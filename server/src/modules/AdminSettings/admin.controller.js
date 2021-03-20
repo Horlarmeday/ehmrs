@@ -1,0 +1,333 @@
+/* eslint-disable camelcase */
+import AdminService from './admin.service';
+import { validateBed, validateDepartment, validateUnit, validateWard } from './validations';
+import { getBeds, getBedsInAWard } from './admin.repository';
+
+/**
+ *
+ *
+ * @class AdminController
+ */
+class AdminController {
+  /**
+   * create a department
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, department data
+   */
+  static async createDepartment(req, res, next) {
+    const { error } = validateDepartment(req.body);
+    if (error) return res.status(400).json(error.details[0].message);
+
+    try {
+      const department = await AdminService.createDepartmentService(
+        Object.assign(req.body, { staff_id: req.user.sub })
+      );
+
+      return res.status(201).json({
+        message: 'Successful! Data saved',
+        data: department,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get departments
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with departments data
+   */
+  static async getDepartments(req, res, next) {
+    try {
+      const departments = await AdminService.getDepartments(req.query);
+
+      return res.status(200).json({
+        message: 'Data retrieved!',
+        data: departments,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * update a department
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, department data
+   */
+  static async updateDepartment(req, res, next) {
+    const { department_id } = req.body;
+    if (!department_id) return res.status(400).json('Department id is required');
+
+    try {
+      const department = await AdminService.updateDepartmentService(req.body);
+
+      return res.status(204).json({
+        message: 'Successful! Data updated',
+        data: department,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * create a unit
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, unit data
+   */
+  static async createUnit(req, res, next) {
+    const { error } = validateUnit(req.body);
+    if (error) return res.status(400).json(error.details[0].message);
+
+    try {
+      const unit = await AdminService.createUnitService(
+        Object.assign(req.body, { staff_id: req.user.sub })
+      );
+
+      return res.status(201).json({
+        message: 'Successful! Data saved',
+        data: unit,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get units
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with units data
+   */
+  static async getUnits(req, res, next) {
+    try {
+      const units = await AdminService.getUnits(req.query);
+
+      return res.status(200).json({
+        message: 'Data retrieved!',
+        data: units,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * update a unit
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, unit data
+   */
+  static async updateUnit(req, res, next) {
+    const { unit_id } = req.body;
+    if (!unit_id) return res.status(400).json('Unit id is required');
+
+    try {
+      const unit = await AdminService.updateUnitService(req.body);
+
+      return res.status(204).json({
+        message: 'Successful! Data updated',
+        data: unit,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * create a ward
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, ward data
+   */
+  static async createWard(req, res, next) {
+    const { error } = validateWard(req.body);
+    if (error) return res.status(400).json(error.details[0].message);
+
+    try {
+      const ward = await AdminService.createWardService(
+        Object.assign(req.body, { staff_id: req.user.sub })
+      );
+
+      return res.status(201).json({
+        message: 'Successful! Data saved',
+        data: ward,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get wards
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with wards data
+   */
+  static async getWards(req, res, next) {
+    try {
+      const wards = await AdminService.getWards(req.query);
+
+      return res.status(200).json({
+        message: 'Data retrieved!',
+        data: wards,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * update a ward
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, ward data
+   */
+  static async updateWard(req, res, next) {
+    const { ward_id } = req.body;
+    if (!ward_id) return res.status(400).json('Ward id is required');
+
+    try {
+      const ward = await AdminService.updateWardService(req.body);
+
+      return res.status(204).json({
+        message: 'Successful! Data updated',
+        data: ward,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * create a bed
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, bed data
+   */
+  static async createBed(req, res, next) {
+    const { error } = validateBed(req.body);
+    if (error) return res.status(400).json(error.details[0].message);
+
+    try {
+      const bed = await AdminService.createBedService(
+        Object.assign(req.body, { staff_id: req.user.sub })
+      );
+
+      return res.status(201).json({
+        message: 'Successful! Data saved',
+        data: bed,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get beds
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with beds data
+   */
+  static async getBeds(req, res, next) {
+    try {
+      const beds = await getBeds();
+
+      return res.status(200).json({
+        message: 'Data retrieved!',
+        data: beds,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * update a bed
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, bed data
+   */
+  static async updateBed(req, res, next) {
+    const { bed_id } = req.body;
+    if (!bed_id) return res.status(400).json('Bed id is required');
+
+    try {
+      const bed = await AdminService.updateBedService(req.body);
+
+      return res.status(204).json({
+        message: 'Successful! Data updated',
+        data: bed,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get all beds in a ward
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, beds data
+   */
+  static async getBedsInAWard(req, res, next) {
+    const { ward_id } = req.body;
+    if (!ward_id) return res.status(400).json('Ward id is required');
+
+    try {
+      const beds = await getBedsInAWard(ward_id);
+
+      return res.status(200).json({
+        message: 'Successful! Data retrieved',
+        data: beds,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+}
+export default AdminController;

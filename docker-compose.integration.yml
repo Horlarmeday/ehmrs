@@ -1,0 +1,35 @@
+version: '3.4'
+
+services:
+  test_api:
+    build: .
+    ports:
+      - 4200:4051
+    env_file:
+      - .env.integration
+    links:
+      - mysql
+      - mongo
+    depends_on:
+      - mysql
+      - mongo
+    volumes:
+      - '.:/app'
+      - '/app/node_modules'
+    networks:
+      - sail
+    container_name: test_api
+    command: npm run dev
+  api_test:
+    image: server_api:latest
+    env_file:
+      - .env.integration
+    depends_on:
+      - mysql
+      - test_api
+    volumes:
+      - '.:/app'
+      - '/app/node_modules'
+    networks:
+      - sail
+    command: npm run test

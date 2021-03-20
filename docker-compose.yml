@@ -1,0 +1,61 @@
+version: '3.4'
+
+services:
+  mongodb:
+    image: mongo:4.0-xenial
+    container_name: mongodb
+    logging:
+      driver: none
+    ports:
+      - '27017:27017'
+    volumes:
+      - 'sailmongo:/var/lib/mongo'
+    networks:
+      - sail
+    restart: always
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    logging:
+      driver: none
+    environment:
+      MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_DATABASE: '${DB_NAME}'
+      MYSQL_USER: '${DB_USER}'
+      MYSQL_PASSWORD: '${DB_PASSWORD}'
+    ports:
+      - '5000:3306'
+    expose:
+      - 5000
+    volumes:
+      - 'sailmysql:/var/lib/mysql'
+    networks:
+      - sail
+    restart: always
+  omnidb:
+    image: taivokasper/omnidb:latest
+    container_name: omnidb
+    restart: always
+    depends_on:
+      - mysql
+    links:
+      - mysql
+    ports:
+      - '8001:8080'
+      - '25482:25482'
+    expose: 
+      - 8001
+    networks:
+      - sail
+    volumes: 
+      - 'config-omnidb:/etc/omnidb'
+networks:
+  sail:
+    driver: bridge
+volumes:
+  sailmysql:
+    driver: local
+  sailmongo:
+    driver: local
+  config-omnidb:
+    driver: local

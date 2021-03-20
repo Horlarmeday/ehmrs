@@ -1,0 +1,40 @@
+node_modules
+client/node_modules
+server/node_modules
+dist/
+npm-debug.log
+
+logs
+server/dist
+client/dist
+server/logs
+
+tmp
+.cache
+.github
+.circle
+.npmrc
+.travis.yml
+greenkeeper.json
+docker-compose*.yml
+*.md
+.git/
+.gitignore
+Jenkinsfile
+
+
+# IDEs and editors
+.idea
+.vscode
+.project
+.classpath
+*.launch
+.settings/
+
+# e2e
+e2e/*.js
+e2e/*.map
+
+#System Files
+.DS_Store
+Thumbs.db
