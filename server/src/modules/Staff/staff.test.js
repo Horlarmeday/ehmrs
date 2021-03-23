@@ -105,7 +105,7 @@ describe('Staff Endpoints /staffs', () => {
         firstname: 'olamide',
         staff_id,
       });
-    await expect(res.status).toBe(204);
+    await expect(res.status).toBe(200);
     await expect(res.body.data.firstname).toBe('olamide');
   }, 10000);
 
