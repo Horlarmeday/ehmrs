@@ -7,7 +7,7 @@ export default [
   {
     url: "/visit/active",
     icon: "flaticon2-user-1",
-    name: "Active Visits"
+    name: "Visits"
   },
   {
     url: "/patient/choose-patient-type",
@@ -45,7 +45,7 @@ export default [
     name: "Health Insurance"
   },
   {
-    url: "/orders/",
+    url: "/orders/orders-type",
     icon: "fas fa-clipboard-list",
     name: "Orders"
   },
@@ -68,5 +68,15 @@ export default [
     url: "/analytics/",
     icon: "far fa-chart-bar",
     name: "Analytics"
+  },
+  {
+    url: "/pharmacy/pharmacy-type",
+    icon: "fas fa-tablets",
+    name: "Pharmacy"
+  },
+  {
+    url: "/laboratory/laboratory-type",
+    icon: "fas fa-thermometer-half",
+    name: "Laboratory"
   }
 ];
