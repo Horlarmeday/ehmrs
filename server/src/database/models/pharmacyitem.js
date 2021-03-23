@@ -113,7 +113,9 @@ module.exports = (sequelize, DataTypes) => {
       drug_type: { type: DataTypes.ENUM('Cash', 'NHIS') },
       drug_form: { type: DataTypes.ENUM('Drug', 'Consumable') },
     },
-    {}
+    {
+      tableName: 'Pharmacy_Items',
+    }
   );
   PharmacyItem.associate = ({ Drug, Staff, Unit }) => {
     // associations can be defined here
