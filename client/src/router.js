@@ -307,15 +307,6 @@ const router = new Router({
                   }
                 },
                 {
-                  path: "generic-drugs",
-                  name: "generic-drugs",
-                  component: () =>
-                    import("@/view/pages/store/pharmacy/GenericDrugs.vue"),
-                  meta: {
-                    requiresAuth: true
-                  }
-                },
-                {
                   path: "pharmacy-items",
                   name: "pharmacy-items",
                   component: () =>
@@ -336,6 +327,87 @@ const router = new Router({
                   }
                 }
               ]
+            }
+          ]
+        },
+        // PHARMACY
+        {
+          path: "/pharmacy",
+          name: "pharmacy-module",
+          component: () => import("@/view/pages/pharmacy/Pharmacy.vue"),
+          children: [
+            {
+              path: "pharmacy-type",
+              name: "pharmacy-type",
+              component: () => import("@/view/pages/pharmacy/Home.vue"),
+              meta: {
+                requiresAuth: true
+              }
+            },
+            {
+              path: "generic-drugs",
+              name: "generic-drugs",
+              component: () => import("@/view/pages/pharmacy/GenericDrugs.vue"),
+              meta: {
+                requiresAuth: true
+              }
+            }
+          ]
+        },
+        // LABORATORY
+        {
+          path: "/laboratory",
+          name: "laboratory",
+          component: () => import("@/view/pages/laboratory/Laboratory.vue"),
+          children: [
+            {
+              path: "laboratory-type",
+              name: "laboratory-type",
+              component: () => import("@/view/pages/laboratory/Home.vue"),
+              meta: {
+                requiresAuth: true
+              }
+            },
+            {
+              path: "sample-types",
+              name: "sample-types",
+              component: () =>
+                import("@/view/pages/laboratory/SampleTypes.vue"),
+              meta: {
+                requiresAuth: true
+              }
+            },
+            {
+              path: "tests",
+              name: "tests",
+              component: () => import("@/view/pages/laboratory/Tests.vue"),
+              meta: {
+                requiresAuth: true
+              }
+            },
+            {
+              path: "nhis-tests",
+              name: "nhis-tests",
+              component: () => import("@/view/pages/laboratory/NhisTests.vue"),
+              meta: {
+                requiresAuth: true
+              }
+            }
+          ]
+        },
+        // ORDERS
+        {
+          path: "/orders",
+          name: "orders",
+          component: () => import("@/view/pages/orders/Orders.vue"),
+          children: [
+            {
+              path: "orders-type",
+              name: "orders-type",
+              component: () => import("@/view/pages/orders/Home.vue"),
+              meta: {
+                requiresAuth: true
+              }
             }
           ]
         }

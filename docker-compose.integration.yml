@@ -2,26 +2,28 @@ version: '3.4'
 
 services:
   test_api:
-    build: .
+    build: 
+      context: ./server
+    container_name: test_api
     ports:
       - 4200:4051
     env_file:
       - .env.integration
     links:
       - mysql
-      - mongo
+      - mongodb
     depends_on:
       - mysql
-      - mongo
+      - mongodb
     volumes:
       - '.:/app'
       - '/app/node_modules'
     networks:
       - sail
-    container_name: test_api
     command: npm run dev
   api_test:
-    image: server_api:latest
+    image: ehmrs_test_api:latest
+    container_name: api_test
     env_file:
       - .env.integration
     depends_on:

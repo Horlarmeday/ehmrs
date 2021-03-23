@@ -1,6 +1,6 @@
 # EHMRS
 
-EHMRS is a  is a CLI to bootstrap new express projects.
+EHMRS is a project to help health care centers manage their clinial, administrative and financial operations.
 
 ## Installation
 
@@ -10,52 +10,6 @@ npm init express-app
 npm install -g create-express-app
 # or 
 npx create-express-app
-```
-
-## Creating an App
-You’ll need to have Node 10.16.0 or later version on your local development machine. It is highly recommended using the latest LTS version.
-
-To create a new app, you may choose one of the following methods:
-
-#### npx
-
-```bash
-npx create-express-app -n my-app
-```
-_where `my-app` is the name of your project_
-
-__note: there should no space in your project name__
-
-After running this command, you will be prompted for some more questions, just follow it to the end, a `my-app` directory will be created 
-inside the current folder. Inside that directory contains the initial project structure.
-
-
-#### npm
-
-```bash
-npm init express-app -n my-app
-```
-
-#### Global Installation
-If you installed globally i.e you ran `npm install -g create-express-app`. To create a new project run the command below
-```bash
-create-express-app -n my-app
-```
-
-To skip all prompts and go for defaults options, run the command below.
-```bash
-create-express-app --yes
-# or 
-npx create-express-app --yes
-# or
-npm init express-app --yes
-```
-_`-y` can be used in place of `--yes`_
-
-After creating project and installation is done, you can open your project folder.
-```bash
-cd my-app
-npm run dev
 ```
 # Express App
 
