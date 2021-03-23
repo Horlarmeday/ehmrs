@@ -77,7 +77,7 @@ describe('Insurance Endpoints /insurances', () => {
         name: 'FHSS',
         insurance_id,
       });
-    await expect(res.status).toBe(204);
+    await expect(res.status).toBe(200);
     await expect(res.body.data.name).toBe('FHSS');
   }, 10000);
 
@@ -89,7 +89,7 @@ describe('Insurance Endpoints /insurances', () => {
         name: 'Police Health Trust',
         hmo_id,
       });
-    await expect(res.status).toBe(204);
+    await expect(res.status).toBe(200);
     await expect(res.body.data.name).toBe('Police Health Trust');
   }, 10000);
 
