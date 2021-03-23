@@ -1,58 +1,12 @@
 /* eslint-disable camelcase */
 import {
   createCashItem,
-  createGenericDrug, createNHISItem,
-  getGenericDrugs, getPharmacyItems,
-  searchGenericDrugs, searchPharmacyItems,
-  updateGenericDrug,
+  createNHISItem,
+  getPharmacyItems,
+  searchPharmacyItems,
 } from './store.repository';
 
 class StoreService {
-  /**
-   * create a generic drug
-   *
-   * @static
-   * @returns {json} json object with generic drug data
-   * @param body
-   * @memberOf StoreService
-   */
-  static async createGenericDrugService(body) {
-    return createGenericDrug(body);
-  }
-
-  /**
-   * update generic drug
-   *
-   * @static
-   * @returns {json} json object with generic data
-   * @param body
-   * @memberOf StoreService
-   */
-  static async updateGenericDrugService(body) {
-    return updateGenericDrug(body);
-  }
-
-  /**
-   * get generic drugs
-   *
-   * @static
-   * @returns {json} json object with generic drugs data
-   * @param body
-   * @memberOf StoreService
-   */
-  static async getGenericDrugs(body) {
-    const { currentPage, pageLimit, search } = body;
-    if (search) {
-      return searchGenericDrugs(+currentPage, +pageLimit, search);
-    }
-
-    if (Object.values(body).length) {
-      return getGenericDrugs(+currentPage, +pageLimit);
-    }
-
-    return getGenericDrugs();
-  }
-
   /**
    * add item to store
    *

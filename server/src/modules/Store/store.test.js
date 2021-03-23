@@ -6,11 +6,10 @@ import server from '../../startup/server';
 // eslint-disable-next-line import/no-extraneous-dependencies
 const request = require('supertest');
 
-const { Staff, Drug, PharmacyItem } = require('../../database/models');
+const { Staff, PharmacyItem } = require('../../database/models');
 
 describe('Store Endpoints /store', () => {
   let token;
-  let drug_id;
   beforeAll(async () => {
     const staff = await Staff.create({
       firstname: 'Fatai',
@@ -32,55 +31,8 @@ describe('Store Endpoints /store', () => {
   }, 14000);
   afterAll(async () => {
     await Staff.destroy({ truncate: true, cascade: false });
-    await Drug.destroy({ truncate: true, cascade: false });
     await PharmacyItem.destroy({ truncate: true, cascade: false });
   });
-
-  it('should create a new generic drug', async () => {
-    const res = await request(server)
-      .post('/api/store/pharmacy/generic/create')
-      .set('Authorization', `Bearer ${token}`)
-      .send({
-        name: 'Paracetamol',
-        type: 'Drug',
-      });
-    drug_id = res.body.data.id;
-    await expect(res.status).toBe(201);
-    await expect(res.body).toHaveProperty('data');
-    await expect(res.body.data).toHaveProperty('id');
-    await expect(res.body.data).toHaveProperty('name', 'Paracetamol');
-  }, 10000);
-
-  it('should return updated generic drug', async () => {
-    const res = await request(server)
-      .put('/api/store/pharmacy/generic/update')
-      .set('Authorization', `Bearer ${token}`)
-      .send({
-        name: 'Penicillin',
-        drug_id,
-      });
-    await expect(res.status).toBe(204);
-    await expect(res.body.data).toHaveProperty('name', 'Penicillin');
-  }, 10000);
-
-  it('should return searched generic drug', async () => {
-    const res = await request(server)
-      .get('/api/store/pharmacy/generic/get?currentPage=1&pageLimit=10&search=Penicillin')
-      .set('Authorization', `Bearer ${token}`);
-    await expect(res.status).toBe(200);
-    await expect(res.body.data).toHaveProperty('docs');
-    await expect(res.body.data.total).toBeGreaterThan(0);
-  }, 10000);
-
-  it('should return all generic drugs', async () => {
-    const res = await request(server)
-      .get('/api/store/pharmacy/generic/get?currentPage=1&pageLimit=10')
-      .set('Authorization', `Bearer ${token}`);
-    await expect(res.status).toBe(200);
-    await expect(res.body.data).toHaveProperty('docs');
-    await expect(res.body.data.docs).toHaveLength(1);
-    await expect(res.body.data.total).toBeGreaterThan(0);
-  }, 10000);
 
   it('should create a new cash pharmacy item', async () => {
     const res = await request(server)
