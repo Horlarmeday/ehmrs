@@ -1,16 +1,20 @@
 import {
   createBed,
   createDepartment,
+  createService,
   createUnit,
   createWard,
   getDepartments,
+  getServices,
   getUnits,
   getWards,
   searchDepartments,
+  searchServices,
   searchUnits,
   searchWards,
   updateBed,
   updateDepartment,
+  updateService,
   updateUnit,
   updateWard,
 } from './admin.repository';
@@ -173,6 +177,51 @@ class AdminService {
    */
   static async updateBedService(body) {
     return updateBed(body);
+  }
+
+  /**
+   * create a service
+   *
+   * @static
+   * @returns {json} json object with service data
+   * @param body
+   * @memberOf AdminService
+   */
+  static async createHospitalService(body) {
+    return createService(body);
+  }
+
+  /**
+   * update a service
+   *
+   * @static
+   * @returns {json} json object with service data
+   * @param body
+   * @memberOf AdminService
+   */
+  static async updateHospitalService(body) {
+    return updateService(body);
+  }
+
+  /**
+   * get services
+   *
+   * @static
+   * @returns {json} json object with services data
+   * @param body
+   * @memberOf AdminService
+   */
+  static async getServices(body) {
+    const { search, pageLimit, currentPage } = body;
+    if (search) {
+      return searchServices(+currentPage, +pageLimit, search);
+    }
+
+    if (Object.values(body).length) {
+      return getServices(+currentPage, +pageLimit);
+    }
+
+    return getServices();
   }
 }
 export default AdminService;

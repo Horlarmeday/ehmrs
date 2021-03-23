@@ -1,7 +1,14 @@
 /* eslint-disable camelcase */
 import AdminService from './admin.service';
-import { validateBed, validateDepartment, validateUnit, validateWard } from './validations';
+import {
+  validateBed,
+  validateDepartment,
+  validateService,
+  validateUnit,
+  validateWard,
+} from './validations';
 import { getBeds, getBedsInAWard } from './admin.repository';
+import { APIError } from '../../util/apiError';
 
 /**
  *
@@ -20,7 +27,7 @@ class AdminController {
    */
   static async createDepartment(req, res, next) {
     const { error } = validateDepartment(req.body);
-    if (error) return res.status(400).json(error.details[0].message);
+    if (error) throw new APIError('ERROR', 400, error.details[0].message);
 
     try {
       const department = await AdminService.createDepartmentService(
@@ -69,12 +76,12 @@ class AdminController {
    */
   static async updateDepartment(req, res, next) {
     const { department_id } = req.body;
-    if (!department_id) return res.status(400).json('Department id is required');
+    if (!department_id) throw new APIError('ERROR', 400, 'Department id is required');
 
     try {
       const department = await AdminService.updateDepartmentService(req.body);
 
-      return res.status(204).json({
+      return res.status(200).json({
         message: 'Successful! Data updated',
         data: department,
       });
@@ -94,7 +101,7 @@ class AdminController {
    */
   static async createUnit(req, res, next) {
     const { error } = validateUnit(req.body);
-    if (error) return res.status(400).json(error.details[0].message);
+    if (error) throw new APIError('ERROR', 400, error.details[0].message);
 
     try {
       const unit = await AdminService.createUnitService(
@@ -143,12 +150,12 @@ class AdminController {
    */
   static async updateUnit(req, res, next) {
     const { unit_id } = req.body;
-    if (!unit_id) return res.status(400).json('Unit id is required');
+    if (!unit_id) throw new APIError('ERROR', 400, 'Unit id is required');
 
     try {
       const unit = await AdminService.updateUnitService(req.body);
 
-      return res.status(204).json({
+      return res.status(200).json({
         message: 'Successful! Data updated',
         data: unit,
       });
@@ -168,7 +175,7 @@ class AdminController {
    */
   static async createWard(req, res, next) {
     const { error } = validateWard(req.body);
-    if (error) return res.status(400).json(error.details[0].message);
+    if (error) throw new APIError('ERROR', 400, error.details[0].message);
 
     try {
       const ward = await AdminService.createWardService(
@@ -217,12 +224,12 @@ class AdminController {
    */
   static async updateWard(req, res, next) {
     const { ward_id } = req.body;
-    if (!ward_id) return res.status(400).json('Ward id is required');
+    if (!ward_id) throw new APIError('ERROR', 400, 'Ward id is required');
 
     try {
       const ward = await AdminService.updateWardService(req.body);
 
-      return res.status(204).json({
+      return res.status(200).json({
         message: 'Successful! Data updated',
         data: ward,
       });
@@ -242,7 +249,7 @@ class AdminController {
    */
   static async createBed(req, res, next) {
     const { error } = validateBed(req.body);
-    if (error) return res.status(400).json(error.details[0].message);
+    if (error) throw new APIError('ERROR', 400, error.details[0].message);
 
     try {
       const bed = await AdminService.createBedService(
@@ -291,12 +298,12 @@ class AdminController {
    */
   static async updateBed(req, res, next) {
     const { bed_id } = req.body;
-    if (!bed_id) return res.status(400).json('Bed id is required');
+    if (!bed_id) throw new APIError('ERROR', 400, 'Bed id is required');
 
     try {
       const bed = await AdminService.updateBedService(req.body);
 
-      return res.status(204).json({
+      return res.status(200).json({
         message: 'Successful! Data updated',
         data: bed,
       });
@@ -316,7 +323,7 @@ class AdminController {
    */
   static async getBedsInAWard(req, res, next) {
     const { ward_id } = req.body;
-    if (!ward_id) return res.status(400).json('Ward id is required');
+    if (!ward_id) throw new APIError('ERROR', 400, 'Ward id is required');
 
     try {
       const beds = await getBedsInAWard(ward_id);
@@ -324,6 +331,80 @@ class AdminController {
       return res.status(200).json({
         message: 'Successful! Data retrieved',
         data: beds,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * create a service
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, service data
+   */
+  static async createService(req, res, next) {
+    const { error } = validateService(req.body);
+    if (error) throw new APIError('ERROR', 400, error.details[0].message);
+
+    try {
+      const service = await AdminService.createHospitalService(
+        Object.assign(req.body, { staff_id: req.user.sub })
+      );
+
+      return res.status(201).json({
+        message: 'Successful! Data saved',
+        data: service,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * update a service
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, service data
+   */
+  static async updateService(req, res, next) {
+    const { service_id } = req.body;
+    if (!service_id) throw new APIError('ERROR', 400, 'Service id is required');
+
+    try {
+      const service = await AdminService.updateHospitalService(req.body);
+
+      return res.status(200).json({
+        message: 'Successful! Data updated',
+        data: service,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get services
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with services data
+   */
+  static async getServices(req, res, next) {
+    try {
+      const services = await AdminService.getServices(req.query);
+
+      return res.status(200).json({
+        message: 'Data retrieved!',
+        data: services,
       });
     } catch (e) {
       return next(e);

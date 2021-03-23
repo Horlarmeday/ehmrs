@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { Sequelize } from 'sequelize';
 
-const { Department, Unit, Ward, Bed } = require('../../database/models');
+const { Department, Unit, Ward, Bed, Service } = require('../../database/models');
 
 const { Op } = Sequelize;
 
@@ -13,6 +13,15 @@ const { Op } = Sequelize;
  */
 export async function getModelById(model, id) {
   return model.findByPk(id);
+}
+
+/**
+ * count number of records in a table
+ * @returns {number} return number of records
+ * @param model
+ */
+export async function getNumberOfRecords(model) {
+  return model.count();
 }
 
 /** ***********************
@@ -273,3 +282,75 @@ export async function getBedsInAWard(data) {
     },
   });
 }
+
+/** ***********************
+ * SERVICES
+ ********************** */
+/**
+ * create a service
+ * @param data
+ * @returns {object} service data
+ */
+export async function createService(data) {
+  const { name, price, staff_id } = data;
+  const count = await getNumberOfRecords(Service);
+  return Service.create({
+    name,
+    staff_id,
+    price,
+    code: `S${count + 1}`,
+  });
+}
+
+/**
+ * update a service
+ * @param data
+ * @returns {object} service data
+ */
+export async function updateService(data) {
+  const { service_id } = data;
+  const service = await getModelById(Service, service_id);
+  return service.update(data);
+}
+
+/**
+ * search services
+ *
+ * @function
+ * @returns {json} json object with services data
+ * @param currentPage
+ * @param pageLimit
+ * @param search
+ */
+export async function searchServices(currentPage = 1, pageLimit = 10, search) {
+  return Service.paginate({
+    page: currentPage,
+    paginate: pageLimit,
+    order: [['createdAt', 'DESC']],
+    where: {
+      name: {
+        [Op.like]: `%${search}%`,
+      },
+    },
+  });
+}
+
+/**
+ * get services
+ *
+ * @function
+ * @returns {json} json object with services data
+ * @param currentPage
+ * @param pageLimit
+ */
+export async function getServices(currentPage = 1, pageLimit = 10) {
+  return Service.paginate({
+    page: currentPage,
+    paginate: pageLimit,
+    order: [['createdAt', 'DESC']],
+  });
+}
+
+/** ***********************
+ * LABORATORY
+ ********************** */
