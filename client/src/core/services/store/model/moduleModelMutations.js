@@ -87,5 +87,30 @@ export default {
   UPDATE_BED(state, bed) {
     const bedIndex = state.beds.findIndex(d => d.id === bed.id);
     Object.assign(state.beds[bedIndex], bed);
+  },
+
+  /**
+   * SERVICES
+   */
+
+  ADD_SERVICE(state, service) {
+    state.services.unshift(service);
+  },
+
+  SET_SERVICES(state, services) {
+    state.services = services;
+  },
+
+  SET_SERVICES_TOTAL(state, total) {
+    state.serviceTotal = total;
+  },
+
+  SET_SERVICE_NUMB_PAGES(state, pages) {
+    state.servicePages = pages;
+  },
+
+  UPDATE_SERVICE(state, service) {
+    const serviceIndex = state.services.findIndex(d => d.id === service.id);
+    Object.assign(state.services[serviceIndex], service);
   }
 };

@@ -7,7 +7,7 @@ export default {
   addDepartment({ commit }, department) {
     return new Promise((resolve, reject) => {
       axios
-        .post("/settings/department/create", department)
+        .post("/settings/departments/create", department)
         .then(response => {
           commit(
             "ADD_DEPARTMENT",
@@ -26,7 +26,7 @@ export default {
   fetchDepartments({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
-        .get("/settings/department/get", {
+        .get("/settings/departments/get", {
           params: {
             currentPage: payload.currentPage,
             pageLimit: payload.itemsPerPage,
@@ -48,7 +48,7 @@ export default {
   updateDepartment({ commit }, department) {
     return new Promise((resolve, reject) => {
       axios
-        .put(`/settings/department/update`, department)
+        .put(`/settings/departments/update`, department)
         .then(response => {
           commit("UPDATE_DEPARTMENT", response.data.data);
           resolve(response);
@@ -65,7 +65,7 @@ export default {
   addUnit({ commit }, unit) {
     return new Promise((resolve, reject) => {
       axios
-        .post(`/settings/unit/create`, unit)
+        .post(`/settings/units/create`, unit)
         .then(response => {
           commit(
             "ADD_UNIT",
@@ -85,7 +85,7 @@ export default {
   fetchUnits({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
-        .get("/settings/unit/get", {
+        .get("/settings/units/get", {
           params: {
             currentPage: payload.currentPage,
             pageLimit: payload.itemsPerPage,
@@ -107,7 +107,7 @@ export default {
   updateUnit({ commit }, unit) {
     return new Promise((resolve, reject) => {
       axios
-        .put(`/settings/unit/update`, unit)
+        .put(`/settings/units/update`, unit)
         .then(response => {
           commit("UPDATE_UNIT", response.data.data);
           resolve(response);
@@ -124,7 +124,7 @@ export default {
   addWard({ commit }, ward) {
     return new Promise((resolve, reject) => {
       axios
-        .post(`/settings/ward/create`, ward)
+        .post(`/settings/wards/create`, ward)
         .then(response => {
           commit(
             "ADD_WARD",
@@ -144,7 +144,7 @@ export default {
   fetchWards({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
-        .get("/settings/ward/get", {
+        .get("/settings/wards/get", {
           params: {
             currentPage: payload.currentPage,
             pageLimit: payload.itemsPerPage,
@@ -166,7 +166,7 @@ export default {
   updateWard({ commit }, ward) {
     return new Promise((resolve, reject) => {
       axios
-        .put(`/settings/ward/update`, ward)
+        .put(`/settings/wards/update`, ward)
         .then(response => {
           commit("UPDATE_WARD", response.data.data);
           resolve(response);
@@ -183,7 +183,7 @@ export default {
   addBed({ commit }, bed) {
     return new Promise((resolve, reject) => {
       axios
-        .post(`/settings/bed/create`, bed)
+        .post(`/settings/beds/create`, bed)
         .then(response => {
           commit(
             "ADD_BED",
@@ -203,7 +203,7 @@ export default {
   fetchBeds({ commit }, ward_id) {
     return new Promise((resolve, reject) => {
       axios
-        .post("/settings/ward/one", ward_id)
+        .post("/settings/ward/beds", ward_id)
         .then(response => {
           commit("SET_BEDS", response.data.data);
           resolve(response);
@@ -217,9 +217,67 @@ export default {
   updateBed({ commit }, bed) {
     return new Promise((resolve, reject) => {
       axios
-        .put(`/settings/bed/update`, bed)
+        .put(`/settings/beds/update`, bed)
         .then(response => {
           commit("UPDATE_BED", response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * SERVICES
+   */
+  addService({ commit }, service) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/settings/services/create`, service)
+        .then(response => {
+          commit(
+            "ADD_SERVICE",
+            Object.assign(service, {
+              id: response.data.data.id,
+              createdAt: response.data.data.createdAt
+            })
+          );
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchServices({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get("/settings/services/get", {
+          params: {
+            currentPage: payload.currentPage,
+            pageLimit: payload.itemsPerPage,
+            search: payload.search
+          }
+        })
+        .then(response => {
+          commit("SET_SERVICES", response.data.data.docs);
+          commit("SET_SERVICES_TOTAL", response.data.data.total);
+          commit("SET_SERVICE_NUMB_PAGES", response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+  updateService({ commit }, service) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/settings/services/update`, service)
+        .then(response => {
+          commit("UPDATE_SERVICE", response.data.data);
           resolve(response);
         })
         .catch(error => {

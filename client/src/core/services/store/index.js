@@ -7,6 +7,8 @@ import insurance from "./insurance/moduleInsurance";
 import employee from "./employee/moduleEmployee";
 import model from "./model/moduleModel";
 import store from "./store/moduleStore";
+import pharmacy from "./pharmacy/modulePharmacy";
+import laboratory from "./laboratory/moduleLaboratory";
 import htmlClass from "./htmlclass.module";
 import config from "./config.module";
 import breadcrumbs from "./breadcrumbs.module";
@@ -21,6 +23,8 @@ export default new Vuex.Store({
     employee,
     insurance,
     store,
+    pharmacy,
+    laboratory,
     htmlClass,
     config,
     breadcrumbs
