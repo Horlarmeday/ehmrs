@@ -4,6 +4,8 @@ import patientRoutes from '../modules/Patient/patient.routes';
 import insuranceRoutes from '../modules/Insurance/insurance.routes';
 import adminRoutes from '../modules/AdminSettings/admin.routes';
 import storeRoutes from '../modules/Store/store.routes';
+import labRoutes from '../modules/Laboratory/laboratory.routes';
+import pharmacyRoutes from '../modules/Pharmacy/pharmacy.routes';
 
 export default (server) => {
   server.use('/api/staffs', userRoutes);
@@ -12,6 +14,8 @@ export default (server) => {
   server.use('/api/insurances', insuranceRoutes);
   server.use('/api/settings', adminRoutes);
   server.use('/api/store', storeRoutes);
+  server.use('/api/laboratory', labRoutes);
+  server.use('/api/pharmacy', pharmacyRoutes);
   server.use((req, res, next) => {
     const apiTimeout = 18000;
     // set the timeout for all HTTP requests
@@ -30,7 +34,7 @@ export default (server) => {
     next();
   });
   server.use((req, res, next) => {
-    const err = res.status(404).json('Resource does not exist');
+    const err = res.status(404).json({ message: 'Resource does not exist' });
     next(err);
   });
 };
