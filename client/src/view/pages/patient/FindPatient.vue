@@ -34,36 +34,7 @@
             </div>
           </div>
           <div class="col-lg-6">
-            <div class="form-group">
-              <label>Find Patient By Date</label>
-              <div class="input-daterange input-group">
-                <datepicker
-                  v-model="start"
-                  input-class="form-control"
-                  placeholder="Start"
-                ></datepicker>
-                <div class="input-group-append">
-                  <span class="input-group-text"
-                    ><i class="la la-ellipsis-h"></i
-                  ></span>
-                </div>
-                <datepicker
-                  v-model="end"
-                  input-class="form-control"
-                  placeholder="End"
-                ></datepicker>
-                <div class="input-group-append">
-                  <button
-                    type="button"
-                    class="btn btn-primary"
-                    @click="searchByDate"
-                  >
-                    Filter
-                  </button>
-                </div>
-              </div>
-              <span class="form-text text-muted">Select Date Range</span>
-            </div>
+            <date-filter @filterbydate="searchByDate" label="Patient" />
           </div>
         </div>
       </div>
@@ -160,8 +131,8 @@
 </template>
 
 <script>
-import Datepicker from "vuejs-datepicker";
 import Pagination from "@/utils/Pagination.vue";
+import DateFilter from "../../../utils/DateFilter";
 export default {
   data() {
     return {
@@ -173,8 +144,8 @@ export default {
     };
   },
   components: {
-    Datepicker,
-    Pagination
+    Pagination,
+    DateFilter
   },
 
   computed: {
@@ -193,17 +164,8 @@ export default {
   },
 
   methods: {
-    notifyEmptyField() {
-      return this.$notify({
-        group: "foo",
-        title: "Error message",
-        text: "Field cannot be left empty",
-        type: "error"
-      });
-    },
-
-    searchByDate() {
-      if (!this.start || !this.end) return this.notifyEmptyField();
+    searchByDate(start, end) {
+      (this.start = start), (this.end = end);
       this.currentPage = 1;
       this.$store.dispatch("patient/fetchPatients", {
         currentPage: this.currentPage,
@@ -226,7 +188,9 @@ export default {
     handlePageChange() {
       this.$store.dispatch("patient/fetchPatients", {
         currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage
+        itemsPerPage: this.itemsPerPage,
+        start: this.start,
+        end: this.end
       });
     },
 

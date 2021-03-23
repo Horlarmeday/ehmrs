@@ -17,7 +17,7 @@
               <v-select
                 v-validate="'required'"
                 data-vv-validate-on="blur"
-                name="drug_id"
+                name="drug"
                 @input="setDrugForm"
                 @search="searchGenericDrugs"
                 v-model="drug_id"
@@ -26,7 +26,7 @@
                 :options="drugs"
               ></v-select>
               <span class="text-danger text-sm">{{
-                errors.first("drug_id")
+                errors.first("drug")
               }}</span>
             </div>
             <div class="col-lg-4">
@@ -423,7 +423,7 @@ export default {
     },
 
     drugs() {
-      return this.$store.state.store.drugs;
+      return this.$store.state.pharmacy.drugs;
     },
 
     canSee() {
@@ -503,7 +503,7 @@ export default {
     },
 
     searchGenericDrugs(search) {
-      this.$store.dispatch("store/fetchGenericDrugs", {
+      this.$store.dispatch("pharmacy/fetchGenericDrugs", {
         currentPage: 1,
         itemsPerPage: 20,
         search

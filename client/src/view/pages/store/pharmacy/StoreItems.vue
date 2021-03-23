@@ -33,11 +33,17 @@
         >
           <thead>
             <tr class="text-left">
-              <th class="pr-0" style="width: 250px">Name</th>
+              <th class="pl-0" style="width: 20px">
+                <label class="checkbox checkbox-lg checkbox-inline">
+                  <input type="checkbox" value="1" />
+                  <span></span>
+                </label>
+              </th>
+              <th class="pr-0" style="width: 300px">Name</th>
               <th style="min-width: 150px">Quantity</th>
-              <th style="min-width: 100px">Shelf</th>
+              <th style="min-width: 50px">Shelf</th>
               <th style="min-width: 100px">Dosage Form</th>
-              <th style="min-width: 100px">Strength/Volume</th>
+              <th style="min-width: 50px">Strength/Volume</th>
               <th style="min-width: 150px">Date Created</th>
               <th class="pr-0 text-right" style="min-width: 150px">action</th>
             </tr>
@@ -47,6 +53,12 @@
               <td colspan="9" align="center" class="text-muted">No Data</td>
             </tr>
             <tr v-for="item in items" :key="item.id">
+              <td class="pl-0">
+                <label class="checkbox checkbox-lg checkbox-inline">
+                  <input type="checkbox" value="1" />
+                  <span></span>
+                </label>
+              </td>
               <td class="pr-0">
                 <a
                   href="#"
@@ -121,6 +133,7 @@
         :per-page="perPage"
         :current-page="currentPage"
         @pagechanged="onPageChange"
+        @changepagecount="onChangePageCount"
       />
     </div>
     <!--end::Body-->
@@ -198,6 +211,13 @@ export default {
         currentPage: 1,
         itemsPerPage: this.itemsPerPage,
         search
+      });
+    },
+
+    onChangePageCount(pagecount) {
+      this.$store.dispatch("store/fetchPharmacyItems", {
+        currentPage: this.currentPage,
+        itemsPerPage: pagecount
       });
     }
   },
