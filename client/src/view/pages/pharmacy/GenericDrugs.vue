@@ -37,9 +37,9 @@
         >
           <thead>
             <tr class="text-left">
-              <th class="pr-0" style="width: 250px">Name</th>
-              <th style="min-width: 250px">Code</th>
-              <th style="min-width: 250px">Type</th>
+              <th class="pr-0" style="width: 450px">Name</th>
+              <th style="min-width: 150px">Code</th>
+              <th style="min-width: 150px">Type</th>
               <th style="min-width: 150px">Date Created</th>
               <th class="pr-0 text-right" style="min-width: 150px">action</th>
             </tr>
@@ -97,6 +97,7 @@
         :per-page="perPage"
         :current-page="currentPage"
         @pagechanged="onPageChange"
+        @changepagecount="onChangePageCount"
       />
     </div>
     <!--end::Body-->
@@ -107,9 +108,9 @@
 <script>
 import CreateGenericDrug from "./create/CreateGenericDrug.vue";
 import Pagination from "@/utils/Pagination.vue";
-import EditIcon from "../../../../assets/icons/EditIcon.vue";
-import AddIcon from "../../../../assets/icons/AddIcon.vue";
-import Search from "../../../../utils/Search.vue";
+import EditIcon from "../../../assets/icons/EditIcon.vue";
+import AddIcon from "../../../assets/icons/AddIcon.vue";
+import Search from "../../../utils/Search.vue";
 export default {
   data() {
     return {
@@ -128,13 +129,13 @@ export default {
   },
   computed: {
     drugs() {
-      return this.$store.state.store.drugs;
+      return this.$store.state.pharmacy.drugs;
     },
     queriedItems() {
-      return this.$store.state.store.total;
+      return this.$store.state.pharmacy.total;
     },
     pages() {
-      return this.$store.state.store.pages;
+      return this.$store.state.pharmacy.pages;
     },
     perPage() {
       return this.drugs.length;
@@ -156,14 +157,14 @@ export default {
     },
 
     handlePageChange() {
-      this.$store.dispatch("store/fetchGenericDrugs", {
+      this.$store.dispatch("pharmacy/fetchGenericDrugs", {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage
       });
     },
 
     onHandleSearch(search) {
-      this.$store.dispatch("store/fetchGenericDrugs", {
+      this.$store.dispatch("pharmacy/fetchGenericDrugs", {
         currentPage: 1,
         itemsPerPage: this.itemsPerPage,
         search
@@ -173,10 +174,17 @@ export default {
     onPageChange(page) {
       this.currentPage = page;
       this.handlePageChange();
+    },
+
+    onChangePageCount(pagecount) {
+      this.$store.dispatch("pharmacy/fetchGenericDrugs", {
+        currentPage: this.currentPage,
+        itemsPerPage: pagecount
+      });
     }
   },
   created() {
-    this.$store.dispatch("store/fetchGenericDrugs", {
+    this.$store.dispatch("pharmacy/fetchGenericDrugs", {
       currentPage: this.currentPage,
       itemsPerPage: this.itemsPerPage
     });

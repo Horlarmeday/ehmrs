@@ -126,13 +126,13 @@ export default {
 
           if (this.drug_id && this.drug_id >= 0) {
             this.$store
-              .dispatch("store/updateGenericDrug", obj)
+              .dispatch("pharmacy/updateGenericDrug", obj)
               .then(() => this.initializeRequest(submitButton))
               .catch(() => this.removeSpinner(submitButton));
           } else {
             delete obj.drug_id;
             this.$store
-              .dispatch("store/addGenericDrug", obj)
+              .dispatch("pharmacy/addGenericDrug", obj)
               .then(() => this.initializeRequest(submitButton))
               .catch(() => this.removeSpinner(submitButton));
           }
