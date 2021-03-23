@@ -1,5 +1,5 @@
 <template>
-  <b-modal v-model="activePrompt" hide-footer title="Department">
+  <b-modal v-model="activePrompt" hide-footer title="Service">
     <div class="mb-15">
       <div class="form-group row">
         <label class="col-lg-3 col-form-label">Name</label>
@@ -117,7 +117,7 @@ export default {
           const obj = {
             service_id: this.service_id,
             name: this.name,
-            description: this.description
+            price: this.price
           };
           // set spinner to submit button
           const submitButton = this.$refs["kt_service_submit"];

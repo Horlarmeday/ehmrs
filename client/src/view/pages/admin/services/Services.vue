@@ -13,7 +13,7 @@
         </h3>
       </div>
       <!--begin::Header-->
-      <div class="card-header border-0">
+      <div class="card-header border-0 float-right">
         <div class="card-toolbar">
           <a
             href="#"
@@ -128,13 +128,13 @@ export default {
       return this.$store.state.model.services;
     },
     queriedItems() {
-      return this.$store.state.model.total;
+      return this.$store.state.model.serviceTotal;
     },
     pages() {
-      return this.$store.state.model.pages;
+      return this.$store.state.model.servicePages;
     },
     perPage() {
-      return this.departments.length;
+      return this.services.length;
     }
   },
 

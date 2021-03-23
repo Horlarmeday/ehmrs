@@ -148,7 +148,7 @@
               </div>
               <div class="ml-6 ml-lg-0 ml-xxl-6 flex-shrink-0">
                 <router-link
-                  to="/settings/bed"
+                  to="/settings/services"
                   class="btn font-weight-bolder text-uppercase btn-light-primary py-4 px-6"
                 >
                   View
