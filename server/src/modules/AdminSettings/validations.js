@@ -32,3 +32,11 @@ export function validateBed(bed) {
   });
   return schema.validate(bed);
 }
+
+export function validateService(service) {
+  const schema = Joi.object({
+    name: Joi.string().required(),
+    price: Joi.number().required(),
+  });
+  return schema.validate(service);
+}
