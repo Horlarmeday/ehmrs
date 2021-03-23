@@ -259,7 +259,7 @@ describe('Patient Endpoints /patients', () => {
         firstname: 'olamide',
         patient_id,
       });
-    await expect(res.status).toBe(204);
+    await expect(res.status).toBe(200);
     await expect(res.body.data.firstname).toBe('olamide');
   }, 10000);
 
@@ -271,7 +271,7 @@ describe('Patient Endpoints /patients', () => {
         firstname: 'Faruk',
         patient_id,
       });
-    await expect(res.status).toBe(204);
+    await expect(res.status).toBe(200);
     await expect(res.body.data.firstname).toBe('Faruk');
   }, 10000);
 });
