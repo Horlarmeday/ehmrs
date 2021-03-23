@@ -50,6 +50,8 @@
       <select
         class="form-control form-control-sm text-primary font-weight-bold mr-4 border-0 bg-light-primary"
         style="width: 75px;"
+        @change="onChangePageCount"
+        v-model="pageCount"
       >
         <option value="10">10</option>
         <option value="20">20</option>
@@ -92,7 +94,8 @@ export default {
   data() {
     return {
       disabled: "disabled",
-      active: "active"
+      active: "active",
+      pageCount: 10
     };
   },
   computed: {
@@ -150,6 +153,9 @@ export default {
     },
     onClickLastPage() {
       this.$emit("pagechanged", this.totalPages);
+    },
+    onChangePageCount() {
+      this.$emit("changepagecount", this.pageCount);
     }
   }
 };
