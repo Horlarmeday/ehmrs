@@ -2,8 +2,8 @@
   <!--begin: Search Form-->
   <div class="card-body py-1">
     <div class="row">
-      <div class="col-lg-3 mb-lg-0 mb-6">
-        <label>Search:</label>
+      <div class="col-lg-3 mb-lg-0 mb-5">
+        <label class="pr-0">Search:</label>
         <input
           type="text"
           class="form-control datatable-input"
@@ -14,6 +14,7 @@
         />
       </div>
     </div>
+    <br />
   </div>
   <!--begin: Datatable-->
 </template>
