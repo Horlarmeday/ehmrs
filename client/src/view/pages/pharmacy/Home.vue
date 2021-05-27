@@ -42,7 +42,7 @@
             >
               <div class="d-flex flex-column mr-5">
                 <router-link
-                  to="/pharmacy/generic-drugs"
+                  to="/pharmacy/dosage-forms"
                   class="h4 text-dark text-hover-primary mb-5"
                 >
                   Dosage Form
@@ -53,7 +53,7 @@
               </div>
               <div class="ml-6 ml-lg-0 ml-xxl-6 flex-shrink-0">
                 <router-link
-                  to="/pharmacy/generic-drugs"
+                  to="/pharmacy/dosage-forms"
                   class="btn font-weight-bolder text-uppercase btn-light-primary py-4 px-6"
                 >
                   View
@@ -73,7 +73,7 @@
             >
               <div class="d-flex flex-column mr-5">
                 <router-link
-                  to="/pharmacy/generic-drugs"
+                  to="/pharmacy/routes-of-administration"
                   class="h4 text-dark text-hover-primary mb-5"
                 >
                   Routes of Administration
@@ -84,7 +84,7 @@
               </div>
               <div class="ml-6 ml-lg-0 ml-xxl-6 flex-shrink-0">
                 <router-link
-                  to="/pharmacy/generic-drugs"
+                  to="/pharmacy/routes-of-administration"
                   class="btn font-weight-bolder text-uppercase btn-light-primary py-4 px-6"
                 >
                   View
@@ -104,10 +104,10 @@
             >
               <div class="d-flex flex-column mr-5">
                 <router-link
-                  to="/pharmacy/generic-drugs"
+                  to="/pharmacy/dosage-measurements"
                   class="h4 text-dark text-hover-primary mb-5"
                 >
-                  Strength/Volume
+                  Dosage Measurements
                 </router-link>
                 <p class="text-dark-50">
                   Click here to view all drugs strength or volumes
@@ -115,7 +115,7 @@
               </div>
               <div class="ml-6 ml-lg-0 ml-xxl-6 flex-shrink-0">
                 <router-link
-                  to="/pharmacy/generic-drugs"
+                  to="/pharmacy/dosage-measurements"
                   class="btn font-weight-bolder text-uppercase btn-light-primary py-4 px-6"
                 >
                   View

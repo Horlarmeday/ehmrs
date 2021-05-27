@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import mime from 'mime';
 import { promisify } from 'util';
 import fs from 'fs';
@@ -50,4 +51,17 @@ export function generateRandomNumbers(num) {
     // eslint-disable-next-line no-restricted-properties
     Math.pow(10, num - 1) + Math.random() * 9 * Math.pow(10, num - 1)
   );
+}
+
+/**
+ * check all values exists
+ * @param history
+ * @returns {boolean|*}
+ */
+export function checkValueExists(history) {
+  const { complaint_note, history_note, examination_note, has_smoking_history } = history;
+  if (complaint_note) return true;
+  if (history_note) return true;
+  if (examination_note) return true;
+  return !!has_smoking_history;
 }

@@ -116,4 +116,45 @@ describe('Store Endpoints /store', () => {
     await expect(res.body.data.docs).toHaveLength(2);
     await expect(res.body.data.total).toBeGreaterThan(0);
   }, 10000);
+
+  it('should create a new laboratory item', async () => {
+    const res = await request(server)
+      .post('/api/store/laboratory/items/create')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        shelf: 'A1',
+        product_code: '2345678',
+        batch: '097754a',
+        voucher: 'ASDFD',
+        quantity: 50,
+        unit: 1,
+        unit_price: 400,
+        expiration: '2024-09-07',
+        name: 'Syringe',
+        date_received: '2020-09-07',
+      });
+    await expect(res.status).toBe(201);
+    await expect(res.body.data).toHaveProperty('id');
+    await expect(res.body.data).toHaveProperty('staff_id');
+    await expect(res.body.data).toHaveProperty('name', 'Syringe');
+  }, 10000);
+
+  it('should return searched laboratory items', async () => {
+    const res = await request(server)
+      .get('/api/store/laboratory/items/get?currentPage=1&pageLimit=10&search=Syringe')
+      .set('Authorization', `Bearer ${token}`);
+    await expect(res.status).toBe(200);
+    await expect(res.body.data).toHaveProperty('docs');
+    await expect(res.body.data.total).toBeGreaterThan(0);
+  }, 10000);
+
+  it('should return all laboratory items', async () => {
+    const res = await request(server)
+      .get('/api/store/laboratory/items/get?currentPage=1&pageLimit=10')
+      .set('Authorization', `Bearer ${token}`);
+    await expect(res.status).toBe(200);
+    await expect(res.body.data).toHaveProperty('docs');
+    await expect(res.body.data.docs).toHaveLength(1);
+    await expect(res.body.data.total).toBeGreaterThan(0);
+  }, 10000);
 });

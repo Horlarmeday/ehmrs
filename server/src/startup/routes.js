@@ -6,6 +6,9 @@ import adminRoutes from '../modules/AdminSettings/admin.routes';
 import storeRoutes from '../modules/Store/store.routes';
 import labRoutes from '../modules/Laboratory/laboratory.routes';
 import pharmacyRoutes from '../modules/Pharmacy/pharmacy.routes';
+import visitRoutes from '../modules/Visit/visit.routes';
+import consultationRoutes from '../modules/Consultation/consultation.routes';
+import triageRoutes from '../modules/Triage/triage.routes';
 
 export default (server) => {
   server.use('/api/staffs', userRoutes);
@@ -16,6 +19,9 @@ export default (server) => {
   server.use('/api/store', storeRoutes);
   server.use('/api/laboratory', labRoutes);
   server.use('/api/pharmacy', pharmacyRoutes);
+  server.use('/api/visits', visitRoutes);
+  server.use('/api/consultations', consultationRoutes);
+  server.use('/api/triage', triageRoutes);
   server.use((req, res, next) => {
     const apiTimeout = 18000;
     // set the timeout for all HTTP requests
@@ -34,7 +40,7 @@ export default (server) => {
     next();
   });
   server.use((req, res, next) => {
-    const err = res.status(404).json({ message: 'Resource does not exist' });
+    const err = res.status(404).json({ status: 'error', message: 'Resource does not exist' });
     next(err);
   });
 };

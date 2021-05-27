@@ -146,6 +146,11 @@ module.exports = (sequelize, DataTypes) => {
       organization: { type: DataTypes.STRING },
       plan: { type: DataTypes.STRING },
       has_insurance: { type: DataTypes.BOOLEAN, defaultValue: false },
+      principal_id: { type: DataTypes.INTEGER },
+      patient_type: {
+        type: DataTypes.ENUM('Dependant', 'Principal', 'Independent'),
+        defaultValue: 'Independent',
+      },
       fullname: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -156,7 +161,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     {}
   );
-  Patient.associate = ({ Staff, Dependant }) => {
+  Patient.associate = ({ Staff, Dependant, Patient, Insurance, HMO }) => {
     // associations can be defined here
     Patient.belongsTo(Staff, {
       foreignKey: 'staff_id',
@@ -164,6 +169,19 @@ module.exports = (sequelize, DataTypes) => {
 
     Patient.hasMany(Dependant, {
       foreignKey: 'patient_id',
+    });
+
+    Patient.belongsTo(Insurance, {
+      foreignKey: 'insurance_id',
+    });
+
+    Patient.belongsTo(HMO, {
+      foreignKey: 'hmo_id',
+    });
+
+    Patient.hasMany(Patient, {
+      foreignKey: 'principal_id',
+      as: 'dependants',
     });
   };
 

@@ -54,3 +54,31 @@ export function validatePharmacyItem(item) {
   });
   return schema.validate(item);
 }
+
+export function validateLaboratoryItem(item) {
+  const schema = Joi.object({
+    product_code: Joi.string()
+      .allow('')
+      .optional(),
+    shelf: Joi.string()
+      .allow('')
+      .optional(),
+    voucher: Joi.string()
+      .allow('')
+      .optional(),
+    batch: Joi.string()
+      .allow('')
+      .optional(),
+    date_received: Joi.date()
+      .optional()
+      .allow(''),
+    expiration: Joi.date()
+      .optional()
+      .allow(''),
+    quantity: Joi.number().required(),
+    name: Joi.string().required(),
+    unit_id: Joi.number().required(),
+    unit_price: Joi.number().required(),
+  });
+  return schema.validate(item);
+}

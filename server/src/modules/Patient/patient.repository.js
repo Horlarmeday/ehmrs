@@ -13,10 +13,11 @@ const db = require('../../database/models/index');
  * generate the hospital id
  * @returns string
  */
-export async function generateHospitalNumber() {
+export async function generateHospitalNumber(numb) {
   const patientCount = await Patient.count();
   const dependantCount = await Dependant.count();
-  return `SVH/${generateId(patientCount + dependantCount + 1, 6)}`;
+  const totalCount = patientCount + dependantCount + 1;
+  return `SVH/${generateId(numb ? totalCount + numb : totalCount, 6)}`;
 }
 
 /**
@@ -28,6 +29,17 @@ export async function generateHospitalNumber() {
  */
 export async function findPatientByPhone(data) {
   return Patient.findOne({ where: { phone: data } });
+}
+
+/**
+ * query staff account in the DB by hospital Id
+ *
+ * @function
+ * @returns {json} json object with hospital Id data
+ * @param data
+ */
+export async function getPatientByHospitalId(data) {
+  return Patient.findOne({ where: { hospital_id: data } });
 }
 
 /**
@@ -98,9 +110,11 @@ async function delayedLog(dependant) {
   await delay();
   const { fileName } = await processSnappedPhoto(dependant.photo, dependant.firstname);
   // generate hospital id
-  const hospital_num = await generateHospitalNumber();
+  let hospital_num = await generateHospitalNumber();
+  const existingHospitalId = await getPatientByHospitalId(hospital_num);
+  if (existingHospitalId) hospital_num = generateHospitalNumber(1);
 
-  return Dependant.create({
+  return Patient.create({
     hospital_id: hospital_num,
     fullname: `${dependant.firstname} ${dependant.lastname}`,
     firstname: dependant.firstname,
@@ -116,7 +130,8 @@ async function delayedLog(dependant) {
     relationship: dependant.relationship,
     plan: dependant.plan,
     staff_id: dependant.staff_id,
-    patient_id: dependant.patient_id,
+    principal_id: dependant.patient_id,
+    patient_type: 'Dependant',
   });
 }
 
@@ -127,7 +142,6 @@ async function delayedLog(dependant) {
  */
 export async function createMultipleDependant(data) {
   const { dependants, patient_id, staff_id } = data;
-
   // map the dependants
   const mappedDependants = dependants.map(dependant => ({
     ...dependant,
@@ -136,7 +150,7 @@ export async function createMultipleDependant(data) {
     patient_id,
   }));
 
-  return Dependant.bulkCreate(mappedDependants);
+  return Patient.bulkCreate(mappedDependants);
 }
 
 /**
@@ -208,6 +222,7 @@ export async function createInsurancePatient(data) {
         hmo_id,
         plan,
         organization,
+        patient_type: 'Principal',
       },
       { transaction: t }
     );
@@ -509,7 +524,7 @@ export async function updateDependant(data) {
 export async function getOnePatient(data) {
   return Patient.findOne({
     where: { id: data },
-    include: [{ model: Dependant }, { model: Insurance }, { model: HMO }],
+    include: [{ model: Insurance }, { model: HMO }, { model: Patient, as: 'dependants' }],
   });
 }
 

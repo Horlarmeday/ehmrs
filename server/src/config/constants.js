@@ -4,4 +4,7 @@ export default {
   UPLOAD_IMAGE: 'Upload to image to box',
   CASH: 'Cash',
   NHIS: 'NHIS',
+  OPD: 'OPD',
+  IPD: 'IPD',
+  Emergency: 'Emergency',
 };

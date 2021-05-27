@@ -96,6 +96,15 @@ export async function createTest(data) {
 }
 
 /**
+ * get a test
+ * @param data
+ * @returns {object} test data
+ */
+export async function getTestById(data) {
+  return getModelById(Test, data);
+}
+
+/**
  * update a test
  * @param data
  * @returns {object} test data

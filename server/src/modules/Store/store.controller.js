@@ -1,7 +1,6 @@
 /* eslint-disable camelcase */
-import { validatePharmacyItem } from './validations';
+import { validateLaboratoryItem, validatePharmacyItem } from './validations';
 import StoreService from './store.service';
-import { APIError } from '../../util/apiError';
 
 /**
  *
@@ -20,7 +19,7 @@ class StoreController {
    */
   static async createPharmacyItem(req, res, next) {
     const { error } = validatePharmacyItem(req.body);
-    if (error) throw new APIError('ERROR', 400, error.details[0].message);
+    if (error) return res.status(400).json({ message: error.details[0].message });
 
     try {
       const item = await StoreService.createPharmacyItemService(
@@ -48,6 +47,55 @@ class StoreController {
   static async getPharmacyItems(req, res, next) {
     try {
       const items = await StoreService.getPharmacyItems(req.query);
+
+      return res.status(200).json({
+        message: 'Data retrieved!',
+        data: items,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * add item to laboratory store
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, item data
+   */
+  static async createLaboratoryItem(req, res, next) {
+    const { error } = validateLaboratoryItem(req.body);
+    if (error) return res.status(400).json({ message: error.details[0].message });
+
+    try {
+      const item = await StoreService.createLaboratoryItemService(
+        Object.assign(req.body, { staff_id: req.user.sub })
+      );
+
+      return res.status(201).json({
+        message: 'Successful! Data saved',
+        data: item,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get laboratory items
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with items data
+   */
+  static async getLaboratoryItems(req, res, next) {
+    try {
+      const items = await StoreService.getLaboratoryItems(req.query);
 
       return res.status(200).json({
         message: 'Data retrieved!',

@@ -4,6 +4,8 @@ import verify from '../../middleware/verify';
 
 const router = Router();
 router.post('/pharmacy/items/create', verify, StoreController.createPharmacyItem);
+router.post('/laboratory/items/create', verify, StoreController.createLaboratoryItem);
 router.get('/pharmacy/items/get', verify, StoreController.getPharmacyItems);
+router.get('/laboratory/items/get', verify, StoreController.getLaboratoryItems);
 
 export default router;

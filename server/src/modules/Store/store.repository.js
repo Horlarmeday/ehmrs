@@ -2,7 +2,7 @@
 import { Sequelize } from 'sequelize';
 import Constants from '../../config/constants';
 
-const { Drug, PharmacyItem, Unit } = require('../../database/models');
+const { Drug, PharmacyItem, Unit, LabItem } = require('../../database/models');
 
 const { Op } = Sequelize;
 
@@ -169,6 +169,97 @@ export async function getPharmacyItems(
         as: 'drug',
         attributes: ['name'],
       },
+      {
+        model: Unit,
+        as: 'unit',
+        attributes: ['name'],
+      },
+    ],
+  });
+}
+
+/** ***********************
+ * LABORATORY STORE
+ ********************** */
+
+/**
+ * create a laboratory item
+ * @param data
+ * @returns {object} item data
+ */
+export async function createLaboratoryItem(data) {
+  const {
+    name,
+    shelf,
+    product_code,
+    batch,
+    voucher,
+    quantity,
+    unit_id,
+    unit_price,
+    expiration,
+    staff_id,
+    date_received,
+  } = data;
+
+  return LabItem.create({
+    name,
+    shelf,
+    product_code,
+    batch,
+    voucher,
+    quantity,
+    remain_quantity: quantity,
+    unit_id,
+    unit_price,
+    total_price: quantity * unit_price,
+    expiration,
+    staff_id,
+    date_received,
+  });
+}
+
+/**
+ * search laboratory items
+ *
+ * @function
+ * @returns {json} json object with laboratory items data
+ * @param currentPage
+ * @param pageLimit
+ * @param search
+ */
+export async function searchLaboratoryItems(currentPage = 1, pageLimit = 10, search) {
+  return LabItem.paginate({
+    page: currentPage,
+    paginate: pageLimit,
+    order: [['createdAt', 'DESC']],
+    where: {
+      name: `%${search}%`,
+    },
+    include: [
+      {
+        model: Unit,
+        as: 'unit',
+        attributes: ['name'],
+      },
+    ],
+  });
+}
+
+/**
+ * get laboratory items
+ *
+ * @function
+ * @returns {json} json object with laboratory items data
+ * @param currentPage
+ * @param pageLimit
+ */
+export async function getLaboratoryItems(currentPage = 1, pageLimit = 10) {
+  return LabItem.paginate({
+    page: currentPage,
+    paginate: pageLimit,
+    order: [['createdAt', 'DESC']],
+    include: [
       {
         model: Unit,
         as: 'unit',

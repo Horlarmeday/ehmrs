@@ -327,6 +327,42 @@ const router = new Router({
                   }
                 }
               ]
+            },
+            {
+              path: "laboratory",
+              component: () =>
+                import("@/view/pages/store/laboratory/Laboratory.vue"),
+              children: [
+                {
+                  path: "",
+                  name: "laboratory-store",
+                  component: () =>
+                    import("@/view/pages/store/laboratory/LaboratoryType.vue"),
+                  meta: {
+                    requiresAuth: true
+                  }
+                },
+                {
+                  path: "laboratory-items",
+                  name: "laboratory-items",
+                  component: () =>
+                    import("@/view/pages/store/laboratory/StoreItems.vue"),
+                  meta: {
+                    requiresAuth: true
+                  }
+                },
+                {
+                  path: "add-item",
+                  name: "add-laboratory-item",
+                  component: () =>
+                    import(
+                      "@/view/pages/store/laboratory/create/CreateStoreItem.vue"
+                    ),
+                  meta: {
+                    requiresAuth: true
+                  }
+                }
+              ]
             }
           ]
         },
@@ -348,6 +384,31 @@ const router = new Router({
               path: "generic-drugs",
               name: "generic-drugs",
               component: () => import("@/view/pages/pharmacy/GenericDrugs.vue"),
+              meta: {
+                requiresAuth: true
+              }
+            },
+            {
+              path: "dosage-forms",
+              name: "dosage-forms",
+              component: () => import("@/view/pages/pharmacy/DosageForms.vue"),
+              meta: {
+                requiresAuth: true
+              }
+            },
+            {
+              path: "dosage-measurements",
+              name: "dosage-measurements",
+              component: () => import("@/view/pages/pharmacy/Measurements.vue"),
+              meta: {
+                requiresAuth: true
+              }
+            },
+            {
+              path: "routes-of-administration",
+              name: "routes-of-administration",
+              component: () =>
+                import("@/view/pages/pharmacy/RoutesOfAdministration.vue"),
               meta: {
                 requiresAuth: true
               }

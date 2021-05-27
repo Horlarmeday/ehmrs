@@ -10,6 +10,7 @@ import {
   generateHospitalNumber,
   getDependants,
   getDependantsByDate,
+  getPatientByHospitalId,
   getPatients,
   getPatientsByDate,
   searchDependants,
@@ -33,14 +34,22 @@ class PatientService {
     const patient = await findPatientByPhone(body.phone);
     if (patient) throw new APIError('INVALID', 400, 'Patient already exists');
 
-    const hospital_id = await generateHospitalNumber();
-    // Save photo to disk
-    const { filepath, fileName } = await processSnappedPhoto(body.photo, body.firstname);
+    let hospital_id = await generateHospitalNumber();
 
-    const createdPatient = await createCashPatient({ ...body, hospital_id, fileName });
-    // upload patient to box in the background
-    await uploadImageToBox(filepath, fileName, createdPatient);
-    return createdPatient;
+    const existingHospitalId = await getPatientByHospitalId(hospital_id);
+    if (existingHospitalId) hospital_id = generateHospitalNumber(1);
+
+    try {
+      // Save photo to disk
+      const { filepath, fileName } = await processSnappedPhoto(body.photo, body.firstname);
+
+      const createdPatient = await createCashPatient({ ...body, hospital_id, fileName });
+      // upload patient to box in the background
+      await uploadImageToBox(filepath, fileName, createdPatient);
+      return createdPatient;
+    } catch (e) {
+      throw new APIError('Error', 500, 'internal server error');
+    }
   }
 
   /**
@@ -55,11 +64,18 @@ class PatientService {
     const user = await findPatientByPhone(body.phone);
     if (user) throw new APIError('INVALID', 400, 'Patient already exists');
 
-    const hospital_id = await generateHospitalNumber();
-    // Save photo to disk
-    const { fileName } = await processSnappedPhoto(body.photo, body.firstname);
+    let hospital_id = await generateHospitalNumber();
 
-    return createInsurancePatient({ ...body, hospital_id, fileName });
+    try {
+      const existingHospitalId = await getPatientByHospitalId(hospital_id);
+      if (existingHospitalId) hospital_id = generateHospitalNumber(1);
+      // Save photo to disk
+      const { fileName } = await processSnappedPhoto(body.photo, body.firstname);
+
+      return createInsurancePatient({ ...body, hospital_id, fileName });
+    } catch (e) {
+      throw new APIError('Error', 500, 'internal server error');
+    }
   }
 
   /**

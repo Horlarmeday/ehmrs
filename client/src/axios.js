@@ -24,7 +24,9 @@ axios.interceptors.response.use(
     return response;
   },
   error => {
+    let res = error.response;
     if (error.response && error.response.data) {
+      if (res.status === 401) store.dispatch("auth/logout");
       //add your code
       notifyError(error);
       return Promise.reject(error.response.data);

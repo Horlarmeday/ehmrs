@@ -172,7 +172,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       process.env.JWT_SECRET,
       {
-        expiresIn: '2 days',
+        expiresIn: '24h',
       }
     );
   };

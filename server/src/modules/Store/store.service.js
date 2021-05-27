@@ -1,8 +1,11 @@
 /* eslint-disable camelcase */
 import {
   createCashItem,
+  createLaboratoryItem,
   createNHISItem,
+  getLaboratoryItems,
   getPharmacyItems,
+  searchLaboratoryItems,
   searchPharmacyItems,
 } from './store.repository';
 
@@ -47,6 +50,39 @@ class StoreService {
     }
 
     return getPharmacyItems();
+  }
+
+  /**
+   * add laboratory item to store
+   *
+   * @static
+   * @returns {json} json object with item data
+   * @param body
+   * @memberOf StoreService
+   */
+  static async createLaboratoryItemService(body) {
+    return createLaboratoryItem(body);
+  }
+
+  /**
+   * get laboratory items
+   *
+   * @static
+   * @returns {json} json object with laboratory items data
+   * @param body
+   * @memberOf StoreService
+   */
+  static async getLaboratoryItems(body) {
+    const { currentPage, pageLimit, search } = body;
+    if (search) {
+      return searchLaboratoryItems(+currentPage, +pageLimit, search);
+    }
+
+    if (Object.values(body).length) {
+      return getLaboratoryItems(+currentPage, +pageLimit);
+    }
+
+    return getLaboratoryItems();
   }
 }
 export default StoreService;

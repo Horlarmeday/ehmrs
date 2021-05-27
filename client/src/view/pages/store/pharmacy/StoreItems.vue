@@ -142,7 +142,7 @@
 </template>
 
 <script>
-import UpdatePharmacyItem from "./update/UpdatePharmacyItem.vue";
+import UpdatePharmacyItem from "./update/UpdateStoreItem.vue";
 import Pagination from "@/utils/Pagination.vue";
 import EditIcon from "../../../../assets/icons/EditIcon.vue";
 import AddIcon from "../../../../assets/icons/AddIcon.vue";

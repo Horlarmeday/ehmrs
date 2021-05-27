@@ -111,6 +111,14 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      principal_id: {
+        type: Sequelize.INTEGER,
+      },
+      patient_type: {
+        type: Sequelize.ENUM('Dependant', 'Principal', 'Independent'),
+        allowNull: false,
+        defaultValue: 'Independent',
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
