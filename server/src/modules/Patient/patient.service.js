@@ -37,7 +37,7 @@ class PatientService {
     let hospital_id = await generateHospitalNumber();
 
     const existingHospitalId = await getPatientByHospitalId(hospital_id);
-    if (existingHospitalId) hospital_id = generateHospitalNumber(1);
+    if (existingHospitalId) hospital_id = generateHospitalNumber();
 
     try {
       // Save photo to disk
@@ -134,31 +134,6 @@ class PatientService {
   }
 
   /**
-   * get dependants
-   *
-   * @static
-   * @returns {json} json object with dependants data
-   * @param body
-   * @memberOf PatientService
-   */
-  static async getDependants(body) {
-    const { search, start, end, pageLimit, currentPage } = body;
-    if (search) {
-      return searchDependants(+currentPage, +pageLimit, search);
-    }
-
-    if (start && end) {
-      return getDependantsByDate(+currentPage, +pageLimit, start, end);
-    }
-
-    if (Object.values(body).length) {
-      return getDependants(+currentPage, +pageLimit);
-    }
-
-    return getDependants();
-  }
-
-  /**
    * update a patient record
    *
    * @static
@@ -168,18 +143,6 @@ class PatientService {
    */
   static async updatePatientService(body) {
     return updatePatient(body);
-  }
-
-  /**
-   * update a dependant record
-   *
-   * @static
-   * @returns {json} json object with dependant data
-   * @param body
-   * @memberOf PatientService
-   */
-  static async updateDependantService(body) {
-    return updateDependant(body);
   }
 }
 export default PatientService;
