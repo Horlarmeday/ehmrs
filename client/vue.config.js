@@ -4,7 +4,7 @@ module.exports = {
   devServer: {
     proxy: {
       "/api": {
-        target: "http://localhost:80",
+        target: "http://localhost:4050",
         changeOrigin: true,
         secure: false
       }
@@ -31,17 +31,17 @@ module.exports = {
         return options;
       });
   },
-  css: {
-    loaderOptions: {
-      postcss: {
-        config: {
-          path: __dirname
-        }
-      },
-      scss: {
-        prependData: `@import "@/assets/sass/vendors/vue/vuetify/variables.scss";`
-      }
-    }
-  },
+  // css: {
+  //   loaderOptions: {
+  //     postcss: {
+  //       config: {
+  //         path: __dirname
+  //       }
+  //     },
+  //     scss: {
+  //       prependData: `@import "@/assets/sass/vendors/vue/vuetify/variables.scss";`
+  //     }
+  //   }
+  // },
   transpileDependencies: ["vuetify"]
 };
