@@ -67,15 +67,12 @@
 </style>
 
 <script>
-import { mapState } from "vuex";
+
 
 export default {
   name: "auth",
   methods: {},
   computed: {
-    ...mapState({
-      errors: state => state.auth.errors
-    }),
     backgroundImage() {
       return process.env.BASE_URL + "media/bg/bg-4.jpg";
     }

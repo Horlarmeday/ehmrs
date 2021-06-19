@@ -173,21 +173,6 @@
           </div>
           <!--end::Forgot-->
         </div>
-        <!--begin::Content footer-->
-        <div
-          class="d-flex justify-content-lg-start justify-content-center align-items-end py-7 py-lg-0"
-        >
-          <a href="#" class="text-primary font-weight-bolder font-size-h5"
-            >Terms</a
-          >
-          <a href="#" class="text-primary ml-10 font-weight-bolder font-size-h5"
-            >Plans</a
-          >
-          <a href="#" class="text-primary ml-10 font-weight-bolder font-size-h5"
-            >Contact Us</a
-          >
-        </div>
-        <!--end::Content footer-->
       </div>
       <!--end::Content-->
     </div>
@@ -201,13 +186,6 @@
 </style>
 
 <script>
-// import formValidation from "@/assets/plugins/formvalidation/dist/es6/core/Core";
-
-// FormValidation plugins
-// import Trigger from "@/assets/plugins/formvalidation/dist/es6/plugins/Trigger";
-// import Bootstrap from "@/assets/plugins/formvalidation/dist/es6/plugins/Bootstrap";
-// import SubmitButton from "@/assets/plugins/formvalidation/dist/es6/plugins/SubmitButton";
-// import Swal from "sweetalert2";
 import KTUtil from "@/assets/js/components/util";
 
 export default {
@@ -215,7 +193,6 @@ export default {
   data() {
     return {
       state: "signin",
-      // Remove this dummy login info
       form: {
         username: "",
         password: ""
@@ -233,53 +210,10 @@ export default {
       return process.env.BASE_URL + "media/users/health.png";
     }
   },
-  mounted() {
-    // const signin_form = KTUtil.getById("kt_login_signin_form");
-    // const forgot_form = KTUtil.getById("kt_login_forgot_form");
-    // this.fv = formValidation(signin_form, {
-    //   fields: {
-    //     username: {
-    //       validators: {
-    //         notEmpty: {
-    //           message: "Username is required"
-    //         }
-    //       }
-    //     },
-    //     password: {
-    //       validators: {
-    //         notEmpty: {
-    //           message: "Password is required"
-    //         }
-    //       }
-    //     }
-    //   },
-    //   plugins: {
-    //     trigger: new Trigger(),
-    //     submitButton: new SubmitButton(),
-    //     bootstrap: new Bootstrap()
-    //   }
-    // });
-    // this.fv2 = formValidation(forgot_form, {
-    //   fields: {
-    //     phone: {
-    //       validators: {
-    //         notEmpty: {
-    //           message: "Phone is required"
-    //         }
-    //       }
-    //     }
-    //   },
-    //   plugins: {
-    //     trigger: new Trigger(),
-    //     submitButton: new SubmitButton(),
-    //     bootstrap: new Bootstrap()
-    //   }
-    // });
-  },
   methods: {
     showForm(form) {
       this.state = form;
-      var form_name = "kt_login_" + form + "_form";
+      const form_name = "kt_login_" + form + "_form";
       KTUtil.animateClass(
         KTUtil.getById(form_name),
         "animate__animated animate__backInUp"
@@ -296,8 +230,6 @@ export default {
     },
 
     onSubmitLogin() {
-      // this.fv.validate();
-
       this.$validator.validateAll().then(result => {
         if (result) {
           let username = this.form.username;

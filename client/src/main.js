@@ -15,7 +15,6 @@ import ClipboardJS from "clipboard";
 window.ClipboardJS = ClipboardJS;
 
 // Vue 3rd party plugins
-import vuetify from "@/core/plugins/vuetify";
 import "@/core/plugins/portal-vue";
 import "@/core/plugins/bootstrap-vue";
 import "@/core/plugins/perfect-scrollbar";
@@ -35,6 +34,5 @@ Vue.use(require("vue-moment"));
 new Vue({
   router,
   store,
-  vuetify,
   render: h => h(App)
 }).$mount("#app");
