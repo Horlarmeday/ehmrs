@@ -1,9 +1,9 @@
 /* eslint-disable camelcase */
 import { Sequelize } from 'sequelize';
 import { delay, generateId, processArray } from '../../helpers/general';
-import { processSnappedPhoto } from '../../helpers/helper';
+import { generateRandomNumbers, processSnappedPhoto } from '../../helpers/helper';
 
-const { Patient, Dependant, Insurance, HMO } = require('../../database/models');
+const { Patient, Insurance, HMO } = require('../../database/models');
 
 const { Op } = Sequelize;
 
@@ -13,11 +13,9 @@ const db = require('../../database/models/index');
  * generate the hospital id
  * @returns string
  */
-export async function generateHospitalNumber(numb) {
-  const patientCount = await Patient.count();
-  const dependantCount = await Dependant.count();
-  const totalCount = patientCount + dependantCount + 1;
-  return `SVH/${generateId(numb ? totalCount + numb : totalCount, 6)}`;
+export async function generateHospitalNumber() {
+  const randomNumbers = generateRandomNumbers(5);
+  return `SVH/${generateId(randomNumbers, 6)}`;
 }
 
 /**
@@ -40,6 +38,15 @@ export async function findPatientByPhone(data) {
  */
 export async function getPatientByHospitalId(data) {
   return Patient.findOne({ where: { hospital_id: data } });
+}
+
+/**
+ * get patient by id
+ * @param data
+ * @returns {object} return patient data
+ */
+export async function getPatientById(data) {
+  return Patient.findByPk(data);
 }
 
 /**
@@ -112,7 +119,7 @@ async function delayedLog(dependant) {
   // generate hospital id
   let hospital_num = await generateHospitalNumber();
   const existingHospitalId = await getPatientByHospitalId(hospital_num);
-  if (existingHospitalId) hospital_num = generateHospitalNumber(1);
+  if (existingHospitalId) hospital_num = generateHospitalNumber();
 
   return Patient.create({
     hospital_id: hospital_num,
@@ -133,24 +140,6 @@ async function delayedLog(dependant) {
     principal_id: dependant.patient_id,
     patient_type: 'Dependant',
   });
-}
-
-/**
- * create multiple dependants
- * @param data
- * @returns {array} array of dependants
- */
-export async function createMultipleDependant(data) {
-  const { dependants, patient_id, staff_id } = data;
-  // map the dependants
-  const mappedDependants = dependants.map(dependant => ({
-    ...dependant,
-    staff_id,
-    fullname: `${dependant.firstname} ${dependant.lastname}`,
-    patient_id,
-  }));
-
-  return Patient.bulkCreate(mappedDependants);
 }
 
 /**
@@ -285,30 +274,12 @@ export async function createOrdinaryPatient(data) {
 }
 
 /**
- * get patient by id
- * @param data
- * @returns {object} return patient data
- */
-export async function getPatientById(data) {
-  return Patient.findByPk(data);
-}
-
-/**
- * get dependant by id
- * @param data
- * @returns {object} return dependant data
- */
-export async function getDependantById(data) {
-  return Dependant.findByPk(data);
-}
-
-/**
  * get enrollee by enrollee_code
  * @param data
  * @returns {object} return patient data
  */
 export async function findDependantByEnrolleeCode(data) {
-  return Dependant.findOne({ where: { enrollee_code: data } });
+  return Patient.findOne({ where: { enrollee_code: data } });
 }
 
 /**
@@ -334,7 +305,7 @@ export async function createDependant(data) {
     staff_id,
     patient_id,
   } = data;
-  return Dependant.create({
+  return Patient.create({
     firstname,
     lastname,
     phone,
@@ -349,8 +320,9 @@ export async function createDependant(data) {
     plan,
     staff_id,
     hospital_id,
-    patient_id,
     fullname: `${firstname}  ${lastname}`,
+    principal_id: patient_id,
+    patient_type: 'Dependant',
   });
 }
 
@@ -426,77 +398,6 @@ export async function searchPatients(currentPage = 1, pageLimit = 10, search) {
 }
 
 /**
- * get dependants
- *
- * @function
- * @returns {json} json object with dependants data
- * @param currentPage
- * @param pageLimit
- */
-export async function getDependants(currentPage = 1, pageLimit = 10) {
-  return Dependant.paginate({
-    page: currentPage,
-    paginate: pageLimit,
-    order: [['createdAt', 'DESC']],
-  });
-}
-
-/**
- * get dependants by date
- *
- * @function
- * @returns {json} json object with dependants data
- * @param currentPage
- * @param pageLimit
- * @param start
- * @param end
- */
-export async function getDependantsByDate(currentPage = 1, pageLimit = 10, start, end) {
-  return Dependant.paginate({
-    page: currentPage,
-    paginate: pageLimit,
-    order: [['createdAt', 'DESC']],
-    where: {
-      createdAt: {
-        [Op.gte]: new Date(new Date(start).setHours(0, 0, 0)),
-        [Op.lt]: new Date(new Date(end).setHours(23, 59, 59)),
-      },
-    },
-  });
-}
-
-/**
- * search dependants
- *
- * @function
- * @returns {json} json object with dependants data
- * @param currentPage
- * @param pageLimit
- * @param search
- */
-export async function searchDependants(currentPage = 1, pageLimit = 10, search) {
-  return Dependant.paginate({
-    page: currentPage,
-    paginate: pageLimit,
-    order: [['createdAt', 'DESC']],
-    where: {
-      [Op.or]: [
-        {
-          fullname: {
-            [Op.like]: `%${search}%`,
-          },
-        },
-        {
-          hospital_id: {
-            [Op.like]: `%${search}%`,
-          },
-        },
-      ],
-    },
-  });
-}
-
-/**
  * update patient data
  * @param data
  * @returns {object} return patient data
@@ -504,16 +405,6 @@ export async function searchDependants(currentPage = 1, pageLimit = 10, search) 
 export async function updatePatient(data) {
   const patient = await getPatientById(data.patient_id);
   return patient.update(data);
-}
-
-/**
- * update dependant data
- * @param data
- * @returns {object} return dependant data
- */
-export async function updateDependant(data) {
-  const dependant = await getDependantById(data.dependant_id);
-  return dependant.update(data);
 }
 
 /**
@@ -525,17 +416,5 @@ export async function getOnePatient(data) {
   return Patient.findOne({
     where: { id: data },
     include: [{ model: Insurance }, { model: HMO }, { model: Patient, as: 'dependants' }],
-  });
-}
-
-/**
- * get one dependant
- * @param data
- * @returns {object} return dependant data
- */
-export async function getOneDependant(data) {
-  return Dependant.findOne({
-    where: { id: data },
-    include: [{ model: Patient }, { model: Insurance }, { model: HMO }],
   });
 }
