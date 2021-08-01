@@ -240,7 +240,8 @@ export default {
             "ADD_SERVICE",
             Object.assign(service, {
               id: response.data.data.id,
-              createdAt: response.data.data.createdAt
+              createdAt: response.data.data.createdAt,
+              code: response.data.data.code
             })
           );
           resolve(response);

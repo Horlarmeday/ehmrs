@@ -56,13 +56,7 @@ export default {
       axios
         .post("/store/laboratory/items/create", item)
         .then(response => {
-          commit(
-            "ADD_LAB_ITEM",
-            Object.assign(item, {
-              id: response.data.data.id,
-              createdAt: response.data.data.createdAt
-            })
-          );
+          commit("ADD_LAB_ITEM", response.data.data);
           resolve(response);
         })
         .catch(error => {
