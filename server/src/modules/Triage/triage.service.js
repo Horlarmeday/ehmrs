@@ -1,4 +1,5 @@
 import { createTriage, getTriageInAVisit } from './triage.repository';
+import VisitService from '../Visit/visit.service';
 
 class TriageService {
   /**
@@ -10,7 +11,8 @@ class TriageService {
    * @memberOf TriageService
    */
   static async createTriageService(body) {
-    return createTriage(body);
+    const visit = await VisitService.getVisitById(body.visit_id);
+    return createTriage({ ...body, patient_id: visit.patient_id });
   }
 
   /**

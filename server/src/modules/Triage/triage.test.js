@@ -40,7 +40,8 @@ describe('Triage Endpoints /triage', () => {
       .set('Authorization', `Bearer ${token}`)
       .send({
         patient_id: 1,
-        rvs: 22,
+        visit_id: 1,
+        rvs: '22',
         weight: 56,
         height: 1.98,
         bmi: 1.999999,
