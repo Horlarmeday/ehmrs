@@ -10,7 +10,7 @@ import visitRoutes from '../modules/Visit/visit.routes';
 import consultationRoutes from '../modules/Consultation/consultation.routes';
 import triageRoutes from '../modules/Triage/triage.routes';
 
-export default (server) => {
+export default server => {
   server.use('/api/staffs', userRoutes);
   server.use('/api/auth', authRoutes);
   server.use('/api/patients', patientRoutes);
