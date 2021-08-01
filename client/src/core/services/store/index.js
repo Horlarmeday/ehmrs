@@ -9,6 +9,9 @@ import model from "./model/moduleModel";
 import store from "./store/moduleStore";
 import pharmacy from "./pharmacy/modulePharmacy";
 import laboratory from "./laboratory/moduleLaboratory";
+import visit from "./visit/moduleVisit";
+import consultation from "./consultation/moduleConsultation";
+import triage from "./triage/moduleTriage";
 import htmlClass from "./htmlclass.module";
 import config from "./config.module";
 import breadcrumbs from "./breadcrumbs.module";
@@ -25,6 +28,9 @@ export default new Vuex.Store({
     store,
     pharmacy,
     laboratory,
+    visit,
+    consultation,
+    triage,
     htmlClass,
     config,
     breadcrumbs
