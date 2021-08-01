@@ -3,17 +3,17 @@
 import { describe, afterAll, it, expect, beforeAll } from '@jest/globals';
 import server from '../../startup/server';
 
-const fs = require('fs');
+// const fs = require('fs');
 
-function readJsonFile() {
-  try {
-    return fs.readFileSync('../Patient/image.json');
-  } catch (e) {
-    throw new Error(e);
-  }
-}
-
-const file = readJsonFile();
+// function readJsonFile() {
+//   try {
+//     return fs.readFileSync('../Patient/image.json');
+//   } catch (e) {
+//     throw new Error(e);
+//   }
+// }
+//
+// const file = readJsonFile();
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 const request = require('supertest');
@@ -56,7 +56,7 @@ describe('Staff Endpoints /staffs', () => {
         username: 'mahmud',
         gender: 'Male',
         address: 'Kubwa',
-        photo: file.image,
+        photo: process.env.image,
         password: '123456',
         email: 'ajao@gmail.com',
         department: 'Medical',

@@ -45,23 +45,21 @@ describe('Store Endpoints /store', () => {
         batch: '097754a',
         voucher: 'ASDFD',
         quantity: 50,
-        unit: 1,
+        unit_id: 1,
         unit_price: 400,
         selling_price: 450,
         expiration: '2024-09-07',
         dosage_form: 'Syr',
         date_received: '2020-09-07',
         strength: 'g',
-        strength_input: 1,
+        strength_input: '1',
         route: 'IV',
         drug_form: 'Drug',
         create_cash_item: true,
         create_nhis_item: false,
       });
     await expect(res.status).toBe(201);
-    await expect(res.body).toHaveProperty('data');
     await expect(res.body.data).toHaveProperty('id');
-    await expect(res.body.data).toHaveProperty('staff_id');
     await expect(res.body.data).toHaveProperty('drug_type', 'Cash');
     await expect(res.body.data).not.toHaveProperty('drug_type', 'NHIS');
   }, 10000);
@@ -77,30 +75,29 @@ describe('Store Endpoints /store', () => {
         batch: '097754a',
         voucher: 'ASDFD',
         quantity: 50,
-        unit: 1,
+        unit_id: 1,
         unit_price: 40,
         selling_price: 45,
+        nhis_selling_price: 45,
         expiration: '2024-09-07',
         dosage_form: 'Syr',
         date_received: '2020-09-07',
         strength: 'g',
-        strength_input: 1,
+        strength_input: '1',
         route: 'IV',
         drug_form: 'Drug',
         create_cash_item: false,
         create_nhis_item: true,
       });
     await expect(res.status).toBe(201);
-    await expect(res.body).toHaveProperty('data');
     await expect(res.body.data).toHaveProperty('id');
-    await expect(res.body.data).toHaveProperty('staff_id');
     await expect(res.body.data).toHaveProperty('drug_type', 'NHIS');
     await expect(res.body.data).not.toHaveProperty('drug_type', 'Cash');
   }, 10000);
 
   it('should return searched pharmacy items', async () => {
     const res = await request(server)
-      .get('/api/store/pharmacy/items/get?currentPage=1&pageLimit=10&search=Penicillin')
+      .get('/api/store/pharmacy/items/get?currentPage=1&pageLimit=10&search=annusol')
       .set('Authorization', `Bearer ${token}`);
     await expect(res.status).toBe(200);
     await expect(res.body.data).toHaveProperty('docs');
@@ -127,7 +124,7 @@ describe('Store Endpoints /store', () => {
         batch: '097754a',
         voucher: 'ASDFD',
         quantity: 50,
-        unit: 1,
+        unit_id: 1,
         unit_price: 400,
         expiration: '2024-09-07',
         name: 'Syringe',
@@ -144,7 +141,6 @@ describe('Store Endpoints /store', () => {
       .get('/api/store/laboratory/items/get?currentPage=1&pageLimit=10&search=Syringe')
       .set('Authorization', `Bearer ${token}`);
     await expect(res.status).toBe(200);
-    await expect(res.body.data).toHaveProperty('docs');
     await expect(res.body.data.total).toBeGreaterThan(0);
   }, 10000);
 
@@ -153,7 +149,6 @@ describe('Store Endpoints /store', () => {
       .get('/api/store/laboratory/items/get?currentPage=1&pageLimit=10')
       .set('Authorization', `Bearer ${token}`);
     await expect(res.status).toBe(200);
-    await expect(res.body.data).toHaveProperty('docs');
     await expect(res.body.data.docs).toHaveLength(1);
     await expect(res.body.data.total).toBeGreaterThan(0);
   }, 10000);
