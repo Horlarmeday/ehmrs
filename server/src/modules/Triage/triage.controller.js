@@ -17,7 +17,7 @@ class TriageController {
 
     try {
       const triage = await TriageService.createTriageService(
-        Object.assign(req.body, { staff_id: req.user.sub })
+        Object.assign(req.body, { staff_id: req.user.sub, visit_id: req.params.id })
       );
 
       return res.status(201).json({

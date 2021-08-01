@@ -1,7 +1,6 @@
 import StaffService from './staff.service';
 import { getStaffById } from './staff.repository';
 import { validateStaff } from './validations';
-import { APIError } from '../../util/apiError';
 
 /**
  *
@@ -20,7 +19,7 @@ class StaffController {
    */
   static async createStaffAccount(req, res, next) {
     const { error } = validateStaff(req.body);
-    if (error) throw new APIError('ERROR', 400, error.details[0].message);
+    if (error) return res.status(400).json({ message: error.details[0].message });
 
     try {
       const staff = await StaffService.createStaffService(req.body);
@@ -46,7 +45,7 @@ class StaffController {
   static async getStaffProfile(req, res, next) {
     try {
       const staff = await getStaffById(req.user.sub);
-      if (!staff) throw new APIError('NOT FOUND', 404, 'invalid staff id');
+      if (!staff) return res.status(400).json({ message: 'invalid staff id' });
 
       return res.status(200).json({
         message: 'Success',
@@ -69,7 +68,7 @@ class StaffController {
   static async getOneStaff(req, res, next) {
     try {
       const staff = await getStaffById(req.params.id);
-      if (!staff) throw new APIError('NOT FOUND', 404, 'staff not found');
+      if (!staff) return res.status(400).json({ message: 'invalid staff id' });
 
       return res.status(200).json({
         message: 'Success',

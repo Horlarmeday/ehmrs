@@ -5,7 +5,6 @@ import {
   validateMeasurement,
   validateRouteOfAdministration,
 } from './validations';
-import { APIError } from '../../util/apiError';
 import PharmacyService from './pharmacy.service';
 
 /**
@@ -25,7 +24,7 @@ class PharmacyController {
    */
   static async createGenericDrug(req, res, next) {
     const { error } = validateGenericDrug(req.body);
-    if (error) throw new APIError('ERROR', 400, error.details[0].message);
+    if (error) return res.status(400).json({ message: error.details[0].message });
 
     try {
       const drug = await PharmacyService.createGenericDrugService(
@@ -52,7 +51,7 @@ class PharmacyController {
    */
   static async updateGenericDrug(req, res, next) {
     const { drug_id } = req.body;
-    if (!drug_id) throw new APIError('ERROR', 400, 'drug id is required');
+    if (!drug_id) return res.status(400).json({ message: 'drug id is required' });
 
     try {
       const drug = await PharmacyService.updateGenericDrugService(req.body);

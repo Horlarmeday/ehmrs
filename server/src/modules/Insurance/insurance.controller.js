@@ -16,7 +16,7 @@ class InsuranceController {
    */
   static async createInsurance(req, res, next) {
     const { error } = validateInsurance(req.body);
-    if (error) throw new APIError('ERROR', 400, error.details[0].message);
+    if (error) return res.status(400).json({ message: error.details[0].message });
 
     try {
       const insurance = await InsuranceService.createInsuranceService(
@@ -43,7 +43,7 @@ class InsuranceController {
    */
   static async createHMO(req, res, next) {
     const { error } = validateHMO(req.body);
-    if (error) throw new APIError('ERROR', 400, error.details[0].message);
+    if (error) return res.status(400).json({ message: error.details[0].message });
 
     try {
       const hmo = await InsuranceService.createHMOService(
@@ -114,7 +114,7 @@ class InsuranceController {
    */
   static async updateInsurance(req, res, next) {
     const { insurance_id } = req.body;
-    if (!insurance_id) throw new APIError('ERROR', 400, 'insurance id is required');
+    if (!insurance_id) return res.status(400).json({ message: 'insurance id is required' });
 
     try {
       const insurance = await updateInsurance(req.body);
@@ -139,7 +139,7 @@ class InsuranceController {
    */
   static async updateHMO(req, res, next) {
     const { hmo_id } = req.body;
-    if (!hmo_id) throw new APIError('ERROR', 400, 'hmo id is required');
+    if (!hmo_id) return res.status(400).json({ message: 'hmo id is required' });
 
     try {
       const hmo = await updateHMO(req.body);

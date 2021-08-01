@@ -7,7 +7,6 @@ import {
 } from './validations';
 import PatientService from './patient.service';
 import { getOnePatient } from './patient.repository';
-import { APIError } from '../../util/apiError';
 
 class PatientController {
   /**
@@ -21,7 +20,7 @@ class PatientController {
    */
   static async createCashPatient(req, res, next) {
     const { error } = validateCashPatient(req.body);
-    if (error) throw new APIError('ERROR', 400, error.details[0].message);
+    if (error) return res.status(400).json({ message: error.details[0].message });
 
     try {
       const patient = await PatientService.createCashPatientService(
@@ -48,7 +47,7 @@ class PatientController {
    */
   static async createHealthInsurancePatient(req, res, next) {
     const { error } = validateHealthInsurancePatient(req.body);
-    if (error) throw new APIError('ERROR', 400, error.details[0].message);
+    if (error) return res.status(400).json({ message: error.details[0].message });
 
     try {
       const patient = await PatientService.createInsurancePatientService(
@@ -75,7 +74,7 @@ class PatientController {
    */
   static async createOrdinaryPatient(req, res, next) {
     const { error } = validateOrdinaryPatient(req.body);
-    if (error) throw new APIError('ERROR', 400, error.details[0].message);
+    if (error) return res.status(400).json({ message: error.details[0].message });
 
     try {
       const patient = await PatientService.createOrdinaryPatientService(
@@ -102,7 +101,7 @@ class PatientController {
    */
   static async createDependant(req, res, next) {
     const { error } = validateDependant(req.body);
-    if (error) throw new APIError('ERROR', 400, error.details[0].message);
+    if (error) return res.status(400).json({ message: error.details[0].message });
 
     try {
       const dependant = await PatientService.createDependantService(
@@ -151,7 +150,7 @@ class PatientController {
    */
   static async updatePatient(req, res, next) {
     const { patient_id } = req.body;
-    if (!patient_id) throw new APIError('ERROR', 400, 'patient id is required');
+    if (!patient_id) return res.status(400).json({ message: 'patient id is required' });
 
     try {
       const patient = await PatientService.updatePatientService(req.body);
@@ -176,7 +175,7 @@ class PatientController {
    */
   static async getPatientProfile(req, res, next) {
     const { id } = req.params;
-    if (!id) throw new APIError('ERROR', 400, 'invalid patient id');
+    if (!id) return res.status(400).json({ message: 'invalid patient id' });
 
     try {
       const patient = await getOnePatient(id);
