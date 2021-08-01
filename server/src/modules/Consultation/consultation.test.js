@@ -51,8 +51,6 @@ describe('Consultation Endpoints /consultations', () => {
             complaint: 'Malaise',
             frequency: 'Days',
             frequency_number: 2,
-            visit_id: 1,
-            patient_id: 1,
             notes: 'Okay',
           },
         ],
@@ -63,12 +61,12 @@ describe('Consultation Endpoints /consultations', () => {
     await expect(res.body.data.history).toHaveProperty('complaint_note', 'Headache');
   }, 10000);
 
-  it('should not create a patient history', async () => {
+  it('should not create a patient observation', async () => {
     const res = await request(server)
       .post('/api/consultations/observation/create/1')
       .set('Authorization', `Bearer ${token}`)
       .send({
-        patient_id: 1,
+        patient_id: '',
         complaint_note: '',
         history_note: '',
         examination_note: '',
@@ -78,26 +76,21 @@ describe('Consultation Endpoints /consultations', () => {
             complaint: 'Malaise',
             frequency: 'Days',
             frequency_number: 2,
-            visit_id: 1,
-            patient_id: 1,
-            notes: 'Okay',
+            notes: '',
           },
         ],
       });
-    await expect(res.status).toBe(201);
-    await expect(res.body.data).toHaveProperty('complaint');
-    await expect(res.body.data).not.toHaveProperty('history');
-    await expect(res.body.data.complaint).toHaveLength(1);
+    await expect(res.status).toBe(400);
   }, 10000);
 
-  it('should not create a patient diagnosis', async () => {
+  it('should create a patient diagnosis', async () => {
     const res = await request(server)
       .post('/api/consultations/diagnosis/create/1')
       .set('Authorization', `Bearer ${token}`)
       .send({
-        patient_id: 1,
-        certainty: 'Presumed',
-        order: 'Primary',
+        diagnosis: 'Headache',
+        certainty: 'presumed',
+        order: 'primary',
         notes: 'Typhoid is presumed',
       });
     await expect(res.status).toBe(201);
