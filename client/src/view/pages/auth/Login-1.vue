@@ -41,7 +41,11 @@
         <div class="d-flex flex-column-fluid flex-center">
           <!--begin::Signin-->
           <div class="login-form login-signin">
-            <div class="form" id="kt_login_signin_form">
+            <form
+              class="form"
+              id="kt_login_signin_form"
+              @keypress.enter="onSubmitLogin"
+            >
               <div class="pb-13 pt-lg-0 pt-5">
                 <h3
                   class="font-weight-bolder text-dark font-size-h4 font-size-h1-lg"
@@ -117,7 +121,7 @@
                   Sign In
                 </button>
               </div>
-            </div>
+            </form>
           </div>
           <!--end::Signin-->
 
@@ -229,6 +233,10 @@ export default {
       );
     },
 
+    initialValues() {
+      this.form = {};
+    },
+
     onSubmitLogin() {
       this.$validator.validateAll().then(result => {
         if (result) {
@@ -247,6 +255,7 @@ export default {
           this.$store
             .dispatch("auth/login", { username, password })
             .then(() => {
+              this.initialValues();
               this.$router.push("/dashboard");
               this.removeSpinner(submitButton);
             })

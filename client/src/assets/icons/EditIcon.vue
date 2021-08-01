@@ -1,6 +1,6 @@
 <template>
   <span class="svg-icon svg-icon-md svg-icon-primary"
-    ><svg
+        data-toggle="tooltip" title="Edit"><svg
       xmlns="http://www.w3.org/2000/svg"
       xmlns:xlink="http://www.w3.org/1999/xlink"
       width="24px"

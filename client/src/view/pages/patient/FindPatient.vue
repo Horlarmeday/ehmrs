@@ -56,6 +56,7 @@
                 <th style="min-width: 100px">Age</th>
                 <th style="min-width: 100px">status</th>
                 <th class="pr-0" style="min-width: 160px">Registration Date</th>
+                <th class="pr-0 " style="min-width: 150px">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -92,14 +93,9 @@
                 </td>
                 <td>
                   <span
-                    v-if="patient.has_insurance"
-                    class="label label-lg label-light-primary label-inline"
-                    >NHIS</span
-                  >
-                  <span
-                    v-else
-                    class="label label-lg label-light-warning label-inline"
-                    >Cash</span
+                    :class="displayLabel(patient.insurance_id)"
+                    class="label label-lg label-inline"
+                    >{{ displayInsuranceType(patient.insurance_id) }}</span
                   >
                 </td>
                 <td class="pr-0">
@@ -107,6 +103,21 @@
                     class="text-dark-75 font-weight-bolder d-block font-size-lg"
                     >{{ patient.createdAt | moment("ddd, MMM Do YYYY") }}</span
                   >
+                </td>
+                <td class="pr-0">
+                  <router-link
+                    to="#"
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
+                  >
+                    <edit-icon />
+                  </router-link>
+                  <a
+                    href="#"
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
+                    @click="addNewData(patient)"
+                  >
+                    <arrow-up-icon />
+                  </a>
                 </td>
               </tr>
             </tbody>
@@ -126,6 +137,11 @@
       </p>
       <!--end::Body-->
     </div>
+    <create-visit
+      :displayPrompt="displayPrompt"
+      @closeModal="hideModal"
+      :patient="patient"
+    />
     <!--end::Card-->
   </div>
 </template>
@@ -133,10 +149,15 @@
 <script>
 import Pagination from "@/utils/Pagination.vue";
 import DateFilter from "../../../utils/DateFilter";
+import ArrowUpIcon from "../../../assets/icons/ArrowUpIcon";
+import EditIcon from "../../../assets/icons/EditIcon";
+import CreateVisit from "../visits/create/CreateVisit";
 export default {
   data() {
     return {
       patient_name: "",
+      displayPrompt: false,
+      patient: {},
       start: null,
       end: null,
       currentPage: 1,
@@ -144,8 +165,11 @@ export default {
     };
   },
   components: {
+    CreateVisit,
+    ArrowUpIcon,
     Pagination,
-    DateFilter
+    DateFilter,
+    EditIcon
   },
 
   computed: {
@@ -164,6 +188,33 @@ export default {
   },
 
   methods: {
+    addNewData(patient) {
+      this.patient = patient;
+      this.displayPrompt = true;
+    },
+
+    hideModal() {
+      this.displayPrompt = false;
+    },
+
+    displayLabel(insurance) {
+      if (insurance === 1) return "label-light-primary";
+      if (insurance === 2) return "label-light-warning";
+      if (insurance === 3) return "label-light-success";
+      if (insurance === 4) return "label-light-danger";
+      if (insurance === 4) return "label-light-dark";
+      return "label-light-info";
+    },
+
+    displayInsuranceType(insurance) {
+      if (insurance === 1) return "NHIS";
+      if (insurance === 2) return "FHSS";
+      if (insurance === 3) return "PHIS";
+      if (insurance === 4) return "Retainership";
+      if (insurance === 4) return "Private";
+      return "Cash";
+    },
+
     searchByDate(start, end) {
       (this.start = start), (this.end = end);
       this.currentPage = 1;
