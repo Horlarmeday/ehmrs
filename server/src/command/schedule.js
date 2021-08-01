@@ -17,8 +17,14 @@ export async function sendGeneratedPassword(message, user) {
 }
 
 export async function uploadImageToBox(filepath, fileName) {
-  await agenda.schedule('in 5 seconds', Constant.UPLOAD_IMAGE, {
+  await agenda.schedule('in 25 seconds', Constant.UPLOAD_IMAGE, {
     filepath,
     fileName,
+  });
+}
+
+export async function assignHospitalNumber(id) {
+  await agenda.schedule('in 5 seconds', Constant.ASSIGN_HOSPITAL_NUMBER, {
+    id,
   });
 }
