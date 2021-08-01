@@ -1057,7 +1057,7 @@ export default {
         phone: this.dependant_phone,
         relationship: this.dependant_relationship,
         enrollee_code: this.dependant_enrollee_id,
-        insurance_id: this.insurance_id,
+        insurance_id: this.$route.params.id,
         hmo_id: this.hmo_id,
         gender: this.dependant_gender,
         address: this.dependant_address,
@@ -1149,7 +1149,7 @@ export default {
         enrollee_code: this.enrollee_id,
         organization: this.organization,
         hmo_id: this.hmo_id,
-        insurance_id: this.insurance_id,
+        insurance_id: this.$route.params.id,
         plan: this.plan,
         photo: this.image,
         dependants: this.dependants
