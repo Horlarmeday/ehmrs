@@ -1,6 +1,5 @@
 import AuthService from './auth.service';
 import { validateForgotPassword, validateLogin } from './validations';
-import { APIError } from '../../util/apiError';
 
 /**
  *
@@ -19,7 +18,7 @@ class AuthController {
    */
   static async login(req, res, next) {
     const { error } = validateLogin(req.body);
-    if (error) throw new APIError('ERROR', 400, error.details[0].message);
+    if (error) return res.status(400).json({ message: error.details[0].message });
 
     try {
       const { token, staff } = await AuthService.loginService(req.body);
@@ -69,7 +68,7 @@ class AuthController {
    */
   static async forgotPassword(req, res, next) {
     const { error } = validateForgotPassword(req.body);
-    if (error) throw new APIError('ERROR', 400, error.details[0].message);
+    if (error) return res.status(400).json({ message: error.details[0].message });
 
     try {
       const staff = await AuthService.forgotPassword(req.body);
