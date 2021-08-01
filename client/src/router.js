@@ -30,7 +30,8 @@ const router = new Router({
         {
           path: "/dashboard",
           name: "dashboard",
-          component: () => import("@/view/pages/home/superadmin/Dashboard.vue"),
+          component: () =>
+            import("@/view/pages/home/medicalrecords/Dashboard.vue"),
           meta: {
             requiresAuth: true
           }
@@ -215,6 +216,24 @@ const router = new Router({
               path: "active",
               name: "active",
               component: () => import("@/view/pages/visits/Visits.vue"),
+              meta: {
+                requiresAuth: true
+              }
+            }
+          ]
+        },
+        // CONSULTATION
+        {
+          path: "/consultation",
+          name: "consultation",
+          component: () =>
+            import("@/view/pages/consultation/Consultation.vue"),
+          children: [
+            {
+              path: ":visitId",
+              name: "visit-details",
+              component: () =>
+                import("@/view/pages/consultation/components/Tabs.vue"),
               meta: {
                 requiresAuth: true
               }
