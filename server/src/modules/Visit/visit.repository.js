@@ -42,6 +42,15 @@ export async function endVisit(visit) {
   return visit.update({ is_active: false, date_visit_ended: Date.now() });
 }
 
+/**
+ * get patient visit by Id
+ * @returns {object} visit data
+ * @param id
+ */
+export async function getVisitById(id) {
+  return Visit.findByPk(id);
+}
+
 /** ***********************
  * ACTIVE VISITS
  ********************** */
@@ -67,7 +76,7 @@ export async function searchActiveVisits(currentPage = 1, pageLimit = 10, search
       {
         model: Patient,
         as: 'patient',
-        attributes: ['fullname', 'photo'],
+        attributes: ['fullname', 'photo', 'hospital_id'],
         where: {
           fullname: {
             [Op.like]: `%${search}%`,
@@ -98,7 +107,7 @@ export async function getActiveVisits(currentPage = 1, pageLimit = 10) {
       {
         model: Patient,
         as: 'patient',
-        attributes: ['fullname', 'photo'],
+        attributes: ['fullname', 'photo', 'hospital_id'],
       },
     ],
   });
@@ -127,7 +136,7 @@ export async function searchVisits(currentPage = 1, pageLimit = 10, search) {
       {
         model: Patient,
         as: 'patient',
-        attributes: ['fullname', 'photo'],
+        attributes: ['fullname', 'photo', 'hospital_id'],
         where: {
           fullname: {
             [Op.like]: `%${search}%`,
@@ -156,7 +165,7 @@ export async function getVisits(currentPage = 1, pageLimit = 10) {
       {
         model: Patient,
         as: 'patient',
-        attributes: ['fullname', 'photo'],
+        attributes: ['fullname', 'photo', 'hospital_id'],
       },
     ],
   });
@@ -189,7 +198,7 @@ export async function searchTypeVisits(currentPage = 1, pageLimit = 10, search, 
       {
         model: Patient,
         as: 'patient',
-        attributes: ['fullname', 'photo'],
+        attributes: ['fullname', 'photo', 'hospital_id'],
         where: {
           fullname: {
             [Op.like]: `%${search}%`,
@@ -222,7 +231,7 @@ export async function getTypeVisits(currentPage = 1, pageLimit = 10, type = 'OPD
       {
         model: Patient,
         as: 'patient',
-        attributes: ['fullname', 'photo'],
+        attributes: ['fullname', 'photo', 'hospital_id'],
       },
     ],
   });

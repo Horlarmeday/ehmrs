@@ -4,6 +4,7 @@ import {
   getActiveVisits,
   getLastVisitStatus,
   getTypeVisits,
+  getVisitById,
   getVisits,
   searchActiveVisits,
   searchTypeVisits,
@@ -55,7 +56,7 @@ class VisitService {
    * @memberOf VisitService
    */
   static async getAllVisits(body) {
-    const { currentPage, pageLimit, search, } = body;
+    const { currentPage, pageLimit, search } = body;
     if (search) {
       return searchVisits(+currentPage, +pageLimit, search);
     }
@@ -86,6 +87,18 @@ class VisitService {
     }
 
     return getTypeVisits();
+  }
+
+  /**
+   * get patient visit by id
+   *
+   * @static
+   * @returns {json} json object with item data
+   * @memberOf VisitService
+   * @param id
+   */
+  static async getVisitById(id) {
+    return getVisitById(id);
   }
 }
 

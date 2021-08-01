@@ -51,7 +51,7 @@ describe('Store Endpoints /visits', () => {
 
   it('should return searched active visits', async () => {
     const res = await request(server)
-      .get('/api/visits/get?currentPage=1&pageLimit=10&search=HALLELUYIA')
+      .get('/api/visits/active/get?currentPage=1&pageLimit=10&search=HALLELUYIA')
       .set('Authorization', `Bearer ${token}`);
     await expect(res.status).toBe(200);
     await expect(res.body.data).toHaveProperty('docs');
@@ -60,17 +60,16 @@ describe('Store Endpoints /visits', () => {
 
   it('should return all active visits', async () => {
     const res = await request(server)
-      .get('/api/visits/get?currentPage=1&pageLimit=10')
+      .get('/api/visits/active/get?currentPage=1&pageLimit=10')
       .set('Authorization', `Bearer ${token}`);
-    await expect(res.body.data).toHaveProperty('docs');
     await expect(res.status).toBe(200);
-    await expect(res.body.data.docs).toHaveLength(1);
+    await expect(res.body.data).toHaveProperty('docs');
     await expect(res.body.data.total).toBeGreaterThan(0);
   }, 10000);
 
   it('should return searched type visits', async () => {
     const res = await request(server)
-      .get('/api/visits/get?currentPage=1&pageLimit=10&search=HALLELUYIA&type=OPD')
+      .get('/api/visits/type/get?currentPage=1&pageLimit=10&search=HALLELUYIA&type=OPD')
       .set('Authorization', `Bearer ${token}`);
     await expect(res.status).toBe(200);
     await expect(res.body.data.total).toBeGreaterThan(0);
@@ -78,18 +77,18 @@ describe('Store Endpoints /visits', () => {
 
   it('should return all type visits', async () => {
     const res = await request(server)
-      .get('/api/visits/get?currentPage=1&pageLimit=10&type=OPD')
+      .get('/api/visits/type/get?currentPage=1&pageLimit=10')
       .set('Authorization', `Bearer ${token}`);
     await expect(res.status).toBe(200);
     await expect(res.body.data).toHaveProperty('docs');
     await expect(res.body.data.docs).toHaveLength(1);
   }, 10000);
 
-  it('should not return type visits', async () => {
+  it('should return all visits', async () => {
     const res = await request(server)
-      .get('/api/visits/get?currentPage=1&pageLimit=10&type=IPD')
+      .get('/api/visits/all/get?currentPage=1&pageLimit=10')
       .set('Authorization', `Bearer ${token}`);
     await expect(res.status).toBe(200);
-    await expect(res.body.data.total).toBe(0);
+    await expect(res.body.data.docs).toHaveLength(1);
   }, 10000);
 });
