@@ -2,7 +2,7 @@
 import mime from 'mime';
 import { promisify } from 'util';
 import fs from 'fs';
-import APIError from '../util/apiError';
+import { APIError } from '../util/apiError';
 
 const writeFile = promisify(fs.writeFile);
 

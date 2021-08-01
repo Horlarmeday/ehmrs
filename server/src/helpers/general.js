@@ -1,4 +1,4 @@
-export function generateId(num, targetLength = 4) {
+export function padNumberWithZero(num, targetLength = 6) {
   return num.toString().padStart(targetLength, 0);
 }
 

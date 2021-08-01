@@ -7,6 +7,15 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true,
       },
+      diagnosis: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          notEmpty: {
+            msg: 'diagnosis is required',
+          },
+        },
+      },
       certainty: {
         type: DataTypes.ENUM('Presumed', 'Confirmed'),
         allowNull: false,
