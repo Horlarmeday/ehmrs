@@ -1,0 +1,65 @@
+<template>
+  <div class="flex-row-auto offcanvas-mobile w-xl-250px" id="kt_profile_aside">
+    <div class="card card-custom card-stretch">
+      <div class="card-body pt-4 p-0">
+        <div class="navi navi-bold navi-hover navi-active navi-link-rounded">
+          <div class="navi-item mb-2" v-for="(data, i) in list" :key="i">
+            <a
+              href="#"
+              @click="switchTab(data.link, $event)"
+              :data-active="i"
+              class="navi-link"
+              :class="data.class"
+            >
+              <span class="navi-text font-size-lg p-0">
+                {{ data.name }}
+              </span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: "Sidebar",
+  data() {
+    return {
+      tabIndex: 0
+    };
+  },
+  props: {
+    list: { type: Array, required: true, default: () => [] }
+  },
+  methods: {
+    switchTab(tab, event) {
+      this.$emit("changeTab", tab);
+      this.setActiveTab(event);
+    },
+    setActiveTab(event) {
+      console.log(event)
+      let target = event.target;
+      // if (!event.target.classList.contains("nav-link")) {
+      //   target = event.target.closest(".nav-link");
+      // }
+
+      // const tab = target.closest('[role="tablist"]');
+      const links = target.querySelectorAll(".nav-link");
+      // remove active tab links
+      for (let i = 0; i < links.length; i++) {
+        links[i].classList.remove("active");
+      }
+
+      // set clicked tab index to bootstrap tab
+      this.tabIndex = parseInt(target.getAttribute("data-active"));
+
+      // set current active tab
+      target.classList.add("active");
+    }
+  }
+};
+</script>
+
+<style scoped></style>
