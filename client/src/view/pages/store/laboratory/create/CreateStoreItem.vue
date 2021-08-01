@@ -214,7 +214,7 @@
     <div>
       <button
         ref="kt_lab_item_submit"
-        class="btn btn-primary font-weight-bold float-right"
+        class="btn btn-primary font-weight-bold float-right mt-2"
         @click="createLabItem"
       >
         Submit
@@ -292,9 +292,8 @@ export default {
       );
     },
 
-    initRequest(button, response) {
+    initRequest(button) {
       this.removeSpinner(button);
-      this.handleSuccess(response);
       this.initValues();
     },
 
@@ -319,7 +318,7 @@ export default {
           };
           this.$store
             .dispatch("store/addLaboratoryItem", data)
-            .then(response => this.initRequest(submitButton, response))
+            .then(() => this.initRequest(submitButton))
             .catch(() => this.removeSpinner(submitButton));
         }
       });
