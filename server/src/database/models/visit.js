@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DATE,
       },
       type: {
-        type: DataTypes.ENUM('IPD', 'OPD', 'Emergency'),
+        type: DataTypes.ENUM('IPD', 'OPD', 'Emergency', 'ANC'),
         allowNull: false,
         validate: {
           notEmpty: {
