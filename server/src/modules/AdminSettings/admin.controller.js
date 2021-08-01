@@ -27,7 +27,7 @@ class AdminController {
    */
   static async createDepartment(req, res, next) {
     const { error } = validateDepartment(req.body);
-    if (error) throw new APIError('ERROR', 400, error.details[0].message);
+    if (error) return res.status(400).json({ message: error.details[0].message });
 
     try {
       const department = await AdminService.createDepartmentService(
@@ -76,7 +76,7 @@ class AdminController {
    */
   static async updateDepartment(req, res, next) {
     const { department_id } = req.body;
-    if (!department_id) throw new APIError('ERROR', 400, 'Department id is required');
+    if (!department_id) return res.status(400).json({ message: 'department id is required' });
 
     try {
       const department = await AdminService.updateDepartmentService(req.body);
@@ -101,7 +101,7 @@ class AdminController {
    */
   static async createUnit(req, res, next) {
     const { error } = validateUnit(req.body);
-    if (error) throw new APIError('ERROR', 400, error.details[0].message);
+    if (error) return res.status(400).json({ message: error.details[0].message });
 
     try {
       const unit = await AdminService.createUnitService(
@@ -150,7 +150,7 @@ class AdminController {
    */
   static async updateUnit(req, res, next) {
     const { unit_id } = req.body;
-    if (!unit_id) throw new APIError('ERROR', 400, 'Unit id is required');
+    if (!unit_id) return res.status(400).json({ message: 'unit id is required' });
 
     try {
       const unit = await AdminService.updateUnitService(req.body);
@@ -175,7 +175,7 @@ class AdminController {
    */
   static async createWard(req, res, next) {
     const { error } = validateWard(req.body);
-    if (error) throw new APIError('ERROR', 400, error.details[0].message);
+    if (error) return res.status(400).json({ message: error.details[0].message });
 
     try {
       const ward = await AdminService.createWardService(
@@ -224,7 +224,7 @@ class AdminController {
    */
   static async updateWard(req, res, next) {
     const { ward_id } = req.body;
-    if (!ward_id) throw new APIError('ERROR', 400, 'Ward id is required');
+    if (!ward_id) return res.status(400).json({ message: 'ward id is required' });
 
     try {
       const ward = await AdminService.updateWardService(req.body);
@@ -249,7 +249,7 @@ class AdminController {
    */
   static async createBed(req, res, next) {
     const { error } = validateBed(req.body);
-    if (error) throw new APIError('ERROR', 400, error.details[0].message);
+    if (error) return res.status(400).json({ message: error.details[0].message });
 
     try {
       const bed = await AdminService.createBedService(
@@ -298,7 +298,7 @@ class AdminController {
    */
   static async updateBed(req, res, next) {
     const { bed_id } = req.body;
-    if (!bed_id) throw new APIError('ERROR', 400, 'Bed id is required');
+    if (!bed_id) return res.status(400).json({ message: 'bed id is required' });
 
     try {
       const bed = await AdminService.updateBedService(req.body);
@@ -323,7 +323,7 @@ class AdminController {
    */
   static async getBedsInAWard(req, res, next) {
     const { ward_id } = req.body;
-    if (!ward_id) throw new APIError('ERROR', 400, 'Ward id is required');
+    if (!ward_id) return res.status(400).json({ message: 'ward id is required' });
 
     try {
       const beds = await getBedsInAWard(ward_id);
@@ -348,7 +348,7 @@ class AdminController {
    */
   static async createService(req, res, next) {
     const { error } = validateService(req.body);
-    if (error) throw new APIError('ERROR', 400, error.details[0].message);
+    if (error) return res.status(400).json({ message: error.details[0].message });
 
     try {
       const service = await AdminService.createHospitalService(
@@ -375,7 +375,7 @@ class AdminController {
    */
   static async updateService(req, res, next) {
     const { service_id } = req.body;
-    if (!service_id) throw new APIError('ERROR', 400, 'Service id is required');
+    if (!service_id) return res.status(400).json({ message: 'service id is required' });
 
     try {
       const service = await AdminService.updateHospitalService(req.body);
