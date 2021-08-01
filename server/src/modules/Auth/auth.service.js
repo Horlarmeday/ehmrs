@@ -22,12 +22,7 @@ class AuthService {
     const validPassword = await bcrypt.compare(body.password, staff.password);
     if (!validPassword) throw new APIError('INVALID', 400, 'Invalid username or password');
 
-    if (staff.status === 'Inactive')
-      throw new APIError(
-        'INVALID',
-        401,
-        'This account has been deactivated, please contact support'
-      );
+    this.checkStaffStatus(staff);
 
     const token = staff.generateAuthToken();
 
@@ -35,6 +30,16 @@ class AuthService {
       token,
       staff,
     };
+  }
+
+  static checkStaffStatus(staff) {
+    if (staff.status === 'Inactive')
+      throw new APIError(
+        'INVALID',
+        401,
+        'This account has been deactivated, please contact support'
+      );
+    return true;
   }
 
   /**
