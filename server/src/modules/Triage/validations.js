@@ -2,8 +2,6 @@ import Joi from 'joi';
 
 export function validateTriage(triage) {
   const schema = Joi.object({
-    patient_id: Joi.number().required(),
-    visit_id: Joi.number().required(),
     rvs: Joi.string()
       .optional()
       .allow(''),
@@ -21,8 +19,12 @@ export function validateTriage(triage) {
       .optional()
       .allow(''),
     temperature: Joi.number().required(),
-    systolic: Joi.number().required(),
-    diastolic: Joi.number().required(),
+    systolic: Joi.number()
+      .optional()
+      .allow(''),
+    diastolic: Joi.number()
+      .optional()
+      .allow(''),
     heart_rate: Joi.number()
       .optional()
       .allow(''),
