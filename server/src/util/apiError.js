@@ -8,10 +8,11 @@ class APIError extends BaseError {
 
 const handleError = (err, res) => {
   const { httpCode, message } = err;
-  res.status(httpCode || 500).json({
+  const statusCode = httpCode || 500;
+  res.status(statusCode).json({
     status: 'error',
-    httpCode,
-    message,
+    httpCode: statusCode,
+    message: statusCode === 500 ? 'internal server error' : message,
   });
 };
 
