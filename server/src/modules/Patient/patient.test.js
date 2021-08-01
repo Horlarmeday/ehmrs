@@ -48,7 +48,7 @@ describe('Patient Endpoints /patients', () => {
     await Staff.destroy({ truncate: true, cascade: false });
   });
 
-  it('should create a new cash patient', async () => {
+  it.only('should create a new cash patient', async () => {
     const res = await request(server)
       .post('/api/patients/create/cash')
       .set('Authorization', `Bearer ${token}`)
@@ -59,7 +59,7 @@ describe('Patient Endpoints /patients', () => {
         middlename: 'Mahmud',
         gender: 'Male',
         address: 'Kubwa',
-        photo: file.image,
+        photo: process.env.image,
         next_of_kin_name: 'sodiq',
         next_of_kin_phone: '09076543212',
         next_of_kin_address: 'Same',
@@ -83,7 +83,7 @@ describe('Patient Endpoints /patients', () => {
     await expect(res.body.data).not.toHaveProperty('insurance_id');
   }, 10000);
 
-  it('should create a new health insurance patient', async () => {
+  it('should create a new health insurance patient with dependants', async () => {
     const res = await request(server)
       .post('/api/patients/create/health-insurance')
       .set('Authorization', `Bearer ${token}`)
@@ -202,7 +202,6 @@ describe('Patient Endpoints /patients', () => {
         date_of_birth: '1994-09-02',
       });
     await expect(res.status).toBe(201);
-    await expect(res.body).toHaveProperty('data');
     await expect(res.body.data).toHaveProperty('patient_id');
     await expect(res.body.data).toHaveProperty('staff_id');
     await expect(res.body.data).toHaveProperty('fullname');
