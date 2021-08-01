@@ -49,7 +49,10 @@ export async function createHMO(data) {
     insurance_id,
     staff_id,
   });
-  return HMO.findOne({ where: { id: hmo.id }, include: [{ model: Insurance }] });
+  return HMO.findOne({
+    where: { id: hmo.id },
+    include: [{ model: Insurance, attributes: ['name'] }],
+  });
 }
 
 /**

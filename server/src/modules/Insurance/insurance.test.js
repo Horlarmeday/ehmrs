@@ -61,6 +61,7 @@ describe('Insurance Endpoints /insurances', () => {
         hmo_num: 'HMO 17',
         insurance_id,
       });
+
     hmo_id = res.body.data.id;
     await expect(res.status).toBe(201);
     await expect(res.body).toHaveProperty('data');
