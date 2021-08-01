@@ -15,7 +15,7 @@ module.exports = {
         type: Sequelize.DATE,
       },
       type: {
-        type: Sequelize.ENUM('IPD', 'OPD', 'Emergency'),
+        type: Sequelize.ENUM('IPD', 'OPD', 'Emergency', 'ANC'),
         allowNull: false,
       },
       staff_id: {

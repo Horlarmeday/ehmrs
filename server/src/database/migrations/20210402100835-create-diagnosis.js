@@ -7,6 +7,10 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
+      diagnosis: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
       certainty: {
         type: Sequelize.ENUM('Presumed', 'Confirmed'),
         allowNull: false,

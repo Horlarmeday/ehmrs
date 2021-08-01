@@ -1,4 +1,3 @@
-'use strict';
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('Triages', {
@@ -6,70 +5,70 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
-      },
-      id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       patient_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull: false,
       },
       visit_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull: false,
       },
       weight: {
-        type: Sequelize.FLOAT
+        type: Sequelize.FLOAT,
       },
       height: {
-        type: Sequelize.FLOAT
+        type: Sequelize.FLOAT,
       },
       bmi: {
-        type: Sequelize.FLOAT
+        type: Sequelize.FLOAT,
       },
       rvs: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       pulse: {
-        type: Sequelize.FLOAT
+        type: Sequelize.FLOAT,
       },
       respiration: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       temperature: {
-        type: Sequelize.FLOAT
+        type: Sequelize.FLOAT,
+        allowNull: false,
       },
       systolic: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING,
       },
       diastolic: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING,
       },
-      heartrate: {
-        type: Sequelize.INTEGER
+      heart_rate: {
+        type: Sequelize.STRING,
       },
       fetal_heart_rate: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING,
       },
       spo2: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING,
       },
       muac: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       staff_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       createdAt: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       updatedAt: {
         allowNull: false,
-        type: Sequelize.DATE
-      }
+        type: Sequelize.DATE,
+      },
     });
   },
   down: (queryInterface, Sequelize) => {
     return queryInterface.dropTable('Triages');
-  }
+  },
 };
