@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import APIError from '../../util/apiError';
+import { APIError } from '../../util/apiError';
 import {
   createCashPatient,
   createDependant,
@@ -7,19 +7,14 @@ import {
   createOrdinaryPatient,
   findDependantByEnrolleeCode,
   findPatientByPhone,
-  generateHospitalNumber,
-  getDependants,
-  getDependantsByDate,
-  getPatientByHospitalId,
+  getPatientById,
   getPatients,
   getPatientsByDate,
-  searchDependants,
   searchPatients,
-  updateDependant,
   updatePatient,
 } from './patient.repository';
 import { processSnappedPhoto } from '../../helpers/helper';
-import { uploadImageToBox } from '../../command/schedule';
+import { assignHospitalNumber, uploadImageToBox } from '../../command/schedule';
 
 class PatientService {
   /**
@@ -34,21 +29,17 @@ class PatientService {
     const patient = await findPatientByPhone(body.phone);
     if (patient) throw new APIError('INVALID', 400, 'Patient already exists');
 
-    let hospital_id = await generateHospitalNumber();
-
-    const existingHospitalId = await getPatientByHospitalId(hospital_id);
-    if (existingHospitalId) hospital_id = generateHospitalNumber();
-
     try {
       // Save photo to disk
       const { filepath, fileName } = await processSnappedPhoto(body.photo, body.firstname);
 
-      const createdPatient = await createCashPatient({ ...body, hospital_id, fileName });
+      const createdPatient = await createCashPatient({ ...body, fileName });
+      await assignHospitalNumber(createdPatient.id);
       // upload patient to box in the background
       await uploadImageToBox(filepath, fileName, createdPatient);
       return createdPatient;
     } catch (e) {
-      throw new APIError('Error', 500, 'internal server error');
+      throw new APIError('Error', 500, e.message);
     }
   }
 
@@ -64,15 +55,11 @@ class PatientService {
     const user = await findPatientByPhone(body.phone);
     if (user) throw new APIError('INVALID', 400, 'Patient already exists');
 
-    let hospital_id = await generateHospitalNumber();
-
     try {
-      const existingHospitalId = await getPatientByHospitalId(hospital_id);
-      if (existingHospitalId) hospital_id = generateHospitalNumber(1);
       // Save photo to disk
       const { fileName } = await processSnappedPhoto(body.photo, body.firstname);
 
-      return createInsurancePatient({ ...body, hospital_id, fileName });
+      return createInsurancePatient({ ...body, fileName });
     } catch (e) {
       throw new APIError('Error', 500, 'internal server error');
     }
@@ -105,7 +92,9 @@ class PatientService {
     const dependant = await findDependantByEnrolleeCode(body.enrollee_code);
     if (dependant) throw new APIError('INVALID', 400, 'Dependants already exists');
 
-    return createDependant(body);
+    const patient = await createDependant(body);
+    await assignHospitalNumber(patient.id);
+    return patient;
   }
 
   /**
@@ -143,6 +132,18 @@ class PatientService {
    */
   static async updatePatientService(body) {
     return updatePatient(body);
+  }
+
+  /**
+   * get a patient by Id
+   *
+   * @static
+   * @returns {json} json object with patient data
+   * @memberOf PatientService
+   * @param id
+   */
+  static async getPatientById(id) {
+    return getPatientById(id);
   }
 }
 export default PatientService;

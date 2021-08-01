@@ -1,7 +1,8 @@
 /* eslint-disable camelcase */
 import { Sequelize } from 'sequelize';
-import { delay, generateId, processArray } from '../../helpers/general';
+import { delay, padNumberWithZero, processArray } from '../../helpers/general';
 import { generateRandomNumbers, processSnappedPhoto } from '../../helpers/helper';
+import { assignHospitalNumber } from '../../command/schedule';
 
 const { Patient, Insurance, HMO } = require('../../database/models');
 
@@ -15,7 +16,7 @@ const db = require('../../database/models/index');
  */
 export async function generateHospitalNumber() {
   const randomNumbers = generateRandomNumbers(5);
-  return `SVH/${generateId(randomNumbers, 6)}`;
+  return `SVH/${padNumberWithZero(randomNumbers, 6)}`;
 }
 
 /**
@@ -77,7 +78,6 @@ export async function createCashPatient(data) {
     relationship,
     alt_phone,
     staff_id,
-    hospital_id,
   } = data;
 
   return Patient.create({
@@ -102,7 +102,6 @@ export async function createCashPatient(data) {
     relationship,
     alt_phone,
     staff_id,
-    hospital_id,
     fullname: `${firstname} ${lastname}`,
   });
 }
@@ -116,13 +115,8 @@ export async function createCashPatient(data) {
 async function delayedLog(dependant) {
   await delay();
   const { fileName } = await processSnappedPhoto(dependant.photo, dependant.firstname);
-  // generate hospital id
-  let hospital_num = await generateHospitalNumber();
-  const existingHospitalId = await getPatientByHospitalId(hospital_num);
-  if (existingHospitalId) hospital_num = generateHospitalNumber();
 
-  return Patient.create({
-    hospital_id: hospital_num,
+  const patient = await Patient.create({
     fullname: `${dependant.firstname} ${dependant.lastname}`,
     firstname: dependant.firstname,
     lastname: dependant.lastname,
@@ -139,7 +133,13 @@ async function delayedLog(dependant) {
     staff_id: dependant.staff_id,
     principal_id: dependant.patient_id,
     patient_type: 'Dependant',
+    country: dependant.country,
+    state: dependant.state,
+    lga: dependant.lga,
+    religion: dependant.religion,
   });
+  await assignHospitalNumber(patient.id);
+  return patient;
 }
 
 /**
@@ -174,7 +174,6 @@ export async function createInsurancePatient(data) {
     alt_phone,
     staff_id,
     enrollee_code,
-    hospital_id,
     organization,
     dependants,
   } = data;
@@ -204,7 +203,6 @@ export async function createInsurancePatient(data) {
         relationship,
         alt_phone,
         staff_id,
-        hospital_id,
         fullname: `${firstname} ${lastname}`,
         has_insurance: true,
         insurance_id,
@@ -215,18 +213,22 @@ export async function createInsurancePatient(data) {
       },
       { transaction: t }
     );
+    await assignHospitalNumber(patient.id);
     // check if there are dependants in the body
     if (dependants.length) {
       const modifiedDependants = dependants.map(d => ({
         ...d,
         staff_id,
         patient_id: patient.id,
+        country: patient.country,
+        state: patient.state,
+        lga: patient.lga,
+        religion: patient.religion,
       }));
       const createdDependants = await processArray(modifiedDependants, delayedLog);
 
       return { patient, createdDependants };
     }
-
     return patient;
   });
 }
@@ -288,7 +290,6 @@ export async function findDependantByEnrolleeCode(data) {
  * @returns {object} dependant data
  */
 export async function createDependant(data) {
-  const hospital_id = await generateHospitalNumber();
   const {
     firstname,
     lastname,
@@ -319,7 +320,6 @@ export async function createDependant(data) {
     relationship,
     plan,
     staff_id,
-    hospital_id,
     fullname: `${firstname}  ${lastname}`,
     principal_id: patient_id,
     patient_type: 'Dependant',
