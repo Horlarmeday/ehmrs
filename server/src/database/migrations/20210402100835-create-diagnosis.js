@@ -8,7 +8,7 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
       diagnosis: {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,
         allowNull: false,
       },
       certainty: {
