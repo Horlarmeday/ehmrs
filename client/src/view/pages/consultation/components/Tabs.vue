@@ -34,7 +34,7 @@
             <li class="nav-item mr-3">
               <a
                 class="nav-link text-dark py-4 px-6"
-                @click="setActiveTab"
+                @click="setActiveTab($event, '#orders')"
                 data-tab="1"
                 data-toggle="tab"
                 href="#"
@@ -102,10 +102,12 @@
 <script>
 import Observations from "../tabs/Observations";
 import Diagnosis from "../tabs/Diagnosis";
+import Orders from "../tabs/Orders";
 
 const ComponentMapping = {
   "#observations": Observations,
-  "#diagnosis": Diagnosis
+  "#diagnosis": Diagnosis,
+  "#orders": Orders
 };
 
 export default {
@@ -120,6 +122,7 @@ export default {
     /**
      * Set current active on click
      * @param event
+     * @param component
      */
     setActiveTab(event, component) {
       let target = event.target;
