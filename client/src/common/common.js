@@ -17,3 +17,9 @@ export const notifySuccess = response => {
     type: "success"
   });
 };
+
+export const deleteArrayElement = (arr, value) => {
+  return arr.filter(function(element) {
+    return element !== value;
+  });
+};
