@@ -58,16 +58,8 @@ export async function createHistory(data) {
  * @returns {object} diagnosis data
  */
 export async function createDiagnosis(data) {
-  const { patient_id, certainty, order, notes, visit_id, staff_id } = data;
-
-  return Diagnosis.create({
-    patient_id,
-    certainty,
-    order,
-    notes,
-    visit_id,
-    staff_id,
-  });
+  console.log(data)
+  return Diagnosis.bulkCreate(data);
 }
 
 /**

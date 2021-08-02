@@ -48,8 +48,16 @@ class ConsultationService {
    * @memberOf ConsultationService
    */
   static async createDiagnosisService(body) {
-    const visit = await VisitService.getVisitById(body.visit_id);
-    return createDiagnosis({ ...body, patient_id: visit.patient_id });
+    const { diagnosis, visit_id, staff_id } = body;
+    const visit = await VisitService.getVisitById(visit_id);
+
+    const mappedDiagnosis = diagnosis.map(result => {
+      result.staff_id = staff_id;
+      result.patient_id = visit.patient_id;
+      result.visit_id = visit_id;
+      return result;
+    });
+    return createDiagnosis(mappedDiagnosis);
   }
 
   /**

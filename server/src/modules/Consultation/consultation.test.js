@@ -88,10 +88,14 @@ describe('Consultation Endpoints /consultations', () => {
       .post('/api/consultations/diagnosis/create/1')
       .set('Authorization', `Bearer ${token}`)
       .send({
-        diagnosis: 'Headache',
-        certainty: 'presumed',
-        order: 'primary',
-        notes: 'Typhoid is presumed',
+        diagnosis: [
+          {
+            diagnosis: 'Headache',
+            certainty: 'presumed',
+            order: 'primary',
+            notes: 'Typhoid is presumed',
+          },
+        ],
       });
     await expect(res.status).toBe(201);
     await expect(res.body.data).toHaveProperty('certainty', 'Presumed');
