@@ -1,7 +1,6 @@
 <template>
   <div>
     <div class="flex-row-fluid ml-lg-8">
-      <div class="spinner text-center spinner-primary spinner-lg"></div>
       <div class="card card-custom gutter-b">
         <div class="card-header pt-5">
           <h3 class="card-title align-items-start flex-column">
@@ -16,8 +15,8 @@
             v-for="(diag, index) in diagnosis"
             :key="index"
           >
-            <div class="col-lg-3">
-              <label>Diagnosis</label>
+            <div class="col-lg-4">
+              <label class="font-weight-bold text-center">Diagnosis</label>
               <input
                 v-validate="'required'"
                 data-vv-validate-on="blur"
@@ -31,14 +30,14 @@
               }}</span>
             </div>
             <div class="col-lg-3">
-              <label class="">Order</label>
+              <label class="font-weight-bold text-center">Order</label>
               <div class="radio-inline">
                 <label class="radio radio-lg radio-square">
                   <input
                     type="radio"
                     name=""
                     v-model="diag.order"
-                    value="primary"
+                    value="Primary"
                   />
                   <span></span>
                   Primary
@@ -48,22 +47,22 @@
                     type="radio"
                     name=""
                     v-model="diag.order"
-                    value="secondary"
+                    value="Secondary"
                   />
                   <span></span>
                   Secondary
                 </label>
               </div>
             </div>
-            <div class="col-lg-4">
-              <label>Certainty</label>
+            <div class="col-lg-3">
+              <label class="font-weight-bold">Certainty</label>
               <div class="radio-inline">
                 <label class="radio radio-lg radio-square">
                   <input
                     type="radio"
                     name=""
                     v-model="diag.certainty"
-                    value="confirmed"
+                    value="Confirmed"
                   />
                   <span></span>
                   Confirmed
@@ -73,7 +72,7 @@
                     type="radio"
                     name=""
                     v-model="diag.certainty"
-                    value="presumed"
+                    value="Presumed"
                   />
                   <span></span>
                   Presumed
@@ -94,6 +93,15 @@
                 />
               </a>
             </div>
+          </div>
+          <div>
+            <button
+              @click="createDiagnosis"
+              ref="kt_diagnosis_submit"
+              class="btn btn-primary"
+            >
+              Submit
+            </button>
           </div>
         </div>
       </div>
@@ -116,6 +124,25 @@ export default {
     };
   },
   methods: {
+    addSpinner(submitButton) {
+      this.isDisabled = true;
+      submitButton.classList.add("spinner", "spinner-light", "spinner-right");
+    },
+
+    removeSpinner(submitButton) {
+      this.isDisabled = false;
+      submitButton.classList.remove(
+        "spinner",
+        "spinner-light",
+        "spinner-right"
+      );
+    },
+
+    initializeRequest(button) {
+      this.removeSpinner(button);
+      this.initValues();
+    },
+
     addNewDiagnosis() {
       this.diagnosis.push({
         certainty: "",
@@ -125,6 +152,37 @@ export default {
     },
     removeDiagnosis(i) {
       this.diagnosis.splice(i, 1);
+    },
+
+    createDiagnosis() {
+      this.$validator.validateAll().then(result => {
+        if (result) {
+          const obj = {
+            diagnosis: this.diagnosis
+          };
+          // set spinner to submit button
+          const submitButton = this.$refs["kt_diagnosis_submit"];
+          this.addSpinner(submitButton);
+
+          this.$store
+            .dispatch("consultation/addDiagnosis", {
+              visit_id: this.$route.params.visitId,
+              complaint: obj
+            })
+            .then(() => this.initializeRequest(submitButton))
+            .catch(() => this.removeSpinner(submitButton));
+        }
+      });
+    },
+
+    initValues() {
+      this.diagnosis = [
+        {
+          diagnosis: "",
+          certainty: "",
+          order: ""
+        }
+      ];
     }
   }
 };
