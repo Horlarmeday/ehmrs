@@ -32,12 +32,19 @@ export function validateObservation(observation) {
 
 export function validateDiagnosis(diagnosis) {
   const schema = Joi.object({
-    patient_id: Joi.number().required(),
-    certainty: Joi.string().required(),
-    order: Joi.string().required(),
-    notes: Joi.string()
-      .allow('')
-      .optional(),
+    diagnosis: Joi.array()
+      .items(
+        Joi.object({
+          certainty: Joi.string().required(),
+          order: Joi.string().required(),
+          diagnosis: Joi.string().required(),
+          notes: Joi.string()
+            .allow('')
+            .optional(),
+        })
+      )
+      .required(),
   });
+
   return schema.validate(diagnosis);
 }
