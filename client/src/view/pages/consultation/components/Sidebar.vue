@@ -2,7 +2,10 @@
   <div class="flex-row-auto offcanvas-mobile w-xl-250px" id="kt_profile_aside">
     <div class="card card-custom card-stretch">
       <div class="card-body pt-4 p-0">
-        <div class="navi navi-bold navi-hover navi-active navi-link-rounded">
+        <div
+          class="navi navi-bold navi-hover navi-active navi-link-rounded"
+          :style="{ backgroundColor: backgroundColor }"
+        >
           <div class="navi-item mb-2" v-for="(data, i) in list" :key="i">
             <a
               href="#"
@@ -31,7 +34,8 @@ export default {
     };
   },
   props: {
-    list: { type: Array, required: true, default: () => [] }
+    list: { type: Array, required: true, default: () => [] },
+    backgroundColor: { type: String }
   },
   methods: {
     switchTab(tab, event) {

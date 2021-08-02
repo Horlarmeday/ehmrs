@@ -31,7 +31,7 @@ const router = new Router({
           path: "/dashboard",
           name: "dashboard",
           component: () =>
-            import("@/view/pages/home/medicalrecords/Dashboard.vue"),
+            import("@/view/pages/home/superadmin/Dashboard.vue"),
           meta: {
             requiresAuth: true
           }
