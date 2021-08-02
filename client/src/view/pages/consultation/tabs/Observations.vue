@@ -14,7 +14,7 @@
 <script>
 import Sidebar from "../components/Sidebar";
 import Examination from "../components/Examination";
-import sidebarList from "../components/sidebarList";
+import sidebarList from "../components/examinationSidebarList";
 import Vitals from "../components/Vitals";
 
 const TabMapping = {
