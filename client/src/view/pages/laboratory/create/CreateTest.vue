@@ -32,6 +32,18 @@
         </div>
       </div>
       <div class="form-group row">
+        <label class="col-lg-3 col-form-label">NHIS Price</label>
+        <div class="col-lg-8">
+          <input
+            type="number"
+            class="form-control form-control-sm"
+            placeholder="Optional"
+            v-model="nhis_price"
+            name="price"
+          />
+        </div>
+      </div>
+      <div class="form-group row">
         <label class="col-lg-3 col-form-label">Sample Type</label>
         <div class="col-lg-8">
           <select
@@ -80,6 +92,7 @@ export default {
       name: "",
       price: "",
       test_id: "",
+      nhis_price: "",
       sample_id: "",
       isDisabled: false
     };
@@ -107,13 +120,14 @@ export default {
         this.initValues();
         this.$validator.reset();
       } else {
-        const { id, name, price, sample_id } = JSON.parse(
+        const { id, name, price, sample_id, nhis_price } = JSON.parse(
           JSON.stringify(this.data)
         );
         this.test_id = id;
         this.name = name;
         this.price = price;
         this.sample_id = sample_id;
+        this.nhis_price = nhis_price;
       }
     }
   },
@@ -143,7 +157,8 @@ export default {
             sample_id: this.sample_id,
             name: this.name,
             price: this.price,
-            test_id: this.test_id
+            test_id: this.test_id,
+            nhis_price: this.nhis_price
           };
           // set spinner to submit button
           const submitButton = this.$refs["kt_test_submit"];
@@ -169,6 +184,7 @@ export default {
       this.price = "";
       this.test_id = "";
       this.sample_id = "";
+      this.nhis_price = "";
     }
   },
   created() {
