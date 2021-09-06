@@ -1,20 +1,23 @@
 /* eslint-disable camelcase */
 import BoxSDK from 'box-node-sdk';
-import APIError from '../util/apiError';
+import fs from 'fs';
+import { BadException } from '../../common/util/api-error';
+import * as path from 'path';
 
-const sdkConfig = require('../../config');
+//import sdkConfig from '../../../config.json';
 
 // const fs = require('fs');
+//
+function readJsonFile() {
+  try {
+    const config = fs.readFileSync(path.join(__dirname, '../../../config.json'), 'utf8');
+    return JSON.parse(config);
+  } catch (e) {
+    throw new BadException('ERROR', 500, e);
+  }
+}
 
-// function readJsonFile() {
-//   try {
-//     return fs.readFileSync('./config.json');
-//   } catch (e) {
-//     throw new Error(e);
-//   }
-// }
-
-const sdk = BoxSDK.getPreconfiguredInstance(sdkConfig);
+const sdk = BoxSDK.getPreconfiguredInstance(readJsonFile());
 
 // Get the service account client, used to create and manage app user accounts
 const client = sdk.getAppAuthClient('enterprise');
@@ -30,7 +33,7 @@ async function updatePatientImage(patient, image_url) {
   try {
     await patient.update({ photo_url: image_url });
   } catch (e) {
-    throw new APIError('ERROR', 400, e);
+    throw new BadException('ERROR', 400, e);
   }
 }
 
@@ -56,7 +59,7 @@ export async function uploadBoxImage(image, path, patient) {
     });
     await updatePatientImage(patient, image_url.shared_link.url);
   } catch (e) {
-    throw new APIError('ERROR', 500, e);
+    throw new BadException('ERROR', 500, e);
   }
 }
 
