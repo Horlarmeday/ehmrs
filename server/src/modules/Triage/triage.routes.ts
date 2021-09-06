@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import TriageController from './triage.controller';
-import verify from '../../middleware/verify';
+import verify from '../../core/middleware/verify';
 
 const router = Router();
 router.post('/create/:id', verify, TriageController.createTriage);

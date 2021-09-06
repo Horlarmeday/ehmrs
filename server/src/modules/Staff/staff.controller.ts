@@ -1,6 +1,7 @@
 import StaffService from './staff.service';
-import { getStaffById } from './staff.repository';
 import { validateStaff } from './validations';
+import { successResponse } from '../../common/responses/success-responses';
+import { ACCOUNT_CREATED, SUCCESS, UPDATED_PROFILE } from './messages/response-messages';
 
 /**
  *
@@ -24,10 +25,7 @@ class StaffController {
     try {
       const staff = await StaffService.createStaffService(req.body);
 
-      return res.status(201).json({
-        message: 'Successful, account created!',
-        data: staff,
-      });
+      return successResponse({ res, message: ACCOUNT_CREATED, data: staff, httpCode: 201 });
     } catch (e) {
       return next(e);
     }
@@ -44,13 +42,9 @@ class StaffController {
    */
   static async getStaffProfile(req, res, next) {
     try {
-      const staff = await getStaffById(req.user.sub);
-      if (!staff) return res.status(400).json({ message: 'invalid staff id' });
+      const staff = await StaffService.getStaffById(req.user.sub);
 
-      return res.status(200).json({
-        message: 'Success',
-        data: staff,
-      });
+      return successResponse({ res, httpCode: 200, data: staff, message: SUCCESS });
     } catch (e) {
       return next(e);
     }
@@ -67,13 +61,9 @@ class StaffController {
    */
   static async getOneStaff(req, res, next) {
     try {
-      const staff = await getStaffById(req.params.id);
-      if (!staff) return res.status(400).json({ message: 'invalid staff id' });
+      const staff = await StaffService.getStaffById(req.params.id);
 
-      return res.status(200).json({
-        message: 'Success',
-        data: staff,
-      });
+      return successResponse({ res, httpCode: 200, data: staff, message: SUCCESS });
     } catch (e) {
       return next(e);
     }
@@ -92,10 +82,7 @@ class StaffController {
     try {
       const staff = await StaffService.updateStaffService(req.body);
 
-      return res.status(200).json({
-        message: 'Profile updated successfully',
-        data: staff,
-      });
+      return successResponse({ res, message: UPDATED_PROFILE, data: staff, httpCode: 200 });
     } catch (e) {
       return next(e);
     }
@@ -114,10 +101,7 @@ class StaffController {
     try {
       const staffs = await StaffService.getStaffs(req.query);
 
-      return res.status(200).json({
-        message: 'Data retrieved',
-        data: staffs,
-      });
+      return successResponse({ res, httpCode: 200, data: staffs, message: SUCCESS });
     } catch (e) {
       return next(e);
     }

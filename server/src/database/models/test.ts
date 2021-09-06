@@ -27,6 +27,10 @@ module.exports = (sequelize, DataTypes) => {
           },
         },
       },
+      nhis_price: {
+        type: DataTypes.DECIMAL(12, 2),
+        allowNull: true,
+      },
       code: {
         type: DataTypes.STRING,
         allowNull: false,

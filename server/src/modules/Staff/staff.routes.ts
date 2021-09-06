@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import StaffController from './staff.controller';
-import verify from '../../middleware/verify';
+import verify from '../../core/middleware/verify';
 
 const router = Router();
 router.post('/create', verify, StaffController.createStaffAccount);
