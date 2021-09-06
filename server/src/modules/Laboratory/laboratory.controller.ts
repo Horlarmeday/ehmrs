@@ -1,6 +1,13 @@
 /* eslint-disable camelcase */
 import { validateNhisTest, validateTest, validateTestSample } from './validations';
 import LaboratoryService from './laboratory.service';
+import { StatusCodes } from '../../core/helpers/helper';
+import { errorResponse } from '../../common/responses/error-responses';
+import { successResponse } from '../../common/responses/success-responses';
+import { DATA_SAVED, DATA_UPDATED } from '../AdminSettings/messages/response-messages';
+import { TEST_REQUIRED } from '../Orders/Laboratory/messages/response-messages';
+import { NextFunction, Request, Response } from 'express';
+import { SUCCESS } from '../../core/constants';
 
 class LaboratoryController {
   /** ***********************
@@ -96,15 +103,23 @@ class LaboratoryController {
    */
   static async createTest(req, res, next) {
     const { error } = validateTest(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
+    if (error)
+      return errorResponse({
+        res,
+        httpCode: StatusCodes.BAD_REQUEST,
+        message: error.details[0].message,
+      });
 
     try {
-      const test = await LaboratoryService.createTestService(
-        Object.assign(req.body, { staff_id: req.user.sub })
-      );
+      const test = await LaboratoryService.createTestService({
+        ...req.body,
+        staff_id: req.user.sub,
+      });
 
-      return res.status(201).json({
-        message: 'Successful! Data saved',
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_SAVED,
         data: test,
       });
     } catch (e) {
@@ -121,17 +136,15 @@ class LaboratoryController {
    * @param {object} next next middleware
    * @returns {json} json object with status, test data
    */
-  static async updateTest(req, res, next) {
+  static async updateTest(req: Request, res: Response, next: NextFunction) {
     const { test_id } = req.body;
-    if (!test_id) return res.status(400).json({ message: 'Test id is required' });
+    if (!test_id)
+      return errorResponse({ res, httpCode: StatusCodes.BAD_REQUEST, message: TEST_REQUIRED });
 
     try {
       const test = await LaboratoryService.updateTestService(req.body);
 
-      return res.status(200).json({
-        message: 'Successful! Data updated',
-        data: test,
-      });
+      return successResponse({ res, data: test, message: DATA_UPDATED, httpCode: StatusCodes.OK });
     } catch (e) {
       return next(e);
     }
@@ -146,14 +159,11 @@ class LaboratoryController {
    * @param {object} next next middleware
    * @returns {json} json object with tests data
    */
-  static async getTests(req, res, next) {
+  static async getTests(req: Request, res: Response, next: NextFunction) {
     try {
       const tests = await LaboratoryService.getTests(req.query);
 
-      return res.status(200).json({
-        message: 'Data retrieved!',
-        data: tests,
-      });
+      return successResponse({ res, message: SUCCESS, httpCode: StatusCodes.OK, data: tests });
     } catch (e) {
       return next(e);
     }
@@ -174,16 +184,24 @@ class LaboratoryController {
    */
   static async createNhisTest(req, res, next) {
     const { error } = validateNhisTest(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
 
     try {
-      const test = await LaboratoryService.createNhisTestService(
-        Object.assign(req.body, { staff_id: req.user.sub })
-      );
+      const test = await LaboratoryService.createNhisTestService({
+        ...req.body,
+        staff_id: req.user.sub,
+      });
 
-      return res.status(201).json({
-        message: 'Successful! Data saved',
+      return successResponse({
+        res,
         data: test,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_SAVED,
       });
     } catch (e) {
       return next(e);
@@ -199,17 +217,15 @@ class LaboratoryController {
    * @param {object} next next middleware
    * @returns {json} json object with status, NHIS test data
    */
-  static async updateNhisTest(req, res, next) {
+  static async updateNhisTest(req: Request, res: Response, next: NextFunction) {
     const { test_id } = req.body;
-    if (!test_id) return res.status(400).json({ message: 'Test id is required' });
+    if (!test_id)
+      return errorResponse({ res, message: TEST_REQUIRED, httpCode: StatusCodes.BAD_REQUEST });
 
     try {
       const test = await LaboratoryService.updateNhisTestService(req.body);
 
-      return res.status(200).json({
-        message: 'Successful! Data updated',
-        data: test,
-      });
+      return successResponse({ res, httpCode: StatusCodes.OK, message: DATA_UPDATED, data: test });
     } catch (e) {
       return next(e);
     }
@@ -224,14 +240,11 @@ class LaboratoryController {
    * @param {object} next next middleware
    * @returns {json} json object with NHIS tests data
    */
-  static async getNhisTests(req, res, next) {
+  static async getNhisTests(req: Request, res: Response, next: NextFunction) {
     try {
       const tests = await LaboratoryService.getNhisTests(req.query);
 
-      return res.status(200).json({
-        message: 'Data retrieved!',
-        data: tests,
-      });
+      return successResponse({ res, httpCode: StatusCodes.OK, message: SUCCESS, data: tests });
     } catch (e) {
       return next(e);
     }
