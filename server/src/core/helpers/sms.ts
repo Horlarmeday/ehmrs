@@ -1,5 +1,5 @@
 import axios from 'axios';
-import APIError from '../util/apiError';
+import { BadException } from '../../common/util/api-error';
 
 export default async function sendSMS(message, recipient) {
   const data = {
@@ -10,9 +10,9 @@ export default async function sendSMS(message, recipient) {
     message,
     routing: 4,
   };
-  try{
-    return await axios.post('https://api.smartsmssolutions.com/smsapi.php', data);
+  try {
+    return await axios.post(process.env.SMS_URL, data);
   } catch (error) {
-    throw new APIError('ERROR', 500, error);
+    throw new BadException('ERROR', 500, error);
   }
 }

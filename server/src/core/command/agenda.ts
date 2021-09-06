@@ -1,6 +1,5 @@
+import Agenda from 'agenda';
 import Jobs from './jobs';
-
-const Agenda = require('agenda');
 
 const agenda = new Agenda({
   db: { address: process.env.DB_MONGO, collection: 'ehmrs_jobs' },
@@ -21,4 +20,4 @@ Jobs(agenda);
 
 agenda.start().then(r => console.log(r));
 
-module.exports = agenda;
+export default agenda;

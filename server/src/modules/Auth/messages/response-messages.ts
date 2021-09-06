@@ -1,0 +1,9 @@
+export const LOGIN_MESSAGE = 'Login successful!';
+export const PASSWORD_CHANGE_MESSAGE = 'Password changed!';
+export const FORGOT_PASSWORD_MESSAGE = 'New password has been sent to your phone.';
+export const INVALID_CREDENTIALS = 'Invalid username or password';
+export const DEACTIVATED_ACCOUNT = 'This account has been deactivated, please contact support';
+export const INVALID_USER = 'Invalid user id';
+export const INVALID_CONFIRM_PASSWORD = 'Your new password must be equal with confirm password';
+export const INCORRECT_PASSWORD = 'Old password not correct';
+export const INVALID_PHONE = 'Invalid phone number';

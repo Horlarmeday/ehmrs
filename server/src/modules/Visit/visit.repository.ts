@@ -1,10 +1,9 @@
 /* eslint-disable camelcase */
 
-import { Sequelize } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 
 const { Visit, Patient } = require('../../database/models');
 
-const { Op } = Sequelize;
 /**
  * create a patient visit
  * @param data
@@ -78,9 +77,18 @@ export async function searchActiveVisits(currentPage = 1, pageLimit = 10, search
         as: 'patient',
         attributes: ['fullname', 'photo', 'hospital_id'],
         where: {
-          fullname: {
-            [Op.like]: `%${search}%`,
-          },
+          [Op.or]: [
+            {
+              fullname: {
+                [Op.like]: `%${search}%`,
+              },
+            },
+            {
+              hospital_id: {
+                [Op.like]: `%${search}%`,
+              },
+            },
+          ],
         },
       },
     ],
@@ -138,9 +146,18 @@ export async function searchVisits(currentPage = 1, pageLimit = 10, search) {
         as: 'patient',
         attributes: ['fullname', 'photo', 'hospital_id'],
         where: {
-          fullname: {
-            [Op.like]: `%${search}%`,
-          },
+          [Op.or]: [
+            {
+              fullname: {
+                [Op.like]: `%${search}%`,
+              },
+            },
+            {
+              hospital_id: {
+                [Op.like]: `%${search}%`,
+              },
+            },
+          ],
         },
       },
     ],
@@ -200,9 +217,18 @@ export async function searchTypeVisits(currentPage = 1, pageLimit = 10, search, 
         as: 'patient',
         attributes: ['fullname', 'photo', 'hospital_id'],
         where: {
-          fullname: {
-            [Op.like]: `%${search}%`,
-          },
+          [Op.or]: [
+            {
+              fullname: {
+                [Op.like]: `%${search}%`,
+              },
+            },
+            {
+              hospital_id: {
+                [Op.like]: `%${search}%`,
+              },
+            },
+          ],
         },
       },
     ],

@@ -1,10 +1,8 @@
 /* eslint-disable camelcase */
-import { Sequelize } from 'sequelize';
-import Constants from '../../config/constants';
+import { Op } from 'sequelize';
+import { CASH, NHIS } from '../../core/constants';
 
 const { Drug, PharmacyItem, Unit, LabItem } = require('../../database/models');
-
-const { Op } = Sequelize;
 
 /** ***********************
  * PHARMACY STORE
@@ -56,7 +54,7 @@ export async function createCashItem(data) {
     strength_input,
     route,
     drug_form,
-    drug_type: Constants.CASH,
+    drug_type: CASH,
   });
 }
 
@@ -106,7 +104,7 @@ export async function createNHISItem(data) {
     strength_input,
     route,
     drug_form,
-    drug_type: Constants.NHIS,
+    drug_type: NHIS,
   });
 }
 

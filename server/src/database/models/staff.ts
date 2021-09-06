@@ -177,13 +177,9 @@ module.exports = (sequelize, DataTypes) => {
     );
   };
 
-  Staff.associate = ({ Patient, Dependant }) => {
+  Staff.associate = ({ Patient }) => {
     // associations can be defined here
     Staff.hasMany(Patient, {
-      foreignKey: 'staff_id',
-    });
-
-    Staff.hasMany(Dependant, {
       foreignKey: 'staff_id',
     });
   };

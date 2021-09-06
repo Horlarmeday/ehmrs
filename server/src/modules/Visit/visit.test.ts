@@ -1,8 +1,8 @@
 /* eslint-disable camelcase */
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { describe, afterAll, it, expect, beforeAll } from '@jest/globals';
-import server from '../../startup/server';
-import Constant from '../../config/constants';
+import server from '../../core/startup/server';
+import Constant from '../../core/constants';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 const request = require('supertest');

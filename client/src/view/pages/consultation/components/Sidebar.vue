@@ -43,14 +43,13 @@ export default {
       this.setActiveTab(event);
     },
     setActiveTab(event) {
-      console.log(event)
       let target = event.target;
-      // if (!event.target.classList.contains("nav-link")) {
-      //   target = event.target.closest(".nav-link");
-      // }
+      if (!event.target.classList.contains("navi-link")) {
+        target = event.target.closest(".navi-link");
+      }
 
       // const tab = target.closest('[role="tablist"]');
-      const links = target.querySelectorAll(".nav-link");
+      const links = document.querySelectorAll(".navi-link");
       // remove active tab links
       for (let i = 0; i < links.length; i++) {
         links[i].classList.remove("active");

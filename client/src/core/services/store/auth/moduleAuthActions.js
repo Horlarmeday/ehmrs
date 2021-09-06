@@ -11,8 +11,8 @@ export default {
         method: "POST"
       })
         .then(response => {
-          const token = response.data.token;
-          const staff = response.data.data;
+          const token = response.data.data.token;
+          const staff = response.data.data.staff;
           localStorage.setItem("user_token", token);
 
           axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;

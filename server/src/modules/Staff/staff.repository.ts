@@ -1,9 +1,8 @@
 /* eslint-disable camelcase */
-import { Sequelize } from 'sequelize';
+
+import { Op } from 'sequelize';
 
 const { Staff } = require('../../database/models');
-
-const { Op } = Sequelize;
 
 /**
  * save staff details to the DB
@@ -66,10 +65,10 @@ export async function findByPhoneOrUsername(data) {
  *
  * @function
  * @returns {json} json object with staff data
- * @param data
+ * @param username
  */
-export async function findStaffByUsername(data) {
-  return Staff.findOne({ where: { username: data.username } });
+export async function getStaffByUsername(username) {
+  return Staff.findOne({ where: { username } });
 }
 
 /**
@@ -79,7 +78,7 @@ export async function findStaffByUsername(data) {
  * @returns {json} json object with staff data
  * @param data
  */
-export async function findStaffByPhone(data) {
+export async function getStaffByPhone(data) {
   return Staff.findOne({ where: { phone: data } });
 }
 
@@ -88,10 +87,10 @@ export async function findStaffByPhone(data) {
  *
  * @function
  * @returns {json} json object with staff data
- * @param data
+ * @param id
  */
-export async function getStaffById(data) {
-  return Staff.findByPk(data);
+export async function getStaffById(id: number) {
+  return Staff.findByPk(id);
 }
 
 /**

@@ -15,6 +15,10 @@ module.exports = {
         type: Sequelize.DECIMAL(12, 2),
         allowNull: false,
       },
+      nhis_price: {
+        type: Sequelize.DECIMAL(12, 2),
+        allowNull: true,
+      },
       code: {
         type: Sequelize.STRING,
         allowNull: false,

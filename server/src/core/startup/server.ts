@@ -5,7 +5,7 @@ import error from '../middleware/error';
 import './logger';
 import loaders from './loaders';
 
-const server = express();
+const server: express.Application = express();
 loaders(server, express);
 routes(server);
 
