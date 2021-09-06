@@ -41,7 +41,7 @@ export async function processSnappedPhoto(param, patient) {
  * @param num
  * @returns {number}
  */
-export function generateRandomNumbers(num) {
+export function generateRandomNumbers(num: number) {
   return Math.floor(Math.pow(10, num - 1) + Math.random() * 9 * Math.pow(10, num - 1));
 }
 
@@ -56,4 +56,16 @@ export function checkValueExists(history) {
   if (history_note) return true;
   if (examination_note) return true;
   return !!has_smoking_history;
+}
+
+export enum StatusCodes {
+  CREATED = 201,
+  OK = 200,
+  BAD_REQUEST = 400,
+  UNAUTHORIZED = 401,
+  FORBIDDEN = 403,
+  NOT_FOUND = 404,
+  TIMED_OUT = 408,
+  SERVER_ERROR = 500,
+  SERVICE_UNAVAILABLE = 501,
 }
