@@ -1,0 +1,15 @@
+export const SEND_PATIENT_SMS = 'Registration SMS';
+export const SEND_FORGOT_PASSWORD = 'Generated password';
+export const UPLOAD_IMAGE = 'Upload to image to box';
+export const ASSIGN_HOSPITAL_NUMBER = 'Assign hospital number';
+export const CASH = 'Cash';
+export const NHIS = 'NHIS';
+export const OPD = 'OPD';
+export const IPD = 'IPD';
+export const Emergency = 'Emergency';
+export const SEQUELIZE = 'SEQUELIZE';
+export const DEVELOPMENT = 'development';
+export const PRODUCTION = 'production';
+export const TEST = 'test';
+export const SUCCESS = 'success';
+export const ERROR = 'error';
