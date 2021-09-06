@@ -2,7 +2,8 @@
 import mime from 'mime';
 import { promisify } from 'util';
 import fs from 'fs';
-import { APIError } from '../util/apiError';
+import { BadException } from '../../common/util/api-error';
+import { DEVELOPMENT } from '../constants';
 
 const writeFile = promisify(fs.writeFile);
 
@@ -14,19 +15,14 @@ const writeFile = promisify(fs.writeFile);
  */
 export async function processSnappedPhoto(param, patient) {
   const matches = param.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-  if (matches.length !== 3) throw new APIError('INVALID', 400, 'invalid base64 string');
+  if (matches.length !== 3) throw new BadException('INVALID', 400, 'invalid base64 string');
 
-  const decodedImg = {
-    type: matches[1],
-    data: Buffer.from(matches[2], 'base64'),
-  };
-  const imageBuffer = decodedImg.data;
-  const { type } = decodedImg;
-  const extension = mime.getExtension(type);
+  const imageBuffer = Buffer.from(matches[2], 'base64');
+  const extension = mime.getExtension(matches[1]);
   const fileName = `${patient}${Date.now()}.${extension}`;
   let filepath;
 
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === DEVELOPMENT) {
     filepath = `src/public/images/${fileName}`;
   } else filepath = `server/src/public/images/${fileName}`;
   try {
@@ -36,7 +32,7 @@ export async function processSnappedPhoto(param, patient) {
       filepath,
     };
   } catch (e) {
-    throw new APIError('ERROR', 500, e);
+    throw new BadException('ERROR', 500, e);
   }
 }
 
@@ -46,11 +42,7 @@ export async function processSnappedPhoto(param, patient) {
  * @returns {number}
  */
 export function generateRandomNumbers(num) {
-  // const year = new Date().getFullYear();
-  return Math.floor(
-    // eslint-disable-next-line no-restricted-properties
-    Math.pow(10, num - 1) + Math.random() * 9 * Math.pow(10, num - 1)
-  );
+  return Math.floor(Math.pow(10, num - 1) + Math.random() * 9 * Math.pow(10, num - 1));
 }
 
 /**
