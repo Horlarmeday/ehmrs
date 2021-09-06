@@ -19,19 +19,16 @@
           role="tabpanel"
         >
           <div class="card-body">
-            <div>
-              <div class="">
-                <div class="">
-                  <div class="d-flex flex-row">
-                    <test-samples
-                      :list="samples"
-                      @changeSample="changeSample"
-                      :backgroundColor="backgroundColor"
-                    />
-                    <component :is="activeTab" />
-                  </div>
-                </div>
-              </div>
+            <div class="col-3 offset-9">
+              <input placeholder="Search..." class="form-control form-control-sm" type="text" />
+            </div>
+            <div class="d-flex flex-row">
+              <test-samples
+                :list="samples"
+                @changeSample="changeSample"
+                :backgroundColor="backgroundColor"
+              />
+              <component :is="activeTab" />
             </div>
           </div>
         </b-collapse>
@@ -64,6 +61,14 @@ export default {
         currentPage: 1,
         itemsPerPage: 100,
         filter: id
+      });
+    },
+
+    searchTests() {
+      this.$store.dispatch("laboratory/fetchTests", {
+        currentPage: 1,
+        itemsPerPage: 100,
+
       });
     }
   },
