@@ -1,12 +1,12 @@
 import { verify } from 'jsonwebtoken';
+import { NextFunction, Response } from 'express';
 
-// eslint-disable-next-line consistent-return
-export default function(req, res, next) {
-  const authHeader = req.headers['x-auth-token'] || req.headers.authorization;
+export default function(req, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
   if (!authHeader) return res.status(401).json('Access denied, No token provided');
 
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.slice(7, authHeader.length);
+  if (authHeader && authHeader?.startsWith('Bearer ')) {
+    const token = authHeader?.slice(7, authHeader.length);
     try {
       req.user = verify(token, process.env.JWT_SECRET);
       next();
