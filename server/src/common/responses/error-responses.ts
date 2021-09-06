@@ -10,3 +10,11 @@ export const handleError = (err, res: Response) => {
     message: statusCode === 500 ? 'internal server error' : message,
   });
 };
+
+export const errorResponse = ({ res, httpCode, message}) => {
+  return res.status(httpCode).json({
+    status: ERROR,
+    httpCode: httpCode,
+    message: httpCode === 500 ? 'internal server error' : message,
+  });
+};
