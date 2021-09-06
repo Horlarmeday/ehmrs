@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import bcrypt from 'bcryptjs';
-import { getStaffByPhone, getStaffByUsername, getStaffById } from '../Staff/staff.repository';
+import { getStaffById, getStaffByPhone, getStaffByUsername } from '../Staff/staff.repository';
 import { BadException } from '../../common/util/api-error';
 import { sendGeneratedPassword } from '../../core/command/schedule';
 import uuidv1 from 'uuid/v4';
@@ -34,12 +34,7 @@ class AuthService {
 
     this.checkStaffStatus(staff);
 
-    const token = staff.generateAuthToken();
-
-    return {
-      token,
-      staff,
-    };
+    return staff.generateAuthToken();
   }
 
   static checkStaffStatus(staff: Staff) {

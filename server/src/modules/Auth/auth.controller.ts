@@ -28,11 +28,11 @@ class AuthController {
     if (error) return res.status(400).json({ message: error.details[0].message });
 
     try {
-      const { token, staff } = await AuthService.loginService(req.body);
+      const token = await AuthService.loginService(req.body);
 
       return successResponse({
         res,
-        data: { token, staff },
+        data: token,
         httpCode: 200,
         message: LOGIN_MESSAGE,
       });
