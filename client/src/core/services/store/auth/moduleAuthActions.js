@@ -11,12 +11,11 @@ export default {
         method: "POST"
       })
         .then(response => {
-          const token = response.data.data.token;
-          const staff = response.data.data.staff;
+          const token = response.data.data;
           localStorage.setItem("user_token", token);
 
           axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-          commit("auth_success", token, staff);
+          commit("auth_success", token);
           resolve(response);
         })
         .catch(err => {
