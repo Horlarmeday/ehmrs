@@ -145,13 +145,13 @@ export async function searchTests(currentPage = 1, pageLimit = 10, search) {
  * @param search
  * @param id
  */
-export async function searchTestsInASample(currentPage = 1, pageLimit = 10, search, id) {
+export async function searchTestsInASample({ currentPage = 1, pageLimit = 10, search, sampleId }) {
   return Test.paginate({
     page: currentPage,
     paginate: pageLimit,
     order: [['createdAt', 'DESC']],
     where: {
-      sample_id: id,
+      sample_id: sampleId,
       name: {
         [Op.like]: `%${search}%`,
       },
