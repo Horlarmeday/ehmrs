@@ -2,23 +2,23 @@
   <div class="flex-row-fluid ml-lg-8">
     <div class="card card-custom gutter-b">
       <div class="card-header pt-5">
-        <h3 class="card-title">
+        <div class="card-title">
           <span class="card-label font-weight-bolder text-dark">Lab Tests</span>
           <button
             v-if="selectedTests.length"
             ref="kt-orderTest-submit"
-            class="btn btn-primary btn-sm"
+            class="btn btn-primary btn-sm float-right mr-2"
             @click="submitLabTest"
           >
             Submit
           </button>
-          <!--          <span class="switch switch-sm switch-icon float-right">-->
-          <!--            <label>-->
-          <!--              <input type="checkbox" checked="checked" name="select" />-->
-          <!--              <span></span>-->
-          <!--            </label>-->
-          <!--          </span>-->
-        </h3>
+          <span class="switch switch-sm switch-icon float-right">
+            <label>
+              <input @change="dispatchTests($event)" type="checkbox" />
+              <span />
+            </label>
+          </span>
+        </div>
       </div>
       <div class="card-body">
         <div class="row">
@@ -47,8 +47,12 @@ export default {
     };
   },
   computed: {
+    testType() {
+      return this.$store.state.consultation.testType;
+    },
     tests() {
-      return this.$store.state.laboratory.tests;
+      if (this.testType === "CASH") return this.$store.state.laboratory.tests;
+      return this.$store.state.laboratory.nhisTests;
     },
     selectedTests() {
       return this.$store.state.order.selectedTests;
@@ -135,6 +139,28 @@ export default {
 
     initValues() {
       this.$store.dispatch("order/emptySelectedTest");
+    },
+
+    changeTestsType(type) {
+      this.$store.dispatch("consultation/changeTestsType", type);
+    },
+
+    fetchTests(type) {
+      this.$store.dispatch(type, {
+        currentPage: 1,
+        itemsPerPage: 100,
+        filter: this.$store.state.consultation.sampleId
+      });
+    },
+
+    dispatchTests(event) {
+      if (event.target.checked) {
+        this.changeTestsType("NHIS");
+        this.fetchTests("laboratory/fetchNhisTests");
+      } else {
+        this.changeTestsType("CASH");
+        this.fetchTests("laboratory/fetchTests");
+      }
     }
   }
 };

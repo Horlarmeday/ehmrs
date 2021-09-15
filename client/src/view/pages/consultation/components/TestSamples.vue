@@ -50,11 +50,12 @@ export default {
     backgroundColor: { type: String }
   },
   created() {
-    this.$store.dispatch("laboratory/fetchTests", {
-      currentPage: 1,
-      itemsPerPage: 100,
-      filter: 1
-    });
+    const test_type = this.$store.state.consultation.testType;
+    if (test_type === "CASH") {
+      this.fetchTests("laboratory/fetchTests");
+    } else {
+      this.fetchTests("laboratory/fetchNhisTests");
+    }
   },
   computed: {
     selectedTests() {
@@ -62,6 +63,14 @@ export default {
     }
   },
   methods: {
+    fetchTests(type) {
+      this.$store.dispatch(type, {
+        currentPage: 1,
+        itemsPerPage: 100,
+        filter: this.$store.state.consultation.sampleId
+      });
+    },
+
     switchTab(id, event) {
       this.$emit("changeSample", id);
       this.setActiveTab(event);

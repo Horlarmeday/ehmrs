@@ -20,7 +20,14 @@
         >
           <div class="card-body">
             <div class="col-3 offset-9">
-              <input placeholder="Search..." class="form-control form-control-sm" type="text" />
+              <!--       TODO: Fix search functionality         -->
+              <input
+                placeholder="Search..."
+                @keyup="searchTests"
+                v-model="searchString"
+                class="form-control form-control-sm"
+                type="text"
+              />
             </div>
             <div class="d-flex flex-row">
               <test-samples
@@ -48,7 +55,8 @@ export default {
   data() {
     return {
       activeTab: "",
-      backgroundColor: "#3699ff29"
+      backgroundColor: "#3699ff29",
+      searchString: ""
     };
   },
   methods: {
@@ -57,19 +65,44 @@ export default {
     },
 
     changeSample(id) {
-      this.$store.dispatch("laboratory/fetchTests", {
+      const test_type = this.$store.state.consultation.testType;
+      if (test_type === "CASH") {
+        this.fetchTests("laboratory/fetchTests", id);
+      } else {
+        this.fetchTests("laboratory/fetchNhisTests", id);
+      }
+
+      this.dispatchChangeSampleId(id);
+    },
+
+    fetchTests(type, id) {
+      this.$store.dispatch(type, {
         currentPage: 1,
         itemsPerPage: 100,
         filter: id
       });
     },
 
-    searchTests() {
-      this.$store.dispatch("laboratory/fetchTests", {
+    dispatchChangeSampleId(id) {
+      this.$store.dispatch("consultation/changeSampleId", id);
+    },
+
+    dispatchSearchTests(type) {
+      this.$store.dispatch(type, {
         currentPage: 1,
         itemsPerPage: 100,
-
+        search: this.searchString,
+        sampleId: this.$store.state.consultation.sampleId
       });
+    },
+
+    searchTests() {
+      const test_type = this.$store.state.consultation.testType;
+      if (test_type === "CASH") {
+        this.dispatchSearchTests("laboratory/fetchTests");
+      } else {
+        this.dispatchSearchTests("laboratory/fetchNhisTests");
+      }
     }
   },
   computed: {
