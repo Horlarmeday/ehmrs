@@ -10,6 +10,9 @@ module.exports = {
       test_id: {
         type: Sequelize.INTEGER,
       },
+      nhis_test_id: {
+        type: Sequelize.INTEGER,
+      },
       test_type: {
         type: Sequelize.STRING,
         defaultValue: 'CASH',
