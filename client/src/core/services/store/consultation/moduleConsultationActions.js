@@ -33,5 +33,13 @@ export default {
           reject(error);
         });
     });
+  },
+
+  changeTestsType({ commit }, type) {
+    commit("CHANGE_TEST_TYPE", type);
+  },
+
+  changeSampleId({ commit }, id) {
+    commit("CHANGE_SAMPLE_ID", id);
   }
 };
