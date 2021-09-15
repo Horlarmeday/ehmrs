@@ -32,7 +32,8 @@ export default {
             currentPage: payload.currentPage,
             pageLimit: payload.itemsPerPage,
             search: payload.search,
-            filter: payload.filter
+            filter: payload.filter,
+            sampleId: payload.sampleId
           }
         })
         .then(response => {
