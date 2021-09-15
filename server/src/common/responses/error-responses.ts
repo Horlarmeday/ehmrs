@@ -11,7 +11,7 @@ export const handleError = (err, res: Response) => {
   });
 };
 
-export const errorResponse = ({ res, httpCode, message}) => {
+export const errorResponse = ({ res, httpCode, message }) => {
   return res.status(httpCode).json({
     status: ERROR,
     httpCode: httpCode,

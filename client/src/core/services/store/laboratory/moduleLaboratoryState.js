@@ -19,5 +19,5 @@ export default {
   nhisTest: null,
   nhisTests: [],
   totalNhisTest: 0,
-  totalNhisPages: 0
+  totalNhisPages: 0,
 };
