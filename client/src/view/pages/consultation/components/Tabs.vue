@@ -152,6 +152,7 @@ export default {
   },
   created() {
     this.activeComponent = ComponentMapping["#observations"];
+    this.$store.dispatch("visit/fetchVisit", this.$route.params.visitId);
   }
 };
 </script>

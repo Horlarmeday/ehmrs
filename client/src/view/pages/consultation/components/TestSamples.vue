@@ -50,19 +50,30 @@ export default {
     backgroundColor: { type: String }
   },
   created() {
-    const test_type = this.$store.state.consultation.testType;
-    if (test_type === "CASH") {
-      this.fetchTests("laboratory/fetchTests");
-    } else {
+    // const test_type = this.$store.state.consultation.testType;
+    if (
+      this.visit.patient.has_insurance &&
+      this.visit.patient.insurance_id !== 4
+    ) {
       this.fetchTests("laboratory/fetchNhisTests");
+      this.changeTestsType("NHIS");
+    } else {
+      this.fetchTests("laboratory/fetchTests");
+      this.changeTestsType("CASH");
     }
   },
   computed: {
     selectedTests() {
       return this.$store.state.order.selectedTests;
+    },
+    visit() {
+      return this.$store.state.visit.visit;
     }
   },
   methods: {
+    changeTestsType(type) {
+      this.$store.dispatch("consultation/changeTestsType", type);
+    },
     fetchTests(type) {
       this.$store.dispatch(type, {
         currentPage: 1,

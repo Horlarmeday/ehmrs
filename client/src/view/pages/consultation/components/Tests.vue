@@ -12,9 +12,16 @@
           >
             Submit
           </button>
-          <span class="switch switch-sm switch-icon float-right">
+          <span
+            v-if="showSwitch"
+            class="switch switch-sm switch-icon float-right"
+          >
             <label>
-              <input @change="dispatchTests($event)" type="checkbox" />
+              <input
+                @change="dispatchTests($event)"
+                type="checkbox"
+                :checked="showSwitch"
+              />
               <span />
             </label>
           </span>
@@ -56,6 +63,15 @@ export default {
     },
     selectedTests() {
       return this.$store.state.order.selectedTests;
+    },
+    visit() {
+      return this.$store.state.visit.visit;
+    },
+    showSwitch() {
+      return (
+        this.visit.patient.has_insurance &&
+        this.visit.patient.insurance_id !== 4
+      );
     }
   },
   methods: {
@@ -69,7 +85,9 @@ export default {
 
     selectTest(value, i) {
       const button = this.$refs["selected"][i];
-      const found = this.selectedTests.find(test => test.test_id === value.id);
+      const found = this.selectedTests.find(
+        test => test.test_id === value.id && test.test_type === value.test_type
+      );
       if (found) {
         this.removeSelectedClass(button);
         this.$store.dispatch(
@@ -88,7 +106,7 @@ export default {
     mapSelectedTest(test) {
       return {
         test_id: test.id,
-        test_type: "CASH",
+        test_type: test?.type ? "NHIS" : "CASH",
         price: test.price,
         name: test.name
       };
