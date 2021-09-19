@@ -1,6 +1,9 @@
 /* eslint-disable camelcase,no-param-reassign */
 import { orderBulkTest, prescribeTest } from './lab-order.repository';
-import VisitService from "../../Visit/visit.service";
+import VisitService from '../../Visit/visit.service';
+import { CASH, NHIS } from '../../../core/constants';
+import { PrescribedTest } from './interface/prescribed-test.interface';
+import { PrescribedTestBody } from './interface/prescribed-test.body';
 
 class LabOrderService {
   /**
@@ -23,12 +26,13 @@ class LabOrderService {
    * @param body
    * @memberOf LabOrderService
    */
-  static async orderBulkTestService(body) {
+  static async orderBulkTestService(body: PrescribedTestBody): Promise<PrescribedTest[]> {
     const { tests, staff_id, visit_id } = body;
     const visit = await VisitService.getVisitById(visit_id);
     const bulkTests = tests.map(test => ({
       ...test,
-      test_id: test.test_id,
+      test_id: test.test_type === CASH ? test.test_id : null,
+      nhis_test_id: test.test_type === NHIS ? test.test_id : null,
       requester: staff_id,
       visit_id,
       patient_id: visit.patient_id,
