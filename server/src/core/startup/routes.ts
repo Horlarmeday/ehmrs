@@ -10,6 +10,7 @@ import visitRoutes from '../../modules/Visit/visit.routes';
 import consultationRoutes from '../../modules/Consultation/consultation.routes';
 import triageRoutes from '../../modules/Triage/triage.routes';
 import labOrderRoutes from '../../modules/Orders/Laboratory/lab-order.routes';
+import pharmacyOrderRoutes from '../../modules/Orders/Pharmacy/pharmacy-order.routes';
 import express from 'express';
 
 export default (server: express.Application) => {
@@ -24,7 +25,8 @@ export default (server: express.Application) => {
   server.use('/api/visits', visitRoutes);
   server.use('/api/consultations', consultationRoutes);
   server.use('/api/triage', triageRoutes);
-  server.use('/api/orders', labOrderRoutes);
+  server.use('/api/orders/lab', labOrderRoutes);
+  server.use('/api/orders/pharmacy', pharmacyOrderRoutes);
   server.use((req, res, next) => {
     const apiTimeout = 18000;
     // set the timeout for all HTTP requests
