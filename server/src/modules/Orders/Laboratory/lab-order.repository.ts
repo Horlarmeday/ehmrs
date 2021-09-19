@@ -10,7 +10,7 @@ export async function prescribeTest(data) {
   const { test_id, test_type, requester, price, patient_id, visit_id } = data;
 
   return PrescribedTest.create({
-    test_id: test_id,
+    test_id,
     test_type,
     requester,
     price,
