@@ -133,6 +133,7 @@ export default {
         });
     });
   },
+
   fetchMeasurements({ commit }) {
     return new Promise((resolve, reject) => {
       axios
@@ -184,6 +185,7 @@ export default {
         });
     });
   },
+
   fetchRoutes({ commit }) {
     return new Promise((resolve, reject) => {
       axios
@@ -204,6 +206,21 @@ export default {
         .put(`/pharmacy/routes-of-administration/update`, route)
         .then(response => {
           commit("UPDATE_ROUTE", response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchRoutesAndMeasurements({ commit }, dosage_form_id) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post("/pharmacy/routes-and-measurement", dosage_form_id)
+        .then(response => {
+          commit("SET_ROUTES", response.data.data.routesOfAdministrations);
+          commit("SET_MEASUREMENTS", response.data.data.dosageMeasurements);
           resolve(response);
         })
         .catch(error => {
