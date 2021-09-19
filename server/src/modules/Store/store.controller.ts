@@ -1,6 +1,12 @@
 /* eslint-disable camelcase */
 import { validateLaboratoryItem, validatePharmacyItem } from './validations';
 import StoreService from './store.service';
+import { errorResponse } from '../../common/responses/error-responses';
+import { StatusCodes } from '../../core/helpers/helper';
+import { successResponse } from '../../common/responses/success-responses';
+import { DATA_SAVED } from '../AdminSettings/messages/response-messages';
+import { SUCCESS } from '../../core/constants';
+import { NextFunction, Request, Response } from 'express';
 
 /**
  *
@@ -19,15 +25,23 @@ class StoreController {
    */
   static async createPharmacyItem(req, res, next) {
     const { error } = validatePharmacyItem(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
+    if (error)
+      return errorResponse({
+        res,
+        httpCode: StatusCodes.BAD_REQUEST,
+        message: error.details[0].message,
+      });
 
     try {
-      const item = await StoreService.createPharmacyItemService(
-        Object.assign(req.body, { staff_id: req.user.sub })
-      );
+      const item = await StoreService.createPharmacyItemService({
+        ...req.body,
+        staff_id: req.user.sub,
+      });
 
-      return res.status(201).json({
-        message: 'Successful! Data saved',
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_SAVED,
         data: item,
       });
     } catch (e) {
@@ -44,12 +58,14 @@ class StoreController {
    * @param {object} next next middleware
    * @returns {json} json object with items data
    */
-  static async getPharmacyItems(req, res, next) {
+  static async getPharmacyItems(req: Request, res: Response, next: NextFunction) {
     try {
       const items = await StoreService.getPharmacyItems(req.query);
 
-      return res.status(200).json({
-        message: 'Data retrieved!',
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
         data: items,
       });
     } catch (e) {
@@ -68,15 +84,23 @@ class StoreController {
    */
   static async createLaboratoryItem(req, res, next) {
     const { error } = validateLaboratoryItem(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
 
     try {
-      const item = await StoreService.createLaboratoryItemService(
-        Object.assign(req.body, { staff_id: req.user.sub })
-      );
+      const item = await StoreService.createLaboratoryItemService({
+        ...req.body,
+        staff_id: req.user.sub,
+      });
 
-      return res.status(201).json({
-        message: 'Successful! Data saved',
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_SAVED,
         data: item,
       });
     } catch (e) {
@@ -93,12 +117,14 @@ class StoreController {
    * @param {object} next next middleware
    * @returns {json} json object with items data
    */
-  static async getLaboratoryItems(req, res, next) {
+  static async getLaboratoryItems(req: Request, res: Response, next: NextFunction) {
     try {
       const items = await StoreService.getLaboratoryItems(req.query);
 
-      return res.status(200).json({
-        message: 'Data retrieved!',
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
         data: items,
       });
     } catch (e) {

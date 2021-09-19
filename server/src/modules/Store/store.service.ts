@@ -8,6 +8,8 @@ import {
   searchLaboratoryItems,
   searchPharmacyItems,
 } from './store.repository';
+import { PharmacyItem } from './interface/pharmacy-item.interface';
+import { LabItem } from './interface/lab-item.interface';
 
 class StoreService {
   /**
@@ -18,9 +20,9 @@ class StoreService {
    * @param body
    * @memberOf StoreService
    */
-  static async createPharmacyItemService(body) {
+  static async createPharmacyItemService(body): Promise<PharmacyItem> {
     const { create_cash_item, create_nhis_item } = body;
-    let item;
+    let item: PharmacyItem | PromiseLike<PharmacyItem>;
     if (create_cash_item) {
       item = await createCashItem(body);
     }
@@ -39,7 +41,7 @@ class StoreService {
    * @param body
    * @memberOf StoreService
    */
-  static async getPharmacyItems(body) {
+  static async getPharmacyItems(body): Promise<PharmacyItem[]> {
     const { currentPage, pageLimit, search, sort_by, order } = body;
     if (search) {
       return searchPharmacyItems(+currentPage, +pageLimit, search);
@@ -60,7 +62,7 @@ class StoreService {
    * @param body
    * @memberOf StoreService
    */
-  static async createLaboratoryItemService(body) {
+  static async createLaboratoryItemService(body): Promise<LabItem> {
     return createLaboratoryItem(body);
   }
 
@@ -72,7 +74,7 @@ class StoreService {
    * @param body
    * @memberOf StoreService
    */
-  static async getLaboratoryItems(body) {
+  static async getLaboratoryItems(body): Promise<LabItem[]> {
     const { currentPage, pageLimit, search } = body;
     if (search) {
       return searchLaboratoryItems(+currentPage, +pageLimit, search);

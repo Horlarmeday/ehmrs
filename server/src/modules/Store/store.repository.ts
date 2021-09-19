@@ -2,7 +2,7 @@
 import { Op } from 'sequelize';
 import { CASH, NHIS } from '../../core/constants';
 
-const { Drug, PharmacyItem, Unit, LabItem } = require('../../database/models');
+const { Drug, PharmacyItem, Unit, LabItem, DosageForm, Measurement, RouteOfAdministration } = require('../../database/models');
 
 /** ***********************
  * PHARMACY STORE
@@ -25,12 +25,12 @@ export async function createCashItem(data) {
     unit_price,
     selling_price,
     expiration,
-    dosage_form,
+    dosage_form_id,
     staff_id,
     date_received,
-    strength,
+    measurement_id,
     strength_input,
-    route,
+    route_id,
     drug_form,
   } = data;
 
@@ -47,12 +47,12 @@ export async function createCashItem(data) {
     total_price: quantity * unit_price,
     selling_price,
     expiration,
-    dosage_form,
+    dosage_form_id,
     staff_id,
     date_received,
-    strength,
+    measurement_id,
     strength_input,
-    route,
+    route_id,
     drug_form,
     drug_type: CASH,
   });
@@ -75,12 +75,12 @@ export async function createNHISItem(data) {
     unit_price,
     nhis_selling_price,
     expiration,
-    dosage_form,
+    dosage_form_id,
     staff_id,
     date_received,
-    strength,
+    measurement_id,
     strength_input,
-    route,
+    route_id,
     drug_form,
   } = data;
 
@@ -97,12 +97,12 @@ export async function createNHISItem(data) {
     total_price: quantity * unit_price,
     selling_price: nhis_selling_price,
     expiration,
-    dosage_form,
+    dosage_form_id,
     staff_id,
     date_received,
-    strength,
+    measurement_id,
     strength_input,
-    route,
+    route_id,
     drug_form,
     drug_type: NHIS,
   });
@@ -135,6 +135,21 @@ export async function searchPharmacyItems(currentPage = 1, pageLimit = 10, searc
       {
         model: Unit,
         as: 'unit',
+        attributes: ['name'],
+      },
+      {
+        model: DosageForm,
+        as: 'dosage_form',
+        attributes: ['name'],
+      },
+      {
+        model: Measurement,
+        as: 'strength',
+        attributes: ['name'],
+      },
+      {
+        model: RouteOfAdministration,
+        as: 'route',
         attributes: ['name'],
       },
     ],
@@ -170,6 +185,21 @@ export async function getPharmacyItems(
       {
         model: Unit,
         as: 'unit',
+        attributes: ['name'],
+      },
+      {
+        model: DosageForm,
+        as: 'dosage_form',
+        attributes: ['name'],
+      },
+      {
+        model: Measurement,
+        as: 'strength',
+        attributes: ['name'],
+      },
+      {
+        model: RouteOfAdministration,
+        as: 'route',
         attributes: ['name'],
       },
     ],
