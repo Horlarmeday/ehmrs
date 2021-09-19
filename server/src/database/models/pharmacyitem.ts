@@ -87,8 +87,8 @@ module.exports = (sequelize, DataTypes) => {
           },
         },
       },
-      dosage_form: {
-        type: DataTypes.STRING,
+      dosage_form_id: {
+        type: DataTypes.INTEGER,
       },
       staff_id: DataTypes.INTEGER,
       date_received: {
@@ -100,14 +100,14 @@ module.exports = (sequelize, DataTypes) => {
           },
         },
       },
-      strength: {
-        type: DataTypes.STRING,
+      measurement_id: {
+        type: DataTypes.INTEGER,
       },
       strength_input: {
         type: DataTypes.STRING,
       },
-      route: {
-        type: DataTypes.STRING,
+      route_id: {
+        type: DataTypes.INTEGER,
       },
       status: { type: DataTypes.ENUM('Active', 'Inactive'), defaultValue: 'Active' },
       drug_type: { type: DataTypes.ENUM('Cash', 'NHIS') },
@@ -117,7 +117,14 @@ module.exports = (sequelize, DataTypes) => {
       tableName: 'Pharmacy_Items',
     }
   );
-  PharmacyItem.associate = ({ Drug, Staff, Unit }) => {
+  PharmacyItem.associate = ({
+    Drug,
+    Staff,
+    Unit,
+    DosageForm,
+    Measurement,
+    RouteOfAdministration,
+  }) => {
     // associations can be defined here
     PharmacyItem.belongsTo(Staff, {
       foreignKey: 'staff_id',
@@ -131,6 +138,21 @@ module.exports = (sequelize, DataTypes) => {
     PharmacyItem.belongsTo(Unit, {
       foreignKey: 'unit_id',
       as: 'unit',
+    });
+
+    PharmacyItem.belongsTo(DosageForm, {
+      foreignKey: 'dosage_form_id',
+      as: 'dosage_form',
+    });
+
+    PharmacyItem.belongsTo(Measurement, {
+      foreignKey: 'measurement_id',
+      as: 'strength',
+    });
+
+    PharmacyItem.belongsTo(RouteOfAdministration, {
+      foreignKey: 'route_id',
+      as: 'route',
     });
   };
   sequelizePaginate.paginate(PharmacyItem);
