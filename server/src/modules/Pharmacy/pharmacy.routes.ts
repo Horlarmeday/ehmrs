@@ -11,6 +11,7 @@ router.post(
   verify,
   PharmacyController.createRouteOfAdministration
 );
+router.post('/routes-and-measurement', verify, PharmacyController.getRoutesAndMeasurements);
 router.put('/generic-drugs/update', verify, PharmacyController.updateGenericDrug);
 router.put('/dosage-forms/update', verify, PharmacyController.updateDosageForm);
 router.put('/measurements/update', verify, PharmacyController.updateMeasurement);

@@ -180,6 +180,21 @@ export async function getMeasurements() {
   });
 }
 
+/**
+ * get measurements in a dosage form
+ *
+ * @function
+ * @returns {json} json object with measurements data
+ */
+export async function getDosageFormMeasurements(dosage_form_id) {
+  return Measurement.findAll({
+    where: {
+      dosage_form_id,
+    },
+    order: [['createdAt', 'DESC']],
+  });
+}
+
 /** **************************
  * ROUTES OF ADMINISTRATION
  ************************** */
@@ -226,5 +241,20 @@ export async function getRoutesOfAdministration() {
   return RouteOfAdministration.findAll({
     order: [['createdAt', 'DESC']],
     include: [{ model: DosageForm, as: 'dosage_form', attributes: ['name'] }],
+  });
+}
+
+/**
+ * get routes of administration in a dosage form
+ *
+ * @function
+ * @returns {json} json object with routes of administration data
+ */
+export async function getDosageFormRoutes(dosage_form_id) {
+  return RouteOfAdministration.findAll({
+    where: {
+      dosage_form_id,
+    },
+    order: [['createdAt', 'DESC']],
   });
 }

@@ -4,6 +4,8 @@ import {
   createGenericDrug,
   createMeasurement,
   createRouteOfAdministration,
+  getDosageFormMeasurements,
+  getDosageFormRoutes,
   getDosageForms,
   getGenericDrugs,
   getMeasurements,
@@ -14,6 +16,10 @@ import {
   updateMeasurement,
   updateRouteOfAdministration,
 } from './pharmacy.repository';
+import { RoutesOfAdministration } from './interface/routes-of-administration.interface';
+import { DosageMeasurement } from './interface/dosage-measurements.interface';
+import { DosageForm } from './interface/dosage-forms.interface';
+import {Drug} from "./interface/generic-drugs.interface";
 
 class PharmacyService {
   /** ***********************
@@ -28,7 +34,7 @@ class PharmacyService {
    * @param body
    * @memberOf PharmacyService
    */
-  static async createGenericDrugService(body) {
+  static async createGenericDrugService(body): Promise<Drug> {
     return createGenericDrug(body);
   }
 
@@ -40,7 +46,7 @@ class PharmacyService {
    * @param body
    * @memberOf PharmacyService
    */
-  static async updateGenericDrugService(body) {
+  static async updateGenericDrugService(body): Promise<Drug> {
     return updateGenericDrug(body);
   }
 
@@ -52,7 +58,7 @@ class PharmacyService {
    * @param body
    * @memberOf PharmacyService
    */
-  static async getGenericDrugs(body) {
+  static async getGenericDrugs(body): Promise<Drug[]> {
     const { currentPage, pageLimit, search } = body;
     if (search) {
       return searchGenericDrugs(+currentPage, +pageLimit, search);
@@ -77,7 +83,7 @@ class PharmacyService {
    * @param body
    * @memberOf PharmacyService
    */
-  static async createDosageFormService(body) {
+  static async createDosageFormService(body): Promise<DosageForm> {
     return createDosageForm(body);
   }
 
@@ -89,7 +95,7 @@ class PharmacyService {
    * @param body
    * @memberOf PharmacyService
    */
-  static async updateDosageFormService(body) {
+  static async updateDosageFormService(body): Promise<DosageForm> {
     return updateDosageForm(body);
   }
 
@@ -100,7 +106,7 @@ class PharmacyService {
    * @returns {json} json object with dosage forms data
    * @memberOf PharmacyService
    */
-  static async getDosageForms() {
+  static async getDosageForms(): Promise<DosageForm[]> {
     return getDosageForms();
   }
 
@@ -116,7 +122,7 @@ class PharmacyService {
    * @param body
    * @memberOf PharmacyService
    */
-  static async createMeasurementService(body) {
+  static async createMeasurementService(body): Promise<DosageMeasurement> {
     return createMeasurement(body);
   }
 
@@ -128,7 +134,7 @@ class PharmacyService {
    * @param body
    * @memberOf PharmacyService
    */
-  static async updateMeasurementService(body) {
+  static async updateMeasurementService(body): Promise<DosageMeasurement> {
     return updateMeasurement(body);
   }
 
@@ -139,7 +145,7 @@ class PharmacyService {
    * @returns {json} json object with measurements data
    * @memberOf PharmacyService
    */
-  static async getMeasurements() {
+  static async getMeasurements(): Promise<DosageMeasurement[]> {
     return getMeasurements();
   }
 
@@ -155,7 +161,7 @@ class PharmacyService {
    * @param body
    * @memberOf PharmacyService
    */
-  static async createRouteService(body) {
+  static async createRouteService(body): Promise<RoutesOfAdministration> {
     return createRouteOfAdministration(body);
   }
 
@@ -167,7 +173,7 @@ class PharmacyService {
    * @param body
    * @memberOf PharmacyService
    */
-  static async updateRouteService(body) {
+  static async updateRouteService(body): Promise<RoutesOfAdministration> {
     return updateRouteOfAdministration(body);
   }
 
@@ -178,8 +184,24 @@ class PharmacyService {
    * @returns {json} json object with route administration data
    * @memberOf PharmacyService
    */
-  static async getRoutesOfAdministration() {
+  static async getRoutesOfAdministration(): Promise<RoutesOfAdministration[]> {
     return getRoutesOfAdministration();
+  }
+
+  /**
+   * get route administration & measurements under a dosage form
+   *
+   * @static
+   * @returns {json} json object with route administration data
+   * @memberOf PharmacyService
+   */
+  static async getRoutesAndMeasurements(dosage_form_id: number) {
+    const routes = getDosageFormRoutes(dosage_form_id);
+    const measurements = getDosageFormMeasurements(dosage_form_id);
+
+    const [routesOfAdministrations, dosageMeasurements] = await Promise.all([routes, measurements]);
+
+    return { routesOfAdministrations, dosageMeasurements };
   }
 }
 export default PharmacyService;
