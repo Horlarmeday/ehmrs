@@ -25,15 +25,21 @@ class LaboratoryController {
    */
   static async createTestSample(req, res, next) {
     const { error } = validateTestSample(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
+    if (error)
+      return errorResponse({
+        res,
+        httpCode: StatusCodes.BAD_REQUEST,
+        message: error.details[0].message,
+      });
 
     try {
-      const sample = await LaboratoryService.createSampleService(
-        Object.assign(req.body, { staff_id: req.user.sub })
-      );
+      const sample = await LaboratoryService.createSampleService({
+        ...req.body,
+        staff_id: req.user.sub,
+      });
 
       return res.status(201).json({
-        message: 'Successful! Data saved',
+        message: DATA_SAVED,
         data: sample,
       });
     } catch (e) {
@@ -58,7 +64,7 @@ class LaboratoryController {
       const sample = await LaboratoryService.updateSampleService(req.body);
 
       return res.status(200).json({
-        message: 'Successful! Data updated',
+        message: DATA_UPDATED,
         data: sample,
       });
     } catch (e) {
