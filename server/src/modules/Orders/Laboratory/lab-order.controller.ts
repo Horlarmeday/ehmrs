@@ -1,7 +1,9 @@
 import { validateBulkLabTest } from './validations';
 import LabOrderService from './lab-order.service';
-import { successResponse } from '../../../common/responses/success-responses';
+import { SuccessResponse, successResponse } from '../../../common/responses/success-responses';
 import { DATA_SAVED } from '../../AdminSettings/messages/response-messages';
+import { errorResponse } from '../../../common/responses/error-responses';
+import { StatusCodes } from '../../../core/helpers/helper';
 
 class LabOrderController {
   /**
@@ -13,9 +15,14 @@ class LabOrderController {
    * @param {object} next next middleware
    * @returns {json} json object with status, lab tests data
    */
-  static async orderLabTest(req, res, next) {
+  static async orderLabTest(req, res, next): Promise<SuccessResponse> {
     const { error } = validateBulkLabTest(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
     try {
       const tests = await LabOrderService.orderBulkTestService({
         ...req.body,
@@ -23,7 +30,12 @@ class LabOrderController {
         visit_id: req.params.id,
       });
 
-      return successResponse({ res, data: tests, message: DATA_SAVED, httpCode: 201 });
+      return successResponse({
+        res,
+        data: tests,
+        message: DATA_SAVED,
+        httpCode: StatusCodes.CREATED,
+      });
     } catch (e) {
       return next(e);
     }
