@@ -16,5 +16,9 @@ export default {
 
   SET_ACTIVE_NUMB_PAGES(state, pages) {
     state.activeVisitPages = pages;
+  },
+
+  SET_VISIT(state, visit) {
+    state.visit = visit;
   }
 };

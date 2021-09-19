@@ -11,5 +11,7 @@ export default {
    */
   visits: [],
   total: 0,
-  pages: 0
+  pages: 0,
+
+  visit: null
 };

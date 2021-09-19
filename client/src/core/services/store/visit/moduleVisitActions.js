@@ -38,5 +38,19 @@ export default {
           reject(error);
         });
     });
+  },
+
+  fetchVisit({ commit }, visitId) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/visits/${visitId}`)
+        .then(response => {
+          commit("SET_VISIT", response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
   }
 };
