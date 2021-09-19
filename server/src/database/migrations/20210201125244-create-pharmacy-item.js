@@ -50,8 +50,8 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: false,
       },
-      dosage_form: {
-        type: Sequelize.STRING,
+      dosage_form_id: {
+        type: Sequelize.INTEGER,
       },
       staff_id: {
         type: Sequelize.INTEGER,
@@ -60,14 +60,14 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: false,
       },
-      strength: {
-        type: Sequelize.STRING,
+      measurement_id: {
+        type: Sequelize.INTEGER,
       },
       strength_input: {
         type: Sequelize.STRING,
       },
-      route: {
-        type: Sequelize.STRING,
+      route_id: {
+        type: Sequelize.INTEGER,
       },
       drug_form: {
         type: Sequelize.ENUM('Drug', 'Consumable'),
