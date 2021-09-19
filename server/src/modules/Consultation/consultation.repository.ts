@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import { BadException } from '../../common/util/api-error';
+import {StatusCodes} from "../../core/helpers/helper";
 
 const { History, Complaint, Diagnosis } = require('../../database/models');
 
@@ -86,6 +87,6 @@ export async function getConsultationSummary(data) {
       histories,
     };
   } catch (e) {
-    throw new BadException('ERROR', 500, e);
+    throw new BadException('ERROR', StatusCodes.SERVER_ERROR, e);
   }
 }
