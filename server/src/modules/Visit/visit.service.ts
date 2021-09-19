@@ -4,12 +4,14 @@ import {
   getActiveVisits,
   getLastVisitStatus,
   getTypeVisits,
+  getVisit,
   getVisitById,
   getVisits,
   searchActiveVisits,
   searchTypeVisits,
   searchVisits,
 } from './visit.repository';
+import { Visit } from './interface/visit.interface';
 
 class VisitService {
   /**
@@ -20,7 +22,7 @@ class VisitService {
    * @param body
    * @memberOf VisitService
    */
-  static async createVisitService(body) {
+  static async createVisitService(body): Promise<Visit> {
     const visit = await getLastVisitStatus(body.patient_id);
     if (visit) await endVisit(visit);
     return createVisit(body);
@@ -34,7 +36,7 @@ class VisitService {
    * @param body
    * @memberOf VisitService
    */
-  static async getActiveVisits(body) {
+  static async getActiveVisits(body): Promise<Visit[]> {
     const { currentPage, pageLimit, search } = body;
     if (search) {
       return searchActiveVisits(+currentPage, +pageLimit, search);
@@ -99,6 +101,18 @@ class VisitService {
    */
   static async getVisitById(id) {
     return getVisitById(id);
+  }
+
+  /**
+   * get a visit including patient details
+   *
+   * @static
+   * @returns {json} json object with item data
+   * @memberOf VisitService
+   * @param id
+   */
+  static async getOneVisit(id: number) {
+    return getVisit(id);
   }
 }
 

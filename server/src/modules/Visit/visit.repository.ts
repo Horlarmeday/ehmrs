@@ -46,8 +46,17 @@ export async function endVisit(visit) {
  * @returns {object} visit data
  * @param id
  */
-export async function getVisitById(id) {
+export async function getVisitById(id: number) {
   return Visit.findByPk(id);
+}
+
+/**
+ * get a visit by Id and including patient details
+ * @returns {object} visit data
+ * @param id
+ */
+export async function getVisit(id: number) {
+  return Visit.findOne({ where: { id }, include: [{ model: Patient, as: 'patient' }] });
 }
 
 /** ***********************

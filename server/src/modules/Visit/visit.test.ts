@@ -2,10 +2,8 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { describe, afterAll, it, expect, beforeAll } from '@jest/globals';
 import server from '../../core/startup/server';
-import Constant from '../../core/constants';
-
-// eslint-disable-next-line import/no-extraneous-dependencies
-const request = require('supertest');
+import { OPD } from '../../core/constants';
+import request from 'supertest';
 
 const { Visit, Staff } = require('../../database/models');
 
@@ -41,7 +39,7 @@ describe('Store Endpoints /visits', () => {
       .set('Authorization', `Bearer ${token}`)
       .send({
         patient_id: 1,
-        type: Constant.OPD,
+        type: OPD,
       });
     await expect(res.status).toBe(201);
     await expect(res.body.data).toHaveProperty('id');
