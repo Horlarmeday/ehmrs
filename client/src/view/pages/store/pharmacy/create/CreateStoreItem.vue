@@ -24,7 +24,7 @@
                 label="name"
                 :reduce="drugs => ({ id: drugs.id, type: drugs.type })"
                 :options="drugs"
-              ></v-select>
+              />
               <span class="text-danger text-sm">{{
                 errors.first("drug")
               }}</span>
@@ -146,7 +146,7 @@
                 v-model="expiration"
                 input-class="form-control form-control-sm"
                 placeholder="Expiry Date"
-              ></datepicker>
+              />
               <span class="text-danger text-sm">{{
                 errors.first("expiration")
               }}</span>
@@ -157,25 +157,20 @@
                 class="form-control form-control-sm"
                 v-model="dosage_form"
                 name="dosage_form"
+                @change="getRoutesAndMeasurements"
               >
-                <option value="Cap">Cap</option>
-                <option value="Cream">Cream</option>
-                <option value="Inj">Inj</option>
-                <option value="Infusions">Infusions</option>
-                <option value="Insulin">Insulin</option>
-                <option value="IVF">IVF</option>
-                <option value="Oint">Oint</option>
-                <option value="Pessary">Pessary</option>
-                <option value="Supp">Supp</option>
-                <option value="Susp">Susp</option>
-                <option value="Syr">Syr</option>
-                <option value="Tab">Tab</option>
+                <option
+                  :value="dosageForm.id"
+                  v-for="dosageForm in dosageForms"
+                  :key="dosageForm.id"
+                  >{{ dosageForm.name }}</option
+                >
               </select>
               <span class="text-danger text-sm">{{
                 errors.first("dosage_form")
               }}</span>
             </div>
-            <div class="col-lg-4 mt-3" v-if="canSee && canSeeStrength">
+            <div class="col-lg-4 mt-3" v-if="canSee">
               <label>Strength <span class="text-danger">*</span></label>
               <input
                 type="text"
@@ -188,34 +183,22 @@
                 errors.first("strength_input")
               }}</span>
             </div>
-            <div class="col-lg-4" v-if="canSee && canSeeStrength">
+            <div class="col-lg-4" v-if="canSee">
               <label>Strength Unit <span class="text-danger">*</span></label>
               <select
                 class="form-control form-control-sm"
                 v-model="strength"
                 name="strength"
               >
-                <option value="kg">kg</option>
-                <option value="g">g</option>
-                <option value="mg">mg</option>
-                <option value="ng">ng</option>
+                <option
+                  :value="measurement.id"
+                  v-for="measurement in measurements"
+                  :key="measurement.id"
+                  >{{ measurement.name }}</option
+                >
               </select>
               <span class="text-danger text-sm">{{
                 errors.first("strength")
-              }}</span>
-            </div>
-            <div class="col-lg-4 mt-3" v-if="canSee && !canSeeStrength">
-              <label>Volume <span class="text-danger">*</span></label>
-              <select
-                class="form-control form-control-sm"
-                v-model="volume"
-                name="volume"
-              >
-                <option value="Mls">Mls</option>
-                <option value="IU">IU</option>
-              </select>
-              <span class="text-danger text-sm">{{
-                errors.first("volume")
               }}</span>
             </div>
 
@@ -229,19 +212,12 @@
                 v-model="route"
                 name="route"
               >
-                <option value="IV">IV</option>
-                <option value="IM">IM</option>
-                <option value="SC">SC</option>
-                <option value="PO">PO</option>
-                <option value="intra rectally">intra rectally</option>
-                <option value="OCC">OCC</option>
-                <option value="transdermal">transdermal</option>
-                <option value="intra spinal">intra spinal</option>
-                <option value="inhalational">inhalational</option>
-                <option value="intra vagina">intra vagina</option>
-                <option value="gutt">gutt</option>
-                <option value="sublingual">sublingual</option>
-                <option value="topical">topical</option>
+                <option
+                  :value="route.id"
+                  v-for="route in routes"
+                  :key="route.id"
+                  >{{ route.name }}</option
+                >
               </select>
               <span class="text-danger text-sm">{{
                 errors.first("route")
@@ -272,7 +248,7 @@
                 label="name"
                 :reduce="units => units.id"
                 :options="units"
-              ></v-select>
+              />
               <span class="text-danger text-sm">{{
                 errors.first("unit")
               }}</span>
@@ -316,7 +292,7 @@
                 v-model="date_received"
                 input-class="form-control form-control-sm"
                 placeholder="Date Received"
-              ></datepicker>
+              />
               <span class="text-danger text-sm">{{
                 errors.first("date_received")
               }}</span>
@@ -398,12 +374,11 @@ export default {
       voucher: "",
       shelf: "",
       shelf_num: "",
-      dosage_form: "",
+      dosage_form: null,
       expiration: "",
-      strength: "",
+      strength: null,
       strength_input: "",
-      volume: "",
-      route: "",
+      route: null,
       quantity: "",
       unit: "",
       unit_price: "",
@@ -430,12 +405,16 @@ export default {
       return this.drug_id.type === "Drug";
     },
 
-    canSeeStrength() {
-      return (
-        this.dosage_form === "Tab" ||
-        this.dosage_form === "Cap" ||
-        this.dosage_form === "Pessary"
-      );
+    dosageForms() {
+      return this.$store.state.pharmacy.dosageForms;
+    },
+
+    measurements() {
+      return this.$store.state.pharmacy.measurements;
+    },
+
+    routes() {
+      return this.$store.state.pharmacy.routes;
     }
   },
 
@@ -454,11 +433,10 @@ export default {
       this.shelf = "";
       this.shelf_num = "";
       this.expiration = "";
-      this.dosage_form = "";
-      this.strength = "";
+      this.dosage_form = null;
+      this.strength = null;
       this.strength_input = "";
-      this.volume = "";
-      this.route = "";
+      this.route = null;
       this.quantity = "";
       this.unit = "";
       this.unit_price = "";
@@ -496,10 +474,10 @@ export default {
 
     setDrugForm() {
       this.drug_form = this.drug_id.type;
-      this.dosage_form = "";
-      this.strength = "";
+      this.dosage_form = null;
+      this.strength = null;
       this.strength_input = "";
-      this.volume = "";
+      this.$store.dispatch("pharmacy/fetchDosageForms");
     },
 
     searchGenericDrugs(search) {
@@ -516,6 +494,12 @@ export default {
       this.initValues();
     },
 
+    getRoutesAndMeasurements() {
+      this.$store.dispatch("pharmacy/fetchRoutesAndMeasurements", {
+        dosage_form_id: this.dosage_form
+      });
+    },
+
     createPharmacyItem() {
       this.$validator.validateAll().then(result => {
         if (result) {
@@ -530,10 +514,10 @@ export default {
             voucher: this.voucher,
             shelf: `${this.shelf}${this.shelf_num}`,
             expiration: this.expiration,
-            dosage_form: this.dosage_form,
-            strength: this.strength || this.volume,
+            dosage_form_id: this.dosage_form,
+            measurement_id: this.strength,
             strength_input: this.strength_input,
-            route: this.route,
+            route_id: this.route,
             unit_id: this.unit,
             quantity: this.quantity,
             unit_price: this.unit_price,
