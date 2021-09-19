@@ -87,17 +87,21 @@
               </td>
               <td>
                 <span
+                  v-if="item.dosage_form_id"
                   class="text-dark-75 font-weight-bolder d-block font-size-lg"
                 >
-                  {{ item.dosage_form || "None" }}
+                  {{ item.dosage_form.name || "None" }}
                 </span>
+                <span v-else class="text-dark-75 font-weight-bolder d-block font-size-lg">Nil</span>
               </td>
               <td>
                 <span
+                  v-if="item.measurement_id"
                   class="text-dark-75 font-weight-bolder d-block font-size-lg"
                 >
-                  {{ item.strength_input }} {{ item.strength || "None" }}
+                  {{ item.strength_input }} {{ item.strength.name || "None" }}
                 </span>
+                <span v-else class="text-dark-75 font-weight-bolder d-block font-size-lg">Nil</span>
               </td>
               <td>
                 <span
