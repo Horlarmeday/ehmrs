@@ -6,6 +6,18 @@ import {
   validateRouteOfAdministration,
 } from './validations';
 import PharmacyService from './pharmacy.service';
+import { errorResponse } from '../../common/responses/error-responses';
+import { StatusCodes } from '../../core/helpers/helper';
+import { SuccessResponse, successResponse } from '../../common/responses/success-responses';
+import { DATA_SAVED, DATA_UPDATED } from '../AdminSettings/messages/response-messages';
+import {
+  DOSAGE_FORM_REQUIRED,
+  DRUG_REQUIRED,
+  MEASUREMENT_REQUIRED,
+  ROUTE_REQUIRED,
+} from './messages/response-messages';
+import { SUCCESS } from '../../core/constants';
+import { NextFunction, Request, Response } from 'express';
 
 /**
  *
@@ -24,15 +36,23 @@ class PharmacyController {
    */
   static async createGenericDrug(req, res, next) {
     const { error } = validateGenericDrug(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
 
     try {
-      const drug = await PharmacyService.createGenericDrugService(
-        Object.assign(req.body, { staff_id: req.user.sub })
-      );
+      const drug = await PharmacyService.createGenericDrugService({
+        ...req.body,
+        staff_id: req.user.sub,
+      });
 
-      return res.status(201).json({
-        message: 'Successful! Data saved',
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_SAVED,
         data: drug,
       });
     } catch (e) {
@@ -51,15 +71,13 @@ class PharmacyController {
    */
   static async updateGenericDrug(req, res, next) {
     const { drug_id } = req.body;
-    if (!drug_id) return res.status(400).json({ message: 'drug id is required' });
+    if (!drug_id)
+      return errorResponse({ res, message: DRUG_REQUIRED, httpCode: StatusCodes.BAD_REQUEST });
 
     try {
       const drug = await PharmacyService.updateGenericDrugService(req.body);
 
-      return res.status(200).json({
-        message: 'Successful! Data updated',
-        data: drug,
-      });
+      return successResponse({ res, httpCode: StatusCodes.OK, message: DATA_UPDATED, data: drug });
     } catch (e) {
       return next(e);
     }
@@ -78,10 +96,7 @@ class PharmacyController {
     try {
       const drugs = await PharmacyService.getGenericDrugs(req.query);
 
-      return res.status(200).json({
-        message: 'Data retrieved!',
-        data: drugs,
-      });
+      return successResponse({ res, httpCode: StatusCodes.OK, message: SUCCESS, data: drugs });
     } catch (e) {
       return next(e);
     }
@@ -98,15 +113,23 @@ class PharmacyController {
    */
   static async createDosageForm(req, res, next) {
     const { error } = validateDosageForm(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
 
     try {
-      const dosageForm = await PharmacyService.createDosageFormService(
-        Object.assign(req.body, { staff_id: req.user.sub })
-      );
+      const dosageForm = await PharmacyService.createDosageFormService({
+        ...req.body,
+        staff_id: req.user.sub,
+      });
 
-      return res.status(201).json({
-        message: 'Successful! Data saved',
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_SAVED,
         data: dosageForm,
       });
     } catch (e) {
@@ -125,13 +148,20 @@ class PharmacyController {
    */
   static async updateDosageForm(req, res, next) {
     const { dosage_form_id } = req.body;
-    if (!dosage_form_id) return res.status(400).json({ message: 'dosage form id is required' });
+    if (!dosage_form_id)
+      return errorResponse({
+        res,
+        message: DOSAGE_FORM_REQUIRED,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
 
     try {
       const dosageForm = await PharmacyService.updateDosageFormService(req.body);
 
-      return res.status(200).json({
-        message: 'Successful! Data updated',
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: DATA_UPDATED,
         data: dosageForm,
       });
     } catch (e) {
@@ -148,16 +178,22 @@ class PharmacyController {
    * @param {object} next next middleware
    * @returns {json} json object with dosage forms data
    */
-  static async getDosageForms(req, res, next) {
+  static async getDosageForms(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse> {
     try {
       const dosageForms = await PharmacyService.getDosageForms();
 
-      return res.status(200).json({
-        message: 'Data retrieved!',
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
         data: dosageForms,
       });
     } catch (e) {
-      return next(e);
+      next(e);
     }
   }
 
@@ -170,21 +206,29 @@ class PharmacyController {
    * @param {object} next next middleware
    * @returns {json} json object with status, measurement data
    */
-  static async createMeasurement(req, res, next) {
+  static async createMeasurement(req, res: Response, next: NextFunction): Promise<SuccessResponse> {
     const { error } = validateMeasurement(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
 
     try {
-      const measurement = await PharmacyService.createMeasurementService(
-        Object.assign(req.body, { staff_id: req.user.sub })
-      );
+      const measurement = await PharmacyService.createMeasurementService({
+        ...req.body,
+        staff_id: req.user.sub,
+      });
 
-      return res.status(201).json({
-        message: 'Successful! Data saved',
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_SAVED,
         data: measurement,
       });
     } catch (e) {
-      return next(e);
+      next(e);
     }
   }
 
@@ -197,15 +241,22 @@ class PharmacyController {
    * @param {object} next next middleware
    * @returns {json} json object with status, measurement data
    */
-  static async updateMeasurement(req, res, next) {
+  static async updateMeasurement(req: Request, res: Response, next: NextFunction) {
     const { measurement_id } = req.body;
-    if (!measurement_id) return res.status(400).json({ message: 'measurement id is required' });
+    if (!measurement_id)
+      return errorResponse({
+        res,
+        httpCode: StatusCodes.BAD_REQUEST,
+        message: MEASUREMENT_REQUIRED,
+      });
 
     try {
       const measurement = await PharmacyService.updateMeasurementService(req.body);
 
-      return res.status(200).json({
-        message: 'Successful! Data updated',
+      return successResponse({
+        res,
+        message: DATA_UPDATED,
+        httpCode: StatusCodes.OK,
         data: measurement,
       });
     } catch (e) {
@@ -226,9 +277,11 @@ class PharmacyController {
     try {
       const measurements = await PharmacyService.getMeasurements();
 
-      return res.status(200).json({
-        message: 'Data retrieved!',
+      return successResponse({
+        res,
         data: measurements,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
       });
     } catch (e) {
       return next(e);
@@ -246,15 +299,23 @@ class PharmacyController {
    */
   static async createRouteOfAdministration(req, res, next) {
     const { error } = validateRouteOfAdministration(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
 
     try {
-      const route = await PharmacyService.createRouteService(
-        Object.assign(req.body, { staff_id: req.user.sub })
-      );
+      const route = await PharmacyService.createRouteService({
+        ...req.body,
+        staff_id: req.user.sub,
+      });
 
-      return res.status(201).json({
-        message: 'Successful! Data saved',
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_SAVED,
         data: route,
       });
     } catch (e) {
@@ -271,17 +332,15 @@ class PharmacyController {
    * @param {object} next next middleware
    * @returns {json} json object with status, route of administration data
    */
-  static async updateRouteOfAdministration(req, res, next) {
+  static async updateRouteOfAdministration(req: Request, res: Response, next: NextFunction) {
     const { route_id } = req.body;
-    if (!route_id) return res.status(400).json({ message: 'route id is required' });
+    if (!route_id)
+      return errorResponse({ res, message: ROUTE_REQUIRED, httpCode: StatusCodes.BAD_REQUEST });
 
     try {
       const route = await PharmacyService.updateRouteService(req.body);
 
-      return res.status(200).json({
-        message: 'Successful! Data updated',
-        data: route,
-      });
+      return successResponse({ res, httpCode: StatusCodes.OK, message: DATA_UPDATED, data: route });
     } catch (e) {
       return next(e);
     }
@@ -300,10 +359,28 @@ class PharmacyController {
     try {
       const routes = await PharmacyService.getRoutesOfAdministration();
 
-      return res.status(200).json({
-        message: 'Data retrieved!',
-        data: routes,
-      });
+      return successResponse({ res, data: routes, message: SUCCESS, httpCode: StatusCodes.OK });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get routes of administration & measurements under a dosage form
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with routes of administration & measurements data
+   */
+  static async getRoutesAndMeasurements(req, res, next) {
+    const { dosage_form_id } = req.body;
+
+    try {
+      const routes = await PharmacyService.getRoutesAndMeasurements(dosage_form_id);
+
+      return successResponse({ res, data: routes, message: SUCCESS, httpCode: StatusCodes.OK });
     } catch (e) {
       return next(e);
     }
