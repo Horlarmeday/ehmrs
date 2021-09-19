@@ -16,12 +16,12 @@ export function validatePharmacyItem(item) {
     shelf: Joi.string()
       .allow('')
       .optional(),
-    strength: Joi.string()
+    measurement_id: Joi.number()
       .optional()
-      .allow(''),
-    dosage_form: Joi.string()
+      .allow(null),
+    dosage_form_id: Joi.number()
       .optional()
-      .allow(''),
+      .allow(null),
     voucher: Joi.string()
       .allow('')
       .optional(),
@@ -31,8 +31,8 @@ export function validatePharmacyItem(item) {
     strength_input: Joi.string()
       .optional()
       .allow(''),
-    route: Joi.string()
-      .allow('')
+    route_id: Joi.number()
+      .allow(null)
       .optional(),
     date_received: Joi.date()
       .optional()
