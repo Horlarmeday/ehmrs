@@ -49,7 +49,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-if="items.length == 0">
+            <tr v-if="!items.length">
               <td colspan="9" align="center" class="text-muted">No Data</td>
             </tr>
             <tr v-for="item in items" :key="item.id">
