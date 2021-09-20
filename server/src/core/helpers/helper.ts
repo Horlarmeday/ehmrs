@@ -69,3 +69,20 @@ export enum StatusCodes {
   SERVER_ERROR = 500,
   SERVICE_UNAVAILABLE = 501,
 }
+
+const removeSpecialCharacter = (param: string, character: string) => {
+  return param.split(`${character}`);
+};
+
+const capitalizeFirstLetter = (word: string) => {
+  return word.charAt(0).toUpperCase() + word.slice(1);
+};
+
+export const joinCapitalizedWord = (param: string, character: string): string => {
+  const arr = removeSpecialCharacter(param, character);
+  let str = '';
+  arr.forEach((word: string) => {
+    str += capitalizeFirstLetter(word);
+  });
+  return str;
+};
