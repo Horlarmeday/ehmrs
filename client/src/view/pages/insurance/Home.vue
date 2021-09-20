@@ -103,11 +103,6 @@
 
 <script>
 export default {
-  methods: {
-    openPage(value) {
-      this.$router.push(`/patient/${value}`);
-    }
-  }
 };
 </script>
 
