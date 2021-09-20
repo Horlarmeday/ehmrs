@@ -13,6 +13,7 @@ import visit from "./visit/moduleVisit";
 import consultation from "./consultation/moduleConsultation";
 import triage from "./triage/moduleTriage";
 import order from "./order/moduleOrder";
+import inventory from "./inventory/moduleInventory";
 import htmlClass from "./htmlclass.module";
 import config from "./config.module";
 import breadcrumbs from "./breadcrumbs.module";
@@ -33,6 +34,7 @@ export default new Vuex.Store({
     consultation,
     triage,
     order,
+    inventory,
     htmlClass,
     config,
     breadcrumbs
