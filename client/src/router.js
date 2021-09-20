@@ -30,8 +30,7 @@ const router = new Router({
         {
           path: "/dashboard",
           name: "dashboard",
-          component: () =>
-            import("@/view/pages/home/superadmin/Dashboard.vue"),
+          component: () => import("@/view/pages/home/superadmin/Dashboard.vue"),
           meta: {
             requiresAuth: true
           }
@@ -226,8 +225,7 @@ const router = new Router({
         {
           path: "/consultation",
           name: "consultation",
-          component: () =>
-            import("@/view/pages/consultation/Consultation.vue"),
+          component: () => import("@/view/pages/consultation/Consultation.vue"),
           children: [
             {
               path: ":visitId",
@@ -485,6 +483,31 @@ const router = new Router({
               path: "orders-type",
               name: "orders-type",
               component: () => import("@/view/pages/orders/Home.vue"),
+              meta: {
+                requiresAuth: true
+              }
+            }
+          ]
+        },
+        // INVENTORY
+        {
+          path: "/inventory",
+          name: "inventory",
+          component: () => import("@/view/pages/inventory/Inventory.vue"),
+          children: [
+            {
+              path: "inventory-type",
+              name: "inventory-type",
+              component: () => import("@/view/pages/inventory/Home.vue"),
+              meta: {
+                requiresAuth: true
+              }
+            },
+            {
+              path: ":inventoryType",
+              name: "inventory-list",
+              component: () =>
+                import("@/view/pages/inventory/InventoryList.vue"),
               meta: {
                 requiresAuth: true
               }
