@@ -18,9 +18,21 @@ module.exports = (sequelize, DataTypes) => {
           },
         },
       },
-      hmo_num: DataTypes.STRING,
-      staff_id: DataTypes.INTEGER,
-      insurance_id: DataTypes.INTEGER,
+      hmo_num: {
+        type: DataTypes.STRING,
+      },
+      staff_id: {
+        type: DataTypes.INTEGER,
+      },
+      insurance_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: {
+          notEmpty: {
+            msg: 'insurance id is required',
+          },
+        },
+      },
     },
     {}
   );
