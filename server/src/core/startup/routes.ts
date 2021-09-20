@@ -11,7 +11,9 @@ import consultationRoutes from '../../modules/Consultation/consultation.routes';
 import triageRoutes from '../../modules/Triage/triage.routes';
 import labOrderRoutes from '../../modules/Orders/Laboratory/lab-order.routes';
 import pharmacyOrderRoutes from '../../modules/Orders/Pharmacy/pharmacy-order.routes';
+import inventoryRoutes from '../../modules/Inventory/inventory.routes';
 import express from 'express';
+import { StatusCodes } from '../helpers/helper';
 
 export default (server: express.Application) => {
   server.use('/api/staffs', userRoutes);
@@ -25,25 +27,32 @@ export default (server: express.Application) => {
   server.use('/api/visits', visitRoutes);
   server.use('/api/consultations', consultationRoutes);
   server.use('/api/triage', triageRoutes);
+  server.use('/api/inventory', inventoryRoutes);
   server.use('/api/orders/lab', labOrderRoutes);
   server.use('/api/orders/pharmacy', pharmacyOrderRoutes);
   server.use((req, res, next) => {
     const apiTimeout = 18000;
     // set the timeout for all HTTP requests
     req.setTimeout(apiTimeout, () => {
-      const err = res.status(408).json({ status: 'error', message: 'Request Timeout' });
+      const err = res
+        .status(StatusCodes.TIMED_OUT)
+        .json({ status: 'error', message: 'Request Timeout' });
       next(err);
     });
 
     // set the server response timeout for all HTTP requests
     res.setTimeout(apiTimeout, () => {
-      const err = res.status(503).json({ status: 'error', message: 'Service Unavailable' });
+      const err = res
+        .status(StatusCodes.SERVICE_UNAVAILABLE)
+        .json({ status: 'error', message: 'Service Unavailable' });
       next(err);
     });
     next();
   });
   server.use((req, res, next) => {
-    const err = res.status(404).json({ status: 'error', message: 'Resource does not exist' });
+    const err = res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ status: 'error', message: 'Resource does not exist' });
     next(err);
   });
 };
