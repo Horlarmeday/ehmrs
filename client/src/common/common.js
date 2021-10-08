@@ -1,4 +1,5 @@
 import Vue from "vue";
+import router from "../router";
 
 export const notifyError = error => {
   Vue.notify({
@@ -22,4 +23,23 @@ export const deleteArrayElement = (arr, value) => {
   return arr.filter(function(element) {
     return element !== value;
   });
+};
+
+export const queryStrings = ({
+  pathName,
+  currentPage = 1,
+  itemsPerPage = 10,
+  search
+}) => {
+  router
+    .push({
+      name: pathName,
+      query: {
+        currentPage: currentPage,
+        itemsPerPage: itemsPerPage,
+        search
+      }
+    })
+    .then(r => console.log(r))
+    .catch(e => notifyError(e));
 };
