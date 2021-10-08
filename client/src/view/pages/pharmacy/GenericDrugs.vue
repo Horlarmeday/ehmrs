@@ -95,7 +95,7 @@
         :total-pages="pages"
         :total="queriedItems"
         :per-page="perPage"
-        :current-page="currentPage"
+        :current-page="+$route.query.currentPage || currentPage"
         @pagechanged="onPageChange"
         @changepagecount="onChangePageCount"
       />
@@ -111,6 +111,8 @@ import Pagination from "@/utils/Pagination.vue";
 import EditIcon from "../../../assets/icons/EditIcon.vue";
 import AddIcon from "../../../assets/icons/AddIcon.vue";
 import Search from "../../../utils/Search.vue";
+import { queryStrings } from "../../../common/common";
+
 export default {
   data() {
     return {
@@ -157,13 +159,24 @@ export default {
     },
 
     handlePageChange() {
-      this.$store.dispatch("pharmacy/fetchGenericDrugs", {
+      queryStrings({
+        pathName: "generic-drugs",
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage
+      });
+      this.$store.dispatch("pharmacy/fetchGenericDrugs", {
+        currentPage: this.$route.query.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage
       });
     },
 
     onHandleSearch(search) {
+      queryStrings({
+        pathName: "generic-drugs",
+        currentPage: 1,
+        itemsPerPage: this.itemsPerPage,
+        search
+      });
       this.$store.dispatch("pharmacy/fetchGenericDrugs", {
         currentPage: 1,
         itemsPerPage: this.itemsPerPage,
@@ -177,16 +190,21 @@ export default {
     },
 
     onChangePageCount(pagecount) {
-      this.$store.dispatch("pharmacy/fetchGenericDrugs", {
+      queryStrings({
+        pathName: "generic-drugs",
         currentPage: this.currentPage,
+        itemsPerPage: pagecount
+      });
+      this.$store.dispatch("pharmacy/fetchGenericDrugs", {
+        currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: pagecount
       });
     }
   },
   created() {
     this.$store.dispatch("pharmacy/fetchGenericDrugs", {
-      currentPage: this.currentPage,
-      itemsPerPage: this.itemsPerPage
+      currentPage: this.$route.query.currentPage || this.currentPage,
+      itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage
     });
   }
 };
