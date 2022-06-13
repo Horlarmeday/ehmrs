@@ -13,7 +13,12 @@
 
     <!--begin::Body-->
     <inventory-table
-      :pagination-params="{ queriedItems, pages, perPage, currentPage }"
+      :pagination-params="{
+        queriedItems,
+        pages,
+        perPage,
+        currentPage: +$route.query.currentPage || currentPage
+      }"
       @changePage="onPageChange"
       @changePageCount="onChangePageCount"
     />
@@ -24,6 +29,7 @@
 <script>
 import InventoryTable from "./components/InventoryTable";
 import Search from "../../../utils/Search.vue";
+import { setUrlQueryParams } from "../../../common/common";
 export default {
   name: "InventoryList",
   data() {
@@ -49,14 +55,23 @@ export default {
   components: { InventoryTable, Search },
   methods: {
     handlePageChange() {
-      this.$store.dispatch("inventory/fetchInventoryItems", {
+      setUrlQueryParams({
         currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage,
+        itemsPerPage: this.itemsPerPage
+      });
+      this.$store.dispatch("inventory/fetchInventoryItems", {
+        currentPage: this.$route.query.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage,
         inventoryType: this.$route.params.inventoryType
       });
     },
 
     onHandleSearch(search) {
+      setUrlQueryParams({
+        currentPage: 1,
+        itemsPerPage: this.itemsPerPage,
+        search: search
+      });
       this.$store.dispatch("inventory/fetchInventoryItems", {
         currentPage: 1,
         itemsPerPage: this.itemsPerPage,
@@ -71,8 +86,13 @@ export default {
     },
 
     onChangePageCount(pagecount) {
-      this.$store.dispatch("inventory/fetchInventoryItems", {
+      setUrlQueryParams({
+        pathName: "generic-drugs",
         currentPage: this.currentPage,
+        itemsPerPage: this.itemsPerPage
+      });
+      this.$store.dispatch("inventory/fetchInventoryItems", {
+        currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: pagecount,
         inventoryType: this.$route.params.inventoryType
       });
@@ -80,8 +100,8 @@ export default {
   },
   created() {
     this.$store.dispatch("inventory/fetchInventoryItems", {
-      currentPage: this.currentPage,
-      itemsPerPage: this.itemsPerPage,
+      currentPage: this.$route.query.currentPage || this.currentPage,
+      itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
       inventoryType: this.$route.params.inventoryType
     });
   }

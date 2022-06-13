@@ -1,4 +1,10 @@
-export interface PatientInterface {
+export enum Patient_Type {
+  PRINCIPAL = 'Principal',
+  DEPENDANT = 'Dependant',
+  INDEPENDENT = 'Independent',
+}
+
+export interface Patient {
   id: number;
   firstname: string;
   lastname: string;

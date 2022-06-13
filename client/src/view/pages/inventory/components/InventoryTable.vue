@@ -29,67 +29,75 @@
             </td>
             <td class="pr-0">
               <a
-                      href="#"
-                      class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg"
-              >{{ item.drug.name }}</a
+                href="#"
+                class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg"
+                >{{ item.drug.name }}</a
               >
               <span
-                      v-if="item.drug_type === 'NHIS'"
-                      class="label label-inline label-success ml-2"
-              >NHIS</span
+                v-if="item.drug_type === 'NHIS'"
+                class="label label-inline label-success ml-2"
+                >NHIS</span
               >
             </td>
             <td>
-                <span
-                        class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                >
-                  {{ item.remain_quantity }} {{ item.unit.name }}
-                </span>
+              <span
+                class="text-dark-75 font-weight-bolder d-block font-size-lg"
+              >
+                {{ item.remain_quantity }} {{ item.unit.name }}
+              </span>
             </td>
             <td>
-                <span
-                        class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                >
-                  {{ item.shelf || "None" }}
-                </span>
+              <span
+                class="text-dark-75 font-weight-bolder d-block font-size-lg"
+              >
+                {{ item.shelf || "None" }}
+              </span>
             </td>
             <td>
-                <span
-                        v-if="item.dosage_form_id"
-                        class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                >
-                  {{ item.dosage_form.name || "None" }}
-                </span>
-              <span v-else class="text-dark-75 font-weight-bolder d-block font-size-lg">Nil</span>
+              <span
+                v-if="item.dosage_form_id"
+                class="text-dark-75 font-weight-bolder d-block font-size-lg"
+              >
+                {{ item.dosage_form.name || "None" }}
+              </span>
+              <span
+                v-else
+                class="text-dark-75 font-weight-bolder d-block font-size-lg"
+                >Nil</span
+              >
             </td>
             <td>
-                <span
-                        v-if="item.measurement_id"
-                        class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                >
-                  {{ item.strength_input }} {{ item.strength.name || "None" }}
-                </span>
-              <span v-else class="text-dark-75 font-weight-bolder d-block font-size-lg">Nil</span>
+              <span
+                v-if="item.measurement_id"
+                class="text-dark-75 font-weight-bolder d-block font-size-lg"
+              >
+                {{ item.strength_input }} {{ item.strength.name || "None" }}
+              </span>
+              <span
+                v-else
+                class="text-dark-75 font-weight-bolder d-block font-size-lg"
+                >Nil</span
+              >
             </td>
             <td>
-                <span
-                        class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                >
-                  {{ item.createdAt | moment("ddd, MMM Do YYYY, h:mma") }}
-                </span>
+              <span
+                class="text-dark-75 font-weight-bolder d-block font-size-lg"
+              >
+                {{ item.createdAt | moment("ddd, MMM Do YYYY, h:mma") }}
+              </span>
             </td>
             <td class="pr-0 text-right">
               <a
-                      href="#"
-                      class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
-                      @click.stop="dispenseData(item)"
+                href="#"
+                class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
+                @click.stop="dispenseData(item)"
               >
                 <send-icon />
               </a>
               <a
-                      href="#"
-                      class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
-                      @click.stop="editData(item)"
+                href="#"
+                class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
+                @click.stop="editData(item)"
               >
                 <edit-icon />
               </a>

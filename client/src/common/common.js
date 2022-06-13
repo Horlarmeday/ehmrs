@@ -25,11 +25,14 @@ export const deleteArrayElement = (arr, value) => {
   });
 };
 
-export const queryStrings = ({
+export const setUrlQueryParams = ({
   pathName,
   currentPage = 1,
   itemsPerPage = 10,
-  search
+  search,
+  startDate,
+  endDate,
+  sort
 }) => {
   router
     .push({
@@ -37,9 +40,12 @@ export const queryStrings = ({
       query: {
         currentPage: currentPage,
         itemsPerPage: itemsPerPage,
-        search
+        search,
+        sort,
+        startDate,
+        endDate
       }
     })
-    .then(r => console.log(r))
+
     .catch(e => notifyError(e));
 };

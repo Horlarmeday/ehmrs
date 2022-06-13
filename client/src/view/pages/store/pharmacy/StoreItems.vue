@@ -21,10 +21,15 @@
       </div>
     </div>
     <!--end::Header-->
-    <search @search="onHandleSearch" />
+    <search-and-filter
+      place-holder="Search Items"
+      @search="onHandleSearch"
+      @sort="onHandleSort"
+    />
 
     <!--begin::Body-->
     <div class="card-body py-0">
+      <button-group />
       <!--begin::Table-->
       <div class="table-responsive">
         <table
@@ -34,7 +39,7 @@
           <thead>
             <tr class="text-left">
               <th class="pl-0" style="width: 20px">
-                <label class="checkbox checkbox-lg checkbox-inline">
+                <label class="checkbox checkbox-md checkbox-inline">
                   <input type="checkbox" value="1" />
                   <span></span>
                 </label>
@@ -54,7 +59,7 @@
             </tr>
             <tr v-for="item in items" :key="item.id">
               <td class="pl-0">
-                <label class="checkbox checkbox-lg checkbox-inline">
+                <label class="checkbox checkbox-md checkbox-inline">
                   <input type="checkbox" value="1" />
                   <span></span>
                 </label>
@@ -92,7 +97,11 @@
                 >
                   {{ item.dosage_form.name || "None" }}
                 </span>
-                <span v-else class="text-dark-75 font-weight-bolder d-block font-size-lg">Nil</span>
+                <span
+                  v-else
+                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
+                  >Nil</span
+                >
               </td>
               <td>
                 <span
@@ -101,7 +110,11 @@
                 >
                   {{ item.strength_input }} {{ item.strength.name || "None" }}
                 </span>
-                <span v-else class="text-dark-75 font-weight-bolder d-block font-size-lg">Nil</span>
+                <span
+                  v-else
+                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
+                  >Nil</span
+                >
               </td>
               <td>
                 <span
@@ -135,7 +148,7 @@
         :total-pages="pages"
         :total="queriedItems"
         :per-page="perPage"
-        :current-page="currentPage"
+        :current-page="+$route.query.currentPage || currentPage"
         @pagechanged="onPageChange"
         @changepagecount="onChangePageCount"
       />
@@ -151,23 +164,28 @@ import Pagination from "@/utils/Pagination.vue";
 import EditIcon from "../../../../assets/icons/EditIcon.vue";
 import AddIcon from "../../../../assets/icons/AddIcon.vue";
 import SendIcon from "../../../../assets/icons/SendIcon.vue";
-import Search from "../../../../utils/Search.vue";
+import SearchAndFilter from "../../../../utils/SearchAndFilter";
+import { setUrlQueryParams } from "../../../../common/common";
+import ButtonGroup from "../../../../utils/ButtonGroup";
 export default {
   data() {
     return {
       displayPrompt: false,
       itemToEdit: {},
       currentPage: 1,
-      itemsPerPage: 10
+      itemsPerPage: 10,
+      selected: []
     };
   },
   components: {
+    ButtonGroup,
+    SearchAndFilter,
     UpdatePharmacyItem,
     Pagination,
     EditIcon,
     AddIcon,
-    SendIcon,
-    Search
+    SendIcon
+    // Search
   },
   computed: {
     items() {
@@ -199,9 +217,14 @@ export default {
     },
 
     handlePageChange() {
-      this.$store.dispatch("store/fetchPharmacyItems", {
+      setUrlQueryParams({
+        pathName: "pharmacy-items",
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage
+      });
+      this.$store.dispatch("store/fetchPharmacyItems", {
+        currentPage: this.$route.query.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage
       });
     },
 
@@ -211,6 +234,12 @@ export default {
     },
 
     onHandleSearch(search) {
+      setUrlQueryParams({
+        pathName: "pharmacy-items",
+        currentPage: this.currentPage,
+        itemsPerPage: this.itemsPerPage,
+        search
+      });
       this.$store.dispatch("store/fetchPharmacyItems", {
         currentPage: 1,
         itemsPerPage: this.itemsPerPage,
@@ -219,16 +248,35 @@ export default {
     },
 
     onChangePageCount(pagecount) {
-      this.$store.dispatch("store/fetchPharmacyItems", {
+      setUrlQueryParams({
+        pathName: "pharmacy-items",
         currentPage: this.currentPage,
+        itemsPerPage: this.itemsPerPage
+      });
+      this.$store.dispatch("store/fetchPharmacyItems", {
+        currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: pagecount
+      });
+    },
+
+    onHandleSort(sort) {
+      setUrlQueryParams({
+        pathName: "pharmacy-items",
+        currentPage: this.currentPage,
+        itemsPerPage: this.itemsPerPage,
+        sort
+      });
+      this.$store.dispatch("store/fetchPharmacyItems", {
+        currentPage: this.$route.query.currentPage || this.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        sort
       });
     }
   },
   created() {
     this.$store.dispatch("store/fetchPharmacyItems", {
-      currentPage: this.currentPage,
-      itemsPerPage: this.itemsPerPage
+      currentPage: this.$route.query.currentPage || this.currentPage,
+      itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage
     });
   }
 };

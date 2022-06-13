@@ -7,14 +7,16 @@ import {
   createOrdinaryPatient,
   findDependantByEnrolleeCode,
   findPatientByPhone,
+  getPatientProfile,
   getPatientById,
   getPatients,
   getPatientsByDate,
   searchPatients,
   updatePatient,
 } from './patient.repository';
-import { processSnappedPhoto } from '../../core/helpers/helper';
+import { processSnappedPhoto, StatusCodes } from '../../core/helpers/helper';
 import { assignHospitalNumber, uploadImageToBox } from '../../core/command/schedule';
+import { DEPENDANT_EXIST, INTERNAL_ERROR, PATIENT_EXIST } from './messages/response-messages';
 
 class PatientService {
   /**
@@ -27,7 +29,7 @@ class PatientService {
    */
   static async createCashPatientService(body) {
     const patient = await findPatientByPhone(body.phone);
-    if (patient) throw new BadException('INVALID', 400, 'Patient already exists');
+    if (patient) throw new BadException('INVALID', StatusCodes.BAD_REQUEST, PATIENT_EXIST);
 
     try {
       // Save photo to disk
@@ -39,7 +41,7 @@ class PatientService {
       await uploadImageToBox(filepath, fileName, createdPatient);
       return createdPatient;
     } catch (e) {
-      throw new BadException('Error', 500, e.message);
+      throw new BadException('Error', StatusCodes.SERVER_ERROR, e.message);
     }
   }
 
@@ -53,7 +55,7 @@ class PatientService {
    */
   static async createInsurancePatientService(body) {
     const user = await findPatientByPhone(body.phone);
-    if (user) throw new BadException('INVALID', 400, 'Patient already exists');
+    if (user) throw new BadException('INVALID', StatusCodes.BAD_REQUEST, PATIENT_EXIST);
 
     try {
       // Save photo to disk
@@ -61,7 +63,7 @@ class PatientService {
 
       return createInsurancePatient({ ...body, fileName });
     } catch (e) {
-      throw new BadException('Error', 500, 'internal server error');
+      throw new BadException('Error', StatusCodes.SERVER_ERROR, INTERNAL_ERROR);
     }
   }
 
@@ -75,9 +77,11 @@ class PatientService {
    */
   static async createOrdinaryPatientService(body) {
     const patient = await findPatientByPhone(body.phone);
-    if (patient) throw new BadException('INVALID', 400, 'Patient already exists');
+    if (patient) throw new BadException('INVALID', StatusCodes.BAD_REQUEST, PATIENT_EXIST);
 
-    return createOrdinaryPatient(body);
+    const createdPatient = await createOrdinaryPatient(body);
+    await assignHospitalNumber(createdPatient.id);
+    return createdPatient;
   }
 
   /**
@@ -90,7 +94,7 @@ class PatientService {
    */
   static async createDependantService(body) {
     const dependant = await findDependantByEnrolleeCode(body.enrollee_code);
-    if (dependant) throw new BadException('INVALID', 400, 'Dependants already exists');
+    if (dependant) throw new BadException('INVALID', StatusCodes.BAD_REQUEST, DEPENDANT_EXIST);
 
     const patient = await createDependant(body);
     await assignHospitalNumber(patient.id);
@@ -144,6 +148,18 @@ class PatientService {
    */
   static async getPatientById(id) {
     return getPatientById(id);
+  }
+
+  /**
+   * get a patient profile by Id
+   *
+   * @static
+   * @returns {json} json object with patient data
+   * @memberOf PatientService
+   * @param id
+   */
+  static async getPatientProfile(id) {
+    return getPatientProfile(id);
   }
 }
 export default PatientService;

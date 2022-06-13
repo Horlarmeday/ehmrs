@@ -31,8 +31,7 @@ export default {
           params: {
             currentPage: payload.currentPage,
             pageLimit: payload.itemsPerPage,
-            sort_by: payload.sort_by,
-            order: payload.order,
+            sort: payload.sort,
             search: payload.search
           }
         })

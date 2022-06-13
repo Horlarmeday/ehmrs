@@ -111,7 +111,7 @@ import Pagination from "@/utils/Pagination.vue";
 import EditIcon from "../../../assets/icons/EditIcon.vue";
 import AddIcon from "../../../assets/icons/AddIcon.vue";
 import Search from "../../../utils/Search.vue";
-import { queryStrings } from "../../../common/common";
+import { setUrlQueryParams } from "../../../common/common";
 
 export default {
   data() {
@@ -159,7 +159,7 @@ export default {
     },
 
     handlePageChange() {
-      queryStrings({
+      setUrlQueryParams({
         pathName: "generic-drugs",
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage
@@ -171,7 +171,7 @@ export default {
     },
 
     onHandleSearch(search) {
-      queryStrings({
+      setUrlQueryParams({
         pathName: "generic-drugs",
         currentPage: 1,
         itemsPerPage: this.itemsPerPage,
@@ -190,7 +190,7 @@ export default {
     },
 
     onChangePageCount(pagecount) {
-      queryStrings({
+      setUrlQueryParams({
         pathName: "generic-drugs",
         currentPage: this.currentPage,
         itemsPerPage: pagecount

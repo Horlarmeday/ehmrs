@@ -175,7 +175,8 @@ export async function getPharmacyItems(
   return PharmacyItem.paginate({
     page: currentPage,
     paginate: pageLimit,
-    order: [[sort_by, order]],
+    order:
+      sort_by === 'name' ? [[{ model: Drug, as: 'drug' }, sort_by, order]] : [[sort_by, order]],
     include: [
       {
         model: Drug,

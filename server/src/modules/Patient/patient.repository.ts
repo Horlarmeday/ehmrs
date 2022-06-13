@@ -3,6 +3,7 @@ import { Op } from 'sequelize';
 import { delay, padNumberWithZero, processArray } from '../../core/helpers/general';
 import { generateRandomNumbers, processSnappedPhoto } from '../../core/helpers/helper';
 import { assignHospitalNumber } from '../../core/command/schedule';
+import { Patient_Type } from './interface/patient.interface';
 
 const { Patient, Insurance, HMO } = require('../../database/models');
 
@@ -24,18 +25,18 @@ export async function generateHospitalNumber() {
  * @returns {json} json object with phone data
  * @param data
  */
-export async function findPatientByPhone(data) {
+export async function findPatientByPhone(data: string) {
   return Patient.findOne({ where: { phone: data } });
 }
 
 /**
- * query staff account in the DB by hospital Id
+ * query patient account in the DB by hospital Id
  *
  * @function
  * @returns {json} json object with hospital Id data
  * @param data
  */
-export async function getPatientByHospitalId(data) {
+export async function getPatientByHospitalId(data: string) {
   return Patient.findOne({ where: { hospital_id: data } });
 }
 
@@ -44,7 +45,7 @@ export async function getPatientByHospitalId(data) {
  * @param data
  * @returns {object} return patient data
  */
-export async function getPatientById(data) {
+export async function getPatientById(data: number) {
   return Patient.findByPk(data);
 }
 
@@ -130,7 +131,7 @@ async function delayedLog(dependant) {
     plan: dependant.plan,
     staff_id: dependant.staff_id,
     principal_id: dependant.patient_id,
-    patient_type: 'Dependant',
+    patient_type: Patient_Type.DEPENDANT,
     country: dependant.country,
     state: dependant.state,
     lga: dependant.lga,
@@ -207,7 +208,7 @@ export async function createInsurancePatient(data) {
         hmo_id,
         plan,
         organization,
-        patient_type: 'Principal',
+        patient_type: Patient_Type.PRINCIPAL,
       },
       { transaction: t }
     );
@@ -320,7 +321,7 @@ export async function createDependant(data) {
     staff_id,
     fullname: `${firstname}  ${lastname}`,
     principal_id: patient_id,
-    patient_type: 'Dependant',
+    patient_type: Patient_Type.DEPENDANT,
   });
 }
 
@@ -410,7 +411,7 @@ export async function updatePatient(data) {
  * @param data
  * @returns {object} return patient data
  */
-export async function getOnePatient(data) {
+export async function getPatientProfile(data) {
   return Patient.findOne({
     where: { id: data },
     include: [{ model: Insurance }, { model: HMO }, { model: Patient, as: 'dependants' }],

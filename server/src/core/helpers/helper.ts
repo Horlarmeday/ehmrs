@@ -86,3 +86,17 @@ export const joinCapitalizedWord = (param: string, character: string): string =>
   });
   return str;
 };
+
+export function splitSort(sort) {
+  let result;
+  if (/^drug/.test(sort)) {
+    result = sort.split('name_');
+    return { sort_by: 'name', order: result[1].toUpperCase() };
+  }
+  if (/^date/.test(sort)) {
+    result = sort.split('received_');
+    return { sort_by: 'date_received', order: result[1].toUpperCase() };
+  }
+  result = sort.split('_');
+  return { sort_by: result[0], order: result[1].toUpperCase() };
+}

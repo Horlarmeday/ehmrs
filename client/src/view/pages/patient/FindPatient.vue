@@ -128,7 +128,7 @@
           :total-pages="pages"
           :total="queriedItems"
           :per-page="perPage"
-          :current-page="currentPage"
+          :current-page="+$route.query.currentPage || currentPage"
           @pagechanged="onPageChange"
         />
       </div>
@@ -152,6 +152,7 @@ import DateFilter from "../../../utils/DateFilter";
 import ArrowUpIcon from "../../../assets/icons/ArrowUpIcon";
 import EditIcon from "../../../assets/icons/EditIcon";
 import CreateVisit from "../visits/create/CreateVisit";
+import {setUrlQueryParams} from "../../../common/common";
 export default {
   data() {
     return {
@@ -218,30 +219,48 @@ export default {
     searchByDate(start, end) {
       (this.start = start), (this.end = end);
       this.currentPage = 1;
-      this.$store.dispatch("patient/fetchPatients", {
+      setUrlQueryParams({
+        pathName: "find-patient",
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
-        start: this.start,
-        end: this.end
+        startDate: this.start,
+        endDate: this.end
+      });
+      this.$store.dispatch("patient/fetchPatients", {
+        currentPage: this.$route.query.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate
       });
     },
 
     searchByName() {
       if (!this.patient_name) return this.notifyEmptyField();
       this.currentPage = 1;
-      this.$store.dispatch("patient/fetchPatients", {
+      setUrlQueryParams({
+        pathName: "find-patient",
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
         search: this.patient_name
       });
+      this.$store.dispatch("patient/fetchPatients", {
+        currentPage: this.$route.query.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage,
+        search: this.$route.query.search
+      });
     },
 
     handlePageChange() {
-      this.$store.dispatch("patient/fetchPatients", {
+      setUrlQueryParams({
+        pathName: "find-patient",
         currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage,
-        start: this.start,
-        end: this.end
+        itemsPerPage: this.itemsPerPage
+      });
+      this.$store.dispatch("patient/fetchPatients", {
+        currentPage: this.$route.query.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate
       });
     },
 

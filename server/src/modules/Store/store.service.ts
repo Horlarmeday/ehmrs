@@ -10,6 +10,7 @@ import {
 } from './store.repository';
 import { PharmacyItem } from './interface/pharmacy-item.interface';
 import { LabItem } from './interface/lab-item.interface';
+import { splitSort } from '../../core/helpers/helper';
 
 class StoreService {
   /**
@@ -42,13 +43,18 @@ class StoreService {
    * @memberOf StoreService
    */
   static async getPharmacyItems(body): Promise<PharmacyItem[]> {
-    const { currentPage, pageLimit, search, sort_by, order } = body;
+    const { currentPage, pageLimit, search, sort } = body;
     if (search) {
       return searchPharmacyItems(+currentPage, +pageLimit, search);
     }
 
-    if (Object.values(body).length) {
+    if (sort) {
+      const { sort_by, order } = splitSort(sort);
       return getPharmacyItems(+currentPage, +pageLimit, sort_by, order);
+    }
+
+    if (Object.values(body).length) {
+      return getPharmacyItems(+currentPage, +pageLimit);
     }
 
     return getPharmacyItems();

@@ -7,14 +7,16 @@
         :class="isInFirstPage ? disabled : ''"
         @click="onClickFirstPage"
         :disabled="isInFirstPage"
-        ><i class="ki ki-bold-double-arrow-back icon-xs"/></a>
+        ><i class="ki ki-bold-double-arrow-back icon-xs"
+      /></a>
       <a
         href="#"
         class="btn btn-icon btn-sm btn-light-primary mr-2 my-1"
         @click="onClickPreviousPage"
         :disabled="isInFirstPage"
         :class="isInFirstPage ? disabled : ''"
-        ><i class="ki ki-bold-arrow-back icon-xs"/></a>
+        ><i class="ki ki-bold-arrow-back icon-xs"
+      /></a>
 
       <a
         v-for="page in pages"
@@ -33,16 +35,16 @@
         :class="isInLastPage ? disabled : ''"
         @click="onClickNextPage"
         :disabled="isInLastPage"
-        ><i class="ki ki-bold-arrow-next icon-xs"></i
-      ></a>
+        ><i class="ki ki-bold-arrow-next icon-xs"
+      /></a>
       <a
         href="#"
         class="btn btn-icon btn-sm btn-light-primary mr-2 my-1"
         @click="onClickLastPage"
         :disabled="isInLastPage"
         :class="isInLastPage ? disabled : ''"
-        ><i class="ki ki-bold-double-arrow-next icon-xs"></i
-      ></a>
+        ><i class="ki ki-bold-double-arrow-next icon-xs"
+      /></a>
     </div>
     <div class="d-flex align-items-center py-3">
       <select
