@@ -1,8 +1,7 @@
 /* eslint-disable camelcase */
 import { Op } from 'sequelize';
 import { CASH, NHIS } from '../../core/constants';
-
-const { Drug, PharmacyItem, Unit, LabItem, DosageForm, Measurement, RouteOfAdministration } = require('../../database/models');
+import { Drug, PharmacyItem, Unit, LabItem, DosageForm, Measurement, RoutesOfAdministration } from '../../database/models';
 
 /** ***********************
  * PHARMACY STORE
@@ -148,7 +147,7 @@ export async function searchPharmacyItems(currentPage = 1, pageLimit = 10, searc
         attributes: ['name'],
       },
       {
-        model: RouteOfAdministration,
+        model: RoutesOfAdministration,
         as: 'route',
         attributes: ['name'],
       },
@@ -199,7 +198,7 @@ export async function getPharmacyItems(
         attributes: ['name'],
       },
       {
-        model: RouteOfAdministration,
+        model: RoutesOfAdministration,
         as: 'route',
         attributes: ['name'],
       },

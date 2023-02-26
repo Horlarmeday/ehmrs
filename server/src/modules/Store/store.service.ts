@@ -8,9 +8,8 @@ import {
   searchLaboratoryItems,
   searchPharmacyItems,
 } from './store.repository';
-import { PharmacyItem } from './interface/pharmacy-item.interface';
-import { LabItem } from './interface/lab-item.interface';
 import { splitSort } from '../../core/helpers/helper';
+import { PharmacyItem, LabItem } from '../../database/models';
 
 class StoreService {
   /**
@@ -42,7 +41,9 @@ class StoreService {
    * @param body
    * @memberOf StoreService
    */
-  static async getPharmacyItems(body): Promise<PharmacyItem[]> {
+  static async getPharmacyItems(
+    body
+  ): Promise<{ total: any; pages: number; perPage: number; docs: any; currentPage: number }> {
     const { currentPage, pageLimit, search, sort } = body;
     if (search) {
       return searchPharmacyItems(+currentPage, +pageLimit, search);
@@ -80,7 +81,9 @@ class StoreService {
    * @param body
    * @memberOf StoreService
    */
-  static async getLaboratoryItems(body): Promise<LabItem[]> {
+  static async getLaboratoryItems(
+    body
+  ): Promise<{ total: any; pages: number; perPage: number; docs: any; currentPage: number }> {
     const { currentPage, pageLimit, search } = body;
     if (search) {
       return searchLaboratoryItems(+currentPage, +pageLimit, search);
