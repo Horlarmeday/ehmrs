@@ -11,7 +11,7 @@ import {
   searchTypeVisits,
   searchVisits,
 } from './visit.repository';
-import { Visit } from './interface/visit.interface';
+import { Visit } from '../../database/models';
 
 class VisitService {
   /**
@@ -36,7 +36,9 @@ class VisitService {
    * @param body
    * @memberOf VisitService
    */
-  static async getActiveVisits(body): Promise<Visit[]> {
+  static async getActiveVisits(
+    body
+  ): Promise<{ total: any; pages: number; perPage: number; docs: any; currentPage: number }> {
     const { currentPage, pageLimit, search } = body;
     if (search) {
       return searchActiveVisits(+currentPage, +pageLimit, search);

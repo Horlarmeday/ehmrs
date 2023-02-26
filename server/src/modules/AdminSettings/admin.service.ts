@@ -20,7 +20,7 @@ import {
   updateUnit,
   updateWard,
 } from './admin.repository';
-import { Department } from './interface/admin.interface';
+import { Department } from '../../database/models';
 
 class AdminService {
   /**

@@ -2,7 +2,7 @@
 
 import { Op, Sequelize } from 'sequelize';
 
-const { Visit, Patient } = require('../../database/models');
+import { Visit, Patient } from '../../database/models';
 
 /**
  * create a patient visit

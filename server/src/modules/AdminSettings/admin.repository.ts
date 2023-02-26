@@ -2,8 +2,7 @@
 import { Op } from 'sequelize';
 import { getModelById, getNumberOfRecords } from '../../core/helpers/general';
 
-const { Department, Unit, Ward, Bed, Service } = require ('../../database/models');
-
+import { Department, Unit, Ward, Bed, Service } from '../../database/models';
 
 /** ***********************
  * DEPARTMENT
