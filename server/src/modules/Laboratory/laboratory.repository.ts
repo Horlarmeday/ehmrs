@@ -2,7 +2,7 @@
 import { Op } from 'sequelize';
 import { getModelById, getNumberOfRecords } from '../../core/helpers/general';
 
-const { Test, NhisTest, TestSample } = require('../../database/models');
+import { Test, NhisTest, Sample } from '../../database/models';
 
 /** ***********************
  * TEST SAMPLE
@@ -16,7 +16,7 @@ const { Test, NhisTest, TestSample } = require('../../database/models');
 export async function createTestSample(data) {
   const { name, staff_id } = data;
 
-  return TestSample.create({
+  return Sample.create({
     name,
     staff_id,
   });
@@ -29,7 +29,7 @@ export async function createTestSample(data) {
  */
 export async function updateTestSample(data) {
   const { sample_id } = data;
-  const sample = await getModelById(TestSample, sample_id);
+  const sample = await getModelById(Sample, sample_id);
   return sample.update(data);
 }
 
@@ -43,7 +43,7 @@ export async function updateTestSample(data) {
  * @param search
  */
 export async function searchTestSamples(currentPage = 1, pageLimit = 10, search) {
-  return TestSample.paginate({
+  return Sample.paginate({
     page: currentPage,
     paginate: pageLimit,
     order: [['createdAt', 'DESC']],
@@ -64,7 +64,7 @@ export async function searchTestSamples(currentPage = 1, pageLimit = 10, search)
  * @param pageLimit
  */
 export async function getTestSamples(currentPage = 1, pageLimit = 10) {
-  return TestSample.paginate({
+  return Sample.paginate({
     page: currentPage,
     paginate: pageLimit,
     order: [['createdAt', 'DESC']],

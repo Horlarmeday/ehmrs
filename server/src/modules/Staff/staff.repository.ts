@@ -2,7 +2,7 @@
 
 import { Op } from 'sequelize';
 
-const { Staff } = require('../../database/models');
+import { Staff } from '../../database/models';
 
 /**
  * save staff details to the DB
@@ -32,7 +32,6 @@ export async function createStaff(data) {
     firstname,
     lastname,
     middlename,
-    fullname: `${firstname} ${lastname}`,
     email,
     password,
     address,
@@ -67,7 +66,7 @@ export async function findByPhoneOrUsername(data) {
  * @returns {json} json object with staff data
  * @param username
  */
-export async function getStaffByUsername(username) {
+export async function getStaffByUsername(username: string) {
   return Staff.findOne({ where: { username } });
 }
 

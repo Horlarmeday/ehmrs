@@ -1,22 +1,13 @@
 /* eslint-disable camelcase */
 import { Op } from 'sequelize';
-import { delay, padNumberWithZero, processArray } from '../../core/helpers/general';
-import { generateRandomNumbers, processSnappedPhoto } from '../../core/helpers/helper';
+import { delay, processArray } from '../../core/helpers/general';
+import { processSnappedPhoto } from '../../core/helpers/helper';
 import { assignHospitalNumber } from '../../core/command/schedule';
-import { Patient_Type } from './interface/patient.interface';
+import { PatientType } from './interface/patient.interface';
+import { HMO, Patient, Insurance } from '../../database/models';
+import sequelizeConnection from '../../database/config/config';
 
-const { Patient, Insurance, HMO } = require('../../database/models');
-
-const db = require('../../database/models');
-
-/**
- * generate the hospital id
- * @returns string
- */
-export async function generateHospitalNumber() {
-  const randomNumbers = generateRandomNumbers(5);
-  return `SVH/${padNumberWithZero(randomNumbers, 6)}`;
-}
+// const db = require('../../database/models');
 
 /**
  * query staff account in the DB by phone
@@ -25,7 +16,7 @@ export async function generateHospitalNumber() {
  * @returns {json} json object with phone data
  * @param data
  */
-export async function findPatientByPhone(data: string) {
+export async function findPatientByPhone(data: string): Promise<Patient> {
   return Patient.findOne({ where: { phone: data } });
 }
 
@@ -36,7 +27,7 @@ export async function findPatientByPhone(data: string) {
  * @returns {json} json object with hospital Id data
  * @param data
  */
-export async function getPatientByHospitalId(data: string) {
+export async function getPatientByHospitalId(data: string): Promise<Patient> {
   return Patient.findOne({ where: { hospital_id: data } });
 }
 
@@ -54,7 +45,7 @@ export async function getPatientById(data: number) {
  * @param data
  * @returns {object} patient data
  */
-export async function createCashPatient(data) {
+export async function createCashPatient(data): Promise<Patient> {
   const {
     firstname,
     email,
@@ -101,7 +92,6 @@ export async function createCashPatient(data) {
     relationship,
     alt_phone,
     staff_id,
-    fullname: `${firstname} ${lastname}`,
   });
 }
 
@@ -116,7 +106,6 @@ async function delayedLog(dependant) {
   const { fileName } = await processSnappedPhoto(dependant.photo, dependant.firstname);
 
   const patient = await Patient.create({
-    fullname: `${dependant.firstname} ${dependant.lastname}`,
     firstname: dependant.firstname,
     lastname: dependant.lastname,
     phone: dependant.phone,
@@ -131,7 +120,7 @@ async function delayedLog(dependant) {
     plan: dependant.plan,
     staff_id: dependant.staff_id,
     principal_id: dependant.patient_id,
-    patient_type: Patient_Type.DEPENDANT,
+    patient_type: PatientType.DEPENDANT,
     country: dependant.country,
     state: dependant.state,
     lga: dependant.lga,
@@ -177,7 +166,7 @@ export async function createInsurancePatient(data) {
     dependants,
   } = data;
 
-  return db.sequelize.transaction(async t => {
+  return sequelizeConnection.transaction(async t => {
     const patient = await Patient.create(
       {
         firstname,
@@ -208,7 +197,7 @@ export async function createInsurancePatient(data) {
         hmo_id,
         plan,
         organization,
-        patient_type: Patient_Type.PRINCIPAL,
+        patient_type: PatientType.PRINCIPAL,
       },
       { transaction: t }
     );
@@ -319,9 +308,8 @@ export async function createDependant(data) {
     relationship,
     plan,
     staff_id,
-    fullname: `${firstname}  ${lastname}`,
     principal_id: patient_id,
-    patient_type: Patient_Type.DEPENDANT,
+    patient_type: PatientType.DEPENDANT,
   });
 }
 
@@ -382,7 +370,12 @@ export async function searchPatients(currentPage = 1, pageLimit = 10, search) {
     where: {
       [Op.or]: [
         {
-          fullname: {
+          firstname: {
+            [Op.like]: `%${search}%`,
+          },
+        },
+        {
+          lastname: {
             [Op.like]: `%${search}%`,
           },
         },
@@ -401,7 +394,7 @@ export async function searchPatients(currentPage = 1, pageLimit = 10, search) {
  * @param data
  * @returns {object} return patient data
  */
-export async function updatePatient(data) {
+export async function updatePatient(data): Promise<Patient> {
   const patient = await getPatientById(data.patient_id);
   return patient.update(data);
 }

@@ -15,7 +15,7 @@ import {
   updatePatient,
 } from './patient.repository';
 import { processSnappedPhoto, StatusCodes } from '../../core/helpers/helper';
-import { assignHospitalNumber, uploadImageToBox } from '../../core/command/schedule';
+import { assignHospitalNumber, uploadImage } from '../../core/command/schedule';
 import { DEPENDANT_EXIST, INTERNAL_ERROR, PATIENT_EXIST } from './messages/response-messages';
 
 class PatientService {
@@ -38,7 +38,7 @@ class PatientService {
       const createdPatient = await createCashPatient({ ...body, fileName });
       await assignHospitalNumber(createdPatient.id);
       // upload patient to box in the background
-      await uploadImageToBox(filepath, fileName, createdPatient);
+      await uploadImage(body.photo, createdPatient);
       return createdPatient;
     } catch (e) {
       throw new BadException('Error', StatusCodes.SERVER_ERROR, e.message);

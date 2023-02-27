@@ -8,8 +8,8 @@ import {
 } from './staff.repository';
 import { BadException } from '../../common/util/api-error';
 import { processSnappedPhoto } from '../../core/helpers/helper';
-import {EXISTING_STAFF, INVALID_STAFF_ID} from './messages/response-messages';
-import {Staff, StaffQueryParam} from './interface/staff.interface';
+import { EXISTING_STAFF, INVALID_STAFF_ID } from './messages/response-messages';
+import { Staff, StaffQueryParam } from './interface/staff.interface';
 
 class StaffService {
   /**
