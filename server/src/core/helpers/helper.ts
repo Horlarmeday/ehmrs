@@ -13,8 +13,8 @@ const writeFile = promisify(fs.writeFile);
  * @param patient - patient firstname
  * @returns {Promise<{fileName: string, filepath: string}>}
  */
-export async function processSnappedPhoto(param, patient) {
-  const matches = param.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+export async function processSnappedPhoto(param: string, patient: string) {
+  const matches = param.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/); // checks if its a base64 image
   if (matches.length !== 3) throw new BadException('INVALID', 400, 'invalid base64 string');
 
   const imageBuffer = Buffer.from(matches[2], 'base64');
@@ -87,7 +87,7 @@ export const joinCapitalizedWord = (param: string, character: string): string =>
   return str;
 };
 
-export function splitSort(sort) {
+export function splitSort(sort: string) {
   let result;
   if (/^drug/.test(sort)) {
     result = sort.split('name_');
@@ -100,3 +100,19 @@ export function splitSort(sort) {
   result = sort.split('_');
   return { sort_by: result[0], order: result[1].toUpperCase() };
 }
+
+export const paginate = (data: any, page: number, limit: number) => {
+  const { count: total, rows: docs } = data;
+  const currentPage = page || 1;
+  const pages = Math.ceil(total / limit);
+  const perPage = limit;
+
+  return { total, docs, pages, perPage, currentPage };
+};
+
+export const calcLimitAndOffset = (page: number, size: number) => {
+  const limit = size || 10;
+  const offset = page ? (page - 1) * limit : 0;
+
+  return { limit, offset };
+};

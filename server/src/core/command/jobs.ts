@@ -1,8 +1,8 @@
 import sendSMS from '../helpers/sms';
-import { uploadBoxImage } from '../helpers/box';
 import { padNumberWithZero } from '../helpers/general';
 import { updatePatient } from '../../modules/Patient/patient.repository';
 import { ASSIGN_HOSPITAL_NUMBER, SEND_PATIENT_SMS, UPLOAD_IMAGE } from '../constants';
+import { uploadImageUpdatePatient } from '../helpers/cloudinary';
 
 export default agenda => {
   agenda.define(SEND_PATIENT_SMS, async job => {
@@ -11,8 +11,8 @@ export default agenda => {
   });
 
   agenda.define(UPLOAD_IMAGE, async job => {
-    const { fileName, filepath, patient } = job.attrs.data;
-    await uploadBoxImage(fileName, filepath, patient);
+    const { image, patient } = job.attrs.data;
+    await uploadImageUpdatePatient(image, patient);
   });
 
   agenda.define(ASSIGN_HOSPITAL_NUMBER, async job => {

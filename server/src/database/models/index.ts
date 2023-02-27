@@ -1,45 +1,28 @@
-import fs from 'fs';
-import path from 'path';
-import { Sequelize } from 'sequelize';
-
-const basename = path.basename(__filename);
-const env = process.env.NODE_ENV || 'development';
-
-const config = require(`${__dirname}/../config/config.js`)[env];
-const db: any = {};
-
-let sequelize;
-if (config.use_env_variable) {
-  sequelize = new Sequelize(process.env[config.use_env_variable], config);
-} else {
-  sequelize = new Sequelize(config.database, config.username, config.password, config);
-}
-
-sequelize
-  .authenticate()
-  .then(() => {
-    console.log('Connection has been established successfully.');
-  })
-  .catch(err => {
-    console.error('Unable to connect to the database:', err);
-  });
-
-fs.readdirSync(__dirname)
-  .filter(file => {
-    return file.indexOf('.') !== 0 && file !== basename && file.slice(-3) === '.ts';
-  })
-  .forEach(file => {
-    const model = sequelize.import(path.join(__dirname, file));
-    db[model.name] = model;
-  });
-
-Object.keys(db).forEach(modelName => {
-  if (db[modelName].associate) {
-    db[modelName].associate(db);
-  }
-});
-
-db.sequelize = sequelize;
-db.Sequelize = Sequelize;
-
-module.exports = db;
+export { Bed } from './bed';
+export { Staff } from './staff';
+export { Complaints } from './complaints';
+export { Department } from './department';
+export { Diagnosis } from './diagnosis';
+export { DosageForm } from './dosageForm';
+export { Drug } from './drug';
+export { History } from './history';
+export { HMO } from './hmo';
+export { Insurance } from './insurance';
+export { Inventory } from './inventory';
+export { LabItem } from './labItem';
+export { Laboratory } from './laboratory';
+export { Measurement } from './measurement';
+export { NhisInventory } from './nhisInventory';
+export { NhisTest } from './nhisTest';
+export { Patient } from './patient';
+export { PharmacyItem } from './pharmacyItem';
+export { PrescribedDrug } from './prescribedDrug';
+export { PrescribedTest } from './prescribedTest';
+export { RoutesOfAdministration } from './routesOfAdministration';
+export { Sample } from './sample';
+export { Service } from './service';
+export { Test } from './test';
+export { Triage } from './triage';
+export { Unit } from './unit';
+export { Visit } from './visit';
+export { Ward } from './ward';
