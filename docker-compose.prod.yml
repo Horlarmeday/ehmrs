@@ -6,7 +6,7 @@ services:
     ports: 
       - '4050'
     env_file:
-      - .env
+      - server/.env
     links: 
       - mongo
       - mysql
