@@ -3,11 +3,14 @@ import {
   Column,
   DataType,
   ForeignKey,
+  HasMany,
   Model,
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
 import { Staff } from './staff';
+import { NhisTest } from './nhisTest';
+import { Test } from './test';
 import {
   FindAttributeOptions,
   GroupOption,
@@ -17,8 +20,8 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 
-@Table({ timestamps: true })
-export class Service extends Model {
+@Table({ timestamps: true, tableName: 'Test_Samples' })
+export class Sample extends Model {
   @PrimaryKey
   @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
   id: number;
@@ -34,28 +37,6 @@ export class Service extends Model {
   })
   name: string;
 
-  @Column({
-    type: DataType.DECIMAL(12, 2),
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'price is required',
-      },
-    },
-  })
-  price: number;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'code is required',
-      },
-    },
-  })
-  code: string;
-
   @ForeignKey(() => Staff)
   @Column({
     type: DataType.INTEGER,
@@ -64,6 +45,12 @@ export class Service extends Model {
 
   @BelongsTo(() => Staff)
   staff: Staff;
+
+  @HasMany(() => NhisTest)
+  nhis_tests: NhisTest[];
+
+  @HasMany(() => Test)
+  tests: Test[];
 
   static async paginate(param: {
     paginate: number;

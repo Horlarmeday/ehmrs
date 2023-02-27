@@ -1,190 +1,270 @@
-import sequelizePaginate from 'sequelize-paginate';
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  ForeignKey,
+  HasMany,
+  Model,
+  PrimaryKey,
+  Table,
+} from 'sequelize-typescript';
+import { PatientType } from '../../modules/Patient/interface/patient.interface';
+import { Gender, Staff } from './staff';
+import { HMO } from './hmo';
+import { Insurance } from './insurance';
+import {
+  FindAttributeOptions,
+  GroupOption,
+  Includeable,
+  Order,
+  WhereOptions,
+} from 'sequelize/types/model';
+import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 
-module.exports = (sequelize, DataTypes) => {
-  const Patient = sequelize.define(
-    'Patient',
-    {
-      id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-      },
-      firstname: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-          notEmpty: {
-            msg: 'firstname is required',
-          },
-        },
-      },
-      lastname: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-          notEmpty: {
-            msg: 'lastname is required',
-          },
-        },
-      },
-      middlename: {
-        type: DataTypes.STRING,
-      },
-      gender: {
-        type: DataTypes.ENUM('Male', 'Female', 'Other'),
-        allowNull: false,
-        validate: {
-          notEmpty: {
-            msg: 'gender is required',
-          },
-        },
-      },
-      phone: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-          notEmpty: {
-            msg: 'phone number is required',
-          },
-        },
-      },
-      alt_phone: {
-        type: DataTypes.STRING,
-      },
-      address: {
-        type: DataTypes.TEXT,
-        allowNull: false,
-        validate: {
-          notEmpty: {
-            msg: 'address is required',
-          },
-        },
-      },
-      country: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-          notEmpty: {
-            msg: 'country is required',
-          },
-        },
-      },
-      state: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-          notEmpty: {
-            msg: 'state is required',
-          },
-        },
-      },
-      lga: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-          notEmpty: {
-            msg: 'local govt is required',
-          },
-        },
-      },
-      hospital_id: {
-        type: DataTypes.STRING,
-      },
-      occupation: {
-        type: DataTypes.STRING,
-      },
-      next_of_kin_name: {
-        type: DataTypes.STRING,
-      },
-      next_of_kin_phone: {
-        type: DataTypes.STRING,
-      },
-      next_of_kin_address: {
-        type: DataTypes.TEXT,
-      },
-      relationship: {
-        type: DataTypes.STRING,
-      },
-      photo: {
-        type: DataTypes.TEXT,
-      },
-      photo_url: {
-        type: DataTypes.TEXT,
-      },
-      date_of_birth: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        validate: {
-          notEmpty: {
-            msg: 'date of birth is required',
-          },
-        },
-      },
-      insurance_id: { type: DataTypes.INTEGER },
-      hmo_id: { type: DataTypes.INTEGER },
-      enrollee_code: { type: DataTypes.STRING },
-      marital_status: {
-        type: DataTypes.STRING,
-      },
-      religion: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-          notEmpty: {
-            msg: 'religion is required',
-          },
-        },
-      },
-      email: { type: DataTypes.STRING },
-      staff_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        validate: {
-          notEmpty: true,
-        },
-      },
-      organization: { type: DataTypes.STRING },
-      plan: { type: DataTypes.STRING },
-      has_insurance: { type: DataTypes.BOOLEAN, defaultValue: false },
-      principal_id: { type: DataTypes.INTEGER },
-      patient_type: {
-        type: DataTypes.ENUM('Dependant', 'Principal', 'Independent'),
-        defaultValue: 'Independent',
-      },
-      fullname: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-          notEmpty: true,
-        },
+@Table({ timestamps: true })
+export class Patient extends Model {
+  @PrimaryKey
+  @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
+  id: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'firstname is required',
       },
     },
-    {}
-  );
-  Patient.associate = ({ Staff, Dependant, Patient, Insurance, HMO }) => {
-    // associations can be defined here
-    Patient.belongsTo(Staff, {
-      foreignKey: 'staff_id',
-    });
+  })
+  firstname: string;
 
-    Patient.hasMany(Dependant, {
-      foreignKey: 'patient_id',
-    });
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'lastname is required',
+      },
+    },
+  })
+  lastname: string;
 
-    Patient.belongsTo(Insurance, {
-      foreignKey: 'insurance_id',
-    });
+  @Column({ type: DataType.STRING })
+  middlename?: string;
 
-    Patient.belongsTo(HMO, {
-      foreignKey: 'hmo_id',
-    });
+  @Column({
+    type: DataType.ENUM(Gender.MALE, Gender.FEMALE, Gender.OTHER),
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'gender is required',
+      },
+    },
+  })
+  gender: string;
 
-    Patient.hasMany(Patient, {
-      foreignKey: 'principal_id',
-      as: 'dependants',
-    });
-  };
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'phone number is required',
+      },
+    },
+  })
+  phone: string;
 
-  sequelizePaginate.paginate(Patient);
-  return Patient;
-};
+  @Column({
+    type: DataType.STRING,
+  })
+  alt_phone?: string;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'address is required',
+      },
+    },
+  })
+  address: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'country is required',
+      },
+    },
+  })
+  country: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'state is required',
+      },
+    },
+  })
+  state: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'local govt is required',
+      },
+    },
+  })
+  lga: string;
+
+  @Column({
+    type: DataType.INTEGER,
+  })
+  hospital_id?: number;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  next_of_kin_name?: string;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  next_of_kin_address?: string;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  next_of_kin_phone?: string;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  occupation: string;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  relationship?: string;
+
+  @Column({
+    type: DataType.TEXT,
+  })
+  photo: string;
+
+  @Column({
+    type: DataType.TEXT,
+  })
+  photo_url: string;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'date of birth is required',
+      },
+    },
+  })
+  date_of_birth: Date;
+
+  @ForeignKey(() => Insurance)
+  @Column({ type: DataType.INTEGER })
+  insurance_id?: number;
+
+  @ForeignKey(() => HMO)
+  @Column({ type: DataType.INTEGER })
+  hmo_id: number;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  marital_status: string;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  enrollee_code: string;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  religion: string;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  email?: string;
+
+  @ForeignKey(() => Staff)
+  @Column({ type: DataType.INTEGER })
+  staff_id?: number;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  organization?: string;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  plan?: string;
+
+  @Column({
+    type: DataType.BOOLEAN,
+  })
+  has_insurance: boolean;
+
+  @ForeignKey(() => Patient)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  principal_id?: number;
+
+  @Column({
+    type: DataType.ENUM(PatientType.DEPENDANT, PatientType.PRINCIPAL, PatientType.INDEPENDENT),
+    defaultValue: PatientType.INDEPENDENT,
+  })
+  patient_type: PatientType;
+
+  @Column({
+    type: DataType.VIRTUAL,
+    get(): unknown {
+      return `${this.getDataValue('firstname')} ${this.getDataValue('lastname')}`;
+    },
+  })
+  fullname?: string;
+
+  @BelongsTo(() => Staff)
+  staff: Staff;
+
+  @BelongsTo(() => HMO)
+  hmo: HMO;
+
+  @BelongsTo(() => Insurance)
+  insurance: Insurance;
+
+  @HasMany(() => Patient)
+  dependants: Patient;
+
+  static async paginate(param: {
+    paginate: number;
+    attributes?: FindAttributeOptions;
+    where?: WhereOptions<any>;
+    page?: number;
+    order?: Order;
+    group?: GroupOption;
+    include?: Includeable | Includeable[];
+  }) {
+    const { limit, offset } = calcLimitAndOffset(param.page, param.paginate);
+    const options = Object.assign({ limit, offset }, param);
+    const data = await this.findAndCountAll(options);
+    return paginate(data, param.page, limit);
+  }
+}

@@ -1,67 +1,119 @@
-module.exports = (sequelize, DataTypes) => {
-  const Diagnosis = sequelize.define(
-    'Diagnosis',
-    {
-      id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-      },
-      diagnosis: {
-        type: DataTypes.TEXT,
-        allowNull: false,
-        validate: {
-          notEmpty: {
-            msg: 'diagnosis is required',
-          },
-        },
-      },
-      certainty: {
-        type: DataTypes.ENUM('Presumed', 'Confirmed'),
-        allowNull: false,
-        validate: {
-          notEmpty: {
-            msg: 'pick a certainty',
-          },
-        },
-      },
-      order: {
-        type: DataTypes.ENUM('Primary', 'Secondary'),
-        allowNull: false,
-        validate: {
-          notEmpty: {
-            msg: 'pick an order',
-          },
-        },
-      },
-      notes: {
-        type: DataTypes.TEXT,
-      },
-      visit_id: {
-        type: DataTypes.INTEGER,
-      },
-      staff_id: {
-        type: DataTypes.INTEGER,
-      },
-      patient_id: {
-        type: DataTypes.INTEGER,
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  ForeignKey,
+  Model,
+  PrimaryKey,
+  Table,
+} from 'sequelize-typescript';
+import { Patient } from './patient';
+import { Staff } from './staff';
+import { Visit } from './visit';
+import {
+  FindAttributeOptions,
+  GroupOption,
+  Includeable,
+  Order,
+  WhereOptions,
+} from 'sequelize/types/model';
+import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
+
+export enum Certainty {
+  PRESUMED = 'Presumed',
+  CONFIRMED = 'Confirmed',
+}
+
+export enum OrderStatus {
+  PRIMARY = 'Primary',
+  SECONDARY = 'Secondary',
+}
+
+@Table({ timestamps: true })
+export class Diagnosis extends Model {
+  @PrimaryKey
+  @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
+  id: number;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'diagnosis is required',
       },
     },
-    {}
-  );
-  Diagnosis.associate = ({ Visit, Patient, Staff }) => {
-    // associations can be defined here
-    Diagnosis.belongsTo(Visit, {
-      foreignKey: 'visit_id',
-    });
+  })
+  diagnosis: string;
 
-    Diagnosis.belongsTo(Patient, {
-      foreignKey: 'patient_id',
-    });
+  @Column({
+    type: DataType.ENUM(Certainty.CONFIRMED, Certainty.PRESUMED),
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'pick a certainty',
+      },
+    },
+  })
+  certainty: Certainty;
 
-    Diagnosis.belongsTo(Staff, {
-      foreignKey: 'staff_id',
-    });
-  };
-  return Diagnosis;
-};
+  @Column({
+    type: DataType.ENUM(OrderStatus.PRIMARY, OrderStatus.SECONDARY),
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'pick an order',
+      },
+    },
+  })
+  order: OrderStatus;
+
+  @Column({
+    type: DataType.TEXT,
+  })
+  notes: string;
+
+  @ForeignKey(() => Visit)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  visit_id: number;
+
+  @ForeignKey(() => Patient)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  patient_id: number;
+
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  staff_id: number;
+
+  @BelongsTo(() => Staff)
+  staff: Staff;
+
+  @BelongsTo(() => Visit)
+  visit: Visit;
+
+  @BelongsTo(() => Patient)
+  patient: Patient;
+
+  static async paginate(param: {
+    paginate: number;
+    attributes?: FindAttributeOptions;
+    where?: WhereOptions<any>;
+    page?: number;
+    order?: Order;
+    group?: GroupOption;
+    include?: Includeable | Includeable[];
+  }) {
+    const { limit, offset } = calcLimitAndOffset(param.page, param.paginate);
+    const options = Object.assign({ limit, offset }, param);
+    const data = await this.findAndCountAll(options);
+    return paginate(data, param.page, limit);
+  }
+}

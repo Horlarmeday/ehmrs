@@ -1,55 +1,89 @@
-import sequelizePaginate from 'sequelize-paginate';
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  ForeignKey,
+  Model,
+  PrimaryKey,
+  Table,
+} from 'sequelize-typescript';
+import { Patient } from './patient';
+import { Staff } from './staff';
+import {
+  FindAttributeOptions,
+  GroupOption,
+  Includeable,
+  Order,
+  WhereOptions,
+} from 'sequelize/types/model';
+import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 
-module.exports = (sequelize, DataTypes) => {
-  const Visit = sequelize.define(
-    'Visit',
-    {
-      id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-      },
-      patient_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        validate: {
-          notEmpty: {
-            msg: 'patient id is required',
-          },
-        },
-      },
-      date_visit_ended: {
-        type: DataTypes.DATE,
-      },
-      type: {
-        type: DataTypes.ENUM('IPD', 'OPD', 'Emergency', 'ANC'),
-        allowNull: false,
-        validate: {
-          notEmpty: {
-            msg: 'visit type is required',
-          },
-        },
-      },
-      staff_id: DataTypes.INTEGER,
-      is_active: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: true,
+export enum VisitType {
+  IPD = 'IPD',
+  OPD = 'OPD',
+  EMERGENCY = 'Emergency',
+  ANC = 'ANC',
+}
+
+@Table({ timestamps: true })
+export class Visit extends Model {
+  @PrimaryKey
+  @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
+  id: number;
+
+  @ForeignKey(() => Patient)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  patient_id: number;
+
+  @Column({
+    type: DataType.DATE,
+  })
+  date_visit_ended: Date;
+
+  @Column({
+    type: DataType.ENUM(VisitType.IPD, VisitType.OPD, VisitType.EMERGENCY, VisitType.ANC),
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'visit type is required',
       },
     },
-    {}
-  );
-  Visit.associate = ({ Patient, Staff }) => {
-    // associations can be defined here
-    Visit.belongsTo(Patient, {
-      foreignKey: 'patient_id',
-      as: 'patient',
-    });
+  })
+  type: VisitType;
 
-    Visit.belongsTo(Staff, {
-      foreignKey: 'staff_id',
-    });
-  };
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  staff_id: number;
 
-  sequelizePaginate.paginate(Visit);
-  return Visit;
-};
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: true,
+  })
+  is_active: boolean;
+
+  @BelongsTo(() => Staff)
+  staff: Staff;
+
+  @BelongsTo(() => Patient)
+  patient: Patient;
+
+  static async paginate(param: {
+    paginate: number;
+    attributes?: FindAttributeOptions;
+    where?: WhereOptions<any>;
+    page?: number;
+    order?: Order;
+    group?: GroupOption;
+    include?: Includeable | Includeable[];
+  }) {
+    const { limit, offset } = calcLimitAndOffset(param.page, param.paginate);
+    const options = Object.assign({ limit, offset }, param);
+    const data = await this.findAndCountAll(options);
+    return paginate(data, param.page, limit);
+  }
+}

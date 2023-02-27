@@ -1,40 +1,76 @@
-module.exports = (sequelize, DataTypes) => {
-  const Measurement = sequelize.define(
-    'Measurement',
-    {
-      id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-      },
-      name: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-          notEmpty: {
-            msg: 'name is required',
-          },
-        },
-      },
-      staff_id: DataTypes.INTEGER,
-      dosage_form_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        validate: {
-          notEmpty: {
-            msg: 'dosage form id is required',
-          },
-        },
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  ForeignKey,
+  Model,
+  PrimaryKey,
+  Table,
+} from 'sequelize-typescript';
+import { DosageForm } from './dosageForm';
+import { Staff } from './staff';
+import {
+  FindAttributeOptions,
+  GroupOption,
+  Includeable,
+  Order,
+  WhereOptions,
+} from 'sequelize/types/model';
+import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
+
+@Table({ timestamps: true })
+export class Measurement extends Model {
+  @PrimaryKey
+  @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
+  id: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'name is required',
       },
     },
-    {}
-  );
-  Measurement.associate = ({ DosageForm }) => {
-    // associations can be defined here
-    Measurement.belongsTo(DosageForm, {
-      foreignKey: 'dosage_form_id',
-      as: 'dosage_form',
-    });
-  };
-  return Measurement;
-};
+  })
+  name: string;
+
+  @ForeignKey(() => DosageForm)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'dosage form is required',
+      },
+    },
+  })
+  dosage_form_id: number;
+
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  staff_id: number;
+
+  @BelongsTo(() => Staff)
+  staff: Staff;
+
+  @BelongsTo(() => DosageForm)
+  dosage_form: DosageForm;
+
+  static async paginate(param: {
+    paginate: number;
+    attributes?: FindAttributeOptions;
+    where?: WhereOptions<any>;
+    page?: number;
+    order?: Order;
+    group?: GroupOption;
+    include?: Includeable | Includeable[];
+  }) {
+    const { limit, offset } = calcLimitAndOffset(param.page, param.paginate);
+    const options = Object.assign({ limit, offset }, param);
+    const data = await this.findAndCountAll(options);
+    return paginate(data, param.page, limit);
+  }
+}

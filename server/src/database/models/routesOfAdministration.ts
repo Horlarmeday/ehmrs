@@ -8,6 +8,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { Staff } from './staff';
+import { DosageForm } from './dosageForm';
 import {
   FindAttributeOptions,
   GroupOption,
@@ -17,8 +18,8 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 
-@Table({ timestamps: true })
-export class Service extends Model {
+@Table({ timestamps: true, tableName: 'Route_of_Administrations' })
+export class RoutesOfAdministration extends Model {
   @PrimaryKey
   @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
   id: number;
@@ -34,27 +35,17 @@ export class Service extends Model {
   })
   name: string;
 
+  @ForeignKey(() => DosageForm)
   @Column({
-    type: DataType.DECIMAL(12, 2),
+    type: DataType.INTEGER,
     allowNull: false,
     validate: {
       notEmpty: {
-        msg: 'price is required',
+        msg: 'dosage form id is required',
       },
     },
   })
-  price: number;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'code is required',
-      },
-    },
-  })
-  code: string;
+  dosage_form_id: number;
 
   @ForeignKey(() => Staff)
   @Column({
@@ -64,6 +55,9 @@ export class Service extends Model {
 
   @BelongsTo(() => Staff)
   staff: Staff;
+
+  @BelongsTo(() => DosageForm)
+  dosage_form: DosageForm;
 
   static async paginate(param: {
     paginate: number;

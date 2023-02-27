@@ -7,12 +7,12 @@ import {
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
-import { Unit } from './unit';
-import { Staff, Status } from './staff';
 import { Drug, DrugForm } from './drug';
-import { Measurement } from './measurement';
+import { Unit } from './unit';
 import { DosageForm } from './dosageForm';
-import { RoutesOfAdministration } from './routesOfAdministration';
+import { Measurement } from './measurement';
+import { Staff } from './staff';
+import { DrugType } from './pharmacyItem';
 import {
   FindAttributeOptions,
   GroupOption,
@@ -22,13 +22,8 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 
-export enum DrugType {
-  CASH = 'Cash',
-  NHIS = 'NHIS',
-}
-
-@Table({ timestamps: true, tableName: 'Pharmacy_Items' })
-export class PharmacyItem extends Model {
+@Table({ timestamps: true })
+export class NhisInventory extends Model {
   @PrimaryKey
   @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
   id: number;
@@ -39,48 +34,32 @@ export class PharmacyItem extends Model {
     allowNull: false,
     validate: {
       notEmpty: {
-        msg: 'drug is required',
+        msg: 'drug id is required',
       },
     },
   })
   drug_id: number;
 
   @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'quantity received is required',
+      },
+    },
+  })
+  quantity_received: number;
+
+  @Column({
     type: DataType.STRING,
   })
-  product_code: string;
+  brand: string;
 
   @Column({
     type: DataType.STRING,
   })
   shelf: string;
-
-  @Column({
-    type: DataType.STRING,
-  })
-  voucher: string;
-
-  @Column({
-    type: DataType.STRING,
-  })
-  batch: string;
-
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'quantity is required',
-      },
-    },
-  })
-  quantity: number;
-
-  @Column({
-    type: DataType.INTEGER,
-    defaultValue: 0,
-  })
-  remain_quantity: number;
 
   @ForeignKey(() => Unit)
   @Column({
@@ -99,17 +78,6 @@ export class PharmacyItem extends Model {
     allowNull: false,
     validate: {
       notEmpty: {
-        msg: 'unit price is required',
-      },
-    },
-  })
-  unit_price: number;
-
-  @Column({
-    type: DataType.DECIMAL(12, 2),
-    allowNull: false,
-    validate: {
-      notEmpty: {
         msg: 'selling price is required',
       },
     },
@@ -121,27 +89,62 @@ export class PharmacyItem extends Model {
     allowNull: false,
     validate: {
       notEmpty: {
-        msg: 'total price is required',
+        msg: 'price is required',
       },
     },
   })
-  total_price: number;
+  price: number;
 
   @Column({
     type: DataType.DATE,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'date expiry is required',
+      },
+    },
   })
   expiration: Date;
 
-  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+    defaultValue: 0,
+  })
+  quantity_consumed?: number;
+
+  @ForeignKey(() => DosageForm)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'dosage form is required',
+      },
+    },
+  })
+  dosage_form_id: number;
+
+  @ForeignKey(() => Measurement)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'measurement is required',
+      },
+    },
+  })
+  measurement_id: number;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  strength_input: string;
+
   @Column({
     type: DataType.INTEGER,
   })
-  staff_id: number;
-
-  @Column({
-    type: DataType.DATE,
-  })
-  date_received: Date;
+  quantity_left: number;
 
   @Column({
     type: DataType.ENUM(DrugForm.DRUG, DrugForm.CONSUMABLE),
@@ -165,52 +168,25 @@ export class PharmacyItem extends Model {
   })
   drug_type: DrugType;
 
-  @Column({ type: DataType.ENUM(Status.ACTIVE, Status.INACTIVE), defaultValue: Status.ACTIVE })
-  status: Status;
-
-  @ForeignKey(() => RoutesOfAdministration)
   @Column({
-    type: DataType.INTEGER,
-  })
-  route_id: number;
-
-  @Column({
-    type: DataType.STRING,
-  })
-  strength_input: string;
-
-  @ForeignKey(() => Measurement)
-  @Column({
-    type: DataType.INTEGER,
+    type: DataType.DATE,
     allowNull: false,
     validate: {
       notEmpty: {
-        msg: 'measurement is required',
+        msg: 'date received is required',
       },
     },
   })
-  measurement_id: number;
+  date_received: Date;
 
-  @ForeignKey(() => DosageForm)
+  @ForeignKey(() => Staff)
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'dosage form is required',
-      },
-    },
   })
-  dosage_form_id: number;
-
-  @BelongsTo(() => Unit)
-  unit: Unit;
+  staff_id: number;
 
   @BelongsTo(() => Staff)
   staff: Staff;
-
-  @BelongsTo(() => Drug)
-  drug: Drug;
 
   @BelongsTo(() => DosageForm)
   dosage_form: DosageForm;
@@ -218,8 +194,11 @@ export class PharmacyItem extends Model {
   @BelongsTo(() => Measurement)
   strength: Measurement;
 
-  @BelongsTo(() => RoutesOfAdministration)
-  route: RoutesOfAdministration;
+  @BelongsTo(() => Drug)
+  drug: Drug;
+
+  @BelongsTo(() => Unit)
+  unit: Unit;
 
   static async paginate(param: {
     paginate: number;

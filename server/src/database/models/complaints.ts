@@ -8,53 +8,53 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { Staff } from './staff';
-import {
-  FindAttributeOptions,
-  GroupOption,
-  Includeable,
-  Order,
-  WhereOptions,
-} from 'sequelize/types/model';
+import { Patient } from './patient';
+import { Visit } from './visit';
+import { FindAttributeOptions, GroupOption, Includeable } from 'sequelize/types/model';
+import { Order, WhereOptions } from 'sequelize';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 
 @Table({ timestamps: true })
-export class Service extends Model {
+export class Complaints extends Model {
   @PrimaryKey
   @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
   id: number;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.TEXT,
     allowNull: false,
     validate: {
       notEmpty: {
-        msg: 'name is required',
+        msg: 'complaint is required',
       },
     },
   })
-  name: string;
+  complaint: string;
 
   @Column({
-    type: DataType.DECIMAL(12, 2),
+    type: DataType.ENUM('Minutes', 'Hours', 'Days', 'Weeks', 'Months', 'Years'),
     allowNull: false,
     validate: {
       notEmpty: {
-        msg: 'price is required',
+        msg: 'frequency is required',
       },
     },
   })
-  price: number;
+  frequency: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.TEXT,
+  })
+  notes: string;
+
+  @Column({
+    type: DataType.INTEGER,
     allowNull: false,
     validate: {
-      notEmpty: {
-        msg: 'code is required',
-      },
+      notEmpty: false,
     },
   })
-  code: string;
+  frequency_number: number;
 
   @ForeignKey(() => Staff)
   @Column({
@@ -62,8 +62,27 @@ export class Service extends Model {
   })
   staff_id: number;
 
+  @ForeignKey(() => Visit)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  visit_id: number;
+
+  @ForeignKey(() => Patient)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  patient_id: number;
+
   @BelongsTo(() => Staff)
   staff: Staff;
+
+  @BelongsTo(() => Patient)
+  patient: Patient;
+
+  @BelongsTo(() => Visit)
+  visit: Visit;
 
   static async paginate(param: {
     paginate: number;

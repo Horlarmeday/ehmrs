@@ -5,8 +5,7 @@ import {
   SEND_PATIENT_SMS,
   UPLOAD_IMAGE,
 } from '../constants';
-import { Patient } from '../../modules/Patient/interface/patient.interface';
-import { Staff } from '../../modules/Staff/interface/staff.interface';
+import { Patient, Staff } from '../../database/models';
 
 export async function sendPatientSMS(message: string, user: Patient) {
   await agenda.schedule('in 30 seconds', SEND_PATIENT_SMS, {
@@ -15,17 +14,16 @@ export async function sendPatientSMS(message: string, user: Patient) {
   });
 }
 
-export async function sendGeneratedPassword(message: string, user: Staff) {
+export async function sendGeneratedPassword(message: string, phone: string) {
   await agenda.schedule('in 15 seconds', SEND_FORGOT_PASSWORD, {
     message,
-    user,
+    phone,
   });
 }
 
-export async function uploadImageToBox(filepath: string, fileName: string, patient: Patient) {
+export async function uploadImage(image: string, patient: Patient) {
   await agenda.schedule('in 25 seconds', UPLOAD_IMAGE, {
-    filepath,
-    fileName,
+    image,
     patient,
   });
 }
