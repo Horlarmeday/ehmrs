@@ -1,0 +1,26 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+lint () {
+  if [ -f "$MYPATH/$1/node_modules/eslint/bin/eslint.js" ]; then
+  echo "- husky/pre-commit: $1 $2 $MYPATH"
+    if [ "$1" = "server" ]; then
+      cd "$MYPATH/$1" && yarn lint-staged -c package.json
+    else
+      echo "-> else case"
+      cd "$MYPATH/$1" && yarn lint-staged -c package.json
+    fi
+   if [ $? -ne 0 ]
+   then
+      exit 1;
+   fi
+  else
+     echo "You don't have linter installed for $2 app. Skipping..."
+  fi
+}
+
+MYPATH=$(pwd)
+echo "Current path: $MYPATH"
+
+lint server Backend
+lint client Frontend
