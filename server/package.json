@@ -10,6 +10,11 @@
     "build": "rimraf ./dist && tsc",
     "migration": "sequelize db:migrate"
   },
+  "lint-staged": {
+    "*.{js,ts,vue}": [
+      "eslint --ext .ts,.js,.vue --quiet --fix"
+    ]
+  },
   "jest": {
     "testEnvironment": "node",
     "coveragePathIgnorePatterns": [
@@ -38,6 +43,7 @@
     "@types/node": "^16.7.10",
     "@types/sequelize": "^4.28.10",
     "@types/supertest": "^2.0.11",
+    "@types/validator": "^13.7.12",
     "@types/winston": "^2.4.4",
     "@typescript-eslint/eslint-plugin": "^4.30.0",
     "@typescript-eslint/parser": "^4.30.0",
@@ -49,7 +55,9 @@
     "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-prettier": "^3.1.1",
     "eslint-plugin-react": "^7.16.0",
+    "eslint-plugin-unused-imports": "^2.0.0",
     "jest": "^26.6.3",
+    "lint-staged": "^13.1.2",
     "nodemon": "^2.0.6",
     "prettier": "^1.19.1",
     "supertest": "^4.0.2",
@@ -63,6 +71,7 @@
     "axios": "^0.21.1",
     "bcryptjs": "^2.4.3",
     "box-node-sdk": "^1.39.0",
+    "cloudinary": "^1.34.0",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
@@ -74,10 +83,10 @@
     "mime": "^2.4.7",
     "morgan": "^1.10.0",
     "mysql2": "^2.1.0",
+    "reflect-metadata": "^0.1.13",
     "rxjs": "^7.3.0",
-    "sequelize": "^5.21.6",
-    "sequelize-paginate": "^1.1.6",
-    "sequelize-typescript": "^2.1.0",
+    "sequelize": "^6.29.0",
+    "sequelize-typescript": "^2.1.5",
     "uuid": "^3.3.3",
     "winston": "^3.2.1"
   }
