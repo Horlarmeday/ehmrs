@@ -21,11 +21,7 @@
                   @keypress.enter="searchByName"
                 />
                 <div class="input-group-append">
-                  <button
-                    type="button"
-                    class="btn btn-primary"
-                    @click="searchByName"
-                  >
+                  <button type="button" class="btn btn-primary" @click="searchByName">
                     Search
                   </button>
                 </div>
@@ -43,9 +39,7 @@
       <div v-if="patients.length" class="card-body pt-0 pb-3">
         <!--begin::Table-->
         <div class="table-responsive">
-          <table
-            class="table table-head-custom table-vertical-center table-head-bg"
-          >
+          <table class="table table-head-custom table-vertical-center table-head-bg">
             <thead>
               <tr class="text-uppercase">
                 <th class="pl-5" style="min-width: 100px">Hospital Number</th>
@@ -65,30 +59,24 @@
                   <a
                     href="#"
                     class="text-dark-75 font-weight-bolder text-hover-primary font-size-lg"
-                    >{{ patient.hospital_id || "No Hospital Number" }}</a
+                    >{{ patient.hospital_id || 'No Hospital Number' }}</a
                   >
                 </td>
                 <td>
                   <router-link to="/patient/profile/1234"
-                    ><span
-                      class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                    >
+                    ><span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                       {{ patient.fullname }}
                     </span></router-link
                   >
                 </td>
                 <td>
-                  <span
-                    class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                  >
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                     {{ patient.gender }}
                   </span>
                 </td>
                 <td>
-                  <span
-                    class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                  >
-                    {{ patient.date_of_birth | moment("from", "now", true) }}
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                    {{ patient.date_of_birth | moment('from', 'now', true) }}
                   </span>
                 </td>
                 <td>
@@ -99,16 +87,12 @@
                   >
                 </td>
                 <td class="pr-0">
-                  <span
-                    class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                    >{{ patient.createdAt | moment("ddd, MMM Do YYYY") }}</span
-                  >
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
+                    patient.createdAt | moment('ddd, MMM Do YYYY')
+                  }}</span>
                 </td>
                 <td class="pr-0">
-                  <router-link
-                    to="#"
-                    class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
-                  >
+                  <router-link to="#" class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3">
                     <edit-icon />
                   </router-link>
                   <a
@@ -137,32 +121,28 @@
       </p>
       <!--end::Body-->
     </div>
-    <create-visit
-      :displayPrompt="displayPrompt"
-      @closeModal="hideModal"
-      :patient="patient"
-    />
+    <create-visit :displayPrompt="displayPrompt" @closeModal="hideModal" :patient="patient" />
     <!--end::Card-->
   </div>
 </template>
 
 <script>
-import Pagination from "@/utils/Pagination.vue";
-import DateFilter from "../../../utils/DateFilter";
-import ArrowUpIcon from "../../../assets/icons/ArrowUpIcon";
-import EditIcon from "../../../assets/icons/EditIcon";
-import CreateVisit from "../visits/create/CreateVisit";
-import {setUrlQueryParams} from "../../../common/common";
+import Pagination from '@/utils/Pagination.vue';
+import DateFilter from '../../../utils/DateFilter';
+import ArrowUpIcon from '../../../assets/icons/ArrowUpIcon';
+import EditIcon from '../../../assets/icons/EditIcon';
+import CreateVisit from '../visits/create/CreateVisit';
+import { setUrlQueryParams } from '../../../common/common';
 export default {
   data() {
     return {
-      patient_name: "",
+      patient_name: '',
       displayPrompt: false,
       patient: {},
       start: null,
       end: null,
       currentPage: 1,
-      itemsPerPage: 10
+      itemsPerPage: 10,
     };
   },
   components: {
@@ -170,7 +150,7 @@ export default {
     ArrowUpIcon,
     Pagination,
     DateFilter,
-    EditIcon
+    EditIcon,
   },
 
   computed: {
@@ -185,7 +165,7 @@ export default {
     },
     perPage() {
       return this.patients.length;
-    }
+    },
   },
 
   methods: {
@@ -199,38 +179,38 @@ export default {
     },
 
     displayLabel(insurance) {
-      if (insurance === 1) return "label-light-primary";
-      if (insurance === 2) return "label-light-warning";
-      if (insurance === 3) return "label-light-success";
-      if (insurance === 4) return "label-light-danger";
-      if (insurance === 4) return "label-light-dark";
-      return "label-light-info";
+      if (insurance === 1) return 'label-light-primary';
+      if (insurance === 2) return 'label-light-warning';
+      if (insurance === 3) return 'label-light-success';
+      if (insurance === 4) return 'label-light-danger';
+      if (insurance === 4) return 'label-light-dark';
+      return 'label-light-info';
     },
 
     displayInsuranceType(insurance) {
-      if (insurance === 1) return "NHIS";
-      if (insurance === 2) return "FHSS";
-      if (insurance === 3) return "PHIS";
-      if (insurance === 4) return "Retainership";
-      if (insurance === 4) return "Private";
-      return "Cash";
+      if (insurance === 1) return 'NHIS';
+      if (insurance === 2) return 'FHSS';
+      if (insurance === 3) return 'PHIS';
+      if (insurance === 4) return 'Retainership';
+      if (insurance === 4) return 'Private';
+      return 'Cash';
     },
 
     searchByDate(start, end) {
       (this.start = start), (this.end = end);
       this.currentPage = 1;
       setUrlQueryParams({
-        pathName: "find-patient",
+        pathName: 'find-patient',
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
-        startDate: this.start,
-        endDate: this.end
+        startDate: new Date(this.start).toISOString(),
+        endDate: new Date(this.end).toISOString(),
       });
-      this.$store.dispatch("patient/fetchPatients", {
+      this.$store.dispatch('patient/fetchPatients', {
         currentPage: this.$route.query.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage,
         start: this.$route.query.startDate,
-        end: this.$route.query.endDate
+        end: this.$route.query.endDate,
       });
     },
 
@@ -238,37 +218,37 @@ export default {
       if (!this.patient_name) return this.notifyEmptyField();
       this.currentPage = 1;
       setUrlQueryParams({
-        pathName: "find-patient",
+        pathName: 'find-patient',
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
-        search: this.patient_name
+        search: this.patient_name,
       });
-      this.$store.dispatch("patient/fetchPatients", {
+      this.$store.dispatch('patient/fetchPatients', {
         currentPage: this.$route.query.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage,
-        search: this.$route.query.search
+        search: this.$route.query.search,
       });
     },
 
     handlePageChange() {
       setUrlQueryParams({
-        pathName: "find-patient",
+        pathName: 'find-patient',
         currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage
+        itemsPerPage: this.itemsPerPage,
       });
-      this.$store.dispatch("patient/fetchPatients", {
+      this.$store.dispatch('patient/fetchPatients', {
         currentPage: this.$route.query.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage,
         start: this.$route.query.startDate,
-        end: this.$route.query.endDate
+        end: this.$route.query.endDate,
       });
     },
 
     onPageChange(page) {
       this.currentPage = page;
       this.handlePageChange();
-    }
-  }
+    },
+  },
 };
 </script>
 

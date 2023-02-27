@@ -60,6 +60,7 @@ export default {
     });
   },
   fetchPatients({ commit }, payload) {
+    console.log(payload);
     return new Promise((resolve, reject) => {
       axios
         .get("/patients/get", {
