@@ -233,13 +233,10 @@ export class Patient extends Model {
   })
   patient_type: PatientType;
 
-  @Column({
-    type: DataType.VIRTUAL,
-    get(): unknown {
-      return `${this.getDataValue('firstname')} ${this.getDataValue('lastname')}`;
-    },
-  })
-  fullname?: string;
+  @Column(DataType.VIRTUAL)
+  get fullname(): unknown {
+    return `${this.getDataValue('firstname')} ${this.getDataValue('lastname')}`;
+  }
 
   @BelongsTo(() => Staff)
   staff: Staff;
@@ -251,7 +248,7 @@ export class Patient extends Model {
   insurance: Insurance;
 
   @HasMany(() => Patient)
-  dependants: Patient;
+  dependants: Patient[];
 
   static async paginate(param: {
     paginate: number;

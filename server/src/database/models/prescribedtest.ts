@@ -25,6 +25,7 @@ import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 export enum TestType {
   CASH = 'Cash',
   NHIS = 'NHIS',
+  OTHER = 'Other',
 }
 
 @Table({ timestamps: true, tableName: 'Prescribed_Tests' })
@@ -39,14 +40,14 @@ export class PrescribedTest extends Model {
   })
   test_id: number;
 
-  @ForeignKey(() => NhisTest)
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.BOOLEAN,
+    defaultValue: false,
   })
-  nhis_test_id: number;
+  is_urgent: boolean;
 
   @Column({
-    type: DataType.ENUM(TestType.CASH, TestType.NHIS),
+    type: DataType.ENUM(TestType.CASH, TestType.NHIS, TestType.OTHER),
     allowNull: false,
     validate: {
       notEmpty: {
@@ -179,9 +180,6 @@ export class PrescribedTest extends Model {
 
   @BelongsTo(() => Test)
   test: Test;
-
-  @BelongsTo(() => NhisTest)
-  nhis_test: NhisTest;
 
   @BelongsTo(() => Visit)
   visit: Visit;
