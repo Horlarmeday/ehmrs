@@ -2,7 +2,8 @@
 import { Op } from 'sequelize';
 import { getModelById, getNumberOfRecords } from '../../core/helpers/general';
 
-import { Test, NhisTest, Sample } from '../../database/models';
+import { Test, NhisTest, Sample, TestTariff, Patient } from '../../database/models';
+import { canUsePriceTariff } from '../../core/helpers/helper';
 
 /** ***********************
  * TEST SAMPLE
@@ -196,7 +197,36 @@ export async function getTests(currentPage = 1, pageLimit = 10) {
 }
 
 /** ***********************
- * NHIS TESTS
+ * TEST TARIFFS
+ ********************** */
+
+/**
+ * create test tariff
+ *
+ * @function
+ * @returns {json} json object with tests data
+ * @param data
+ */
+export const createTestTariff = async data => {
+  return TestTariff.bulkCreate(data, { updateOnDuplicate: ['price'] });
+};
+
+const testPriceTariff = async (patient: Patient, test_id: number) => {
+  const { price } =
+    (await TestTariff.findOne({
+      where: { test_id, hmo_id: patient.hmo_id },
+      order: [['createdAt', 'DESC']],
+    })) || {};
+  return price;
+};
+
+export const getTestPrice = (patient: Patient, test_id: number) => {
+  if (canUsePriceTariff(patient)) return testPriceTariff(patient, test_id);
+  return null;
+};
+
+/** ***********************
+ * NHIS TESTS - DEPRECATED
  ********************** */
 
 /**

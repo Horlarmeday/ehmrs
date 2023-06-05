@@ -1,9 +1,10 @@
 /* eslint-disable camelcase,no-param-reassign */
 import { orderBulkTest, prescribeTest } from './lab-order.repository';
 import VisitService from '../../Visit/visit.service';
-import { CASH, NHIS } from '../../../core/constants';
-import { PrescribedTest } from './interface/prescribed-test.interface';
 import { PrescribedTestBody } from './interface/prescribed-test.body';
+import { PrescribedTest } from '../../../database/models';
+import PatientService from '../../Patient/patient.service';
+import { getTestPrice } from '../../Laboratory/laboratory.repository';
 
 class LabOrderService {
   /**
@@ -29,15 +30,17 @@ class LabOrderService {
   static async orderBulkTestService(body: PrescribedTestBody): Promise<PrescribedTest[]> {
     const { tests, staff_id, visit_id } = body;
     const visit = await VisitService.getVisitById(visit_id);
-    const bulkTests = tests.map(test => ({
-      ...test,
-      test_id: test.test_type === CASH ? test.test_id : null,
-      nhis_test_id: test.test_type === NHIS ? test.test_id : null,
-      requester: staff_id,
-      visit_id,
-      patient_id: visit.patient_id,
-      date_requested: Date.now(),
-    }));
+    const patient = await PatientService.getPatientById(visit.patient_id);
+    const bulkTests = await Promise.all(
+      tests.map(async test => ({
+        ...test,
+        price: (await getTestPrice(patient, test.test_id)) || test.price,
+        requester: staff_id,
+        visit_id,
+        patient_id: visit.patient_id,
+        date_requested: Date.now(),
+      }))
+    );
     return orderBulkTest(bulkTests);
   }
 }

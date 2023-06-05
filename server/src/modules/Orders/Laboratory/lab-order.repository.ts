@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-const { PrescribedTest } = require('../../../database/models');
+import { PrescribedTest } from '../../../database/models';
 
 /**
  * prescribe a test for patient
@@ -7,11 +7,10 @@ const { PrescribedTest } = require('../../../database/models');
  * @returns {object} prescribed test data
  */
 export async function prescribeTest(data) {
-  const { test_id, test_type, requester, price, patient_id, visit_id } = data;
+  const { test_id, requester, price, patient_id, visit_id } = data;
 
   return PrescribedTest.create({
     test_id,
-    test_type,
     requester,
     price,
     patient_id,

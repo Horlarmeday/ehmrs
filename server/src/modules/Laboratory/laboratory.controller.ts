@@ -1,5 +1,10 @@
 /* eslint-disable camelcase */
-import { validateNhisTest, validateTest, validateTestSample } from './validations';
+import {
+  validateNhisTest,
+  validateTest,
+  validateTestSample,
+  validateTestTariff,
+} from './validations';
 import LaboratoryService from './laboratory.service';
 import { StatusCodes } from '../../core/helpers/helper';
 import { errorResponse } from '../../common/responses/error-responses';
@@ -176,7 +181,46 @@ class LaboratoryController {
   }
 
   /** ***********************
-   * NHIS TESTS
+   * TEST TARIFFS
+   ********************** */
+
+  /**
+   * create a test tariff
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, test data
+   */
+  static async createTestTariff(req, res, next) {
+    const { error } = validateTestTariff(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        httpCode: StatusCodes.BAD_REQUEST,
+        message: error.details[0].message,
+      });
+
+    try {
+      const test = await LaboratoryService.createTestTariffService({
+        ...req.body,
+        staff_id: req.user.sub,
+      });
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_SAVED,
+        data: test,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /** ***********************
+   * NHIS TESTS - DEPRECATED
    ********************** */
 
   /**

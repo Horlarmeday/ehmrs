@@ -6,6 +6,7 @@ const router = Router();
 router.post('/test/samples/create', verify, LaboratoryController.createTestSample);
 router.post('/tests/create', verify, LaboratoryController.createTest);
 router.post('/nhis/tests/create', verify, LaboratoryController.createNhisTest);
+router.post('/tests/tariff/create', verify, LaboratoryController.createTestTariff);
 router.put('/test/samples/update', verify, LaboratoryController.updateTestSample);
 router.put('/tests/update', verify, LaboratoryController.updateTest);
 router.put('/nhis/tests/update', verify, LaboratoryController.updateNhisTest);

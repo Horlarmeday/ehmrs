@@ -2,6 +2,7 @@ import {
   createNhisTest,
   createTest,
   createTestSample,
+  createTestTariff,
   filterNhisTests,
   filterTests,
   getNhisTests,
@@ -15,6 +16,8 @@ import {
   updateTest,
   updateTestSample,
 } from './laboratory.repository';
+import { TestTariff } from '../../database/models';
+import { TestTariffDto } from './dto/test-tariff.dto';
 
 class LaboratoryService {
   /** ***********************
@@ -174,6 +177,29 @@ class LaboratoryService {
     }
 
     return getTests();
+  }
+
+  /** ***********************
+   * TEST TARIFFS
+   ********************** */
+
+  /**
+   * create a test tariffs
+   *
+   * @static
+   * @returns {json} json object with test tariff data
+   * @param body
+   * @memberOf LaboratoryService
+   */
+  static async createTestTariffService(body: TestTariffDto) {
+    const { prices, test_id } = body;
+
+    const data = prices.map(price => ({
+      ...price,
+      test_id,
+      insurance_id: price.insurance_id,
+    }));
+    return createTestTariff(data);
   }
 }
 export default LaboratoryService;
