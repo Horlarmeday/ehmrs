@@ -78,5 +78,10 @@ export default [
     url: "/laboratory/laboratory-type",
     icon: "fas fa-thermometer-half",
     name: "Laboratory"
+  },
+  {
+    url: "/radiology/radiology-type",
+    icon: "fab fa-empire",
+    name: "Radiology"
   }
 ];

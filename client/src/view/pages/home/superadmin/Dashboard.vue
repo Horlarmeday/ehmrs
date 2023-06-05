@@ -1,6 +1,6 @@
 <template>
   <!--Begin::Row-->
-  <div class="row">
+  <div class="row text-center">
     <div class="col-xl-3" v-for="(route, index) in routes" :key="index">
       <!--begin::Stats Widget 29-->
       <div
@@ -46,6 +46,8 @@ export default {
   background-position: right top;
   background-size: 30% auto;
   background-image: url(/media/svg/shapes/abstract-1.svg);
+  border: 1px solid #ddd;
+  /*background: linear-gradient(to bottom,#FFF,#DDD);*/
 }
 
 .align-center {

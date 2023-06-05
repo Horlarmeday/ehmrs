@@ -38,7 +38,7 @@ const router = new Router({
         // {
         //   path: "/builder",
         //   name: "builder",
-        //   component: () => import("@/view/pages/Builder.vue")
+        //   components: () => import("@/view/pages/Builder.vue")
         // },
         // PATIENT
         {
@@ -447,8 +447,8 @@ const router = new Router({
               }
             },
             {
-              path: "sample-types",
-              name: "sample-types",
+              path: "sample-dto",
+              name: "sample-dto",
               component: () =>
                 import("@/view/pages/laboratory/SampleTypes.vue"),
               meta: {
@@ -508,6 +508,40 @@ const router = new Router({
               name: "inventory-list",
               component: () =>
                 import("@/view/pages/inventory/InventoryList.vue"),
+              meta: {
+                requiresAuth: true
+              }
+            }
+          ]
+        },
+        // RADIOLOGY
+        {
+          path: "/radiology",
+          name: "radiology",
+          component: () => import('@/view/pages/radiology/RadiologyPage.vue'),
+          children: [
+            {
+              path: "radiology-type",
+              name: "radiology-type",
+              component: () => import("@/view/pages/radiology/Home.vue"),
+              meta: {
+                requiresAuth: true
+              }
+            },
+            {
+              path: "imaging",
+              name: "imaging",
+              component: () =>
+                import("@/view/pages/radiology/components/Imaging.vue"),
+              meta: {
+                requiresAuth: true
+              }
+            },
+            {
+              path: "investigations",
+              name: "investigations",
+              component: () =>
+                import("@/view/pages/radiology/components/Investigation.vue"),
               meta: {
                 requiresAuth: true
               }
