@@ -10,12 +10,13 @@ module.exports = {
       test_id: {
         type: Sequelize.INTEGER,
       },
-      nhis_test_id: {
-        type: Sequelize.INTEGER,
+      is_urgent: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
       },
       test_type: {
-        type: Sequelize.STRING,
-        defaultValue: 'CASH',
+        type: Sequelize.ENUM('NHIS', 'Cash', 'Other'),
+        defaultValue: 'Cash',
         allowNull: false,
       },
       requester: {
@@ -41,6 +42,10 @@ module.exports = {
       payment_status: {
         type: Sequelize.ENUM('Pending', 'Cleared', 'Paid'),
         defaultValue: 'Pending',
+      },
+      billing_status: {
+        type: Sequelize.ENUM('Billed', 'Unbilled'),
+        defaultValue: 'Unbilled',
       },
       is_test_verified: {
         type: Sequelize.BOOLEAN,
