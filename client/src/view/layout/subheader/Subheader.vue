@@ -1,9 +1,5 @@
 <template>
-  <div
-    class="subheader pb-2 pb-lg-4"
-    v-bind:class="subheaderClasses"
-    id="kt_subheader"
-  >
+  <div class="subheader pb-2 pb-lg-4" v-bind:class="subheaderClasses" id="kt_subheader">
     <div
       class="d-flex align-items-center justify-content-between flex-wrap flex-sm-nowrap"
       v-bind:class="{ 'container-fluid': widthFluid, container: !widthFluid }"
@@ -12,9 +8,7 @@
         <h5 class="text-dark font-weight-bold my-2 mr-5">
           {{ title }}
         </h5>
-        <ul
-          class="breadcrumb breadcrumb-transparent breadcrumb-dot font-weight-bold p-0 my-2"
-        >
+        <ul class="breadcrumb breadcrumb-transparent breadcrumb-dot font-weight-bold p-0 my-2">
           <li class="breadcrumb-item">
             <router-link :to="'/'" class="subheader-breadcrumbs-home">
               <i class="flaticon2-shelter text-muted icon-1x"></i>
@@ -39,11 +33,7 @@
         </ul>
       </div>
       <div class="d-flex align-items-center">
-        <a
-          href="#"
-          class="btn btn-light font-weight-bold btn-sm"
-          @click="$router.go(-1)"
-        >
+        <a href="#" class="btn btn-light font-weight-bold btn-sm" @click="$router.go(-1)">
           <i class="fas fa-arrow-circle-left"></i>
           Back
         </a>
@@ -169,40 +159,40 @@
 </style>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters } from 'vuex';
 
 export default {
-  name: "KTSubheader",
+  name: 'KTSubheader',
   props: {
     breadcrumbs: Array,
-    title: String
+    title: String,
   },
   computed: {
-    ...mapGetters(["layoutConfig"]),
+    ...mapGetters(['layoutConfig']),
 
     /**
      * Check if subheader width is fluid
      */
     widthFluid() {
-      return this.layoutConfig("subheader.width") === "fluid";
+      return this.layoutConfig('subheader.width') === 'fluid';
     },
 
     subheaderClasses() {
       const classes = [];
-      const style = this.layoutConfig("subheader.style");
+      const style = this.layoutConfig('subheader.style');
       if (style) {
         classes.push(style);
 
-        if (style === "solid") {
-          classes.push("bg-white");
+        if (style === 'solid') {
+          classes.push('bg-white');
         }
 
-        if (this.layoutConfig("subheader.fixed")) {
-          classes.push("border-top");
+        if (this.layoutConfig('subheader.fixed')) {
+          classes.push('border-top');
         }
       }
-      return classes.join(" ");
-    }
-  }
+      return classes.join(' ');
+    },
+  },
 };
 </script>

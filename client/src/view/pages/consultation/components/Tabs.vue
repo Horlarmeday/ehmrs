@@ -3,10 +3,7 @@
     <div class="header-top mb-6">
       <div class="container white">
         <div class="d-none d-lg-flex align-items-center mr-3">
-          <ul
-            class="header-tabs nav align-self-end font-size-lg"
-            role="tablist"
-          >
+          <ul class="header-tabs nav align-self-end font-size-lg" role="tablist">
             <li class="nav-item">
               <a
                 class="nav-link text-dark py-4 px-6 active"
@@ -100,22 +97,22 @@
 </template>
 
 <script>
-import Observations from "../tabs/Observations";
-import Diagnosis from "../tabs/Diagnosis";
-import Orders from "../tabs/Orders";
+import Observations from '../tabs/Observations';
+import Diagnosis from '../tabs/Diagnosis';
+import Orders from '../tabs/Orders';
 
 const ComponentMapping = {
-  "#observations": Observations,
-  "#diagnosis": Diagnosis,
-  "#orders": Orders
+  '#observations': Observations,
+  '#diagnosis': Diagnosis,
+  '#orders': Orders,
 };
 
 export default {
-  name: "Tabs",
+  name: 'Tabs',
   data() {
     return {
       tabIndex: 0,
-      activeComponent: ""
+      activeComponent: '',
     };
   },
   methods: {
@@ -126,34 +123,34 @@ export default {
      */
     setActiveTab(event, component) {
       let target = event.target;
-      if (!event.target.classList.contains("nav-link")) {
-        target = event.target.closest(".nav-link");
+      if (!event.target.classList.contains('nav-link')) {
+        target = event.target.closest('.nav-link');
       }
 
       const tab = target.closest('[role="tablist"]');
-      const links = tab.querySelectorAll(".nav-link");
+      const links = tab.querySelectorAll('.nav-link');
       // remove active tab links
       for (let i = 0; i < links.length; i++) {
-        links[i].classList.remove("active");
+        links[i].classList.remove('active');
       }
 
       // set clicked tab index to bootstrap tab
-      this.tabIndex = parseInt(target.getAttribute("data-tab"));
+      this.tabIndex = parseInt(target.getAttribute('data-tab'));
 
       // set current active tab
-      target.classList.add("active");
+      target.classList.add('active');
 
       this.setActiveComponent(component);
     },
 
     setActiveComponent(component) {
       this.activeComponent = ComponentMapping[component];
-    }
+    },
   },
   created() {
-    this.activeComponent = ComponentMapping["#observations"];
-    this.$store.dispatch("visit/fetchVisit", this.$route.params.visitId);
-  }
+    this.activeComponent = ComponentMapping['#observations'];
+    this.$store.dispatch('visit/fetchVisit', this.$route.params.visitId);
+  },
 };
 </script>
 
