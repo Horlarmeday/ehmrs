@@ -44,7 +44,6 @@ export default {
         });
     });
   },
-
   updateInsurance({ commit }, insurance) {
     return new Promise((resolve, reject) => {
       axios
