@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="#diagnosis">
     <div class="flex-row-fluid ml-lg-8">
       <div class="card card-custom gutter-b">
         <div class="card-header pt-5">

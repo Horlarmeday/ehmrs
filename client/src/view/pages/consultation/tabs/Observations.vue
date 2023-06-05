@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="observations">
     <div class="d-flex flex-column-fluid">
       <div class=" container ">
         <div class="d-flex flex-row">
@@ -12,33 +12,33 @@
 </template>
 
 <script>
-import Sidebar from "../components/Sidebar";
-import Examination from "../components/Examination";
-import sidebarList from "../components/examinationSidebarList";
-import Vitals from "../components/Vitals";
+import Sidebar from '../components/Sidebar';
+import Examination from '../components/Examination';
+import sidebarList from '../components/examinationSidebarList';
+import Vitals from '../components/Vitals';
 
 const TabMapping = {
-  "#vitals": Vitals,
-  "#history": Examination
+  '#vitals': Vitals,
+  '#history': Examination,
 };
 
 export default {
-  name: "Observations",
+  name: 'Observations',
   components: { Vitals, Examination, Sidebar },
   data() {
     return {
       list: sidebarList,
-      activeTab: ""
+      activeTab: '',
     };
   },
   methods: {
     changeTab(tab) {
       this.activeTab = TabMapping[tab];
-    }
+    },
   },
   created() {
-    this.activeTab = TabMapping["#history"];
-  }
+    this.activeTab = TabMapping['#history'];
+  },
 };
 </script>
 

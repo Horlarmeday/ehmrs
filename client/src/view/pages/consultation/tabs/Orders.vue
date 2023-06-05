@@ -12,29 +12,19 @@
             <accordion-icon />
           </div>
         </div>
-        <b-collapse
-          id="accordion-1"
-          visible
-          accordion="my-accordion"
-          role="tabpanel"
-        >
+        <b-collapse id="accordion-1" visible accordion="my-accordion" role="tabpanel">
           <div class="card-body">
             <div class="col-3 offset-9">
-              <!--       TODO: Fix search functionality         -->
               <input
                 placeholder="Search..."
                 @keyup="searchTests"
                 v-model="searchString"
-                class="form-control form-control-sm"
+                class="form-control form-control-md"
                 type="text"
               />
             </div>
             <div class="d-flex flex-row">
-              <test-samples
-                :list="samples"
-                @changeSample="changeSample"
-                :backgroundColor="backgroundColor"
-              />
+              <test-side-bar />
               <component :is="activeTab" />
             </div>
           </div>
@@ -44,19 +34,18 @@
   </div>
 </template>
 <script>
-import Sidebar from "../components/Sidebar";
-import Tests from "../components/Tests";
-import AccordionIcon from "../../../../assets/icons/AccordionIcon";
-import TestSamples from "../components/TestSamples";
+import Tests from '../components/orders/Tests.vue';
+import AccordionIcon from '../../../../assets/icons/AccordionIcon';
+import TestSideBar from '../components/orders/TestSideBar.vue';
 
 export default {
-  name: "Orders",
-  components: { Sidebar, Tests, AccordionIcon, TestSamples },
+  name: 'Orders',
+  components: { Tests, AccordionIcon, TestSideBar },
   data() {
     return {
-      activeTab: "",
-      backgroundColor: "#3699ff29",
-      searchString: ""
+      activeTab: '',
+      backgroundColor: '#3699ff29',
+      searchString: '',
     };
   },
   methods: {
@@ -64,58 +53,20 @@ export default {
       this.activeTab = Tests;
     },
 
-    changeSample(id) {
-      const test_type = this.$store.state.consultation.testType;
-      if (test_type === "CASH") {
-        this.fetchTests("laboratory/fetchTests", id);
-      } else {
-        this.fetchTests("laboratory/fetchNhisTests", id);
-      }
-
-      this.dispatchChangeSampleId(id);
-    },
-
-    fetchTests(type, id) {
-      this.$store.dispatch(type, {
-        currentPage: 1,
-        itemsPerPage: 100,
-        filter: id
-      });
-    },
-
-    dispatchChangeSampleId(id) {
-      this.$store.dispatch("consultation/changeSampleId", id);
-    },
-
     dispatchSearchTests(type) {
       this.$store.dispatch(type, {
         currentPage: 1,
         itemsPerPage: 100,
         search: this.searchString,
-        sampleId: this.$store.state.consultation.sampleId
       });
     },
 
     searchTests() {
-      const test_type = this.$store.state.consultation.testType;
-      if (test_type === "CASH") {
-        this.dispatchSearchTests("laboratory/fetchTests");
-      } else {
-        this.dispatchSearchTests("laboratory/fetchNhisTests");
-      }
-    }
-  },
-  computed: {
-    samples() {
-      return this.$store.state.laboratory.samples;
-    }
+      this.dispatchSearchTests('laboratory/fetchTests');
+    },
   },
 
   created() {
-    this.$store.dispatch("laboratory/fetchTestSamples", {
-      currentPage: 1,
-      itemsPerPage: 100
-    });
     this.activeTab = Tests;
   }
 };
