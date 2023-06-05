@@ -4,6 +4,7 @@ import { promisify } from 'util';
 import fs from 'fs';
 import { BadException } from '../../common/util/api-error';
 import { DEVELOPMENT } from '../constants';
+import { Patient } from '../../database/models';
 
 const writeFile = promisify(fs.writeFile);
 
@@ -116,3 +117,5 @@ export const calcLimitAndOffset = (page: number, size: number) => {
 
   return { limit, offset };
 };
+
+export const canUsePriceTariff = (patient: Patient) => !!(patient?.insurance_id && patient?.hmo_id);

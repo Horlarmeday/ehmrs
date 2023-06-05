@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { Op } from 'sequelize';
 
-const { Insurance, HMO } = require('../../database/models');
+import { Insurance, HMO } from '../../database/models';
 
 /**
  * create a health insurance type
