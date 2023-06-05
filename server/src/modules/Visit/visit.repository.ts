@@ -4,6 +4,7 @@ import { Op, Sequelize } from 'sequelize';
 
 import { Visit, Patient } from '../../database/models';
 
+const patientAttributes = () => ['fullname', 'photo', 'hospital_id', 'firstname', 'lastname'];
 /**
  * create a patient visit
  * @param data
@@ -84,7 +85,7 @@ export async function searchActiveVisits(currentPage = 1, pageLimit = 10, search
       {
         model: Patient,
         as: 'patient',
-        attributes: ['fullname', 'photo', 'hospital_id'],
+        attributes: patientAttributes(),
         where: {
           [Op.or]: [
             {
@@ -124,7 +125,7 @@ export async function getActiveVisits(currentPage = 1, pageLimit = 10) {
       {
         model: Patient,
         as: 'patient',
-        attributes: ['fullname', 'photo', 'hospital_id'],
+        attributes: patientAttributes(),
       },
     ],
   });
@@ -153,7 +154,7 @@ export async function searchVisits(currentPage = 1, pageLimit = 10, search) {
       {
         model: Patient,
         as: 'patient',
-        attributes: ['fullname', 'photo', 'hospital_id'],
+        attributes: patientAttributes(),
         where: {
           [Op.or]: [
             {
@@ -191,7 +192,7 @@ export async function getVisits(currentPage = 1, pageLimit = 10) {
       {
         model: Patient,
         as: 'patient',
-        attributes: ['fullname', 'photo', 'hospital_id'],
+        attributes: patientAttributes(),
       },
     ],
   });
@@ -224,7 +225,7 @@ export async function searchTypeVisits(currentPage = 1, pageLimit = 10, search, 
       {
         model: Patient,
         as: 'patient',
-        attributes: ['fullname', 'photo', 'hospital_id'],
+        attributes: patientAttributes(),
         where: {
           [Op.or]: [
             {
@@ -266,7 +267,7 @@ export async function getTypeVisits(currentPage = 1, pageLimit = 10, type = 'OPD
       {
         model: Patient,
         as: 'patient',
-        attributes: ['fullname', 'photo', 'hospital_id'],
+        attributes: patientAttributes(),
       },
     ],
   });

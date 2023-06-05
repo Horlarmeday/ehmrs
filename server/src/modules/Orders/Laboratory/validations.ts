@@ -8,6 +8,7 @@ export function validateBulkLabTest(tests) {
           test_id: Joi.number().required(),
           test_type: Joi.string().required(),
           price: Joi.number().required(),
+          is_urgent: Joi.boolean().required(),
         })
       )
       .required(),

@@ -26,3 +26,19 @@ export function validateNhisTest(test) {
   });
   return schema.validate(test);
 }
+
+export function validateTestTariff(test) {
+  const schema = Joi.object({
+    test_id: Joi.number().required(),
+    prices: Joi.array()
+      .items(
+        Joi.object({
+          insurance_id: Joi.number().required(),
+          hmo_id: Joi.number().required(),
+          price: Joi.string().required(),
+        })
+      )
+      .required(),
+  });
+  return schema.validate(test);
+}
