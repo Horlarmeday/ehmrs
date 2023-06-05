@@ -4,7 +4,6 @@ import * as models from '../models';
 
 const env = process.env.NODE_ENV || 'development';
 const { host, dialect, password, username, database } = DBConfig[env];
-
 const sequelizeConnection = new Sequelize(database, username, password, {
   host,
   dialect,

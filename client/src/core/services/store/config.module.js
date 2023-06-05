@@ -13,7 +13,7 @@ export const OVERRIDE_PAGE_LAYOUT_CONFIG = "overridePageLayoutConfig";
 export default {
   state: {
     config: config,
-    initial: config
+    initial: config,
   },
   getters: {
     /**

@@ -1,8 +1,8 @@
-// action types
+// action dto
 export const ADD_BODY_CLASSNAME = "addBodyClassName";
 export const REMOVE_BODY_CLASSNAME = "removeBodyClassName";
 export const ADD_CLASSNAME = "addClassName";
-// mutation types
+// mutation dto
 export const SET_CLASSNAME_BY_POSITION = "setClassNameByPosition";
 
 export default {
