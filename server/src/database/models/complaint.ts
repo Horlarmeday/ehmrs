@@ -15,7 +15,7 @@ import { Order, WhereOptions } from 'sequelize';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 
 @Table({ timestamps: true })
-export class Complaints extends Model {
+export class Complaint extends Model {
   @PrimaryKey
   @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
   id: number;

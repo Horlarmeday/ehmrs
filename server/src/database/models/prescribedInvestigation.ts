@@ -7,11 +7,10 @@ import {
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
-import { Test } from './test';
 import { Staff } from './staff';
 import { Visit } from './visit';
 import { Patient } from './patient';
-import { BillingStatus, DispenseStatus, PaymentStatus } from './prescribedDrug';
+import { BillingStatus, PaymentStatus } from './prescribedDrug';
 import {
   FindAttributeOptions,
   GroupOption,
@@ -20,24 +19,20 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
+import { PrescriptionType } from './prescribedTest';
+import { Investigation } from './investigation';
 
-export enum PrescriptionType {
-  CASH = 'Cash',
-  NHIS = 'NHIS',
-  OTHER = 'Other',
-}
-
-@Table({ timestamps: true, tableName: 'Prescribed_Tests' })
-export class PrescribedTest extends Model {
+@Table({ timestamps: true, tableName: 'Prescribed_Investigations' })
+export class PrescribedInvestigation extends Model {
   @PrimaryKey
   @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
   id: number;
 
-  @ForeignKey(() => Test)
+  @ForeignKey(() => Investigation)
   @Column({
     type: DataType.INTEGER,
   })
-  test_id: number;
+  investigation_id: number;
 
   @Column({
     type: DataType.BOOLEAN,
@@ -50,11 +45,11 @@ export class PrescribedTest extends Model {
     allowNull: false,
     validate: {
       notEmpty: {
-        msg: 'test type is required',
+        msg: 'investigation type is required',
       },
     },
   })
-  test_type: PrescriptionType;
+  investigation_type: PrescriptionType;
 
   @ForeignKey(() => Staff)
   @Column({
@@ -113,7 +108,7 @@ export class PrescribedTest extends Model {
     allowNull: false,
     defaultValue: PaymentStatus.PENDING,
   })
-  payment_status: DispenseStatus;
+  payment_status: PaymentStatus;
 
   @Column({
     type: DataType.ENUM(BillingStatus.BILLED, BillingStatus.UNBILLED),
@@ -126,41 +121,41 @@ export class PrescribedTest extends Model {
     type: DataType.BOOLEAN,
     defaultValue: false,
   })
-  is_test_verified: boolean;
+  is_investigation_verified: boolean;
 
   @Column({
     type: DataType.BOOLEAN,
     defaultValue: false,
   })
-  is_test_approved: boolean;
+  is_investigation_approved: boolean;
 
   @Column({
     type: DataType.DATE,
   })
-  test_verified_date: Date;
+  investigation_verified_date: Date;
 
   @Column({
     type: DataType.DATE,
   })
-  test_approved_date: Date;
+  investigation_approved_date: Date;
 
   @ForeignKey(() => Staff)
   @Column({
     type: DataType.INTEGER,
   })
-  test_verified_by: number;
+  investigation_verified_by: number;
 
   @ForeignKey(() => Staff)
   @Column({
     type: DataType.INTEGER,
   })
-  test_approved_by: number;
+  investigation_approved_by: number;
 
   @Column({
     type: DataType.BOOLEAN,
     defaultValue: false,
   })
-  is_nhis_test_approved: boolean;
+  is_nhis_investigation_approved: boolean;
 
   @BelongsTo(() => Staff, {
     foreignKey: 'requester',
@@ -168,17 +163,17 @@ export class PrescribedTest extends Model {
   examiner: Staff;
 
   @BelongsTo(() => Staff, {
-    foreignKey: 'test_verified_by',
+    foreignKey: 'investigation_verified_by',
   })
-  test_verifier: Staff;
+  investigation_verifier: Staff;
 
   @BelongsTo(() => Staff, {
-    foreignKey: 'test_approved_by',
+    foreignKey: 'investigation_approved_by',
   })
-  test_approver: Staff;
+  investigation_approver: Staff;
 
-  @BelongsTo(() => Test)
-  test: Test;
+  @BelongsTo(() => Investigation)
+  investigation: Investigation;
 
   @BelongsTo(() => Visit)
   visit: Visit;
