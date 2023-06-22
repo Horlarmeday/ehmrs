@@ -20,17 +20,17 @@
     .symbol-badge {
         width: $badge-size;
         height: $badge-size;
-        top: -($badge-size/2);
-        right: -($badge-size/2);
+        top: -(calc($badge-size/2));
+        right: -(calc($badge-size/2));
 
         &.symbol-badge-bottom {
             top: auto;
-            bottom: -($badge-size/2);
+            bottom: -(calc($badge-size/2));
         }
     }
 
     &.symbol-circle {
-        $distance: ($size / 2) * (1.41 - 1) - $badge-size;
+        $distance: calc($size / 2) * (1.41 - 1) - $badge-size;
 
         .symbol-badge {
             top: $distance;

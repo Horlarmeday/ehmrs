@@ -7,13 +7,13 @@
 	&:before {
 		width: $size;
   		height: $size;
-  		margin-top: -($size/2);
+  		margin-top: -(calc($size/2));
   	}
 
 	&.spinner-center {
 		&:before {
 			left: 50%;
-  			margin-left: -($size/2);
+  			margin-left: -(calc($size/2));
 		}
 	}
 
