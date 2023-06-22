@@ -1,5 +1,5 @@
 import { validateBulkLabTest } from './validations';
-import LabOrderService from './lab-order.service';
+import { LabOrderService } from './lab-order.service';
 import { SuccessResponse, successResponse } from '../../../common/responses/success-responses';
 import { DATA_SAVED } from '../../AdminSettings/messages/response-messages';
 import { errorResponse } from '../../../common/responses/error-responses';

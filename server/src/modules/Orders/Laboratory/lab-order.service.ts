@@ -6,7 +6,7 @@ import { PrescribedTest } from '../../../database/models';
 import PatientService from '../../Patient/patient.service';
 import { getTestPrice } from '../../Laboratory/laboratory.repository';
 
-class LabOrderService {
+export class LabOrderService {
   /**
    * prescribe a test for patient
    *
@@ -44,4 +44,3 @@ class LabOrderService {
     return orderBulkTest(bulkTests);
   }
 }
-export default LabOrderService;

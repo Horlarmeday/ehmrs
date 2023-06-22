@@ -26,11 +26,24 @@ export function validateObservation(observation) {
         })
       )
       .required(),
+    diagnosis: Joi.array()
+      .items(
+        Joi.object({
+          certainty: Joi.string().required(),
+          order: Joi.string().required(),
+          diagnosis: Joi.string().required(),
+          notes: Joi.string()
+            .allow('')
+            .optional(),
+        })
+      )
+      .required(),
   });
   return schema.validate(observation);
 }
 
-export function validateDiagnosis(diagnosis) {
+// DEPRECATED
+export function validateDiagnosis(diagnosis: any) {
   const schema = Joi.object({
     diagnosis: Joi.array()
       .items(
