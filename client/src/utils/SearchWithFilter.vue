@@ -21,9 +21,7 @@
           v-model="id"
           @change="onFilter"
         >
-          <option :value="d.id" v-for="(d, index) in data" :key="index">{{
-            d.name
-          }}</option>
+          <option :selected="selected" :value="d.id" v-for="(d, index) in data" :key="index">{{ d.name }}</option>
         </select>
       </div>
     </div>
@@ -36,27 +34,31 @@ export default {
   props: {
     label: {
       type: String,
-      required: true
+      required: true,
     },
     data: {
       type: Array,
-      required: true
-    }
+      required: true,
+    },
+    selected: {
+      type: Number,
+      required: false,
+    },
   },
   data() {
     return {
-      id: "",
-      search: ""
+      id: '',
+      search: '',
     };
   },
   methods: {
     onSearch() {
-      this.$emit("search", this.search);
+      this.$emit('search', this.search);
     },
     onFilter() {
-      this.$emit("filter", this.id);
-    }
-  }
+      this.$emit('filter', this.id);
+    },
+  },
 };
 </script>
 

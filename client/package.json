@@ -6,7 +6,8 @@
         "serve": "vue-cli-service serve",
         "build": "vue-cli-service build",
         "lint": "vue-cli-service lint",
-        "rtl": "webpack --config webpack-rtl.config.js"
+        "rtl": "webpack --config webpack-rtl.config.js",
+        "__eslint_fix": "./node_modules/eslint/bin/eslint.js . --ext .js,.ts,.vue --quiet --fix"
     },
     "lint-staged": {
         "*.{js,ts,vue}": [
