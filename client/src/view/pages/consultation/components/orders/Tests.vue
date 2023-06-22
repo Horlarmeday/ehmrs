@@ -64,7 +64,7 @@ export default {
       return this.$store.state.visit.visit;
     },
     showSwitch() {
-      return this.visit.patient.has_insurance && this.visit.patient.insurance_id !== 4;
+      return this.visit?.patient?.has_insurance && this.visit?.patient?.insurance_id !== 4;
     },
   },
   methods: {
@@ -127,7 +127,7 @@ export default {
     },
 
     defaultSwitchPosition() {
-      if (this.visit.patient.has_insurance && this.visit.patient.insurance_id !== 4) {
+      if (this.visit?.patient?.has_insurance && this.visit?.patient?.insurance_id !== 4) {
         this.switchPosition = true;
       }
     },

@@ -16,18 +16,18 @@
                 >Observations</a
               >
             </li>
-            <li class="nav-item mr-3">
-              <a
-                class="nav-link text-dark py-4 px-6"
-                @click="setActiveTab($event, '#diagnosis')"
-                data-tab="1"
-                data-toggle="tab"
-                href="#"
-                role="tab"
-                aria-selected="true"
-                >Diagnosis</a
-              >
-            </li>
+<!--            <li class="nav-item mr-3">-->
+<!--              <a-->
+<!--                class="nav-link text-dark py-4 px-6"-->
+<!--                @click="setActiveTab($event, '#diagnosis')"-->
+<!--                data-tab="1"-->
+<!--                data-toggle="tab"-->
+<!--                href="#"-->
+<!--                role="tab"-->
+<!--                aria-selected="true"-->
+<!--                >Diagnosis</a-->
+<!--              >-->
+<!--            </li>-->
             <li class="nav-item mr-3">
               <a
                 class="nav-link text-dark py-4 px-6"
@@ -100,6 +100,7 @@
 import Observations from '../tabs/Observations';
 import Diagnosis from '../tabs/Diagnosis';
 import Orders from '../tabs/Orders';
+import router from '@/router';
 
 const ComponentMapping = {
   '#observations': Observations,
@@ -137,6 +138,12 @@ export default {
       // set clicked tab index to bootstrap tab
       this.tabIndex = parseInt(target.getAttribute('data-tab'));
 
+      router.push({
+        query: {
+          tab: component,
+        },
+      });
+
       // set current active tab
       target.classList.add('active');
 
@@ -148,6 +155,7 @@ export default {
     },
   },
   created() {
+    // const component = this.$route.query.tab;
     this.activeComponent = ComponentMapping['#observations'];
     this.$store.dispatch('visit/fetchVisit', this.$route.params.visitId);
   },
