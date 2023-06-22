@@ -13,7 +13,7 @@ const sequelizeConnection = new Sequelize(database, username, password, {
   },
 });
 // sequelizeConnection
-//   .sync({ force: true })
+//   .sync({ })
 //   .then(r => {
 //     console.log('All models created!.');
 //   }).catch(err => console.error('Error occurred syncing models:', err))

@@ -1,6 +1,6 @@
 export { Bed } from './bed';
 export { Staff } from './staff';
-export { Complaints } from './complaints';
+export { Complaint } from './complaint';
 export { Department } from './department';
 export { Diagnosis } from './diagnosis';
 export { DosageForm } from './dosageForm';
@@ -22,6 +22,7 @@ export { Patient } from './patient';
 export { PharmacyItem } from './pharmacyItem';
 export { PrescribedDrug } from './prescribedDrug';
 export { PrescribedTest } from './prescribedTest';
+export { PrescribedInvestigation } from './prescribedInvestigation';
 export { RoutesOfAdministration } from './routesOfAdministration';
 export { Sample } from './sample';
 export { Service } from './service';
