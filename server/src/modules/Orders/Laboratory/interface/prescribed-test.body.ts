@@ -1,8 +1,8 @@
-import { TestType } from '../../../../database/models/prescribedTest';
+import { PrescriptionType } from '../../../../database/models/prescribedTest';
 
 type Tests = {
   test_id: number;
-  test_type: TestType;
+  test_type: PrescriptionType;
   price: string | number;
 };
 

@@ -8,7 +8,8 @@
     "start:dev": "nodemon",
     "start": "tsc && node dist/app.js",
     "build": "rimraf ./dist && tsc",
-    "migration": "sequelize db:migrate"
+    "migration": "sequelize db:migrate",
+    "__eslint_fix": "./node_modules/eslint/bin/eslint.js . --ext .js,.ts --quiet --fix"
   },
   "lint-staged": {
     "*.{js,ts,vue}": [

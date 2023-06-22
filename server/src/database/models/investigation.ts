@@ -57,7 +57,7 @@ export class Investigation extends Model {
       },
     },
   })
-  imaging_id!: number;
+  imaging_id: number;
 
   @ForeignKey(() => Staff)
   @Column({
