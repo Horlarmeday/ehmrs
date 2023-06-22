@@ -25,14 +25,14 @@ class ConsultationController {
         visit_id: req.params.id,
       });
 
-      return successResponse({ res, message: DATA_SAVED, data: observation, httpCode: 201 })
+      return successResponse({ res, message: DATA_SAVED, data: observation, httpCode: 201 });
     } catch (e) {
       return next(e);
     }
   }
 
   /**
-   * create a patient diagnosis
+   * create a patient diagnosis - DEPRECATED
    *
    * @static
    * @param {object} req express request object

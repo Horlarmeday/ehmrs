@@ -1,7 +1,8 @@
 /* eslint-disable camelcase,no-param-reassign */
 import {
+  bulkCreateComplaint,
   createComplaint,
-  createDiagnosis,
+  bulkCreateDiagnosis,
   createObservation,
   getConsultationSummary,
 } from './consultation.repository';
@@ -19,7 +20,7 @@ class ConsultationService {
    * @memberOf ConsultationService
    */
   static async createObservationService(body: Observation) {
-    const { complaints, staff_id, visit_id } = body;
+    const { complaints, staff_id, visit_id, diagnosis } = body;
     let history;
     const visit = await VisitService.getVisitById(visit_id);
 
@@ -27,21 +28,30 @@ class ConsultationService {
       history = await createObservation({ ...body, patient_id: visit.patient_id });
     }
 
-    const complaint = await Promise.all(
-      complaints.map(async complain => {
-        complain.staff_id = staff_id;
-        complain.visit_id = visit_id;
-        complain.patient_id = visit.patient_id;
-        await createComplaint(complain);
-        return complain;
-      })
-    );
+    const mappedComplaints = complaints.map(complain => {
+      complain.staff_id = staff_id;
+      complain.visit_id = visit_id;
+      complain.patient_id = visit.patient_id;
+      return complain;
+    });
 
-    return { history, complaint };
+    const mappedDiagnosis = diagnosis.map(result => {
+      result.staff_id = staff_id;
+      result.patient_id = visit.patient_id;
+      result.visit_id = visit_id;
+      return result;
+    });
+
+    const [createdComplaints, diagnoses] = await Promise.all([
+      bulkCreateComplaint(mappedComplaints),
+      bulkCreateDiagnosis(mappedDiagnosis),
+    ]);
+
+    return { history, createdComplaints, diagnoses };
   }
 
   /**
-   * create patient diagnosis
+   * create patient diagnosis - DEPRECATED
    *
    * @static
    * @returns {json} json object with diagnosis data
@@ -58,7 +68,7 @@ class ConsultationService {
       result.visit_id = visit_id;
       return result;
     });
-    return createDiagnosis(mappedDiagnosis);
+    return bulkCreateDiagnosis(mappedDiagnosis);
   }
 
   /**

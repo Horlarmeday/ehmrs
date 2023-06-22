@@ -1,8 +1,8 @@
 /* eslint-disable camelcase */
 import { BadException } from '../../common/util/api-error';
-import {StatusCodes} from "../../core/helpers/helper";
+import { StatusCodes } from '../../core/helpers/helper';
 
-const { History, Complaint, Diagnosis } = require('../../database/models');
+import { History, Complaint, Diagnosis } from '../../database/models';
 
 /**
  * create a patient complaint
@@ -21,6 +21,15 @@ export async function createComplaint(data) {
     visit_id,
     staff_id,
   });
+}
+
+/**
+ * create a bulk patient complaint
+ * @param data
+ * @returns {object} complaint data
+ */
+export async function bulkCreateComplaint(data) {
+  return Complaint.bulkCreate(data);
 }
 
 /**
@@ -55,7 +64,7 @@ export async function createObservation(data) {
  * @param data
  * @returns {object} diagnosis data
  */
-export async function createDiagnosis(data) {
+export async function bulkCreateDiagnosis(data) {
   return Diagnosis.bulkCreate(data);
 }
 
