@@ -12,10 +12,10 @@
 </template>
 
 <script>
-import Sidebar from '../components/Sidebar';
-import Examination from '../components/Examination';
-import sidebarList from '../components/examinationSidebarList';
-import Vitals from '../components/Vitals';
+import Sidebar from '../components/observations/Sidebar.vue';
+import Examination from '../components/observations/Examination.vue';
+import sidebarList from '../components/observations/examinationSidebarList';
+import Vitals from '../components/observations/Vitals.vue';
 
 const TabMapping = {
   '#vitals': Vitals,

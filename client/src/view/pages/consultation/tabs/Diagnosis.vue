@@ -1,20 +1,14 @@
 <template>
-  <div id="#diagnosis">
+  <div id="diagnosis">
     <div class="flex-row-fluid ml-lg-8">
       <div class="card card-custom gutter-b">
         <div class="card-header pt-5">
           <h3 class="card-title align-items-start flex-column">
-            <span class="card-label font-weight-bolder text-dark"
-              >Diagnosis</span
-            >
+            <span class="card-label font-weight-bolder text-dark">Diagnosis</span>
           </h3>
         </div>
         <div class="card-body">
-          <div
-            class="form-group row"
-            v-for="(diag, index) in diagnosis"
-            :key="index"
-          >
+          <div class="form-group row" v-for="(diag, index) in diagnosis" :key="index">
             <div class="col-lg-4">
               <label class="font-weight-bold text-center">Diagnosis</label>
               <input
@@ -25,30 +19,18 @@
                 class="form-control form-control-sm"
                 v-model="diag.diagnosis"
               />
-              <span class="text-danger text-sm">{{
-                errors.first("diagnosis")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('diagnosis') }}</span>
             </div>
             <div class="col-lg-3">
               <label class="font-weight-bold text-center">Order</label>
               <div class="radio-inline">
                 <label class="radio radio-lg radio-square">
-                  <input
-                    type="radio"
-                    name=""
-                    v-model="diag.order"
-                    value="Primary"
-                  />
+                  <input type="radio" name="" v-model="diag.order" value="Primary" />
                   <span></span>
                   Primary
                 </label>
                 <label class="radio radio-lg radio-square">
-                  <input
-                    type="radio"
-                    name=""
-                    v-model="diag.order"
-                    value="Secondary"
-                  />
+                  <input type="radio" name="" v-model="diag.order" value="Secondary" />
                   <span></span>
                   Secondary
                 </label>
@@ -58,22 +40,12 @@
               <label class="font-weight-bold">Certainty</label>
               <div class="radio-inline">
                 <label class="radio radio-lg radio-square">
-                  <input
-                    type="radio"
-                    name=""
-                    v-model="diag.certainty"
-                    value="Confirmed"
-                  />
+                  <input type="radio" name="" v-model="diag.certainty" value="Confirmed" />
                   <span></span>
                   Confirmed
                 </label>
                 <label class="radio radio-lg radio-square">
-                  <input
-                    type="radio"
-                    name=""
-                    v-model="diag.certainty"
-                    value="Presumed"
-                  />
+                  <input type="radio" name="" v-model="diag.certainty" value="Presumed" />
                   <span></span>
                   Presumed
                 </label>
@@ -95,11 +67,7 @@
             </div>
           </div>
           <div>
-            <button
-              @click="createDiagnosis"
-              ref="kt_diagnosis_submit"
-              class="btn btn-primary"
-            >
+            <button @click="createDiagnosis" ref="kt_diagnosis_submit" class="btn btn-primary">
               Submit
             </button>
           </div>
@@ -111,31 +79,27 @@
 
 <script>
 export default {
-  name: "Diagnosis",
+  name: 'Diagnosis',
   data() {
     return {
       diagnosis: [
         {
-          certainty: "",
-          order: "",
-          diagnosis: ""
-        }
-      ]
+          certainty: '',
+          order: '',
+          diagnosis: '',
+        },
+      ],
     };
   },
   methods: {
     addSpinner(submitButton) {
       this.isDisabled = true;
-      submitButton.classList.add("spinner", "spinner-light", "spinner-right");
+      submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');
     },
 
     removeSpinner(submitButton) {
       this.isDisabled = false;
-      submitButton.classList.remove(
-        "spinner",
-        "spinner-light",
-        "spinner-right"
-      );
+      submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
     },
 
     initializeRequest(button) {
@@ -145,9 +109,9 @@ export default {
 
     addNewDiagnosis() {
       this.diagnosis.push({
-        certainty: "",
-        order: "",
-        diagnosis: ""
+        certainty: '',
+        order: '',
+        diagnosis: '',
       });
     },
     removeDiagnosis(i) {
@@ -158,16 +122,16 @@ export default {
       this.$validator.validateAll().then(result => {
         if (result) {
           const obj = {
-            diagnosis: this.diagnosis
+            diagnosis: this.diagnosis,
           };
           // set spinner to submit button
-          const submitButton = this.$refs["kt_diagnosis_submit"];
+          const submitButton = this.$refs['kt_diagnosis_submit'];
           this.addSpinner(submitButton);
 
           this.$store
-            .dispatch("consultation/addDiagnosis", {
+            .dispatch('consultation/addDiagnosis', {
               visit_id: this.$route.params.visitId,
-              complaint: obj
+              complaint: obj,
             })
             .then(() => this.initializeRequest(submitButton))
             .catch(() => this.removeSpinner(submitButton));
@@ -178,13 +142,13 @@ export default {
     initValues() {
       this.diagnosis = [
         {
-          diagnosis: "",
-          certainty: "",
-          order: ""
-        }
+          diagnosis: '',
+          certainty: '',
+          order: '',
+        },
       ];
-    }
-  }
+    },
+  },
 };
 </script>
 
