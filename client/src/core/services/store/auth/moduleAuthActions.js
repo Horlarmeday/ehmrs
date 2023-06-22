@@ -75,6 +75,7 @@ export default {
       commit("logout");
       localStorage.removeItem("user_token");
       delete axios.defaults.headers.common["authorization"];
+      window.location.replace('/');
       resolve();
     });
   }

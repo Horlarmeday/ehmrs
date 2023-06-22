@@ -1,6 +1,9 @@
 import axios from '../../../../axios';
 
 export default {
+  /**************
+   LAB ORDERS
+   *************/
   orderLabTest({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
@@ -34,5 +37,44 @@ export default {
   },
   toggleTestUrgent({ commit }, testId) {
     commit('TOGGLE_TEST_URGENT', testId);
+  },
+
+  /**************
+   RADIOLOGY ORDERS
+   *************/
+  orderInvestigationTest({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/orders/radiology/create/${payload.id}`, { investigations: payload.investigations })
+        .then(response => {
+          commit('ORDER_INVESTIGATION_TEST', payload.investigations);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  addSelectedInvestigation({ commit }, investigation) {
+    commit('ADD_SELECTED_INVESTIGATION', investigation);
+  },
+  removeSelectedInvestigation({ commit }, investigation) {
+    commit('REMOVE_SELECTED_INVESTIGATION', investigation);
+  },
+  emptySelectedInvestigations({ commit }) {
+    commit('EMPTY_SELECTED_INVESTIGATION', []);
+  },
+  addSelectedInvestigationButton({ commit }, button) {
+    commit('ADD_SELECTED_INVESTIGATION_BUTTON', button);
+  },
+  removeSelectedInvestigationButton({ commit }, buttonId) {
+    commit('REMOVE_SELECTED_INVESTIGATION_BUTTON', buttonId);
+  },
+  emptySelectedInvestigationButtons({ commit }) {
+    commit('EMPTY_SELECTED_INVESTIGATION_BUTTONS');
+  },
+  toggleInvestigationUrgency({ commit }, investigationId) {
+    commit('TOGGLE_INVESTIGATION_URGENCY', investigationId);
   },
 };
