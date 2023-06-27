@@ -108,57 +108,82 @@
           </div>
         </div>
         <hr />
-        <div class="form-group row" v-for="(diag, index) in diagnosis" :key="`${index}-d`">
-          <div class="col-lg-5">
-            <label class="font-weight-bold text-center">Diagnosis</label>
-            <input
-              v-validate="'required'"
-              data-vv-validate-on="blur"
-              type="text"
-              name="diagnosis"
-              class="form-control form-control-sm"
-              v-model="diag.diagnosis"
-            />
-            <span class="text-danger text-sm">{{ errors.first('diagnosis') }}</span>
-          </div>
-          <div class="col-lg-3">
-            <label class="font-weight-bold">Order</label>
+        <div>
+          <div class="mb-3">
             <div class="radio-inline">
-              <label class="radio radio-md radio-square">
-                <input type="radio" name="" v-model="diag.order" value="Primary" />
+              <label
+                class="radio radio-md radio-rounded"
+                v-for="(type, index) in diseaseTypes"
+                :key="index"
+              >
+                <input type="radio" name="radio4" v-model="diagnosisType" :value="type" />
                 <span></span>
-                Primary
-              </label>
-              <label class="radio radio-md radio-square">
-                <input type="radio" name="" v-model="diag.order" value="Secondary" />
-                <span></span>
-                Secondary
+                {{ type }}
               </label>
             </div>
           </div>
-          <div class="col-lg-3">
-            <label class="font-weight-bold">Certainty</label>
-            <div class="radio-inline">
-              <label class="radio radio-md radio-square">
-                <input type="radio" name="" v-model="diag.certainty" value="Confirmed" />
-                <span></span>
-                Confirmed
-              </label>
-              <label class="radio radio-md radio-square">
-                <input type="radio" name="" v-model="diag.certainty" value="Presumed" />
-                <span></span>
-                Presumed
-              </label>
+          <div class="form-group row" v-for="(diag, index) in diagnosis" :key="index">
+            <div class="col-lg-5">
+              <label class="font-weight-bold text-center">Diagnosis</label>
+              <v-select
+                name="diagnosis"
+                @input="addNewDiagnosis"
+                @search="searchDiagnosis"
+                v-model="diag.diagnosis"
+                label="diagnosis"
+                :reduce="
+                  diagnoses => ({
+                    id: diagnoses.id,
+                    diagnosis: diagnoses.diagnosis,
+                    type: diagnosisType,
+                  })
+                "
+                :options="diagnoses"
+              >
+                <template #search="{attributes, events}">
+                  <input
+                    class="vs__search"
+                    :required="!diag.diagnosis"
+                    v-bind="attributes"
+                    v-on="events"
+                  />
+                </template>
+              </v-select>
+            </div>
+            <div class="col-lg-3">
+              <label class="font-weight-bold">Certainty</label>
+              <div class="radio-inline">
+                <label
+                  class="radio radio-md radio-square"
+                  v-for="(certainty, i) in certainties"
+                  :key="i"
+                >
+                  <input type="radio" v-model="diag.certainty" :value="certainty" />
+                  <span></span>
+                  {{ certainty }}
+                </label>
+              </div>
+            </div>
+            <div class="col-lg-3">
+              <label class="font-weight-bold text-center">Notes</label>
+              <input
+                name="notes"
+                v-model="diag.notes"
+                type="text"
+                class="form-control form-control-sm"
+              />
+            </div>
+            <div class="col-lg-1">
+              <br />
+              <a href="#" class="col-lg-1 col-form-label">
+                <i
+                  class="far fa-trash-alt icon-md text-danger icon-lg"
+                  v-if="index !== 0"
+                  @click="removeDiagnosis(index)"
+                />
+              </a>
             </div>
           </div>
-          <a href="#" class="col-lg-1 col-form-label">
-            <i class="far fa-plus-square mr-3 mt-4 text-primary icon-lg" @click="() => {}" />
-            <i
-              class="far fa-trash-alt icon-md text-danger icon-lg"
-              v-if="index !== 0"
-              @click="() => {}"
-            />
-          </a>
         </div>
         <div>
           <button
@@ -176,8 +201,10 @@
 </template>
 
 <script>
+import vSelect from 'vue-select';
 export default {
   name: 'Examination',
+  components: { vSelect },
   data() {
     return {
       complaints: [
@@ -191,8 +218,8 @@ export default {
       diagnosis: [
         {
           certainty: '',
-          order: '',
           diagnosis: '',
+          notes: '',
         },
       ],
       complaint_note: '',
@@ -200,7 +227,23 @@ export default {
       examination_note: '',
       has_smoking_history: '',
       isDisabled: false,
+      diagnosisType: 'ICD10',
+      certainties: ['Confirmed', 'Presumed'],
+      diseaseTypes: ['ICD10', 'ICPC2'],
     };
+  },
+  computed: {
+    diagnoses: {
+      get() {
+        if (this.diagnosisType === 'ICD10') {
+          return this.$store.state.diagnosis.icd10Diseases;
+        }
+        return this.$store.state.diagnosis.icpc2Diseases;
+      },
+      set() {
+        this.diagnoses = [];
+      },
+    },
   },
   methods: {
     addSpinner(submitButton) {
@@ -219,28 +262,51 @@ export default {
     },
 
     createExamination() {
-      this.$validator.validateAll().then(result => {
-        if (result) {
-          const obj = {
-            complaints: this.complaints,
-            has_smoking_history: this.has_smoking_history,
-            examination_note: this.examination_note,
-            history_note: this.history_note,
-            complaint_note: this.complaint_note,
-            diagnosis: this.diagnosis,
-          };
-          // set spinner to submit button
-          const submitButton = this.$refs['kt_observation_submit'];
-          this.addSpinner(submitButton);
+      this.removeEmptyDiagnosis();
+      if (this.checkDiagnosisNotSelected()) return this.errorMessage();
+      this.$validator
+        .validateAll()
+        .then(result => {
+          if (result) {
+            const obj = {
+              complaints: this.complaints,
+              has_smoking_history: this.has_smoking_history,
+              examination_note: this.examination_note,
+              history_note: this.history_note,
+              complaint_note: this.complaint_note,
+              diagnosis: this.diagnosis.map(({ diagnosis, certainty, notes }) => ({
+                diagnosis_id: diagnosis.id,
+                type: diagnosis.type,
+                certainty,
+                notes,
+              })),
+            };
+            // set spinner to submit button
+            const submitButton = this.$refs['kt_observation_submit'];
+            this.addSpinner(submitButton);
 
-          this.$store
-            .dispatch('consultation/addObservation', {
-              visit_id: this.$route.params.visitId,
-              complaint: obj,
-            })
-            .then(() => this.initializeRequest(submitButton))
-            .catch(() => this.removeSpinner(submitButton));
-        }
+            this.$store
+              .dispatch('consultation/addObservation', {
+                visit_id: this.$route.params.visitId,
+                complaint: obj,
+              })
+              .then(() => this.initializeRequest(submitButton))
+              .catch(() => this.removeSpinner(submitButton));
+          }
+        })
+        .catch(e => console.error(e));
+    },
+
+    checkDiagnosisNotSelected() {
+      return this.diagnosis.some(({ diagnosis, certainty }) => !diagnosis || !certainty);
+    },
+
+    errorMessage() {
+      this.$notify({
+        group: 'foo',
+        title: 'Error!',
+        text: 'Please select a diagnosis with certainty',
+        type: 'error',
       });
     },
 
@@ -260,12 +326,18 @@ export default {
     addNewDiagnosis() {
       this.diagnosis.push({
         certainty: '',
-        order: '',
         diagnosis: '',
+        notes: '',
       });
     },
+
     removeDiagnosis(i) {
       this.diagnosis.splice(i, 1);
+    },
+
+    removeEmptyDiagnosis() {
+      const index = this.diagnosis.findIndex(({ diagnosis }) => !diagnosis);
+      if (this.diagnosis.length > 1 && index !== -1) this.removeDiagnosis(index);
     },
 
     initValues() {
@@ -279,15 +351,27 @@ export default {
       ];
       this.diagnosis = [
         {
-          diagnosis: '',
           certainty: '',
-          order: '',
+          diagnosis: '',
+          notes: '',
         },
       ];
       this.has_smoking_history = '';
       this.examination_note = '';
       this.history_note = '';
       this.complaint_note = '';
+    },
+
+    searchDiagnosis(search) {
+      if (this.diagnosisType === 'ICD10') {
+        this.$store.dispatch('diagnosis/fetchICD10Diagnosis', {
+          search,
+        });
+      } else {
+        this.$store.dispatch('diagnosis/fetchICPC2Diagnosis', {
+          search,
+        });
+      }
     },
   },
 };
