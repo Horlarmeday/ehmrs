@@ -129,7 +129,8 @@ export default {
       default: () => []
     },
     paginationParams: {
-      type: Object
+      type: Object,
+      required: true,
     }
   },
   methods: {
