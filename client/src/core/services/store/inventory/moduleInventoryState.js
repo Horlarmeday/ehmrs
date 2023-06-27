@@ -1,4 +1,7 @@
 export default {
+  inventory: null,
+  inventories: [],
+
   items: [],
   item: null,
   total: 0,

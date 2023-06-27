@@ -1,4 +1,17 @@
 export default {
+  ADD_INVENTORY(state, inventory) {
+    state.inventories.unshift(inventory);
+  },
+
+  SET_INVENTORIES(state, inventories) {
+    state.inventories = inventories;
+  },
+
+  UPDATE_INVENTORY(state, inventory) {
+    const inventoryIndex = state.inventories.findIndex(p => p.id === inventory.id);
+    Object.assign(state.inventories[inventoryIndex], inventory);
+  },
+
   ADD_ITEM(state, item) {
     state.items.unshift(item);
   },
