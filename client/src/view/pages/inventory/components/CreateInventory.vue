@@ -1,5 +1,5 @@
 <template>
-  <b-modal v-model="activePrompt" hide-footer title="Insurance">
+  <b-modal v-model="activePrompt" hide-footer title="Create Inventory">
     <div class="mb-15">
       <div class="form-group row">
         <label class="col-lg-3 col-form-label">Name</label>
@@ -17,22 +17,49 @@
         </div>
       </div>
       <div class="form-group row">
+        <label class="col-lg-3 col-form-label">Allowed Drugs Type:</label>
+        <div class="col-lg-8">
+          <select
+            v-validate="'required'"
+            data-vv-validate-on="blur"
+            name="accepted_drug_type"
+            v-model="accepted_drug_type"
+            class="form-control-sm form-control"
+          >
+            <option :value="type" v-for="(type, i) in acceptedDrugTypes" :key="i">{{
+              type
+            }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-lg-3 col-form-label">Refill Level</label>
+        <div class="col-lg-8">
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            placeholder="Optional"
+            v-model="refill_level"
+          />
+        </div>
+      </div>
+      <div class="form-group row">
         <label class="col-lg-3 col-form-label">Description:</label>
         <div class="col-lg-8">
           <input
             type="text"
             class="form-control form-control-sm"
             placeholder="Optional"
-            v-model="description"
+            v-model="desc"
           />
         </div>
       </div>
     </div>
     <button
       class="mt-3 btn btn-primary"
-      @click="createInsurance"
+      @click="createInventory"
       :disabled="isDisabled"
-      ref="kt_insurance_submit"
+      ref="kt_inventory_submit"
     >
       Submit
     </button>
@@ -54,9 +81,11 @@ export default {
   data() {
     return {
       name: '',
-      description: '',
-      insurance_id: '',
+      accepted_drug_type: '',
+      refill_level: '',
+      desc: '',
       isDisabled: false,
+      acceptedDrugTypes: ['Cash Drug', 'Covered Drug', 'Both'],
     };
   },
   computed: {
@@ -79,10 +108,12 @@ export default {
         this.initValues();
         this.$validator.reset();
       } else {
-        const { id, name, description } = JSON.parse(JSON.stringify(this.data));
-        this.insurance_id = id;
+        const { id, name, desc, accepted_drug_type, refill_level } = JSON.parse(JSON.stringify(this.data));
+        this.inventory_id = id;
         this.name = name;
-        this.description = description;
+        this.desc = desc;
+        this.accepted_drug_type = accepted_drug_type;
+        this.refill_level = refill_level;
       }
     },
   },
@@ -102,27 +133,29 @@ export default {
       this.$emit('closeModal');
       this.initValues();
     },
-    createInsurance() {
+    createInventory() {
       this.$validator.validateAll().then(result => {
         if (result) {
           const obj = {
-            insurance_id: this.insurance_id,
+            inventory_id: this.id,
             name: this.name,
-            description: this.description,
+            desc: this.desc,
+            accepted_drug_type: this.accepted_drug_type,
+            refill_level: this.refill_level,
           };
           // set spinner to submit button
-          const submitButton = this.$refs['kt_insurance_submit'];
+          const submitButton = this.$refs['kt_inventory_submit'];
           this.addSpinner(submitButton);
 
-          if (this.insurance_id && this.insurance_id >= 0) {
+          if (this.inventory_id && this.inventory_id >= 0) {
             this.$store
-              .dispatch('insurance/updateInsurance', obj)
+              .dispatch('inventory/updateInventory', obj)
               .then(() => this.endRequest(submitButton))
               .catch(() => this.removeSpinner(submitButton));
           } else {
-            delete obj.insurance_id;
+            delete obj.inventory_id;
             this.$store
-              .dispatch('insurance/addInsurance', obj)
+              .dispatch('inventory/addInventory', obj)
               .then(() => this.endRequest(submitButton))
               .catch(() => this.removeSpinner(submitButton));
           }
@@ -130,9 +163,11 @@ export default {
       });
     },
     initValues() {
+      this.inventory_id = '';
       this.name = '';
-      this.description = '';
-      this.insurance_id = '';
+      this.desc = '';
+      this.accepted_drug_type = '';
+      this.refill_level = '';
     },
   },
 };

@@ -151,7 +151,7 @@ export default class Declarative extends Plugin<DeclarativeOptions> {
         const arr = clazz.split('.');
 
         // TODO: Find a safer way to create a plugin instance from the class
-        // Currently, I have to use `any` here instead of a construtable interface
+        // Currently, I have to use `any` here instead of a construtable types
         let fn: any = (window || this);
         for (let i = 0, len = arr.length; i < len; i++) {
             fn = fn[arr[i]];

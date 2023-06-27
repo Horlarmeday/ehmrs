@@ -132,7 +132,7 @@ export default {
           //     this.$store
           //       .dispatch("model/updateBed", obj)
           //       .then(response => {
-          //         this.initializeRequest(submitButton, response);
+          //         this.endRequest(submitButton, response);
           //       })
           //       .catch(err => {
           //         this.cancelRequest(submitButton, err);
