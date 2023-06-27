@@ -3,6 +3,9 @@ import ConsultationService from './consultation.service';
 import { successResponse } from '../../common/responses/success-responses';
 import { DATA_SAVED } from '../AdminSettings/messages/response-messages';
 import { SUCCESS } from '../../core/constants';
+import { errorResponse } from '../../common/responses/error-responses';
+import { DOSAGE_FORM_REQUIRED } from '../Pharmacy/messages/response-messages';
+import { StatusCodes } from '../../core/helpers/helper';
 
 class ConsultationController {
   /**
@@ -16,7 +19,12 @@ class ConsultationController {
    */
   static async createObservation(req, res, next) {
     const { error } = validateObservation(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
 
     try {
       const observation = await ConsultationService.createObservationService({
@@ -42,7 +50,12 @@ class ConsultationController {
    */
   static async createDiagnosis(req, res, next) {
     const { error } = validateDiagnosis(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
 
     try {
       const diagnosis = await ConsultationService.createDiagnosisService({

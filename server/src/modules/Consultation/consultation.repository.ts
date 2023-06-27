@@ -52,7 +52,7 @@ export async function createObservation(data) {
     complaint_note,
     history_note,
     examination_note,
-    has_smoking_history,
+    has_smoking_history: has_smoking_history || false,
     visit_id,
     staff_id,
     patient_id,
