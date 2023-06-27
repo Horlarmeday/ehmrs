@@ -14,6 +14,7 @@ import pharmacyOrderRoutes from '../../modules/Orders/Pharmacy/pharmacy-order.ro
 import radiologyOrderRoutes from '../../modules/Orders/Radiology/radiology-order.routes';
 import inventoryRoutes from '../../modules/Inventory/inventory.routes';
 import radiologyRoutes from '../../modules/Radiology/radiology.routes';
+import diagnosisRoutes from '../../modules/Diagnosis/diagnosis.routes';
 import express from 'express';
 import { StatusCodes } from '../helpers/helper';
 
@@ -31,6 +32,7 @@ export default (server: express.Application) => {
   server.use('/api/triage', triageRoutes);
   server.use('/api/inventory', inventoryRoutes);
   server.use('/api/radiology', radiologyRoutes);
+  server.use('/api/diagnosis', diagnosisRoutes);
   server.use('/api/orders/lab', labOrderRoutes);
   server.use('/api/orders/pharmacy', pharmacyOrderRoutes);
   server.use('/api/orders/radiology', radiologyOrderRoutes);

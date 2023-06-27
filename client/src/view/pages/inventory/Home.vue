@@ -1,41 +1,33 @@
 <template>
   <div>
+    <create-inventory
+      :data="inventoryToEdit"
+      :display-prompt="displayPrompt"
+      @closeModal="hideModal"
+    />
+    <div v-if="!inventories.length" class="bv-example">
+      <empty-data-card @addData="addNewData" />
+    </div>
     <!--begin::Row-->
-    <div class="row mb-10">
-      <div
-        class="col-lg-6 col-xl-4 mb-10"
-        v-for="(inventory, i) in inventories"
-        :key="i"
-      >
+    <div v-if="inventories.length" class="row mb-10">
+      <div class="col-lg-6 col-xl-4 mb-10" v-for="(inventory, i) in inventories" :key="i">
         <!--begin::Callout-->
+        <callout-card
+          :name="inventory.name"
+          :desc="inventory.desc || `Click here to view items in the ${inventory.name}`"
+          :link="`/inventory/${inventory.id}`"
+        />
+        <!--end::Callout-->
+      </div>
+      <div class="col-lg-6 col-xl-4 mb-10">
         <div class="card card-custom mb-2 bg-diagonal">
           <div class="card-body">
-            <div
-              class="d-flex align-items-center justify-content-between p-4 flex-lg-wrap flex-xl-nowrap"
-            >
-              <div class="d-flex flex-column mr-5">
-                <router-link
-                  :to="inventory.link"
-                  class="h4 text-dark text-hover-primary mb-5"
-                >
-                  {{ inventory.name }}
-                </router-link>
-                <p class="text-dark-50">
-                  {{ inventory.desc }}
-                </p>
-              </div>
-              <div class="ml-6 ml-lg-0 ml-xxl-6 flex-shrink-0">
-                <router-link
-                  :to="inventory.link"
-                  class="btn font-weight-bolder text-uppercase btn-light-primary py-4 px-6"
-                >
-                  View
-                </router-link>
-              </div>
+            <div class="text-center cursor-pointer" @click="addNewData">
+              <i class="flaticon2-plus icon-4x"></i>
             </div>
+            <div class="text-center text-dark-50"><p>Create a new Inventory</p></div>
           </div>
         </div>
-        <!--end::Callout-->
       </div>
     </div>
     <!--end::Row-->
@@ -43,35 +35,42 @@
 </template>
 
 <script>
+import CreateInventory from './components/CreateInventory.vue';
+import CalloutCard from '@/utils/CalloutCard.vue';
+import EmptyDataCard from '@/utils/EmptyDataCard.vue';
+
 export default {
-  name: "Home.vue",
+  name: 'Home.vue',
+  components: { EmptyDataCard, CalloutCard, CreateInventory },
   data() {
     return {
-      inventories: [
-        {
-          name: "Outpatient Inventory",
-          link: "/inventory/outpatient-inventory",
-          desc: "Click here to view items in the outpatient inventory"
-        },
-        {
-          name: "Inpatient Inventory",
-          link: "/inventory/inpatient-inventory",
-          desc: "Click here to view items in the inpatient inventory"
-        },
-        {
-          name: "NHIS Outpatient Inventory",
-          link: "/inventory/nhis-outpatient-inventory",
-          desc: "Click here to view items in the NHIS outpatient inventory"
-        },
-        {
-          name: "NHIS Inpatient Inventory",
-          link: "/inventory/nhis-inpatient-inventory",
-          desc: "Click here to view items in the NHIS inpatient inventory"
-        }
-      ]
+      displayPrompt: false,
+      inventoryToEdit: {},
     };
-  }
+  },
+  computed: {
+    inventories() {
+      return this.$store.state.inventory.inventories;
+    },
+  },
+  created() {
+    this.$store.dispatch('inventory/fetchInventories');
+  },
+  methods: {
+    hideModal() {
+      this.displayPrompt = false;
+    },
+
+    addNewData() {
+      this.inventoryToEdit = {};
+      this.displayPrompt = true;
+    },
+  },
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.cursor-pointer {
+  cursor: pointer;
+}
+</style>

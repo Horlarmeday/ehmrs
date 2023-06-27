@@ -32,7 +32,7 @@ export const setUrlQueryParams = ({
   search,
   startDate,
   endDate,
-  sort
+  sort,
 }) => {
   router
     .push({
