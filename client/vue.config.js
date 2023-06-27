@@ -8,7 +8,7 @@ module.exports = {
         changeOrigin: true,
         secure: false
       }
-    }
+    },
   },
   publicPath:
     process.env.NODE_ENV === "production" ? "/metronic/vue/demo7/" : "/",
@@ -20,7 +20,8 @@ module.exports = {
         // Or if using full build of Vue (runtime + compiler)
         // vue$: 'vue/dist/vue.esm.js'      // 'vue/dist/vue.common.js' for webpack 1
       }
-    }
+    },
+    watch: true
   },
   chainWebpack: config => {
     config.module
@@ -43,5 +44,5 @@ module.exports = {
   //     }
   //   }
   // },
-  transpileDependencies: ["vuetify"]
+  transpileDependencies: ['vuetify'],
 };

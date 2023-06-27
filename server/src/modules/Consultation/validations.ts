@@ -13,6 +13,7 @@ export function validateObservation(observation) {
       .optional(),
     has_smoking_history: Joi.boolean()
       .allow('')
+      .default(false)
       .optional(),
     complaints: Joi.array()
       .items(
@@ -30,8 +31,8 @@ export function validateObservation(observation) {
       .items(
         Joi.object({
           certainty: Joi.string().required(),
-          order: Joi.string().required(),
-          diagnosis: Joi.string().required(),
+          type: Joi.string().valid('ICD10', 'ICPC2'),
+          diagnosis_id: Joi.number().required(),
           notes: Joi.string()
             .allow('')
             .optional(),
