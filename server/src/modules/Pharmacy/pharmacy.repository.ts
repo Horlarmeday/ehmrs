@@ -3,7 +3,7 @@ import { Op } from 'sequelize';
 import { generateRandomNumbers } from '../../core/helpers/helper';
 import { getModelById } from '../../core/helpers/general';
 
-const { Drug, DosageForm, Measurement, RouteOfAdministration } = require('../../database/models');
+import { Drug, DosageForm, Measurement, RoutesOfAdministration } from '../../database/models';
 
 async function includeOneModel({ model, modelToInclude, id, includeAs }) {
   return model.findOne({
@@ -207,13 +207,13 @@ export async function getDosageFormMeasurements(dosage_form_id) {
 export async function createRouteOfAdministration(data) {
   const { name, staff_id, dosage_form_id } = data;
 
-  const route = await RouteOfAdministration.create({
+  const route = await RoutesOfAdministration.create({
     name,
     staff_id,
     dosage_form_id,
   });
   return includeOneModel({
-    model: RouteOfAdministration,
+    model: RoutesOfAdministration,
     modelToInclude: DosageForm,
     id: route.id,
     includeAs: 'dosage_form',
@@ -227,7 +227,7 @@ export async function createRouteOfAdministration(data) {
  */
 export async function updateRouteOfAdministration(data) {
   const { route_id } = data;
-  const route = await getModelById(RouteOfAdministration, route_id);
+  const route = await getModelById(RoutesOfAdministration, route_id);
   return route.update(data);
 }
 
@@ -238,7 +238,7 @@ export async function updateRouteOfAdministration(data) {
  * @returns {json} json object with routes of administration data
  */
 export async function getRoutesOfAdministration() {
-  return RouteOfAdministration.findAll({
+  return RoutesOfAdministration.findAll({
     order: [['createdAt', 'DESC']],
     include: [{ model: DosageForm, as: 'dosage_form', attributes: ['name'] }],
   });
@@ -251,7 +251,7 @@ export async function getRoutesOfAdministration() {
  * @returns {json} json object with routes of administration data
  */
 export async function getDosageFormRoutes(dosage_form_id) {
-  return RouteOfAdministration.findAll({
+  return RoutesOfAdministration.findAll({
     where: {
       dosage_form_id,
     },

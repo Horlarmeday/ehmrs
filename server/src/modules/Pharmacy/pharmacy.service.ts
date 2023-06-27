@@ -16,10 +16,10 @@ import {
   updateMeasurement,
   updateRouteOfAdministration,
 } from './pharmacy.repository';
-import { RoutesOfAdministration } from './interface/routes-of-administration.interface';
 import { DosageMeasurement } from './interface/dosage-measurements.interface';
 import { DosageForm } from './interface/dosage-forms.interface';
-import {Drug} from "./interface/generic-drugs.interface";
+import { Drug } from './interface/generic-drugs.interface';
+import { RoutesOfAdministration } from '../../database/models';
 
 class PharmacyService {
   /** ***********************
@@ -58,7 +58,9 @@ class PharmacyService {
    * @param body
    * @memberOf PharmacyService
    */
-  static async getGenericDrugs(body): Promise<Drug[]> {
+  static async getGenericDrugs(
+    body
+  ): Promise<{ total: any; pages: number; perPage: number; docs: any; currentPage: number }> {
     const { currentPage, pageLimit, search } = body;
     if (search) {
       return searchGenericDrugs(+currentPage, +pageLimit, search);
