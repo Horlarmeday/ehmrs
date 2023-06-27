@@ -6,6 +6,12 @@
       @closeModal="hideModal"
       :data="itemToEdit"
     />
+
+    <dispense-modal
+      :displayPrompt="displayDispenseModal"
+      @closeModal="hideDispenseModal"
+      :items-to-dispense="itemsToDispense"
+    />
     <!--begin::Header-->
     <div class="card-header border-0 py-5">
       <h3 class="card-title align-items-start flex-column">
@@ -25,22 +31,24 @@
       place-holder="Search Items"
       @search="onHandleSearch"
       @sort="onHandleSort"
+      @filter="onFilter"
     />
 
     <!--begin::Body-->
     <div class="card-body py-0">
-      <button-group />
+      <button-group
+        @openModal="openDispenseModal"
+        v-if="selectedItems.length"
+        :count="selectedItems.length"
+      />
       <!--begin::Table-->
       <div class="table-responsive">
-        <table
-          class="table table-head-custom table-vertical-center"
-          id="kt_advance_table_widget_1"
-        >
+        <table class="table table-head-custom table-vertical-center" id="kt_advance_table_widget_1">
           <thead>
             <tr class="text-left">
               <th class="pl-0" style="width: 20px">
                 <label class="checkbox checkbox-md checkbox-inline">
-                  <input type="checkbox" value="1" />
+                  <input type="checkbox" v-model="isAllSelected" />
                   <span></span>
                 </label>
               </th>
@@ -60,7 +68,7 @@
             <tr v-for="item in items" :key="item.id">
               <td class="pl-0">
                 <label class="checkbox checkbox-md checkbox-inline">
-                  <input type="checkbox" value="1" />
+                  <input type="checkbox" :checked="isSelected(item)" @change="toggleItem(item)" />
                   <span></span>
                 </label>
               </td>
@@ -70,24 +78,18 @@
                   class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg"
                   >{{ item.drug.name }}</a
                 >
-                <span
-                  v-if="item.drug_type === 'NHIS'"
-                  class="label label-inline label-success ml-2"
+                <span v-if="item.drug_type === 'NHIS'" class="label label-inline label-success ml-2"
                   >NHIS</span
                 >
               </td>
               <td>
-                <span
-                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                >
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                   {{ item.remain_quantity }} {{ item.unit.name }}
                 </span>
               </td>
               <td>
-                <span
-                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                >
-                  {{ item.shelf || "None" }}
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ item.shelf || 'None' }}
                 </span>
               </td>
               <td>
@@ -95,32 +97,22 @@
                   v-if="item.dosage_form_id"
                   class="text-dark-75 font-weight-bolder d-block font-size-lg"
                 >
-                  {{ item.dosage_form.name || "None" }}
+                  {{ item.dosage_form.name || 'None' }}
                 </span>
-                <span
-                  v-else
-                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                  >Nil</span
-                >
+                <span v-else class="text-dark-75 font-weight-bolder d-block font-size-lg">Nil</span>
               </td>
               <td>
                 <span
                   v-if="item.measurement_id"
                   class="text-dark-75 font-weight-bolder d-block font-size-lg"
                 >
-                  {{ item.strength_input }} {{ item.strength.name || "None" }}
+                  {{ item.strength_input }} {{ item.strength.name || 'None' }}
                 </span>
-                <span
-                  v-else
-                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                  >Nil</span
-                >
+                <span v-else class="text-dark-75 font-weight-bolder d-block font-size-lg">Nil</span>
               </td>
               <td>
-                <span
-                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                >
-                  {{ item.createdAt | moment("ddd, MMM Do YYYY, h:mma") }}
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ item.createdAt | moment('ddd, MMM Do YYYY, h:mma') }}
                 </span>
               </td>
               <td class="pr-0 text-right">
@@ -131,13 +123,6 @@
                 >
                   <send-icon />
                 </a>
-                <a
-                  href="#"
-                  class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
-                  @click.stop="editData(item)"
-                >
-                  <edit-icon />
-                </a>
               </td>
             </tr>
           </tbody>
@@ -147,7 +132,7 @@
       <pagination
         :total-pages="pages"
         :total="queriedItems"
-        :per-page="perPage"
+        :per-page="itemsPerPage"
         :current-page="+$route.query.currentPage || currentPage"
         @pagechanged="onPageChange"
         @changepagecount="onChangePageCount"
@@ -159,32 +144,34 @@
 </template>
 
 <script>
-import UpdatePharmacyItem from "./update/UpdateStoreItem.vue";
-import Pagination from "@/utils/Pagination.vue";
-import EditIcon from "../../../../assets/icons/EditIcon.vue";
-import AddIcon from "../../../../assets/icons/AddIcon.vue";
-import SendIcon from "../../../../assets/icons/SendIcon.vue";
-import SearchAndFilter from "../../../../utils/SearchAndFilter";
-import { setUrlQueryParams } from "../../../../common/common";
-import ButtonGroup from "../../../../utils/ButtonGroup";
+import UpdatePharmacyItem from './update/UpdateStoreItem.vue';
+import Pagination from '@/utils/Pagination.vue';
+import AddIcon from '../../../../assets/icons/AddIcon.vue';
+import SendIcon from '../../../../assets/icons/SendIcon.vue';
+import SearchAndFilter from '../../../../utils/SearchAndFilter';
+import { setUrlQueryParams } from '../../../../common/common';
+import ButtonGroup from '../../../../utils/ButtonGroup';
+import DispenseModal from '@/view/pages/store/pharmacy/components/DispenseModal.vue';
 export default {
   data() {
     return {
       displayPrompt: false,
+      displayDispenseModal: false,
       itemToEdit: {},
       currentPage: 1,
       itemsPerPage: 10,
-      selected: []
+      selected: [],
+      itemsToDispense: [],
     };
   },
   components: {
+    DispenseModal,
     ButtonGroup,
     SearchAndFilter,
     UpdatePharmacyItem,
     Pagination,
-    EditIcon,
     AddIcon,
-    SendIcon
+    SendIcon,
     // Search
   },
   computed: {
@@ -199,16 +186,39 @@ export default {
     },
     perPage() {
       return this.items.length;
-    }
+    },
+    selectedItems() {
+      return this.$store.state.store.selectedItems;
+    },
+    isAllSelected: {
+      get() {
+        return this.selectedItems.length === this.items.length;
+      },
+      set(value) {
+        // Update the selected items based on the new value of isAllSelected
+        if (value) {
+          // Set all items as selected
+          this.$store.dispatch('store/addAllAsSelectedItems', this.items);
+        } else {
+          // Clear all selected items
+          this.$store.dispatch('store/removeAllSelectedItems');
+        }
+      },
+    },
   },
   methods: {
-    addNewData() {
-      this.itemToEdit = {};
-      this.displayPrompt = true;
-    },
-
     hideModal() {
       this.displayPrompt = false;
+    },
+
+    hideDispenseModal() {
+      this.displayDispenseModal = false;
+      console.log(this.displayDispenseModal);
+    },
+
+    openDispenseModal(value) {
+      this.displayDispenseModal = value;
+      this.mapSelectedItems();
     },
 
     editData(item) {
@@ -216,16 +226,30 @@ export default {
       this.displayPrompt = true;
     },
 
-    handlePageChange() {
+    queryParams({ search = null, sort = null, filter = null, pagecount = null }) {
       setUrlQueryParams({
-        pathName: "pharmacy-items",
+        pathName: 'pharmacy-items',
         currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage
+        itemsPerPage: pagecount || this.itemsPerPage,
+        ...(search && { search }),
+        ...(sort && { sort }),
+        ...(filter && { filter }),
       });
-      this.$store.dispatch("store/fetchPharmacyItems", {
-        currentPage: this.$route.query.currentPage,
-        itemsPerPage: this.$route.query.itemsPerPage
+    },
+
+    fetchPharmacyItems({ sort = null, filter = null, search = null, currentPage = null }) {
+      this.$store.dispatch('store/fetchPharmacyItems', {
+        currentPage: currentPage || this.$route.query.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        ...(search && { search }),
+        ...(sort && { sort }),
+        ...(filter && { filter }),
       });
+    },
+
+    handlePageChange() {
+      this.queryParams({});
+      this.fetchPharmacyItems({});
     },
 
     onPageChange(page) {
@@ -234,51 +258,68 @@ export default {
     },
 
     onHandleSearch(search) {
-      setUrlQueryParams({
-        pathName: "pharmacy-items",
-        currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage,
-        search
-      });
-      this.$store.dispatch("store/fetchPharmacyItems", {
-        currentPage: 1,
-        itemsPerPage: this.itemsPerPage,
-        search
-      });
+      this.queryParams({ search });
+      this.fetchPharmacyItems({ search, currentPage: 1 });
     },
 
     onChangePageCount(pagecount) {
-      setUrlQueryParams({
-        pathName: "pharmacy-items",
-        currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage
-      });
-      this.$store.dispatch("store/fetchPharmacyItems", {
+      this.queryParams({ pagecount });
+      this.$store.dispatch('store/fetchPharmacyItems', {
         currentPage: this.$route.query.currentPage || this.currentPage,
-        itemsPerPage: pagecount
+        itemsPerPage: pagecount,
       });
     },
 
     onHandleSort(sort) {
-      setUrlQueryParams({
-        pathName: "pharmacy-items",
-        currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage,
-        sort
-      });
-      this.$store.dispatch("store/fetchPharmacyItems", {
+      this.queryParams({ sort });
+      this.fetchPharmacyItems({
+        sort,
         currentPage: this.$route.query.currentPage || this.currentPage,
-        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
-        sort
       });
-    }
+    },
+
+    onFilter(filter) {
+      this.queryParams({ filter });
+      this.fetchPharmacyItems({
+        filter,
+        currentPage: this.$route.query.currentPage || this.currentPage,
+      });
+    },
+
+    isSelected(item) {
+      return this.selectedItems.includes(item);
+    },
+
+    toggleItem(item) {
+      if (this.isSelected(item)) {
+        // If the item is already selected, remove it from selectedItems
+        this.$store.dispatch('store/removeSelectedItem', item);
+      } else {
+        // If the item is not selected, add it to selectedItems
+        this.$store.dispatch('store/addSelectedItem', item);
+      }
+    },
+
+    mapSelectedItems() {
+      this.itemsToDispense = this.selectedItems.map(
+        ({ id, drug, unit, remain_quantity, drug_type }) => ({
+          staff: null,
+          id,
+          quantity_to_dispense: null,
+          dispensary: null,
+          drug_name: drug.name,
+          quantity_left: remain_quantity,
+          unit: unit.name,
+          drug_type,
+        })
+      );
+    },
   },
   created() {
-    this.$store.dispatch("store/fetchPharmacyItems", {
+    this.fetchPharmacyItems({
       currentPage: this.$route.query.currentPage || this.currentPage,
-      itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage
     });
-  }
+  },
 };
 </script>
 

@@ -43,7 +43,7 @@
             <li class="nav-item mr-3">
               <a
                 class="nav-link text-dark py-4 px-6"
-                @click="setActiveTab"
+                @click="setActiveTab($event, '#medications')"
                 data-tab="1"
                 data-toggle="tab"
                 href="#"
@@ -98,14 +98,14 @@
 
 <script>
 import Observations from '../tabs/Observations';
-import Diagnosis from '../tabs/Diagnosis';
 import Orders from '../tabs/Orders';
+import Medications from '../tabs/Medications.vue';
 import router from '@/router';
 
 const ComponentMapping = {
   '#observations': Observations,
-  '#diagnosis': Diagnosis,
   '#orders': Orders,
+  '#medications': Medications,
 };
 
 export default {
