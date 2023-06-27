@@ -27,6 +27,23 @@ export default {
     Object.assign(state.items[itemIndex], item);
   },
 
+  ADD_SELECTED_ITEM(state, item) {
+    state.selectedItems.push(item);
+  },
+
+  ADD_ALL_SELECTED_ITEMS(state, items) {
+    state.selectedItems.push(...items);
+  },
+
+  REMOVE_SELECTED_ITEM(state, item) {
+    const itemIndex = state.selectedItems.findIndex(({ id }) => id === item.id);
+    state.selectedItems.splice(itemIndex, 1);
+  },
+
+  REMOVE_ALL_SELECTED_ITEMS(state, items) {
+    state.selectedItems = items;
+  },
+
   /**
    * LABORATORY ITEMS
    */
@@ -53,5 +70,5 @@ export default {
   UPDATE_LAB_ITEM(state, item) {
     const itemIndex = state.labItems.findIndex(p => p.id === item.id);
     Object.assign(state.labItems[itemIndex], item);
-  }
+  },
 };

@@ -6,6 +6,7 @@ export default {
   items: [],
   totalItems: 0,
   itemPages: 0,
+  selectedItems: [],
 
   /**
    * LAB ITEMS

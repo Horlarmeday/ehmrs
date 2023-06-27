@@ -1,4 +1,4 @@
-import axios from "../../../../axios";
+import axios from '../../../../axios';
 
 export default {
   /**
@@ -7,14 +7,14 @@ export default {
   addGenericDrug({ commit }, drug) {
     return new Promise((resolve, reject) => {
       axios
-        .post("/pharmacy/generic-drugs/create", drug)
+        .post('/pharmacy/generic-drugs/create', drug)
         .then(response => {
           commit(
-            "ADD_GENERIC_DRUG",
+            'ADD_GENERIC_DRUG',
             Object.assign(drug, {
               id: response.data.data.id,
               createdAt: response.data.data.createdAt,
-              code: response.data.data.code
+              code: response.data.data.code,
             })
           );
           resolve(response);
@@ -27,17 +27,17 @@ export default {
   fetchGenericDrugs({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
-        .get("/pharmacy/generic-drugs/get", {
+        .get('/pharmacy/generic-drugs/get', {
           params: {
             currentPage: payload.currentPage,
             pageLimit: payload.itemsPerPage,
-            search: payload.search
-          }
+            search: payload.search,
+          },
         })
         .then(response => {
-          commit("SET_GENERIC_DRUGS", response.data.data.docs);
-          commit("SET_GENERIC_DRUGS_TOTAL", response.data.data.total);
-          commit("SET_NUMB_PAGES", response.data.data.pages);
+          commit('SET_GENERIC_DRUGS', response.data.data.docs);
+          commit('SET_GENERIC_DRUGS_TOTAL', response.data.data.total);
+          commit('SET_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
         .catch(error => {
@@ -51,7 +51,7 @@ export default {
       axios
         .put(`/pharmacy/generic-drugs/update`, drug)
         .then(response => {
-          commit("UPDATE_GENERIC_DRUG", response.data.data);
+          commit('UPDATE_GENERIC_DRUG', response.data.data);
           resolve(response);
         })
         .catch(error => {
@@ -66,13 +66,13 @@ export default {
   addDosageForm({ commit }, dosageForm) {
     return new Promise((resolve, reject) => {
       axios
-        .post("/pharmacy/dosage-forms/create", dosageForm)
+        .post('/pharmacy/dosage-forms/create', dosageForm)
         .then(response => {
           commit(
-            "ADD_DOSAGE_FORM",
+            'ADD_DOSAGE_FORM',
             Object.assign(dosageForm, {
               id: response.data.data.id,
-              createdAt: response.data.data.createdAt
+              createdAt: response.data.data.createdAt,
             })
           );
           resolve(response);
@@ -85,9 +85,9 @@ export default {
   fetchDosageForms({ commit }) {
     return new Promise((resolve, reject) => {
       axios
-        .get("/pharmacy/dosage-forms/get")
+        .get('/pharmacy/dosage-forms/get')
         .then(response => {
-          commit("SET_DOSAGE_FORMS", response.data.data);
+          commit('SET_DOSAGE_FORMS', response.data.data);
           resolve(response);
         })
         .catch(error => {
@@ -101,7 +101,7 @@ export default {
       axios
         .put(`/pharmacy/dosage-forms/update`, dosageForm)
         .then(response => {
-          commit("UPDATE_DOSAGE_FORM", response.data.data);
+          commit('UPDATE_DOSAGE_FORM', response.data.data);
           resolve(response);
         })
         .catch(error => {
@@ -116,14 +116,14 @@ export default {
   addMeasurement({ commit }, measurement) {
     return new Promise((resolve, reject) => {
       axios
-        .post("/pharmacy/measurements/create", measurement)
+        .post('/pharmacy/measurements/create', measurement)
         .then(response => {
           commit(
-            "ADD_MEASUREMENT",
+            'ADD_MEASUREMENT',
             Object.assign(measurement, {
               id: response.data.data.id,
               dosage_form: response.data.data.dosage_form,
-              createdAt: response.data.data.createdAt
+              createdAt: response.data.data.createdAt,
             })
           );
           resolve(response);
@@ -137,9 +137,9 @@ export default {
   fetchMeasurements({ commit }) {
     return new Promise((resolve, reject) => {
       axios
-        .get("/pharmacy/measurements/get")
+        .get('/pharmacy/measurements/get')
         .then(response => {
-          commit("SET_MEASUREMENTS", response.data.data);
+          commit('SET_MEASUREMENTS', response.data.data);
           resolve(response);
         })
         .catch(error => {
@@ -153,7 +153,7 @@ export default {
       axios
         .put(`/pharmacy/measurements/update`, measurement)
         .then(response => {
-          commit("UPDATE_MEASUREMENT", response.data.data);
+          commit('UPDATE_MEASUREMENT', response.data.data);
           resolve(response);
         })
         .catch(error => {
@@ -168,14 +168,14 @@ export default {
   addRoute({ commit }, route) {
     return new Promise((resolve, reject) => {
       axios
-        .post("/pharmacy/routes-of-administration/create", route)
+        .post('/pharmacy/routes-of-administration/create', route)
         .then(response => {
           commit(
-            "ADD_ROUTE",
+            'ADD_ROUTE',
             Object.assign(route, {
               id: response.data.data.id,
               dosage_form: response.data.data.dosage_form,
-              createdAt: response.data.data.createdAt
+              createdAt: response.data.data.createdAt,
             })
           );
           resolve(response);
@@ -189,9 +189,9 @@ export default {
   fetchRoutes({ commit }) {
     return new Promise((resolve, reject) => {
       axios
-        .get("/pharmacy/routes-of-administration/get")
+        .get('/pharmacy/routes-of-administration/get')
         .then(response => {
-          commit("SET_ROUTES", response.data.data);
+          commit('SET_ROUTES', response.data.data);
           resolve(response);
         })
         .catch(error => {
@@ -205,7 +205,7 @@ export default {
       axios
         .put(`/pharmacy/routes-of-administration/update`, route)
         .then(response => {
-          commit("UPDATE_ROUTE", response.data.data);
+          commit('UPDATE_ROUTE', response.data.data);
           resolve(response);
         })
         .catch(error => {
@@ -217,15 +217,15 @@ export default {
   fetchRoutesAndMeasurements({ commit }, dosage_form_id) {
     return new Promise((resolve, reject) => {
       axios
-        .post("/pharmacy/routes-and-measurement", dosage_form_id)
+        .post('/pharmacy/routes-and-measurement', dosage_form_id)
         .then(response => {
-          commit("SET_ROUTES", response.data.data.routesOfAdministrations);
-          commit("SET_MEASUREMENTS", response.data.data.dosageMeasurements);
+          commit('SET_ROUTES', response.data.data.routesOfAdministrations);
+          commit('SET_MEASUREMENTS', response.data.data.dosageMeasurements);
           resolve(response);
         })
         .catch(error => {
           reject(error);
         });
     });
-  }
+  },
 };

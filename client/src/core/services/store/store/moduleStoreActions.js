@@ -47,6 +47,22 @@ export default {
     });
   },
 
+  addSelectedItem({ commit }, item) {
+    commit('ADD_SELECTED_ITEM', item);
+  },
+
+  addAllAsSelectedItems({ commit }, items) {
+    commit('ADD_ALL_SELECTED_ITEMS', items);
+  },
+
+  removeSelectedItem({ commit }, item) {
+    commit('REMOVE_SELECTED_ITEM', item);
+  },
+
+  removeAllSelectedItems({ commit }) {
+    commit('REMOVE_ALL_SELECTED_ITEMS', []);
+  },
+
   /**
    * LABORATORY ITEMS
    */
