@@ -59,9 +59,7 @@
         <option value="50">50</option>
         <option value="100">100</option>
       </select>
-      <span class="text-muted"
-        >Displaying {{ perPage }} of {{ total }} records</span
-      >
+      <span class="text-muted">Displaying {{ perPage }} of {{ total }} records</span>
     </div>
   </div>
 </template>
@@ -72,57 +70,63 @@ export default {
     maxVisibleButtons: {
       type: Number,
       required: false,
-      default: 6
+      default: 6,
     },
     totalPages: {
       type: Number,
-      required: true
+      required: true,
     },
     total: {
       type: Number,
-      required: true
+      required: true,
     },
     currentPage: {
       type: Number,
-      required: true
+      required: true,
     },
     perPage: {
       type: Number,
-      required: true
-    }
+      required: true,
+    },
   },
   data() {
     return {
-      disabled: "disabled",
-      active: "active",
-      pageCount: 10
+      disabled: 'disabled',
+      active: 'active',
+      pageCount: 10,
     };
   },
   computed: {
     startPage() {
-      // When on the first page
-      if (this.currentPage === 1) {
+      // When on the first page or the total number of pages is less than the maxVisibleButtons
+      if (this.currentPage === 1 || this.totalPages <= this.maxVisibleButtons) {
         return 1;
       }
       // When on the last page
       if (this.currentPage === this.totalPages) {
-        return this.totalPages - this.maxVisibleButtons;
+        return this.totalPages - (this.maxVisibleButtons - 1);
       }
       // When in between
-      return this.currentPage - 1;
+      const halfMaxVisibleButtons = Math.floor(this.maxVisibleButtons / 2);
+      let start = this.currentPage - halfMaxVisibleButtons;
+      if (start < 1) {
+        start = 1;
+      } else if (start + this.maxVisibleButtons - 1 > this.totalPages) {
+        start = this.totalPages - (this.maxVisibleButtons - 1);
+      }
+      return start;
     },
     pages() {
       const range = [];
 
       for (
         let i = this.startPage;
-        i <=
-        Math.min(this.startPage + this.maxVisibleButtons - 1, this.totalPages);
+        i <= Math.min(this.startPage + this.maxVisibleButtons - 1, this.totalPages);
         i += 1
       ) {
         range.push({
           name: i,
-          isDisabled: i === this.currentPage
+          isDisabled: i === this.currentPage,
         });
       }
 
@@ -133,31 +137,31 @@ export default {
     },
     isInLastPage() {
       return this.currentPage === this.totalPages;
-    }
+    },
   },
   methods: {
     isPageActive(page) {
       return this.currentPage === page;
     },
     onClickFirstPage() {
-      this.$emit("pagechanged", 1);
+      this.$emit('pagechanged', 1);
     },
     onClickPreviousPage() {
-      this.$emit("pagechanged", this.currentPage - 1);
+      this.$emit('pagechanged', this.currentPage - 1);
     },
     onClickPage(page) {
-      this.$emit("pagechanged", page);
+      this.$emit('pagechanged', page);
     },
     onClickNextPage() {
-      this.$emit("pagechanged", this.currentPage + 1);
+      this.$emit('pagechanged', this.currentPage + 1);
     },
     onClickLastPage() {
-      this.$emit("pagechanged", this.totalPages);
+      this.$emit('pagechanged', this.totalPages);
     },
     onChangePageCount() {
-      this.$emit("changepagecount", this.pageCount);
-    }
-  }
+      this.$emit('changepagecount', this.pageCount);
+    },
+  },
 };
 </script>
 

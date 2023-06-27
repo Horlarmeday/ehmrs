@@ -8,9 +8,9 @@
           @keypress.enter="onSearch"
         />
         <b-input-group-append>
-          <b-dropdown text="Dropdown" variant="outline-secondary">
-            <b-dropdown-item>Action A</b-dropdown-item>
-            <b-dropdown-item>Action B</b-dropdown-item>
+          <b-dropdown text="Type" variant="outline-secondary">
+            <b-dropdown-item>Drugs</b-dropdown-item>
+            <b-dropdown-item>Consumables</b-dropdown-item>
           </b-dropdown>
           <b-form-select v-model="sort" :options="options" @change="onSort" />
         </b-input-group-append>
