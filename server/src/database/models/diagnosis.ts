@@ -24,9 +24,9 @@ export enum Certainty {
   CONFIRMED = 'Confirmed',
 }
 
-export enum OrderStatus {
-  PRIMARY = 'Primary',
-  SECONDARY = 'Secondary',
+export enum DiagnosisType {
+  ICPC2 = 'ICPC2',
+  ICD10 = 'ICD10',
 }
 
 @Table({ timestamps: true })
@@ -36,15 +36,26 @@ export class Diagnosis extends Model {
   id: number;
 
   @Column({
-    type: DataType.TEXT,
+    type: DataType.INTEGER,
     allowNull: false,
     validate: {
       notEmpty: {
-        msg: 'diagnosis is required',
+        msg: 'diagnosis id is required',
       },
     },
   })
-  diagnosis: string;
+  diagnosis_id: number;
+
+  @Column({
+    type: DataType.ENUM(DiagnosisType.ICD10, DiagnosisType.ICPC2),
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'pick a type',
+      },
+    },
+  })
+  type: DiagnosisType;
 
   @Column({
     type: DataType.ENUM(Certainty.CONFIRMED, Certainty.PRESUMED),
@@ -56,17 +67,6 @@ export class Diagnosis extends Model {
     },
   })
   certainty: Certainty;
-
-  @Column({
-    type: DataType.ENUM(OrderStatus.PRIMARY, OrderStatus.SECONDARY),
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'pick an order',
-      },
-    },
-  })
-  order: OrderStatus;
 
   @Column({
     type: DataType.TEXT,
