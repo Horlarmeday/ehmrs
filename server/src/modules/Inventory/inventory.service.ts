@@ -1,18 +1,50 @@
 import {
+  createInventory,
+  getAnInventory,
+  getInventories,
   getInventoryItems,
   inventories,
   receiveBulkItem,
   searchInventoryItems,
 } from './inventory.repository';
-import { InventoryItem } from './interface/inventory-item.interface';
-import { joinCapitalizedWord, StatusCodes } from '../../core/helpers/helper';
-import { BadException } from '../../common/util/api-error';
-import { INVALID_INVENTORY } from './messages/response-messages';
+import { Inventory, InventoryItem } from '../../database/models';
+import { InventoryTypes } from './types/inventory.types';
+import { GetInventoryItemsBody } from './types/inventory-item.types';
 
 class InventoryService {
-  /** ***********************
-   * OUTPATIENT
-   ********************** */
+  /**
+   * create an inventory
+   *
+   * @static
+   * @returns {json} json object with inventory data
+   * @param body
+   * @memberOf InventoryService
+   */
+  static async createInventory(body: InventoryTypes): Promise<Inventory> {
+    return createInventory(body);
+  }
+
+  /**
+   * get all inventories
+   *
+   * @static
+   * @returns {json} json object with inventories data
+   * @memberOf InventoryService
+   */
+  static async getInventories(): Promise<Inventory[]> {
+    return getInventories();
+  }
+
+  /**
+   * get an inventory
+   *
+   * @static
+   * @returns {json} json object with inventory data
+   * @memberOf InventoryService
+   */
+  static async getInventory(inventoryId: number): Promise<Inventory> {
+    return getAnInventory(inventoryId);
+  }
 
   /**
    * receive item(s) into the inventory
@@ -26,9 +58,9 @@ class InventoryService {
   static async receiveItems(inventory, body: InventoryItem[]): Promise<InventoryItem[]> {
     const items = body.map(item => ({
       ...item,
-      quantity_received: item.quantity,
+      quantity_received: item.quantity_received,
     }));
-    return receiveBulkItem(inventory, items);
+    return receiveBulkItem(items);
   }
 
   /**
@@ -39,12 +71,8 @@ class InventoryService {
    * @param body
    * @memberOf InventoryService
    */
-  static async getOutpatientInventoryItems(body) {
-    const { currentPage, pageLimit, search, inventoryType } = body;
-    const inventory = joinCapitalizedWord(inventoryType, '-');
-
-    if (!inventories[inventory])
-      throw new BadException('ERROR', StatusCodes.BAD_REQUEST, INVALID_INVENTORY);
+  static async getInventoryItems(body: GetInventoryItemsBody) {
+    const { currentPage, pageLimit, search, inventory } = body;
 
     if (search) {
       return searchInventoryItems({

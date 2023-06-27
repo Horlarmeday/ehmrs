@@ -1,30 +1,26 @@
 import { Op } from 'sequelize';
 
-const {
+import {
   Unit,
   Measurement,
   DosageForm,
   Drug,
-  OutpatientInventory,
-  InpatientInventory,
-  NhisInpatientInventory,
-  NhisOutpatientInventory,
-} = require('../../database/models');
+  Inventory,
+  InventoryItem,
+} from '../../database/models';
+import { InventoryTypes } from './types/inventory.types';
 
 export const inventories = {
-  OutpatientInventory,
-  InpatientInventory,
-  NhisOutpatientInventory,
-  NhisInpatientInventory,
+  Inventory,
+  InventoryItem,
 };
 
 /**
  * receive product(s) into the inventory
- * @param inventory
  * @param data
  * @returns {object} inventory product data
  */
-export async function receiveItem(inventory, data) {
+export async function receiveItem(data) {
   const {
     drug_id,
     quantity,
@@ -39,8 +35,9 @@ export async function receiveItem(inventory, data) {
     drug_form,
     drug_type,
     date_received,
+    inventory_id,
   } = data;
-  return inventory.create({
+  return InventoryItem.create({
     drug_id,
     quantity_received: quantity,
     unit_id,
@@ -54,17 +51,17 @@ export async function receiveItem(inventory, data) {
     drug_form,
     drug_type,
     date_received,
+    inventory_id,
   });
 }
 
 /**
  * receive bulk item(s) into the inventory
- * @param inventory
  * @param data
  * @returns {object} inventory product data
  */
-export async function receiveBulkItem(inventory, data) {
-  return inventories[inventory].bulkCreate(data);
+export async function receiveBulkItem(data) {
+  return InventoryItem.bulkCreate(data);
 }
 
 /**
@@ -77,10 +74,13 @@ export async function receiveBulkItem(inventory, data) {
  * @param pageLimit
  */
 export async function getInventoryItems({ inventory, currentPage = 1, pageLimit = 10 }) {
-  return inventories[inventory].paginate({
+  return InventoryItem.paginate({
     page: currentPage,
     paginate: pageLimit,
     order: [['createdAt', 'DESC']],
+    where: {
+      inventory_id: inventory,
+    },
     include: [
       {
         model: Drug,
@@ -117,10 +117,13 @@ export async function getInventoryItems({ inventory, currentPage = 1, pageLimit 
  * @param search
  */
 export async function searchInventoryItems({ inventory, currentPage = 1, pageLimit = 10, search }) {
-  return inventory.paginate({
+  return InventoryItem.paginate({
     page: currentPage,
     paginate: pageLimit,
     order: [['createdAt', 'DESC']],
+    where: {
+      inventory_id: inventory,
+    },
     include: [
       {
         model: Drug,
@@ -150,3 +153,28 @@ export async function searchInventoryItems({ inventory, currentPage = 1, pageLim
     ],
   });
 }
+
+/**
+ * create an inventory
+ * @param data
+ * @returns {object} inventory product data
+ */
+export const createInventory = (data: Partial<Inventory>) => {
+  return Inventory.create(data);
+};
+
+/**
+ * get list of all inventories
+ * @returns {object} inventory product data
+ */
+export const getInventories = async () => {
+  return Inventory.findAll();
+};
+
+/**
+ * get an inventory
+ * @returns {object} inventory product data
+ */
+export const getAnInventory = async (inventoryId: number) => {
+  return Inventory.findOne({ where: { id: inventoryId } });
+};
