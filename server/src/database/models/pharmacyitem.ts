@@ -182,24 +182,12 @@ export class PharmacyItem extends Model {
   @ForeignKey(() => Measurement)
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'measurement is required',
-      },
-    },
   })
   measurement_id: number;
 
   @ForeignKey(() => DosageForm)
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'dosage form is required',
-      },
-    },
   })
   dosage_form_id: number;
 

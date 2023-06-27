@@ -42,6 +42,7 @@ export class History extends Model {
 
   @Column({
     type: DataType.BOOLEAN,
+    defaultValue: false,
   })
   has_smoking_history: boolean;
 

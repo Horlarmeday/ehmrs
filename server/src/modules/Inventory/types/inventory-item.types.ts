@@ -23,3 +23,10 @@ export class InventoryItem {
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+export type GetInventoryItemsBody = {
+  currentPage: number;
+  pageLimit?: number;
+  search?: string;
+  inventory: number;
+};

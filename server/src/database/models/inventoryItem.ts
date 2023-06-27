@@ -21,12 +21,25 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
+import { Inventory } from './inventory';
 
-@Table({ timestamps: true })
-export class NhisInventory extends Model {
+@Table({ timestamps: true, tableName: 'inventory_items' })
+export class InventoryItem extends Model {
   @PrimaryKey
   @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
   id: number;
+
+  @ForeignKey(() => Inventory)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'inventory id is required',
+      },
+    },
+  })
+  inventory_id: number;
 
   @ForeignKey(() => Drug)
   @Column({
@@ -93,7 +106,7 @@ export class NhisInventory extends Model {
       },
     },
   })
-  price: number;
+  acquired_price: number;
 
   @Column({
     type: DataType.DATE,
@@ -199,6 +212,9 @@ export class NhisInventory extends Model {
 
   @BelongsTo(() => Unit)
   unit: Unit;
+
+  @BelongsTo(() => Inventory)
+  inventory: Inventory;
 
   static async paginate(param: {
     paginate: number;
