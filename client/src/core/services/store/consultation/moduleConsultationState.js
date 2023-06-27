@@ -1,6 +1,6 @@
 export default {
   observations: [],
   diagnosis: [],
-  testType: "CASH",
+  testType: 'CASH',
   sampleId: 1
 };
