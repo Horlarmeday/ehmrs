@@ -2,14 +2,18 @@ import {
   createInventory,
   getAnInventory,
   getInventories,
+  getInventoryItemByDrugId,
+  getInventoryItemById,
+  getInventoryItemHistory,
   getInventoryItems,
-  inventories,
   receiveBulkItem,
   searchInventoryItems,
 } from './inventory.repository';
 import { Inventory, InventoryItem } from '../../database/models';
 import { InventoryTypes } from './types/inventory.types';
 import { GetInventoryItemsBody } from './types/inventory-item.types';
+import { BadException } from '../../common/util/api-error';
+import server from '../../core/startup/server';
 
 class InventoryService {
   /**
@@ -72,7 +76,16 @@ class InventoryService {
    * @memberOf InventoryService
    */
   static async getInventoryItems(body: GetInventoryItemsBody) {
-    const { currentPage, pageLimit, search, inventory } = body;
+    const { currentPage, pageLimit, search, inventory, filter } = body;
+    if (filter && search) {
+      return searchInventoryItems({
+        inventory,
+        currentPage: +currentPage,
+        pageLimit: +pageLimit,
+        search,
+        filter,
+      });
+    }
 
     if (search) {
       return searchInventoryItems({
@@ -92,6 +105,46 @@ class InventoryService {
     }
 
     return getInventoryItems({ inventory });
+  }
+
+  /**
+   * get an item from the inventory via its ID
+   * @param inventoryId
+   */
+  static async getInventoryItem(inventoryId: number) {
+    const item = await getInventoryItemById(inventoryId);
+    if (!item) throw new BadException('NOT_FOUND', 404, 'Item not found');
+    return item;
+  }
+
+  /**
+   * get an item from the store the drug ID
+   * @param drugId
+   */
+  async getInventoryItemByDrugId(drugId: number) {
+    const item = await getInventoryItemByDrugId(drugId);
+    if (!item) throw new BadException('NOT_FOUND', 404, 'Item not found');
+    return item;
+  }
+
+  /**
+   * get inventory item histories
+   * @param body
+   */
+  static async getInventoryItemHistory(
+    body
+  ): Promise<{ total: any; pages: number; perPage: number; docs: any; currentPage: number }> {
+    const { currentPage, pageLimit, filter, inventoryItemId } = body;
+
+    if (filter) {
+      return getInventoryItemHistory({ currentPage, pageLimit, filter, inventoryItemId });
+    }
+
+    if (Object.values(body).length) {
+      return getInventoryItemHistory({ currentPage, pageLimit, inventoryItemId });
+    }
+
+    return getInventoryItemHistory({ inventoryItemId });
   }
 }
 

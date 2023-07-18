@@ -1,4 +1,4 @@
-import { Op } from 'sequelize';
+import { literal, Op } from 'sequelize';
 
 import {
   Unit,
@@ -7,8 +7,11 @@ import {
   Drug,
   Inventory,
   InventoryItem,
+  InventoryItemHistory,
+  Staff,
 } from '../../database/models';
 import { InventoryTypes } from './types/inventory.types';
+import { HistoryType } from '../../database/models/inventoryItemHistory';
 
 export const inventories = {
   Inventory,
@@ -115,20 +118,27 @@ export async function getInventoryItems({ inventory, currentPage = 1, pageLimit 
  * @param currentPage
  * @param pageLimit
  * @param search
+ * @param filter
  */
-export async function searchInventoryItems({ inventory, currentPage = 1, pageLimit = 10, search }) {
+export async function searchInventoryItems({
+  inventory,
+  currentPage = 1,
+  pageLimit = 10,
+  search,
+  filter = null,
+}) {
   return InventoryItem.paginate({
     page: currentPage,
     paginate: pageLimit,
     order: [['createdAt', 'DESC']],
     where: {
       inventory_id: inventory,
+      ...(filter && { ...JSON.parse(filter) }),
     },
     include: [
       {
         model: Drug,
-        as: 'drug',
-        attributes: ['name'],
+        attributes: ['name', 'id'],
         where: {
           name: {
             [Op.like]: `%${search}%`,
@@ -137,18 +147,15 @@ export async function searchInventoryItems({ inventory, currentPage = 1, pageLim
       },
       {
         model: Unit,
-        as: 'unit',
         attributes: ['name'],
       },
       {
         model: DosageForm,
-        as: 'dosage_form',
         attributes: ['name'],
       },
       {
         model: Measurement,
-        as: 'strength',
-        attributes: ['name'],
+        attributes: ['name', 'id'],
       },
     ],
   });
@@ -177,4 +184,91 @@ export const getInventories = async () => {
  */
 export const getAnInventory = async (inventoryId: number) => {
   return Inventory.findOne({ where: { id: inventoryId } });
+};
+
+export const getInventoryItemById = async (inventoryId: number) => {
+  return await InventoryItem.findByPk(inventoryId, {
+    include: [
+      {
+        model: Drug,
+        attributes: ['name'],
+      },
+      {
+        model: Unit,
+        attributes: ['name', 'id'],
+      },
+      {
+        model: Measurement,
+        attributes: ['name'],
+      },
+      {
+        model: DosageForm,
+        attributes: ['name'],
+      },
+    ],
+  });
+};
+
+export const getInventoryItemByDrugId = async (drugId: number) => {
+  return await InventoryItem.findOne({ where: { drug_id: drugId } });
+};
+
+export const addItemToInventory = async item => {
+  const [inventoryItem, created] = await InventoryItem.findOrCreate({
+    where: { drug_id: item.drug_id, inventory_id: item.inventory_id },
+    defaults: { ...item },
+  });
+
+  if (!created) {
+    await InventoryItem.update(
+      {
+        ...item,
+        quantity_remaining: literal(`quantity_remaining + ${item.quantity_remaining}`),
+        quantity_received: literal(`quantity_received + ${item.quantity_remaining}`),
+      },
+      { where: { drug_id: item.drug_id, inventory_id: item.inventory_id } }
+    );
+  }
+
+  return inventoryItem;
+};
+
+export const addInventoryItemHistory = async (item): Promise<InventoryItemHistory> => {
+  return InventoryItemHistory.create({
+    ...item,
+  });
+};
+
+/**
+ * get pharmacy store item history
+ *
+ * @function
+ * @returns {json} json object with item history data
+ * @param currentPage
+ * @param pageLimit
+ * @param sort_by
+ * @param filter
+ */
+export const getInventoryItemHistory = async ({
+  currentPage = 1,
+  pageLimit = 10,
+  filter = '{}',
+  inventoryItemId,
+}) => {
+  return InventoryItemHistory.paginate({
+    page: +currentPage,
+    paginate: +pageLimit,
+    where: { inventory_item_id: inventoryItemId, ...JSON.parse(filter) },
+    order: [['history_date', 'DESC']],
+    include: [
+      {
+        model: Unit,
+        attributes: ['name', 'id'],
+      },
+      {
+        model: Staff,
+        attributes: ['firstname', 'lastname'],
+      },
+    ],
+  });
 };

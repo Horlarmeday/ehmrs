@@ -13,7 +13,7 @@ import { DosageForm } from './dosageForm';
 import { Staff } from './staff';
 import { Measurement } from './measurement';
 import { Unit } from './unit';
-import { DrugType } from './pharmacyItem';
+import { DrugType } from './pharmacyStore';
 import {
   FindAttributeOptions,
   GroupOption,
@@ -26,7 +26,7 @@ import { InventoryItem } from './inventoryItem';
 
 export enum AcceptedDrugType {
   CASH = 'Cash Drug',
-  COVERED = 'Covered Drug',
+  NHIS = 'NHIS Drug',
   BOTH = 'Both',
 }
 
@@ -53,7 +53,7 @@ export class Inventory extends Model {
   refill_level: number;
 
   @Column({
-    type: DataType.ENUM(AcceptedDrugType.CASH, AcceptedDrugType.BOTH, AcceptedDrugType.COVERED),
+    type: DataType.ENUM(AcceptedDrugType.CASH, AcceptedDrugType.BOTH, AcceptedDrugType.NHIS),
     allowNull: false,
     validate: {
       notEmpty: {

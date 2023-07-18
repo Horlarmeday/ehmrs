@@ -87,6 +87,51 @@ class InventoryController {
       return next(e);
     }
   }
+
+  /**
+   * get inventory items
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with inventory items data
+   */
+  static async getInventoryItem(req, res, next) {
+    const { id } = req.params;
+
+    try {
+      const items = await InventoryService.getInventoryItem(id);
+
+      return successResponse({ res, data: items, httpCode: StatusCodes.OK, message: SUCCESS });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get inventory items
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with inventory items data
+   */
+  static async getInventoryItemHistory(req, res, next) {
+    const inventoryItemId = req.params.id;
+
+    try {
+      const history = await InventoryService.getInventoryItemHistory({
+        ...req.query,
+        inventoryItemId,
+      });
+
+      return successResponse({ res, data: history, httpCode: StatusCodes.OK, message: SUCCESS });
+    } catch (e) {
+      return next(e);
+    }
+  }
 }
 
 export default InventoryController;
