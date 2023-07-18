@@ -5,8 +5,18 @@ import fs from 'fs';
 import { BadException } from '../../common/util/api-error';
 import { DEVELOPMENT } from '../constants';
 import { Patient } from '../../database/models';
+import { Response } from 'express';
+import { ExportDataType } from '../../modules/Store/types/pharmacy-item.types';
+import { exportDataToCSV, exportDataToExcel, exportDataToPDF } from './fileExport';
 
 const writeFile = promisify(fs.writeFile);
+
+export type ExportSelectedDataType = {
+  res: Response;
+  headers: string[][];
+  data: any;
+  dataType: ExportDataType;
+};
 
 /**
  * process base64 image string into an actual image a writes to disk
@@ -62,6 +72,7 @@ export function checkValueExists(history) {
 export enum StatusCodes {
   CREATED = 201,
   OK = 200,
+  MODIFIED = 204,
   BAD_REQUEST = 400,
   UNAUTHORIZED = 401,
   FORBIDDEN = 403,
@@ -119,3 +130,14 @@ export const calcLimitAndOffset = (page: number, size: number) => {
 };
 
 export const canUsePriceTariff = (patient: Patient) => !!(patient?.insurance_id && patient?.hmo_id);
+
+export const exportSelectedData = ({ res, dataType, data, headers }: ExportSelectedDataType) => {
+  switch (dataType) {
+    case ExportDataType.CSV:
+      return exportDataToCSV(res, data, headers);
+    case ExportDataType.EXCEL:
+      return exportDataToExcel(res, data, headers);
+    case ExportDataType.PDF:
+      return exportDataToPDF(res, data, headers);
+  }
+};

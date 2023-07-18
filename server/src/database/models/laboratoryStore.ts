@@ -19,7 +19,7 @@ import {
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 
 @Table({ timestamps: true, tableName: 'Lab_Items' })
-export class LabItem extends Model {
+export class LaboratoryStore extends Model {
   @PrimaryKey
   @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
   id: number;

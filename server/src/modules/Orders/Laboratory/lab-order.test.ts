@@ -5,7 +5,7 @@ import server from '../../../core/startup/server';
 import request from 'supertest';
 import { OPD } from '../../../core/constants';
 
-const { Staff, PrescribedTest, Visit } = require('../../database/models');
+import { Staff, PrescribedTest, Visit } from '../../database/models';
 
 const tests = [
   {
@@ -25,7 +25,7 @@ const tests = [
   },
 ];
 
-describe('Lab Order Endpoints /orders/lab', () => {
+describe('Lab Order Endpoints /tests/lab', () => {
   let token;
   let visit_id;
   beforeAll(async () => {
