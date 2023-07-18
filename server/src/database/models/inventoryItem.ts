@@ -12,7 +12,7 @@ import { Unit } from './unit';
 import { DosageForm } from './dosageForm';
 import { Measurement } from './measurement';
 import { Staff } from './staff';
-import { DrugType } from './pharmacyItem';
+import { DrugType } from './pharmacyStore';
 import {
   FindAttributeOptions,
   GroupOption,
@@ -45,6 +45,7 @@ export class InventoryItem extends Model {
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
+    unique: true,
     validate: {
       notEmpty: {
         msg: 'drug id is required',
@@ -64,15 +65,10 @@ export class InventoryItem extends Model {
   })
   quantity_received: number;
 
-  @Column({
-    type: DataType.STRING,
-  })
-  brand: string;
-
-  @Column({
-    type: DataType.STRING,
-  })
-  shelf: string;
+  // @Column({
+  //   type: DataType.STRING,
+  // })
+  // brand: string;
 
   @ForeignKey(() => Unit)
   @Column({
@@ -128,24 +124,12 @@ export class InventoryItem extends Model {
   @ForeignKey(() => DosageForm)
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'dosage form is required',
-      },
-    },
   })
   dosage_form_id: number;
 
   @ForeignKey(() => Measurement)
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'measurement is required',
-      },
-    },
   })
   measurement_id: number;
 
@@ -157,7 +141,7 @@ export class InventoryItem extends Model {
   @Column({
     type: DataType.INTEGER,
   })
-  quantity_left: number;
+  quantity_remaining: number;
 
   @Column({
     type: DataType.ENUM(DrugForm.DRUG, DrugForm.CONSUMABLE),
