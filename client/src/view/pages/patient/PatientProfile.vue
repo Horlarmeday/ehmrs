@@ -63,7 +63,7 @@
 </template>
 
 <script>
-import History from "./components/History.vue";
+import History from './components/History.vue';
 export default {
   components: {
     History

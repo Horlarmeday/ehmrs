@@ -8,6 +8,7 @@
       </div>
       <div class="card-body py-2">
         <div>MEdics</div>
+        <div></div>
       </div>
     </div>
   </div>
@@ -15,7 +16,7 @@
 
 <script>
 export default {
-  name: "Medications"
+  name: 'Medications',
 };
 </script>
 
