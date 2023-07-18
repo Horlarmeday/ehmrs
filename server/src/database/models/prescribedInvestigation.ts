@@ -104,7 +104,12 @@ export class PrescribedInvestigation extends Model {
   date_requested: Date;
 
   @Column({
-    type: DataType.ENUM(PaymentStatus.CLEARED, PaymentStatus.PAID, PaymentStatus.PENDING),
+    type: DataType.ENUM(
+      PaymentStatus.CLEARED,
+      PaymentStatus.PAID,
+      PaymentStatus.PENDING,
+      PaymentStatus.PERMITTED
+    ),
     allowNull: false,
     defaultValue: PaymentStatus.PENDING,
   })

@@ -20,30 +20,10 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
-import { DosageForm } from './dosageForm';
-import { RoutesOfAdministration } from './routesOfAdministration';
-import { Measurement } from './measurement';
+import { BillingStatus, DispenseStatus, PaymentStatus, PrescribedDrug } from './prescribedDrug';
 
-export enum DispenseStatus {
-  DISPENSED = 'Dispensed',
-  PENDING = 'Pending',
-  RETURNED = 'Returned',
-}
-
-export enum PaymentStatus {
-  PENDING = 'Pending',
-  PAID = 'Paid',
-  CLEARED = 'Cleared',
-  PERMITTED = 'Permitted',
-}
-
-export enum BillingStatus {
-  BILLED = 'Billed',
-  UNBILLED = 'Unbilled',
-}
-
-@Table({ timestamps: true, tableName: 'Prescribed_Drugs' })
-export class PrescribedDrug extends Model {
+@Table({ timestamps: true, tableName: 'Additional_item_prescriptions' })
+export class PrescribedAdditionalItem extends Model {
   @PrimaryKey
   @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
   id: number;
@@ -59,18 +39,6 @@ export class PrescribedDrug extends Model {
     },
   })
   drug_id: number;
-
-  @ForeignKey(() => DosageForm)
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'dosage form is required',
-      },
-    },
-  })
-  dosage_form_id: number;
 
   @Column({
     type: DataType.ENUM(DrugType.CASH, DrugType.NHIS),
@@ -88,7 +56,7 @@ export class PrescribedDrug extends Model {
     allowNull: false,
     validate: {
       notEmpty: {
-        msg: 'quantity is required',
+        msg: 'quantity prescribed is required',
       },
     },
   })
@@ -105,56 +73,16 @@ export class PrescribedDrug extends Model {
   })
   quantity_to_dispense: number;
 
-  @ForeignKey(() => RoutesOfAdministration)
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.ENUM(DrugForm.DRUG, DrugForm.CONSUMABLE),
     allowNull: false,
     validate: {
       notEmpty: {
-        msg: 'route is required',
+        msg: 'drug form is required',
       },
     },
   })
-  route_id: number;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'frequency is required',
-      },
-    },
-  })
-  frequency: string;
-
-  @ForeignKey(() => Measurement)
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'strength is required',
-      },
-    },
-  })
-  strength_id: number;
-
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'duration is required',
-      },
-    },
-  })
-  duration: number;
-
-  @Column({
-    type: DataType.TEXT,
-  })
-  notes: string;
+  drug_form: DrugForm;
 
   @Column({
     type: DataType.DECIMAL(12, 2),
@@ -175,12 +103,7 @@ export class PrescribedDrug extends Model {
   dispense_status: DispenseStatus;
 
   @Column({
-    type: DataType.ENUM(
-      PaymentStatus.CLEARED,
-      PaymentStatus.PAID,
-      PaymentStatus.PENDING,
-      PaymentStatus.PERMITTED
-    ),
+    type: DataType.ENUM(PaymentStatus.CLEARED, PaymentStatus.PAID, PaymentStatus.PENDING),
     allowNull: false,
     defaultValue: PaymentStatus.PENDING,
   })
@@ -211,34 +134,6 @@ export class PrescribedDrug extends Model {
   })
   date_prescribed: Date;
 
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'prescribed strength is required',
-      },
-    },
-  })
-  prescribed_strength: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'duration unit is required',
-      },
-    },
-  })
-  duration_unit: string;
-
-  @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: false,
-  })
-  is_nhis_drug_approved: boolean;
-
   @ForeignKey(() => Visit)
   @Column({
     type: DataType.INTEGER,
@@ -263,6 +158,12 @@ export class PrescribedDrug extends Model {
   })
   patient_id: number;
 
+  @ForeignKey(() => PrescribedDrug)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  drug_prescription_id: number;
+
   @Column({
     type: DataType.DATE,
     allowNull: false,
@@ -286,15 +187,8 @@ export class PrescribedDrug extends Model {
   @BelongsTo(() => Patient)
   patient: Patient;
 
-  @BelongsTo(() => DosageForm)
-  dosage_form: DosageForm;
-
-  @BelongsTo(() => RoutesOfAdministration)
-  route: RoutesOfAdministration;
-
-  @BelongsTo(() => Measurement)
-  strength: Measurement;
-
+  @BelongsTo(() => PrescribedDrug)
+  drug_prescription: PrescribedDrug;
   static async paginate(param: {
     paginate: number;
     attributes?: FindAttributeOptions;
