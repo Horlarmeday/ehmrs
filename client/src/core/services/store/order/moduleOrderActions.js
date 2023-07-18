@@ -56,6 +56,23 @@ export default {
     });
   },
 
+  /**************
+   DRUG ORDERS
+   *************/
+  orderDrug({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/orders/pharmacy/create/${payload.id}`, payload.drug)
+        .then(response => {
+          commit('ORDER_DRUG', payload.drug);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
   addSelectedInvestigation({ commit }, investigation) {
     commit('ADD_SELECTED_INVESTIGATION', investigation);
   },

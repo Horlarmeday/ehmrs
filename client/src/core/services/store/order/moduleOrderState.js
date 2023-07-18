@@ -21,5 +21,11 @@ export default {
   selectedInvestigations: [],
   selectedInvestigationsButtons: [],
   totalInvestigations: null,
-  investigationPages: 0
+  investigationPages: 0,
+
+  /**************
+   MEDICATION ORDERS
+   *************/
+  drug_order: null,
+  drug_orders: [],
 };

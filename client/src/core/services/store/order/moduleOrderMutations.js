@@ -80,4 +80,14 @@ export default {
     button.button.classList.remove('btn-danger');
     state.selectedInvestigationsButtons.splice(buttonIndex, 1);
   },
+
+  /**************
+   DRUG ORDERS
+   *************/
+  ORDER_DRUG(state, drug) {
+    state.drug_orders.push(drug);
+  },
+  SET_DRUG_ORDERS(state, drugs) {
+    state.drug_orders.push(drugs);
+  },
 };
