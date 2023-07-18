@@ -70,7 +70,7 @@
                 <span
                   class="text-dark-75 font-weight-bolder d-block font-size-lg"
                 >
-                  {{ item.remain_quantity }} {{ item.unit.name }}
+                  {{ item.quantity_remaining }} {{ item.unit.name }}
                 </span>
               </td>
               <td>

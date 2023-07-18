@@ -12,6 +12,19 @@
       @closeModal="hideDispenseModal"
       :items-to-dispense="itemsToDispense"
     />
+
+    <reorder-item-modal
+      :display-prompt="displayReorderModal"
+      @closeModal="hideReorderModal"
+      :items-to-reorder="itemsToReorder"
+    />
+
+    <export-modal
+      :data="itemsToExport"
+      action="store/exportData"
+      :display-prompt="displayExportModal"
+      @closeModal="hideExportModal"
+    />
     <!--begin::Header-->
     <div class="card-header border-0 py-5">
       <h3 class="card-title align-items-start flex-column">
@@ -37,7 +50,9 @@
     <!--begin::Body-->
     <div class="card-body py-0">
       <button-group
-        @openModal="openDispenseModal"
+        @openDispenseModal="openDispenseModal"
+        @openReorderModal="openReorderModal"
+        @openExportModal="openExportModal"
         v-if="selectedItems.length"
         :count="selectedItems.length"
       />
@@ -53,12 +68,11 @@
                 </label>
               </th>
               <th class="pr-0" style="width: 300px">Name</th>
-              <th style="min-width: 150px">Quantity</th>
+              <th style="min-width: 150px">Quantity Remaining</th>
               <th style="min-width: 50px">Shelf</th>
               <th style="min-width: 100px">Dosage Form</th>
               <th style="min-width: 50px">Strength/Volume</th>
               <th style="min-width: 150px">Date Created</th>
-              <th class="pr-0 text-right" style="min-width: 150px">action</th>
             </tr>
           </thead>
           <tbody>
@@ -73,10 +87,10 @@
                 </label>
               </td>
               <td class="pr-0">
-                <a
-                  href="#"
+                <router-link
                   class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg"
-                  >{{ item.drug.name }}</a
+                  :to="`/store/pharmacy/items/${item.id}`"
+                  >{{ item.drug.name }}</router-link
                 >
                 <span v-if="item.drug_type === 'NHIS'" class="label label-inline label-success ml-2"
                   >NHIS</span
@@ -84,7 +98,7 @@
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ item.remain_quantity }} {{ item.unit.name }}
+                  {{ item.quantity_remaining }} {{ item.unit.name }}
                 </span>
               </td>
               <td>
@@ -115,15 +129,6 @@
                   {{ item.createdAt | moment('ddd, MMM Do YYYY, h:mma') }}
                 </span>
               </td>
-              <td class="pr-0 text-right">
-                <a
-                  href="#"
-                  class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
-                  @click.stop="dispenseData(item)"
-                >
-                  <send-icon />
-                </a>
-              </td>
             </tr>
           </tbody>
         </table>
@@ -147,11 +152,12 @@
 import UpdatePharmacyItem from './update/UpdateStoreItem.vue';
 import Pagination from '@/utils/Pagination.vue';
 import AddIcon from '../../../../assets/icons/AddIcon.vue';
-import SendIcon from '../../../../assets/icons/SendIcon.vue';
 import SearchAndFilter from '../../../../utils/SearchAndFilter';
-import { setUrlQueryParams } from '../../../../common/common';
+import { setUrlQueryParams } from '@/common/common';
 import ButtonGroup from '../../../../utils/ButtonGroup';
 import DispenseModal from '@/view/pages/store/pharmacy/components/DispenseModal.vue';
+import ReorderItemModal from '@/view/pages/store/pharmacy/components/ReorderItemModal.vue';
+import ExportModal from '@/utils/ExportModal.vue';
 export default {
   data() {
     return {
@@ -161,18 +167,23 @@ export default {
       currentPage: 1,
       itemsPerPage: 10,
       selected: [],
+      loading: false,
       itemsToDispense: [],
+      itemsToReorder: [],
+      itemsToExport: {},
+      displayReorderModal: false,
+      displayExportModal: false,
     };
   },
   components: {
+    ExportModal,
+    ReorderItemModal,
     DispenseModal,
     ButtonGroup,
     SearchAndFilter,
     UpdatePharmacyItem,
     Pagination,
     AddIcon,
-    SendIcon,
-    // Search
   },
   computed: {
     items() {
@@ -213,12 +224,46 @@ export default {
 
     hideDispenseModal() {
       this.displayDispenseModal = false;
-      console.log(this.displayDispenseModal);
     },
 
     openDispenseModal(value) {
+      this.mapDispenseItems();
+      if (this.itemsToDispense.length > 10) {
+        return this.$notify({
+          group: 'foo',
+          title: 'Error message',
+          text: 'You cannot dispense more than 10 items at a time',
+          type: 'error',
+        });
+      }
       this.displayDispenseModal = value;
-      this.mapSelectedItems();
+    },
+
+    openReorderModal(value) {
+      this.mapReorderItems();
+      if (this.itemsToReorder.length > 10) {
+        return this.$notify({
+          group: 'foo',
+          title: 'Error message',
+          text: 'You cannot reorder more than 10 items at a time',
+          type: 'error',
+        });
+      }
+      this.displayReorderModal = value;
+    },
+
+    openExportModal(value) {
+      const selectedItemsId = this.selectedItems.map(({ id }) => id);
+      this.itemsToExport = { selectedItemsId };
+      this.displayExportModal = value;
+    },
+
+    hideReorderModal() {
+      this.displayReorderModal = false;
+    },
+
+    hideExportModal() {
+      this.displayExportModal = false;
     },
 
     editData(item) {
@@ -300,21 +345,54 @@ export default {
       }
     },
 
-    mapSelectedItems() {
+    mapDispenseItems() {
       this.itemsToDispense = this.selectedItems.map(
-        ({ id, drug, unit, remain_quantity, drug_type }) => ({
-          staff: null,
+        ({ id, drug, unit, quantity_remaining, drug_type }) => ({
+          receiver: null,
           id,
           quantity_to_dispense: null,
           dispensary: null,
           drug_name: drug.name,
-          quantity_left: remain_quantity,
-          unit: unit.name,
+          quantity_left: quantity_remaining,
+          unit_name: unit.name,
+          unit_id: unit.id,
           drug_type,
+          isInvalid: false,
+        })
+      );
+    },
+
+    mapReorderItems() {
+      this.itemsToReorder = this.selectedItems.map(
+        ({
+          id,
+          drug,
+          unit,
+          drug_type,
+          unit_price,
+          selling_price,
+          voucher,
+          batch,
+          expiration,
+          date_received,
+        }) => ({
+          quantity_received: null,
+          id,
+          selling_price,
+          unit_price,
+          drug_name: drug.name,
+          unit_name: unit.name,
+          drug_type,
+          voucher,
+          batch,
+          expiration,
+          date_received,
+          isInvalid: false,
         })
       );
     },
   },
+
   created() {
     this.fetchPharmacyItems({
       currentPage: this.$route.query.currentPage || this.currentPage,
