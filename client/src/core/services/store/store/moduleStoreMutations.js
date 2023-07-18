@@ -27,6 +27,10 @@ export default {
     Object.assign(state.items[itemIndex], item);
   },
 
+  /***
+   * SELECTED ITEMS
+   */
+
   ADD_SELECTED_ITEM(state, item) {
     state.selectedItems.push(item);
   },
@@ -42,6 +46,37 @@ export default {
 
   REMOVE_ALL_SELECTED_ITEMS(state, items) {
     state.selectedItems = items;
+  },
+
+  /***
+   * PHARMACY ITEM HISTORY
+   */
+  SET_PHARM_ITEM_HISTORY(state, items) {
+    state.itemHistories = items;
+  },
+
+  SET_PHARM_ITEM_HISTORY_TOTAL(state, total) {
+    state.totalItemHistory = total;
+  },
+
+  SET_PHARM_ITEM_HISTORY_PAGES(state, pages) {
+    state.itemHistoryPages = pages;
+  },
+
+
+  /***
+   * PHARMACY ITEM LOGS
+   */
+  SET_PHARM_ITEM_LOGS(state, items) {
+    state.itemLogs = items;
+  },
+
+  SET_PHARM_ITEM_LOGS_TOTAL(state, total) {
+    state.totalItemLog = total;
+  },
+
+  SET_PHARM_ITEM_LOGS_PAGES(state, pages) {
+    state.itemLogPages = pages;
   },
 
   /**
