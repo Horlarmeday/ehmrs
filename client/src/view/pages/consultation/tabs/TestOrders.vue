@@ -30,9 +30,9 @@
   </div>
 </template>
 <script>
-import Tests from '../../components/orders/Tests.vue';
-import AccordionIcon from '../../../../../assets/icons/AccordionIcon';
-import TestSideBar from '../../components/orders/TestSideBar.vue';
+import Tests from '../components/tests/Tests.vue';
+import AccordionIcon from '../../../../assets/icons/AccordionIcon.vue';
+import TestSideBar from '../components/tests/TestSideBar.vue';
 
 export default {
   name: 'TestOrders',

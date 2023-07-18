@@ -21,7 +21,9 @@
           v-model="id"
           @change="onFilter"
         >
-          <option :selected="selected" :value="d.id" v-for="(d, index) in data" :key="index">{{ d.name }}</option>
+          <option :selected="selected" :value="d.id" v-for="(d, index) in data" :key="index">{{
+            d.name
+          }}</option>
         </select>
       </div>
     </div>
