@@ -33,9 +33,9 @@ export default (server: express.Application) => {
   server.use('/api/inventory', inventoryRoutes);
   server.use('/api/radiology', radiologyRoutes);
   server.use('/api/diagnosis', diagnosisRoutes);
-  server.use('/api/orders/lab', labOrderRoutes);
-  server.use('/api/orders/pharmacy', pharmacyOrderRoutes);
-  server.use('/api/orders/radiology', radiologyOrderRoutes);
+  server.use('/api/tests/lab', labOrderRoutes);
+  server.use('/api/tests/pharmacy', pharmacyOrderRoutes);
+  server.use('/api/tests/radiology', radiologyOrderRoutes);
   server.use((req, res, next) => {
     const apiTimeout = 18000;
     // set the timeout for all HTTP requests

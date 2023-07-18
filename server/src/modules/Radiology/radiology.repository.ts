@@ -192,7 +192,7 @@ export const createInvestigationTariff = async data => {
 const investigationPriceTariff = async (patient: Patient, investigation_id: number) => {
   const { price } =
     (await InvestigationTariff.findOne({
-      where: { investigation_id, hmo_id: patient.hmo_id },
+      where: { investigation_id, hmo_id: patient.hmo_id, insurance_id: patient.insurance_id },
       order: [['createdAt', 'DESC']],
     })) || {};
   return price;
