@@ -1,21 +1,21 @@
-import Vue from "vue";
-import router from "../router";
+import Vue from 'vue';
+import router from '../router';
 
 export const notifyError = error => {
   Vue.notify({
-    group: "foo",
-    title: "Error message",
+    group: 'foo',
+    title: 'Error message',
     text: error.response.data.message,
-    type: "error"
+    type: 'error',
   });
 };
 
 export const notifySuccess = response => {
   Vue.notify({
-    group: "foo",
-    title: "Success message",
+    group: 'foo',
+    title: 'Success message',
     text: response.data.message,
-    type: "success"
+    type: 'success',
   });
 };
 
@@ -33,6 +33,7 @@ export const setUrlQueryParams = ({
   startDate,
   endDate,
   sort,
+  filter,
 }) => {
   router
     .push({
@@ -43,9 +44,38 @@ export const setUrlQueryParams = ({
         search,
         sort,
         startDate,
-        endDate
-      }
+        endDate,
+        filter,
+      },
     })
 
     .catch(e => notifyError(e));
 };
+
+export function debounce(func, wait, immediate) {
+  let timeout;
+  return function() {
+    const context = this,
+      args = arguments;
+    clearTimeout(timeout);
+    if (immediate && !timeout) func.apply(context, args);
+    timeout = setTimeout(function() {
+      timeout = null;
+      if (!immediate) func.apply(context, args);
+    }, wait);
+  };
+}
+
+export function monthDiff(todayDate, expiration) {
+  let months;
+  months = (expiration.getFullYear() - todayDate.getFullYear()) * 12;
+  months -= todayDate.getMonth();
+  months += expiration.getMonth();
+  return months <= 0 ? 0 : months;
+}
+
+export const getExtensions = () => ({
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+  'application/pdf': 'pdf',
+  'text/csv': 'csv',
+});
