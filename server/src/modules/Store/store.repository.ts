@@ -1,7 +1,19 @@
 /* eslint-disable camelcase */
 import { Op } from 'sequelize';
 import { CASH, NHIS } from '../../core/constants';
-import { Drug, PharmacyItem, Unit, LabItem, DosageForm, Measurement, RoutesOfAdministration } from '../../database/models';
+import {
+  Drug,
+  PharmacyStore,
+  Unit,
+  LaboratoryStore,
+  DosageForm,
+  Measurement,
+  RoutesOfAdministration,
+  PharmacyStoreHistory,
+  Inventory,
+  Staff,
+  PharmacyStoreLog,
+} from '../../database/models';
 
 /** ***********************
  * PHARMACY STORE
@@ -19,7 +31,7 @@ export async function createCashItem(data) {
     product_code,
     batch,
     voucher,
-    quantity,
+    quantity_received,
     unit_id,
     unit_price,
     selling_price,
@@ -33,17 +45,17 @@ export async function createCashItem(data) {
     drug_form,
   } = data;
 
-  return PharmacyItem.create({
+  return PharmacyStore.create({
     drug_id,
     shelf,
     product_code,
     batch,
     voucher,
-    quantity,
-    remain_quantity: quantity,
+    quantity_received,
+    remain_quantity: quantity_received,
     unit_id,
     unit_price,
-    total_price: quantity * unit_price,
+    total_price: quantity_received * unit_price,
     selling_price,
     expiration,
     dosage_form_id,
@@ -69,7 +81,7 @@ export async function createNHISItem(data) {
     product_code,
     batch,
     voucher,
-    quantity,
+    quantity_received,
     unit_id,
     unit_price,
     nhis_selling_price,
@@ -83,17 +95,17 @@ export async function createNHISItem(data) {
     drug_form,
   } = data;
 
-  return PharmacyItem.create({
+  return PharmacyStore.create({
     drug_id,
     shelf,
     product_code,
     batch,
     voucher,
-    quantity,
-    remain_quantity: quantity,
+    quantity_received,
+    remain_quantity: quantity_received,
     unit_id,
     unit_price,
-    total_price: quantity * unit_price,
+    total_price: quantity_received * unit_price,
     selling_price: nhis_selling_price,
     expiration,
     dosage_form_id,
@@ -108,6 +120,42 @@ export async function createNHISItem(data) {
 }
 
 /**
+ * get pharmacy items drugs
+ *
+ * @function
+ * @returns {json} json object with items data
+ * @param selectedItemsId
+ */
+export async function findPharmacyStoreItems(selectedItemsId: number[]) {
+  return PharmacyStore.findAll({
+    where: { id: selectedItemsId },
+    include: [
+      {
+        model: Drug,
+        attributes: ['name'],
+        order: [['name', 'ASC']],
+      },
+      {
+        model: Unit,
+        attributes: ['name', 'id'],
+      },
+      {
+        model: DosageForm,
+        attributes: ['name'],
+      },
+      {
+        model: Measurement,
+        attributes: ['name'],
+      },
+      {
+        model: RoutesOfAdministration,
+        attributes: ['name'],
+      },
+    ],
+  });
+}
+
+/**
  * search pharmacy items
  *
  * @function
@@ -116,15 +164,14 @@ export async function createNHISItem(data) {
  * @param pageLimit
  * @param search
  */
-export async function searchPharmacyItems(currentPage = 1, pageLimit = 10, search) {
-  return PharmacyItem.paginate({
+export async function searchPharmacyStoreItems(currentPage = 1, pageLimit = 10, search) {
+  return PharmacyStore.paginate({
     page: currentPage,
     paginate: pageLimit,
     order: [['createdAt', 'DESC']],
     include: [
       {
         model: Drug,
-        as: 'drug',
         where: {
           name: {
             [Op.like]: `%${search}%`,
@@ -133,22 +180,18 @@ export async function searchPharmacyItems(currentPage = 1, pageLimit = 10, searc
       },
       {
         model: Unit,
-        as: 'unit',
-        attributes: ['name'],
+        attributes: ['name', 'id'],
       },
       {
         model: DosageForm,
-        as: 'dosage_form',
         attributes: ['name'],
       },
       {
         model: Measurement,
-        as: 'strength',
         attributes: ['name'],
       },
       {
         model: RoutesOfAdministration,
-        as: 'route',
         attributes: ['name'],
       },
     ],
@@ -164,47 +207,182 @@ export async function searchPharmacyItems(currentPage = 1, pageLimit = 10, searc
  * @param pageLimit
  * @param sort_by
  * @param order
+ * @param filter
  */
-export async function getPharmacyItems(
+export async function getPharmacyStoreItems({
   currentPage = 1,
   pageLimit = 10,
   sort_by = 'createdAt',
-  order = 'DESC'
-) {
-  return PharmacyItem.paginate({
-    page: currentPage,
-    paginate: pageLimit,
+  order = 'DESC',
+  filter = '{}',
+}) {
+  return PharmacyStore.paginate({
+    page: +currentPage,
+    paginate: +pageLimit,
+    where: { ...JSON.parse(filter) },
     order:
       sort_by === 'name' ? [[{ model: Drug, as: 'drug' }, sort_by, order]] : [[sort_by, order]],
     include: [
       {
         model: Drug,
-        as: 'drug',
         attributes: ['name'],
       },
       {
         model: Unit,
-        as: 'unit',
-        attributes: ['name'],
+        attributes: ['name', 'id'],
       },
       {
         model: DosageForm,
-        as: 'dosage_form',
         attributes: ['name'],
       },
       {
         model: Measurement,
-        as: 'strength',
         attributes: ['name'],
       },
       {
         model: RoutesOfAdministration,
-        as: 'route',
         attributes: ['name'],
       },
     ],
   });
 }
+
+export const getPharmacyStoreItemById = async (storeId: number) => {
+  return await PharmacyStore.findByPk(storeId, {
+    include: [
+      {
+        model: Drug,
+        attributes: ['name'],
+      },
+      {
+        model: Unit,
+        attributes: ['name', 'id'],
+      },
+      {
+        model: Measurement,
+        attributes: ['name'],
+      },
+      {
+        model: DosageForm,
+        attributes: ['name'],
+      },
+    ],
+  });
+};
+
+/**
+ * get a pharmacy store item by drugId
+ *
+ * @function
+ * @returns {json} json object with item data
+ * @param drugId
+ */
+export const getPharmacyItemByDrugId = async (drugId: number) => {
+  return await PharmacyStore.findOne({ where: { drug_id: drugId } });
+};
+
+/**
+ * add a pharmacy store item history
+ *
+ * @function
+ * @returns {json} json object with item history data
+ * @param item
+ */
+export const addStoreItemHistory = async (item): Promise<PharmacyStoreHistory> => {
+  return PharmacyStoreHistory.create({ ...item });
+};
+
+/**
+ * update a pharmacy store item
+ *
+ * @function
+ * @returns {json} json object with item data
+ * @param query
+ * @param fieldsToUpdate
+ */
+export const updatePharmacyStoreItem = async (query: any, fieldsToUpdate: any) => {
+  return await PharmacyStore.update({ ...fieldsToUpdate }, { where: { ...query } });
+};
+
+/**
+ * get pharmacy store item history
+ *
+ * @function
+ * @returns {json} json object with item history data
+ * @param currentPage
+ * @param pageLimit
+ * @param sort_by
+ * @param filter
+ */
+export const getPharmacyStoreItemHistory = async ({
+  currentPage = 1,
+  pageLimit = 10,
+  filter = '{}',
+  storeId,
+}) => {
+  return PharmacyStoreHistory.paginate({
+    page: +currentPage,
+    paginate: +pageLimit,
+    where: { pharmacy_store_id: storeId, ...JSON.parse(filter) },
+    order: [['history_date', 'DESC']],
+    include: [
+      {
+        model: Inventory,
+        attributes: ['name'],
+      },
+      {
+        model: Unit,
+        attributes: ['name', 'id'],
+      },
+      {
+        model: Staff,
+        as: 'receiver',
+        attributes: ['firstname', 'lastname'],
+      },
+      {
+        model: Staff,
+        as: 'dispenser',
+        attributes: ['firstname', 'lastname'],
+      },
+    ],
+  });
+};
+
+/**
+ * create a pharmacy store item log
+ * @returns {object} item data
+ */
+export const createPharmacyStoreLogs = async (item): Promise<PharmacyStoreLog> => {
+  return await PharmacyStoreLog.create({ ...item });
+};
+
+/**
+ * get pharmacy store item logs
+ *
+ * @function
+ * @returns {json} json object with item logs data
+ * @param currentPage
+ * @param pageLimit
+ * @param sort_by
+ */
+export const getPharmacyStoreItemLogs = async ({ currentPage = 1, pageLimit = 10, storeId }) => {
+  return PharmacyStoreLog.paginate({
+    page: +currentPage,
+    paginate: +pageLimit,
+    where: { pharmacy_store_id: storeId },
+    order: [['date_received', 'DESC']],
+    include: [
+      {
+        model: Unit,
+        attributes: ['name', 'id'],
+      },
+      {
+        model: Staff,
+        attributes: ['firstname', 'lastname'],
+      },
+    ],
+  });
+};
 
 /** ***********************
  * LABORATORY STORE
@@ -230,7 +408,7 @@ export async function createLaboratoryItem(data) {
     date_received,
   } = data;
 
-  return LabItem.create({
+  return LaboratoryStore.create({
     name,
     shelf,
     product_code,
@@ -257,7 +435,7 @@ export async function createLaboratoryItem(data) {
  * @param search
  */
 export async function searchLaboratoryItems(currentPage = 1, pageLimit = 10, search) {
-  return LabItem.paginate({
+  return LaboratoryStore.paginate({
     page: currentPage,
     paginate: pageLimit,
     order: [['createdAt', 'DESC']],
@@ -283,14 +461,13 @@ export async function searchLaboratoryItems(currentPage = 1, pageLimit = 10, sea
  * @param pageLimit
  */
 export async function getLaboratoryItems(currentPage = 1, pageLimit = 10) {
-  return LabItem.paginate({
+  return LaboratoryStore.paginate({
     page: currentPage,
     paginate: pageLimit,
     order: [['createdAt', 'DESC']],
     include: [
       {
         model: Unit,
-        as: 'unit',
         attributes: ['name'],
       },
     ],

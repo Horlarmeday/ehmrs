@@ -4,7 +4,7 @@ import server from '../../core/startup/server';
 
 import request from 'supertest';
 
-const { Staff, PharmacyItem } = require('../../database/models');
+import { Staff, PharmacyStore } from '../../database/models';
 
 describe('Store Endpoints /store', () => {
   let token;
@@ -29,7 +29,7 @@ describe('Store Endpoints /store', () => {
   }, 14000);
   afterAll(async () => {
     await Staff.destroy({ truncate: true, cascade: false });
-    await PharmacyItem.destroy({ truncate: true, cascade: false });
+    await PharmacyStore.destroy({ truncate: true, cascade: false });
   });
 
   it('should create a new cash pharmacy item', async () => {
