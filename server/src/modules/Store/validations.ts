@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import { ExportDataType } from './types/pharmacy-item.types';
 
 export function validateGenericDrug(drug) {
   const schema = Joi.object({
@@ -40,7 +41,7 @@ export function validatePharmacyItem(item) {
     expiration: Joi.date()
       .optional()
       .allow(''),
-    quantity: Joi.number().required(),
+    quantity_received: Joi.number().required(),
     unit_id: Joi.number().required(),
     unit_price: Joi.number().required(),
     selling_price: Joi.number().required(),
@@ -82,3 +83,49 @@ export function validateLaboratoryItem(item) {
   });
   return schema.validate(item);
 }
+
+export const validateDispenseItems = items => {
+  const schema = Joi.object({
+    items: Joi.array().items(
+      Joi.object({
+        id: Joi.number().required(),
+        receiver: Joi.number().required(),
+        quantity_to_dispense: Joi.number().required(),
+        dispensary: Joi.number().required(),
+        drug_name: Joi.string().required(),
+        unit_id: Joi.number().required(),
+      })
+    ),
+  });
+  return schema.validate(items);
+};
+
+export const validateReorderItems = items => {
+  const schema = Joi.object({
+    items: Joi.array().items(
+      Joi.object({
+        id: Joi.number().required(),
+        selling_price: Joi.number().required(),
+        unit_price: Joi.number().required(),
+        quantity_received: Joi.number().required(),
+        voucher: Joi.string().required(),
+        batch: Joi.string().required(),
+        expiration: Joi.date().required(),
+        date_received: Joi.date().required(),
+      })
+    ),
+  });
+  return schema.validate(items);
+};
+
+export const validateExportedData = items => {
+  const schema = Joi.object({
+    selectedItemsId: Joi.array()
+      .items()
+      .required(),
+    dataType: Joi.string()
+      .valid(ExportDataType.CSV, ExportDataType.PDF, ExportDataType.EXCEL)
+      .required(),
+  });
+  return schema.validate(items);
+};
