@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
-import {PrescribedDrugBody} from "./interface/prescribed-drug.body";
+import { PrescribedDrugBody } from './interface/prescribed-drug.body';
 
-const { PrescribedDrug } = require('../../../database/models');
+import { PrescribedDrug } from '../../../database/models';
 
 /**
  * prescribe a drug for patient
@@ -12,19 +12,18 @@ export async function prescribeDrug(data: PrescribedDrugBody) {
   const {
     drug_id,
     drug_type,
-    quantity,
+    quantity_prescribed,
     quantity_to_dispense,
-    route,
-    dosage_form,
+    dosage_form_id,
     prescribed_strength,
-    strength,
+    strength_id,
+    route_id,
     frequency,
     duration,
     duration_unit,
     notes,
     total_price,
     examiner,
-    capitated_price,
     patient_id,
     visit_id,
     start_date,
@@ -32,19 +31,18 @@ export async function prescribeDrug(data: PrescribedDrugBody) {
   return PrescribedDrug.create({
     drug_id,
     drug_type,
-    quantity,
+    quantity_prescribed,
     quantity_to_dispense,
-    route,
-    dosage_form,
+    route_id,
+    dosage_form_id,
     prescribed_strength,
-    strength,
+    strength_id,
     frequency,
     duration,
     duration_unit,
     notes,
     total_price,
     examiner,
-    capitated_price,
     patient_id,
     visit_id,
     start_date,

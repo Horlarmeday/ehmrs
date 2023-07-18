@@ -1,9 +1,16 @@
 /* eslint-disable camelcase */
 import { Op } from 'sequelize';
-import { generateRandomNumbers } from '../../core/helpers/helper';
+import { canUsePriceTariff, generateRandomNumbers } from '../../core/helpers/helper';
 import { getModelById } from '../../core/helpers/general';
 
-import { Drug, DosageForm, Measurement, RoutesOfAdministration } from '../../database/models';
+import {
+  DosageForm,
+  Drug,
+  DrugTariff,
+  Measurement,
+  Patient,
+  RoutesOfAdministration,
+} from '../../database/models';
 
 async function includeOneModel({ model, modelToInclude, id, includeAs }) {
   return model.findOne({
@@ -88,6 +95,17 @@ export async function getGenericDrugs(currentPage = 1, pageLimit = 10) {
     paginate: pageLimit,
     order: [['createdAt', 'DESC']],
   });
+}
+
+/**
+ * get generic drugs by id
+ *
+ * @function
+ * @returns {json} json object with generic drug data
+ * @param drug_id
+ */
+export async function getGenericDrugById(drug_id: number): Promise<Drug> {
+  return await getModelById(Drug, drug_id);
 }
 
 /** ***********************
@@ -258,3 +276,32 @@ export async function getDosageFormRoutes(dosage_form_id) {
     order: [['createdAt', 'DESC']],
   });
 }
+
+/** ***********************
+ * DRUG TARIFFS
+ ********************** */
+
+/**
+ * create test tariff
+ *
+ * @function
+ * @returns {json} json object with tests data
+ * @param data
+ */
+export const createDrugTariff = async data => {
+  return DrugTariff.bulkCreate(data, { updateOnDuplicate: ['price'] });
+};
+
+const drugPriceTariff = async (patient: Patient, drug_id: number) => {
+  const { price } =
+    (await DrugTariff.findOne({
+      where: { drug_id, hmo_id: patient.hmo_id, insurance_id: patient.insurance_id },
+      order: [['createdAt', 'DESC']],
+    })) || {};
+  return price;
+};
+
+export const getDrugPrice = (patient: Patient, drug_id: number) => {
+  if (canUsePriceTariff(patient)) return drugPriceTariff(patient, drug_id);
+  return null;
+};

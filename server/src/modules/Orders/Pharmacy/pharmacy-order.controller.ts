@@ -4,8 +4,9 @@ import { StatusCodes } from '../../../core/helpers/helper';
 import { DATA_SAVED } from '../../AdminSettings/messages/response-messages';
 import { validateDrugPrescription } from './validations';
 import PharmacyOrderService from './pharmacy-order.service';
+import { ERROR } from '../../../core/constants';
 
-class PharmacyOrderController {
+export class PharmacyOrderController {
   /**
    * prescribe a drug
    *
@@ -18,11 +19,14 @@ class PharmacyOrderController {
   static async prescribeDrug(req, res, next): Promise<SuccessResponse> {
     const { error } = validateDrugPrescription(req.body);
     if (error)
-      return errorResponse({
-        res,
+      return res.status(400).json({
         message: error.details[0].message,
-        httpCode: StatusCodes.BAD_REQUEST,
       });
+    // return errorResponse({
+    //   res,
+    //   message: error.details[0].message,
+    //   httpCode: StatusCodes.BAD_REQUEST,
+    // });
     try {
       const tests = await PharmacyOrderService.prescribeDrug({
         ...req.body,
@@ -41,5 +45,3 @@ class PharmacyOrderController {
     }
   }
 }
-
-export default PharmacyOrderController;
