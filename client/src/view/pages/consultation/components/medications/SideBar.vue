@@ -1,6 +1,17 @@
 <template>
   <div class="flex-row-auto offcanvas-mobile w-xl-250px" id="kt_profile_aside">
-    <div class="card card-custom">
+    <div class="card card-custom gutter-b">
+      <div class="card-header py-5">
+        <div class="card-title">
+          <span class="card-label font-weight-bolder text-dark">Order Drug</span>
+          <span v-if="showSwitch" class="switch switch-sm switch-icon float-right">
+            <label>
+              <input @change="flipSwitch($event)" type="checkbox" :checked="switchPosition" />
+              <span />
+            </label>
+          </span>
+        </div>
+      </div>
       <div class="card-body pt-4 p-0">
         <div class="form">
           <div class="card-body">
@@ -9,21 +20,20 @@
               <div class="col-lg-9">
                 <select
                   v-validate="'required'"
+                  data-vv-validate-on="blur"
                   class="form-control form-control-sm"
                   v-model="dosage_form"
                   name="dosage_form"
                   @change="getRoutes"
                 >
                   <option
-                    :value="dosageForm.id"
+                    :value="{ id: dosageForm.id, name: dosageForm.name }"
                     v-for="dosageForm in dosageForms"
                     :key="dosageForm.id"
                     >{{ dosageForm.name }}</option
                   >
                 </select>
-                <span class="form-text text-danger text-muted">{{
-                  errors.first('dosage_form')
-                }}</span>
+                <span class="form-text text-danger">{{ errors.first('dosage_form') }}</span>
               </div>
             </div>
             <div class="form-group row">
@@ -33,26 +43,55 @@
                   class="form-control form-control-sm"
                   name="route"
                   v-model="route"
-                  v-validate="'route'"
+                  v-validate="'required'"
+                  data-vv-validate-on="blur"
                 >
                   <option :value="route.id" v-for="route in routes" :key="route.id">{{
                     route.name
                   }}</option>
                 </select>
-                <span class="form-text text-danger text-muted">{{ errors.first('route') }}</span>
+                <span class="form-text text-danger">{{ errors.first('route') }}</span>
               </div>
             </div>
             <div class="form-group row">
               <label class="col-lg-3 col-form-label">Drug:</label>
               <div class="col-lg-9">
-                <select class="form-control form-control-sm" name="drug" v-validate="'required'">
-                  <option>IM</option>
-                  <option>IV</option>
-                </select>
-                <span class="form-text text-muted">{{ errors.first('drug') }}</span>
-                <!--                <span class="form-text text-muted">Available Strength:</span>-->
-                <!--                <span class="form-text text-muted">Quantity Remaining</span>-->
-                <!--                <span class="form-text text-muted">Price: </span>-->
+                <v-select
+                  name="diagnosis"
+                  @search="getDrugs"
+                  @input="setDrugInfo"
+                  v-model="drug"
+                  label="name"
+                  :disabled="!dosage_form"
+                  :options="drugOptions"
+                  :reduce="
+                    items => ({
+                      name: items.name,
+                      drug_id: items.id,
+                      strength: items?.strength,
+                      strength_input: items.strength_input,
+                      price: items.price,
+                      quantity_remaining: items.quantity_remaining,
+                      unit_name: items?.unit_name,
+                    })
+                  "
+                />
+                <span class="form-text text-sm text-danger">{{ errors.first('drug') }}</span>
+                <span v-if="strength_input" class="form-text text-success"
+                  >Available Strength:
+                  <span class="font-weight-boldest">{{ strength_input }} {{ strength?.name }}</span></span
+                >
+                <span
+                  v-if="quantity_remaining"
+                  class="form-text"
+                  :class="quantity_remaining < 50 ? 'text-danger' : 'text-success'"
+                >
+                  Quantity Remaining:
+                  <span class="font-weight-boldest">{{ quantity_remaining }} {{ unit_name }}</span>
+                </span>
+                <span v-if="price" class="form-text text-success"
+                  >Price: <span class="font-weight-boldest">₦{{ price }}</span></span
+                >
               </div>
             </div>
             <div class="form-group row">
@@ -66,59 +105,121 @@
                   input-class="form-control form-control-sm"
                   placeholder="Starting Date"
                 />
-                <span class="form-text text-muted">{{ errors.first('start_date') }}</span>
+                <span class="form-text text-danger">{{ errors.first('start_date') }}</span>
               </div>
             </div>
             <div class="form-group row">
               <label class="col-lg-3 col-form-label">Strength:</label>
               <div class="col-lg-9">
-                <select class="form-control form-control-sm" name="presc_strength">
-                  <option>IM</option>
-                  <option>IV</option>
-                </select>
-                <span class="form-text text-muted">{{ errors.first('presc_strength') }}</span>
+                <input
+                  type="number"
+                  class="form-control form-control-sm"
+                  v-model="prescribed_strength"
+                  @input="calculateDosageQuantity"
+                />
+                <span class="form-text text-danger">{{ errors.first('prescribed_strength') }}</span>
               </div>
             </div>
             <div class="form-group row">
               <label class="col-lg-3 col-form-label">Frequency:</label>
               <div class="col-lg-9">
-                <select class="form-control form-control-sm" name="frequency">
-                  <option>IM</option>
-                  <option>IV</option>
+                <select
+                  v-validate="'required'"
+                  data-vv-validate-on="blur"
+                  @change="calculateDosageQuantity"
+                  v-model="frequency"
+                  class="form-control form-control-sm"
+                  name="frequency"
+                >
+                  <option :value="freq" v-for="(freq, i) in frequencies" :key="i">{{
+                    freq.label
+                  }}</option>
                 </select>
-                <span class="form-text text-muted">{{ errors.first('frequency') }}</span>
+                <span class="form-text text-danger">{{ errors.first('frequency') }}</span>
               </div>
             </div>
             <div class="form-group row">
               <label class="col-lg-3 col-form-label">Duration:</label>
               <div class="col-lg-9">
-                <input class="form-control-sm form-control" type="number" name="duration" />
-                <span class="form-text text-muted">{{ errors.first('duration') }}</span>
+                <input
+                  v-model="duration"
+                  class="form-control-sm form-control"
+                  type="number"
+                  name="duration"
+                  v-validate="'required'"
+                  data-vv-validate-on="blur"
+                  @input="calculateDosageQuantity"
+                />
+                <span class="form-text text-danger">{{ errors.first('duration') }}</span>
               </div>
             </div>
             <div class="form-group row">
               <label class="col-lg-3 col-form-label">Unit:</label>
               <div class="col-lg-9">
-                <select class="form-control form-control-sm" name="unit">
-                  <option>IM</option>
-                  <option>IV</option>
+                <select
+                  @change="calculateDosageQuantity"
+                  v-model="duration_unit"
+                  class="form-control form-control-sm"
+                  name="unit"
+                  v-validate="'required'"
+                  data-vv-validate-on="blur"
+                >
+                  <option :value="unit" v-for="(unit, i) in units" :key="i">{{
+                    unit.label
+                  }}</option>
                 </select>
-                <span class="form-text text-muted">{{ errors.first('unit') }}</span>
+                <span class="form-text text-danger">{{ errors.first('duration_unit') }}</span>
+                <span v-if="quantity_prescribed" class="form-text text-success"
+                  >Dosage Quantity:
+                  <span class="font-weight-boldest"
+                    >{{ quantity_prescribed }} {{ unit_name }}</span
+                  ></span
+                >
               </div>
             </div>
             <div class="form-group row">
               <label class="col-lg-3 col-form-label">Qty to dispense:</label>
               <div class="col-lg-9">
-                <input class="form-control-sm form-control" type="number" name="qty_to_dispense" />
-                <span class="form-text text-muted">{{ errors.first('qty_to_dispense') }}</span>
+                <input
+                  v-model="quantity_to_dispense"
+                  class="form-control-sm form-control"
+                  type="number"
+                  name="quantity_to_dispense"
+                  v-validate="'required'"
+                  data-vv-validate-on="blur"
+                  @input="getTotalPrice"
+                />
+                <span class="form-text text-danger">{{
+                  errors.first('quantity_to_dispense')
+                }}</span>
+                <span v-if="total_price" class="form-text text-success">
+                  Total price
+                  <span class="text-success"
+                    ><span class="font-weight-boldest">₦{{ total_price }}</span></span
+                  >
+                </span>
               </div>
             </div>
             <div class="form-group row">
               <label class="col-lg-3 col-form-label">Notes:</label>
               <div class="col-lg-9">
-                <textarea name="notes" cols="5" class="form-control form-control-sm" rows="2" />
-                <span class="form-text text-muted">{{ errors.first('notes') }}</span>
+                <textarea
+                  v-model="notes"
+                  name="notes"
+                  cols="5"
+                  class="form-control form-control-sm"
+                  rows="2"
+                />
               </div>
+            </div>
+            <div class="mt-3">
+              <button
+                @click="submitDrugOrder"
+                ref="kt-drugOrder-submit"
+                class="btn btn-primary btn-md float-right mb-3"
+              >
+                Save
+              </button>
             </div>
           </div>
         </div>
@@ -128,24 +229,216 @@
 </template>
 
 <script>
+import Datepicker from 'vuejs-datepicker';
+import vSelect from 'vue-select';
+import { debounce } from '@/common/common';
 export default {
   name: 'MedicationSideBar',
+  components: { vSelect, Datepicker },
+  computed: {
+    dosageForms() {
+      return this.$store.state.pharmacy.dosageForms;
+    },
+    routes() {
+      return this.$store.state.pharmacy.routes;
+    },
+    items() {
+      return this.$store.state.inventory.items;
+    },
+    visit() {
+      return this.$store.state.visit.visit;
+    },
+    showSwitch() {
+      return this.visit?.patient?.has_insurance && this.visit?.patient?.insurance_id !== 4;
+    },
+    inventories() {
+      return this.$store.state.inventory.inventories;
+    },
+    drugOptions() {
+      return this.items.map(item => ({
+        name: item?.drug?.name,
+        id: item?.drug?.id,
+        strength: item?.strength,
+        strength_input: item.strength_input,
+        price: item.selling_price,
+        quantity_remaining: item.quantity_remaining,
+        unit_name: item?.unit?.name,
+      }));
+    },
+  },
+
   data: () => ({
+    switchPosition: false,
     dosage_form: '',
     route: '',
     start_date: '',
-    dosageForms: [],
-    routes: [],
+    duration_unit: '',
+    notes: '',
+    quantity_to_dispense: '',
+    duration: '',
+    frequency: '',
+    drug: '',
+    prescribed_strength: '',
+    drug_id: '',
+
+    price: null,
+    total_price: null,
+    quantity_remaining: null,
+    strength_input: null,
+    strength: null,
+    quantity_prescribed: null,
+    unit_name: null,
+    frequencies: [
+      { val: 1, label: 'Stat' },
+      { val: 1, label: 'OD' },
+      { val: 2, label: 'BD' },
+      { val: 3, label: 'TDS' },
+      { val: 4, label: 'QDS' },
+      { val: 6, label: 'Q4H' },
+      { val: 12, label: 'Q2H' },
+      { val: 24, label: 'Q1H' },
+    ],
+    units: [
+      { val: 1, label: 'Days' },
+      { val: 7, label: 'Weeks' },
+      { val: 30, label: 'Months' },
+    ],
   }),
   methods: {
+    getInventories() {
+      this.$store.dispatch('inventory/fetchInventories');
+    },
+
     getRoutes() {
       this.$store.dispatch('pharmacy/fetchRoutesAndMeasurements', {
-        dosage_form_id: this.dosage_form,
+        dosage_form_id: this.dosage_form.id,
       });
+    },
+
+    flipSwitch(event) {
+      this.switchPosition = !!event.target.checked;
+    },
+
+    defaultSwitchPosition() {
+      if (this.visit?.patient?.has_insurance && this.visit?.patient?.insurance_id !== 4) {
+        this.switchPosition = true;
+      }
+    },
+
+    getDrugs(search) {
+      const type = this.switchPosition ? 'NHIS' : 'CASH';
+      const inventory = this.inventories.find(inventory =>
+        inventory.name.toLowerCase().includes(type.toLowerCase())
+      )?.id;
+      this.$store.dispatch('inventory/fetchInventoryItems', {
+        inventory,
+        filter: { dosage_form_id: this.dosage_form.id },
+        search,
+      });
+    },
+
+    debouncedSearch(search) {
+      debounce(this.getDrugs(search), 500);
+    },
+
+    setDrugInfo() {
+      this.strength = this.drug.strength;
+      this.drug_id = this.drug.id;
+      this.price = this.drug.price;
+      this.unit_name = this.drug.unit_name;
+      this.strength_input = this.drug.strength_input;
+      this.quantity_remaining = this.drug.quantity_remaining;
+    },
+
+    getTotalPrice() {
+      this.total_price = this.price * this.quantity_to_dispense;
+    },
+
+    calculateDosageQuantity() {
+      if (this.frequency.label === 'Stat' || this.dosage_form.name === 'Cream') {
+        this.quantity_prescribed = 1;
+      } else {
+        this.quantity_prescribed = Math.ceil(
+          (this.prescribed_strength / Number(this.strength_input)) *
+            this.frequency.val *
+            this.duration *
+            this.duration_unit.val
+        );
+      }
+    },
+
+    submitDrugOrder() {
+      const submitButton = this.$refs['kt-drugOrder-submit'];
+      this.addSpinner(submitButton);
+      this.$store
+        .dispatch('order/orderDrug', {
+          drug: this.drugData(),
+          id: this.$route.params.visitId,
+        })
+        .then(() => this.endRequest(submitButton))
+        .catch(() => this.removeSpinner(submitButton));
+    },
+
+    drugData() {
+      return {
+        dosage_form_id: this.dosage_form.id,
+        route_id: this.route,
+        start_date: this.start_date,
+        duration_unit: this.duration_unit.label,
+        notes: this.notes,
+        quantity_to_dispense: this.quantity_to_dispense,
+        quantity_prescribed: this.quantity_prescribed,
+        duration: this.duration,
+        frequency: this.frequency.label,
+
+        prescribed_strength: this.prescribed_strength,
+        strength_id: this.strength.id,
+        drug_id: this.drug_id,
+        total_price: this.total_price,
+        drug_type: this.switchPosition ? 'NHIS' : 'CASH',
+      };
+    },
+
+    addSpinner(submitButton) {
+      this.isDisabled = true;
+      submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');
+    },
+
+    removeSpinner(submitButton) {
+      this.isDisabled = false;
+      submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
+    },
+
+    endRequest(button) {
+      this.removeSpinner(button);
+      this.initValues();
+    },
+    initValues() {
+      this.dosage_form = '';
+      this.route = '';
+      this.start_date = '';
+      this.duration_unit = '';
+      this.notes = '';
+      this.quantity_to_dispense = '';
+      this.duration = '';
+      this.frequency = '';
+      this.drug = '';
+      this.prescribed_strength = '';
+      this.drug_id = '';
+
+      this.price = null;
+      this.total_price = null;
+      this.quantity_remaining = null;
+      this.strength_input = null;
+      this.strength = null;
+      this.quantity_prescribed = null;
+      this.unit_name = null;
     },
   },
   created() {
     this.$store.dispatch('pharmacy/fetchDosageForms');
+    this.defaultSwitchPosition();
+    this.getInventories();
   },
 };
 </script>

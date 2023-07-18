@@ -31,13 +31,13 @@
             <li class="nav-item mr-3">
               <a
                 class="nav-link text-dark py-4 px-6"
-                @click="setActiveTab($event, '#orders')"
+                @click="setActiveTab($event, '#testOrders')"
                 data-tab="1"
                 data-toggle="tab"
                 href="#"
                 role="tab"
                 aria-selected="true"
-                >Orders</a
+                >Tests</a
               >
             </li>
             <li class="nav-item mr-3">
@@ -55,7 +55,7 @@
             <li class="nav-item mr-3">
               <a
                 class="nav-link text-dark py-4 px-6"
-                @click="setActiveTab"
+                @click="setActiveTab($event, '#investigationOrders')"
                 data-tab="1"
                 data-toggle="tab"
                 href="#"
@@ -98,13 +98,15 @@
 
 <script>
 import Observations from '../tabs/Observations';
-import Orders from '../tabs/Orders';
+import TestOrders from '../tabs/TestOrders.vue';
+import InvestigationOrders from '../tabs/InvestigationOrders.vue';
 import Medications from '../tabs/Medications.vue';
-import router from '@/router';
+// import router from '@/router';
 
 const ComponentMapping = {
   '#observations': Observations,
-  '#orders': Orders,
+  '#testOrders': TestOrders,
+  '#investigationOrders': InvestigationOrders,
   '#medications': Medications,
 };
 
@@ -138,11 +140,11 @@ export default {
       // set clicked tab index to bootstrap tab
       this.tabIndex = parseInt(target.getAttribute('data-tab'));
 
-      router.push({
-        query: {
-          tab: component,
-        },
-      });
+      // router.push({
+      //   query: {
+      //     tab: component,
+      //   },
+      // });
 
       // set current active tab
       target.classList.add('active');

@@ -321,6 +321,14 @@ const router = new Router({
                   },
                 },
                 {
+                  path: 'items/:item',
+                  name: 'item-details',
+                  component: () => import('@/view/pages/store/pharmacy/StoreItem.vue'),
+                  meta: {
+                    requiresAuth: true,
+                  },
+                },
+                {
                   path: 'add-item',
                   name: 'add-item',
                   component: () => import('@/view/pages/store/pharmacy/create/CreateStoreItem.vue'),
@@ -426,8 +434,8 @@ const router = new Router({
               },
             },
             {
-              path: 'sample-dto',
-              name: 'sample-dto',
+              path: 'sample-types',
+              name: 'sample-types',
               component: () => import('@/view/pages/laboratory/SampleTypes.vue'),
               meta: {
                 requiresAuth: true,
@@ -453,13 +461,13 @@ const router = new Router({
         },
         // ORDERS
         {
-          path: '/orders',
+          path: '/tests',
           name: 'orders',
           component: () => import('@/view/pages/orders/Orders.vue'),
           children: [
             {
-              path: 'orders-type',
-              name: 'orders-type',
+              path: 'tests-type',
+              name: 'tests-type',
               component: () => import('@/view/pages/orders/Home.vue'),
               meta: {
                 requiresAuth: true,
@@ -485,6 +493,14 @@ const router = new Router({
               path: ':id',
               name: 'inventory-list',
               component: () => import('@/view/pages/inventory/InventoryList.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'items/:id',
+              name: 'inventory-item',
+              component: () => import('@/view/pages/inventory/InventoryItem.vue'),
               meta: {
                 requiresAuth: true,
               },
