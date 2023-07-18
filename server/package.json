@@ -67,6 +67,7 @@
     "typescript": "^4.4.2"
   },
   "dependencies": {
+    "@types/pdfkit": "^0.12.10",
     "agenda": "^3.1.0",
     "agendash2": "^0.8.2",
     "axios": "^0.21.1",
@@ -84,11 +85,13 @@
     "mime": "^2.4.7",
     "morgan": "^1.10.0",
     "mysql2": "^2.1.0",
+    "pdfkit": "^0.13.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.3.0",
     "sequelize": "^6.29.0",
     "sequelize-typescript": "^2.1.5",
     "uuid": "^3.3.3",
-    "winston": "^3.2.1"
+    "winston": "^3.2.1",
+    "xlsx": "file:vendor/xlsx-0.20.0.tgz"
   }
 }
