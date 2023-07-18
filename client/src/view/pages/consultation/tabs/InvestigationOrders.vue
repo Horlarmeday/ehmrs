@@ -8,7 +8,7 @@
             <accordion-icon />
           </div>
         </div>
-        <b-collapse id="accordion-2">
+        <b-collapse id="accordion-2" visible>
           <div class="card-body">
             <div class="col-12">
               <search-with-filter
@@ -30,9 +30,9 @@
   </div>
 </template>
 <script>
-import Investigations from '../../components/orders/Investigations.vue';
-import AccordionIcon from '../../../../../assets/icons/AccordionIcon';
-import InvestigationSideBar from '../../components/orders/InvestigationSideBar.vue';
+import Investigations from '../components/investigations/Investigations.vue';
+import AccordionIcon from '../../../../assets/icons/AccordionIcon.vue';
+import InvestigationSideBar from '../components/investigations/InvestigationSideBar.vue';
 import SearchWithFilter from '@/utils/SearchWithFilter.vue';
 
 export default {
