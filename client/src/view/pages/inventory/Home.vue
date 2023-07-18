@@ -15,7 +15,7 @@
         <callout-card
           :name="inventory.name"
           :desc="inventory.desc || `Click here to view items in the ${inventory.name}`"
-          :link="`/inventory/${inventory.id}`"
+          :link="`/inventory/${inventory.id}?name=${inventory.name}`"
         />
         <!--end::Callout-->
       </div>

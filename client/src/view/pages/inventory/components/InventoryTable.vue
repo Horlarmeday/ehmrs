@@ -8,30 +8,36 @@
       >
         <thead>
           <tr class="text-left">
+            <th class="pl-0" style="width: 20px">
+              <label class="checkbox checkbox-md checkbox-inline">
+                <input type="checkbox" />
+                <span></span>
+              </label>
+            </th>
             <th class="pr-0" style="width: 250px">Name</th>
-            <th class="pr-0" style="width: 150px">Code</th>
+            <th class="pr-0" style="width: 150px">Quantity</th>
             <th class="pr-0" style="width: 150px">Price</th>
-            <th class="pr-0" style="width: 250px">Type</th>
+            <th class="pr-0" style="width: 250px">Dosage Form</th>
             <th style="min-width: 150px">Date Created</th>
             <th class="pr-0 text-right" style="min-width: 50px">action</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-if="items.length">
+          <tr v-if="!items.length">
             <td colspan="9" align="center" class="text-muted">No Data</td>
           </tr>
           <tr v-for="item in items" :key="item.id">
             <td class="pl-0">
-              <label class="checkbox checkbox-lg checkbox-inline">
+              <label class="checkbox checkbox-md checkbox-inline">
                 <input type="checkbox" value="1" />
                 <span></span>
               </label>
             </td>
             <td class="pr-0">
-              <a
-                href="#"
+              <router-link
+                :to="`/inventory/items/${item.id}`"
                 class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg"
-                >{{ item.drug.name }}</a
+                >{{ item.drug.name }}</router-link
               >
               <span
                 v-if="item.drug_type === 'NHIS'"
@@ -43,14 +49,14 @@
               <span
                 class="text-dark-75 font-weight-bolder d-block font-size-lg"
               >
-                {{ item.remain_quantity }} {{ item.unit.name }}
+                {{ item.quantity_remaining }} {{ item.unit.name }}
               </span>
             </td>
             <td>
               <span
                 class="text-dark-75 font-weight-bolder d-block font-size-lg"
               >
-                {{ item.shelf || "None" }}
+                {{ item.selling_price || "None" }}
               </span>
             </td>
             <td>
@@ -60,44 +66,27 @@
               >
                 {{ item.dosage_form.name || "None" }}
               </span>
-              <span
-                v-else
-                class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                >Nil</span
-              >
-            </td>
-            <td>
-              <span
-                v-if="item.measurement_id"
-                class="text-dark-75 font-weight-bolder d-block font-size-lg"
-              >
-                {{ item.strength_input }} {{ item.strength.name || "None" }}
-              </span>
-              <span
-                v-else
-                class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                >Nil</span
-              >
+              <span v-else class="text-dark-75 font-weight-bolder d-block font-size-lg">Nil</span>
             </td>
             <td>
               <span
                 class="text-dark-75 font-weight-bolder d-block font-size-lg"
               >
-                {{ item.createdAt | moment("ddd, MMM Do YYYY, h:mma") }}
+                {{ item.date_received | moment("ddd, MMM Do YYYY, h:mma") }}
               </span>
             </td>
             <td class="pr-0 text-right">
               <a
                 href="#"
                 class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
-                @click.stop="dispenseData(item)"
+                @click.stop="() => {}"
               >
                 <send-icon />
               </a>
               <a
                 href="#"
                 class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
-                @click.stop="editData(item)"
+                @click.stop="() => {}"
               >
                 <edit-icon />
               </a>
@@ -120,9 +109,11 @@
 
 <script>
 import Pagination from "../../../../utils/Pagination";
+import SendIcon from "@/assets/icons/SendIcon.vue";
+import EditIcon from "@/assets/icons/EditIcon.vue";
 export default {
   name: "InventoryTable",
-  components: { Pagination },
+  components: { EditIcon, SendIcon, Pagination },
   props: {
     items: {
       type: Array,

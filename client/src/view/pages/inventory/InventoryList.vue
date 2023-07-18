@@ -4,7 +4,7 @@
     <!--begin::Header-->
     <div class="card-header border-0 py-5">
       <h3 class="card-title align-items-start flex-column">
-        <span class="card-label font-weight-bolder text-dark">Inventory</span>
+        <span class="card-label font-weight-bolder text-dark">{{ inventoryName }}</span>
       </h3>
     </div>
     <!--end::Header-->
@@ -13,6 +13,7 @@
 
     <!--begin::Body-->
     <inventory-table
+      :items="items"
       :pagination-params="{
         queriedItems,
         pages,
@@ -51,6 +52,9 @@ export default {
     perPage() {
       return this.items.length;
     },
+    inventoryName() {
+      return this.$route.query.name
+    }
   },
   components: { InventoryTable, Search },
   methods: {
