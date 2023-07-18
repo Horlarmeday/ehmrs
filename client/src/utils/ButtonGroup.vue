@@ -10,16 +10,15 @@
     <b-button variant="outline-secondary">Edit Items</b-button>
     <b-dropdown text="More Actions" variant="outline-secondary">
       <b-dropdown-item @click="dispenseItems">Dispense</b-dropdown-item>
-      <b-dropdown-item>Reorder</b-dropdown-item>
-      <b-dropdown-item>Export</b-dropdown-item>
+      <b-dropdown-item @click="reorderItems">Reorder</b-dropdown-item>
+      <b-dropdown-item @click="exportData">Export</b-dropdown-item>
     </b-dropdown>
   </b-button-group>
 </template>
 
 <script>
-
 export default {
-  name: "ButtonGroup.vue",
+  name: 'ButtonGroup.vue',
   props: {
     count: {
       type: Number,
@@ -27,9 +26,17 @@ export default {
   },
   methods: {
     dispenseItems() {
-      this.$emit('openModal', true);
-    }
-  }
+      this.$emit('openDispenseModal', true);
+    },
+
+    reorderItems() {
+      this.$emit('openReorderModal', true);
+    },
+
+    exportData() {
+      this.$emit('openExportModal', true);
+    },
+  },
 };
 </script>
 
