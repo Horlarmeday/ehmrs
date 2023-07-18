@@ -21,29 +21,35 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
+import { PharmacyStore } from './pharmacyStore';
 
 export enum DrugType {
   CASH = 'Cash',
   NHIS = 'NHIS',
 }
 
-@Table({ timestamps: true, tableName: 'Pharmacy_Items' })
-export class PharmacyItem extends Model {
+export enum LogType {
+  UPDATE = 'Update',
+  REORDER = 'Reorder',
+}
+
+@Table({ timestamps: true, tableName: 'Pharmacy_Store_Item_Logs' })
+export class PharmacyStoreLog extends Model {
   @PrimaryKey
   @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
   id: number;
 
-  @ForeignKey(() => Drug)
+  @ForeignKey(() => PharmacyStore)
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
     validate: {
       notEmpty: {
-        msg: 'drug is required',
+        msg: 'store id is required',
       },
     },
   })
-  drug_id: number;
+  pharmacy_store_id: number;
 
   @Column({
     type: DataType.STRING,
@@ -74,13 +80,13 @@ export class PharmacyItem extends Model {
       },
     },
   })
-  quantity: number;
+  quantity_received: number;
 
   @Column({
     type: DataType.INTEGER,
     defaultValue: 0,
   })
-  remain_quantity: number;
+  quantity_remaining: number;
 
   @ForeignKey(() => Unit)
   @Column({
@@ -191,14 +197,26 @@ export class PharmacyItem extends Model {
   })
   dosage_form_id: number;
 
+  @Column({
+    type: DataType.ENUM(LogType.UPDATE, LogType.REORDER),
+    allowNull: false,
+    defaultValue: LogType.REORDER,
+    validate: {
+      notEmpty: {
+        msg: 'log type is required',
+      },
+    },
+  })
+  log_type: LogType;
+
   @BelongsTo(() => Unit)
   unit: Unit;
 
   @BelongsTo(() => Staff)
   staff: Staff;
 
-  @BelongsTo(() => Drug)
-  drug: Drug;
+  @BelongsTo(() => PharmacyStore)
+  store: PharmacyStore;
 
   @BelongsTo(() => DosageForm)
   dosage_form: DosageForm;
