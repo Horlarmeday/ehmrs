@@ -20,4 +20,29 @@ export default {
   nhisTests: [],
   totalNhisTest: 0,
   totalNhisPages: 0,
+
+  /**
+   * SAMPLES TO COLLECT
+   */
+  samplesToCollect: [],
+  sampleToCollect: null,
+  accession_number: null,
+  totalSamplesToCollect: 0,
+  totalSamplesToCollectPages: 0,
+
+  /**
+   * SAMPLES COLLECTED
+   */
+  samplesCollected: [],
+  sampleCollected: null,
+  totalSamplesCollected: 0,
+  totalSamplesCollectedPages: 0,
+
+  /***
+   * TEST RESULT
+   */
+  result: null,
+  results: [],
+  totalTestResults: 0,
+  totalTestResultsPages: 0,
 };

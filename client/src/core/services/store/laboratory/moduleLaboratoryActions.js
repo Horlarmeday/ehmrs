@@ -120,6 +120,183 @@ export default {
     });
   },
 
+  /***
+   * SAMPLES TO COLLECT
+   */
+  fetchSamplesToCollect({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/laboratory/samples-to-collect/get', {
+          params: {
+            currentPage: payload.currentPage,
+            pageLimit: payload.itemsPerPage,
+            search: payload.search,
+            period: payload.period,
+          },
+        })
+        .then(response => {
+          commit('SET_SAMPLES_TO_COLLECT', response.data.data.docs);
+          commit('SET_SAMPLES_TO_COLLECT_TOTAL', response.data.data.total);
+          commit('SET_SAMPLES_TO_COLLECT_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchOneSampleToCollect({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/laboratory/samples-to-collect/get/${payload.id}`)
+        .then(response => {
+          commit('SET_SAMPLE_TO_COLLECT', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchOneCollectedSample({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/laboratory/samples-collected/get/${payload.id}`)
+        .then(response => {
+          commit('SET_SAMPLE_COLLECTED', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  generateAccessionNumber({ commit }) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/laboratory/accession-number`)
+        .then(response => {
+          commit('GEN_ACCESSION_NUMBER', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  collectSamples({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/laboratory/collect-samples`, payload)
+        .then(response => {
+          commit('COLLECT_SAMPLES', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * TEST RESULTS
+   */
+  addTestResult({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/laboratory/add-test-result`, { results: payload })
+        .then(response => {
+          commit('SET_TEST_RESULT', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  validateTestResults({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/laboratory/validate-test-result`, { ...payload })
+        .then(response => {
+          commit('SET_TEST_RESULT', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  approveTestResults({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/laboratory/approve-test-result`, { results: payload })
+        .then(response => {
+          commit('SET_TEST_RESULT', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchTestResults({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/laboratory/test-results/get', {
+          params: {
+            currentPage: payload.currentPage,
+            pageLimit: payload.itemsPerPage,
+            search: payload.search,
+            start: payload.start,
+            end: payload.end,
+          },
+        })
+        .then(response => {
+          commit('SET_TEST_RESULTS', response.data.data.docs);
+          commit('SET_TEST_RESULTS_TOTAL', response.data.data.total);
+          commit('SET_TEST_RESULTS_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /***
+   * SAMPLES COLLECTED
+   */
+  fetchSamplesCollected({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/laboratory/samples-collected/get', {
+          params: {
+            currentPage: payload.currentPage,
+            pageLimit: payload.itemsPerPage,
+            search: payload.search,
+            period: payload.period,
+          },
+        })
+        .then(response => {
+          commit('SET_SAMPLES_COLLECTED', response.data.data.docs);
+          commit('SET_SAMPLES_COLLECTED_TOTAL', response.data.data.total);
+          commit('SET_SAMPLES_COLLECTED_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
   /**
    * NHIS TESTS
    */

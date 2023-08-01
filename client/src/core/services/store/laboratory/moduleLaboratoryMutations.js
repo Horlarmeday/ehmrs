@@ -66,5 +66,70 @@ export default {
   UPDATE_NHIS_TEST(state, test) {
     const testIndex = state.nhisTests.findIndex(p => p.id === test.id);
     Object.assign(state.nhisTests[testIndex], test);
-  }
+  },
+
+  /**
+   * SAMPLES TO COLLECT
+   */
+  SET_SAMPLES_TO_COLLECT(state, samples) {
+    state.samplesToCollect = samples;
+  },
+
+  SET_SAMPLES_TO_COLLECT_TOTAL(state, total) {
+    state.totalSamplesToCollect = total;
+  },
+
+  SET_SAMPLES_TO_COLLECT_PAGES(state, pages) {
+    state.totalSamplesToCollectPages = pages;
+  },
+
+  SET_SAMPLE_TO_COLLECT(state, sample) {
+    state.sampleToCollect = sample;
+  },
+
+  GEN_ACCESSION_NUMBER(state, number) {
+    state.accession_number = number;
+  },
+
+  COLLECT_SAMPLES(state, number) {
+    console.log(number);
+  },
+
+  /**
+   * SAMPLES COLLECTED
+   */
+  SET_SAMPLES_COLLECTED(state, samples) {
+    state.samplesCollected = samples;
+  },
+
+  SET_SAMPLES_COLLECTED_TOTAL(state, total) {
+    state.totalSamplesCollected = total;
+  },
+
+  SET_SAMPLES_COLLECTED_PAGES(state, pages) {
+    state.totalSamplesCollectedPages = pages;
+  },
+
+  SET_SAMPLE_COLLECTED(state, sample) {
+    state.sampleCollected = sample;
+  },
+
+  /****
+   * TEST RESULT
+   */
+  SET_TEST_RESULT(state, result) {
+    state.result = result;
+  },
+
+  SET_TEST_RESULTS(state, results) {
+    state.results = results;
+  },
+
+  SET_TEST_RESULTS_TOTAL(state, total) {
+    state.totalTestResults = total;
+  },
+
+  SET_TEST_RESULTS_PAGES(state, pages) {
+    state.totalTestResultsPages = pages;
+  },
 };
