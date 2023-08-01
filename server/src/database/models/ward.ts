@@ -6,6 +6,7 @@ import {
   ForeignKey,
   PrimaryKey,
   BelongsTo,
+  HasMany,
 } from 'sequelize-typescript';
 import { Staff } from './staff';
 import {
@@ -16,6 +17,8 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
+import { Bed } from './bed';
+import { Service } from './service';
 
 @Table({ timestamps: true })
 export class Ward extends Model {
@@ -38,8 +41,18 @@ export class Ward extends Model {
   @Column({ type: DataType.INTEGER })
   staff_id: number;
 
+  @ForeignKey(() => Service)
+  @Column({ type: DataType.INTEGER, allowNull: false })
+  service_id: number;
+
   @BelongsTo(() => Staff)
   staff: Staff;
+
+  @BelongsTo(() => Service)
+  service: Service;
+
+  @HasMany(() => Bed)
+  beds: Bed[];
 
   static async paginate(param: {
     paginate: number;

@@ -61,13 +61,10 @@ export class Staff extends Model {
   })
   middlename!: string;
 
-  @Column({
-    type: DataType.VIRTUAL,
-    get(): unknown {
-      return `${this.getDataValue('firstname')} ${this.getDataValue('lastname')}`;
-    },
-  })
-  fullname?: string;
+  @Column(DataType.VIRTUAL)
+  get fullname(): unknown {
+    return `${this.getDataValue('firstname')} ${this.getDataValue('lastname')}`;
+  }
 
   @Column({
     type: DataType.STRING,
@@ -195,6 +192,7 @@ export class Staff extends Model {
         lastname: this.lastname,
         fullname: this.fullname,
         role: this.role,
+        sub_role: this.sub_role,
         username: this.username,
         email: this.email,
       },
