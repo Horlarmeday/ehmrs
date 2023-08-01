@@ -1,9 +1,51 @@
 /* eslint-disable camelcase */
-import { Op } from 'sequelize';
+import sequelize, { Op } from 'sequelize';
 import { getModelById, getNumberOfRecords } from '../../core/helpers/general';
 
-import { Test, NhisTest, Sample, TestTariff, Patient } from '../../database/models';
-import { canUsePriceTariff } from '../../core/helpers/helper';
+import {
+  NhisTest,
+  Patient,
+  PrescribedTest,
+  Sample,
+  Test,
+  TestPrescription,
+  TestResult,
+  TestTariff,
+} from '../../database/models';
+import { calcLimitAndOffset, canUsePriceTariff, paginate } from '../../core/helpers/helper';
+import { SamplePeriod } from '../Orders/Laboratory/interface/prescribed-test.interface';
+import moment from 'moment/moment';
+import { chain } from 'lodash';
+import { TestStatus } from '../../database/models/prescribedTest';
+import sequelizeConnection from '../../database/config/config';
+import { ResultStatus } from '../../database/models/testResult';
+const testResultFieldsToUpdate = (fields?: string[]) => [
+  'prescribed_test_id',
+  'result',
+  'is_abnormal',
+  'comments',
+  'status',
+  'updatedAt',
+  ...(fields.length && fields),
+];
+const todayQuery = (field: string) => ({
+  [field]: {
+    [Op.gte]: moment()
+      .startOf('day')
+      .toDate(),
+    [Op.lt]: moment()
+      .endOf('day')
+      .toDate(),
+  },
+});
+
+const backlogQuery = (field: string) => ({
+  [field]: {
+    [Op.lt]: moment()
+      .startOf('day')
+      .toDate(),
+  },
+});
 
 /** ***********************
  * TEST SAMPLE
@@ -223,6 +265,428 @@ const testPriceTariff = async (patient: Patient, test_id: number) => {
 export const getTestPrice = (patient: Patient, test_id: number) => {
   if (canUsePriceTariff(patient)) return testPriceTariff(patient, test_id);
   return null;
+};
+
+/** ***********************
+ * LABORATORY RESULTS
+ ********************** */
+
+/**
+ * get all samples to collect
+ *
+ * @function
+ * @returns {json} json object with test samples data
+ * @param currentPage
+ * @param pageLimit
+ * @param period
+ * @param search
+ */
+export const getSamplesToCollect = async ({
+  currentPage = 1,
+  pageLimit = 10,
+  period = null,
+  search = null,
+}) => {
+  const { limit, offset } = calcLimitAndOffset(+currentPage, +pageLimit);
+  const samples = await TestPrescription.findAll({
+    attributes: {
+      include: [
+        // Count the number of tests in each sample and alias it as 'testCount'
+        [sequelize.fn('COUNT', sequelize.col('tests.id')), 'testCount'],
+      ],
+    },
+    where: {
+      status: TestStatus.PENDING,
+      ...(period === SamplePeriod.TODAY
+        ? todayQuery('date_requested')
+        : backlogQuery('date_requested')),
+    },
+    order: [['date_requested', 'DESC']],
+    include: [
+      {
+        model: PrescribedTest,
+        as: 'tests',
+        attributes: [], // Exclude all columns from the PrescribedTest table (we only need the count)
+      },
+      {
+        model: Patient,
+        attributes: ['firstname', 'lastname', 'fullname', 'hospital_id'],
+        where: {
+          ...(search && {
+            [Op.or]: [
+              {
+                firstname: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+              {
+                lastname: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+              {
+                hospital_id: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+            ],
+          }),
+        },
+      },
+    ],
+    group: ['TestPrescription.id'], // Group the results by testPrescription.id to get the count per sample
+    subQuery: false,
+    limit,
+    offset,
+  });
+  const count = await TestPrescription.count();
+  return paginate({ rows: samples, count }, currentPage, limit);
+};
+
+/**
+ * get all collected samples
+ *
+ * @function
+ * @returns {json} json object with test samples data
+ * @param currentPage
+ * @param pageLimit
+ * @param period
+ * @param search
+ */
+export const getCollectedSamples = async ({
+  currentPage = 1,
+  pageLimit = 10,
+  period = null,
+  search = null,
+}) => {
+  const { limit, offset } = calcLimitAndOffset(+currentPage, +pageLimit);
+  const samples = await TestPrescription.findAll({
+    attributes: {
+      include: [
+        [sequelize.fn('COUNT', sequelize.col('tests.id')), 'total'],
+        [
+          sequelize.fn(
+            'COUNT',
+            sequelize.literal(
+              `DISTINCT CASE WHEN tests.status = '${TestStatus.PENDING}' THEN tests.id END`
+            )
+          ),
+          'pending_tests_count',
+        ],
+        [
+          sequelize.fn(
+            'COUNT',
+            sequelize.literal(
+              `DISTINCT CASE WHEN tests.status = '${TestStatus.REFERRED}' THEN tests.id END`
+            )
+          ),
+          'referred_tests_count',
+        ],
+        [
+          sequelize.fn(
+            'COUNT',
+            sequelize.literal(
+              `DISTINCT CASE WHEN tests.status = '${TestStatus.RESULT_ADDED}' THEN tests.id END`
+            )
+          ),
+          'pending_validations_count',
+        ],
+      ],
+    },
+    order: [['date_sample_received', 'DESC']],
+    where: {
+      status: TestStatus.SAMPLE_COLLECTED,
+      ...(period === SamplePeriod.TODAY
+        ? todayQuery('date_sample_received')
+        : backlogQuery('date_sample_received')),
+    },
+    include: [
+      {
+        model: PrescribedTest,
+        as: 'tests',
+        attributes: [], // Exclude all columns from the PrescribedTest table (we only need the count)
+      },
+      {
+        model: Patient,
+        attributes: ['firstname', 'lastname', 'fullname', 'hospital_id'],
+        where: {
+          ...(search && {
+            [Op.or]: [
+              {
+                firstname: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+              {
+                lastname: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+              {
+                hospital_id: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+            ],
+          }),
+        },
+      },
+    ],
+    group: ['TestPrescription.id'], // Group the results by testPrescription.id to get the count per sample
+    subQuery: false,
+    limit,
+    offset,
+  });
+  const count = await TestPrescription.count();
+  return paginate({ rows: samples, count }, currentPage, limit);
+};
+
+export const getLastTestPrescription = async (patient_id: number) => {
+  return TestPrescription.findOne({ where: { patient_id }, order: [['date_requested', 'DESC']] });
+};
+
+export const createTestPrescription = async (data: any) => {
+  return TestPrescription.create({ ...data });
+};
+
+export const getTestPrescription = async query => {
+  return TestPrescription.findOne({ where: { ...query } });
+};
+
+export const getOneSampleToCollect = async (testPrescriptionId: number | string) => {
+  const testPrescriptions = await TestPrescription.findOne({
+    where: { id: testPrescriptionId, status: TestStatus.PENDING },
+    attributes: [],
+    include: [
+      {
+        model: Patient,
+        attributes: ['firstname', 'lastname', 'hospital_id', 'gender'],
+      },
+      {
+        model: PrescribedTest,
+        attributes: ['test_id'],
+        include: [
+          { model: Test, attributes: ['name'] },
+          { model: Sample, attributes: ['name'] },
+        ],
+      },
+    ],
+  });
+  return { ...testPrescriptions.toJSON(), tests: groupTestsBySample(testPrescriptions.tests) };
+};
+
+export const getOneCollectedSample = async (testPrescriptionId: number | string) => {
+  const testPrescriptions = await TestPrescription.findOne({
+    where: { id: testPrescriptionId, status: TestStatus.SAMPLE_COLLECTED },
+    attributes: ['accession_number', 'result_notes'],
+    include: [
+      {
+        model: Patient,
+        attributes: ['firstname', 'lastname', 'hospital_id', 'gender', 'id'],
+      },
+      {
+        model: PrescribedTest,
+        attributes: ['test_id', 'id', 'status'],
+        include: [
+          { model: Test, attributes: ['name'] },
+          { model: Sample, attributes: ['name'] },
+          {
+            model: TestResult,
+            attributes: [
+              'result',
+              'is_abnormal',
+              'comments',
+              'institute_referred',
+              'referral_reason',
+              'status',
+            ],
+          },
+        ],
+      },
+    ],
+  });
+  return { ...testPrescriptions.toJSON(), tests: groupTestsBySample(testPrescriptions.tests) };
+};
+
+export const updateTestPrescription = (
+  query: sequelize.WhereOptions<any>,
+  fieldsToUpdate: { [x: string]: any }
+) => {
+  return TestPrescription.update({ ...fieldsToUpdate }, { where: { ...query } });
+};
+
+export const validateTestResults = async (data, result_notes) => {
+  return sequelizeConnection.transaction(async t => {
+    // append results
+    const result = await TestResult.bulkCreate(data, {
+      updateOnDuplicate: testResultFieldsToUpdate(),
+      transaction: t,
+    });
+    await Promise.all(
+      data.map(async test =>
+        PrescribedTest.update(
+          { ...statusToUpdate(test) },
+          { where: { id: test.prescribed_test_id }, transaction: t }
+        )
+      )
+    );
+    await TestPrescription.update(
+      { result_notes },
+      { where: { id: data[0].test_prescription_id }, transaction: t }
+    );
+    return result;
+  });
+};
+
+export const approveTestResults = async data => {
+  return sequelizeConnection.transaction(async t => {
+    const result = await Promise.all(
+      data.map(async test => {
+        if (test.test_status) {
+          return PrescribedTest.update(
+            {
+              status: TestStatus.APPROVED,
+              test_approved_date: Date.now(),
+              test_approved_by: test.staff_id,
+            },
+            { where: { id: test.prescribed_test_id }, transaction: t }
+          );
+        }
+      })
+    );
+    const testsCount = await PrescribedTest.count({
+      where: {
+        test_prescription_id: data[0].test_prescription_id,
+        status: {
+          [Op.ne]: TestStatus.REFERRED,
+        },
+      },
+    });
+    if (data.length === testsCount) {
+      await TestPrescription.update(
+        { status: TestStatus.COMPLETED },
+        { where: { id: data[0].test_prescription_id }, transaction: t }
+      );
+    }
+    return result;
+  });
+};
+
+export const appendTestResults = async (
+  data: any[] | readonly sequelize.Optional<any, string>[]
+) => {
+  return sequelizeConnection.transaction(async t => {
+    const testResults = await TestResult.bulkCreate(data, {
+      updateOnDuplicate: testResultFieldsToUpdate(['institute_referred', 'referral_reason']),
+      transaction: t,
+    });
+    await Promise.all(
+      data.map(async test =>
+        PrescribedTest.update(
+          { status: test.testStatus },
+          { where: { id: test.prescribed_test_id }, transaction: t }
+        )
+      )
+    );
+    return testResults;
+  });
+};
+
+export const getTestResults = async ({
+  currentPage = 1,
+  pageLimit = 10,
+  start = null,
+  end = null,
+  search = null,
+}) => {
+  return await TestPrescription.paginate({
+    page: +currentPage,
+    paginate: +pageLimit,
+    attributes: ['id', 'accession_number', 'source', 'date_sample_received'],
+    order: [['date_sample_received', 'DESC']],
+    where: {
+      ...(search && {
+        [Op.or]: [
+          {
+            accession_number: {
+              [Op.like]: `%${search}%`,
+            },
+          },
+          {
+            '$patient.firstname$': {
+              [Op.like]: `%${search}%`,
+            },
+          },
+          {
+            '$patient.lastname$': {
+              [Op.like]: `%${search}%`,
+            },
+          },
+          {
+            '$patient.hospital_id$': {
+              [Op.like]: `%${search}%`,
+            },
+          },
+        ],
+      }),
+      ...(start &&
+        end && {
+          date_sample_collected: {
+            [Op.gte]: moment(start)
+              .startOf('day')
+              .toDate(),
+            [Op.lt]: moment(end)
+              .endOf('day')
+              .toDate(),
+          },
+        }),
+    },
+    include: [
+      {
+        model: PrescribedTest,
+        as: 'tests',
+        where: {
+          status: TestStatus.APPROVED,
+        },
+        required: true,
+        attributes: [],
+      },
+      {
+        model: Patient,
+        attributes: ['firstname', 'lastname', 'fullname', 'hospital_id'],
+      },
+    ],
+  });
+};
+
+export const getTestResult = async (test_prescription_id: number) => {
+  await TestPrescription.findOne();
+};
+
+const groupTestsBySample = (tests: PrescribedTest[]) => {
+  return chain(tests)
+    .groupBy(x => x.sample.name)
+    .map((value, key) => ({
+      sample: key,
+      data: value,
+    }))
+    .value();
+};
+
+const statusToUpdate = test => {
+  switch (test.status) {
+    case ResultStatus.ACCEPTED:
+      return {
+        status: TestStatus.VERIFIED,
+        result_status: ResultStatus.ACCEPTED,
+        test_verified_date: Date.now(),
+        test_verified_by: test.staff_id,
+      };
+    case ResultStatus.REJECTED:
+      return { status: TestStatus.PENDING, result_status: ResultStatus.REJECTED };
+    default:
+      return { status: TestStatus.PENDING, result_status: ResultStatus.PENDING };
+  }
 };
 
 /** ***********************

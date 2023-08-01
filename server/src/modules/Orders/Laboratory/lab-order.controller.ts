@@ -1,9 +1,10 @@
 import { validateBulkLabTest } from './validations';
 import { LabOrderService } from './lab-order.service';
-import { SuccessResponse, successResponse } from '../../../common/responses/success-responses';
+import { successResponse } from '../../../common/responses/success-responses';
 import { DATA_SAVED } from '../../AdminSettings/messages/response-messages';
 import { errorResponse } from '../../../common/responses/error-responses';
 import { StatusCodes } from '../../../core/helpers/helper';
+import { NextFunction, Response } from 'express';
 
 class LabOrderController {
   /**
@@ -15,7 +16,7 @@ class LabOrderController {
    * @param {object} next next middleware
    * @returns {json} json object with status, lab tests data
    */
-  static async orderLabTest(req, res, next): Promise<SuccessResponse> {
+  static async orderLabTest(req, res: Response, next: NextFunction) {
     const { error } = validateBulkLabTest(req.body);
     if (error)
       return errorResponse({

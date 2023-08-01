@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
-import { PrescribedTest } from '../../../database/models';
+import { PrescribedTest, TestSample } from '../../../database/models';
+import sequelize from 'sequelize';
 
 /**
  * prescribe a test for patient
@@ -27,3 +28,10 @@ export async function prescribeTest(data) {
 export async function orderBulkTest(data) {
   return PrescribedTest.bulkCreate(data);
 }
+
+export const updatePrescribedTest = (
+  query: sequelize.WhereOptions<any>,
+  fieldsToUpdate: { [x: string]: string }
+) => {
+  return PrescribedTest.update({ ...fieldsToUpdate }, { where: { ...query } });
+};

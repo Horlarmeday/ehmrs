@@ -5,7 +5,7 @@ import server from '../../../core/startup/server';
 import request from 'supertest';
 import { OPD } from '../../../core/constants';
 
-import { Staff, PrescribedTest, Visit } from '../../database/models';
+import { Staff, PrescribedTest, Visit } from '../../../database/models';
 
 const tests = [
   {
