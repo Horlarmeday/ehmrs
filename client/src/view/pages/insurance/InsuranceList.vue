@@ -42,7 +42,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-if="insurances.length == 0">
+            <tr v-if="insurances.length === 0">
               <td colspan="9" align="center" class="text-muted">No Data</td>
             </tr>
             <tr v-for="insurance in insurances" :key="insurance.id">

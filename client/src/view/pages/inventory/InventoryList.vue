@@ -30,7 +30,7 @@
 <script>
 import InventoryTable from './components/InventoryTable';
 import Search from '../../../utils/Search.vue';
-import { setUrlQueryParams } from '../../../common/common';
+import { debounce, removeSpinner, setUrlQueryParams } from "../../../common/common";
 export default {
   name: 'InventoryList',
   data() {
@@ -70,19 +70,27 @@ export default {
       });
     },
 
-    onHandleSearch(search) {
+    onHandleSearch(prop) {
+      const { search, spinDiv } = prop;
       setUrlQueryParams({
         currentPage: 1,
         itemsPerPage: this.itemsPerPage,
         search: search,
       });
-      this.$store.dispatch('inventory/fetchInventoryItems', {
-        currentPage: 1,
-        itemsPerPage: this.itemsPerPage,
-        search,
-        inventory: this.$route.params.id,
-      });
+      this.debounceSearch(search, this, spinDiv);
     },
+
+    debounceSearch: debounce((search, vm, spinDiv) => {
+      vm.$store
+        .dispatch('inventory/fetchInventoryItems', {
+          currentPage: 1,
+          itemsPerPage: vm.itemsPerPage,
+          search,
+          inventory: this.$route.params.id,
+        })
+        .then(() => removeSpinner(spinDiv))
+        .catch(() => removeSpinner(spinDiv));
+    }, 500),
 
     onPageChange(page) {
       this.currentPage = page;
