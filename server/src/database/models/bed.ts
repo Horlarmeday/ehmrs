@@ -10,6 +10,10 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 
+export enum BedStatus {
+  TAKEN = 'Taken',
+  UNTAKEN = 'Untaken',
+}
 @Table({ tableName: 'beds' })
 export class Bed extends Model {
   @PrimaryKey
@@ -37,6 +41,13 @@ export class Bed extends Model {
     },
   })
   code: string;
+
+  @Column({
+    type: DataType.ENUM(BedStatus.TAKEN, BedStatus.UNTAKEN),
+    allowNull: false,
+    defaultValue: BedStatus.UNTAKEN,
+  })
+  status: BedStatus;
 
   @ForeignKey(() => Staff)
   @Column({ type: DataType.INTEGER })
