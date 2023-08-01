@@ -5,32 +5,23 @@
       class="btn btn-icon btn-hover-transparent-white d-flex align-items-center btn-lg px-md-2 w-md-auto"
     >
       <div class="d-flex flex-column text-right pr-3">
-        <span
-          class="text-white opacity-50 font-weight-bold font-size-sm d-none d-md-inline"
-          >{{ user.fullname }}</span
-        >
-        <span
-          class="text-white font-weight-bolder font-size-sm d-none d-md-inline"
-          >{{ user.role }}</span
-        >
+        <span class="text-white opacity-50 font-weight-bold font-size-sm d-none d-md-inline">{{
+          user.fullname
+        }}</span>
+        <span class="text-white font-weight-bolder font-size-sm d-none d-md-inline">{{
+          user.role
+        }}</span>
       </div>
       <span class="symbol symbol-35">
-        <span
-          class="symbol-label font-size-h5 font-weight-bold text-white bg-white-o-30"
-          >{{ firstChar }}</span
-        >
+        <span class="symbol-label font-size-h5 font-weight-bold text-white bg-white-o-30">{{
+          firstChar
+        }}</span>
       </span>
     </div>
 
-    <div
-      id="kt_quick_user"
-      ref="kt_quick_user"
-      class="offcanvas offcanvas-right p-10"
-    >
+    <div id="kt_quick_user" ref="kt_quick_user" class="offcanvas offcanvas-right p-10">
       <!--begin::Header-->
-      <div
-        class="offcanvas-header d-flex align-items-center justify-content-between pb-5"
-      >
+      <div class="offcanvas-header d-flex align-items-center justify-content-between pb-5">
         <h3 class="font-weight-bold m-0">
           User Profile
           <small class="text-muted font-size-sm ml-2">12 messages</small>
@@ -57,10 +48,7 @@
             <i class="symbol-badge bg-success"></i>
           </div>
           <div class="d-flex flex-column">
-            <a
-              href="#"
-              class="font-weight-bold font-size-h5 text-dark-75 text-hover-primary"
-            >
+            <a href="#" class="font-weight-bold font-size-h5 text-dark-75 text-hover-primary">
               {{ user.fullname }}
             </a>
             <div class="text-muted mt-1">{{ user.role }}</div>
@@ -70,9 +58,7 @@
                   <span class="navi-icon mr-1">
                     <span class="svg-icon svg-icon-lg svg-icon-primary">
                       <!--begin::Svg Icon-->
-                      <inline-svg
-                        src="media/svg/icons/Communication/Mail-notification.svg"
-                      />
+                      <inline-svg src="media/svg/icons/Communication/Mail-notification.svg" />
                       <!--end::Svg Icon-->
                     </span>
                   </span>
@@ -92,20 +78,13 @@
         <!--begin::Nav-->
         <div class="navi navi-spacer-x-0 p-0">
           <!--begin::Item-->
-          <router-link
-            to="/builder"
-            @click.native="closeOffcanvas"
-            href="#"
-            class="navi-item"
-          >
+          <router-link to="/builder" @click.native="closeOffcanvas" href="#" class="navi-item">
             <div class="navi-link">
               <div class="symbol symbol-40 bg-light mr-3">
                 <div class="symbol-label">
                   <span class="svg-icon svg-icon-md svg-icon-success">
                     <!--begin::Svg Icon-->
-                    <inline-svg
-                      src="media/svg/icons/General/Notification2.svg"
-                    />
+                    <inline-svg src="media/svg/icons/General/Notification2.svg" />
                     <!--end::Svg Icon-->
                   </span>
                 </div>
@@ -114,9 +93,7 @@
                 <div class="font-weight-bold">My Profile</div>
                 <div class="text-muted">
                   Account settings and more
-                  <span
-                    class="label label-light-danger label-inline font-weight-bold"
-                  >
+                  <span class="label label-light-danger label-inline font-weight-bold">
                     update
                   </span>
                 </div>
@@ -125,12 +102,7 @@
           </router-link>
           <!--end:Item-->
           <!--begin::Item-->
-          <router-link
-            to="/builder"
-            @click.native="closeOffcanvas"
-            href="#"
-            class="navi-item"
-          >
+          <router-link to="/builder" @click.native="closeOffcanvas" href="#" class="navi-item">
             <div class="navi-link">
               <div class="symbol symbol-40 bg-light mr-3">
                 <div class="symbol-label">
@@ -149,12 +121,7 @@
           </router-link>
           <!--end:Item-->
           <!--begin::Item-->
-          <router-link
-            to="/builder"
-            @click.native="closeOffcanvas"
-            href="#"
-            class="navi-item"
-          >
+          <router-link to="/builder" @click.native="closeOffcanvas" href="#" class="navi-item">
             <div class="navi-link">
               <div class="symbol symbol-40 bg-light mr-3">
                 <div class="symbol-label">
@@ -173,20 +140,13 @@
           </router-link>
           <!--end:Item-->
           <!--begin::Item-->
-          <router-link
-            to="/builder"
-            @click.native="closeOffcanvas"
-            href="#"
-            class="navi-item"
-          >
+          <router-link to="/builder" @click.native="closeOffcanvas" href="#" class="navi-item">
             <div class="navi-link">
               <div class="symbol symbol-40 bg-light mr-3">
                 <div class="symbol-label">
                   <span class="svg-icon svg-icon-md svg-icon-primary">
                     <!--begin::Svg Icon-->
-                    <inline-svg
-                      src="media/svg/icons/Communication/Mail-opened.svg"
-                    />
+                    <inline-svg src="media/svg/icons/Communication/Mail-opened.svg" />
                     <!--end::Svg Icon-->
                   </span>
                 </div>
@@ -213,10 +173,7 @@
               v-bind:class="`bg-light-${item.type}`"
               v-bind:key="i"
             >
-              <span
-                class="svg-icon mr-5"
-                v-bind:class="`svg-icon-${item.type}`"
-              >
+              <span class="svg-icon mr-5" v-bind:class="`svg-icon-${item.type}`">
                 <span class="svg-icon svg-icon-lg">
                   <!--begin::Svg Icon-->
                   <inline-svg :src="item.svg" />
@@ -234,10 +191,7 @@
                   {{ item.desc }}
                 </span>
               </div>
-              <span
-                class="font-weight-bolder py-1 font-size-lg"
-                v-bind:class="`text-${item.type}`"
-              >
+              <span class="font-weight-bolder py-1 font-size-lg" v-bind:class="`text-${item.type}`">
                 {{ item.alt }}
               </span>
             </div>
@@ -258,67 +212,65 @@
 </style>
 
 <script>
-import KTLayoutQuickUser from "@/assets/js/layout/extended/quick-user.js";
-import KTOffcanvas from "@/assets/js/components/offcanvas.js";
-import { parseJwt } from "../../../../core/plugins/parseJwt";
+import KTLayoutQuickUser from '@/assets/js/layout/extended/quick-user.js';
+import KTOffcanvas from '@/assets/js/components/offcanvas.js';
+import { parseJwt } from '../../../../core/plugins/parseJwt';
 export default {
-  name: "KTQuickUser",
+  name: 'KTQuickUser',
   data() {
     return {
       list: [
         {
-          title: "Another purpose persuade",
-          desc: "Due in 2 Days",
-          alt: "+28%",
-          svg: "media/svg/icons/Home/Library.svg",
-          type: "warning"
+          title: 'Another purpose persuade',
+          desc: 'Due in 2 Days',
+          alt: '+28%',
+          svg: 'media/svg/icons/Home/Library.svg',
+          type: 'warning',
         },
         {
-          title: "Would be to people",
-          desc: "Due in 2 Days",
-          alt: "+50%",
-          svg: "media/svg/icons/Communication/Write.svg",
-          type: "success"
+          title: 'Would be to people',
+          desc: 'Due in 2 Days',
+          alt: '+50%',
+          svg: 'media/svg/icons/Communication/Write.svg',
+          type: 'success',
         },
         {
-          title: "Purpose would be to persuade",
-          desc: "Due in 2 Days",
-          alt: "-27%",
-          svg: "media/svg/icons/Communication/Group-chat.svg",
-          type: "danger"
+          title: 'Purpose would be to persuade',
+          desc: 'Due in 2 Days',
+          alt: '-27%',
+          svg: 'media/svg/icons/Communication/Group-chat.svg',
+          type: 'danger',
         },
         {
-          title: "The best product",
-          desc: "Due in 2 Days",
-          alt: "+8%",
-          svg: "media/svg/icons/General/Attachment2.svg",
-          type: "info"
-        }
+          title: 'The best product',
+          desc: 'Due in 2 Days',
+          alt: '+8%',
+          svg: 'media/svg/icons/General/Attachment2.svg',
+          type: 'info',
+        },
       ],
-      user: "",
-      firstChar: ""
+      user: '',
+      firstChar: '',
     };
   },
   mounted() {
-    this.user = parseJwt(localStorage.getItem("user_token"));
+    this.user = parseJwt(localStorage.getItem('user_token'));
     this.firstChar = this.user.firstname.charAt(0).toUpperCase();
     // Init Quick User Panel
-    KTLayoutQuickUser.init(this.$refs["kt_quick_user"]);
+    KTLayoutQuickUser.init(this.$refs['kt_quick_user']);
   },
   methods: {
     onLogout() {
-      this.$store
-        .dispatch("auth/logout")
-        .then(() => this.$router.push("/auth/login"));
+      this.$store.dispatch('auth/logout').then(() => this.$router.push('/auth/login'));
     },
     closeOffcanvas() {
       new KTOffcanvas(KTLayoutQuickUser.getElement()).hide();
-    }
+    },
   },
   computed: {
     picture() {
-      return process.env.BASE_URL + "media/users/300_21.jpg";
-    }
-  }
+      return process.env.BASE_URL + 'media/users/300_21.jpg';
+    },
+  },
 };
 </script>
