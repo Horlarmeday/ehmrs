@@ -11,6 +11,7 @@ export default {
 
   ward: null,
   wards: [],
+  wardsAndBeds: [],
   totalWard: 0,
   wardPages: 0,
 

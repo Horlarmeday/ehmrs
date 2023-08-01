@@ -59,6 +59,10 @@ export default {
     state.wards = wards;
   },
 
+  SET_WARDS_AND_BEDS(state, wards) {
+    state.wardsAndBeds = wards;
+  },
+
   SET_WARDS_TOTAL(state, total) {
     state.totalWard = total;
   },
