@@ -4,14 +4,16 @@
     <div class="row">
       <div class="col-lg-3 mb-lg-0 mb-6">
         <label>Search:</label>
-        <input
-          type="text"
-          class="form-control datatable-input"
-          placeholder="Type and press enter to search"
-          data-col-index="0"
-          v-model="search"
-          @keypress.enter="onSearch"
-        />
+        <div ref="spin">
+          <input
+            type="text"
+            class="form-control datatable-input"
+            placeholder="Type and press enter to search"
+            data-col-index="0"
+            v-model="search"
+            @keyup="onSearch"
+          />
+        </div>
       </div>
       <div class="col-lg-3  mb-lg-0 mb-6">
         <label>{{ label }}:</label>
@@ -32,6 +34,8 @@
 </template>
 
 <script>
+import { addSpinner } from '@/common/common';
+
 export default {
   props: {
     label: {
@@ -55,8 +59,11 @@ export default {
   },
   methods: {
     onSearch() {
-      this.$emit('search', this.search);
+      const spinDiv = this.$refs['spin'];
+      addSpinner(spinDiv);
+      this.$emit('search', { search: this.search, spinDiv });
     },
+
     onFilter() {
       this.$emit('filter', this.id);
     },

@@ -36,7 +36,7 @@ const router = new Router({
         {
           path: '/dashboard',
           name: 'dashboard',
-          component: () => import('@/view/pages/home/superadmin/Dashboard.vue'),
+          component: () => import('@/view/pages/home/Dashboard.vue'),
           meta: {
             requiresAuth: true,
           },
@@ -453,6 +453,62 @@ const router = new Router({
               path: 'nhis-tests',
               name: 'nhis-tests',
               component: () => import('@/view/pages/laboratory/NhisTests.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'samples-to-collect',
+              name: 'samples-to-collect',
+              component: () => import('@/view/pages/laboratory/SamplesToCollect.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'samples-collected',
+              name: 'samples-collected',
+              component: () => import('@/view/pages/laboratory/SamplesCollected.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'result-validation/:id',
+              name: 'result-validation',
+              component: () => import('@/view/pages/laboratory/ResultValidation.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'add-test-result/:id',
+              name: 'add-test-result',
+              component: () => import('@/view/pages/laboratory/AddTestResult.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'collect-sample/:id',
+              name: 'collect-sample',
+              component: () => import('@/view/pages/laboratory/CollectTestSample.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'result-approval/:id',
+              name: 'result-approval',
+              component: () => import('@/view/pages/laboratory/ResultApproval.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'find-results',
+              name: 'find-results',
+              component: () => import('@/view/pages/laboratory/FindTestResult.vue'),
               meta: {
                 requiresAuth: true,
               },

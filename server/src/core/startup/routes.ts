@@ -12,9 +12,11 @@ import triageRoutes from '../../modules/Triage/triage.routes';
 import labOrderRoutes from '../../modules/Orders/Laboratory/lab-order.routes';
 import pharmacyOrderRoutes from '../../modules/Orders/Pharmacy/pharmacy-order.routes';
 import radiologyOrderRoutes from '../../modules/Orders/Radiology/radiology-order.routes';
+import serviceOrderRoutes from '../../modules/Orders/Service/service-order.routes';
 import inventoryRoutes from '../../modules/Inventory/inventory.routes';
 import radiologyRoutes from '../../modules/Radiology/radiology.routes';
 import diagnosisRoutes from '../../modules/Diagnosis/diagnosis.routes';
+import admissionRoutes from '../../modules/Admission/admission.routes';
 import express from 'express';
 import { StatusCodes } from '../helpers/helper';
 
@@ -33,9 +35,11 @@ export default (server: express.Application) => {
   server.use('/api/inventory', inventoryRoutes);
   server.use('/api/radiology', radiologyRoutes);
   server.use('/api/diagnosis', diagnosisRoutes);
-  server.use('/api/tests/lab', labOrderRoutes);
-  server.use('/api/tests/pharmacy', pharmacyOrderRoutes);
-  server.use('/api/tests/radiology', radiologyOrderRoutes);
+  server.use('/api/admission', admissionRoutes);
+  server.use('/api/orders/laboratory', labOrderRoutes);
+  server.use('/api/orders/pharmacy', pharmacyOrderRoutes);
+  server.use('/api/orders/radiology', radiologyOrderRoutes);
+  server.use('/api/orders/service', serviceOrderRoutes);
   server.use((req, res, next) => {
     const apiTimeout = 18000;
     // set the timeout for all HTTP requests
