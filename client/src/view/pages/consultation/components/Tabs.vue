@@ -6,8 +6,9 @@
           <ul class="header-tabs nav align-self-end font-size-lg" role="tablist">
             <li class="nav-item">
               <a
-                class="nav-link text-dark py-4 px-6 active"
-                @click="setActiveTab($event, '#observations')"
+                class="nav-link text-dark py-4 px-6"
+                :class="{ active: tabIndex === 0, disabled: tabIndex === 0 }"
+                @click="setActiveTab($event, 'observations')"
                 data-tab="0"
                 data-toggle="tab"
                 href="#"
@@ -16,24 +17,13 @@
                 >Observations</a
               >
             </li>
-<!--            <li class="nav-item mr-3">-->
-<!--              <a-->
-<!--                class="nav-link text-dark py-4 px-6"-->
-<!--                @click="setActiveTab($event, '#diagnosis')"-->
-<!--                data-tab="1"-->
-<!--                data-toggle="tab"-->
-<!--                href="#"-->
-<!--                role="tab"-->
-<!--                aria-selected="true"-->
-<!--                >Diagnosis</a-->
-<!--              >-->
-<!--            </li>-->
             <li class="nav-item mr-3">
               <a
                 class="nav-link text-dark py-4 px-6"
-                @click="setActiveTab($event, '#testOrders')"
+                @click="setActiveTab($event, 'tests')"
                 data-tab="1"
                 data-toggle="tab"
+                :class="{ active: tabIndex === 1, disabled: tabIndex === 1 }"
                 href="#"
                 role="tab"
                 aria-selected="true"
@@ -43,8 +33,9 @@
             <li class="nav-item mr-3">
               <a
                 class="nav-link text-dark py-4 px-6"
-                @click="setActiveTab($event, '#medications')"
-                data-tab="1"
+                :class="{ active: tabIndex === 2, disabled: tabIndex === 2 }"
+                @click="setActiveTab($event, 'medications')"
+                data-tab="2"
                 data-toggle="tab"
                 href="#"
                 role="tab"
@@ -55,8 +46,9 @@
             <li class="nav-item mr-3">
               <a
                 class="nav-link text-dark py-4 px-6"
-                @click="setActiveTab($event, '#investigationOrders')"
-                data-tab="1"
+                :class="{ active: tabIndex === 3, disabled: tabIndex === 3 }"
+                @click="setActiveTab($event, 'investigations')"
+                data-tab="3"
                 data-toggle="tab"
                 href="#"
                 role="tab"
@@ -67,8 +59,9 @@
             <li class="nav-item mr-3">
               <a
                 class="nav-link text-dark py-4 px-6"
-                @click="setActiveTab"
-                data-tab="1"
+                :class="{ active: tabIndex === 4, disabled: tabIndex === 4 }"
+                @click="setActiveTab($event, 'disposition')"
+                data-tab="4"
                 data-toggle="tab"
                 href="#"
                 role="tab"
@@ -79,8 +72,9 @@
             <li class="nav-item mr-3">
               <a
                 class="nav-link text-dark py-4 px-6"
+                :class="{ active: tabIndex === 5, disabled: tabIndex === 5 }"
                 @click="setActiveTab"
-                data-tab="1"
+                data-tab="5"
                 data-toggle="tab"
                 href="#"
                 role="tab"
@@ -88,7 +82,38 @@
                 >History</a
               >
             </li>
+            <li class="nav-item mr-3">
+              <a
+                class="nav-link text-dark py-4 px-6"
+                :class="{ active: tabIndex === 6, disabled: tabIndex === 6 }"
+                @click="setActiveTab($event, 'services')"
+                data-tab="6"
+                data-toggle="tab"
+                href="#"
+                role="tab"
+                aria-selected="true"
+                >Services</a
+              >
+            </li>
           </ul>
+          <div class="ml-auto">
+            <a v-b-tooltip.hover title="General Information" href="#" class="btn btn-icon btn-light-primary pulse pulse-primary mr-5">
+              <i class="flaticon2-information"></i>
+              <span class="pulse-ring"></span>
+            </a>
+            <a v-b-tooltip.hover title="Admission Details" href="#" class="btn btn-icon btn-light-warning pulse pulse-warning mr-5">
+              <i class="fas fa-bed"></i>
+              <span class="pulse-ring"></span>
+            </a>
+            <a v-b-tooltip.hover title="Alerts" href="#" class="btn btn-icon btn-light-danger pulse pulse-danger mr-5">
+              <i class="fas fa-exclamation-triangle"></i>
+              <span class="pulse-ring"></span>
+            </a>
+            <a v-b-tooltip.hover title="Vitals" href="#" class="btn btn-icon btn-light-info pulse pulse-info mr-5">
+              <i class="fas fa-stethoscope"></i>
+              <span class="pulse-ring"></span>
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -101,13 +126,17 @@ import Observations from '../tabs/Observations';
 import TestOrders from '../tabs/TestOrders.vue';
 import InvestigationOrders from '../tabs/InvestigationOrders.vue';
 import Medications from '../tabs/Medications.vue';
+import ServicesOrder from '../tabs/ServiceOrders.vue';
+import Disposition from '@/view/pages/consultation/tabs/Disposition.vue';
 // import router from '@/router';
 
 const ComponentMapping = {
-  '#observations': Observations,
-  '#testOrders': TestOrders,
-  '#investigationOrders': InvestigationOrders,
-  '#medications': Medications,
+  observations: Observations,
+  tests: TestOrders,
+  investigations: InvestigationOrders,
+  medications: Medications,
+  services: ServicesOrder,
+  disposition: Disposition,
 };
 
 export default {
@@ -135,31 +164,49 @@ export default {
       // remove active tab links
       for (let i = 0; i < links.length; i++) {
         links[i].classList.remove('active');
+        links[i].removeAttribute('disabled');
       }
 
       // set clicked tab index to bootstrap tab
       this.tabIndex = parseInt(target.getAttribute('data-tab'));
 
-      // router.push({
-      //   query: {
-      //     tab: component,
-      //   },
-      // });
-
       // set current active tab
       target.classList.add('active');
+      target.setAttribute('disabled', true);
 
       this.setActiveComponent(component);
+
+      this.$router.push({
+        query: {
+          tab: component,
+          tabIndex: this.tabIndex,
+        },
+      });
     },
 
     setActiveComponent(component) {
       this.activeComponent = ComponentMapping[component];
     },
+
+    getActiveTab() {
+      const storedTab = this.$route.query.tab;
+      const storedTabIndex = this.$route.query.tabIndex;
+      if (storedTab && ComponentMapping[storedTab] && storedTabIndex) {
+        this.activeComponent = ComponentMapping[storedTab];
+        this.tabIndex = parseInt(storedTabIndex);
+      } else {
+        this.activeComponent = ComponentMapping['observations'];
+        this.tabIndex = 0;
+      }
+    },
   },
   created() {
-    // const component = this.$route.query.tab;
-    this.activeComponent = ComponentMapping['#observations'];
-    this.$store.dispatch('visit/fetchVisit', this.$route.params.visitId);
+    this.getActiveTab();
+    this.$store
+      .dispatch('visit/fetchVisit', this.$route.params.visitId)
+      .then(response =>
+        this.$store.dispatch('patient/setCurrentPatient', response.data.data.patient)
+      );
   },
 };
 </script>
@@ -168,7 +215,6 @@ export default {
 .white {
   background-color: white;
 }
-
 .nav-item .nav-link.active {
   background-color: #a9a9a961 !important;
 }

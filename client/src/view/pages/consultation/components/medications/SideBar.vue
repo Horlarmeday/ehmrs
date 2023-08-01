@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-row-auto offcanvas-mobile w-xl-250px" id="kt_profile_aside">
+  <div class="col-4 offcanvas-mobile w-xl-250px" id="kt_profile_aside">
     <div class="card card-custom gutter-b">
       <div class="card-header py-5">
         <div class="card-title">
@@ -58,7 +58,7 @@
               <div class="col-lg-9">
                 <v-select
                   name="diagnosis"
-                  @search="getDrugs"
+                  @search="onSearch"
                   @input="setDrugInfo"
                   v-model="drug"
                   label="name"
@@ -79,7 +79,9 @@
                 <span class="form-text text-sm text-danger">{{ errors.first('drug') }}</span>
                 <span v-if="strength_input" class="form-text text-success"
                   >Available Strength:
-                  <span class="font-weight-boldest">{{ strength_input }} {{ strength?.name }}</span></span
+                  <span class="font-weight-boldest"
+                    >{{ strength_input }} {{ strength?.name }}</span
+                  ></span
                 >
                 <span
                   v-if="quantity_remaining"
@@ -232,6 +234,7 @@
 import Datepicker from 'vuejs-datepicker';
 import vSelect from 'vue-select';
 import { debounce } from '@/common/common';
+import KTUtil from "@/assets/js/components/util";
 export default {
   name: 'MedicationSideBar',
   components: { vSelect, Datepicker },
@@ -271,7 +274,7 @@ export default {
     switchPosition: false,
     dosage_form: '',
     route: '',
-    start_date: '',
+    start_date: new Date(),
     duration_unit: '',
     notes: '',
     quantity_to_dispense: '',
@@ -320,30 +323,16 @@ export default {
     },
 
     defaultSwitchPosition() {
-      if (this.visit?.patient?.has_insurance && this.visit?.patient?.insurance_id !== 4) {
-        this.switchPosition = true;
-      }
-    },
-
-    getDrugs(search) {
-      const type = this.switchPosition ? 'NHIS' : 'CASH';
-      const inventory = this.inventories.find(inventory =>
-        inventory.name.toLowerCase().includes(type.toLowerCase())
-      )?.id;
-      this.$store.dispatch('inventory/fetchInventoryItems', {
-        inventory,
-        filter: { dosage_form_id: this.dosage_form.id },
-        search,
-      });
-    },
-
-    debouncedSearch(search) {
-      debounce(this.getDrugs(search), 500);
+      setTimeout(() => {
+        if (this.visit?.patient?.has_insurance && this.visit?.patient?.insurance_id !== 4) {
+          this.switchPosition = true;
+        }
+      }, 350);
     },
 
     setDrugInfo() {
       this.strength = this.drug.strength;
-      this.drug_id = this.drug.id;
+      this.drug_id = this.drug.drug_id;
       this.price = this.drug.price;
       this.unit_name = this.drug.unit_name;
       this.strength_input = this.drug.strength_input;
@@ -395,7 +384,7 @@ export default {
         strength_id: this.strength.id,
         drug_id: this.drug_id,
         total_price: this.total_price,
-        drug_type: this.switchPosition ? 'NHIS' : 'CASH',
+        drug_type: this.switchPosition ? 'NHIS' : 'Cash',
       };
     },
 
@@ -412,6 +401,13 @@ export default {
     endRequest(button) {
       this.removeSpinner(button);
       this.initValues();
+      this.$store.dispatch('order/fetchPrescribedDrugs', {
+        fetchWithItems: true,
+        filter: { visit_id: this.$route.params.visitId },
+      });
+      setTimeout(() => {
+        KTUtil.scrollTop();
+      }, 500);
     },
     initValues() {
       this.dosage_form = '';
@@ -434,7 +430,29 @@ export default {
       this.quantity_prescribed = null;
       this.unit_name = null;
     },
+
+    onSearch(search, loading) {
+      if (search.length > 2) {
+        loading(true);
+        this.search(loading, search, this);
+      }
+    },
+
+    search: debounce((loading, search, vm) => {
+      const type = vm.switchPosition ? 'NHIS' : 'Cash';
+      const inventory = vm.inventories.find(inventory =>
+        inventory.name.toLowerCase().includes(type.toLowerCase())
+      )?.id;
+      vm.$store
+        .dispatch('inventory/fetchInventoryItems', {
+          inventory,
+          filter: { dosage_form_id: vm.dosage_form.id },
+          search,
+        })
+        .then(() => loading(false));
+    }, 500),
   },
+
   created() {
     this.$store.dispatch('pharmacy/fetchDosageForms');
     this.defaultSwitchPosition();
