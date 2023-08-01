@@ -7,7 +7,7 @@ export default {
   orderLabTest({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
-        .post(`/orders/lab/create/${payload.id}`, { tests: payload.tests })
+        .post(`/orders/laboratory/create/${payload.id}`, { tests: payload.tests })
         .then(response => {
           commit('ORDER_LAB_TEST', payload.tests);
           resolve(response);
@@ -56,23 +56,6 @@ export default {
     });
   },
 
-  /**************
-   DRUG ORDERS
-   *************/
-  orderDrug({ commit }, payload) {
-    return new Promise((resolve, reject) => {
-      axios
-        .post(`/orders/pharmacy/create/${payload.id}`, payload.drug)
-        .then(response => {
-          commit('ORDER_DRUG', payload.drug);
-          resolve(response);
-        })
-        .catch(error => {
-          reject(error);
-        });
-    });
-  },
-
   addSelectedInvestigation({ commit }, investigation) {
     commit('ADD_SELECTED_INVESTIGATION', investigation);
   },
@@ -93,5 +76,86 @@ export default {
   },
   toggleInvestigationUrgency({ commit }, investigationId) {
     commit('TOGGLE_INVESTIGATION_URGENCY', investigationId);
+  },
+
+  /**************
+   DRUG ORDERS
+   *************/
+  orderDrug({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/orders/pharmacy/create/${payload.id}`, payload.drug)
+        .then(response => {
+          commit('ORDER_DRUG', payload.drug);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchPrescribedDrugs({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/orders/pharmacy/get', {
+          params: {
+            currentPage: payload?.currentPage,
+            pageLimit: payload?.itemsPerPage,
+            fetchWithItems: payload?.fetchWithItems,
+            filter: payload?.filter,
+          },
+        })
+        .then(response => {
+          if (payload.fetchWithItems) {
+            commit('SET_DRUG_ORDERS', response.data.data.prescribedDrugs.docs);
+            commit('SET_ADD_ITEMS_ORDERS', response.data.data.additionalItems.docs);
+            return;
+          }
+          commit('SET_DRUG_ORDERS', response.data.data.docs);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /***********************
+   * ADDITIONAL SERVICES
+   **********************/
+  orderAdditionalService({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/orders/service/create/${payload.id}`, { services: payload.services })
+        .then(response => {
+          commit('ORDER_ADD_SERVICE', payload.services);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+  addSelectedService({ commit }, service) {
+    commit('ADD_SELECTED_SERVICE', service);
+  },
+  removeSelectedService({ commit }, service) {
+    commit('REMOVE_SELECTED_SERVICE', service);
+  },
+  emptySelectedService({ commit }) {
+    commit('EMPTY_SELECTED_SERVICE', []);
+  },
+  addSelectedServiceButton({ commit }, button) {
+    commit('ADD_SELECTED_SERVICE_BUTTON', button);
+  },
+  removeSelectedServiceButton({ commit }, buttonId) {
+    commit('REMOVE_SELECTED_SERVICE_BUTTON', buttonId);
+  },
+  emptySelectedServiceButtons({ commit }) {
+    commit('EMPTY_SELECTED_SERVICE_BUTTONS');
+  },
+  toggleServiceUrgent({ commit }, serviceId) {
+    commit('TOGGLE_SERVICE_URGENT', serviceId);
   },
 };

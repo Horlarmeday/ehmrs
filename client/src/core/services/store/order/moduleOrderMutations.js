@@ -85,9 +85,60 @@ export default {
    DRUG ORDERS
    *************/
   ORDER_DRUG(state, drug) {
-    state.drug_orders.push(drug);
+    console.log(drug);
   },
   SET_DRUG_ORDERS(state, drugs) {
-    state.drug_orders.push(drugs);
+    state.drug_orders = drugs;
+  },
+  SET_ADD_ITEMS_ORDERS(state, items) {
+    state.additional_items_orders = items;
+  },
+
+  /*********************
+   * ADDITIONAL SERVICES
+   **********************/
+  ORDER_ADD_SERVICE(state, services) {
+    state.service_orders.push(services);
+  },
+
+  ADD_SELECTED_SERVICE(state, service) {
+    state.selectedServices.push(service);
+  },
+
+  REMOVE_SELECTED_SERVICE(state, service) {
+    const serviceIndex = state.selectedServices.findIndex(
+      ({ service_id }) => service_id === service.service_id
+    );
+    state.selectedServices.splice(serviceIndex, 1);
+  },
+
+  EMPTY_SELECTED_SERVICE(state, services) {
+    state.selectedServices = services;
+  },
+
+  EMPTY_SELECTED_SERVICE_BUTTONS(state) {
+    state.selectedServicesButtons.forEach(({ button }) => {
+      button.classList.remove('btn-danger');
+    });
+    state.selectedServicesButtons = [];
+  },
+
+  TOGGLE_SERVICE_URGENT(state, serviceId) {
+    const service = state.selectedServices.find(({ service_id }) => service_id === serviceId);
+    service.is_urgent = !service.is_urgent;
+  },
+
+  ADD_SELECTED_SERVICE_BUTTON(state, button) {
+    button.button.classList.add('btn-danger');
+    state.selectedServicesButtons.push(button);
+  },
+
+  REMOVE_SELECTED_SERVICE_BUTTON(state, buttonId) {
+    const buttonIndex = state.selectedServicesButtons.findIndex(
+      ({ button_id }) => button_id === buttonId
+    );
+    const button = state.selectedServicesButtons.find(({ button_id }) => button_id === buttonId);
+    button.button.classList.remove('btn-danger');
+    state.selectedServicesButtons.splice(buttonIndex, 1);
   },
 };

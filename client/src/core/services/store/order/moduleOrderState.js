@@ -28,4 +28,15 @@ export default {
    *************/
   drug_order: null,
   drug_orders: [],
+  additional_items_orders: [],
+
+  /**********************
+   * ADDITIONAL SERVICES
+   *********************/
+  service_order: null,
+  service_orders: [],
+  selectedServices: [],
+  selectedServicesButtons: [],
+  totalServices: null,
+  servicePages: 0,
 };
