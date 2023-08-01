@@ -1,10 +1,6 @@
 <template>
   <div class="row" data-sticky-container>
-    <create-bed
-      :displayPrompt="displayPrompt"
-      @closeModal="hideModal"
-      :data="ward"
-    />
+    <create-bed :displayPrompt="displayPrompt" @closeModal="hideModal" :data="ward" />
     <div class="col-lg-6 col-xl-3">
       <div
         class="card card-custom sticky"
@@ -15,19 +11,12 @@
       >
         <div class="card-header">
           <div class="card-title">
-            <h3 class="card-label">
-              Wards <small>List of all available wards</small>
-            </h3>
+            <h3 class="card-label">Wards <small>List of all available wards</small></h3>
           </div>
         </div>
         <div class="card-body p-0">
           <ul class="navi navi-bold navi-hover my-5" role="tablist">
-            <li
-              class="navi-item"
-              v-for="ward in wards"
-              :key="ward.id"
-              @click="getBeds(ward)"
-            >
+            <li class="navi-item" v-for="ward in wards" :key="ward.id" @click="getBeds(ward)">
               <a class="navi-link" :class="active" data-toggle="tab" href="#">
                 <span class="navi-icon"><i class="flaticon2-plus-1"></i></span>
                 <span class="navi-text">{{ ward.name }}</span>
@@ -89,16 +78,16 @@
 </template>
 
 <script>
-import CreateBed from "./CreateBed.vue";
+import CreateBed from './CreateBed.vue';
 export default {
   components: { CreateBed },
   data() {
     return {
-      active: "activ",
+      active: 'activ',
       isActive: false,
       displayPrompt: false,
       showBeds: false,
-      ward: {}
+      ward: {},
     };
   },
   computed: {
@@ -107,12 +96,12 @@ export default {
     },
     beds() {
       return this.$store.state.model.beds;
-    }
+    },
   },
   created() {
-    this.$store.dispatch("model/fetchWards", {
+    this.$store.dispatch('model/fetchWards', {
       currentPage: 1,
-      itemsPerPage: 20
+      itemsPerPage: 20,
     });
   },
   methods: {
@@ -126,11 +115,11 @@ export default {
     getBeds(ward) {
       this.showBeds = true;
       this.ward = ward;
-      this.$store.dispatch("model/fetchBeds", {
-        ward_id: ward.id
+      this.$store.dispatch('model/fetchBeds', {
+        ward_id: ward.id,
       });
-    }
-  }
+    },
+  },
 };
 </script>
 

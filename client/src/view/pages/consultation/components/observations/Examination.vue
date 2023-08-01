@@ -202,6 +202,7 @@
 
 <script>
 import vSelect from 'vue-select';
+import { debounce } from '@/common/common';
 export default {
   name: 'Examination',
   components: { vSelect },
@@ -362,17 +363,28 @@ export default {
       this.complaint_note = '';
     },
 
-    searchDiagnosis(search) {
-      if (this.diagnosisType === 'ICD10') {
-        this.$store.dispatch('diagnosis/fetchICD10Diagnosis', {
-          search,
-        });
-      } else {
-        this.$store.dispatch('diagnosis/fetchICPC2Diagnosis', {
-          search,
-        });
+    searchDiagnosis(search, loading) {
+      if (search.length > 2) {
+        loading(true);
+        this.search(loading, search, this);
       }
     },
+
+    search: debounce((loading, search, vm) => {
+      if (vm.diagnosisType === 'ICD10') {
+        vm.$store
+          .dispatch('diagnosis/fetchICD10Diagnosis', {
+            search,
+          })
+          .then(() => loading(false));
+      } else {
+        vm.$store
+          .dispatch('diagnosis/fetchICPC2Diagnosis', {
+            search,
+          })
+          .then(() => loading(false));
+      }
+    }, 500),
   },
 };
 </script>
