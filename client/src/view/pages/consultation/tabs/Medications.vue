@@ -1,8 +1,8 @@
 <template>
   <div id="medications">
     <div class="d-flex flex-column-fluid">
-      <div class=" container ">
-        <div class="d-flex flex-row">
+      <div class="container">
+        <div class="row">
           <sidebar />
           <component :is="activeTab" />
         </div>

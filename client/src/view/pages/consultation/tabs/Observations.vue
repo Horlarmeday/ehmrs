@@ -18,8 +18,8 @@ import sidebarList from '../components/observations/examinationSidebarList';
 import Vitals from '../components/observations/Vitals.vue';
 
 const TabMapping = {
-  '#vitals': Vitals,
-  '#history': Examination,
+  'vitals': Vitals,
+  'history': Examination,
 };
 
 export default {
@@ -35,9 +35,17 @@ export default {
     changeTab(tab) {
       this.activeTab = TabMapping[tab];
     },
+    getActiveTab() {
+      const storedTab = this.$route.query.subTab;
+      if (storedTab && TabMapping[storedTab]) {
+        this.activeTab = TabMapping[storedTab];
+      } else {
+        this.activeTab = TabMapping['history'];
+      }
+    },
   },
   created() {
-    this.activeTab = TabMapping['#history'];
+    this.getActiveTab();
   },
 };
 </script>
