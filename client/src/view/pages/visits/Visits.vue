@@ -10,19 +10,39 @@
       <!--begin::Example-->
       <div class="example">
         <b-tabs content-class="mt-3">
-          <b-tab title="Active"><active /></b-tab>
+          <b-tab>
+            <template v-slot:title>
+              <strong>Active</strong>
+            </template>
+            <active />
+          </b-tab>
 
-          <b-tab title="Programs" lazy> </b-tab>
+          <b-tab lazy>
+            <template v-slot:title>
+              <strong>Programs</strong>
+            </template>
+          </b-tab>
 
-          <b-tab title="IPD" lazy
-            ><b-alert show>I'm lazy mounted!</b-alert></b-tab
-          >
+          <b-tab lazy>
+            <template v-slot:title>
+              <strong>IPD</strong>
+            </template>
+            <b-alert show>I'm lazy mounted!</b-alert>
+          </b-tab>
 
-          <b-tab title="OPD"><b-alert show>I'm always mounted</b-alert></b-tab>
+          <b-tab lazy>
+            <template v-slot:title>
+              <strong>OPD</strong>
+            </template>
+            <b-alert show>I'm always mounted</b-alert>
+          </b-tab>
 
-          <b-tab title="All" lazy
-            ><b-alert show>I'm lazy mounted!</b-alert></b-tab
-          >
+          <b-tab lazy>
+            <template v-slot:title>
+              <strong>All</strong>
+            </template>
+            <b-alert show>I'm lazy mounted!</b-alert>
+          </b-tab>
         </b-tabs>
       </div>
       <!--end::Example-->
@@ -32,11 +52,11 @@
 </template>
 
 <script>
-import Active from "./components/Active.vue";
+import Active from './components/Active.vue';
 export default {
   components: {
-    Active
-  }
+    Active,
+  },
 };
 </script>
 

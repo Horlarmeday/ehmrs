@@ -49,7 +49,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-if="items.length == 0">
+            <tr v-if="items.length === 0">
               <td colspan="9" align="center" class="text-muted">No Data</td>
             </tr>
             <tr v-for="item in items" :key="item.id">
@@ -143,6 +143,7 @@ import EditIcon from "../../../../assets/icons/EditIcon.vue";
 import AddIcon from "../../../../assets/icons/AddIcon.vue";
 import SendIcon from "../../../../assets/icons/SendIcon.vue";
 import Search from "../../../../utils/Search.vue";
+import { debounce, removeSpinner } from "@/common/common";
 export default {
   data() {
     return {
@@ -201,13 +202,21 @@ export default {
       this.handlePageChange();
     },
 
-    onHandleSearch(search) {
-      this.$store.dispatch("store/fetchLaboratoryItems", {
-        currentPage: 1,
-        itemsPerPage: this.itemsPerPage,
-        search
-      });
+    onHandleSearch(prop) {
+      const { search, spinDiv } = prop;
+      this.debounceSearch(search, this, spinDiv);
     },
+
+    debounceSearch: debounce((search, vm, spinDiv) => {
+      vm.$store
+        .dispatch('store/fetchLaboratoryItems', {
+          currentPage: 1,
+          itemsPerPage: vm.itemsPerPage,
+          search,
+        })
+        .then(() => removeSpinner(spinDiv))
+        .catch(() => removeSpinner(spinDiv));
+    }, 500),
 
     onChangePageCount(pagecount) {
       this.$store.dispatch("store/fetchLaboratoryItems", {
