@@ -1,18 +1,10 @@
 <template>
-  <!--Begin::Row-->
   <div>
-    <div class="form-group">
-      <div class="input-group">
-        <div class="input-group-prepend">
-          <span class="input-group-text"><i class="flaticon-search icon-lg"></i></span>
-        </div>
-        <input @input="filterRoutes" type="text" class="form-control" placeholder="Search" />
-      </div>
-    </div>
-    <div class="row text-center">
-      <div class="col-xl-3" v-for="(route, index) in routes" :key="index">
+    <Stats />
+    <div class="row">
+      <div class="col-3" v-for="(route, index) in routes" :key="index">
         <div
-          class="card card-custom bgi-no-repeat card-stretch gutter-b card-cover pointer text-center"
+          class="card card-custom bgi-no-repeat card-stretch gutter-b card-cover cursor-pointer text-center"
           @click="openPage(route.url)"
         >
           <div class="card-body">
@@ -29,27 +21,17 @@
     </div>
   </div>
 </template>
-
 <script>
 import items from './dashboardItems';
+import Stats from '@/view/pages/home/laboratory/Stats.vue';
 export default {
-  data() {
-    return {
-      routes: items,
-    };
-  },
+  components: { Stats },
+  data: () => ({
+    routes: items,
+  }),
   methods: {
     openPage(value) {
       this.$router.push(value);
-    },
-
-    filterRoutes(event) {
-      if (!event.target.value) {
-        return (this.routes = items);
-      }
-      this.routes = this.routes.filter(item =>
-        item.name.toLowerCase().includes(event.target.value.toLowerCase())
-      );
     },
   },
 };
@@ -62,14 +44,6 @@ export default {
   background-image: url(/media/svg/shapes/abstract-1.svg);
   border: 1px solid #ddd;
   /*background: linear-gradient(to bottom,#FFF,#DDD);*/
-}
-
-.align-center {
-  margin-left: 33%;
-}
-
-.pointer {
-  cursor: pointer;
 }
 
 .fa,
