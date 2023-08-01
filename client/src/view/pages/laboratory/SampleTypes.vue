@@ -94,6 +94,7 @@ import Pagination from "@/utils/Pagination.vue";
 import EditIcon from "../../../assets/icons/EditIcon.vue";
 import AddIcon from "../../../assets/icons/AddIcon.vue";
 import Search from "../../../utils/Search.vue";
+import { debounce, removeSpinner } from "@/common/common";
 export default {
   data() {
     return {
@@ -146,13 +147,21 @@ export default {
       });
     },
 
-    onHandleSearch(search) {
-      this.$store.dispatch("laboratory/fetchTestSamples", {
-        currentPage: 1,
-        itemsPerPage: this.itemsPerPage,
-        search
-      });
+    onHandleSearch(prop) {
+      const { search, spinDiv } = prop;
+      this.debounceSearch(search, this, spinDiv);
     },
+
+    debounceSearch: debounce((search, vm, spinDiv) => {
+      vm.$store
+        .dispatch('laboratory/fetchTestSamples', {
+          currentPage: 1,
+          itemsPerPage: vm.itemsPerPage,
+          search,
+        })
+        .then(() => removeSpinner(spinDiv))
+        .catch(() => removeSpinner(spinDiv));
+    }, 500),
 
     onPageChange(page) {
       this.currentPage = page;
