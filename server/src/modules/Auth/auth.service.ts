@@ -4,7 +4,7 @@ import { getStaffById, getStaffByPhone, getStaffByUsername } from '../Staff/staf
 import { BadException } from '../../common/util/api-error';
 import { sendGeneratedPassword } from '../../core/command/schedule';
 import uuidv1 from 'uuid/v4';
-import { Staff, Status } from '../Staff/interface/staff.interface';
+import { Status } from '../Staff/interface/staff.interface';
 import { ChangePasswordParam, LoginParams } from './interface/auth.interface';
 import {
   DEACTIVATED_ACCOUNT,
@@ -14,6 +14,7 @@ import {
   INVALID_PHONE,
   INVALID_USER,
 } from './messages/response-messages';
+import { Staff } from '../../database/models';
 
 class AuthService {
   /**

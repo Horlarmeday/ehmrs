@@ -2,7 +2,16 @@
 import { Op } from 'sequelize';
 import { getModelById, getNumberOfRecords } from '../../core/helpers/general';
 
-import { Department, Unit, Ward, Bed, Service } from '../../database/models';
+import {
+  Department,
+  Unit,
+  Ward,
+  Bed,
+  Service,
+  ServiceTariff,
+  Patient,
+} from '../../database/models';
+import { canUsePriceTariff } from '../../core/helpers/helper';
 
 /** ***********************
  * DEPARTMENT
@@ -149,11 +158,12 @@ export async function getUnits(currentPage = 1, pageLimit = 10) {
  * @returns {object} ward data
  */
 export async function createWard(data) {
-  const { name, staff_id } = data;
+  const { name, staff_id, service_id } = data;
 
   return Ward.create({
     name,
     staff_id,
+    service_id,
   });
 }
 
@@ -206,6 +216,17 @@ export async function getWards(currentPage = 1, pageLimit = 20) {
   });
 }
 
+/**
+ * get a ward and the associated service
+ *
+ * @function
+ * @returns {json} json object with wards data
+ * @param ward_id
+ */
+export const getWardWithService = async (ward_id: number) => {
+  return Ward.findByPk(ward_id, { include: [{ model: Service }] });
+};
+
 /** ***********************
  * BED
  ********************** */
@@ -247,6 +268,29 @@ export async function getBeds() {
     order: [['createdAt', 'DESC']],
   });
 }
+
+/**
+ * get wards and associated beds
+ *
+ * @function
+ * @returns {json} json object with wards(beds) data
+ */
+export const getWardsAndBeds = (search: string) => {
+  return Ward.findAll({
+    order: [['createdAt', 'DESC']],
+    where: {
+      name: {
+        [Op.like]: `%${search}%`,
+      },
+    },
+    include: [
+      {
+        model: Bed,
+        attributes: ['bed_type', 'id', 'code', 'status'],
+      },
+    ],
+  });
+};
 
 /**
  * get beds under a ward
@@ -332,5 +376,29 @@ export async function getServices(currentPage = 1, pageLimit = 10) {
 }
 
 /** ***********************
- * LABORATORY
+ * SERVICE TARIFFS
  ********************** */
+/**
+ * create service tariff
+ *
+ * @function
+ * @returns {json} json object with service tariff data
+ * @param data
+ */
+export const createServiceTariff = async data => {
+  return ServiceTariff.bulkCreate(data, { updateOnDuplicate: ['price'] });
+};
+
+const servicePriceTariff = async (patient: Patient, service_id: number): Promise<number> => {
+  const { price } =
+    (await ServiceTariff.findOne({
+      where: { service_id, hmo_id: patient.hmo_id, insurance_id: patient.insurance_id },
+      order: [['createdAt', 'DESC']],
+    })) || {};
+  return price;
+};
+
+export const getServicePrice = (patient: Patient, service_id: number) => {
+  if (canUsePriceTariff(patient)) return servicePriceTariff(patient, service_id);
+  return null;
+};

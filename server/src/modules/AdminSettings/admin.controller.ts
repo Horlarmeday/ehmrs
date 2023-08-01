@@ -189,6 +189,25 @@ class AdminController {
   }
 
   /**
+   * get wards and beds
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with wards(beds) data
+   */
+  static async getWardsAndBeds(req, res, next) {
+    try {
+      const wards = await AdminService.getWardsAndBeds(req.query);
+
+      return successResponse({ res, message: SUCCESS, data: wards, httpCode: 200 });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
    * update a ward
    *
    * @static

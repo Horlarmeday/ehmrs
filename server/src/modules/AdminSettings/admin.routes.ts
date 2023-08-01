@@ -14,6 +14,7 @@ router.get('/units/get', verify, AdminController.getUnits);
 router.get('/wards/get', verify, AdminController.getWards);
 router.get('/beds/get', verify, AdminController.getBeds);
 router.get('/services/get', verify, AdminController.getServices);
+router.get('/wards-and-beds/get', verify, AdminController.getWardsAndBeds);
 router.put('/departments/update', verify, AdminController.updateDepartment);
 router.put('/units/update', verify, AdminController.updateUnit);
 router.put('/wards/update', verify, AdminController.updateWard);

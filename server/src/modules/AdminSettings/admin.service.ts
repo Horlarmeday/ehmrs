@@ -10,6 +10,7 @@ import {
   getServices,
   getUnits,
   getWards,
+  getWardsAndBeds,
   searchDepartments,
   searchServices,
   searchUnits,
@@ -156,6 +157,23 @@ class AdminService {
     }
 
     return getWards();
+  }
+
+  /**
+   * get wards and beds
+   *
+   * @static
+   * @returns {json} json object with wards(beds) data
+   * @param body
+   * @memberOf AdminService
+   */
+  static async getWardsAndBeds(body) {
+    const { search } = body;
+    if (search) {
+      return getWardsAndBeds(search);
+    }
+
+    return getWardsAndBeds('');
   }
 
   /**
