@@ -1,17 +1,17 @@
 export default [
   {
     name: "History and Observation",
-    link: "#history",
+    link: "history",
     class: "active"
   },
   {
     name: "Vitals",
-    link: "#vitals",
+    link: "vitals",
     class: ""
   },
   {
     name: "ANC",
-    link: "#anc",
+    link: "anc",
     class: ""
   },
   {

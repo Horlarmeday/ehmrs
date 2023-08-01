@@ -79,3 +79,18 @@ export const getExtensions = () => ({
   'application/pdf': 'pdf',
   'text/csv': 'csv',
 });
+export const addSpinner = element => {
+  element.classList.add('spinner', 'spinner-primary', 'spinner-right');
+};
+
+export const removeSpinner = element => {
+  element.classList.remove('spinner', 'spinner-primary', 'spinner-right');
+};
+
+export const parseJwt = token => {
+  try {
+    if (token) return JSON.parse(atob(token.split('.')[1]));
+  } catch (error) {
+    throw new Error(error);
+  }
+}
