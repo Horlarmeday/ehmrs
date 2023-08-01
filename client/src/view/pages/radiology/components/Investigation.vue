@@ -101,6 +101,7 @@ import SearchWithFilter from '../../../../utils/SearchWithFilter.vue';
 import AddIcon from '../../../../assets/icons/AddIcon.vue';
 import EditIcon from '@/assets/icons/EditIcon.vue';
 import investigation from '@/view/pages/radiology/components/Investigation.vue';
+import { debounce, removeSpinner } from "@/common/common";
 export default {
   name: 'Investigation',
   data() {
@@ -162,13 +163,21 @@ export default {
       this.handlePageChange();
     },
 
-    onHandleSearch(search) {
-      this.$store.dispatch('radiology/fetchInvestigations', {
-        currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage,
-        search,
-      });
+    onHandleSearch(prop) {
+      const { search, spinDiv } = prop;
+      this.debounceSearch(search, this, spinDiv);
     },
+
+    debounceSearch: debounce((search, vm, spinDiv) => {
+      vm.$store
+        .dispatch('radiology/fetchInvestigations', {
+          currentPage: vm.currentPage,
+          itemsPerPage: vm.itemsPerPage,
+          search,
+        })
+        .then(() => removeSpinner(spinDiv))
+        .catch(() => removeSpinner(spinDiv));
+    }, 500),
 
     onHandleFilter(filter) {
       this.$store.dispatch('radiology/fetchInvestigations', {

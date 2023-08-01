@@ -142,9 +142,11 @@ export default {
     },
 
     defaultSwitchPosition() {
-      if (this.visit?.patient?.has_insurance && this.visit?.patient?.insurance_id !== 4) {
-        this.switchPosition = true;
-      }
+      setTimeout(() => {
+        if (this.visit?.patient?.has_insurance && this.visit?.patient?.insurance_id !== 4) {
+          this.switchPosition = true;
+        }
+      }, 350);
     },
 
     flipSwitch(event) {

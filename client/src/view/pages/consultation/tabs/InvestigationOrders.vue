@@ -34,6 +34,7 @@ import Investigations from '../components/investigations/Investigations.vue';
 import AccordionIcon from '../../../../assets/icons/AccordionIcon.vue';
 import InvestigationSideBar from '../components/investigations/InvestigationSideBar.vue';
 import SearchWithFilter from '@/utils/SearchWithFilter.vue';
+import { debounce, removeSpinner } from '@/common/common';
 
 export default {
   name: 'InvestigationOrders',
@@ -52,21 +53,21 @@ export default {
       this.activeTab = Investigations;
     },
 
-    dispatchSearchTests(type) {
-      this.$store.dispatch(type, {
-        currentPage: 1,
-        itemsPerPage: 100,
-        search: this.searchString,
-      });
+    onHandleSearch(prop) {
+      const { search, spinDiv } = prop;
+      this.debounceSearch(search, this, spinDiv);
     },
 
-    onHandleSearch(search) {
-      this.$store.dispatch('radiology/fetchInvestigations', {
-        currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage,
-        search,
-      });
-    },
+    debounceSearch: debounce((search, vm, spinDiv) => {
+      vm.$store
+        .dispatch('radiology/fetchInvestigations', {
+          currentPage: vm.currentPage,
+          itemsPerPage: vm.itemsPerPage,
+          search,
+        })
+        .then(() => removeSpinner(spinDiv))
+        .catch(() => removeSpinner(spinDiv));
+    }, 500),
 
     onHandleFilter(filter) {
       this.$store.dispatch('radiology/fetchInvestigations', {
@@ -86,7 +87,7 @@ export default {
     this.$store.dispatch('radiology/fetchInvestigations', {
       currentPage: this.currentPage,
       itemsPerPage: this.itemsPerPage,
-      filter: 1
+      filter: 1,
     });
   },
 };
