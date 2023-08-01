@@ -8,6 +8,8 @@ import { Patient } from '../../database/models';
 import { Response } from 'express';
 import { ExportDataType } from '../../modules/Store/types/pharmacy-item.types';
 import { exportDataToCSV, exportDataToExcel, exportDataToPDF } from './fileExport';
+import { v4 as uuidv4 } from 'uuid';
+import moment from 'moment/moment';
 
 const writeFile = promisify(fs.writeFile);
 
@@ -140,4 +142,24 @@ export const exportSelectedData = ({ res, dataType, data, headers }: ExportSelec
     case ExportDataType.PDF:
       return exportDataToPDF(res, data, headers);
   }
+};
+
+export const mapToUnique = arr => {
+  const uniqueSet = new Set(arr);
+  return Array.from(uniqueSet);
+};
+
+export const generateLabAccessionNumber = () => {
+  const uuid = uuidv4();
+  const splittedStr = uuid.split('-');
+  const randomFirst = splittedStr[4]?.toUpperCase();
+  const randomSecond = splittedStr[1]?.toUpperCase();
+  const prefix = 'LAB';
+  return `${prefix}-${randomFirst}-${randomSecond}`;
+};
+
+export const isToday = (specificDateTime: Date) => {
+  const currentDateTime = moment();
+  const targetDateTime = moment(specificDateTime, 'YYYY-MM-DD HH:mm');
+  return currentDateTime.isSame(targetDateTime, 'day');
 };
