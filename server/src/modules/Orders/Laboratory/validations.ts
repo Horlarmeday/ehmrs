@@ -7,6 +7,7 @@ export function validateBulkLabTest(tests) {
         Joi.object({
           test_id: Joi.number().required(),
           test_type: Joi.string().required(),
+          sample_id: Joi.number().required(),
           price: Joi.number().required(),
           is_urgent: Joi.boolean().required(),
         })

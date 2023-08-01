@@ -16,6 +16,15 @@ export function validateTest(test) {
   return schema.validate(test);
 }
 
+export function validateUpdateTestPrescription(number) {
+  const schema = Joi.object({
+    accession_number: Joi.string().required(),
+    id: Joi.string().required(),
+  });
+
+  return schema.validate(number);
+}
+
 export function validateNhisTest(test) {
   const schema = Joi.object({
     name: Joi.string().required(),
@@ -41,4 +50,88 @@ export function validateTestTariff(test) {
       .required(),
   });
   return schema.validate(test);
+}
+
+export function validateAddTestResult(result) {
+  const schema = Joi.object({
+    results: Joi.array()
+      .items(
+        Joi.object({
+          prescribed_test_id: Joi.number().required(),
+          test_prescription_id: Joi.number().required(),
+          patient_id: Joi.number().required(),
+          disabledReferral: Joi.boolean().required(),
+          name: Joi.string().required(),
+          status: Joi.string()
+            .optional()
+            .allow(''),
+          result: Joi.string().required(),
+          is_abnormal: Joi.boolean().required(),
+          institute_referred: Joi.string()
+            .optional()
+            .allow(''),
+          referral_reason: Joi.string()
+            .optional()
+            .allow(''),
+          comments: Joi.string()
+            .optional()
+            .allow(''),
+        })
+      )
+      .required(),
+  });
+
+  return schema.validate(result);
+}
+
+export function validateTestResults(result) {
+  const schema = Joi.object({
+    results: Joi.array()
+      .items(
+        Joi.object({
+          prescribed_test_id: Joi.number().required(),
+          test_prescription_id: Joi.number().required(),
+          name: Joi.string().required(),
+          patient_id: Joi.number().required(),
+          status: Joi.string()
+            .valid('Accepted', 'Rejected', 'Pending')
+            .required(),
+          result: Joi.string().required(),
+          is_abnormal: Joi.boolean().required(),
+          comments: Joi.string()
+            .optional()
+            .allow(''),
+        })
+      )
+      .required(),
+    result_notes: Joi.string().required(),
+  });
+
+  return schema.validate(result);
+}
+
+export function validateApproveTestResults(result) {
+  const schema = Joi.object({
+    results: Joi.array()
+      .items(
+        Joi.object({
+          prescribed_test_id: Joi.number().required(),
+          test_prescription_id: Joi.number().required(),
+          name: Joi.string().required(),
+          patient_id: Joi.number().required(),
+          test_status: Joi.boolean().required(),
+          status: Joi.string()
+            .valid('Accepted', 'Rejected', 'Pending')
+            .required(),
+          result: Joi.string().required(),
+          is_abnormal: Joi.boolean().required(),
+          comments: Joi.string()
+            .optional()
+            .allow(''),
+        })
+      )
+      .required(),
+  });
+
+  return schema.validate(result);
 }

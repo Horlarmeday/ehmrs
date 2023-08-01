@@ -20,6 +20,7 @@ export function validateUnit(unit) {
 export function validateWard(ward) {
   const schema = Joi.object({
     name: Joi.string().required(),
+    service_id: Joi.number().required(),
   });
   return schema.validate(ward);
 }

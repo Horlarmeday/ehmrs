@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import { DrugType } from '../../../database/models/pharmacyStore';
 
 export function validateDrugPrescription(drug) {
   const schema = Joi.object({
@@ -19,6 +20,7 @@ export function validateDrugPrescription(drug) {
       .allow(''),
     total_price: Joi.number().required(),
     drug_id: Joi.number().required(),
+    drug_type: Joi.string().valid(DrugType.CASH, DrugType.NHIS),
   });
 
   return schema.validate(drug);
