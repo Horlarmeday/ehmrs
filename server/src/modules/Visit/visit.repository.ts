@@ -2,7 +2,7 @@
 
 import { Op, Sequelize } from 'sequelize';
 
-import { Visit, Patient } from '../../database/models';
+import { Visit, Patient, Insurance, HMO } from '../../database/models';
 
 const patientAttributes = () => ['fullname', 'photo', 'hospital_id', 'firstname', 'lastname'];
 /**
@@ -57,7 +57,37 @@ export async function getVisitById(id: number) {
  * @param id
  */
 export async function getVisit(id: number) {
-  return Visit.findOne({ where: { id }, include: [{ model: Patient, as: 'patient' }] });
+  return Visit.findOne({
+    where: { id },
+    include: [
+      {
+        model: Patient,
+        attributes: [
+          'fullname',
+          'firstname',
+          'lastname',
+          'date_of_birth',
+          'photo',
+          'photo_url',
+          'gender',
+          'hospital_id',
+          'insurance_id',
+          'hmo_id',
+          'has_insurance',
+        ],
+        include: [
+          {
+            model: Insurance,
+            attributes: ['name'],
+          },
+          {
+            model: HMO,
+            attributes: ['name'],
+          },
+        ],
+      },
+    ],
+  });
 }
 
 /** ***********************
@@ -89,7 +119,12 @@ export async function searchActiveVisits(currentPage = 1, pageLimit = 10, search
         where: {
           [Op.or]: [
             {
-              fullname: {
+              firstname: {
+                [Op.like]: `%${search}%`,
+              },
+            },
+            {
+              lastname: {
                 [Op.like]: `%${search}%`,
               },
             },
@@ -124,7 +159,6 @@ export async function getActiveVisits(currentPage = 1, pageLimit = 10) {
     include: [
       {
         model: Patient,
-        as: 'patient',
         attributes: patientAttributes(),
       },
     ],
@@ -153,12 +187,16 @@ export async function searchVisits(currentPage = 1, pageLimit = 10, search) {
     include: [
       {
         model: Patient,
-        as: 'patient',
         attributes: patientAttributes(),
         where: {
           [Op.or]: [
             {
-              fullname: {
+              firstname: {
+                [Op.like]: `%${search}%`,
+              },
+            },
+            {
+              lastname: {
                 [Op.like]: `%${search}%`,
               },
             },
@@ -191,7 +229,6 @@ export async function getVisits(currentPage = 1, pageLimit = 10) {
     include: [
       {
         model: Patient,
-        as: 'patient',
         attributes: patientAttributes(),
       },
     ],
@@ -203,7 +240,7 @@ export async function getVisits(currentPage = 1, pageLimit = 10) {
  ********************** */
 
 /**
- * search typed visits
+ * search type of visits
  *
  * @function
  * @returns {json} json object with all visits data
@@ -224,12 +261,16 @@ export async function searchTypeVisits(currentPage = 1, pageLimit = 10, search, 
     include: [
       {
         model: Patient,
-        as: 'patient',
         attributes: patientAttributes(),
         where: {
           [Op.or]: [
             {
-              fullname: {
+              firstname: {
+                [Op.like]: `%${search}%`,
+              },
+            },
+            {
+              lastname: {
                 [Op.like]: `%${search}%`,
               },
             },
@@ -246,7 +287,7 @@ export async function searchTypeVisits(currentPage = 1, pageLimit = 10, search, 
 }
 
 /**
- * get all typed visits
+ * get all types of visits
  *
  * @function
  * @returns {json} json object with visits data
@@ -266,7 +307,6 @@ export async function getTypeVisits(currentPage = 1, pageLimit = 10, type = 'OPD
     include: [
       {
         model: Patient,
-        as: 'patient',
         attributes: patientAttributes(),
       },
     ],
