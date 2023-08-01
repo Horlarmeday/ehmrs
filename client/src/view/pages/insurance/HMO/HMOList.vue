@@ -111,6 +111,7 @@ import Pagination from "@/utils/Pagination.vue";
 import SearchWithFilter from "../../../../utils/SearchWithFilter.vue";
 import AddIcon from "../../../../assets/icons/AddIcon.vue";
 import EditIcon from "@/assets/icons/EditIcon.vue";
+import { debounce, removeSpinner } from "@/common/common";
 export default {
   data() {
     return {
@@ -180,13 +181,21 @@ export default {
       this.handlePageChange();
     },
 
-    onHandleSearch(search) {
-      this.$store.dispatch("insurance/fetchHMOs", {
-        currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage,
-        search
-      });
+    onHandleSearch(prop) {
+      const { search, spinDiv } = prop;
+      this.debounceSearch(search, this, spinDiv);
     },
+
+    debounceSearch: debounce((search, vm, spinDiv) => {
+      vm.$store
+        .dispatch('insurance/fetchHMOs', {
+          currentPage: vm.currentPage,
+          itemsPerPage: vm.itemsPerPage,
+          search,
+        })
+        .then(() => removeSpinner(spinDiv))
+        .catch(() => removeSpinner(spinDiv));
+    }, 500),
 
     onHandleFilter(filter) {
       this.$store.dispatch("insurance/fetchHMOs", {
