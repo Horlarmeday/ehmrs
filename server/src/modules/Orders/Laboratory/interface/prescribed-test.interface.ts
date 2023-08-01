@@ -22,3 +22,8 @@ export class PrescribedTest {
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+export enum SamplePeriod {
+  TODAY = 'Today',
+  BACKLOG = 'Backlog',
+}

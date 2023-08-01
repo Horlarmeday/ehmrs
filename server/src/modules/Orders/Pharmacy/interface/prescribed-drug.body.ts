@@ -1,8 +1,24 @@
 import { DrugType } from '../../../../database/models/pharmacyStore';
 import { DrugForm } from '../../../../database/models/drug';
 
+export class PrescribedAdditionalItemBody {
+  drug_id: number;
+  unit_id: number;
+  examiner: number;
+  drug_type: DrugType;
+  quantity_prescribed: number;
+  quantity_to_dispense: number;
+  drug_form?: DrugForm;
+  drug_prescription_id?: string;
+  total_price: number;
+  patient_id: number;
+  visit_id: number;
+  start_date: Date;
+}
+
 export class PrescribedDrugBody {
   drug_id: number;
+  staff_id: number;
   drug_type: DrugType;
   quantity_prescribed: number;
   quantity_to_dispense: number;

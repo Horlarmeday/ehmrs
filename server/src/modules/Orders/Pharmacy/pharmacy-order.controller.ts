@@ -4,7 +4,9 @@ import { StatusCodes } from '../../../core/helpers/helper';
 import { DATA_SAVED } from '../../AdminSettings/messages/response-messages';
 import { validateDrugPrescription } from './validations';
 import PharmacyOrderService from './pharmacy-order.service';
-import { ERROR } from '../../../core/constants';
+import { ERROR, SUCCESS } from '../../../core/constants';
+import { NextFunction, Request, Response } from 'express';
+import StoreService from '../../Store/store.service';
 
 export class PharmacyOrderController {
   /**
@@ -16,17 +18,14 @@ export class PharmacyOrderController {
    * @param {object} next next middleware
    * @returns {json} json object with status, prescribed drug data
    */
-  static async prescribeDrug(req, res, next): Promise<SuccessResponse> {
+  static async orderDrug(req, res, next): Promise<SuccessResponse> {
     const { error } = validateDrugPrescription(req.body);
     if (error)
-      return res.status(400).json({
+      return errorResponse({
+        res,
         message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
       });
-    // return errorResponse({
-    //   res,
-    //   message: error.details[0].message,
-    //   httpCode: StatusCodes.BAD_REQUEST,
-    // });
     try {
       const tests = await PharmacyOrderService.prescribeDrug({
         ...req.body,
@@ -39,6 +38,30 @@ export class PharmacyOrderController {
         data: tests,
         message: DATA_SAVED,
         httpCode: StatusCodes.CREATED,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get pharmacy item history
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with item history data
+   */
+  static async getPrescribedDrugs(req: Request, res: Response, next: NextFunction) {
+    try {
+      const items = await PharmacyOrderService.getPrescribedDrugs(req.query);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data: items,
       });
     } catch (e) {
       return next(e);

@@ -21,6 +21,7 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { BillingStatus, DispenseStatus, PaymentStatus, PrescribedDrug } from './prescribedDrug';
+import { Unit } from './unit';
 
 @Table({ timestamps: true, tableName: 'Additional_item_prescriptions' })
 export class PrescribedAdditionalItem extends Model {
@@ -120,6 +121,11 @@ export class PrescribedAdditionalItem extends Model {
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'examiner is required',
+      },
+    },
   })
   examiner: number;
 
@@ -166,14 +172,20 @@ export class PrescribedAdditionalItem extends Model {
 
   @Column({
     type: DataType.DATE,
+  })
+  start_date: Date;
+
+  @ForeignKey(() => Unit)
+  @Column({
+    type: DataType.INTEGER,
     allowNull: false,
     validate: {
       notEmpty: {
-        msg: 'start date is required',
+        msg: 'unit id is required',
       },
     },
   })
-  start_date: Date;
+  unit_id: number;
 
   @BelongsTo(() => Staff)
   requester: Staff;
@@ -189,6 +201,9 @@ export class PrescribedAdditionalItem extends Model {
 
   @BelongsTo(() => PrescribedDrug)
   drug_prescription: PrescribedDrug;
+
+  @BelongsTo(() => Unit)
+  unit: Unit;
   static async paginate(param: {
     paginate: number;
     attributes?: FindAttributeOptions;

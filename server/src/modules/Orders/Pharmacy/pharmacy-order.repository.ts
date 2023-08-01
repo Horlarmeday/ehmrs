@@ -1,7 +1,17 @@
 /* eslint-disable camelcase */
-import { PrescribedDrugBody } from './interface/prescribed-drug.body';
+import { PrescribedAdditionalItemBody, PrescribedDrugBody } from './interface/prescribed-drug.body';
 
-import { PrescribedDrug } from '../../../database/models';
+import {
+  DosageForm,
+  Drug,
+  Measurement,
+  PrescribedAdditionalItem,
+  PrescribedDrug,
+  RoutesOfAdministration,
+  Staff,
+  Unit,
+} from '../../../database/models';
+import exp from 'constants';
 
 /**
  * prescribe a drug for patient
@@ -49,3 +59,116 @@ export async function prescribeDrug(data: PrescribedDrugBody) {
     date_prescribed: Date.now(),
   });
 }
+
+/**
+ * get prescribed drugs
+ * @param currentPage
+ * @param pageLimit
+ * @param filter
+ */
+export const getPrescribedDrugs = ({ currentPage = 1, pageLimit = 10, filter = null }) => {
+  return PrescribedDrug.paginate({
+    page: +currentPage,
+    paginate: +pageLimit,
+    order: [['date_prescribed', 'DESC']],
+    where: {
+      ...(filter && { ...JSON.parse(filter) }),
+    },
+    include: [
+      {
+        model: Drug,
+        attributes: ['name'],
+        order: [['name', 'ASC']],
+      },
+      {
+        model: Staff,
+        attributes: ['firstname', 'lastname'],
+      },
+      {
+        model: DosageForm,
+        attributes: ['name'],
+      },
+      {
+        model: Measurement,
+        attributes: ['name'],
+      },
+      {
+        model: RoutesOfAdministration,
+        attributes: ['name'],
+      },
+    ],
+  });
+};
+
+/**
+ * get prescribed additional items
+ * @param currentPage
+ * @param pageLimit
+ * @param filter
+ */
+export const getPrescribedAdditionalItems = ({
+  currentPage = 1,
+  pageLimit = 10,
+  filter = null,
+}) => {
+  return PrescribedAdditionalItem.paginate({
+    page: +currentPage,
+    paginate: +pageLimit,
+    order: [['date_prescribed', 'DESC']],
+    where: {
+      ...(filter && { ...JSON.parse(filter) }),
+    },
+    include: [
+      {
+        model: Drug,
+        attributes: ['name'],
+        order: [['name', 'ASC']],
+      },
+      {
+        model: Staff,
+        attributes: ['firstname', 'lastname'],
+      },
+      {
+        model: Unit,
+        attributes: ['name'],
+      },
+    ],
+  });
+};
+
+/**
+ * add additional item for patient
+ * @param data
+ * @returns {object} prescribed additional item data
+ */
+export const prescribeAdditionalItem = async (data: PrescribedAdditionalItemBody) => {
+  const {
+    drug_id,
+    drug_type,
+    quantity_prescribed,
+    quantity_to_dispense,
+    drug_prescription_id,
+    drug_form,
+    total_price,
+    examiner,
+    patient_id,
+    visit_id,
+    start_date,
+    unit_id,
+  } = data;
+  return PrescribedAdditionalItem.create({
+    drug_id,
+    drug_type,
+    quantity_prescribed,
+    quantity_to_dispense,
+    drug_form,
+    total_price,
+    examiner,
+    patient_id,
+    visit_id,
+    start_date,
+    drug_prescription_id,
+    unit_id,
+    date_prescribed: Date.now(),
+  });
+};
