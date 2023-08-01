@@ -96,6 +96,10 @@ export default {
         });
     });
   },
+  
+  setCurrentPatient({ commit }, payload) {
+    commit('SET_CURRENT_PATIENT', payload)
+  },
 
   updatePatient({ commit }, patient) {
     return new Promise((resolve, reject) => {

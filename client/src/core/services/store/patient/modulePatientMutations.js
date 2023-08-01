@@ -19,6 +19,10 @@ export default {
     state.patient = patient;
   },
 
+  SET_CURRENT_PATIENT(state, patient) {
+    state.currentPatient = patient;
+  },
+
   UPDATE_PATIENT(state, patient) {
     const patientIndex = state.patients.findIndex(p => p.id === patient.id);
     Object.assign(state.patients[patientIndex], patient);

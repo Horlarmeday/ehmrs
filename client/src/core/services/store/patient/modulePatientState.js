@@ -3,6 +3,7 @@ export default {
   patients: [],
   total: null,
   pages: 0,
+  currentPatient: null,
 
   dependant: null,
   dependants: [],
