@@ -13,19 +13,10 @@
             <accordion-icon />
           </div>
         </div>
-        <b-collapse
-          id="accordion-1"
-          visible
-          accordion="my-accordion"
-          role="tabpanel"
-        >
+        <b-collapse id="accordion-1" visible accordion="my-accordion" role="tabpanel">
           <div class="card-body">
             <div class="pt-6">
-              <img
-                src="/media/users/blank.png"
-                v-if="!videoShowing && !image"
-                width="160"
-              />
+              <img src="/media/users/blank.png" v-if="!videoShowing && !image" width="160" />
               <video
                 ref="video"
                 id="video"
@@ -33,14 +24,7 @@
                 style="height:1px;width:120px;margin-bottom:20px;"
                 autoplay
               ></video>
-              <canvas
-                ref="canvas"
-                id="canvas"
-                width="250"
-                height="187"
-                v-show="image"
-              >
-              </canvas>
+              <canvas ref="canvas" id="canvas" width="250" height="187" v-show="image"> </canvas>
               <button
                 id="snap"
                 v-if="!image && !photoSaved && !videoShowing"
@@ -87,9 +71,7 @@
                   placeholder="First Name"
                   name="firstname"
                 />
-                <span class="text-danger text-sm">{{
-                  errors.first("firstname")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('firstname') }}</span>
               </div>
               <div class="col-lg-4">
                 <label>Middle Name</label>
@@ -100,9 +82,7 @@
                   placeholder="Middle Name"
                   name="middlename"
                 />
-                <span class="text-danger text-sm">{{
-                  errors.first("middlename")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('middlename') }}</span>
               </div>
               <div class="col-lg-4">
                 <label>Last Name <span class="text-danger">*</span></label>
@@ -115,9 +95,7 @@
                   placeholder="Last Name"
                   name="lastname"
                 />
-                <span class="text-danger text-sm">{{
-                  errors.first("lastname")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('lastname') }}</span>
               </div>
             </div>
             <!-- Contact -->
@@ -131,9 +109,7 @@
                   placeholder="Enter email"
                   v-model="email"
                 />
-                <span class="text-danger text-sm">{{
-                  errors.first("email")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('email') }}</span>
               </div>
               <div class="col-lg-4">
                 <label>Phone Number <span class="text-danger">*</span></label>
@@ -147,9 +123,7 @@
                   placeholder="Phone Number"
                   name="phone"
                 />
-                <span class="text-danger text-sm">{{
-                  errors.first("phone")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('phone') }}</span>
               </div>
               <div class="col-lg-4">
                 <label>Username <span class="text-danger">*</span></label>
@@ -162,9 +136,7 @@
                   placeholder="Enter Username"
                   v-model="username"
                 />
-                <span class="text-danger text-sm">{{
-                  errors.first("username")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('username') }}</span>
               </div>
             </div>
             <div class="form-group row">
@@ -178,9 +150,7 @@
                   input-class="form-control form-control-sm"
                   placeholder="Date of Birth"
                 ></datepicker>
-                <span class="text-danger text-sm">{{
-                  errors.first("date_of_birth")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('date_of_birth') }}</span>
               </div>
               <div class="col-lg-4">
                 <label>Gender <span class="text-danger">*</span></label>
@@ -195,9 +165,7 @@
                   <option value="Female">Female</option>
                   <option value="Other">Other</option>
                 </select>
-                <span class="text-danger text-sm">{{
-                  errors.first("gender")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('gender') }}</span>
               </div>
               <div class="col-lg-4">
                 <label>Password <span class="text-danger">*</span></label>
@@ -210,9 +178,7 @@
                   placeholder="Enter Password"
                   v-model="password"
                 />
-                <span class="text-danger text-sm">{{
-                  errors.first("password")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('password') }}</span>
               </div>
             </div>
             <div class="form-group row">
@@ -227,9 +193,7 @@
                   placeholder="Home Address"
                   name="address"
                 />
-                <span class="text-danger text-sm">{{
-                  errors.first("address")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('address') }}</span>
               </div>
               <div class="col-lg-4">
                 <label>Department <span class="text-danger">*</span></label>
@@ -248,9 +212,7 @@
                     >{{ department.department }}
                   </option>
                 </select>
-                <span class="text-danger text-sm">{{
-                  errors.first("department")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('department') }}</span>
               </div>
               <div class="col-lg-4">
                 <label>Roles <span class="text-danger">*</span></label>
@@ -269,9 +231,7 @@
                     >{{ role.role }}
                   </option>
                 </select>
-                <span class="text-danger text-sm">{{
-                  errors.first("role")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('role') }}</span>
               </div>
             </div>
             <div class="form-group row">
@@ -305,31 +265,31 @@
 </template>
 
 <script>
-import Datepicker from "vuejs-datepicker";
-import { departments, getRolesById, getSubRoleById } from "./employeeRoles";
-import Swal from "sweetalert2";
-import AccordionIcon from "../../../../assets/icons/AccordionIcon";
+import Datepicker from 'vuejs-datepicker';
+import { departments, getRolesById, getSubRoleById } from './employeeRoles';
+import Swal from 'sweetalert2';
+import AccordionIcon from '../../../../assets/icons/AccordionIcon';
 export default {
   components: {
     Datepicker,
-    AccordionIcon
+    AccordionIcon,
   },
   data() {
     return {
-      gender: "",
-      firstname: "",
-      lastname: "",
-      middlename: "",
-      email: "",
-      phone: "",
-      date_of_birth: "",
-      address: "",
-      department: "",
-      password: "",
-      username: "",
-      role: "",
-      sub_role: "",
-      relationship: "",
+      gender: '',
+      firstname: '',
+      lastname: '',
+      middlename: '',
+      email: '',
+      phone: '',
+      date_of_birth: '',
+      address: '',
+      department: '',
+      password: '',
+      username: '',
+      role: '',
+      sub_role: '',
+      relationship: '',
       departments: [],
       roles: [],
       sub_roles: [],
@@ -341,7 +301,7 @@ export default {
       isDisabled: false,
       video: {},
       canvas: {},
-      image: ""
+      image: '',
     };
   },
   computed: {
@@ -362,7 +322,7 @@ export default {
         this.image &&
         this.sub_role
       );
-    }
+    },
   },
 
   created() {
@@ -381,7 +341,7 @@ export default {
     startCamera() {
       this.toggleVideoShowing();
       this.video = this.$refs.video;
-      this.video.style = "display:block;width:250px;margin-bottom:20px;";
+      this.video.style = 'display:block;width:250px;margin-bottom:20px;';
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
           this.video.srcObject = stream;
@@ -403,13 +363,13 @@ export default {
 
     capture() {
       this.canvas = this.$refs.canvas;
-      this.canvas.getContext("2d").drawImage(this.video, 0, 0, 250, 187);
+      this.canvas.getContext('2d').drawImage(this.video, 0, 0, 250, 187);
       this.image = this.canvas.toDataURL();
     },
 
     snapAgain() {
       this.video = this.$refs.video;
-      this.video.style = "display:block;width:250px;margin-bottom:20px;";
+      this.video.style = 'display:block;width:250px;margin-bottom:20px;';
       this.image = null;
     },
 
@@ -418,49 +378,45 @@ export default {
     },
 
     initValues() {
-      this.gender = "";
-      this.firstname = "";
-      this.lastname = "";
-      this.middlename = "";
-      this.username = "";
-      this.email = "";
-      this.phone = "";
-      this.date_of_birth = "";
-      this.password = "";
-      this.address = "";
-      this.department = "";
-      this.role = "";
-      this.sub_role = "";
+      this.gender = '';
+      this.firstname = '';
+      this.lastname = '';
+      this.middlename = '';
+      this.username = '';
+      this.email = '';
+      this.phone = '';
+      this.date_of_birth = '';
+      this.password = '';
+      this.address = '';
+      this.department = '';
+      this.role = '';
+      this.sub_role = '';
       this.showFinish = false;
       this.videoShowing = false;
       this.photoSaved = false;
       this.photoLoading = false;
       this.video = {};
       this.canvas = {};
-      this.image = "";
+      this.image = '';
     },
 
     addSpinner(submitButton) {
       this.isDisabled = true;
-      submitButton.classList.add("spinner", "spinner-light", "spinner-right");
+      submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');
     },
 
     removeSpinner(submitButton) {
       this.isDisabled = false;
-      submitButton.classList.remove(
-        "spinner",
-        "spinner-light",
-        "spinner-right"
-      );
+      submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
     },
 
     handleSuccess(response) {
       Swal.fire({
-        title: "Success!",
+        title: 'Success!',
         html: `${response.data.message}`,
-        icon: "success",
-        confirmButtonClass: "btn btn-primary",
-        heightAuto: false
+        icon: 'success',
+        confirmButtonClass: 'btn btn-primary',
+        heightAuto: false,
       });
     },
 
@@ -473,10 +429,10 @@ export default {
 
     notifyPhoto() {
       return this.$notify({
-        group: "foo",
-        title: "Error message",
-        text: "Please take photo",
-        type: "error"
+        group: 'foo',
+        title: 'Error message',
+        text: 'Please take photo',
+        type: 'error',
       });
     },
 
@@ -485,7 +441,7 @@ export default {
       this.$validator.validateAll().then(result => {
         if (result) {
           // set spinner to submit button
-          const submitButton = this.$refs["kt-submit"];
+          const submitButton = this.$refs['kt-submit'];
           this.addSpinner(submitButton);
 
           const data = {
@@ -502,16 +458,16 @@ export default {
             role: this.role.text,
             sub_role: this.sub_role.text,
             address: this.address,
-            photo: this.image
+            photo: this.image,
           };
           this.$store
-            .dispatch("employee/addEmployee", data)
+            .dispatch('employee/addEmployee', data)
             .then(response => this.initializeRequest(submitButton, response))
             .catch(() => this.removeSpinner(submitButton));
         }
       });
-    }
-  }
+    },
+  },
 };
 </script>
 

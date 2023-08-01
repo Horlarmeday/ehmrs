@@ -8,6 +8,8 @@
         v-for="visit in visits"
         :key="visit.id"
         @click="visitDetailsPage(visit)"
+        v-b-tooltip.hover
+        :title="visit.patient.fullname"
       >
         <div>
           <img alt="Pic" src="/media/users/blank.png" width="50" class="mb-2" />
@@ -19,9 +21,7 @@
           >
         </p>
         <p class="mb-0">
-          <small class="font-weight-bolder">{{
-            visit.patient.hospital_id
-          }}</small>
+          <small class="font-weight-bolder">{{ visit.patient.hospital_id }}</small>
         </p>
       </div>
     </div>
@@ -29,13 +29,14 @@
 </template>
 
 <script>
-import Search from "../../../../utils/Search";
+import Search from '../../../../utils/Search';
+import { debounce, removeSpinner } from '@/common/common';
 export default {
   components: { Search },
   data() {
     return {
       currentPage: 1,
-      itemsPerPage: 10
+      itemsPerPage: 10,
     };
   },
   computed: {
@@ -50,14 +51,14 @@ export default {
     },
     perPage() {
       return this.visits.length;
-    }
+    },
   },
 
   methods: {
     handlePageChange() {
-      this.$store.dispatch("visit/fetchActiveVisits", {
+      this.$store.dispatch('visit/fetchActiveVisits', {
         currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage
+        itemsPerPage: this.itemsPerPage,
       });
     },
 
@@ -66,29 +67,37 @@ export default {
       this.handlePageChange();
     },
 
-    onHandleSearch(search) {
-      this.$store.dispatch("visit/fetchActiveVisits", {
-        currentPage: 1,
-        itemsPerPage: this.itemsPerPage,
-        search
-      });
+    onHandleSearch(prop) {
+      const { search, spinDiv } = prop;
+      this.debounceSearch(search, this, spinDiv);
     },
 
+    debounceSearch: debounce((search, vm, spinDiv) => {
+      vm.$store
+        .dispatch('visit/fetchActiveVisits', {
+          currentPage: 1,
+          itemsPerPage: vm.itemsPerPage,
+          search,
+        })
+        .then(() => removeSpinner(spinDiv))
+        .catch(() => removeSpinner(spinDiv));
+    }, 500),
+
     displayIcon(type) {
-      if (type === "IPD") return "fas fa-bed";
-      if (type === "ANC") return "fas fa-female";
+      if (type === 'IPD') return 'fas fa-bed';
+      if (type === 'ANC') return 'fas fa-female';
     },
 
     cutName(name) {
-      const splitName = name.split(" ");
+      const splitName = name.split(' ');
       if (splitName.length <= 2) return name;
       splitName.splice(2, 1);
-      return splitName.join(" ");
+      return splitName.join(' ');
     },
 
     displayEllipsis(name) {
-      if (name.length <= 11) return "";
-      return "...";
+      if (name.length <= 11) return '';
+      return '...';
     },
 
     shortenName(name, character) {
@@ -101,14 +110,14 @@ export default {
 
     visitDetailsPage(visit) {
       this.$router.push(`/consultation/${visit.id}`);
-    }
+    },
   },
   created() {
-    this.$store.dispatch("visit/fetchActiveVisits", {
+    this.$store.dispatch('visit/fetchActiveVisits', {
       currentPage: this.currentPage,
-      itemsPerPage: this.itemsPerPage
+      itemsPerPage: this.itemsPerPage,
     });
-  }
+  },
 };
 </script>
 
