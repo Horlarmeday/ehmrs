@@ -111,7 +111,7 @@ import Pagination from "@/utils/Pagination.vue";
 import EditIcon from "../../../assets/icons/EditIcon.vue";
 import AddIcon from "../../../assets/icons/AddIcon.vue";
 import Search from "../../../utils/Search.vue";
-import { setUrlQueryParams } from "../../../common/common";
+import { debounce, removeSpinner, setUrlQueryParams } from "../../../common/common";
 
 export default {
   data() {
@@ -170,20 +170,28 @@ export default {
       });
     },
 
-    onHandleSearch(search) {
+    onHandleSearch(prop) {
+      const { search, spinDiv } = prop;
       setUrlQueryParams({
-        pathName: "generic-drugs",
+        pathName: 'generic-drugs',
         currentPage: 1,
         itemsPerPage: this.itemsPerPage,
         search
       });
-      this.$store.dispatch("pharmacy/fetchGenericDrugs", {
-        currentPage: 1,
-        itemsPerPage: this.itemsPerPage,
-        search
-      });
+      this.debounceSearch(search, this, spinDiv);
     },
 
+    debounceSearch: debounce((search, vm, spinDiv) => {
+      vm.$store
+        .dispatch('pharmacy/fetchGenericDrugs', {
+          currentPage: 1,
+          itemsPerPage: vm.itemsPerPage,
+          search,
+        })
+        .then(() => removeSpinner(spinDiv))
+        .catch(() => removeSpinner(spinDiv));
+    }, 500),
+    
     onPageChange(page) {
       this.currentPage = page;
       this.handlePageChange();
