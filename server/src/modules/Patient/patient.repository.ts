@@ -41,6 +41,15 @@ export async function getPatientById(data: number) {
 }
 
 /**
+ * get patient with its insurance
+ * @returns {object} return patient data
+ * @param patient_id
+ */
+export const getPatientWithInsurance = (patient_id: number) => {
+  return Patient.findByPk(patient_id, { include: [{ model: Insurance }] });
+};
+
+/**
  * create a cash patient account
  * @param data
  * @returns {object} patient data
@@ -191,7 +200,6 @@ export async function createInsurancePatient(data) {
         relationship,
         alt_phone,
         staff_id,
-        fullname: `${firstname} ${lastname}`,
         has_insurance: true,
         insurance_id,
         hmo_id,
@@ -259,7 +267,6 @@ export async function createOrdinaryPatient(data) {
     lga,
     religion,
     staff_id,
-    fullname: `${firstname} ${lastname}`,
   });
 }
 

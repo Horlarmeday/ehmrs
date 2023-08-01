@@ -11,7 +11,7 @@ import { Test } from './test';
 import { Staff } from './staff';
 import { Visit } from './visit';
 import { Patient } from './patient';
-import { BillingStatus, DispenseStatus, PaymentStatus } from './prescribedDrug';
+import { BillingStatus, PaymentStatus } from './prescribedDrug';
 import {
   FindAttributeOptions,
   GroupOption,
@@ -20,11 +20,30 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
+import { Sample } from './sample';
+import { TestPrescription } from './testPrescriptions';
+import { TestResult } from './testResult';
 
 export enum PrescriptionType {
   CASH = 'Cash',
   NHIS = 'NHIS',
   OTHER = 'Other',
+}
+
+export enum TestStatus {
+  PENDING = 'Pending',
+  REFERRED = 'Referred',
+  COMPLETED = 'Completed',
+  RESULT_ADDED = 'Result Added',
+  SAMPLE_COLLECTED = 'Sample Collected',
+  VERIFIED = 'Verified',
+  APPROVED = 'Approved',
+}
+
+export enum ResultStatus {
+  ACCEPTED = 'Accepted',
+  REJECTED = 'Rejected',
+  PENDING = 'Pending',
 }
 
 @Table({ timestamps: true, tableName: 'Prescribed_Tests' })
@@ -36,8 +55,44 @@ export class PrescribedTest extends Model {
   @ForeignKey(() => Test)
   @Column({
     type: DataType.INTEGER,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'test id is required',
+      },
+    },
   })
   test_id: number;
+
+  @ForeignKey(() => Sample)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'sample id is required',
+      },
+    },
+  })
+  sample_id: number;
+
+  @ForeignKey(() => TestPrescription)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'test prescription id is required',
+      },
+    },
+  })
+  test_prescription_id: number;
+
+  @ForeignKey(() => TestResult)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  result_id: number;
 
   @Column({
     type: DataType.BOOLEAN,
@@ -118,7 +173,7 @@ export class PrescribedTest extends Model {
     allowNull: false,
     defaultValue: PaymentStatus.PENDING,
   })
-  payment_status: DispenseStatus;
+  payment_status: PaymentStatus;
 
   @Column({
     type: DataType.ENUM(BillingStatus.BILLED, BillingStatus.UNBILLED),
@@ -128,16 +183,25 @@ export class PrescribedTest extends Model {
   billing_status: BillingStatus;
 
   @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: false,
+    type: DataType.ENUM(
+      TestStatus.PENDING,
+      TestStatus.COMPLETED,
+      TestStatus.REFERRED,
+      TestStatus.SAMPLE_COLLECTED,
+      TestStatus.RESULT_ADDED,
+      TestStatus.VERIFIED,
+      TestStatus.APPROVED
+    ),
+    allowNull: false,
+    defaultValue: TestStatus.PENDING,
   })
-  is_test_verified: boolean;
+  status: TestStatus;
 
   @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: false,
+    type: DataType.ENUM(ResultStatus.ACCEPTED, ResultStatus.REJECTED, ResultStatus.PENDING),
+    defaultValue: ResultStatus.PENDING,
   })
-  is_test_approved: boolean;
+  result_status: ResultStatus;
 
   @Column({
     type: DataType.DATE,
@@ -185,11 +249,20 @@ export class PrescribedTest extends Model {
   @BelongsTo(() => Test)
   test: Test;
 
+  @BelongsTo(() => Sample)
+  sample: Sample;
+
   @BelongsTo(() => Visit)
   visit: Visit;
 
+  @BelongsTo(() => TestPrescription)
+  test_prescription: TestPrescription;
+
   @BelongsTo(() => Patient)
   patient: Patient;
+
+  @BelongsTo(() => TestResult)
+  result: TestResult;
 
   static async paginate(param: {
     paginate: number;

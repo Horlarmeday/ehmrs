@@ -12,12 +12,20 @@ export class RadiologyOrderService {
    * @static
    * @returns {json} json object with prescribed investigation data
    * @param body
-   * @memberOf LabOrderService
+   * @memberOf RadiologyOrderService
    */
   static async prescribeInvestigationService(body) {
     return prescribeInvestigation(body);
   }
 
+  /**
+   * order bulk investigation for patient
+   *
+   * @static
+   * @returns {json} json object with prescribed investigation data
+   * @param body
+   * @memberOf RadiologyOrderService
+   */
   static async orderBulkInvestigationService(
     body: PrescribedInvestigationBody
   ): Promise<PrescribedInvestigation[]> {

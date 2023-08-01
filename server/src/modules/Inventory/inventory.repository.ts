@@ -87,23 +87,20 @@ export async function getInventoryItems({ inventory, currentPage = 1, pageLimit 
     include: [
       {
         model: Drug,
-        as: 'drug',
-        attributes: ['name'],
+        order: [['name', 'ASC']],
+        attributes: ['name', 'id'],
       },
       {
         model: Unit,
-        as: 'unit',
         attributes: ['name'],
       },
       {
         model: DosageForm,
-        as: 'dosage_form',
         attributes: ['name'],
       },
       {
         model: Measurement,
-        as: 'strength',
-        attributes: ['name'],
+        attributes: ['name', 'id'],
       },
     ],
   });
@@ -130,7 +127,6 @@ export async function searchInventoryItems({
   return InventoryItem.paginate({
     page: currentPage,
     paginate: pageLimit,
-    order: [['createdAt', 'DESC']],
     where: {
       inventory_id: inventory,
       ...(filter && { ...JSON.parse(filter) }),
@@ -138,7 +134,8 @@ export async function searchInventoryItems({
     include: [
       {
         model: Drug,
-        attributes: ['name', 'id'],
+        attributes: ['id', 'name'],
+        order: [['name', 'ASC']],
         where: {
           name: {
             [Op.like]: `%${search}%`,

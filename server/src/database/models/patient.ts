@@ -21,6 +21,11 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 
+export enum PatientStatus {
+  ADMITTED = 'Admitted',
+  REGULAR = 'Regular',
+}
+
 @Table({ timestamps: true })
 export class Patient extends Model {
   @PrimaryKey
@@ -232,6 +237,12 @@ export class Patient extends Model {
     defaultValue: PatientType.INDEPENDENT,
   })
   patient_type: PatientType;
+
+  @Column({
+    type: DataType.ENUM(PatientStatus.ADMITTED, PatientStatus.REGULAR),
+    defaultValue: PatientStatus.REGULAR,
+  })
+  patient_status: PatientStatus;
 
   @Column(DataType.VIRTUAL)
   get fullname(): unknown {
