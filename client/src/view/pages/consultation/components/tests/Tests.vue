@@ -1,25 +1,25 @@
 <template>
   <div class="flex-row-fluid ml-lg-8">
-    <div class="card card-custom gutter-b">
+    <div class="card-custom gutter-b">
       <div class="card-header pt-5">
         <div class="card-title">
           <span class="card-label font-weight-bolder text-dark">Lab Tests</span>
-          <span v-if="showSwitch" class="switch switch-sm switch-icon float-right">
+          <span v-if="showSwitch" class="switch switch-sm switch-icon">
             <label>
               <input @change="flipSwitch($event)" type="checkbox" :checked="switchPosition" />
               <span />
             </label>
           </span>
-        </div>
-        <div>
-          <button
-            v-if="selectedTests.length"
-            ref="kt-orderTest-submit"
-            class="btn btn-primary btn-sm float-right mr-2"
-            @click="submitLabTest"
-          >
-            Submit
-          </button>
+          <div class="">
+            <button
+              v-if="selectedTests.length"
+              ref="kt-orderTest-submit"
+              class="btn btn-primary btn-sm float-right mr-2"
+              @click="submitLabTest"
+            >
+              Submit
+            </button>
+          </div>
         </div>
       </div>
       <hr>
@@ -87,6 +87,7 @@ export default {
         test_type: this.switchPosition ? 'NHIS' : 'CASH',
         price: test.price,
         name: test.name,
+        sample_id: test.sample_id,
       };
     },
 
@@ -127,9 +128,11 @@ export default {
     },
 
     defaultSwitchPosition() {
-      if (this.visit?.patient?.has_insurance && this.visit?.patient?.insurance_id !== 4) {
-        this.switchPosition = true;
-      }
+      setTimeout(() => {
+        if (this.visit?.patient?.has_insurance && this.visit?.patient?.insurance_id !== 4) {
+          this.switchPosition = true;
+        }
+      }, 350);
     },
 
     flipSwitch(event) {

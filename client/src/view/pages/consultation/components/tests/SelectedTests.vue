@@ -1,6 +1,6 @@
 <template>
   <div class="flex-row-auto offcanvas-mobile w-xl-250px">
-    <div class="card card-custom card-stretch">
+    <div class="card-custom card-stretch">
       <div class="card-header pt-5">
         <h6 class="card-title">
           <span class="card-label font-weight-bolder text-dark">Selected Tests</span>

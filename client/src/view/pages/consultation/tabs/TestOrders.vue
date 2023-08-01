@@ -11,13 +11,15 @@
         <b-collapse id="accordion-1" visible>
           <div class="card-body">
             <div class="col-3 offset-9">
-              <input
-                placeholder="Search..."
-                @keyup="searchTests"
-                v-model="searchString"
-                class="form-control form-control-md"
-                type="text"
-              />
+              <div ref="spinn">
+                <input
+                  placeholder="Search..."
+                  @keyup="searchTests"
+                  v-model="searchString"
+                  class="form-control form-control-md"
+                  type="text"
+                />
+              </div>
             </div>
             <div class="d-flex flex-row">
               <test-side-bar />
@@ -33,6 +35,7 @@
 import Tests from '../components/tests/Tests.vue';
 import AccordionIcon from '../../../../assets/icons/AccordionIcon.vue';
 import TestSideBar from '../components/tests/TestSideBar.vue';
+import { addSpinner, debounce, removeSpinner } from "@/common/common";
 
 export default {
   name: 'TestOrders',
@@ -49,17 +52,22 @@ export default {
       this.activeTab = Tests;
     },
 
-    dispatchSearchTests(type) {
-      this.$store.dispatch(type, {
-        currentPage: 1,
-        itemsPerPage: 100,
-        search: this.searchString,
-      });
+    searchTests() {
+      const spinDiv = this.$refs['spinn'];
+      addSpinner(spinDiv);
+      this.search(this.searchString, this, spinDiv);
     },
 
-    searchTests() {
-      this.dispatchSearchTests('laboratory/fetchTests');
-    },
+    search: debounce((search, vm, spinDiv) => {
+      vm.$store
+        .dispatch('laboratory/fetchTests', {
+          currentPage: 1,
+          itemsPerPage: 100,
+          search,
+        })
+        .then(() => removeSpinner(spinDiv))
+        .catch(() => removeSpinner(spinDiv));
+    }, 500),
   },
 
   created() {
