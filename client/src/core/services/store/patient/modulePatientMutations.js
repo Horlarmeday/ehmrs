@@ -19,6 +19,10 @@ export default {
     state.patient = patient;
   },
 
+  SET_PATIENT_PROFILE(state, patient) {
+    state.patientProfile = patient;
+  },
+
   SET_CURRENT_PATIENT(state, patient) {
     state.currentPatient = patient;
   },

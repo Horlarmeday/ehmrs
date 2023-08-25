@@ -1,36 +1,18 @@
-import axios from "../../../../axios";
+import axios from '../../../../axios';
 
 export default {
   /**
    * PRINCIPAL
    */
-  createCashPatient({ commit }, patient) {
+  createPatientAccount({ commit }, patient) {
     return new Promise((resolve, reject) => {
       axios
-        .post("/patients/create/cash", patient)
+        .post('/patients/create', patient)
         .then(response => {
           commit(
-            "ADD_PATIENT",
+            'ADD_PATIENT',
             Object.assign(patient, {
-              patient_id: response.data.data.id
-            })
-          );
-          resolve(response);
-        })
-        .catch(error => {
-          reject(error);
-        });
-    });
-  },
-  createHealthInsurancePatient({ commit }, patient) {
-    return new Promise((resolve, reject) => {
-      axios
-        .post("/patients/create/health-insurance", patient)
-        .then(response => {
-          commit(
-            "ADD_PATIENT",
-            Object.assign(patient, {
-              patient_id: response.data.data.id
+              patient_id: response.data.data.id,
             })
           );
           resolve(response);
@@ -41,15 +23,29 @@ export default {
     });
   },
 
-  createOrdinaryPatient({ commit }, patient) {
+  addPatientHealthInsurance({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
-        .post("/patients/create/ordinary", patient)
+        .post(`/patients/health-insurance/${payload.patient_id}`, payload.data)
+        .then(response => {
+          commit({});
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  createEmergencyPatient({ commit }, patient) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post('/patients/create/emergency', patient)
         .then(response => {
           commit(
-            "ADD_PATIENT",
+            'ADD_PATIENT',
             Object.assign(patient, {
-              patient_id: response.data.data.id
+              patient_id: response.data.data.id,
             })
           );
           resolve(response);
@@ -59,23 +55,23 @@ export default {
         });
     });
   },
+
   fetchPatients({ commit }, payload) {
-    console.log(payload);
     return new Promise((resolve, reject) => {
       axios
-        .get("/patients/get", {
+        .get('/patients/get', {
           params: {
             currentPage: payload.currentPage,
             pageLimit: payload.itemsPerPage,
             search: payload.search,
             start: payload.start,
-            end: payload.end
-          }
+            end: payload.end,
+          },
         })
         .then(response => {
-          commit("SET_PATIENTS", response.data.data.docs);
-          commit("SET_PATIENTS_TOTAL", response.data.data.total);
-          commit("SET_NUMB_PAGES", response.data.data.pages);
+          commit('SET_PATIENTS', response.data.data.docs);
+          commit('SET_PATIENTS_TOTAL', response.data.data.total);
+          commit('SET_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
         .catch(error => {
@@ -83,12 +79,13 @@ export default {
         });
     });
   },
+
   fetchPatient({ commit }, patientId) {
     return new Promise((resolve, reject) => {
       axios
         .get(`/patients/get/${patientId}`)
         .then(response => {
-          commit("SET_PATIENT", response.data.data);
+          commit('SET_PATIENT', response.data.data);
           resolve(response);
         })
         .catch(error => {
@@ -96,9 +93,23 @@ export default {
         });
     });
   },
-  
+
+  fetchPatientProfile({ commit }, patientId) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/patients/profile/get/${patientId}`)
+        .then(response => {
+          commit('SET_PATIENT_PROFILE', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
   setCurrentPatient({ commit }, payload) {
-    commit('SET_CURRENT_PATIENT', payload)
+    commit('SET_CURRENT_PATIENT', payload);
   },
 
   updatePatient({ commit }, patient) {
@@ -106,7 +117,7 @@ export default {
       axios
         .put(`/patients/update/patient`, patient)
         .then(response => {
-          commit("UPDATE_PATIENT", response.data.data);
+          commit('UPDATE_PATIENT', response.data.data);
           resolve(response);
         })
         .catch(error => {
@@ -124,9 +135,9 @@ export default {
         .post(`/patients/create/dependant/${patientId}`, dependant)
         .then(response => {
           commit(
-            "ADD_DEPENDANT",
+            'ADD_DEPENDANT',
             Object.assign(dependant, {
-              dependant_id: response.data.data.id
+              dependant_id: response.data.data.id,
             })
           );
           resolve(response);
@@ -140,19 +151,19 @@ export default {
   fetchDependants({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
-        .get("/patients/dependant/get", {
+        .get('/patients/dependant/get', {
           params: {
             currentPage: payload.currentPage,
             pageLimit: payload.itemsPerPage,
             search: payload.search,
             start: payload.start,
-            end: payload.end
-          }
+            end: payload.end,
+          },
         })
         .then(response => {
-          commit("SET_DEPENDANTS", response.data.data.docs);
-          commit("SET_DEPENDANTS_TOTAL", response.data.data.total);
-          commit("SET_DEPENDANTS_NUMB_PAGES", response.data.data.pages);
+          commit('SET_DEPENDANTS', response.data.data.docs);
+          commit('SET_DEPENDANTS_TOTAL', response.data.data.total);
+          commit('SET_DEPENDANTS_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
         .catch(error => {
@@ -166,7 +177,7 @@ export default {
       axios
         .put(`/patients/update/dependant`, dependant)
         .then(response => {
-          commit("UPDATE_DEPENDANT", response.data.data);
+          commit('UPDATE_DEPENDANT', response.data.data);
           resolve(response);
         })
         .catch(error => {
@@ -180,12 +191,12 @@ export default {
       axios
         .get(`/patients/dependant/get/${dependantId}`)
         .then(response => {
-          commit("SET_DEPENDANT", response.data.data);
+          commit('SET_DEPENDANT', response.data.data);
           resolve(response);
         })
         .catch(error => {
           reject(error);
         });
     });
-  }
+  },
 };

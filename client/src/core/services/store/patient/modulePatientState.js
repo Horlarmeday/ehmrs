@@ -1,5 +1,6 @@
 export default {
   patient: null,
+  patientProfile: null,
   patients: [],
   total: null,
   pages: 0,
