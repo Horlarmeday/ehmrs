@@ -1,10 +1,17 @@
 import {
+  appendInvestigationResults,
+  approveInvestigationResults,
   createImaging,
   createInvestigation,
   createInvestigationTariff,
   filterInvestigations,
   getImaging,
+  getInvestigationResult,
   getInvestigations,
+  getInvestigationsApprovals,
+  getInvestigationsResults,
+  getOneRequestedInvestigation,
+  getRequestedInvestigations,
   searchImaging,
   searchInvestigations,
   updateImaging,
@@ -15,9 +22,10 @@ import {
   CreateInvestigationDto,
   InvestigationQueryDto,
   InvestigationTariffDto,
+  RadiologyResultDto,
 } from './dto/radiology.dto';
-import { TestTariffDto } from '../Laboratory/dto/test-tariff.dto';
-import { createTestTariff, updateTest } from '../Laboratory/laboratory.repository';
+import { TestStatus } from '../../database/models/prescribedTest';
+import { isEmpty } from 'lodash';
 
 export class RadiologyService {
   /**
@@ -131,5 +139,121 @@ export class RadiologyService {
    */
   static async updateInvestigationService(body) {
     return updateInvestigation(body);
+  }
+
+  /***********************
+   * RADIOLOGY RESULTS
+   ***********************/
+
+  /**
+   * Get requested investigations
+   * @param body
+   * @memberOf LaboratoryService
+   */
+  static async getRequestedInvestigations(body) {
+    const { search, pageLimit, currentPage, period, start, end } = body;
+    if (start && end) {
+      return getRequestedInvestigations({ currentPage, pageLimit, start, end });
+    }
+
+    if (search) {
+      return getRequestedInvestigations({ currentPage, pageLimit, period, search });
+    }
+
+    if (Object.values(body).length) {
+      return getRequestedInvestigations({ currentPage, pageLimit, period });
+    }
+
+    return getRequestedInvestigations({ period });
+  }
+
+  /***
+   * get one requested investigation
+   * @param body
+   */
+  static async getOneRequestedInvestigation(body) {
+    const { prescriptionId } = body;
+    return getOneRequestedInvestigation(prescriptionId);
+  }
+
+  /**
+   * Add/Update investigation results
+   * @param radiologyResultDto
+   */
+  static async appendInvestigationResults(radiologyResultDto: RadiologyResultDto) {
+    const { results, staff_id } = radiologyResultDto;
+    const data = results.map(result => ({
+      ...result,
+      staff_id,
+      testStatus: this.getTestStatus(result),
+      date_created: Date.now(),
+    }));
+    return appendInvestigationResults(data);
+  }
+
+  /**
+   * Get investigations needing approval
+   * @param body
+   * @memberOf LaboratoryService
+   */
+  static async getInvestigationsApproval(body) {
+    const { search, pageLimit, currentPage, start, end } = body;
+    if (start && end) {
+      return getInvestigationsApprovals({ currentPage, pageLimit, start, end });
+    }
+
+    if (search) {
+      return getInvestigationsApprovals({ currentPage, pageLimit, search });
+    }
+
+    if (Object.values(body).length) {
+      return getInvestigationsApprovals({ currentPage, pageLimit });
+    }
+
+    return getInvestigationsApprovals({});
+  }
+
+  /**
+   * Approve investigation results
+   * @param investigationResultId
+   */
+  static async approveInvestigationResults(investigationResultId: number) {
+    return approveInvestigationResults(investigationResultId);
+  }
+
+  /**
+   * Get investigations results
+   * @param body
+   * @memberOf LaboratoryService
+   */
+  static async getInvestigationsResults(body) {
+    const { search, pageLimit, currentPage, start, end } = body;
+    if (start && end) {
+      return getInvestigationsResults({ currentPage, pageLimit, start, end });
+    }
+
+    if (search) {
+      return getInvestigationsResults({ currentPage, pageLimit, search });
+    }
+
+    if (Object.values(body).length) {
+      return getInvestigationsResults({ currentPage, pageLimit });
+    }
+
+    return getInvestigationsResults({});
+  }
+
+  /***
+   * get investigation result
+   * @param body
+   */
+  static async getInvestigationResult(body) {
+    const { prescriptionId } = body;
+    return getInvestigationResult(prescriptionId);
+  }
+
+  static getTestStatus(result) {
+    if (result.result) return TestStatus.RESULT_ADDED;
+    if (isEmpty(result.result)) return TestStatus.PENDING;
   }
 }
