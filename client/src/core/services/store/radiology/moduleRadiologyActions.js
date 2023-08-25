@@ -103,4 +103,156 @@ export default {
         });
     });
   },
+
+  /***
+   * REQUESTED INVESTIGATIONS
+   */
+  fetchRequestedInvestigations({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/radiology/requested-investigations/get', {
+          params: {
+            currentPage: payload.currentPage,
+            pageLimit: payload.itemsPerPage,
+            search: payload.search,
+            period: payload.period,
+            start: payload.start,
+            end: payload.end,
+          },
+        })
+        .then(response => {
+          commit('SET_REQUESTED_INVESTIGATIONS', response.data.data.docs);
+          commit('SET_REQUESTED_INVESTIGATIONS_TOTAL', response.data.data.total);
+          commit('SET_REQUESTED_INVESTIGATIONS_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchOneRequestedInvestigation({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/radiology/requested-investigations/get/${payload.id}`)
+        .then(response => {
+          commit('SET_REQUESTED_INVESTIGATION', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  uploadResultImages({ commit }, images) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post('/radiology/upload-images', images)
+        .then(response => {
+          commit('UPLOAD_RESULT_IMAGES', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  addInvestigationResult({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/radiology/requested-investigations/add-result`, { results: payload })
+        .then(response => {
+          commit('SET_INVESTIGATION_RESULT', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /***
+   * INVESTIGATIONS APPROVAL
+   */
+  fetchInvestigationsApproval({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/radiology/investigations-approval/get', {
+          params: {
+            currentPage: payload.currentPage,
+            pageLimit: payload.itemsPerPage,
+            search: payload.search,
+            start: payload.start,
+            end: payload.end,
+          },
+        })
+        .then(response => {
+          commit('SET_INVESTIGATIONS_APPROVAL', response.data.data.docs);
+          commit('SET_INVESTIGATIONS_APPROVAL_TOTAL', response.data.data.total);
+          commit('SET_INVESTIGATIONS_APPROVAL_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  approveInvestigationResult({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/radiology/requested-investigations/approve/${payload.id}`)
+        .then(response => {
+          commit('SET_INVESTIGATION_RESULT', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * RESULTS
+   */
+  fetchInvestigationsResults({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/radiology/investigations-results/get', {
+          params: {
+            currentPage: payload.currentPage,
+            pageLimit: payload.itemsPerPage,
+            search: payload.search,
+            start: payload.start,
+            end: payload.end,
+          },
+        })
+        .then(response => {
+          commit('SET_INVESTIGATIONS_RESULTS', response.data.data.docs);
+          commit('SET_INVESTIGATIONS_RESULTS_TOTAL', response.data.data.total);
+          commit('SET_INVESTIGATIONS_RESULTS_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchOneInvestigationResult({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/radiology/investigations-results/get/${payload.id}`)
+        .then(response => {
+          commit('SET_INVESTIGATION_RESULT', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
 };

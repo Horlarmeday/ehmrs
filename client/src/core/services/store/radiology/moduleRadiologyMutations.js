@@ -1,4 +1,7 @@
 export default {
+  /***
+   * IMAGING
+   */
   ADD_IMAGING(state, imaging) {
     state.imagings.unshift(imaging);
   },
@@ -24,7 +27,9 @@ export default {
     Object.assign(state.imagings[imagingIndex], imaging);
   },
 
-  // Investigations
+  /***
+   * INVESTIGATIONS
+   */
   ADD_INVESTIGATION(state, investigation) {
     state.investigations.unshift(investigation);
   },
@@ -48,5 +53,62 @@ export default {
   UPDATE_INVESTIGATION(state, investigation) {
     const investigationIndex = state.investigations.findIndex(p => p.id === investigation.id);
     Object.assign(state.investigations[investigationIndex], investigation);
+  },
+
+  /***
+   * REQUESTED INVESTIGATIONS
+   */
+  SET_REQUESTED_INVESTIGATION(state, investigation) {
+    state.reqInvestigation = investigation;
+  },
+
+  SET_REQUESTED_INVESTIGATIONS(state, investigations) {
+    state.reqInvestigations = investigations;
+  },
+
+  SET_REQUESTED_INVESTIGATIONS_TOTAL(state, total) {
+    state.totalReqInvestigation = total;
+  },
+
+  SET_REQUESTED_INVESTIGATIONS_PAGES(state, pages) {
+    state.totalReqInvestigationPages = pages;
+  },
+
+  /***
+   * INVESTIGATIONS RESULT
+   */
+  UPLOAD_RESULT_IMAGES(state, images) {
+    state.resultImages = images;
+  },
+
+  SET_INVESTIGATION_RESULT(state, result) {
+    state.result = result;
+  },
+
+  SET_INVESTIGATIONS_RESULTS(state, results) {
+    state.results = results;
+  },
+
+  SET_INVESTIGATIONS_RESULTS_TOTAL(state, total) {
+    state.totalInvestigationResults = total;
+  },
+
+  SET_INVESTIGATIONS_RESULTS_PAGES(state, pages) {
+    state.totalInvestigationResultsPages = pages;
+  },
+
+  /***
+   * INVESTIGATIONS APPROVAL
+   */
+  SET_INVESTIGATIONS_APPROVAL(state, investigations) {
+    state.investigationsApprovals = investigations;
+  },
+
+  SET_INVESTIGATIONS_APPROVAL_TOTAL(state, total) {
+    state.totalInvestigationsApproval = total;
+  },
+
+  SET_INVESTIGATIONS_APPROVAL_PAGES(state, pages) {
+    state.totalInvestigationsApprovalPages = pages;
   },
 };
