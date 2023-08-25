@@ -8,35 +8,44 @@
       </div>
 
       <div class="card-body py-2">
-        <div class="form-group row mt-3" v-for="(complaint, index) in complaints" :key="index">
-          <label class="col-lg-2 col-form-label">Chief Complaint:</label>
-          <div class="col-lg-4">
-            <input
+        <div class="form-group row">
+          <label class="col-2 col-form-label">Chief Complaint</label>
+          <div class="col-9">
+            <textarea
+              v-model="complaint_note"
+              class="form-control form-control-sm"
+              cols="10"
+              rows="2"
+              name="chief_complaint"
               v-validate="'required'"
               data-vv-validate-on="blur"
+            />
+            <span class="text-danger text-sm">{{ errors.first('complaint') }}</span>
+          </div>
+        </div>
+        <div class="form-group row mt-3" v-for="(complaint, index) in complaints" :key="index">
+          <label class="col-lg-2 col-form-label">Additional Complaint:</label>
+          <div class="col-lg-4">
+            <input
               name="complaint"
               v-model="complaint.complaint"
               type="text"
-              class="form-control form-control-sm"
-            />
-            <span class="text-danger text-sm">{{ errors.first('complaint') }}</span>
+              class="form-control
+            form-control-sm" />
+            <!--            <span class="text-danger text-sm">{{ errors.first('complaint') }}</span>-->
           </div>
           <label class="col-lg-1 col-form-label">For</label>
           <div class="col-lg-2">
             <input
-              v-validate="'required'"
-              data-vv-validate-on="blur"
               name="frequency_number"
               v-model="complaint.frequency_number"
               type="number"
               class="form-control form-control-sm"
             />
-            <span class="text-danger text-sm">{{ errors.first('frequency_number') }}</span>
+<!--            <span class="text-danger text-sm">{{ errors.first('frequency_number') }}</span>-->
           </div>
           <div class="col-lg-2">
             <select
-              v-validate="'required'"
-              data-vv-validate-on="blur"
               name="frequency"
               v-model="complaint.frequency"
               class="form-control form-control-sm"
@@ -48,7 +57,7 @@
               <option value="Months">Months</option>
               <option value="Years">Years</option>
             </select>
-            <span class="text-danger text-sm">{{ errors.first('frequency') }}</span>
+<!--            <span class="text-danger text-sm">{{ errors.first('frequency') }}</span>-->
           </div>
           <a href="#" class="col-lg-1 col-form-label">
             <i class="far fa-plus-square mr-3 text-primary icon-lg" @click="addNewComplaint" />
@@ -58,17 +67,6 @@
               @click="removeComplaints(index)"
             />
           </a>
-        </div>
-        <div class="form-group row">
-          <label class="col-2 col-form-label">Chief Complaint Notes</label>
-          <div class="col-9">
-            <textarea
-              v-model="complaint_note"
-              class="form-control form-control-sm"
-              cols="10"
-              rows="2"
-            />
-          </div>
         </div>
         <div class="form-group row">
           <label class="col-2 col-form-label">History Notes</label>
@@ -270,7 +268,9 @@ export default {
         .then(result => {
           if (result) {
             const obj = {
-              complaints: this.complaints,
+              ...(this.complaints.some(({ complaint }) => complaint) && {
+                complaints: this.complaints,
+              }),
               has_smoking_history: this.has_smoking_history,
               examination_note: this.examination_note,
               history_note: this.history_note,

@@ -15,11 +15,11 @@
         <!-- begin:: Content -->
         <div id="kt_content" class="content  d-flex flex-column flex-column-fluid">
           <!-- begin:: Content Head -->
-          <KTSubheader
-            v-if="subheaderDisplay && displaySubheaderOnDashboard"
-            v-bind:breadcrumbs="breadcrumbs"
-            v-bind:title="pageTitle"
-          />
+<!--          <KTSubheader-->
+<!--            v-if="subheaderDisplay && displaySubheaderOnDashboard"-->
+<!--            v-bind:breadcrumbs="breadcrumbs"-->
+<!--            v-bind:title="pageTitle"-->
+<!--          />-->
           <!-- end:: Content Head -->
 
           <!-- begin:: Content Body -->
@@ -58,7 +58,7 @@ import { mapGetters } from 'vuex';
 import KTAside from '@/view/layout/aside/Aside.vue';
 import KTHeader from '@/view/layout/header/Header.vue';
 import KTHeaderMobile from '@/view/layout/header/HeaderMobile.vue';
-import KTSubheader from '@/view/layout/subheader/Subheader.vue';
+// import KTSubheader from '@/view/layout/subheader/Subheader.vue';
 import KTFooter from '@/view/layout/footer/Footer.vue';
 import HtmlClass from '@/core/services/htmlclass.service';
 import KTStickyToolbar from '@/view/layout/extras/StickyToolbar.vue';
@@ -75,7 +75,7 @@ export default {
     KTAside,
     KTHeader,
     KTHeaderMobile,
-    KTSubheader,
+    // KTSubheader,
     KTFooter,
     KTStickyToolbar,
     KTScrollTop,

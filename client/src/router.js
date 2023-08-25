@@ -61,17 +61,17 @@ const router = new Router({
               },
             },
             {
-              path: 'cash-patient',
-              name: 'cash-patient',
-              component: () => import('@/view/pages/patient/create/AddCashPatient.vue'),
+              path: 'create-account',
+              name: 'create-account',
+              component: () => import('@/view/pages/patient/create/CreatePatientAccount.vue'),
               meta: {
                 requiresAuth: true,
               },
             },
             {
-              path: 'ordinary-patient',
-              name: 'ordinary-patient',
-              component: () => import('@/view/pages/patient/create/AddOrdinaryPatient.vue'),
+              path: 'create-emergency-account',
+              name: 'create-emergency-account',
+              component: () => import('@/view/pages/patient/create/CreateEmergencyAccount.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -95,7 +95,7 @@ const router = new Router({
             {
               path: 'health-insurance/:id',
               name: 'health-insurance-patient',
-              component: () => import('@/view/pages/patient/create/AddHealthInsurancePatient.vue'),
+              component: () => import('@/view/pages/patient/create/AddPatientInsurance.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -513,6 +513,22 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            {
+              path: 'test-result/:id',
+              name: 'test-result',
+              component: () => import('@/view/pages/laboratory/TestResult.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'verified-results',
+              name: 'verified-results',
+              component: () => import('@/view/pages/laboratory/VerifiedResults.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
           ],
         },
         // ORDERS
@@ -589,6 +605,54 @@ const router = new Router({
               path: 'investigations',
               name: 'investigations',
               component: () => import('@/view/pages/radiology/components/Investigation.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'requested-investigations',
+              name: 'requested-investigations',
+              component: () => import('@/view/pages/radiology/RequestedInvestigations.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'add-test-result/:id',
+              name: 'requested-investigation',
+              component: () => import('@/view/pages/radiology/AddInvestigationResult.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'investigations-approval',
+              name: 'investigations-approval',
+              component: () => import('@/view/pages/radiology/VerifiedInvestigationsResult.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'result-approval/:id',
+              name: 'radiology-result-approval',
+              component: () => import('@/view/pages/radiology/ApproveInvestigationResult.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'investigations-results',
+              name: 'investigations-results',
+              component: () => import('@/view/pages/radiology/InvestigationsResults.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'investigations-results/:id',
+              name: 'investigations-result',
+              component: () => import('@/view/pages/radiology/InvestigationResult.vue'),
               meta: {
                 requiresAuth: true,
               },

@@ -14,12 +14,9 @@
       </div>
       <!--begin::Header-->
       <div class="card-header border-0 float-right">
+        <search @search="onHandleSearch" />
         <div class="card-toolbar">
-          <a
-            href="#"
-            class="btn btn-primary font-weight-bolder font-size-sm"
-            @click="addNewData"
-          >
+          <a href="#" class="btn btn-primary font-weight-bolder font-size-sm" @click="addNewData">
             <add-icon /> Add New
           </a>
         </div>
@@ -30,9 +27,7 @@
       <div class="card-body pt-0 pb-3">
         <!--begin::Table-->
         <div class="table-responsive">
-          <table
-            class="table table-head-custom table-vertical-center table-head-bg"
-          >
+          <table class="table table-head-custom table-vertical-center table-head-bg">
             <thead>
               <tr class="text-uppercase">
                 <th class="pl-5" style="min-width: 150px">Name</th>
@@ -46,32 +41,25 @@
               <tr v-for="service in services" :key="service.id">
                 <td class="pl-5">
                   <p>
-                    <span
-                      class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                    >
+                    <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                       {{ service.name }}
                     </span>
                   </p>
                 </td>
                 <td>
-                  <span
-                    class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                  >
-                    {{ service.price || "None" }}
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                    {{ service.price || 'None' }}
                   </span>
                 </td>
                 <td>
-                  <span
-                    class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                  >
-                    {{ service.code || "None" }}
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                    {{ service.code || 'None' }}
                   </span>
                 </td>
                 <td class="">
-                  <span
-                    class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                    >{{ service.createdAt | moment("ddd, MMM Do YYYY") }}</span
-                  >
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
+                    service.createdAt | moment('ddd, MMM Do YYYY')
+                  }}</span>
                 </td>
                 <td class="pr-0">
                   <a
@@ -102,25 +90,28 @@
 </template>
 
 <script>
-import Pagination from "@/utils/Pagination.vue";
-import CreateService from "./CreateService.vue";
-import EditIcon from "../../../../assets/icons/EditIcon.vue";
-import AddIcon from "../../../../assets/icons/AddIcon.vue";
+import Pagination from '@/utils/Pagination.vue';
+import CreateService from './CreateService.vue';
+import EditIcon from '../../../../assets/icons/EditIcon.vue';
+import AddIcon from '../../../../assets/icons/AddIcon.vue';
+import Search from '@/utils/Search.vue';
+import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
 export default {
   data() {
     return {
-      search: "",
+      search: '',
       currentPage: 1,
       itemsPerPage: 10,
       displayPrompt: false,
-      serviceToEdit: {}
+      serviceToEdit: {},
     };
   },
   components: {
+    Search,
     Pagination,
     CreateService,
     EditIcon,
-    AddIcon
+    AddIcon,
   },
 
   computed: {
@@ -135,7 +126,7 @@ export default {
     },
     perPage() {
       return this.services.length;
-    }
+    },
   },
 
   methods: {
@@ -148,29 +139,50 @@ export default {
       this.displayPrompt = false;
     },
 
-    editData(department) {
-      this.serviceToEdit = department;
+    editData(service) {
+      this.serviceToEdit = service;
       this.displayPrompt = true;
     },
 
+    onHandleSearch(prop) {
+      const { search, spinDiv } = prop;
+      setUrlQueryParams({
+        currentPage: 1,
+        itemsPerPage: this.itemsPerPage,
+        search: search,
+      });
+      this.debounceSearch(search, this, spinDiv);
+    },
+
+    debounceSearch: debounce((search, vm, spinDiv) => {
+      vm.$store
+        .dispatch('model/fetchServices', {
+          currentPage: 1,
+          itemsPerPage: vm.itemsPerPage,
+          search,
+        })
+        .then(() => removeSpinner(spinDiv))
+        .catch(() => removeSpinner(spinDiv));
+    }, 500),
+
     handlePageChange() {
-      this.$store.dispatch("model/fetchServices", {
+      this.$store.dispatch('model/fetchServices', {
         currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage
+        itemsPerPage: this.itemsPerPage,
       });
     },
 
     onPageChange(page) {
       this.currentPage = page;
       this.handlePageChange();
-    }
+    },
   },
   created() {
-    this.$store.dispatch("model/fetchServices", {
+    this.$store.dispatch('model/fetchServices', {
       currentPage: this.currentPage,
-      itemsPerPage: this.itemsPerPage
+      itemsPerPage: this.itemsPerPage,
     });
-  }
+  },
 };
 </script>
 

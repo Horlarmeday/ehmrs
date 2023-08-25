@@ -97,22 +97,7 @@
             </li>
           </ul>
           <div class="ml-auto">
-            <a v-b-tooltip.hover title="General Information" href="#" class="btn btn-icon btn-light-primary pulse pulse-primary mr-5">
-              <i class="flaticon2-information"></i>
-              <span class="pulse-ring"></span>
-            </a>
-            <a v-b-tooltip.hover title="Admission Details" href="#" class="btn btn-icon btn-light-warning pulse pulse-warning mr-5">
-              <i class="fas fa-bed"></i>
-              <span class="pulse-ring"></span>
-            </a>
-            <a v-b-tooltip.hover title="Alerts" href="#" class="btn btn-icon btn-light-danger pulse pulse-danger mr-5">
-              <i class="fas fa-exclamation-triangle"></i>
-              <span class="pulse-ring"></span>
-            </a>
-            <a v-b-tooltip.hover title="Vitals" href="#" class="btn btn-icon btn-light-info pulse pulse-info mr-5">
-              <i class="fas fa-stethoscope"></i>
-              <span class="pulse-ring"></span>
-            </a>
+            <pulse-icons />
           </div>
         </div>
       </div>
@@ -128,6 +113,7 @@ import InvestigationOrders from '../tabs/InvestigationOrders.vue';
 import Medications from '../tabs/Medications.vue';
 import ServicesOrder from '../tabs/ServiceOrders.vue';
 import Disposition from '@/view/pages/consultation/tabs/Disposition.vue';
+import PulseIcons from '@/view/pages/consultation/components/PulseIcons.vue';
 // import router from '@/router';
 
 const ComponentMapping = {
@@ -141,6 +127,7 @@ const ComponentMapping = {
 
 export default {
   name: 'Tabs',
+  components: { PulseIcons },
   data() {
     return {
       tabIndex: 0,

@@ -16,44 +16,6 @@
         <div class="form">
           <div class="card-body">
             <div class="form-group row">
-              <label class="col-lg-3 col-form-label">Dosage:</label>
-              <div class="col-lg-9">
-                <select
-                  v-validate="'required'"
-                  data-vv-validate-on="blur"
-                  class="form-control form-control-sm"
-                  v-model="dosage_form"
-                  name="dosage_form"
-                  @change="getRoutes"
-                >
-                  <option
-                    :value="{ id: dosageForm.id, name: dosageForm.name }"
-                    v-for="dosageForm in dosageForms"
-                    :key="dosageForm.id"
-                    >{{ dosageForm.name }}</option
-                  >
-                </select>
-                <span class="form-text text-danger">{{ errors.first('dosage_form') }}</span>
-              </div>
-            </div>
-            <div class="form-group row">
-              <label class="col-lg-3 col-form-label">Route:</label>
-              <div class="col-lg-9">
-                <select
-                  class="form-control form-control-sm"
-                  name="route"
-                  v-model="route"
-                  v-validate="'required'"
-                  data-vv-validate-on="blur"
-                >
-                  <option :value="route.id" v-for="route in routes" :key="route.id">{{
-                    route.name
-                  }}</option>
-                </select>
-                <span class="form-text text-danger">{{ errors.first('route') }}</span>
-              </div>
-            </div>
-            <div class="form-group row">
               <label class="col-lg-3 col-form-label">Drug:</label>
               <div class="col-lg-9">
                 <v-select
@@ -62,7 +24,6 @@
                   @input="setDrugInfo"
                   v-model="drug"
                   label="name"
-                  :disabled="!dosage_form"
                   :options="drugOptions"
                   :reduce="
                     items => ({
@@ -73,6 +34,7 @@
                       price: items.price,
                       quantity_remaining: items.quantity_remaining,
                       unit_name: items?.unit_name,
+                      dosage_form: items?.dosage_form,
                     })
                   "
                 />
@@ -94,6 +56,50 @@
                 <span v-if="price" class="form-text text-success"
                   >Price: <span class="font-weight-boldest">₦{{ price }}</span></span
                 >
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-lg-3 col-form-label">Dosage:</label>
+              <div class="col-lg-9">
+                <input
+                  readonly
+                  type="text"
+                  class="form-control-sm form-control"
+                  v-model="dosage_form.name"
+                />
+<!--                <select-->
+<!--                  v-validate="'required'"-->
+<!--                  data-vv-validate-on="blur"-->
+<!--                  class="form-control form-control-sm"-->
+<!--                  v-model="dosage_form"-->
+<!--                  name="dosage_form"-->
+<!--                  @change="getRoutes"-->
+<!--                >-->
+<!--                  <option-->
+<!--                    :value="{ id: dosageForm.id, name: dosageForm.name }"-->
+<!--                    v-for="dosageForm in dosageForms"-->
+<!--                    :key="dosageForm.id"-->
+<!--                    >{{ dosageForm.name }}</option-->
+<!--                  >-->
+<!--                </select>-->
+                <span class="form-text text-danger">{{ errors.first('dosage_form') }}</span>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-lg-3 col-form-label">Route:</label>
+              <div class="col-lg-9">
+                <select
+                  class="form-control form-control-sm"
+                  name="route"
+                  v-model="route"
+                  v-validate="'required'"
+                  data-vv-validate-on="blur"
+                >
+                  <option :value="route.id" v-for="route in routes" :key="route.id">{{
+                    route.name
+                  }}</option>
+                </select>
+                <span class="form-text text-danger">{{ errors.first('route') }}</span>
               </div>
             </div>
             <div class="form-group row">
@@ -202,6 +208,22 @@
                 </span>
               </div>
             </div>
+            <div v-if="switchPosition" class="form-group row">
+              <label class="col-lg-3 col-form-label">Drug Type:</label>
+              <div class="col-lg-9">
+                <div class="radio-inline mt-2">
+                  <label
+                    v-for="(type, i) in drugTypes"
+                    class="radio radio-md radio-rounded"
+                    :key="i"
+                  >
+                    <input type="radio" v-model="drug_group" :value="type" />
+                    <span></span>
+                    {{ type }}
+                  </label>
+                </div>
+              </div>
+            </div>
             <div class="form-group row">
               <label class="col-lg-3 col-form-label">Notes:</label>
               <div class="col-lg-9">
@@ -217,6 +239,7 @@
             <div class="mt-3">
               <button
                 @click="submitDrugOrder"
+                :disabled="!quantity_remaining"
                 ref="kt-drugOrder-submit"
                 class="btn btn-primary btn-md float-right mb-3"
               >
@@ -234,7 +257,7 @@
 import Datepicker from 'vuejs-datepicker';
 import vSelect from 'vue-select';
 import { debounce } from '@/common/common';
-import KTUtil from "@/assets/js/components/util";
+import KTUtil from '@/assets/js/components/util';
 export default {
   name: 'MedicationSideBar',
   components: { vSelect, Datepicker },
@@ -266,6 +289,7 @@ export default {
         price: item.selling_price,
         quantity_remaining: item.quantity_remaining,
         unit_name: item?.unit?.name,
+        dosage_form: item?.dosage_form,
       }));
     },
   },
@@ -283,6 +307,7 @@ export default {
     drug: '',
     prescribed_strength: '',
     drug_id: '',
+    drug_group: '',
 
     price: null,
     total_price: null,
@@ -306,6 +331,7 @@ export default {
       { val: 7, label: 'Weeks' },
       { val: 30, label: 'Months' },
     ],
+    drugTypes: ['Primary', 'Secondary'],
   }),
   methods: {
     getInventories() {
@@ -337,6 +363,8 @@ export default {
       this.unit_name = this.drug.unit_name;
       this.strength_input = this.drug.strength_input;
       this.quantity_remaining = this.drug.quantity_remaining;
+      this.dosage_form = this.drug.dosage_form;
+      this.getRoutes()
     },
 
     getTotalPrice() {
@@ -385,6 +413,7 @@ export default {
         drug_id: this.drug_id,
         total_price: this.total_price,
         drug_type: this.switchPosition ? 'NHIS' : 'Cash',
+        drug_group: this.drug_group,
       };
     },
 
@@ -412,7 +441,7 @@ export default {
     initValues() {
       this.dosage_form = '';
       this.route = '';
-      this.start_date = '';
+      this.start_date = new Date();
       this.duration_unit = '';
       this.notes = '';
       this.quantity_to_dispense = '';
@@ -429,6 +458,7 @@ export default {
       this.strength = null;
       this.quantity_prescribed = null;
       this.unit_name = null;
+      this.drug_group = null;
     },
 
     onSearch(search, loading) {
@@ -446,7 +476,6 @@ export default {
       vm.$store
         .dispatch('inventory/fetchInventoryItems', {
           inventory,
-          filter: { dosage_form_id: vm.dosage_form.id },
           search,
         })
         .then(() => loading(false));
@@ -454,7 +483,6 @@ export default {
   },
 
   created() {
-    this.$store.dispatch('pharmacy/fetchDosageForms');
     this.defaultSwitchPosition();
     this.getInventories();
   },

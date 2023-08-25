@@ -115,7 +115,6 @@ export default {
         notes: '',
         type: ''
       });
-      console.log(this.diagnosis);
     },
     removeDiagnosis(i) {
       this.diagnosis.splice(i, 1);
