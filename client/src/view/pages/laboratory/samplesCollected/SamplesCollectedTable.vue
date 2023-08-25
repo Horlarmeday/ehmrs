@@ -2,7 +2,11 @@
   <div>
     <div v-if="!loading">
       <div class="mt-3">
-        <search @search="onHandleSearch" />
+        <search
+          @search="onHandleSearch"
+          @filterByDateRange="searchByDate"
+          :show-date-filter="true"
+        />
       </div>
       <div class="table-responsive">
         <table class="table table-head-custom table-head-bg table-borderless table-vertical-center">
@@ -84,7 +88,7 @@
               </td>
               <td class="text-right pr-0">
                 <router-link
-                  :class="{ disabled: pending_tests_count > 0 }"
+                  :class="{ disabled: sample.pending_tests_count === 0 }"
                   v-b-tooltip.hover
                   title="Result"
                   :to="`/laboratory/add-test-result/${sample.id}`"
@@ -93,7 +97,7 @@
                   <ArrowRightIcon />
                 </router-link>
                 <router-link
-                  :class="{ disabled: sample.pending_validations_count < 1 }"
+                  :class="{ disabled: !sample.pending_validations_count }"
                   v-b-tooltip.hover
                   title="Validate"
                   :to="`/laboratory/result-validation/${sample.id}`"
@@ -102,7 +106,7 @@
                   <ValidateIcon />
                 </router-link>
                 <router-link
-                  :class="{ disabled: sample.status === 'Completed' }"
+                  :class="{ disabled: !sample.pending_approved_count }"
                   v-b-tooltip.hover
                   title="Approve"
                   :to="`/laboratory/result-approval/${sample.id}`"
@@ -164,6 +168,8 @@ export default {
     itemsPerPage: 10,
     loading: false,
     count: 0,
+    start: null,
+    end: null,
   }),
   methods: {
     handlePageChange() {
@@ -195,6 +201,22 @@ export default {
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));
     }, 500),
+
+    searchByDate(range) {
+      const { start, end, dateSpin } = range;
+      this.end = end;
+      this.start = start;
+      this.currentPage = 1;
+      this.$store
+        .dispatch('laboratory/fetchSamplesCollected', {
+          currentPage: this.currentPage,
+          itemsPerPage: this.itemsPerPage,
+          start: new Date(this.start).toISOString(),
+          end: new Date(this.end).toISOString(),
+        })
+        .then(() => removeSpinner(dateSpin))
+        .catch(() => removeSpinner(dateSpin));
+    },
 
     getSampleStatus(status) {
       if (status === 'Pending') return 'label-warning ';

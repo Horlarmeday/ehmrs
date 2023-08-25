@@ -2,7 +2,8 @@
   <div>
     <div v-if="!loading">
       <div class="mt-3">
-        <search @search="onHandleSearch" />
+        <search @search="onHandleSearch" @filterByDateRange="searchByDate"
+                :show-date-filter="true" />
       </div>
       <div class="table-responsive">
         <table class="table table-head-custom table-head-bg table-borderless table-vertical-center">
@@ -96,6 +97,8 @@ export default {
     itemsPerPage: 10,
     loading: false,
     count: 0,
+    start: null,
+    end: null,
   }),
   computed: {
     samples() {
@@ -147,6 +150,22 @@ export default {
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));
     }, 500),
+
+    searchByDate(range) {
+      const { start, end, dateSpin } = range;
+      this.end = end;
+      this.start = start;
+      this.currentPage = 1;
+      this.$store
+        .dispatch('laboratory/fetchSamplesToCollect', {
+          currentPage: this.currentPage,
+          itemsPerPage: this.itemsPerPage,
+          start: new Date(this.start).toISOString(),
+          end: new Date(this.end).toISOString(),
+        })
+        .then(() => removeSpinner(dateSpin))
+        .catch(() => removeSpinner(dateSpin));
+    },
 
     countToHundred() {
       for (let i = 1; i <= 100; i++) {

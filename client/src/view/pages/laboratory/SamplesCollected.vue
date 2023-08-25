@@ -24,5 +24,37 @@ import SamplesCollectedTable from './samplesCollected/SamplesCollectedTable.vue'
 
 export default {
   components: { SamplesCollectedTable },
+  methods: {
+    setActiveTab(event, component) {
+      let target = event.target;
+      if (!event.target.classList.contains('nav-link')) {
+        target = event.target.closest('.nav-link');
+      }
+
+      const tab = target.closest('[role="tablist"]');
+      const links = tab.querySelectorAll('.nav-link');
+      // remove active tab links
+      for (let i = 0; i < links.length; i++) {
+        links[i].classList.remove('active');
+        links[i].removeAttribute('disabled');
+      }
+
+      // set clicked tab index to bootstrap tab
+      this.tabIndex = parseInt(target.getAttribute('data-tab'));
+
+      // set current active tab
+      target.classList.add('active');
+      target.setAttribute('disabled', true);
+
+      this.setActiveComponent(component);
+
+      this.$router.push({
+        query: {
+          tab: component,
+          tabIndex: this.tabIndex,
+        },
+      });
+    },
+  }
 };
 </script>
