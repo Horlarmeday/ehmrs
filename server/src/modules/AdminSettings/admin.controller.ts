@@ -223,7 +223,7 @@ class AdminController {
     try {
       const ward = await AdminService.updateWardService(req.body);
 
-      return successResponse({ res, httpCode: 200, data: ward, message: DATA_UPDATED });
+      return successResponse({ res, httpCode: 201, data: ward, message: DATA_UPDATED });
     } catch (e) {
       return next(e);
     }

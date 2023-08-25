@@ -158,12 +158,13 @@ export async function getUnits(currentPage = 1, pageLimit = 10) {
  * @returns {object} ward data
  */
 export async function createWard(data) {
-  const { name, staff_id, service_id } = data;
+  const { name, staff_id, service_id, occupant_type } = data;
 
   return Ward.create({
     name,
     staff_id,
     service_id,
+    occupant_type,
   });
 }
 

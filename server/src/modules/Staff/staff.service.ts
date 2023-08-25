@@ -25,7 +25,7 @@ class StaffService {
     if (user) throw new BadException('INVALID', 400, EXISTING_STAFF);
 
     // Save photo to disk
-    const { fileName } = await processSnappedPhoto(body.photo, body.firstname);
+    const fileName = await processSnappedPhoto(body.photo, body.firstname);
 
     return createStaff({ ...body, fileName });
   }

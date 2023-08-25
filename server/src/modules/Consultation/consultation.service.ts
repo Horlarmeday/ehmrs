@@ -28,12 +28,15 @@ class ConsultationService {
       history = await createObservation({ ...body, patient_id: visit.patient_id });
     }
 
-    const mappedComplaints = complaints.map(complain => {
-      complain.staff_id = staff_id;
-      complain.visit_id = visit_id;
-      complain.patient_id = visit.patient_id;
-      return complain;
-    });
+    let mappedComplaints;
+    if (complaints?.length) {
+      mappedComplaints = complaints.map(complain => {
+        complain.staff_id = staff_id;
+        complain.visit_id = visit_id;
+        complain.patient_id = visit.patient_id;
+        return complain;
+      });
+    }
 
     const mappedDiagnosis = diagnosis.map(result => {
       result.staff_id = staff_id;
@@ -43,7 +46,7 @@ class ConsultationService {
     });
 
     const [createdComplaints, diagnoses] = await Promise.all([
-      bulkCreateComplaint(mappedComplaints),
+      mappedComplaints?.length && bulkCreateComplaint(mappedComplaints),
       bulkCreateDiagnosis(mappedDiagnosis),
     ]);
 
