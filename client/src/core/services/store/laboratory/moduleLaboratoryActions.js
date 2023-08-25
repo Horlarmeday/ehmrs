@@ -1,4 +1,5 @@
 import axios from '../../../../axios';
+import { getExtensions } from '@/common/common';
 
 export default {
   /**
@@ -271,6 +272,54 @@ export default {
     });
   },
 
+  fetchTestResult({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/laboratory/test-results/get/${payload.id}`)
+        .then(response => {
+          commit('SET_TEST_RESULT', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  downloadTestResult({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(
+          `/laboratory/download-results/${payload.id}`,
+          {},
+          {
+            responseType: 'arraybuffer', // Important to receive binary data
+          }
+        )
+        .then(response => {
+          const contentType = response.headers['content-type'].split(';')[0];
+          const blob = new Blob([response.data], {
+            type: contentType,
+          });
+          const url = window.URL.createObjectURL(blob);
+          // Create an anchor element with download attribute and trigger click event
+          const a = document.createElement('a');
+          const extension = getExtensions();
+          a.href = url;
+          a.download = `lab_result.${extension[contentType]}`;
+          a.click();
+
+          // Clean up resources
+          window.URL.revokeObjectURL(url);
+          commit('REMOVE_ALL_SELECTED_ITEMS', []);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
   /***
    * SAMPLES COLLECTED
    */
@@ -283,12 +332,60 @@ export default {
             pageLimit: payload.itemsPerPage,
             search: payload.search,
             period: payload.period,
+            start: payload.start,
+            end: payload.end,
           },
         })
         .then(response => {
           commit('SET_SAMPLES_COLLECTED', response.data.data.docs);
           commit('SET_SAMPLES_COLLECTED_TOTAL', response.data.data.total);
           commit('SET_SAMPLES_COLLECTED_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * VERIFIED RESULTS
+   */
+
+  fetchVerifiedResults({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/laboratory/verified-results/get', {
+          params: {
+            currentPage: payload.currentPage,
+            pageLimit: payload.itemsPerPage,
+            search: payload.search,
+            start: payload.start,
+            end: payload.end,
+          },
+        })
+        .then(response => {
+          commit('SET_VERIFIED_TESTS', response.data.data.docs);
+          commit('SET_VERIFIED_TESTS_TOTAL', response.data.data.total);
+          commit('SET_VERIFIED_TESTS_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * STATS
+   */
+
+  fetchTodayStats({ commit }) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/laboratory/today-stats/get')
+        .then(response => {
+          commit('SET_TODAY_STATS', response.data.data);
           resolve(response);
         })
         .catch(error => {

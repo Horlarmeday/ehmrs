@@ -45,4 +45,17 @@ export default {
   results: [],
   totalTestResults: 0,
   totalTestResultsPages: 0,
+
+  /***
+   * VERIFIED TESTS
+   */
+  verifiedTest: null,
+  verifiedTests: [],
+  totalVerifiedTest: 0,
+  totalVerifiedTestPages: 0,
+
+  /***
+   * STATS
+   */
+  stats: {}
 };

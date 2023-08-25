@@ -132,4 +132,30 @@ export default {
   SET_TEST_RESULTS_PAGES(state, pages) {
     state.totalTestResultsPages = pages;
   },
+
+  /****
+   * VERIFIED TESTS
+   */
+  SET_VERIFIED_TEST(state, test) {
+    state.verifiedTest = test;
+  },
+
+  SET_VERIFIED_TESTS(state, tests) {
+    state.verifiedTests = tests;
+  },
+
+  SET_VERIFIED_TESTS_TOTAL(state, total) {
+    state.totalVerifiedTest = total;
+  },
+
+  SET_VERIFIED_TESTS_PAGES(state, pages) {
+    state.totalVerifiedTestPages = pages;
+  },
+
+  /****
+   * STATS
+   */
+  SET_TODAY_STATS(state, stat) {
+    state.stats = stat;
+  },
 };
