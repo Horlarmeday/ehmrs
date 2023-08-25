@@ -7,6 +7,7 @@
 <script>
 import SuperAdmin from './superadmin/Dashboard.vue';
 import Laboratory from './laboratory/Dashboard.vue';
+import Radiology from './radiology/Dashboard.vue';
 import { parseJwt } from '@/common/common';
 export default {
   data: () => ({
@@ -20,6 +21,8 @@ export default {
           return (this.dashboardComponent = SuperAdmin);
         case 'Laboratory':
           return (this.dashboardComponent = Laboratory);
+        case 'Radiology':
+          return (this.dashboardComponent = Radiology);
         default:
           return (this.dashboardComponent = SuperAdmin);
       }

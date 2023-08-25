@@ -15,9 +15,9 @@ export default [
     name: 'Results',
   },
   {
-    url: '/laboratory/test-validations',
+    url: '/laboratory/verified-results',
     icon: 'flaticon-like',
-    name: 'Validations',
+    name: 'Approvals',
   },
   {
     url: '/laboratory/reports',

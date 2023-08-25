@@ -83,7 +83,7 @@ const roles = [
   },
   {
     id: 8,
-    role: 'Medical Imaging',
+    role: 'Radiology',
     dept_id: 8,
   },
   {
