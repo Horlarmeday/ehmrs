@@ -45,6 +45,17 @@ export class Ward extends Model {
   @Column({ type: DataType.INTEGER, allowNull: false })
   service_id: number;
 
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'occupant type is required',
+      },
+    },
+  })
+  occupant_type: string;
+
   @BelongsTo(() => Staff)
   staff: Staff;
 

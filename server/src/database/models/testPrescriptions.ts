@@ -21,6 +21,7 @@ import {
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { TestSample } from './testSample';
 import { PrescribedTest } from './prescribedTest';
+import { TestResult } from './testResult';
 
 export enum Source {
   ANC = 'ANC',
@@ -131,10 +132,8 @@ export class TestPrescription extends Model {
   })
   examiner: Staff;
 
-  @HasMany(() => TestSample, {
-    foreignKey: 'test_approved_by',
-  })
-  test_samples: TestSample[];
+  @HasMany(() => TestResult)
+  results: TestResult[];
 
   @HasMany(() => PrescribedTest)
   tests: PrescribedTest[];

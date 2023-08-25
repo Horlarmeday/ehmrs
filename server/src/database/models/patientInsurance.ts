@@ -7,7 +7,6 @@ import {
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
-import { Sample } from './sample';
 import { Staff } from './staff';
 import {
   FindAttributeOptions,
@@ -17,106 +16,90 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
+import { Insurance } from './insurance';
+import { HMO } from './hmo';
+import { Patient } from './patient';
 
-export enum TestType {
-  PRIMARY = 'Primary',
-  SECONDARY = 'Secondary',
-}
-@Table({ timestamps: true })
-export class Test extends Model {
+@Table({ timestamps: true, tableName: 'Patient_Insurances' })
+export class PatientInsurance extends Model {
   @PrimaryKey
   @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
   id: number;
 
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'name is required',
-      },
-    },
-  })
-  name: string;
-
-  @Column({
-    type: DataType.DECIMAL(12, 2),
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'price is required',
-      },
-    },
-  })
-  price: number;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'code is required',
-      },
-    },
-  })
-  code: string;
-
-  @ForeignKey(() => Sample)
+  @ForeignKey(() => Patient)
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
     validate: {
       notEmpty: {
-        msg: 'sample id is required',
+        msg: 'insurance is required',
       },
     },
   })
-  sample_id: number;
+  patient_id: number;
 
+  @ForeignKey(() => Insurance)
   @Column({
-    type: DataType.ENUM(TestType.PRIMARY, TestType.SECONDARY),
+    type: DataType.INTEGER,
     allowNull: false,
     validate: {
       notEmpty: {
-        msg: 'type of test is required',
+        msg: 'insurance is required',
       },
     },
   })
-  type: TestType;
+  insurance_id: number;
+
+  @ForeignKey(() => HMO)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'hmo is required',
+      },
+    },
+  })
+  hmo_id: number;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+  })
+  is_default: boolean;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'unit of test result is required',
-      },
-    },
   })
-  result_unit: string;
+  plan?: string;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'result valid range is required',
-      },
-    },
   })
-  valid_range: string;
+  organization?: string;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  enrollee_code: string;
 
   @ForeignKey(() => Staff)
   @Column({
     type: DataType.INTEGER,
   })
-  staff_id: number;
+  staff_id!: number;
 
   @BelongsTo(() => Staff)
   staff: Staff;
 
-  @BelongsTo(() => Sample)
-  sample: Sample;
+  @BelongsTo(() => Insurance)
+  insurance: Insurance;
+
+  @BelongsTo(() => HMO)
+  hmo: HMO;
+
+  @BelongsTo(() => Patient)
+  patient: Patient;
 
   static async paginate(param: {
     paginate: number;
