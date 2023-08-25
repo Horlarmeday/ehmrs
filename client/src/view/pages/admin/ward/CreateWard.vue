@@ -36,6 +36,21 @@
           <span class="text-danger text-sm">{{ errors.first('service') }}</span>
         </div>
       </div>
+      <div class="form-group row">
+        <label class="col-lg-3 col-form-label">Occupant Type</label>
+        <div class="col-lg-8">
+          <select
+            v-validate="'required'"
+            data-vv-validate-on="blur"
+            name="occupant_type"
+            class="form-control form-control-sm"
+            v-model="occupant_type"
+          >
+            <option v-for="(type, i) in occupantTypes" :key="i">{{ type }}</option>
+          </select>
+          <span class="text-danger text-sm">{{ errors.first('occupant_type') }}</span>
+        </div>
+      </div>
     </div>
     <button
       class="mt-3 btn btn-primary"
@@ -70,6 +85,8 @@ export default {
       ward_id: '',
       isDisabled: false,
       service_id: '',
+      occupant_type: '',
+      occupantTypes: ['Male', 'Female', 'Children', 'All'],
     };
   },
   computed: {
@@ -95,10 +112,11 @@ export default {
         this.initValues();
         this.$validator.reset();
       } else {
-        const { id, name, service_id } = JSON.parse(JSON.stringify(this.data));
+        const { id, name, service_id, occupant_type } = JSON.parse(JSON.stringify(this.data));
         this.ward_id = id;
         this.name = name;
         this.service_id = service_id;
+        this.occupant_type = occupant_type;
       }
     },
   },
@@ -142,6 +160,7 @@ export default {
             ward_id: this.ward_id,
             name: this.name,
             service_id: this.service_id,
+            occupant_type: this.occupant_type,
           };
           // set spinner to submit button
           const submitButton = this.$refs['kt_ward_submit'];
@@ -166,6 +185,7 @@ export default {
       this.name = '';
       this.ward_id = '';
       this.service_id = '';
+      this.occupant_type = '';
     },
   },
 };
