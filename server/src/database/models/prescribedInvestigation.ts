@@ -21,6 +21,17 @@ import {
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { PrescriptionType } from './prescribedTest';
 import { Investigation } from './investigation';
+import { InvestigationResult } from './investigationResult';
+import { InvestigationPrescription } from './investigationPrescription';
+
+export enum InvestigationStatus {
+  PENDING = 'Pending',
+  VERIFIED = 'Verified',
+  APPROVED = 'Approved',
+  RESULT_ADDED = 'Result Added',
+  REFERRED = 'Referred',
+  COMPLETED = 'Completed',
+}
 
 @Table({ timestamps: true, tableName: 'Prescribed_Investigations' })
 export class PrescribedInvestigation extends Model {
@@ -92,6 +103,18 @@ export class PrescribedInvestigation extends Model {
   })
   patient_id: number;
 
+  @ForeignKey(() => InvestigationPrescription)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'investigation prescription id is required',
+      },
+    },
+  })
+  investigation_prescription_id: number;
+
   @Column({
     type: DataType.DATE,
     allowNull: false,
@@ -122,17 +145,24 @@ export class PrescribedInvestigation extends Model {
   })
   billing_status: BillingStatus;
 
+  @ForeignKey(() => InvestigationResult)
   @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: false,
+    type: DataType.INTEGER,
   })
-  is_investigation_verified: boolean;
+  result_id: number;
 
   @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: false,
+    type: DataType.ENUM(
+      InvestigationStatus.PENDING,
+      InvestigationStatus.RESULT_ADDED,
+      InvestigationStatus.VERIFIED,
+      InvestigationStatus.APPROVED,
+      InvestigationStatus.REFERRED
+    ),
+    allowNull: false,
+    defaultValue: InvestigationStatus.PENDING,
   })
-  is_investigation_approved: boolean;
+  status: InvestigationStatus;
 
   @Column({
     type: DataType.DATE,
@@ -185,6 +215,12 @@ export class PrescribedInvestigation extends Model {
 
   @BelongsTo(() => Patient)
   patient: Patient;
+
+  @BelongsTo(() => InvestigationResult)
+  result: InvestigationResult;
+
+  @BelongsTo(() => InvestigationPrescription)
+  investigation_prescription: InvestigationPrescription;
 
   static async paginate(param: {
     paginate: number;

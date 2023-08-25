@@ -7,7 +7,7 @@ import {
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
-import { Drug, DrugForm } from './drug';
+import { Drug } from './drug';
 import { DrugType } from './pharmacyStore';
 import { Staff } from './staff';
 import { Visit } from './visit';
@@ -40,6 +40,11 @@ export enum PaymentStatus {
 export enum BillingStatus {
   BILLED = 'Billed',
   UNBILLED = 'Unbilled',
+}
+
+export enum DrugGroup {
+  PRIMARY = 'Primary',
+  SECONDARY = 'Secondary',
 }
 
 @Table({ timestamps: true, tableName: 'Prescribed_Drugs' })
@@ -238,6 +243,11 @@ export class PrescribedDrug extends Model {
     defaultValue: false,
   })
   is_nhis_drug_approved: boolean;
+
+  @Column({
+    type: DataType.ENUM(DrugGroup.PRIMARY, DrugGroup.SECONDARY),
+  })
+  drug_group: string;
 
   @ForeignKey(() => Visit)
   @Column({

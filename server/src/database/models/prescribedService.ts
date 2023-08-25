@@ -82,12 +82,6 @@ export class PrescribedService extends Model {
   @ForeignKey(() => Visit)
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'visit id is required',
-      },
-    },
   })
   visit_id: number;
 
