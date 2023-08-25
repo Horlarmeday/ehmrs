@@ -2,11 +2,7 @@
   <div>
     <!--begin::Card-->
     <div class="card card-custom gutter-b example example-compact">
-      <create-ward
-        :displayPrompt="displayPrompt"
-        @closeModal="hideModal"
-        :data="wardToEdit"
-      />
+      <create-ward :displayPrompt="displayPrompt" @closeModal="hideModal" :data="wardToEdit" />
       <div class="card-header" style="min-height: 50px !important">
         <h3 class="card-title">
           Ward List
@@ -18,11 +14,7 @@
           <span class="card-label font-weight-bolder text-dark"></span>
         </h3>
         <div class="card-toolbar">
-          <a
-            href="#"
-            class="btn btn-primary font-weight-bolder font-size-sm"
-            @click="addNewData"
-          >
+          <a href="#" class="btn btn-primary font-weight-bolder font-size-sm" @click="addNewData">
             <add-icon /> Add New
           </a>
         </div>
@@ -33,12 +25,11 @@
       <div class="card-body pt-0 pb-3">
         <!--begin::Table-->
         <div class="table-responsive">
-          <table
-            class="table table-head-custom table-vertical-center table-head-bg"
-          >
+          <table class="table table-head-custom table-vertical-center table-head-bg">
             <thead>
               <tr class="text-uppercase">
                 <th class="pl-5" style="min-width: 150px">Name</th>
+                <th class="pl-5" style="min-width: 150px">Occupant Type</th>
                 <th style="min-width: 160px">Date</th>
                 <th class="pr-0 " style="min-width: 150px">action</th>
               </tr>
@@ -47,18 +38,20 @@
               <tr v-for="ward in wards" :key="ward.id">
                 <td class="pl-5">
                   <router-link to="#"
-                    ><span
-                      class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                    >
+                    ><span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                       {{ ward.name }}
                     </span></router-link
                   >
                 </td>
                 <td>
-                  <span
-                    class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                    >{{ ward.createdAt | moment("ddd, MMM Do YYYY") }}</span
-                  >
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
+                    ward.occupant_type
+                  }}</span>
+                </td>
+                <td>
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
+                    ward.createdAt | moment('ddd, MMM Do YYYY')
+                  }}</span>
                 </td>
                 <td class="pr-0">
                   <a
@@ -89,25 +82,25 @@
 </template>
 
 <script>
-import Pagination from "@/utils/Pagination.vue";
-import EditIcon from "../../../../assets/icons/EditIcon.vue";
-import AddIcon from "../../../../assets/icons/AddIcon.vue";
-import CreateWard from "./CreateWard.vue";
+import Pagination from '@/utils/Pagination.vue';
+import EditIcon from '../../../../assets/icons/EditIcon.vue';
+import AddIcon from '../../../../assets/icons/AddIcon.vue';
+import CreateWard from './CreateWard.vue';
 export default {
   data() {
     return {
-      search: "",
+      search: '',
       currentPage: 1,
       itemsPerPage: 20,
       displayPrompt: false,
-      wardToEdit: {}
+      wardToEdit: {},
     };
   },
   components: {
     Pagination,
     EditIcon,
     AddIcon,
-    CreateWard
+    CreateWard,
   },
 
   computed: {
@@ -122,7 +115,7 @@ export default {
     },
     perPage() {
       return this.wards.length;
-    }
+    },
   },
 
   methods: {
@@ -141,23 +134,23 @@ export default {
     },
 
     handlePageChange() {
-      this.$store.dispatch("model/fetchWards", {
+      this.$store.dispatch('model/fetchWards', {
         currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage
+        itemsPerPage: this.itemsPerPage,
       });
     },
 
     onPageChange(page) {
       this.currentPage = page;
       this.handlePageChange();
-    }
+    },
   },
   created() {
-    this.$store.dispatch("model/fetchWards", {
+    this.$store.dispatch('model/fetchWards', {
       currentPage: this.currentPage,
-      itemsPerPage: this.itemsPerPage
+      itemsPerPage: this.itemsPerPage,
     });
-  }
+  },
 };
 </script>
 

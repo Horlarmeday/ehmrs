@@ -1,9 +1,10 @@
 /* eslint-disable camelcase */
 import {
-  validateCashPatient,
+  validateCreatePatientAccount,
   validateDependant,
-  validateHealthInsurancePatient,
-  validateOrdinaryPatient,
+  validatePatientHealthInsurance,
+  validateCreateEmergencyPatient,
+  validateFindPatient,
 } from './validations';
 import PatientService from './patient.service';
 import { errorResponse } from '../../common/responses/error-responses';
@@ -24,8 +25,8 @@ class PatientController {
    * @param {object} next next middleware
    * @returns {json} json object with status, patient data
    */
-  static async createCashPatient(req, res, next): Promise<SuccessResponse> {
-    const { error } = validateCashPatient(req.body);
+  static async createPatientAccount(req, res, next): Promise<SuccessResponse> {
+    const { error } = validateCreatePatientAccount(req.body);
     if (error)
       return errorResponse({
         res,
@@ -34,7 +35,7 @@ class PatientController {
       });
 
     try {
-      const patient = await PatientService.createCashPatientService({
+      const patient = await PatientService.createPatientAccount({
         ...req.body,
         staff_id: req.user.sub,
       });
@@ -51,7 +52,7 @@ class PatientController {
   }
 
   /**
-   * create a health insurance patient record
+   * add patient health insurance info
    *
    * @static
    * @param {object} req express request object
@@ -59,8 +60,8 @@ class PatientController {
    * @param {object} next next middleware
    * @returns {json} json object with status, patient data
    */
-  static async createHealthInsurancePatient(req, res, next): Promise<SuccessResponse> {
-    const { error } = validateHealthInsurancePatient(req.body);
+  static async addPatientHealthInsurance(req, res, next): Promise<SuccessResponse> {
+    const { error } = validatePatientHealthInsurance(req.body);
     if (error)
       return errorResponse({
         res,
@@ -69,8 +70,9 @@ class PatientController {
       });
 
     try {
-      const patient = await PatientService.createInsurancePatientService({
+      const patient = await PatientService.addPatientInsurance({
         ...req.body,
+        patient_id: req.params.id,
         staff_id: req.user.sub,
       });
 
@@ -86,7 +88,7 @@ class PatientController {
   }
 
   /**
-   * create a ordinary patient record
+   * create an emergency patient record
    *
    * @static
    * @param {object} req express request object
@@ -94,12 +96,12 @@ class PatientController {
    * @param {object} next next middleware
    * @returns {json} json object with status, patient data
    */
-  static async createOrdinaryPatient(
+  static async createEmergencyPatientAccount(
     req,
     res: Response,
     next: NextFunction
   ): Promise<SuccessResponse> {
-    const { error } = validateOrdinaryPatient(req.body);
+    const { error } = validateCreateEmergencyPatient(req.body);
     if (error)
       return errorResponse({
         res,
@@ -108,7 +110,7 @@ class PatientController {
       });
 
     try {
-      const patient = await PatientService.createOrdinaryPatientService({
+      const patient = await PatientService.createEmergencyPatient({
         ...req.body,
         staff_id: req.user.sub,
       });
@@ -241,6 +243,71 @@ class PatientController {
     const { id } = req.params;
     try {
       const patient = await PatientService.getPatientProfile(id);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data: patient,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  /**
+   * get a patient
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, patient data
+   */
+  static async getOnePatient(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse> {
+    const { id } = req.params;
+    try {
+      const patient = await PatientService.getPatientById(id);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data: patient,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  /**
+   * get a patient by name and phone
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, patient data
+   */
+  static async getPatientByNameAndPhone(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse> {
+    const { error } = validateFindPatient(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+
+    try {
+      const patient = await PatientService.getPatientByNameAndPhone(req.body);
 
       return successResponse({
         res,

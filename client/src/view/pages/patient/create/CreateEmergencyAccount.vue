@@ -424,7 +424,7 @@ export default {
             address: this.address
           };
           this.$store
-            .dispatch("patient/createOrdinaryPatient", data)
+            .dispatch("patient/createEmergencyPatient", data)
             .then(response => {
               this.removeSpinner(submitButton);
               this.handleSuccess(response);
