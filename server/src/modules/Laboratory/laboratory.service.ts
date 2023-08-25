@@ -13,6 +13,7 @@ import {
   getOneSampleToCollect,
   getSamplesToCollect,
   getTestPrescription,
+  getOneTestResult,
   getTestResults,
   getTests,
   getTestSamples,
@@ -25,6 +26,8 @@ import {
   updateTestPrescription,
   updateTestSample,
   validateTestResults,
+  getVerifiedTestResults,
+  todayTestStats,
 } from './laboratory.repository';
 import { TestTariffDto } from './dto/test-tariff.dto';
 import { TestStatus } from '../../database/models/prescribedTest';
@@ -35,6 +38,7 @@ import {
   LaboratoryResultDto,
   LaboratoryResultValidationDto,
 } from './dto/laboratory-result.dto';
+import moment from 'moment';
 
 class LaboratoryService {
   /** ***********************
@@ -176,7 +180,11 @@ class LaboratoryService {
    * @memberOf LaboratoryService
    */
   static async samplesToCollect(body) {
-    const { search, pageLimit, currentPage, period } = body;
+    const { search, pageLimit, currentPage, period, start, end } = body;
+    if (start && end) {
+      return getSamplesToCollect({ currentPage, pageLimit, period, search, start, end });
+    }
+
     if (search) {
       return getSamplesToCollect({ currentPage, pageLimit, period, search });
     }
@@ -221,7 +229,11 @@ class LaboratoryService {
    * @memberOf LaboratoryService
    */
   static async samplesCollected(body) {
-    const { search, pageLimit, currentPage, period } = body;
+    const { search, pageLimit, currentPage, period, start, end } = body;
+    if (start && end) {
+      return getCollectedSamples({ currentPage, pageLimit, period, search, end, start });
+    }
+
     if (search) {
       return getCollectedSamples({ currentPage, pageLimit, period, search });
     }
@@ -237,6 +249,44 @@ class LaboratoryService {
     return getOneCollectedSample(prescriptionId);
   }
 
+  static async getTestResult(prescriptionId: number) {
+    return getOneTestResult(prescriptionId);
+  }
+
+  static async getTodayTestStats() {
+    return todayTestStats();
+  }
+
+  /**
+   * Download test result
+   * @param prescriptionId
+   */
+  static async downloadTestResult(prescriptionId: number) {
+    const testResult = await getOneTestResult(prescriptionId);
+    const patientInfo = {
+      patientName: testResult.patient.fullname.toString(),
+      patientId: testResult.patient.hospital_id,
+      sex: testResult.patient.gender,
+      age: moment().diff(testResult.patient.date_of_birth, 'years'),
+      orderDate: moment(testResult.date_requested).format('YYYY-MM-DD, h:mma'),
+      reportDate: moment().format('YYYY-MM-DD, h:mma'),
+      accession_number: testResult.accession_number,
+    };
+    const testResults = testResult.tests.map(test => ({
+      testName: test.test.name,
+      result: test.result.result,
+      comments: test.result.comments,
+      abnormalState: test.result.is_abnormal ? 'Yes' : 'No',
+      unit: test.test.result_unit,
+      validRange: test.test.valid_range,
+    }));
+    return { patientInfo, testResults };
+  }
+
+  /**
+   * Add/Update test results
+   * @param laboratoryResultDto
+   */
   static async appendTestResults(laboratoryResultDto: LaboratoryResultDto) {
     const { results, staff_id } = laboratoryResultDto;
     const data = results.map(result => ({
@@ -248,6 +298,10 @@ class LaboratoryService {
     return appendTestResults(data);
   }
 
+  /**
+   * Validate and verify test results
+   * @param laboratoryResultValidationDto
+   */
   static async validateTestResults(laboratoryResultValidationDto: LaboratoryResultValidationDto) {
     const { results, result_notes, staff_id } = laboratoryResultValidationDto;
     const data = results.map(result => ({
@@ -258,6 +312,10 @@ class LaboratoryService {
     return validateTestResults(data, result_notes);
   }
 
+  /***
+   * Approve test results
+   * @param laboratoryResultApprovalDto
+   */
   static async approveTestResults(laboratoryResultApprovalDto: LaboratoryResultApprovalDto) {
     const { results, staff_id } = laboratoryResultApprovalDto;
     const data = results.map(result => ({
@@ -283,6 +341,24 @@ class LaboratoryService {
     }
 
     return getTestResults({ search });
+  }
+
+  /**
+   * Get verified test results
+   * @param body
+   * @memberOf LaboratoryService
+   */
+  static async getVerifiedResults(body) {
+    const { search, pageLimit, currentPage, start, end, period } = body;
+    if (start && end) {
+      return getVerifiedTestResults({ currentPage, pageLimit, search, end, start, period });
+    }
+
+    if (Object.values(body).length) {
+      return getVerifiedTestResults({ currentPage, pageLimit, period });
+    }
+
+    return getVerifiedTestResults({ period });
   }
 
   static getTestStatus(result) {

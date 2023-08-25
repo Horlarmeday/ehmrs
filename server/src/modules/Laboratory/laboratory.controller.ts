@@ -17,6 +17,8 @@ import { TEST_REQUIRED } from '../Orders/Laboratory/messages/response-messages';
 import { NextFunction, Request, Response } from 'express';
 import { SUCCESS } from '../../core/constants';
 import { validateUpdateTestPrescription } from './validations';
+import { downloadTestResult } from '../../core/helpers/downloadTestResult';
+import { stat } from 'fs';
 
 class LaboratoryController {
   /** ***********************
@@ -356,7 +358,6 @@ class LaboratoryController {
   static async getOneCollectedSample(req: Request, res: Response, next: NextFunction) {
     try {
       const prescription = await LaboratoryService.getOneCollectedSample(req.params.id);
-
       return res.status(200).json({
         message: 'Success',
         data: prescription,
@@ -476,6 +477,86 @@ class LaboratoryController {
       const results = await LaboratoryService.getTestResults(req.query);
 
       return successResponse({ res, message: SUCCESS, httpCode: StatusCodes.OK, data: results });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get one sample to collect
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, test prescription data
+   */
+  static async getTestResult(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await LaboratoryService.getTestResult(+req.params.id);
+
+      return res.status(200).json({
+        message: 'Success',
+        data: result,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * Download test result
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, test result pdf data
+   */
+  static async downloadTestResult(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { patientInfo, testResults } = await LaboratoryService.downloadTestResult(
+        +req.params.id
+      );
+      return downloadTestResult(patientInfo, testResults, res);
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get all samples collected
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with tests data
+   */
+  static async getVerifiedTestResults(req: Request, res: Response, next: NextFunction) {
+    try {
+      const results = await LaboratoryService.getVerifiedResults(req.query);
+
+      return successResponse({ res, message: SUCCESS, httpCode: StatusCodes.OK, data: results });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get all samples collected
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with tests data
+   */
+  static async getTestTodayStats(req: Request, res: Response, next: NextFunction) {
+    try {
+      const stats = await LaboratoryService.getTodayTestStats();
+
+      return successResponse({ res, message: SUCCESS, httpCode: StatusCodes.OK, data: stats });
     } catch (e) {
       return next(e);
     }

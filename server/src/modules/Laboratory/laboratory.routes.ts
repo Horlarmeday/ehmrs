@@ -19,11 +19,15 @@ router.put('/collect-samples', verify, LaboratoryController.collectTestSample);
 router.post('/add-test-result', verify, LaboratoryController.addTestResults);
 router.post('/validate-test-result', verify, LaboratoryController.validateTestResults);
 router.post('/approve-test-result', verify, LaboratoryController.approveTestResults);
+router.post('/download-results/:id', verify, LaboratoryController.downloadTestResult);
 router.get('/samples-to-collect/get', verify, LaboratoryController.samplesToCollect);
 router.get('/samples-to-collect/get/:id', verify, LaboratoryController.getOneSampleToCollect);
 router.get('/samples-collected/get', verify, LaboratoryController.samplesCollected);
 router.get('/samples-collected/get/:id', verify, LaboratoryController.getOneCollectedSample);
 router.get('/test-results/get', verify, LaboratoryController.getTestResults);
+router.get('/test-results/get/:id', verify, LaboratoryController.getTestResult);
+router.get('/verified-results/get', verify, LaboratoryController.getVerifiedTestResults);
+router.get('/today-stats/get', verify, LaboratoryController.getTestTodayStats);
 
 // NHIS tests deprecated
 router.post('/nhis/tests/create', verify, LaboratoryController.createNhisTest);
