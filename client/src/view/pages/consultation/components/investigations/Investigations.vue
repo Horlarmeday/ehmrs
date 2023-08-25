@@ -1,6 +1,6 @@
 <template>
   <div class="flex-row-fluid ml-lg-8">
-    <div class="card card-custom gutter-b">
+    <div class="card-custom gutter-b">
       <div class="card-header pt-5">
         <div class="card-title">
           <span class="card-label font-weight-bolder text-dark">Investigations</span>
@@ -10,16 +10,16 @@
               <span />
             </label>
           </span>
-        </div>
-        <div>
-          <button
-            v-if="selectedInvestigations.length"
-            ref="kt-orderInvestigation-submit"
-            class="btn btn-primary btn-sm float-right mr-2"
-            @click="submitRadiologyTest"
-          >
-            Submit
-          </button>
+          <div>
+            <button
+              v-if="selectedInvestigations.length"
+              ref="kt-orderInvestigation-submit"
+              class="btn btn-primary btn-sm float-right mr-2"
+              @click="submitRadiologyTest"
+            >
+              Submit
+            </button>
+          </div>
         </div>
       </div>
       <hr />
