@@ -1,4 +1,4 @@
-import { PrescribedInvestigation } from '../../../database/models/prescribedInvestigation';
+import { PrescribedInvestigation } from '../../../database/models';
 
 /**
  * prescribe an investigation for patient
