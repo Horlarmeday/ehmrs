@@ -44,7 +44,6 @@ export default {
   },
 
   fetchInventoryItems({ commit }, payload) {
-    console.log(payload);
     return new Promise((resolve, reject) => {
       axios
         .get(`/inventory/get/${payload.inventory}/items`, {

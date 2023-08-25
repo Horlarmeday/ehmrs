@@ -10,13 +10,6 @@ import {
   InventoryItemHistory,
   Staff,
 } from '../../database/models';
-import { InventoryTypes } from './types/inventory.types';
-import { HistoryType } from '../../database/models/inventoryItemHistory';
-
-export const inventories = {
-  Inventory,
-  InventoryItem,
-};
 
 /**
  * receive product(s) into the inventory
@@ -96,7 +89,7 @@ export async function getInventoryItems({ inventory, currentPage = 1, pageLimit 
       },
       {
         model: DosageForm,
-        attributes: ['name'],
+        attributes: ['name', 'id'],
       },
       {
         model: Measurement,
@@ -148,7 +141,7 @@ export async function searchInventoryItems({
       },
       {
         model: DosageForm,
-        attributes: ['name'],
+        attributes: ['name', 'id'],
       },
       {
         model: Measurement,

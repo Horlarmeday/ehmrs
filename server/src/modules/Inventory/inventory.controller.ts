@@ -17,7 +17,6 @@ class InventoryController {
    */
   static async createInventory(req, res, next) {
     const { error } = validateCreateInventory(req.body);
-    console.log(req.body);
     if (error)
       return errorResponse({
         res,
