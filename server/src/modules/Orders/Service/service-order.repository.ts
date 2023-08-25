@@ -14,11 +14,12 @@ export const orderBulkService = async data => {
  * @param data
  * @returns {object} prescribed service data
  */
-export const prescribeService = data => {
-  const { service_id, requester, price, patient_id, visit_id } = data;
+export const prescribeService = async data => {
+  const { service_id, requester, price, patient_id, visit_id, service_type } = data;
 
   return PrescribedService.create({
     service_id,
+    service_type,
     requester,
     price,
     patient_id,

@@ -10,6 +10,7 @@ import { ExportDataType } from '../../modules/Store/types/pharmacy-item.types';
 import { exportDataToCSV, exportDataToExcel, exportDataToPDF } from './fileExport';
 import { v4 as uuidv4 } from 'uuid';
 import moment from 'moment/moment';
+import { Op } from 'sequelize';
 
 const writeFile = promisify(fs.writeFile);
 
@@ -40,10 +41,7 @@ export async function processSnappedPhoto(param: string, patient: string) {
   } else filepath = `server/src/public/images/${fileName}`;
   try {
     await writeFile(filepath, imageBuffer, 'utf8');
-    return {
-      fileName,
-      filepath,
-    };
+    return fileName;
   } catch (e) {
     throw new BadException('ERROR', 500, e);
   }
@@ -163,3 +161,33 @@ export const isToday = (specificDateTime: Date) => {
   const targetDateTime = moment(specificDateTime, 'YYYY-MM-DD HH:mm');
   return currentDateTime.isSame(targetDateTime, 'day');
 };
+
+export const todayQuery = (field: string) => ({
+  [field]: {
+    [Op.gte]: moment()
+      .startOf('day')
+      .toDate(),
+    [Op.lt]: moment()
+      .endOf('day')
+      .toDate(),
+  },
+});
+
+export const dateIntervalQuery = (field: string, start: Date, end: Date) => ({
+  [field]: {
+    [Op.gte]: moment(start)
+      .startOf('day')
+      .toDate(),
+    [Op.lt]: moment(end)
+      .endOf('day')
+      .toDate(),
+  },
+});
+
+export const backlogQuery = (field: string) => ({
+  [field]: {
+    [Op.lt]: moment()
+      .startOf('day')
+      .toDate(),
+  },
+});

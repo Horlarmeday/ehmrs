@@ -1,3 +1,6 @@
+import { SamplePeriod } from '../../modules/Orders/Laboratory/interface/prescribed-test.interface';
+import { backlogQuery, todayQuery } from './helper';
+
 export function padNumberWithZero(num, targetLength = 6) {
   return num.toString().padStart(targetLength, 0);
 }
@@ -29,3 +32,8 @@ export async function getModelById(model, id: number) {
 export async function getNumberOfRecords(model) {
   return model.count();
 }
+
+export const getPeriodQuery = (period: SamplePeriod | null, field: string) => {
+  if (period === SamplePeriod.TODAY) return todayQuery(field);
+  if (period === SamplePeriod.BACKLOG) return backlogQuery(field);
+};

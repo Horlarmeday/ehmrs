@@ -59,7 +59,7 @@ export const exportDataToPDF = (res: Response, data: any[], headers: string[][])
       prepareHeader: () => doc.font('Helvetica-Bold'),
       prepareRow: row => doc.font('Helvetica'),
       // width: 412,
-      // align: ['center', 'center', 'cent er'],
+      // align: ['center', 'center', 'center'],
     }
   );
 
