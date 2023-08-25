@@ -83,7 +83,7 @@
                   <span
                     :class="displayLabel(patient.insurance_id)"
                     class="label label-lg label-inline"
-                    >{{ displayInsuranceType(patient.insurance_id) }}</span
+                    >{{ displayPatientType(patient.insurance_id) }}</span
                   >
                 </td>
                 <td class="pr-0">
@@ -92,7 +92,10 @@
                   }}</span>
                 </td>
                 <td class="pr-0">
-                  <router-link to="#" class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3">
+                  <router-link
+                    :to="`/patient/health-insurance/${patient.id}`"
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
+                  >
                     <edit-icon />
                   </router-link>
                   <a
@@ -178,22 +181,16 @@ export default {
       this.displayPrompt = false;
     },
 
-    displayLabel(insurance) {
-      if (insurance === 1) return 'label-light-primary';
-      if (insurance === 2) return 'label-light-warning';
-      if (insurance === 3) return 'label-light-success';
-      if (insurance === 4) return 'label-light-danger';
-      if (insurance === 4) return 'label-light-dark';
+    displayLabel(type) {
+      if (type === 'Principal') return 'label-light-primary';
+      if (type === 'Dependant') return 'label-light-danger';
       return 'label-light-info';
     },
 
-    displayInsuranceType(insurance) {
-      if (insurance === 1) return 'NHIS';
-      if (insurance === 2) return 'FHSS';
-      if (insurance === 3) return 'PHIS';
-      if (insurance === 4) return 'Retainership';
-      if (insurance === 4) return 'Private';
-      return 'Cash';
+    displayPatientType(type) {
+      if (type === 'Dependant') return 'DEPENDANT';
+      if (type === 'Principal') return 'PATIENT';
+      return 'PATIENT';
     },
 
     searchByDate(start, end) {

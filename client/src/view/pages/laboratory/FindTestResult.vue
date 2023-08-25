@@ -84,9 +84,12 @@
                   }}</span>
                 </td>
                 <td class="pr-0">
-                  <a href="#" class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3">
-                    <arrow-up-icon />
-                  </a>
+                  <router-link
+                    :to="`/laboratory/test-result/${result.id}`"
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
+                  >
+                    <arrow-right-icon />
+                  </router-link>
                 </td>
               </tr>
             </tbody>
@@ -102,7 +105,7 @@
         />
       </div>
       <p
-        v-if="!results.length"
+        v-if="!queriedItems"
         class="font-weight-bolder card-body pt-0 pb-3 text-center text-dark-40"
       >
         No Results
@@ -113,12 +116,12 @@
 </template>
 <script>
 import DateFilter from '@/utils/DateFilter.vue';
-import ArrowUpIcon from '@/assets/icons/ArrowUpIcon.vue';
 import Pagination from '@/utils/Pagination.vue';
 import { setUrlQueryParams } from '@/common/common';
+import ArrowRightIcon from "@/assets/icons/ArrowRightIcon.vue";
 export default {
   name: 'FindResult',
-  components: { Pagination, ArrowUpIcon, DateFilter },
+  components: { ArrowRightIcon, Pagination, DateFilter },
   data: () => ({
     search: '',
     currentPage: 1,

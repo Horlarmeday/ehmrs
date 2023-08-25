@@ -15,11 +15,11 @@
 import Sidebar from '../components/medications/SideBar.vue';
 import Medications from '../components/medications/Medications.vue';
 const TabMapping = {
-  '#medications': Medications
-}
+  '#medications': Medications,
+};
 
 export default {
-  name: "Medications",
+  name: 'Medications',
   data() {
     return {
       activeTab: '',
@@ -32,6 +32,4 @@ export default {
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
