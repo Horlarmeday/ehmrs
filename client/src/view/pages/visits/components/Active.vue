@@ -14,14 +14,14 @@
         <div>
           <img alt="Pic" src="/media/users/blank.png" width="50" class="mb-2" />
         </div>
-        <p class="mb-0">
+        <p class="mb-0 font-size-lg">
           <strong
             >{{ shortenName(visit.patient.fullname, 11) }}
             <span>{{ displayEllipsis(visit.patient.fullname) }}</span></strong
           >
         </p>
         <p class="mb-0">
-          <small class="font-weight-bolder">{{ visit.patient.hospital_id }}</small>
+          <small class="font-size-lg font-weight-bolder">{{ visit.patient.hospital_id }}</small>
         </p>
       </div>
     </div>

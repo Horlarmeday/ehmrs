@@ -422,9 +422,9 @@ export default {
 
     initializeRequest(button, response) {
       this.removeSpinner(button);
-      this.handleSuccess(response);
       this.stopStreamedVideo(this.video);
       this.initValues();
+      this.handleSuccess(response);
     },
 
     notifyPhoto() {
