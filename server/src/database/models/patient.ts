@@ -8,7 +8,7 @@ import {
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
-import { PatientType } from '../../modules/Patient/interface/patient.interface';
+import { PatientType } from '../../modules/Patient/types/patient.types';
 import { Gender, Staff } from './staff';
 import { HMO } from './hmo';
 import { Insurance } from './insurance';
@@ -20,6 +20,7 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
+import { PatientInsurance } from './patientInsurance';
 
 export enum PatientStatus {
   ADMITTED = 'Admitted',
@@ -129,9 +130,10 @@ export class Patient extends Model {
   lga: string;
 
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.STRING,
+    unique: true,
   })
-  hospital_id?: number;
+  hospital_id?: string;
 
   @Column({
     type: DataType.STRING,
@@ -211,6 +213,10 @@ export class Patient extends Model {
   @Column({ type: DataType.INTEGER })
   staff_id?: number;
 
+  @ForeignKey(() => PatientInsurance)
+  @Column({ type: DataType.INTEGER })
+  patient_insurance_id?: number;
+
   @Column({
     type: DataType.STRING,
   })
@@ -257,6 +263,9 @@ export class Patient extends Model {
 
   @BelongsTo(() => Insurance)
   insurance: Insurance;
+
+  @BelongsTo(() => PatientInsurance)
+  patientInsurance: PatientInsurance;
 
   @HasMany(() => Patient)
   dependants: Patient[];

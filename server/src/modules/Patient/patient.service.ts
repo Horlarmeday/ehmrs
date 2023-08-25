@@ -1,10 +1,9 @@
 /* eslint-disable camelcase */
 import { BadException } from '../../common/util/api-error';
 import {
-  createCashPatient,
+  createPatientAccount,
   createDependant,
-  createInsurancePatient,
-  createOrdinaryPatient,
+  createEmergencyPatient,
   findDependantByEnrolleeCode,
   findPatientByPhone,
   getPatientProfile,
@@ -13,10 +12,19 @@ import {
   getPatientsByDate,
   searchPatients,
   updatePatient,
+  addPatientInsurance,
+  getPatientByNameAndPhone,
 } from './patient.repository';
 import { processSnappedPhoto, StatusCodes } from '../../core/helpers/helper';
 import { assignHospitalNumber, uploadImage } from '../../core/command/schedule';
 import { DEPENDANT_EXIST, INTERNAL_ERROR, PATIENT_EXIST } from './messages/response-messages';
+import {
+  AddPatientInsuranceBody,
+  CreatePatientBody,
+  EmergencyPatientBody,
+  PatientType,
+} from './types/patient.types';
+import { prescribeService } from '../Orders/Service/service-order.repository';
 
 class PatientService {
   /**
@@ -24,21 +32,30 @@ class PatientService {
    *
    * @static
    * @returns {json} json object with patient data
-   * @param body
    * @memberOf PatientService
+   * @param createPatientBody
    */
-  static async createCashPatientService(body) {
-    const patient = await findPatientByPhone(body.phone);
+  static async createPatientAccount(createPatientBody: CreatePatientBody) {
+    const patient = await findPatientByPhone(createPatientBody.phone);
     if (patient) throw new BadException('INVALID', StatusCodes.BAD_REQUEST, PATIENT_EXIST);
 
     try {
       // Save photo to disk
-      const { filepath, fileName } = await processSnappedPhoto(body.photo, body.firstname);
+      const fileName = await processSnappedPhoto(
+        createPatientBody.photo,
+        createPatientBody.firstname
+      );
 
-      const createdPatient = await createCashPatient({ ...body, fileName });
+      const createdPatient = await createPatientAccount({ ...createPatientBody, fileName });
       await assignHospitalNumber(createdPatient.id);
-      // upload patient to box in the background
-      await uploadImage(body.photo, createdPatient);
+      if (createPatientBody.service_id)
+        await prescribeService({
+          service_id: createPatientBody.service_id,
+          patient_id: createdPatient.id,
+          price: createPatientBody.registration_fee,
+          service_type: 'Cash',
+        });
+      // await uploadImage(body.photo, createdPatient);
       return createdPatient;
     } catch (e) {
       throw new BadException('Error', StatusCodes.SERVER_ERROR, e.message);
@@ -46,22 +63,27 @@ class PatientService {
   }
 
   /**
-   * create health insurance patient account along with his dependants
+   * set patient health insurance and dependants
    *
    * @static
    * @returns {json} json object with patient data
-   * @param body
    * @memberOf PatientService
+   * @param patientInsuranceBody
    */
-  static async createInsurancePatientService(body) {
-    const user = await findPatientByPhone(body.phone);
-    if (user) throw new BadException('INVALID', StatusCodes.BAD_REQUEST, PATIENT_EXIST);
+  static async addPatientInsurance(patientInsuranceBody: AddPatientInsuranceBody) {
+    const { patient_id, dependants } = patientInsuranceBody;
+    let updatedDependants;
 
     try {
-      // Save photo to disk
-      const { fileName } = await processSnappedPhoto(body.photo, body.firstname);
-
-      return createInsurancePatient({ ...body, fileName });
+      if (dependants?.length) {
+        updatedDependants = dependants.map(async dependant => ({
+          ...dependant,
+          principal_id: patient_id,
+          patient_type: PatientType.DEPENDANT,
+          photo: await processSnappedPhoto(dependant.photo, dependant.firstname),
+        }));
+      }
+      return addPatientInsurance({ ...patientInsuranceBody, dependants: updatedDependants });
     } catch (e) {
       throw new BadException('Error', StatusCodes.SERVER_ERROR, INTERNAL_ERROR);
     }
@@ -72,14 +94,14 @@ class PatientService {
    *
    * @static
    * @returns {json} json object with patient data
-   * @param body
    * @memberOf PatientService
+   * @param emergencyPatientBody
    */
-  static async createOrdinaryPatientService(body) {
-    const patient = await findPatientByPhone(body.phone);
+  static async createEmergencyPatient(emergencyPatientBody: EmergencyPatientBody) {
+    const patient = await findPatientByPhone(emergencyPatientBody.phone);
     if (patient) throw new BadException('INVALID', StatusCodes.BAD_REQUEST, PATIENT_EXIST);
 
-    const createdPatient = await createOrdinaryPatient(body);
+    const createdPatient = await createEmergencyPatient(emergencyPatientBody);
     await assignHospitalNumber(createdPatient.id);
     return createdPatient;
   }
@@ -151,7 +173,7 @@ class PatientService {
   }
 
   /**
-   * get a patient profile by Id
+   * get a patient profile by id
    *
    * @static
    * @returns {json} json object with patient data
@@ -160,6 +182,18 @@ class PatientService {
    */
   static async getPatientProfile(id) {
     return getPatientProfile(id);
+  }
+
+  /**
+   * get a patient profile by name and phone
+   *
+   * @static
+   * @returns {json} json object with patient data
+   * @memberOf PatientService
+   * @param body
+   */
+  static async getPatientByNameAndPhone(body) {
+    return getPatientByNameAndPhone(body);
   }
 }
 export default PatientService;

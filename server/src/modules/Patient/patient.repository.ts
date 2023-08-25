@@ -1,13 +1,10 @@
 /* eslint-disable camelcase */
 import { Op } from 'sequelize';
-import { delay, processArray } from '../../core/helpers/general';
-import { processSnappedPhoto } from '../../core/helpers/helper';
 import { assignHospitalNumber } from '../../core/command/schedule';
-import { PatientType } from './interface/patient.interface';
-import { HMO, Patient, Insurance } from '../../database/models';
+import { PatientType } from './types/patient.types';
+import { HMO, Insurance, Patient, PatientInsurance } from '../../database/models';
 import sequelizeConnection from '../../database/config/config';
-
-// const db = require('../../database/models');
+import { BadException } from '../../common/util/api-error';
 
 /**
  * query staff account in the DB by phone
@@ -50,11 +47,11 @@ export const getPatientWithInsurance = (patient_id: number) => {
 };
 
 /**
- * create a cash patient account
+ * create a patient account
  * @param data
  * @returns {object} patient data
  */
-export async function createCashPatient(data): Promise<Patient> {
+export async function createPatientAccount(data): Promise<Patient> {
   const {
     firstname,
     email,
@@ -105,136 +102,81 @@ export async function createCashPatient(data): Promise<Patient> {
 }
 
 /**
- * create a dependant by from group of dependants
- *
- * @param dependant
- * @returns {object} of dependant
- */
-async function delayedLog(dependant) {
-  await delay();
-  const { fileName } = await processSnappedPhoto(dependant.photo, dependant.firstname);
-
-  const patient = await Patient.create({
-    firstname: dependant.firstname,
-    lastname: dependant.lastname,
-    phone: dependant.phone,
-    gender: dependant.gender,
-    insurance_id: dependant.insurance_id,
-    hmo_id: dependant.hmo_id,
-    date_of_birth: dependant.date_of_birth,
-    address: dependant.address,
-    enrollee_code: dependant.enrollee_code,
-    photo: fileName,
-    relationship: dependant.relationship,
-    plan: dependant.plan,
-    staff_id: dependant.staff_id,
-    principal_id: dependant.patient_id,
-    patient_type: PatientType.DEPENDANT,
-    country: dependant.country,
-    state: dependant.state,
-    lga: dependant.lga,
-    religion: dependant.religion,
-  });
-  await assignHospitalNumber(patient.id);
-  return patient;
-}
-
-/**
  * create a health insurance patient account
  * @param data
  * @returns {object} patient data
  */
-export async function createInsurancePatient(data) {
+export const addPatientInsurance = async data => {
   const {
-    firstname,
-    lastname,
-    email,
-    middlename,
-    phone,
-    next_of_kin_name,
-    next_of_kin_phone,
-    next_of_kin_address,
-    occupation,
-    marital_status,
-    address,
-    gender,
-    date_of_birth,
     insurance_id,
     hmo_id,
     plan,
-    country,
-    state,
-    lga,
-    religion,
-    fileName,
-    relationship,
-    alt_phone,
     staff_id,
     enrollee_code,
     organization,
     dependants,
+    patient_id,
   } = data;
 
   return sequelizeConnection.transaction(async t => {
-    const patient = await Patient.create(
+    const patientInsurance = await PatientInsurance.findOne({
+      where: { patient_id, insurance_id, hmo_id },
+    });
+    if (patientInsurance)
+      throw new BadException('Exist', 400, 'Patient already subscribed to this HMO');
+
+    const insurance = await PatientInsurance.create(
       {
-        firstname,
-        lastname,
-        middlename,
-        email,
-        next_of_kin_phone,
-        phone,
-        next_of_kin_address,
-        occupation,
-        next_of_kin_name,
-        marital_status,
-        address,
-        gender,
-        date_of_birth,
-        country,
-        state,
-        lga,
-        religion,
-        enrollee_code,
-        photo: fileName,
-        relationship,
-        alt_phone,
-        staff_id,
-        has_insurance: true,
         insurance_id,
         hmo_id,
         plan,
+        staff_id,
+        enrollee_code,
         organization,
-        patient_type: PatientType.PRINCIPAL,
+        patient_id,
       },
       { transaction: t }
     );
-    await assignHospitalNumber(patient.id);
+
+    const patient = await Patient.update(
+      {
+        patient_insurance_id: insurance.id,
+      },
+      { where: { id: patient_id }, transaction: t }
+    );
+
     // check if there are dependants in the body
     if (dependants.length) {
-      const modifiedDependants = dependants.map(d => ({
-        ...d,
-        staff_id,
-        patient_id: patient.id,
-        country: patient.country,
-        state: patient.state,
-        lga: patient.lga,
-        religion: patient.religion,
-      }));
-      const createdDependants = await processArray(modifiedDependants, delayedLog);
-
-      return { patient, createdDependants };
+      const modifiedDependants = await Patient.bulkCreate(dependants, { transaction: t });
+      await Promise.all(
+        modifiedDependants.map(dependant => {
+          PatientInsurance.create(
+            {
+              insurance_id,
+              hmo_id,
+              plan,
+              staff_id,
+              enrollee_code: dependant.enrollee_code,
+              organization,
+              patient_id: dependant.id,
+            },
+            { transaction: t }
+          );
+          assignHospitalNumber(dependant.id);
+        })
+      );
+      return { patient, modifiedDependants };
     }
     return patient;
   });
-}
+};
 
 /**
  * create a ordinary patient account
  * @param data
  * @returns {object} patient data
  */
-export async function createOrdinaryPatient(data) {
+export async function createEmergencyPatient(data) {
   const {
     firstname,
     lastname,
@@ -388,7 +330,7 @@ export async function searchPatients(currentPage = 1, pageLimit = 10, search) {
         },
         {
           hospital_id: {
-            [Op.like]: `%${search}%`,
+            [Op.like]: `%${search}`,
           },
         },
       ],
@@ -417,3 +359,12 @@ export async function getPatientProfile(data) {
     include: [{ model: Insurance }, { model: HMO }, { model: Patient, as: 'dependants' }],
   });
 }
+
+/**
+ * get Patient by firstname and phone
+ * @param data
+ * @returns {object} prescribed service data
+ */
+export const getPatientByNameAndPhone = async data => {
+  return await Patient.findOne({ where: { firstname: data.firstname, phone: data.phone } });
+};
