@@ -34,8 +34,12 @@
                       <input v-model="test.result" type="text" class="" />
                     </td>
                     <td>
-                      <span v-b-tooltip.hover title="Result was rejected" class="mr-4" v-if="test.status === 'Rejected'"
-                      ><i class="flaticon2-warning text-warning icon-lg" />
+                      <span
+                        v-b-tooltip.hover
+                        title="Result was rejected"
+                        class="mr-4"
+                        v-if="test.status === 'Rejected'"
+                        ><i class="flaticon2-warning text-warning icon-lg" />
                       </span>
                     </td>
                     <td>
@@ -127,11 +131,11 @@ export default {
           name: test.test.name,
           patient_id: this.patient_id,
           disabledReferral: true,
-          result: test?.result?.result,
-          is_abnormal: test?.result?.is_abnormal,
-          institute_referred: test?.result?.institute_referred,
-          referral_reason: test?.result?.referral_reason,
-          comments: test?.result?.comments,
+          result: test?.result?.result || '',
+          is_abnormal: test?.result?.is_abnormal || false,
+          institute_referred: test?.result?.institute_referred || '',
+          referral_reason: test?.result?.referral_reason || '',
+          comments: test?.result?.comments || '',
           status: test?.result?.status,
         })),
       })),

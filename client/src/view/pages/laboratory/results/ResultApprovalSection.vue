@@ -40,7 +40,7 @@
             </td>
             <td>
               <label v-b-tooltip.hover title="Enable to approve test" class="checkbox">
-                <input type="checkbox" v-model="result.test_status" value="Approved" />
+                <input type="checkbox" v-model="result.test_status" />
                 <span></span>
               </label>
             </td>
@@ -104,7 +104,7 @@ export default {
           result: test?.result?.result,
           is_abnormal: test?.result?.is_abnormal,
           status: test?.result?.status,
-          test_status: test.status,
+          test_status: false,
           comments: test?.result?.comments,
         }))
       ),
@@ -127,7 +127,7 @@ export default {
 
     approveTests() {
       const results = this.results.filter(({ status }) => status === 'Accepted');
-      if (results.some(({ test_status }) => !test_status)) {
+      if (!results.some(({ test_status }) => test_status)) {
         return this.$notify({
           group: 'foo',
           title: 'Error message',
