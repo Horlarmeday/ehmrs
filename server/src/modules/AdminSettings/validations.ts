@@ -21,6 +21,7 @@ export function validateWard(ward) {
   const schema = Joi.object({
     name: Joi.string().required(),
     service_id: Joi.number().required(),
+    occupant_type: Joi.string().required(),
   });
   return schema.validate(ward);
 }

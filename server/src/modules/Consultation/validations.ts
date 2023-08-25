@@ -2,9 +2,7 @@ import Joi from 'joi';
 
 export function validateObservation(observation) {
   const schema = Joi.object({
-    complaint_note: Joi.string()
-      .allow('')
-      .optional(),
+    complaint_note: Joi.string().required(),
     history_note: Joi.string()
       .allow('')
       .optional(),
@@ -26,7 +24,7 @@ export function validateObservation(observation) {
             .optional(),
         })
       )
-      .required(),
+      .optional(),
     diagnosis: Joi.array()
       .items(
         Joi.object({

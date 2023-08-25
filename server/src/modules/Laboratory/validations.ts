@@ -12,6 +12,8 @@ export function validateTest(test) {
     name: Joi.string().required(),
     price: Joi.number().required(),
     sample_id: Joi.number().required(),
+    result_unit: Joi.string().required(),
+    valid_range: Joi.string().required(),
   });
   return schema.validate(test);
 }

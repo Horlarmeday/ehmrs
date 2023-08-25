@@ -37,3 +37,24 @@ export function validateInvestigationTariff(investigation) {
   });
   return schema.validate(investigation);
 }
+
+export function validateAddInvestigationResults(result) {
+  const schema = Joi.object({
+    results: Joi.array()
+      .items(
+        Joi.object({
+          prescribed_investigation_id: Joi.number().required(),
+          investigation_prescription_id: Joi.number().required(),
+          name: Joi.string().required(),
+          patient_id: Joi.number().required(),
+          status: Joi.string()
+            .valid('Accepted', 'Rejected', 'Pending')
+            .required(),
+          result: Joi.string().required(),
+        })
+      )
+      .required(),
+  });
+
+  return schema.validate(result);
+}

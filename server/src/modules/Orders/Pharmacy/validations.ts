@@ -18,6 +18,9 @@ export function validateDrugPrescription(drug) {
     notes: Joi.string()
       .optional()
       .allow(''),
+    drug_group: Joi.string()
+      .optional()
+      .allow(''),
     total_price: Joi.number().required(),
     drug_id: Joi.number().required(),
     drug_type: Joi.string().valid(DrugType.CASH, DrugType.NHIS),
