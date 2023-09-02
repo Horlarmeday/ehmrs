@@ -4,8 +4,10 @@ import {
   getHMOs,
   getInsuranceHMOs,
   getInsurances,
+  getPatientHealthInsurances,
   searchHMOs,
   searchInsurances,
+  setInsuranceAsDefault,
 } from './insurance.repository';
 
 class InsuranceService {
@@ -77,6 +79,31 @@ class InsuranceService {
     }
 
     return getHMOs();
+  }
+
+  /**
+   * get a patient health insurances
+   *
+   * @static
+   * @returns {json} json object with patient insurances data
+   * @memberOf InsuranceService
+   * @param patientId
+   */
+  static async getPatientHealthInsurances(patientId: number) {
+    return getPatientHealthInsurances(patientId);
+  }
+
+  /**
+   * set insurance as default
+   *
+   * @static
+   * @returns {json} json object with patient insurance data
+   * @param body
+   * @memberOf InsuranceService
+   */
+  static async setInsuranceAsDefault(body) {
+    const { insurance_id, patient_id } = body;
+    return setInsuranceAsDefault(insurance_id, patient_id);
   }
 }
 export default InsuranceService;
