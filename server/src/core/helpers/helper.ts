@@ -25,7 +25,7 @@ export type ExportSelectedDataType = {
  * process base64 image string into an actual image a writes to disk
  * @param param - base64 image string
  * @param patient - patient firstname
- * @returns {Promise<{fileName: string, filepath: string}>}
+ * @returns {Promise<{fileName: string}>}
  */
 export async function processSnappedPhoto(param: string, patient: string) {
   const matches = param.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/); // checks if its a base64 image
@@ -129,7 +129,7 @@ export const calcLimitAndOffset = (page: number, size: number) => {
   return { limit, offset };
 };
 
-export const canUsePriceTariff = (patient: Patient) => !!(patient?.insurance_id && patient?.hmo_id);
+export const canUsePriceTariff = (patient: Patient) => patient?.has_insurance;
 
 export const exportSelectedData = ({ res, dataType, data, headers }: ExportSelectedDataType) => {
   switch (dataType) {

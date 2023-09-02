@@ -94,3 +94,5 @@ export const parseJwt = token => {
     throw new Error(error);
   }
 }
+
+export const EXCLUDED_INSURANCE = ['Retainership']
