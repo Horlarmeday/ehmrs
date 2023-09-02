@@ -1,11 +1,9 @@
 /* eslint-disable camelcase */
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { describe, afterAll, it, expect, beforeAll } from '@jest/globals';
 import server from '../../core/startup/server';
 import { OPD } from '../../core/constants';
 import request from 'supertest';
-
-const { Visit, Staff } = require('../../database/models');
+import { Visit, Staff } from '../../database/models';
 
 describe('Store Endpoints /visits', () => {
   let token;
@@ -33,7 +31,7 @@ describe('Store Endpoints /visits', () => {
     await Visit.destroy({ truncate: true, cascade: false });
   });
 
-  it('should create a new patient visit', async () => {
+  it('should page a new patient visit', async () => {
     const res = await request(server)
       .post('/api/visits/create')
       .set('Authorization', `Bearer ${token}`)

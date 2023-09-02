@@ -9,7 +9,7 @@ import { NextFunction, Request, Response } from 'express';
 
 class VisitController {
   /**
-   * create a patient visit
+   * page a patient visit
    *
    * @static
    * @param {object} req express request object

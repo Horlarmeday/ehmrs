@@ -2,11 +2,12 @@
 
 import { Op, Sequelize } from 'sequelize';
 
-import { Visit, Patient, Insurance, HMO } from '../../database/models';
+import { Visit, Patient } from '../../database/models';
+import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 
 const patientAttributes = () => ['fullname', 'photo', 'hospital_id', 'firstname', 'lastname'];
 /**
- * create a patient visit
+ * page a patient visit
  * @param data
  * @returns {object} visit data
  */
@@ -57,7 +58,7 @@ export async function getVisitById(id: number) {
  * @param id
  */
 export async function getVisit(id: number) {
-  return Visit.findOne({
+  const visit = await Visit.findOne({
     where: { id },
     include: [
       {
@@ -71,23 +72,16 @@ export async function getVisit(id: number) {
           'photo_url',
           'gender',
           'hospital_id',
-          'insurance_id',
-          'hmo_id',
           'has_insurance',
-        ],
-        include: [
-          {
-            model: Insurance,
-            attributes: ['name'],
-          },
-          {
-            model: HMO,
-            attributes: ['name'],
-          },
         ],
       },
     ],
   });
+  const insurance = await getPatientInsuranceQuery({
+    patient_id: visit.patient_id,
+    is_default: true,
+  });
+  return { ...visit.toJSON(), insurance };
 }
 
 /** ***********************
