@@ -1,11 +1,8 @@
 /* eslint-disable camelcase */
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { afterAll, beforeAll, describe, expect, it } from '@jest/globals';
 import server from '../../core/startup/server';
-
-// const fs = require('fs');
-const request = require('supertest');
-const file = require('./image.json');
+import request from 'supertest';
+import file from './image.json';
 
 // function readJsonFile() {
 //   try {
@@ -16,7 +13,7 @@ const file = require('./image.json');
 // }
 
 // const file = readJsonFile();
-const { Patient, Staff, Dependant } = require('../../database/models');
+import { Patient, Staff } from '../../database/models';
 
 describe('Patient Endpoints /patients', () => {
   let token;
@@ -44,11 +41,10 @@ describe('Patient Endpoints /patients', () => {
 
   afterAll(async () => {
     await Patient.destroy({ truncate: true, cascade: false });
-    await Dependant.destroy({ truncate: true, cascade: false });
     await Staff.destroy({ truncate: true, cascade: false });
   });
 
-  it.only('should create a new cash patient', async () => {
+  it('should create a new cash patient', async () => {
     const res = await request(server)
       .post('/api/patients/create/cash')
       .set('Authorization', `Bearer ${token}`)

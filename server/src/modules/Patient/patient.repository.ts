@@ -1,10 +1,12 @@
 /* eslint-disable camelcase */
 import { Op } from 'sequelize';
-import { assignHospitalNumber } from '../../core/command/schedule';
+import { assignHospitalNumber } from '../../core/command/worker/schedule';
 import { PatientType } from './types/patient.types';
-import { HMO, Insurance, Patient, PatientInsurance } from '../../database/models';
+import { Insurance, Patient, PatientInsurance } from '../../database/models';
 import sequelizeConnection from '../../database/config/config';
 import { BadException } from '../../common/util/api-error';
+import { PATIENT_HAS_INSURANCE } from './messages/response-messages';
+import { getPatientInsuranceQuery, setInsuranceAsDefault } from '../Insurance/insurance.repository';
 
 /**
  * query staff account in the DB by phone
@@ -71,15 +73,15 @@ export async function createPatientAccount(data): Promise<Patient> {
     lga,
     religion,
     fileName,
-    relationship,
+    next_of_kin_relationship,
     alt_phone,
     staff_id,
   } = data;
 
   return Patient.create({
-    firstname,
-    lastname,
-    middlename,
+    firstname: firstname.replace(/ +(?= )/g, '').trim(),
+    lastname: lastname.replace(/ +(?= )/g, '').trim(),
+    middlename: middlename?.replace(/ +(?= )/g, '')?.trim(),
     email,
     phone,
     next_of_kin_phone,
@@ -95,7 +97,7 @@ export async function createPatientAccount(data): Promise<Patient> {
     lga,
     religion,
     photo: fileName,
-    relationship,
+    next_of_kin_relationship,
     alt_phone,
     staff_id,
   });
@@ -118,12 +120,11 @@ export const addPatientInsurance = async data => {
     patient_id,
   } = data;
 
-  return sequelizeConnection.transaction(async t => {
+  const result = await sequelizeConnection.transaction(async t => {
     const patientInsurance = await PatientInsurance.findOne({
       where: { patient_id, insurance_id, hmo_id },
     });
-    if (patientInsurance)
-      throw new BadException('Exist', 400, 'Patient already subscribed to this HMO');
+    if (patientInsurance) throw new BadException('Exist', 400, PATIENT_HAS_INSURANCE);
 
     const insurance = await PatientInsurance.create(
       {
@@ -138,19 +139,19 @@ export const addPatientInsurance = async data => {
       { transaction: t }
     );
 
-    const patient = await Patient.update(
+    await Patient.update(
       {
-        patient_insurance_id: insurance.id,
+        has_insurance: true,
       },
       { where: { id: patient_id }, transaction: t }
     );
 
     // check if there are dependants in the body
-    if (dependants.length) {
+    if (dependants?.length) {
       const modifiedDependants = await Patient.bulkCreate(dependants, { transaction: t });
       await Promise.all(
-        modifiedDependants.map(dependant => {
-          PatientInsurance.create(
+        modifiedDependants.map(async dependant => {
+          await PatientInsurance.create(
             {
               insurance_id,
               hmo_id,
@@ -162,13 +163,14 @@ export const addPatientInsurance = async data => {
             },
             { transaction: t }
           );
-          assignHospitalNumber(dependant.id);
+          await assignHospitalNumber(dependant.id);
         })
       );
-      return { patient, modifiedDependants };
     }
-    return patient;
+    return insurance;
   });
+  await setInsuranceAsDefault(result.id, patient_id);
+  return result;
 };
 
 /**
@@ -195,9 +197,9 @@ export async function createEmergencyPatient(data) {
   } = data;
 
   return Patient.create({
-    firstname,
-    lastname,
-    middlename,
+    firstname: firstname.replace(/ +(?= )/g, '').trim(),
+    lastname: lastname.replace(/ +(?= )/g, '').trim(),
+    middlename: middlename?.replace(/ +(?= )/g, '')?.trim(),
     email,
     phone,
     marital_status,
@@ -242,10 +244,13 @@ export async function createDependant(data) {
     plan,
     staff_id,
     patient_id,
+    lga,
+    country,
+    state,
   } = data;
   return Patient.create({
-    firstname,
-    lastname,
+    firstname: firstname.replace(/ +(?= )/g, '').trim(),
+    lastname: lastname.replace(/ +(?= )/g, '').trim(),
     phone,
     gender,
     insurance_id,
@@ -257,6 +262,9 @@ export async function createDependant(data) {
     relationship,
     plan,
     staff_id,
+    lga,
+    country,
+    state,
     principal_id: patient_id,
     patient_type: PatientType.DEPENDANT,
   });
@@ -350,14 +358,16 @@ export async function updatePatient(data): Promise<Patient> {
 
 /**
  * get one patient
- * @param data
  * @returns {object} return patient data
+ * @param patient_id
  */
-export async function getPatientProfile(data) {
-  return Patient.findOne({
-    where: { id: data },
-    include: [{ model: Insurance }, { model: HMO }, { model: Patient, as: 'dependants' }],
+export async function getPatientProfile(patient_id: number) {
+  const patient = await Patient.findOne({
+    where: { id: patient_id },
+    include: [Patient],
   });
+  const insurance = await getPatientInsuranceQuery({ patient_id, is_default: true });
+  return { ...patient.toJSON(), insurance };
 }
 
 /**

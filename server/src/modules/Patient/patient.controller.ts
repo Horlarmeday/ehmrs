@@ -204,16 +204,11 @@ class PatientController {
     res: Response,
     next: NextFunction
   ): Promise<SuccessResponse> {
-    const { patient_id } = req.body;
-    if (!patient_id)
-      return errorResponse({
-        res,
-        message: PATIENT_ID_REQUIRED,
-        httpCode: StatusCodes.BAD_REQUEST,
-      });
-
     try {
-      const patient = await PatientService.updatePatientService(req.body);
+      const patient = await PatientService.updatePatientService({
+        ...req.body,
+        patient_id: req.params.id,
+      });
 
       return successResponse({
         res,

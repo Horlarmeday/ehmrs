@@ -16,7 +16,7 @@ import {
   getPatientByNameAndPhone,
 } from './patient.repository';
 import { processSnappedPhoto, StatusCodes } from '../../core/helpers/helper';
-import { assignHospitalNumber, uploadImage } from '../../core/command/schedule';
+import { assignHospitalNumber, uploadImage } from '../../core/command/worker/schedule';
 import { DEPENDANT_EXIST, INTERNAL_ERROR, PATIENT_EXIST } from './messages/response-messages';
 import {
   AddPatientInsuranceBody,
@@ -55,7 +55,7 @@ class PatientService {
           price: createPatientBody.registration_fee,
           service_type: 'Cash',
         });
-      // await uploadImage(body.photo, createdPatient);
+      // await uploadImage(body.photo, createdPatient.id);
       return createdPatient;
     } catch (e) {
       throw new BadException('Error', StatusCodes.SERVER_ERROR, e.message);
@@ -71,17 +71,22 @@ class PatientService {
    * @param patientInsuranceBody
    */
   static async addPatientInsurance(patientInsuranceBody: AddPatientInsuranceBody) {
-    const { patient_id, dependants } = patientInsuranceBody;
-    let updatedDependants;
+    const { patient_id, dependants, staff_id } = patientInsuranceBody;
+    let updatedDependants = [];
 
     try {
       if (dependants?.length) {
-        updatedDependants = dependants.map(async dependant => ({
-          ...dependant,
-          principal_id: patient_id,
-          patient_type: PatientType.DEPENDANT,
-          photo: await processSnappedPhoto(dependant.photo, dependant.firstname),
-        }));
+        updatedDependants = await Promise.all(
+          dependants.map(async dependant => ({
+            ...dependant,
+            firstname: dependant.firstname.replace(/ +(?= )/g, '').trim(),
+            lastname: dependant.lastname.replace(/ +(?= )/g, '').trim(),
+            principal_id: patient_id,
+            patient_type: PatientType.DEPENDANT,
+            photo: await processSnappedPhoto(dependant.photo, dependant.firstname),
+            staff_id,
+          }))
+        );
       }
       return addPatientInsurance({ ...patientInsuranceBody, dependants: updatedDependants });
     } catch (e) {
@@ -118,7 +123,10 @@ class PatientService {
     const dependant = await findDependantByEnrolleeCode(body.enrollee_code);
     if (dependant) throw new BadException('INVALID', StatusCodes.BAD_REQUEST, DEPENDANT_EXIST);
 
-    const patient = await createDependant(body);
+    // Save photo to disk
+    const fileName = await processSnappedPhoto(body.photo, body.firstname);
+
+    const patient = await createDependant({ ...body, photo: fileName });
     await assignHospitalNumber(patient.id);
     return patient;
   }
@@ -157,7 +165,15 @@ class PatientService {
    * @memberOf PatientService
    */
   static async updatePatientService(body) {
-    return updatePatient(body);
+    let photo;
+    if (body.picture) {
+      photo = await processSnappedPhoto(body.picture, body.patient.firstname);
+    }
+    return updatePatient({
+      ...body.patient,
+      patient_id: body.patient_id,
+      ...(body.picture && { photo }),
+    });
   }
 
   /**
