@@ -2,7 +2,7 @@
 import bcrypt from 'bcryptjs';
 import { getStaffById, getStaffByPhone, getStaffByUsername } from '../Staff/staff.repository';
 import { BadException } from '../../common/util/api-error';
-import { sendGeneratedPassword } from '../../core/command/schedule';
+import { sendGeneratedPassword } from '../../core/command/worker/schedule';
 import uuidv1 from 'uuid/v4';
 import { Status } from '../Staff/interface/staff.interface';
 import { ChangePasswordParam, LoginParams } from './interface/auth.interface';
