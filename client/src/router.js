@@ -55,7 +55,7 @@ const router = new Router({
             {
               path: 'choose-patient-type',
               name: 'choose-patient-type',
-              component: () => import('@/view/pages/patient/create/Patient.vue'),
+              component: () => import('@/view/pages/patient/page/Patient.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -63,7 +63,7 @@ const router = new Router({
             {
               path: 'create-account',
               name: 'create-account',
-              component: () => import('@/view/pages/patient/create/CreatePatientAccount.vue'),
+              component: () => import('@/view/pages/patient/page/CreatePatientAccount.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -71,7 +71,7 @@ const router = new Router({
             {
               path: 'create-emergency-account',
               name: 'create-emergency-account',
-              component: () => import('@/view/pages/patient/create/CreateEmergencyAccount.vue'),
+              component: () => import('@/view/pages/patient/page/CreateEmergencyAccount.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -95,7 +95,31 @@ const router = new Router({
             {
               path: 'health-insurance/:id',
               name: 'health-insurance-patient',
-              component: () => import('@/view/pages/patient/create/AddPatientInsurance.vue'),
+              component: () => import('@/view/pages/patient/page/AddPatientInsurance.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'dependants/:id',
+              name: 'patient-dependants',
+              component: () => import('@/view/pages/patient/page/Dependants.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'health-insurance/default/:id',
+              name: 'health-insurance-default',
+              component: () => import('@/view/pages/patient/page/ChangeInsurance.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'edit/:id',
+              name: 'profile-edit',
+              component: () => import('@/view/pages/patient/page/EditPatient.vue'),
               meta: {
                 requiresAuth: true,
               },
