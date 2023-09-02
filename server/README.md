@@ -20,7 +20,7 @@ To create a new app, you may choose one of the following methods:
 #### npx
 
 ```bash
-npx create-express-app -n my-app
+npx page-express-app -n my-app
 ```
 _where `my-app` is the name of your project_
 
@@ -39,14 +39,14 @@ npm init express-app -n my-app
 #### Global Installation
 If you installed globally i.e you ran `npm install -g create-express-app`. To create a new project run the command below
 ```bash
-create-express-app -n my-app
+page-express-app -n my-app
 ```
 
 To skip all prompts and go for defaults options, run the command below.
 ```bash
-create-express-app --yes
+page-express-app --yes
 # or 
-npx create-express-app --yes
+npx page-express-app --yes
 # or
 npm init express-app --yes
 ```
