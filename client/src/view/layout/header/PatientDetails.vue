@@ -25,14 +25,16 @@
           }}</span>
         </p>
       </li>
-      <li v-if="patient.insurance_id" class="menu-item">
+      <li v-if="patient.has_insurance" class="menu-item">
         <p class="menu-link">
-          <span class="text-dark font-weight-bolder">{{ patient.insurance.name }}</span>
+          <span class="text-dark font-weight-bolder">{{ patient?.insurance.name }}</span>
         </p>
       </li>
       <li v-if="patient.hmo_id" class="menu-item">
         <p class="menu-link">
-          <span class="menu-text text-dark font-weight-bolder">{{ patient.hmo.name }}</span>
+          <span class="menu-text text-dark font-weight-bolder">{{
+            patient?.hmo.name
+          }}</span>
         </p>
       </li>
     </ul>

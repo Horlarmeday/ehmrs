@@ -1,38 +1,49 @@
 <template>
   <div>
-    <div class="row">
+    <div v-if="patient" class="row">
       <div class="col-5">
         <b-list-group>
           <b-list-group-item href="#" variant="dark">Personal Information</b-list-group-item>
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             Patient Name
-            <div class="font-weight-boldest text-dark">Bode George</div>
+            <div class="font-weight-boldest text-dark">{{ patient.fullname }}</div>
           </b-list-group-item>
 
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             Patient ID
-            <div class="font-weight-boldest text-dark">SVH/0005</div>
+            <div class="font-weight-boldest text-dark">{{ patient.hospital_id }}</div>
           </b-list-group-item>
 
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             Religion
-            <div class="font-weight-boldest text-dark">Islam</div>
+            <div class="font-weight-boldest text-dark">{{ patient.religion || '-' }}</div>
           </b-list-group-item>
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             Gender
-            <div class="font-weight-boldest text-dark">Male</div>
+            <div class="font-weight-boldest text-dark">{{ patient.gender || '-' }}</div>
           </b-list-group-item>
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             Marital Status
-            <div class="font-weight-boldest text-dark">Married</div>
+            <div class="font-weight-boldest text-dark">{{ patient.marital_status }}</div>
           </b-list-group-item>
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             Date of Birth
-            <div class="font-weight-boldest text-dark">20th May, 1993</div>
+            <div class="font-weight-boldest text-dark">
+              {{ patient.date_of_birth | moment('DD/MM/YYYY') }}
+            </div>
           </b-list-group-item>
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             Occupation
-            <div class="font-weight-boldest text-dark">Nurse</div>
+            <div class="font-weight-boldest text-dark">{{ patient.occupation || '-' }}</div>
+          </b-list-group-item>
+          <b-list-group-item
+            v-if="patient.patient_type === 'Dependant'"
+            class="d-flex justify-content-between align-items-center opacity-75"
+          >
+            Relationship to Principal
+            <div class="font-weight-boldest text-dark">
+              {{ patient.relationship_to_principal || '-' }}
+            </div>
           </b-list-group-item>
         </b-list-group>
       </div>
@@ -41,94 +52,138 @@
           <b-list-group-item href="#" variant="dark">Contact Information</b-list-group-item>
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             Email
-            <div class="font-weight-boldest text-dark">bode@gmail.com</div>
+            <div class="font-weight-boldest text-dark">{{ patient.email || '-' }}</div>
           </b-list-group-item>
 
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             Phone Number
-            <div class="font-weight-boldest text-dark">07073849494</div>
+            <div class="font-weight-boldest text-dark">{{ patient.phone || '-' }}</div>
           </b-list-group-item>
 
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             Address
-            <div class="font-weight-boldest text-dark">21 Restau Street, Kubwa Abuja</div>
+            <div class="font-weight-boldest text-dark">{{ patient.address }}</div>
           </b-list-group-item>
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             Country
-            <div class="font-weight-boldest text-dark">Nigeria</div>
+            <div class="font-weight-boldest text-dark">{{ patient.country }}</div>
           </b-list-group-item>
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             State
-            <div class="font-weight-boldest text-dark">FCT</div>
+            <div class="font-weight-boldest text-dark">{{ patient.state }}</div>
           </b-list-group-item>
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             Local Government
-            <div class="font-weight-boldest text-dark">Abuja Municipal</div>
+            <div class="font-weight-boldest text-dark">{{ patient.lga }}</div>
           </b-list-group-item>
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             Additional Phone Number
-            <div class="font-weight-boldest text-dark">-</div>
+            <div class="font-weight-boldest text-dark">{{ patient.alt_phone || '-' }}</div>
           </b-list-group-item>
         </b-list-group>
       </div>
       <div class="col-2">
         <div class="symbol symbol-150 mr-3">
-          <img alt="Pic" src="/media/users/300_25.jpg" />
+          <img v-if="patient.photo" alt="Pic" :src="`/static/images/${patient.photo}`" />
+          <img v-else alt="Pic" src="/media/users/300_25.jpg" />
         </div>
       </div>
-      <div class="col-5 pt-3">
+      <div v-if="patient.next_of_kin_name" class="col-5 pt-3">
         <b-list-group>
           <b-list-group-item href="#" variant="dark">Next of Kin Information</b-list-group-item>
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             Next of Kin Name
-            <div class="font-weight-boldest text-dark">Friday George</div>
+            <div class="font-weight-boldest text-dark">{{ patient.next_of_kin_name || '-' }}</div>
           </b-list-group-item>
 
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             Next of Kin Address
-            <div class="font-weight-boldest text-dark">Same as above</div>
+            <div class="font-weight-boldest text-dark">
+              {{ patient.next_of_kin_address || '-' }}
+            </div>
           </b-list-group-item>
 
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             Next of Kin Phone
-            <div class="font-weight-boldest text-dark">09087654321</div>
+            <div class="font-weight-boldest text-dark">{{ patient.next_of_kin_phone || '-' }}</div>
           </b-list-group-item>
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             Relationship to Next of Kin
-            <div class="font-weight-boldest text-dark">Brother</div>
+            <div class="font-weight-boldest text-dark">{{ patient.relationship || '-' }}</div>
           </b-list-group-item>
         </b-list-group>
       </div>
-      <div class="col-5 pt-3">
+      <div v-if="patient.has_insurance" class="col-5 pt-3">
         <b-list-group>
-          <b-list-group-item href="#" variant="dark">Health Insurance Information</b-list-group-item>
+          <b-list-group-item href="#" variant="dark"
+            >Health Insurance Information</b-list-group-item
+          >
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             Insurance Name
-            <div class="font-weight-boldest text-dark">NHIS</div>
+            <div class="font-weight-boldest text-dark">
+              {{ patient?.insurance?.insurance?.name }}
+            </div>
           </b-list-group-item>
 
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
-            HMO Name
-            <div class="font-weight-boldest text-dark">Police HMO</div>
+            HMO
+            <div class="font-weight-boldest text-dark">{{ patient?.insurance?.hmo?.name }}</div>
           </b-list-group-item>
 
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             Policy Number
-            <div class="font-weight-boldest text-dark">PO345738</div>
+            <div class="font-weight-boldest text-dark">
+              {{ patient?.insurance?.enrollee_code || '-' }}
+            </div>
           </b-list-group-item>
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             Organization
-            <div class="font-weight-boldest text-dark">Nigerian Police Force</div>
+            <div class="font-weight-boldest text-dark">
+              {{ patient?.insurance?.organization || '-' }}
+            </div>
           </b-list-group-item>
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             Plan
-            <div class="font-weight-boldest text-dark">Standard Plan</div>
+            <div class="font-weight-boldest text-dark">{{ patient?.insurance?.plan || '-' }}</div>
           </b-list-group-item>
         </b-list-group>
       </div>
     </div>
+    <div v-else>
+      <b-progress :value="count" variant="primary" show-progress animated :max="200" />
+    </div>
   </div>
 </template>
 <script>
-export default {};
+export default {
+  data: () => ({
+    count: 0,
+  }),
+
+  props: {
+    patient: {
+      type: Object,
+      required: true,
+      default: () => {},
+    },
+  },
+
+  mounted() {
+    this.countToHundred()
+  },
+
+  methods: {
+    countToHundred() {
+      for (let i = 1; i <= 100; i++) {
+        this.count = i;
+        if (this.patient) break;
+      }
+    },
+  },
+};
 </script>
+<style scoped>
+.symbol.symbol-150 > img {
+  max-width: 250px;
+}
+</style>
