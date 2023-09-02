@@ -22,7 +22,7 @@
           </button>
         </div>
       </div>
-      <hr>
+      <hr />
       <div class="card-body">
         <div class="row">
           <div class="col-lg-3" v-for="(service, i) in services" :key="service.id">
@@ -41,6 +41,8 @@
 </template>
 
 <script>
+import { EXCLUDED_INSURANCE } from '@/common/common';
+
 export default {
   name: 'Services',
   data() {
@@ -64,7 +66,10 @@ export default {
       return this.$store.state.visit.visit;
     },
     showSwitch() {
-      return this.visit?.patient?.has_insurance && this.visit?.patient?.insurance_id !== 4;
+      return (
+        this.visit?.patient?.has_insurance &&
+        !EXCLUDED_INSURANCE.includes(this.visit?.insurance?.insurance?.name)
+      );
     },
   },
   methods: {
@@ -128,7 +133,10 @@ export default {
 
     defaultSwitchPosition() {
       setTimeout(() => {
-        if (this.visit?.patient?.has_insurance && this.visit?.patient?.insurance_id !== 4) {
+        if (
+          this.visit?.patient?.has_insurance &&
+          !EXCLUDED_INSURANCE.includes(this.visit?.insurance?.insurance?.name)
+        ) {
           this.switchPosition = true;
         }
       }, 350);
@@ -141,7 +149,4 @@ export default {
 };
 </script>
 
-
-<style scoped>
-
-</style>
+<style scoped></style>

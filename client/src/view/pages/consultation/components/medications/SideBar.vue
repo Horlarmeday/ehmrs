@@ -67,21 +67,6 @@
                   class="form-control-sm form-control"
                   v-model="dosage_form.name"
                 />
-<!--                <select-->
-<!--                  v-validate="'required'"-->
-<!--                  data-vv-validate-on="blur"-->
-<!--                  class="form-control form-control-sm"-->
-<!--                  v-model="dosage_form"-->
-<!--                  name="dosage_form"-->
-<!--                  @change="getRoutes"-->
-<!--                >-->
-<!--                  <option-->
-<!--                    :value="{ id: dosageForm.id, name: dosageForm.name }"-->
-<!--                    v-for="dosageForm in dosageForms"-->
-<!--                    :key="dosageForm.id"-->
-<!--                    >{{ dosageForm.name }}</option-->
-<!--                  >-->
-<!--                </select>-->
                 <span class="form-text text-danger">{{ errors.first('dosage_form') }}</span>
               </div>
             </div>
@@ -256,7 +241,7 @@
 <script>
 import Datepicker from 'vuejs-datepicker';
 import vSelect from 'vue-select';
-import { debounce } from '@/common/common';
+import { debounce, EXCLUDED_INSURANCE } from '@/common/common';
 import KTUtil from '@/assets/js/components/util';
 export default {
   name: 'MedicationSideBar',
@@ -275,7 +260,10 @@ export default {
       return this.$store.state.visit.visit;
     },
     showSwitch() {
-      return this.visit?.patient?.has_insurance && this.visit?.patient?.insurance_id !== 4;
+      return (
+        this.visit?.patient?.has_insurance &&
+        !EXCLUDED_INSURANCE.includes(this.visit?.insurance?.insurance?.name)
+      );
     },
     inventories() {
       return this.$store.state.inventory.inventories;
@@ -350,7 +338,10 @@ export default {
 
     defaultSwitchPosition() {
       setTimeout(() => {
-        if (this.visit?.patient?.has_insurance && this.visit?.patient?.insurance_id !== 4) {
+        if (
+          this.visit?.patient?.has_insurance &&
+          !EXCLUDED_INSURANCE.includes(this.visit?.insurance?.insurance?.name)
+        ) {
           this.switchPosition = true;
         }
       }, 350);
@@ -364,7 +355,7 @@ export default {
       this.strength_input = this.drug.strength_input;
       this.quantity_remaining = this.drug.quantity_remaining;
       this.dosage_form = this.drug.dosage_form;
-      this.getRoutes()
+      this.getRoutes();
     },
 
     getTotalPrice() {
