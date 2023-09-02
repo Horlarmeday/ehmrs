@@ -7,7 +7,7 @@ import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 
 const patientAttributes = () => ['fullname', 'photo', 'hospital_id', 'firstname', 'lastname'];
 /**
- * page a patient visit
+ * create a patient visit
  * @param data
  * @returns {object} visit data
  */

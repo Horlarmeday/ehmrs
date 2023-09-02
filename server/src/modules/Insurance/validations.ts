@@ -20,3 +20,10 @@ export function validateHMO(hmo) {
   });
   return schema.validate(hmo);
 }
+
+export function validateSetInsuranceDefault(insurance) {
+  const schema = Joi.object({
+    insurance_id: Joi.number().required(),
+  });
+  return schema.validate(insurance);
+}

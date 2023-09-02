@@ -31,7 +31,7 @@ describe('Store Endpoints /visits', () => {
     await Visit.destroy({ truncate: true, cascade: false });
   });
 
-  it('should page a new patient visit', async () => {
+  it('should create a new patient visit', async () => {
     const res = await request(server)
       .post('/api/visits/create')
       .set('Authorization', `Bearer ${token}`)

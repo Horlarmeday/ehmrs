@@ -23,7 +23,7 @@ export function validateCreatePatientAccount(patient) {
     next_of_kin_name: Joi.string().required(),
     next_of_kin_phone: Joi.string().required(),
     next_of_kin_address: Joi.string().required(),
-    relationship: Joi.string().required(),
+    next_of_kin_relationship: Joi.string().required(),
     country: Joi.string().required(),
     state: Joi.string().required(),
     lga: Joi.string().required(),
@@ -64,7 +64,7 @@ export function validatePatientHealthInsurance(patient) {
           lastname: Joi.string().required(),
           gender: Joi.string().required(),
           date_of_birth: Joi.date().required(),
-          relationship: Joi.string().required(),
+          relationship_to_principal: Joi.string().required(),
           photo: Joi.string().required(),
           insurance_id: Joi.number().required(),
           hmo_id: Joi.number().required(),
@@ -72,6 +72,9 @@ export function validatePatientHealthInsurance(patient) {
           plan: Joi.string().required(),
           phone: Joi.string().required(),
           address: Joi.string().required(),
+          country: Joi.string().required(),
+          state: Joi.string().required(),
+          lga: Joi.string().required(),
         })
       )
       .optional(),
@@ -119,13 +122,18 @@ export function validateDependant(dependant) {
     lastname: Joi.string().required(),
     date_of_birth: Joi.date().required(),
     insurance_id: Joi.number().required(),
-    relationship: Joi.string().required(),
+    relationship_to_principal: Joi.string().required(),
     photo: Joi.string().required(),
     hmo_id: Joi.number().required(),
-    plan: Joi.string().required(),
+    plan: Joi.string()
+      .optional()
+      .allow(null),
     enrollee_code: Joi.string().required(),
     address: Joi.string().required(),
     phone: Joi.string().required(),
+    country: Joi.string().required(),
+    state: Joi.string().required(),
+    lga: Joi.string().required(),
   });
   return schema.validate(dependant);
 }

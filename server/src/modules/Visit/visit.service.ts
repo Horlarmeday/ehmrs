@@ -15,7 +15,7 @@ import { Visit } from '../../database/models';
 
 class VisitService {
   /**
-   * page patient visit
+   * create patient visit
    *
    * @static
    * @returns {json} json object with item data
