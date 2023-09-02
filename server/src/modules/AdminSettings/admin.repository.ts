@@ -10,8 +10,10 @@ import {
   Service,
   ServiceTariff,
   Patient,
+  PatientInsurance,
 } from '../../database/models';
 import { canUsePriceTariff } from '../../core/helpers/helper';
+import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 
 /** ***********************
  * DEPARTMENT
@@ -390,16 +392,22 @@ export const createServiceTariff = async data => {
   return ServiceTariff.bulkCreate(data, { updateOnDuplicate: ['price'] });
 };
 
-const servicePriceTariff = async (patient: Patient, service_id: number): Promise<number> => {
+const servicePriceTariff = async (
+  insurance: PatientInsurance,
+  service_id: number
+): Promise<number> => {
   const { price } =
     (await ServiceTariff.findOne({
-      where: { service_id, hmo_id: patient.hmo_id, insurance_id: patient.insurance_id },
+      where: { service_id, hmo_id: insurance.hmo_id, insurance_id: insurance.insurance_id },
       order: [['createdAt', 'DESC']],
     })) || {};
   return price;
 };
 
-export const getServicePrice = (patient: Patient, service_id: number) => {
-  if (canUsePriceTariff(patient)) return servicePriceTariff(patient, service_id);
+export const getServicePrice = async (patient: Patient, service_id: number) => {
+  if (canUsePriceTariff(patient)) {
+    const insurance = await getPatientInsuranceQuery({ patient_id: patient.id, is_default: true });
+    return servicePriceTariff(insurance, service_id);
+  }
   return null;
 };

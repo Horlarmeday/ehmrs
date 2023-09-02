@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { Op } from 'sequelize';
 
-import { Insurance, HMO } from '../../database/models';
+import { Insurance, HMO, PatientInsurance } from '../../database/models';
 
 /**
  * create a health insurance type
@@ -172,3 +172,79 @@ export async function updateHMO(data) {
   const hmo = await getHMOById(data.hmo_id);
   return hmo.update(data);
 }
+
+/**
+ * get patient insurance by id
+ * @returns {object} return patient insurance data
+ * @param query
+ */
+export const getPatientInsuranceQuery = async (query: Record<string, unknown>) => {
+  return PatientInsurance.findOne({
+    where: { ...query },
+    include: [
+      {
+        model: Insurance,
+        attributes: ['name'],
+      },
+      {
+        model: HMO,
+        attributes: ['name'],
+      },
+    ],
+  });
+};
+
+/**
+ * get patient insurance count
+ * @returns {object} return patient insurance count
+ * @param query
+ */
+export const getPatientInsuranceCount = async (query: Record<string, any>) => {
+  return PatientInsurance.count({ where: { ...query } });
+};
+
+/**
+ * update patient insurance
+ * @returns {object} return patient insurance affected row
+ * @param query
+ * @param fieldsToUpdate
+ */
+export const updatePatientInsurance = async (
+  query: Record<string, any>,
+  fieldsToUpdate: Record<string, any>
+) => {
+  return PatientInsurance.update({ ...fieldsToUpdate }, { where: { ...query } });
+};
+
+/**
+ * make insurance default
+ * @returns {object} return patient insurance affected row
+ * @param insurance_id
+ * @param patient_id
+ */
+export const setInsuranceAsDefault = async (insurance_id: number, patient_id: number) => {
+  if ((await getPatientInsuranceCount({ patient_id })) > 1)
+    await updatePatientInsurance({ patient_id }, { is_default: false }); // first make all default false
+  return await updatePatientInsurance({ id: insurance_id }, { is_default: true }); // make one default
+};
+
+/**
+ * get a patient all health insurance
+ * @returns {object} return patient insurance data
+ * @param patientId
+ */
+export const getPatientHealthInsurances = async (patientId: number) => {
+  return PatientInsurance.findAll({
+    where: { patient_id: patientId },
+    include: [
+      {
+        model: Insurance,
+        attributes: ['name'],
+      },
+      {
+        model: HMO,
+        attributes: ['name'],
+      },
+    ],
+  });
+};

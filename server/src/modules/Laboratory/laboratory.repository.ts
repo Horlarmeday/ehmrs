@@ -5,6 +5,7 @@ import { getModelById, getNumberOfRecords, getPeriodQuery } from '../../core/hel
 import {
   NhisTest,
   Patient,
+  PatientInsurance,
   PrescribedTest,
   Sample,
   Test,
@@ -23,6 +24,7 @@ import { chain } from 'lodash';
 import { TestStatus } from '../../database/models/prescribedTest';
 import sequelizeConnection from '../../database/config/config';
 import { ResultStatus } from '../../database/models/testResult';
+import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 
 const testResultFieldsToUpdate = (fields: string[] = []) => [
   'prescribed_test_id',
@@ -242,17 +244,20 @@ export const createTestTariff = async data => {
   return TestTariff.bulkCreate(data, { updateOnDuplicate: ['price'] });
 };
 
-const testPriceTariff = async (patient: Patient, test_id: number) => {
+const testPriceTariff = async (insurance: PatientInsurance, test_id: number) => {
   const { price } =
     (await TestTariff.findOne({
-      where: { test_id, hmo_id: patient.hmo_id, insurance_id: patient.insurance_id },
+      where: { test_id, hmo_id: insurance.hmo_id, insurance_id: insurance.insurance_id },
       order: [['createdAt', 'DESC']],
     })) || {};
   return price;
 };
 
-export const getTestPrice = (patient: Patient, test_id: number) => {
-  if (canUsePriceTariff(patient)) return testPriceTariff(patient, test_id);
+export const getTestPrice = async (patient: Patient, test_id: number) => {
+  if (canUsePriceTariff(patient)) {
+    const insurance = await getPatientInsuranceQuery({ patient_id: patient.id, is_default: true });
+    return testPriceTariff(insurance, test_id);
+  }
   return null;
 };
 

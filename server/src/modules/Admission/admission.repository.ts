@@ -6,8 +6,9 @@ import { BedStatus } from '../../database/models/bed';
 import { ServiceType } from '../../database/models/prescribedService';
 import { PatientStatus } from '../../database/models/patient';
 import { getWardWithService } from '../AdminSettings/admin.repository';
-import { getPatientWithInsurance } from '../Patient/patient.repository';
+import { getPatientById } from '../Patient/patient.repository';
 import { AdmissionBodyType } from './types/admission.types';
+import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 
 /**
  * Admit patient into a ward
@@ -19,9 +20,12 @@ export const admitPatient = async (data: AdmissionBodyType) => {
   return await sequelize.transaction(async (t: Transaction) => {
     const admission = await Admission.create({ ...data }, { transaction: t });
     await Bed.update({ status: BedStatus.TAKEN }, { where: { id: bed_id }, transaction: t });
-    const ward = await getWardWithService(ward_id);
-    const patient = await getPatientWithInsurance(patient_id);
-    if (!patient.insurance_id || !EXCLUDED_INSURANCE.includes(patient?.insurance?.name))
+    const [ward, insurance, patient] = await Promise.all([
+      getWardWithService(ward_id),
+      getPatientInsuranceQuery({ patient_id }),
+      getPatientById(patient_id),
+    ]);
+    if (!patient.has_insurance || !EXCLUDED_INSURANCE.includes(insurance?.insurance?.name))
       await PrescribedService.create(
         {
           service_id: ward.service.id,

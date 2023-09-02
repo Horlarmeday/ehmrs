@@ -5,6 +5,7 @@ import {
   InvestigationResult,
   InvestigationTariff,
   Patient,
+  PatientInsurance,
   PrescribedInvestigation,
 } from '../../database/models';
 import sequelize, { Op } from 'sequelize';
@@ -18,6 +19,7 @@ import { getModelById, getPeriodQuery } from '../../core/helpers/general';
 import { InvestigationStatus } from '../../database/models/prescribedInvestigation';
 import sequelizeConnection from '../../database/config/config';
 import { ResultStatus } from '../../database/models/testResult';
+import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 
 /**
  * create new imaging
@@ -209,17 +211,20 @@ export const createInvestigationTariff = async data => {
   return InvestigationTariff.bulkCreate(data, { updateOnDuplicate: ['price'] });
 };
 
-const investigationPriceTariff = async (patient: Patient, investigation_id: number) => {
+const investigationPriceTariff = async (insurance: PatientInsurance, investigation_id: number) => {
   const { price } =
     (await InvestigationTariff.findOne({
-      where: { investigation_id, hmo_id: patient.hmo_id, insurance_id: patient.insurance_id },
+      where: { investigation_id, hmo_id: insurance.hmo_id, insurance_id: insurance.insurance_id },
       order: [['createdAt', 'DESC']],
     })) || {};
   return price;
 };
 
-export const getInvestigationPrice = (patient: Patient, investigation_id: number) => {
-  if (canUsePriceTariff(patient)) return investigationPriceTariff(patient, investigation_id);
+export const getInvestigationPrice = async (patient: Patient, investigation_id: number) => {
+  if (canUsePriceTariff(patient)) {
+    const insurance = await getPatientInsuranceQuery({ patient_id: patient.id, is_default: true });
+    return investigationPriceTariff(insurance, investigation_id);
+  }
   return null;
 };
 

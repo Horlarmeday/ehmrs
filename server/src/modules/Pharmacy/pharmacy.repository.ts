@@ -9,8 +9,10 @@ import {
   DrugTariff,
   Measurement,
   Patient,
+  PatientInsurance,
   RoutesOfAdministration,
 } from '../../database/models';
+import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 
 async function includeOneModel({ model, modelToInclude, id, includeAs }) {
   return model.findOne({
@@ -292,16 +294,20 @@ export const createDrugTariff = async data => {
   return DrugTariff.bulkCreate(data, { updateOnDuplicate: ['price'] });
 };
 
-const drugPriceTariff = async (patient: Patient, drug_id: number) => {
+const drugPriceTariff = async (insurance: PatientInsurance, drug_id: number) => {
   const { price } =
     (await DrugTariff.findOne({
-      where: { drug_id, hmo_id: patient.hmo_id, insurance_id: patient.insurance_id },
+      where: { drug_id, hmo_id: insurance.hmo_id, insurance_id: insurance.insurance_id },
       order: [['createdAt', 'DESC']],
     })) || {};
   return price;
 };
 
-export const getDrugPrice = (patient: Patient, drug_id: number) => {
-  if (canUsePriceTariff(patient)) return drugPriceTariff(patient, drug_id);
+export const getDrugPrice = async (patient: Patient, drug_id: number) => {
+  if (canUsePriceTariff(patient)) {
+    const insurance = await getPatientInsuranceQuery({ patient_id: patient.id, is_default: true });
+    return drugPriceTariff(insurance, drug_id);
+  }
+
   return null;
 };
