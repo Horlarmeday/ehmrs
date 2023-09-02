@@ -180,13 +180,13 @@
                 />
               </div>
               <div class="col-lg-4">
-                <label>Phone Number <span class="text-danger">*</span></label>
+                <label>Phone Number</label>
                 <input
                   maxlength="11"
                   type="text"
                   class="form-control form-control-sm"
                   v-model="dependant_phone"
-                  placeholder="Phone Number"
+                  placeholder="Phone Number (Optional)"
                   name="dependant_phone"
                 />
               </div>
@@ -339,7 +339,10 @@
                                 </span>
                               </td>
                               <td class="">
-                                <a href="#" @click="removeDependant"
+                                <a href="#" @click="editDependant(dependant, index)"
+                                  ><i class="flaticon2-contract text-primary mr-2"></i
+                                ></a>
+                                <a href="#" @click="removeDependant(index)"
                                   ><i class="flaticon2-trash text-danger"></i
                                 ></a>
                               </td>
@@ -357,7 +360,7 @@
           </div>
         </b-collapse>
       </div>
-      <!-- Button to create -->
+      <!-- Button to page -->
       <div>
         <button
           ref="kt-sign_up_submit"
@@ -375,7 +378,6 @@
 <script>
 import Datepicker from 'vuejs-datepicker';
 import vSelect from 'vue-select';
-import { getCountries, getStateById, getCityById } from '../../../../assets/json/index';
 import AccordionIcon from '../../../../assets/icons/AccordionIcon';
 import Swal from 'sweetalert2';
 export default {
@@ -392,7 +394,6 @@ export default {
       relationship: '',
       plan: '',
       insurance_id: '',
-      countries: [],
       states: [],
       cities: [],
 
@@ -419,7 +420,6 @@ export default {
   },
   created() {
     this.getPatient();
-    this.countries = getCountries();
     this.getInsurances();
   },
   computed: {
@@ -437,14 +437,6 @@ export default {
   },
 
   methods: {
-    getStates() {
-      this.states = getStateById(this.country.id);
-    },
-
-    getCities() {
-      this.cities = getCityById(this.state.id);
-    },
-
     getInsurances() {
       this.$store.dispatch('insurance/fetchInsurances', {
         currentPage: 1,
@@ -465,7 +457,6 @@ export default {
     },
 
     // Image Capture
-
     stopStreamedVideo(videoElem) {
       const stream = videoElem.srcObject;
       const tracks = stream.getTracks();
@@ -544,7 +535,10 @@ export default {
         firstname: this.dependant_firstname,
         lastname: this.dependant_lastname,
         phone: this.dependant_phone || this.patient.phone,
-        relationship: this.dependant_relationship,
+        country: this.patient.country,
+        state: this.patient.state,
+        lga: this.patient.lga,
+        relationship_to_principal: this.dependant_relationship,
         enrollee_code: this.dependant_enrollee_id,
         insurance_id: this.insurance_id,
         hmo_id: this.hmo_id,
@@ -554,12 +548,25 @@ export default {
         date_of_birth: this.dependant_date_of_birth,
         photo: this.dependant_image,
       });
-      this.stopStreamedVideo(this.dependantvideo);
+      if (this.dependantvideo) this.stopStreamedVideo(this.dependantvideo);
       this.initDependant();
     },
 
     removeDependant(index) {
       this.dependants.splice(index, 1);
+    },
+
+    editDependant(dependant, index) {
+      this.dependant_firstname = dependant.firstname;
+      this.dependant_lastname = dependant.lastname;
+      this.dependant_phone = this.patient.phone;
+      this.dependant_relationship = dependant.relationship;
+      this.dependant_enrollee_id = dependant.enrollee_code;
+      this.dependant_gender = dependant.gender;
+      this.dependant_address = dependant.address;
+      this.dependant_date_of_birth = dependant.date_of_birth;
+      this.dependant_image = dependant.photo;
+      this.removeDependant(index);
     },
 
     addSpinner(submitButton) {
@@ -570,6 +577,16 @@ export default {
     removeSpinner(submitButton) {
       this.isDisabled = false;
       submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
+    },
+
+    displayErrorPrompt() {
+      Swal.fire({
+        title: 'Error!',
+        html: `Click the add button to add the dependant, before clicking the submit button`,
+        icon: 'error',
+        timerProgressBar: '10s',
+        heightAuto: false,
+      });
     },
 
     displayPrompt() {
@@ -599,6 +616,7 @@ export default {
     addPatient() {
       this.$validator.validateAll().then(result => {
         if (result) {
+          if (this.dependant_firstname) return this.displayErrorPrompt();
           if (this.dependants.length === 0) return this.displayPrompt();
           this.finishAddPatient();
         }
@@ -622,8 +640,8 @@ export default {
         .dispatch('patient/addPatientHealthInsurance', { data, patient_id: this.patient.id })
         .then(() => {
           this.removeSpinner(submitButton);
-          this.stopStreamedVideo(this.video);
           this.initPatientValues();
+          if (this.dependantvideo) this.stopStreamedVideo(this.dependantvideo);
         })
         .catch(() => this.removeSpinner(submitButton));
     },
