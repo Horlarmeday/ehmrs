@@ -28,7 +28,7 @@ export default {
       axios
         .post(`/patients/health-insurance/${payload.patient_id}`, payload.data)
         .then(response => {
-          commit({});
+          commit('ADD_PATIENT', response.data.data);
           resolve(response);
         })
         .catch(error => {
@@ -112,10 +112,10 @@ export default {
     commit('SET_CURRENT_PATIENT', payload);
   },
 
-  updatePatient({ commit }, patient) {
+  updatePatient({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
-        .put(`/patients/update/patient`, patient)
+        .put(`/patients/update/${payload.id}`, payload.data)
         .then(response => {
           commit('UPDATE_PATIENT', response.data.data);
           resolve(response);
@@ -129,17 +129,12 @@ export default {
   /**
    * DEPENDANTS
    */
-  createDependant({ commit }, dependant, patientId) {
+  createDependant({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
-        .post(`/patients/create/dependant/${patientId}`, dependant)
+        .post(`/patients/create/dependant/${payload.patient_id}`, payload.data)
         .then(response => {
-          commit(
-            'ADD_DEPENDANT',
-            Object.assign(dependant, {
-              dependant_id: response.data.data.id,
-            })
-          );
+          commit('ADD_DEPENDANT', response.data.data.id);
           resolve(response);
         })
         .catch(error => {

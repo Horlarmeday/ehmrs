@@ -45,7 +45,7 @@ export default {
       axios
         .get(`/visits/${visitId}`)
         .then(response => {
-          commit("SET_VISIT", response.data.data);
+          commit('SET_VISIT', response.data.data);
           resolve(response);
         })
         .catch(error => {

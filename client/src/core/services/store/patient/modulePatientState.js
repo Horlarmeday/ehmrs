@@ -9,5 +9,5 @@ export default {
   dependant: null,
   dependants: [],
   totaldependant: null,
-  dependantpages: 0
+  dependantpages: 0,
 };
