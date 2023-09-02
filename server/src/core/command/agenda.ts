@@ -1,5 +1,6 @@
 import Agenda from 'agenda';
-import Jobs from './jobs';
+import Jobs from './worker/jobDefinition';
+import { CronJob, JobNow } from './worker/worker';
 
 const agenda = new Agenda({
   db: { address: process.env.DB_MONGO, collection: 'ehmrs_jobs' },
@@ -18,6 +19,9 @@ agenda
 
 Jobs(agenda);
 
-agenda.start().then(r => console.log(r));
+agenda.start().then(() => {
+  //JobNow(agenda);
+  CronJob(agenda);
+});
 
 export default agenda;
