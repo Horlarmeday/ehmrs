@@ -63,7 +63,7 @@
                   >
                 </td>
                 <td>
-                  <router-link to="/patient/profile/1234"
+                  <router-link :to="`/patient/profile/${patient.id}`"
                     ><span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                       {{ patient.fullname }}
                     </span></router-link
@@ -81,9 +81,9 @@
                 </td>
                 <td>
                   <span
-                    :class="displayLabel(patient.insurance_id)"
+                    :class="displayLabel(patient.patient_type)"
                     class="label label-lg label-inline"
-                    >{{ displayPatientType(patient.insurance_id) }}</span
+                    >{{ displayPatientType(patient.patient_type) }}</span
                   >
                 </td>
                 <td class="pr-0">
@@ -93,6 +93,7 @@
                 </td>
                 <td class="pr-0">
                   <router-link
+                    :class="{ disabled: patient.patient_type === 'Dependant' }"
                     :to="`/patient/health-insurance/${patient.id}`"
                     class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
                   >
@@ -249,4 +250,9 @@ export default {
 };
 </script>
 
-<style></style>
+<style scoped>
+.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+</style>
