@@ -26,6 +26,14 @@ export default {
     Object.assign(state.insurances[insuranceIndex], insurance);
   },
 
+  SET_PATIENT_INSURANCES(state, insurances) {
+    state.patientInsurances = insurances;
+  },
+
+  SET_PATIENT_INSURANCE(state, insurance) {
+    state.patientInsurance = insurance;
+  },
+
   /**
    * HMO
    */

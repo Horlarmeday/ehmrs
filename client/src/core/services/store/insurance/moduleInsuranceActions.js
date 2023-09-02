@@ -1,4 +1,4 @@
-import axios from "../../../../axios";
+import axios from '../../../../axios';
 
 export default {
   /**
@@ -7,13 +7,13 @@ export default {
   addInsurance({ commit }, insurance) {
     return new Promise((resolve, reject) => {
       axios
-        .post("/insurances/create", insurance)
+        .post('/insurances/create', insurance)
         .then(response => {
           commit(
-            "ADD_INSURANCE",
+            'ADD_INSURANCE',
             Object.assign(insurance, {
               id: response.data.data.id,
-              createdAt: response.data.data.createdAt
+              createdAt: response.data.data.createdAt,
             })
           );
           resolve(response);
@@ -26,17 +26,17 @@ export default {
   fetchInsurances({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
-        .get("/insurances/get", {
+        .get('/insurances/get', {
           params: {
             currentPage: payload.currentPage,
             pageLimit: payload.itemsPerPage,
-            search: payload.search
-          }
+            search: payload.search,
+          },
         })
         .then(response => {
-          commit("SET_INSURANCES", response.data.data.docs);
-          commit("SET_INSURANCES_TOTAL", response.data.data.total);
-          commit("SET_NUMB_PAGES", response.data.data.pages);
+          commit('SET_INSURANCES', response.data.data.docs);
+          commit('SET_INSURANCES_TOTAL', response.data.data.total);
+          commit('SET_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
         .catch(error => {
@@ -44,12 +44,41 @@ export default {
         });
     });
   },
+
   updateInsurance({ commit }, insurance) {
     return new Promise((resolve, reject) => {
       axios
         .put(`/insurances/update`, insurance)
         .then(response => {
-          commit("UPDATE_INSURANCE", response.data.data);
+          commit('UPDATE_INSURANCE', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchPatientInsurances({ commit }, patientId) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/insurances/health-insurances/get/${patientId}`)
+        .then(response => {
+          commit('SET_PATIENT_INSURANCES', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  setInsuranceAsDefault({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/insurances/health-insurance/default/${payload.id}`, payload.data)
+        .then(response => {
+          commit('SET_PATIENT_INSURANCE', response.data.data);
           resolve(response);
         })
         .catch(error => {
@@ -66,7 +95,7 @@ export default {
       axios
         .post(`/insurances/create/hmo`, hmo)
         .then(response => {
-          commit("ADD_HMO", response.data.data);
+          commit('ADD_HMO', response.data.data);
           resolve(response);
         })
         .catch(error => {
@@ -78,18 +107,18 @@ export default {
   fetchHMOs({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
-        .get("/insurances/get/hmo", {
+        .get('/insurances/get/hmo', {
           params: {
             currentPage: payload.currentPage,
             pageLimit: payload.itemsPerPage,
             search: payload.search,
-            filter: payload.filter
-          }
+            filter: payload.filter,
+          },
         })
         .then(response => {
-          commit("SET_HMOS", response.data.data.docs);
-          commit("SET_HMOS_TOTAL", response.data.data.total);
-          commit("SET_HMO_NUMB_PAGES", response.data.data.pages);
+          commit('SET_HMOS', response.data.data.docs);
+          commit('SET_HMOS_TOTAL', response.data.data.total);
+          commit('SET_HMO_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
         .catch(error => {
@@ -103,12 +132,12 @@ export default {
       axios
         .put(`/insurances/update/hmo`, hmo)
         .then(response => {
-          commit("UPDATE_HMO", response.data.data);
+          commit('UPDATE_HMO', response.data.data);
           resolve(response);
         })
         .catch(error => {
           reject(error);
         });
     });
-  }
+  },
 };
