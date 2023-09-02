@@ -29,6 +29,7 @@ export type AddPatientInsuranceBody = {
   hmo_id: number;
   insurance_id: number;
   patient_id: number;
+  staff_id: number;
   plan: string;
   dependants: Array<Dependant>;
 };

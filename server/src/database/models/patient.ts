@@ -2,16 +2,17 @@ import {
   BelongsTo,
   Column,
   DataType,
+  DefaultScope,
   ForeignKey,
   HasMany,
   Model,
   PrimaryKey,
+  Scopes,
   Table,
 } from 'sequelize-typescript';
 import { PatientType } from '../../modules/Patient/types/patient.types';
 import { Gender, Staff } from './staff';
-import { HMO } from './hmo';
-import { Insurance } from './insurance';
+
 import {
   FindAttributeOptions,
   GroupOption,
@@ -153,12 +154,17 @@ export class Patient extends Model {
   @Column({
     type: DataType.STRING,
   })
+  next_of_kin_relationship?: string;
+
+  @Column({
+    type: DataType.STRING,
+  })
   occupation: string;
 
   @Column({
     type: DataType.STRING,
   })
-  relationship?: string;
+  relationship_to_principal?: string;
 
   @Column({
     type: DataType.TEXT,
@@ -180,14 +186,6 @@ export class Patient extends Model {
     },
   })
   date_of_birth: Date;
-
-  @ForeignKey(() => Insurance)
-  @Column({ type: DataType.INTEGER })
-  insurance_id?: number;
-
-  @ForeignKey(() => HMO)
-  @Column({ type: DataType.INTEGER })
-  hmo_id: number;
 
   @Column({
     type: DataType.STRING,
@@ -213,10 +211,6 @@ export class Patient extends Model {
   @Column({ type: DataType.INTEGER })
   staff_id?: number;
 
-  @ForeignKey(() => PatientInsurance)
-  @Column({ type: DataType.INTEGER })
-  patient_insurance_id?: number;
-
   @Column({
     type: DataType.STRING,
   })
@@ -229,6 +223,7 @@ export class Patient extends Model {
 
   @Column({
     type: DataType.BOOLEAN,
+    defaultValue: false,
   })
   has_insurance: boolean;
 
@@ -258,18 +253,11 @@ export class Patient extends Model {
   @BelongsTo(() => Staff)
   staff: Staff;
 
-  @BelongsTo(() => HMO)
-  hmo: HMO;
-
-  @BelongsTo(() => Insurance)
-  insurance: Insurance;
-
-  @BelongsTo(() => PatientInsurance)
-  patientInsurance: PatientInsurance;
+  @HasMany(() => PatientInsurance)
+  insurances: PatientInsurance[];
 
   @HasMany(() => Patient)
   dependants: Patient[];
-
   static async paginate(param: {
     paginate: number;
     attributes?: FindAttributeOptions;
