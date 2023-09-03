@@ -36,4 +36,5 @@ export class PrescribedDrugBody {
   patient_id: number;
   visit_id: number;
   start_date: Date;
+  source: string;
 }

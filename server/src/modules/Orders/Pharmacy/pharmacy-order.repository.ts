@@ -13,12 +13,14 @@ import {
 } from '../../../database/models';
 import exp from 'constants';
 
+type PrescribeDrugType = PrescribedDrugBody & { drug_prescription_id };
+
 /**
  * prescribe a drug for patient
  * @param data
  * @returns {object} prescribed drug data
  */
-export async function prescribeDrug(data: PrescribedDrugBody) {
+export async function prescribeDrug(data: PrescribeDrugType): Promise<PrescribedDrug> {
   const {
     drug_id,
     drug_type,
@@ -37,6 +39,7 @@ export async function prescribeDrug(data: PrescribedDrugBody) {
     patient_id,
     visit_id,
     start_date,
+    drug_prescription_id,
   } = data;
   return PrescribedDrug.create({
     drug_id,
@@ -57,6 +60,7 @@ export async function prescribeDrug(data: PrescribedDrugBody) {
     visit_id,
     start_date,
     date_prescribed: Date.now(),
+    drug_prescription_id,
   });
 }
 
@@ -82,6 +86,7 @@ export const getPrescribedDrugs = ({ currentPage = 1, pageLimit = 10, filter = n
       },
       {
         model: Staff,
+        as: 'requester',
         attributes: ['firstname', 'lastname'],
       },
       {
@@ -126,6 +131,7 @@ export const getPrescribedAdditionalItems = ({
       },
       {
         model: Staff,
+        as: 'requester',
         attributes: ['firstname', 'lastname'],
       },
       {

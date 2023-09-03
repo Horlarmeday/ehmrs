@@ -6,6 +6,7 @@ import { getModelById } from '../../core/helpers/general';
 import {
   DosageForm,
   Drug,
+  DrugPrescription,
   DrugTariff,
   Measurement,
   Patient,
@@ -308,6 +309,20 @@ export const getDrugPrice = async (patient: Patient, drug_id: number) => {
     const insurance = await getPatientInsuranceQuery({ patient_id: patient.id, is_default: true });
     return drugPriceTariff(insurance, drug_id);
   }
-
   return null;
+};
+
+/** ***********************
+ * PRESCRIBED DRUGS
+ ********************** */
+export const getLastDrugPrescription = async (patient_id: number) => {
+  return DrugPrescription.findOne({ where: { patient_id }, order: [['date_prescribed', 'DESC']] });
+};
+
+export const createDrugPrescription = async (data: any) => {
+  return DrugPrescription.create({ ...data });
+};
+
+export const getOnePrescription = async query => {
+  return DrugPrescription.findOne({ where: { ...query } });
 };
