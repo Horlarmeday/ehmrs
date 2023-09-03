@@ -20,7 +20,7 @@ import {
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { PrescribedTest } from './prescribedTest';
 import { Sample } from './sample';
-import { TestPrescription } from './testPrescriptions';
+import { TestPrescription } from './testPrescription';
 
 @Table({ timestamps: true, tableName: 'Prescribed_Test_Samples' })
 export class TestSample extends Model {

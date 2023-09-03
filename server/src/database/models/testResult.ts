@@ -17,7 +17,7 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { PrescribedTest } from './prescribedTest';
-import { TestPrescription } from './testPrescriptions';
+import { TestPrescription } from './testPrescription';
 import { Staff } from './staff';
 
 export enum ResultStatus {
