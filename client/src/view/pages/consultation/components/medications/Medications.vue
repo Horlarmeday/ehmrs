@@ -7,7 +7,7 @@
         </h3>
       </div>
 
-      <div class="card-body pt-2">
+      <div class="card-body pt-2" style="padding: 2rem 1.25rem">
         <!--begin::Table-->
         <div class="table-responsive table-bordered nowrap">
           <table class="table table-striped">

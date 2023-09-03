@@ -224,7 +224,7 @@
             <div class="mt-3">
               <button
                 @click="submitDrugOrder"
-                :disabled="!quantity_remaining"
+                :disabled="quantity_remaining <= 0"
                 ref="kt-drugOrder-submit"
                 class="btn btn-primary btn-md float-right mb-3"
               >
