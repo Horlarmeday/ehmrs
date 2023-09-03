@@ -46,8 +46,8 @@ export default {
           link: '/patient/create-account',
         },
         {
-          name: 'Emergency Account',
-          desc: 'Click to create an emergency patient account',
+          name: 'Walk-In Patient Account',
+          desc: 'Create a walk-in patient account',
           link: '/patient/create-emergency-account',
         },
       ],
