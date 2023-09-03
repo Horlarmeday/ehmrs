@@ -267,6 +267,7 @@ export async function createDependant(data) {
     state,
     principal_id: patient_id,
     patient_type: PatientType.DEPENDANT,
+    has_insurance: true,
   });
 }
 

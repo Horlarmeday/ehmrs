@@ -85,6 +85,7 @@ class PatientService {
             patient_type: PatientType.DEPENDANT,
             photo: await processSnappedPhoto(dependant.photo, dependant.firstname),
             staff_id,
+            has_insurance: true,
           }))
         );
       }
