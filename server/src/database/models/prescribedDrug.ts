@@ -23,6 +23,7 @@ import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { DosageForm } from './dosageForm';
 import { RoutesOfAdministration } from './routesOfAdministration';
 import { Measurement } from './measurement';
+import { DrugPrescription } from './drugPrescription';
 
 export enum DispenseStatus {
   DISPENSED = 'Dispensed',
@@ -109,6 +110,12 @@ export class PrescribedDrug extends Model {
     },
   })
   quantity_to_dispense: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    defaultValue: 0,
+  })
+  quantity_dispensed: number;
 
   @ForeignKey(() => RoutesOfAdministration)
   @Column({
@@ -284,8 +291,29 @@ export class PrescribedDrug extends Model {
   })
   start_date: Date;
 
-  @BelongsTo(() => Staff)
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  dispensed_by: number;
+
+  @ForeignKey(() => DrugPrescription)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'drug prescription is required',
+      },
+    },
+  })
+  drug_prescription_id: number;
+
+  @BelongsTo(() => Staff, 'examiner')
   requester: Staff;
+
+  @BelongsTo(() => Staff, 'dispensed_by')
+  dispenser: Staff;
 
   @BelongsTo(() => Drug)
   drug: Drug;
@@ -304,6 +332,9 @@ export class PrescribedDrug extends Model {
 
   @BelongsTo(() => Measurement)
   strength: Measurement;
+
+  @BelongsTo(() => DrugPrescription)
+  prescription: DrugPrescription;
 
   static async paginate(param: {
     paginate: number;

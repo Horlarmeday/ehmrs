@@ -21,7 +21,7 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Sample } from './sample';
-import { TestPrescription } from './testPrescriptions';
+import { TestPrescription } from './testPrescription';
 import { TestResult } from './testResult';
 
 export enum PrescriptionType {
