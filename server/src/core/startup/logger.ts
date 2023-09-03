@@ -8,11 +8,6 @@ const myFormat = printf(({ level, message, label, time }) => {
 });
 const tsFormat = 'YYYY-MM-DD HH:mm:ss';
 
-export type Message = (message: string) => string;
-export type TaggedMessage = (tag: string) => Message;
-export const taggedMessage: TaggedMessage = (tag: string) => (message: string) =>
-  `${[tag]} - ${message}`;
-
 class Logger {
   constructor() {
     winston.add(
