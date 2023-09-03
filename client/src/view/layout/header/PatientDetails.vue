@@ -3,7 +3,8 @@
     <ul v-if="patient" class="menu-nav">
       <li class="menu-item">
         <div class="symbol symbol-40 symbol-lg-50 symbol-circle bg-dark mr-3">
-          <img alt="Pic" src="/media/users/blank.png" />
+          <img v-if="patient.photo" alt="Pic" :src="`/static/images/${patient.photo}`" />
+          <img v-else alt="Pic" src="/media/users/blank.png" />
         </div>
       </li>
       <li class="menu-item">
@@ -27,13 +28,13 @@
       </li>
       <li v-if="patient.has_insurance" class="menu-item">
         <p class="menu-link">
-          <span class="text-dark font-weight-bolder">{{ patient?.insurance.name }}</span>
+          <span class="text-dark font-weight-bolder">{{ patient?.insurance?.name }}</span>
         </p>
       </li>
-      <li v-if="patient.hmo_id" class="menu-item">
+      <li v-if="patient.has_insurance" class="menu-item">
         <p class="menu-link">
           <span class="menu-text text-dark font-weight-bolder">{{
-            patient?.hmo.name
+            patient?.hmo?.name
           }}</span>
         </p>
       </li>
