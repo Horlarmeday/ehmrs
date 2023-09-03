@@ -10,7 +10,7 @@ import {
   getTestPrice,
 } from '../../Laboratory/laboratory.repository';
 import { isToday } from '../../../core/helpers/helper';
-import { TestStatus } from '../../../database/models/testPrescriptions';
+import { TestStatus } from '../../../database/models/testPrescription';
 
 export class LabOrderService {
   /**

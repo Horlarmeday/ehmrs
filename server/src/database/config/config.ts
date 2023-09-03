@@ -12,6 +12,7 @@ const sequelizeConnection = new Sequelize(database, username, password, {
     return /^(?!.*(?:index)).*\.ts$/.test(filename);
   },
 });
+
 // sequelizeConnection
 //   .sync({})
 //   .then(r => {

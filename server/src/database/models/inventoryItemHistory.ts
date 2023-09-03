@@ -8,7 +8,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { Unit } from './unit';
-import { Staff, Status } from './staff';
+import { Staff } from './staff';
 import {
   FindAttributeOptions,
   GroupOption,
