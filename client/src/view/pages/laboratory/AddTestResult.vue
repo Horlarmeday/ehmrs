@@ -22,11 +22,11 @@
 </template>
 
 <script>
-import SectionTitle from './components/SectionTitle.vue';
-import PatientSection from './components/PatientSection.vue';
+import SectionTitle from '../../../utils/SectionTitle.vue';
+import PatientSection from '../../../utils/PatientSection.vue';
 import Banner from './results/Banner';
 import ResultSection from './results/ResultSection';
-import PageTitle from './components/PageTitle.vue';
+import PageTitle from '../../../utils/PageTitle.vue';
 export default {
   name: 'AddTestResult',
   data: () => ({

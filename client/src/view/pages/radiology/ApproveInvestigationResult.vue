@@ -20,9 +20,9 @@
 </template>
 
 <script>
-import SectionTitle from '../laboratory/components/SectionTitle.vue';
-import PatientSection from '../laboratory/components/PatientSection.vue';
-import PageTitle from '../laboratory/components/PageTitle.vue';
+import SectionTitle from '../../../utils/SectionTitle.vue';
+import PatientSection from '../../../utils/PatientSection.vue';
+import PageTitle from '../../../utils/PageTitle.vue';
 import InvestigationResultSection from '@/view/pages/radiology/result/InputResultSection.vue';
 export default {
   name: 'RadiologyResultApproval',

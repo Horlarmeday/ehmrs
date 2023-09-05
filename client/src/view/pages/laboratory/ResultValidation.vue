@@ -21,10 +21,10 @@
 </template>
 
 <script>
-import SectionTitle from './components/SectionTitle.vue';
-import PatientSection from './components/PatientSection.vue';
+import SectionTitle from '../../../utils/SectionTitle.vue';
+import PatientSection from '../../../utils/PatientSection.vue';
 import ResultValidationSection from './results/ResultValidationSection';
-import PageTitle from '@/view/pages/laboratory/components/PageTitle.vue';
+import PageTitle from '@/utils/PageTitle.vue';
 export default {
   name: 'ValidateResult',
   components: { PageTitle, PatientSection, ResultValidationSection, SectionTitle },
