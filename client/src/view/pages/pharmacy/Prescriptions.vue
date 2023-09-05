@@ -9,11 +9,11 @@
           <b-tabs content-class="">
             <!-- This tabs content will always be mounted -->
             <b-tab title="Today" lazy>
-              <samples-to-collect-table period="Today" />
+              <prescriptions-table period="Today" />
             </b-tab>
             <!-- and will be un-mounted when hidden -->
             <b-tab title="Backlog" lazy>
-              <samples-to-collect-table period="Backlog" />
+              <prescriptions-table period="Backlog" />
             </b-tab>
           </b-tabs>
         </div>
@@ -22,9 +22,9 @@
   </div>
 </template>
 <script>
-import SamplesToCollectTable from '@/view/pages/laboratory/samplesToCollect/SamplesToCollectTable.vue';
+import PrescriptionsTable from '@/view/pages/pharmacy/prescriptions/PrescriptionsTable.vue';
 
 export default {
-  components: { SamplesToCollectTable },
+  components: { PrescriptionsTable },
 };
 </script>

@@ -2,64 +2,82 @@
   <div>
     <div v-if="!loading">
       <div class="mt-3">
-        <search @search="onHandleSearch" @filterByDateRange="searchByDate" :show-date-filter="true" />
+        <search
+          @search="onHandleSearch"
+          @filterByDateRange="searchByDate"
+          :show-date-filter="true"
+        />
       </div>
       <div class="table-responsive">
         <table class="table table-head-custom table-head-bg table-borderless table-vertical-center">
           <thead>
-          <tr class="text-uppercase">
-            <th style="min-width: 150px" class="pl-7">
-              <span class="text-dark-75">Patient ID</span>
-            </th>
-            <th style="min-width: 200px">Patient Name</th>
-            <th style="min-width: 150px">Total Drugs</th>
-            <th style="min-width: 150px">Status</th>
-            <th class="text-right" style="min-width: 130px">Action</th>
-            <th style="min-width: 120px"></th>
-          </tr>
+            <tr class="text-uppercase">
+              <th style="min-width: 150px" class="pl-7">
+                <span class="text-dark-75">Patient ID</span>
+              </th>
+              <th style="min-width: 200px">Patient Name</th>
+              <th style="min-width: 150px">Total Drugs</th>
+              <th style="min-width: 150px">Dispensed Drugs</th>
+              <th style="min-width: 150px">Status</th>
+              <th v-if="period !== 'Today'" style="min-width: 100px">Date Collected</th>
+              <th class="text-right" style="min-width: 130px">Action</th>
+              <th style="min-width: 120px"></th>
+            </tr>
           </thead>
           <tbody>
-          <tr v-if="samples.length === 0">
-            <td colspan="9" align="center" class="text-muted">No Data</td>
-          </tr>
-          <tr v-for="sample in samples" :key="sample.id">
-            <td class="pl-7 py-8">
-              <div class="d-flex align-items-center">
-                <div>
-                  <a
-                    href="#"
-                    class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg"
-                  >{{ sample.patient.hospital_id }}</a
-                  >
+            <tr v-if="prescriptions.length === 0">
+              <td colspan="9" align="center" class="text-muted">No Data</td>
+            </tr>
+            <tr v-for="prescription in prescriptions" :key="prescription.id">
+              <td class="pl-7 py-8">
+                <div class="d-flex align-items-center">
+                  <div>
+                    <a
+                      href="#"
+                      class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg"
+                      >{{ prescription.patient.hospital_id }}</a
+                    >
+                  </div>
                 </div>
-              </div>
-            </td>
-            <td>
+              </td>
+              <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ sample.patient.fullname }}
+                  {{ prescription.patient.fullname }}
                 </span>
-            </td>
-            <td>
+              </td>
+              <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg pl-7">
-                  {{ sample.test_count }}
+                  {{ prescription.total }}
                 </span>
-            </td>
-            <td>
-                <span :class="getSampleStatus(sample.status)" class="label label-lg label-inline">{{
-                    sample.status
-                  }}</span>
-            </td>
-            <td class="text-right pr-0">
-              <router-link
-                v-b-tooltip.hover
-                title="Collect Sample"
-                :to="`/laboratory/collect-sample/${sample.id}`"
-                class="btn btn-icon btn-light btn-hover-primary btn-sm"
-              >
-                <ArrowRightIcon />
-              </router-link>
-            </td>
-          </tr>
+              </td>
+              <td>
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg pl-7">
+                  {{ prescription.dispensed_drugs_count }}
+                </span>
+              </td>
+              <td>
+                <span
+                  :class="getSampleStatus(prescription.status)"
+                  class="label label-lg label-inline"
+                  >{{ prescription.status }}</span
+                >
+              </td>
+              <td v-if="period !== 'Today'">
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
+                  prescription.date_prescribed | moment('DD/MM/YYYY, h:mma')
+                }}</span>
+              </td>
+              <td class="text-right pr-0">
+                <router-link
+                  v-b-tooltip.hover
+                  title="Collect Sample"
+                  :to="`/pharmacy/dispense/${prescription.id}`"
+                  class="btn btn-icon btn-light btn-hover-primary btn-sm"
+                >
+                  <ArrowRightIcon />
+                </router-link>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -100,17 +118,17 @@ export default {
     end: null,
   }),
   computed: {
-    samples() {
-      return this.$store.state.laboratory.samplesToCollect;
+    prescriptions() {
+      return this.$store.state.pharmacy.prescriptions;
     },
     queriedItems() {
-      return this.$store.state.laboratory.totalSamplesToCollect;
+      return this.$store.state.pharmacy.totalPrescription;
     },
     pages() {
-      return this.$store.state.laboratory.totalSamplesToCollectPages;
+      return this.$store.state.pharmacy.prescriptionPages;
     },
     perPage() {
-      return this.samples.length;
+      return this.prescriptions.length;
     },
   },
   methods: {
@@ -120,8 +138,26 @@ export default {
       return 'label-light-primary ';
     },
 
+    fetchPrescriptions({
+      currentPage,
+      itemsPerPage,
+      search = null,
+      period = 'Today',
+      start = null,
+      end = null,
+    }) {
+      return this.$store.dispatch('pharmacy/fetchPrescriptions', {
+        currentPage,
+        itemsPerPage,
+        period,
+        ...(search && { search }),
+        ...(start && { start }),
+        ...(end && { end }),
+      });
+    },
+
     handlePageChange() {
-      this.$store.dispatch('laboratory/fetchSamplesToCollect', {
+      this.fetchPrescriptions({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
         period: this.period,
@@ -140,7 +176,7 @@ export default {
 
     debounceSearch: debounce((search, vm, spinDiv) => {
       vm.$store
-        .dispatch('laboratory/fetchSamplesToCollect', {
+        .dispatch('pharmacy/fetchPrescriptions', {
           currentPage: 1,
           itemsPerPage: vm.itemsPerPage,
           search,
@@ -155,13 +191,13 @@ export default {
       this.end = end;
       this.start = start;
       this.currentPage = 1;
-      this.$store
-        .dispatch('laboratory/fetchSamplesToCollect', {
-          currentPage: this.currentPage,
-          itemsPerPage: this.itemsPerPage,
-          start: new Date(this.start).toISOString(),
-          end: new Date(this.end).toISOString(),
-        })
+      this.fetchPrescriptions({
+        currentPage: this.currentPage,
+        itemsPerPage: this.itemsPerPage,
+        period: this.period,
+        start: new Date(this.start).toISOString(),
+        end: new Date(this.end).toISOString(),
+      })
         .then(() => removeSpinner(dateSpin))
         .catch(() => removeSpinner(dateSpin));
     },
@@ -169,20 +205,18 @@ export default {
     countToHundred() {
       for (let i = 1; i <= 100; i++) {
         this.count = i;
-        if (this.samples.length) break;
+        if (this.prescriptions.length) break;
       }
     },
   },
   created() {
     this.loading = true;
     this.countToHundred();
-    this.$store
-      .dispatch('laboratory/fetchSamplesToCollect', {
-        currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage,
-        period: this.period,
-      })
-      .then(() => (this.loading = false));
+    this.fetchPrescriptions({
+      currentPage: this.currentPage,
+      itemsPerPage: this.itemsPerPage,
+      period: this.period,
+    }).then(() => (this.loading = false));
   },
 };
 </script>
