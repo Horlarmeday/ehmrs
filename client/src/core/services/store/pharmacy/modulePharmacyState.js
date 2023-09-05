@@ -29,5 +29,13 @@ export default {
   route: null,
   routes: [],
   totalRoutes: 0,
-  routePages: 0
+  routePages: 0,
+
+  /**
+   * PRESCRIPTIONS
+   */
+  prescription: null,
+  prescriptions: [],
+  totalPrescription: 0,
+  prescriptionPages: 0
 };

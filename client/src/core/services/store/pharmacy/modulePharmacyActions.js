@@ -24,6 +24,7 @@ export default {
         });
     });
   },
+
   fetchGenericDrugs({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
@@ -221,6 +222,49 @@ export default {
         .then(response => {
           commit('SET_ROUTES', response.data.data.routesOfAdministrations);
           commit('SET_MEASUREMENTS', response.data.data.dosageMeasurements);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * PRESCRIPTIONS
+   */
+
+  fetchPrescriptions({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/pharmacy/prescriptions/get', {
+          params: {
+            currentPage: payload.currentPage,
+            pageLimit: payload.itemsPerPage,
+            search: payload.search,
+            start: payload.start,
+            end: payload.end,
+            period: payload.period,
+          },
+        })
+        .then(response => {
+          commit('SET_PRESCRIPTIONS', response.data.data.docs);
+          commit('SET_PRESCRIPTIONS_TOTAL', response.data.data.total);
+          commit('SET_PRESCRIPTIONS_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchOnePrescription({ commit }, prescriptionId) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/pharmacy/prescriptions/get/${prescriptionId}`)
+        .then(response => {
+          commit('SET_PRESCRIPTION', response.data.data);
           resolve(response);
         })
         .catch(error => {

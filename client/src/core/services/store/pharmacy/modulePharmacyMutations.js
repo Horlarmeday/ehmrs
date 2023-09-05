@@ -88,5 +88,24 @@ export default {
   UPDATE_ROUTE(state, route) {
     const routeIndex = state.routes.findIndex(p => p.id === route.id);
     Object.assign(state.routes[routeIndex], route);
-  }
+  },
+
+  /**
+   * PRESCRIPTIONS
+   */
+  SET_PRESCRIPTIONS(state, prescriptions) {
+    state.prescriptions = prescriptions;
+  },
+
+  SET_PRESCRIPTION(state, prescription) {
+    state.prescription = prescription;
+  },
+
+  SET_PRESCRIPTIONS_TOTAL(state, total) {
+    state.totalPrescription = total;
+  },
+
+  SET_PRESCRIPTIONS_PAGES(state, pages) {
+    state.prescriptionPages = pages;
+  },
 };
