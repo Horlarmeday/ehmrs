@@ -355,7 +355,7 @@ class PharmacyController {
    * @param {object} next next middleware
    * @returns {json} json object with routes of administration data
    */
-  static async getRoutesOfAdministration(req, res, next) {
+  static async getRoutesOfAdministration(req: Request, res: Response, next: NextFunction) {
     try {
       const routes = await PharmacyService.getRoutesOfAdministration();
 
@@ -381,6 +381,52 @@ class PharmacyController {
       const routes = await PharmacyService.getRoutesAndMeasurements(dosage_form_id);
 
       return successResponse({ res, data: routes, message: SUCCESS, httpCode: StatusCodes.OK });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * PRESCRIPTIONS
+   */
+  /**
+   * get drugs prescriptions
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with drug prescriptions data
+   */
+  static async getDrugPrescriptions(req: Request, res: Response, next: NextFunction) {
+    try {
+      const routes = await PharmacyService.getDrugPrescriptions(req.query);
+
+      return successResponse({ res, data: routes, message: SUCCESS, httpCode: StatusCodes.OK });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get one prescription
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns json object with drug prescription data
+   */
+  static async getOnePrescription(req: Request, res: Response, next: NextFunction) {
+    try {
+      const drugPrescription = await PharmacyService.getOneDrugPrescription(req.params.id);
+
+      return successResponse({
+        res,
+        data: drugPrescription,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+      });
     } catch (e) {
       return next(e);
     }

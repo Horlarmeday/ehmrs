@@ -24,5 +24,7 @@ router.get('/generic-drugs/get', verify, PharmacyController.getGenericDrugs);
 router.get('/dosage-forms/get', verify, PharmacyController.getDosageForms);
 router.get('/measurements/get', verify, PharmacyController.getMeasurements);
 router.get('/routes-of-administration/get', verify, PharmacyController.getRoutesOfAdministration);
+router.get('/prescriptions/get', verify, PharmacyController.getDrugPrescriptions);
+router.get('/prescriptions/get/:id', verify, PharmacyController.getOnePrescription);
 
 export default router;

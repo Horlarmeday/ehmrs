@@ -1,7 +1,13 @@
 /* eslint-disable camelcase */
-import { Op } from 'sequelize';
-import { canUsePriceTariff, generateRandomNumbers } from '../../core/helpers/helper';
-import { getModelById } from '../../core/helpers/general';
+import sequelize, { Op } from 'sequelize';
+import {
+  calcLimitAndOffset,
+  canUsePriceTariff,
+  dateIntervalQuery,
+  generateRandomNumbers,
+  paginate,
+} from '../../core/helpers/helper';
+import { getModelById, getPeriodQuery } from '../../core/helpers/general';
 
 import {
   DosageForm,
@@ -11,9 +17,11 @@ import {
   Measurement,
   Patient,
   PatientInsurance,
+  PrescribedDrug,
   RoutesOfAdministration,
 } from '../../database/models';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
+import { DispenseStatus } from '../../database/models/prescribedDrug';
 
 async function includeOneModel({ model, modelToInclude, id, includeAs }) {
   return model.findOne({
@@ -271,7 +279,7 @@ export async function getRoutesOfAdministration() {
  * @function
  * @returns {json} json object with routes of administration data
  */
-export async function getDosageFormRoutes(dosage_form_id) {
+export async function getDosageFormRoutes(dosage_form_id: number) {
   return RoutesOfAdministration.findAll({
     where: {
       dosage_form_id,
@@ -291,7 +299,7 @@ export async function getDosageFormRoutes(dosage_form_id) {
  * @returns {json} json object with tests data
  * @param data
  */
-export const createDrugTariff = async data => {
+export const createDrugTariff = async (data: readonly sequelize.Optional<any, string>[]) => {
   return DrugTariff.bulkCreate(data, { updateOnDuplicate: ['price'] });
 };
 
@@ -319,10 +327,137 @@ export const getLastDrugPrescription = async (patient_id: number) => {
   return DrugPrescription.findOne({ where: { patient_id }, order: [['date_prescribed', 'DESC']] });
 };
 
-export const createDrugPrescription = async (data: any) => {
+export const createDrugPrescription = async (data: sequelize.Optional<any, string>) => {
   return DrugPrescription.create({ ...data });
 };
 
-export const getOnePrescription = async query => {
+export const getOnePrescription = async (query: sequelize.WhereOptions<any>) => {
   return DrugPrescription.findOne({ where: { ...query } });
+};
+
+/**
+ * get drugs prescriptions
+ *
+ * @function
+ * @returns {json} json object with drugs prescriptions data
+ * @param currentPage
+ * @param pageLimit
+ * @param period
+ * @param search
+ * @param start
+ * @param end
+ */
+export const getDrugPrescriptions = async ({
+  currentPage = 1,
+  pageLimit = 10,
+  period = null,
+  search = null,
+  start = null,
+  end = null,
+}): Promise<{
+  total: number;
+  pages: number;
+  perPage: number;
+  docs: DrugPrescription[];
+  currentPage: number;
+}> => {
+  const { limit, offset } = calcLimitAndOffset(+currentPage, +pageLimit);
+  const query = {
+    ...(period && getPeriodQuery(period, 'date_prescribed')),
+    ...(start && end && dateIntervalQuery('date_prescribed', start, end)),
+  };
+  const samples = await DrugPrescription.findAll({
+    attributes: {
+      include: [
+        [sequelize.fn('COUNT', sequelize.col('drugs.id')), 'total'],
+        [
+          sequelize.fn(
+            'COUNT',
+            sequelize.literal(
+              `DISTINCT CASE WHEN drugs.dispense_status = '${DispenseStatus.DISPENSED}' THEN drugs.id END`
+            )
+          ),
+          'dispensed_drugs_count',
+        ],
+        [
+          sequelize.fn(
+            'COUNT',
+            sequelize.literal(
+              `DISTINCT CASE WHEN drugs.dispense_status = '${DispenseStatus.RETURNED}' THEN drugs.id END`
+            )
+          ),
+          'returned_drugs_count',
+        ],
+      ],
+    },
+    order: [['date_prescribed', 'DESC']],
+    where: {
+      ...query,
+    },
+    include: [
+      {
+        model: PrescribedDrug,
+        as: 'drugs',
+        attributes: [], // Exclude all columns from the PrescribedDrug table (we only need the count)
+      },
+      {
+        model: Patient,
+        attributes: ['firstname', 'lastname', 'fullname', 'hospital_id'],
+        where: {
+          ...(search && {
+            [Op.or]: [
+              {
+                firstname: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+              {
+                lastname: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+              {
+                hospital_id: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+            ],
+          }),
+        },
+      },
+    ],
+    group: ['DrugPrescription.id'], // Group the results by DrugPrescription.id to get the count per sample
+    subQuery: false,
+    limit,
+    offset,
+  });
+  const count = await DrugPrescription.count({ where: { ...query } });
+  return paginate({ rows: samples, count }, currentPage, limit);
+};
+
+/**
+ * get one drug prescription
+ *
+ * @function
+ * @returns {json} json object with drugs prescriptions data
+ * @param drugPrescriptionId
+ */
+export const getOneDrugPrescription = async (
+  drugPrescriptionId: number | string
+): Promise<DrugPrescription> => {
+  return await DrugPrescription.findOne({
+    where: { id: drugPrescriptionId },
+    attributes: [],
+    include: [
+      {
+        model: Patient,
+        attributes: ['firstname', 'lastname', 'hospital_id', 'gender', 'id'],
+      },
+      {
+        model: PrescribedDrug,
+        attributes: ['drug_id', 'id', 'status'],
+        include: [{ model: Drug, attributes: ['name'] }],
+      },
+    ],
+  });
 };

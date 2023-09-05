@@ -7,8 +7,10 @@ import {
   getDosageFormMeasurements,
   getDosageFormRoutes,
   getDosageForms,
+  getDrugPrescriptions,
   getGenericDrugs,
   getMeasurements,
+  getOneDrugPrescription,
   getRoutesOfAdministration,
   searchGenericDrugs,
   updateDosageForm,
@@ -20,6 +22,7 @@ import { DosageMeasurement } from './interface/dosage-measurements.interface';
 import { DosageForm } from './interface/dosage-forms.interface';
 import { Drug } from './interface/generic-drugs.interface';
 import { RoutesOfAdministration } from '../../database/models';
+import { getCollectedSamples } from '../Laboratory/laboratory.repository';
 
 class PharmacyService {
   /** ***********************
@@ -58,9 +61,9 @@ class PharmacyService {
    * @param body
    * @memberOf PharmacyService
    */
-  static async getGenericDrugs(
-    body
-  ): Promise<{ total: any; pages: number; perPage: number; docs: any; currentPage: number }> {
+  static async getGenericDrugs(body: {
+    [s: string]: string;
+  }): Promise<{ total: any; pages: number; perPage: number; docs: any; currentPage: number }> {
     const { currentPage, pageLimit, search } = body;
     if (search) {
       return searchGenericDrugs(+currentPage, +pageLimit, search);
@@ -204,6 +207,39 @@ class PharmacyService {
     const [routesOfAdministrations, dosageMeasurements] = await Promise.all([routes, measurements]);
 
     return { routesOfAdministrations, dosageMeasurements };
+  }
+
+  /** ***********************
+   * PRESCRIPTIONS
+   ********************** */
+
+  /**
+   * get drug prescriptions
+   * @param body
+   */
+  static async getDrugPrescriptions(body) {
+    const { currentPage, pageLimit, search, start, end, period } = body;
+    if (start && end) {
+      return getDrugPrescriptions({ currentPage, pageLimit, period, search, end, start });
+    }
+
+    if (search) {
+      return getDrugPrescriptions({ currentPage, pageLimit, period, search });
+    }
+
+    if (Object.values(body).length) {
+      return getDrugPrescriptions({ currentPage, pageLimit, period });
+    }
+
+    return getDrugPrescriptions({ period });
+  }
+
+  /**
+   * get one drug prescription
+   * @param drugPrescriptionId
+   */
+  static async getOneDrugPrescription(drugPrescriptionId: string) {
+    return getOneDrugPrescription(drugPrescriptionId);
   }
 }
 export default PharmacyService;
