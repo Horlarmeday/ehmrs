@@ -21,9 +21,9 @@
 </template>
 
 <script>
-import SectionTitle from './components/SectionTitle.vue';
-import PatientSection from './components/PatientSection.vue';
-import PageTitle from '@/view/pages/laboratory/components/PageTitle.vue';
+import SectionTitle from '../../../utils/SectionTitle.vue';
+import PatientSection from '../../../utils/PatientSection.vue';
+import PageTitle from '@/utils/PageTitle.vue';
 import TestResultSection from '@/view/pages/laboratory/results/TestResultSection.vue';
 export default {
   name: 'TestResult',
