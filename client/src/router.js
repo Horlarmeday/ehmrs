@@ -441,6 +441,14 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            {
+              path: 'prescriptions',
+              name: 'drug-prescriptions',
+              component: () => import('@/view/pages/pharmacy/Prescriptions.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
           ],
         },
         // LABORATORY

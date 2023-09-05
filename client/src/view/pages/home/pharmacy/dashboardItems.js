@@ -10,7 +10,7 @@ export default [
     name: 'Requests',
   },
   {
-    url: '/pharmacy/inventory',
+    url: '/inventory/inventory-type',
     icon: 'fas fa-laptop-house',
     name: 'Inventory',
   },

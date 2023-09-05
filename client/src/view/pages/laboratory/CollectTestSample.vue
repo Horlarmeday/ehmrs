@@ -20,11 +20,11 @@
 </template>
 
 <script>
-import SectionTitle from './components/SectionTitle';
+import SectionTitle from '../../../utils/SectionTitle.vue';
 import TestsOrderSection from './collectTestSample/TestsOrderSection';
-import PatientSection from './components/PatientSection';
+import PatientSection from '../../../utils/PatientSection.vue';
 import OrderSection from './collectTestSample/OrderSection';
-import PageTitle from './components/PageTitle.vue';
+import PageTitle from '../../../utils/PageTitle.vue';
 export default {
   name: 'CollectTestSample',
   data: () => ({
