@@ -212,7 +212,7 @@ class PatientController {
 
       return successResponse({
         res,
-        httpCode: StatusCodes.OK,
+        httpCode: StatusCodes.CREATED,
         message: DATA_UPDATED,
         data: patient,
       });

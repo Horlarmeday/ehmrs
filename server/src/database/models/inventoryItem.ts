@@ -45,6 +45,7 @@ export class InventoryItem extends Model {
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
+    unique: false,
     validate: {
       notEmpty: {
         msg: 'drug id is required',
