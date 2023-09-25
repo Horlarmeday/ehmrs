@@ -16,9 +16,13 @@ export class PharmacyOrderController {
    * @param {object} req express request object
    * @param {object} res express response object
    * @param {object} next next middleware
-   * @returns {json} json object with status, prescribed drug data
+   * @returns {SuccessResponse} json object with status, prescribed drug data
    */
-  static async orderDrug(req, res, next): Promise<SuccessResponse> {
+  static async orderDrug(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
     const { error } = validateDrugPrescription(req.body);
     if (error)
       return errorResponse({

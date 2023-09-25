@@ -11,7 +11,7 @@ import {
   Staff,
   Unit,
 } from '../../../database/models';
-import exp from 'constants';
+import { WhereOptions } from 'sequelize';
 
 type PrescribeDrugType = PrescribedDrugBody & { drug_prescription_id };
 
@@ -40,7 +40,11 @@ export async function prescribeDrug(data: PrescribeDrugType): Promise<Prescribed
     visit_id,
     start_date,
     drug_prescription_id,
-  } = data;
+    drug_group,
+    inventory_id,
+    source,
+    ante_natal_id,
+  } = data || {};
   return PrescribedDrug.create({
     drug_id,
     drug_type,
@@ -61,6 +65,10 @@ export async function prescribeDrug(data: PrescribeDrugType): Promise<Prescribed
     start_date,
     date_prescribed: Date.now(),
     drug_prescription_id,
+    drug_group: drug_group || null,
+    inventory_id,
+    source,
+    ante_natal_id,
   });
 }
 
@@ -145,9 +153,11 @@ export const getPrescribedAdditionalItems = ({
 /**
  * add additional item for patient
  * @param data
- * @returns {object} prescribed additional item data
+ * @returns {Promise<PrescribedAdditionalItem>} prescribed additional item data
  */
-export const prescribeAdditionalItem = async (data: PrescribedAdditionalItemBody) => {
+export const prescribeAdditionalItem = async (
+  data: PrescribedAdditionalItemBody
+): Promise<PrescribedAdditionalItem> => {
   const {
     drug_id,
     drug_type,
@@ -161,6 +171,7 @@ export const prescribeAdditionalItem = async (data: PrescribedAdditionalItemBody
     visit_id,
     start_date,
     unit_id,
+    inventory_id,
   } = data;
   return PrescribedAdditionalItem.create({
     drug_id,
@@ -176,5 +187,50 @@ export const prescribeAdditionalItem = async (data: PrescribedAdditionalItemBody
     drug_prescription_id,
     unit_id,
     date_prescribed: Date.now(),
+    inventory_id,
   });
+};
+
+/**
+ * get one prescribed drug
+ * @param query
+ * @returns {Promise<PrescribedDrug>} prescribed drug data
+ */
+export const getOnePrescribedDrug = async (
+  query: WhereOptions<PrescribedDrug>
+): Promise<PrescribedDrug> => {
+  return await PrescribedDrug.findOne({ where: { ...query } });
+};
+
+/**
+ * get all prescribed drugs in a drug prescription
+ * @param query
+ * @returns {Promise<PrescribedDrug[]>} prescribed drug data
+ */
+export const getPrescriptionDrugs = async (
+  query: WhereOptions<PrescribedDrug>
+): Promise<PrescribedDrug[]> => {
+  return await PrescribedDrug.findAll({ where: { ...query } });
+};
+
+/**
+ * get one additional item
+ * @param query
+ * @returns {Promise<PrescribedAdditionalItem>} additional item data
+ */
+export const getOneAdditionalItem = async (
+  query: WhereOptions<PrescribedAdditionalItem>
+): Promise<PrescribedAdditionalItem> => {
+  return await PrescribedAdditionalItem.findOne({ where: { ...query } });
+};
+
+/**
+ * get all additional items in a drug prescription
+ * @param query
+ * @returns {Promise<PrescribedAdditionalItem[]>} additional items data
+ */
+export const getPrescriptionAdditionalItems = async (
+  query: WhereOptions<PrescribedAdditionalItem>
+): Promise<PrescribedAdditionalItem[]> => {
+  return await PrescribedAdditionalItem.findAll({ where: { ...query } });
 };

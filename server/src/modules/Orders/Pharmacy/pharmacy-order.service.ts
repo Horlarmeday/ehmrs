@@ -101,13 +101,14 @@ class PharmacyOrderService {
     return createDrugPrescription(this.drugPrescriptionData(data, patient_id));
   }
 
-  static drugPrescriptionData(body: PrescribedDrugBody, patient_id: number) {
+  private static drugPrescriptionData(body: PrescribedDrugBody, patient_id: number) {
     return {
       source: body.source,
       requester: body.staff_id,
       visit_id: body.visit_id,
       patient_id,
       date_prescribed: Date.now(),
+      ...(body?.ante_natal_id && { ante_natal_id: body?.ante_natal_id }),
     };
   }
 }
