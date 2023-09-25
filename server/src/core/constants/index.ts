@@ -2,6 +2,7 @@ export const SEND_PATIENT_SMS = 'Registration SMS';
 export const SEND_FORGOT_PASSWORD = 'Generated password';
 export const UPLOAD_IMAGE = 'Upload to image to box';
 export const ASSIGN_HOSPITAL_NUMBER = 'Assign hospital number';
+export const ASSIGN_ANTENATAL_NUMBER = 'Assign antenatal number';
 export const CASH = 'CASH';
 export const NHIS = 'NHIS';
 export const OPD = 'OPD';

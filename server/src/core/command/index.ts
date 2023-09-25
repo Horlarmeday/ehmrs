@@ -1,10 +1,12 @@
 export enum JobName {
   ASSIGN_HOSPITAL_NUMBER = 'Assign hospital number',
   SEND_FORGOT_PASSWORD = 'Send generated password',
-  UPLOAD_IMAGE = 'Upload to image to box',
+  UPLOAD_IMAGE = 'Upload to image to cloudinary',
   EMPTY_HOSPITAL_NUMBER = 'Check empty hospital number',
   PATIENT_HEALTH_INSURANCE = 'Create patient health insurance',
   PRINCIPAL_RELATIONSHIP = 'Update dependant relationship to principal',
+  ASSIGN_ANTENATAL_NUMBER = 'Assign antenatal number',
+  SEND_PATIENT_SMS = 'Registration SMS',
 }
 
 export const CronTimer = {
