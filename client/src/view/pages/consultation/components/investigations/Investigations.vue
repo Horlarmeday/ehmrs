@@ -6,7 +6,7 @@
           <span class="card-label font-weight-bolder text-dark">Investigations</span>
           <span v-if="showSwitch" class="switch switch-sm switch-icon float-right">
             <label>
-              <input @change="flipSwitch($event)" type="checkbox" :checked="switchPosition" />
+              <input @change="flipSwitch($event)" type="checkbox" :checked="switchPosition && switchSpot" />
               <span />
             </label>
           </span>
@@ -45,19 +45,31 @@
 </template>
 
 <script>
-import { EXCLUDED_INSURANCE } from "@/common/common";
-
 export default {
   name: 'Investigations',
   data() {
     return {
       checkmark: 'flaticon2-check-mark',
       isDisabled: false,
-      switchPosition: false,
+      switchSpot: true,
     };
   },
   created() {
     this.defaultSwitchPosition();
+  },
+  props: {
+    switchPosition: {
+      type: Boolean,
+      required: true,
+    },
+    showSwitch: {
+      type: Boolean,
+      required: true,
+    },
+    source: {
+      type: String,
+      required: true,
+    },
   },
   computed: {
     investigations() {
@@ -65,15 +77,6 @@ export default {
     },
     selectedInvestigations() {
       return this.$store.state.order.selectedInvestigations;
-    },
-    visit() {
-      return this.$store.state.visit.visit;
-    },
-    showSwitch() {
-      return (
-        this.visit?.patient?.has_insurance &&
-        !EXCLUDED_INSURANCE.includes(this.visit?.insurance?.insurance?.name)
-      );
     },
   },
   methods: {
@@ -104,9 +107,11 @@ export default {
       return {
         investigation_id: investigation.id,
         is_urgent: false,
-        investigation_type: this.switchPosition ? 'NHIS' : 'CASH',
+        investigation_type: this.switchPosition && this.switchSpot ? 'NHIS' : 'CASH',
         price: investigation.price,
         name: investigation.name,
+        source: this.source,
+        ...(this.source === 'Antenatal' && { ante_natal_id: this.$route.query.antenatal }),
       };
     },
 
@@ -135,7 +140,7 @@ export default {
       this.$store
         .dispatch('order/orderInvestigationTest', {
           investigations,
-          id: this.$route.params.visitId,
+          id: this.$route.params.id,
         })
         .then(() => this.initializeRequest(submitButton))
         .catch(() => this.removeSpinner(submitButton));
@@ -146,19 +151,8 @@ export default {
       this.$store.dispatch('order/emptySelectedInvestigationButtons');
     },
 
-    defaultSwitchPosition() {
-      setTimeout(() => {
-        if (
-          this.visit?.patient?.has_insurance &&
-          !EXCLUDED_INSURANCE.includes(this.visit?.insurance?.insurance?.name)
-        ) {
-          this.switchPosition = true;
-        }
-      }, 350);
-    },
-
     flipSwitch(event) {
-      this.switchPosition = !!event.target.checked;
+      this.switchSpot = !!event.target.checked;
     },
   },
 };
