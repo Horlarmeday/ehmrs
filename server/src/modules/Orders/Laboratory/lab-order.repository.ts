@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { PrescribedTest, TestSample } from '../../../database/models';
+import { PrescribedTest } from '../../../database/models';
 import sequelize from 'sequelize';
 
 /**

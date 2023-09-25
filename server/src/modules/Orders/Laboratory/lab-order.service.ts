@@ -1,6 +1,5 @@
 /* eslint-disable camelcase,no-param-reassign */
 import { orderBulkTest, prescribeTest } from './lab-order.repository';
-import VisitService from '../../Visit/visit.service';
 import { PrescribedTestBody } from './interface/prescribed-test.body';
 import { PrescribedTest } from '../../../database/models';
 import PatientService from '../../Patient/patient.service';
@@ -11,6 +10,7 @@ import {
 } from '../../Laboratory/laboratory.repository';
 import { isToday } from '../../../core/helpers/helper';
 import { TestStatus } from '../../../database/models/testPrescription';
+import { getVisitById } from '../../Visit/visit.repository';
 
 export class LabOrderService {
   /**
@@ -35,7 +35,7 @@ export class LabOrderService {
    */
   static async orderBulkTestService(body: PrescribedTestBody): Promise<PrescribedTest[]> {
     const { tests, staff_id, visit_id } = body;
-    const visit = await VisitService.getVisitById(visit_id);
+    const visit = await getVisitById(visit_id);
     const patient = await PatientService.getPatientById(visit.patient_id);
     const prescription = await this.getTestPrescription(visit.patient_id, body);
     const bulkTests = await Promise.all(
@@ -61,7 +61,7 @@ export class LabOrderService {
    * @param patient_id
    * @param data
    */
-  static async getTestPrescription(patient_id: number, data: PrescribedTestBody) {
+  private static async getTestPrescription(patient_id: number, data: PrescribedTestBody) {
     const lastPrescription = await getLastTestPrescription(patient_id);
 
     if (lastPrescription && !isToday(lastPrescription?.date_requested))
@@ -77,13 +77,14 @@ export class LabOrderService {
     return createTestPrescription(this.testPrescriptionData(data, patient_id));
   }
 
-  static testPrescriptionData(body: PrescribedTestBody, patient_id: number) {
+  private static testPrescriptionData(body: PrescribedTestBody, patient_id: number) {
     return {
-      source: body.source,
+      source: body.tests[0].source,
       requester: body.staff_id,
       visit_id: body.visit_id,
       patient_id,
       date_requested: Date.now(),
+      ...(body.tests[0]?.ante_natal_id && { ante_natal_id: body.tests[0]?.ante_natal_id }),
     };
   }
 }
