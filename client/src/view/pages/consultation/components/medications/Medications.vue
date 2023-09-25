@@ -162,14 +162,13 @@ export default {
       currentPage: this.currentPage,
       itemsPerPage: this.itemsPerPage,
       fetchWithItems: true,
-      filter: { visit_id: this.$route.params.visitId },
+      filter: { visit_id: this.$route.params.id },
     });
   },
   methods: {
     viewPopover(item) {
       this.item = item;
       this.showPopover = true;
-      // this.$root.$emit('bv::show::popover', 'popover-reactive-1');
     },
     hidePopover() {
       this.showPopover = false;
