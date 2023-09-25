@@ -21,9 +21,10 @@ import {
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { InvestigationResult } from './investigationResult';
 import { PrescribedInvestigation } from './prescribedInvestigation';
+import { Antenatal } from './antenatal';
 
 export enum Source {
-  ANC = 'ANC',
+  ANC = 'Antenatal',
   CONSULTATION = 'Consultation',
 }
 
@@ -115,6 +116,12 @@ export class InvestigationPrescription extends Model {
   })
   result_notes: string;
 
+  @ForeignKey(() => Antenatal)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  ante_natal_id: number;
+
   @BelongsTo(() => Staff, {
     foreignKey: 'requester',
   })
@@ -131,6 +138,9 @@ export class InvestigationPrescription extends Model {
 
   @BelongsTo(() => Patient)
   patient: Patient;
+
+  @BelongsTo(() => Antenatal)
+  antenatal: Antenatal;
 
   static async paginate(param: {
     paginate: number;

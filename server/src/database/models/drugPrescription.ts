@@ -20,10 +20,11 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { PrescribedDrug } from './prescribedDrug';
-import { TestResult } from './testResult';
+import { Antenatal } from './antenatal';
+import { PrescribedAdditionalItem } from './prescribedAdditionalItem';
 
 export enum Source {
-  ANC = 'ANC',
+  ANC = 'Antenatal',
   CONSULTATION = 'Consultation',
   THEATER = 'Theater',
 }
@@ -110,19 +111,41 @@ export class DrugPrescription extends Model {
   })
   status: DrugStatus;
 
+  @ForeignKey(() => Antenatal)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  ante_natal_id: number;
+
   @BelongsTo(() => Staff, {
     foreignKey: 'requester',
   })
   examiner: Staff;
 
-  @HasMany(() => PrescribedDrug)
+  @HasMany(() => PrescribedDrug, {
+    foreignKey: 'drug_prescription_id',
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+    hooks: true,
+  })
   drugs: PrescribedDrug[];
+
+  @HasMany(() => PrescribedAdditionalItem, {
+    foreignKey: 'drug_prescription_id',
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+    hooks: true,
+  })
+  items: PrescribedAdditionalItem[];
 
   @BelongsTo(() => Visit)
   visit: Visit;
 
   @BelongsTo(() => Patient)
   patient: Patient;
+
+  @BelongsTo(() => Antenatal)
+  antenatal: Antenatal;
 
   static async paginate(param: {
     paginate: number;

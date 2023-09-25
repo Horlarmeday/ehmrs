@@ -19,12 +19,12 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
-import { TestSample } from './testSample';
 import { PrescribedTest } from './prescribedTest';
 import { TestResult } from './testResult';
+import { Antenatal } from './antenatal';
 
 export enum Source {
-  ANC = 'ANC',
+  ANC = 'Antenatal',
   CONSULTATION = 'Consultation',
 }
 
@@ -127,6 +127,12 @@ export class TestPrescription extends Model {
   })
   result_notes: string;
 
+  @ForeignKey(() => Antenatal)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  ante_natal_id: number;
+
   @BelongsTo(() => Staff, {
     foreignKey: 'requester',
   })
@@ -148,6 +154,9 @@ export class TestPrescription extends Model {
     foreignKey: 'sample_received_by',
   })
   sample_receiver: Staff;
+
+  @BelongsTo(() => Antenatal)
+  antenatal: Antenatal;
 
   static async paginate(param: {
     paginate: number;
