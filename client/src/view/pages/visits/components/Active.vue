@@ -12,7 +12,14 @@
         :title="visit.patient.fullname"
       >
         <div>
-          <img alt="Pic" src="/media/users/blank.png" width="50" class="mb-2" />
+          <img
+            v-if="!imageError"
+            alt="Pic"
+            :src="imageUrl(visit.patient.photo)"
+            @load="handleImageLoad"
+            @error="handleImageError"
+          />
+          <img v-else alt="Pic" src="/media/users/blank.png" width="50" class="mb-2" />
         </div>
         <p class="mb-0 font-size-lg">
           <strong
@@ -37,6 +44,7 @@ export default {
     return {
       currentPage: 1,
       itemsPerPage: 10,
+      imageError: false,
     };
   },
   computed: {
@@ -110,6 +118,16 @@ export default {
 
     visitDetailsPage(visit) {
       this.$router.push(`/consultation/${visit.id}`);
+    },
+
+    imageUrl(url) {
+      return `${window.location.origin}/static/images/${url}`;
+    },
+    handleImageLoad() {
+      this.imageError = false;
+    },
+    handleImageError() {
+      this.imageError = true;
     },
   },
   created() {

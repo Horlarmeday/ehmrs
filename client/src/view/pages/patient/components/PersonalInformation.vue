@@ -84,8 +84,17 @@
       </div>
       <div class="col-2">
         <div class="symbol symbol-150 mr-3">
-          <img v-if="patient.photo" alt="Pic" :src="`/static/images/${patient.photo}`" />
-          <img v-else alt="Pic" src="/media/users/300_25.jpg" />
+          <img
+            v-if="!imageError"
+            alt="Pic"
+            :src="imageUrl(patient.photo)"
+            @load="handleImageLoad"
+            @error="handleImageError"
+          />
+          <span class="symbol-label font-size-h1">
+            {{ patient?.firstname?.charAt(0)?.toUpperCase() }}
+            {{ patient?.lastname?.charAt(0)?.toUpperCase() }}
+          </span>
         </div>
       </div>
       <div v-if="patient.next_of_kin_name" class="col-5 pt-3">
@@ -158,6 +167,7 @@
 export default {
   data: () => ({
     count: 0,
+    imageError: false,
   }),
 
   props: {
@@ -169,7 +179,7 @@ export default {
   },
 
   mounted() {
-    this.countToHundred()
+    this.countToHundred();
   },
 
   methods: {
@@ -178,6 +188,15 @@ export default {
         this.count = i;
         if (this.patient) break;
       }
+    },
+    imageUrl(url) {
+      return `${window.location.origin}/static/images/${url}`;
+    },
+    handleImageLoad() {
+      this.imageError = false;
+    },
+    handleImageError() {
+      this.imageError = true;
     },
   },
 };
