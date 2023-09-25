@@ -13,7 +13,10 @@ export class PrescribedAdditionalItemBody {
   total_price: number;
   patient_id: number;
   visit_id: number;
+  inventory_id: number;
   start_date: Date;
+  ante_natal_id?: number;
+  source: string;
 }
 
 export class PrescribedDrugBody {
@@ -35,6 +38,10 @@ export class PrescribedDrugBody {
   examiner: number;
   patient_id: number;
   visit_id: number;
+  insurance_id: number;
+  inventory_id: number;
   start_date: Date;
   source: string;
+  drug_group?: string;
+  ante_natal_id?: number;
 }

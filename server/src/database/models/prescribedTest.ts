@@ -21,8 +21,9 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Sample } from './sample';
-import { TestPrescription } from './testPrescription';
+import { Source, TestPrescription } from './testPrescription';
 import { TestResult } from './testResult';
+import { Antenatal } from './antenatal';
 
 export enum PrescriptionType {
   CASH = 'Cash',
@@ -231,6 +232,18 @@ export class PrescribedTest extends Model {
   })
   is_nhis_test_approved: boolean;
 
+  @ForeignKey(() => Antenatal)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  ante_natal_id: number;
+
+  @Column({
+    type: DataType.ENUM(Source.ANC, Source.CONSULTATION),
+    defaultValue: Source.CONSULTATION,
+  })
+  source: Source;
+
   @BelongsTo(() => Staff, {
     foreignKey: 'requester',
   })
@@ -263,6 +276,9 @@ export class PrescribedTest extends Model {
 
   @BelongsTo(() => TestResult)
   result: TestResult;
+
+  @BelongsTo(() => Antenatal)
+  antenatal: Antenatal;
 
   static async paginate(param: {
     paginate: number;

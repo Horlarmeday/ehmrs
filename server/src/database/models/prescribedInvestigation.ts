@@ -23,6 +23,7 @@ import { PrescriptionType } from './prescribedTest';
 import { Investigation } from './investigation';
 import { InvestigationResult } from './investigationResult';
 import { InvestigationPrescription } from './investigationPrescription';
+import { Antenatal } from './antenatal';
 
 export enum InvestigationStatus {
   PENDING = 'Pending',
@@ -31,6 +32,11 @@ export enum InvestigationStatus {
   RESULT_ADDED = 'Result Added',
   REFERRED = 'Referred',
   COMPLETED = 'Completed',
+}
+
+export enum Source {
+  ANC = 'Antenatal',
+  CONSULTATION = 'Consultation',
 }
 
 @Table({ timestamps: true, tableName: 'Prescribed_Investigations' })
@@ -192,6 +198,18 @@ export class PrescribedInvestigation extends Model {
   })
   is_nhis_investigation_approved: boolean;
 
+  @ForeignKey(() => Antenatal)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  ante_natal_id: number;
+
+  @Column({
+    type: DataType.ENUM(Source.ANC, Source.CONSULTATION),
+    defaultValue: Source.CONSULTATION,
+  })
+  source: Source;
+
   @BelongsTo(() => Staff, {
     foreignKey: 'requester',
   })
@@ -221,6 +239,9 @@ export class PrescribedInvestigation extends Model {
 
   @BelongsTo(() => InvestigationPrescription)
   investigation_prescription: InvestigationPrescription;
+
+  @BelongsTo(() => Antenatal)
+  antenatal: Antenatal;
 
   static async paginate(param: {
     paginate: number;

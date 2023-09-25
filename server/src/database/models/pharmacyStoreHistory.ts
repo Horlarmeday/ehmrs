@@ -64,6 +64,7 @@ export class PharmacyStoreHistory extends Model {
       notEmpty: {
         msg: 'quantity remainder is required',
       },
+      min: 0,
     },
   })
   quantity_remaining: number;

@@ -20,8 +20,36 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
-import { BillingStatus, DispenseStatus, PaymentStatus, PrescribedDrug } from './prescribedDrug';
+import { PrescribedDrug } from './prescribedDrug';
 import { Unit } from './unit';
+import { Inventory } from './inventory';
+import { DrugPrescription } from './drugPrescription';
+import { Antenatal } from './antenatal';
+
+export enum DispenseStatus {
+  DISPENSED = 'Dispensed',
+  PENDING = 'Pending',
+  RETURNED = 'Returned',
+  PARTIAL_DISPENSED = 'Partial Dispense',
+}
+
+export enum PaymentStatus {
+  PENDING = 'Pending',
+  PAID = 'Paid',
+  CLEARED = 'Cleared',
+  PERMITTED = 'Permitted',
+}
+
+export enum BillingStatus {
+  BILLED = 'Billed',
+  UNBILLED = 'Unbilled',
+}
+
+export enum Source {
+  ANC = 'Antenatal',
+  CONSULTATION = 'Consultation',
+  THEATER = 'Theater',
+}
 
 @Table({ timestamps: true, tableName: 'Additional_item_prescriptions' })
 export class PrescribedAdditionalItem extends Model {
@@ -75,6 +103,18 @@ export class PrescribedAdditionalItem extends Model {
   quantity_to_dispense: number;
 
   @Column({
+    type: DataType.INTEGER,
+    defaultValue: 0,
+  })
+  quantity_returned: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    defaultValue: 0,
+  })
+  quantity_dispensed: number;
+
+  @Column({
     type: DataType.ENUM(DrugForm.DRUG, DrugForm.CONSUMABLE),
     allowNull: false,
     validate: {
@@ -97,14 +137,24 @@ export class PrescribedAdditionalItem extends Model {
   total_price: number;
 
   @Column({
-    type: DataType.ENUM(DispenseStatus.DISPENSED, DispenseStatus.PENDING, DispenseStatus.RETURNED),
+    type: DataType.ENUM(
+      DispenseStatus.DISPENSED,
+      DispenseStatus.PENDING,
+      DispenseStatus.RETURNED,
+      DispenseStatus.PARTIAL_DISPENSED
+    ),
     allowNull: false,
     defaultValue: DispenseStatus.PENDING,
   })
   dispense_status: DispenseStatus;
 
   @Column({
-    type: DataType.ENUM(PaymentStatus.CLEARED, PaymentStatus.PAID, PaymentStatus.PENDING),
+    type: DataType.ENUM(
+      PaymentStatus.CLEARED,
+      PaymentStatus.PAID,
+      PaymentStatus.PENDING,
+      PaymentStatus.PERMITTED
+    ),
     allowNull: false,
     defaultValue: PaymentStatus.PENDING,
   })
@@ -168,7 +218,7 @@ export class PrescribedAdditionalItem extends Model {
   @Column({
     type: DataType.INTEGER,
   })
-  drug_prescription_id: number;
+  prescribed_drug_id: number;
 
   @Column({
     type: DataType.DATE,
@@ -187,6 +237,48 @@ export class PrescribedAdditionalItem extends Model {
   })
   unit_id: number;
 
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  dispensed_by: number;
+
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  returned_by: number;
+
+  @ForeignKey(() => Inventory)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'inventory id is required',
+      },
+    },
+  })
+  inventory_id: number;
+
+  @ForeignKey(() => DrugPrescription)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  drug_prescription_id: number;
+
+  @ForeignKey(() => Antenatal)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  ante_natal_id: number;
+
+  @Column({
+    type: DataType.ENUM(Source.ANC, Source.CONSULTATION, Source.THEATER),
+    defaultValue: Source.CONSULTATION,
+  })
+  source: Source;
+
   @BelongsTo(() => Staff)
   requester: Staff;
 
@@ -200,10 +292,20 @@ export class PrescribedAdditionalItem extends Model {
   patient: Patient;
 
   @BelongsTo(() => PrescribedDrug)
-  drug_prescription: PrescribedDrug;
+  prescription: PrescribedDrug;
 
   @BelongsTo(() => Unit)
   unit: Unit;
+
+  @BelongsTo(() => Inventory)
+  inventory: Inventory;
+
+  @BelongsTo(() => Antenatal)
+  antenatal: Antenatal;
+
+  @BelongsTo(() => DrugPrescription)
+  drugPrescription: DrugPrescription;
+
   static async paginate(param: {
     paginate: number;
     attributes?: FindAttributeOptions;

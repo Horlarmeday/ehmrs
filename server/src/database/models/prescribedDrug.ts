@@ -3,6 +3,7 @@ import {
   Column,
   DataType,
   ForeignKey,
+  HasMany,
   Model,
   PrimaryKey,
   Table,
@@ -24,11 +25,15 @@ import { DosageForm } from './dosageForm';
 import { RoutesOfAdministration } from './routesOfAdministration';
 import { Measurement } from './measurement';
 import { DrugPrescription } from './drugPrescription';
+import { Inventory } from './inventory';
+import { PrescribedAdditionalItem } from './prescribedAdditionalItem';
+import { Antenatal } from './antenatal';
 
 export enum DispenseStatus {
   DISPENSED = 'Dispensed',
   PENDING = 'Pending',
   RETURNED = 'Returned',
+  PARTIAL_DISPENSED = 'Partial Dispense',
 }
 
 export enum PaymentStatus {
@@ -46,6 +51,12 @@ export enum BillingStatus {
 export enum DrugGroup {
   PRIMARY = 'Primary',
   SECONDARY = 'Secondary',
+}
+
+export enum Source {
+  ANC = 'Antenatal',
+  CONSULTATION = 'Consultation',
+  THEATER = 'Theater',
 }
 
 @Table({ timestamps: true, tableName: 'Prescribed_Drugs' })
@@ -117,6 +128,12 @@ export class PrescribedDrug extends Model {
   })
   quantity_dispensed: number;
 
+  @Column({
+    type: DataType.INTEGER,
+    defaultValue: 0,
+  })
+  quantity_returned: number;
+
   @ForeignKey(() => RoutesOfAdministration)
   @Column({
     type: DataType.INTEGER,
@@ -180,7 +197,12 @@ export class PrescribedDrug extends Model {
   total_price: number;
 
   @Column({
-    type: DataType.ENUM(DispenseStatus.DISPENSED, DispenseStatus.PENDING, DispenseStatus.RETURNED),
+    type: DataType.ENUM(
+      DispenseStatus.DISPENSED,
+      DispenseStatus.PENDING,
+      DispenseStatus.RETURNED,
+      DispenseStatus.PARTIAL_DISPENSED
+    ),
     allowNull: false,
     defaultValue: DispenseStatus.PENDING,
   })
@@ -254,7 +276,7 @@ export class PrescribedDrug extends Model {
   @Column({
     type: DataType.ENUM(DrugGroup.PRIMARY, DrugGroup.SECONDARY),
   })
-  drug_group: string;
+  drug_group: DrugGroup;
 
   @ForeignKey(() => Visit)
   @Column({
@@ -297,6 +319,12 @@ export class PrescribedDrug extends Model {
   })
   dispensed_by: number;
 
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  returned_by: number;
+
   @ForeignKey(() => DrugPrescription)
   @Column({
     type: DataType.INTEGER,
@@ -308,6 +336,30 @@ export class PrescribedDrug extends Model {
     },
   })
   drug_prescription_id: number;
+
+  @ForeignKey(() => Inventory)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'inventory id is required',
+      },
+    },
+  })
+  inventory_id: number;
+
+  @ForeignKey(() => Antenatal)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  ante_natal_id: number;
+
+  @Column({
+    type: DataType.ENUM(Source.ANC, Source.CONSULTATION, Source.THEATER),
+    defaultValue: Source.CONSULTATION,
+  })
+  source: Source;
 
   @BelongsTo(() => Staff, 'examiner')
   requester: Staff;
@@ -335,6 +387,20 @@ export class PrescribedDrug extends Model {
 
   @BelongsTo(() => DrugPrescription)
   prescription: DrugPrescription;
+
+  @BelongsTo(() => Antenatal)
+  antenatal: Antenatal;
+
+  @BelongsTo(() => Inventory)
+  inventory: Inventory;
+
+  @HasMany(() => PrescribedAdditionalItem, {
+    foreignKey: 'prescribed_drug_id',
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+    hooks: true,
+  })
+  items: PrescribedAdditionalItem[];
 
   static async paginate(param: {
     paginate: number;

@@ -20,6 +20,7 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Service } from './service';
+import { Antenatal } from './antenatal';
 
 export enum ServiceType {
   CASH = 'Cash',
@@ -138,6 +139,12 @@ export class PrescribedService extends Model {
   })
   examiner: Staff;
 
+  @ForeignKey(() => Antenatal)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  ante_natal_id: number;
+
   @BelongsTo(() => Service)
   service: Service;
 
@@ -146,6 +153,9 @@ export class PrescribedService extends Model {
 
   @BelongsTo(() => Patient)
   patient: Patient;
+
+  @BelongsTo(() => Antenatal)
+  antenatal: Antenatal;
 
   static async paginate(param: {
     paginate: number;
