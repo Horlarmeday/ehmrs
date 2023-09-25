@@ -1,8 +1,9 @@
 /* eslint-disable camelcase */
 import {
+  validateDispenseDrug,
   validateDosageForm,
   validateGenericDrug,
-  validateMeasurement,
+  validateMeasurement, validateReturnDrug,
   validateRouteOfAdministration,
 } from './validations';
 import PharmacyService from './pharmacy.service';
@@ -11,8 +12,8 @@ import { StatusCodes } from '../../core/helpers/helper';
 import { SuccessResponse, successResponse } from '../../common/responses/success-responses';
 import { DATA_SAVED, DATA_UPDATED } from '../AdminSettings/messages/response-messages';
 import {
-  DOSAGE_FORM_REQUIRED,
-  DRUG_REQUIRED,
+  DOSAGE_FORM_REQUIRED, DRUG_DISPENSED,
+  DRUG_REQUIRED, DRUG_RETURNED,
   MEASUREMENT_REQUIRED,
   ROUTE_REQUIRED,
 } from './messages/response-messages';
@@ -426,6 +427,85 @@ class PharmacyController {
         data: drugPrescription,
         httpCode: StatusCodes.OK,
         message: SUCCESS,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * dispense drug from inventory
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {Promise<SuccessResponse<any>>} json object with status, prescribed drug data
+   */
+  static async dispenseDrug(
+    req: Request & { user: Record<any, string> },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse<any> | void> {
+    const { error } = validateDispenseDrug(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+
+    try {
+      const drug = await PharmacyService.dispenseDrug({
+        ...req.body,
+        staff_id: req.user.sub,
+        drug_prescription_id: req.params.id,
+      });
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DRUG_DISPENSED,
+        data: drug,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * dispense drug from inventory
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {Promise<SuccessResponse<any>>} json object with status, item inventory history data
+   */
+  static async returnDrugToInventory(
+    req: Request & { user: Record<any, string> },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse<any> | void> {
+    const { error } = validateReturnDrug(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+
+    try {
+      const drug = await PharmacyService.returnDrugToInventory({
+        ...req.body,
+        staff_id: req.user.sub,
+      });
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DRUG_RETURNED,
+        data: drug,
       });
     } catch (e) {
       return next(e);

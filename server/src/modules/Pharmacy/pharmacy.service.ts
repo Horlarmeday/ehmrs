@@ -4,6 +4,7 @@ import {
   createGenericDrug,
   createMeasurement,
   createRouteOfAdministration,
+  dispenseDrug,
   getDosageFormMeasurements,
   getDosageFormRoutes,
   getDosageForms,
@@ -12,6 +13,7 @@ import {
   getMeasurements,
   getOneDrugPrescription,
   getRoutesOfAdministration,
+  returnDrugToInventory,
   searchGenericDrugs,
   updateDosageForm,
   updateGenericDrug,
@@ -21,8 +23,31 @@ import {
 import { DosageMeasurement } from './interface/dosage-measurements.interface';
 import { DosageForm } from './interface/dosage-forms.interface';
 import { Drug } from './interface/generic-drugs.interface';
-import { RoutesOfAdministration } from '../../database/models';
-import { getCollectedSamples } from '../Laboratory/laboratory.repository';
+import {
+  InventoryItem,
+  InventoryItemHistory,
+  PrescribedAdditionalItem,
+  PrescribedDrug,
+  RoutesOfAdministration,
+} from '../../database/models';
+import {
+  getOneAdditionalItem,
+  getOnePrescribedDrug,
+  getPrescriptionDrugs,
+} from '../Orders/Pharmacy/pharmacy-order.repository';
+import { DispenseDrugType, ReturnDrugType } from './interface/prescribed-drug.type';
+import { BadException } from '../../common/util/api-error';
+import { StatusCodes } from '../../core/helpers/helper';
+import { gt, gte } from 'lodash';
+import { getInventoryItemQuery, getQuantitySum } from '../Inventory/inventory.repository';
+import {
+  INVENTORY_QUANTITY_LOW,
+  QUANTITY_MORE_THAN_DOCTOR_QUANTITY,
+  QUANTITY_MORE_THAN_QUANTITY_LEFT,
+  RETURN_QUANTITY_MORE_THAN_DOCTOR_QUANTITY,
+  RETURN_QUANTITY_MORE_THAN_QUANTITY_PRESCRIBED,
+} from './messages/response-messages';
+import { HistoryType } from '../../database/models/inventoryItemHistory';
 
 class PharmacyService {
   /** ***********************
@@ -241,5 +266,101 @@ class PharmacyService {
   static async getOneDrugPrescription(drugPrescriptionId: string) {
     return getOneDrugPrescription(drugPrescriptionId);
   }
+
+  /**
+   * dispense drug from inventory
+   *
+   * @static
+   * @returns {Promise<PrescribedDrug>} json object with inventory items data
+   * @param body
+   * @memberOf PharmacyService
+   */
+  static async dispenseDrug(
+    body: DispenseDrugType
+  ): Promise<PrescribedDrug | PrescribedAdditionalItem> {
+    const { prescription_id, additional_item_id } = body;
+
+    const fetchPrescribedDrug = prescription_id
+      ? getOnePrescribedDrug({ id: prescription_id })
+      : getOneAdditionalItem({ id: additional_item_id });
+
+    const prescribedDrug = await fetchPrescribedDrug;
+    const inventoryItem = await getInventoryItemQuery({
+      inventory_id: prescribedDrug.inventory_id,
+      drug_id: prescribedDrug.drug_id,
+    });
+    this.dispenseDrugValidations(body, prescribedDrug, inventoryItem);
+    return dispenseDrug(inventoryItem, prescribedDrug, body);
+  }
+
+  /**
+   * Return drug to inventory
+   *
+   * @static
+   * @returns {Promise<PrescribedDrug>} json object with inventory item history data
+   * @param body
+   * @memberOf PharmacyService
+   */
+  static async returnDrugToInventory(body: ReturnDrugType): Promise<InventoryItemHistory> {
+    const { prescription_id, additional_item_id } = body || {};
+    const fetchPrescribedDrug = prescription_id
+      ? getOnePrescribedDrug({ id: prescription_id })
+      : getOneAdditionalItem({ id: additional_item_id });
+
+    const prescribedDrug = await fetchPrescribedDrug;
+    const inventoryItem = await getInventoryItemQuery({
+      inventory_id: prescribedDrug.inventory_id,
+      drug_id: prescribedDrug.drug_id,
+    });
+
+    await this.returnDrugValidations(body, prescribedDrug);
+    return returnDrugToInventory(inventoryItem, prescribedDrug, body);
+  }
+
+  static dispenseDrugValidations(
+    data: DispenseDrugType,
+    prescribedDrug: PrescribedDrug | PrescribedAdditionalItem,
+    inventoryItem: InventoryItem
+  ) {
+    if (gt(+data.quantity_to_dispense, +prescribedDrug.quantity_to_dispense))
+      throw new BadException(
+        'INVALID',
+        StatusCodes.BAD_REQUEST,
+        QUANTITY_MORE_THAN_DOCTOR_QUANTITY
+      );
+
+    const quantityYetDispensed =
+      prescribedDrug.quantity_to_dispense - prescribedDrug.quantity_dispensed;
+    if (gt(+data.quantity_to_dispense, quantityYetDispensed))
+      throw new BadException('INVALID', StatusCodes.BAD_REQUEST, QUANTITY_MORE_THAN_QUANTITY_LEFT);
+
+    if (gt(+data.quantity_to_dispense, +inventoryItem.quantity_remaining))
+      throw new BadException('INVALID', StatusCodes.BAD_REQUEST, INVENTORY_QUANTITY_LOW);
+  }
+
+  static async returnDrugValidations(
+    data: ReturnDrugType,
+    prescribedDrug: PrescribedDrug | PrescribedAdditionalItem
+  ) {
+    if (gt(+data.quantity_to_return, +prescribedDrug.quantity_to_dispense))
+      throw new BadException(
+        'INVALID',
+        StatusCodes.BAD_REQUEST,
+        RETURN_QUANTITY_MORE_THAN_DOCTOR_QUANTITY
+      );
+
+    const quantitySum = await getQuantitySum('quantity_returned', {
+      history_type: HistoryType.RETURNED,
+      drug_prescription_id: prescribedDrug.id,
+    });
+    if (gt(+quantitySum + +data.quantity_to_return, prescribedDrug.quantity_to_dispense))
+      throw new BadException(
+        'INVALID',
+        StatusCodes.BAD_REQUEST,
+        RETURN_QUANTITY_MORE_THAN_QUANTITY_PRESCRIBED
+      );
+  }
+
+  // 2 qtp - 1qtp
 }
 export default PharmacyService;

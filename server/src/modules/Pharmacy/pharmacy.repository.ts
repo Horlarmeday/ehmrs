@@ -14,14 +14,25 @@ import {
   Drug,
   DrugPrescription,
   DrugTariff,
+  InventoryItem,
+  InventoryItemHistory,
   Measurement,
   Patient,
   PatientInsurance,
+  PrescribedAdditionalItem,
   PrescribedDrug,
   RoutesOfAdministration,
 } from '../../database/models';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { DispenseStatus } from '../../database/models/prescribedDrug';
+import sequelizeConnection from '../../database/config/config';
+import { HistoryType } from '../../database/models/inventoryItemHistory';
+import { DrugStatus } from '../../database/models/drugPrescription';
+import { DispenseDrugType, ReturnDrugType } from './interface/prescribed-drug.type';
+import {
+  getPrescriptionAdditionalItems,
+  getPrescriptionDrugs,
+} from '../Orders/Pharmacy/pharmacy-order.repository';
 
 async function includeOneModel({ model, modelToInclude, id, includeAs }) {
   return model.findOne({
@@ -447,7 +458,7 @@ export const getOneDrugPrescription = async (
 ): Promise<DrugPrescription> => {
   return await DrugPrescription.findOne({
     where: { id: drugPrescriptionId },
-    attributes: [],
+    attributes: ['status'],
     include: [
       {
         model: Patient,
@@ -455,9 +466,118 @@ export const getOneDrugPrescription = async (
       },
       {
         model: PrescribedDrug,
-        attributes: ['drug_id', 'id', 'status'],
-        include: [{ model: Drug, attributes: ['name'] }],
+        include: [
+          { model: Drug, attributes: ['name'] },
+          { model: RoutesOfAdministration, attributes: ['name'] },
+          { model: DosageForm, attributes: ['name'] },
+          { model: Measurement, attributes: ['name'] },
+        ],
       },
     ],
+  });
+};
+
+const getDispenseStatus = (
+  quantityToDispense: number,
+  prescribedDrug: PrescribedDrug | PrescribedAdditionalItem
+) => {
+  const quantityRemaining = prescribedDrug.quantity_to_dispense - prescribedDrug.quantity_dispensed;
+  if (quantityToDispense < quantityRemaining) return DispenseStatus.PARTIAL_DISPENSED;
+  return DispenseStatus.DISPENSED;
+};
+
+export const dispenseDrug = async (
+  inventoryItem: InventoryItem,
+  prescribedDrug: PrescribedDrug | PrescribedAdditionalItem,
+  data: DispenseDrugType
+) => {
+  return await sequelizeConnection.transaction(async t => {
+    const { quantity_to_dispense, staff_id, drug_prescription_id } = data;
+    inventoryItem.quantity_consumed += +quantity_to_dispense;
+    inventoryItem.quantity_remaining -= +quantity_to_dispense;
+    const item = await inventoryItem.save({ transaction: t });
+
+    await InventoryItemHistory.create(
+      {
+        quantity_dispensed: quantity_to_dispense,
+        quantity_remaining: item.quantity_remaining,
+        inventory_item_id: inventoryItem.id,
+        inventory_id: inventoryItem.inventory_id,
+        unit_id: inventoryItem.unit_id,
+        staff_id,
+        history_date: Date.now(),
+        history_type: HistoryType.DISPENSED,
+        patient_id: prescribedDrug.patient_id,
+        drug_prescription_id: data.prescription_id,
+        visit_id: prescribedDrug.visit_id,
+        additional_item_id: data?.additional_item_id,
+      },
+      { transaction: t }
+    );
+
+    prescribedDrug.dispense_status = getDispenseStatus(quantity_to_dispense, prescribedDrug);
+    prescribedDrug.quantity_dispensed += data.quantity_to_dispense;
+    prescribedDrug.dispensed_by = data.staff_id;
+    const drug = await prescribedDrug.save({ transaction: t });
+
+    const [prescriptions, additionalItems] = await Promise.all([
+      getPrescriptionDrugs({ drug_prescription_id }),
+      getPrescriptionAdditionalItems({ drug_prescription_id }),
+    ]);
+
+    const isDrugsAllDispensed = prescriptions.every(
+      drug => drug.dispense_status === DispenseStatus.DISPENSED
+    );
+    const isAdditionalItemsAllDispensed = additionalItems.every(
+      drug => drug.dispense_status === DispenseStatus.DISPENSED
+    );
+    await DrugPrescription.update(
+      {
+        status:
+          isDrugsAllDispensed && isAdditionalItemsAllDispensed
+            ? DrugStatus.COMPLETE_DISPENSE
+            : DrugStatus.PARTIAL_DISPENSED,
+      },
+      { where: { id: drug_prescription_id }, transaction: t }
+    );
+    return drug;
+  });
+};
+
+export const returnDrugToInventory = async (
+  inventoryItem: InventoryItem,
+  prescribedDrug: PrescribedDrug | PrescribedAdditionalItem,
+  data: ReturnDrugType
+) => {
+  return await sequelizeConnection.transaction(async t => {
+    const { quantity_to_return, staff_id } = data;
+    inventoryItem.quantity_consumed -= +quantity_to_return;
+    inventoryItem.quantity_remaining += +quantity_to_return;
+    const item = await inventoryItem.save({ transaction: t });
+
+    const history = await InventoryItemHistory.create(
+      {
+        quantity_returned: quantity_to_return,
+        quantity_remaining: +item.quantity_remaining,
+        inventory_item_id: inventoryItem.id,
+        inventory_id: inventoryItem.inventory_id,
+        unit_id: inventoryItem.unit_id,
+        staff_id,
+        history_date: Date.now(),
+        history_type: HistoryType.RETURNED,
+        patient_id: prescribedDrug.patient_id,
+        drug_prescription_id: data.prescription_id,
+        visit_id: prescribedDrug.visit_id,
+        additional_item_id: data?.additional_item_id,
+      },
+      { transaction: t }
+    );
+
+    prescribedDrug.dispense_status = DispenseStatus.RETURNED;
+    prescribedDrug.quantity_returned += +quantity_to_return;
+    prescribedDrug.returned_by = data.staff_id;
+    await prescribedDrug.save({ transaction: t });
+
+    return history;
   });
 };
