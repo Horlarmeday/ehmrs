@@ -71,7 +71,7 @@
                 <router-link
                   v-b-tooltip.hover
                   title="Collect Sample"
-                  :to="`/pharmacy/dispense/${prescription.id}`"
+                  :to="`/pharmacy/prescriptions/${prescription.id}`"
                   class="btn btn-icon btn-light btn-hover-primary btn-sm"
                 >
                   <ArrowRightIcon />
@@ -134,8 +134,8 @@ export default {
   methods: {
     getSampleStatus(status) {
       if (status === 'Pending') return 'label-light-warning ';
-      if (status === 'Completed') return 'label-light-success ';
-      return 'label-light-primary ';
+      if (status === 'Complete Dispense') return 'label-light-success ';
+      return 'label-light-danger ';
     },
 
     fetchPrescriptions({
