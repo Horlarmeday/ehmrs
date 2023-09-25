@@ -1,8 +1,8 @@
 import { orderBulkService, prescribeService } from './service-order.repository';
 import VisitService from '../../Visit/visit.service';
 import PatientService from '../../Patient/patient.service';
-import { PrescribedService } from '../../../database/models/prescribedService';
-import { PrescribedServiceBody } from './types/service-order.types';
+import { PrescribedService } from '../../../database/models';
+import { PrescribedBulkServiceBody } from './types/service-order.types';
 import { getServicePrice } from '../../AdminSettings/admin.repository';
 
 export class ServiceOrderService {
@@ -26,7 +26,7 @@ export class ServiceOrderService {
    * @param body
    * @memberOf ServiceOrderService
    */
-  static async orderBulkService(body: PrescribedServiceBody): Promise<PrescribedService[]> {
+  static async orderBulkService(body: PrescribedBulkServiceBody): Promise<PrescribedService[]> {
     const { services, staff_id, visit_id } = body;
     const visit = await VisitService.getVisitById(visit_id);
     const patient = await PatientService.getPatientById(visit.patient_id);

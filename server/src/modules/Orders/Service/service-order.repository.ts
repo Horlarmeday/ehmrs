@@ -1,4 +1,5 @@
 import { PrescribedService } from '../../../database/models/prescribedService';
+import { PrescribeServiceBody } from './types/service-order.types';
 
 /**
  * prescribe multiple services for patient
@@ -12,10 +13,11 @@ export const orderBulkService = async data => {
 /**
  * prescribe a service for patient
  * @param data
- * @returns {object} prescribed service data
+ * @returns {Promise<PrescribedService>} prescribed service data
  */
-export const prescribeService = async data => {
-  const { service_id, requester, price, patient_id, visit_id, service_type } = data;
+export const prescribeService = async (data: PrescribeServiceBody): Promise<PrescribedService> => {
+  const { service_id, requester, price, patient_id, visit_id, service_type, ante_natal_id } =
+    data || {};
 
   return PrescribedService.create({
     service_id,
@@ -25,5 +27,6 @@ export const prescribeService = async data => {
     patient_id,
     date_requested: Date.now(),
     visit_id,
+    ante_natal_id,
   });
 };
