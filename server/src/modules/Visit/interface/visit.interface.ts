@@ -1,4 +1,4 @@
-type VisitType = 'IPD' | 'OPD' | 'Emergency' | 'ANC';
+import { VisitType } from '../../../database/models/visit';
 
 export class Visit {
   id?: number;
@@ -9,4 +9,10 @@ export class Visit {
   is_active: boolean;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export class CreateVisit {
+  patient_id: number;
+  type: VisitType;
+  ante_natal_id?: number;
 }

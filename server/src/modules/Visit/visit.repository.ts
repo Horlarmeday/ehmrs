@@ -12,13 +12,14 @@ const patientAttributes = () => ['fullname', 'photo', 'hospital_id', 'firstname'
  * @returns {object} visit data
  */
 export async function createVisit(data) {
-  const { patient_id, type, staff_id } = data;
+  const { patient_id, type, staff_id, ante_natal_id } = data || {};
 
   return Visit.create({
     patient_id,
     type,
     staff_id,
     is_active: true,
+    ante_natal_id,
   });
 }
 
@@ -243,7 +244,7 @@ export async function getVisits(currentPage = 1, pageLimit = 10) {
  * @param search
  * @param type
  */
-export async function searchTypeVisits(currentPage = 1, pageLimit = 10, search, type = 'OPD') {
+export async function searchVisitsType(currentPage = 1, pageLimit = 10, search, type = 'OPD') {
   return Visit.paginate({
     page: currentPage,
     paginate: pageLimit,
@@ -289,7 +290,7 @@ export async function searchTypeVisits(currentPage = 1, pageLimit = 10, search, 
  * @param pageLimit
  * @param type
  */
-export async function getTypeVisits(currentPage = 1, pageLimit = 10, type = 'OPD') {
+export async function getVisitsType(currentPage = 1, pageLimit = 10, type = 'OPD') {
   return Visit.paginate({
     page: currentPage,
     paginate: pageLimit,
