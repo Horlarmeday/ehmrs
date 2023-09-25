@@ -120,7 +120,7 @@ export default {
       this.$store
         .dispatch('order/orderAdditionalService', {
           services,
-          id: this.$route.params.visitId,
+          id: this.$route.params.id,
         })
         .then(() => this.initializeRequest(submitButton))
         .catch(() => this.removeSpinner(submitButton));

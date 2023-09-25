@@ -31,7 +31,7 @@
             <thead>
               <tr class="text-uppercase">
                 <th class="pl-5" style="min-width: 150px">Name</th>
-                <th style="min-width: 100px">Price</th>
+                <th style="min-width: 100px">Price(₦)</th>
                 <th style="min-width: 100px">Code</th>
                 <th style="min-width: 160px">Date</th>
                 <th class="pr-0 " style="min-width: 150px">action</th>

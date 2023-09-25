@@ -6,7 +6,7 @@
           <span class="card-label font-weight-bolder text-dark">Order Drug</span>
           <span v-if="showSwitch" class="switch switch-sm switch-icon float-right">
             <label>
-              <input @change="flipSwitch($event)" type="checkbox" :checked="switchPosition" />
+              <input @change="flipSwitch($event)" type="checkbox" :checked="switchPosition && switchSpot" />
               <span />
             </label>
           </span>
@@ -241,7 +241,7 @@
 <script>
 import Datepicker from 'vuejs-datepicker';
 import vSelect from 'vue-select';
-import { debounce, EXCLUDED_INSURANCE } from '@/common/common';
+import { debounce } from '@/common/common';
 import KTUtil from '@/assets/js/components/util';
 export default {
   name: 'MedicationSideBar',
@@ -255,15 +255,6 @@ export default {
     },
     items() {
       return this.$store.state.inventory.items;
-    },
-    visit() {
-      return this.$store.state.visit.visit;
-    },
-    showSwitch() {
-      return (
-        this.visit?.patient?.has_insurance &&
-        !EXCLUDED_INSURANCE.includes(this.visit?.insurance?.insurance?.name)
-      );
     },
     inventories() {
       return this.$store.state.inventory.inventories;
@@ -282,8 +273,23 @@ export default {
     },
   },
 
+  props: {
+    switchPosition: {
+      type: Boolean,
+      required: true,
+    },
+    showSwitch: {
+      type: Boolean,
+      required: true,
+    },
+    source: {
+      type: String,
+      required: true,
+    },
+  },
+
   data: () => ({
-    switchPosition: false,
+    switchSpot: true,
     dosage_form: '',
     route: '',
     start_date: new Date(),
@@ -295,7 +301,8 @@ export default {
     drug: '',
     prescribed_strength: '',
     drug_id: '',
-    drug_group: '',
+    drug_group: null,
+    inventory_id: '',
 
     price: null,
     total_price: null,
@@ -333,18 +340,7 @@ export default {
     },
 
     flipSwitch(event) {
-      this.switchPosition = !!event.target.checked;
-    },
-
-    defaultSwitchPosition() {
-      setTimeout(() => {
-        if (
-          this.visit?.patient?.has_insurance &&
-          !EXCLUDED_INSURANCE.includes(this.visit?.insurance?.insurance?.name)
-        ) {
-          this.switchPosition = true;
-        }
-      }, 350);
+      this.switchSpot = !!event.target.checked;
     },
 
     setDrugInfo() {
@@ -376,15 +372,19 @@ export default {
     },
 
     submitDrugOrder() {
-      const submitButton = this.$refs['kt-drugOrder-submit'];
-      this.addSpinner(submitButton);
-      this.$store
-        .dispatch('order/orderDrug', {
-          drug: this.drugData(),
-          id: this.$route.params.visitId,
-        })
-        .then(() => this.endRequest(submitButton))
-        .catch(() => this.removeSpinner(submitButton));
+      this.$validator.validateAll().then(result => {
+        if (result) {
+          const submitButton = this.$refs['kt-drugOrder-submit'];
+          this.addSpinner(submitButton);
+          this.$store
+            .dispatch('order/orderDrug', {
+              drug: this.drugData(),
+              id: this.$route.params.id,
+            })
+            .then(() => this.endRequest(submitButton))
+            .catch(() => this.removeSpinner(submitButton));
+        }
+      })
     },
 
     drugData() {
@@ -403,8 +403,11 @@ export default {
         strength_id: this.strength.id,
         drug_id: this.drug_id,
         total_price: this.total_price,
-        drug_type: this.switchPosition ? 'NHIS' : 'Cash',
+        drug_type: this.switchPosition && this.switchSpot ? 'NHIS' : 'Cash',
         drug_group: this.drug_group,
+        inventory_id: this.inventory_id,
+        source: this.source,
+        ...(this.source === 'Antenatal' && { ante_natal_id: this.$route.query.antenatal }),
       };
     },
 
@@ -423,12 +426,13 @@ export default {
       this.initValues();
       this.$store.dispatch('order/fetchPrescribedDrugs', {
         fetchWithItems: true,
-        filter: { visit_id: this.$route.params.visitId },
+        filter: { visit_id: this.$route.params.id },
       });
       setTimeout(() => {
         KTUtil.scrollTop();
       }, 500);
     },
+
     initValues() {
       this.dosage_form = '';
       this.route = '';
@@ -450,6 +454,7 @@ export default {
       this.quantity_prescribed = null;
       this.unit_name = null;
       this.drug_group = null;
+      this.inventory_id = null;
     },
 
     onSearch(search, loading) {
@@ -460,10 +465,11 @@ export default {
     },
 
     search: debounce((loading, search, vm) => {
-      const type = vm.switchPosition ? 'NHIS' : 'Cash';
+      const type = vm.switchPosition && vm.switchSpot ? 'NHIS' : 'Cash';
       const inventory = vm.inventories.find(inventory =>
         inventory.name.toLowerCase().includes(type.toLowerCase())
       )?.id;
+      vm.inventory_id = inventory;
       vm.$store
         .dispatch('inventory/fetchInventoryItems', {
           inventory,
@@ -474,7 +480,6 @@ export default {
   },
 
   created() {
-    this.defaultSwitchPosition();
     this.getInventories();
   },
 };

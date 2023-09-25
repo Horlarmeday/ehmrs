@@ -65,7 +65,7 @@ export default {
 
 <style scoped>
 .select-order {
-  background: linear-gradient(to bottom,#FFF,#DDD);
+  background: linear-gradient(to bottom, #fff, #ddd);
   border: 1px solid #ddd;
   border-radius: 3px;
 }

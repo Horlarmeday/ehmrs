@@ -40,7 +40,6 @@ export default {
     selectedInvestigations: {
       type: Array,
     },
-    // sBackgroundColor: { type: String },
   },
   methods: {
     truncateText(investigation) {
