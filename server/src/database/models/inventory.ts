@@ -8,12 +8,7 @@ import {
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
-import { Drug, DrugForm } from './drug';
-import { DosageForm } from './dosageForm';
 import { Staff } from './staff';
-import { Measurement } from './measurement';
-import { Unit } from './unit';
-import { DrugType } from './pharmacyStore';
 import {
   FindAttributeOptions,
   GroupOption,

@@ -65,11 +65,6 @@ export class InventoryItem extends Model {
   })
   quantity_received: number;
 
-  // @Column({
-  //   type: DataType.STRING,
-  // })
-  // brand: string;
-
   @ForeignKey(() => Unit)
   @Column({
     type: DataType.INTEGER,
@@ -140,6 +135,10 @@ export class InventoryItem extends Model {
 
   @Column({
     type: DataType.INTEGER,
+    defaultValue: 0,
+    validate: {
+      min: 0,
+    },
   })
   quantity_remaining: number;
 
