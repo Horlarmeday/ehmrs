@@ -6,12 +6,13 @@ export default {
   totalActiveVisits: 0,
   activeVisitPages: 0,
 
-  /**
-   * ALL VISITS
-   */
   visits: [],
   total: 0,
   pages: 0,
 
-  visit: null
+  visit: null,
+
+  visitTypes: [],
+  totalVisitTypes: 0,
+  totalVisitTypesPages: 0,
 };

@@ -20,5 +20,17 @@ export default {
 
   SET_VISIT(state, visit) {
     state.visit = visit;
-  }
+  },
+
+  SET_VISIT_TYPES(state, visits) {
+    state.visitTypes = visits;
+  },
+
+  SET_VISIT_TYPES_TOTAL(state, total) {
+    state.totalVisitTypes = total;
+  },
+
+  SET_VISIT_TYPES_PAGES(state, pages) {
+    state.totalVisitTypesPages = pages;
+  },
 };
