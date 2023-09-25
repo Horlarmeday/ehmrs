@@ -1,7 +1,6 @@
 /* eslint-disable camelcase */
 import { getModelByVisitId } from '../Consultation/consultation.repository';
-
-const { Triage } = require('../../database/models');
+import { Triage } from '../../database/models';
 
 /**
  * create a patient vital signs

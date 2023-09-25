@@ -33,6 +33,7 @@ import {
   MapDispenseStoreItemHistoryType,
   MapSupplyStoreItemHistoryType,
 } from './types/pharmacy-item.types';
+import { lt } from 'lodash';
 
 class StoreService {
   /**
@@ -159,12 +160,15 @@ class StoreService {
    * Reorder pharmacy store
    *
    * @static
-   * @returns {json} json object with pharmacy item history data
+   * @returns {Promise<PharmacyStore[]>} json object with pharmacy item history data
    * @memberOf StoreService
    * @param items
    * @param staff_id
    */
-  static async reorderPharmacyStoreItems(items: ItemsToReorder[], staff_id: number) {
+  static async reorderPharmacyStoreItems(
+    items: ItemsToReorder[],
+    staff_id: number
+  ): Promise<PharmacyStore[]> {
     return await Promise.all(
       items.map(async item => {
         const storeItem = await getPharmacyStoreItemById(item.id);
@@ -253,7 +257,7 @@ class StoreService {
       getPharmacyStoreItemById(item.id),
       getAnInventory(item.dispensary),
     ]);
-    if (storeItem.quantity_remaining < item.quantity_to_dispense) {
+    if (lt(storeItem.quantity_remaining, item.quantity_to_dispense)) {
       throw new BadException('Invalid', 400, INVALID_QUANTITY.replace('drug', item.drug_name));
     }
 

@@ -14,7 +14,6 @@ import {
   DATA_RETRIEVED,
 } from '../AdminSettings/messages/response-messages';
 import { NextFunction, Response } from 'express';
-import LaboratoryService from '../Laboratory/laboratory.service';
 
 export class RadiologyController {
   /**

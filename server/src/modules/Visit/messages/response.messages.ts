@@ -1,0 +1,1 @@
+export const ANTENATAL_ACCOUNT_REQUIRED = 'Patient needs to have an active antenatal account';
