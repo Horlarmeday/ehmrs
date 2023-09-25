@@ -245,9 +245,9 @@ const router = new Router({
           component: () => import('@/view/pages/consultation/Consultation.vue'),
           children: [
             {
-              path: ':visitId',
+              path: ':id',
               name: 'visit-details',
-              component: () => import('@/view/pages/consultation/components/Tabs.vue'),
+              component: () => import('@/view/pages/consultation/Tabs.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -271,7 +271,39 @@ const router = new Router({
             {
               path: 'ante-natal',
               name: 'ante-natal',
-              component: () => import('@/view/pages/programs/Antenatal.vue'),
+              component: () => import('@/view/pages/programs/antenatal/Home.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'ante-natal/list',
+              name: 'ante-natal-list',
+              component: () => import('@/view/pages/programs/antenatal/Patients.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'ante-natal/enrol',
+              name: 'ante-natal-enrol',
+              component: () => import('@/view/pages/programs/antenatal/EnrolPatient.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'ante-natal/visit/:id',
+              name: 'ante-natal-visit',
+              component: () => import('@/view/pages/programs/antenatal/Tabs.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'ante-natal/profile/:id',
+              name: 'ante-natal-profile',
+              component: () => import('@/view/pages/programs/antenatal/Profile.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -445,6 +477,14 @@ const router = new Router({
               path: 'prescriptions',
               name: 'drug-prescriptions',
               component: () => import('@/view/pages/pharmacy/Prescriptions.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'prescriptions/:id',
+              name: 'drug-prescription',
+              component: () => import('@/view/pages/pharmacy/PrescriptionDetail.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -685,6 +725,46 @@ const router = new Router({
               path: 'investigations-results/:id',
               name: 'investigations-result',
               component: () => import('@/view/pages/radiology/InvestigationResult.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+          ],
+        },
+        // INVENTORY REQUESTS
+        {
+          path: '/request',
+          name: 'request',
+          component: () => import('@/view/pages/requests/Request.vue'),
+          children: [
+            {
+              path: 'request-type',
+              name: 'request-type',
+              component: () => import('@/view/pages/requests/Home.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'create',
+              name: 'request-create',
+              component: () => import('@/view/pages/requests/CreateRequest.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'list',
+              name: 'request-list',
+              component: () => import('@/view/pages/requests/Requests.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'inventory-requests',
+              name: 'user-requests',
+              component: () => import('@/view/pages/requests/CurrentUserRequests.vue'),
               meta: {
                 requiresAuth: true,
               },

@@ -17,6 +17,8 @@ import inventoryRoutes from '../../modules/Inventory/inventory.routes';
 import radiologyRoutes from '../../modules/Radiology/radiology.routes';
 import diagnosisRoutes from '../../modules/Diagnosis/diagnosis.routes';
 import admissionRoutes from '../../modules/Admission/admission.routes';
+import requestRoutes from '../../modules/Request/request.routes';
+import antenatalRoutes from '../../modules/Antenatal/antenatal.routes';
 import express from 'express';
 import { StatusCodes } from '../helpers/helper';
 
@@ -36,6 +38,8 @@ export default (server: express.Application) => {
   server.use('/api/radiology', radiologyRoutes);
   server.use('/api/diagnosis', diagnosisRoutes);
   server.use('/api/admission', admissionRoutes);
+  server.use('/api/requests', requestRoutes);
+  server.use('/api/antenatal', antenatalRoutes);
   server.use('/api/orders/laboratory', labOrderRoutes);
   server.use('/api/orders/pharmacy', pharmacyOrderRoutes);
   server.use('/api/orders/radiology', radiologyOrderRoutes);
