@@ -55,7 +55,7 @@ export default {
   created() {
     this.loading = true;
     this.$store
-      .dispatch('admission/fetchAdmission', { visitId: this.$route.params.visitId })
+      .dispatch('admission/fetchAdmission', { visitId: this.$route.params.id })
       .then(() => (this.loading = false));
   },
 };

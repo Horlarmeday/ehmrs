@@ -79,7 +79,7 @@ export default {
         confirmButtonClass: 'btn btn-primary',
         heightAuto: false,
       });
-      this.$store.dispatch('admission/fetchAdmission', { visitId: this.$route.params.visitId });
+      this.$store.dispatch('admission/fetchAdmission', { visitId: this.$route.params.id });
     },
 
     dischargePatient(admissionId) {

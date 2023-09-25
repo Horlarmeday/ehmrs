@@ -134,7 +134,7 @@ export default {
     endRequest(button) {
       this.removeSpinner(button);
       this.initValues();
-      this.$store.dispatch('admission/fetchAdmission', { visitId: this.$route.params.visitId });
+      this.$store.dispatch('admission/fetchAdmission', { visitId: this.$route.params.id });
     },
 
     initValues() {
@@ -150,7 +150,7 @@ export default {
       this.$store
         .dispatch('admission/admitPatient', {
           bed_id: this.bed_id,
-          visit_id: this.$route.params.visitId,
+          visit_id: this.$route.params.id,
           ward_id: this.ward.id,
           comment: this.comment,
         })
