@@ -1,7 +1,8 @@
 import Joi from 'joi';
 import { DrugType } from '../../../database/models/pharmacyStore';
+import { DrugGroup } from '../../../database/models/prescribedDrug';
 
-export function validateDrugPrescription(drug) {
+export function validateDrugPrescription(drug: any) {
   const schema = Joi.object({
     start_date: Joi.string().required(),
     quantity_prescribed: Joi.number().required(),
@@ -10,6 +11,7 @@ export function validateDrugPrescription(drug) {
     frequency: Joi.string().required(),
     dosage_form_id: Joi.number().required(),
     strength_id: Joi.number().required(),
+    inventory_id: Joi.number().required(),
     prescribed_strength: Joi.string()
       .allow('')
       .optional(),
@@ -24,6 +26,10 @@ export function validateDrugPrescription(drug) {
     total_price: Joi.number().required(),
     drug_id: Joi.number().required(),
     drug_type: Joi.string().valid(DrugType.CASH, DrugType.NHIS),
+    source: Joi.string().valid('Antenatal', 'Consultation'),
+    ante_natal_id: Joi.number()
+      .optional()
+      .allow(''),
   });
 
   return schema.validate(drug);

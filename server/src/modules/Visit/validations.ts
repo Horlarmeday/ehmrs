@@ -4,6 +4,9 @@ export function validateVisit(visit) {
   const schema = Joi.object({
     patient_id: Joi.number().required(),
     type: Joi.string().required(),
+    ante_natal_id: Joi.number()
+      .allow('')
+      .optional(),
   });
   return schema.validate(visit);
 }

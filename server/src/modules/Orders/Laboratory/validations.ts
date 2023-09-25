@@ -10,6 +10,12 @@ export function validateBulkLabTest(tests) {
           sample_id: Joi.number().required(),
           price: Joi.number().required(),
           is_urgent: Joi.boolean().required(),
+          ante_natal_id: Joi.number()
+            .optional()
+            .allow(''),
+          source: Joi.string()
+            .valid('Antenatal', 'Consultation')
+            .required(),
         })
       )
       .required(),

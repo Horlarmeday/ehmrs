@@ -9,6 +9,12 @@ export function validateBulkInvestigationTest(investigations) {
           investigation_type: Joi.string().required(),
           price: Joi.number().required(),
           is_urgent: Joi.boolean().required(),
+          source: Joi.string()
+            .valid('Antenatal', 'Consultation')
+            .required(),
+          ante_natal_id: Joi.number()
+            .optional()
+            .allow(''),
         })
       )
       .required(),

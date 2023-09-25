@@ -30,3 +30,21 @@ export function validateRouteOfAdministration(route) {
   });
   return schema.validate(route);
 }
+
+export function validateDispenseDrug(drug) {
+  const schema = Joi.object({
+    prescription_id: Joi.number(),
+    additional_item_id: Joi.number(),
+    quantity_to_dispense: Joi.number().required(),
+  }).xor('prescription_id', 'additional_item_id');
+  return schema.validate(drug);
+}
+
+export function validateReturnDrug(drug) {
+  const schema = Joi.object({
+    prescription_id: Joi.number(),
+    additional_item_id: Joi.number(),
+    quantity_to_return: Joi.number().required(),
+  }).xor('prescription_id', 'additional_item_id');
+  return schema.validate(drug);
+}
