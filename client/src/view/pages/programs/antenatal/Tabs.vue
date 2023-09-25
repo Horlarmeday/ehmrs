@@ -1,0 +1,237 @@
+<template>
+  <div>
+    <div class="header-top mb-6">
+      <div class="container white">
+        <div class="d-none d-lg-flex align-items-center mr-3">
+          <ul class="header-tabs nav align-self-end font-size-lg" role="tablist">
+            <li class="nav-item">
+              <a
+                v-if="antenatal && antenatal.account_status === 'Inactive'"
+                class="nav-link text-dark py-4 px-6"
+                :class="{ active: tabIndex === 0, disabled: tabIndex === 0 }"
+                @click="setActiveTab($event, 'accountUpdate')"
+                data-tab="0"
+                data-toggle="tab"
+                href="#"
+                role="tab"
+                aria-selected="true"
+                >Account Update</a
+              >
+              <a
+                v-else
+                class="nav-link text-dark py-4 px-6"
+                @click="setActiveTab($event, 'triage')"
+                data-tab="0"
+                data-toggle="tab"
+                :class="{ active: tabIndex === 0, disabled: tabIndex === 0 }"
+                href="#"
+                role="tab"
+                aria-selected="true"
+                >Triage</a
+              >
+            </li>
+            <li class="nav-item mr-3">
+              <a
+                class="nav-link text-dark py-4 px-6"
+                :class="{ active: tabIndex === 1, disabled: tabIndex === 1 }"
+                @click="setActiveTab($event, 'tests')"
+                data-tab="1"
+                data-toggle="tab"
+                href="#"
+                role="tab"
+                aria-selected="true"
+                >Tests</a
+              >
+            </li>
+            <li class="nav-item mr-3">
+              <a
+                class="nav-link text-dark py-4 px-6"
+                :class="{ active: tabIndex === 2, disabled: tabIndex === 2 }"
+                @click="setActiveTab($event, 'medication')"
+                data-tab="2"
+                data-toggle="tab"
+                href="#"
+                role="tab"
+                aria-selected="true"
+                >Medication</a
+              >
+            </li>
+            <li class="nav-item mr-3">
+              <a
+                class="nav-link text-dark py-4 px-6"
+                :class="{ active: tabIndex === 3, disabled: tabIndex === 3 }"
+                @click="setActiveTab($event, 'radiology')"
+                data-tab="3"
+                data-toggle="tab"
+                href="#"
+                role="tab"
+                aria-selected="true"
+                >Radiology</a
+              >
+            </li>
+            <li class="nav-item mr-3">
+              <a
+                class="nav-link text-dark py-4 px-6"
+                :class="{ active: tabIndex === 4, disabled: tabIndex === 4 }"
+                @click="setActiveTab($event, 'clinicalNote')"
+                data-tab="4"
+                data-toggle="tab"
+                href="#"
+                role="tab"
+                aria-selected="true"
+                >Clinical Notes</a
+              >
+            </li>
+            <li class="nav-item mr-3">
+              <a
+                class="nav-link text-dark py-4 px-6"
+                :class="{ active: tabIndex === 5, disabled: tabIndex === 5 }"
+                @click="setActiveTab($event, 'doctorConsultations')"
+                data-tab="5"
+                data-toggle="tab"
+                href="#"
+                role="tab"
+                aria-selected="true"
+                >Doctor Consultations</a
+              >
+            </li>
+          </ul>
+          <div class="ml-auto">
+            <pulse-icons />
+          </div>
+        </div>
+      </div>
+    </div>
+    <page-skeleton v-if="loading" title="Title" :times="6" />
+    <component :is="activeComponent" @accountUpdated="handleAccountUpdate" />
+  </div>
+</template>
+
+<script>
+import PulseIcons from '@/view/pages/consultation/components/PulseIcons.vue';
+import AccountUpdate from '@/view/pages/programs/antenatal/tabs/AccountUpdate.vue';
+import Tests from '@/view/pages/programs/antenatal/tabs/Tests.vue';
+import Medication from '@/view/pages/programs/antenatal/tabs/Medication.vue';
+import Triage from '@/view/pages/programs/antenatal/tabs/Triage.vue';
+import PageSkeleton from '@/utils/PageSkeleton.vue';
+import Radiology from '@/view/pages/programs/antenatal/tabs/Radiology.vue';
+import ClinicalNote from '@/view/pages/programs/antenatal/tabs/ClinicalNote.vue';
+import DoctorConsultations from '@/view/pages/programs/antenatal/DoctorConsultations.vue';
+const ComponentMapping = {
+  accountUpdate: AccountUpdate,
+  tests: Tests,
+  medication: Medication,
+  triage: Triage,
+  radiology: Radiology,
+  clinicalNote: ClinicalNote,
+  doctorConsultations: DoctorConsultations,
+};
+export default {
+  components: {
+    PageSkeleton,
+    PulseIcons,
+  },
+  data: () => ({
+    tabIndex: 0,
+    activeComponent: '',
+    loading: false,
+  }),
+  computed: {
+    antenatal() {
+      return this.$store.state.antenatal.antenatal;
+    },
+  },
+  methods: {
+    setActiveTab(event, component) {
+      let target = event.target;
+      if (!event.target.classList.contains('nav-link')) {
+        target = event.target.closest('.nav-link');
+      }
+
+      const tab = target.closest('[role="tablist"]');
+      const links = tab.querySelectorAll('.nav-link');
+      // remove active tab links
+      for (let i = 0; i < links.length; i++) {
+        links[i].classList.remove('active');
+        links[i].removeAttribute('disabled');
+      }
+
+      // set clicked tab index to bootstrap tab
+      this.tabIndex = parseInt(target.getAttribute('data-tab'));
+
+      // set current active tab
+      target.classList.add('active');
+      target.setAttribute('disabled', true);
+
+      this.setActiveComponent(component);
+
+      this.$router.push({
+        query: {
+          tab: component,
+          tabIndex: this.tabIndex,
+          antenatal: this.antenatal.id,
+        },
+      });
+    },
+
+    setActiveComponent(component) {
+      this.activeComponent = ComponentMapping[component];
+    },
+
+    defaultTab() {
+      if (this.antenatal && this.antenatal.account_status === 'Inactive') {
+        return 'accountUpdate';
+      }
+
+      if (this.antenatal && this.antenatal.account_status === 'Active') {
+        return 'triage';
+      }
+      return null;
+    },
+
+    getActiveTab() {
+      let storedTab = this.$route.query.tab;
+      const storedTabIndex = this.$route.query.tabIndex;
+      if (storedTab && ComponentMapping[storedTab] && storedTabIndex) {
+        if (storedTab === 'accountUpdate') storedTab = this.defaultTab();
+        this.activeComponent = ComponentMapping[storedTab];
+        this.tabIndex = parseInt(storedTabIndex);
+        this.loading = false;
+      } else {
+        const activeTab = this.defaultTab();
+        this.activeComponent = ComponentMapping[activeTab];
+        this.tabIndex = 0;
+        this.loading = false;
+      }
+    },
+
+    handleAccountUpdate() {
+      this.fetchAntenatalRecord();
+      setTimeout(() => this.getActiveTab(), 300);
+    },
+
+    fetchAntenatalRecord() {
+      this.$store
+        .dispatch('antenatal/fetchOneAntenatalAccount', this.$route.query.antenatal)
+        .then(response => {
+          const res = response.data.data;
+          this.$store.dispatch('patient/setCurrentPatient', { ...res.patient, ...res.insurance });
+        });
+    },
+  },
+  created() {
+    this.loading = true;
+    this.fetchAntenatalRecord();
+    setTimeout(() => this.getActiveTab(), 300);
+  },
+};
+</script>
+
+<style scoped>
+.white {
+  background-color: white;
+}
+.nav-item .nav-link.active {
+  background-color: #a9a9a961 !important;
+}
+</style>
