@@ -4,12 +4,13 @@ import { validateHMO, validateInsurance, validateSetInsuranceDefault } from './v
 import { updateHMO, updateInsurance } from './insurance.repository';
 import { errorResponse } from '../../common/responses/error-responses';
 import { StatusCodes } from '../../core/helpers/helper';
-import { successResponse } from '../../common/responses/success-responses';
+import { SuccessResponse, successResponse } from '../../common/responses/success-responses';
 import {
   DATA_RETRIEVED,
   DATA_SAVED,
   DATA_UPDATED,
 } from '../AdminSettings/messages/response-messages';
+import { NextFunction, Request, Response } from 'express';
 
 class InsuranceController {
   /**
@@ -245,6 +246,34 @@ class InsuranceController {
         httpCode: StatusCodes.OK,
         message: DATA_RETRIEVED,
         data: insurances,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get patient health insurances
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {Promise<SuccessResponse | void>} json object with status, patient insurances data
+   */
+  static async getPatientDefaultInsurance(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    try {
+      const insurance = await InsuranceService.getPatientActiveInsurance(+req.query.patientId);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: DATA_RETRIEVED,
+        data: insurance,
       });
     } catch (e) {
       return next(e);

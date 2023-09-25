@@ -4,11 +4,12 @@ import {
   getHMOs,
   getInsuranceHMOs,
   getInsurances,
-  getPatientHealthInsurances,
+  getPatientHealthInsurances, getPatientInsuranceQuery,
   searchHMOs,
   searchInsurances,
   setInsuranceAsDefault,
 } from './insurance.repository';
+import { PatientInsurance } from '../../database/models';
 
 class InsuranceService {
   /**
@@ -104,6 +105,18 @@ class InsuranceService {
   static async setInsuranceAsDefault(body) {
     const { insurance_id, patient_id } = body;
     return setInsuranceAsDefault(insurance_id, patient_id);
+  }
+
+  /**
+   * get a patient default health insurance
+   *
+   * @static
+   * @returns {Promise<PatientInsurance[]>} json object with patient insurance data
+   * @memberOf InsuranceService
+   * @param patientId
+   */
+  static async getPatientActiveInsurance(patientId: number): Promise<PatientInsurance | null> {
+    return getPatientInsuranceQuery({ patient_id: patientId, is_default: true });
   }
 }
 export default InsuranceService;

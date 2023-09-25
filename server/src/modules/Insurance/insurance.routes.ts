@@ -9,6 +9,11 @@ router.post('/health-insurance/default/:id', verify, InsuranceController.setInsu
 router.put('/update', verify, InsuranceController.updateInsurance);
 router.put('/update/hmo', verify, InsuranceController.updateHMO);
 router.get('/get', verify, InsuranceController.getInsurances);
+router.get(
+  '/health-insurances/get/default',
+  verify,
+  InsuranceController.getPatientDefaultInsurance
+);
 router.get('/health-insurances/get/:id', verify, InsuranceController.getPatientHealthInsurances);
 router.get('/get/hmo', verify, InsuranceController.getHMOs);
 

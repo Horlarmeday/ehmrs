@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { Op } from 'sequelize';
+import { GroupedCountResultItem, Op, WhereOptions } from 'sequelize';
 
 import { Insurance, HMO, PatientInsurance } from '../../database/models';
 
@@ -175,10 +175,12 @@ export async function updateHMO(data) {
 
 /**
  * get patient insurance by id
- * @returns {object} return patient insurance data
+ * @returns {Promise<PatientInsurance | null>} return patient insurance data
  * @param query
  */
-export const getPatientInsuranceQuery = async (query: Record<string, unknown>) => {
+export const getPatientInsuranceQuery = async (
+  query: WhereOptions<PatientInsurance>
+): Promise<PatientInsurance | null> => {
   return PatientInsurance.findOne({
     where: { ...query },
     include: [
@@ -196,16 +198,16 @@ export const getPatientInsuranceQuery = async (query: Record<string, unknown>) =
 
 /**
  * get patient insurance count
- * @returns {object} return patient insurance count
+ * @returns {Promise<number>} return patient insurance count
  * @param query
  */
-export const getPatientInsuranceCount = async (query: Record<string, any>) => {
+export const getPatientInsuranceCount = async (query: Record<string, any>): Promise<number> => {
   return PatientInsurance.count({ where: { ...query } });
 };
 
 /**
  * update patient insurance
- * @returns {object} return patient insurance affected row
+ * @returns {Promise<[affectedCount: number]>} return patient insurance affected row
  * @param query
  * @param fieldsToUpdate
  */
@@ -218,7 +220,7 @@ export const updatePatientInsurance = async (
 
 /**
  * make insurance default
- * @returns {object} return patient insurance affected row
+ * @returns {Promise<[affectedCount: number]>} return patient insurance affected row
  * @param insurance_id
  * @param patient_id
  */
@@ -230,10 +232,12 @@ export const setInsuranceAsDefault = async (insurance_id: number, patient_id: nu
 
 /**
  * get a patient all health insurance
- * @returns {object} return patient insurance data
+ * @returns {Promise<PatientInsurance[]>} return patient insurance data
  * @param patientId
  */
-export const getPatientHealthInsurances = async (patientId: number) => {
+export const getPatientHealthInsurances = async (
+  patientId: number
+): Promise<PatientInsurance[]> => {
   return PatientInsurance.findAll({
     where: { patient_id: patientId },
     include: [
