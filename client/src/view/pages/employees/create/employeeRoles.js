@@ -88,7 +88,7 @@ const roles = [
   },
   {
     id: 9,
-    role: 'Doctor',
+    role: 'General Practitioner',
     dept_id: 9,
   },
   {
@@ -115,6 +115,50 @@ const roles = [
     id: 14,
     role: 'Admin',
     dept_id: 12,
+  },
+  {
+    id: 15,
+    role: 'Obstetrics and gynaecology',
+    dept_id: 9,
+  },
+  {
+    id: 16,
+    role: 'Pediatrician',
+    dept_id: 9,
+  },
+  {
+    id: 17,
+    role: 'Oncologist',
+    dept_id: 9,
+  },
+  {
+    id: 18,
+    role: 'Cardiologist',
+    dept_id: 9,
+  },
+  {
+    id: 19,
+    role: 'Ophthalmology',
+    dept_id: 9,
+  },
+  {
+    id: 20,
+    role: 'Neurologist',
+    dept_id: 9,
+  },
+  {
+    id: 21,
+    role: 'Dermatologist',
+    dept_id: 9,
+  },
+  {
+    id: 22,
+    role: 'Psychiatrist',
+    dept_id: 9,
+  },{
+    id: 23,
+    role: 'Orthopaedist',
+    dept_id: 9,
   },
 ];
 

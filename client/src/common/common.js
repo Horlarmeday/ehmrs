@@ -93,6 +93,12 @@ export const parseJwt = token => {
   } catch (error) {
     throw new Error(error);
   }
-}
+};
 
-export const EXCLUDED_INSURANCE = ['Retainership']
+export const EXCLUDED_INSURANCE = ['Retainership'];
+
+export const isContainEmptyValues = array => {
+  return array.some(obj =>
+    Object.values(obj).some(value => value === null || value === undefined || value === '')
+  );
+};
