@@ -5,7 +5,7 @@ export default [
     name: 'Prescriptions',
   },
   {
-    url: '/pharmacy/requests',
+    url: '/request/inventory-requests',
     icon: 'fas fa-clipboard-list',
     name: 'Requests',
   },

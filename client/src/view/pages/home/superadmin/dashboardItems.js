@@ -84,4 +84,9 @@ export default [
     icon: 'fab fa-empire',
     name: 'Radiology',
   },
+  {
+    url: '/request/request-type',
+    icon: 'flaticon2-laptop',
+    name: 'Inventory Requests',
+  },
 ];
