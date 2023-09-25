@@ -7,7 +7,7 @@ import {
   getLastInvestigationPrescription,
 } from '../../Radiology/radiology.repository';
 import { PrescribedInvestigationBody } from './types/radiology-order.types';
-import { PrescribedInvestigation } from '../../../database/models';
+import { InvestigationPrescription, PrescribedInvestigation } from '../../../database/models';
 import { isToday } from '../../../core/helpers/helper';
 import { InvestigationStatus } from '../../../database/models/investigationPrescription';
 
@@ -59,12 +59,15 @@ export class RadiologyOrderService {
    * get the investigation prescription
    *
    * @static
-   * @returns {json} json object with prescribed investigation data
+   * @returns {Promise<InvestigationPrescription>} json object with prescribed investigation data
    * @memberOf RadiologyOrderService
    * @param patient_id
    * @param data
    */
-  static async getInvestigationPrescription(patient_id: number, data: PrescribedInvestigationBody) {
+  static async getInvestigationPrescription(
+    patient_id: number,
+    data: PrescribedInvestigationBody
+  ): Promise<InvestigationPrescription> {
     const lastPrescription = await getLastInvestigationPrescription(patient_id);
 
     if (lastPrescription && !isToday(lastPrescription?.date_requested))
@@ -80,13 +83,16 @@ export class RadiologyOrderService {
     return createInvestigationPrescription(this.investigationData(data, patient_id));
   }
 
-  static investigationData(body: PrescribedInvestigationBody, patient_id: number) {
+  private static investigationData(body: PrescribedInvestigationBody, patient_id: number) {
     return {
-      source: body.source,
+      source: body.investigations[0]?.source,
       requester: body.staff_id,
       visit_id: body.visit_id,
       patient_id,
       date_requested: Date.now(),
+      ...(body.investigations[0]?.ante_natal_id && {
+        ante_natal_id: body.investigations[0]?.ante_natal_id,
+      }),
     };
   }
 }
