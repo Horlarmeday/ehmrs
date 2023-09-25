@@ -108,4 +108,8 @@ export default {
   SET_PRESCRIPTIONS_PAGES(state, pages) {
     state.prescriptionPages = pages;
   },
+
+  DISPENSE_DRUG(state, prescription) {
+    console.log(prescription);
+  },
 };

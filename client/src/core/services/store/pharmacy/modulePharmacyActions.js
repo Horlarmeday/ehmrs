@@ -272,4 +272,32 @@ export default {
         });
     });
   },
+
+  dispenseDrug({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/pharmacy/dispense-drug/${payload.id}`, payload.data)
+        .then(response => {
+          commit('DISPENSE_DRUG', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  returnDrug({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/pharmacy/return-drug/${payload.id}`, payload.data)
+        .then(response => {
+          commit('DISPENSE_DRUG', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
 };

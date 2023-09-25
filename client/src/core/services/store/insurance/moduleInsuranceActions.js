@@ -87,6 +87,20 @@ export default {
     });
   },
 
+  fetchPatientDefaultInsurance({ commit }, patientId) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/insurances/health-insurances/get/default`, { params: { patientId } })
+        .then(response => {
+          commit('SET_PATIENT_INSURANCE', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
   /**
    * HMO
    */

@@ -14,6 +14,7 @@ export default {
         });
     });
   },
+
   fetchAdmissions({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
