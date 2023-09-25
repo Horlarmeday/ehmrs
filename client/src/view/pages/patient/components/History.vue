@@ -2,17 +2,9 @@
   <!--begin::Card-->
   <div class="card card-custom card-stretch card-stretch-fourth gutter-b">
     <!-- <div class="card-body"> -->
-    <div
-      class="accordion accordion-solid accordion-panel accordion-svg-toggle"
-      role="tablist"
-    >
+    <div class="accordion accordion-solid accordion-panel accordion-svg-toggle" role="tablist">
       <div class="card">
-        <div
-          class="card-header"
-          header-tag="header"
-          role="tab"
-          style="background: blue"
-        >
+        <div class="card-header" header-tag="header" role="tab" style="background: blue">
           <div class="card-title accord" v-b-toggle="'accordion-1'">
             <div class="card-label">02 Jan 2021 10:00am</div>
           </div>
@@ -38,9 +30,7 @@
                   Option 3
                 </label>
               </div>
-              <span class="form-text text-muted"
-                >Choose appropriate registration type</span
-              >
+              <span class="form-text text-muted">Choose appropriate registration type</span>
             </div>
             <div class="form-group">
               <label>Consultation Fee</label>
@@ -61,9 +51,7 @@
                   Option 3
                 </label>
               </div>
-              <span class="form-text text-muted"
-                >Choose the appropriate consultation</span
-              >
+              <span class="form-text text-muted">Choose the appropriate consultation</span>
             </div>
           </div>
         </b-collapse>
@@ -78,7 +66,7 @@
 export default {};
 </script>
 
-<style>
+<style scoped>
 .accord {
   background: #f1f1f1 !important;
   padding: 0.5rem 1.25rem !important;

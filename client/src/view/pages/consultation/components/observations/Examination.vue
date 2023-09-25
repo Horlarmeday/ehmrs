@@ -288,7 +288,7 @@ export default {
 
             this.$store
               .dispatch('consultation/addObservation', {
-                visit_id: this.$route.params.visitId,
+                visit_id: this.$route.params.id,
                 complaint: obj,
               })
               .then(() => this.initializeRequest(submitButton))

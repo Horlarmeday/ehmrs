@@ -41,7 +41,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-if="dosageForms.length == 0">
+            <tr v-if="dosageForms.length === 0">
               <td colspan="9" align="center" class="text-muted">No Data</td>
             </tr>
             <tr v-for="dosage in dosageForms" :key="dosage.id">

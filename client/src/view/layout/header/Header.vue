@@ -157,7 +157,7 @@
         </div>
       </div>
     </div>
-    <notifications group="foo" />
+    <notifications position="bottom center" group="foo" />
   </div>
 </template>
 
@@ -235,7 +235,7 @@ export default {
     },
 
     displayPatientDetails() {
-      const pagesToDisplay = ['visit-details'];
+      const pagesToDisplay = ['visit-details', 'ante-natal-visit'];
       return pagesToDisplay.includes(this.$route.name);
     },
   },
