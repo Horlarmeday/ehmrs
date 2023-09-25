@@ -17,6 +17,8 @@ import inventory from './inventory/moduleInventory';
 import radiology from './radiology/moduleRadiology';
 import diagnosis from './diagnosis/moduleDiagnosis';
 import admission from './admission/moduleAdmission';
+import request from './request/moduleRequest';
+import antenatal from './antenatal/moduleAntenatal';
 import htmlClass from './htmlclass.module';
 import config from './config.module';
 import breadcrumbs from './breadcrumbs.module';
@@ -41,6 +43,8 @@ export default new Vuex.Store({
     radiology,
     diagnosis,
     admission,
+    request,
+    antenatal,
     htmlClass,
     config,
     breadcrumbs,

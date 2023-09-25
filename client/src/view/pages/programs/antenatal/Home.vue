@@ -2,7 +2,7 @@
   <div>
     <!--begin::Row-->
     <div class="row mb-10">
-      <div class="col-lg-6 col-xl-4 mb-10" v-for="(route, i) in routes" :key="i">
+      <div v-for="(route, i) in routes" :key="i" class="col-lg-6 col-xl-4 mb-10">
         <!--begin::Callout-->
         <div class="card card-custom mb-2 bg-diagonal">
           <div class="card-body">
@@ -37,32 +37,20 @@
 
 <script>
 export default {
-  data() {
-    return {
-      routes: [
-        {
-          name: 'Generic Drugs',
-          desc: 'Click here to view all generic drugs',
-          link: '/pharmacy/generic-drugs',
-        },
-        {
-          name: 'Dosage Form',
-          desc: 'Click here to view all dosage forms',
-          link: '/pharmacy/dosage-forms',
-        },
-        {
-          name: 'Route of Administration',
-          desc: 'Click here to view all routes of administration',
-          link: '/pharmacy/routes-of-administration',
-        },
-        {
-          name: 'Dosage Measurements',
-          desc: 'Click here to view all dosage measurements',
-          link: '/pharmacy/dosage-measurements',
-        },
-      ],
-    };
-  },
+  data: () => ({
+    routes: [
+      {
+        name: 'Ante-Natal Patients',
+        link: '/program/ante-natal/list',
+        desc: 'Click to view the patients enrolled into the ante-natal program',
+      },
+      {
+        name: 'Create Account',
+        link: '/program/ante-natal/enrol',
+        desc: 'Click to enrol patients into the ante-natal program',
+      },
+    ],
+  }),
   methods: {
     openPage(value) {
       this.$router.push(`/patient/${value}`);

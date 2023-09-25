@@ -41,24 +41,14 @@ export default {
     return {
       routes: [
         {
-          name: 'Generic Drugs',
-          desc: 'Click here to view all generic drugs',
-          link: '/pharmacy/generic-drugs',
+          name: 'Requests',
+          desc: 'Click here to view all requests made for inventory items',
+          link: '/request/list',
         },
         {
-          name: 'Dosage Form',
-          desc: 'Click here to view all dosage forms',
-          link: '/pharmacy/dosage-forms',
-        },
-        {
-          name: 'Route of Administration',
-          desc: 'Click here to view all routes of administration',
-          link: '/pharmacy/routes-of-administration',
-        },
-        {
-          name: 'Dosage Measurements',
-          desc: 'Click here to view all dosage measurements',
-          link: '/pharmacy/dosage-measurements',
+          name: 'Create Request',
+          desc: 'Click here to create a new request for inventory items',
+          link: '/request/create',
         },
       ],
     };
