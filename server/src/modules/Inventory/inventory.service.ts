@@ -13,7 +13,7 @@ import { Inventory, InventoryItem } from '../../database/models';
 import { InventoryTypes } from './types/inventory.types';
 import { GetInventoryItemsBody } from './types/inventory-item.types';
 import { BadException } from '../../common/util/api-error';
-import server from '../../core/startup/server';
+import { getOnePrescribedDrug, getPrescriptionDrugs } from '../Orders/Pharmacy/pharmacy-order.repository';
 
 class InventoryService {
   /**
@@ -55,11 +55,10 @@ class InventoryService {
    *
    * @static
    * @returns {json} json object with inventory items data
-   * @param inventory
    * @param body
    * @memberOf InventoryService
    */
-  static async receiveItems(inventory, body: InventoryItem[]): Promise<InventoryItem[]> {
+  static async receiveItems(body: InventoryItem[]): Promise<InventoryItem[]> {
     const items = body.map(item => ({
       ...item,
       quantity_received: item.quantity_received,

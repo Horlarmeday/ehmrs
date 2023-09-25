@@ -1,4 +1,4 @@
-import { literal, Op } from 'sequelize';
+import sequelize, { literal, Op, Optional, WhereOptions } from 'sequelize';
 
 import {
   Unit,
@@ -8,7 +8,7 @@ import {
   Inventory,
   InventoryItem,
   InventoryItemHistory,
-  Staff,
+  Staff, Patient,
 } from '../../database/models';
 
 /**
@@ -54,9 +54,9 @@ export async function receiveItem(data) {
 /**
  * receive bulk item(s) into the inventory
  * @param data
- * @returns {object} inventory product data
+ * @returns {Promise<InventoryItem[]>} inventory product data
  */
-export async function receiveBulkItem(data) {
+export async function receiveBulkItem(data): Promise<InventoryItem[]> {
   return InventoryItem.bulkCreate(data);
 }
 
@@ -137,7 +137,7 @@ export async function searchInventoryItems({
       },
       {
         model: Unit,
-        attributes: ['name'],
+        attributes: ['name', 'id'],
       },
       {
         model: DosageForm,
@@ -154,25 +154,25 @@ export async function searchInventoryItems({
 /**
  * create an inventory
  * @param data
- * @returns {object} inventory product data
+ * @returns {Inventory} inventory product data
  */
-export const createInventory = (data: Partial<Inventory>) => {
+export const createInventory = (data: Partial<Inventory>): Promise<Inventory> => {
   return Inventory.create(data);
 };
 
 /**
  * get list of all inventories
- * @returns {object} inventory product data
+ * @returns {Promise<Inventory[]>} inventory product data
  */
-export const getInventories = async () => {
+export const getInventories = async (): Promise<Inventory[]> => {
   return Inventory.findAll();
 };
 
 /**
  * get an inventory
- * @returns {object} inventory product data
+ * @returns {Inventory} inventory product data
  */
-export const getAnInventory = async (inventoryId: number) => {
+export const getAnInventory = async (inventoryId: number): Promise<Inventory> => {
   return Inventory.findOne({ where: { id: inventoryId } });
 };
 
@@ -203,7 +203,11 @@ export const getInventoryItemByDrugId = async (drugId: number) => {
   return await InventoryItem.findOne({ where: { drug_id: drugId } });
 };
 
-export const addItemToInventory = async item => {
+export const getInventoryItemQuery = async (query: WhereOptions<InventoryItem>) => {
+  return await InventoryItem.findOne({ where: { ...query } });
+};
+
+export const addItemToInventory = async (item: Optional<any, string>) => {
   const [inventoryItem, created] = await InventoryItem.findOrCreate({
     where: { drug_id: item.drug_id, inventory_id: item.inventory_id },
     defaults: { ...item },
@@ -229,11 +233,18 @@ export const addInventoryItemHistory = async (item): Promise<InventoryItemHistor
   });
 };
 
+export const getQuantitySum = async (
+  fieldToSum: string,
+  query: sequelize.WhereOptions<InventoryItemHistory>
+) => {
+  return InventoryItemHistory.sum(fieldToSum, { where: { ...query } });
+};
+
 /**
  * get pharmacy store item history
  *
  * @function
- * @returns {json} json object with item history data
+ * @returns {Promise<{currentPage, docs, pages, perPage, total}>} json object with item history data
  * @param currentPage
  * @param pageLimit
  * @param sort_by
@@ -244,7 +255,13 @@ export const getInventoryItemHistory = async ({
   pageLimit = 10,
   filter = '{}',
   inventoryItemId,
-}) => {
+}): Promise<{
+  currentPage: number;
+  docs: InventoryItemHistory[];
+  pages: number;
+  perPage: number;
+  total: number;
+}> => {
   return InventoryItemHistory.paginate({
     page: +currentPage,
     paginate: +pageLimit,
@@ -257,6 +274,10 @@ export const getInventoryItemHistory = async ({
       },
       {
         model: Staff,
+        attributes: ['firstname', 'lastname'],
+      },
+      {
+        model: Patient,
         attributes: ['firstname', 'lastname'],
       },
     ],
