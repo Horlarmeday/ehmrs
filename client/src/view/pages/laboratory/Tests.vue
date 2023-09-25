@@ -43,7 +43,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-if="tests.length == 0">
+            <tr v-if="tests.length === 0">
               <td colspan="9" align="center" class="text-muted">No Data</td>
             </tr>
             <tr v-for="test in tests" :key="test.id">

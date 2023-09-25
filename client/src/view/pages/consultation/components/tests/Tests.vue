@@ -6,7 +6,11 @@
           <span class="card-label font-weight-bolder text-dark">Lab Tests</span>
           <span v-if="showSwitch" class="switch switch-sm switch-icon">
             <label>
-              <input @change="flipSwitch($event)" type="checkbox" :checked="switchPosition" />
+              <input
+                @change="flipSwitch($event)"
+                type="checkbox"
+                :checked="switchPosition && switchSpot"
+              />
               <span />
             </label>
           </span>
@@ -41,19 +45,28 @@
 </template>
 
 <script>
-import { EXCLUDED_INSURANCE } from '@/common/common';
-
 export default {
   name: 'Tests',
   data() {
     return {
       checkmark: 'flaticon2-check-mark',
       isDisabled: false,
-      switchPosition: false,
+      switchSpot: true,
     };
   },
-  created() {
-    this.defaultSwitchPosition();
+  props: {
+    switchPosition: {
+      type: Boolean,
+      required: true,
+    },
+    showSwitch: {
+      type: Boolean,
+      required: true,
+    },
+    source: {
+      type: String,
+      required: true,
+    },
   },
   computed: {
     tests() {
@@ -61,15 +74,6 @@ export default {
     },
     selectedTests() {
       return this.$store.state.order.selectedTests;
-    },
-    visit() {
-      return this.$store.state.visit.visit;
-    },
-    showSwitch() {
-      return (
-        this.visit?.patient?.has_insurance &&
-        !EXCLUDED_INSURANCE.includes(this.visit?.insurance?.insurance?.name)
-      );
     },
   },
   methods: {
@@ -89,10 +93,12 @@ export default {
       return {
         test_id: test.id,
         is_urgent: false,
-        test_type: this.switchPosition ? 'NHIS' : 'CASH',
+        test_type: this.switchPosition && this.switchSpot ? 'NHIS' : 'CASH',
         price: test.price,
         name: test.name,
         sample_id: test.sample_id,
+        source: this.source,
+        ...(this.source === 'Antenatal' && { ante_natal_id: this.$route.query.antenatal }),
       };
     },
 
@@ -106,7 +112,7 @@ export default {
       submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
     },
 
-    initializeRequest(button) {
+    endRequest(button) {
       this.removeSpinner(button);
       this.initValues();
     },
@@ -121,9 +127,9 @@ export default {
       this.$store
         .dispatch('order/orderLabTest', {
           tests,
-          id: this.$route.params.visitId,
+          id: this.$route.params.id,
         })
-        .then(() => this.initializeRequest(submitButton))
+        .then(() => this.endRequest(submitButton))
         .catch(() => this.removeSpinner(submitButton));
     },
 
@@ -132,19 +138,8 @@ export default {
       this.$store.dispatch('order/emptySelectedButtons');
     },
 
-    defaultSwitchPosition() {
-      setTimeout(() => {
-        if (
-          this.visit?.patient?.has_insurance &&
-          !EXCLUDED_INSURANCE.includes(this.visit?.insurance?.insurance?.name)
-        ) {
-          this.switchPosition = true;
-        }
-      }, 350);
-    },
-
     flipSwitch(event) {
-      this.switchPosition = !!event.target.checked;
+      this.switchSpot = !!event.target.checked;
     },
   },
 };
