@@ -107,14 +107,13 @@
 </template>
 
 <script>
-import Observations from '../tabs/Observations';
-import TestOrders from '../tabs/TestOrders.vue';
-import InvestigationOrders from '../tabs/InvestigationOrders.vue';
-import Medications from '../tabs/Medications.vue';
-import ServicesOrder from '../tabs/ServiceOrders.vue';
+import Observations from './tabs/Observations.vue';
+import TestOrders from './tabs/TestOrders.vue';
+import InvestigationOrders from './tabs/InvestigationOrders.vue';
+import Medications from './tabs/MedicationOrders.vue';
+import ServicesOrder from './tabs/ServiceOrders.vue';
 import Disposition from '@/view/pages/consultation/tabs/Disposition.vue';
 import PulseIcons from '@/view/pages/consultation/components/PulseIcons.vue';
-// import router from '@/router';
 
 const ComponentMapping = {
   observations: Observations,
@@ -189,7 +188,7 @@ export default {
   },
   created() {
     this.getActiveTab();
-    this.$store.dispatch('visit/fetchVisit', this.$route.params.visitId).then(response => {
+    this.$store.dispatch('visit/fetchVisit', this.$route.params.id).then(response => {
       const res = response.data.data;
       this.$store.dispatch('patient/setCurrentPatient', { ...res.patient, ...res.insurance });
     });

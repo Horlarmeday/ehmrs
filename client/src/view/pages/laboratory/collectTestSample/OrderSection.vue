@@ -4,12 +4,7 @@
       <div class="form-group row">
         <label class="col-2 col-form-label">Accession Number</label>
         <div class="col-3">
-          <input
-            v-model="accession_number"
-            class="form-control form-control-sm"
-            type="text"
-            readonly
-          />
+          <input v-model="accession_number" class="form-control form-control-sm" type="text" />
         </div>
         <div class="col-2">
           <button @click="generateAccessionNumber" class="btn btn-sm btn-outline-secondary">

@@ -173,7 +173,7 @@ export default {
 
           this.$store
             .dispatch("triage/addTriage", {
-              visit_id: this.$route.params.visitId,
+              visit_id: this.$route.params.id,
               triage: obj
             })
             .then(() => this.initializeRequest(submitButton))
