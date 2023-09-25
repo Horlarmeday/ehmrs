@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { Op } from 'sequelize';
+import { Op, WhereOptions } from 'sequelize';
 import { getModelById, getNumberOfRecords } from '../../core/helpers/general';
 
 import {
@@ -377,6 +377,17 @@ export async function getServices(currentPage = 1, pageLimit = 10) {
     order: [['createdAt', 'DESC']],
   });
 }
+
+/**
+ * get a service
+ *
+ * @function
+ * @returns {Promise<Service>} json object with service data
+ * @param query
+ */
+export const getOneService = async (query: WhereOptions<Service>): Promise<Service> => {
+  return Service.findOne({ where: { ...query } });
+};
 
 /** ***********************
  * SERVICE TARIFFS

@@ -11,6 +11,8 @@ import { successResponse } from '../../common/responses/success-responses';
 import { DATA_SAVED, DATA_UPDATED } from './messages/response-messages';
 import { SUCCESS } from '../../core/constants';
 import { NextFunction, Request, Response } from 'express';
+import { errorResponse } from '../../common/responses/error-responses';
+import { StatusCodes } from '../../core/helpers/helper';
 
 /**
  *
@@ -29,7 +31,12 @@ class AdminController {
    */
   static async createDepartment(req, res, next) {
     const { error } = validateDepartment(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
 
     try {
       const department = await AdminService.createDepartmentService({
@@ -73,7 +80,12 @@ class AdminController {
    */
   static async updateDepartment(req, res, next) {
     const { department_id } = req.body;
-    if (!department_id) return res.status(400).json({ message: 'department id is required' });
+    if (!department_id)
+      return errorResponse({
+        res,
+        message: 'department id is required',
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
 
     try {
       const department = await AdminService.updateDepartmentService(req.body);
@@ -95,7 +107,12 @@ class AdminController {
    */
   static async createUnit(req, res, next) {
     const { error } = validateUnit(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
 
     try {
       const unit = await AdminService.createUnitService({ ...req.body, staff_id: req.user.sub });
@@ -158,7 +175,12 @@ class AdminController {
    */
   static async createWard(req, res, next) {
     const { error } = validateWard(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
 
     try {
       const ward = await AdminService.createWardService({ ...req.body, staff_id: req.user.sub });
@@ -240,7 +262,12 @@ class AdminController {
    */
   static async createBed(req, res, next) {
     const { error } = validateBed(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
 
     try {
       const bed = await AdminService.createBedService({
@@ -328,7 +355,12 @@ class AdminController {
    */
   static async createService(req, res: Response, next: NextFunction) {
     const { error } = validateService(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
 
     try {
       const service = await AdminService.createHospitalService({
