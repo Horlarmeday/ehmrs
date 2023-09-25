@@ -45,10 +45,16 @@
                                   <div class="symbol symbol-50 symbol-light mr-4">
                                     <span class="symbol-label">
                                       <img
-                                        :src="`/static/images/${dependant.photo}`"
-                                        class="h-75 align-self-end"
-                                        alt=""
+                                        v-if="!imageError"
+                                        alt="Pic"
+                                        :src="imageUrl(patient.photo)"
+                                        @load="handleImageLoad"
+                                        @error="handleImageError"
                                       />
+                                      <span class="symbol-label font-size-h4">
+                                        {{ dependant?.firstname?.charAt(0)?.toUpperCase() }}
+                                        {{ dependant?.lastname?.charAt(0)?.toUpperCase() }}
+                                      </span>
                                     </span>
                                   </div>
                                   <div>
@@ -323,6 +329,7 @@ export default {
       dphotoLoading: false,
       dependantvideo: {},
       dependantcanvas: {},
+      imageError: false,
     };
   },
 
@@ -463,6 +470,18 @@ export default {
 
     fetchPatient() {
       this.$store.dispatch('patient/fetchPatientProfile', this.$route.params.id);
+    },
+
+    imageUrl(url) {
+      return `${window.location.origin}/static/images/${url}`;
+    },
+
+    handleImageLoad() {
+      this.imageError = false;
+    },
+
+    handleImageError() {
+      this.imageError = true;
     },
   },
 };
