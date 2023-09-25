@@ -75,7 +75,7 @@ export default {
       setUrlQueryParams({
         currentPage: 1,
         itemsPerPage: this.itemsPerPage,
-        search: search,
+        search,
       });
       this.debounceSearch(search, this, spinDiv);
     },

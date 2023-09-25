@@ -39,16 +39,14 @@
                   {{ history.quantity_remaining }} {{ history?.unit?.name }}
                 </span>
               </td>
-              <td  v-if="table_type === 'Dispensed'">
-                <span
-                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                >
+              <td v-if="table_type === 'Dispensed'">
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                   {{ history?.patient?.firstname }} {{ history?.patient?.lastname }}
                 </span>
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ history?.dispenser?.firstname }} {{ history?.dispenser?.lastname }}
+                  {{ history?.staff?.firstname }} {{ history?.staff?.lastname }}
                 </span>
               </td>
               <td>

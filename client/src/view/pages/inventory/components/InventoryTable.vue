@@ -2,10 +2,7 @@
   <div class="card-body py-0">
     <!--begin::Table-->
     <div class="table-responsive">
-      <table
-        class="table table-head-custom table-vertical-center"
-        id="kt_advance_table_widget_1"
-      >
+      <table class="table table-head-custom table-vertical-center" id="kt_advance_table_widget_1">
         <thead>
           <tr class="text-left">
             <th class="pl-0" style="width: 20px">
@@ -39,24 +36,18 @@
                 class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg"
                 >{{ item.drug.name }}</router-link
               >
-              <span
-                v-if="item.drug_type === 'NHIS'"
-                class="label label-inline label-success ml-2"
+              <span v-if="item.drug_type === 'NHIS'" class="label label-inline label-success ml-2"
                 >NHIS</span
               >
             </td>
             <td>
-              <span
-                class="text-dark-75 font-weight-bolder d-block font-size-lg"
-              >
+              <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                 {{ item.quantity_remaining }} {{ item.unit.name }}
               </span>
             </td>
             <td>
-              <span
-                class="text-dark-75 font-weight-bolder d-block font-size-lg"
-              >
-                {{ item.selling_price || "None" }}
+              <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                {{ item.selling_price || 'None' }}
               </span>
             </td>
             <td>
@@ -64,15 +55,13 @@
                 v-if="item.dosage_form_id"
                 class="text-dark-75 font-weight-bolder d-block font-size-lg"
               >
-                {{ item.dosage_form.name || "None" }}
+                {{ item.dosage_form.name || 'None' }}
               </span>
               <span v-else class="text-dark-75 font-weight-bolder d-block font-size-lg">Nil</span>
             </td>
             <td>
-              <span
-                class="text-dark-75 font-weight-bolder d-block font-size-lg"
-              >
-                {{ item.date_received | moment("ddd, MMM Do YYYY, h:mma") }}
+              <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                {{ item.date_received | moment('ddd, MMM Do YYYY, h:mma') }}
               </span>
             </td>
             <td class="pr-0 text-right">
@@ -108,31 +97,31 @@
 </template>
 
 <script>
-import Pagination from "../../../../utils/Pagination";
-import SendIcon from "@/assets/icons/SendIcon.vue";
-import EditIcon from "@/assets/icons/EditIcon.vue";
+import Pagination from '../../../../utils/Pagination';
+import SendIcon from '@/assets/icons/SendIcon.vue';
+import EditIcon from '@/assets/icons/EditIcon.vue';
 export default {
-  name: "InventoryTable",
+  name: 'InventoryTable',
   components: { EditIcon, SendIcon, Pagination },
   props: {
     items: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     paginationParams: {
       type: Object,
       required: true,
-    }
+    },
   },
   methods: {
     changePage(page) {
-      this.$emit("changePage", page);
+      this.$emit('changePage', page);
     },
 
     changePageCount(pagecount) {
-      this.$emit("changePageCount", pagecount);
-    }
-  }
+      this.$emit('changePageCount', pagecount);
+    },
+  },
 };
 </script>
 
