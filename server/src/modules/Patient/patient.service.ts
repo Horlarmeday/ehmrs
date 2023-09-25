@@ -25,6 +25,7 @@ import {
   PatientType,
 } from './types/patient.types';
 import { prescribeService } from '../Orders/Service/service-order.repository';
+import { ParsedQs } from 'qs';
 
 class PatientService {
   /**
@@ -140,10 +141,14 @@ class PatientService {
    * @param body
    * @memberOf PatientService
    */
-  static async getPatients(body) {
-    const { search, start, end, pageLimit, currentPage } = body;
+  static async getPatients(body: { [s: string]: string | string[] | ParsedQs | ParsedQs[] }) {
+    const { search, start, end, pageLimit, currentPage, filter } = body;
+    if (filter) {
+      return searchPatients({ currentPage: +currentPage, pageLimit: +pageLimit, search, filter });
+    }
+
     if (search) {
-      return searchPatients(+currentPage, +pageLimit, search);
+      return searchPatients({ currentPage: +currentPage, pageLimit: +pageLimit, search });
     }
 
     if (start && end) {

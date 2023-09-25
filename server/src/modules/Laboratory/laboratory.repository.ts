@@ -269,7 +269,7 @@ export const getTestPrice = async (patient: Patient, test_id: number) => {
  * get all samples to collect
  *
  * @function
- * @returns {json} json object with test samples data
+ * @returns {Promise<TestPrescription[]>} json object with test samples data
  * @param currentPage
  * @param pageLimit
  * @param period
@@ -284,7 +284,13 @@ export const getSamplesToCollect = async ({
   search = null,
   start = null,
   end = null,
-}) => {
+}): Promise<{
+  total: any;
+  pages: number;
+  perPage: number;
+  docs: TestPrescription[];
+  currentPage: number;
+}> => {
   const { limit, offset } = calcLimitAndOffset(+currentPage, +pageLimit);
   const query = {
     status: TestStatus.PENDING,

@@ -41,10 +41,10 @@ export async function getPatientById(data: number) {
 
 /**
  * get patient with its insurance
- * @returns {object} return patient data
+ * @returns {Promise<Patient>} return patient data
  * @param patient_id
  */
-export const getPatientWithInsurance = (patient_id: number) => {
+export const getPatientWithInsurance = (patient_id: number): Promise<Patient> => {
   return Patient.findByPk(patient_id, { include: [{ model: Insurance }] });
 };
 
@@ -319,13 +319,15 @@ export async function getPatientsByDate(currentPage = 1, pageLimit = 10, start, 
  * @param currentPage
  * @param pageLimit
  * @param search
+ * @param filter
  */
-export async function searchPatients(currentPage = 1, pageLimit = 10, search) {
+export async function searchPatients({ currentPage = 1, pageLimit = 10, search, filter = null }) {
   return Patient.paginate({
     page: currentPage,
     paginate: pageLimit,
     order: [['createdAt', 'DESC']],
     where: {
+      ...(filter && JSON.parse(filter)),
       [Op.or]: [
         {
           firstname: {
