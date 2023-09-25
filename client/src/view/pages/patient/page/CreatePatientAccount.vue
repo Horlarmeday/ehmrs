@@ -157,7 +157,8 @@
                   v-model="date_of_birth"
                   input-class="form-control form-control-sm"
                   placeholder="Date of Birth"
-                ></datepicker>
+                  todayHighlight
+                />
                 <span class="text-danger text-sm">{{ errors.first('date_of_birth') }}</span>
               </div>
               <div class="col-lg-4">
