@@ -61,6 +61,7 @@ export class InventoryItemHistory extends Model {
       notEmpty: {
         msg: 'quantity remainder is required',
       },
+      min: 0,
     },
   })
   quantity_remaining: number;
@@ -111,7 +112,7 @@ export class InventoryItemHistory extends Model {
   @Column({
     type: DataType.INTEGER,
   })
-  dispensed_by: number;
+  staff_id: number;
 
   @Column({
     type: DataType.DATE,
@@ -162,8 +163,8 @@ export class InventoryItemHistory extends Model {
   @BelongsTo(() => Unit)
   unit: Unit;
 
-  @BelongsTo(() => Staff, 'dispensed_by')
-  dispenser: Staff;
+  @BelongsTo(() => Staff, 'staff_id')
+  staff: Staff;
 
   @BelongsTo(() => Inventory)
   inventory: Inventory;

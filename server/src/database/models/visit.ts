@@ -17,12 +17,13 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
+import { Antenatal } from './antenatal';
 
 export enum VisitType {
   IPD = 'IPD',
   OPD = 'OPD',
   EMERGENCY = 'Emergency',
-  ANC = 'ANC',
+  ANC = 'Antenatal',
 }
 
 @Table({ timestamps: true })
@@ -65,6 +66,12 @@ export class Visit extends Model {
     defaultValue: true,
   })
   is_active: boolean;
+
+  @ForeignKey(() => Antenatal)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  ante_natal_id: number;
 
   @BelongsTo(() => Staff)
   staff: Staff;
