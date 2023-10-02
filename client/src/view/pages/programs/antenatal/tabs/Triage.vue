@@ -105,7 +105,7 @@
 
 <script>
 import Datepicker from 'vuejs-datepicker';
-import TriageAccordion from '@/view/pages/programs/antenatal/components/TriageAccordion.vue';
+import TriageAccordion from '@/view/pages/programs/antenatal/components/accordion/TriageAccordion.vue';
 export default {
   data: () => ({
     height: '',
