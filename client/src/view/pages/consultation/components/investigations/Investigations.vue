@@ -1,9 +1,10 @@
 <template>
   <div class="flex-row-fluid ml-lg-8">
     <div class="card-custom gutter-b">
-      <div class="card-header pt-5">
+      <div class="card-header">
+        <investigation-accordion />
         <div class="card-title">
-          <span class="card-label font-weight-bolder text-dark">Investigations</span>
+          <span class="card-label font-weight-bolder text-dark"></span>
           <span v-if="showSwitch" class="switch switch-sm switch-icon float-right">
             <label>
               <input
@@ -49,17 +50,17 @@
 </template>
 
 <script>
+import InvestigationAccordion from '@/view/pages/programs/antenatal/components/accordion/InvestigationAccordion.vue';
+
 export default {
   name: 'Investigations',
+  components: { InvestigationAccordion },
   data() {
     return {
       checkmark: 'flaticon2-check-mark',
       isDisabled: false,
       switchSpot: true,
     };
-  },
-  created() {
-    this.defaultSwitchPosition();
   },
   props: {
     switchPosition: {
