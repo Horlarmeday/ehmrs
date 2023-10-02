@@ -136,10 +136,7 @@ export class AntenatalController {
 
   static async getAntenatalTriages(req: Request, res: Response, next: NextFunction) {
     try {
-      const patients = await AntenatalService.getAntenatalTriages({
-        ...req.query,
-        antenatalId: req.params.id,
-      });
+      const patients = await AntenatalService.getAntenatalTriages(req.query);
       return successResponse({
         res,
         httpCode: StatusCodes.OK,
@@ -183,10 +180,7 @@ export class AntenatalController {
 
   static async getClinicalNotes(req: Request, res: Response, next: NextFunction) {
     try {
-      const patients = await AntenatalService.getClinicalNotes({
-        ...req.query,
-        antenatalId: req.params.id,
-      });
+      const patients = await AntenatalService.getClinicalNotes(req.query);
       return successResponse({
         res,
         httpCode: StatusCodes.OK,
@@ -268,10 +262,7 @@ export class AntenatalController {
 
   static async getObservations(req: Request, res: Response, next: NextFunction) {
     try {
-      const observations = await AntenatalService.getObservations({
-        ...req.query,
-        antenatalId: req.params.id,
-      });
+      const observations = await AntenatalService.getObservations(req.query);
       return successResponse({
         res,
         httpCode: StatusCodes.OK,

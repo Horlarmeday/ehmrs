@@ -20,7 +20,10 @@ import {
   getOneAntenatalAccount,
   updateAntenatalAccount,
   updateClinicalNote,
-  createObservation, updateObservation, getObservations, getVisitsSummary,
+  createObservation,
+  updateObservation,
+  getObservations,
+  getVisitsSummary,
 } from './antenatal.repository';
 import { AccountStatus } from '../../database/models/antenatal';
 import { prescribeService } from '../Orders/Service/service-order.repository';
@@ -158,13 +161,17 @@ export class AntenatalService {
    * @memberof AntenatalService
    */
   static async getAntenatalTriages(body) {
-    const { currentPage, pageLimit, antenatalId } = body;
+    const { currentPage, pageLimit, filter } = body;
 
-    if (Object.keys(body).length) {
-      return getAntenatalTriages({ currentPage: +currentPage, pageLimit: +pageLimit, antenatalId });
+    if (filter) {
+      return getAntenatalTriages({ currentPage, pageLimit, filter });
     }
 
-    return getAntenatalTriages({ antenatalId });
+    if (Object.keys(body).length) {
+      return getAntenatalTriages({ currentPage, pageLimit, filter });
+    }
+
+    return getAntenatalTriages({});
   }
 
   /**
@@ -190,13 +197,17 @@ export class AntenatalService {
    * @memberof AntenatalService
    */
   static async getClinicalNotes(body) {
-    const { currentPage, pageLimit, antenatalId } = body;
+    const { currentPage, pageLimit, filter } = body;
 
-    if (Object.keys(body).length) {
-      return getClinicalNotes({ currentPage: +currentPage, pageLimit: +pageLimit, antenatalId });
+    if (filter) {
+      return getClinicalNotes({ currentPage, pageLimit, filter });
     }
 
-    return getClinicalNotes({ antenatalId });
+    if (Object.keys(body).length) {
+      return getClinicalNotes({ currentPage, pageLimit, filter });
+    }
+
+    return getClinicalNotes({});
   }
 
   /**
@@ -262,13 +273,17 @@ export class AntenatalService {
    * @memberof AntenatalService
    */
   static async getObservations(body) {
-    const { currentPage, pageLimit, antenatalId } = body;
+    const { currentPage, pageLimit, filter } = body;
 
-    if (Object.keys(body).length) {
-      return getObservations({ currentPage, pageLimit, antenatalId });
+    if (filter) {
+      return getObservations({ currentPage, pageLimit, filter });
     }
 
-    return getObservations({ antenatalId });
+    if (Object.keys(body).length) {
+      return getObservations({ currentPage, pageLimit, filter });
+    }
+
+    return getObservations({});
   }
 
   /**

@@ -159,7 +159,7 @@ export const createAntenatalTriage = async data => {
 export const getAntenatalTriages = async ({
   currentPage = 1,
   pageLimit = 10,
-  antenatalId,
+  filter = null,
 }): Promise<{
   currentPage: number;
   docs: Antenatal[];
@@ -171,7 +171,7 @@ export const getAntenatalTriages = async ({
     page: +currentPage,
     paginate: +pageLimit,
     where: {
-      ante_natal_id: antenatalId,
+      ...(filter && { ...JSON.parse(filter) }),
     },
     order: [['createdAt', 'DESC']],
   });
@@ -206,7 +206,7 @@ export const createClinicalNote = async data => {
 export const getClinicalNotes = async ({
   currentPage = 1,
   pageLimit = 10,
-  antenatalId,
+  filter = null,
 }): Promise<{
   currentPage: number;
   docs: Antenatal[];
@@ -218,7 +218,7 @@ export const getClinicalNotes = async ({
     page: +currentPage,
     paginate: +pageLimit,
     where: {
-      ante_natal_id: antenatalId,
+      ...(filter && { ...JSON.parse(filter) }),
     },
     include: [{ model: Staff, attributes: staffAttributes }],
     order: [['createdAt', 'DESC']],
@@ -304,7 +304,7 @@ export const updateObservation = async (
 export const getObservations = async ({
   currentPage = 1,
   pageLimit = 10,
-  antenatalId,
+  filter = null,
 }): Promise<{
   currentPage: number;
   docs: Antenatal[];
@@ -316,7 +316,7 @@ export const getObservations = async ({
     page: +currentPage,
     paginate: +pageLimit,
     where: {
-      ante_natal_id: antenatalId,
+      ...(filter && { ...JSON.parse(filter) }),
     },
     include: [{ model: Staff, attributes: staffAttributes }],
     order: [['createdAt', 'DESC']],
