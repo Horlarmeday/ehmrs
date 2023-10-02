@@ -79,7 +79,7 @@
 <script>
 import Diagnosis from '@/view/pages/consultation/components/observations/Diagnosis.vue';
 import { notifyError } from '@/common/common';
-import ObservationsAccordion from '@/view/pages/programs/antenatal/components/ObservationAccordion.vue';
+import ObservationsAccordion from '@/view/pages/programs/antenatal/components/accordion/ObservationAccordion.vue';
 
 export default {
   name: 'Observation',
@@ -158,7 +158,6 @@ export default {
               })),
               ante_natal_id: this.$route.query.antenatal,
             };
-            // set spinner to submit button
             const submitButton = this.$refs['kt_observation_submit'];
             this.addSpinner(submitButton);
 
