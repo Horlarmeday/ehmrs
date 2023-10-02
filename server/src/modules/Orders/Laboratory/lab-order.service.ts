@@ -1,5 +1,5 @@
 /* eslint-disable camelcase,no-param-reassign */
-import { orderBulkTest, prescribeTest } from './lab-order.repository';
+import { getPrescribedTests, orderBulkTest, prescribeTest } from './lab-order.repository';
 import { PrescribedTestBody } from './interface/prescribed-test.body';
 import { PrescribedTest } from '../../../database/models';
 import PatientService from '../../Patient/patient.service';
@@ -50,6 +50,28 @@ export class LabOrderService {
       }))
     );
     return orderBulkTest(bulkTests);
+  }
+
+  /**
+   * get prescribed tests
+   *
+   * @static
+   * @returns {json} json object with prescribed tests data
+   * @param body
+   * @memberOf PharmacyOrderService
+   */
+  static async getPrescribedTests(body) {
+    const { currentPage, pageLimit, filter } = body;
+
+    if (filter) {
+      return getPrescribedTests({ currentPage, pageLimit, filter });
+    }
+
+    if (Object.values(body).length) {
+      return getPrescribedTests({ currentPage, pageLimit });
+    }
+
+    return getPrescribedTests({});
   }
 
   /**

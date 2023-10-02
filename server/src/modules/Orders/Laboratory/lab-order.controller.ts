@@ -4,7 +4,8 @@ import { successResponse } from '../../../common/responses/success-responses';
 import { DATA_SAVED } from '../../AdminSettings/messages/response-messages';
 import { errorResponse } from '../../../common/responses/error-responses';
 import { StatusCodes } from '../../../core/helpers/helper';
-import { NextFunction, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
+import { SUCCESS } from '../../../core/constants';
 
 class LabOrderController {
   /**
@@ -36,6 +37,30 @@ class LabOrderController {
         data: tests,
         message: DATA_SAVED,
         httpCode: StatusCodes.CREATED,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get prescribed tests
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with prescribed tests data
+   */
+  static async getPrescribedTests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const tests = await LabOrderService.getPrescribedTests(req.query);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data: tests,
       });
     } catch (e) {
       return next(e);
