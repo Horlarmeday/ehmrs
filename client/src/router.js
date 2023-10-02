@@ -231,7 +231,39 @@ const router = new Router({
             {
               path: 'active',
               name: 'active',
-              component: () => import('@/view/pages/visits/Visits.vue'),
+              component: () => import('@/view/pages/visits/page/Visits.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'new/:id',
+              name: 'new-visit',
+              component: () => import('@/view/pages/visits/create/CreateNewVisit.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'queue',
+              name: 'queue',
+              component: () => import('@/view/pages/visits/page/Outpatients.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'in-patients',
+              name: 'in-patients',
+              component: () => import('@/view/pages/visits/page/Inpatients.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'ante-natal',
+              name: 'ante-natal-visits',
+              component: () => import('@/view/pages/visits/page/Antenatal.vue'),
               meta: {
                 requiresAuth: true,
               },
