@@ -110,9 +110,6 @@ export default {
 
     shortenName(name, character) {
       if (!name.length || name.length <= 11) return name;
-
-      // const cut = name.indexOf(" ", character);
-      // if (cut === -1) return name;
       return name.substring(0, character);
     },
 
