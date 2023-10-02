@@ -86,10 +86,11 @@ export default {
   fetchAntenatalTriages({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
-        .get(`/antenatal/triage/${payload.id}`, {
+        .get(`/antenatal/triage`, {
           params: {
             currentPage: payload.currentPage,
             pageLimit: payload.itemsPerPage,
+            filter: payload.filter,
           },
         })
         .then(response => {
@@ -124,10 +125,11 @@ export default {
   fetchClinicalNotes({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
-        .get(`/antenatal/clinical-notes/${payload.id}`, {
+        .get(`/antenatal/clinical-notes`, {
           params: {
             currentPage: payload.currentPage,
             pageLimit: payload.itemsPerPage,
+            filter: payload.filter,
           },
         })
         .then(response => {
@@ -176,10 +178,11 @@ export default {
   fetchObservations({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
-        .get(`/antenatal/observations/${payload.id}`, {
+        .get(`/antenatal/observations`, {
           params: {
             currentPage: payload.currentPage,
             pageLimit: payload.itemsPerPage,
+            filter: payload.filter,
           },
         })
         .then(response => {
