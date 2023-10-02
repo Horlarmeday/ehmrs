@@ -4,7 +4,33 @@
       <div class="container white">
         <div class="d-none d-lg-flex align-items-center mr-3">
           <ul class="header-tabs nav align-self-end font-size-lg" role="tablist">
-            <li class="nav-item">
+            <li class="nav-item mr-3">
+              <a
+                class="nav-link text-dark py-4 px-6"
+                :class="{ active: tabIndex === 5, disabled: tabIndex === 5 }"
+                @click="setActiveTab($event, 'summary')"
+                data-tab="5"
+                data-toggle="tab"
+                href="#"
+                role="tab"
+                aria-selected="true"
+                >Visits Summary</a
+              >
+            </li>
+            <li v-if="doctorAllowedTabs.includes(currentUser.role)" class="nav-item mr-3">
+              <a
+                class="nav-link text-dark py-4 px-6"
+                :class="{ active: tabIndex === 6, disabled: tabIndex === 6 }"
+                @click="setActiveTab($event, 'observation')"
+                data-tab="6"
+                data-toggle="tab"
+                href="#"
+                role="tab"
+                aria-selected="true"
+                >Observations</a
+              >
+            </li>
+            <li v-if="nurseAllowedTabs.includes(currentUser.role)" class="nav-item">
               <a
                 v-if="antenatal && antenatal.account_status === 'Inactive'"
                 class="nav-link text-dark py-4 px-6"
@@ -69,7 +95,7 @@
                 >Radiology</a
               >
             </li>
-            <li class="nav-item mr-3">
+            <li v-if="nurseAllowedTabs.includes(currentUser.role)" class="nav-item mr-3">
               <a
                 class="nav-link text-dark py-4 px-6"
                 :class="{ active: tabIndex === 4, disabled: tabIndex === 4 }"
@@ -82,19 +108,6 @@
                 >Clinical Notes</a
               >
             </li>
-            <li class="nav-item mr-3">
-              <a
-                class="nav-link text-dark py-4 px-6"
-                :class="{ active: tabIndex === 5, disabled: tabIndex === 5 }"
-                @click="setActiveTab($event, 'doctorConsultations')"
-                data-tab="5"
-                data-toggle="tab"
-                href="#"
-                role="tab"
-                aria-selected="true"
-                >Doctor Consultations</a
-              >
-            </li>
           </ul>
           <div class="ml-auto">
             <pulse-icons />
@@ -102,7 +115,7 @@
         </div>
       </div>
     </div>
-    <page-skeleton v-if="loading" title="Title" :times="6" />
+    <page-skeleton v-if="loading" title="Antenatal" :times="6" />
     <component :is="activeComponent" @accountUpdated="handleAccountUpdate" />
   </div>
 </template>
@@ -116,7 +129,10 @@ import Triage from '@/view/pages/programs/antenatal/tabs/Triage.vue';
 import PageSkeleton from '@/utils/PageSkeleton.vue';
 import Radiology from '@/view/pages/programs/antenatal/tabs/Radiology.vue';
 import ClinicalNote from '@/view/pages/programs/antenatal/tabs/ClinicalNote.vue';
-import DoctorConsultations from '@/view/pages/programs/antenatal/DoctorConsultations.vue';
+import Summary from '@/view/pages/programs/antenatal/VisitsSummary.vue';
+import { parseJwt } from '@/core/plugins/parseJwt';
+import Observation from '@/view/pages/programs/antenatal/tabs/Observation.vue';
+
 const ComponentMapping = {
   accountUpdate: AccountUpdate,
   tests: Tests,
@@ -124,7 +140,8 @@ const ComponentMapping = {
   triage: Triage,
   radiology: Radiology,
   clinicalNote: ClinicalNote,
-  doctorConsultations: DoctorConsultations,
+  summary: Summary,
+  observation: Observation,
 };
 export default {
   components: {
@@ -135,6 +152,9 @@ export default {
     tabIndex: 0,
     activeComponent: '',
     loading: false,
+    currentUser: '',
+    doctorAllowedTabs: ['Super Admin', 'General Practitioner'],
+    nurseAllowedTabs: ['Super Admin', 'Nurse'],
   }),
   computed: {
     antenatal() {
@@ -179,14 +199,18 @@ export default {
     },
 
     defaultTab() {
-      if (this.antenatal && this.antenatal.account_status === 'Inactive') {
-        return 'accountUpdate';
-      }
+      if (this.doctorAllowedTabs.includes(this.currentUser.role)) {
+        return 'summary';
+      } else {
+        if (this.antenatal && this.antenatal.account_status === 'Inactive') {
+          return 'accountUpdate';
+        }
 
-      if (this.antenatal && this.antenatal.account_status === 'Active') {
-        return 'triage';
+        if (this.antenatal && this.antenatal.account_status === 'Active') {
+          return 'triage';
+        }
+        return null;
       }
-      return null;
     },
 
     getActiveTab() {
@@ -200,7 +224,7 @@ export default {
       } else {
         const activeTab = this.defaultTab();
         this.activeComponent = ComponentMapping[activeTab];
-        this.tabIndex = 0;
+        this.tabIndex = this.doctorAllowedTabs.includes(this.currentUser.role) ? 5 : 0;
         this.loading = false;
       }
     },
@@ -215,12 +239,14 @@ export default {
         .dispatch('antenatal/fetchOneAntenatalAccount', this.$route.query.antenatal)
         .then(response => {
           const res = response.data.data;
+          this.$store.dispatch('insurance/fetchPatientDefaultInsurance', res.patient_id);
           this.$store.dispatch('patient/setCurrentPatient', { ...res.patient, ...res.insurance });
         });
     },
   },
   created() {
     this.loading = true;
+    this.currentUser = parseJwt(localStorage.getItem('user_token'));
     this.fetchAntenatalRecord();
     setTimeout(() => this.getActiveTab(), 300);
   },

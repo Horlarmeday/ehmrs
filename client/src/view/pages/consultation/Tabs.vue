@@ -102,6 +102,7 @@
         </div>
       </div>
     </div>
+    <page-skeleton v-if="loading" title="Consultation" :times="6" />
     <component :is="activeComponent" />
   </div>
 </template>
@@ -114,6 +115,7 @@ import Medications from './tabs/MedicationOrders.vue';
 import ServicesOrder from './tabs/ServiceOrders.vue';
 import Disposition from '@/view/pages/consultation/tabs/Disposition.vue';
 import PulseIcons from '@/view/pages/consultation/components/PulseIcons.vue';
+import PageSkeleton from '@/utils/PageSkeleton.vue';
 
 const ComponentMapping = {
   observations: Observations,
@@ -126,11 +128,12 @@ const ComponentMapping = {
 
 export default {
   name: 'Tabs',
-  components: { PulseIcons },
+  components: { PageSkeleton, PulseIcons },
   data() {
     return {
       tabIndex: 0,
       activeComponent: '',
+      loading: false,
     };
   },
   methods: {
@@ -180,13 +183,16 @@ export default {
       if (storedTab && ComponentMapping[storedTab] && storedTabIndex) {
         this.activeComponent = ComponentMapping[storedTab];
         this.tabIndex = parseInt(storedTabIndex);
+        this.loading = false;
       } else {
         this.activeComponent = ComponentMapping['observations'];
         this.tabIndex = 0;
+        this.loading = false;
       }
     },
   },
   created() {
+    this.loading = true;
     this.getActiveTab();
     this.$store.dispatch('visit/fetchVisit', this.$route.params.id).then(response => {
       const res = response.data.data;

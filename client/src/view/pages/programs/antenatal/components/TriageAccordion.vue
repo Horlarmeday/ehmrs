@@ -9,61 +9,20 @@
         </div>
         <b-collapse id="accordion-1" accordion="my-accordion" role="tabpanel">
           <div class="card-body border">
-            <div class="table-responsive">
-              <table class="table table-sm">
-                <thead class="thead-light">
-                  <tr class="text-uppercase">
-                    <th scope="col">Height</th>
-                    <th scope="col">Weight</th>
-                    <th scope="col">Pallor</th>
-                    <th scope="col">Blood Pressure</th>
-                    <th scope="col">Maturity</th>
-                    <th scope="col">Date Added</th>
-                    <th scope="col">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-if="!triages?.length">
-                    <td colspan="9" align="center" class="text-muted">No Data</td>
-                  </tr>
-                  <tr v-for="(triage, i) in triages" :key="i">
-                    <td>{{ triage.height }}</td>
-                    <td>{{ triage.weight }}</td>
-                    <td>{{ triage.pallor }}</td>
-                    <td>{{ triage.blood_pressure }}</td>
-                    <td>{{ triage.maturity }}</td>
-                    <td>{{ triage.createdAt | moment('DD/MM/YYYY, h:mma') }}</td>
-                    <td>
-                      <a :id="popOverId" @click="viewPopover(triage)" href="#"
-                        ><i class="icon-xl text-primary la la-eye"></i
-                      ></a>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <triage-table :triages="triages" />
           </div>
-          <triage-popover
-            :triage="triage"
-            :target="popOverId"
-            :show="showPopover"
-            @closePopover="hidePopover"
-          />
         </b-collapse>
       </div>
     </div>
   </div>
 </template>
 <script>
-import TriagePopover from './TriagePopover.vue';
+import TriageTable from './TriageTable.vue';
 export default {
-  components: { TriagePopover },
+  components: { TriageTable },
   data: () => ({
     currentPage: 1,
     itemsPerPage: 10,
-    showPopover: false,
-    popOverId: 'popover-reactive-3',
-    triage: {},
   }),
   computed: {
     triages() {
@@ -86,13 +45,6 @@ export default {
         itemsPerPage: this.itemsPerPage,
         id: this.$route.query.antenatal,
       });
-    },
-    viewPopover(triage) {
-      this.triage = triage;
-      this.showPopover = true;
-    },
-    hidePopover() {
-      this.showPopover = false;
     },
   },
   created() {

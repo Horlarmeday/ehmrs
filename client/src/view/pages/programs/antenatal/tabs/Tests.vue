@@ -38,7 +38,6 @@ export default {
     },
   },
   created() {
-    this.$store.dispatch('insurance/fetchPatientDefaultInsurance', this.antenatal.patient_id);
     this.defaultSwitchPosition();
   },
 };
