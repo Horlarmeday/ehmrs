@@ -8,8 +8,7 @@
           <input
             type="text"
             class="form-control datatable-input"
-            placeholder="Type and press enter to search"
-            data-col-index="0"
+            placeholder="Search..."
             v-model="search"
             @keyup="onSearch"
           />
