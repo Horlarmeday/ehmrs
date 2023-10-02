@@ -195,6 +195,7 @@ export class Staff extends Model {
         sub_role: this.sub_role,
         username: this.username,
         email: this.email,
+        photo: this.photo,
       },
       process.env.JWT_SECRET,
       {

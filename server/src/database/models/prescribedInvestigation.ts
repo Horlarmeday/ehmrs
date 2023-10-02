@@ -24,6 +24,7 @@ import { Investigation } from './investigation';
 import { InvestigationResult } from './investigationResult';
 import { InvestigationPrescription } from './investigationPrescription';
 import { Antenatal } from './antenatal';
+import { Imaging } from './imaging';
 
 export enum InvestigationStatus {
   PENDING = 'Pending',
@@ -50,6 +51,18 @@ export class PrescribedInvestigation extends Model {
     type: DataType.INTEGER,
   })
   investigation_id: number;
+
+  @ForeignKey(() => Imaging)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'imaging id is required',
+      },
+    },
+  })
+  imaging_id: number;
 
   @Column({
     type: DataType.BOOLEAN,
@@ -242,6 +255,9 @@ export class PrescribedInvestigation extends Model {
 
   @BelongsTo(() => Antenatal)
   antenatal: Antenatal;
+
+  @BelongsTo(() => Imaging)
+  imaging: Imaging;
 
   static async paginate(param: {
     paginate: number;
