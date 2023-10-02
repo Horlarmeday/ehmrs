@@ -1,3 +1,5 @@
+import { Diagnosis } from '../../../database/models';
+
 export class CreateAntenatal {
   patient_id: number;
   staff_id: number;
@@ -55,4 +57,16 @@ export class CreateAntenatalTriage {
 export class CreateClinicalNote {
   notes: string;
   clinical_note_id?: number;
+}
+
+export class CreateObservation {
+  mother_condition: string;
+  foetal_condition: string;
+  doctor_comments: string;
+  continuation_sheet: string;
+  visit_id: number;
+  staff_id: number;
+  ante_natal_id: number;
+  diagnosis: Array<Diagnosis>;
+  observation_id?: number;
 }

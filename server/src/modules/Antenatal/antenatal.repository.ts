@@ -1,5 +1,6 @@
 import {
   Antenatal,
+  AntenatalObservation,
   AntenatalTriage,
   Patient,
   PreviousPregnancy,
@@ -7,6 +8,17 @@ import {
 } from '../../database/models';
 import { Op, WhereOptions } from 'sequelize';
 import { ClinicalNote } from '../../database/models';
+import { getVisitsQuery, patientAttributes } from '../Visit/visit.repository';
+import { getPrescriptionTests } from '../Orders/Laboratory/lab-order.repository';
+import {
+  getPrescriptionAdditionalItems,
+  getPrescriptionDrugs,
+} from '../Orders/Pharmacy/pharmacy-order.repository';
+import { getPrescriptionInvestigations } from '../Orders/Radiology/radiology-order.repository';
+import { paginate } from '../../core/helpers/helper';
+import { getPatientDiagnoses } from '../Consultation/consultation.repository';
+
+export const staffAttributes = ['fullname', 'firstname', 'lastname'];
 
 /**
  * Create a patient antenatal account
@@ -105,11 +117,11 @@ export const getAntenatalPatients = async ({
     include: [
       {
         model: Staff,
-        attributes: ['firstname', 'lastname', 'fullname'],
+        attributes: staffAttributes,
       },
       {
         model: Patient,
-        attributes: ['firstname', 'lastname', 'fullname', 'hospital_id'],
+        attributes: patientAttributes,
       },
     ],
   });
@@ -122,6 +134,10 @@ export const getAntenatalPatients = async ({
 export const createPreviousPregnancies = async data => {
   return PreviousPregnancy.bulkCreate(data);
 };
+
+/****************
+ * TRIAGE
+ ***************/
 
 /**
  * Create antenatal triage
@@ -161,6 +177,14 @@ export const getAntenatalTriages = async ({
   });
 };
 
+export const getTriages = async (query: WhereOptions<AntenatalTriage>) => {
+  return AntenatalTriage.findAll({ where: { ...query } });
+};
+
+/******************
+ * CLINICAL NOTES
+ ******************/
+
 /**
  * Create antenatal clinical note
  * @param data
@@ -196,7 +220,7 @@ export const getClinicalNotes = async ({
     where: {
       ante_natal_id: antenatalId,
     },
-    include: [{ model: Staff, attributes: ['firstname', 'lastname', 'fullname'] }],
+    include: [{ model: Staff, attributes: staffAttributes }],
     order: [['createdAt', 'DESC']],
   });
 };
@@ -208,7 +232,7 @@ export const getClinicalNotes = async ({
 export const getOneClinicalNote = async (query: WhereOptions<ClinicalNote>) => {
   return ClinicalNote.findOne({
     where: { ...query },
-    include: [{ model: Staff, attributes: ['firstname', 'lastname', 'fullname'] }],
+    include: [{ model: Staff, attributes: staffAttributes }],
   });
 };
 
@@ -223,4 +247,132 @@ export const updateClinicalNote = async (
 ) => {
   const clinicalNote = await getOneClinicalNote({ ...query });
   return clinicalNote.update(data);
+};
+
+export const getAntenatalClinicalNotes = async (query: WhereOptions<ClinicalNote>) => {
+  return ClinicalNote.findAll({
+    where: { ...query },
+    include: [{ model: Staff, attributes: staffAttributes }],
+  });
+};
+
+/************************
+ * ANTENATAL OBSERVATION
+ ************************/
+
+/**
+ * Create a patient antenatal observation
+ * @param data
+ */
+export const createObservation = async data => {
+  return AntenatalObservation.create({ ...data });
+};
+
+/**
+ * get one antenatal observation
+ * @param query
+ */
+export const getOneObservation = async (query: WhereOptions<AntenatalObservation>) => {
+  return AntenatalObservation.findOne({
+    where: { ...query },
+    include: [{ model: Staff, attributes: staffAttributes }],
+  });
+};
+
+/**
+ * Update antenatal observation
+ * @param data
+ * @param query
+ */
+export const updateObservation = async (
+  data: { [p: string]: any },
+  query: WhereOptions<AntenatalObservation>
+) => {
+  const observation = await getOneObservation({ ...query });
+  return observation.update(data);
+};
+
+/**
+ * get antenatal observations
+ *
+ * @function
+ * @returns {Promise<{currentPage, docs, pages, perPage, total}>} json object with antenatal observations data
+ * @param currentPage
+ * @param pageLimit
+ * @param antenatalId
+ */
+export const getObservations = async ({
+  currentPage = 1,
+  pageLimit = 10,
+  antenatalId,
+}): Promise<{
+  currentPage: number;
+  docs: Antenatal[];
+  pages: number;
+  perPage: number;
+  total: number;
+}> => {
+  return AntenatalObservation.paginate({
+    page: +currentPage,
+    paginate: +pageLimit,
+    where: {
+      ante_natal_id: antenatalId,
+    },
+    include: [{ model: Staff, attributes: staffAttributes }],
+    order: [['createdAt', 'DESC']],
+  });
+};
+
+export const getAntenatalObservations = async (query: WhereOptions<AntenatalObservation>) => {
+  return AntenatalObservation.findAll({
+    where: { ...query },
+    include: [{ model: Staff, attributes: staffAttributes }],
+  });
+};
+
+/***************************
+ * ANTENATAL VISITS SUMMARY
+ ***************************/
+
+const getPrescriptions = async (visit_id: number) => {
+  const [
+    tests,
+    drugs,
+    investigations,
+    observations,
+    triages,
+    notes,
+    diagnoses,
+    items,
+  ] = await Promise.all([
+    getPrescriptionTests({ visit_id }),
+    getPrescriptionDrugs({ visit_id }),
+    getPrescriptionInvestigations({ visit_id }),
+    getAntenatalObservations({ visit_id }),
+    getTriages({ visit_id }),
+    getAntenatalClinicalNotes({ visit_id }),
+    getPatientDiagnoses({ visit_id }),
+    getPrescriptionAdditionalItems({ visit_id }),
+  ]);
+  return { tests, drugs, investigations, observations, triages, notes, diagnoses, items };
+};
+
+export const getVisitsSummary = async (currentPage = 1, pageLimit = 5, antenatalId: number) => {
+  const { visits, limit, count } = await getVisitsQuery(
+    currentPage,
+    pageLimit,
+    {
+      ante_natal_id: antenatalId,
+    },
+    ['id', 'date_visit_start', 'date_visit_ended']
+  );
+  const summary = await Promise.all(
+    visits.map(async ({ id, date_visit_start, date_visit_ended }) => ({
+      id,
+      date_visit_start,
+      date_visit_ended,
+      ...(await getPrescriptions(id)),
+    }))
+  );
+  return paginate({ rows: summary, count }, currentPage, limit);
 };

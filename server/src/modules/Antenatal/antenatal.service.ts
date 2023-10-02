@@ -1,6 +1,8 @@
 import {
   CreateAntenatal,
-  CreateAntenatalTriage, CreateClinicalNote,
+  CreateAntenatalTriage,
+  CreateClinicalNote,
+  CreateObservation,
   UpdateAntenatalAccount,
 } from './types/antenatal.types';
 import { getPatientById } from '../Patient/patient.repository';
@@ -13,9 +15,12 @@ import {
   createClinicalNote,
   createPreviousPregnancies,
   getAntenatalPatients,
-  getAntenatalTriages, getClinicalNotes,
+  getAntenatalTriages,
+  getClinicalNotes,
   getOneAntenatalAccount,
-  updateAntenatalAccount, updateClinicalNote,
+  updateAntenatalAccount,
+  updateClinicalNote,
+  createObservation, updateObservation, getObservations, getVisitsSummary,
 } from './antenatal.repository';
 import { AccountStatus } from '../../database/models/antenatal';
 import { prescribeService } from '../Orders/Service/service-order.repository';
@@ -24,6 +29,7 @@ import { ANTENATAL_ACCOUNT_EXISTS, FEMALE_REQUIRED } from './messages/antenatal.
 import { assignAntenatalNumber } from '../../core/command/worker/schedule';
 import moment from 'moment';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
+import { bulkCreateDiagnosis } from '../Consultation/consultation.repository';
 
 export class AntenatalService {
   /**
@@ -200,6 +206,84 @@ export class AntenatalService {
    */
   static async updateClinicalNote(body: CreateClinicalNote) {
     return updateClinicalNote({ ...body }, { id: body.clinical_note_id });
+  }
+
+  /**
+   * Create antenatal observation
+   * @memberof AntenatalService
+   * @param body
+   */
+  static async createObservation(body: CreateObservation) {
+    const {
+      diagnosis,
+      visit_id,
+      doctor_comments,
+      foetal_condition,
+      mother_condition,
+      continuation_sheet,
+      staff_id,
+      ante_natal_id,
+    } = body;
+    const antenatal = await getOneAntenatalAccount({ id: ante_natal_id });
+    const mappedDiagnosis = diagnosis.map(result => ({
+      ...result,
+      staff_id,
+      patient_id: antenatal.patient_id,
+      visit_id,
+    }));
+    const [observation, diagnoses] = await Promise.all([
+      createObservation({
+        doctor_comments,
+        foetal_condition,
+        mother_condition,
+        continuation_sheet,
+        ante_natal_id: antenatal.id,
+        patient_id: antenatal.patient_id,
+        visit_id,
+        staff_id,
+      }),
+      bulkCreateDiagnosis(mappedDiagnosis),
+    ]);
+    return { observation, diagnoses };
+  }
+
+  /**
+   * Update antenatal clinical note
+   * @memberof AntenatalService
+   * @param body
+   */
+  static async updateObservation(body: CreateObservation) {
+    return updateObservation({ ...body }, { id: body.observation_id });
+  }
+
+  /**
+   * Get antenatal observations
+   * @param body
+   * @memberof AntenatalService
+   */
+  static async getObservations(body) {
+    const { currentPage, pageLimit, antenatalId } = body;
+
+    if (Object.keys(body).length) {
+      return getObservations({ currentPage, pageLimit, antenatalId });
+    }
+
+    return getObservations({ antenatalId });
+  }
+
+  /**
+   * Get antenatal all visits summary
+   * @param body
+   * @memberof AntenatalService
+   */
+  static async getVisitsSummary(body) {
+    const { currentPage, pageLimit, antenatalId } = body;
+
+    if (Object.keys(body).length) {
+      return getVisitsSummary(currentPage, pageLimit, antenatalId);
+    }
+
+    return getVisitsSummary(1, 5, antenatalId);
   }
 
   private static async antenatalValidations(patient_id: number) {
