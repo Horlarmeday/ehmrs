@@ -145,9 +145,85 @@ export default {
   updateClinicalNote({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
-        .put(`/antenatal/clinical-notes/update/${payload.id}`, payload.data)
+        .put(`/antenatal/clinical-notes/${payload.id}`, payload.data)
         .then(response => {
           commit('UPDATE_CLINICAL_NOTE', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * OBSERVATION
+   */
+  createObservation({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/antenatal/observations/${payload.id}`, payload.data)
+        .then(response => {
+          commit('CREATE_OBSERVATION', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchObservations({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/antenatal/observations/${payload.id}`, {
+          params: {
+            currentPage: payload.currentPage,
+            pageLimit: payload.itemsPerPage,
+          },
+        })
+        .then(response => {
+          commit('SET_OBSERVATIONS', response.data.data.docs);
+          commit('SET_OBSERVATIONS_TOTAL', response.data.data.total);
+          commit('SET_OBSERVATIONS_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  updateObservation({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/antenatal/observations/${payload.id}`, payload.data)
+        .then(response => {
+          commit('UPDATE_OBSERVATION', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * VISITS SUMMARY
+   */
+  fetchVisitsSummary({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/antenatal/visits-summary/${payload.id}`, {
+          params: {
+            currentPage: payload.currentPage,
+            pageLimit: payload.itemsPerPage,
+          },
+        })
+        .then(response => {
+          commit('SET_VISITS_SUMMARY', response.data.data.docs);
+          commit('SET_VISITS_SUMMARY_TOTAL', response.data.data.total);
+          commit('SET_VISITS_SUMMARY_PAGES', response.data.data.pages);
           resolve(response);
         })
         .catch(error => {

@@ -61,4 +61,44 @@ export default {
     const noteIndex = state.clinicalNotes.findIndex(n => n.id === note.id);
     Object.assign(state.clinicalNotes[noteIndex], note);
   },
+
+  /**
+   * OBSERVATION
+   */
+  CREATE_OBSERVATION(state, observation) {
+    state.observations.push(observation);
+  },
+
+  SET_OBSERVATIONS(state, observations) {
+    state.observations = observations;
+  },
+
+  SET_OBSERVATIONS_TOTAL(state, total) {
+    state.totalObservations = total;
+  },
+
+  SET_OBSERVATIONS_PAGES(state, pages) {
+    state.totalObservationPages = pages;
+  },
+
+  UPDATE_OBSERVATION(state, observation) {
+    const observationIndex = state.observations.findIndex(n => n.id === observation.id);
+    Object.assign(state.observations[observationIndex], observation);
+  },
+
+  /**
+   * VISITS SUMMARY
+   */
+  SET_VISITS_SUMMARY(state, visits) {
+    if (state.summaries[0]?.id !== visits[0]?.id)
+      state.summaries.push(...visits);
+  },
+
+  SET_VISITS_SUMMARY_TOTAL(state, total) {
+    state.totalSummaries = total;
+  },
+
+  SET_VISITS_SUMMARY_PAGES(state, pages) {
+    state.totalSummaryPages = pages;
+  },
 };

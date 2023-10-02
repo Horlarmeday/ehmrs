@@ -13,4 +13,14 @@ export default {
   clinicalNotes: [],
   totalClinicalNotes: null,
   totalClinicalNotesPages: 0,
+
+  observation: null,
+  observations: [],
+  totalObservations: null,
+  totalObservationPages: 0,
+
+  summary: null,
+  summaries: [],
+  totalSummaries: 0,
+  totalSummaryPages: 0,
 };
