@@ -2,24 +2,30 @@ import {
   createVisit,
   endVisit,
   getActiveVisits,
-  getLastVisitStatus,
+  getLastActiveVisit,
   getVisit,
   getVisitById,
   getVisits,
-  getVisitsType,
+  getCategoryVisits,
   searchActiveVisits,
   searchVisits,
-  searchVisitsType,
+  searchCategoryVisits,
+  getProfessionalAssignedVisits,
 } from './visit.repository';
 import { Visit } from '../../database/models';
 import { CreateVisit } from './interface/visit.interface';
-import { VisitType } from '../../database/models/visit';
+import { VisitCategory } from '../../database/models/visit';
 import { getOneAntenatalAccount } from '../Antenatal/antenatal.repository';
 import { AccountStatus, Antenatal } from '../../database/models/antenatal';
 import { BadException } from '../../common/util/api-error';
 import { StatusCodes } from '../../core/helpers/helper';
 import { Op } from 'sequelize';
 import { ANTENATAL_ACCOUNT_REQUIRED } from './messages/response.messages';
+import { getOneService } from '../AdminSettings/admin.repository';
+import { prescribeService } from '../Orders/Service/service-order.repository';
+import { getPatientById } from '../Patient/patient.repository';
+import { Gender } from '../../database/models/staff';
+import { FEMALE_REQUIRED } from '../Antenatal/messages/antenatal.messages';
 
 class VisitService {
   /**
@@ -32,14 +38,20 @@ class VisitService {
    */
   static async createVisitService(body: CreateVisit): Promise<Visit> {
     let antenatal: Antenatal;
-    const { patient_id, ante_natal_id, type } = body;
-    const visit = await getLastVisitStatus(patient_id);
+    const { patient_id, ante_natal_id, category, service_id, staff_id } = body;
+    const [patient, visit] = await Promise.all([
+      getPatientById(patient_id),
+      getLastActiveVisit(patient_id),
+    ]);
+    if (category === VisitCategory.ANC && patient.gender !== Gender.FEMALE)
+      throw new BadException('INVALID', StatusCodes.BAD_REQUEST, FEMALE_REQUIRED);
+
     if (visit) await endVisit(visit); // end existing visit - since 2 visits cannot be active
 
-    // This check happens if a visit wants to be created when an antenatal account already exists
+    // This check happens if the visit category is ANC and a visit wants to be created when an antenatal account already exists
     // `ante_natal_id` field in the body only happens when a visit wants to be created
     // immediately a patient was enrolled for antenatal
-    if (type === VisitType.ANC && !ante_natal_id) {
+    if (category === VisitCategory.ANC && !ante_natal_id) {
       antenatal = await getOneAntenatalAccount({
         patient_id,
         [Op.or]: [
@@ -51,20 +63,37 @@ class VisitService {
         throw new BadException('INVALID', StatusCodes.BAD_REQUEST, ANTENATAL_ACCOUNT_REQUIRED);
     }
 
-    return createVisit({ ...body, ...(antenatal && { ante_natal_id: antenatal.id }) });
+    const createdVisit = await createVisit({
+      ...body,
+      ...(antenatal && { ante_natal_id: antenatal.id }),
+    });
+
+    if (service_id) {
+      const service = await getOneService({ id: service_id });
+      await prescribeService({
+        service_id,
+        service_type: 'Cash',
+        price: service.price,
+        patient_id,
+        requester: staff_id,
+        ante_natal_id: antenatal?.id,
+        visit_id: createdVisit.id,
+      });
+    }
+    return createdVisit;
   }
 
   /**
    * get active visits
    *
    * @static
-   * @returns {json} json object with visits data
+   * @returns {Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }>} json object with visits data
    * @param body
    * @memberOf VisitService
    */
   static async getActiveVisits(
     body
-  ): Promise<{ total: any; pages: number; perPage: number; docs: any; currentPage: number }> {
+  ): Promise<{ total: any; pages: number; perPage: number; docs: Visit[]; currentPage: number }> {
     const { currentPage, pageLimit, search } = body;
     if (search) {
       return searchActiveVisits(+currentPage, +pageLimit, search);
@@ -81,11 +110,13 @@ class VisitService {
    * get all visits
    *
    * @static
-   * @returns {json} json object with visits data
+   * @returns {Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }>} json object with visits data
    * @param body
    * @memberOf VisitService
    */
-  static async getAllVisits(body) {
+  static async getAllVisits(
+    body
+  ): Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }> {
     const { currentPage, pageLimit, search } = body;
     if (search) {
       return searchVisits(+currentPage, +pageLimit, search);
@@ -102,32 +133,62 @@ class VisitService {
    * get typed visits
    *
    * @static
-   * @returns {json} json object with visits data
+   * @returns {Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }>} json object with visits data
    * @param body
    * @memberOf VisitService
    */
-  static async getTypeVisits(body) {
-    const { currentPage, pageLimit, search, type } = body;
+  static async getCategoryVisits(
+    body
+  ): Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }> {
+    const { currentPage, pageLimit, search, category } = body;
     if (search) {
-      return searchVisitsType(+currentPage, +pageLimit, search, type);
+      return searchCategoryVisits(+currentPage, +pageLimit, search, category);
     }
 
     if (Object.values(body).length) {
-      return getVisitsType(+currentPage, +pageLimit, type);
+      return getCategoryVisits(+currentPage, +pageLimit, category);
     }
 
-    return getVisitsType();
+    return getCategoryVisits();
+  }
+
+  /**
+   * get professional assigned visits
+   *
+   * @static
+   * @returns {Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }>} json object with visits data
+   * @param body
+   * @memberOf VisitService
+   */
+  static async getProfessionalAssignedVisits(
+    body
+  ): Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }> {
+    const { currentPage, pageLimit, search, role, start, end } = body;
+    if (start && end) {
+      return getProfessionalAssignedVisits({ currentPage, pageLimit, search, role });
+    }
+
+    if (Object.values(body).length) {
+      return getProfessionalAssignedVisits({
+        currentPage,
+        pageLimit,
+        search,
+        role,
+      });
+    }
+
+    return getProfessionalAssignedVisits({ search, role });
   }
 
   /**
    * get patient visit by id
    *
    * @static
-   * @returns {json} json object with item data
+   * @returns {Promise<Visit>} json object with item data
    * @memberOf VisitService
    * @param id
    */
-  static async getVisitById(id) {
+  static async getVisitById(id: number): Promise<Visit> {
     return getVisitById(id);
   }
 

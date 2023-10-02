@@ -19,11 +19,16 @@ import {
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Antenatal } from './antenatal';
 
-export enum VisitType {
-  IPD = 'IPD',
-  OPD = 'OPD',
+export enum VisitCategory {
+  IPD = 'Inpatient',
+  OPD = 'Outpatient',
   EMERGENCY = 'Emergency',
   ANC = 'Antenatal',
+}
+
+export enum VisitStatus {
+  ONGOING = 'Ongoing',
+  ENDED = 'Ended',
 }
 
 @Table({ timestamps: true })
@@ -45,15 +50,20 @@ export class Visit extends Model {
   date_visit_ended: Date;
 
   @Column({
-    type: DataType.ENUM(VisitType.IPD, VisitType.OPD, VisitType.EMERGENCY, VisitType.ANC),
+    type: DataType.ENUM(
+      VisitCategory.IPD,
+      VisitCategory.OPD,
+      VisitCategory.EMERGENCY,
+      VisitCategory.ANC
+    ),
     allowNull: false,
     validate: {
       notEmpty: {
-        msg: 'visit type is required',
+        msg: 'visit category is required',
       },
     },
   })
-  type: VisitType;
+  category: VisitCategory;
 
   @ForeignKey(() => Staff)
   @Column({
@@ -62,10 +72,50 @@ export class Visit extends Model {
   staff_id: number;
 
   @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: true,
+    type: DataType.DATE,
+    allowNull: false,
   })
-  is_active: boolean;
+  date_visit_start: Date;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'department is required',
+      },
+    },
+  })
+  department: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'professional is required',
+      },
+    },
+  })
+  professional: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'visit type is required',
+      },
+    },
+  })
+  type: string;
+
+  @Column({
+    type: DataType.ENUM(VisitStatus.ENDED, VisitStatus.ONGOING),
+    allowNull: false,
+    defaultValue: VisitStatus.ONGOING,
+  })
+  status: VisitStatus;
 
   @ForeignKey(() => Antenatal)
   @Column({
@@ -78,6 +128,9 @@ export class Visit extends Model {
 
   @BelongsTo(() => Patient)
   patient: Patient;
+
+  @BelongsTo(() => Antenatal)
+  antenatal: Antenatal;
 
   static async paginate(param: {
     paginate: number;

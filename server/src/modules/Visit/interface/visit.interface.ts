@@ -1,18 +1,13 @@
-import { VisitType } from '../../../database/models/visit';
-
-export class Visit {
-  id?: number;
-  patient_id: number;
-  date_visit_ended: Date;
-  type: VisitType;
-  staff_id: number;
-  is_active: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { VisitCategory } from '../../../database/models/visit';
 
 export class CreateVisit {
   patient_id: number;
-  type: VisitType;
+  category: VisitCategory;
   ante_natal_id?: number;
+  type: string;
+  professional: string;
+  department: string;
+  date_of_visit: Date;
+  service_id: number;
+  staff_id: number;
 }

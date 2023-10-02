@@ -17,7 +17,11 @@ class VisitController {
    * @param {object} next next middleware
    * @returns {json} json object with status, visit data
    */
-  static async createVisit(req, res, next): Promise<SuccessResponse> {
+  static async createVisit(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
     const { error } = validateVisit(req.body);
     if (error)
       return errorResponse({
@@ -49,7 +53,7 @@ class VisitController {
    * @param {object} next next middleware
    * @returns {json} json object with visits data
    */
-  static async getVisits(req, res, next) {
+  static async getVisits(req: Request, res: Response, next: NextFunction) {
     try {
       const visits = await VisitService.getAllVisits(req.query);
 
@@ -83,7 +87,7 @@ class VisitController {
   }
 
   /**
-   * get type visits
+   * get category visits
    *
    * @static
    * @param {object} req express request object
@@ -91,13 +95,13 @@ class VisitController {
    * @param {object} next next middleware
    * @returns {json} json object with visits data
    */
-  static async getTypeVisits(
+  static async getCategoryVisits(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<SuccessResponse> {
     try {
-      const visits = await VisitService.getTypeVisits(req.query);
+      const visits = await VisitService.getCategoryVisits(req.query);
 
       return successResponse({ res, httpCode: StatusCodes.OK, message: SUCCESS, data: visits });
     } catch (e) {
@@ -123,6 +127,32 @@ class VisitController {
       const visit = await VisitService.getOneVisit(+req.params.id);
 
       return successResponse({ res, httpCode: StatusCodes.OK, message: SUCCESS, data: visit });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  /**
+   * get professional assigned visits
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with visits data
+   */
+  static async getProfessionalAssignedVisits(
+    req: Request & { user: { sub: number; role: string } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse> {
+    try {
+      const visits = await VisitService.getProfessionalAssignedVisits({
+        ...req.query,
+        role: req.user.role,
+      });
+
+      return successResponse({ res, httpCode: StatusCodes.OK, message: SUCCESS, data: visits });
     } catch (e) {
       next(e);
     }
