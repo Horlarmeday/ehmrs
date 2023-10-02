@@ -9,7 +9,7 @@ export default {
       axios
         .post(`/orders/laboratory/create/${payload.id}`, { tests: payload.tests })
         .then(response => {
-          commit('ORDER_LAB_TEST', payload.tests);
+          commit('ORDER_LAB_TEST', response.data.data);
           resolve(response);
         })
         .catch(error => {
@@ -17,6 +17,29 @@ export default {
         });
     });
   },
+
+  fetchPrescribedTests({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/orders/laboratory/get', {
+          params: {
+            currentPage: payload?.currentPage,
+            pageLimit: payload?.itemsPerPage,
+            filter: payload?.filter,
+          },
+        })
+        .then(response => {
+          commit('SET_TESTS_ORDERS', response.data.data.docs);
+          commit('SET_TESTS_ORDERS_TOTAL', response.data.data.total);
+          commit('SET_TESTS_ORDERS_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
   addSelectedTest({ commit }, test) {
     commit('ADD_SELECTED_TEST', test);
   },
@@ -47,7 +70,29 @@ export default {
       axios
         .post(`/orders/radiology/create/${payload.id}`, { investigations: payload.investigations })
         .then(response => {
-          commit('ORDER_INVESTIGATION_TEST', payload.investigations);
+          commit('ORDER_INVESTIGATION_TEST', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchRadiologyOrders({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/orders/radiology/get', {
+          params: {
+            currentPage: payload?.currentPage,
+            pageLimit: payload?.itemsPerPage,
+            filter: payload?.filter,
+          },
+        })
+        .then(response => {
+          commit('SET_INVESTIGATIONS_ORDERS', response.data.data.docs);
+          commit('SET_INVESTIGATIONS_ORDERS_TOTAL', response.data.data.total);
+          commit('SET_INVESTIGATIONS_ORDERS_PAGES', response.data.data.pages);
           resolve(response);
         })
         .catch(error => {
