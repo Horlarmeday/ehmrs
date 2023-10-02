@@ -113,7 +113,7 @@ export function splitSort(sort: string) {
   return { sort_by: result[0], order: result[1].toUpperCase() };
 }
 
-export const paginate = (data: any, page: number, limit: number) => {
+export const paginate = (data: { rows: any[]; count: number }, page: number, limit: number) => {
   const { count: total, rows: docs } = data;
   const currentPage = page || 1;
   const pages = Math.ceil(total / limit);

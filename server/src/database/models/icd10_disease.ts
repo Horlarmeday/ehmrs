@@ -18,9 +18,10 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
+import { Diagnosis } from './diagnosis';
 
 @Table({ timestamps: true, tableName: 'icd10_diseases' })
-export class ICD10Disease extends Model {
+export class ICD10Disease extends Model<Diagnosis> {
   @PrimaryKey
   @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
   id: number;

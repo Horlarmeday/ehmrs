@@ -1,5 +1,6 @@
 export { Admission } from './admission';
 export { Antenatal } from './antenatal';
+export { AntenatalObservation } from './antenatalObservation';
 export { AntenatalTriage } from './antenatalTriage';
 export { Alert } from './alert';
 export { Allergy } from './allergy';
