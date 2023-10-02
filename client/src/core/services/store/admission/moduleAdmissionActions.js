@@ -39,6 +39,7 @@ export default {
         });
     });
   },
+
   fetchAdmission({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
@@ -56,6 +57,7 @@ export default {
         });
     });
   },
+
   recommendForDischarge({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios

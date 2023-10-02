@@ -18,19 +18,53 @@ export default {
     state.activeVisitPages = pages;
   },
 
+  /**
+   * CATEGORY VISITS
+   */
+
+  SET_CATEGORY_VISITS(state, visits) {
+    state.categoryVisits = visits;
+  },
+
+  SET_CATEGORY_VISITS_TOTAL(state, total) {
+    state.totalCategoryVisits = total;
+  },
+
+  SET_CATEGORY_VISITS_PAGES(state, pages) {
+    state.totalCategoryVisitsPages = pages;
+  },
+
+  /**
+   * ASSIGNED VISITS
+   */
+  SET_ASSIGNED_VISITS(state, visits) {
+    state.assignedVisits = visits;
+  },
+
+  SET_ASSIGNED_VISITS_TOTAL(state, total) {
+    state.totalAssignedVisits = total;
+  },
+
+  SET_ASSIGNED_VISITS_PAGES(state, pages) {
+    state.totalAssignedVisitsPages = pages;
+  },
+
+  /**
+   * ALL VISITS
+   */
   SET_VISIT(state, visit) {
     state.visit = visit;
   },
 
-  SET_VISIT_TYPES(state, visits) {
-    state.visitTypes = visits;
+  SET_ALL_VISITS(state, visits) {
+    state.visits = visits;
   },
 
-  SET_VISIT_TYPES_TOTAL(state, total) {
-    state.totalVisitTypes = total;
+  SET_ALL_VISITS_TOTAL(state, total) {
+    state.total = total;
   },
 
-  SET_VISIT_TYPES_PAGES(state, pages) {
-    state.totalVisitTypesPages = pages;
+  SET_ALL_VISITS_PAGES(state, pages) {
+    state.pages = pages;
   },
 };

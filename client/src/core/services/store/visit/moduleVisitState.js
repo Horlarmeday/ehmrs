@@ -6,13 +6,25 @@ export default {
   totalActiveVisits: 0,
   activeVisitPages: 0,
 
+  /**
+   * TOTAL VISITS
+   */
   visits: [],
   total: 0,
   pages: 0,
-
   visit: null,
 
-  visitTypes: [],
-  totalVisitTypes: 0,
-  totalVisitTypesPages: 0,
+  /**
+   * CATEGORY VISITS
+   */
+  categoryVisits: [],
+  totalCategoryVisits: 0,
+  totalCategoryVisitsPages: 0,
+
+  /**
+   * ASSIGNED VISITS
+   */
+  assignedVisits: [],
+  totalAssignedVisits: 0,
+  totalAssignedVisitsPages: 0,
 };
