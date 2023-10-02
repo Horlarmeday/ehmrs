@@ -1,9 +1,10 @@
 <template>
   <div class="flex-row-fluid ml-lg-8">
     <div class="card-custom gutter-b">
-      <div class="card-header pt-5">
+      <div class="card-header">
+        <tests-accordion />
         <div class="card-title">
-          <span class="card-label font-weight-bolder text-dark">Lab Tests</span>
+          <span class="card-label font-weight-bolder text-dark"></span>
           <span v-if="showSwitch" class="switch switch-sm switch-icon">
             <label>
               <input
@@ -26,6 +27,7 @@
           </div>
         </div>
       </div>
+
       <hr />
       <div class="card-body">
         <div class="row">
@@ -45,8 +47,11 @@
 </template>
 
 <script>
+import TestsAccordion from '@/view/pages/programs/antenatal/components/accordion/TestsAccordion.vue';
+
 export default {
   name: 'Tests',
+  components: { TestsAccordion },
   data() {
     return {
       checkmark: 'flaticon2-check-mark',

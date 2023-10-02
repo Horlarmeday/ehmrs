@@ -16,7 +16,7 @@
                   placeholder="Search..."
                   @keyup="searchTests"
                   v-model="searchString"
-                  class="form-control form-control-md"
+                  class="form-control form-control-md mb-3"
                   type="text"
                 />
               </div>
