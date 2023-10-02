@@ -6,11 +6,6 @@
       <h3 class="card-title align-items-start flex-column">
         <span class="card-label font-weight-bolder text-dark">Visits</span>
       </h3>
-      <div class="card-toolbar">
-        <router-link to="#" class="btn btn-primary font-weight-bolder font-size-sm">
-          <add-icon /> Create Visit
-        </router-link>
-      </div>
     </div>
     <!--end::Header-->
     <div class="card-body">
@@ -28,28 +23,28 @@
             <template v-slot:title>
               <strong>Antenatal</strong>
             </template>
-            <visit-type type="Antenatal" />
+            <visit-category category="Antenatal" />
           </b-tab>
 
           <b-tab lazy>
             <template v-slot:title>
               <strong>IPD</strong>
             </template>
-            <visit-type type="IPD" />
+            <visit-category category="Inpatient" />
           </b-tab>
 
           <b-tab lazy>
             <template v-slot:title>
               <strong>OPD</strong>
             </template>
-            <visit-type type="OPD" />
+            <visit-category category="Outpatient" />
           </b-tab>
 
           <b-tab lazy>
             <template v-slot:title>
               <strong>All</strong>
             </template>
-            <visit-type type="Antenatal" />
+            <visit-category category="Antenatal" />
           </b-tab>
         </b-tabs>
       </div>
@@ -60,13 +55,11 @@
 </template>
 
 <script>
-import Active from './components/Active.vue';
-import VisitType from '@/view/pages/visits/components/VisitType.vue';
-import AddIcon from '@/assets/icons/AddIcon.vue';
+import Active from '../components/Active.vue';
+import VisitCategory from '@/view/pages/visits/components/VisitCategory.vue';
 export default {
   components: {
-    AddIcon,
-    VisitType,
+    VisitCategory,
     Active,
   },
 };

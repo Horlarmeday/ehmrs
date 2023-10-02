@@ -41,13 +41,13 @@ export default {
   },
   computed: {
     visits() {
-      return this.$store.state.visit.visitTypes;
+      return this.$store.state.visit.categoryVisits;
     },
     queriedItems() {
-      return this.$store.state.visit.totalVisitTypes;
+      return this.$store.state.visit.totalCategoryVisits;
     },
     pages() {
-      return this.$store.state.visit.totalVisitTypesPages;
+      return this.$store.state.visit.totalCategoryVisitsPages;
     },
     perPage() {
       return this.visits.length;
@@ -55,7 +55,7 @@ export default {
   },
 
   props: {
-    type: {
+    category: {
       type: String,
       required: true,
     },
@@ -63,10 +63,10 @@ export default {
 
   methods: {
     handlePageChange() {
-      this.$store.dispatch('visit/fetchVisitsType', {
+      this.$store.dispatch('visit/fetchCategoryVisits', {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
-        type: this.type,
+        category: this.category,
       });
     },
 
@@ -82,19 +82,19 @@ export default {
 
     debounceSearch: debounce((search, vm, spinDiv) => {
       vm.$store
-        .dispatch('visit/fetchVisitsType', {
+        .dispatch('visit/fetchCategoryVisits', {
           currentPage: 1,
           itemsPerPage: vm.itemsPerPage,
           search,
-          type: this.type,
+          category: this.category,
         })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));
     }, 500),
 
     displayIcon() {
-      if (this.type === 'IPD') return 'fas fa-bed';
-      if (this.type === 'ANC') return 'fas fa-female';
+      if (this.category === 'Inpatient') return 'fas fa-bed';
+      if (this.category === 'Antenatal') return 'fas fa-female';
     },
 
     cutName(name) {
@@ -115,7 +115,7 @@ export default {
     },
 
     visitDetailsPage(visit) {
-      if (this.type === 'Antenatal') {
+      if (this.category === 'Antenatal') {
         return this.$router.push(
           `/program/ante-natal/visit/${visit.id}?antenatal=${visit.ante_natal_id}`
         );
@@ -124,10 +124,10 @@ export default {
     },
   },
   created() {
-    this.$store.dispatch('visit/fetchVisitsType', {
+    this.$store.dispatch('visit/fetchCategoryVisits', {
       currentPage: this.currentPage,
       itemsPerPage: this.itemsPerPage,
-      type: this.type,
+      category: this.category,
     });
   },
 };
