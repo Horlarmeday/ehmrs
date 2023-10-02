@@ -2,8 +2,11 @@
   <div>
     <div v-if="!loading">
       <div class="mt-3">
-        <search @search="onHandleSearch" @filterByDateRange="searchByDate"
-                :show-date-filter="true" />
+        <search
+          @search="onHandleSearch"
+          @filterByDateRange="searchByDate"
+          :show-date-filter="true"
+        />
       </div>
       <div class="table-responsive">
         <table class="table table-head-custom table-head-bg table-borderless table-vertical-center">

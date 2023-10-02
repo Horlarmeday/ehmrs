@@ -24,7 +24,7 @@
       <div class="offcanvas-header d-flex align-items-center justify-content-between pb-5">
         <h3 class="font-weight-bold m-0">
           User Profile
-          <small class="text-muted font-size-sm ml-2">12 messages</small>
+<!--          <small class="text-muted font-size-sm ml-2">12 messages</small>-->
         </h3>
         <a
           href="#"
@@ -43,8 +43,19 @@
       >
         <!--begin::Header-->
         <div class="d-flex align-items-center mt-5">
-          <div class="symbol symbol-100 mr-5">
-            <img class="symbol-label" :src="picture" alt="" />
+          <div class="symbol symbol-primary symbol-100 mr-5">
+            <img
+              v-if="!imageError"
+              alt="Pic"
+              class="symbol-label"
+              :src="imageUrl(user.photo)"
+              @load="handleImageLoad"
+              @error="handleImageError"
+            />
+            <span v-else class="symbol-label font-size-h1">
+              {{ user?.firstname?.charAt(0)?.toUpperCase() }}
+              {{ user?.lastname?.charAt(0)?.toUpperCase() }}
+            </span>
             <i class="symbol-badge bg-success"></i>
           </div>
           <div class="d-flex flex-column">
@@ -251,6 +262,7 @@ export default {
       ],
       user: '',
       firstChar: '',
+      imageError: false,
     };
   },
   mounted() {
@@ -265,6 +277,17 @@ export default {
     },
     closeOffcanvas() {
       new KTOffcanvas(KTLayoutQuickUser.getElement()).hide();
+    },
+    imageUrl(url) {
+      return `${window.location.origin}/static/images/${url}`;
+    },
+
+    handleImageLoad() {
+      this.imageError = false;
+    },
+
+    handleImageError() {
+      this.imageError = true;
     },
   },
   computed: {

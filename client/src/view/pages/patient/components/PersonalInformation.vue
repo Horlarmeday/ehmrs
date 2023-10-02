@@ -91,7 +91,7 @@
             @load="handleImageLoad"
             @error="handleImageError"
           />
-          <span class="symbol-label font-size-h1">
+          <span v-else class="symbol-label font-size-h1">
             {{ patient?.firstname?.charAt(0)?.toUpperCase() }}
             {{ patient?.lastname?.charAt(0)?.toUpperCase() }}
           </span>
