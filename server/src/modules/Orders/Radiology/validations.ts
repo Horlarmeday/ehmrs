@@ -6,6 +6,7 @@ export function validateBulkInvestigationTest(investigations) {
       .items(
         Joi.object({
           investigation_id: Joi.number().required(),
+          imaging_id: Joi.number().required(),
           investigation_type: Joi.string().required(),
           price: Joi.number().required(),
           is_urgent: Joi.boolean().required(),

@@ -107,3 +107,26 @@ export function validateCreateClinicalNote(req: any) {
   });
   return schema.validate(req);
 }
+
+export function validateCreateObservation(req: any) {
+  const schema = Joi.object({
+    mother_condition: Joi.string().required(),
+    foetal_condition: Joi.string().required(),
+    doctor_comments: Joi.string().required(),
+    continuation_sheet: Joi.string().required(),
+    ante_natal_id: Joi.number().required(),
+    diagnosis: Joi.array()
+      .items(
+        Joi.object({
+          certainty: Joi.string().required(),
+          type: Joi.string().valid('ICD10', 'ICPC2'),
+          diagnosis_id: Joi.number().required(),
+          notes: Joi.string()
+            .allow('')
+            .optional(),
+        })
+      )
+      .required(),
+  });
+  return schema.validate(req);
+}
