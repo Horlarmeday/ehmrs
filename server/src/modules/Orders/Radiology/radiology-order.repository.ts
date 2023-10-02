@@ -1,5 +1,6 @@
 import { Imaging, Investigation, PrescribedInvestigation, Staff } from '../../../database/models';
 import { WhereOptions } from 'sequelize';
+import { staffAttributes } from '../../Antenatal/antenatal.repository';
 
 /**
  * prescribe an investigation for patient
@@ -35,7 +36,31 @@ export const prescribeInvestigation = data => {
  * @returns {object} prescribed investigation data
  */
 export const orderBulkInvestigation = async data => {
-  return PrescribedInvestigation.bulkCreate(data);
+  const investigations = await PrescribedInvestigation.bulkCreate(data);
+  const testIds = investigations.map(({ id }) => id);
+  return getPrescriptionInvestigations({ id: testIds });
+};
+
+/**
+ * get prescribed investigations
+ * @param currentPage
+ * @param pageLimit
+ * @param filter
+ */
+export const getPrescribedInvestigations = ({ currentPage = 1, pageLimit = 10, filter = null }) => {
+  return PrescribedInvestigation.paginate({
+    page: +currentPage,
+    paginate: +pageLimit,
+    order: [['date_requested', 'DESC']],
+    where: {
+      ...(filter && { ...JSON.parse(filter) }),
+    },
+    include: [
+      { model: Investigation, attributes: ['name'] },
+      { model: Imaging, attributes: ['name'] },
+      { model: Staff, as: 'examiner', attributes: staffAttributes },
+    ],
+  });
 };
 
 /**
@@ -51,7 +76,7 @@ export const getPrescriptionInvestigations = async (
     include: [
       { model: Investigation, attributes: ['name'] },
       { model: Imaging, attributes: ['name'] },
-      { model: Staff, as: 'examiner', attributes: ['firstname', 'lastname', 'fullname'] },
+      { model: Staff, as: 'examiner', attributes: staffAttributes },
     ],
   });
 };

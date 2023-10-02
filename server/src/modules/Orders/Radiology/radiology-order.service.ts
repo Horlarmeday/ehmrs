@@ -1,4 +1,8 @@
-import { orderBulkInvestigation, prescribeInvestigation } from './radiology-order.repository';
+import {
+  getPrescribedInvestigations,
+  orderBulkInvestigation,
+  prescribeInvestigation,
+} from './radiology-order.repository';
 import VisitService from '../../Visit/visit.service';
 import PatientService from '../../Patient/patient.service';
 import {
@@ -81,6 +85,28 @@ export class RadiologyOrderService {
       return createInvestigationPrescription(this.investigationData(data, patient_id));
 
     return createInvestigationPrescription(this.investigationData(data, patient_id));
+  }
+
+  /**
+   * get prescribed investigations
+   *
+   * @static
+   * @returns {json} json object with prescribed investigations data
+   * @param body
+   * @memberOf RadiologyOrderService
+   */
+  static async getPrescribedInvestigations(body) {
+    const { currentPage, pageLimit, filter } = body;
+
+    if (filter) {
+      return getPrescribedInvestigations({ currentPage, pageLimit, filter });
+    }
+
+    if (Object.values(body).length) {
+      return getPrescribedInvestigations({ currentPage, pageLimit });
+    }
+
+    return getPrescribedInvestigations({});
   }
 
   private static investigationData(body: PrescribedInvestigationBody, patient_id: number) {

@@ -4,6 +4,9 @@ import { StatusCodes } from '../../../core/helpers/helper';
 import { DATA_SAVED } from '../../AdminSettings/messages/response-messages';
 import { RadiologyOrderService } from './radiology-order.service';
 import { validateBulkInvestigationTest } from './validations';
+import { NextFunction, Request, Response } from 'express';
+import { LabOrderService } from '../Laboratory/lab-order.service';
+import { SUCCESS } from '../../../core/constants';
 
 export class RadiologyOrderController {
   /**
@@ -35,6 +38,30 @@ export class RadiologyOrderController {
         data: investigations,
         message: DATA_SAVED,
         httpCode: StatusCodes.CREATED,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get prescribed investigations
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with prescribed investigations data
+   */
+  static async getPrescribedInvestigations(req: Request, res: Response, next: NextFunction) {
+    try {
+      const investigations = await RadiologyOrderService.getPrescribedInvestigations(req.query);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data: investigations,
       });
     } catch (e) {
       return next(e);
