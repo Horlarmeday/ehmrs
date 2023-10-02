@@ -255,7 +255,7 @@ export default {
       submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
     },
 
-    initializeRequest(button) {
+    endRequest(button) {
       this.removeSpinner(button);
       this.initValues();
     },
@@ -282,7 +282,6 @@ export default {
                 notes,
               })),
             };
-            // set spinner to submit button
             const submitButton = this.$refs['kt_observation_submit'];
             this.addSpinner(submitButton);
 
@@ -291,7 +290,7 @@ export default {
                 visit_id: this.$route.params.id,
                 complaint: obj,
               })
-              .then(() => this.initializeRequest(submitButton))
+              .then(() => this.endRequest(submitButton))
               .catch(() => this.removeSpinner(submitButton));
           }
         })

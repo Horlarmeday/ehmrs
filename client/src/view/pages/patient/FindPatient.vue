@@ -49,7 +49,7 @@
                 </th>
                 <th style="min-width: 100px">Age</th>
                 <th style="min-width: 100px">status</th>
-                <th class="pr-0" style="min-width: 160px">Registration Date</th>
+                <th style="min-width: 160px">Registration Date</th>
                 <th class="pr-0 " style="min-width: 150px">Action</th>
               </tr>
             </thead>
@@ -86,26 +86,20 @@
                     >{{ displayPatientType(patient.patient_type) }}</span
                   >
                 </td>
-                <td class="pr-0">
+                <td>
                   <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
                     patient.createdAt | moment('ddd, MMM Do YYYY')
                   }}</span>
                 </td>
                 <td class="pr-0">
                   <router-link
-                    :class="{ disabled: patient.patient_type === 'Dependant' }"
-                    :to="`/patient/health-insurance/${patient.id}`"
+                    title="Create Visit"
+                    :to="`/visit/new/${patient.id}`"
                     class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
+                    v-b-tooltip.hover
                   >
-                    <edit-icon />
+                    <arrow-right-icon />
                   </router-link>
-                  <a
-                    href="#"
-                    class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
-                    @click="addNewData(patient)"
-                  >
-                    <arrow-up-icon />
-                  </a>
                 </td>
               </tr>
             </tbody>
@@ -132,11 +126,10 @@
 
 <script>
 import Pagination from '@/utils/Pagination.vue';
-import DateFilter from '../../../utils/DateFilter';
-import ArrowUpIcon from '../../../assets/icons/ArrowUpIcon';
-import EditIcon from '../../../assets/icons/EditIcon';
+import DateFilter from '@/utils/DateFilter';
 import CreateVisit from '../visits/create/CreateVisit';
-import { setUrlQueryParams } from '../../../common/common';
+import { setUrlQueryParams } from '@/common/common';
+import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
 export default {
   data() {
     return {
@@ -150,11 +143,10 @@ export default {
     };
   },
   components: {
+    ArrowRightIcon,
     CreateVisit,
-    ArrowUpIcon,
     Pagination,
     DateFilter,
-    EditIcon,
   },
 
   computed: {

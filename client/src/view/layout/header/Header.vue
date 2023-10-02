@@ -235,7 +235,7 @@ export default {
     },
 
     displayPatientDetails() {
-      const pagesToDisplay = ['visit-details', 'ante-natal-visit'];
+      const pagesToDisplay = ['visit-details', 'ante-natal-visit', 'new-visit'];
       return pagesToDisplay.includes(this.$route.name);
     },
   },
