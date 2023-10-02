@@ -1,11 +1,10 @@
-import { successResponse } from '../../common/responses/success-responses';
+import { SuccessResponse, successResponse } from '../../common/responses/success-responses';
 import { DATA_SAVED } from '../AdminSettings/messages/response-messages';
-import { NextFunction, Response } from 'express';
+import { NextFunction, Response, Request } from 'express';
 import { errorResponse } from '../../common/responses/error-responses';
 import { StatusCodes } from '../../core/helpers/helper';
 import { AdmissionService } from './admission.service';
 import { validateAdmission } from './validations';
-import AdminService from '../AdminSettings/admin.service';
 import { SUCCESS } from '../../core/constants';
 
 export class AdmissionController {
@@ -18,7 +17,11 @@ export class AdmissionController {
    * @param {object} next next middleware
    * @returns {json} json object with status, admission data
    */
-  static async admitPatient(req, res: Response, next: NextFunction) {
+  static async admitPatient(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
     const { error } = validateAdmission(req.body);
     if (error)
       return errorResponse({
@@ -48,7 +51,11 @@ export class AdmissionController {
    * @param {object} next next middleware
    * @returns {json} json object with admission data
    */
-  static async getPatientAdmission(req, res, next) {
+  static async getPatientAdmission(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
     try {
       const admission = await AdmissionService.getPatientAdmission(req.query.visitId);
 
@@ -67,11 +74,38 @@ export class AdmissionController {
    * @param {object} next next middleware
    * @returns {json} json object with status, admission data
    */
-  static async sendForDischarge(req, res: Response, next: NextFunction) {
+  static async sendForDischarge(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
     try {
       const admission = await AdmissionService.updateAdmission(req.body);
 
       return successResponse({ res, httpCode: 200, data: admission, message: DATA_SAVED });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get admitted patients
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with admission data
+   */
+  static async getAdmittedPatients(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    try {
+      const admissions = await AdmissionService.getAdmittedPatients(req.query);
+
+      return successResponse({ res, message: SUCCESS, data: admissions, httpCode: 200 });
     } catch (e) {
       return next(e);
     }

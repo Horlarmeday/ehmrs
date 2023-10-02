@@ -1,7 +1,6 @@
 import sequelize from '../../database/config/config';
-import { Transaction } from 'sequelize';
-import { Admission } from '../../database/models/admission';
-import { Bed, Patient, PrescribedService, Staff, Ward } from '../../database/models';
+import { Op, Transaction } from 'sequelize';
+import { Bed, Patient, PrescribedService, Staff, Ward, Admission } from '../../database/models';
 import { BedStatus } from '../../database/models/bed';
 import { ServiceType } from '../../database/models/prescribedService';
 import { PatientStatus } from '../../database/models/patient';
@@ -9,6 +8,7 @@ import { getWardWithService } from '../AdminSettings/admin.repository';
 import { getPatientById } from '../Patient/patient.repository';
 import { AdmissionBodyType } from './types/admission.types';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
+import { patientAttributes } from '../Visit/visit.repository';
 
 /**
  * Admit patient into a ward
@@ -76,6 +76,65 @@ export const getAdmissionByPatientId = (patient_id: number) => {
   });
 };
 
-export const updateAdmission = async (data, admissionId) => {
+export const updateAdmission = async (data: { [p: string]: any }, admissionId: number) => {
   return Admission.update({ ...data }, { where: { id: admissionId } });
+};
+
+/**
+ * get admitted patients
+ *
+ * @function
+ * @returns {Promise<{ total: any; docs: Admission[]; pages: number; perPage: number; currentPage: number }>} json object with all admission data
+ * @param currentPage
+ * @param pageLimit
+ * @param search
+ * @param discharge_status
+ */
+export const getAdmittedPatients = async ({
+  currentPage = 1,
+  pageLimit = 10,
+  discharge_status,
+  search = null,
+}): Promise<{
+  total: any;
+  docs: Admission[];
+  pages: number;
+  perPage: number;
+  currentPage: number;
+}> => {
+  return Admission.paginate({
+    page: +currentPage,
+    paginate: +pageLimit,
+    order: [['createdAt', 'DESC']],
+    where: {
+      discharge_status,
+    },
+    include: [
+      {
+        model: Patient,
+        attributes: patientAttributes,
+        where: {
+          ...(search && {
+            [Op.or]: [
+              {
+                firstname: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+              {
+                lastname: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+              {
+                hospital_id: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+            ],
+          }),
+        },
+      },
+    ],
+  });
 };

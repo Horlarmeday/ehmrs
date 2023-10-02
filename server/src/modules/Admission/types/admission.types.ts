@@ -10,5 +10,5 @@ export type UpdateAdmissionBody = {
   ward_id?: number;
   bed_id?: number;
   should_discharge?: boolean;
-  admissionId?: boolean;
+  admissionId?: number;
 };
