@@ -1,5 +1,6 @@
 import { PrescribedService } from '../../../database/models/prescribedService';
 import { PrescribeServiceBody } from './types/service-order.types';
+import { WhereOptions } from 'sequelize';
 
 /**
  * prescribe multiple services for patient
@@ -29,4 +30,15 @@ export const prescribeService = async (data: PrescribeServiceBody): Promise<Pres
     visit_id,
     ante_natal_id,
   });
+};
+
+/**
+ * get all prescribed services
+ * @param query
+ * @returns {Promise<PrescribedService[]>} prescribed services data
+ */
+export const getPrescribedServices = async (
+  query: WhereOptions<PrescribedService>
+): Promise<PrescribedService[]> => {
+  return await PrescribedService.findAll({ where: { ...query } });
 };

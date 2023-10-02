@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { PrescribedTest } from '../../../database/models';
+import { PrescribedTest, Staff, Test } from '../../../database/models';
 import sequelize from 'sequelize';
 
 /**
@@ -30,8 +30,18 @@ export async function orderBulkTest(data) {
 }
 
 export const updatePrescribedTest = (
-  query: sequelize.WhereOptions<any>,
+  query: sequelize.WhereOptions<PrescribedTest>,
   fieldsToUpdate: { [x: string]: string }
 ) => {
   return PrescribedTest.update({ ...fieldsToUpdate }, { where: { ...query } });
+};
+
+export const getPrescriptionTests = async (query: sequelize.WhereOptions<PrescribedTest>) => {
+  return PrescribedTest.findAll({
+    where: { ...query },
+    include: [
+      { model: Test, attributes: ['name'] },
+      { model: Staff, as: 'examiner', attributes: ['firstname', 'lastname', 'fullname'] },
+    ],
+  });
 };

@@ -210,7 +210,33 @@ export const getOnePrescribedDrug = async (
 export const getPrescriptionDrugs = async (
   query: WhereOptions<PrescribedDrug>
 ): Promise<PrescribedDrug[]> => {
-  return await PrescribedDrug.findAll({ where: { ...query } });
+  return await PrescribedDrug.findAll({
+    where: { ...query },
+    include: [
+      {
+        model: Drug,
+        attributes: ['name'],
+        order: [['name', 'ASC']],
+      },
+      {
+        model: Staff,
+        as: 'requester',
+        attributes: ['firstname', 'lastname'],
+      },
+      {
+        model: DosageForm,
+        attributes: ['name'],
+      },
+      {
+        model: Measurement,
+        attributes: ['name'],
+      },
+      {
+        model: RoutesOfAdministration,
+        attributes: ['name'],
+      },
+    ],
+  });
 };
 
 /**
