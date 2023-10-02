@@ -7,7 +7,7 @@
   </div>
 </template>
 <script>
-import ClinicalNoteAccordion from '@/view/pages/programs/antenatal/components/ClinicalNoteAccordion.vue';
+import ClinicalNoteAccordion from '@/view/pages/programs/antenatal/components/accordion/ClinicalNoteAccordion.vue';
 import CreateClinicalNote from '@/view/pages/programs/antenatal/components/CreateClinicalNote.vue';
 
 export default {

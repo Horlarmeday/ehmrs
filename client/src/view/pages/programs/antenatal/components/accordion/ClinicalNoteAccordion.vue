@@ -4,7 +4,7 @@
       <div class="card">
         <div class="card-header" header-tag="header" role="tab" style="background: blue">
           <div class="card-title accord" v-b-toggle="'accordion-94'">
-            <div class="card-label">Previous Clinical Notes</div>
+            <div class="card-label">Clinical Notes</div>
           </div>
         </div>
         <b-collapse id="accordion-94" accordion="my-accordion" role="tabpanel">
@@ -54,7 +54,7 @@ export default {
       this.$store.dispatch('antenatal/fetchClinicalNotes', {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
-        id: this.$route.query.antenatal,
+        filter: { visit_id: this.$route.params.id },
       });
     },
 
@@ -67,7 +67,7 @@ export default {
       this.$store.dispatch('antenatal/fetchClinicalNotes', {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
-        id: this.$route.query.antenatal,
+        filter: { visit_id: this.$route.params.id },
       });
     },
 
