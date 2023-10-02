@@ -3,6 +3,7 @@ import { BadException } from '../../common/util/api-error';
 import { StatusCodes } from '../../core/helpers/helper';
 
 import { History, Complaint, Diagnosis } from '../../database/models';
+import { WhereOptions } from 'sequelize';
 
 /**
  * create a patient complaint
@@ -62,11 +63,20 @@ export async function createObservation(data) {
 /**
  * create a patient diagnosis
  * @param data
- * @returns {object} diagnosis data
+ * @returns {Promise<Diagnosis[]>} diagnosis data
  */
-export async function bulkCreateDiagnosis(data) {
+export async function bulkCreateDiagnosis(data): Promise<Diagnosis[]> {
   return Diagnosis.bulkCreate(data);
 }
+
+/**
+ * get a patient diagnoses
+ * @returns {Promise<Diagnosis[]>} diagnosis data
+ * @param query
+ */
+export const getPatientDiagnoses = async (query: WhereOptions<Diagnosis>): Promise<Diagnosis[]> => {
+  return Diagnosis.findAll({ where: { ...query } });
+};
 
 /**
  * get a model by visit id

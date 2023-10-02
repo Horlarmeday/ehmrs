@@ -9,6 +9,7 @@ import {
 import { checkValueExists } from '../../core/helpers/helper';
 import VisitService from '../Visit/visit.service';
 import { Observation } from './interface/consultation.interface';
+import { History } from '../../database/models';
 
 class ConsultationService {
   /**
@@ -21,14 +22,14 @@ class ConsultationService {
    */
   static async createObservationService(body: Observation) {
     const { complaints, staff_id, visit_id, diagnosis } = body;
-    let history;
+    let history: History;
     const visit = await VisitService.getVisitById(visit_id);
 
     if (checkValueExists(body)) {
       history = await createObservation({ ...body, patient_id: visit.patient_id });
     }
 
-    let mappedComplaints;
+    let mappedComplaints: string | any[];
     if (complaints?.length) {
       mappedComplaints = complaints.map(complain => {
         complain.staff_id = staff_id;
