@@ -18,8 +18,8 @@ import sidebarList from '../components/observations/examinationSidebarList';
 import Vitals from '../components/observations/Vitals.vue';
 
 const TabMapping = {
-  'vitals': Vitals,
-  'history': Examination,
+  vitals: Vitals,
+  history: Examination,
 };
 
 export default {
