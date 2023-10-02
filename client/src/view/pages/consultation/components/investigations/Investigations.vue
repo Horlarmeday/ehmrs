@@ -6,7 +6,11 @@
           <span class="card-label font-weight-bolder text-dark">Investigations</span>
           <span v-if="showSwitch" class="switch switch-sm switch-icon float-right">
             <label>
-              <input @change="flipSwitch($event)" type="checkbox" :checked="switchPosition && switchSpot" />
+              <input
+                @change="flipSwitch($event)"
+                type="checkbox"
+                :checked="switchPosition && switchSpot"
+              />
               <span />
             </label>
           </span>
@@ -106,6 +110,7 @@ export default {
     mapSelectedInvestigation(investigation) {
       return {
         investigation_id: investigation.id,
+        imaging_id: investigation.imaging_id,
         is_urgent: false,
         investigation_type: this.switchPosition && this.switchSpot ? 'NHIS' : 'CASH',
         price: investigation.price,
