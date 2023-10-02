@@ -6,7 +6,7 @@
       </b-button>
       {{ drug?.drug?.name }}
     </template>
-    <table class="table">
+    <table class="table table-sm">
       <tbody>
         <tr>
           <th scope="row">Drug Type</th>
@@ -17,6 +17,12 @@
                 drug.drug_type
               }}</span>
             </span>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">Starting Date</th>
+          <td>
+            <span>{{ drug.start_date | moment('DD/MM/YYYY') }}</span>
           </td>
         </tr>
         <tr>
@@ -48,9 +54,7 @@
         <tr>
           <th scope="row">Payment Status</th>
           <td>
-            <span
-              :class="getPaymentStatus(drug.payment_status)"
-              class="label label-inline"
+            <span :class="getPaymentStatus(drug.payment_status)" class="label label-inline"
               >Pending</span
             >
           </td>
@@ -59,6 +63,14 @@
           <th scope="row">Notes</th>
           <td>
             <span>{{ drug.notes }}</span>
+          </td>
+        </tr>
+        <tr>
+          <th>Requested By</th>
+          <td>
+            <a href="#"
+              >{{ drug?.requester?.firstname }} {{ drug?.requester?.lastname?.charAt(0) }}</a
+            >
           </td>
         </tr>
       </tbody>

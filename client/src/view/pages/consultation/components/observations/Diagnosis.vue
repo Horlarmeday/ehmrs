@@ -17,38 +17,39 @@
       <div class="col-lg-5">
         <label class="font-weight-bold text-center">Diagnosis</label>
         <v-select
-          v-validate="'required'"
-          data-vv-validate-on="blur"
           name="diagnosis"
           @input="addNewDiagnosis"
           @search="searchDiagnosis"
-          v-model="diag.diagnosis_id"
+          v-model="diag.diagnosis"
           label="diagnosis"
-          :reduce="diagnoses => diagnoses.id"
+          :reduce="
+            diagnoses => ({
+              id: diagnoses.id,
+              diagnosis: diagnoses.diagnosis,
+              type: diagnosisType,
+            })
+          "
           :options="diagnoses"
-        />
-        <span class="text-danger text-sm">{{ errors.first('diagnosis') }}</span>
+        >
+          <template #search="{attributes, events}">
+            <input
+              class="vs__search"
+              :required="!diag.diagnosis"
+              v-bind="attributes"
+              v-on="events"
+            />
+          </template>
+        </v-select>
       </div>
       <div class="col-lg-3">
         <label class="font-weight-bold">Certainty</label>
         <div class="radio-inline">
-          <label
-            class="radio radio-md radio-square"
-            v-for="(certainty, index) in certainties"
-            :key="index"
-          >
-            <input
-              type="radio"
-              v-validate="'required'"
-              name="certainty"
-              v-model="diag.certainty"
-              :value="certainty"
-            />
+          <label class="radio radio-md radio-square" v-for="(certainty, i) in certainties" :key="i">
+            <input type="radio" v-model="diag.certainty" :value="certainty" />
             <span></span>
             {{ certainty }}
           </label>
         </div>
-        <span class="text-danger text-sm">{{ errors.first('certainty') }}</span>
       </div>
       <div class="col-lg-3">
         <label class="font-weight-bold text-center">Notes</label>
@@ -70,9 +71,20 @@
 
 <script>
 import vSelect from 'vue-select';
+import { debounce } from '@/common/common';
 export default {
   name: 'Diagnosis',
   components: { vSelect },
+  props: {
+    sendDiagnosis: {
+      type: Boolean,
+      required: true,
+    },
+    endDiagnosis: {
+      type: Boolean,
+      required: true,
+    },
+  },
   data() {
     return {
       diagnosisType: 'ICD10',
@@ -82,8 +94,7 @@ export default {
         {
           certainty: '',
           notes: '',
-          diagnosis_id: '',
-          type: '',
+          diagnosis: '',
         },
       ],
     };
@@ -103,19 +114,18 @@ export default {
   },
 
   methods: {
-    initializeRequest(button) {
-      this.removeSpinner(button);
+    initializeRequest() {
       this.initValues();
     },
 
     addNewDiagnosis() {
       this.diagnosis.push({
         certainty: '',
-        diagnosis_id: '',
+        diagnosis: '',
         notes: '',
-        type: ''
       });
     },
+
     removeDiagnosis(i) {
       this.diagnosis.splice(i, 1);
     },
@@ -124,25 +134,43 @@ export default {
       this.diagnosis = [
         {
           certainty: '',
-          diagnosis_id: '',
-          type: '',
+          diagnosis: '',
           notes: '',
         },
       ];
     },
 
-    searchDiagnosis(search) {
-      if (this.diagnosisType === 'ICD10') {
-        this.$store.dispatch('diagnosis/fetchICD10Diagnosis', {
-          search,
-        });
-      } else {
-        this.$store.dispatch('diagnosis/fetchICPC2Diagnosis', {
-          search,
-        });
+    searchDiagnosis(search, loading) {
+      if (search.length > 2) {
+        loading(true);
+        this.search(loading, search, this);
       }
     },
 
+    search: debounce((loading, search, vm) => {
+      if (vm.diagnosisType === 'ICD10') {
+        vm.fetchDiagnosis('diagnosis/fetchICD10Diagnosis', loading, search, vm);
+      } else {
+        vm.fetchDiagnosis('diagnosis/fetchICPC2Diagnosis', loading, search, vm);
+      }
+    }, 500),
+
+    fetchDiagnosis(type, loading, search, vm) {
+      vm.$store.dispatch(type, { search }).then(() => loading(false));
+    },
+
+    emitDiagnosis() {
+      this.$emit('diagnosis', this.diagnosis);
+    },
+  },
+  watch: {
+    sendDiagnosis(value) {
+      if (value) this.emitDiagnosis();
+    },
+
+    endDiagnosis(value) {
+      if (value) this.initValues();
+    },
   },
 };
 </script>

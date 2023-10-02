@@ -51,7 +51,7 @@
                                         @load="handleImageLoad"
                                         @error="handleImageError"
                                       />
-                                      <span class="symbol-label font-size-h4">
+                                      <span v-else class="symbol-label font-size-h4">
                                         {{ dependant?.firstname?.charAt(0)?.toUpperCase() }}
                                         {{ dependant?.lastname?.charAt(0)?.toUpperCase() }}
                                       </span>

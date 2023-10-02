@@ -1,16 +1,16 @@
 export default [
   {
-    url: '/radiology/requested-investigations',
+    url: '/visit/queue',
     icon: 'flaticon-users-1',
     name: 'Queue',
   },
   {
-    url: '/radiology/investigations-approval',
+    url: '/visit/in-patients',
     icon: 'fas fa-bed',
     name: 'In-Patients',
   },
   {
-    url: '/radiology/investigations-approval',
+    url: '/visit/ante-natal',
     icon: 'fas fa-ankh',
     name: 'Antenatal Visits',
   },

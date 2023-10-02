@@ -174,8 +174,12 @@ export default {
     createVisit() {
       const obj = {
         patient_id: this.patient.id,
-        type: 'Antenatal',
+        category: 'Antenatal',
         ante_natal_id: this.antenatal.id,
+        type: 'New visit',
+        date_of_visit: new Date(),
+        department: 'Nursing',
+        professional: 'Nurse',
       };
       this.$store.dispatch('visit/addVisit', obj).then(response => {
         this.initValues();
