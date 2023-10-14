@@ -66,7 +66,7 @@
 export default {};
 </script>
 
-<style scoped>
+<style>
 .accord {
   background: #f1f1f1 !important;
   padding: 0.5rem 1.25rem !important;

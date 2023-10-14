@@ -9,16 +9,10 @@
     <!--begin::Header-->
     <div class="card-header border-0 py-5">
       <h3 class="card-title align-items-start flex-column">
-        <span class="card-label font-weight-bolder text-dark"
-          >Dosage Forms</span
-        >
+        <span class="card-label font-weight-bolder text-dark">Dosage Forms</span>
       </h3>
       <div class="card-toolbar">
-        <a
-          href="#"
-          class="btn btn-success font-weight-bolder font-size-sm"
-          @click="addNewData"
-        >
+        <a href="#" class="btn btn-success font-weight-bolder font-size-sm" @click="addNewData">
           <add-icon /> Add New
         </a>
       </div>
@@ -29,10 +23,7 @@
     <div class="card-body py-0">
       <!--begin::Table-->
       <div class="table-responsive">
-        <table
-          class="table table-head-custom table-vertical-center"
-          id="kt_advance_table_widget_1"
-        >
+        <table class="table table-head-custom table-vertical-center" id="kt_advance_table_widget_1">
           <thead>
             <tr class="text-left">
               <th class="pr-0" style="width: 450px">Name</th>
@@ -53,10 +44,8 @@
                 >
               </td>
               <td>
-                <span
-                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                >
-                  {{ dosage.createdAt | moment("ddd, MMM Do YYYY, h:mma") }}
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ dosage.createdAt | dayjs('ddd, MMM Do YYYY, h:mma') }}
                 </span>
               </td>
               <td class="pr-0 text-right">
@@ -80,22 +69,22 @@
 </template>
 
 <script>
-import CreateDosageForm from "./create/CreateDosageForm.vue";
-import EditIcon from "../../../assets/icons/EditIcon.vue";
-import AddIcon from "../../../assets/icons/AddIcon.vue";
+import CreateDosageForm from './create/CreateDosageForm.vue';
+import EditIcon from '@/assets/icons/EditIcon.vue';
+import AddIcon from '@/assets/icons/AddIcon.vue';
 export default {
   data() {
     return {
       displayPrompt: false,
       dosageToEdit: {},
       currentPage: 1,
-      itemsPerPage: 10
+      itemsPerPage: 10,
     };
   },
   components: {
     CreateDosageForm,
     EditIcon,
-    AddIcon
+    AddIcon,
   },
   computed: {
     dosageForms() {
@@ -103,7 +92,7 @@ export default {
     },
     perPage() {
       return this.dosageForms.length;
-    }
+    },
   },
   methods: {
     addNewData() {
@@ -118,11 +107,11 @@ export default {
     editData(dosage) {
       this.dosageToEdit = dosage;
       this.displayPrompt = true;
-    }
+    },
   },
   created() {
-    this.$store.dispatch("pharmacy/fetchDosageForms");
-  }
+    this.$store.dispatch('pharmacy/fetchDosageForms');
+  },
 };
 </script>
 

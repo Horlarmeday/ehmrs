@@ -1,11 +1,7 @@
 <template>
   <!--begin::Advance Table Widget 1-->
   <div class="card card-custom gutter-b">
-    <update-lab-item
-      :displayPrompt="displayPrompt"
-      @closeModal="hideModal"
-      :data="itemToEdit"
-    />
+    <update-lab-item :displayPrompt="displayPrompt" @closeModal="hideModal" :data="itemToEdit" />
     <!--begin::Header-->
     <div class="card-header border-0 py-5">
       <h3 class="card-title align-items-start flex-column">
@@ -27,10 +23,7 @@
     <div class="card-body py-0">
       <!--begin::Table-->
       <div class="table-responsive">
-        <table
-          class="table table-head-custom table-vertical-center"
-          id="kt_advance_table_widget_1"
-        >
+        <table class="table table-head-custom table-vertical-center" id="kt_advance_table_widget_1">
           <thead>
             <tr class="text-left">
               <th class="pl-0" style="width: 20px">
@@ -67,38 +60,28 @@
                 >
               </td>
               <td>
-                <span
-                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                >
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                   {{ item.quantity_remaining }} {{ item.unit.name }}
                 </span>
               </td>
               <td>
-                <span
-                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                >
-                  {{ item.shelf || "None" }}
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ item.shelf || 'None' }}
                 </span>
               </td>
               <td>
-                <span
-                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                >
-                  {{ item.total_price || "None" }}
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ item.total_price || 'None' }}
                 </span>
               </td>
               <td>
-                <span
-                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                >
-                  {{ item.expiration | moment("ddd, MMM Do YYYY") }}
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ item.expiration | dayjs('ddd, MMM Do YYYY') }}
                 </span>
               </td>
               <td>
-                <span
-                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                >
-                  {{ item.createdAt | moment("ddd, MMM Do YYYY, h:mma") }}
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ item.createdAt | dayjs('ddd, MMM Do YYYY, h:mma') }}
                 </span>
               </td>
               <td class="pr-0 text-right">
@@ -137,20 +120,20 @@
 </template>
 
 <script>
-import UpdateLabItem from "./update/UpdateStoreItem.vue";
-import Pagination from "@/utils/Pagination.vue";
-import EditIcon from "../../../../assets/icons/EditIcon.vue";
-import AddIcon from "../../../../assets/icons/AddIcon.vue";
-import SendIcon from "../../../../assets/icons/SendIcon.vue";
-import Search from "../../../../utils/Search.vue";
-import { debounce, removeSpinner } from "@/common/common";
+import UpdateLabItem from './update/UpdateStoreItem.vue';
+import Pagination from '@/utils/Pagination.vue';
+import EditIcon from '../../../../assets/icons/EditIcon.vue';
+import AddIcon from '../../../../assets/icons/AddIcon.vue';
+import SendIcon from '../../../../assets/icons/SendIcon.vue';
+import Search from '../../../../utils/Search.vue';
+import { debounce, removeSpinner } from '@/common/common';
 export default {
   data() {
     return {
       displayPrompt: false,
       itemToEdit: {},
       currentPage: 1,
-      itemsPerPage: 10
+      itemsPerPage: 10,
     };
   },
   components: {
@@ -159,7 +142,7 @@ export default {
     EditIcon,
     AddIcon,
     SendIcon,
-    Search
+    Search,
   },
   computed: {
     items() {
@@ -173,7 +156,7 @@ export default {
     },
     perPage() {
       return this.items.length;
-    }
+    },
   },
   methods: {
     addNewData() {
@@ -191,9 +174,9 @@ export default {
     },
 
     handlePageChange() {
-      this.$store.dispatch("store/fetchLaboratoryItems", {
+      this.$store.dispatch('store/fetchLaboratoryItems', {
         currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage
+        itemsPerPage: this.itemsPerPage,
       });
     },
 
@@ -219,18 +202,18 @@ export default {
     }, 500),
 
     onChangePageCount(pagecount) {
-      this.$store.dispatch("store/fetchLaboratoryItems", {
+      this.$store.dispatch('store/fetchLaboratoryItems', {
         currentPage: this.currentPage,
-        itemsPerPage: pagecount
+        itemsPerPage: pagecount,
       });
-    }
+    },
   },
   created() {
-    this.$store.dispatch("store/fetchLaboratoryItems", {
+    this.$store.dispatch('store/fetchLaboratoryItems', {
       currentPage: this.currentPage,
-      itemsPerPage: this.itemsPerPage
+      itemsPerPage: this.itemsPerPage,
     });
-  }
+  },
 };
 </script>
 

@@ -22,7 +22,7 @@
           <td>{{ triage.pallor }}</td>
           <td>{{ triage.blood_pressure }}</td>
           <td>{{ triage.maturity }}</td>
-          <td>{{ triage.createdAt | moment('DD/MM/YYYY, h:mma') }}</td>
+          <td>{{ triage.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
           <td>
             <a :id="popOverId" @click="viewPopover(triage)" href="#"
               ><i class="icon-xl text-primary la la-eye"></i

@@ -39,7 +39,7 @@
               >{{ admission?.examiner?.firstname }} {{ admission?.examiner?.lastname.charAt(0) }}</a
             >
           </td>
-          <td>{{ admission.createdAt | moment('ddd, MMM Do YYYY, h:mma') }}</td>
+          <td>{{ admission.createdAt | dayjs('ddd, MMM Do YYYY, h:mma') }}</td>
           <td>
             <a
               v-if="!admission.should_discharge"

@@ -76,7 +76,7 @@
                 </td>
                 <td>
                   <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                    {{ patient.date_of_birth | moment('from', 'now', true) }}
+                    {{ patient.date_of_birth | dayjs('from', 'now', true) }}
                   </span>
                 </td>
                 <td>
@@ -88,7 +88,7 @@
                 </td>
                 <td>
                   <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
-                    patient.createdAt | moment('ddd, MMM Do YYYY')
+                    patient.createdAt | dayjs('ddd, MMM Do YYYY')
                   }}</span>
                 </td>
                 <td class="pr-0">

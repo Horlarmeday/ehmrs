@@ -48,7 +48,7 @@
             </td>
             <td>
               <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                {{ queue.date_visit_start | moment('ddd, MMM Do YYYY, h:mma') }}
+                {{ queue.date_visit_start | dayjs('ddd, MMM Do YYYY, h:mma') }}
               </span>
             </td>
             <td class="text-right pr-0">

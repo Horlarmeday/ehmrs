@@ -40,7 +40,7 @@
               <span>{{ drug.duration }} {{ drug.duration_unit }}</span>
             </td>
             <td>
-              <span>{{ drug.date_prescribed | moment('DD/MM/YYYY, h:mma') }}</span>
+              <span>{{ drug.date_prescribed | dayjs('DD/MM/YYYY, h:mma') }}</span>
             </td>
             <td>
               <span>

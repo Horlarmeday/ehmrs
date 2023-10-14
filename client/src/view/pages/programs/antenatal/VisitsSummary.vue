@@ -14,11 +14,11 @@
                 <div class="card-label text-dark-50">
                   <span class="mr-5">
                     <span class="mr-2 text-dark">Start:</span>
-                    <span>{{ summary.date_visit_start | moment('ddd, MMM Do YYYY, h:mma') }}</span>
+                    <span>{{ summary.date_visit_start | dayjs('ddd, MMM Do YYYY, h:mma') }}</span>
                   </span>
                   <span v-if="summary.date_visit_ended">
                     <span class="mr-2 text-dark">End:</span>
-                    <span>{{ summary.date_visit_ended | moment('ddd, MMM Do YYYY, h:mma') }}</span>
+                    <span>{{ summary.date_visit_ended | dayjs('ddd, MMM Do YYYY, h:mma') }}</span>
                   </span>
                 </div>
               </div>
@@ -55,6 +55,9 @@
         <!-- </div> -->
       </div>
     </div>
+    <a href="#" class="btn btn-outline-secondary m-auto pl-lg-5 pr-lg-5">
+      <i class="flaticon2-circle-vol-2"></i> See more
+    </a>
   </div>
 </template>
 <script>

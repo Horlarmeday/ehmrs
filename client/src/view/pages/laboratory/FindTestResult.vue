@@ -80,7 +80,7 @@
                 </td>
                 <td class="pr-0">
                   <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
-                    result.date_sample_received | moment('ddd, MMM Do YYYY, h:mma')
+                    result.date_sample_received | dayjs('ddd, MMM Do YYYY, h:mma')
                   }}</span>
                 </td>
                 <td class="pr-0">

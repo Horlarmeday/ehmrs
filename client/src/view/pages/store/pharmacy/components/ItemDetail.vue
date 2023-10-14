@@ -75,7 +75,7 @@
         <div class="col-3 mb-lg-5">
           <div class="col d-flex flex-column flex-root">
             <span class="font-weight-bolder mb-2">DATE RECEIVED</span>
-            <span class="opacity-70">{{ item.date_received | moment('ddd, MMM Do YYYY') }}</span>
+            <span class="opacity-70">{{ item.date_received | dayjs('ddd, MMM Do YYYY') }}</span>
           </div>
         </div>
         <div class="col-3">
@@ -86,7 +86,7 @@
                 getExpiryStatus(item.expiration)
               }}</span></span
             >
-            <span class="opacity-70">{{ item.expiration | moment('ddd, MMM Do YYYY') }}</span>
+            <span class="opacity-70">{{ item.expiration | dayjs('ddd, MMM Do YYYY') }}</span>
           </div>
         </div>
       </div>

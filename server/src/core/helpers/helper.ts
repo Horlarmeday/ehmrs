@@ -9,7 +9,7 @@ import { Response } from 'express';
 import { ExportDataType } from '../../modules/Store/types/pharmacy-item.types';
 import { exportDataToCSV, exportDataToExcel, exportDataToPDF } from './fileExport';
 import { v4 as uuidv4 } from 'uuid';
-import moment from 'moment/moment';
+import dayjs from 'dayjs';
 import { Op } from 'sequelize';
 
 const writeFile = promisify(fs.writeFile);
@@ -157,17 +157,17 @@ export const generateLabAccessionNumber = () => {
 };
 
 export const isToday = (specificDateTime: Date) => {
-  const currentDateTime = moment();
-  const targetDateTime = moment(specificDateTime, 'YYYY-MM-DD HH:mm');
+  const currentDateTime = dayjs();
+  const targetDateTime = dayjs(specificDateTime, 'YYYY-MM-DD HH:mm');
   return currentDateTime.isSame(targetDateTime, 'day');
 };
 
 export const todayQuery = (field: string) => ({
   [field]: {
-    [Op.gte]: moment()
+    [Op.gte]: dayjs()
       .startOf('day')
       .toDate(),
-    [Op.lt]: moment()
+    [Op.lt]: dayjs()
       .endOf('day')
       .toDate(),
   },
@@ -175,10 +175,10 @@ export const todayQuery = (field: string) => ({
 
 export const dateIntervalQuery = (field: string, start: Date, end: Date) => ({
   [field]: {
-    [Op.gte]: moment(start)
+    [Op.gte]: dayjs(start)
       .startOf('day')
       .toDate(),
-    [Op.lt]: moment(end)
+    [Op.lt]: dayjs(end)
       .endOf('day')
       .toDate(),
   },
@@ -186,7 +186,7 @@ export const dateIntervalQuery = (field: string, start: Date, end: Date) => ({
 
 export const backlogQuery = (field: string) => ({
   [field]: {
-    [Op.lt]: moment()
+    [Op.lt]: dayjs()
       .startOf('day')
       .toDate(),
   },

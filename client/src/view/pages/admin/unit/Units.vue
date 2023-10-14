@@ -2,11 +2,7 @@
   <div>
     <!--begin::Card-->
     <div class="card card-custom gutter-b example example-compact">
-      <create-unit
-        :displayPrompt="displayPrompt"
-        @closeModal="hideModal"
-        :data="unitToEdit"
-      />
+      <create-unit :displayPrompt="displayPrompt" @closeModal="hideModal" :data="unitToEdit" />
       <div class="card-header" style="min-height: 50px !important">
         <h3 class="card-title">
           Unit List
@@ -18,11 +14,7 @@
           <span class="card-label font-weight-bolder text-dark">Units</span>
         </h3>
         <div class="card-toolbar">
-          <a
-            href="#"
-            class="btn btn-primary font-weight-bolder font-size-sm"
-            @click="addNewData"
-          >
+          <a href="#" class="btn btn-primary font-weight-bolder font-size-sm" @click="addNewData">
             <add-icon /> Add New
           </a>
         </div>
@@ -33,9 +25,7 @@
       <div class="card-body pt-0 pb-3">
         <!--begin::Table-->
         <div class="table-responsive">
-          <table
-            class="table table-head-custom table-vertical-center table-head-bg"
-          >
+          <table class="table table-head-custom table-vertical-center table-head-bg">
             <thead>
               <tr class="text-uppercase">
                 <th class="pl-5" style="min-width: 150px">Name</th>
@@ -47,18 +37,15 @@
               <tr v-for="unit in units" :key="unit.id">
                 <td class="pl-5">
                   <router-link to="/patient/profile/1234"
-                    ><span
-                      class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                    >
+                    ><span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                       {{ unit.name }}
                     </span></router-link
                   >
                 </td>
                 <td class="">
-                  <span
-                    class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                    >{{ unit.createdAt | moment("ddd, MMM Do YYYY") }}</span
-                  >
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
+                    unit.createdAt | dayjs('ddd, MMM Do YYYY')
+                  }}</span>
                 </td>
                 <td class="pr-0">
                   <a
@@ -89,25 +76,25 @@
 </template>
 
 <script>
-import Pagination from "@/utils/Pagination.vue";
-import EditIcon from "../../../../assets/icons/EditIcon.vue";
-import AddIcon from "../../../../assets/icons/AddIcon.vue";
-import CreateUnit from "./CreateUnit.vue";
+import Pagination from '@/utils/Pagination.vue';
+import EditIcon from '../../../../assets/icons/EditIcon.vue';
+import AddIcon from '../../../../assets/icons/AddIcon.vue';
+import CreateUnit from './CreateUnit.vue';
 export default {
   data() {
     return {
-      search: "",
+      search: '',
       currentPage: 1,
       itemsPerPage: 10,
       displayPrompt: false,
-      unitToEdit: {}
+      unitToEdit: {},
     };
   },
   components: {
     Pagination,
     EditIcon,
     AddIcon,
-    CreateUnit
+    CreateUnit,
   },
 
   computed: {
@@ -122,7 +109,7 @@ export default {
     },
     perPage() {
       return this.units.length;
-    }
+    },
   },
 
   methods: {
@@ -141,23 +128,23 @@ export default {
     },
 
     handlePageChange() {
-      this.$store.dispatch("model/fetchUnits", {
+      this.$store.dispatch('model/fetchUnits', {
         currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage
+        itemsPerPage: this.itemsPerPage,
       });
     },
 
     onPageChange(page) {
       this.currentPage = page;
       this.handlePageChange();
-    }
+    },
   },
   created() {
-    this.$store.dispatch("model/fetchUnits", {
+    this.$store.dispatch('model/fetchUnits', {
       currentPage: this.currentPage,
-      itemsPerPage: this.itemsPerPage
+      itemsPerPage: this.itemsPerPage,
     });
-  }
+  },
 };
 </script>
 

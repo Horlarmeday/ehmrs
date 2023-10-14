@@ -50,7 +50,7 @@
                 </td>
                 <td>
                   <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
-                    ward.createdAt | moment('ddd, MMM Do YYYY')
+                    ward.createdAt | dayjs('ddd, MMM Do YYYY')
                   }}</span>
                 </td>
                 <td class="pr-0">

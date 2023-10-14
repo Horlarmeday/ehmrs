@@ -64,7 +64,7 @@
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ investigation.createdAt | moment('ddd, MMM Do YYYY, h:mma') }}
+                  {{ investigation.createdAt | dayjs('ddd, MMM Do YYYY, h:mma') }}
                 </span>
               </td>
               <td class="pr-0 text-right">

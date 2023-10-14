@@ -57,7 +57,7 @@
           </td>
           <td>
             <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-              {{ request.createdAt | moment('ddd, MMM Do YYYY, h:mma') }}
+              {{ request.createdAt | dayjs('ddd, MMM Do YYYY, h:mma') }}
             </span>
           </td>
         </tr>

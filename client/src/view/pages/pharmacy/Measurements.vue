@@ -9,16 +9,10 @@
     <!--begin::Header-->
     <div class="card-header border-0 py-5">
       <h3 class="card-title align-items-start flex-column">
-        <span class="card-label font-weight-bolder text-dark"
-          >Measurements</span
-        >
+        <span class="card-label font-weight-bolder text-dark">Measurements</span>
       </h3>
       <div class="card-toolbar">
-        <a
-          href="#"
-          class="btn btn-success font-weight-bolder font-size-sm"
-          @click="addNewData"
-        >
+        <a href="#" class="btn btn-success font-weight-bolder font-size-sm" @click="addNewData">
           <add-icon /> Add New
         </a>
       </div>
@@ -29,10 +23,7 @@
     <div class="card-body py-0">
       <!--begin::Table-->
       <div class="table-responsive">
-        <table
-          class="table table-head-custom table-vertical-center"
-          id="kt_advance_table_widget_1"
-        >
+        <table class="table table-head-custom table-vertical-center" id="kt_advance_table_widget_1">
           <thead>
             <tr class="text-left">
               <th class="pr-0" style="width: 250px">Name</th>
@@ -61,12 +52,8 @@
                 >
               </td>
               <td>
-                <span
-                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                >
-                  {{
-                    measurement.createdAt | moment("ddd, MMM Do YYYY, h:mma")
-                  }}
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ measurement.createdAt | dayjs('ddd, MMM Do YYYY, h:mma') }}
                 </span>
               </td>
               <td class="pr-0 text-right">
@@ -90,22 +77,22 @@
 </template>
 
 <script>
-import CreateMeasurement from "./create/CreateMeasurement.vue";
-import EditIcon from "../../../assets/icons/EditIcon.vue";
-import AddIcon from "../../../assets/icons/AddIcon.vue";
+import CreateMeasurement from './create/CreateMeasurement.vue';
+import EditIcon from '@/assets/icons/EditIcon.vue';
+import AddIcon from '@/assets/icons/AddIcon.vue';
 export default {
   data() {
     return {
       displayPrompt: false,
       measurementToEdit: {},
       currentPage: 1,
-      itemsPerPage: 10
+      itemsPerPage: 10,
     };
   },
   components: {
     CreateMeasurement,
     EditIcon,
-    AddIcon
+    AddIcon,
   },
   computed: {
     measurements() {
@@ -113,7 +100,7 @@ export default {
     },
     perPage() {
       return this.measurements.length;
-    }
+    },
   },
   methods: {
     addNewData() {
@@ -128,11 +115,11 @@ export default {
     editData(measurement) {
       this.measurementToEdit = measurement;
       this.displayPrompt = true;
-    }
+    },
   },
   created() {
-    this.$store.dispatch("pharmacy/fetchMeasurements");
-  }
+    this.$store.dispatch('pharmacy/fetchMeasurements');
+  },
 };
 </script>
 

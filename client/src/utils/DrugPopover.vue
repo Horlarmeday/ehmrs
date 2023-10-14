@@ -22,7 +22,7 @@
         <tr>
           <th scope="row">Starting Date</th>
           <td>
-            <span>{{ drug.start_date | moment('DD/MM/YYYY') }}</span>
+            <span>{{ drug.start_date | dayjs('DD/MM/YYYY') }}</span>
           </td>
         </tr>
         <tr>

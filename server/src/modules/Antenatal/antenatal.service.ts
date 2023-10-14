@@ -30,7 +30,7 @@ import { prescribeService } from '../Orders/Service/service-order.repository';
 import { getOneService } from '../AdminSettings/admin.repository';
 import { ANTENATAL_ACCOUNT_EXISTS, FEMALE_REQUIRED } from './messages/antenatal.messages';
 import { assignAntenatalNumber } from '../../core/command/worker/schedule';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { bulkCreateDiagnosis } from '../Consultation/consultation.repository';
 
@@ -44,8 +44,8 @@ export class AntenatalService {
     const { patient_id, service_id, staff_id } = body;
     await this.antenatalValidations(patient_id);
     const dates = {
-      start_date: moment().toDate(),
-      end_date: moment()
+      start_date: dayjs().toDate(),
+      end_date: dayjs()
         .add(9, 'months')
         .add(2, 'weeks')
         .toDate(),

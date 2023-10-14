@@ -1,25 +1,25 @@
 <template>
   <div class="flex-row-fluid ml-lg-8">
-    <div class="card card-custom gutter-b">
-      <div class="card-header pt-5">
+    <div class="card-custom gutter-b">
+      <div class="card-header">
         <div class="card-title">
-          <span class="card-label font-weight-bolder text-dark">Additional Services</span>
-          <span v-if="showSwitch" class="switch switch-sm switch-icon float-right">
+          <span class="card-label font-weight-bolder text-dark"></span>
+          <span v-if="showSwitch" class="switch switch-sm switch-icon">
             <label>
               <input @change="flipSwitch($event)" type="checkbox" :checked="switchPosition" />
               <span />
             </label>
           </span>
-        </div>
-        <div>
-          <button
-            v-if="selectedServices.length"
-            ref="kt-orderService-submit"
-            class="btn btn-primary btn-sm float-right mr-2"
-            @click="submitService"
-          >
-            Submit
-          </button>
+          <div>
+            <button
+              v-if="selectedServices.length"
+              ref="kt-orderService-submit"
+              class="btn btn-primary btn-sm float-right mr-2"
+              @click="submitService"
+            >
+              Submit
+            </button>
+          </div>
         </div>
       </div>
       <hr />

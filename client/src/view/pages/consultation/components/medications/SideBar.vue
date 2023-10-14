@@ -6,7 +6,11 @@
           <span class="card-label font-weight-bolder text-dark">Order Drug</span>
           <span v-if="showSwitch" class="switch switch-sm switch-icon float-right">
             <label>
-              <input @change="flipSwitch($event)" type="checkbox" :checked="switchPosition && switchSpot" />
+              <input
+                @change="flipSwitch($event)"
+                type="checkbox"
+                :checked="switchPosition && switchSpot"
+              />
               <span />
             </label>
           </span>
@@ -193,7 +197,7 @@
                 </span>
               </div>
             </div>
-            <div v-if="switchPosition" class="form-group row">
+            <div v-if="switchPosition && switchSpot" class="form-group row">
               <label class="col-lg-3 col-form-label">Drug Type:</label>
               <div class="col-lg-9">
                 <div class="radio-inline mt-2">
@@ -243,6 +247,7 @@ import Datepicker from 'vuejs-datepicker';
 import vSelect from 'vue-select';
 import { debounce } from '@/common/common';
 import KTUtil from '@/assets/js/components/util';
+
 export default {
   name: 'MedicationSideBar',
   components: { vSelect, Datepicker },
@@ -259,17 +264,23 @@ export default {
     inventories() {
       return this.$store.state.inventory.inventories;
     },
-    drugOptions() {
-      return this.items.map(item => ({
-        name: item?.drug?.name,
-        id: item?.drug?.id,
-        strength: item?.strength,
-        strength_input: item.strength_input,
-        price: item.selling_price,
-        quantity_remaining: item.quantity_remaining,
-        unit_name: item?.unit?.name,
-        dosage_form: item?.dosage_form,
-      }));
+    drugOptions: {
+      get() {
+        return this.items.map(item => ({
+          name: item?.drug?.name,
+          id: item?.drug?.id,
+          strength: item?.strength,
+          strength_input: item.strength_input,
+          price: item.selling_price,
+          quantity_remaining: item.quantity_remaining,
+          unit_name: item?.unit?.name,
+          dosage_form: item?.dosage_form,
+        }));
+      },
+      set() {
+        this.$store.commit('inventory/SET_ITEMS', []);
+        this.drug = '';
+      },
     },
   },
 
@@ -341,6 +352,14 @@ export default {
 
     flipSwitch(event) {
       this.switchSpot = !!event.target.checked;
+      this.drugOptions = [];
+      this.strength = '';
+      this.drug_id = '';
+      this.price = '';
+      this.unit_name = '';
+      this.strength_input = '';
+      this.quantity_remaining = '';
+      this.dosage_form = '';
     },
 
     setDrugInfo() {
@@ -384,7 +403,7 @@ export default {
             .then(() => this.endRequest(submitButton))
             .catch(() => this.removeSpinner(submitButton));
         }
-      })
+      });
     },
 
     drugData() {
@@ -404,9 +423,9 @@ export default {
         drug_id: this.drug_id,
         total_price: this.total_price,
         drug_type: this.switchPosition && this.switchSpot ? 'NHIS' : 'Cash',
-        drug_group: this.drug_group,
-        inventory_id: this.inventory_id,
+        inventory_id: this.getInventoryId(),
         source: this.source,
+        ...(this.drug_group && { drug_group: this.drug_group }),
         ...(this.source === 'Antenatal' && { ante_natal_id: this.$route.query.antenatal }),
       };
     },
@@ -465,10 +484,7 @@ export default {
     },
 
     search: debounce((loading, search, vm) => {
-      const type = vm.switchPosition && vm.switchSpot ? 'NHIS' : 'Cash';
-      const inventory = vm.inventories.find(inventory =>
-        inventory.name.toLowerCase().includes(type.toLowerCase())
-      )?.id;
+      const inventory = vm.getInventoryId();
       vm.inventory_id = inventory;
       vm.$store
         .dispatch('inventory/fetchInventoryItems', {
@@ -477,6 +493,13 @@ export default {
         })
         .then(() => loading(false));
     }, 500),
+
+    getInventoryId() {
+      const type = this.switchPosition && this.switchSpot ? 'NHIS' : 'Cash';
+      return this.inventories.find(inventory =>
+        inventory.name.toLowerCase().includes(type.toLowerCase())
+      )?.id;
+    },
   },
 
   created() {

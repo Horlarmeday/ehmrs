@@ -25,7 +25,7 @@
             </td>
             <td>
               <span>
-                {{ note.createdAt | moment('ddd, MMM Do YYYY, h:mma') }}
+                {{ note.createdAt | dayjs('ddd, MMM Do YYYY, h:mma') }}
               </span>
             </td>
             <td>

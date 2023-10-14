@@ -81,7 +81,7 @@
                               </td>
                               <td>
                                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                                  {{ dependant.date_of_birth | moment('DD/MM/YYYY') }}
+                                  {{ dependant.date_of_birth | dayjs('DD/MM/YYYY') }}
                                 </span>
                               </td>
                               <td>

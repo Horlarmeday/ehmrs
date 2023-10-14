@@ -66,7 +66,7 @@
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ account.createdAt | moment('ddd, MMM Do YYYY, h:mma') }}
+                  {{ account.createdAt | dayjs('ddd, MMM Do YYYY, h:mma') }}
                 </span>
               </td>
               <td class="pr-0">

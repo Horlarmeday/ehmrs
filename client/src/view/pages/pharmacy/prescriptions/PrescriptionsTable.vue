@@ -64,7 +64,7 @@
               </td>
               <td v-if="period !== 'Today'">
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
-                  prescription.date_prescribed | moment('DD/MM/YYYY, h:mma')
+                  prescription.date_prescribed | dayjs('DD/MM/YYYY, h:mma')
                 }}</span>
               </td>
               <td class="text-right pr-0">

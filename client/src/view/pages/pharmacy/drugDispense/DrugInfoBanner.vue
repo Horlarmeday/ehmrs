@@ -82,7 +82,7 @@
             class="text-dark-50 text-hover-primary font-weight-bold mr-lg-8 mr-5 mb-lg-0 mb-2"
             ><i class="far fa-calendar-alt mr-2 font-size-lg icon-lg"></i>Starting Date:
             <span class="text-dark ml-2">{{
-              prescription.start_date | moment('DD/MM/YYYY')
+              prescription.start_date | dayjs('DD/MM/YYYY')
             }}</span></a
           >
         </div>
@@ -102,7 +102,7 @@
             class="text-dark-50 text-hover-primary font-weight-bold mr-lg-8 mr-5 mb-lg-0 mb-2"
             ><i class="flaticon2-calendar-2 mr-2 font-size-lg icon-lg"></i>Date Prescribed:
             <span class="ml-2 text-dark">{{
-              prescription.date_prescribed | moment('ddd, MMM Do YYYY')
+              prescription.date_prescribed | dayjs('ddd, MMM Do YYYY')
             }}</span></a
           >
         </div>

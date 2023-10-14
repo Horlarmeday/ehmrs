@@ -2,11 +2,7 @@
   <div>
     <!--begin::Card-->
     <div class="card card-custom gutter-b example example-compact">
-      <edit-employee
-        :displayPrompt="displayPrompt"
-        @closeModal="hideModal"
-        :data="staffToEdit"
-      />
+      <edit-employee :displayPrompt="displayPrompt" @closeModal="hideModal" :data="staffToEdit" />
       <div class="card-header" style="min-height: 50px !important">
         <h3 class="card-title">
           Find Employee Record
@@ -26,11 +22,7 @@
                   @keypress.enter="searchByName"
                 />
                 <div class="input-group-append">
-                  <button
-                    type="button"
-                    class="btn btn-primary"
-                    @click="searchByName"
-                  >
+                  <button type="button" class="btn btn-primary" @click="searchByName">
                     Search
                   </button>
                 </div>
@@ -45,9 +37,7 @@
       <div v-if="employees.length" class="card-body pt-0 pb-3">
         <!--begin::Table-->
         <div class="table-responsive">
-          <table
-            class="table table-head-custom table-vertical-center table-head-bg"
-          >
+          <table class="table table-head-custom table-vertical-center table-head-bg">
             <thead>
               <tr class="text-uppercase">
                 <th class="pl-5" style="min-width: 150px">Name</th>
@@ -64,39 +54,29 @@
               <tr v-for="staff in employees" :key="staff.id">
                 <td class="pl-5">
                   <router-link to="/patient/profile/1234"
-                    ><span
-                      class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                    >
+                    ><span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                       {{ staff.fullname }}
                     </span></router-link
                   >
                 </td>
                 <td>
-                  <span
-                    class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                  >
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                     {{ staff.username }}
                   </span>
                 </td>
                 <td>
-                  <span
-                    class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                  >
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                     {{ staff.phone }}
                   </span>
                 </td>
                 <td>
-                  <span
-                    class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                  >
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                     {{ staff.role }}
                   </span>
                 </td>
                 <td>
-                  <span
-                    class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                  >
-                    {{ staff.sub_role || "None" }}
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                    {{ staff.sub_role || 'None' }}
                   </span>
                 </td>
                 <td>
@@ -105,17 +85,14 @@
                     class="label label-lg label-light-primary label-inline"
                     >Active</span
                   >
-                  <span
-                    v-else
-                    class="label label-lg label-light-warning label-inline"
+                  <span v-else class="label label-lg label-light-warning label-inline"
                     >Inactive</span
                   >
                 </td>
                 <td>
-                  <span
-                    class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                    >{{ staff.createdAt | moment("ddd, MMM Do YYYY") }}</span
-                  >
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
+                    staff.createdAt | dayjs('ddd, MMM Do YYYY, h:mma')
+                  }}</span>
                 </td>
                 <td class="pr-0">
                   <a
@@ -146,23 +123,23 @@
 </template>
 
 <script>
-import Pagination from "@/utils/Pagination.vue";
-import EditIcon from "../../../assets/icons/EditIcon.vue";
-import EditEmployee from "./create/EditEmployee";
+import Pagination from '@/utils/Pagination.vue';
+import EditIcon from '../../../assets/icons/EditIcon.vue';
+import EditEmployee from './create/EditEmployee';
 export default {
   data() {
     return {
-      search: "",
+      search: '',
       currentPage: 1,
       itemsPerPage: 10,
       displayPrompt: false,
-      staffToEdit: {}
+      staffToEdit: {},
     };
   },
   components: {
     Pagination,
     EditIcon,
-    EditEmployee
+    EditEmployee,
   },
 
   computed: {
@@ -177,33 +154,33 @@ export default {
     },
     perPage() {
       return this.employees.length;
-    }
+    },
   },
 
   methods: {
     notifyEmptyField() {
       return this.$notify({
-        group: "foo",
-        title: "Error message",
-        text: "Field cannot be left empty",
-        type: "error"
+        group: 'foo',
+        title: 'Error message',
+        text: 'Field cannot be left empty',
+        type: 'error',
       });
     },
 
     searchByName() {
       if (!this.search) return this.notifyEmptyField();
       this.currentPage = 1;
-      this.$store.dispatch("employee/fetchEmployees", {
+      this.$store.dispatch('employee/fetchEmployees', {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
-        search: this.search
+        search: this.search,
       });
     },
 
     handlePageChange() {
-      this.$store.dispatch("employee/fetchEmployees", {
+      this.$store.dispatch('employee/fetchEmployees', {
         currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage
+        itemsPerPage: this.itemsPerPage,
       });
     },
 
@@ -219,8 +196,8 @@ export default {
 
     hideModal() {
       this.displayPrompt = false;
-    }
-  }
+    },
+  },
 };
 </script>
 

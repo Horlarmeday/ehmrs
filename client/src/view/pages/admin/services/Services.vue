@@ -58,7 +58,7 @@
                 </td>
                 <td class="">
                   <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
-                    service.createdAt | moment('ddd, MMM Do YYYY')
+                    service.createdAt | dayjs('ddd, MMM Do YYYY')
                   }}</span>
                 </td>
                 <td class="pr-0">

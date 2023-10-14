@@ -9,16 +9,10 @@
     <!--begin::Header-->
     <div class="card-header border-0 py-5">
       <h3 class="card-title align-items-start flex-column">
-        <span class="card-label font-weight-bolder text-dark"
-          >Test Samples</span
-        >
+        <span class="card-label font-weight-bolder text-dark">Test Samples</span>
       </h3>
       <div class="card-toolbar">
-        <a
-          href="#"
-          class="btn btn-success font-weight-bolder font-size-sm"
-          @click="addNewData"
-        >
+        <a href="#" class="btn btn-success font-weight-bolder font-size-sm" @click="addNewData">
           <add-icon /> Add New
         </a>
       </div>
@@ -31,10 +25,7 @@
     <div class="card-body py-0">
       <!--begin::Table-->
       <div class="table-responsive">
-        <table
-          class="table table-head-custom table-vertical-center"
-          id="kt_advance_table_widget_1"
-        >
+        <table class="table table-head-custom table-vertical-center" id="kt_advance_table_widget_1">
           <thead>
             <tr class="text-left">
               <th class="pr-0" style="width: 450px">Type</th>
@@ -55,10 +46,8 @@
                 >
               </td>
               <td>
-                <span
-                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                >
-                  {{ sample.createdAt | moment("ddd, MMM Do YYYY, h:mma") }}
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ sample.createdAt | dayjs('ddd, MMM Do YYYY, h:mma') }}
                 </span>
               </td>
               <td class="pr-0 text-right">
@@ -89,19 +78,19 @@
 </template>
 
 <script>
-import CreateSampleType from "./create/CreateSampleType.vue";
-import Pagination from "@/utils/Pagination.vue";
-import EditIcon from "../../../assets/icons/EditIcon.vue";
-import AddIcon from "../../../assets/icons/AddIcon.vue";
-import Search from "../../../utils/Search.vue";
-import { debounce, removeSpinner } from "@/common/common";
+import CreateSampleType from './create/CreateSampleType.vue';
+import Pagination from '@/utils/Pagination.vue';
+import EditIcon from '../../../assets/icons/EditIcon.vue';
+import AddIcon from '../../../assets/icons/AddIcon.vue';
+import Search from '../../../utils/Search.vue';
+import { debounce, removeSpinner } from '@/common/common';
 export default {
   data() {
     return {
       displayPrompt: false,
       sampleToEdit: {},
       currentPage: 1,
-      itemsPerPage: 10
+      itemsPerPage: 10,
     };
   },
   components: {
@@ -109,7 +98,7 @@ export default {
     Pagination,
     Search,
     EditIcon,
-    AddIcon
+    AddIcon,
   },
   computed: {
     samples() {
@@ -123,7 +112,7 @@ export default {
     },
     perPage() {
       return this.samples.length;
-    }
+    },
   },
   methods: {
     addNewData() {
@@ -141,9 +130,9 @@ export default {
     },
 
     handlePageChange() {
-      this.$store.dispatch("laboratory/fetchTestSamples", {
+      this.$store.dispatch('laboratory/fetchTestSamples', {
         currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage
+        itemsPerPage: this.itemsPerPage,
       });
     },
 
@@ -169,18 +158,18 @@ export default {
     },
 
     onChangePageCount(pagecount) {
-      this.$store.dispatch("laboratory/fetchTestSamples", {
+      this.$store.dispatch('laboratory/fetchTestSamples', {
         currentPage: this.currentPage,
-        itemsPerPage: pagecount
+        itemsPerPage: pagecount,
       });
-    }
+    },
   },
   created() {
-    this.$store.dispatch("laboratory/fetchTestSamples", {
+    this.$store.dispatch('laboratory/fetchTestSamples', {
       currentPage: this.currentPage,
-      itemsPerPage: this.itemsPerPage
+      itemsPerPage: this.itemsPerPage,
     });
-  }
+  },
 };
 </script>
 

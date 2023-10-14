@@ -38,7 +38,7 @@ import {
   LaboratoryResultDto,
   LaboratoryResultValidationDto,
 } from './dto/laboratory-result.dto';
-import moment from 'moment';
+import dayjs from 'dayjs';
 
 class LaboratoryService {
   /** ***********************
@@ -267,9 +267,9 @@ class LaboratoryService {
       patientName: testResult.patient.fullname.toString(),
       patientId: testResult.patient.hospital_id,
       sex: testResult.patient.gender,
-      age: moment().diff(testResult.patient.date_of_birth, 'years'),
-      orderDate: moment(testResult.date_requested).format('YYYY-MM-DD, h:mma'),
-      reportDate: moment().format('YYYY-MM-DD, h:mma'),
+      age: dayjs().diff(testResult.patient.date_of_birth, 'years'),
+      orderDate: dayjs(testResult.date_requested).format('YYYY-MM-DD, h:mma'),
+      reportDate: dayjs().format('YYYY-MM-DD, h:mma'),
       accession_number: testResult.accession_number,
     };
     const testResults = testResult.tests.map(test => ({

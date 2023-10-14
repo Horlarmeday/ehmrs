@@ -79,7 +79,7 @@
               </td>
               <td v-if="period !== 'Today'">
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
-                  sample.date_sample_received | moment('DD/MM/YYYY, h:mma')
+                  sample.date_sample_received | dayjs('DD/MM/YYYY, h:mma')
                 }}</span>
               </td>
               <td class="text-right pr-0">

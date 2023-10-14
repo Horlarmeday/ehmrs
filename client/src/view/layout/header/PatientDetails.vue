@@ -31,7 +31,7 @@
       <li class="menu-item">
         <div class="menu-link">
           <span class="text-dark font-weight-bolder">{{
-            patient.date_of_birth | moment('from', 'now', true)
+            patient.date_of_birth | dayjs('from', 'now', true)
           }}</span>
         </div>
       </li>

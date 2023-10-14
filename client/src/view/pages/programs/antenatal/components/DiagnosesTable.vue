@@ -26,7 +26,7 @@
           <td>{{ diagnosis.certainty }}</td>
           <td>{{ diagnosis.notes || '-' }}</td>
           <td>{{ diagnosis.staff.fullname }}</td>
-          <td>{{ diagnosis.createdAt | moment('DD/MM/YYYY, h:mma') }}</td>
+          <td>{{ diagnosis.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
           <td>
             <a href="#"><i class="flaticon-delete mr-2"></i></a>
             <a href="#"><i class="flaticon-edit-1"></i></a>

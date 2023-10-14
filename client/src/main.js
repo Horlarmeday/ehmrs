@@ -3,6 +3,7 @@ import App from './App.vue';
 import router from './router';
 import store from '@/core/services/store';
 import Notifications from 'vue-notification';
+import dayjs from '@/core/plugins/dayjs';
 
 Vue.config.productionTip = false;
 
@@ -22,6 +23,7 @@ import '@/core/plugins/highlight-js';
 import '@/core/plugins/inline-svg';
 import '@/core/plugins/apexcharts';
 import '@/core/plugins/metronic';
+import 'nprogress/nprogress.css';
 import '@mdi/font/css/materialdesignicons.css';
 import 'vue-select/dist/vue-select.css';
 
@@ -29,7 +31,7 @@ import 'vue-select/dist/vue-select.css';
 import VeeValidate from 'vee-validate';
 Vue.use(VeeValidate);
 Vue.use(Notifications);
-Vue.use(require('vue-moment'));
+Vue.use(dayjs);
 
 new Vue({
   router,

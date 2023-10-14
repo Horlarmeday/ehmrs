@@ -22,7 +22,7 @@
           <td>{{ observation.doctor_comments }}</td>
           <td>{{ observation.continuation_sheet }}</td>
           <td>{{ observation.staff.fullname }}</td>
-          <td>{{ observation.createdAt | moment('DD/MM/YYYY, h:mma') }}</td>
+          <td>{{ observation.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
           <td>
             <a href="#"><i class="flaticon-delete mr-2"></i></a>
             <a href="#"><i class="flaticon-edit-1"></i></a>

@@ -25,7 +25,7 @@
               <span :class="getResultColor(test.status)">{{ test.status }}</span>
             </td>
             <td>{{ test.examiner.fullname }}</td>
-            <td>{{ test.createdAt | moment('DD/MM/YYYY, h:mma') }}</td>
+            <td>{{ test.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
             <td>
               <a href="#" :class="test.status !== 'Approved' ? 'disabled' : ''">
                 <i class="flaticon-file-2 text-success mr-2"></i>
