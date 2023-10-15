@@ -4,6 +4,8 @@ import { StatusCodes } from '../../../core/helpers/helper';
 import { DATA_SAVED } from '../../AdminSettings/messages/response-messages';
 import { ServiceOrderService } from './service-order.service';
 import { validateBulkService } from './validations';
+import { NextFunction, Request, Response } from 'express';
+import { SUCCESS } from '../../../core/constants';
 
 export class ServiceOrderController {
   /**
@@ -35,6 +37,34 @@ export class ServiceOrderController {
         data: services,
         message: DATA_SAVED,
         httpCode: StatusCodes.CREATED,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get prescribed services
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with prescribed services data
+   */
+  static async getPrescribedServices(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    try {
+      const services = await ServiceOrderService.getPrescribedServices(req.query);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data: services,
       });
     } catch (e) {
       return next(e);

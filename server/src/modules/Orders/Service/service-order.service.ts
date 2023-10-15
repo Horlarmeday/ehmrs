@@ -1,4 +1,8 @@
-import { orderBulkService, prescribeService } from './service-order.repository';
+import {
+  getPrescribedServices,
+  orderBulkService,
+  prescribeService,
+} from './service-order.repository';
 import VisitService from '../../Visit/visit.service';
 import PatientService from '../../Patient/patient.service';
 import { PrescribedService } from '../../../database/models';
@@ -41,5 +45,27 @@ export class ServiceOrderService {
       }))
     );
     return orderBulkService(bulkServices);
+  }
+
+  /**
+   * get prescribed services
+   *
+   * @static
+   * @returns {json} json object with prescribed services data
+   * @param body
+   * @memberOf ServiceOrderService
+   */
+  static async getPrescribedServices(body) {
+    const { currentPage, pageLimit, filter } = body;
+
+    if (filter) {
+      return getPrescribedServices({ currentPage, pageLimit, filter });
+    }
+
+    if (Object.values(body).length) {
+      return getPrescribedServices({ currentPage, pageLimit });
+    }
+
+    return getPrescribedServices({});
   }
 }

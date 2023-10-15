@@ -1,6 +1,8 @@
-import { PrescribedService } from '../../../database/models/prescribedService';
+import { PrescribedService } from '../../../database/models';
 import { PrescribeServiceBody } from './types/service-order.types';
 import { WhereOptions } from 'sequelize';
+import { Service, Staff } from '../../../database/models';
+import { staffAttributes } from '../../Antenatal/antenatal.repository';
 
 /**
  * prescribe multiple services for patient
@@ -37,8 +39,36 @@ export const prescribeService = async (data: PrescribeServiceBody): Promise<Pres
  * @param query
  * @returns {Promise<PrescribedService[]>} prescribed services data
  */
-export const getPrescribedServices = async (
+export const getPrescriptionServices = async (
   query: WhereOptions<PrescribedService>
 ): Promise<PrescribedService[]> => {
   return await PrescribedService.findAll({ where: { ...query } });
+};
+
+/**
+ * get prescribed services
+ * @param currentPage
+ * @param pageLimit
+ * @param filter
+ */
+export const getPrescribedServices = ({ currentPage = 1, pageLimit = 10, filter = null }) => {
+  return PrescribedService.paginate({
+    page: +currentPage,
+    paginate: +pageLimit,
+    order: [['date_requested', 'DESC']],
+    where: {
+      ...(filter && { ...JSON.parse(filter) }),
+    },
+    include: [
+      {
+        model: Service,
+        attributes: ['name'],
+      },
+      {
+        model: Staff,
+        as: 'examiner',
+        attributes: staffAttributes,
+      },
+    ],
+  });
 };
