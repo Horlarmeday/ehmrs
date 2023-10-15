@@ -137,6 +137,18 @@ export default {
     state.selectedServices.push(service);
   },
 
+  SET_SERVICES_ORDERS(state, services) {
+    state.service_orders = services;
+  },
+
+  SET_SERVICES_ORDERS_TOTAL(state, total) {
+    state.totalServices = total;
+  },
+
+  SET_SERVICES_ORDERS_PAGES(state, pages) {
+    state.servicePages = pages;
+  },
+
   REMOVE_SELECTED_SERVICE(state, service) {
     const serviceIndex = state.selectedServices.findIndex(
       ({ service_id }) => service_id === service.service_id
