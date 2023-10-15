@@ -1,12 +1,17 @@
 <template>
   <div class="flex-row-fluid ml-lg-8">
-    <div class="card-custom gutter-b">
+    <div class="card-custom">
       <div class="card-header">
+        <services-accordion />
         <div class="card-title">
           <span class="card-label font-weight-bolder text-dark"></span>
           <span v-if="showSwitch" class="switch switch-sm switch-icon">
             <label>
-              <input @change="flipSwitch($event)" type="checkbox" :checked="switchPosition" />
+              <input
+                @change="flipSwitch($event)"
+                type="checkbox"
+                :checked="switchPosition && switchSpot"
+              />
               <span />
             </label>
           </span>
@@ -41,19 +46,31 @@
 </template>
 
 <script>
-import { EXCLUDED_INSURANCE } from '@/common/common';
+import ServicesAccordion from '@/view/components/accordion/ServicesAccordion.vue';
 
 export default {
   name: 'Services',
+  components: { ServicesAccordion },
   data() {
     return {
       checkmark: 'flaticon2-check-mark',
       isDisabled: false,
-      switchPosition: false,
+      switchSpot: true,
     };
   },
-  created() {
-    this.defaultSwitchPosition();
+  props: {
+    switchPosition: {
+      type: Boolean,
+      required: true,
+    },
+    showSwitch: {
+      type: Boolean,
+      required: true,
+    },
+    source: {
+      type: String,
+      required: true,
+    },
   },
   computed: {
     services() {
@@ -61,15 +78,6 @@ export default {
     },
     selectedServices() {
       return this.$store.state.order.selectedServices;
-    },
-    visit() {
-      return this.$store.state.visit.visit;
-    },
-    showSwitch() {
-      return (
-        this.visit?.patient?.has_insurance &&
-        !EXCLUDED_INSURANCE.includes(this.visit?.insurance?.insurance?.name)
-      );
     },
   },
   methods: {
@@ -89,9 +97,11 @@ export default {
       return {
         service_id: service.id,
         is_urgent: false,
-        service_type: this.switchPosition ? 'NHIS' : 'CASH',
+        service_type: this.switchPosition && this.switchSpot ? 'NHIS' : 'CASH',
         price: service.price,
         name: service.name,
+        source: this.source,
+        ...(this.source === 'Antenatal' && { ante_natal_id: this.$route.query.antenatal }),
       };
     },
 
@@ -105,7 +115,7 @@ export default {
       submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
     },
 
-    initializeRequest(button) {
+    endRequest(button) {
       this.removeSpinner(button);
       this.initValues();
     },
@@ -122,7 +132,7 @@ export default {
           services,
           id: this.$route.params.id,
         })
-        .then(() => this.initializeRequest(submitButton))
+        .then(() => this.endRequest(submitButton))
         .catch(() => this.removeSpinner(submitButton));
     },
 
@@ -131,19 +141,8 @@ export default {
       this.$store.dispatch('order/emptySelectedServiceButtons');
     },
 
-    defaultSwitchPosition() {
-      setTimeout(() => {
-        if (
-          this.visit?.patient?.has_insurance &&
-          !EXCLUDED_INSURANCE.includes(this.visit?.insurance?.insurance?.name)
-        ) {
-          this.switchPosition = true;
-        }
-      }, 350);
-    },
-
     flipSwitch(event) {
-      this.switchPosition = !!event.target.checked;
+      this.switchSpot = !!event.target.checked;
     },
   },
 };

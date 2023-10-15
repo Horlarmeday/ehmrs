@@ -1,77 +1,48 @@
 <template>
-  <div id="serviceOrders">
-    <div class="accordion accordion-solid accordion-panel accordion-svg-toggle">
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title" v-b-toggle.accordion-3>
-            <div class="card-label">Services</div>
-            <accordion-icon />
-          </div>
-        </div>
-        <b-collapse id="accordion-3" visible>
-          <div class="card-body">
-            <div class="col-3 offset-9">
-              <div ref="spinn">
-                <input
-                  placeholder="Search..."
-                  @keyup="searchServices"
-                  v-model="searchString"
-                  class="form-control form-control-md"
-                  type="text"
-                />
-              </div>
-            </div>
-            <div class="d-flex flex-row">
-              <service-sidebar />
-              <component :is="activeTab" />
-            </div>
-          </div>
-        </b-collapse>
-      </div>
-    </div>
+  <div>
+    <service-card
+      :show-switch="showSwitch"
+      :switch-position="switchPosition"
+      source="Consultation"
+    />
   </div>
 </template>
 
 <script>
-import Services from '@/view/pages/consultation/components/services/Services.vue';
-import ServiceSidebar from '@/view/pages/consultation/components/services/ServiceSidebar.vue';
-import AccordionIcon from '@/assets/icons/AccordionIcon.vue';
-import { addSpinner, debounce, removeSpinner } from '@/common/common';
+import { EXCLUDED_INSURANCE } from '@/common/common';
+import ServiceCard from '@/view/pages/consultation/components/services/ServiceCard.vue';
 
 export default {
-  data() {
-    return {
-      activeTab: '',
-      backgroundColor: '#3699ff29',
-      searchString: '',
-    };
+  data: () => ({
+    switchPosition: false,
+  }),
+  computed: {
+    visit() {
+      return this.$store.state.visit.visit;
+    },
+    showSwitch() {
+      return (
+        (this.visit?.patient?.has_insurance &&
+          !EXCLUDED_INSURANCE.includes(this.visit?.insurance?.insurance?.name)) ||
+        false
+      );
+    },
   },
-  components: { AccordionIcon, ServiceSidebar, Services },
+  components: { ServiceCard },
   methods: {
-    changeTab() {
-      this.activeTab = Services;
-    },
-
-    debounceSearch: debounce((search, vm, spinDiv) => {
-      vm.$store
-        .dispatch('model/fetchServices', {
-          currentPage: vm.currentPage,
-          itemsPerPage: vm.itemsPerPage,
-          search,
-        })
-        .then(() => removeSpinner(spinDiv))
-        .catch(() => removeSpinner(spinDiv));
-    }, 500),
-
-    searchServices() {
-      const spinDiv = this.$refs['spinn'];
-      addSpinner(spinDiv);
-      this.debounceSearch(this.searchString, this, spinDiv);
+    defaultSwitchPosition() {
+      setTimeout(() => {
+        if (
+          this.visit?.patient?.has_insurance &&
+          !EXCLUDED_INSURANCE.includes(this.visit?.insurance?.insurance?.name)
+        ) {
+          this.switchPosition = true;
+        }
+      }, 350);
     },
   },
-
   created() {
-    this.activeTab = Services;
+    this.defaultSwitchPosition();
   },
 };
 </script>
