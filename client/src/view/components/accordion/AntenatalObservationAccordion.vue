@@ -26,7 +26,7 @@
 </template>
 <script>
 import Pagination from '@/utils/Pagination.vue';
-import ObservationsTable from '@/view/pages/programs/antenatal/components/ObservationsTable.vue';
+import ObservationsTable from '@/view/components/table/AntenatalObservationsTable.vue';
 
 export default {
   name: 'ObservationsAccordion',

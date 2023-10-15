@@ -40,7 +40,7 @@
   </div>
 </template>
 <script>
-import TriagePopover from '@/view/pages/programs/antenatal/components/TriagePopover.vue';
+import TriagePopover from '@/view/components/popover/AntenatalTriagePopover.vue';
 
 export default {
   name: 'TriageTable',

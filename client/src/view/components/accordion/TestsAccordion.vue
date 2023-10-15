@@ -1,18 +1,17 @@
 <template>
-  <div class="card-custom card-stretch card-stretch-fourth gutter-b">
+  <div class="card-custom card-stretch card-stretch-fourth">
     <div class="accordion accordion-solid accordion-panel accordion-svg-toggle" role="tablist">
       <div class="card">
         <div class="card-header" header-tag="header" role="tab" style="background: blue">
-          <div class="card-title accord" v-b-toggle="'accordion-94'">
-            <div class="card-label">Clinical Notes</div>
+          <div class="card-title accord" v-b-toggle="'accordion-9'">
+            <div class="card-label">Tests</div>
           </div>
         </div>
-        <b-collapse id="accordion-94" accordion="my-accordion" role="tabpanel">
+        <b-collapse id="accordion-9" accordion="my-accordion" role="tabpanel">
           <div class="card-body border">
-            <!--begin::Table-->
-            <clinical-notes-table @getClinicalNote="editData" :notes="clinicalNotes" />
-            <!--end::Table-->
+            <tests-table :tests="tests" />
             <pagination
+              v-if="tests?.length"
               :total-pages="pages"
               :total="queriedItems"
               :per-page="perPage"
@@ -26,32 +25,33 @@
   </div>
 </template>
 <script>
+import TestsTable from '@/view/components/table/TestsTable.vue';
 import Pagination from '@/utils/Pagination.vue';
-import ClinicalNotesTable from '@/view/pages/programs/antenatal/components/ClinicalNotesTable.vue';
 
 export default {
-  components: { ClinicalNotesTable, Pagination },
+  components: { Pagination, TestsTable },
+  name: 'TestsAccordion',
   data: () => ({
     currentPage: 1,
     itemsPerPage: 10,
   }),
   computed: {
-    clinicalNotes() {
-      return this.$store.state.antenatal.clinicalNotes;
+    tests() {
+      return this.$store.state.order.lab_orders;
     },
     queriedItems() {
-      return this.$store.state.antenatal.totalClinicalNotes || 0;
+      return this.$store.state.order.total;
     },
     pages() {
-      return this.$store.state.antenatal.totalClinicalNotesPages;
+      return this.$store.state.order.pages;
     },
     perPage() {
-      return this.clinicalNotes.length;
+      return this.tests.length;
     },
   },
   methods: {
     handlePageChange() {
-      this.$store.dispatch('antenatal/fetchClinicalNotes', {
+      this.$store.dispatch('order/fetchPrescribedTests', {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
         filter: { visit_id: this.$route.params.id },
@@ -63,22 +63,23 @@ export default {
       this.handlePageChange();
     },
 
-    fetchClinicalNotes() {
-      this.$store.dispatch('antenatal/fetchClinicalNotes', {
+    fetchTests() {
+      this.$store.dispatch('order/fetchPrescribedTests', {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
         filter: { visit_id: this.$route.params.id },
       });
     },
-
-    editData(note) {
-      this.$emit('clinicalNote', note);
-    },
   },
   created() {
-    this.fetchClinicalNotes();
+    this.fetchTests();
   },
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.accord {
+  background: #f1f1f1 !important;
+  padding: 0.5rem 1.25rem !important;
+}
+</style>

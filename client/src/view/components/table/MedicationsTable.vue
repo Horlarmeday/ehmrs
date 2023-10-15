@@ -61,7 +61,7 @@
   </div>
 </template>
 <script>
-import DrugPopover from '@/utils/DrugPopover.vue';
+import DrugPopover from '@/view/components/popover/DrugPopover.vue';
 
 export default {
   name: 'MedicationsTable',

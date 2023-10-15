@@ -4,14 +4,14 @@
       <div class="card">
         <div class="card-header" header-tag="header" role="tab" style="background: blue">
           <div class="card-title accord" v-b-toggle="'accordion-9'">
-            <div class="card-label">Tests</div>
+            <div class="card-label">Investigations</div>
           </div>
         </div>
         <b-collapse id="accordion-9" accordion="my-accordion" role="tabpanel">
           <div class="card-body border">
-            <tests-table :tests="tests" />
+            <radiology-table :investigations="investigations" />
             <pagination
-              v-if="tests?.length"
+              v-if="investigations?.length"
               :total-pages="pages"
               :total="queriedItems"
               :per-page="perPage"
@@ -25,33 +25,32 @@
   </div>
 </template>
 <script>
-import TestsTable from '@/view/pages/programs/antenatal/components/TestsTable.vue';
 import Pagination from '@/utils/Pagination.vue';
+import RadiologyTable from '@/view/components/table/RadiologyTable.vue';
 
 export default {
-  components: { Pagination, TestsTable },
-  name: 'TestsAccordion',
+  components: { RadiologyTable, Pagination },
   data: () => ({
     currentPage: 1,
     itemsPerPage: 10,
   }),
   computed: {
-    tests() {
-      return this.$store.state.order.lab_orders;
+    investigations() {
+      return this.$store.state.order.radiology_orders;
     },
     queriedItems() {
-      return this.$store.state.order.total;
+      return this.$store.state.order.totalInvestigations;
     },
     pages() {
-      return this.$store.state.order.pages;
+      return this.$store.state.order.investigationPages;
     },
     perPage() {
-      return this.tests.length;
+      return this.investigations.length;
     },
   },
   methods: {
     handlePageChange() {
-      this.$store.dispatch('order/fetchPrescribedTests', {
+      this.$store.dispatch('order/fetchRadiologyOrders', {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
         filter: { visit_id: this.$route.params.id },
@@ -63,8 +62,8 @@ export default {
       this.handlePageChange();
     },
 
-    fetchTests() {
-      this.$store.dispatch('order/fetchPrescribedTests', {
+    fetchInvestigations() {
+      this.$store.dispatch('order/fetchRadiologyOrders', {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
         filter: { visit_id: this.$route.params.id },
@@ -72,7 +71,7 @@ export default {
     },
   },
   created() {
-    this.fetchTests();
+    this.fetchInvestigations();
   },
 };
 </script>

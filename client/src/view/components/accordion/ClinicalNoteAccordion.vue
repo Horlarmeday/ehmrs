@@ -3,15 +3,16 @@
     <div class="accordion accordion-solid accordion-panel accordion-svg-toggle" role="tablist">
       <div class="card">
         <div class="card-header" header-tag="header" role="tab" style="background: blue">
-          <div class="card-title accord" v-b-toggle="'accordion-9'">
-            <div class="card-label">Investigations</div>
+          <div class="card-title accord" v-b-toggle="'accordion-94'">
+            <div class="card-label">Clinical Notes</div>
           </div>
         </div>
-        <b-collapse id="accordion-9" accordion="my-accordion" role="tabpanel">
+        <b-collapse id="accordion-94" accordion="my-accordion" role="tabpanel">
           <div class="card-body border">
-            <radiology-table :investigations="investigations" />
+            <!--begin::Table-->
+            <clinical-notes-table @getClinicalNote="editData" :notes="clinicalNotes" />
+            <!--end::Table-->
             <pagination
-              v-if="investigations?.length"
               :total-pages="pages"
               :total="queriedItems"
               :per-page="perPage"
@@ -26,31 +27,31 @@
 </template>
 <script>
 import Pagination from '@/utils/Pagination.vue';
-import RadiologyTable from '@/view/pages/programs/antenatal/components/RadiologyTable.vue';
+import ClinicalNotesTable from '@/view/components/table/ClinicalNotesTable.vue';
 
 export default {
-  components: { RadiologyTable, Pagination },
+  components: { ClinicalNotesTable, Pagination },
   data: () => ({
     currentPage: 1,
     itemsPerPage: 10,
   }),
   computed: {
-    investigations() {
-      return this.$store.state.order.radiology_orders;
+    clinicalNotes() {
+      return this.$store.state.antenatal.clinicalNotes;
     },
     queriedItems() {
-      return this.$store.state.order.totalInvestigations;
+      return this.$store.state.antenatal.totalClinicalNotes || 0;
     },
     pages() {
-      return this.$store.state.order.investigationPages;
+      return this.$store.state.antenatal.totalClinicalNotesPages;
     },
     perPage() {
-      return this.investigations.length;
+      return this.clinicalNotes.length;
     },
   },
   methods: {
     handlePageChange() {
-      this.$store.dispatch('order/fetchRadiologyOrders', {
+      this.$store.dispatch('antenatal/fetchClinicalNotes', {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
         filter: { visit_id: this.$route.params.id },
@@ -62,16 +63,20 @@ export default {
       this.handlePageChange();
     },
 
-    fetchInvestigations() {
-      this.$store.dispatch('order/fetchRadiologyOrders', {
+    fetchClinicalNotes() {
+      this.$store.dispatch('antenatal/fetchClinicalNotes', {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
         filter: { visit_id: this.$route.params.id },
       });
     },
+
+    editData(note) {
+      this.$emit('clinicalNote', note);
+    },
   },
   created() {
-    this.fetchInvestigations();
+    this.fetchClinicalNotes();
   },
 };
 </script>

@@ -17,7 +17,7 @@
   </div>
 </template>
 <script>
-import TriageTable from '../TriageTable.vue';
+import TriageTable from '../table/AntenatalTriageTable.vue';
 export default {
   components: { TriageTable },
   data: () => ({
