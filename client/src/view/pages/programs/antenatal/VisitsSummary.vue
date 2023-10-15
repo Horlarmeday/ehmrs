@@ -61,13 +61,13 @@
   </div>
 </template>
 <script>
-import TriageTable from '@/view/pages/programs/antenatal/components/TriageTable.vue';
-import ObservationsTable from '@/view/pages/programs/antenatal/components/ObservationsTable.vue';
-import DiagnosesTable from '@/view/pages/programs/antenatal/components/DiagnosesTable.vue';
-import TestsTable from '@/view/pages/programs/antenatal/components/TestsTable.vue';
-import MedicationsTable from '@/view/pages/programs/antenatal/components/MedicationsTable.vue';
-import RadiologyTable from '@/view/pages/programs/antenatal/components/RadiologyTable.vue';
-import ClinicalNotesTable from '@/view/pages/programs/antenatal/components/ClinicalNotesTable.vue';
+import TriageTable from '@/view/components/table/AntenatalTriageTable.vue';
+import ObservationsTable from '@/view/components/table/AntenatalObservationsTable.vue';
+import DiagnosesTable from '@/view/components/table/DiagnosesTable.vue';
+import TestsTable from '@/view/components/table/TestsTable.vue';
+import MedicationsTable from '@/view/components/table/MedicationsTable.vue';
+import RadiologyTable from '@/view/components/table/RadiologyTable.vue';
+import ClinicalNotesTable from '@/view/components/table/ClinicalNotesTable.vue';
 export default {
   name: 'VisitsSummary',
   components: {

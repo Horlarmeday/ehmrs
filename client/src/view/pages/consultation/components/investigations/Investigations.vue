@@ -50,7 +50,7 @@
 </template>
 
 <script>
-import InvestigationAccordion from '@/view/pages/programs/antenatal/components/accordion/InvestigationAccordion.vue';
+import InvestigationAccordion from '@/view/components/accordion/InvestigationAccordion.vue';
 
 export default {
   name: 'Investigations',

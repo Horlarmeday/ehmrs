@@ -1,6 +1,6 @@
 <template>
   <div class="flex-row-fluid ml-lg-8">
-    <div class="card-custom gutter-b">
+    <div class="card-custom">
       <div class="card-header">
         <tests-accordion />
         <div class="card-title">
@@ -47,7 +47,7 @@
 </template>
 
 <script>
-import TestsAccordion from '@/view/pages/programs/antenatal/components/accordion/TestsAccordion.vue';
+import TestsAccordion from '@/view/components/accordion/TestsAccordion.vue';
 
 export default {
   name: 'Tests',

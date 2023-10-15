@@ -25,8 +25,8 @@
 </template>
 
 <script>
-import MedicationsTable from '@/view/pages/programs/antenatal/components/MedicationsTable.vue';
-import AdditionalItemsTable from '@/view/pages/programs/antenatal/components/AdditionalItemsTable.vue';
+import MedicationsTable from '@/view/components/table/MedicationsTable.vue';
+import AdditionalItemsTable from '@/view/components/table/AdditionalItemsTable.vue';
 
 export default {
   name: 'Medications',

@@ -79,7 +79,7 @@
 <script>
 import Diagnosis from '@/view/pages/consultation/components/observations/Diagnosis.vue';
 import { notifyError } from '@/common/common';
-import ObservationsAccordion from '@/view/pages/programs/antenatal/components/accordion/ObservationAccordion.vue';
+import ObservationsAccordion from '@/view/components/accordion/AntenatalObservationAccordion.vue';
 
 export default {
   name: 'Observation',
