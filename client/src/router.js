@@ -175,13 +175,13 @@ const router = new Router({
             {
               path: 'choose-type',
               name: 'choose-setting-type',
-              component: () => import('@/view/pages/admin/AdminModels.vue'),
+              component: () => import('@/view/pages/admin/Home.vue'),
               meta: {
                 requiresAuth: true,
               },
             },
             {
-              path: 'department',
+              path: 'departments',
               name: 'department',
               component: () => import('@/view/pages/admin/department/Departments.vue'),
               meta: {
@@ -189,7 +189,7 @@ const router = new Router({
               },
             },
             {
-              path: 'unit',
+              path: 'units',
               name: 'unit',
               component: () => import('@/view/pages/admin/unit/Units.vue'),
               meta: {
@@ -197,7 +197,7 @@ const router = new Router({
               },
             },
             {
-              path: 'ward',
+              path: 'wards',
               name: 'ward',
               component: () => import('@/view/pages/admin/ward/Wards.vue'),
               meta: {
@@ -205,7 +205,7 @@ const router = new Router({
               },
             },
             {
-              path: 'bed',
+              path: 'beds',
               name: 'bed',
               component: () => import('@/view/pages/admin/bed/Beds.vue'),
               meta: {

@@ -81,6 +81,7 @@
           :per-page="perPage"
           :current-page="currentPage"
           @pagechanged="onPageChange"
+          @changepagecount="onHandlePageCount"
         />
       </div>
       <!--end::Body-->
@@ -176,6 +177,13 @@ export default {
       this.currentPage = page;
       this.handlePageChange();
     },
+
+    onHandlePageCount(count) {
+      this.$store.dispatch('model/fetchServices', {
+        currentPage: this.currentPage,
+        itemsPerPage: count,
+      });
+    },
   },
   created() {
     this.$store.dispatch('model/fetchServices', {
@@ -186,4 +194,8 @@ export default {
 };
 </script>
 
-<style></style>
+<style>
+.sc {
+  box-shadow: 0 0 10px #08354f, 0 0 5px #113751;
+}
+</style>

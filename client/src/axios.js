@@ -17,8 +17,23 @@ axios.defaults.baseURL = '/api';
 axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 axios.defaults.timeout = 180000;
 
+NProgress.setColor = color => {
+  const style = document.createElement('style');
+  style.textContent = `
+  #nprogress .bar {
+    background: ${color} !important;
+  }
+  #nprogress .peg {
+    width: 150px;
+    box-shadow: 0 0 10px #08354f, 0 0 5px #113751;
+  }
+  `;
+  document.body.appendChild(style);
+};
+
 axios.interceptors.request.use(
   config => {
+    NProgress.setColor('white');
     NProgress.start();
     return config;
   },
@@ -39,7 +54,9 @@ axios.interceptors.response.use(
         store.dispatch('auth/logout');
         break;
     }
-    NProgress.done(true);
+    setTimeout(() => {
+      NProgress.done(true);
+    }, 30000);
     return response;
   },
   error => {
