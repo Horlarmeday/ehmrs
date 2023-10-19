@@ -18,6 +18,7 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Antenatal } from './antenatal';
+import { Admission } from './admission';
 
 export enum VisitCategory {
   IPD = 'Inpatient',
@@ -123,6 +124,12 @@ export class Visit extends Model {
   })
   ante_natal_id: number;
 
+  @ForeignKey(() => Admission)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  admission_id: number;
+
   @BelongsTo(() => Staff)
   staff: Staff;
 
@@ -131,6 +138,9 @@ export class Visit extends Model {
 
   @BelongsTo(() => Antenatal)
   antenatal: Antenatal;
+
+  @BelongsTo(() => Admission)
+  admission: Admission;
 
   static async paginate(param: {
     paginate: number;

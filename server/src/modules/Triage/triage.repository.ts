@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import { getModelByVisitId } from '../Consultation/consultation.repository';
 import { Triage } from '../../database/models';
+import { WhereOptions } from 'sequelize';
 
 /**
  * create a patient vital signs
@@ -57,3 +58,14 @@ export async function createTriage(data) {
 export async function getTriageInAVisit(data) {
   return getModelByVisitId(Triage, data);
 }
+
+/**
+ * get all triage done in a visit
+ *
+ * @function
+ * @returns {Promise<Triage[]>} json object with triage data
+ * @param query
+ */
+export const getTriages = async (query: WhereOptions<Triage>): Promise<Triage[]> => {
+  return Triage.findAll({ where: { ...query } });
+};
