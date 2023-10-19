@@ -90,8 +90,7 @@ export default {
    * VISITS SUMMARY
    */
   SET_VISITS_SUMMARY(state, visits) {
-    if (state.summaries[0]?.id !== visits[0]?.id)
-      state.summaries.push(...visits);
+    state.summaries = visits;
   },
 
   SET_VISITS_SUMMARY_TOTAL(state, total) {

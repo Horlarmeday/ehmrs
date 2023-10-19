@@ -13,5 +13,20 @@ export default {
 
   CHANGE_SAMPLE_ID(state, id) {
     state.sampleId = id;
-  }
+  },
+
+  /**
+   * CONSULTATION HISTORY
+   */
+  SET_VISITS_HISTORY(state, history) {
+    state.histories = history;
+  },
+
+  SET_VISITS_HISTORY_TOTAL(state, total) {
+    state.totalHistories = total;
+  },
+
+  SET_VISITS_HISTORY_PAGES(state, pages) {
+    state.totalHistoryPages = pages;
+  },
 };

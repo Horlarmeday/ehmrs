@@ -36,4 +36,26 @@ export default {
   changeSampleId({ commit }, id) {
     commit('CHANGE_SAMPLE_ID', id);
   },
+
+  fetchVisitsHistory({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/consultations/history/get`, {
+          params: {
+            currentPage: payload.currentPage,
+            pageLimit: payload.itemsPerPage,
+            visitId: payload.visitId,
+          },
+        })
+        .then(response => {
+          commit('SET_VISITS_HISTORY', response.data.data.docs);
+          commit('SET_VISITS_HISTORY_TOTAL', response.data.data.total);
+          commit('SET_VISITS_HISTORY_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
 };
