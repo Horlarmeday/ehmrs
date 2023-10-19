@@ -1,7 +1,7 @@
 import { verify } from 'jsonwebtoken';
-import { NextFunction, Response } from 'express';
+import { NextFunction, Response, Request } from 'express';
 
-export default function(req, res: Response, next: NextFunction) {
+export default function(req: Request & { user: any }, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
   if (!authHeader) return res.status(401).json('Access denied, No token provided');
 

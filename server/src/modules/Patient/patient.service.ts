@@ -16,7 +16,7 @@ import {
   getPatientByNameAndPhone,
 } from './patient.repository';
 import { processSnappedPhoto, StatusCodes } from '../../core/helpers/helper';
-import { assignHospitalNumber, uploadImage } from '../../core/command/worker/schedule';
+import { JobSchedule } from '../../core/command/worker/schedule';
 import { DEPENDANT_EXIST, INTERNAL_ERROR, PATIENT_EXIST } from './messages/response-messages';
 import {
   AddPatientInsuranceBody,
@@ -26,6 +26,7 @@ import {
 } from './types/patient.types';
 import { prescribeService } from '../Orders/Service/service-order.repository';
 import { ParsedQs } from 'qs';
+import { Patient } from '../../database/models';
 
 class PatientService {
   /**
@@ -48,7 +49,8 @@ class PatientService {
       );
 
       const createdPatient = await createPatientAccount({ ...createPatientBody, fileName });
-      await assignHospitalNumber(createdPatient.id);
+      await JobSchedule.assignHospitalNumber(createdPatient.id);
+
       if (createPatientBody.service_id)
         await prescribeService({
           service_id: createPatientBody.service_id,
@@ -109,7 +111,8 @@ class PatientService {
     if (patient) throw new BadException('INVALID', StatusCodes.BAD_REQUEST, PATIENT_EXIST);
 
     const createdPatient = await createEmergencyPatient(emergencyPatientBody);
-    await assignHospitalNumber(createdPatient.id);
+    await JobSchedule.assignHospitalNumber(createdPatient.id);
+
     return createdPatient;
   }
 
@@ -121,7 +124,7 @@ class PatientService {
    * @param body
    * @memberOf PatientService
    */
-  static async createDependantService(body) {
+  static async createDependantService(body): Promise<Patient> {
     const dependant = await findDependantByEnrolleeCode(body.enrollee_code);
     if (dependant) throw new BadException('INVALID', StatusCodes.BAD_REQUEST, DEPENDANT_EXIST);
 
@@ -129,7 +132,8 @@ class PatientService {
     const fileName = await processSnappedPhoto(body.photo, body.firstname);
 
     const patient = await createDependant({ ...body, photo: fileName });
-    await assignHospitalNumber(patient.id);
+    await JobSchedule.assignHospitalNumber(patient.id);
+
     return patient;
   }
 

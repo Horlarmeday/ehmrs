@@ -29,7 +29,7 @@ import { AccountStatus } from '../../database/models/antenatal';
 import { prescribeService } from '../Orders/Service/service-order.repository';
 import { getOneService } from '../AdminSettings/admin.repository';
 import { ANTENATAL_ACCOUNT_EXISTS, FEMALE_REQUIRED } from './messages/antenatal.messages';
-import { assignAntenatalNumber } from '../../core/command/worker/schedule';
+import { JobSchedule } from '../../core/command/worker/schedule';
 import dayjs from 'dayjs';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { bulkCreateDiagnosis } from '../Consultation/consultation.repository';
@@ -55,7 +55,7 @@ export class AntenatalService {
       ...body,
       ...dates,
     });
-    await assignAntenatalNumber(antenatal.id, patient_id); // update antenatal number
+    await JobSchedule.assignAntenatalNumber(antenatal.id, patient_id); // update antenatal number
 
     if (service_id) {
       const service = await getOneService({ id: service_id });

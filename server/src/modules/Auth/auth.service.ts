@@ -2,7 +2,7 @@
 import bcrypt from 'bcryptjs';
 import { getStaffById, getStaffByPhone, getStaffByUsername } from '../Staff/staff.repository';
 import { BadException } from '../../common/util/api-error';
-import { sendGeneratedPassword } from '../../core/command/worker/schedule';
+import { JobSchedule } from '../../core/command/worker/schedule';
 import uuidv1 from 'uuid/v4';
 import { Status } from '../Staff/interface/staff.interface';
 import { ChangePasswordParam, LoginParams } from './interface/auth.interface';
@@ -25,7 +25,7 @@ class AuthService {
    * @param body
    * @memberOf AuthService
    */
-  static async loginService(body: LoginParams) {
+  static async loginService(body: LoginParams): Promise<string> {
     const { username, password } = body;
     const staff = await getStaffByUsername(username);
     if (!staff) throw new BadException('INVALID', 400, INVALID_CREDENTIALS);
@@ -94,7 +94,7 @@ class AuthService {
 
     // send staff sms
     const message = `Your new password is ${tempPassword}. Change as soon as you login`;
-    await sendGeneratedPassword(message, staff.phone);
+    await JobSchedule.sendGeneratedPassword(message, staff.phone);
 
     return staff;
   }

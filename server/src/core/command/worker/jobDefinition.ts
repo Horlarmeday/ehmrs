@@ -1,4 +1,5 @@
 import { JobName } from '../index';
+import { Agenda, Job } from '@hokify/agenda';
 import {
   assignHospitalNumber,
   checkEmptyHospitalNumber,
@@ -8,7 +9,7 @@ import {
   assignAntenatalNumber,
 } from '../jobs';
 import { logger } from '../../helpers/logger';
-import { updatePatientHealthInsurance } from '../jobs/updatePatientHealthInsurance.job';
+import { updatePatientHealthInsurance } from '../jobs/now/updatePatientHealthInsurance.job';
 
 const Jobs = {
   [JobName.EMPTY_HOSPITAL_NUMBER]: checkEmptyHospitalNumber,
@@ -20,10 +21,10 @@ const Jobs = {
   [JobName.ASSIGN_ANTENATAL_NUMBER]: assignAntenatalNumber,
 };
 
-export default agenda => {
-  Object.keys(Jobs).forEach(name => {
+export default (agenda: Agenda) => {
+  Object.keys(Jobs).forEach((name: JobName) => {
     logger.info(`Defining ${name} job in agenda`);
-    agenda.define(name, async (job: any) => {
+    agenda.define(name, async (job: Job) => {
       await Jobs[name](job);
     });
   });

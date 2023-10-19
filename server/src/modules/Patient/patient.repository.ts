@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import { Op } from 'sequelize';
-import { assignHospitalNumber } from '../../core/command/worker/schedule';
+import { JobSchedule } from '../../core/command/worker/schedule';
 import { PatientType } from './types/patient.types';
 import { Insurance, Patient, PatientInsurance } from '../../database/models';
 import sequelizeConnection from '../../database/config/config';
@@ -163,7 +163,7 @@ export const addPatientInsurance = async data => {
             },
             { transaction: t }
           );
-          await assignHospitalNumber(dependant.id);
+          await JobSchedule.assignHospitalNumber(dependant.id);
         })
       );
     }
