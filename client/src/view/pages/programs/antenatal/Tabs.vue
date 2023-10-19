@@ -129,7 +129,7 @@ import Triage from '@/view/pages/programs/antenatal/tabs/Triage.vue';
 import PageSkeleton from '@/utils/PageSkeleton.vue';
 import Radiology from '@/view/pages/programs/antenatal/tabs/Radiology.vue';
 import ClinicalNote from '@/view/pages/programs/antenatal/tabs/ClinicalNote.vue';
-import Summary from '@/view/pages/programs/antenatal/VisitsSummary.vue';
+import Summary from '@/view/pages/programs/antenatal/tabs/Summary.vue';
 import { parseJwt } from '@/core/plugins/parseJwt';
 import Observation from '@/view/pages/programs/antenatal/tabs/Observation.vue';
 

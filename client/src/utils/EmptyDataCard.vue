@@ -2,9 +2,7 @@
   <div class="text-center">
     <div class="empty-card">
       <span class="card-icon" @click="addNewData">&#x2B;</span>
-      <span class="card-text"
-        >There are no inventories, kindly click on the plus icon to create one.</span
-      >
+      <span class="card-text">{{ text }}</span>
     </div>
   </div>
 </template>
@@ -12,6 +10,12 @@
 <script>
 export default {
   name: 'EmptyDataCard',
+  props: {
+    text: {
+      type: String,
+      required: true,
+    },
+  },
   methods: {
     addNewData() {
       this.$emit('addData', true);

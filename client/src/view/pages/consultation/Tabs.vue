@@ -4,12 +4,25 @@
       <div class="container white">
         <div class="d-none d-lg-flex align-items-center mr-3">
           <ul class="header-tabs nav align-self-end font-size-lg" role="tablist">
-            <li class="nav-item">
+            <li class="nav-item mr-3">
               <a
                 class="nav-link text-dark py-4 px-6"
                 :class="{ active: tabIndex === 0, disabled: tabIndex === 0 }"
-                @click="setActiveTab($event, 'observations')"
+                @click="setActiveTab($event, 'history')"
                 data-tab="0"
+                data-toggle="tab"
+                href="#"
+                role="tab"
+                aria-selected="true"
+                >History</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link text-dark py-4 px-6"
+                :class="{ active: tabIndex === 1, disabled: tabIndex === 1 }"
+                @click="setActiveTab($event, 'observations')"
+                data-tab="1"
                 data-toggle="tab"
                 href="#"
                 role="tab"
@@ -21,9 +34,9 @@
               <a
                 class="nav-link text-dark py-4 px-6"
                 @click="setActiveTab($event, 'tests')"
-                data-tab="1"
+                data-tab="2"
                 data-toggle="tab"
-                :class="{ active: tabIndex === 1, disabled: tabIndex === 1 }"
+                :class="{ active: tabIndex === 2, disabled: tabIndex === 2 }"
                 href="#"
                 role="tab"
                 aria-selected="true"
@@ -33,9 +46,9 @@
             <li class="nav-item mr-3">
               <a
                 class="nav-link text-dark py-4 px-6"
-                :class="{ active: tabIndex === 2, disabled: tabIndex === 2 }"
+                :class="{ active: tabIndex === 3, disabled: tabIndex === 3 }"
                 @click="setActiveTab($event, 'medications')"
-                data-tab="2"
+                data-tab="3"
                 data-toggle="tab"
                 href="#"
                 role="tab"
@@ -46,9 +59,9 @@
             <li class="nav-item mr-3">
               <a
                 class="nav-link text-dark py-4 px-6"
-                :class="{ active: tabIndex === 3, disabled: tabIndex === 3 }"
+                :class="{ active: tabIndex === 4, disabled: tabIndex === 4 }"
                 @click="setActiveTab($event, 'investigations')"
-                data-tab="3"
+                data-tab="4"
                 data-toggle="tab"
                 href="#"
                 role="tab"
@@ -59,9 +72,9 @@
             <li class="nav-item mr-3">
               <a
                 class="nav-link text-dark py-4 px-6"
-                :class="{ active: tabIndex === 4, disabled: tabIndex === 4 }"
+                :class="{ active: tabIndex === 5, disabled: tabIndex === 5 }"
                 @click="setActiveTab($event, 'disposition')"
-                data-tab="4"
+                data-tab="5"
                 data-toggle="tab"
                 href="#"
                 role="tab"
@@ -72,22 +85,9 @@
             <li class="nav-item mr-3">
               <a
                 class="nav-link text-dark py-4 px-6"
-                :class="{ active: tabIndex === 5, disabled: tabIndex === 5 }"
-                @click="setActiveTab"
-                data-tab="5"
-                data-toggle="tab"
-                href="#"
-                role="tab"
-                aria-selected="true"
-                >History</a
-              >
-            </li>
-            <li class="nav-item mr-3">
-              <a
-                class="nav-link text-dark py-4 px-6"
-                :class="{ active: tabIndex === 6, disabled: tabIndex === 6 }"
+                :class="{ active: tabIndex === 7, disabled: tabIndex === 7 }"
                 @click="setActiveTab($event, 'services')"
-                data-tab="6"
+                data-tab="7"
                 data-toggle="tab"
                 href="#"
                 role="tab"
@@ -116,6 +116,7 @@ import ServicesOrder from './tabs/ServiceOrders.vue';
 import Disposition from '@/view/pages/consultation/tabs/Disposition.vue';
 import PulseIcons from '@/view/pages/consultation/components/PulseIcons.vue';
 import PageSkeleton from '@/utils/PageSkeleton.vue';
+import History from '@/view/pages/consultation/tabs/History.vue';
 
 const ComponentMapping = {
   observations: Observations,
@@ -124,6 +125,7 @@ const ComponentMapping = {
   medications: Medications,
   services: ServicesOrder,
   disposition: Disposition,
+  history: History,
 };
 
 export default {
@@ -185,7 +187,7 @@ export default {
         this.tabIndex = parseInt(storedTabIndex);
         this.loading = false;
       } else {
-        this.activeComponent = ComponentMapping['observations'];
+        this.activeComponent = ComponentMapping['history'];
         this.tabIndex = 0;
         this.loading = false;
       }
