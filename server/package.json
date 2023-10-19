@@ -68,9 +68,9 @@
     "typescript": "^4.4.2"
   },
   "dependencies": {
+    "@hokify/agenda": "^6.3.0",
     "@types/pdfkit": "^0.12.10",
-    "agenda": "^3.1.0",
-    "agendash2": "^0.8.2",
+    "agendash": "^4.0.0",
     "axios": "^0.21.1",
     "bcryptjs": "^2.4.3",
     "box-node-sdk": "^1.39.0",
