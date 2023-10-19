@@ -6,7 +6,7 @@
       @closeModal="hideModal"
     />
     <div v-if="!inventories.length" class="bv-example">
-      <empty-data-card @addData="addNewData" />
+      <empty-data-card :text="content" @addData="addNewData" />
     </div>
     <!--begin::Row-->
     <div v-if="inventories.length" class="row mb-10">
@@ -46,6 +46,7 @@ export default {
     return {
       displayPrompt: false,
       inventoryToEdit: {},
+      content: 'There are no inventories, kindly click on the plus icon to create one',
     };
   },
   computed: {

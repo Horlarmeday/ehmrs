@@ -102,3 +102,6 @@ export const isContainEmptyValues = array => {
     Object.values(obj).some(value => value === null || value === undefined || value === '')
   );
 };
+
+export const isEmpty = obj =>
+  [Object, Array].includes((obj || {}).constructor) && !Object.entries(obj || {}).length;
