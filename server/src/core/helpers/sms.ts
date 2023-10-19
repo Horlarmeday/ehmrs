@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { BadException } from '../../common/util/api-error';
 
-export default async function sendSMS(message, recipient) {
+export const sendSMS = async (message: string, recipient: string) => {
   const data = {
     username: process.env.SMSSMARTUSERNAME,
     password: process.env.SMSSMARTPASSWORD,
@@ -15,4 +15,4 @@ export default async function sendSMS(message, recipient) {
   } catch (error) {
     throw new BadException('ERROR', 500, error);
   }
-}
+};

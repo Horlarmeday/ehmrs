@@ -9,7 +9,7 @@ const cloud = cloudinary.v2.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export const uploadPatientImageCloudinary = async (image: string, patientId: string) => {
+export const uploadPatientImageCloudinary = async (image: string, patientId: number) => {
   const message = taggedMessaged('uploadPatientImageCloudinary');
 
   try {

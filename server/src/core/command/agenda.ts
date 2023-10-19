@@ -1,16 +1,15 @@
-import Agenda from 'agenda';
+import { Agenda } from '@hokify/agenda';
 import Jobs from './worker/jobDefinition';
-import { CronJob, JobNow } from './worker/worker';
+import { CronJobs } from './worker/worker';
+
+if (!process.env.DB_MONGO) throw new Error('Cannot find Mongo url');
 
 const agenda = new Agenda({
-  db: { address: process.env.DB_MONGO, collection: 'ehmrs_jobs' },
-  options: {
-    autoIndex: false,
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-    useFindAndModify: false,
+  db: {
+    address: process.env.DB_MONGO,
+    collection: 'ehmrs_jobs',
   },
+  ensureIndex: true,
 });
 
 agenda
@@ -20,8 +19,8 @@ agenda
 Jobs(agenda);
 
 agenda.start().then(() => {
-  //JobNow(agenda);
-  CronJob(agenda);
+  //InstantJobs(agenda);
+  CronJobs(agenda);
 });
 
 export default agenda;
