@@ -5,11 +5,13 @@ import {
   bulkCreateDiagnosis,
   createObservation,
   getConsultationSummary,
+  getVisitsHistory,
 } from './consultation.repository';
 import { checkValueExists } from '../../core/helpers/helper';
 import VisitService from '../Visit/visit.service';
 import { Observation } from './interface/consultation.interface';
 import { History } from '../../database/models';
+import { getVisitById } from '../Visit/visit.repository';
 
 class ConsultationService {
   /**
@@ -85,6 +87,23 @@ class ConsultationService {
    */
   static async getConsultationSummary(body) {
     return getConsultationSummary(body);
+  }
+
+  /**
+   * Get visits history
+   * @param body
+   * @memberof ConsultationService
+   */
+  static async getVisitsHistory(body) {
+    const { currentPage, pageLimit, visitId } = body;
+
+    const visit = await getVisitById(visitId);
+
+    if (Object.keys(body).length) {
+      return getVisitsHistory(currentPage, pageLimit, visit.patient_id);
+    }
+
+    return getVisitsHistory(1, 5, visit.patient_id);
   }
 }
 

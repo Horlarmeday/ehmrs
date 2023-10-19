@@ -1,9 +1,22 @@
 /* eslint-disable camelcase */
 import { BadException } from '../../common/util/api-error';
-import { StatusCodes } from '../../core/helpers/helper';
+import { paginate, StatusCodes } from '../../core/helpers/helper';
 
 import { History, Complaint, Diagnosis } from '../../database/models';
 import { WhereOptions } from 'sequelize';
+import { getPrescriptionTests } from '../Orders/Laboratory/lab-order.repository';
+import {
+  getPrescriptionAdditionalItems,
+  getPrescriptionDrugs,
+} from '../Orders/Pharmacy/pharmacy-order.repository';
+import { getPrescriptionInvestigations } from '../Orders/Radiology/radiology-order.repository';
+import {
+  getAntenatalClinicalNotes,
+  getAntenatalObservations,
+  getAncTriages,
+} from '../Antenatal/antenatal.repository';
+import { getTriages } from '../Triage/triage.repository';
+import { getVisitsQuery } from '../Visit/visit.repository';
 
 /**
  * create a patient complaint
@@ -94,18 +107,75 @@ export async function getModelByVisitId(model, data) {
  * @returns {object} consultation summary data
  */
 export async function getConsultationSummary(data) {
-  const diagnosis = getModelByVisitId(Diagnosis, data);
   const complaint = getModelByVisitId(Complaint, data);
   const history = getModelByVisitId(History, data);
 
   try {
-    const [diagnoses, complaints, histories] = await Promise.all([diagnosis, complaint, history]);
+    const [complaints, histories] = await Promise.all([complaint, history]);
     return {
-      diagnoses,
-      complaints,
       histories,
+      complaints,
     };
   } catch (e) {
     throw new BadException('ERROR', StatusCodes.SERVER_ERROR, e);
   }
 }
+
+const getPrescriptions = async (visit_id: number) => {
+  const [
+    tests,
+    drugs,
+    investigations,
+    observations,
+    triages,
+    diagnoses,
+    items,
+  ] = await Promise.all([
+    getPrescriptionTests({ visit_id }),
+    getPrescriptionDrugs({ visit_id }),
+    getPrescriptionInvestigations({ visit_id }),
+    getConsultationSummary(visit_id),
+    getTriages({ visit_id }),
+    getPatientDiagnoses({ visit_id }),
+    getPrescriptionAdditionalItems({ visit_id }),
+  ]);
+  return { tests, drugs, investigations, observations, triages, diagnoses, items };
+};
+
+/**
+ * get consultation history
+ * @returns {Promise<{total: number, docs: any[], pages: number, perPage: number, currentPage: number}>} consultation summary data
+ * @param currentPage
+ * @param pageLimit
+ * @param patientId
+ */
+export const getVisitsHistory = async (
+  currentPage = 1,
+  pageLimit = 5,
+  patientId
+): Promise<{
+  total: number;
+  docs: any[];
+  pages: number;
+  perPage: number;
+  currentPage: number;
+}> => {
+  const { visits, limit, count } = await getVisitsQuery(
+    currentPage,
+    pageLimit,
+    {
+      patient_id: patientId,
+    },
+    ['id', 'date_visit_start', 'date_visit_ended', 'patient_id']
+  );
+  const summary = await Promise.all(
+    visits.map(async ({ id, date_visit_start, date_visit_ended, patient_id }) => ({
+      id,
+      date_visit_start,
+      date_visit_ended,
+      patient_id,
+      ...(await getPrescriptions(id)),
+    }))
+  );
+  return paginate({ rows: summary, count }, currentPage, limit);
+};

@@ -6,5 +6,6 @@ const router = Router();
 router.post('/observation/create/:id', verify, ConsultationController.createObservation);
 router.post('/diagnosis/create/:id', verify, ConsultationController.createDiagnosis);
 router.get('/summary/get/:id', verify, ConsultationController.getConsultationSummary);
+router.get('/history/get', verify, ConsultationController.getVisitsHistory);
 
 export default router;

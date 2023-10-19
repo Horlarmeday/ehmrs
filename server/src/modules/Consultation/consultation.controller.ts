@@ -1,11 +1,11 @@
 import { validateDiagnosis, validateObservation } from './validations';
 import ConsultationService from './consultation.service';
-import { successResponse } from '../../common/responses/success-responses';
-import { DATA_SAVED } from '../AdminSettings/messages/response-messages';
+import { SuccessResponse, successResponse } from '../../common/responses/success-responses';
+import { DATA_RETRIEVED, DATA_SAVED } from '../AdminSettings/messages/response-messages';
 import { SUCCESS } from '../../core/constants';
 import { errorResponse } from '../../common/responses/error-responses';
-import { DOSAGE_FORM_REQUIRED } from '../Pharmacy/messages/response-messages';
 import { StatusCodes } from '../../core/helpers/helper';
+import { NextFunction, Request, Response } from 'express';
 
 class ConsultationController {
   /**
@@ -79,11 +79,38 @@ class ConsultationController {
    * @param {object} next next middleware
    * @returns {json} json object with consultation summary data
    */
-  static async getConsultationSummary(req, res, next) {
+  static async getConsultationSummary(req: Request, res: Response, next: NextFunction) {
     try {
       const summary = await ConsultationService.getConsultationSummary(req.params.id);
 
       return successResponse({ res, message: SUCCESS, data: summary, httpCode: 200 });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get consultation history
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with consultation history data
+   */
+  static async getVisitsHistory(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    try {
+      const history = await ConsultationService.getVisitsHistory(req.query);
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: DATA_RETRIEVED,
+        data: history,
+      });
     } catch (e) {
       return next(e);
     }
