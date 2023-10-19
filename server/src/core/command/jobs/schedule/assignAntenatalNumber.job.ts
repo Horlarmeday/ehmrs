@@ -1,15 +1,20 @@
-import { logger, taggedMessaged } from '../../helpers/logger';
-import { getAntenatalNumber } from '../helper';
-import { Job } from 'agenda';
+import { logger, taggedMessaged } from '../../../helpers/logger';
+import { getAntenatalNumber } from '../../helper';
+import { Job } from '@hokify/agenda';
 import {
   getOneAntenatalAccount,
   updateAntenatalAccount,
-} from '../../../modules/Antenatal/antenatal.repository';
-import { AccountStatus } from '../../../database/models/antenatal';
+} from '../../../../modules/Antenatal/antenatal.repository';
+import { AccountStatus } from '../../../../database/models/antenatal';
+
+type AssignAntenatalNumberData = {
+  id: number;
+  patient_id: number;
+};
 
 export const assignAntenatalNumber = async (job: Job) => {
   const message = taggedMessaged('AssignAntenatalNumber');
-  const { id, patient_id } = job.attrs.data;
+  const { id, patient_id } = job.attrs.data as AssignAntenatalNumberData;
   let antenatalNumber: string;
   const antenatal = await getOneAntenatalAccount({
     patient_id,

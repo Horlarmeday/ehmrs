@@ -1,8 +1,8 @@
-import { Patient } from '../../../database/models';
+import { Patient } from '../../../../database/models';
 import { Op } from 'sequelize';
-import { processArray } from '../../helpers/general';
-import { logger, taggedMessaged } from '../../helpers/logger';
-import { getHospitalNumber } from '../helper';
+import { processArray } from '../../../helpers/general';
+import { logger, taggedMessaged } from '../../../helpers/logger';
+import { getHospitalNumber } from '../../helper';
 
 const updateHospitalNumber = async (patient: Patient) => {
   const message = taggedMessaged('updateHospitalNumber');

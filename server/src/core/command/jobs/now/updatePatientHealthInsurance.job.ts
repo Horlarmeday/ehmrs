@@ -1,9 +1,11 @@
-import { Patient, PatientInsurance } from '../../../database/models';
+import { Patient, PatientInsurance } from '../../../../database/models';
 import { Op } from 'sequelize';
-import { logger, taggedMessaged } from '../../helpers/logger';
-import { processArray } from '../../helpers/general';
+import { logger, taggedMessaged } from '../../../helpers/logger';
+import { processArray } from '../../../helpers/general';
 
-const createPatientInsuranceRecord = async patient => {
+const createPatientInsuranceRecord = async (
+  patient: Patient & { hmo_id: number; insurance_id: number }
+) => {
   const message = taggedMessaged('createPatientInsuranceRecord');
 
   const insurance = await PatientInsurance.findOne({
@@ -31,9 +33,9 @@ export const updatePatientHealthInsurance = async () => {
   const patients = await Patient.findAll({ where: { hmo_id: { [Op.ne]: null } } });
 
   try {
-    // if (patients?.length) {
-    //   await processArray(patients, createPatientInsuranceRecord);
-    // }
+    if (patients?.length) {
+      await processArray(patients, createPatientInsuranceRecord);
+    }
     logger.warning(message(`No patients with empty hospital number, skipping...`));
   } catch (e) {
     logger.error(message('Error'), e);
