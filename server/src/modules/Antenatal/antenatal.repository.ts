@@ -177,7 +177,7 @@ export const getAntenatalTriages = async ({
   });
 };
 
-export const getTriages = async (query: WhereOptions<AntenatalTriage>) => {
+export const getAncTriages = async (query: WhereOptions<AntenatalTriage>) => {
   return AntenatalTriage.findAll({ where: { ...query } });
 };
 
@@ -349,7 +349,7 @@ const getPrescriptions = async (visit_id: number) => {
     getPrescriptionDrugs({ visit_id }),
     getPrescriptionInvestigations({ visit_id }),
     getAntenatalObservations({ visit_id }),
-    getTriages({ visit_id }),
+    getAncTriages({ visit_id }),
     getAntenatalClinicalNotes({ visit_id }),
     getPatientDiagnoses({ visit_id }),
     getPrescriptionAdditionalItems({ visit_id }),
@@ -364,13 +364,14 @@ export const getVisitsSummary = async (currentPage = 1, pageLimit = 5, antenatal
     {
       ante_natal_id: antenatalId,
     },
-    ['id', 'date_visit_start', 'date_visit_ended']
+    ['id', 'date_visit_start', 'date_visit_ended', 'patient_id']
   );
   const summary = await Promise.all(
-    visits.map(async ({ id, date_visit_start, date_visit_ended }) => ({
+    visits.map(async ({ id, date_visit_start, date_visit_ended, patient_id }) => ({
       id,
       date_visit_start,
       date_visit_ended,
+      patient_id,
       ...(await getPrescriptions(id)),
     }))
   );

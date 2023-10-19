@@ -1,6 +1,14 @@
 import sequelize from '../../database/config/config';
 import { Op, Transaction } from 'sequelize';
-import { Bed, Patient, PrescribedService, Staff, Ward, Admission } from '../../database/models';
+import {
+  Bed,
+  Patient,
+  PrescribedService,
+  Staff,
+  Ward,
+  Admission,
+  Visit,
+} from '../../database/models';
 import { BedStatus } from '../../database/models/bed';
 import { ServiceType } from '../../database/models/prescribedService';
 import { PatientStatus } from '../../database/models/patient';
@@ -9,6 +17,7 @@ import { getPatientById } from '../Patient/patient.repository';
 import { AdmissionBodyType } from './types/admission.types';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { patientAttributes } from '../Visit/visit.repository';
+import { VisitCategory } from '../../database/models/visit';
 
 /**
  * Admit patient into a ward
@@ -25,6 +34,7 @@ export const admitPatient = async (data: AdmissionBodyType) => {
       getPatientInsuranceQuery({ patient_id }),
       getPatientById(patient_id),
     ]);
+
     if (!patient.has_insurance || !EXCLUDED_INSURANCE.includes(insurance?.insurance?.name))
       await PrescribedService.create(
         {
@@ -41,6 +51,10 @@ export const admitPatient = async (data: AdmissionBodyType) => {
     await Patient.update(
       { patient_status: PatientStatus.ADMITTED },
       { where: { id: patient_id }, transaction: t }
+    );
+    await Visit.update(
+      { category: VisitCategory.IPD, admission_id: admission.id },
+      { where: { id: visit_id }, transaction: t }
     );
     //todo: insert default admission items
     return await getAdmissionById(admission.id);

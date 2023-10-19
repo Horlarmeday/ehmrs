@@ -16,7 +16,7 @@ export class AdmissionService {
    * @memberOf AdmissionService
    * @param body
    */
-  static async admitPatient(body: AdmissionBodyType) {
+  static async admitPatient(body: AdmissionBodyType): Promise<Admission> {
     const visit = await getVisitById(body.visit_id);
     const admission = await getAdmissionByPatientId(visit.patient_id);
     if (admission && admission?.discharge_status === DischargeStatus.ON_ADMISSION) {
