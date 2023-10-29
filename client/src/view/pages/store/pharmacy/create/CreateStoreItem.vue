@@ -25,9 +25,7 @@
                 :reduce="drugs => ({ id: drugs.id, type: drugs.type })"
                 :options="drugs"
               />
-              <span class="text-danger text-sm">{{
-                errors.first("drug")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('drug') }}</span>
             </div>
             <div class="col-lg-4">
               <label>Product Code</label>
@@ -38,9 +36,7 @@
                 placeholder="Product Code"
                 name="product_code"
               />
-              <span class="text-danger text-sm">{{
-                errors.first("product_code")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('product_code') }}</span>
             </div>
             <div class="col-lg-4">
               <label>Voucher/Ref Number</label>
@@ -51,9 +47,7 @@
                 placeholder="Voucher/Ref Number"
                 name="voucher"
               />
-              <span class="text-danger text-sm">{{
-                errors.first("voucher")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('voucher') }}</span>
             </div>
           </div>
           <!-- Contact -->
@@ -67,9 +61,7 @@
                 placeholder="Batch Number"
                 v-model="batch"
               />
-              <span class="text-danger text-sm">{{
-                errors.first("batch")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('batch') }}</span>
             </div>
             <div class="col-lg-4">
               <label>Shelf <span class="text-danger">*</span></label>
@@ -107,9 +99,7 @@
                 <option>Y</option>
                 <option>Z</option>
               </select>
-              <span class="text-danger text-sm">{{
-                errors.first("shelf")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('shelf') }}</span>
             </div>
             <div class="col-lg-4">
               <label>Shelf Number <span class="text-danger">*</span></label>
@@ -131,9 +121,7 @@
                 <option>9</option>
                 <option>10</option>
               </select>
-              <span class="text-danger text-sm">{{
-                errors.first("shelf_num")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('shelf_num') }}</span>
             </div>
           </div>
           <div class="form-group row">
@@ -147,9 +135,7 @@
                 input-class="form-control form-control-sm"
                 placeholder="Expiry Date"
               />
-              <span class="text-danger text-sm">{{
-                errors.first("expiration")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('expiration') }}</span>
             </div>
             <div class="col-lg-4" v-if="canSee">
               <label>Dosage Form <span class="text-danger">*</span></label>
@@ -166,9 +152,7 @@
                   >{{ dosageForm.name }}</option
                 >
               </select>
-              <span class="text-danger text-sm">{{
-                errors.first("dosage_form")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('dosage_form') }}</span>
             </div>
             <div class="col-lg-4 mt-3" v-if="canSee">
               <label>Strength <span class="text-danger">*</span></label>
@@ -179,17 +163,11 @@
                 placeholder="Strength"
                 name="strength_input"
               />
-              <span class="text-danger text-sm">{{
-                errors.first("strength_input")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('strength_input') }}</span>
             </div>
             <div class="col-lg-4" v-if="canSee">
               <label>Strength Unit <span class="text-danger">*</span></label>
-              <select
-                class="form-control form-control-sm"
-                v-model="strength"
-                name="strength"
-              >
+              <select class="form-control form-control-sm" v-model="strength" name="strength">
                 <option
                   :value="measurement.id"
                   v-for="measurement in measurements"
@@ -197,31 +175,17 @@
                   >{{ measurement.name }}</option
                 >
               </select>
-              <span class="text-danger text-sm">{{
-                errors.first("strength")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('strength') }}</span>
             </div>
 
             <div class="col-lg-4 mt-3" v-if="canSee">
-              <label
-                >Route of Administration
-                <span class="text-danger">*</span></label
-              >
-              <select
-                class="form-control form-control-sm"
-                v-model="route"
-                name="route"
-              >
-                <option
-                  :value="route.id"
-                  v-for="route in routes"
-                  :key="route.id"
-                  >{{ route.name }}</option
-                >
+              <label>Route of Administration <span class="text-danger">*</span></label>
+              <select class="form-control form-control-sm" v-model="route" name="route">
+                <option :value="route.id" v-for="route in routes" :key="route.id">{{
+                  route.name
+                }}</option>
               </select>
-              <span class="text-danger text-sm">{{
-                errors.first("route")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('route') }}</span>
             </div>
             <div class="col-lg-4 mt-3">
               <label>Quantity <span class="text-danger">*</span></label>
@@ -234,9 +198,7 @@
                 placeholder="Quantity"
                 name="quantity"
               />
-              <span class="text-danger text-sm">{{
-                errors.first("quantity")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('quantity') }}</span>
             </div>
             <div class="col-lg-4 mt-3">
               <label>Unit <span class="text-danger">*</span></label>
@@ -249,9 +211,7 @@
                 :reduce="units => units.id"
                 :options="units"
               />
-              <span class="text-danger text-sm">{{
-                errors.first("unit")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('unit') }}</span>
             </div>
             <div class="col-lg-4 mt-3">
               <label>Unit Price <span class="text-danger">*</span></label>
@@ -264,9 +224,7 @@
                 placeholder="Unit Price"
                 name="unit_price"
               />
-              <span class="text-danger text-sm">{{
-                errors.first("unit_price")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('unit_price') }}</span>
             </div>
             <div class="col-lg-4 mt-3">
               <label>Selling Price <span class="text-danger">*</span></label>
@@ -279,9 +237,7 @@
                 placeholder="Selling Price"
                 name="selling_price"
               />
-              <span class="text-danger text-sm">{{
-                errors.first("selling_price")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('selling_price') }}</span>
             </div>
             <div class="col-lg-4 mt-3">
               <label>Date Received <span class="text-danger">*</span></label>
@@ -293,29 +249,19 @@
                 input-class="form-control form-control-sm"
                 placeholder="Date Received"
               />
-              <span class="text-danger text-sm">{{
-                errors.first("date_received")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('date_received') }}</span>
             </div>
             <div class="col-lg-4 mt-3">
               <div class="form-group">
                 <label>Item Type</label>
                 <div class="checkbox-inline">
                   <label class="checkbox checkbox-rounded">
-                    <input
-                      type="checkbox"
-                      :value="true"
-                      v-model="create_cash_item"
-                    />
+                    <input type="checkbox" :value="true" v-model="create_cash_item" />
                     <span></span>
                     Cash
                   </label>
                   <label class="checkbox checkbox-rounded">
-                    <input
-                      type="checkbox"
-                      :value="true"
-                      v-model="create_nhis_item"
-                    />
+                    <input type="checkbox" :value="true" v-model="create_nhis_item" />
                     <span></span>
                     NHIS
                   </label>
@@ -324,9 +270,7 @@
               </div>
             </div>
             <div class="col-lg-4 mt-3" v-if="create_nhis_item">
-              <label
-                >NHIS Selling Price <span class="text-danger">*</span></label
-              >
+              <label>NHIS Selling Price <span class="text-danger">*</span></label>
               <input
                 type="number"
                 class="form-control form-control-sm"
@@ -334,9 +278,7 @@
                 placeholder="NHIS Selling Price"
                 name="nhis_selling_price"
               />
-              <span class="text-danger text-sm">{{
-                errors.first("nhis_selling_price")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('nhis_selling_price') }}</span>
             </div>
           </div>
         </div>
@@ -356,40 +298,40 @@
 </template>
 
 <script>
-import Datepicker from "vuejs-datepicker";
-import AccordionIcon from "../../../../../assets/icons/AccordionIcon";
-import Swal from "sweetalert2";
-import vSelect from "vue-select";
+import Datepicker from 'vuejs-datepicker';
+import AccordionIcon from '../../../../../assets/icons/AccordionIcon';
+import Swal from 'sweetalert2';
+import vSelect from 'vue-select';
 export default {
   components: {
     Datepicker,
     AccordionIcon,
-    vSelect
+    vSelect,
   },
   data() {
     return {
-      drug_id: "",
-      product_code: "",
-      batch: "",
-      voucher: "",
-      shelf: "",
-      shelf_num: "",
+      drug_id: '',
+      product_code: '',
+      batch: '',
+      voucher: '',
+      shelf: '',
+      shelf_num: '',
       dosage_form: null,
-      expiration: "",
+      expiration: '',
       strength: null,
-      strength_input: "",
+      strength_input: '',
       route: null,
-      quantity: "",
-      unit: "",
-      unit_price: "",
-      selling_price: "",
-      nhis_selling_price: "",
-      date_received: "",
-      drug_form: "",
+      quantity: '',
+      unit: '',
+      unit_price: '',
+      selling_price: '',
+      nhis_selling_price: '',
+      date_received: '',
+      drug_form: '',
 
       isDisabled: false,
       create_cash_item: true,
-      create_nhis_item: false
+      create_nhis_item: false,
     };
   },
   computed: {
@@ -402,7 +344,7 @@ export default {
     },
 
     canSee() {
-      return this.drug_id.type === "Drug";
+      return this.drug_id.type === 'Drug';
     },
 
     dosageForms() {
@@ -415,60 +357,56 @@ export default {
 
     routes() {
       return this.$store.state.pharmacy.routes;
-    }
+    },
   },
 
   created() {
-    this.$store.dispatch("model/fetchUnits", {
+    this.$store.dispatch('model/fetchUnits', {
       currentPage: 1,
-      itemsPerPage: 20
+      itemsPerPage: 20,
     });
   },
   methods: {
     initValues() {
-      this.drug_id = "";
-      this.product_code = "";
-      this.batch = "";
-      this.voucher = "";
-      this.shelf = "";
-      this.shelf_num = "";
-      this.expiration = "";
+      this.drug_id = '';
+      this.product_code = '';
+      this.batch = '';
+      this.voucher = '';
+      this.shelf = '';
+      this.shelf_num = '';
+      this.expiration = '';
       this.dosage_form = null;
       this.strength = null;
-      this.strength_input = "";
+      this.strength_input = '';
       this.route = null;
-      this.quantity = "";
-      this.unit = "";
-      this.unit_price = "";
-      this.selling_price = "";
-      this.nhis_selling_price = "";
-      this.date_received = "";
-      this.drug_form = "";
+      this.quantity = '';
+      this.unit = '';
+      this.unit_price = '';
+      this.selling_price = '';
+      this.nhis_selling_price = '';
+      this.date_received = '';
+      this.drug_form = '';
       this.create_cash_item = true;
       this.create_nhis_item = false;
     },
 
     addSpinner(submitButton) {
       this.isDisabled = true;
-      submitButton.classList.add("spinner", "spinner-light", "spinner-right");
+      submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');
     },
 
     removeSpinner(submitButton) {
       this.isDisabled = false;
-      submitButton.classList.remove(
-        "spinner",
-        "spinner-light",
-        "spinner-right"
-      );
+      submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
     },
 
     handleSuccess(response) {
       Swal.fire({
-        title: "Success!",
+        title: 'Success!',
         html: `${response.data.message}`,
-        icon: "success",
-        confirmButtonClass: "btn btn-primary",
-        heightAuto: false
+        icon: 'success',
+        confirmButtonClass: 'btn btn-primary',
+        heightAuto: false,
       });
     },
 
@@ -476,15 +414,15 @@ export default {
       this.drug_form = this.drug_id.type;
       this.dosage_form = null;
       this.strength = null;
-      this.strength_input = "";
-      this.$store.dispatch("pharmacy/fetchDosageForms");
+      this.strength_input = '';
+      this.$store.dispatch('pharmacy/fetchDosageForms');
     },
 
     searchGenericDrugs(search) {
-      this.$store.dispatch("pharmacy/fetchGenericDrugs", {
+      this.$store.dispatch('pharmacy/fetchGenericDrugs', {
         currentPage: 1,
         itemsPerPage: 20,
-        search
+        search,
       });
     },
 
@@ -495,8 +433,8 @@ export default {
     },
 
     getRoutesAndMeasurements() {
-      this.$store.dispatch("pharmacy/fetchRoutesAndMeasurements", {
-        dosage_form_id: this.dosage_form
+      this.$store.dispatch('pharmacy/fetchRoutesAndMeasurements', {
+        dosage_form_id: this.dosage_form,
       });
     },
 
@@ -504,7 +442,7 @@ export default {
       this.$validator.validateAll().then(result => {
         if (result) {
           // set spinner to submit button
-          const submitButton = this.$refs["kt_pharmacy_item_submit"];
+          const submitButton = this.$refs['kt_pharmacy_item_submit'];
           this.addSpinner(submitButton);
 
           const data = {
@@ -526,16 +464,16 @@ export default {
             date_received: this.date_received,
             drug_form: this.drug_form,
             create_cash_item: this.create_cash_item,
-            create_nhis_item: this.create_nhis_item
+            create_nhis_item: this.create_nhis_item,
           };
           this.$store
-            .dispatch("store/addPharmacyItem", data)
+            .dispatch('store/addPharmacyItem', data)
             .then(response => this.initRequest(submitButton, response))
             .catch(() => this.removeSpinner(submitButton));
         }
       });
-    }
-  }
+    },
+  },
 };
 </script>
 
