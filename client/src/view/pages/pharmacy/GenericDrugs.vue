@@ -9,16 +9,10 @@
     <!--begin::Header-->
     <div class="card-header border-0 py-5">
       <h3 class="card-title align-items-start flex-column">
-        <span class="card-label font-weight-bolder text-dark"
-          >Generic Drugs</span
-        >
+        <span class="card-label font-weight-bolder text-dark">Generic Drugs</span>
       </h3>
       <div class="card-toolbar">
-        <a
-          href="#"
-          class="btn btn-success font-weight-bolder font-size-sm"
-          @click="addNewData"
-        >
+        <a href="#" class="btn btn-success font-weight-bolder font-size-sm" @click="addNewData">
           <add-icon /> Add New
         </a>
       </div>
@@ -31,10 +25,7 @@
     <div class="card-body py-0">
       <!--begin::Table-->
       <div class="table-responsive">
-        <table
-          class="table table-head-custom table-vertical-center"
-          id="kt_advance_table_widget_1"
-        >
+        <table class="table table-head-custom table-vertical-center" id="kt_advance_table_widget_1">
           <thead>
             <tr class="text-left">
               <th class="pr-0" style="width: 450px">Name</th>
@@ -45,7 +36,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-if="drugs.length == 0">
+            <tr v-if="drugs.length === 0">
               <td colspan="9" align="center" class="text-muted">No Data</td>
             </tr>
             <tr v-for="drug in drugs" :key="drug.id">
@@ -57,23 +48,17 @@
                 >
               </td>
               <td>
-                <span
-                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                >
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                   {{ drug.code }}
                 </span>
               </td>
               <td>
-                <span
-                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                >
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                   {{ drug.type }}
                 </span>
               </td>
               <td>
-                <span
-                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                >
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                   {{ drug.createdAt | dayjs('ddd, MMM Do YYYY, h:mma') }}
                 </span>
               </td>
@@ -106,12 +91,12 @@
 </template>
 
 <script>
-import CreateGenericDrug from "./create/CreateGenericDrug.vue";
-import Pagination from "@/utils/Pagination.vue";
-import EditIcon from "../../../assets/icons/EditIcon.vue";
-import AddIcon from "../../../assets/icons/AddIcon.vue";
-import Search from "../../../utils/Search.vue";
-import { debounce, removeSpinner, setUrlQueryParams } from "../../../common/common";
+import CreateGenericDrug from './create/CreateGenericDrug.vue';
+import Pagination from '@/utils/Pagination.vue';
+import EditIcon from '@/assets/icons/EditIcon.vue';
+import AddIcon from '@/assets/icons/AddIcon.vue';
+import Search from '@/utils/Search.vue';
+import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
 
 export default {
   data() {
@@ -119,7 +104,7 @@ export default {
       displayPrompt: false,
       drugToEdit: {},
       currentPage: 1,
-      itemsPerPage: 10
+      itemsPerPage: 10,
     };
   },
   components: {
@@ -127,7 +112,7 @@ export default {
     Pagination,
     Search,
     EditIcon,
-    AddIcon
+    AddIcon,
   },
   computed: {
     drugs() {
@@ -141,7 +126,7 @@ export default {
     },
     perPage() {
       return this.drugs.length;
-    }
+    },
   },
   methods: {
     addNewData() {
@@ -160,13 +145,13 @@ export default {
 
     handlePageChange() {
       setUrlQueryParams({
-        pathName: "generic-drugs",
+        pathName: 'generic-drugs',
         currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage
+        itemsPerPage: this.itemsPerPage,
       });
-      this.$store.dispatch("pharmacy/fetchGenericDrugs", {
+      this.$store.dispatch('pharmacy/fetchGenericDrugs', {
         currentPage: this.$route.query.currentPage,
-        itemsPerPage: this.$route.query.itemsPerPage
+        itemsPerPage: this.$route.query.itemsPerPage,
       });
     },
 
@@ -176,7 +161,7 @@ export default {
         pathName: 'generic-drugs',
         currentPage: 1,
         itemsPerPage: this.itemsPerPage,
-        search
+        search,
       });
       this.debounceSearch(search, this, spinDiv);
     },
@@ -191,7 +176,7 @@ export default {
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));
     }, 500),
-    
+
     onPageChange(page) {
       this.currentPage = page;
       this.handlePageChange();
@@ -199,22 +184,22 @@ export default {
 
     onChangePageCount(pagecount) {
       setUrlQueryParams({
-        pathName: "generic-drugs",
+        pathName: 'generic-drugs',
         currentPage: this.currentPage,
-        itemsPerPage: pagecount
+        itemsPerPage: pagecount,
       });
-      this.$store.dispatch("pharmacy/fetchGenericDrugs", {
+      this.$store.dispatch('pharmacy/fetchGenericDrugs', {
         currentPage: this.$route.query.currentPage || this.currentPage,
-        itemsPerPage: pagecount
+        itemsPerPage: pagecount,
       });
-    }
+    },
   },
   created() {
-    this.$store.dispatch("pharmacy/fetchGenericDrugs", {
+    this.$store.dispatch('pharmacy/fetchGenericDrugs', {
       currentPage: this.$route.query.currentPage || this.currentPage,
-      itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage
+      itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
     });
-  }
+  },
 };
 </script>
 

@@ -31,7 +31,8 @@
               v-model="complaint.complaint"
               type="text"
               class="form-control
-            form-control-sm" />
+            form-control-sm"
+            />
             <!--            <span class="text-danger text-sm">{{ errors.first('complaint') }}</span>-->
           </div>
           <label class="col-lg-1 col-form-label">For</label>
@@ -42,7 +43,7 @@
               type="number"
               class="form-control form-control-sm"
             />
-<!--            <span class="text-danger text-sm">{{ errors.first('frequency_number') }}</span>-->
+            <!--            <span class="text-danger text-sm">{{ errors.first('frequency_number') }}</span>-->
           </div>
           <div class="col-lg-2">
             <select
@@ -57,10 +58,14 @@
               <option value="Months">Months</option>
               <option value="Years">Years</option>
             </select>
-<!--            <span class="text-danger text-sm">{{ errors.first('frequency') }}</span>-->
+            <!--            <span class="text-danger text-sm">{{ errors.first('frequency') }}</span>-->
           </div>
           <a href="#" class="col-lg-1 col-form-label">
-            <i class="far fa-plus-square mr-3 text-primary icon-lg" @click="addNewComplaint" />
+            <i
+              v-if="index === 0"
+              class="far fa-plus-square mr-3 text-primary icon-lg"
+              @click="addNewComplaint"
+            />
             <i
               class="far fa-trash-alt icon-md text-danger"
               v-if="index !== 0"

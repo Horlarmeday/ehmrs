@@ -194,8 +194,4 @@ export default {
 };
 </script>
 
-<style>
-.sc {
-  box-shadow: 0 0 10px #08354f, 0 0 5px #113751;
-}
-</style>
+<style scoped></style>

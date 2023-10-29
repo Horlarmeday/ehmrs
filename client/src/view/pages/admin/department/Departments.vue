@@ -9,13 +9,13 @@
       />
       <div class="card-header" style="min-height: 50px !important">
         <h3 class="card-title">
-          Department List
+          Departments
         </h3>
       </div>
       <!--begin::Header-->
       <div class="card-header border-0">
         <h3 class="card-title align-items-start flex-column">
-          <span class="card-label font-weight-bolder text-dark">Departments</span>
+          <span class="card-label font-weight-bolder text-dark"></span>
         </h3>
         <div class="card-toolbar">
           <a href="#" class="btn btn-primary font-weight-bolder font-size-sm" @click="addNewData">
