@@ -151,10 +151,10 @@
 <script>
 import UpdatePharmacyItem from './update/UpdateStoreItem.vue';
 import Pagination from '@/utils/Pagination.vue';
-import AddIcon from '../../../../assets/icons/AddIcon.vue';
-import SearchAndFilter from '../../../../utils/SearchAndFilter';
-import { setUrlQueryParams } from '@/common/common';
-import ButtonGroup from '../../../../utils/ButtonGroup';
+import AddIcon from '@/assets/icons/AddIcon.vue';
+import SearchAndFilter from '@/utils/SearchAndFilter';
+import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
+import ButtonGroup from '@/utils/ButtonGroup';
 import DispenseModal from '@/view/pages/store/pharmacy/components/DispenseModal.vue';
 import ReorderItemModal from '@/view/pages/store/pharmacy/components/ReorderItemModal.vue';
 import ExportModal from '@/utils/ExportModal.vue';
@@ -282,8 +282,8 @@ export default {
       });
     },
 
-    fetchPharmacyItems({ sort = null, filter = null, search = null, currentPage = null }) {
-      this.$store.dispatch('store/fetchPharmacyItems', {
+    fetchPharmacyItems({ sort = null, filter = null, search = null, currentPage = 1 }) {
+      return this.$store.dispatch('store/fetchPharmacyItems', {
         currentPage: currentPage || this.$route.query.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         ...(search && { search }),
@@ -302,10 +302,17 @@ export default {
       this.handlePageChange();
     },
 
-    onHandleSearch(search) {
+    onHandleSearch(prop) {
+      const { search, spinDiv } = prop;
       this.queryParams({ search });
-      this.fetchPharmacyItems({ search, currentPage: 1 });
+      this.debounceSearch(search, this, spinDiv);
     },
+
+    debounceSearch: debounce((search, vm, spinDiv) => {
+      vm.fetchPharmacyItems({ currentPage: 1, search })
+        .then(() => removeSpinner(spinDiv))
+        .catch(() => removeSpinner(spinDiv));
+    }, 500),
 
     onChangePageCount(pagecount) {
       this.queryParams({ pagecount });
