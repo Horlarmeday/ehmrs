@@ -20,5 +20,8 @@ export default {
 
   services: [],
   serviceTotal: 0,
-  servicePages: 0
+  servicePages: 0,
+
+  default: null,
+  defaults: [],
 };

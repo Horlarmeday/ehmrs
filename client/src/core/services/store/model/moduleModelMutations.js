@@ -1,4 +1,7 @@
 export default {
+  /**
+   * DEPARTMENT
+   */
   ADD_DEPARTMENT(state, department) {
     state.departments.unshift(department);
   },
@@ -16,9 +19,7 @@ export default {
   },
 
   UPDATE_DEPARTMENT(state, department) {
-    const departmentIndex = state.departments.findIndex(
-      p => p.id === department.id
-    );
+    const departmentIndex = state.departments.findIndex(p => p.id === department.id);
     Object.assign(state.departments[departmentIndex], department);
   },
 
@@ -116,5 +117,21 @@ export default {
   UPDATE_SERVICE(state, service) {
     const serviceIndex = state.services.findIndex(d => d.id === service.id);
     Object.assign(state.services[serviceIndex], service);
-  }
+  },
+
+  /**
+   * DEFAULT
+   */
+
+  ADD_ADMIN_DEFAULT(state, adminDefault) {
+    state.defaults.unshift(adminDefault);
+  },
+
+  SET_ADMIN_DEFAULTS(state, adminDefaults) {
+    state.defaults = adminDefaults;
+  },
+
+  SET_ADMIN_DEFAULT(state, adminDefault) {
+    state.default = adminDefault;
+  },
 };

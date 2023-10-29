@@ -304,4 +304,49 @@ export default {
         });
     });
   },
+
+  /**
+   * DEFAULTS
+   */
+  addDefault({ commit }, adminDefault) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post('/settings/defaults/create', adminDefault)
+        .then(response => {
+          commit('ADD_ADMIN_DEFAULT', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchDefaults({ commit }) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/settings/defaults/get')
+        .then(response => {
+          commit('SET_ADMIN_DEFAULTS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchOneDefault({ commit }, defaultId) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/settings/defaults/${defaultId}/get`)
+        .then(response => {
+          commit('SET_ADMIN_DEFAULT', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
 };
