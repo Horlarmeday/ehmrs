@@ -2,17 +2,19 @@
 import AdminService from './admin.service';
 import {
   validateBed,
+  validateCreateDefault,
   validateDepartment,
   validateService,
   validateUnit,
   validateWard,
 } from './validations';
-import { successResponse } from '../../common/responses/success-responses';
+import { SuccessResponse, successResponse } from '../../common/responses/success-responses';
 import { DATA_SAVED, DATA_UPDATED } from './messages/response-messages';
 import { SUCCESS } from '../../core/constants';
 import { NextFunction, Request, Response } from 'express';
 import { errorResponse } from '../../common/responses/error-responses';
 import { StatusCodes } from '../../core/helpers/helper';
+import { Default } from '../../database/models';
 
 /**
  *
@@ -410,6 +412,86 @@ class AdminController {
       const services = await AdminService.getServices(req.query);
 
       return successResponse({ res, httpCode: 200, data: services, message: SUCCESS });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * create a default
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {Promise<Default>} json object with status, default data
+   */
+  static async createAdminDefault(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    const { error } = validateCreateDefault(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+
+    try {
+      const adminDefault = await AdminService.createAdminDefault({
+        ...req.body,
+        staff_id: req.user.sub,
+      });
+
+      return successResponse({ res, httpCode: 201, data: adminDefault, message: DATA_SAVED });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get defaults
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with defaults data
+   */
+  static async getDefaults(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    try {
+      const defaults = await AdminService.getDefaults();
+
+      return successResponse({ res, message: SUCCESS, data: defaults, httpCode: 200 });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get a default
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with default data
+   */
+  static async getOneDefault(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    try {
+      const adminDefault = await AdminService.getOneDefault(+req.params.id);
+
+      return successResponse({ res, message: SUCCESS, data: adminDefault, httpCode: 200 });
     } catch (e) {
       return next(e);
     }

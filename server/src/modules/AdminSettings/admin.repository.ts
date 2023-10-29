@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { Op, WhereOptions } from 'sequelize';
+import { Op, Optional, WhereOptions } from 'sequelize';
 import { getModelById, getNumberOfRecords } from '../../core/helpers/general';
 
 import {
@@ -11,9 +11,12 @@ import {
   ServiceTariff,
   Patient,
   PatientInsurance,
+  Default,
+  Staff,
 } from '../../database/models';
 import { canUsePriceTariff } from '../../core/helpers/helper';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
+import { staffAttributes } from '../Antenatal/antenatal.repository';
 
 /** ***********************
  * DEPARTMENT
@@ -421,4 +424,49 @@ export const getServicePrice = async (patient: Patient, service_id: number) => {
     return servicePriceTariff(insurance, service_id);
   }
   return null;
+};
+
+/***********************
+ * DEFAULTS
+ **********************/
+
+/**
+ * create admin defaults
+ *
+ * @function
+ * @returns {Promise<Default>} json object with default data
+ * @param data
+ */
+export const createDefault = async (data: Optional<string, any>): Promise<Default> => {
+  const oneDefault = await getOneDefault({ type: data.type });
+  if (oneDefault) {
+    const dbData = JSON.parse(oneDefault.data);
+    const concattedData = dbData.concat(data.data);
+    return await oneDefault.update({ data: concattedData });
+  }
+  return Default.create({ ...data });
+};
+
+/**
+ * get admin defaults
+ *
+ * @function
+ * @returns {Promise<Default[]>} json object with defaults data
+ */
+export const getDefaults = async (): Promise<Default[]> => {
+  return Default.findAll({
+    order: [['createdAt', 'DESC']],
+    include: [{ model: Staff, attributes: staffAttributes }],
+  });
+};
+
+/**
+ * get an admin default
+ *
+ * @function
+ * @returns {Promise<Service>} json object with default data
+ * @param query
+ */
+export const getOneDefault = async (query: WhereOptions<Default>): Promise<Default> => {
+  return Default.findOne({ where: { ...query } });
 };
