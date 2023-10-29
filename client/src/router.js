@@ -220,6 +220,30 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            {
+              path: 'defaults',
+              name: 'default',
+              component: () => import('@/view/pages/admin/defaults/Defaults.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'defaults/create',
+              name: 'create-default',
+              component: () => import('@/view/pages/admin/defaults/CreateDefault.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'defaults/:id',
+              name: 'one-default',
+              component: () => import('@/view/pages/admin/defaults/Default.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
           ],
         },
         // VISITS

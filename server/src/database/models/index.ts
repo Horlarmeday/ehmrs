@@ -8,6 +8,7 @@ export { Bed } from './bed';
 export { Staff } from './staff';
 export { Complaint } from './complaint';
 export { ClinicalNote } from './clinicalNote';
+export { Default } from './default';
 export { Department } from './department';
 export { Diagnosis } from './diagnosis';
 export { DosageForm } from './dosageForm';
