@@ -141,7 +141,7 @@ export async function findPharmacyStoreItems(selectedItemsId: number[]) {
       },
       {
         model: DosageForm,
-        attributes: ['name'],
+        attributes: ['name', 'id'],
       },
       {
         model: Measurement,
@@ -166,8 +166,8 @@ export async function findPharmacyStoreItems(selectedItemsId: number[]) {
  */
 export async function searchPharmacyStoreItems(currentPage = 1, pageLimit = 10, search) {
   return PharmacyStore.paginate({
-    page: currentPage,
-    paginate: pageLimit,
+    page: +currentPage,
+    paginate: +pageLimit,
     order: [['createdAt', 'DESC']],
     include: [
       {
@@ -184,7 +184,7 @@ export async function searchPharmacyStoreItems(currentPage = 1, pageLimit = 10, 
       },
       {
         model: DosageForm,
-        attributes: ['name'],
+        attributes: ['name', 'id'],
       },
       {
         model: Measurement,
@@ -233,7 +233,7 @@ export async function getPharmacyStoreItems({
       },
       {
         model: DosageForm,
-        attributes: ['name'],
+        attributes: ['name', 'id'],
       },
       {
         model: Measurement,

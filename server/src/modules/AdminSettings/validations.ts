@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import { DefaultType } from '../../database/models/default';
 
 export function validateDepartment(department) {
   const schema = Joi.object({
@@ -41,4 +42,20 @@ export function validateService(service) {
     price: Joi.number().required(),
   });
   return schema.validate(service);
+}
+
+export function validateCreateDefault(req) {
+  const schema = Joi.object({
+    type: Joi.string()
+      .valid(
+        DefaultType.OPERATION_ITEMS,
+        DefaultType.INJECTION_ITEMS,
+        DefaultType.ANC_ROUTINE_DRUGS,
+        DefaultType.ANC_ROUTINE_TESTS,
+        DefaultType.ADMISSION_ITEMS
+      )
+      .required(),
+    data: Joi.any().required(),
+  });
+  return schema.validate(req);
 }
