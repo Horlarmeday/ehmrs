@@ -2,7 +2,14 @@
   <div class="card-body py-1">
     <div>
       <b-input-group>
-        <b-form-input :placeholder="placeHolder" v-model="search" @keypress.enter="onSearch" />
+        <div ref="spinning" class="w-75">
+          <input
+            class="form-control"
+            :placeholder="placeHolder"
+            v-model="search"
+            @keyup="onSearch"
+          />
+        </div>
         <b-input-group-append>
           <b-dropdown text="Type" variant="outline-secondary">
             <b-dropdown-item @click="onFilter('Drug')">Drugs</b-dropdown-item>
@@ -16,6 +23,8 @@
 </template>
 
 <script>
+import { addSpinner } from '@/common/common';
+
 export default {
   name: 'SearchAndFilter',
   data() {
@@ -40,7 +49,9 @@ export default {
   },
   methods: {
     onSearch() {
-      this.$emit('search', this.search);
+      const spinDiv = this.$refs['spinning'];
+      addSpinner(spinDiv);
+      this.$emit('search', { search: this.search, spinDiv });
     },
     onSort() {
       this.$emit('sort', this.sort);
