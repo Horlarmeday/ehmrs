@@ -1,12 +1,15 @@
 import {
   createBed,
+  createDefault,
   createDepartment,
   createService,
   createUnit,
   createWard,
   getBeds,
   getBedsInAWard,
+  getDefaults,
   getDepartments,
+  getOneDefault,
   getServices,
   getUnits,
   getWards,
@@ -21,11 +24,10 @@ import {
   updateUnit,
   updateWard,
 } from './admin.repository';
-import { Department } from '../../database/models';
+import { Default, Department } from '../../database/models';
 
 class AdminService {
-  /**
-   * create a department
+  /** create a department
    *
    * @static
    * @returns {json} json object with department data
@@ -266,6 +268,41 @@ class AdminService {
     }
 
     return getServices();
+  }
+
+  /**
+   * create a default
+   *
+   * @static
+   * @returns {Promise<Default>} json object with default data
+   * @param body
+   * @memberOf AdminService
+   */
+  static async createAdminDefault(body): Promise<Default> {
+    return createDefault(body);
+  }
+
+  /**
+   * get a default
+   *
+   * @static
+   * @returns {Promise<Default>} json object with default data
+   * @memberOf AdminService
+   * @param defaultId
+   */
+  static async getOneDefault(defaultId: number): Promise<Default> {
+    return getOneDefault({ id: defaultId });
+  }
+
+  /**
+   * get defaults
+   *
+   * @static
+   * @returns {Promise<Default[]>} json object with defaults data
+   * @memberOf AdminService
+   */
+  static async getDefaults(): Promise<Default[]> {
+    return getDefaults();
   }
 }
 export default AdminService;
