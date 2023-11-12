@@ -37,10 +37,9 @@
   </div>
 </template>
 <script>
-import { defineComponent } from 'vue';
 import DeleteIcon from '@/assets/icons/DeleteIcon.vue';
 
-export default defineComponent({
+export default {
   components: { DeleteIcon },
   computed: {
     defaults() {
@@ -53,7 +52,7 @@ export default defineComponent({
       return this.defaults.find(def => def.id?.toString() === this.$route.params.id)?.data;
     },
   },
-});
+};
 </script>
 
 <style scoped></style>
