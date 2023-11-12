@@ -18,6 +18,7 @@ export enum DefaultType {
   OPERATION_ITEMS = 'OPERATION_ITEMS',
   ANC_ROUTINE_TESTS = 'ANC_ROUTINE_TESTS',
   ANC_ROUTINE_DRUGS = 'ANC_ROUTINE_DRUGS',
+  WATER_INJECTIONS = 'WATER_INJECTIONS',
 }
 
 @Table({ timestamps: true })
@@ -32,7 +33,8 @@ export class Default extends Model {
       DefaultType.ANC_ROUTINE_DRUGS,
       DefaultType.ADMISSION_ITEMS,
       DefaultType.INJECTION_ITEMS,
-      DefaultType.OPERATION_ITEMS
+      DefaultType.OPERATION_ITEMS,
+      DefaultType.WATER_INJECTIONS
     ),
     allowNull: false,
     validate: {
@@ -46,7 +48,7 @@ export class Default extends Model {
   @Column({
     type: DataType.JSON,
   })
-  data: string;
+  data: Array<any>;
 
   @ForeignKey(() => Staff)
   @Column({
