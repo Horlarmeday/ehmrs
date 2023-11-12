@@ -182,7 +182,7 @@ export default {
       axios
         .get('/settings/wards-and-beds/get', {
           params: {
-            search: payload.search,
+            search: payload?.search,
           },
         })
         .then(response => {
@@ -254,14 +254,7 @@ export default {
       axios
         .post(`/settings/services/create`, service)
         .then(response => {
-          commit(
-            'ADD_SERVICE',
-            Object.assign(service, {
-              id: response.data.data.id,
-              createdAt: response.data.data.createdAt,
-              code: response.data.data.code,
-            })
-          );
+          commit('ADD_SERVICE', response.data.data);
           resolve(response);
         })
         .catch(error => {
@@ -342,6 +335,20 @@ export default {
         .get(`/settings/defaults/${defaultId}/get`)
         .then(response => {
           commit('SET_ADMIN_DEFAULT', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  deleteDefaultData({ commit }, adminDefault) {
+    return new Promise((resolve, reject) => {
+      axios
+        .delete('/settings/defaults/delete', { data: adminDefault })
+        .then(response => {
+          commit('ADD_ADMIN_DEFAULT', response.data.data);
           resolve(response);
         })
         .catch(error => {
