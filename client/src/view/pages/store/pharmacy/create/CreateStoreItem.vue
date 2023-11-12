@@ -11,6 +11,7 @@
         </div>
         <div class="card-body">
           <!-- NAME -->
+          <div class="form-group row"></div>
           <div class="form-group row">
             <div class="col-lg-4">
               <label>Generic Drug <span class="text-danger">*</span></label>
@@ -22,7 +23,7 @@
                 @search="searchGenericDrugs"
                 v-model="drug_id"
                 label="name"
-                :reduce="drugs => ({ id: drugs.id, type: drugs.type })"
+                :reduce="items => ({ id: items.id, type: items.type, name: items.name })"
                 :options="drugs"
               />
               <span class="text-danger text-sm">{{ errors.first('drug') }}</span>
@@ -49,10 +50,7 @@
               />
               <span class="text-danger text-sm">{{ errors.first('voucher') }}</span>
             </div>
-          </div>
-          <!-- Contact -->
-          <div class="form-group row">
-            <div class="col-lg-4">
+            <div class="col-lg-4 mt-3">
               <label>Batch Number</label>
               <input
                 type="text"
@@ -63,69 +61,7 @@
               />
               <span class="text-danger text-sm">{{ errors.first('batch') }}</span>
             </div>
-            <div class="col-lg-4">
-              <label>Shelf <span class="text-danger">*</span></label>
-              <select
-                v-validate="'required'"
-                data-vv-validate-on="blur"
-                class="form-control form-control-sm"
-                v-model="shelf"
-                name="shelf"
-              >
-                <option>A</option>
-                <option>B</option>
-                <option>C</option>
-                <option>D</option>
-                <option>E</option>
-                <option>F</option>
-                <option>G</option>
-                <option>H</option>
-                <option>I</option>
-                <option>J</option>
-                <option>K</option>
-                <option>L</option>
-                <option>M</option>
-                <option>N</option>
-                <option>O</option>
-                <option>P</option>
-                <option>Q</option>
-                <option>R</option>
-                <option>S</option>
-                <option>T</option>
-                <option>U</option>
-                <option>V</option>
-                <option>W</option>
-                <option>X</option>
-                <option>Y</option>
-                <option>Z</option>
-              </select>
-              <span class="text-danger text-sm">{{ errors.first('shelf') }}</span>
-            </div>
-            <div class="col-lg-4">
-              <label>Shelf Number <span class="text-danger">*</span></label>
-              <select
-                v-model="shelf_num"
-                class="form-control form-control-sm"
-                name="shelf_num"
-                v-validate="'required'"
-                data-vv-validate-on="blur"
-              >
-                <option>1</option>
-                <option>2</option>
-                <option>3</option>
-                <option>4</option>
-                <option>5</option>
-                <option>6</option>
-                <option>7</option>
-                <option>8</option>
-                <option>9</option>
-                <option>10</option>
-              </select>
-              <span class="text-danger text-sm">{{ errors.first('shelf_num') }}</span>
-            </div>
-          </div>
-          <div class="form-group row">
-            <div class="col-lg-4">
+            <div class="col-lg-4 mt-3">
               <label>Expiry Date <span class="text-danger">*</span></label>
               <datepicker
                 name="expiration"
@@ -137,7 +73,7 @@
               />
               <span class="text-danger text-sm">{{ errors.first('expiration') }}</span>
             </div>
-            <div class="col-lg-4" v-if="canSee">
+            <div class="col-lg-4 mt-3" v-if="canSee">
               <label>Dosage Form <span class="text-danger">*</span></label>
               <select
                 class="form-control form-control-sm"
@@ -165,7 +101,7 @@
               />
               <span class="text-danger text-sm">{{ errors.first('strength_input') }}</span>
             </div>
-            <div class="col-lg-4" v-if="canSee">
+            <div class="col-lg-4 mt-3" v-if="canSee">
               <label>Strength Unit <span class="text-danger">*</span></label>
               <select class="form-control form-control-sm" v-model="strength" name="strength">
                 <option
@@ -177,7 +113,6 @@
               </select>
               <span class="text-danger text-sm">{{ errors.first('strength') }}</span>
             </div>
-
             <div class="col-lg-4 mt-3" v-if="canSee">
               <label>Route of Administration <span class="text-danger">*</span></label>
               <select class="form-control form-control-sm" v-model="route" name="route">
@@ -299,8 +234,7 @@
 
 <script>
 import Datepicker from 'vuejs-datepicker';
-import AccordionIcon from '../../../../../assets/icons/AccordionIcon';
-import Swal from 'sweetalert2';
+import AccordionIcon from '@/assets/icons/AccordionIcon';
 import vSelect from 'vue-select';
 export default {
   components: {
@@ -326,7 +260,7 @@ export default {
       unit_price: '',
       selling_price: '',
       nhis_selling_price: '',
-      date_received: '',
+      date_received: new Date(),
       drug_form: '',
 
       isDisabled: false,
@@ -384,7 +318,7 @@ export default {
       this.unit_price = '';
       this.selling_price = '';
       this.nhis_selling_price = '';
-      this.date_received = '';
+      this.date_received = new Date();
       this.drug_form = '';
       this.create_cash_item = true;
       this.create_nhis_item = false;
@@ -398,16 +332,6 @@ export default {
     removeSpinner(submitButton) {
       this.isDisabled = false;
       submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
-    },
-
-    handleSuccess(response) {
-      Swal.fire({
-        title: 'Success!',
-        html: `${response.data.message}`,
-        icon: 'success',
-        confirmButtonClass: 'btn btn-primary',
-        heightAuto: false,
-      });
     },
 
     setDrugForm() {
@@ -426,9 +350,8 @@ export default {
       });
     },
 
-    initRequest(button, response) {
+    initRequest(button) {
       this.removeSpinner(button);
-      this.handleSuccess(response);
       this.initValues();
     },
 
@@ -457,7 +380,7 @@ export default {
             strength_input: this.strength_input,
             route_id: this.route,
             unit_id: this.unit,
-            quantity: this.quantity,
+            quantity_received: this.quantity,
             unit_price: this.unit_price,
             selling_price: this.selling_price,
             nhis_selling_price: this.nhis_selling_price,
@@ -468,7 +391,7 @@ export default {
           };
           this.$store
             .dispatch('store/addPharmacyItem', data)
-            .then(response => this.initRequest(submitButton, response))
+            .then(() => this.initRequest(submitButton))
             .catch(() => this.removeSpinner(submitButton));
         }
       });
