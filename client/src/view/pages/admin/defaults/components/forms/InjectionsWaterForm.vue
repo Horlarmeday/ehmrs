@@ -1,6 +1,6 @@
 <template>
   <div>
-    <SectionTitle text="Injection Items" />
+    <SectionTitle text="Injections Needing Water" />
     <div v-for="(item, i) in items" :key="i">
       <div class="form-group row">
         <div class="col-lg-6">
@@ -15,28 +15,12 @@
             :reduce="
               drugs => ({
                 name: drugs.name,
-                drug_id: drugs.drug_id,
-                unit_id: drugs.unit_id,
-                strength: drugs?.strength,
-                strength_input: drugs.strength_input,
-                price: drugs.price,
-                quantity_remaining: drugs.quantity_remaining,
-                unit_name: drugs?.unit_name,
-                dosage_form: drugs?.dosage_form,
-                drug_type: drugs?.drug_type,
+                drug_id: drugs.id,
               })
             "
-            :options="drugOptions"
+            :options="drugs"
           >
-            <template #option="{ drug_type, name }">
-              <span>{{ name }} - </span>
-              <em> {{ drug_type || '' }}</em>
-            </template>
           </v-select>
-        </div>
-        <div class="col-lg-4">
-          <label>Quantity:</label>
-          <input type="number" class="form-control form-control-sm" v-model="item.quantity" />
         </div>
         <a href="#" class="col-lg-2 col-form-label mt-lg-5">
           <i v-if="i === 0" class="far fa-plus-square mr-3 text-primary icon-lg" @click="addItem" />
@@ -51,7 +35,7 @@
     <button
       @click="submitForm"
       :disabled="isDisabled"
-      ref="kt-injectionForm"
+      ref="kt-injectionWaterForm"
       class="btn btn-primary float-right"
     >
       Submit
@@ -70,7 +54,6 @@ export default {
       {
         id: randomId(),
         drug: '',
-        quantity: 1,
       },
     ],
     isDisabled: false,
@@ -83,22 +66,7 @@ export default {
   },
   computed: {
     drugs() {
-      return this.$store.state.store.items;
-    },
-    drugOptions() {
-      return this.drugs.map(item => ({
-        name: item?.drug?.name,
-        id: item?.id,
-        drug_id: item?.drug?.id,
-        strength: item?.strength,
-        strength_input: item.strength_input,
-        price: item.selling_price,
-        quantity_remaining: item.quantity_remaining,
-        unit_name: item?.unit?.name,
-        unit_id: item?.unit?.id,
-        dosage_form: item?.dosage_form,
-        drug_type: item?.drug_type,
-      }));
+      return this.$store.state.pharmacy.drugs;
     },
   },
   methods: {
@@ -111,7 +79,7 @@ export default {
 
     debounceSearch: debounce((search, vm, loading) => {
       vm.$store
-        .dispatch('store/fetchPharmacyItems', {
+        .dispatch('pharmacy/fetchGenericDrugs', {
           currentPage: 1,
           itemsPerPage: vm.itemsPerPage,
           search,
@@ -124,7 +92,6 @@ export default {
       this.items.push({
         id: randomId(),
         drug: '',
-        quantity: 1,
       });
     },
 
@@ -143,7 +110,6 @@ export default {
         {
           id: randomId(),
           drug: '',
-          quantity: 1,
         },
       ];
     },
@@ -159,7 +125,7 @@ export default {
     },
 
     submitForm() {
-      const submitButton = this.$refs['kt-injectionForm'];
+      const submitButton = this.$refs['kt-injectionWaterForm'];
       this.addSpinner(submitButton);
 
       this.$store

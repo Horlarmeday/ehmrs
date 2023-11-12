@@ -5,9 +5,7 @@
       <table class="table table-head-custom table-vertical-center table-head-bg">
         <thead>
           <tr class="text-uppercase">
-            <th class="pl-5" style="min-width: 150px">Drug</th>
-            <th style="min-width: 160px">Quantity</th>
-            <th style="min-width: 160px">Price</th>
+            <th class="pl-5" style="min-width: 250px">Drug</th>
             <th class="pr-0 " style="min-width: 150px">action</th>
           </tr>
         </thead>
@@ -20,16 +18,6 @@
               <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                 {{ item?.drug?.name }}
               </span>
-            </td>
-            <td>
-              <span class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                >{{ item.quantity }} {{ item.drug.unit_name }}</span
-              >
-            </td>
-            <td>
-              <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
-                item.drug.price
-              }}</span>
             </td>
             <td class="pr-0">
               <button
