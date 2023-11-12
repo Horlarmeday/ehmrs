@@ -20,6 +20,7 @@ import { Patient } from './patient';
 import { Ward } from './ward';
 import { Bed } from './bed';
 import { Visit } from './visit';
+import { Antenatal } from './antenatal';
 
 export enum DischargeStatus {
   DISCHARGED = 'Discharged',
@@ -120,6 +121,12 @@ export class Admission extends Model {
   })
   discharged_by: number;
 
+  @ForeignKey(() => Antenatal)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  ante_natal_id: number;
+
   @BelongsTo(() => Staff, 'admitted_by')
   examiner: Staff;
 
@@ -140,6 +147,9 @@ export class Admission extends Model {
 
   @BelongsTo(() => Visit)
   visit: Visit;
+
+  @BelongsTo(() => Antenatal)
+  antenatal: Antenatal;
 
   static async paginate(param: {
     paginate: number;

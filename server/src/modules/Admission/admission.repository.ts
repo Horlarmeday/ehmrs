@@ -1,23 +1,41 @@
 import sequelize from '../../database/config/config';
 import { Op, Transaction } from 'sequelize';
 import {
+  Admission,
   Bed,
+  Inventory,
   Patient,
+  PatientInsurance,
   PrescribedService,
   Staff,
-  Ward,
-  Admission,
   Visit,
+  Ward,
 } from '../../database/models';
 import { BedStatus } from '../../database/models/bed';
 import { ServiceType } from '../../database/models/prescribedService';
 import { PatientStatus } from '../../database/models/patient';
-import { getWardWithService } from '../AdminSettings/admin.repository';
+import { getOneDefault, getWardWithService } from '../AdminSettings/admin.repository';
 import { getPatientById } from '../Patient/patient.repository';
 import { AdmissionBodyType } from './types/admission.types';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { patientAttributes } from '../Visit/visit.repository';
 import { VisitCategory } from '../../database/models/visit';
+import dayjs from 'dayjs';
+import { DrugForm } from '../../database/models/drug';
+import { DefaultType } from '../../database/models/default';
+import { Source } from '../../database/models/prescribedDrug';
+import { bulkCreateAdditionalItems } from '../Orders/Pharmacy/pharmacy-order.repository';
+import { Gender } from '../../database/models/staff';
+import { DrugType } from '../../database/models/pharmacyStore';
+import { getInventories } from '../Inventory/inventory.repository';
+
+enum Ages {
+  ALL_AGES = 'ALL_AGES',
+  LESS_THAN_EQUAL_TO_ONE = 'LESS_THAN_EQUAL_TO_ONE',
+  GREATER_THAN_ONE_LESS_THAN_FIFTEEN = 'GREATER_THAN_ONE_LESS_THAN_FIFTEEN',
+  GREATER_THAN_FIFTEEN = 'GREATER_THAN_FIFTEEN',
+}
+const EXCLUDED_INSURANCE = ['NHIS', 'FHSS'];
 
 /**
  * Admit patient into a ward
@@ -25,15 +43,18 @@ import { VisitCategory } from '../../database/models/visit';
  */
 export const admitPatient = async (data: AdmissionBodyType) => {
   const { bed_id, admitted_by, patient_id, visit_id, ward_id } = data;
-  const EXCLUDED_INSURANCE = ['NHIS', 'FHSS'];
+  const [ward, insurance, patient, oneDefault, inventories] = await Promise.all([
+    getWardWithService(ward_id),
+    getPatientInsuranceQuery({ patient_id }),
+    getPatientById(patient_id),
+    getOneDefault({ type: DefaultType.ADMISSION_ITEMS }),
+    getInventories(),
+  ]);
+
   return await sequelize.transaction(async (t: Transaction) => {
     const admission = await Admission.create({ ...data }, { transaction: t });
+
     await Bed.update({ status: BedStatus.TAKEN }, { where: { id: bed_id }, transaction: t });
-    const [ward, insurance, patient] = await Promise.all([
-      getWardWithService(ward_id),
-      getPatientInsuranceQuery({ patient_id }),
-      getPatientById(patient_id),
-    ]);
 
     if (!patient.has_insurance || !EXCLUDED_INSURANCE.includes(insurance?.insurance?.name))
       await PrescribedService.create(
@@ -49,14 +70,23 @@ export const admitPatient = async (data: AdmissionBodyType) => {
         { transaction: t }
       );
     await Patient.update(
-      { patient_status: PatientStatus.ADMITTED },
+      { patient_status: PatientStatus.INPATIENT },
       { where: { id: patient_id }, transaction: t }
     );
     await Visit.update(
       { category: VisitCategory.IPD, admission_id: admission.id },
       { where: { id: visit_id }, transaction: t }
     );
-    //todo: insert default admission items
+
+    // don't await the result
+    insertDefaultAdmissionItems({
+      patient,
+      items: oneDefault.data,
+      admission,
+      insurance,
+      inventories,
+    });
+
     return await getAdmissionById(admission.id);
   });
 };
@@ -151,4 +181,93 @@ export const getAdmittedPatients = async ({
       },
     ],
   });
+};
+
+/**
+ * insert the default items for patient admission
+ *
+ * @function
+ * @returns {boolean} json object with additional items data
+ * @param {object} patient
+ * @param items
+ * @param admission
+ * @param insurance
+ * @param inventories
+ */
+export const insertDefaultAdmissionItems = async ({
+  patient,
+  items,
+  admission,
+  insurance,
+  inventories,
+}: {
+  patient: Patient;
+  items: any[];
+  admission: Admission;
+  insurance: PatientInsurance;
+  inventories: Inventory[];
+}): Promise<boolean> => {
+  const formattedDate = dayjs(patient.date_of_birth).format('YYYY-MM-DD');
+  const age = dayjs().diff(dayjs(formattedDate), 'year');
+  const sex = patient.gender;
+  const source = admission.ante_natal_id ? Source.ANC : Source.CONSULTATION;
+  const drugType =
+    patient.has_insurance && EXCLUDED_INSURANCE.includes(insurance.insurance.name)
+      ? DrugType.NHIS
+      : DrugType.CASH;
+
+  const inventory = inventories.find(({ accepted_drug_type }) =>
+    new RegExp(`\\b${drugType}\\b`, 'i').test(accepted_drug_type)
+  );
+
+  const createItems = (filteredItems: any[]) => {
+    return filteredItems.map(item => ({
+      drug_form: DrugForm.CONSUMABLE,
+      quantity_prescribed: +item.quantity,
+      quantity_to_dispense: +item.quantity,
+      visit_id: admission.visit_id,
+      inventory_id: inventory.id,
+      start_date: Date.now(),
+      date_prescribed: Date.now(),
+      ante_natal_id: admission.ante_natal_id,
+      examiner: admission.admitted_by,
+      drug_type: drugType,
+      source,
+      patient_id: patient.id,
+      drug_id: item.drug.drug_id,
+      unit_id: item.drug.unit_id,
+      total_price: item.drug.price * item.quantity * (patient.has_insurance ? 0.1 : 1),
+    }));
+  };
+
+  const allAgesItems = items.filter(item => item.age === Ages.ALL_AGES);
+  await bulkCreateAdditionalItems(createItems(allAgesItems));
+
+  if (age <= 1) {
+    const ageLessOneItems = items.filter(item => item.age === Ages.LESS_THAN_EQUAL_TO_ONE);
+    await bulkCreateAdditionalItems(createItems(ageLessOneItems));
+  }
+
+  if (age > 1 && age <= 15) {
+    const betweenOneAndFifteenItems = items.filter(
+      item => item.age === Ages.GREATER_THAN_ONE_LESS_THAN_FIFTEEN
+    );
+    await bulkCreateAdditionalItems(createItems(betweenOneAndFifteenItems));
+  }
+
+  if (age > 15 && sex === Gender.FEMALE) {
+    const femaleItems = items.filter(
+      item => item.age === Ages.GREATER_THAN_FIFTEEN && item.sex === Gender.FEMALE
+    );
+    await bulkCreateAdditionalItems(createItems(femaleItems));
+  }
+
+  if (age > 15 && sex === Gender.MALE) {
+    const maleItems = items.filter(
+      item => item.age === Ages.GREATER_THAN_FIFTEEN && item.sex === Gender.MALE
+    );
+    await bulkCreateAdditionalItems(createItems(maleItems));
+  }
+
+  return true;
 };

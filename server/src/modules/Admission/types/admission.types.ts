@@ -4,6 +4,7 @@ export type AdmissionBodyType = {
   bed_id: number;
   visit_id: number;
   admitted_by: number;
+  ante_natal_id?: number;
 };
 
 export type UpdateAdmissionBody = {

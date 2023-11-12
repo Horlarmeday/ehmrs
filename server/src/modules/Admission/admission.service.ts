@@ -1,11 +1,17 @@
 import { AdmissionBodyType, UpdateAdmissionBody } from './types/admission.types';
-import { admitPatient, getAdmissionByPatientId, getAdmittedPatients, updateAdmission } from './admission.repository';
-import { getVisitById, searchCategoryVisits } from '../Visit/visit.repository';
+import {
+  admitPatient,
+  getAdmissionByPatientId,
+  getAdmittedPatients,
+  updateAdmission,
+} from './admission.repository';
+import { getVisitById } from '../Visit/visit.repository';
 import { Admission, DischargeStatus } from '../../database/models/admission';
 import { BadException } from '../../common/util/api-error';
 import { StatusCodes } from '../../core/helpers/helper';
-import { Visit } from '../../database/models';
 import { ParsedQs } from 'qs';
+import { getPatientById } from '../Patient/patient.repository';
+import { PATIENT_ON_ADMISSION } from './messages/response-messages';
 
 export class AdmissionService {
   /**
@@ -20,11 +26,7 @@ export class AdmissionService {
     const visit = await getVisitById(body.visit_id);
     const admission = await getAdmissionByPatientId(visit.patient_id);
     if (admission && admission?.discharge_status === DischargeStatus.ON_ADMISSION) {
-      throw new BadException(
-        'Invalid',
-        StatusCodes.BAD_REQUEST,
-        'Patient still on admission, discharge first'
-      );
+      throw new BadException('Invalid', StatusCodes.BAD_REQUEST, PATIENT_ON_ADMISSION);
     }
     return await admitPatient({ ...body, patient_id: visit.patient_id });
   }
