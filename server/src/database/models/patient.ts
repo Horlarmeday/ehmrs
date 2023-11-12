@@ -24,8 +24,9 @@ import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { PatientInsurance } from './patientInsurance';
 
 export enum PatientStatus {
-  ADMITTED = 'Admitted',
-  REGULAR = 'Regular',
+  INPATIENT = 'Inpatient',
+  OUTPATIENT = 'Outpatient',
+  DECEASED = 'Deceased',
 }
 
 @Table({ timestamps: true })
@@ -240,8 +241,8 @@ export class Patient extends Model {
   patient_type: PatientType;
 
   @Column({
-    type: DataType.ENUM(PatientStatus.ADMITTED, PatientStatus.REGULAR),
-    defaultValue: PatientStatus.REGULAR,
+    type: DataType.ENUM(PatientStatus.INPATIENT, PatientStatus.OUTPATIENT, PatientStatus.DECEASED),
+    defaultValue: PatientStatus.OUTPATIENT,
   })
   patient_status: PatientStatus;
 
