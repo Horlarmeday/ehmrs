@@ -10,7 +10,17 @@ import Laboratory from './laboratory/Dashboard.vue';
 import Radiology from './radiology/Dashboard.vue';
 import Pharmacy from './pharmacy/Dashboard.vue';
 import Doctor from './medicalPractitioners/generalPractitioner/Dashboard.vue';
+import MedicalRecords from './medicalrecords/Dashboard.vue';
 import { parseJwt } from '@/common/common';
+
+const Roles = {
+  SUPER_ADMIN: 'Super Admin',
+  LABORATORY: 'Laboratory',
+  RADIOLOGY: 'Radiology',
+  PHARMACY: 'Pharmacy',
+  GENERAL_PRACTITIONER: 'General Practitioner',
+  MEDICAL_RECORDS: 'Medical Records',
+};
 export default {
   data: () => ({
     dashboardComponent: null,
@@ -19,16 +29,18 @@ export default {
     renderDashboard(token) {
       const role = parseJwt(token);
       switch (role.role) {
-        case 'Super Admin':
+        case Roles.SUPER_ADMIN:
           return (this.dashboardComponent = SuperAdmin);
-        case 'Laboratory':
+        case Roles.LABORATORY:
           return (this.dashboardComponent = Laboratory);
-        case 'Radiology':
+        case Roles.RADIOLOGY:
           return (this.dashboardComponent = Radiology);
-        case 'Pharmacy':
+        case Roles.PHARMACY:
           return (this.dashboardComponent = Pharmacy);
-        case 'General Practitioner':
+        case Roles.GENERAL_PRACTITIONER:
           return (this.dashboardComponent = Doctor);
+        case Roles.MEDICAL_RECORDS:
+          return (this.dashboardComponent = MedicalRecords);
         default:
           return (this.dashboardComponent = SuperAdmin);
       }
