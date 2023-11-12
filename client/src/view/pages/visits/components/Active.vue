@@ -4,32 +4,38 @@
 
     <div class="col-lg-12">
       <div
-        class="bg-gray-200 rounded-lg pr-4 pl-4 pointer text-center mr-2 inline-display mb-2"
+        class="bg-gray-200 rounded-lg pointer text-center mr-2 inline-display mb-2"
         v-for="visit in visits"
         :key="visit.id"
         @click="visitDetailsPage(visit)"
         v-b-tooltip.hover
         :title="visit.patient.fullname"
+        style="min-width: 150px"
       >
-        <div>
-          <img
-            v-if="!imageError"
-            alt="Pic"
-            :src="imageUrl(visit.patient.photo)"
-            @load="handleImageLoad"
-            @error="handleImageError"
-          />
-          <img v-else alt="Pic" src="/media/users/blank.png" width="50" class="mb-2" />
+        <div v-if="visit.category !== outPatientCategory" class="displayIcon">
+          <i :class="displayIcon(visit.category)" class="text-white"></i>
         </div>
-        <p class="mb-0 font-size-lg">
-          <strong
-            >{{ shortenName(visit.patient.fullname, 11) }}
-            <span>{{ displayEllipsis(visit.patient.fullname) }}</span></strong
-          >
-        </p>
-        <p class="mb-0">
-          <small class="font-size-lg font-weight-bolder">{{ visit.patient.hospital_id }}</small>
-        </p>
+        <div class="pr-4 pl-4 pb-4">
+          <div>
+            <img
+              v-if="!imageError"
+              alt="Pic"
+              :src="imageUrl(visit.patient.photo)"
+              @load="handleImageLoad"
+              @error="handleImageError"
+            />
+            <img v-else alt="Pic" src="/media/users/blank.png" width="50" class="mb-2" />
+          </div>
+          <p class="mb-0 font-size-lg">
+            <strong
+              >{{ shortenName(visit.patient.fullname, 11) }}
+              <span>{{ displayEllipsis(visit.patient.fullname) }}</span></strong
+            >
+          </p>
+          <p class="mb-0">
+            <small class="font-size-lg font-weight-bolder">{{ visit.patient.hospital_id }}</small>
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -45,6 +51,7 @@ export default {
       currentPage: 1,
       itemsPerPage: 10,
       imageError: false,
+      outPatientCategory: 'Outpatient',
     };
   },
   computed: {
@@ -92,15 +99,8 @@ export default {
     }, 500),
 
     displayIcon(type) {
-      if (type === 'IPD') return 'fas fa-bed';
-      if (type === 'ANC') return 'fas fa-female';
-    },
-
-    cutName(name) {
-      const splitName = name.split(' ');
-      if (splitName.length <= 2) return name;
-      splitName.splice(2, 1);
-      return splitName.join(' ');
+      if (type === 'Inpatient') return 'fas fa-bed';
+      if (type === 'Antenatal') return 'fas fa-female';
     },
 
     displayEllipsis(name) {
@@ -114,7 +114,12 @@ export default {
     },
 
     visitDetailsPage(visit) {
-      this.$router.push(`/consultation/${visit.id}`);
+      if (visit.category === 'Antenatal') {
+        return this.$router.push(
+          `/program/ante-natal/visit/${visit.id}?antenatal=${visit.ante_natal_id}`
+        );
+      }
+      return this.$router.push(`/consultation/${visit.id}`);
     },
 
     imageUrl(url) {
@@ -143,5 +148,17 @@ export default {
 
 .pointer {
   cursor: pointer;
+}
+
+.displayIcon {
+  position: absolute;
+  left: 5;
+  right: 1;
+  top: 0;
+  background: #88af28;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 0 5px 0 0;
+  font-size: 18px;
 }
 </style>

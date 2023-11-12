@@ -24,7 +24,7 @@ NProgress.setColor = color => {
     background: ${color} !important;
   }
   #nprogress .peg {
-    width: 150px;
+    width: 250px;
     box-shadow: 0 0 10px #ffffff, 0 0 5px #f3f5f6;  }
   `;
   document.body.appendChild(style);

@@ -26,9 +26,8 @@
             <td>
               <span> ₦{{ item.total_price }} </span>
             </td>
-            <td></td>
             <td>
-              <span>{{ item.date_prescribed | dayjs('dd, MMM Do YYYY, h:mma') }}</span>
+              <span>{{ item.date_prescribed | dayjs('ddd, MMM Do YYYY, h:mma') }}</span>
             </td>
             <td>
               <span
