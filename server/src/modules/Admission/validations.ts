@@ -5,6 +5,9 @@ export function validateAdmission(admission) {
     ward_id: Joi.number().required(),
     bed_id: Joi.number().required(),
     visit_id: Joi.number().required(),
+    ante_natal_id: Joi.number()
+      .optional()
+      .allow(''),
     comment: Joi.string()
       .optional()
       .allow(''),

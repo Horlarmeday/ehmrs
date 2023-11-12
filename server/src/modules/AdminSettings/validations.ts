@@ -52,10 +52,19 @@ export function validateCreateDefault(req) {
         DefaultType.INJECTION_ITEMS,
         DefaultType.ANC_ROUTINE_DRUGS,
         DefaultType.ANC_ROUTINE_TESTS,
-        DefaultType.ADMISSION_ITEMS
+        DefaultType.ADMISSION_ITEMS,
+        DefaultType.WATER_INJECTIONS
       )
       .required(),
     data: Joi.any().required(),
+  });
+  return schema.validate(req);
+}
+
+export function validateDeleteDefaultData(req) {
+  const schema = Joi.object({
+    id: Joi.number().required(),
+    dataId: Joi.string().required(),
   });
   return schema.validate(req);
 }

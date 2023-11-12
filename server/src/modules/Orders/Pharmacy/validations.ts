@@ -10,6 +10,7 @@ export function validateDrugPrescription(drug: any) {
     route_id: Joi.number().required(),
     frequency: Joi.string().required(),
     dosage_form_id: Joi.number().required(),
+    dosage_form_name: Joi.string().required(),
     strength_id: Joi.number().required(),
     inventory_id: Joi.number().required(),
     prescribed_strength: Joi.string()
