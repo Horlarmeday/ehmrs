@@ -19,10 +19,10 @@ import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Patient } from './patient';
 
 export enum AccountStatus {
-  ACTIVE = 'Active',
+  ACTIVE = 'ACTIVE',
   COMPLETED = 'COMPLETED',
   DISCONTINUED = 'DISCONTINUED',
-  INACTIVE = 'Inactive',
+  INACTIVE = 'INACTIVE',
 }
 
 @Table({ timestamps: true, tableName: 'Antenatal_Accounts' })
