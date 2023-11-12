@@ -25,6 +25,7 @@ import { Unit } from './unit';
 import { Inventory } from './inventory';
 import { DrugPrescription } from './drugPrescription';
 import { Antenatal } from './antenatal';
+import { SurgeryRequest } from './surgeryRequest';
 
 export enum DispenseStatus {
   DISPENSED = 'Dispensed',
@@ -273,6 +274,12 @@ export class PrescribedAdditionalItem extends Model {
   })
   ante_natal_id: number;
 
+  @ForeignKey(() => SurgeryRequest)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  surgery_id: number;
+
   @Column({
     type: DataType.ENUM(Source.ANC, Source.CONSULTATION, Source.THEATER),
     defaultValue: Source.CONSULTATION,
@@ -305,6 +312,9 @@ export class PrescribedAdditionalItem extends Model {
 
   @BelongsTo(() => DrugPrescription)
   drugPrescription: DrugPrescription;
+
+  @BelongsTo(() => SurgeryRequest)
+  surgeryRequest: SurgeryRequest;
 
   static async paginate(param: {
     paginate: number;

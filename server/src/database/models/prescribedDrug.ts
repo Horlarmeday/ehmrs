@@ -28,6 +28,7 @@ import { DrugPrescription } from './drugPrescription';
 import { Inventory } from './inventory';
 import { PrescribedAdditionalItem } from './prescribedAdditionalItem';
 import { Antenatal } from './antenatal';
+import { SurgeryRequest } from './surgeryRequest';
 
 export enum DispenseStatus {
   DISPENSED = 'Dispensed',
@@ -355,6 +356,12 @@ export class PrescribedDrug extends Model {
   })
   ante_natal_id: number;
 
+  @ForeignKey(() => SurgeryRequest)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  surgery_id: number;
+
   @Column({
     type: DataType.ENUM(Source.ANC, Source.CONSULTATION, Source.THEATER),
     defaultValue: Source.CONSULTATION,
@@ -393,6 +400,9 @@ export class PrescribedDrug extends Model {
 
   @BelongsTo(() => Inventory)
   inventory: Inventory;
+
+  @BelongsTo(() => SurgeryRequest)
+  surgeryRequest: SurgeryRequest;
 
   @HasMany(() => PrescribedAdditionalItem, {
     foreignKey: 'prescribed_drug_id',

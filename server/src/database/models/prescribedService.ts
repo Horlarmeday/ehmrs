@@ -21,6 +21,7 @@ import {
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Service } from './service';
 import { Antenatal } from './antenatal';
+import { SurgeryRequest } from './surgeryRequest';
 
 export enum ServiceType {
   CASH = 'Cash',
@@ -145,6 +146,12 @@ export class PrescribedService extends Model {
   })
   ante_natal_id: number;
 
+  @ForeignKey(() => SurgeryRequest)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  surgery_id: number;
+
   @BelongsTo(() => Service)
   service: Service;
 
@@ -156,6 +163,9 @@ export class PrescribedService extends Model {
 
   @BelongsTo(() => Antenatal)
   antenatal: Antenatal;
+
+  @BelongsTo(() => SurgeryRequest)
+  surgeryRequest: SurgeryRequest;
 
   static async paginate(param: {
     paginate: number;

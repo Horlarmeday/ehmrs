@@ -25,6 +25,7 @@ import { InvestigationResult } from './investigationResult';
 import { InvestigationPrescription } from './investigationPrescription';
 import { Antenatal } from './antenatal';
 import { Imaging } from './imaging';
+import { SurgeryRequest } from './surgeryRequest';
 
 export enum InvestigationStatus {
   PENDING = 'Pending',
@@ -216,6 +217,12 @@ export class PrescribedInvestigation extends Model {
     type: DataType.INTEGER,
   })
   ante_natal_id: number;
+
+  @ForeignKey(() => SurgeryRequest)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  surgery_id: number;
 
   @Column({
     type: DataType.ENUM(Source.ANC, Source.CONSULTATION),

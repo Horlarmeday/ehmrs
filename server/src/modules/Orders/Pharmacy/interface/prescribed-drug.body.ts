@@ -9,7 +9,8 @@ export class PrescribedAdditionalItemBody {
   quantity_prescribed: number;
   quantity_to_dispense: number;
   drug_form?: DrugForm;
-  drug_prescription_id?: string;
+  drug_prescription_id?: number;
+  prescribed_drug_id?: number;
   total_price: number;
   patient_id: number;
   visit_id: number;
@@ -27,6 +28,7 @@ export class PrescribedDrugBody {
   quantity_to_dispense: number;
   route: number;
   dosage_form_id: number;
+  dosage_form_name: string;
   route_id: number;
   prescribed_strength: string;
   strength_id: string;
@@ -38,6 +40,7 @@ export class PrescribedDrugBody {
   examiner: number;
   patient_id: number;
   visit_id: number;
+  unit_id: number;
   insurance_id: number;
   inventory_id: number;
   start_date: Date;

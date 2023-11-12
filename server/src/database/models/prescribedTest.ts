@@ -24,6 +24,7 @@ import { Sample } from './sample';
 import { Source, TestPrescription } from './testPrescription';
 import { TestResult } from './testResult';
 import { Antenatal } from './antenatal';
+import { SurgeryRequest } from './surgeryRequest';
 
 export enum PrescriptionType {
   CASH = 'Cash',
@@ -238,6 +239,12 @@ export class PrescribedTest extends Model {
   })
   ante_natal_id: number;
 
+  @ForeignKey(() => SurgeryRequest)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  surgery_id: number;
+
   @Column({
     type: DataType.ENUM(Source.ANC, Source.CONSULTATION),
     defaultValue: Source.CONSULTATION,
@@ -279,6 +286,9 @@ export class PrescribedTest extends Model {
 
   @BelongsTo(() => Antenatal)
   antenatal: Antenatal;
+
+  @BelongsTo(() => SurgeryRequest)
+  surgeryRequest: SurgeryRequest;
 
   static async paginate(param: {
     paginate: number;
