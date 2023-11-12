@@ -4,95 +4,17 @@
       <div class="container white">
         <div class="d-none d-lg-flex align-items-center mr-3">
           <ul class="header-tabs nav align-self-end font-size-lg" role="tablist">
-            <li class="nav-item mr-3">
+            <li class="nav-item mr-3" v-for="(tab, index) in tabs" :key="index">
               <a
                 class="nav-link text-dark py-4 px-6"
-                :class="{ active: tabIndex === 0, disabled: tabIndex === 0 }"
-                @click="setActiveTab($event, 'history')"
-                data-tab="0"
+                :class="{ active: tabIndex === index, disabled: tabIndex === index }"
+                @click="setActiveTab($event, tab.component)"
+                :data-tab="index"
                 data-toggle="tab"
                 href="#"
                 role="tab"
                 aria-selected="true"
-                >History</a
-              >
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link text-dark py-4 px-6"
-                :class="{ active: tabIndex === 1, disabled: tabIndex === 1 }"
-                @click="setActiveTab($event, 'observations')"
-                data-tab="1"
-                data-toggle="tab"
-                href="#"
-                role="tab"
-                aria-selected="true"
-                >Observations</a
-              >
-            </li>
-            <li class="nav-item mr-3">
-              <a
-                class="nav-link text-dark py-4 px-6"
-                @click="setActiveTab($event, 'tests')"
-                data-tab="2"
-                data-toggle="tab"
-                :class="{ active: tabIndex === 2, disabled: tabIndex === 2 }"
-                href="#"
-                role="tab"
-                aria-selected="true"
-                >Tests</a
-              >
-            </li>
-            <li class="nav-item mr-3">
-              <a
-                class="nav-link text-dark py-4 px-6"
-                :class="{ active: tabIndex === 3, disabled: tabIndex === 3 }"
-                @click="setActiveTab($event, 'medications')"
-                data-tab="3"
-                data-toggle="tab"
-                href="#"
-                role="tab"
-                aria-selected="true"
-                >Medications</a
-              >
-            </li>
-            <li class="nav-item mr-3">
-              <a
-                class="nav-link text-dark py-4 px-6"
-                :class="{ active: tabIndex === 4, disabled: tabIndex === 4 }"
-                @click="setActiveTab($event, 'investigations')"
-                data-tab="4"
-                data-toggle="tab"
-                href="#"
-                role="tab"
-                aria-selected="true"
-                >Radiology</a
-              >
-            </li>
-            <li class="nav-item mr-3">
-              <a
-                class="nav-link text-dark py-4 px-6"
-                :class="{ active: tabIndex === 5, disabled: tabIndex === 5 }"
-                @click="setActiveTab($event, 'disposition')"
-                data-tab="5"
-                data-toggle="tab"
-                href="#"
-                role="tab"
-                aria-selected="true"
-                >Disposition</a
-              >
-            </li>
-            <li class="nav-item mr-3">
-              <a
-                class="nav-link text-dark py-4 px-6"
-                :class="{ active: tabIndex === 7, disabled: tabIndex === 7 }"
-                @click="setActiveTab($event, 'services')"
-                data-tab="7"
-                data-toggle="tab"
-                href="#"
-                role="tab"
-                aria-selected="true"
-                >Services</a
+                >{{ tab.name }}</a
               >
             </li>
           </ul>
@@ -117,6 +39,7 @@ import Disposition from '@/view/pages/consultation/tabs/Disposition.vue';
 import PulseIcons from '@/view/pages/consultation/components/PulseIcons.vue';
 import PageSkeleton from '@/utils/PageSkeleton.vue';
 import History from '@/view/pages/consultation/tabs/History.vue';
+import Surgery from '@/view/pages/consultation/tabs/Surgery.vue';
 
 const ComponentMapping = {
   observations: Observations,
@@ -126,6 +49,7 @@ const ComponentMapping = {
   services: ServicesOrder,
   disposition: Disposition,
   history: History,
+  surgery: Surgery,
 };
 
 export default {
@@ -136,6 +60,40 @@ export default {
       tabIndex: 0,
       activeComponent: '',
       loading: false,
+      tabs: [
+        {
+          name: 'History',
+          component: 'history',
+        },
+        {
+          name: 'Observations',
+          component: 'observations',
+        },
+        {
+          name: 'Tests',
+          component: 'tests',
+        },
+        {
+          name: 'Medications',
+          component: 'medications',
+        },
+        {
+          name: 'Radiology',
+          component: 'radiology',
+        },
+        {
+          name: 'Disposition',
+          component: 'disposition',
+        },
+        {
+          name: 'Services',
+          component: 'services',
+        },
+        {
+          name: 'Surgery',
+          component: 'surgery',
+        },
+      ],
     };
   },
   methods: {

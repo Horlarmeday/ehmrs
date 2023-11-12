@@ -58,7 +58,7 @@
           </div>
           <!-- </div> -->
         </div>
-        <div class="m-auto">
+        <div class="text-center">
           <a
             href="#"
             :disabled="isInLastPage"

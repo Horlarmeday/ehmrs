@@ -4,7 +4,7 @@
       <div class="container white">
         <div class="d-none d-lg-flex align-items-center mr-3">
           <ul class="header-tabs nav align-self-end font-size-lg" role="tablist">
-            <li class="nav-item mr-3">
+            <li class="nav-item mr-1">
               <a
                 class="nav-link text-dark py-4 px-6"
                 :class="{ active: tabIndex === 5, disabled: tabIndex === 5 }"
@@ -14,10 +14,10 @@
                 href="#"
                 role="tab"
                 aria-selected="true"
-                >Visits Summary</a
+                >Summary</a
               >
             </li>
-            <li v-if="doctorAllowedTabs.includes(currentUser.role)" class="nav-item mr-3">
+            <li v-if="doctorAllowedTabs.includes(currentUser.role)" class="nav-item mr-1">
               <a
                 class="nav-link text-dark py-4 px-6"
                 :class="{ active: tabIndex === 6, disabled: tabIndex === 6 }"
@@ -56,7 +56,7 @@
                 >Triage</a
               >
             </li>
-            <li class="nav-item mr-3">
+            <li class="nav-item mr-1">
               <a
                 class="nav-link text-dark py-4 px-6"
                 :class="{ active: tabIndex === 1, disabled: tabIndex === 1 }"
@@ -69,7 +69,7 @@
                 >Tests</a
               >
             </li>
-            <li class="nav-item mr-3">
+            <li class="nav-item mr-1">
               <a
                 class="nav-link text-dark py-4 px-6"
                 :class="{ active: tabIndex === 2, disabled: tabIndex === 2 }"
@@ -82,7 +82,7 @@
                 >Medication</a
               >
             </li>
-            <li class="nav-item mr-3">
+            <li class="nav-item mr-1">
               <a
                 class="nav-link text-dark py-4 px-6"
                 :class="{ active: tabIndex === 3, disabled: tabIndex === 3 }"
@@ -106,6 +106,32 @@
                 role="tab"
                 aria-selected="true"
                 >Clinical Notes</a
+              >
+            </li>
+            <li v-if="nurseAllowedTabs.includes(currentUser.role)" class="nav-item mr-3">
+              <a
+                class="nav-link text-dark py-4 px-6"
+                :class="{ active: tabIndex === 7, disabled: tabIndex === 7 }"
+                @click="setActiveTab($event, 'disposition')"
+                data-tab="7"
+                data-toggle="tab"
+                href="#"
+                role="tab"
+                aria-selected="true"
+                >Disposition</a
+              >
+            </li>
+            <li v-if="doctorAllowedTabs.includes(currentUser.role)" class="nav-item mr-3">
+              <a
+                class="nav-link text-dark py-4 px-6"
+                :class="{ active: tabIndex === 8, disabled: tabIndex === 8 }"
+                @click="setActiveTab($event, 'surgery')"
+                data-tab="8"
+                data-toggle="tab"
+                href="#"
+                role="tab"
+                aria-selected="true"
+                >Surgery</a
               >
             </li>
           </ul>
@@ -132,6 +158,8 @@ import ClinicalNote from '@/view/pages/programs/antenatal/tabs/ClinicalNote.vue'
 import Summary from '@/view/pages/programs/antenatal/tabs/Summary.vue';
 import { parseJwt } from '@/core/plugins/parseJwt';
 import Observation from '@/view/pages/programs/antenatal/tabs/Observation.vue';
+import Disposition from '@/view/pages/consultation/tabs/Disposition.vue';
+import Surgery from '@/view/pages/consultation/tabs/Surgery.vue';
 
 const ComponentMapping = {
   accountUpdate: AccountUpdate,
@@ -142,6 +170,8 @@ const ComponentMapping = {
   clinicalNote: ClinicalNote,
   summary: Summary,
   observation: Observation,
+  disposition: Disposition,
+  surgery: Surgery,
 };
 export default {
   components: {

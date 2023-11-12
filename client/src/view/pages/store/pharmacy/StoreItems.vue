@@ -31,12 +31,16 @@
         <span class="card-label font-weight-bolder text-dark">Store Items</span>
       </h3>
       <div class="card-toolbar">
-        <router-link
-          to="/store/pharmacy/add-item"
-          class="btn btn-success font-weight-bolder font-size-sm"
+        <b-dropdown
+          href="/store/pharmacy/add-item"
+          split
+          split-to="/store/pharmacy/add-item"
+          class="float-right"
+          variant="primary"
         >
-          <add-icon /> Add New
-        </router-link>
+          <template #button-content> <add-icon /> Add Item </template>
+          <b-dropdown-item to="/store/pharmacy/add-bulk-item">Add Bulk Items</b-dropdown-item>
+        </b-dropdown>
       </div>
     </div>
     <!--end::Header-->
@@ -69,8 +73,8 @@
               </th>
               <th class="pr-0" style="width: 300px">Name</th>
               <th style="min-width: 150px">Quantity Remaining</th>
-              <th style="min-width: 50px">Shelf</th>
               <th style="min-width: 100px">Dosage Form</th>
+              <th style="min-width: 100px">Unit Price (₦)</th>
               <th style="min-width: 50px">Strength/Volume</th>
               <th style="min-width: 150px">Date Created</th>
             </tr>
@@ -102,11 +106,6 @@
                 </span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ item.shelf || 'None' }}
-                </span>
-              </td>
-              <td>
                 <span
                   v-if="item.dosage_form_id"
                   class="text-dark-75 font-weight-bolder d-block font-size-lg"
@@ -114,6 +113,11 @@
                   {{ item.dosage_form.name || 'None' }}
                 </span>
                 <span v-else class="text-dark-75 font-weight-bolder d-block font-size-lg">Nil</span>
+              </td>
+              <td>
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ item.unit_price || 'None' }}
+                </span>
               </td>
               <td>
                 <span
@@ -294,7 +298,7 @@ export default {
 
     handlePageChange() {
       this.queryParams({});
-      this.fetchPharmacyItems({});
+      this.fetchPharmacyItems({ currentPage: this.currentPage });
     },
 
     onPageChange(page) {
