@@ -5,6 +5,7 @@ import {
   createService,
   createUnit,
   createWard,
+  deleteDefaultData,
   getBeds,
   getBedsInAWard,
   getDefaults,
@@ -303,6 +304,18 @@ class AdminService {
    */
   static async getDefaults(): Promise<Default[]> {
     return getDefaults();
+  }
+
+  /**
+   * delete a default data
+   *
+   * @static
+   * @returns {Promise<Default>} json object with default data
+   * @param body
+   * @memberOf AdminService
+   */
+  static async deleteDefaultData(body): Promise<Default> {
+    return deleteDefaultData({ id: body.id }, body.dataId);
   }
 }
 export default AdminService;

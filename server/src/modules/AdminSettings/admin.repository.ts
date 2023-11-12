@@ -279,15 +279,17 @@ export async function getBeds() {
  * get wards and associated beds
  *
  * @function
- * @returns {json} json object with wards(beds) data
+ * @returns {Promise<Ward[]>} json object with wards(beds) data
  */
 export const getWardsAndBeds = (search: string) => {
   return Ward.findAll({
     order: [['createdAt', 'DESC']],
     where: {
-      name: {
-        [Op.like]: `%${search}%`,
-      },
+      ...(search && {
+        name: {
+          [Op.like]: `%${search}%`,
+        },
+      }),
     },
     include: [
       {
@@ -440,7 +442,7 @@ export const getServicePrice = async (patient: Patient, service_id: number) => {
 export const createDefault = async (data: Optional<string, any>): Promise<Default> => {
   const oneDefault = await getOneDefault({ type: data.type });
   if (oneDefault) {
-    const dbData = JSON.parse(oneDefault.data);
+    const dbData = oneDefault.data;
     const concattedData = dbData.concat(data.data);
     return await oneDefault.update({ data: concattedData });
   }
@@ -464,9 +466,27 @@ export const getDefaults = async (): Promise<Default[]> => {
  * get an admin default
  *
  * @function
- * @returns {Promise<Service>} json object with default data
+ * @returns {Promise<Default>} json object with default data
  * @param query
  */
 export const getOneDefault = async (query: WhereOptions<Default>): Promise<Default> => {
   return Default.findOne({ where: { ...query } });
+};
+
+/**
+ * Delete default data
+ *
+ * @function
+ * @returns {Promise<Default>} json object with default data
+ * @param query
+ * @param dataId
+ */
+export const deleteDefaultData = async (
+  query: WhereOptions<Default>,
+  dataId: string
+): Promise<Default> => {
+  const oneDefault = await getOneDefault({ ...query });
+  const dbData = oneDefault.data;
+  const filteredData = dbData.filter(({ id }) => id !== dataId);
+  return await oneDefault.update({ data: filteredData });
 };

@@ -3,13 +3,14 @@ import AdminService from './admin.service';
 import {
   validateBed,
   validateCreateDefault,
+  validateDeleteDefaultData,
   validateDepartment,
   validateService,
   validateUnit,
   validateWard,
 } from './validations';
 import { SuccessResponse, successResponse } from '../../common/responses/success-responses';
-import { DATA_SAVED, DATA_UPDATED } from './messages/response-messages';
+import { DATA_DELETED, DATA_SAVED, DATA_UPDATED } from './messages/response-messages';
 import { SUCCESS } from '../../core/constants';
 import { NextFunction, Request, Response } from 'express';
 import { errorResponse } from '../../common/responses/error-responses';
@@ -492,6 +493,39 @@ class AdminController {
       const adminDefault = await AdminService.getOneDefault(+req.params.id);
 
       return successResponse({ res, message: SUCCESS, data: adminDefault, httpCode: 200 });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * delete a default data
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {Promise<Default>} json object with status, default data
+   */
+  static async deleteDefaultData(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    const { error } = validateDeleteDefaultData(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+
+    try {
+      const adminDefault = await AdminService.deleteDefaultData({
+        ...req.body,
+      });
+
+      return successResponse({ res, httpCode: 201, data: adminDefault, message: DATA_DELETED });
     } catch (e) {
       return next(e);
     }
