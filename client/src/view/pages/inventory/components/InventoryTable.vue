@@ -36,9 +36,6 @@
                 class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg"
                 >{{ item.drug.name }}</router-link
               >
-              <span v-if="item.drug_type === 'NHIS'" class="label label-inline label-success ml-2"
-                >NHIS</span
-              >
             </td>
             <td>
               <span class="text-dark-75 font-weight-bolder d-block font-size-lg">

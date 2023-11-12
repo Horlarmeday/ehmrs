@@ -1,5 +1,5 @@
 <template>
-  <div class="card card-custom gutter-b">
+  <div class="card-custom gutter-b">
     <!--begin::Header-->
     <div class="card-header border-0 py-5">
       <h3 class="card-title align-items-start flex-column">
