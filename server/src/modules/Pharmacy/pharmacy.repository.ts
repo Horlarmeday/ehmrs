@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import sequelize, { Op } from 'sequelize';
+import sequelize, { Op, WhereOptions } from 'sequelize';
 import {
   calcLimitAndOffset,
   canUsePriceTariff,
@@ -298,6 +298,18 @@ export async function getDosageFormRoutes(dosage_form_id: number) {
     order: [['createdAt', 'DESC']],
   });
 }
+
+/**
+ * get one routes of administration
+ *
+ * @function
+ * @returns {Promise<RoutesOfAdministration>} json object with routes of administration data
+ */
+export const getOneRouteOfAdministration = async (
+  query: WhereOptions<RoutesOfAdministration>
+): Promise<RoutesOfAdministration> => {
+  return RoutesOfAdministration.findOne({ where: { ...query } });
+};
 
 /** ***********************
  * DRUG TARIFFS

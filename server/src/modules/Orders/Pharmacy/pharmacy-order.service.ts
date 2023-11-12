@@ -2,6 +2,7 @@ import {
   getPrescribedAdditionalItems,
   getPrescribedDrugs,
   prescribeDrug,
+  syringeNeedleCalculation,
 } from './pharmacy-order.repository';
 import { PrescribedDrugBody } from './interface/prescribed-drug.body';
 import { PrescribedDrug } from '../../../database/models';
@@ -15,6 +16,10 @@ import {
 } from '../../Pharmacy/pharmacy.repository';
 import { isToday } from '../../../core/helpers/helper';
 import { DrugStatus } from '../../../database/models/drugPrescription';
+import { getOneDefault } from '../../AdminSettings/admin.repository';
+import { DefaultType } from '../../../database/models/default';
+import { BadException } from '../../../common/util/api-error';
+import { INJECTION_SYRINGES_NOT_FOUND } from './messages/response-messages';
 
 class PharmacyOrderService {
   /**
@@ -26,18 +31,30 @@ class PharmacyOrderService {
    * @memberOf PharmacyOrderService
    */
   static async prescribeDrug(body: PrescribedDrugBody): Promise<PrescribedDrug> {
-    const { drug_type, total_price, drug_id, visit_id, staff_id } = body;
+    const { drug_type, total_price, drug_id, visit_id, staff_id, dosage_form_name } = body;
     const visit = await VisitService.getVisitById(visit_id);
     const patient = await PatientService.getPatientById(visit.patient_id);
     const drugPrice = await getDrugPrice(patient, drug_id);
     const drugPrescription = await this.getDrugPrescription(patient.id, body);
-    return prescribeDrug({
+    const prescribedDrug = await prescribeDrug({
       ...body,
       patient_id: patient.id,
       examiner: staff_id,
       total_price: this.getTotalPrice(total_price, drugPrice, drug_type),
       drug_prescription_id: drugPrescription.id,
     });
+    if (/\binjection\b/i.test(dosage_form_name)) {
+      const injectionDefault = await getOneDefault({ type: DefaultType.INJECTION_ITEMS });
+      if (!injectionDefault) {
+        throw new BadException('Error', 400, INJECTION_SYRINGES_NOT_FOUND);
+      }
+      await syringeNeedleCalculation({
+        patient,
+        prescription: prescribedDrug,
+        injectionItems: injectionDefault.data,
+      });
+    }
+    return prescribedDrug;
   }
 
   /**

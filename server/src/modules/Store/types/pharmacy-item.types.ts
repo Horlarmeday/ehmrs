@@ -13,7 +13,7 @@ export class PharmacyItem {
   shelf: string;
   batch: string;
   quantity: number;
-  remain_quantity: number;
+  quantity_remaining: number;
   unit_id: number;
   unit_price: number | string;
   total_price: number | string;
