@@ -13,7 +13,7 @@
         </h3>
       </div>
       <!--begin::Header-->
-      <div class="card-header border-0 float-right">
+      <div class="card-header border-0 ">
         <search @search="onHandleSearch" />
         <div class="card-toolbar">
           <a href="#" class="btn btn-primary font-weight-bolder font-size-sm" @click="addNewData">

@@ -374,6 +374,7 @@ export default {
     },
 
     getTotalPrice() {
+      this.quantity_to_dispense = Math.floor(Math.abs(this.quantity_to_dispense));
       this.total_price = this.price * this.quantity_to_dispense;
     },
 
@@ -409,6 +410,7 @@ export default {
     drugData() {
       return {
         dosage_form_id: this.dosage_form.id,
+        dosage_form_name: this.dosage_form.name,
         route_id: this.route,
         start_date: this.start_date,
         duration_unit: this.duration_unit.label,
