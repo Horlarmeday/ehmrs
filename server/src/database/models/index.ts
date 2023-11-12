@@ -50,6 +50,8 @@ export { Request } from './request';
 export { Sample } from './sample';
 export { Service } from './service';
 export { ServiceTariff } from './serviceTariff';
+export { SurgeryProcedure } from './surgeryProcedure';
+export { SurgeryRequest } from './surgeryRequest';
 export { Test } from './test';
 export { TestTariff } from './testTariff';
 export { Triage } from './triage';

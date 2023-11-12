@@ -11,6 +11,7 @@ import { exportDataToCSV, exportDataToExcel, exportDataToPDF } from './fileExpor
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 import { Op } from 'sequelize';
+import { PrescribedDrugBody } from '../../modules/Orders/Pharmacy/interface/prescribed-drug.body';
 
 const writeFile = promisify(fs.writeFile);
 
@@ -27,14 +28,14 @@ export type ExportSelectedDataType = {
  * @param patient - patient firstname
  * @returns {Promise<{fileName: string}>}
  */
-export async function processSnappedPhoto(param: string, patient: string) {
+export async function processSnappedPhoto(param: string, patient: string): Promise<string> {
   const matches = param.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/); // checks if its a base64 image
   if (matches.length !== 3) throw new BadException('INVALID', 400, 'invalid base64 string');
 
   const imageBuffer = Buffer.from(matches[2], 'base64');
   const extension = mime.getExtension(matches[1]);
   const fileName = `${patient}${Date.now()}.${extension}`;
-  let filepath;
+  let filepath: fs.PathOrFileDescriptor;
 
   if (process.env.NODE_ENV === DEVELOPMENT) {
     filepath = `src/public/images/${fileName}`;
@@ -52,7 +53,7 @@ export async function processSnappedPhoto(param: string, patient: string) {
  * @param num
  * @returns {number}
  */
-export function generateRandomNumbers(num: number) {
+export function generateRandomNumbers(num: number): number {
   return Math.floor(Math.pow(10, num - 1) + Math.random() * 9 * Math.pow(10, num - 1));
 }
 
@@ -61,7 +62,7 @@ export function generateRandomNumbers(num: number) {
  * @param history
  * @returns {boolean|*}
  */
-export function checkValueExists(history) {
+export function checkValueExists(history): boolean | any {
   const { complaint_note, history_note, examination_note, has_smoking_history } = history;
   if (complaint_note) return true;
   if (history_note) return true;
@@ -99,8 +100,8 @@ export const joinCapitalizedWord = (param: string, character: string): string =>
   return str;
 };
 
-export function splitSort(sort: string) {
-  let result;
+export const splitSort = (sort: string) => {
+  let result: string[];
   if (/^drug/.test(sort)) {
     result = sort.split('name_');
     return { sort_by: 'name', order: result[1].toUpperCase() };
@@ -111,7 +112,7 @@ export function splitSort(sort: string) {
   }
   result = sort.split('_');
   return { sort_by: result[0], order: result[1].toUpperCase() };
-}
+};
 
 export const paginate = (data: { rows: any[]; count: number }, page: number, limit: number) => {
   const { count: total, rows: docs } = data;
@@ -142,7 +143,7 @@ export const exportSelectedData = ({ res, dataType, data, headers }: ExportSelec
   }
 };
 
-export const mapToUnique = arr => {
+export const mapToUnique = (arr: Iterable<unknown>) => {
   const uniqueSet = new Set(arr);
   return Array.from(uniqueSet);
 };
