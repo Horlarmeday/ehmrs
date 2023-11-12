@@ -1,5 +1,5 @@
 <template>
-  <div id="disposition">
+  <div>
     <admission />
   </div>
 </template>

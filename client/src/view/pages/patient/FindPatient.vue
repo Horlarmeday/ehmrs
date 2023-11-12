@@ -93,7 +93,7 @@
                 </td>
                 <td class="pr-0">
                   <router-link
-                    title="Create Visit"
+                    title="Start a Visit"
                     :to="`/visit/new/${patient.id}`"
                     class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
                     v-b-tooltip.hover
@@ -127,7 +127,7 @@
 <script>
 import Pagination from '@/utils/Pagination.vue';
 import DateFilter from '@/utils/DateFilter';
-import CreateVisit from '../visits/create/CreateVisit';
+import CreateVisit from '../visits/create/CreateVisit-Deprecated.vue';
 import { setUrlQueryParams } from '@/common/common';
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
 export default {

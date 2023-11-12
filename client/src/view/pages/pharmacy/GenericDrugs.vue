@@ -12,7 +12,7 @@
         <span class="card-label font-weight-bolder text-dark">Generic Drugs</span>
       </h3>
       <div class="card-toolbar">
-        <a href="#" class="btn btn-success font-weight-bolder font-size-sm" @click="addNewData">
+        <a href="#" class="btn btn-primary font-weight-bolder font-size-sm" @click="addNewData">
           <add-icon /> Add New
         </a>
       </div>

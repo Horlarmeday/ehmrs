@@ -91,6 +91,7 @@ export default {
         ANC_ROUTINE_DRUGS: 'Antenatal Routine Drugs',
         INJECTION_ITEMS: 'Injection Items',
         OPERATION_ITEMS: 'Theater Operation Items',
+        WATER_INJECTIONS: 'Injections Needing Water',
       },
     };
   },
@@ -105,7 +106,6 @@ export default {
     },
   },
 
-  methods: {},
   created() {
     this.$store
       .dispatch('model/fetchDefaults')

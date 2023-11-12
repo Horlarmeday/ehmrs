@@ -16,6 +16,7 @@ import ANCRoutineDrugsTable from './components/table/ANCRoutineDrugsTable.vue';
 import ANCRoutineTestsTable from './components/table/ANCRoutineTestsTable.vue';
 import InjectionItemsTable from './components/table/InjectionItemsTable.vue';
 import OperationItemsTable from './components/table/OperationItemsTable.vue';
+import InjectionsWaterTable from './components/table/InjectionsWaterTable.vue';
 
 const TableDefault = {
   ADMISSION_ITEMS: AdmissionItemsTable,
@@ -23,6 +24,7 @@ const TableDefault = {
   ANC_ROUTINE_DRUGS: ANCRoutineDrugsTable,
   INJECTION_ITEMS: InjectionItemsTable,
   OPERATION_ITEMS: OperationItemsTable,
+  WATER_INJECTIONS: InjectionsWaterTable,
 };
 export default {
   data: () => ({
@@ -33,6 +35,7 @@ export default {
       ANC_ROUTINE_DRUGS: 'Antenatal Routine Drugs',
       INJECTION_ITEMS: 'Injection Items',
       OPERATION_ITEMS: 'Theater Operation Items',
+      WATER_INJECTIONS: 'Injections Needing Water',
     },
   }),
   created() {
