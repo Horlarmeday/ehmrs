@@ -112,6 +112,20 @@
             :reduce="services => services.id"
           />
         </div>
+        <div class="col-lg-4">
+          <label>Priority:</label>
+          <select
+            class="form-control"
+            v-model="priority"
+            v-validate="'required'"
+            data-vv-validate-on="blur"
+          >
+            <option :value="type" v-for="(priority, i) in priorities" :key="i">{{
+              priority
+            }}</option>
+          </select>
+          <span class="text-danger text-sm">{{ errors.first('priority') }}</span>
+        </div>
       </div>
       <div>
         <button ref="kt_visit_submit" @click="createVisit" class="btn btn-primary">
@@ -132,6 +146,7 @@ export default {
   data() {
     return {
       categories: ['Antenatal', 'Emergency', 'Inpatient', 'Outpatient'],
+      priorities: ['Not Urgent', 'Urgent', 'Emergency'],
       visitTypes: [
         'New visit',
         'Postoperative follow-up visit',
@@ -156,6 +171,7 @@ export default {
       date_of_visit: '',
       time_of_visit: '',
       service_id: '',
+      priority: '',
       currentPage: 1,
       itemsPerPage: 20,
     };
@@ -212,6 +228,7 @@ export default {
             type: this.type,
             date_of_visit: new Date(date),
             service_id: this.service_id,
+            priority: this.priority,
             department: this.department.text,
             professional: this.professional.text,
             patient_id: this.$route.params.id,
@@ -235,6 +252,7 @@ export default {
       this.service_id = '';
       this.type = '';
       this.department = '';
+      this.priority = '';
     },
   },
   created() {

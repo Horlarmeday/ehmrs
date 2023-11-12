@@ -25,9 +25,10 @@
 <script>
 import ANCRoutineDrugsForm from './components/forms/ANCRoutineDrugsForm.vue';
 import AdmissionItemsForm from './components/forms/AdmissionItemsForm.vue';
-import ANCRoutineTestsForm from '@/view/pages/admin/defaults/components/forms/ANCRoutineTestsForm.vue';
-import InjectionItemsForm from '@/view/pages/admin/defaults/components/forms/InjectionItemsForm.vue';
-import OperationItemsForm from '@/view/pages/admin/defaults/components/forms/OperationItemsForm.vue';
+import ANCRoutineTestsForm from './components/forms/ANCRoutineTestsForm.vue';
+import InjectionItemsForm from './components/forms/InjectionItemsForm.vue';
+import OperationItemsForm from './components/forms/OperationItemsForm.vue';
+import InjectionsWaterForm from './components/forms/InjectionsWaterForm.vue';
 
 export default {
   components: { ANCRoutineDrugsForm },
@@ -52,6 +53,10 @@ export default {
         code: 'INJECTION_ITEMS',
       },
       {
+        name: 'Injections Needing Water',
+        code: 'WATER_INJECTIONS',
+      },
+      {
         name: 'Theater Operation Items',
         code: 'OPERATION_ITEMS',
       },
@@ -74,6 +79,9 @@ export default {
           break;
         case 'OPERATION_ITEMS':
           this.currentComponent = OperationItemsForm;
+          break;
+        case 'WATER_INJECTIONS':
+          this.currentComponent = InjectionsWaterForm;
           break;
       }
     },
