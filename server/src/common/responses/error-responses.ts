@@ -1,10 +1,10 @@
 import { Response } from 'express';
 import { ERROR } from '../../core/constants';
 
-export const handleError = (err, res: Response) => {
+export const handleError = (err: any, res: Response) => {
   const { httpCode, message } = err;
   const statusCode = httpCode || 500;
-  return res.status(statusCode).json({
+  res.status(statusCode).send({
     status: ERROR,
     httpCode: statusCode,
     message: statusCode === 500 ? 'internal server error' : message,
