@@ -19,8 +19,11 @@ import diagnosisRoutes from '../../modules/Diagnosis/diagnosis.routes';
 import admissionRoutes from '../../modules/Admission/admission.routes';
 import requestRoutes from '../../modules/Request/request.routes';
 import antenatalRoutes from '../../modules/Antenatal/antenatal.routes';
-import express from 'express';
+import surgeryRoutes from '../../modules/Surgery/surgery.routes';
+import express, { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from '../helpers/helper';
+import { handleError } from '../../common/responses/error-responses';
+import { logger } from '../helpers/logger';
 
 export default (server: express.Application) => {
   server.use('/api/staffs', userRoutes);
@@ -40,10 +43,25 @@ export default (server: express.Application) => {
   server.use('/api/admission', admissionRoutes);
   server.use('/api/requests', requestRoutes);
   server.use('/api/antenatal', antenatalRoutes);
+  server.use('/api/surgery', surgeryRoutes);
   server.use('/api/orders/laboratory', labOrderRoutes);
   server.use('/api/orders/pharmacy', pharmacyOrderRoutes);
   server.use('/api/orders/radiology', radiologyOrderRoutes);
   server.use('/api/orders/service', serviceOrderRoutes);
+  server.use(
+    (
+      error: { statusCode: number; message: string },
+      req: Request,
+      res: Response,
+      next: NextFunction
+    ) => {
+      //const ErrorCodesNotToLog = [404];
+      //if (error?.statusCode && !ErrorCodesNotToLog.includes(error?.statusCode)) {
+      logger.error(error.message, error);
+      // }
+      handleError(error, res);
+    }
+  );
   server.use((req, res, next) => {
     const apiTimeout = 18000;
     // set the timeout for all HTTP requests
