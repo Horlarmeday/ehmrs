@@ -4,25 +4,38 @@
 
     <div class="col-lg-12">
       <div
-        class="bg-gray-200 rounded-lg pr-4 pl-4 pointer text-center mr-2 inline-display mb-2"
+        class="bg-gray-200 rounded-lg pointer text-center mr-2 inline-display mb-2"
         v-for="visit in visits"
         :key="visit.id"
         @click="visitDetailsPage(visit)"
         v-b-tooltip.hover
         :title="visit.patient.fullname"
+        style="min-width: 150px"
       >
-        <div>
-          <img alt="Pic" src="/media/users/blank.png" width="50" class="mb-2" />
+        <div v-if="visit.category !== 'Outpatient'" class="displayIcon">
+          <i :class="displayIcon(visit.category)" class="text-white"></i>
         </div>
-        <p class="mb-0 font-size-lg">
-          <strong
-            >{{ shortenName(visit.patient.fullname, 11) }}
-            <span>{{ displayEllipsis(visit.patient.fullname) }}</span></strong
-          >
-        </p>
-        <p class="mb-0">
-          <small class="font-size-lg font-weight-bolder">{{ visit.patient.hospital_id }}</small>
-        </p>
+        <div class="pr-4 pl-4 pb-4">
+          <div>
+            <img
+              v-if="!imageError"
+              alt="Pic"
+              :src="imageUrl(visit.patient.photo)"
+              @load="handleImageLoad"
+              @error="handleImageError"
+            />
+            <img v-else alt="Pic" src="/media/users/blank.png" width="50" class="mb-2" />
+          </div>
+          <p class="mb-0 font-size-lg">
+            <strong
+              >{{ shortenName(visit.patient.fullname, 11) }}
+              <span>{{ displayEllipsis(visit.patient.fullname) }}</span></strong
+            >
+          </p>
+          <p class="mb-0">
+            <small class="font-size-lg font-weight-bolder">{{ visit.patient.hospital_id }}</small>
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -37,6 +50,7 @@ export default {
     return {
       currentPage: 1,
       itemsPerPage: 10,
+      imageError: false,
     };
   },
   computed: {
@@ -97,13 +111,6 @@ export default {
       if (this.category === 'Antenatal') return 'fas fa-female';
     },
 
-    cutName(name) {
-      const splitName = name.split(' ');
-      if (splitName.length <= 2) return name;
-      splitName.splice(2, 1);
-      return splitName.join(' ');
-    },
-
     displayEllipsis(name) {
       if (name.length <= 11) return '';
       return '...';
@@ -121,6 +128,15 @@ export default {
         );
       }
       return this.$router.push(`/consultation/${visit.id}`);
+    },
+    imageUrl(url) {
+      return `${window.location.origin}/static/images/${url}`;
+    },
+    handleImageLoad() {
+      this.imageError = false;
+    },
+    handleImageError() {
+      this.imageError = true;
     },
   },
   created() {

@@ -28,14 +28,14 @@
 
           <b-tab lazy>
             <template v-slot:title>
-              <strong>IPD</strong>
+              <strong>Inpatient</strong>
             </template>
             <visit-category category="Inpatient" />
           </b-tab>
 
           <b-tab lazy>
             <template v-slot:title>
-              <strong>OPD</strong>
+              <strong>Outpatient</strong>
             </template>
             <visit-category category="Outpatient" />
           </b-tab>
