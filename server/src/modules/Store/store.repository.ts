@@ -1,6 +1,5 @@
 /* eslint-disable camelcase */
-import { Op } from 'sequelize';
-import { CASH, NHIS } from '../../core/constants';
+import { Op, WhereOptions } from 'sequelize';
 import {
   Drug,
   PharmacyStore,
@@ -14,6 +13,7 @@ import {
   Staff,
   PharmacyStoreLog,
 } from '../../database/models';
+import { DrugType } from '../../database/models/pharmacyStore';
 
 /** ***********************
  * PHARMACY STORE
@@ -52,7 +52,7 @@ export async function createCashItem(data) {
     batch,
     voucher,
     quantity_received,
-    remain_quantity: quantity_received,
+    quantity_remaining: quantity_received,
     unit_id,
     unit_price,
     total_price: quantity_received * unit_price,
@@ -65,7 +65,7 @@ export async function createCashItem(data) {
     strength_input,
     route_id,
     drug_form,
-    drug_type: CASH,
+    drug_type: DrugType.CASH,
   });
 }
 
@@ -102,7 +102,7 @@ export async function createNHISItem(data) {
     batch,
     voucher,
     quantity_received,
-    remain_quantity: quantity_received,
+    quantity_remaining: quantity_received,
     unit_id,
     unit_price,
     total_price: quantity_received * unit_price,
@@ -115,7 +115,7 @@ export async function createNHISItem(data) {
     strength_input,
     route_id,
     drug_form,
-    drug_type: NHIS,
+    drug_type: DrugType.NHIS,
   });
 }
 
@@ -282,6 +282,19 @@ export const getPharmacyItemByDrugId = async (drugId: number) => {
 };
 
 /**
+ * get one pharmacy store item
+ *
+ * @function
+ * @returns {Promise<PharmacyStore>} json object with pharmacy store item data
+ * @param query
+ */
+export const getOnePharmacyStoreItem = async (
+  query: WhereOptions<PharmacyStore>
+): Promise<PharmacyStore> => {
+  return PharmacyStore.findOne({ where: { ...query } });
+};
+
+/**
  * add a pharmacy store item history
  *
  * @function
@@ -296,7 +309,7 @@ export const addStoreItemHistory = async (item): Promise<PharmacyStoreHistory> =
  * update a pharmacy store item
  *
  * @function
- * @returns {json} json object with item data
+ * @returns {Promise<[affectedCount: number]>} json object with item data
  * @param query
  * @param fieldsToUpdate
  */

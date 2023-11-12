@@ -7,6 +7,7 @@ import {
   createPharmacyStoreLogs,
   findPharmacyStoreItems,
   getLaboratoryItems,
+  getOnePharmacyStoreItem,
   getPharmacyItemByDrugId,
   getPharmacyStoreItemById,
   getPharmacyStoreItemHistory,
@@ -25,15 +26,19 @@ import {
   addItemToInventory,
   getAnInventory,
 } from '../Inventory/inventory.repository';
-import { INVALID_INVENTORY, INVALID_QUANTITY } from '../Inventory/messages/response-messages';
+import {
+  INVALID_INVENTORY,
+  INVALID_QUANTITY,
+  ITEM_EXISTS,
+} from '../Inventory/messages/response-messages';
 import { HistoryType } from '../../database/models/inventoryItemHistory';
 import {
-  ExportDataType,
   ItemsToReorder,
   MapDispenseStoreItemHistoryType,
   MapSupplyStoreItemHistoryType,
 } from './types/pharmacy-item.types';
 import { lt } from 'lodash';
+import { DrugType } from '../../database/models/pharmacyStore';
 
 class StoreService {
   /**
@@ -45,11 +50,13 @@ class StoreService {
    * @memberOf StoreService
    */
   static async createPharmacyItemService(body): Promise<PharmacyStore> {
-    const { create_cash_item } = body;
-    if (create_cash_item) {
-      return await createCashItem(body);
-    }
-    return await createNHISItem(body);
+    const { create_cash_item, create_nhis_item, drug_id } = body;
+    let item: PharmacyStore;
+    await this.pharmacyStoreValidations(drug_id, create_cash_item, create_nhis_item);
+
+    if (create_cash_item) item = await createCashItem(body);
+    if (create_nhis_item) item = await createNHISItem(body);
+    return item;
   }
 
   /**
@@ -313,7 +320,7 @@ class StoreService {
       inventory_id: inventoryItem.inventory_id,
       unit_id: item.unit_id,
       item_receiver: item.receiver,
-      dispensed_by: staff_id,
+      staff_id,
       history_date: Date.now(),
       history_type: HistoryType.SUPPLIED,
     };
@@ -351,6 +358,20 @@ class StoreService {
       history_date: Date.now(),
       history_type: HistoryType.SUPPLIED,
     };
+  }
+
+  private static async pharmacyStoreValidations(
+    drugId: number,
+    create_cash_item: boolean,
+    create_nhis_item: boolean
+  ) {
+    const [cashItem, nhisItem] = await Promise.all([
+      getOnePharmacyStoreItem({ drug_id: drugId, drug_type: DrugType.CASH }),
+      getOnePharmacyStoreItem({ drug_id: drugId, drug_type: DrugType.NHIS }),
+    ]);
+
+    if (cashItem && create_cash_item) throw new BadException('Invalid', 400, ITEM_EXISTS);
+    if (nhisItem && create_nhis_item) throw new BadException('Invalid', 400, ITEM_EXISTS);
   }
 
   /**************************

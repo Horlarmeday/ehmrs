@@ -24,6 +24,7 @@ export async function createVisit(data): Promise<Visit> {
     professional,
     department,
     date_of_visit,
+    priority,
   } = data || {};
 
   return Visit.create({
@@ -35,6 +36,7 @@ export async function createVisit(data): Promise<Visit> {
     type,
     staff_id,
     ante_natal_id,
+    priority,
   });
 }
 

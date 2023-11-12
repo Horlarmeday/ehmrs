@@ -9,7 +9,7 @@ import {
 import StoreService from './store.service';
 import { errorResponse } from '../../common/responses/error-responses';
 import { exportSelectedData, StatusCodes } from '../../core/helpers/helper';
-import { successResponse } from '../../common/responses/success-responses';
+import { SuccessResponse, successResponse } from '../../common/responses/success-responses';
 import { DATA_SAVED } from '../AdminSettings/messages/response-messages';
 import { SUCCESS } from '../../core/constants';
 import { NextFunction, Request, Response } from 'express';
@@ -91,7 +91,11 @@ class StoreController {
    * @param {object} next next middleware
    * @returns {json} json object with status, item data
    */
-  static async dispenseStoreItems(req, res, next) {
+  static async dispenseStoreItems(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
     const { error } = validateDispenseItems(req.body);
     if (error)
       return errorResponse({
