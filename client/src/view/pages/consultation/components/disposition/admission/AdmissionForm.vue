@@ -2,7 +2,7 @@
   <div class="form">
     <div class="form-group row">
       <label class="col-2 col-form-label">Select Ward</label>
-      <div class="col-4">
+      <div class="col-6">
         <v-select
           v-model="ward"
           label="name"
@@ -24,16 +24,20 @@
     </div>
     <div v-if="ward" class="form-group row">
       <label class="col-2 col-form-label">Bed Space</label>
-      <div class="col-4">
-        <div class="row">
-          <div v-if="!beds.length" class="offset-1">
-            <span class="text-danger mb-2">There are no beds in this ward</span>
+      <div class="col-6">
+        <div v-if="!beds.length">
+          <div class="alert alert-custom alert-notice alert-light-danger fade show" role="alert">
+            <div class="alert-text">There are no beds in this ward!</div>
           </div>
-          <div v-for="bed in beds" :key="bed.id" class="col-lg-3" data-test-id="tabs">
+        </div>
+        <div class="row">
+          <div v-for="bed in beds" :key="bed.id" class="ml-3">
             <div
               class="bg-gray-100 rounded-lg text-dark text-center pr-4 pl-4 pt-4 pb-4 mr-2 inline-display mb-2"
               :class="bed.status === 'Untaken' && 'bg-hover-state-primary shadow bg-gray-400'"
               @click="setActiveTab($event, bed)"
+              v-b-tooltip.hover
+              :title="bed.status === 'Taken' ? 'Bed is already taken' : 'Click to select bed'"
             >
               <span class="navi-icon"
                 ><i class="fas fa-bed text-primary"></i>
@@ -46,13 +50,18 @@
     </div>
     <div class="form-group row">
       <label class="col-2 col-form-label">Comment </label>
-      <div class="col-4">
+      <div class="col-6">
         <textarea v-model="comment" class="form-control" cols="30" rows="5" />
       </div>
     </div>
     <div class="form-group row">
       <div class="col-2 offset-3"></div>
-      <button @click="admitPatient" ref="kt-admit-submit" class="float-right btn btn-primary">
+      <button
+        :disabled="isDisabled || !bed_id"
+        @click="admitPatient"
+        ref="kt-admit-submit"
+        class="float-right btn btn-primary"
+      >
         Submit
       </button>
     </div>
@@ -70,12 +79,17 @@ export default {
     beds: [],
     bed_id: '',
     comment: '',
+    isDisabled: false,
   }),
 
   computed: {
     wards() {
       return this.$store.state.model.wardsAndBeds;
     },
+  },
+
+  created() {
+    this.$store.dispatch('model/fetchWardsAndBeds');
   },
 
   methods: {
@@ -153,6 +167,7 @@ export default {
           visit_id: this.$route.params.id,
           ward_id: this.ward.id,
           comment: this.comment,
+          ...(this.$route.query?.antenatal && { ante_natal_id: this.$route.query.antenatal }),
         })
         .then(() => this.endRequest(submitButton))
         .catch(() => this.removeSpinner(submitButton));

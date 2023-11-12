@@ -14,7 +14,7 @@
           </div>
           <div v-else>
             <admission-details
-              v-if="admission && admission.discharge_status === 'On Admission'"
+              v-if="admission && admission.discharge_status === admissionStatus"
               :admission="admission"
             />
             <admission-form v-else />
@@ -35,6 +35,7 @@ export default {
   data: () => ({
     loading: false,
     count: 0,
+    admissionStatus: 'On Admission',
   }),
 
   computed: {

@@ -16,6 +16,7 @@
               drugs => ({
                 name: drugs.name,
                 drug_id: drugs.drug_id,
+                unit_id: drugs.unit_id,
                 strength: drugs?.strength,
                 strength_input: drugs.strength_input,
                 price: drugs.price,
@@ -129,6 +130,7 @@ export default {
         price: item.selling_price,
         quantity_remaining: item.quantity_remaining,
         unit_name: item?.unit?.name,
+        unit_id: item?.unit?.id,
         dosage_form: item?.dosage_form,
         drug_type: item?.drug_type,
       }));
