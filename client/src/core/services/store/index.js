@@ -19,6 +19,7 @@ import diagnosis from './diagnosis/moduleDiagnosis';
 import admission from './admission/moduleAdmission';
 import request from './request/moduleRequest';
 import antenatal from './antenatal/moduleAntenatal';
+import surgery from './surgery/moduleSurgery';
 import htmlClass from './htmlclass.module';
 import config from './config.module';
 import breadcrumbs from './breadcrumbs.module';
@@ -45,6 +46,7 @@ export default new Vuex.Store({
     admission,
     request,
     antenatal,
+    surgery,
     htmlClass,
     config,
     breadcrumbs,

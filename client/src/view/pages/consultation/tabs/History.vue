@@ -56,13 +56,13 @@
             </div>
           </div>
         </div>
-        <div class="m-auto">
+        <div class="text-center">
           <a
             href="#"
             :disabled="isInLastPage"
             :class="isInLastPage ? disabled : ''"
             @click="onFetchMore"
-            class="btn btn-outline-secondary mb-3 btn-block padding-left padding-right"
+            class="btn btn-outline-secondary mb-3 padding-left padding-right"
           >
             <i class="flaticon2-circle-vol-2"></i> See more
           </a>
