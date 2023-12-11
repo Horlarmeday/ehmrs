@@ -1,4 +1,4 @@
-import axios from '../../../../axios';
+import axios from '@/axios';
 
 export default {
   /**************
@@ -166,6 +166,42 @@ export default {
     });
   },
 
+  orderAdditionalItems({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/orders/pharmacy/additional-items/create/${payload.id}`, payload.data)
+        .then(response => {
+          commit('ORDER_ADD_ITEMS', payload.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchPrescribedAdditionalItems({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/orders/pharmacy/additional-items/get', {
+          params: {
+            currentPage: payload?.currentPage,
+            pageLimit: payload?.itemsPerPage,
+            filter: payload?.filter,
+          },
+        })
+        .then(response => {
+          commit('SET_ADD_ITEMS_ORDERS', response.data.data.docs);
+          commit('SET_ADD_ITEMS_ORDERS_TOTAL', response.data.data.total);
+          commit('SET_ADD_ITEMS_ORDERS_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
   /***********************
    * ADDITIONAL SERVICES
    **********************/
@@ -225,5 +261,44 @@ export default {
   },
   toggleServiceUrgent({ commit }, serviceId) {
     commit('TOGGLE_SERVICE_URGENT', serviceId);
+  },
+
+  /**************
+   TREATMENTS
+   *************/
+  orderTreatment({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/orders/pharmacy/treatment/create/${payload.id}`, payload.data)
+        .then(response => {
+          commit('ORDER_TREATMENT', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchTreatments({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/orders/pharmacy/treatment/get', {
+          params: {
+            currentPage: payload?.currentPage,
+            pageLimit: payload?.itemsPerPage,
+            filter: payload?.filter,
+          },
+        })
+        .then(response => {
+          commit('SET_TREATMENTS', response.data.data.docs);
+          commit('SET_TREATMENTS_TOTAL', response.data.data.total);
+          commit('SET_TREATMENTS_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
   },
 };

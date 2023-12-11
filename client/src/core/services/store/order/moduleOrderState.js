@@ -29,6 +29,8 @@ export default {
   drug_order: null,
   drug_orders: [],
   additional_items_orders: [],
+  totalAdditionalItemsOrders: 0,
+  additionalItemsOrdersPages: 0,
 
   /**********************
    * ADDITIONAL SERVICES
@@ -39,4 +41,12 @@ export default {
   selectedServicesButtons: [],
   totalServices: null,
   servicePages: 0,
+
+  /**********************
+   * TREATMENTS
+   *********************/
+  treatments: [],
+  treatment: null,
+  totalTreatments: 0,
+  treatmentPages: 0,
 };

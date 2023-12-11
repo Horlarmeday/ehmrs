@@ -119,11 +119,25 @@ export default {
   ORDER_DRUG(state, drug) {
     console.log(drug);
   },
+
   SET_DRUG_ORDERS(state, drugs) {
     state.drug_orders = drugs;
   },
+
+  ORDER_ADD_ITEMS(state, items) {
+    console.log(items);
+  },
+
   SET_ADD_ITEMS_ORDERS(state, items) {
     state.additional_items_orders = items;
+  },
+
+  SET_ADD_ITEMS_ORDERS_TOTAL(state, total) {
+    state.totalAdditionalItemsOrders = total;
+  },
+
+  SET_ADD_ITEMS_ORDERS_PAGES(state, pages) {
+    state.additionalItemsOrdersPages = pages;
   },
 
   /*********************
@@ -184,5 +198,24 @@ export default {
     const button = state.selectedServicesButtons.find(({ button_id }) => button_id === buttonId);
     button.button.classList.remove('btn-danger');
     state.selectedServicesButtons.splice(buttonIndex, 1);
+  },
+
+  /**************
+    TREATMENTS
+   *************/
+  ORDER_TREATMENT(state, treatments) {
+    console.log(treatments);
+  },
+
+  SET_TREATMENTS(state, treatments) {
+    state.treatments = treatments;
+  },
+
+  SET_TREATMENTS_TOTAL(state, total) {
+    state.totalTreatments = total;
+  },
+
+  SET_TREATMENTS_PAGES(state, total) {
+    state.treatmentPages = total;
   },
 };
