@@ -108,11 +108,6 @@ export class Triage extends Model {
   @Column({
     type: DataType.STRING,
   })
-  fetal_heart_rate: string;
-
-  @Column({
-    type: DataType.STRING,
-  })
   spo2: string;
 
   @Column({

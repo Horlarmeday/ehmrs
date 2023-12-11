@@ -1,5 +1,10 @@
 import { validateTriage } from './validations';
 import TriageService from './triage.service';
+import { errorResponse } from '../../common/responses/error-responses';
+import { StatusCodes } from '../../core/helpers/helper';
+import { successResponse } from '../../common/responses/success-responses';
+import { DATA_RETRIEVED, DATA_SAVED } from '../AdminSettings/messages/response-messages';
+import { NextFunction, Request, Response } from 'express';
 
 class TriageController {
   /**
@@ -11,19 +16,25 @@ class TriageController {
    * @param {object} next next middleware
    * @returns {json} json object with status, vital signs data
    */
-  static async createTriage(req, res, next) {
+  static async createTriage(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
     const { error } = validateTriage(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
+    if (error)
+      return errorResponse({
+        res,
+        httpCode: StatusCodes.BAD_REQUEST,
+        message: error.details[0].message,
+      });
 
     try {
       const triage = await TriageService.createTriageService(
         Object.assign(req.body, { staff_id: req.user.sub, visit_id: req.params.id })
       );
 
-      return res.status(201).json({
-        message: 'Successful! Data saved',
-        data: triage,
-      });
+      return successResponse({ res, httpCode: 201, data: triage, message: DATA_SAVED });
     } catch (e) {
       return next(e);
     }
@@ -38,14 +49,11 @@ class TriageController {
    * @param {object} next next middleware
    * @returns {json} json object with triage data
    */
-  static async getTriageVisit(req, res, next) {
+  static async getTriageVisit(req: Request, res: Response, next: NextFunction) {
     try {
       const triage = await TriageService.getVisitTriage(req.params.id);
 
-      return res.status(200).json({
-        message: 'Data retrieved!',
-        data: triage,
-      });
+      return successResponse({ res, httpCode: 200, data: triage, message: DATA_RETRIEVED });
     } catch (e) {
       return next(e);
     }
