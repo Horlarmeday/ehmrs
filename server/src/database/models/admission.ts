@@ -127,6 +127,12 @@ export class Admission extends Model {
   })
   ante_natal_id: number;
 
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+  })
+  date_admitted: Date;
+
   @BelongsTo(() => Staff, 'admitted_by')
   examiner: Staff;
 

@@ -1,9 +1,12 @@
 import sequelize from '../../database/config/config';
-import { Op, Transaction } from 'sequelize';
+import { Op, Transaction, WhereOptions } from 'sequelize';
 import {
   Admission,
   Bed,
+  CarePlan,
   Inventory,
+  IOChart,
+  Observation,
   Patient,
   PatientInsurance,
   PrescribedService,
@@ -28,6 +31,8 @@ import { bulkCreateAdditionalItems } from '../Orders/Pharmacy/pharmacy-order.rep
 import { Gender } from '../../database/models/staff';
 import { DrugType } from '../../database/models/pharmacyStore';
 import { getInventories } from '../Inventory/inventory.repository';
+import { staffAttributes } from '../Antenatal/antenatal.repository';
+import { dateIntervalQuery } from '../../core/helpers/helper';
 
 enum Ages {
   ALL_AGES = 'ALL_AGES',
@@ -52,7 +57,10 @@ export const admitPatient = async (data: AdmissionBodyType) => {
   ]);
 
   return await sequelize.transaction(async (t: Transaction) => {
-    const admission = await Admission.create({ ...data }, { transaction: t });
+    const admission = await Admission.create(
+      { ...data, date_admitted: Date.now() },
+      { transaction: t }
+    );
 
     await Bed.update({ status: BedStatus.TAKEN }, { where: { id: bed_id }, transaction: t });
 
@@ -78,46 +86,68 @@ export const admitPatient = async (data: AdmissionBodyType) => {
       { where: { id: visit_id }, transaction: t }
     );
 
-    // don't await the result
-    insertDefaultAdmissionItems({
-      patient,
-      items: oneDefault.data,
-      admission,
-      insurance,
-      inventories,
-    });
+    if (oneDefault) {
+      // don't await the result
+      insertDefaultAdmissionItems({
+        patient,
+        items: oneDefault.data,
+        admission,
+        insurance,
+        inventories,
+      });
+    }
 
-    return await getAdmissionById(admission.id);
+    return getOneAdmission({ id: admission.id });
   });
 };
 
 /**
- * get admission by its id
- * @param admission_id
+ * get one admission
+ * @param query
  */
-export const getAdmissionById = (admission_id: number) => {
-  return Admission.findByPk(admission_id, {
-    include: [
-      { model: Ward, attributes: ['name'] },
-      { model: Bed, attributes: ['code'] },
-      { model: Staff, as: 'examiner', attributes: ['firstname', 'lastname'] },
-    ],
-  });
-};
-
-/**
- * get admission by patient id
- * @param patient_id
- */
-export const getAdmissionByPatientId = (patient_id: number) => {
+export const getOneAdmission = async (query: WhereOptions<Admission>) => {
   return Admission.findOne({
-    where: { patient_id },
+    where: { ...query },
     include: [
       { model: Ward, attributes: ['name'] },
       { model: Bed, attributes: ['code'] },
-      { model: Staff, as: 'examiner', attributes: ['firstname', 'lastname'] },
+      { model: Staff, as: 'examiner', attributes: staffAttributes },
     ],
   });
+};
+
+/**
+ * get admission
+ * @param query
+ */
+export const getAdmissionQuery = async (query: WhereOptions<Admission>) => {
+  const admission = await Admission.findOne({
+    where: { ...query },
+    include: [
+      {
+        model: Patient,
+        attributes: [
+          'fullname',
+          'firstname',
+          'lastname',
+          'date_of_birth',
+          'photo',
+          'photo_url',
+          'gender',
+          'hospital_id',
+          'has_insurance',
+        ],
+      },
+      { model: Ward, attributes: ['name'] },
+      { model: Bed, attributes: ['code'] },
+      { model: Staff, as: 'examiner', attributes: staffAttributes },
+    ],
+  });
+  const insurance = await getPatientInsuranceQuery({
+    patient_id: admission.patient_id,
+    is_default: true,
+  });
+  return { ...admission.toJSON(), insurance };
 };
 
 export const updateAdmission = async (data: { [p: string]: any }, admissionId: number) => {
@@ -137,8 +167,10 @@ export const updateAdmission = async (data: { [p: string]: any }, admissionId: n
 export const getAdmittedPatients = async ({
   currentPage = 1,
   pageLimit = 10,
-  discharge_status,
+  filter = null,
   search = null,
+  start = null,
+  end = null,
 }): Promise<{
   total: any;
   docs: Admission[];
@@ -149,15 +181,21 @@ export const getAdmittedPatients = async ({
   return Admission.paginate({
     page: +currentPage,
     paginate: +pageLimit,
-    order: [['createdAt', 'DESC']],
+    order: [['date_admitted', 'DESC']],
     where: {
-      discharge_status,
+      ...(start && end && dateIntervalQuery('date_admitted', start, end)),
     },
     include: [
+      {
+        model: Ward,
+        attributes: ['name'],
+      },
+      { model: Staff, as: 'examiner', attributes: staffAttributes },
       {
         model: Patient,
         attributes: patientAttributes,
         where: {
+          ...(filter && JSON.parse(filter)),
           ...(search && {
             [Op.or]: [
               {
@@ -270,4 +308,73 @@ export const insertDefaultAdmissionItems = async ({
   }
 
   return true;
+};
+
+/******************
+ * Observations
+ ******************/
+
+/**
+ * create an observation
+ * @param data
+ */
+export const createObservation = async (data: { [p: string]: any }) => {
+  return Observation.create({ ...data });
+};
+
+/**
+ * get a patient observations
+ * @param query
+ */
+export const getObservations = async (query: WhereOptions<Observation>) => {
+  return Observation.findAll({
+    where: { ...query },
+    include: [{ model: Staff, attributes: staffAttributes }],
+  });
+};
+
+/******************
+ * Care Plan
+ ******************/
+
+/**
+ * create a care plan
+ * @param data
+ */
+export const createCarePlan = async (data: { [p: string]: any }) => {
+  return CarePlan.create({ ...data });
+};
+
+/**
+ * get a patient care plans
+ * @param query
+ */
+export const getCarePlans = async (query: WhereOptions<CarePlan>) => {
+  return CarePlan.findAll({
+    where: { ...query },
+    include: [{ model: Staff, attributes: staffAttributes }],
+  });
+};
+
+/******************
+ * IO Chart
+ ******************/
+
+/**
+ * create a care plan
+ * @param data
+ */
+export const createIOChart = async (data: { [p: string]: any }[]) => {
+  return IOChart.bulkCreate(data);
+};
+
+/**
+ * get a patient IO Chart
+ * @param query
+ */
+export const getIOCharts = async (query: WhereOptions<IOChart>) => {
+  return IOChart.findAll({
+    where: { ...query },
+    include: [{ model: Staff, attributes: staffAttributes }],
+  });
 };
