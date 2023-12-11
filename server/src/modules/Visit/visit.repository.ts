@@ -7,8 +7,17 @@ import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { VisitCategory, VisitStatus } from '../../database/models/visit';
 import { calcLimitAndOffset, dateIntervalQuery } from '../../core/helpers/helper';
 import { FindAttributeOptions } from 'sequelize/types/model';
+import { getPrescriptions } from '../Consultation/consultation.repository';
 
-export const patientAttributes = ['fullname', 'photo', 'hospital_id', 'firstname', 'lastname'];
+export const patientAttributes = [
+  'fullname',
+  'photo',
+  'hospital_id',
+  'firstname',
+  'lastname',
+  'gender',
+];
+
 /**
  * create a patient visit
  * @param data
@@ -101,6 +110,15 @@ export async function getVisit(id: number) {
   return { ...visit.toJSON(), insurance };
 }
 
+/**
+ * Update a patient visit
+ * @param query
+ * @param fieldsToUpdate
+ */
+export const updateVisit = (query: WhereOptions<Visit>, fieldsToUpdate: Record<string, any>) => {
+  return Visit.update({ ...fieldsToUpdate }, { where: { ...query } });
+};
+
 /** ***********************
  * ACTIVE VISITS
  ********************** */
@@ -113,18 +131,23 @@ export async function getVisit(id: number) {
  * @param currentPage
  * @param pageLimit
  * @param search
+ * @param start
+ * @param end
  */
-export async function searchActiveVisits(
+export async function searchActiveVisits({
   currentPage = 1,
   pageLimit = 10,
-  search: string
-): Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }> {
+  search = null,
+  start = null,
+  end = null,
+}): Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }> {
   return Visit.paginate({
-    page: currentPage,
-    paginate: pageLimit,
-    order: [['createdAt', 'DESC']],
+    page: +currentPage,
+    paginate: +pageLimit,
+    order: [['date_visit_start', 'DESC']],
     where: {
       status: VisitStatus.ONGOING,
+      ...(start && end && dateIntervalQuery('date_visit_start', start, end)),
     },
     include: [
       {
@@ -162,17 +185,22 @@ export async function searchActiveVisits(
  * @returns {Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }>} json object with visits data
  * @param currentPage
  * @param pageLimit
+ * @param start
+ * @param end
  */
-export async function getActiveVisits(
+export async function getActiveVisits({
   currentPage = 1,
-  pageLimit = 10
-): Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }> {
+  pageLimit = 10,
+  start = null,
+  end = null,
+}): Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }> {
   return Visit.paginate({
-    page: currentPage,
-    paginate: pageLimit,
-    order: [['createdAt', 'DESC']],
+    page: +currentPage,
+    paginate: +pageLimit,
+    order: [['date_visit_start', 'DESC']],
     where: {
       status: VisitStatus.ONGOING,
+      ...(start && end && dateIntervalQuery('date_visit_start', start, end)),
     },
     include: [
       {
@@ -196,15 +224,18 @@ export async function getActiveVisits(
  * @param pageLimit
  * @param search
  */
-export async function searchVisits(
+export async function searchVisits({
   currentPage = 1,
   pageLimit = 10,
-  search: string
-): Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }> {
+  search,
+}): Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }> {
   return Visit.paginate({
     page: currentPage,
     paginate: pageLimit,
-    attributes: [[Sequelize.fn('MAX', Sequelize.col('patient_id')), 'patient_id']],
+    attributes: [
+      [Sequelize.fn('MAX', Sequelize.col('patient_id')), 'patient_id'],
+      [Sequelize.fn('MAX', Sequelize.col('category')), 'category'],
+    ],
     group: ['patient_id'],
     include: [
       {
@@ -241,15 +272,25 @@ export async function searchVisits(
  * @returns {Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }>} json object with visits data
  * @param currentPage
  * @param pageLimit
+ * @param start
+ * @param end
  */
-export async function getVisits(
+export async function getVisits({
   currentPage = 1,
-  pageLimit = 10
-): Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }> {
+  pageLimit = 10,
+  start = null,
+  end = null,
+}): Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }> {
   return Visit.paginate({
     page: +currentPage,
     paginate: +pageLimit,
-    attributes: [[Sequelize.fn('MAX', Sequelize.col('patient_id')), 'patient_id']],
+    attributes: [
+      [Sequelize.fn('MAX', Sequelize.col('patient_id')), 'patient_id'],
+      [Sequelize.fn('MAX', Sequelize.col('category')), 'category'],
+    ],
+    where: {
+      ...(start && end && dateIntervalQuery('date_visit_start', start, end)),
+    },
     group: ['patient_id'],
     include: [
       {
@@ -277,7 +318,7 @@ export const getVisitsQuery = async (
  ********************** */
 
 /**
- * search type of visits
+ * search categorize visits
  *
  * @function
  * @returns {Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }>} json object with all visits data
@@ -285,13 +326,21 @@ export const getVisitsQuery = async (
  * @param pageLimit
  * @param search
  * @param category
+ * @param filter
  */
-export async function searchCategoryVisits(
+export async function searchCategoryVisits({
   currentPage = 1,
   pageLimit = 10,
-  search: string,
-  category = 'Outpatient'
-): Promise<{
+  search = null,
+  category = 'Outpatient',
+  filter = null,
+}: {
+  currentPage: number;
+  pageLimit: number;
+  search: string;
+  category: string;
+  filter: any;
+}): Promise<{
   total: any;
   docs: Visit[];
   pages: number;
@@ -299,12 +348,13 @@ export async function searchCategoryVisits(
   currentPage: number;
 }> {
   return Visit.paginate({
-    page: currentPage,
-    paginate: pageLimit,
-    order: [['createdAt', 'DESC']],
+    page: +currentPage,
+    paginate: +pageLimit,
+    order: [['date_visit_start', 'DESC']],
     where: {
       category,
       status: VisitStatus.ONGOING,
+      ...(filter && JSON.parse(filter)),
     },
     include: [
       {
@@ -335,26 +385,29 @@ export async function searchCategoryVisits(
 }
 
 /**
- * get all types of visits
+ * get categorized visits
  *
  * @function
  * @returns { Promise<{total: any, docs: any, pages: number, perPage: number, currentPage: number}>} json object with visits data
  * @param currentPage
  * @param pageLimit
  * @param category
+ * @param filter
  */
-export async function getCategoryVisits(
+export async function getCategoryVisits({
   currentPage = 1,
   pageLimit = 10,
-  category = 'Outpatient'
-): Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }> {
+  category = 'Outpatient',
+  filter = null,
+}): Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }> {
   return Visit.paginate({
-    page: currentPage,
-    paginate: pageLimit,
-    order: [['createdAt', 'DESC']],
+    page: +currentPage,
+    paginate: +pageLimit,
+    order: [['date_visit_start', 'DESC']],
     where: {
       category,
       status: VisitStatus.ONGOING,
+      ...(filter && JSON.parse(filter)),
     },
     include: [
       {
@@ -369,7 +422,7 @@ export async function getCategoryVisits(
  * PROFESSIONAL ASSIGNED VISITS
  ********************** */
 /**
- * search type of visits
+ * search professional assigned visits
  *
  * @function
  * @returns {Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }>} json object with all visits data
@@ -379,6 +432,7 @@ export async function getCategoryVisits(
  * @param role
  * @param start
  * @param end
+ * @param filter
  */
 export const getProfessionalAssignedVisits = async ({
   currentPage = 1,
@@ -387,6 +441,7 @@ export const getProfessionalAssignedVisits = async ({
   search = null,
   start = null,
   end = null,
+  filter = null,
 }): Promise<{
   total: any;
   docs: Visit[];
@@ -397,10 +452,11 @@ export const getProfessionalAssignedVisits = async ({
   return Visit.paginate({
     page: +currentPage,
     paginate: +pageLimit,
-    order: [['createdAt', 'DESC']],
+    order: [['date_visit_start', 'DESC']],
     where: {
       status: VisitStatus.ONGOING,
       professional: role,
+      ...(filter && JSON.parse(filter)),
       [Op.or]: [
         {
           category: VisitCategory.OPD,
@@ -439,4 +495,16 @@ export const getProfessionalAssignedVisits = async ({
       },
     ],
   });
+};
+
+/** ***********************
+ * VISITS SUMMARY
+ ********************** */
+/**
+ * Get all prescriptions in a visit
+ * @param visitId
+ */
+export const getVisitPrescriptions = async (visitId: number) => {
+  const prescriptions = await getPrescriptions(visitId);
+  return prescriptions;
 };

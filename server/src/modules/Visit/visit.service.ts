@@ -11,6 +11,7 @@ import {
   searchVisits,
   searchCategoryVisits,
   getProfessionalAssignedVisits,
+  getVisitPrescriptions,
 } from './visit.repository';
 import { Visit } from '../../database/models';
 import { CreateVisit } from './interface/visit.interface';
@@ -26,6 +27,7 @@ import { prescribeService } from '../Orders/Service/service-order.repository';
 import { getPatientById } from '../Patient/patient.repository';
 import { Gender } from '../../database/models/staff';
 import { FEMALE_REQUIRED } from '../Antenatal/messages/antenatal.messages';
+import { filter } from 'rxjs';
 
 class VisitService {
   /**
@@ -94,16 +96,17 @@ class VisitService {
   static async getActiveVisits(
     body
   ): Promise<{ total: any; pages: number; perPage: number; docs: Visit[]; currentPage: number }> {
-    const { currentPage, pageLimit, search } = body;
+    const { currentPage, pageLimit, search, start, end } = body;
+
     if (search) {
-      return searchActiveVisits(+currentPage, +pageLimit, search);
+      return searchActiveVisits({ currentPage, pageLimit, search });
     }
 
     if (Object.values(body).length) {
-      return getActiveVisits(+currentPage, +pageLimit);
+      return getActiveVisits({ currentPage, pageLimit, start, end });
     }
 
-    return getActiveVisits();
+    return getActiveVisits({});
   }
 
   /**
@@ -117,16 +120,16 @@ class VisitService {
   static async getAllVisits(
     body
   ): Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }> {
-    const { currentPage, pageLimit, search } = body;
+    const { currentPage, pageLimit, search, start, end } = body;
     if (search) {
-      return searchVisits(+currentPage, +pageLimit, search);
+      return searchVisits({ currentPage, pageLimit, search });
     }
 
     if (Object.values(body).length) {
-      return getVisits(+currentPage, +pageLimit);
+      return getVisits({ currentPage, pageLimit, start, end });
     }
 
-    return getVisits();
+    return getVisits({});
   }
 
   /**
@@ -140,16 +143,17 @@ class VisitService {
   static async getCategoryVisits(
     body
   ): Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }> {
-    const { currentPage, pageLimit, search, category } = body;
+    const { currentPage, pageLimit, search, category, filter } = body;
+
     if (search) {
-      return searchCategoryVisits(+currentPage, +pageLimit, search, category);
+      return searchCategoryVisits({ currentPage, pageLimit, search, category, filter });
     }
 
     if (Object.values(body).length) {
-      return getCategoryVisits(+currentPage, +pageLimit, category);
+      return getCategoryVisits({ currentPage, pageLimit, category, filter });
     }
 
-    return getCategoryVisits();
+    return getCategoryVisits({ filter, category });
   }
 
   /**
@@ -163,9 +167,18 @@ class VisitService {
   static async getProfessionalAssignedVisits(
     body
   ): Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }> {
-    const { currentPage, pageLimit, search, role, start, end } = body;
+    const { currentPage, pageLimit, search, role, start, end, filter } = body || {};
+
     if (start && end) {
-      return getProfessionalAssignedVisits({ currentPage, pageLimit, search, role });
+      return getProfessionalAssignedVisits({
+        currentPage,
+        start,
+        end,
+        pageLimit,
+        search,
+        role,
+        filter,
+      });
     }
 
     if (Object.values(body).length) {
@@ -174,10 +187,11 @@ class VisitService {
         pageLimit,
         search,
         role,
+        filter,
       });
     }
 
-    return getProfessionalAssignedVisits({ search, role });
+    return getProfessionalAssignedVisits({ search, role, filter });
   }
 
   /**
@@ -202,6 +216,17 @@ class VisitService {
    */
   static async getOneVisit(id: number) {
     return getVisit(id);
+  }
+
+  /**
+   * get all prescriptions in a visit
+   *
+   * @static
+   * @memberOf VisitService
+   * @param id
+   */
+  static async getVisitPrescriptions(id: number) {
+    return getVisitPrescriptions(id);
   }
 }
 

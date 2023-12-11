@@ -157,6 +157,34 @@ class VisitController {
       next(e);
     }
   }
+
+  /**
+   * get all prescriptions in a visit
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with visit data
+   */
+  static async getVisitPrescriptions(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse> {
+    try {
+      const prescriptions = await VisitService.getVisitPrescriptions(+req.params.id);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data: prescriptions,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }
 
 export default VisitController;

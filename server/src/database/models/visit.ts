@@ -130,6 +130,18 @@ export class Visit extends Model {
   })
   admission_id: number;
 
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+  })
+  has_done_vitals: boolean;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+  })
+  is_taken: boolean;
+
   @BelongsTo(() => Staff)
   staff: Staff;
 
