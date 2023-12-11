@@ -1,6 +1,7 @@
 import { Sequelize } from 'sequelize-typescript';
 import DBConfig from './db-config';
 import * as models from '../models';
+import { logger } from '../../core/helpers/logger';
 
 const env = process.env.NODE_ENV || 'development';
 const { host, dialect, password, username, database } = DBConfig[env];
@@ -8,6 +9,7 @@ const sequelizeConnection = new Sequelize(database, username, password, {
   host,
   dialect,
   models: Object.values(models),
+  pool: { max: 50, min: 0, acquire: 30000, idle: 300000 },
   modelMatch: (filename, member) => {
     return /^(?!.*(?:index)).*\.ts$/.test(filename);
   },
@@ -23,9 +25,9 @@ const sequelizeConnection = new Sequelize(database, username, password, {
 sequelizeConnection
   .authenticate()
   .then(() => {
-    console.log('Connection has been established successfully.');
+    logger.notice(`Connection has been established successfully, <${env}>`);
   })
   .catch(err => {
-    console.error('Unable to connect to the database:', err);
+    logger.error('Unable to connect to the database:', err);
   });
 export default sequelizeConnection;

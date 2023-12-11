@@ -1,8 +1,7 @@
 /* eslint-disable camelcase */
 import { BadException } from '../../common/util/api-error';
 import { paginate, StatusCodes } from '../../core/helpers/helper';
-
-import { History, Complaint, Diagnosis } from '../../database/models';
+import { History, Complaint, Diagnosis, Staff } from '../../database/models';
 import { WhereOptions } from 'sequelize';
 import { getPrescriptionTests } from '../Orders/Laboratory/lab-order.repository';
 import {
@@ -10,13 +9,11 @@ import {
   getPrescriptionDrugs,
 } from '../Orders/Pharmacy/pharmacy-order.repository';
 import { getPrescriptionInvestigations } from '../Orders/Radiology/radiology-order.repository';
-import {
-  getAntenatalClinicalNotes,
-  getAntenatalObservations,
-  getAncTriages,
-} from '../Antenatal/antenatal.repository';
 import { getTriages } from '../Triage/triage.repository';
 import { getVisitsQuery } from '../Visit/visit.repository';
+import { getPrescriptionServices } from '../Orders/Service/service-order.repository';
+import { Model } from 'sequelize-typescript';
+import { staffAttributes } from '../Antenatal/antenatal.repository';
 
 /**
  * create a patient complaint
@@ -88,7 +85,10 @@ export async function bulkCreateDiagnosis(data): Promise<Diagnosis[]> {
  * @param query
  */
 export const getPatientDiagnoses = async (query: WhereOptions<Diagnosis>): Promise<Diagnosis[]> => {
-  return Diagnosis.findAll({ where: { ...query } });
+  return Diagnosis.findAll({
+    where: { ...query },
+    include: [{ model: Staff, attributes: staffAttributes }],
+  });
 };
 
 /**
@@ -97,7 +97,7 @@ export const getPatientDiagnoses = async (query: WhereOptions<Diagnosis>): Promi
  * @param data
  * @returns {array} of model data
  */
-export async function getModelByVisitId(model, data) {
+export async function getModelByVisitId(model, data: any) {
   return model.findAll({ where: { visit_id: data } });
 }
 
@@ -107,8 +107,8 @@ export async function getModelByVisitId(model, data) {
  * @returns {object} consultation summary data
  */
 export async function getConsultationSummary(data) {
-  const complaint = getModelByVisitId(Complaint, data);
-  const history = getModelByVisitId(History, data);
+  const complaint = getModelByVisitId(Complaint, data) as Promise<Complaint[]>;
+  const history = getModelByVisitId(History, data) as Promise<History[]>;
 
   try {
     const [complaints, histories] = await Promise.all([complaint, history]);
@@ -121,7 +121,7 @@ export async function getConsultationSummary(data) {
   }
 }
 
-const getPrescriptions = async (visit_id: number) => {
+export const getPrescriptions = async (visit_id: number) => {
   const [
     tests,
     drugs,
@@ -130,6 +130,7 @@ const getPrescriptions = async (visit_id: number) => {
     triages,
     diagnoses,
     items,
+    services,
   ] = await Promise.all([
     getPrescriptionTests({ visit_id }),
     getPrescriptionDrugs({ visit_id }),
@@ -138,8 +139,9 @@ const getPrescriptions = async (visit_id: number) => {
     getTriages({ visit_id }),
     getPatientDiagnoses({ visit_id }),
     getPrescriptionAdditionalItems({ visit_id }),
+    getPrescriptionServices({ visit_id }),
   ]);
-  return { tests, drugs, investigations, observations, triages, diagnoses, items };
+  return { tests, drugs, investigations, observations, triages, diagnoses, items, services };
 };
 
 /**
