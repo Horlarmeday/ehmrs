@@ -42,7 +42,7 @@
 </template>
 
 <script>
-import Search from '../../../../utils/Search';
+import Search from '../../../../../utils/Search.vue';
 import { debounce, removeSpinner } from '@/common/common';
 export default {
   components: { Search },
@@ -152,9 +152,7 @@ export default {
 
 .displayIcon {
   position: absolute;
-  left: 5;
   right: 1;
-  top: 0;
   background: #88af28;
   color: #fff;
   padding: 2px 8px;

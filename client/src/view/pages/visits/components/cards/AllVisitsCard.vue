@@ -1,6 +1,6 @@
 <template>
   <div class="row">
-    <search @search="onHandleSearch" />
+    <search @search="onHandleSearch" @filterByDateRange="searchByDate" :show-date-filter="true" />
 
     <div class="col-lg-12">
       <div
@@ -12,7 +12,7 @@
         :title="visit.patient.fullname"
         style="min-width: 150px"
       >
-        <div v-if="visit.category !== 'Outpatient'" class="displayIcon">
+        <div v-if="visit.category !== outPatientVisit" class="displayIcon">
           <i :class="displayIcon(visit.category)" class="text-white"></i>
         </div>
         <div class="pr-4 pl-4 pb-4">
@@ -42,8 +42,9 @@
 </template>
 
 <script>
-import Search from '@/utils/Search';
-import { debounce, removeSpinner } from '@/common/common';
+import Search from '@/utils/Search.vue';
+import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
+import dayjs from 'dayjs';
 export default {
   components: { Search },
   data() {
@@ -51,36 +52,36 @@ export default {
       currentPage: 1,
       itemsPerPage: 10,
       imageError: false,
+      outPatientVisit: 'Outpatient',
     };
   },
   computed: {
     visits() {
-      return this.$store.state.visit.categoryVisits;
+      return this.$store.state.visit.visits;
     },
     queriedItems() {
-      return this.$store.state.visit.totalCategoryVisits;
+      return this.$store.state.visit.visits;
     },
     pages() {
-      return this.$store.state.visit.totalCategoryVisitsPages;
+      return this.$store.state.visit.visits;
     },
     perPage() {
       return this.visits.length;
     },
   },
 
-  props: {
-    category: {
-      type: String,
-      required: true,
-    },
-  },
-
   methods: {
     handlePageChange() {
-      this.$store.dispatch('visit/fetchCategoryVisits', {
+      setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
-        category: this.category,
+      });
+      this.$store.dispatch('visit/fetchAllVisits', {
+        currentPage: this.$route.query.currentPage || this.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
+        search: this.$route.query.search,
       });
     },
 
@@ -91,24 +92,28 @@ export default {
 
     onHandleSearch(prop) {
       const { search, spinDiv } = prop;
+      setUrlQueryParams({
+        currentPage: 1,
+        itemsPerPage: this.itemsPerPage,
+        search,
+      });
       this.debounceSearch(search, this, spinDiv);
     },
 
     debounceSearch: debounce((search, vm, spinDiv) => {
       vm.$store
-        .dispatch('visit/fetchCategoryVisits', {
+        .dispatch('visit/fetchAllVisits', {
           currentPage: 1,
           itemsPerPage: vm.itemsPerPage,
           search,
-          category: this.category,
         })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));
     }, 500),
 
-    displayIcon() {
-      if (this.category === 'Inpatient') return 'fas fa-bed';
-      if (this.category === 'Antenatal') return 'fas fa-female';
+    displayIcon(category) {
+      if (category === 'Inpatient') return 'fas fa-bed';
+      if (category === 'Antenatal') return 'fas fa-female';
     },
 
     displayEllipsis(name) {
@@ -122,7 +127,7 @@ export default {
     },
 
     visitDetailsPage(visit) {
-      if (this.category === 'Antenatal') {
+      if (visit.category === 'Antenatal') {
         return this.$router.push(
           `/program/ante-natal/visit/${visit.id}?antenatal=${visit.ante_natal_id}`
         );
@@ -138,12 +143,34 @@ export default {
     handleImageError() {
       this.imageError = true;
     },
+    searchByDate(range) {
+      const { start, end, dateSpin } = range;
+      this.currentPage = 1;
+      setUrlQueryParams({
+        pathName: 'request-list',
+        currentPage: this.currentPage,
+        itemsPerPage: this.itemsPerPage,
+        startDate: dayjs(start).format('YYYY-MM-DD'),
+        endDate: dayjs(end).format('YYYY-MM-DD'),
+      });
+      this.$store
+        .dispatch('visit/fetchAllVisits', {
+          currentPage: this.$route.query.currentPage,
+          itemsPerPage: this.$route.query.itemsPerPage,
+          start: this.$route.query.startDate,
+          end: this.$route.query.endDate,
+        })
+        .then(() => removeSpinner(dateSpin))
+        .catch(() => removeSpinner(dateSpin));
+    },
   },
   created() {
-    this.$store.dispatch('visit/fetchCategoryVisits', {
-      currentPage: this.currentPage,
-      itemsPerPage: this.itemsPerPage,
-      category: this.category,
+    this.$store.dispatch('visit/fetchAllVisits', {
+      currentPage: this.$route.query.currentPage || this.currentPage,
+      itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+      search: this.$route.query.search || null,
+      start: this.$route.query.startDate || null,
+      end: this.$route.query.endDate || null,
     });
   },
 };

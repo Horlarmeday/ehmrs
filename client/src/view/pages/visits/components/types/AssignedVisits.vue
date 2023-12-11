@@ -22,6 +22,7 @@
         }"
         :queues="queues"
         @changePage="onPageChange"
+        :url="url"
       />
     </div>
   </div>
@@ -29,10 +30,11 @@
 <script>
 import Search from '@/utils/Search.vue';
 import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
-import QueueTable from '@/view/pages/visits/components/QueueTable.vue';
+import QueueTable from '@/view/pages/visits/components/table/VisitsTable.vue';
+import dayjs from 'dayjs';
 
 export default {
-  name: 'Queue',
+  name: 'AssignedVisits',
   components: { QueueTable, Search },
   data: () => ({
     currentPage: 1,
@@ -40,7 +42,19 @@ export default {
     loading: false,
     start: null,
     end: null,
+    currentUser: '',
+    GENERAL_PRACTITIONER: 'General Practitioner',
   }),
+  props: {
+    url: {
+      type: String,
+      required: true,
+    },
+    filter: {
+      type: Object,
+      required: false,
+    },
+  },
   computed: {
     queues() {
       return this.$store.state.visit.assignedVisits;
@@ -65,6 +79,8 @@ export default {
         currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         search: this.$route.query.search || null,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
       });
     },
 
@@ -89,6 +105,7 @@ export default {
           currentPage: 1,
           itemsPerPage: vm.$route.query.itemsPerPage || vm.itemsPerPage,
           search,
+          ...(this.filter && { filter: this.filter }),
         })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));
@@ -96,21 +113,18 @@ export default {
 
     searchByDate(range) {
       const { start, end, dateSpin } = range;
-      this.end = end;
-      this.start = start;
       this.currentPage = 1;
       setUrlQueryParams({
-        pathName: 'queue',
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
-        startDate: new Date(this.start).toISOString(),
-        endDate: new Date(this.end).toISOString(),
+        startDate: dayjs(start).format('YYYY-MM-DD'),
+        endDate: dayjs(end).format('YYYY-MM-DD'),
       });
       this.fetchQueue({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
-        start: new Date(this.start).toISOString(),
-        end: new Date(this.end).toISOString(),
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
       })
         .then(() => removeSpinner(dateSpin))
         .catch(() => removeSpinner(dateSpin));
@@ -124,6 +138,8 @@ export default {
       this.fetchQueue({
         currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: pagecount,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
       });
     },
 
@@ -132,8 +148,8 @@ export default {
         currentPage,
         itemsPerPage,
         ...(search && { search }),
-        ...(start && { startDate: new Date(start).toISOString() }),
-        ...(end && { startDate: new Date(end).toISOString() }),
+        ...(start && end && { start, end }),
+        ...(this.filter && { filter: this.filter }),
       });
     },
   },
