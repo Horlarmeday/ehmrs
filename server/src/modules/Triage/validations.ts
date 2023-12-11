@@ -12,26 +12,23 @@ export function validateTriage(triage) {
     bmi: Joi.number()
       .optional()
       .allow(''),
-    pulse: Joi.number()
+    pulse: Joi.string()
       .optional()
       .allow(''),
     respiration: Joi.string()
       .optional()
       .allow(''),
-    temperature: Joi.number().required(),
-    systolic: Joi.number()
+    temperature: Joi.string().required(),
+    systolic: Joi.string()
       .optional()
       .allow(''),
-    diastolic: Joi.number()
+    diastolic: Joi.string()
       .optional()
       .allow(''),
-    heart_rate: Joi.number()
+    heart_rate: Joi.string()
       .optional()
       .allow(''),
-    fetal_heart_rate: Joi.number()
-      .optional()
-      .allow(''),
-    spo2: Joi.number()
+    spo2: Joi.string()
       .optional()
       .allow(''),
     muac: Joi.string()
