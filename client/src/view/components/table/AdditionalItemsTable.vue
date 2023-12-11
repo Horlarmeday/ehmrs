@@ -18,7 +18,7 @@
           </tr>
           <tr v-for="item in items" :key="item.id">
             <th>
-              <span>{{ item?.drug?.name || '-' }}</span>
+              <a href="#">{{ item?.drug?.name || '-' }}</a>
             </th>
             <td>
               <span> {{ item.quantity_prescribed }} {{ item?.unit?.name }} </span>
