@@ -19,13 +19,7 @@
           </tr>
           <tr v-for="drug in drugs" :key="drug.id">
             <th>
-              <a
-                @click="viewPopover(drug)"
-                href="#"
-                :id="popOverId"
-              >
-                {{ drug.drug.name }}</a
-              >
+              <a @click="viewPopover(drug)" href="#" :id="popOverId"> {{ drug.drug.name }}</a>
             </th>
             <td>
               <span>{{ drug.quantity_to_dispense }} {{ drug?.dosage_form?.name || '-' }}</span>

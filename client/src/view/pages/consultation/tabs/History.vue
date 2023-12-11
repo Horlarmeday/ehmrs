@@ -75,7 +75,7 @@
   </div>
 </template>
 <script>
-import TriageTable from '@/view/components/table/AntenatalTriageTable.vue';
+import TriageTable from '@/view/components/table/TriageTable.vue';
 // import ObservationsTable from '@/view/components/table/AntenatalObservationsTable.vue';
 import DiagnosesTable from '@/view/components/table/DiagnosesTable.vue';
 import TestsTable from '@/view/components/table/TestsTable.vue';

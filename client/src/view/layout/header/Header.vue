@@ -167,7 +167,7 @@ import KTTopbar from '@/view/layout/header/Topbar.vue';
 import KTLayoutHeader from '@/assets/js/layout/base/header.js';
 import KTLayoutHeaderMenu from '@/assets/js/layout/base/header-menu.js';
 import KTMenu from '@/view/layout/header/Menu.vue';
-import PatientDetails from "@/view/layout/header/PatientDetails.vue";
+import PatientDetails from '@/view/layout/header/PatientDetails.vue';
 
 export default {
   name: 'KTHeader',
@@ -235,7 +235,19 @@ export default {
     },
 
     displayPatientDetails() {
-      const pagesToDisplay = ['visit-details', 'ante-natal-visit', 'new-visit'];
+      const pagesToDisplay = [
+        'visit-details',
+        'ante-natal-visit',
+        'new-visit',
+        'create-vitals',
+        'treatment-records',
+        'admission-operations',
+        'admission-observations',
+        'admission-careplans',
+        'admission-iocharts',
+        'admission-treatments',
+        'admission-additional-prescriptions',
+      ];
       return pagesToDisplay.includes(this.$route.name);
     },
   },

@@ -16,9 +16,6 @@
             <additional-items-table :items="items" />
           </b-tab>
         </b-tabs>
-        <!--begin::Table-->
-
-        <!--end::Table-->
       </div>
     </div>
   </div>
