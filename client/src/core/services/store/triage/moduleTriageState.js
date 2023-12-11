@@ -1,4 +1,6 @@
 export default {
   triages: [],
-  triage: null
+  triage: null,
+  total: 0,
+  pages: 0,
 };
