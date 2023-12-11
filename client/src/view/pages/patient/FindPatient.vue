@@ -130,6 +130,7 @@ import DateFilter from '@/utils/DateFilter';
 import CreateVisit from '../visits/create/CreateVisit-Deprecated.vue';
 import { setUrlQueryParams } from '@/common/common';
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
+import dayjs from 'dayjs';
 export default {
   data() {
     return {
@@ -190,11 +191,10 @@ export default {
       (this.start = start), (this.end = end);
       this.currentPage = 1;
       setUrlQueryParams({
-        pathName: 'find-patient',
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
-        startDate: new Date(this.start).toISOString(),
-        endDate: new Date(this.end).toISOString(),
+        startDate: dayjs(start).format('YYYY-MM-DD'),
+        endDate: dayjs(end).format('YYYY-MM-DD'),
       });
       this.$store.dispatch('patient/fetchPatients', {
         currentPage: this.$route.query.currentPage,
@@ -208,7 +208,6 @@ export default {
       if (!this.patient_name) return this.notifyEmptyField();
       this.currentPage = 1;
       setUrlQueryParams({
-        pathName: 'find-patient',
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
         search: this.patient_name,
@@ -222,7 +221,6 @@ export default {
 
     handlePageChange() {
       setUrlQueryParams({
-        pathName: 'find-patient',
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
       });

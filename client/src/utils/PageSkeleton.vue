@@ -1,7 +1,7 @@
 <template>
   <div>
-    <h5>{{ title }}</h5>
     <div class="placeholder-content">
+      <h5 class="mb-4">{{ title }}</h5>
       <div v-for="index in times" :key="index" class="skeleton-loader"></div>
     </div>
   </div>

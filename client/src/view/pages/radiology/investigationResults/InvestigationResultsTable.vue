@@ -76,10 +76,11 @@
 </template>
 
 <script>
-import { debounce, removeSpinner } from '@/common/common';
+import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
 import Search from '@/utils/Search.vue';
 import Pagination from '@/utils/Pagination.vue';
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
+import dayjs from 'dayjs';
 
 export default {
   components: { ArrowRightIcon, Pagination, Search },
@@ -107,9 +108,16 @@ export default {
   }),
   methods: {
     handlePageChange() {
-      this.$store.dispatch('radiology/fetchInvestigationsResults', {
+      setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
+      });
+      this.$store.dispatch('radiology/fetchInvestigationsResults', {
+        currentPage: this.$route.query.currentPage || this.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || null,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
         period: this.period,
       });
     },
@@ -121,6 +129,11 @@ export default {
 
     onHandleSearch(prop) {
       const { search, spinDiv } = prop;
+      setUrlQueryParams({
+        currentPage: this.currentPage,
+        itemsPerPage: this.itemsPerPage,
+        search,
+      });
       this.debounceSearch(search, this, spinDiv);
     },
 
@@ -138,15 +151,20 @@ export default {
 
     searchByDate(range) {
       const { start, end, dateSpin } = range;
-      this.end = end;
-      this.start = start;
       this.currentPage = 1;
+      setUrlQueryParams({
+        currentPage: this.currentPage,
+        itemsPerPage: this.itemsPerPage,
+        startDate: dayjs(start).format('YYYY-MM-DD'),
+        endDate: dayjs(end).format('YYYY-MM-DD'),
+      });
       this.$store
         .dispatch('radiology/fetchInvestigationsResults', {
-          currentPage: this.currentPage,
-          itemsPerPage: this.itemsPerPage,
-          start: new Date(this.start).toISOString(),
-          end: new Date(this.end).toISOString(),
+          currentPage: this.$route.query.currentPage,
+          itemsPerPage: this.$route.query.itemsPerPage,
+          start: this.$route.query.startDate,
+          end: this.$route.query.endDate,
+          period: this.period,
         })
         .then(() => removeSpinner(dateSpin))
         .catch(() => removeSpinner(dateSpin));
@@ -164,8 +182,12 @@ export default {
     this.countToHundred();
     this.$store
       .dispatch('radiology/fetchInvestigationsResults', {
-        currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage,
+        currentPage: this.$route.query.currentPage || this.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || null,
+        start: this.$route.query.startDate || null,
+        end: this.$route.query.endDate || null,
+        period: this.period,
       })
       .then(() => (this.loading = false));
   },

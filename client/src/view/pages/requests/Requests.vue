@@ -40,6 +40,7 @@ import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
 import RequestModal from '@/view/pages/requests/components/RequestModal.vue';
 import SelectedGroup from '@/view/pages/requests/components/SelectedGroup.vue';
 import RequestsTable from '@/view/pages/requests/components/RequestsTable.vue';
+import dayjs from 'dayjs';
 export default {
   data() {
     return {
@@ -74,27 +75,29 @@ export default {
       this.displayPrompt = false;
     },
 
-    searchByDate(start, end) {
-      (this.start = start), (this.end = end);
+    searchByDate(range) {
+      const { start, end, dateSpin } = range;
       this.currentPage = 1;
       setUrlQueryParams({
         pathName: 'request-list',
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
-        startDate: new Date(this.start).toISOString(),
-        endDate: new Date(this.end).toISOString(),
+        startDate: dayjs(start).format('YYYY-MM-DD'),
+        endDate: dayjs(end).format('YYYY-MM-DD'),
       });
-      this.$store.dispatch('request/fetchRequests', {
-        currentPage: this.$route.query.currentPage,
-        itemsPerPage: this.$route.query.itemsPerPage,
-        start: this.$route.query.startDate,
-        end: this.$route.query.endDate,
-      });
+      this.$store
+        .dispatch('request/fetchRequests', {
+          currentPage: this.$route.query.currentPage,
+          itemsPerPage: this.$route.query.itemsPerPage,
+          start: this.$route.query.startDate,
+          end: this.$route.query.endDate,
+        })
+        .then(() => removeSpinner(dateSpin))
+        .catch(() => removeSpinner(dateSpin));
     },
 
     handlePageChange() {
       setUrlQueryParams({
-        pathName: 'request-list',
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
       });
@@ -103,6 +106,7 @@ export default {
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         start: this.$route.query.startDate,
         end: this.$route.query.endDate,
+        search: this.$route.query.search,
       });
     },
 
@@ -151,6 +155,9 @@ export default {
     this.$store.dispatch('request/fetchRequests', {
       currentPage: this.$route.query.currentPage || this.currentPage,
       itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+      search: this.$route.query.search || null,
+      start: this.$route.query.startDate || null,
+      end: this.$route.query.endDate || null,
     });
   },
 };

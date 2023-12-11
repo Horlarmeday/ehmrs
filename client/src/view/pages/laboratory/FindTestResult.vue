@@ -118,7 +118,8 @@
 import DateFilter from '@/utils/DateFilter.vue';
 import Pagination from '@/utils/Pagination.vue';
 import { setUrlQueryParams } from '@/common/common';
-import ArrowRightIcon from "@/assets/icons/ArrowRightIcon.vue";
+import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
+import dayjs from 'dayjs';
 export default {
   name: 'FindResult',
   components: { ArrowRightIcon, Pagination, DateFilter },
@@ -155,7 +156,6 @@ export default {
       if (!this.search) return this.notifyEmptyField();
       this.currentPage = 1;
       setUrlQueryParams({
-        pathName: 'find-results',
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
         search: this.search,
@@ -169,7 +169,6 @@ export default {
 
     handlePageChange() {
       setUrlQueryParams({
-        pathName: 'find-results',
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
       });
@@ -187,15 +186,12 @@ export default {
     },
 
     searchByDate(start, end) {
-      this.start = start;
-      this.end = end;
       this.currentPage = 1;
       setUrlQueryParams({
-        pathName: 'find-results',
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
-        startDate: new Date(this.start).toISOString(),
-        endDate: new Date(this.end).toISOString(),
+        startDate: dayjs(start).format('YYYY-MM-DD'),
+        endDate: dayjs(end).format('YYYY-MM-DD'),
       });
       this.$store.dispatch('laboratory/fetchTestResults', {
         currentPage: this.$route.query.currentPage,

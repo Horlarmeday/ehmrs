@@ -1,5 +1,5 @@
 <template>
-  <b-modal v-model="activePrompt" hide-footer title="Staff" size="modal-lg">
+  <b-modal v-model="activePrompt" hide-footer title="Staff" size="modal-xl">
     <div class="p-3">
       <!-- NAME -->
       <div class="form-group row">
@@ -14,9 +14,7 @@
             placeholder="First Name"
             name="firstname"
           />
-          <span class="text-danger text-sm">{{
-            errors.first("firstname")
-          }}</span>
+          <span class="text-danger text-sm">{{ errors.first('firstname') }}</span>
         </div>
         <div class="col-lg-4">
           <label>Middle Name</label>
@@ -27,9 +25,7 @@
             placeholder="Middle Name"
             name="middlename"
           />
-          <span class="text-danger text-sm">{{
-            errors.first("middlename")
-          }}</span>
+          <span class="text-danger text-sm">{{ errors.first('middlename') }}</span>
         </div>
         <div class="col-lg-4">
           <label>Last Name <span class="text-danger">*</span></label>
@@ -42,9 +38,7 @@
             placeholder="Last Name"
             name="lastname"
           />
-          <span class="text-danger text-sm">{{
-            errors.first("lastname")
-          }}</span>
+          <span class="text-danger text-sm">{{ errors.first('lastname') }}</span>
         </div>
       </div>
       <!-- Contact -->
@@ -58,7 +52,7 @@
             placeholder="Enter email"
             v-model="email"
           />
-          <span class="text-danger text-sm">{{ errors.first("email") }}</span>
+          <span class="text-danger text-sm">{{ errors.first('email') }}</span>
         </div>
         <div class="col-lg-4">
           <label>Phone Number <span class="text-danger">*</span></label>
@@ -72,7 +66,7 @@
             placeholder="Phone Number"
             name="phone"
           />
-          <span class="text-danger text-sm">{{ errors.first("phone") }}</span>
+          <span class="text-danger text-sm">{{ errors.first('phone') }}</span>
         </div>
         <div class="col-lg-4">
           <label>Username <span class="text-danger">*</span></label>
@@ -85,9 +79,7 @@
             placeholder="Enter Username"
             v-model="username"
           />
-          <span class="text-danger text-sm">{{
-            errors.first("username")
-          }}</span>
+          <span class="text-danger text-sm">{{ errors.first('username') }}</span>
         </div>
       </div>
       <div class="form-group row">
@@ -101,9 +93,7 @@
             input-class="form-control form-control-sm"
             placeholder="Date of Birth"
           ></datepicker>
-          <span class="text-danger text-sm">{{
-            errors.first("date_of_birth")
-          }}</span>
+          <span class="text-danger text-sm">{{ errors.first('date_of_birth') }}</span>
         </div>
         <div class="col-lg-4">
           <label>Gender <span class="text-danger">*</span></label>
@@ -118,7 +108,7 @@
             <option value="Female">Female</option>
             <option value="Other">Other</option>
           </select>
-          <span class="text-danger text-sm">{{ errors.first("gender") }}</span>
+          <span class="text-danger text-sm">{{ errors.first('gender') }}</span>
         </div>
         <div class="col-lg-4">
           <label>Home Address <span class="text-danger">*</span></label>
@@ -131,7 +121,7 @@
             placeholder="Home Address"
             name="address"
           />
-          <span class="text-danger text-sm">{{ errors.first("address") }}</span>
+          <span class="text-danger text-sm">{{ errors.first('address') }}</span>
         </div>
       </div>
       <div class="form-group row">
@@ -152,9 +142,7 @@
               >{{ department.department }}
             </option>
           </select>
-          <span class="text-danger text-sm">{{
-            errors.first("department")
-          }}</span>
+          <span class="text-danger text-sm">{{ errors.first('department') }}</span>
         </div>
         <div class="col-lg-4">
           <label>Roles <span class="text-danger">*</span></label>
@@ -166,22 +154,16 @@
             data-vv-validate-on="blur"
             @change="getSubRoles"
           >
-            <option
-              v-for="role in roles"
-              :key="role.id"
-              :value="{ id: role.id, text: role.role }"
+            <option v-for="role in roles" :key="role.id" :value="{ id: role.id, text: role.role }"
               >{{ role.role }}
             </option>
           </select>
-          <span class="text-danger text-sm">{{ errors.first("role") }}</span>
+          <span class="text-danger text-sm">{{ errors.first('role') }}</span>
         </div>
         <div class="col-lg-4">
           <label>Sub Roles </label>
           <select class="form-control form-control-sm" v-model="sub_role">
-            <option
-              v-for="sub in sub_roles"
-              :key="sub.id"
-              :value="{ id: sub.id, text: sub.sub }"
+            <option v-for="sub in sub_roles" :key="sub.id" :value="{ id: sub.id, text: sub.sub }"
               >{{ sub.sub }}
             </option>
           </select>
@@ -201,62 +183,56 @@
 </template>
 
 <script>
-import Datepicker from "vuejs-datepicker";
-import {
-  departments,
-  getRolesById,
-  getSubRoleById,
-  roles,
-  sub_roles
-} from "./employeeRoles";
+import Datepicker from 'vuejs-datepicker';
+import { departments, getRolesById, getSubRoleById, roles, sub_roles } from './employeeRoles';
 export default {
   props: {
     displayPrompt: {
       type: Boolean,
-      required: true
+      required: true,
     },
     data: {
       type: Object,
-      default: () => {}
-    }
+      default: () => {},
+    },
   },
   components: {
-    Datepicker
+    Datepicker,
   },
   data() {
     return {
-      gender: "",
-      firstname: "",
-      lastname: "",
-      middlename: "",
-      email: "",
-      phone: "",
-      date_of_birth: "",
-      address: "",
-      department: "",
-      username: "",
-      role: "",
-      sub_role: "",
-      relationship: "",
+      gender: '',
+      firstname: '',
+      lastname: '',
+      middlename: '',
+      email: '',
+      phone: '',
+      date_of_birth: '',
+      address: '',
+      department: '',
+      username: '',
+      role: '',
+      sub_role: '',
+      relationship: '',
       departments,
       roles,
       sub_roles,
-      staff_id: "",
-      isDisabled: false
+      staff_id: '',
+      isDisabled: false,
     };
   },
   computed: {
     validateForm() {
-      return !this.errors.any() && this.name !== "";
+      return !this.errors.any() && this.name !== '';
     },
     activePrompt: {
       get() {
         return this.displayPrompt;
       },
       set(value) {
-        this.$emit("closeModal", value);
-      }
-    }
+        this.$emit('closeModal', value);
+      },
+    },
   },
   watch: {
     displayPrompt(val) {
@@ -278,7 +254,7 @@ export default {
           role,
           sub_role,
           phone,
-          username
+          username,
         } = JSON.parse(JSON.stringify(this.data));
         this.staff_id = id;
         this.firstname = firstname;
@@ -294,7 +270,7 @@ export default {
         this.gender = gender;
         this.username = username;
       }
-    }
+    },
   },
   methods: {
     getRoles() {
@@ -305,24 +281,24 @@ export default {
       this.sub_roles = getSubRoleById(this.role.id);
     },
     initValues() {
-      this.gender = "";
-      this.firstname = "";
-      this.lastname = "";
-      this.middlename = "";
-      this.username = "";
-      this.email = "";
-      this.phone = "";
-      this.date_of_birth = "";
-      this.address = "";
-      this.department = "";
-      this.role = "";
-      this.sub_role = "";
+      this.gender = '';
+      this.firstname = '';
+      this.lastname = '';
+      this.middlename = '';
+      this.username = '';
+      this.email = '';
+      this.phone = '';
+      this.date_of_birth = '';
+      this.address = '';
+      this.department = '';
+      this.role = '';
+      this.sub_role = '';
     },
     updateEmployee() {
       this.$validator.validateAll().then(result => {
         if (result) {
           // set spinner to submit button
-          const submitButton = this.$refs["kt_employee_submit"];
+          const submitButton = this.$refs['kt_employee_submit'];
           this.addSpinner(submitButton);
 
           const data = {
@@ -339,16 +315,17 @@ export default {
             role: this.role.text,
             sub_role: this.sub_role.text,
             address: this.address,
-            photo: this.image
+            photo: this.image,
+            staff_id: this.image,
           };
           this.$store
-            .dispatch("employee/addEmployee", data)
+            .dispatch('employee/addEmployee', data)
             .then(response => this.initializeRequest(submitButton, response))
             .catch(() => this.removeSpinner(submitButton));
         }
       });
-    }
-  }
+    },
+  },
 };
 </script>
 

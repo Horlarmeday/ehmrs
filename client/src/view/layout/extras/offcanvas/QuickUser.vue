@@ -8,9 +8,9 @@
         <span class="text-white opacity-50 font-weight-bold font-size-sm d-none d-md-inline">{{
           user.fullname
         }}</span>
-        <span class="text-white font-weight-bolder font-size-sm d-none d-md-inline">{{
-          user.role
-        }}</span>
+        <span class="text-white font-weight-bolder font-size-sm d-none d-md-inline"
+          >{{ user.role }} {{ user?.sub_role ? `(${user.sub_role})` : '' }}</span
+        >
       </div>
       <span class="symbol symbol-35">
         <span class="symbol-label font-size-h5 font-weight-bold text-white bg-white-o-30">{{
@@ -24,7 +24,6 @@
       <div class="offcanvas-header d-flex align-items-center justify-content-between pb-5">
         <h3 class="font-weight-bold m-0">
           User Profile
-<!--          <small class="text-muted font-size-sm ml-2">12 messages</small>-->
         </h3>
         <a
           href="#"
