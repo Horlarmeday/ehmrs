@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import router from '../router';
+import dayjs from 'dayjs';
 
 export const notifyError = error => {
   Vue.notify({
@@ -116,4 +117,10 @@ export const randomId = () => {
   s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);
   s[8] = s[13] = s[18] = s[23] = '-';
   return s.join('');
+};
+
+export const isToday = specificDateTime => {
+  const currentDateTime = dayjs();
+  const targetDateTime = dayjs(specificDateTime, 'YYYY-MM-DD');
+  return currentDateTime.isSame(targetDateTime, 'day');
 };
