@@ -26,6 +26,8 @@ export default {
             currentPage: payload.currentPage,
             pageLimit: payload.itemsPerPage,
             search: payload.search,
+            start: payload.start,
+            end: payload.end,
           },
         })
         .then(response => {
@@ -63,6 +65,9 @@ export default {
             pageLimit: payload.itemsPerPage,
             search: payload.search,
             category: payload.category,
+            filter: payload?.filter,
+            start: payload.start,
+            end: payload.end,
           },
         })
         .then(response => {
@@ -78,6 +83,7 @@ export default {
   },
 
   fetchProfessionalVisits({ commit }, payload) {
+    console.log(payload);
     return new Promise((resolve, reject) => {
       axios
         .get('/visits/professional-assigned/get', {
@@ -87,6 +93,7 @@ export default {
             search: payload.search,
             start: payload.start,
             end: payload.end,
+            filter: payload?.filter,
           },
         })
         .then(response => {
@@ -117,6 +124,20 @@ export default {
           commit('SET_ALL_VISITS', response.data.data.docs);
           commit('SET_ALL_VISITS_TOTAL', response.data.data.total);
           commit('SET_ALL_VISITS_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchVisitPrescriptions({ commit }, visitId) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/visits/prescriptions/${visitId}`)
+        .then(response => {
+          commit('SET_VISIT_PRESCRIPTIONS', response.data.data);
           resolve(response);
         })
         .catch(error => {

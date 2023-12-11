@@ -27,4 +27,9 @@ export default {
   assignedVisits: [],
   totalAssignedVisits: 0,
   totalAssignedVisitsPages: 0,
+
+  /**
+   * VISIT PRESCRIPTIONS
+   */
+  visitPrescriptions: null,
 };

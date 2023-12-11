@@ -67,4 +67,11 @@ export default {
   SET_ALL_VISITS_PAGES(state, pages) {
     state.pages = pages;
   },
+
+  /**
+   * VISIT PRESCRIPTIONS
+   */
+  SET_VISIT_PRESCRIPTIONS(state, prescriptions) {
+    state.visitPrescriptions = prescriptions;
+  },
 };
