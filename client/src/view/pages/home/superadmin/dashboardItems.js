@@ -5,7 +5,7 @@ export default [
     name: 'Find Patient Record',
   },
   {
-    url: '/visit/active',
+    url: '/visit/all',
     icon: 'flaticon2-user-1',
     name: 'Visits',
   },

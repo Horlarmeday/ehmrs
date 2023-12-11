@@ -5,7 +5,7 @@ export default [
     name: 'Queue',
   },
   {
-    url: '/visit/in-patients',
+    url: '/visit/inpatients',
     icon: 'fas fa-bed',
     name: 'In-Patients',
   },
@@ -15,7 +15,7 @@ export default [
     name: 'Antenatal Visits',
   },
   {
-    url: '/radiology/reports',
+    url: '/radiology/appointments',
     icon: 'flaticon-event-calendar-symbol',
     name: 'Appointments',
   },
