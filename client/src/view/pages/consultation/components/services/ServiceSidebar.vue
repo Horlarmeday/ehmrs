@@ -8,7 +8,7 @@
 import SelectedServices from '@/view/pages/consultation/components/services/SelectedServices.vue';
 
 export default {
-  name: 'TestSideBar',
+  name: 'ServiceSideBar',
   components: { SelectedServices },
   data() {
     return {
@@ -38,6 +38,4 @@ export default {
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

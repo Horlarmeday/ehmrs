@@ -8,7 +8,7 @@
             <accordion-icon />
           </div>
         </div>
-        <b-collapse id="accordion-3" visible>
+        <b-collapse id="accordion-3" :visible="visible">
           <div class="card-body">
             <div class="col-3 offset-9">
               <div ref="spinn">
@@ -28,6 +28,7 @@
                 :showSwitch="showSwitch"
                 :source="source"
                 :is="activeTab"
+                :filter="filter"
               />
             </div>
           </div>
@@ -66,6 +67,14 @@ export default {
     source: {
       type: String,
       required: true,
+    },
+    filter: {
+      type: Object,
+      required: true,
+    },
+    visible: {
+      type: Boolean,
+      default: true,
     },
   },
   components: { AccordionIcon, ServiceSidebar, Services },

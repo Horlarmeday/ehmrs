@@ -2,7 +2,7 @@
   <div class="flex-row-fluid ml-lg-8">
     <div class="card-custom">
       <div class="card-header">
-        <services-accordion />
+        <services-accordion :filter="filter" />
         <div class="card-title">
           <span class="card-label font-weight-bolder text-dark"></span>
           <span v-if="showSwitch" class="switch switch-sm switch-icon">
@@ -71,6 +71,10 @@ export default {
       type: String,
       required: true,
     },
+    filter: {
+      type: Object,
+      required: true,
+    },
   },
   computed: {
     services() {
@@ -100,7 +104,7 @@ export default {
         service_type: this.switchPosition && this.switchSpot ? 'NHIS' : 'CASH',
         price: service.price,
         name: service.name,
-        source: this.source,
+        // source: this.source,
         ...(this.source === 'Antenatal' && { ante_natal_id: this.$route.query.antenatal }),
       };
     },
@@ -118,6 +122,11 @@ export default {
     endRequest(button) {
       this.removeSpinner(button);
       this.initValues();
+      this.$store.dispatch('order/fetchPrescribedServices', {
+        currentPage: 1,
+        itemsPerPage: 10,
+        filter: this.filter,
+      });
     },
 
     submitService() {
@@ -130,7 +139,7 @@ export default {
       this.$store
         .dispatch('order/orderAdditionalService', {
           services,
-          id: this.$route.params.id,
+          id: this.filter.visit_id,
         })
         .then(() => this.endRequest(submitButton))
         .catch(() => this.removeSpinner(submitButton));

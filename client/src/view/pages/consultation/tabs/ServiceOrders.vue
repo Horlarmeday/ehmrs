@@ -4,6 +4,7 @@
       :show-switch="showSwitch"
       :switch-position="switchPosition"
       source="Consultation"
+      :filter="filter"
     />
   </div>
 </template>
@@ -19,6 +20,9 @@ export default {
   computed: {
     visit() {
       return this.$store.state.visit.visit;
+    },
+    filter() {
+      return { visit_id: this.$route.params.id };
     },
     showSwitch() {
       return (

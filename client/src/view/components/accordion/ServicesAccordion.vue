@@ -36,6 +36,12 @@ export default {
     currentPage: 1,
     itemsPerPage: 10,
   }),
+  props: {
+    filter: {
+      type: Object,
+      required: true,
+    },
+  },
   computed: {
     services() {
       return this.$store.state.order.service_orders;
@@ -52,11 +58,7 @@ export default {
   },
   methods: {
     handlePageChange() {
-      this.$store.dispatch('order/fetchPrescribedServices', {
-        currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage,
-        filter: { visit_id: this.$route.params.id },
-      });
+      this.fetchServices();
     },
 
     onPageChange(page) {
@@ -65,11 +67,13 @@ export default {
     },
 
     fetchServices() {
-      this.$store.dispatch('order/fetchPrescribedServices', {
-        currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage,
-        filter: { visit_id: this.$route.params.id },
-      });
+      setTimeout(() => {
+        this.$store.dispatch('order/fetchPrescribedServices', {
+          currentPage: this.currentPage,
+          itemsPerPage: this.itemsPerPage,
+          filter: this.filter,
+        });
+      }, 500);
     },
   },
   created() {

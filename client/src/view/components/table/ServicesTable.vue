@@ -17,7 +17,7 @@
             <td colspan="9" align="center" class="text-muted">No Data</td>
           </tr>
           <tr v-for="(service, i) in services" :key="i">
-            <td>{{ service.service.name }}</td>
+            <td>{{ service?.service?.name }}</td>
             <td>{{ service.billing_status }}</td>
             <td>
               <span :class="getServiceTypeColor(service.service_type)">{{
