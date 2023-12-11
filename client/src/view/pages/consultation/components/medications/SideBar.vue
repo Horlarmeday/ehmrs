@@ -185,6 +185,7 @@
                   v-validate="'required'"
                   data-vv-validate-on="blur"
                   @input="getTotalPrice"
+                  :disabled="!quantity_prescribed"
                 />
                 <span class="form-text text-danger">{{
                   errors.first('quantity_to_dispense')
@@ -226,9 +227,12 @@
               </div>
             </div>
             <div class="mt-3">
+              <div v-if="nhisPriceQuotaExceeded" class="alert alert-warning" role="alert">
+                <span class="font-size-sm font-weight-bold">NHIS drugs limit is reached</span>
+              </div>
               <button
                 @click="submitDrugOrder"
-                :disabled="quantity_remaining <= 0"
+                :disabled="quantity_remaining <= 0 || nhisPriceQuotaExceeded"
                 ref="kt-drugOrder-submit"
                 class="btn btn-primary btn-md float-right mb-3"
               >
@@ -245,7 +249,7 @@
 <script>
 import Datepicker from 'vuejs-datepicker';
 import vSelect from 'vue-select';
-import { debounce } from '@/common/common';
+import { debounce, isToday } from '@/common/common';
 import KTUtil from '@/assets/js/components/util';
 
 export default {
@@ -282,6 +286,19 @@ export default {
         this.drug = '';
       },
     },
+    drugOrders() {
+      return this.$store.state.order.drug_orders;
+    },
+  },
+
+  watch: {
+    // check NHIS drugs quota is reached
+    drugOrders(value) {
+      if (this.switchPosition && this.switchSpot) {
+        const total = this.getTotalDrugsPrescribedToday(value);
+        if (total > this.quotaPrice) this.nhisPriceQuotaExceeded = true;
+      }
+    },
   },
 
   props: {
@@ -300,6 +317,8 @@ export default {
   },
 
   data: () => ({
+    nhisPriceQuotaExceeded: false,
+    quotaPrice: 100, // todo: select this from settings
     switchSpot: true,
     dosage_form: '',
     route: '',
@@ -352,14 +371,23 @@ export default {
 
     flipSwitch(event) {
       this.switchSpot = !!event.target.checked;
-      this.drugOptions = [];
-      this.strength = '';
-      this.drug_id = '';
-      this.price = '';
-      this.unit_name = '';
-      this.strength_input = '';
-      this.quantity_remaining = '';
-      this.dosage_form = '';
+      this.initValues();
+    },
+
+    removeValues() {
+      this.route = '';
+      this.start_date = new Date();
+      this.duration_unit = '';
+      this.notes = '';
+      this.quantity_to_dispense = '';
+      this.duration = '';
+      this.frequency = '';
+      this.prescribed_strength = '';
+      this.total_price = null;
+      this.quantity_prescribed = null;
+      this.drug_group = null;
+      this.inventory_id = null;
+      this.nhisPriceQuotaExceeded = false;
     },
 
     setDrugInfo() {
@@ -371,11 +399,18 @@ export default {
       this.quantity_remaining = this.drug.quantity_remaining;
       this.dosage_form = this.drug.dosage_form;
       this.getRoutes();
+      this.removeValues();
     },
 
     getTotalPrice() {
       this.quantity_to_dispense = Math.floor(Math.abs(this.quantity_to_dispense));
       this.total_price = this.price * this.quantity_to_dispense;
+      // check NHIS drugs quota is reached
+      if (this.switchPosition && this.switchSpot) {
+        const totalDrugsPrescribedToday = this.getTotalDrugsPrescribedToday(this.drugOrders);
+        const total = +this.total_price + +totalDrugsPrescribedToday;
+        this.nhisPriceQuotaExceeded = total > this.quotaPrice;
+      }
     },
 
     calculateDosageQuantity() {
@@ -476,6 +511,7 @@ export default {
       this.unit_name = null;
       this.drug_group = null;
       this.inventory_id = null;
+      this.nhisPriceQuotaExceeded = false;
     },
 
     onSearch(search, loading) {
@@ -501,6 +537,15 @@ export default {
       return this.inventories.find(inventory =>
         inventory.name.toLowerCase().includes(type.toLowerCase())
       )?.id;
+    },
+
+    sumTotalPrice(arr) {
+      return arr.reduce((a, b) => a + +b.total_price, 0);
+    },
+
+    getTotalDrugsPrescribedToday(arr) {
+      const drugsToday = arr.filter(({ date_prescribed }) => isToday(date_prescribed));
+      return this.sumTotalPrice(drugsToday);
     },
   },
 
