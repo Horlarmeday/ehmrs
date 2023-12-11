@@ -1,11 +1,16 @@
 /* eslint-disable camelcase */
-import { PrescribedAdditionalItemBody, PrescribedDrugBody } from './interface/prescribed-drug.body';
+import {
+  PatientTreatmentBody,
+  PrescribedAdditionalItemBody,
+  PrescribedDrugBody,
+} from './interface/prescribed-drug.body';
 
 import {
   DosageForm,
   Drug,
   Measurement,
   Patient,
+  PatientTreatment,
   PrescribedAdditionalItem,
   PrescribedDrug,
   RoutesOfAdministration,
@@ -19,6 +24,7 @@ import { getOneRouteOfAdministration } from '../../Pharmacy/pharmacy.repository'
 import { PatientStatus } from '../../../database/models/patient';
 import { getOneDefault } from '../../AdminSettings/admin.repository';
 import { DefaultType } from '../../../database/models/default';
+import { staffAttributes } from '../../Antenatal/antenatal.repository';
 
 type PrescribeDrugType = PrescribedDrugBody & { drug_prescription_id: number };
 const PRESCRIPTION_FREQUENCY = {
@@ -154,7 +160,7 @@ export const getPrescribedAdditionalItems = ({
     paginate: +pageLimit,
     order: [['date_prescribed', 'DESC']],
     where: {
-      ...(filter && { ...JSON.parse(filter) }),
+      ...(filter && JSON.parse(filter)),
     },
     include: [
       {
@@ -294,7 +300,20 @@ export const getOneAdditionalItem = async (
 export const getPrescriptionAdditionalItems = async (
   query: WhereOptions<PrescribedAdditionalItem>
 ): Promise<PrescribedAdditionalItem[]> => {
-  return await PrescribedAdditionalItem.findAll({ where: { ...query } });
+  return await PrescribedAdditionalItem.findAll({
+    where: { ...query },
+    include: [
+      { model: Staff, attributes: staffAttributes },
+      {
+        model: Drug,
+        attributes: ['name'],
+      },
+      {
+        model: Unit,
+        attributes: ['name'],
+      },
+    ],
+  });
 };
 
 export const syringeNeedleCalculation = async ({
@@ -381,4 +400,48 @@ export const syringeNeedleCalculation = async ({
   if (waterData) await prescribeAdditionalItem({ ...prescribeAdditionalItemData, ...waterData });
 
   return true;
+};
+
+/**
+ * add treatments data for patient
+ * @param data
+ * @returns {Promise<PatientTreatment[]>} patient treatment data
+ */
+export const createBulkTreatmentData = async (data): Promise<PatientTreatment[]> => {
+  return PatientTreatment.bulkCreate(data);
+};
+
+/**
+ * get patient treatments
+ * @param currentPage
+ * @param pageLimit
+ * @param filter
+ */
+export const getPatientTreatments = ({ currentPage = 1, pageLimit = 10, filter = null }) => {
+  return PatientTreatment.paginate({
+    page: +currentPage,
+    paginate: +pageLimit,
+    order: [['date_entered', 'DESC']],
+    where: {
+      ...(filter && JSON.parse(filter)),
+    },
+    include: [
+      {
+        model: Drug,
+        attributes: ['name'],
+      },
+      {
+        model: Staff,
+        attributes: ['firstname', 'lastname', 'fullname'],
+      },
+      {
+        model: RoutesOfAdministration,
+        attributes: ['name'],
+      },
+      {
+        model: DosageForm,
+        attributes: ['name'],
+      },
+    ],
+  });
 };

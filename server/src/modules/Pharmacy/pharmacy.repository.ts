@@ -319,10 +319,12 @@ export const getOneRouteOfAdministration = async (
  * create test tariff
  *
  * @function
- * @returns {json} json object with tests data
+ * @returns {DrugTariff[]} json object with drugs data
  * @param data
  */
-export const createDrugTariff = async (data: readonly sequelize.Optional<any, string>[]) => {
+export const createDrugTariff = async (
+  data: readonly sequelize.Optional<any, string>[]
+): Promise<DrugTariff[]> => {
   return DrugTariff.bulkCreate(data, { updateOnDuplicate: ['price'] });
 };
 
