@@ -114,7 +114,7 @@
               <div class="col-lg-4">
                 <label>Phone Number <span class="text-danger">*</span></label>
                 <input
-                  v-validate="'required|min:11|max:11'"
+                  v-validate="'required|min:11|max:11|phone_pattern'"
                   data-vv-validate-on="blur"
                   maxlength="11"
                   type="text"
@@ -327,6 +327,7 @@ export default {
 
   created() {
     this.departments = departments;
+    this.phoneValidation();
   },
   methods: {
     getRoles() {
@@ -465,6 +466,19 @@ export default {
             .then(response => this.initializeRequest(submitButton, response))
             .catch(() => this.removeSpinner(submitButton));
         }
+      });
+    },
+
+    phoneValidation() {
+      this.$validator.extend('phone_pattern', {
+        getMessage(field) {
+          return 'The ' + field + ' field should match the Nigerian phone pattern e.g 07098765321';
+        },
+        validate(value) {
+          return /((^090)([23589]))|((^070)([1-9]))|((^080)([2-9]))|((^081)([0-9]))(\d{7})/.test(
+            value
+          );
+        },
       });
     },
   },

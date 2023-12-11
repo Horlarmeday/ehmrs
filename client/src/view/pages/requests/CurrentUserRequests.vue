@@ -6,7 +6,9 @@
         <span class="card-label font-weight-bolder text-dark">Requests</span>
       </h3>
       <div class="card-title">
-        <router-link class="btn btn-primary btn-sm" to="/request/create">Create Request</router-link>
+        <router-link class="btn btn-primary btn-sm" to="/request/create"
+          >Create Request</router-link
+        >
       </div>
     </div>
     <search @search="onHandleSearch" :show-date-filter="true" />
@@ -30,6 +32,7 @@ import Search from '@/utils/Search.vue';
 import Pagination from '@/utils/Pagination.vue';
 import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
 import RequestsTable from '@/view/pages/requests/components/RequestsTable.vue';
+import dayjs from 'dayjs';
 export default {
   data() {
     return {
@@ -58,27 +61,28 @@ export default {
   },
   components: { RequestsTable, Pagination, Search },
   methods: {
-    searchByDate(start, end) {
-      (this.start = start), (this.end = end);
+    searchByDate(range) {
+      const { start, end, dateSpin } = range;
       this.currentPage = 1;
       setUrlQueryParams({
-        pathName: 'request-list',
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
-        startDate: new Date(this.start).toISOString(),
-        endDate: new Date(this.end).toISOString(),
+        startDate: dayjs(start).format('YYYY-MM-DD'),
+        endDate: dayjs(end).format('YYYY-MM-DD'),
       });
-      this.$store.dispatch('request/fetchCurrentUserRequests', {
-        currentPage: this.$route.query.currentPage,
-        itemsPerPage: this.$route.query.itemsPerPage,
-        start: this.$route.query.startDate,
-        end: this.$route.query.endDate,
-      });
+      this.$store
+        .dispatch('request/fetchCurrentUserRequests', {
+          currentPage: this.$route.query.currentPage,
+          itemsPerPage: this.$route.query.itemsPerPage,
+          start: this.$route.query.startDate,
+          end: this.$route.query.endDate,
+        })
+        .then(() => removeSpinner(dateSpin))
+        .catch(() => removeSpinner(dateSpin));
     },
 
     handlePageChange() {
       setUrlQueryParams({
-        pathName: 'request-list',
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
       });
@@ -87,6 +91,7 @@ export default {
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         start: this.$route.query.startDate,
         end: this.$route.query.endDate,
+        search: this.$route.query.search,
       });
     },
 
@@ -120,6 +125,9 @@ export default {
     this.$store.dispatch('request/fetchCurrentUserRequests', {
       currentPage: this.$route.query.currentPage || this.currentPage,
       itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+      search: this.$route.query.search || null,
+      start: this.$route.query.startDate || null,
+      end: this.$route.query.endDate || null,
     });
   },
 };

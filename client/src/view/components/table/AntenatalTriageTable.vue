@@ -43,7 +43,7 @@
 import TriagePopover from '@/view/components/popover/AntenatalTriagePopover.vue';
 
 export default {
-  name: 'TriageTable',
+  name: 'AntenatalTriageTable',
   components: { TriagePopover },
   data: () => ({
     showPopover: false,
