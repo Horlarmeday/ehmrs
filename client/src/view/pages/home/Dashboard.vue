@@ -11,6 +11,8 @@ import Radiology from './radiology/Dashboard.vue';
 import Pharmacy from './pharmacy/Dashboard.vue';
 import Doctor from './medicalPractitioners/generalPractitioner/Dashboard.vue';
 import MedicalRecords from './medicalrecords/Dashboard.vue';
+import GOPD from './nurse/opd/Dashboard.vue';
+import FemaleWard from './nurse/femaleWard/Dashboard.vue';
 import { parseJwt } from '@/common/common';
 
 const Roles = {
@@ -20,6 +22,11 @@ const Roles = {
   PHARMACY: 'Pharmacy',
   GENERAL_PRACTITIONER: 'General Practitioner',
   MEDICAL_RECORDS: 'Medical Records',
+  NURSE: 'Nurse',
+};
+const SubRoles = {
+  G_OPD: 'G-OPD',
+  FEMALE_WARD: 'Female Ward',
 };
 export default {
   data: () => ({
@@ -41,8 +48,19 @@ export default {
           return (this.dashboardComponent = Doctor);
         case Roles.MEDICAL_RECORDS:
           return (this.dashboardComponent = MedicalRecords);
+        case Roles.NURSE:
+          return this.getSubRoleDashboard(role.sub_role);
         default:
           return (this.dashboardComponent = SuperAdmin);
+      }
+    },
+
+    getSubRoleDashboard(subRole) {
+      switch (subRole) {
+        case SubRoles.G_OPD:
+          return (this.dashboardComponent = GOPD);
+        case SubRoles.FEMALE_WARD:
+          return (this.dashboardComponent = FemaleWard);
       }
     },
   },
