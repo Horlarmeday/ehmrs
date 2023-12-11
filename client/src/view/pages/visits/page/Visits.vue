@@ -44,7 +44,7 @@
             <template v-slot:title>
               <strong>All</strong>
             </template>
-            <visit-category category="Antenatal" />
+            <all-visits />
           </b-tab>
         </b-tabs>
       </div>
@@ -55,10 +55,12 @@
 </template>
 
 <script>
-import Active from '../components/Active.vue';
-import VisitCategory from '@/view/pages/visits/components/VisitCategory.vue';
+import Active from '../components/cards/ActiveVisitsCard.vue';
+import VisitCategory from '../components/cards/CategoryVisitsCard.vue';
+import AllVisits from '../components/cards/AllVisitsCard.vue';
 export default {
   components: {
+    AllVisits,
     VisitCategory,
     Active,
   },

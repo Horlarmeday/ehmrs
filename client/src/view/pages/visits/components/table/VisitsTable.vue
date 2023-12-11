@@ -7,8 +7,9 @@
             <th style="min-width: 150px" class="pl-7">
               <span class="text-dark-75">Patient ID</span>
             </th>
-            <th style="min-width: 200px">Patient Name</th>
+            <th style="min-width: 250px">Patient Name</th>
             <th style="min-width: 150px">Category</th>
+            <th v-if="$route.name !== antenatalRoute" style="min-width: 150px">Gender</th>
             <th style="min-width: 150px">Status</th>
             <th style="min-width: 150px">Date</th>
             <th class="text-right pr-0" style="min-width: 130px">Action</th>
@@ -41,6 +42,11 @@
                 {{ queue.category }}
               </span>
             </td>
+            <td v-if="$route.name !== antenatalRoute">
+              <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                {{ queue.patient.gender }}
+              </span>
+            </td>
             <td>
               <span :class="getVisitStatus(queue.status)" class="label label-lg label-inline">{{
                 queue.status
@@ -53,11 +59,7 @@
             </td>
             <td class="text-right pr-0">
               <router-link
-                :to="
-                  $route.name === 'ante-natal-visits'
-                    ? `/program/ante-natal/visit/${queue.id}?antenatal=${queue.ante_natal_id}`
-                    : `/consultation/${queue.id}`
-                "
+                :to="getRoute(queue)"
                 class="btn btn-icon btn-light btn-hover-primary btn-sm"
               >
                 <ArrowRightIcon />
@@ -82,6 +84,13 @@ import Pagination from '@/utils/Pagination.vue';
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
 
 export default {
+  data: () => ({
+    currentUser: '',
+    doctor: 'General Practitioner',
+    antenatalRoute: 'ante-natal-visits',
+    activeVisitRoute: 'active-visits',
+  }),
+
   components: { ArrowRightIcon, Pagination },
   props: {
     queues: {
@@ -94,8 +103,21 @@ export default {
       required: true,
       default: () => {},
     },
+    url: {
+      type: String,
+      required: true,
+    },
   },
+
   methods: {
+    getRoute(queue) {
+      let url = this.url;
+      url = url.replaceAll('{queueId}', queue.id);
+      if (url.includes('{antenatalId}'))
+        url = url.replaceAll('{antenatalId}', queue?.ante_natal_id);
+      return url;
+    },
+
     getVisitStatus(status) {
       if (status === 'Ongoing') return 'label-light-success ';
       return 'label-light-primary ';
