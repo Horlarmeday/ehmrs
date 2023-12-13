@@ -57,6 +57,7 @@ export default (server: express.Application) => {
     ) => {
       //const ErrorCodesNotToLog = [404];
       //if (error?.statusCode && !ErrorCodesNotToLog.includes(error?.statusCode)) {
+      console.log(error);
       logger.error(error.message, error);
       // }
       handleError(error, res);

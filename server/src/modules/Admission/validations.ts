@@ -93,3 +93,11 @@ export function validateIOChart(iochart) {
 
   return schema.validate(iochart);
 }
+
+export function validateNursingNote(note) {
+  const schema = Joi.object({
+    type_of_duty: Joi.string().required(),
+    notes: Joi.string().required(),
+  });
+  return schema.validate(note);
+}

@@ -35,6 +35,7 @@ export { LaboratoryStore } from './laboratoryStore';
 export { Laboratory } from './laboratory';
 export { Measurement } from './measurement';
 export { NhisTest } from './nhisTest';
+export { NursingNote } from './nursingNote';
 export { Observation } from './observation';
 export { Patient } from './patient';
 export { PharmacyStore } from './pharmacyStore';
