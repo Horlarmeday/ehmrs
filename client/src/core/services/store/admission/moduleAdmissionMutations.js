@@ -51,4 +51,15 @@ export default {
   SET_IO_CHARTS(state, charts) {
     state.iocharts = charts;
   },
+
+  /**
+   * Nursing Notes
+   */
+  CREATE_NURSING_NOTE(state, note) {
+    state.nursingNote = note;
+  },
+
+  SET_NURSING_NOTES(state, notes) {
+    state.nursingNotes = notes;
+  },
 };

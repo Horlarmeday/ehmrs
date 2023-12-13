@@ -165,4 +165,35 @@ export default {
         });
     });
   },
+
+  /**
+   * IO Charts
+   */
+  createNursingNote({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/admission/nursing-notes/${payload.id}`, payload.data)
+        .then(response => {
+          commit('CREATE_NURSING_NOTE', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchNursingNotes({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/admission/nursing-notes/${payload.id}`)
+        .then(response => {
+          commit('SET_NURSING_NOTES', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
 };

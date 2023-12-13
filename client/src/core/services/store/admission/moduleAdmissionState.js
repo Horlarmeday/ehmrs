@@ -12,4 +12,7 @@ export default {
 
   iochart: null,
   iocharts: [],
+
+  nursingNote: null,
+  nursingNotes: [],
 };
