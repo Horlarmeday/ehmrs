@@ -24,7 +24,7 @@
                 service.service_type
               }}</span>
             </td>
-            <td>{{ service.examiner.fullname }}</td>
+            <td>{{ service?.examiner?.fullname }}</td>
             <td>{{ service.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
             <td>
               <a href="#" :class="service.payment_status !== 'Pending' ? 'disabled' : ''"

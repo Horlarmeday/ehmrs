@@ -69,6 +69,11 @@ export default {
         link: '/settings/wards',
         desc: 'View all wards',
       },
+      {
+        name: 'Merge Accounts',
+        link: '/settings/merge-accounts',
+        desc: 'Merge duplicates accounts',
+      },
     ],
   }),
   methods: {

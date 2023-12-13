@@ -83,7 +83,7 @@ import MedicationsTable from '@/view/components/table/MedicationsTable.vue';
 import RadiologyTable from '@/view/components/table/RadiologyTable.vue';
 import ServicesTable from '@/view/components/table/ServicesTable.vue';
 import EmptyDataCard from '@/utils/EmptyDataCard.vue';
-import { isEmpty } from '@/common/common';
+
 export default {
   name: 'History',
   components: {
@@ -104,6 +104,13 @@ export default {
     content:
       'It seems this patient does not have any history of visits, click to start an observation',
   }),
+  props: {
+    isEmptySummary: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+  },
   computed: {
     summaries() {
       return this.$store.state.consultation.histories;
@@ -122,19 +129,6 @@ export default {
     },
     isInLastPage() {
       return this.currentPage === this.pages || !this.pages;
-    },
-    isEmptySummary() {
-      return this.summaries.every(
-        summary =>
-          isEmpty(summary.drugs) &&
-          isEmpty(summary.tests) &&
-          isEmpty(summary.investigations) &&
-          isEmpty(summary.items) &&
-          isEmpty(summary.diagnoses) &&
-          isEmpty(summary.triages) &&
-          isEmpty(summary.observations.histories) &&
-          isEmpty(summary.observations.complaints)
-      );
     },
   },
   methods: {
@@ -160,9 +154,6 @@ export default {
       });
       window.location.reload();
     },
-  },
-  created() {
-    this.fetchVisitsHistory();
   },
 };
 </script>
