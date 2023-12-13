@@ -9,11 +9,13 @@ import {
   admitPatient,
   createCarePlan,
   createIOChart,
+  createNursingNote,
   createObservation,
   getAdmissionQuery,
   getAdmittedPatients,
   getCarePlans,
   getIOCharts,
+  getNursingNotes,
   getObservations,
   getOneAdmission,
   updateAdmission,
@@ -23,7 +25,7 @@ import { Admission, DischargeStatus } from '../../database/models/admission';
 import { BadException } from '../../common/util/api-error';
 import { StatusCodes } from '../../core/helpers/helper';
 import { PATIENT_ON_ADMISSION } from './messages/response-messages';
-import { CarePlan, IOChart, Observation } from '../../database/models';
+import { CarePlan, IOChart, NursingNote, Observation } from '../../database/models';
 
 export class AdmissionService {
   /**
@@ -219,5 +221,42 @@ export class AdmissionService {
    */
   static async getIOCharts(admissionId: number): Promise<IOChart[]> {
     return getIOCharts({ admission_id: admissionId });
+  }
+
+  /**
+   * create a patient nursing notes
+   *
+   * @method
+   * @returns {Promise<NursingNote>} json object with nursing notes data
+   * @memberOf AdmissionService
+   * @param body
+   * @param admissionId
+   * @param staffId
+   */
+  static async createNursingNote(
+    body: CarePlanBodyType,
+    admissionId: number,
+    staffId: number
+  ): Promise<NursingNote> {
+    const admission = await getOneAdmission({ id: admissionId });
+    return createNursingNote({
+      ...body,
+      admission_id: admission.id,
+      visit_id: admission.visit_id,
+      staff_id: staffId,
+      patient_id: admission.patient_id,
+    });
+  }
+
+  /**
+   * get a patient nursing notes
+   *
+   * @method
+   * @returns {json} json object with nursing notes data
+   * @memberOf AdmissionService
+   * @param admissionId
+   */
+  static async getNursingNotes(admissionId: number): Promise<NursingNote[]> {
+    return getNursingNotes({ admission_id: admissionId });
   }
 }

@@ -6,6 +6,7 @@ import {
   CarePlan,
   Inventory,
   IOChart,
+  NursingNote,
   Observation,
   Patient,
   PatientInsurance,
@@ -143,11 +144,14 @@ export const getAdmissionQuery = async (query: WhereOptions<Admission>) => {
       { model: Staff, as: 'examiner', attributes: staffAttributes },
     ],
   });
-  const insurance = await getPatientInsuranceQuery({
-    patient_id: admission.patient_id,
-    is_default: true,
-  });
-  return { ...admission.toJSON(), insurance };
+  if (admission) {
+    const insurance = await getPatientInsuranceQuery({
+      patient_id: admission.patient_id,
+      is_default: true,
+    });
+    return { ...admission.toJSON(), insurance };
+  }
+  return null;
 };
 
 export const updateAdmission = async (data: { [p: string]: any }, admissionId: number) => {
@@ -188,14 +192,16 @@ export const getAdmittedPatients = async ({
     include: [
       {
         model: Ward,
-        attributes: ['name'],
+        attributes: ['name', 'occupant_type'],
+        where: {
+          ...(filter && JSON.parse(filter)),
+        },
       },
       { model: Staff, as: 'examiner', attributes: staffAttributes },
       {
         model: Patient,
         attributes: patientAttributes,
         where: {
-          ...(filter && JSON.parse(filter)),
           ...(search && {
             [Op.or]: [
               {
@@ -374,6 +380,29 @@ export const createIOChart = async (data: { [p: string]: any }[]) => {
  */
 export const getIOCharts = async (query: WhereOptions<IOChart>) => {
   return IOChart.findAll({
+    where: { ...query },
+    include: [{ model: Staff, attributes: staffAttributes }],
+  });
+};
+
+/******************
+ * Nursing Notes
+ ******************/
+
+/**
+ * create a Nursing notes
+ * @param data
+ */
+export const createNursingNote = async (data: { [p: string]: any }) => {
+  return NursingNote.create(data);
+};
+
+/**
+ * get a patient Nursing Notes
+ * @param query
+ */
+export const getNursingNotes = async (query: WhereOptions<NursingNote>) => {
+  return NursingNote.findAll({
     where: { ...query },
     include: [{ model: Staff, attributes: staffAttributes }],
   });

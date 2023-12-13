@@ -8,6 +8,7 @@ import {
   validateAdmission,
   validateCarePlan,
   validateIOChart,
+  validateNursingNote,
   validateObservation,
 } from './validations';
 import { SUCCESS } from '../../core/constants';
@@ -281,6 +282,64 @@ export class AdmissionController {
       const ioCharts = await AdmissionService.getIOCharts(+req.params.id);
 
       return successResponse({ res, message: SUCCESS, data: ioCharts, httpCode: 200 });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * create a patient Nursing notes
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, Nursing notes data
+   */
+  static async createNursingNote(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    const { error } = validateNursingNote(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        httpCode: StatusCodes.BAD_REQUEST,
+        message: error.details[0].message,
+      });
+
+    try {
+      const nursingNote = await AdmissionService.createNursingNote(
+        req.body,
+        +req.params.id,
+        req.user.sub
+      );
+
+      return successResponse({ res, httpCode: 201, data: nursingNote, message: DATA_SAVED });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get patient Nursing notes
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with Nursing notes data
+   */
+  static async getPatientNursingNotes(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    try {
+      const nursingNotes = await AdmissionService.getNursingNotes(+req.params.id);
+
+      return successResponse({ res, message: SUCCESS, data: nursingNotes, httpCode: 200 });
     } catch (e) {
       return next(e);
     }
