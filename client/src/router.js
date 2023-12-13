@@ -939,6 +939,14 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            {
+              path: 'nursing-notes/:id',
+              name: 'admission-nursing-notes',
+              component: () => import('@/view/pages/admission/page/NursingNote.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
           ],
         },
       ],

@@ -263,6 +263,7 @@ export default {
     endRequest(button) {
       this.removeSpinner(button);
       this.initValues();
+      this.fetchVisitsHistory();
     },
 
     createExamination() {
@@ -375,20 +376,24 @@ export default {
     },
 
     search: debounce((loading, search, vm) => {
-      if (vm.diagnosisType === 'ICD10') {
-        vm.$store
-          .dispatch('diagnosis/fetchICD10Diagnosis', {
-            search,
-          })
-          .then(() => loading(false));
-      } else {
-        vm.$store
-          .dispatch('diagnosis/fetchICPC2Diagnosis', {
-            search,
-          })
-          .then(() => loading(false));
-      }
+      const dispatchType =
+        vm.diagnosisType === 'ICD10'
+          ? 'diagnosis/fetchICD10Diagnosis'
+          : 'diagnosis/fetchICPC2Diagnosis';
+      vm.$store
+        .dispatch(dispatchType, {
+          search,
+        })
+        .then(() => loading(false));
     }, 500),
+
+    fetchVisitsHistory() {
+      this.$store.dispatch('consultation/fetchVisitsHistory', {
+        currentPage: this.currentPage,
+        itemsPerPage: this.itemsPerPage,
+        visitId: this.$route.params.id,
+      });
+    },
   },
 };
 </script>

@@ -247,6 +247,7 @@ export default {
         'admission-iocharts',
         'admission-treatments',
         'admission-additional-prescriptions',
+        'admission-nursing-notes',
       ];
       return pagesToDisplay.includes(this.$route.name);
     },

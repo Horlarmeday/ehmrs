@@ -19,7 +19,7 @@ import Vitals from '../components/observations/Vitals.vue';
 
 const TabMapping = {
   vitals: Vitals,
-  history: Examination,
+  examination: Examination,
 };
 
 export default {
@@ -40,7 +40,7 @@ export default {
       if (storedTab && TabMapping[storedTab]) {
         this.activeTab = TabMapping[storedTab];
       } else {
-        this.activeTab = TabMapping['history'];
+        this.activeTab = TabMapping['examination'];
       }
     },
   },
