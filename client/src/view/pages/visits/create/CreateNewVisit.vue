@@ -119,6 +119,7 @@
             v-model="priority"
             v-validate="'required'"
             data-vv-validate-on="blur"
+            name="priority"
           >
             <option :value="type" v-for="(priority, i) in priorities" :key="i">{{
               priority
@@ -168,8 +169,8 @@ export default {
       professionals: null,
       department: '',
       type: '',
-      date_of_visit: '',
-      time_of_visit: '',
+      date_of_visit: new Date(),
+      time_of_visit: new Date().toLocaleTimeString(),
       service_id: '',
       priority: '',
       currentPage: 1,

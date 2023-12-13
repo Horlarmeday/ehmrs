@@ -7,7 +7,10 @@
             <li class="nav-item mr-3" v-for="(tab, index) in tabs" :key="index">
               <a
                 class="nav-link text-dark py-4 px-6"
-                :class="{ active: tabIndex === index, disabled: tabIndex === index }"
+                :class="{
+                  active: tabIndex === index,
+                  disabled: tabIndex === index || isEmptySummary,
+                }"
                 @click="setActiveTab($event, tab.component)"
                 :data-tab="index"
                 data-toggle="tab"
@@ -25,7 +28,7 @@
       </div>
     </div>
     <page-skeleton v-if="loading" title="Consultation" :times="6" />
-    <component :is="activeComponent" />
+    <component :is="activeComponent" :isEmptySummary="isEmptySummary" />
   </div>
 </template>
 
@@ -40,6 +43,7 @@ import PulseIcons from '@/view/pages/consultation/components/PulseIcons.vue';
 import PageSkeleton from '@/utils/PageSkeleton.vue';
 import History from '@/view/pages/consultation/tabs/History.vue';
 import Surgery from '@/view/pages/consultation/tabs/Surgery.vue';
+import { isEmpty } from '@/common/common';
 
 const ComponentMapping = {
   observations: Observations,
@@ -96,6 +100,24 @@ export default {
       ],
     };
   },
+  computed: {
+    summaries() {
+      return this.$store.state.consultation.histories;
+    },
+    isEmptySummary() {
+      return this.summaries.every(
+        summary =>
+          isEmpty(summary.drugs) &&
+          isEmpty(summary.tests) &&
+          isEmpty(summary.investigations) &&
+          isEmpty(summary.items) &&
+          isEmpty(summary.diagnoses) &&
+          isEmpty(summary.triages) &&
+          isEmpty(summary.observations.histories) &&
+          isEmpty(summary.observations.complaints)
+      );
+    },
+  },
   methods: {
     /**
      * Set current active on click
@@ -150,6 +172,14 @@ export default {
         this.loading = false;
       }
     },
+
+    fetchVisitsHistory() {
+      this.$store.dispatch('consultation/fetchVisitsHistory', {
+        currentPage: this.currentPage,
+        itemsPerPage: this.itemsPerPage,
+        visitId: this.$route.params.id,
+      });
+    },
   },
   created() {
     this.loading = true;
@@ -158,6 +188,7 @@ export default {
       const res = response.data.data;
       this.$store.dispatch('patient/setCurrentPatient', { ...res.patient, ...res.insurance });
     });
+    this.fetchVisitsHistory();
   },
 };
 </script>

@@ -7,9 +7,6 @@
       </h3>
     </div>
     <div class="card-body">
-      <div class="p-3">
-        <button @click="addMoreRequest" class="btn btn-primary btn-md">Add</button>
-      </div>
       <div v-for="(item, i) in itemsToRequest" :key="i">
         <div class="form-group row">
           <div class="col-lg-4">
@@ -58,6 +55,17 @@
           </div>
           <div class="col-lg-1">
             <br />
+            <a
+              title="Add more"
+              v-b-tooltip.hover
+              href="javascript:"
+              data-repeater-delete=""
+              class="btn font-weight-bold btn-primary btn-icon mr-2"
+              v-if="i === 0"
+              @click="addMoreRequest"
+            >
+              <i class="far fa-plus-square"></i>
+            </a>
             <a
               href="javascript:"
               data-repeater-delete=""

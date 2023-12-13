@@ -117,7 +117,7 @@ export default {
       return this.admissions.length;
     },
     filter() {
-      return this.$route.query.gender || null;
+      return this.$route.query.occupantType || null;
     },
   },
   methods: {
@@ -157,7 +157,7 @@ export default {
           itemsPerPage: vm.$route.query.itemsPerPage || vm.itemsPerPage,
           search,
           category: this.category,
-          ...(this.filter && { filter: { gender: this.filter } }),
+          ...(this.filter && { filter: { occupant_type: this.filter } }),
         })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));
@@ -202,7 +202,7 @@ export default {
         itemsPerPage,
         ...(search && { search }),
         ...(start && end && { start, end }),
-        ...(this.filter && { filter: { gender: this.filter } }),
+        ...(this.filter && { filter: { occupant_type: this.filter } }),
       });
     },
   },
