@@ -28,3 +28,16 @@ export class StaffQueryParam {
   pageLimit?: number;
   search?: string;
 }
+
+export type JwtTokenType = {
+  sub: number;
+  firstname: string;
+  lastname: string;
+  fullname: string;
+  role: string;
+  sub_role: string;
+  username: string;
+  email: string;
+  photo: string;
+  department: string;
+};
