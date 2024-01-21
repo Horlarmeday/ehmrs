@@ -3,12 +3,12 @@
   <div class="card card-custom gutter-b">
     <div class="card-header border-0 py-5">
       <h3 class="card-title align-items-start flex-column">
-        <span class="card-label font-weight-bolder text-dark">Ante-Natal Patients</span>
+        <span class="card-label font-weight-bolder text-dark">Immunization Patients</span>
       </h3>
       <div class="card-toolbar">
         <router-link
           v-if="allowedRoles.includes(currentUser.role)"
-          to="/program/ante-natal/enrol"
+          to="/program/immunization/enrol"
           class="btn btn-success font-weight-bolder font-size-sm"
         >
           <add-icon /> Enrol Patient
@@ -28,7 +28,7 @@
             <tr class="text-left">
               <th class="pr-0" style="width: 150px">Patient ID</th>
               <th style="width: 250px">Patient Name</th>
-              <th style="width: 150px">Antenatal No.</th>
+              <th style="width: 150px">Immunization No.</th>
               <th style="width: 150px">Status</th>
               <th style="min-width: 200px">Date Created</th>
               <th style="min-width: 150px">Created By</th>
@@ -56,16 +56,13 @@
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ account.antenatal_number }}
+                  {{ account.immunization_number }}
                 </span>
               </td>
               <td>
-                <span
-                  :class="getStatusColor(account.account_status)"
-                  class="label label-dot mr-2"
-                ></span>
-                <span :class="getTextColor(account.account_status)" class="font-weight-bold">{{
-                  account.account_status
+                <span :class="getStatusColor(account.status)" class="label label-dot mr-2"></span>
+                <span :class="getTextColor(account.status)" class="font-weight-bold">{{
+                  account.status
                 }}</span>
               </td>
               <td>
@@ -81,7 +78,7 @@
               </td>
               <td class="pr-0 text-right">
                 <router-link
-                  :to="`/program/ante-natal/profile/${account.id}`"
+                  :to="`/program/immunization/profile/${account.id}`"
                   class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
                 >
                   <arrow-right-icon />
@@ -129,13 +126,13 @@ export default {
   },
   computed: {
     accounts() {
-      return this.$store.state.antenatal.antenatalAccounts;
+      return this.$store.state.immunization.immunizations;
     },
     queriedItems() {
-      return this.$store.state.antenatal.total || 0;
+      return this.$store.state.immunization.total || 0;
     },
     pages() {
-      return this.$store.state.antenatal.pages;
+      return this.$store.state.immunization.pages;
     },
     perPage() {
       return this.accounts.length;
@@ -143,7 +140,7 @@ export default {
   },
   methods: {
     handlePageChange() {
-      this.$store.dispatch('antenatal/fetchAntenatalAccounts', {
+      this.$store.dispatch('immunization/fetchImmunizationAccounts', {
         currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         search: this.$route.query.search,
@@ -167,7 +164,7 @@ export default {
 
     debounceSearch: debounce((search, vm, spinDiv) => {
       vm.$store
-        .dispatch('antenatal/fetchAntenatalAccounts', {
+        .dispatch('immunization/fetchImmunizationAccounts', {
           currentPage: 1,
           itemsPerPage: vm.itemsPerPage,
           search,
@@ -177,21 +174,21 @@ export default {
     }, 500),
 
     getStatusColor(status) {
-      if (status === 'ACTIVE') return 'label-success';
+      if (status === 'ONGOING') return 'label-success';
       if (status === 'COMPLETED') return 'label-info';
       if (status === 'DISCONTINUED') return 'label-danger';
       return 'label-warning';
     },
 
     getTextColor(status) {
-      if (status === 'ACTIVE') return 'text-success';
+      if (status === 'ONGOING') return 'text-success';
       if (status === 'COMPLETED') return 'text-info';
       if (status === 'DISCONTINUED') return 'text-danger';
       return 'text-warning';
     },
   },
   created() {
-    this.$store.dispatch('antenatal/fetchAntenatalAccounts', {
+    this.$store.dispatch('immunization/fetchImmunizationAccounts', {
       currentPage: this.$route.query.currentPage || this.currentPage,
       itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
     });

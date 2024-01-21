@@ -3,13 +3,18 @@
     <div class="d-flex">
       <!--begin: Pic-->
       <div class="flex-shrink-0 mr-7 mt-lg-0 mt-3">
-        <div class="symbol symbol-50 symbol-lg-120">
-          <img v-if="patient.photo" :src="`/static/images/${patient.photo}`" alt="image" />
-          <img v-else src="/media/users/300_25.jpg" alt="image" />
-        </div>
-
-        <div class="symbol symbol-50 symbol-lg-120 symbol-primary d-none">
-          <span class="font-size-h3 symbol-label font-weight-boldest">JM</span>
+        <div class="symbol symbol-lg-60 symbol-circle">
+          <img
+            v-if="!imageError"
+            alt="Pic"
+            :src="imageUrl(patient.photo)"
+            @load="handleImageLoad"
+            @error="handleImageError"
+          />
+          <span v-else class="symbol-label font-size-h4">
+            {{ patient?.firstname?.charAt(0)?.toUpperCase() }}
+            {{ patient?.lastname?.charAt(0)?.toUpperCase() }}
+          </span>
         </div>
       </div>
       <!--end::Pic-->
@@ -55,6 +60,13 @@
                 ><i class="flaticon-bus-stop mr-1 font-size-lg icon-md"></i> Address:
                 <span class="font-weight-bold text-dark-50 ml-3">{{ patient.address }}</span></span
               >
+              <span class="mr-3" style="border: 1px solid gainsboro; height: 25px"></span>
+              <span class="font-weight-bold text-dark-75 mr-5"
+                ><i class="flaticon-user mr-1 font-size-lg icon-md"></i> Age:
+                <span class="font-weight-bold text-dark-50 ml-3"
+                  >{{ calculateAge(patient.date_of_birth) }} years old</span
+                ></span
+              >
             </div>
           </div>
         </div>
@@ -66,12 +78,29 @@
 </template>
 
 <script>
+import { calculateAge } from '@/common/common';
+
 export default {
+  data: () => ({
+    imageError: false,
+  }),
   props: {
     patient: {
       type: Object,
       required: true,
       default: () => {},
+    },
+  },
+  methods: {
+    calculateAge,
+    imageUrl(url) {
+      return `${window.location.origin}/static/images/${url}`;
+    },
+    handleImageLoad() {
+      this.imageError = false;
+    },
+    handleImageError() {
+      this.imageError = true;
     },
   },
 };

@@ -10,7 +10,9 @@
           <router-link
             v-b-tooltip:hover
             :title="route.desc"
-            :to="`${route.link}${$route.params.id}${route.query ? `?patient=${patient.fullname}`: ''}`"
+            :to="
+              `${route.link}${$route.params.id}${route.query ? `?patient=${patient.fullname}` : ''}`
+            "
             class="btn btn-icon pulse mr-5"
             :class="`btn-light-${route.status} pulse-${route.status}`"
           >
@@ -56,7 +58,7 @@
 </template>
 
 <script>
-import History from './components/History.vue';
+import History from '../components/History.vue';
 import PersonalInformation from '@/view/pages/patient/components/PersonalInformation.vue';
 export default {
   components: {
