@@ -4,15 +4,12 @@
       <div class="card-header py-5">
         <div class="card-title">
           <span class="card-label font-weight-bolder text-dark">Order Drug</span>
-          <span v-if="showSwitch" class="switch switch-sm switch-icon float-right">
-            <label>
-              <input
-                @change="flipSwitch($event)"
-                type="checkbox"
-                :checked="switchPosition && switchSpot"
-              />
-              <span />
-            </label>
+          <span v-if="showSwitch" class="ml-5">
+            <switch-box
+              :switch-position="switchPosition"
+              :switch-spot="switchSpot"
+              @switchSpot="flipSwitch"
+            />
           </span>
         </div>
       </div>
@@ -251,10 +248,11 @@ import Datepicker from 'vuejs-datepicker';
 import vSelect from 'vue-select';
 import { debounce, isToday } from '@/common/common';
 import KTUtil from '@/assets/js/components/util';
+import SwitchBox from '@/utils/SwitchBox.vue';
 
 export default {
   name: 'MedicationSideBar',
-  components: { vSelect, Datepicker },
+  components: { SwitchBox, vSelect, Datepicker },
   computed: {
     dosageForms() {
       return this.$store.state.pharmacy.dosageForms;
@@ -318,7 +316,7 @@ export default {
 
   data: () => ({
     nhisPriceQuotaExceeded: false,
-    quotaPrice: 100, // todo: select this from settings
+    quotaPrice: 3500, // todo: select this from settings
     switchSpot: true,
     dosage_form: '',
     route: '',
@@ -369,8 +367,8 @@ export default {
       });
     },
 
-    flipSwitch(event) {
-      this.switchSpot = !!event.target.checked;
+    flipSwitch(value) {
+      this.switchSpot = value;
       this.initValues();
     },
 
@@ -464,6 +462,7 @@ export default {
         source: this.source,
         ...(this.drug_group && { drug_group: this.drug_group }),
         ...(this.source === 'Antenatal' && { ante_natal_id: this.$route.query.antenatal }),
+        ...(this.source === 'Immunization' && { immunization_id: this.$route.query.immunization }),
       };
     },
 
