@@ -55,7 +55,7 @@
             cols="30"
             rows="5"
           />
-          <span class="text-danger text-sm">{{ errors.first('continuation_sheet') }}</span>
+          <span class="text-danger text-sm">{{ errors.first('doctor_continuation_sheet') }}</span>
         </div>
       </div>
       <diagnosis
@@ -134,6 +134,11 @@ export default {
     endRequest(button) {
       this.removeSpinner(button);
       this.initValues();
+      this.$store.dispatch('antenatal/fetchObservations', {
+        currentPage: 1,
+        itemsPerPage: 10,
+        filter: { visit_id: this.$route.params.id },
+      });
     },
 
     createObservation() {
