@@ -31,10 +31,6 @@ export default {
   data: () => ({
     currentPage: 1,
     itemsPerPage: 10,
-    count: 0,
-    item: {},
-    showPopover: false,
-    popOverId: 'popover-reactive-1',
   }),
   computed: {
     drugs() {
@@ -51,15 +47,6 @@ export default {
       fetchWithItems: true,
       filter: { visit_id: this.$route.params.id },
     });
-  },
-  methods: {
-    viewPopover(item) {
-      this.item = item;
-      this.showPopover = true;
-    },
-    hidePopover() {
-      this.showPopover = false;
-    },
   },
 };
 </script>

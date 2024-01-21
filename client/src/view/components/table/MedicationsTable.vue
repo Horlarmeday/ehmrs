@@ -37,7 +37,7 @@
               <span>{{ drug.date_prescribed | dayjs('DD/MM/YYYY, h:mma') }}</span>
             </td>
             <td>
-              <span>
+              <span v-if="allowedRoles.includes(currentUser.role)">
                 <a href="#"><i class="flaticon-delete mr-2 text-danger"></i></a>
                 <a href="#"><i class="flaticon-edit-1 text-success"></i></a>
               </span>
@@ -56,6 +56,7 @@
 </template>
 <script>
 import DrugPopover from '@/view/components/popover/DrugPopover.vue';
+import { parseJwt } from '@/core/plugins/parseJwt';
 
 export default {
   name: 'MedicationsTable',
@@ -64,6 +65,8 @@ export default {
     item: {},
     showPopover: false,
     popOverId: 'popover-reactive-1',
+    currentUser: parseJwt(localStorage.getItem('user_token')),
+    allowedRoles: ['General Practitioner', 'Super Admin'],
   }),
   props: {
     drugs: {
