@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="">
+    <div class="mt-3">
       <div v-for="(item, i) in treatments" :key="i">
         <div class="d-flex justify-content-between">
           <div class="d-flex flex-column flex-root" style="flex: 2">
@@ -62,15 +62,17 @@
           </div>
         </div>
       </div>
+      <div class="col-lg-12 offset-10">
+        <button
+          class="btn btn-primary mb-3"
+          @click="submitDrugs"
+          :disabled="isDisabled || !treatments.length"
+          ref="kt_addTreatment_submit"
+        >
+          Submit
+        </button>
+      </div>
     </div>
-    <button
-      class="btn btn-primary float-right"
-      @click="submitDrugs"
-      :disabled="isDisabled || !treatments.length"
-      ref="kt_addTreatment_submit"
-    >
-      Submit
-    </button>
   </div>
 </template>
 <script>
@@ -80,16 +82,6 @@ import { debounce } from '@/common/common';
 export default {
   components: { vSelect },
   props: {
-    switchPosition: {
-      type: Boolean,
-      required: true,
-      default: false,
-    },
-    showSwitch: {
-      type: Boolean,
-      required: true,
-      default: false,
-    },
     source: {
       type: String,
       required: true,
@@ -101,7 +93,6 @@ export default {
     },
   },
   data: () => ({
-    switchSpot: true,
     isDisabled: false,
     treatments: [
       {
@@ -224,10 +215,6 @@ export default {
         .dispatch('order/orderTreatment', { data: treatments, id: this.$route.params.id })
         .then(() => this.endRequest(submitButton))
         .catch(() => this.removeSpinner(submitButton));
-    },
-
-    flipSwitch(event) {
-      this.switchSpot = !!event.target.checked;
     },
   },
 };

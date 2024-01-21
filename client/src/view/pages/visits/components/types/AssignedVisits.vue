@@ -43,7 +43,6 @@ export default {
     start: null,
     end: null,
     currentUser: '',
-    GENERAL_PRACTITIONER: 'General Practitioner',
   }),
   props: {
     url: {

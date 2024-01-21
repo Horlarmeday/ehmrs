@@ -22,7 +22,7 @@
         }"
         :queues="visits"
         @changePage="onPageChange"
-        url=""
+        :url="url"
       />
     </div>
   </div>
@@ -55,8 +55,15 @@ export default {
     perPage() {
       return this.visits.length;
     },
-    category() {
-      return this.$route.query.type || '';
+  },
+  props: {
+    url: {
+      type: String,
+      required: true,
+    },
+    filter: {
+      type: Object,
+      required: false,
     },
   },
   methods: {
@@ -64,6 +71,7 @@ export default {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
+        search: this.$route.query.search,
       });
       this.fetchQueue({
         currentPage: this.$route.query.currentPage || this.currentPage,
@@ -133,14 +141,13 @@ export default {
       });
     },
 
-    fetchQueue({ currentPage = 1, itemsPerPage = 10, search, start = null, end = null, filter }) {
+    fetchQueue({ currentPage = 1, itemsPerPage = 10, search = null, start = null, end = null }) {
       return this.$store.dispatch('visit/fetchActiveVisits', {
         currentPage,
         itemsPerPage,
-        category: this.category,
         ...(search && { search }),
         ...(start && end && { start, end }),
-        ...(filter && { filter }),
+        ...(this.filter && { filter: this.filter }),
       });
     },
   },
@@ -151,7 +158,6 @@ export default {
       search: this.$route.query.search || null,
       start: this.$route.query.startDate || null,
       end: this.$route.query.endDate || null,
-      ...(this.category && { category: this.category }),
     });
   },
 };
