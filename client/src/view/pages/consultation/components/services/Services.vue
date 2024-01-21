@@ -5,15 +5,12 @@
         <services-accordion :filter="filter" />
         <div class="card-title">
           <span class="card-label font-weight-bolder text-dark"></span>
-          <span v-if="showSwitch" class="switch switch-sm switch-icon">
-            <label>
-              <input
-                @change="flipSwitch($event)"
-                type="checkbox"
-                :checked="switchPosition && switchSpot"
-              />
-              <span />
-            </label>
+          <span v-if="showSwitch">
+            <switch-box
+              :switch-position="switchPosition"
+              :switch-spot="switchSpot"
+              @switchSpot="flipSwitch"
+            />
           </span>
           <div>
             <button
@@ -47,10 +44,11 @@
 
 <script>
 import ServicesAccordion from '@/view/components/accordion/ServicesAccordion.vue';
+import SwitchBox from '@/utils/SwitchBox.vue';
 
 export default {
   name: 'Services',
-  components: { ServicesAccordion },
+  components: { SwitchBox, ServicesAccordion },
   data() {
     return {
       checkmark: 'flaticon2-check-mark',
@@ -150,8 +148,8 @@ export default {
       this.$store.dispatch('order/emptySelectedServiceButtons');
     },
 
-    flipSwitch(event) {
-      this.switchSpot = !!event.target.checked;
+    flipSwitch(value) {
+      this.switchSpot = value;
     },
   },
 };
