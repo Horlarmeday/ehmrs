@@ -281,7 +281,7 @@ export async function getBeds() {
  * @function
  * @returns {Promise<Ward[]>} json object with wards(beds) data
  */
-export const getWardsAndBeds = (search: string) => {
+export const getWardsAndBeds = (search: string = null): Promise<Ward[]> => {
   return Ward.findAll({
     order: [['createdAt', 'DESC']],
     where: {
@@ -324,13 +324,14 @@ export async function getBedsInAWard(data: number) {
  * @returns {object} service data
  */
 export async function createService(data) {
-  const { name, price, staff_id } = data;
+  const { name, price, staff_id, type } = data;
   const count = await getNumberOfRecords(Service);
   return Service.create({
     name,
     staff_id,
     price,
     code: `S${count + 1}`,
+    type,
   });
 }
 

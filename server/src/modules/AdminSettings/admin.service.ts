@@ -25,7 +25,7 @@ import {
   updateUnit,
   updateWard,
 } from './admin.repository';
-import { Default, Department } from '../../database/models';
+import { Default, Department, Ward } from '../../database/models';
 
 class AdminService {
   /** create a department
@@ -170,13 +170,9 @@ class AdminService {
    * @param body
    * @memberOf AdminService
    */
-  static async getWardsAndBeds(body) {
+  static async getWardsAndBeds(body): Promise<Ward[]> {
     const { search } = body;
-    if (search) {
-      return getWardsAndBeds(search);
-    }
-
-    return getWardsAndBeds('');
+    return getWardsAndBeds(search);
   }
 
   /**
