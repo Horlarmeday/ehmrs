@@ -1,5 +1,5 @@
 <template>
-  <div class="card-custom card-stretch card-stretch-fourth gutter-b">
+  <div class="card-custom card-stretch card-stretch-fourth gutter-b mt-3">
     <div class="accordion accordion-solid accordion-panel accordion-svg-toggle" role="tablist">
       <div class="card">
         <div class="card-header" header-tag="header" role="tab" style="background: blue">

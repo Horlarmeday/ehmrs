@@ -1,19 +1,16 @@
 <template>
   <div class="flex-row-fluid ml-lg-8">
-    <div class="card-custom gutter-b">
+    <div class="card-custom">
       <div class="card-header">
         <investigation-accordion />
         <div class="card-title">
           <span class="card-label font-weight-bolder text-dark"></span>
-          <span v-if="showSwitch" class="switch switch-sm switch-icon float-right">
-            <label>
-              <input
-                @change="flipSwitch($event)"
-                type="checkbox"
-                :checked="switchPosition && switchSpot"
-              />
-              <span />
-            </label>
+          <span v-if="showSwitch">
+            <switch-box
+              :switch-position="switchPosition"
+              :switch-spot="switchSpot"
+              @switchSpot="flipSwitch"
+            />
           </span>
           <div>
             <button
@@ -51,10 +48,11 @@
 
 <script>
 import InvestigationAccordion from '@/view/components/accordion/InvestigationAccordion.vue';
+import SwitchBox from '@/utils/SwitchBox.vue';
 
 export default {
   name: 'Investigations',
-  components: { InvestigationAccordion },
+  components: { SwitchBox, InvestigationAccordion },
   data() {
     return {
       checkmark: 'flaticon2-check-mark',
@@ -157,8 +155,8 @@ export default {
       this.$store.dispatch('order/emptySelectedInvestigationButtons');
     },
 
-    flipSwitch(event) {
-      this.switchSpot = !!event.target.checked;
+    flipSwitch(value) {
+      this.switchSpot = value;
     },
   },
 };

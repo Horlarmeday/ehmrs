@@ -93,18 +93,16 @@
     </div>
   </div>
   <div v-else>
-    <b-progress :value="count" variant="primary" show-progress animated :max="100"></b-progress>
+    <DefaultSkeleton />
   </div>
 </template>
 
 <script>
 import { monthDiff } from '@/common/common';
+import DefaultSkeleton from '@/utils/DefaultSkeleton.vue';
 
 export default {
-  data: () => ({
-    count: 0,
-  }),
-
+  components: { DefaultSkeleton },
   computed: {
     item() {
       return this.$store.state.store.item;
@@ -112,7 +110,6 @@ export default {
   },
 
   created() {
-    this.countToHundred();
     this.$store.dispatch('store/fetchPharmacyItem', { id: this.$route.params.item });
   },
 
@@ -127,13 +124,6 @@ export default {
       const month = monthDiff(new Date(), new Date(expiryDate));
       if (month > 0 && month <= 6) return 'label label-inline label-warning';
       if (month <= 0) return 'label label-inline label-danger';
-    },
-
-    countToHundred() {
-      for (let i = 1; i <= 100; i++) {
-        this.count = i;
-        if (this.item) break;
-      }
     },
   },
 };
