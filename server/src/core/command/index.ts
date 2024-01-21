@@ -6,6 +6,7 @@ export enum JobName {
   PATIENT_HEALTH_INSURANCE = 'Create patient health insurance',
   PRINCIPAL_RELATIONSHIP = 'Update dependant relationship to principal',
   ASSIGN_ANTENATAL_NUMBER = 'Assign antenatal number',
+  ASSIGN_IMMUNIZATION_NUMBER = 'Assign immunization number',
   SEND_PATIENT_SMS = 'Registration SMS',
 }
 
