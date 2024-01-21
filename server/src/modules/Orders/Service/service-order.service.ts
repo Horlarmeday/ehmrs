@@ -2,12 +2,16 @@ import {
   getPrescribedServices,
   orderBulkService,
   prescribeService,
+  updatePrescribedService,
 } from './service-order.repository';
 import VisitService from '../../Visit/visit.service';
 import PatientService from '../../Patient/patient.service';
 import { PrescribedService } from '../../../database/models';
 import { PrescribedBulkServiceBody } from './types/service-order.types';
 import { getServicePrice } from '../../AdminSettings/admin.repository';
+import { PrescriptionType } from '../../../database/models/prescribedTest';
+import { NHISApprovalStatus } from '../../../core/helpers/general';
+import { ServiceType } from '../../../database/models/prescribedService';
 
 export class ServiceOrderService {
   /**
@@ -42,6 +46,9 @@ export class ServiceOrderService {
         visit_id,
         patient_id: visit.patient_id,
         date_requested: Date.now(),
+        ...(service.service_type === ServiceType.NHIS && {
+          nhis_status: NHISApprovalStatus.PENDING,
+        }),
       }))
     );
     return orderBulkService(bulkServices);
@@ -67,5 +74,17 @@ export class ServiceOrderService {
     }
 
     return getPrescribedServices({});
+  }
+
+  /**
+   * update a prescribed service
+   *
+   * @static
+   * @returns {json} json object with prescribed service data
+   * @param body
+   * @memberOf ServiceOrderService
+   */
+  static async updatePrescribedService(body) {
+    return updatePrescribedService(body);
   }
 }

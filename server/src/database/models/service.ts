@@ -17,6 +17,11 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 
+export enum ServiceType {
+  PRIMARY = 'Primary',
+  SECONDARY = 'Secondary',
+}
+
 @Table({ timestamps: true })
 export class Service extends Model {
   @PrimaryKey
@@ -55,6 +60,18 @@ export class Service extends Model {
     },
   })
   code: string;
+
+  @Column({
+    type: DataType.ENUM(ServiceType.PRIMARY, ServiceType.SECONDARY),
+    defaultValue: ServiceType.PRIMARY,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'type of service is required',
+      },
+    },
+  })
+  type: ServiceType;
 
   @ForeignKey(() => Staff)
   @Column({
