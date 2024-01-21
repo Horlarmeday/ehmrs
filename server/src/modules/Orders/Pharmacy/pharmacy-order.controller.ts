@@ -1,7 +1,7 @@
 import { successResponse, SuccessResponse } from '../../../common/responses/success-responses';
 import { errorResponse } from '../../../common/responses/error-responses';
 import { StatusCodes } from '../../../core/helpers/helper';
-import { DATA_SAVED } from '../../AdminSettings/messages/response-messages';
+import { DATA_SAVED, DATA_UPDATED } from '../../AdminSettings/messages/response-messages';
 import {
   validateCreateTreatmentData,
   validateDrugPrescription,
@@ -10,6 +10,8 @@ import {
 import PharmacyOrderService from './pharmacy-order.service';
 import { SUCCESS } from '../../../core/constants';
 import { NextFunction, Request, Response } from 'express';
+import { isEmpty } from 'lodash';
+import { EMPTY_REQUEST_BODY } from './messages/response-messages';
 
 export class PharmacyOrderController {
   /**
@@ -83,6 +85,41 @@ export class PharmacyOrderController {
         res,
         data: tests,
         message: DATA_SAVED,
+        httpCode: StatusCodes.CREATED,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * update a prescribed drug
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {SuccessResponse} json object with status, prescribed drug data
+   */
+  static async updatePrescribedDrug(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    const empty = isEmpty(req.body);
+    if (empty)
+      return errorResponse({
+        res,
+        message: EMPTY_REQUEST_BODY,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+    try {
+      const drug = await PharmacyOrderService.updatePrescribedDrug(req.body);
+
+      return successResponse({
+        res,
+        data: drug,
+        message: DATA_UPDATED,
         httpCode: StatusCodes.CREATED,
       });
     } catch (e) {

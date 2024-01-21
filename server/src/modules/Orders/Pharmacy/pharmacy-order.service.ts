@@ -6,6 +6,7 @@ import {
   getPrescribedDrugs,
   prescribeDrug,
   syringeNeedleCalculation,
+  updatePrescribedDrug,
 } from './pharmacy-order.repository';
 import {
   PatientTreatmentBody,
@@ -35,6 +36,7 @@ import { INJECTION_SYRINGES_NOT_FOUND } from './messages/response-messages';
 import { getInventoryItemQuery } from '../../Inventory/inventory.repository';
 import { getVisitById } from '../../Visit/visit.repository';
 import { getOneAdmission } from '../../Admission/admission.repository';
+import { NHISApprovalStatus } from '../../../core/helpers/general';
 
 class PharmacyOrderService {
   /**
@@ -70,6 +72,9 @@ class PharmacyOrderService {
       examiner: staff_id,
       total_price: this.getTotalPrice(totalPrice, drugPrice, drug_type),
       drug_prescription_id: drugPrescription.id,
+      ...(drug_type === DrugType.NHIS && {
+        nhis_status: NHISApprovalStatus.PENDING,
+      }),
     });
     if (/\binjection\b/i.test(dosage_form_name)) {
       const injectionDefaults = await getOneDefault({ type: DefaultType.INJECTION_ITEMS });
@@ -127,6 +132,18 @@ class PharmacyOrderService {
   }
 
   /**
+   * update prescribed drug
+   *
+   * @static
+   * @returns {Promise<PrescribedDrug>} json object with prescribed drug data
+   * @param body
+   * @memberOf PharmacyOrderService
+   */
+  static async updatePrescribedDrug(body: Partial<PrescribedDrug>): Promise<PrescribedDrug> {
+    return updatePrescribedDrug(body);
+  }
+
+  /**
    * get prescribed drugs
    *
    * @static
@@ -145,15 +162,11 @@ class PharmacyOrderService {
       return { prescribedDrugs, additionalItems };
     }
 
-    if (filter) {
+    if (Object.values(body).length) {
       return getPrescribedDrugs({ currentPage, pageLimit, filter });
     }
 
-    if (Object.values(body).length) {
-      return getPrescribedDrugs({ currentPage, pageLimit });
-    }
-
-    return getPrescribedDrugs({});
+    return getPrescribedDrugs({ filter });
   }
 
   /**

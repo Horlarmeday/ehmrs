@@ -25,6 +25,9 @@ import { PatientStatus } from '../../../database/models/patient';
 import { getOneDefault } from '../../AdminSettings/admin.repository';
 import { DefaultType } from '../../../database/models/default';
 import { staffAttributes } from '../../Antenatal/antenatal.repository';
+import { BadException } from '../../../common/util/api-error';
+import { StatusCodes } from '../../../core/helpers/helper';
+import { ERROR_UPDATING_DRUG } from './messages/response-messages';
 
 type PrescribeDrugType = PrescribedDrugBody & { drug_prescription_id: number };
 const PRESCRIPTION_FREQUENCY = {
@@ -74,6 +77,7 @@ export async function prescribeDrug(data: PrescribeDrugType): Promise<Prescribed
     source,
     ante_natal_id,
     unit_id,
+    immunization_id,
   } = data || {};
   return PrescribedDrug.create({
     drug_id,
@@ -100,6 +104,7 @@ export async function prescribeDrug(data: PrescribeDrugType): Promise<Prescribed
     source,
     ante_natal_id,
     unit_id,
+    immunization_id,
   });
 }
 
@@ -115,7 +120,7 @@ export const getPrescribedDrugs = ({ currentPage = 1, pageLimit = 10, filter = n
     paginate: +pageLimit,
     order: [['date_prescribed', 'DESC']],
     where: {
-      ...(filter && { ...JSON.parse(filter) }),
+      ...(filter && JSON.parse(filter)),
     },
     include: [
       {
@@ -126,7 +131,7 @@ export const getPrescribedDrugs = ({ currentPage = 1, pageLimit = 10, filter = n
       {
         model: Staff,
         as: 'requester',
-        attributes: ['firstname', 'lastname'],
+        attributes: staffAttributes,
       },
       {
         model: DosageForm,
@@ -142,6 +147,19 @@ export const getPrescribedDrugs = ({ currentPage = 1, pageLimit = 10, filter = n
       },
     ],
   });
+};
+
+/**
+ * update prescribed drug
+ * @param data
+ */
+export const updatePrescribedDrug = async (data: Partial<PrescribedDrug>) => {
+  try {
+    await PrescribedDrug.update({ ...data }, { where: { id: data.id } });
+  } catch (e) {
+    throw new BadException('Error', StatusCodes.SERVER_ERROR, ERROR_UPDATING_DRUG);
+  }
+  return getOnePrescribedDrug({ id: data.id });
 };
 
 /**
@@ -171,7 +189,7 @@ export const getPrescribedAdditionalItems = ({
       {
         model: Staff,
         as: 'requester',
-        attributes: ['firstname', 'lastname'],
+        attributes: staffAttributes,
       },
       {
         model: Unit,
@@ -241,7 +259,33 @@ export const bulkCreateAdditionalItems = async (data): Promise<PrescribedAdditio
 export const getOnePrescribedDrug = async (
   query: WhereOptions<PrescribedDrug>
 ): Promise<PrescribedDrug> => {
-  return await PrescribedDrug.findOne({ where: { ...query } });
+  return await PrescribedDrug.findOne({
+    where: { ...query },
+    include: [
+      {
+        model: Drug,
+        attributes: ['name'],
+        order: [['name', 'ASC']],
+      },
+      {
+        model: Staff,
+        as: 'requester',
+        attributes: staffAttributes,
+      },
+      {
+        model: DosageForm,
+        attributes: ['name'],
+      },
+      {
+        model: Measurement,
+        attributes: ['name'],
+      },
+      {
+        model: RoutesOfAdministration,
+        attributes: ['name'],
+      },
+    ],
+  });
 };
 
 /**
@@ -263,7 +307,7 @@ export const getPrescriptionDrugs = async (
       {
         model: Staff,
         as: 'requester',
-        attributes: ['firstname', 'lastname'],
+        attributes: staffAttributes,
       },
       {
         model: DosageForm,

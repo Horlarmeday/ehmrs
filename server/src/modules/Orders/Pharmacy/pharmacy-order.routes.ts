@@ -9,4 +9,5 @@ router.post('/treatment/create/:id', verify, PharmacyOrderController.createTreat
 router.get('/get', verify, PharmacyOrderController.getPrescribedDrugs);
 router.get('/additional-items/get', verify, PharmacyOrderController.getPrescribedAdditionalItems);
 router.get('/treatment/get', verify, PharmacyOrderController.getPatientTreatmentData);
+router.put('/update', verify, PharmacyOrderController.updatePrescribedDrug);
 export default router;
