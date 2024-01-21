@@ -2,12 +2,15 @@ import {
   Antenatal,
   AntenatalObservation,
   AntenatalTriage,
+  ClinicalNote,
+  Delivery,
   Patient,
+  PostNatal,
   PreviousPregnancy,
   Staff,
+  Visit,
 } from '../../database/models';
-import { Op, WhereOptions } from 'sequelize';
-import { ClinicalNote } from '../../database/models';
+import { Op, Optional, WhereOptions } from 'sequelize';
 import { getVisitsQuery, patientAttributes } from '../Visit/visit.repository';
 import { getPrescriptionTests } from '../Orders/Laboratory/lab-order.repository';
 import {
@@ -17,6 +20,10 @@ import {
 import { getPrescriptionInvestigations } from '../Orders/Radiology/radiology-order.repository';
 import { paginate } from '../../core/helpers/helper';
 import { getPatientDiagnoses } from '../Consultation/consultation.repository';
+import sequelizeConnection from '../../database/config/config';
+import { AccountStatus } from '../../database/models/antenatal';
+import { CreatePostNatal } from './types/antenatal.types';
+import { VisitStatus } from '../../database/models/visit';
 
 export const staffAttributes = ['fullname', 'firstname', 'lastname'];
 
@@ -48,6 +55,10 @@ export const getOneAntenatalAccount = async (query: WhereOptions<Antenatal>) => 
           'gender',
           'hospital_id',
           'has_insurance',
+          'occupation',
+          'next_of_kin_name',
+          'next_of_kin_phone',
+          'next_of_kin_address',
         ],
       },
     ],
@@ -135,6 +146,17 @@ export const createPreviousPregnancies = async data => {
   return PreviousPregnancy.bulkCreate(data);
 };
 
+/**
+ * Get patient previous pregnancies
+ * @param query
+ */
+export const getPreviousPregnancies = async (query: WhereOptions<PreviousPregnancy>) => {
+  return PreviousPregnancy.findAll({
+    where: { ...query },
+    include: [{ model: Staff, attributes: staffAttributes }],
+  });
+};
+
 /****************
  * TRIAGE
  ***************/
@@ -171,7 +193,7 @@ export const getAntenatalTriages = async ({
     page: +currentPage,
     paginate: +pageLimit,
     where: {
-      ...(filter && { ...JSON.parse(filter) }),
+      ...(filter && JSON.parse(filter)),
     },
     order: [['createdAt', 'DESC']],
   });
@@ -364,16 +386,81 @@ export const getVisitsSummary = async (currentPage = 1, pageLimit = 5, antenatal
     {
       ante_natal_id: antenatalId,
     },
-    ['id', 'date_visit_start', 'date_visit_ended', 'patient_id']
+    ['id', 'date_visit_start', 'date_visit_ended', 'patient_id', 'category', 'status']
   );
   const summary = await Promise.all(
-    visits.map(async ({ id, date_visit_start, date_visit_ended, patient_id }) => ({
-      id,
-      date_visit_start,
-      date_visit_ended,
-      patient_id,
-      ...(await getPrescriptions(id)),
-    }))
+    visits.map(
+      async ({ id, date_visit_start, date_visit_ended, patient_id, category, status }) => ({
+        id,
+        date_visit_start,
+        date_visit_ended,
+        patient_id,
+        category,
+        status,
+        ...(await getPrescriptions(id)),
+      })
+    )
   );
   return paginate({ rows: summary, count }, currentPage, limit);
+};
+
+/***************************
+ * DELIVERY INFO
+ ***************************/
+/**
+ * Create a patient delivery information
+ * @param data
+ */
+export const createDeliveryInfo = async data => {
+  return Delivery.create({ ...data });
+};
+
+/**
+ * get a patient delivery information
+ * @param query
+ */
+export const getDeliveryInfo = async (query: WhereOptions<Delivery>) => {
+  return Delivery.findAll({
+    where: { ...query },
+    include: [{ model: Staff, attributes: staffAttributes }],
+  });
+};
+
+/***************************
+ * POST NATAL
+ ***************************/
+/**
+ * Create a patient postnatal information
+ * @param data
+ * @param antenatalId
+ */
+export const createPostnatal = async (
+  data: Optional<CreatePostNatal, keyof CreatePostNatal>,
+  antenatalId: number
+) => {
+  return await sequelizeConnection.transaction(async t => {
+    const postnatal = await PostNatal.create({ ...data }, { transaction: t });
+
+    await Antenatal.update(
+      { account_status: AccountStatus.COMPLETED, end_date: Date.now() },
+      { where: { id: antenatalId }, transaction: t }
+    );
+
+    await Visit.update(
+      { status: VisitStatus.ENDED, date_visit_ended: Date.now() },
+      { where: { id: data.visit_id }, transaction: t }
+    );
+    return postnatal;
+  });
+};
+
+/**
+ * get a patient delivery information
+ * @param query
+ */
+export const getPostnatalInfo = async (query: WhereOptions<PostNatal>) => {
+  return PostNatal.findAll({
+    where: { ...query },
+    include: [{ model: Staff, attributes: staffAttributes }],
+  });
 };

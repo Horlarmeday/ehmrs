@@ -2,7 +2,9 @@ import {
   CreateAntenatal,
   CreateAntenatalTriage,
   CreateClinicalNote,
+  CreateDeliveryInfo,
   CreateObservation,
+  CreatePostNatal,
   UpdateAntenatalAccount,
 } from './types/antenatal.types';
 import { getPatientById } from '../Patient/patient.repository';
@@ -24,6 +26,11 @@ import {
   updateObservation,
   getObservations,
   getVisitsSummary,
+  createDeliveryInfo,
+  getDeliveryInfo,
+  createPostnatal,
+  getPostnatalInfo,
+  getPreviousPregnancies,
 } from './antenatal.repository';
 import { AccountStatus } from '../../database/models/antenatal';
 import { prescribeService } from '../Orders/Service/service-order.repository';
@@ -80,11 +87,11 @@ export class AntenatalService {
     const { currentPage, pageLimit, search } = body;
 
     if (search) {
-      return getAntenatalPatients({ currentPage: +currentPage, pageLimit: +pageLimit, search });
+      return getAntenatalPatients({ currentPage, pageLimit, search });
     }
 
     if (Object.keys(body).length) {
-      return getAntenatalPatients({ currentPage: +currentPage, pageLimit: +pageLimit });
+      return getAntenatalPatients({ currentPage, pageLimit });
     }
 
     return getAntenatalPatients({});
@@ -132,6 +139,15 @@ export class AntenatalService {
       await createPreviousPregnancies(prevPregnancies);
     }
     return antenatal;
+  }
+
+  /**
+   * Get antenatal previous pregnancies
+   * @memberof AntenatalService
+   * @param antenatalId
+   */
+  static async getPreviousPregnancies(antenatalId: number) {
+    return getPreviousPregnancies({ ante_natal_id: antenatalId });
   }
 
   /**
@@ -299,6 +315,61 @@ export class AntenatalService {
     }
 
     return getVisitsSummary(1, 5, antenatalId);
+  }
+
+  /**
+   * Create patient delivery information
+   * @memberof AntenatalService
+   * @param body
+   * @param antenatalId
+   * @param staff_id
+   */
+  static async createDeliveryInfo(body: CreateDeliveryInfo, antenatalId: number, staff_id: number) {
+    const antenatal = await getOneAntenatalAccount({ id: antenatalId });
+    return await createDeliveryInfo({
+      ...body,
+      patient_id: antenatal.patient_id,
+      ante_natal_id: antenatal.id,
+      staff_id,
+    });
+  }
+
+  /**
+   * Get patient delivery information
+   * @memberof AntenatalService
+   * @param antenatalId
+   */
+  static async getDeliveryInfo(antenatalId: number) {
+    return getDeliveryInfo({ ante_natal_id: antenatalId });
+  }
+
+  /**
+   * Create patient postnatal information
+   * @memberof AntenatalService
+   * @param body
+   * @param antenatalId
+   * @param staff_id
+   */
+  static async createPostnatal(body: CreatePostNatal, antenatalId: number, staff_id: number) {
+    const antenatal = await getOneAntenatalAccount({ id: antenatalId });
+    return await createPostnatal(
+      {
+        ...body,
+        patient_id: antenatal.patient_id,
+        ante_natal_id: antenatal.id,
+        staff_id,
+      },
+      antenatalId
+    );
+  }
+
+  /**
+   * Get patient postnatal information
+   * @memberof AntenatalService
+   * @param antenatalId
+   */
+  static async getPostnatal(antenatalId: number) {
+    return getPostnatalInfo({ ante_natal_id: antenatalId });
   }
 
   private static async antenatalValidations(patient_id: number) {

@@ -70,3 +70,52 @@ export class CreateObservation {
   diagnosis: Array<Diagnosis>;
   observation_id?: number;
 }
+
+export type CreateDeliveryInfo = {
+  mode_of_delivery: string;
+  date_of_delivery: Date;
+  blood_loss_quantity: string;
+  duration: string;
+  condition_of_mother: string;
+  condition_of_baby: string;
+  apgar_one_min: string;
+  apgar_five_min: string;
+  apgar_ten_min: string;
+  baby_immunization_date: Date;
+  bcg: string;
+  opvo: string;
+  hbv: string;
+  comments: string;
+  nature_of_liquor: string;
+  nevirapine: string;
+  vitaminA_IU: string;
+  birth_weight: string;
+  sex: string;
+  time_surgery_ended: Date;
+};
+
+export type CreatePostNatal = {
+  temperature: string;
+  weight: number;
+  height: number;
+  pulse: string;
+  respiration: string;
+  lochia: string;
+  feeding: string;
+  baby_condition: string;
+  general_condition: string;
+  blood_pressure: string;
+  involution_of_uterus: string;
+  episotomy: string;
+  pap_smear_date: Date;
+  result: string;
+  pcv: string;
+  comments: string;
+  reflexes: string;
+  pelvic_examination: string;
+  umbilical_cord: string;
+  patient_id?: number;
+  ante_natal_id?: number;
+  staff_id?: number;
+  visit_id?: number;
+};
