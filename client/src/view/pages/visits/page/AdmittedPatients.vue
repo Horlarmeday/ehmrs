@@ -119,6 +119,9 @@ export default {
     filter() {
       return this.$route.query.occupantType || null;
     },
+    visitType() {
+      return this.$route.query.visitType || null;
+    },
   },
   methods: {
     handlePageChange() {
@@ -156,8 +159,8 @@ export default {
           currentPage: 1,
           itemsPerPage: vm.$route.query.itemsPerPage || vm.itemsPerPage,
           search,
-          category: this.category,
           ...(this.filter && { filter: { occupant_type: this.filter } }),
+          ...(this.visitType && { visitType: { maternity: true } }),
         })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));
@@ -203,6 +206,7 @@ export default {
         ...(search && { search }),
         ...(start && end && { start, end }),
         ...(this.filter && { filter: { occupant_type: this.filter } }),
+        ...(this.visitType && { visitType: { maternity: true } }),
       });
     },
   },

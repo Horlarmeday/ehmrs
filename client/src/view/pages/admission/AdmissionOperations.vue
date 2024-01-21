@@ -58,11 +58,6 @@ export default {
         link: '/admission/careplans/',
         desc: 'Patient care plan',
       },
-      // {
-      //   name: 'Ward Round',
-      //   link: '/admission/wardround/',
-      //   desc: 'Ward round details',
-      // },
       {
         name: 'IO Chart',
         link: '/admission/iocharts/',
