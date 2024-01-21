@@ -65,6 +65,20 @@ export default {
     });
   },
 
+  fetchPreviousPregnancies({ commit }, antenatalId) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/antenatal/previous-pregnancies/${antenatalId}`)
+        .then(response => {
+          commit('SET_PREVIOUS_PREGNANCIES', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
   /**
    * TRIAGE
    */
@@ -227,6 +241,68 @@ export default {
           commit('SET_VISITS_SUMMARY', response.data.data.docs);
           commit('SET_VISITS_SUMMARY_TOTAL', response.data.data.total);
           commit('SET_VISITS_SUMMARY_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * DELIVERY INFO
+   */
+  createDeliveryInfo({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/antenatal/delivery-info/${payload.id}`, payload.data)
+        .then(response => {
+          commit('CREATE_DELIVERY_INFO', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchDeliveryInfo({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/antenatal/delivery-info/${payload.id}`)
+        .then(response => {
+          commit('SET_DELIVERY_INFO', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * POST NATAL INFO
+   */
+  createPostNatalInfo({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/antenatal/postnatal-info/${payload.id}`, payload.data)
+        .then(response => {
+          commit('CREATE_POSTNATAL_INFO', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchPostNatalInfo({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/antenatal/postnatal-info/${payload.id}`)
+        .then(response => {
+          commit('SET_POSTNATAL_INFO', response.data.data);
           resolve(response);
         })
         .catch(error => {

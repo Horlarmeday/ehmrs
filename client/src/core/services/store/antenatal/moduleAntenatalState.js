@@ -1,6 +1,7 @@
 export default {
   antenatal: null,
   antenatalAccounts: [],
+  previousPregnancies: [],
   total: null,
   pages: 0,
 
@@ -23,4 +24,7 @@ export default {
   summaries: [],
   totalSummaries: 0,
   totalSummaryPages: 0,
+
+  deliveries: [],
+  postNatals: [],
 };
