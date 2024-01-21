@@ -1,6 +1,6 @@
 export default [
   {
-    url: '/visit/admitted-patients?occupantType=Female',
+    url: '/visit/admitted-patients?visitType=Maternity',
     icon: 'fas fa-bed',
     name: 'Admitted Patients',
   },

@@ -10,9 +10,9 @@ export default [
     name: 'Visits',
   },
   {
-    url: '/patient/choose-patient-type',
+    url: '/patient/patient-operations',
     icon: 'flaticon2-user',
-    name: 'Register Patient',
+    name: 'Patients Operations',
   },
   {
     url: '/appointment/active',

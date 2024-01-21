@@ -1,13 +1,13 @@
 export default [
   {
-    url: '/visit/admitted-patients?occupantType=Female',
-    icon: 'fas fa-bed',
-    name: 'Admitted Patients',
+    url: '/visit/nhis-active-visits',
+    icon: 'fas fa-tablets',
+    name: 'Prescriptions',
   },
   {
-    url: '/admission/discharge-patients',
-    icon: 'fas far fa-smile',
-    name: 'Discharge Records',
+    url: '/patient/health-insurance',
+    icon: 'flaticon-users-1',
+    name: 'Patients',
   },
   {
     url: '/reports/active',
