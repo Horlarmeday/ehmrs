@@ -6,11 +6,12 @@ import {
   createObservation,
   getConsultationSummary,
   getVisitsHistory,
+  getDiagnosesAndFindings,
 } from './consultation.repository';
 import { checkValueExists } from '../../core/helpers/helper';
 import VisitService from '../Visit/visit.service';
 import { Observation } from './interface/consultation.interface';
-import { History } from '../../database/models';
+import { AntenatalObservation, Complaint, Diagnosis, History } from '../../database/models';
 import { getVisitById } from '../Visit/visit.repository';
 
 class ConsultationService {
@@ -104,6 +105,23 @@ class ConsultationService {
     }
 
     return getVisitsHistory(1, 5, visit.patient_id);
+  }
+
+  /**
+   * get patient consultation diagnoses and findings
+   *
+   * @static
+   * @returns {json} json object with consultation summary data
+   * @param body
+   * @memberOf ConsultationService
+   */
+  static async getDiagnosesAndFindings(
+    body
+  ): Promise<{
+    diagnoses: Diagnosis[];
+    findings: { histories: History[]; complaints: Complaint[] } | AntenatalObservation[];
+  }> {
+    return getDiagnosesAndFindings(body);
   }
 }
 
