@@ -1,5 +1,5 @@
 import { SuccessResponse, successResponse } from '../../common/responses/success-responses';
-import { DATA_SAVED } from '../AdminSettings/messages/response-messages';
+import { DATA_SAVED, DATA_UPDATED } from '../AdminSettings/messages/response-messages';
 import { NextFunction, Response, Request } from 'express';
 import { errorResponse } from '../../common/responses/error-responses';
 import { StatusCodes } from '../../core/helpers/helper';
@@ -7,9 +7,12 @@ import { AdmissionService } from './admission.service';
 import {
   validateAdmission,
   validateCarePlan,
+  validateChangeWard,
+  validateDischargePatient,
   validateIOChart,
   validateNursingNote,
   validateObservation,
+  validateWardRound,
 } from './validations';
 import { SUCCESS } from '../../core/constants';
 
@@ -39,7 +42,7 @@ export class AdmissionController {
     try {
       const admission = await AdmissionService.admitPatient({
         ...req.body,
-        admitted_by: req.user.sub,
+        admitted_by: req.user,
       });
 
       return successResponse({ res, httpCode: 201, data: admission, message: DATA_SAVED });
@@ -81,14 +84,45 @@ export class AdmissionController {
    * @returns {json} json object with status, admission data
    */
   static async sendForDischarge(
-    req: Request,
+    req: Request & { user: { sub: number } },
     res: Response,
     next: NextFunction
   ): Promise<SuccessResponse | void> {
     try {
-      const admission = await AdmissionService.updateAdmission(req.body);
+      const admission = await AdmissionService.updateAdmission(req.body, req.user.sub);
 
-      return successResponse({ res, httpCode: 200, data: admission, message: DATA_SAVED });
+      return successResponse({ res, httpCode: 201, data: admission, message: DATA_SAVED });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * Change patient ward
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, ward data
+   */
+  static async changeWard(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    const { error } = validateChangeWard(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        httpCode: StatusCodes.BAD_REQUEST,
+        message: error.details[0].message,
+      });
+
+    try {
+      const admission = await AdmissionService.changePatientWard(req.body, +req.params.id);
+
+      return successResponse({ res, httpCode: 201, data: admission, message: DATA_UPDATED });
     } catch (e) {
       return next(e);
     }
@@ -340,6 +374,190 @@ export class AdmissionController {
       const nursingNotes = await AdmissionService.getNursingNotes(+req.params.id);
 
       return successResponse({ res, message: SUCCESS, data: nursingNotes, httpCode: 200 });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * discharge patient
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, discharge data
+   */
+  static async dischargePatient(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    const { error } = validateDischargePatient(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        httpCode: StatusCodes.BAD_REQUEST,
+        message: error.details[0].message,
+      });
+    try {
+      const admission = await AdmissionService.dischargePatient(
+        req.body,
+        +req.params.id,
+        req.user.sub
+      );
+
+      return successResponse({ res, httpCode: 201, data: admission, message: DATA_SAVED });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get discharge records
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with discharge data
+   */
+  static async getDischargeRecords(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    try {
+      const discharges = await AdmissionService.getDischargeRecords(req.query);
+
+      return successResponse({ res, message: SUCCESS, data: discharges, httpCode: 200 });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get a discharge record
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with discharge data
+   */
+  static async getOneDischargeRecord(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    try {
+      const discharge = await AdmissionService.getOneDischargeRecord(+req.params.id);
+
+      return successResponse({ res, message: SUCCESS, data: discharge, httpCode: 200 });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get doctor prescriptions
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with tests, drugs, investigations etc.  data
+   */
+  static async getDoctorPrescriptions(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    try {
+      const summary = await AdmissionService.getDoctorPrescriptions(+req.params.id);
+
+      return successResponse({ res, message: SUCCESS, data: summary, httpCode: 200 });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get admission history
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with tests, drugs, investigations etc.  data
+   */
+  static async getAdmissionHistory(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    try {
+      const summary = await AdmissionService.getAdmissionHistory(+req.params.id);
+
+      return successResponse({ res, message: SUCCESS, data: summary, httpCode: 200 });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * create a patient Nursing notes
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, Nursing notes data
+   */
+  static async createWardRound(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    const { error } = validateWardRound(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        httpCode: StatusCodes.BAD_REQUEST,
+        message: error.details[0].message,
+      });
+
+    try {
+      const wardRound = await AdmissionService.createWardRound(
+        req.body,
+        +req.params.id,
+        req.user.sub
+      );
+
+      return successResponse({ res, httpCode: 201, data: wardRound, message: DATA_SAVED });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get patient ward rounds
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with ward rounds data
+   */
+  static async getWardRounds(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    try {
+      const wardRounds = await AdmissionService.getWardRounds(+req.params.id);
+
+      return successResponse({ res, message: SUCCESS, data: wardRounds, httpCode: 200 });
     } catch (e) {
       return next(e);
     }

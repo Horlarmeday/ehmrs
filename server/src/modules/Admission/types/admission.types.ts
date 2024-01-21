@@ -1,9 +1,12 @@
+import { DischargeType } from '../../../database/models/discharge';
+import { JwtTokenType } from '../../Staff/interface/staff.interface';
+
 export type AdmissionBodyType = {
   patient_id: number;
   ward_id: number;
   bed_id: number;
   visit_id: number;
-  admitted_by: number;
+  admitted_by: JwtTokenType;
   ante_natal_id?: number;
 };
 
@@ -45,4 +48,16 @@ export type IOChartBodyType = {
   output_quantity: number;
   input_total: number;
   output_total: number;
+};
+
+export type ChangeWardBodyType = {
+  ward_id: number;
+  bed_id: number;
+};
+
+export type DischargeBodyType = {
+  discharge_type: DischargeType;
+  date_discharged: Date;
+  conditions_of_patient: string;
+  transfer_location?: string;
 };

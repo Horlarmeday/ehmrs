@@ -1,9 +1,11 @@
 import sequelize from '../../database/config/config';
+import sequelizeConnection from '../../database/config/config';
 import { Op, Transaction, WhereOptions } from 'sequelize';
 import {
   Admission,
   Bed,
   CarePlan,
+  Discharge,
   Inventory,
   IOChart,
   NursingNote,
@@ -14,26 +16,38 @@ import {
   Staff,
   Visit,
   Ward,
+  WardRound,
 } from '../../database/models';
 import { BedStatus } from '../../database/models/bed';
 import { ServiceType } from '../../database/models/prescribedService';
 import { PatientStatus } from '../../database/models/patient';
 import { getOneDefault, getWardWithService } from '../AdminSettings/admin.repository';
 import { getPatientById } from '../Patient/patient.repository';
-import { AdmissionBodyType } from './types/admission.types';
+import { AdmissionBodyType, ChangeWardBodyType, DischargeBodyType } from './types/admission.types';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { patientAttributes } from '../Visit/visit.repository';
-import { VisitCategory } from '../../database/models/visit';
+import { VisitCategory, VisitStatus } from '../../database/models/visit';
 import dayjs from 'dayjs';
 import { DrugForm } from '../../database/models/drug';
 import { DefaultType } from '../../database/models/default';
 import { Source } from '../../database/models/prescribedDrug';
-import { bulkCreateAdditionalItems } from '../Orders/Pharmacy/pharmacy-order.repository';
+import {
+  bulkCreateAdditionalItems,
+  getPatientTreatments,
+  getPrescriptionAdditionalItems,
+  getPrescriptionDrugs,
+} from '../Orders/Pharmacy/pharmacy-order.repository';
 import { Gender } from '../../database/models/staff';
 import { DrugType } from '../../database/models/pharmacyStore';
 import { getInventories } from '../Inventory/inventory.repository';
 import { staffAttributes } from '../Antenatal/antenatal.repository';
 import { dateIntervalQuery } from '../../core/helpers/helper';
+import { DischargeStatus } from '../../database/models/admission';
+import { DischargeType } from '../../database/models/discharge';
+import { getPrescriptionTests } from '../Orders/Laboratory/lab-order.repository';
+import { getPrescriptionInvestigations } from '../Orders/Radiology/radiology-order.repository';
+import { getPrescriptionServices } from '../Orders/Service/service-order.repository';
+import { getPatientDiagnoses } from '../Consultation/consultation.repository';
 
 enum Ages {
   ALL_AGES = 'ALL_AGES',
@@ -48,8 +62,8 @@ const EXCLUDED_INSURANCE = ['NHIS', 'FHSS'];
  * @param data
  */
 export const admitPatient = async (data: AdmissionBodyType) => {
-  const { bed_id, admitted_by, patient_id, visit_id, ward_id } = data;
-  const [ward, insurance, patient, oneDefault, inventories] = await Promise.all([
+  const { bed_id, admitted_by, patient_id, visit_id, ward_id, ante_natal_id } = data;
+  const [ward, insurance, patient, admissionItems, inventories] = await Promise.all([
     getWardWithService(ward_id),
     getPatientInsuranceQuery({ patient_id }),
     getPatientById(patient_id),
@@ -57,9 +71,29 @@ export const admitPatient = async (data: AdmissionBodyType) => {
     getInventories(),
   ]);
 
-  return await sequelize.transaction(async (t: Transaction) => {
+  return sequelize.transaction(async (t: Transaction) => {
+    // end existing visit
+    await Visit.update(
+      { status: VisitStatus.ENDED, date_visit_ended: Date.now() },
+      { where: { id: visit_id }, transaction: t }
+    );
+    // start a new visit
+    const visit = await Visit.create(
+      {
+        patient_id: patient.id,
+        category: VisitCategory.IPD,
+        type: 'New Visit',
+        professional: admitted_by.role,
+        department: admitted_by.department,
+        date_visit_start: Date.now(),
+        staff_id: admitted_by,
+        ...(ante_natal_id && { ante_natal_id }),
+      },
+      { transaction: t }
+    );
+
     const admission = await Admission.create(
-      { ...data, date_admitted: Date.now() },
+      { ...data, visit_id: visit.id, admitted_by: admitted_by.sub, date_admitted: Date.now() },
       { transaction: t }
     );
 
@@ -71,27 +105,27 @@ export const admitPatient = async (data: AdmissionBodyType) => {
           service_id: ward.service.id,
           price: ward.service.price,
           service_type: ServiceType.CASH,
-          requester: admitted_by,
-          visit_id,
+          requester: admitted_by.sub,
+          visit_id: visit.id,
           patient_id,
           date_requested: Date.now(),
         },
         { transaction: t }
       );
+
     await Patient.update(
       { patient_status: PatientStatus.INPATIENT },
       { where: { id: patient_id }, transaction: t }
     );
-    await Visit.update(
-      { category: VisitCategory.IPD, admission_id: admission.id },
-      { where: { id: visit_id }, transaction: t }
-    );
 
-    if (oneDefault) {
+    // update the visit with the admission id
+    await Visit.update({ admission_id: admission.id }, { where: { id: visit.id }, transaction: t });
+
+    if (admissionItems) {
       // don't await the result
       insertDefaultAdmissionItems({
         patient,
-        items: oneDefault.data,
+        items: admissionItems.data,
         admission,
         insurance,
         inventories,
@@ -110,7 +144,7 @@ export const getOneAdmission = async (query: WhereOptions<Admission>) => {
   return Admission.findOne({
     where: { ...query },
     include: [
-      { model: Ward, attributes: ['name'] },
+      { model: Ward, as: 'ward', attributes: ['name'] },
       { model: Bed, attributes: ['code'] },
       { model: Staff, as: 'examiner', attributes: staffAttributes },
     ],
@@ -139,7 +173,7 @@ export const getAdmissionQuery = async (query: WhereOptions<Admission>) => {
           'has_insurance',
         ],
       },
-      { model: Ward, attributes: ['name'] },
+      { model: Ward, as: 'ward', attributes: ['name'] },
       { model: Bed, attributes: ['code'] },
       { model: Staff, as: 'examiner', attributes: staffAttributes },
     ],
@@ -156,6 +190,59 @@ export const getAdmissionQuery = async (query: WhereOptions<Admission>) => {
 
 export const updateAdmission = async (data: { [p: string]: any }, admissionId: number) => {
   return Admission.update({ ...data }, { where: { id: admissionId } });
+};
+
+export const getAdmission = (admissionId: number) => {
+  return Admission.findByPk(admissionId);
+};
+
+/**
+ * get admission history
+ * @param admissionId
+ */
+export const getAdmissionHistory = async (admissionId: number) => {
+  const admission = await getAdmission(admissionId);
+  const [
+    tests,
+    drugs,
+    investigations,
+    observations,
+    plans,
+    diagnoses,
+    items,
+    services,
+    charts,
+    notes,
+    treatments,
+    wardRounds,
+  ] = await Promise.all([
+    getPrescriptionTests({ visit_id: admission.visit_id }),
+    getPrescriptionDrugs({ visit_id: admission.visit_id }),
+    getPrescriptionInvestigations({ visit_id: admission.visit_id }),
+    getObservations({ admission_id: admissionId }),
+    getCarePlans({ admission_id: admissionId }),
+    getPatientDiagnoses({ visit_id: admission.visit_id }),
+    getPrescriptionAdditionalItems({ visit_id: admission.visit_id }),
+    getPrescriptionServices({ visit_id: admission.visit_id }),
+    getIOCharts({ admission_id: admissionId }),
+    getNursingNotes({ admission_id: admissionId }),
+    getPatientTreatments({ filter: JSON.stringify({ visit_id: admission.visit_id }) }),
+    getWardRounds({ admission_id: admissionId }),
+  ]);
+  return {
+    tests,
+    drugs,
+    investigations,
+    observations,
+    plans,
+    diagnoses,
+    items,
+    services,
+    charts,
+    notes,
+    treatments: treatments.docs,
+    wardRounds,
+  };
 };
 
 /**
@@ -188,13 +275,17 @@ export const getAdmittedPatients = async ({
     order: [['date_admitted', 'DESC']],
     where: {
       ...(start && end && dateIntervalQuery('date_admitted', start, end)),
+      discharge_status: DischargeStatus.ON_ADMISSION,
     },
     include: [
       {
         model: Ward,
+        as: 'ward',
         attributes: ['name', 'occupant_type'],
         where: {
-          ...(filter && JSON.parse(filter)),
+          ...(filter && {
+            [Op.or]: [{ ...JSON.parse(filter) }, { occupant_type: 'All' }],
+          }),
         },
       },
       { model: Staff, as: 'examiner', attributes: staffAttributes },
@@ -224,6 +315,101 @@ export const getAdmittedPatients = async ({
         },
       },
     ],
+  });
+};
+
+/**
+ * get antenatal admitted patients
+ *
+ * @function
+ * @returns {Promise<{ total: any; docs: Admission[]; pages: number; perPage: number; currentPage: number }>} json object with all admission data
+ * @param currentPage
+ * @param pageLimit
+ * @param search
+ * @param discharge_status
+ */
+export const getAntenatalAdmittedPatients = async ({
+  currentPage = 1,
+  pageLimit = 10,
+  search = null,
+  start = null,
+  end = null,
+}): Promise<{
+  total: any;
+  docs: Admission[];
+  pages: number;
+  perPage: number;
+  currentPage: number;
+}> => {
+  return Admission.paginate({
+    page: +currentPage,
+    paginate: +pageLimit,
+    order: [['date_admitted', 'DESC']],
+    where: {
+      ...(start && end && dateIntervalQuery('date_admitted', start, end)),
+      discharge_status: DischargeStatus.ON_ADMISSION,
+      ante_natal_id: {
+        [Op.ne]: null,
+      },
+    },
+    include: [
+      {
+        model: Ward,
+        as: 'ward',
+        attributes: ['name', 'occupant_type'],
+      },
+      { model: Staff, as: 'examiner', attributes: staffAttributes },
+      {
+        model: Patient,
+        attributes: patientAttributes,
+        where: {
+          ...(search && {
+            [Op.or]: [
+              {
+                firstname: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+              {
+                lastname: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+              {
+                hospital_id: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+            ],
+          }),
+        },
+      },
+    ],
+  });
+};
+
+/**
+ * change patient ward
+ *
+ * @function
+ * @returns {void}
+ * @param admission
+ * @param data
+ */
+export const changePatientWard = async (
+  admission: Admission,
+  data: ChangeWardBodyType
+): Promise<void> => {
+  return sequelizeConnection.transaction(async t => {
+    // remove patient from previous bed in the old ward
+    await Bed.update(
+      { status: BedStatus.UNTAKEN },
+      { where: { id: admission.bed_id }, transaction: t }
+    );
+    // change the ward details in the admission
+    await admission.update({ ...data, previous_ward: admission.ward_id }, { transaction: t });
+    // assign new bed to the patient in the new ward
+    await Bed.update({ status: BedStatus.TAKEN }, { where: { id: data.bed_id }, transaction: t });
   });
 };
 
@@ -335,6 +521,7 @@ export const createObservation = async (data: { [p: string]: any }) => {
 export const getObservations = async (query: WhereOptions<Observation>) => {
   return Observation.findAll({
     where: { ...query },
+    order: [['createdAt', 'DESC']],
     include: [{ model: Staff, attributes: staffAttributes }],
   });
 };
@@ -358,6 +545,7 @@ export const createCarePlan = async (data: { [p: string]: any }) => {
 export const getCarePlans = async (query: WhereOptions<CarePlan>) => {
   return CarePlan.findAll({
     where: { ...query },
+    order: [['createdAt', 'DESC']],
     include: [{ model: Staff, attributes: staffAttributes }],
   });
 };
@@ -381,6 +569,7 @@ export const createIOChart = async (data: { [p: string]: any }[]) => {
 export const getIOCharts = async (query: WhereOptions<IOChart>) => {
   return IOChart.findAll({
     where: { ...query },
+    order: [['createdAt', 'DESC']],
     include: [{ model: Staff, attributes: staffAttributes }],
   });
 };
@@ -404,6 +593,157 @@ export const createNursingNote = async (data: { [p: string]: any }) => {
 export const getNursingNotes = async (query: WhereOptions<NursingNote>) => {
   return NursingNote.findAll({
     where: { ...query },
+    order: [['createdAt', 'DESC']],
     include: [{ model: Staff, attributes: staffAttributes }],
+  });
+};
+
+/******************
+ * Ward Round
+ ******************/
+
+/**
+ * create a Ward round
+ * @param data
+ */
+export const createWardRound = async (data: { [p: string]: any }) => {
+  return WardRound.create(data);
+};
+
+/**
+ * get a patient Ward rounds
+ * @param query
+ */
+export const getWardRounds = async (query: WhereOptions<WardRound>) => {
+  return WardRound.findAll({
+    where: { ...query },
+    order: [['createdAt', 'DESC']],
+    include: [{ model: Staff, attributes: staffAttributes }],
+  });
+};
+
+/******************
+ * Discharge Patient
+ ******************/
+
+type DischargePatientType = DischargeBodyType & {
+  admission_id: number;
+  ward_id: number;
+  patient_id: number;
+  visit_id: number;
+  discharged_by: number;
+};
+
+/**
+ * Discharge a patient
+ * @param data
+ */
+export const dischargePatient = async (data: DischargePatientType) => {
+  const { discharged_by, patient_id, admission_id, discharge_type } = data;
+  return await sequelize.transaction(async (t: Transaction) => {
+    // create discharge record
+    const discharge = await Discharge.create({ ...data }, { transaction: t });
+    // update the admission status
+    await Admission.update(
+      { discharged_by, discharge_status: DischargeStatus.DISCHARGED },
+      { where: { id: admission_id }, transaction: t }
+    );
+    // update the patient status
+    await Patient.update(
+      {
+        patient_status:
+          discharge_type === DischargeType.DEATH
+            ? PatientStatus.DECEASED
+            : PatientStatus.OUTPATIENT,
+      },
+      { where: { id: patient_id }, transaction: t }
+    );
+
+    // end visit
+    await Visit.update(
+      { status: VisitStatus.ENDED, date_visit_ended: Date.now() },
+      { where: { id: data.visit_id }, transaction: t }
+    );
+    return getOneDischargeRecord({ id: discharge.id });
+  });
+};
+
+/**
+ * get discharge records
+ *
+ * @function
+ * @returns {Promise<{ total: any; docs: Discharge[]; pages: number; perPage: number; currentPage: number }>} json object with all discharge data
+ * @param currentPage
+ * @param pageLimit
+ * @param search
+ * @param discharge_status
+ */
+export const getDischargeRecords = async ({
+  currentPage = 1,
+  pageLimit = 10,
+  search = null,
+  start = null,
+  end = null,
+}): Promise<{
+  total: any;
+  docs: Discharge[];
+  pages: number;
+  perPage: number;
+  currentPage: number;
+}> => {
+  return Discharge.paginate({
+    page: +currentPage,
+    paginate: +pageLimit,
+    order: [['date_discharged', 'DESC']],
+    where: {
+      ...(start && end && dateIntervalQuery('date_discharged', start, end)),
+    },
+    include: [
+      {
+        model: Ward,
+        as: 'ward',
+        attributes: ['name'],
+      },
+      { model: Staff, attributes: staffAttributes },
+      {
+        model: Patient,
+        attributes: patientAttributes,
+        where: {
+          ...(search && {
+            [Op.or]: [
+              {
+                firstname: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+              {
+                lastname: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+              {
+                hospital_id: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+            ],
+          }),
+        },
+      },
+    ],
+  });
+};
+
+/**
+ * get one discharge record
+ * @param query
+ */
+export const getOneDischargeRecord = async (query: WhereOptions<Discharge>) => {
+  return Discharge.findOne({
+    where: { ...query },
+    include: [
+      { model: Ward, attributes: ['name'] },
+      { model: Staff, attributes: staffAttributes },
+    ],
   });
 };
