@@ -115,6 +115,8 @@ export default {
       url = url.replaceAll('{queueId}', queue.id);
       if (url.includes('{antenatalId}'))
         url = url.replaceAll('{antenatalId}', queue?.ante_natal_id);
+      else if (url.includes('{immunizationId}'))
+        url = url.replaceAll('{immunizationId}', queue?.immunization_id);
       return url;
     },
 

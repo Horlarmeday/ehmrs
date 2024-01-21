@@ -4,7 +4,7 @@
       <triage-accordion />
       <div class="form-group row">
         <div class="col-lg-4">
-          <label>Height (m):</label>
+          <label>Height (cm):</label>
           <input @input="calculateBMI" type="number" class="form-control" v-model="height" />
         </div>
         <div class="col-lg-4">
@@ -12,7 +12,7 @@
           <input @input="calculateBMI" type="number" class="form-control" v-model="weight" />
         </div>
         <div class="col-lg-4">
-          <label>BMI (kg/h^2):</label>
+          <label>BMI (kg/m²):</label>
           <input readonly type="number" class="form-control" v-model="body_mass_index" />
         </div>
       </div>
@@ -79,7 +79,7 @@
       <div class="form-group row">
         <div class="col-lg-4">
           <label>Oedema:</label>
-          <input type="number" class="form-control" v-model="oedema" />
+          <input type="text" class="form-control" v-model="oedema" />
         </div>
         <div class="col-lg-4">
           <label>Comments:</label>
@@ -93,6 +93,7 @@
       <div>
         <button
           @click="submitTriage"
+          :disabled="isDisabled"
           ref="kt-antenatalTriage-submit"
           class="btn btn-primary float-right"
         >
@@ -123,6 +124,7 @@ export default {
     foetal_heart_rate: '',
     fundal_height: '',
     rvst: '',
+    isDisabled: false,
   }),
   components: {
     TriageAccordion,
@@ -145,7 +147,7 @@ export default {
     },
 
     calculateBMI() {
-      this.body_mass_index = (this.weight / this.height ** 2).toFixed(2);
+      this.body_mass_index = (this.weight / (this.height / 100) ** 2).toFixed(2);
     },
 
     initValues() {
