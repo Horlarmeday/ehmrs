@@ -8,17 +8,13 @@
     >
       <!--begin::Copyright-->
       <div class="text-dark order-2 order-md-1">
-        <span class="text-muted font-weight-bold mr-2"
-          >{{ new Date().getFullYear() }} ©</span
-        >
-        <a href="#" target="_blank" class="text-dark-75 text-hover-primary"
-          >Worthy Tech</a
-        >
+        <span class="text-muted font-weight-bold mr-2">{{ new Date().getFullYear() }} ©</span>
+        <a href="#" class="text-dark-75 text-hover-primary">Worthy</a>
       </div>
       <!--end::Copyright-->
       <!--begin::Nav-->
       <div class="nav nav-dark order-1 order-md-2">
-        <a href="#" target="_blank" class="nav-link pl-3 pr-0">Contact</a>
+        <a href="#" class="nav-link pl-3 pr-0">Contact</a>
       </div>
       <!--end::Nav-->
     </div>
@@ -28,19 +24,19 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters } from 'vuex';
 
 export default {
-  name: "KTFooter",
+  name: 'KTFooter',
   computed: {
-    ...mapGetters(["layoutConfig"]),
+    ...mapGetters(['layoutConfig']),
 
     /**
      * Check if footer container is fluid
      */
     widthFluid() {
-      return this.layoutConfig("footer.width") === "fluid";
-    }
-  }
+      return this.layoutConfig('footer.width') === 'fluid';
+    },
+  },
 };
 </script>

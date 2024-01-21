@@ -248,6 +248,12 @@ export default {
         'admission-treatments',
         'admission-additional-prescriptions',
         'admission-nursing-notes',
+        'admission-change-ward',
+        'admission-discharge',
+        'admission-doctor-prescriptions',
+        'admission-history',
+        'immunization-visit',
+        'nhis-visits',
       ];
       return pagesToDisplay.includes(this.$route.name);
     },

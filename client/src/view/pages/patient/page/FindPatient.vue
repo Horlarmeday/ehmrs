@@ -126,8 +126,8 @@
 
 <script>
 import Pagination from '@/utils/Pagination.vue';
-import DateFilter from '@/utils/DateFilter';
-import CreateVisit from '../visits/create/CreateVisit-Deprecated.vue';
+import DateFilter from '@/utils/DateFilter.vue';
+import CreateVisit from '../../visits/create/CreateVisit-Deprecated.vue';
 import { setUrlQueryParams } from '@/common/common';
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
 import dayjs from 'dayjs';
@@ -141,6 +141,7 @@ export default {
       end: null,
       currentPage: 1,
       itemsPerPage: 10,
+      isDisabled: false,
     };
   },
   components: {
@@ -178,7 +179,7 @@ export default {
     displayLabel(type) {
       if (type === 'Principal') return 'label-light-primary';
       if (type === 'Dependant') return 'label-light-danger';
-      return 'label-light-info';
+      return 'label-light-dark';
     },
 
     displayPatientType(type) {
@@ -236,6 +237,13 @@ export default {
       this.currentPage = page;
       this.handlePageChange();
     },
+  },
+  created() {
+    this.$store.dispatch('patient/fetchPatients', {
+      currentPage: this.$route.query.currentPage,
+      itemsPerPage: this.$route.query.itemsPerPage,
+      search: this.$route.query.search,
+    });
   },
 };
 </script>
