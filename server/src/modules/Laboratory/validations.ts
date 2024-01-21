@@ -14,6 +14,9 @@ export function validateTest(test) {
     sample_id: Joi.number().required(),
     result_unit: Joi.string().required(),
     valid_range: Joi.string().required(),
+    type: Joi.string()
+      .valid('Primary', 'Secondary')
+      .required(),
   });
   return schema.validate(test);
 }

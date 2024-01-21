@@ -49,8 +49,11 @@ export function validateDrugPrescription(drug: any) {
     total_price: Joi.number().required(),
     drug_id: Joi.number().required(),
     drug_type: Joi.string().valid(DrugType.CASH, DrugType.NHIS),
-    source: Joi.string().valid('Antenatal', 'Consultation'),
+    source: Joi.string().valid('Antenatal', 'Consultation', 'Immunization'),
     ante_natal_id: Joi.number()
+      .optional()
+      .allow(''),
+    immunization_id: Joi.number()
       .optional()
       .allow(''),
   });

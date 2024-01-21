@@ -15,6 +15,9 @@ export function validateInvestigation(investigation) {
     name: Joi.string().required(),
     price: Joi.number().required(),
     imaging_id: Joi.number().required(),
+    type: Joi.string()
+      .valid('Primary', 'Secondary')
+      .required(),
     description: Joi.string()
       .optional()
       .allow(''),

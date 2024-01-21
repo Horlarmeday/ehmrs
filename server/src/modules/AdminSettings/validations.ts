@@ -40,6 +40,9 @@ export function validateService(service) {
   const schema = Joi.object({
     name: Joi.string().required(),
     price: Joi.number().required(),
+    type: Joi.string()
+      .valid('Primary', 'Secondary')
+      .required(),
   });
   return schema.validate(service);
 }

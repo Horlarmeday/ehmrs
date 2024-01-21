@@ -101,3 +101,30 @@ export function validateNursingNote(note) {
   });
   return schema.validate(note);
 }
+
+export function validateChangeWard(ward) {
+  const schema = Joi.object({
+    ward_id: Joi.number().required(),
+    bed_id: Joi.number().required(),
+  });
+  return schema.validate(ward);
+}
+
+export function validateDischargePatient(discharge) {
+  const schema = Joi.object({
+    discharge_type: Joi.string().required(),
+    date_discharged: Joi.date().required(),
+    conditions_of_patient: Joi.string().required(),
+    transfer_location: Joi.string()
+      .optional()
+      .allow(''),
+  });
+  return schema.validate(discharge);
+}
+
+export function validateWardRound(wardRound) {
+  const schema = Joi.object({
+    content: Joi.string().required(),
+  });
+  return schema.validate(wardRound);
+}
