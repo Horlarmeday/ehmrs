@@ -1,4 +1,8 @@
-import userRoutes from '../../modules/Staff/staff.routes';
+import express, { NextFunction, Request, Response } from 'express';
+import { StatusCodes } from '../helpers/helper';
+import { handleError } from '../../common/responses/error-responses';
+import { logger } from '../helpers/logger';
+import staffRoutes from '../../modules/Staff/staff.routes';
 import authRoutes from '../../modules/Auth/auth.routes';
 import patientRoutes from '../../modules/Patient/patient.routes';
 import insuranceRoutes from '../../modules/Insurance/insurance.routes';
@@ -20,13 +24,10 @@ import admissionRoutes from '../../modules/Admission/admission.routes';
 import requestRoutes from '../../modules/Request/request.routes';
 import antenatalRoutes from '../../modules/Antenatal/antenatal.routes';
 import surgeryRoutes from '../../modules/Surgery/surgery.routes';
-import express, { NextFunction, Request, Response } from 'express';
-import { StatusCodes } from '../helpers/helper';
-import { handleError } from '../../common/responses/error-responses';
-import { logger } from '../helpers/logger';
+import immunizationRoutes from '../../modules/Immunization/immunization.routes';
 
 export default (server: express.Application) => {
-  server.use('/api/staffs', userRoutes);
+  server.use('/api/staffs', staffRoutes);
   server.use('/api/auth', authRoutes);
   server.use('/api/patients', patientRoutes);
   server.use('/api/insurances', insuranceRoutes);
@@ -44,6 +45,7 @@ export default (server: express.Application) => {
   server.use('/api/requests', requestRoutes);
   server.use('/api/antenatal', antenatalRoutes);
   server.use('/api/surgery', surgeryRoutes);
+  server.use('/api/immunizations', immunizationRoutes);
   server.use('/api/orders/laboratory', labOrderRoutes);
   server.use('/api/orders/pharmacy', pharmacyOrderRoutes);
   server.use('/api/orders/radiology', radiologyOrderRoutes);
@@ -57,7 +59,7 @@ export default (server: express.Application) => {
     ) => {
       //const ErrorCodesNotToLog = [404];
       //if (error?.statusCode && !ErrorCodesNotToLog.includes(error?.statusCode)) {
-      console.log(error);
+      console.error(error);
       logger.error(error.message, error);
       // }
       handleError(error, res);

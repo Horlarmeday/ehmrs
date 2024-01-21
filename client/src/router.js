@@ -53,9 +53,17 @@ const router = new Router({
           component: () => import('@/view/pages/patient/Patient.vue'),
           children: [
             {
+              path: 'patient-operations',
+              name: 'patient-operations',
+              component: () => import('@/view/pages/patient/page/PatientOperations.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
               path: 'choose-patient-type',
               name: 'choose-patient-type',
-              component: () => import('@/view/pages/patient/page/Patient.vue'),
+              component: () => import('@/view/pages/patient/page/ChoosePatientType.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -79,7 +87,7 @@ const router = new Router({
             {
               path: 'find-patient',
               name: 'find-patient',
-              component: () => import('@/view/pages/patient/FindPatient.vue'),
+              component: () => import('@/view/pages/patient/page/FindPatient.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -87,7 +95,7 @@ const router = new Router({
             {
               path: 'profile/:id',
               name: 'patient-profile',
-              component: () => import('@/view/pages/patient/PatientProfile.vue'),
+              component: () => import('@/view/pages/patient/page/PatientProfile.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -120,6 +128,14 @@ const router = new Router({
               path: 'edit/:id',
               name: 'profile-edit',
               component: () => import('@/view/pages/patient/page/EditPatient.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'health-insurance',
+              name: 'insurance-patients',
+              component: () => import('@/view/pages/nhis/page/Patients.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -268,14 +284,6 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
-            {
-              path: 'active',
-              name: 'active-visits',
-              component: () => import('@/view/pages/visits/components/types/ActiveVisits.vue'),
-              meta: {
-                requiresAuth: true,
-              },
-            },
             // DOCTOR
             {
               path: 'queue',
@@ -297,6 +305,14 @@ const router = new Router({
               path: 'ante-natal',
               name: 'ante-natal-visits',
               component: () => import('@/view/pages/visits/page/AntenatalPatients.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'immunization',
+              name: 'immunization-visits',
+              component: () => import('@/view/pages/visits/page/ImmunizationPatients.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -334,6 +350,23 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            //NHIS
+            {
+              path: 'nhis-active-visits',
+              name: 'nhis-active-visits',
+              component: () => import('@/view/pages/visits/page/NHISPatientsVisits.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'nhis-visits/:id',
+              name: 'nhis-visits',
+              component: () => import('@/view/pages/nhis/page/Tabs.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
           ],
         },
         // CONSULTATION
@@ -366,6 +399,7 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            // ANTENATAL
             {
               path: 'ante-natal',
               name: 'ante-natal',
@@ -402,6 +436,39 @@ const router = new Router({
               path: 'ante-natal/profile/:id',
               name: 'ante-natal-profile',
               component: () => import('@/view/pages/programs/antenatal/Profile.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            // IMMUNIZATION
+            {
+              path: 'immunization',
+              name: 'immunization',
+              component: () => import('@/view/pages/programs/immunization/Home.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'immunization/enrol',
+              name: 'immunization-enrol',
+              component: () => import('@/view/pages/programs/immunization/Enrol.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'immunization/list',
+              name: 'immunization-list',
+              component: () => import('@/view/pages/programs/immunization/Patients.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'immunization/visit/:id',
+              name: 'immunization-visit',
+              component: () => import('@/view/pages/programs/immunization/Tabs.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -892,6 +959,14 @@ const router = new Router({
           component: () => import('@/view/pages/admission/Admission.vue'),
           children: [
             {
+              path: 'discharge-patients',
+              name: 'discharge-patients',
+              component: () => import('@/view/pages/admission/page/DischargedPatients.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
               path: 'operations/:id',
               name: 'admission-operations',
               component: () => import('@/view/pages/admission/AdmissionOperations.vue'),
@@ -943,6 +1018,38 @@ const router = new Router({
               path: 'nursing-notes/:id',
               name: 'admission-nursing-notes',
               component: () => import('@/view/pages/admission/page/NursingNote.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'change-ward/:id',
+              name: 'admission-change-ward',
+              component: () => import('@/view/pages/admission/page/ChangeWard.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'discharge/:id',
+              name: 'admission-discharge',
+              component: () => import('@/view/pages/admission/page/Discharge.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'doctor-prescriptions/:id',
+              name: 'admission-doctor-prescriptions',
+              component: () => import('@/view/pages/admission/page/DoctorPrescription.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'history/:id',
+              name: 'admission-history',
+              component: () => import('@/view/pages/admission/page/AdmissionHistory.vue'),
               meta: {
                 requiresAuth: true,
               },
