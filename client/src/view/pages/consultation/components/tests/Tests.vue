@@ -5,15 +5,12 @@
         <tests-accordion />
         <div class="card-title">
           <span class="card-label font-weight-bolder text-dark"></span>
-          <span v-if="showSwitch" class="switch switch-sm switch-icon">
-            <label>
-              <input
-                @change="flipSwitch($event)"
-                type="checkbox"
-                :checked="switchPosition && switchSpot"
-              />
-              <span />
-            </label>
+          <span v-if="showSwitch">
+            <switch-box
+              :switch-position="switchPosition"
+              :switch-spot="switchSpot"
+              @switchSpot="flipSwitch"
+            />
           </span>
           <div class="">
             <button
@@ -48,10 +45,11 @@
 
 <script>
 import TestsAccordion from '@/view/components/accordion/TestsAccordion.vue';
+import SwitchBox from '@/utils/SwitchBox.vue';
 
 export default {
   name: 'Tests',
-  components: { TestsAccordion },
+  components: { SwitchBox, TestsAccordion },
   data() {
     return {
       checkmark: 'flaticon2-check-mark',
@@ -143,8 +141,8 @@ export default {
       this.$store.dispatch('order/emptySelectedButtons');
     },
 
-    flipSwitch(event) {
-      this.switchSpot = !!event.target.checked;
+    flipSwitch(value) {
+      this.switchSpot = value;
     },
   },
 };

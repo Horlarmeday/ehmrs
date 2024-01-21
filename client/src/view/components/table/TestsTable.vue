@@ -25,10 +25,12 @@
             <td>{{ test.examiner.fullname }}</td>
             <td>{{ test.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
             <td>
-              <a href="#" :class="test.result_status !== 'Accepted' ? 'disabled' : ''">
-                <i class="flaticon-file-2 text-success mr-2"></i>
-              </a>
-              <a href="#"><i class="flaticon-delete text-danger"></i></a>
+              <span v-if="allowedRoles.includes(currentUser.role)">
+                <a href="#" :class="test.result_status !== 'Accepted' ? 'disabled' : ''">
+                  <i class="flaticon-file-2 text-success mr-2"></i>
+                </a>
+                <a href="#"><i class="flaticon-delete text-danger"></i></a>
+              </span>
             </td>
           </tr>
         </tbody>
@@ -37,8 +39,14 @@
   </div>
 </template>
 <script>
+import { parseJwt } from '@/core/plugins/parseJwt';
+
 export default {
   name: 'TestsTable',
+  data: () => ({
+    currentUser: parseJwt(localStorage.getItem('user_token')),
+    allowedRoles: ['General Practitioner', 'Super Admin'],
+  }),
   props: {
     tests: {
       type: Array,
