@@ -8,6 +8,4 @@ export default {
 
   dependant: null,
   dependants: [],
-  totaldependant: null,
-  dependantpages: 0,
 };
