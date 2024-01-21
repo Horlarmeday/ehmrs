@@ -19,12 +19,14 @@ import {
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Antenatal } from './antenatal';
 import { Admission } from './admission';
+import { Immunization } from './immunization';
 
 export enum VisitCategory {
   IPD = 'Inpatient',
   OPD = 'Outpatient',
   EMERGENCY = 'Emergency',
   ANC = 'Antenatal',
+  Immunization = 'Immunization',
 }
 
 export enum VisitStatus {
@@ -55,7 +57,8 @@ export class Visit extends Model {
       VisitCategory.IPD,
       VisitCategory.OPD,
       VisitCategory.EMERGENCY,
-      VisitCategory.ANC
+      VisitCategory.ANC,
+      VisitCategory.Immunization
     ),
     allowNull: false,
     validate: {
@@ -142,6 +145,12 @@ export class Visit extends Model {
   })
   is_taken: boolean;
 
+  @ForeignKey(() => Immunization)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  immunization_id: number;
+
   @BelongsTo(() => Staff)
   staff: Staff;
 
@@ -153,6 +162,9 @@ export class Visit extends Model {
 
   @BelongsTo(() => Admission)
   admission: Admission;
+
+  @BelongsTo(() => Immunization)
+  immunization: Immunization;
 
   static async paginate(param: {
     paginate: number;
