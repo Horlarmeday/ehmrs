@@ -17,17 +17,20 @@ import { Visit } from '../../database/models';
 import { CreateVisit } from './interface/visit.interface';
 import { VisitCategory } from '../../database/models/visit';
 import { getOneAntenatalAccount } from '../Antenatal/antenatal.repository';
-import { AccountStatus, Antenatal } from '../../database/models/antenatal';
+import { AccountStatus } from '../../database/models/antenatal';
 import { BadException } from '../../common/util/api-error';
 import { StatusCodes } from '../../core/helpers/helper';
 import { Op } from 'sequelize';
-import { ANTENATAL_ACCOUNT_REQUIRED } from './messages/response.messages';
+import {
+  ANTENATAL_ACCOUNT_REQUIRED,
+  IMMUNIZATION_ACCOUNT_REQUIRED,
+} from './messages/response.messages';
 import { getOneService } from '../AdminSettings/admin.repository';
 import { prescribeService } from '../Orders/Service/service-order.repository';
 import { getPatientById } from '../Patient/patient.repository';
 import { Gender } from '../../database/models/staff';
 import { FEMALE_REQUIRED } from '../Antenatal/messages/antenatal.messages';
-import { filter } from 'rxjs';
+import { getOneImmunization } from '../Immunization/immunization.repository';
 
 class VisitService {
   /**
@@ -39,8 +42,7 @@ class VisitService {
    * @memberOf VisitService
    */
   static async createVisitService(body: CreateVisit): Promise<Visit> {
-    let antenatal: Antenatal;
-    const { patient_id, ante_natal_id, category, service_id, staff_id } = body;
+    const { patient_id, ante_natal_id, category, service_id, staff_id, immunization_id } = body;
     const [patient, visit] = await Promise.all([
       getPatientById(patient_id),
       getLastActiveVisit(patient_id),
@@ -54,7 +56,7 @@ class VisitService {
     // `ante_natal_id` field in the body only happens when a visit wants to be created
     // immediately a patient was enrolled for antenatal
     if (category === VisitCategory.ANC && !ante_natal_id) {
-      antenatal = await getOneAntenatalAccount({
+      const antenatal = await getOneAntenatalAccount({
         patient_id,
         [Op.or]: [
           { account_status: AccountStatus.ACTIVE },
@@ -63,12 +65,19 @@ class VisitService {
       });
       if (!antenatal)
         throw new BadException('INVALID', StatusCodes.BAD_REQUEST, ANTENATAL_ACCOUNT_REQUIRED);
+      body.ante_natal_id = antenatal.id;
     }
 
-    const createdVisit = await createVisit({
-      ...body,
-      ...(antenatal && { ante_natal_id: antenatal.id }),
-    });
+    if (category === VisitCategory.Immunization && !immunization_id) {
+      const immunization = await getOneImmunization({
+        patient_id,
+      });
+      if (!immunization)
+        throw new BadException('INVALID', StatusCodes.BAD_REQUEST, IMMUNIZATION_ACCOUNT_REQUIRED);
+      body.immunization_id = immunization.id;
+    }
+
+    const createdVisit = await createVisit(body);
 
     if (service_id) {
       const service = await getOneService({ id: service_id });
@@ -78,7 +87,7 @@ class VisitService {
         price: service.price,
         patient_id,
         requester: staff_id,
-        ante_natal_id: antenatal?.id,
+        ante_natal_id: body?.ante_natal_id,
         visit_id: createdVisit.id,
       });
     }
@@ -96,17 +105,17 @@ class VisitService {
   static async getActiveVisits(
     body
   ): Promise<{ total: any; pages: number; perPage: number; docs: Visit[]; currentPage: number }> {
-    const { currentPage, pageLimit, search, start, end } = body;
+    const { currentPage, pageLimit, search, start, end, filter } = body;
 
     if (search) {
-      return searchActiveVisits({ currentPage, pageLimit, search });
+      return searchActiveVisits({ currentPage, pageLimit, search, filter });
     }
 
     if (Object.values(body).length) {
-      return getActiveVisits({ currentPage, pageLimit, start, end });
+      return getActiveVisits({ currentPage, pageLimit, start, end, filter });
     }
 
-    return getActiveVisits({});
+    return getActiveVisits({ filter });
   }
 
   /**

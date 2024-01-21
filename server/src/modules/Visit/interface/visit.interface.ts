@@ -4,6 +4,7 @@ export class CreateVisit {
   patient_id: number;
   category: VisitCategory;
   ante_natal_id?: number;
+  immunization_id?: number;
   type: string;
   professional: string;
   department: string;

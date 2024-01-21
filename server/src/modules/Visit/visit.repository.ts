@@ -2,7 +2,7 @@
 
 import { Op, Sequelize, WhereOptions } from 'sequelize';
 
-import { Visit, Patient } from '../../database/models';
+import { Patient, Visit } from '../../database/models';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { VisitCategory, VisitStatus } from '../../database/models/visit';
 import { calcLimitAndOffset, dateIntervalQuery } from '../../core/helpers/helper';
@@ -16,6 +16,7 @@ export const patientAttributes = [
   'firstname',
   'lastname',
   'gender',
+  'has_insurance',
 ];
 
 /**
@@ -34,6 +35,7 @@ export async function createVisit(data): Promise<Visit> {
     department,
     date_of_visit,
     priority,
+    immunization_id,
   } = data || {};
 
   return Visit.create({
@@ -46,6 +48,7 @@ export async function createVisit(data): Promise<Visit> {
     staff_id,
     ante_natal_id,
     priority,
+    immunization_id,
   });
 }
 
@@ -133,6 +136,7 @@ export const updateVisit = (query: WhereOptions<Visit>, fieldsToUpdate: Record<s
  * @param search
  * @param start
  * @param end
+ * @param filter
  */
 export async function searchActiveVisits({
   currentPage = 1,
@@ -140,6 +144,7 @@ export async function searchActiveVisits({
   search = null,
   start = null,
   end = null,
+  filter = null,
 }): Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }> {
   return Visit.paginate({
     page: +currentPage,
@@ -155,6 +160,7 @@ export async function searchActiveVisits({
         as: 'patient',
         attributes: patientAttributes,
         where: {
+          ...(filter && JSON.parse(filter)),
           [Op.or]: [
             {
               firstname: {
@@ -187,12 +193,14 @@ export async function searchActiveVisits({
  * @param pageLimit
  * @param start
  * @param end
+ * @param filter
  */
 export async function getActiveVisits({
   currentPage = 1,
   pageLimit = 10,
   start = null,
   end = null,
+  filter = null,
 }): Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }> {
   return Visit.paginate({
     page: +currentPage,
@@ -206,6 +214,9 @@ export async function getActiveVisits({
       {
         model: Patient,
         attributes: patientAttributes,
+        where: {
+          ...(filter && JSON.parse(filter)),
+        },
       },
     ],
   });
@@ -505,6 +516,6 @@ export const getProfessionalAssignedVisits = async ({
  * @param visitId
  */
 export const getVisitPrescriptions = async (visitId: number) => {
-  const prescriptions = await getPrescriptions(visitId);
+  const prescriptions = await getPrescriptions(visitId, VisitCategory.OPD);
   return prescriptions;
 };
