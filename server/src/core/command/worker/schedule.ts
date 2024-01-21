@@ -20,4 +20,7 @@ export const JobSchedule = {
 
   uploadImage: (image: string, patientId: string) =>
     agendaSchedule('in 25 seconds', JobName.UPLOAD_IMAGE, { image, patientId }),
+
+  assignImmunizationNumber: (id: number) =>
+    agendaSchedule('in 5 seconds', JobName.ASSIGN_IMMUNIZATION_NUMBER, { id }),
 };
