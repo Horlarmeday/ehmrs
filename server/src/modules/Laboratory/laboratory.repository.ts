@@ -113,7 +113,7 @@ export async function getTestSamples(currentPage = 1, pageLimit = 10) {
  * @returns {object} test data
  */
 export async function createTest(data) {
-  const { name, price, sample_id, staff_id, result_unit, valid_range } = data;
+  const { name, price, sample_id, staff_id, result_unit, valid_range, type } = data;
   const count = await getNumberOfRecords(Test);
 
   return Test.create({
@@ -124,6 +124,7 @@ export async function createTest(data) {
     result_unit,
     valid_range,
     code: `D${count + 1}`,
+    type,
   });
 }
 

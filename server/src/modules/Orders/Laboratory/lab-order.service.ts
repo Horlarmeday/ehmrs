@@ -1,7 +1,12 @@
 /* eslint-disable camelcase,no-param-reassign */
-import { getPrescribedTests, orderBulkTest, prescribeTest } from './lab-order.repository';
+import {
+  getPrescribedTests,
+  orderBulkTest,
+  prescribeTest,
+  updatePrescribedTest,
+} from './lab-order.repository';
 import { PrescribedTestBody } from './interface/prescribed-test.body';
-import { PrescribedTest } from '../../../database/models';
+import { PrescribedDrug, PrescribedTest } from '../../../database/models';
 import PatientService from '../../Patient/patient.service';
 import {
   createTestPrescription,
@@ -11,6 +16,8 @@ import {
 import { isToday } from '../../../core/helpers/helper';
 import { TestStatus } from '../../../database/models/testPrescription';
 import { getVisitById } from '../../Visit/visit.repository';
+import { NHISApprovalStatus } from '../../../core/helpers/general';
+import { PrescriptionType } from '../../../database/models/prescribedTest';
 
 export class LabOrderService {
   /**
@@ -47,6 +54,9 @@ export class LabOrderService {
         patient_id: visit.patient_id,
         date_requested: Date.now(),
         test_prescription_id: prescription.id,
+        ...(test.test_type === PrescriptionType.NHIS && {
+          nhis_status: NHISApprovalStatus.PENDING,
+        }),
       }))
     );
     return orderBulkTest(bulkTests);
@@ -58,7 +68,7 @@ export class LabOrderService {
    * @static
    * @returns {json} json object with prescribed tests data
    * @param body
-   * @memberOf PharmacyOrderService
+   * @memberOf LabOrderService
    */
   static async getPrescribedTests(body) {
     const { currentPage, pageLimit, filter } = body;
@@ -72,6 +82,18 @@ export class LabOrderService {
     }
 
     return getPrescribedTests({});
+  }
+
+  /**
+   * update prescribed test
+   *
+   * @static
+   * @returns {Promise<PrescribedTest>} json object with prescribed test data
+   * @param body
+   * @memberOf LabOrderService
+   */
+  static async updatePrescribedTest(body: Partial<PrescribedTest>): Promise<PrescribedTest> {
+    return updatePrescribedTest(body);
   }
 
   /**

@@ -1,7 +1,12 @@
 /* eslint-disable camelcase */
-import { PrescribedTest, Staff, Test } from '../../../database/models';
-import sequelize from 'sequelize';
+import { PrescribedDrug, PrescribedTest, Staff, Test } from '../../../database/models';
+import sequelize, { WhereOptions } from 'sequelize';
 import { staffAttributes } from '../../Antenatal/antenatal.repository';
+import { BadException } from '../../../common/util/api-error';
+import { StatusCodes } from '../../../core/helpers/helper';
+import { ERROR_UPDATING_DRUG } from '../Pharmacy/messages/response-messages';
+import { getOnePrescribedDrug } from '../Pharmacy/pharmacy-order.repository';
+import { ERROR_UPDATING_TEST } from './messages/response-messages';
 
 /**
  * prescribe a test for patient
@@ -33,11 +38,13 @@ export async function orderBulkTest(data) {
   return getPrescriptionTests({ id: testIds });
 }
 
-export const updatePrescribedTest = (
-  query: sequelize.WhereOptions<PrescribedTest>,
-  fieldsToUpdate: { [x: string]: string }
-) => {
-  return PrescribedTest.update({ ...fieldsToUpdate }, { where: { ...query } });
+export const updatePrescribedTest = async (data: Partial<PrescribedTest>) => {
+  try {
+    await PrescribedTest.update({ ...data }, { where: { id: data.id } });
+  } catch (e) {
+    throw new BadException('Error', StatusCodes.SERVER_ERROR, ERROR_UPDATING_TEST);
+  }
+  return getOnePrescribedTest({ id: data.id });
 };
 
 /**
@@ -52,12 +59,12 @@ export const getPrescribedTests = ({ currentPage = 1, pageLimit = 10, filter = n
     paginate: +pageLimit,
     order: [['date_requested', 'DESC']],
     where: {
-      ...(filter && { ...JSON.parse(filter) }),
+      ...(filter && JSON.parse(filter)),
     },
     include: [
       {
         model: Test,
-        attributes: ['name'],
+        attributes: ['name', 'type'],
       },
       {
         model: Staff,
@@ -73,6 +80,16 @@ export const getPrescriptionTests = async (query: sequelize.WhereOptions<Prescri
     where: { ...query },
     include: [
       { model: Test, attributes: ['name'] },
+      { model: Staff, as: 'examiner', attributes: staffAttributes },
+    ],
+  });
+};
+
+export const getOnePrescribedTest = async (query: WhereOptions<PrescribedTest>) => {
+  return PrescribedTest.findOne({
+    where: { ...query },
+    include: [
+      { model: Test, attributes: ['name', 'type'] },
       { model: Staff, as: 'examiner', attributes: staffAttributes },
     ],
   });
