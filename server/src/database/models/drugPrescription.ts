@@ -19,15 +19,9 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
-import { PrescribedDrug } from './prescribedDrug';
+import { PrescribedDrug, Source } from './prescribedDrug';
 import { Antenatal } from './antenatal';
 import { PrescribedAdditionalItem } from './prescribedAdditionalItem';
-
-export enum Source {
-  ANC = 'Antenatal',
-  CONSULTATION = 'Consultation',
-  THEATER = 'Theater',
-}
 
 export enum DrugStatus {
   PENDING = 'Pending',
@@ -42,7 +36,7 @@ export class DrugPrescription extends Model {
   id: number;
 
   @Column({
-    type: DataType.ENUM(Source.ANC, Source.CONSULTATION, Source.THEATER),
+    type: DataType.ENUM(Source.ANC, Source.CONSULTATION, Source.THEATER, Source.IMMUNIZATION),
     defaultValue: Source.CONSULTATION,
   })
   source: Source;

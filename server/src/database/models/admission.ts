@@ -21,6 +21,7 @@ import { Ward } from './ward';
 import { Bed } from './bed';
 import { Visit } from './visit';
 import { Antenatal } from './antenatal';
+import { Immunization } from './immunization';
 
 export enum DischargeStatus {
   DISCHARGED = 'Discharged',
@@ -93,6 +94,7 @@ export class Admission extends Model {
   })
   discharge_status: DischargeStatus;
 
+  @ForeignKey(() => Ward)
   @Column({
     type: DataType.INTEGER,
   })
@@ -148,8 +150,11 @@ export class Admission extends Model {
   @BelongsTo(() => Bed)
   bed: Bed;
 
-  @BelongsTo(() => Ward)
+  @BelongsTo(() => Ward, 'ward_id')
   ward: Ward;
+
+  @BelongsTo(() => Ward, 'previous_ward')
+  previousWard: Ward;
 
   @BelongsTo(() => Visit)
   visit: Visit;

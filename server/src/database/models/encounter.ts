@@ -16,75 +16,48 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
-import { Imaging } from './imaging';
-
-export enum InvestigationType {
-  PRIMARY = 'Primary',
-  SECONDARY = 'Secondary',
-}
+import { Visit } from './visit';
 
 @Table({ timestamps: true })
-export class Investigation extends Model {
+export class Encounter extends Model {
   @PrimaryKey
   @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
   id: number;
 
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'investigation name is required',
-      },
-    },
-  })
-  name: string;
-
-  @Column({
-    type: DataType.DECIMAL(12, 2),
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'price is required',
-      },
-    },
-  })
-  price: number;
-
-  @Column({
-    type: DataType.ENUM(InvestigationType.PRIMARY, InvestigationType.SECONDARY),
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'type of investigation is required',
-      },
-    },
-  })
-  type: InvestigationType;
-
-  @ForeignKey(() => Imaging)
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'imaging id is required',
-      },
-    },
-  })
-  imaging_id: number;
-
   @ForeignKey(() => Staff)
   @Column({
     type: DataType.INTEGER,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'staff id is required',
+      },
+    },
   })
-  staff_id?: number;
+  staff_id: number;
+
+  @ForeignKey(() => Visit)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'visit id is required',
+      },
+    },
+  })
+  visit_id: number;
+
+  @Column({
+    type: DataType.DATE,
+  })
+  time_of_encounter: Date;
 
   @BelongsTo(() => Staff)
-  staff: Staff;
+  examiner: Staff;
 
-  @BelongsTo(() => Imaging)
-  imaging: Imaging;
+  @BelongsTo(() => Visit)
+  visit: Visit;
 
   static async paginate(param: {
     paginate: number;

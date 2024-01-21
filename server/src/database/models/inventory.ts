@@ -22,7 +22,9 @@ import { InventoryItem } from './inventoryItem';
 export enum AcceptedDrugType {
   CASH = 'Cash Drug',
   NHIS = 'NHIS Drug',
+  PRIVATE = 'Private Drug',
   BOTH = 'Both',
+  ALL = 'All',
 }
 
 @Table({ timestamps: true })
@@ -48,7 +50,13 @@ export class Inventory extends Model {
   refill_level: number;
 
   @Column({
-    type: DataType.ENUM(AcceptedDrugType.CASH, AcceptedDrugType.BOTH, AcceptedDrugType.NHIS),
+    type: DataType.ENUM(
+      AcceptedDrugType.CASH,
+      AcceptedDrugType.BOTH,
+      AcceptedDrugType.NHIS,
+      AcceptedDrugType.ALL,
+      AcceptedDrugType.PRIVATE
+    ),
     allowNull: false,
     validate: {
       notEmpty: {
