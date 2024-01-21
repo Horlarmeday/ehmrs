@@ -8,7 +8,7 @@ router.post('/pharmacy/items/dispense', verify, StoreController.dispenseStoreIte
 router.post('/pharmacy/items/reorder', verify, StoreController.reorderStoreItems);
 router.post('/pharmacy/items/export', verify, StoreController.exportData);
 router.post('/laboratory/items/create', verify, StoreController.createLaboratoryItem);
-router.get('/pharmacy/items/get', verify, StoreController.getPharmacyItems);
+router.get('/pharmacy/items/get', verify, StoreController.getPharmacyStoreItems);
 router.get('/pharmacy/items/:id', verify, StoreController.getPharmacyStoreItem);
 router.get('/pharmacy/items/history/:id', verify, StoreController.getPharmacyStoreItemHistory);
 router.get('/pharmacy/items/logs/:id', verify, StoreController.getPharmacyStoreItemLogs);

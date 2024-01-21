@@ -67,7 +67,7 @@ class StoreController {
    * @param {object} next next middleware
    * @returns {json} json object with items data
    */
-  static async getPharmacyItems(req: Request, res: Response, next: NextFunction) {
+  static async getPharmacyStoreItems(req: Request, res: Response, next: NextFunction) {
     try {
       const items = await StoreService.getPharmacyItems(req.query);
 

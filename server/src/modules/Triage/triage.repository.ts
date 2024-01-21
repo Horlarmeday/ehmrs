@@ -1,5 +1,4 @@
 /* eslint-disable camelcase */
-import { getModelByVisitId } from '../Consultation/consultation.repository';
 import { Triage } from '../../database/models';
 import { WhereOptions } from 'sequelize';
 
@@ -54,7 +53,7 @@ export async function createTriage(data) {
  * @param data
  */
 export async function getTriageInAVisit(data) {
-  return getModelByVisitId(Triage, data);
+  return Triage.findAll({ where: { visit_id: data } });
 }
 
 /**
