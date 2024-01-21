@@ -2,7 +2,7 @@
   <div>
     <div class="header-top mb-6">
       <div class="container white">
-        <div class="d-none d-lg-flex align-items-center mr-3">
+        <div class="d-none d-lg-flex align-items-center mr-1">
           <ul class="header-tabs nav align-self-end font-size-lg" role="tablist">
             <li class="nav-item mr-1">
               <a
@@ -32,7 +32,7 @@
             </li>
             <li v-if="nurseAllowedTabs.includes(currentUser.role)" class="nav-item">
               <a
-                v-if="antenatal && antenatal.account_status === 'Inactive'"
+                v-if="antenatal && antenatal.account_status === Inactive"
                 class="nav-link text-dark py-4 px-6"
                 :class="{ active: tabIndex === 0, disabled: tabIndex === 0 }"
                 @click="setActiveTab($event, 'accountUpdate')"
@@ -95,7 +95,7 @@
                 >Radiology</a
               >
             </li>
-            <li v-if="nurseAllowedTabs.includes(currentUser.role)" class="nav-item mr-3">
+            <li v-if="nurseAllowedTabs.includes(currentUser.role)" class="nav-item">
               <a
                 class="nav-link text-dark py-4 px-6"
                 :class="{ active: tabIndex === 4, disabled: tabIndex === 4 }"
@@ -108,7 +108,7 @@
                 >Clinical Notes</a
               >
             </li>
-            <li v-if="nurseAllowedTabs.includes(currentUser.role)" class="nav-item mr-3">
+            <li v-if="doctorAllowedTabs.includes(currentUser.role)" class="nav-item">
               <a
                 class="nav-link text-dark py-4 px-6"
                 :class="{ active: tabIndex === 7, disabled: tabIndex === 7 }"
@@ -121,7 +121,7 @@
                 >Disposition</a
               >
             </li>
-            <li v-if="doctorAllowedTabs.includes(currentUser.role)" class="nav-item mr-3">
+            <li v-if="doctorAllowedTabs.includes(currentUser.role)" class="nav-item">
               <a
                 class="nav-link text-dark py-4 px-6"
                 :class="{ active: tabIndex === 8, disabled: tabIndex === 8 }"
@@ -132,6 +132,32 @@
                 role="tab"
                 aria-selected="true"
                 >Surgery</a
+              >
+            </li>
+            <li v-if="nurseAllowedTabs.includes(currentUser.role)" class="nav-item">
+              <a
+                class="nav-link text-dark py-4 px-6"
+                :class="{ active: tabIndex === 9, disabled: tabIndex === 9 }"
+                @click="setActiveTab($event, 'deliveryInfo')"
+                data-tab="9"
+                data-toggle="tab"
+                href="#"
+                role="tab"
+                aria-selected="true"
+                >Delivery</a
+              >
+            </li>
+            <li v-if="nurseAllowedTabs.includes(currentUser.role)" class="nav-item">
+              <a
+                class="nav-link text-dark py-4 px-6"
+                :class="{ active: tabIndex === 10, disabled: tabIndex === 10 }"
+                @click="setActiveTab($event, 'postNatal')"
+                data-tab="10"
+                data-toggle="tab"
+                href="#"
+                role="tab"
+                aria-selected="true"
+                >Post Natal</a
               >
             </li>
           </ul>
@@ -160,6 +186,8 @@ import { parseJwt } from '@/core/plugins/parseJwt';
 import Observation from '@/view/pages/programs/antenatal/tabs/Observation.vue';
 import Disposition from '@/view/pages/consultation/tabs/Disposition.vue';
 import Surgery from '@/view/pages/consultation/tabs/Surgery.vue';
+import Delivery from '@/view/pages/programs/antenatal/tabs/Delivery.vue';
+import Postnatal from '@/view/pages/programs/antenatal/tabs/Postnatal.vue';
 
 const ComponentMapping = {
   accountUpdate: AccountUpdate,
@@ -172,6 +200,8 @@ const ComponentMapping = {
   observation: Observation,
   disposition: Disposition,
   surgery: Surgery,
+  deliveryInfo: Delivery,
+  postNatal: Postnatal,
 };
 export default {
   components: {
@@ -185,6 +215,8 @@ export default {
     currentUser: '',
     doctorAllowedTabs: ['Super Admin', 'General Practitioner'],
     nurseAllowedTabs: ['Super Admin', 'Nurse'],
+    Active: 'ACTIVE',
+    Inactive: 'INACTIVE',
   }),
   computed: {
     antenatal() {
@@ -232,11 +264,11 @@ export default {
       if (this.doctorAllowedTabs.includes(this.currentUser.role)) {
         return 'summary';
       } else {
-        if (this.antenatal && this.antenatal.account_status === 'Inactive') {
+        if (this.antenatal && this.antenatal.account_status === this.Inactive) {
           return 'accountUpdate';
         }
 
-        if (this.antenatal && this.antenatal.account_status === 'Active') {
+        if (this.antenatal && this.antenatal.account_status === this.Active) {
           return 'triage';
         }
         return null;

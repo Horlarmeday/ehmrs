@@ -4,9 +4,10 @@
       <div class="container white">
         <div class="d-none d-lg-flex align-items-center mr-3">
           <ul class="header-tabs nav align-self-end font-size-lg" role="tablist">
-            <li class="nav-item mr-3" v-for="(tab, index) in tabs" :key="index">
+            <li class="nav-item mr-1" v-for="(tab, index) in tabs" :key="index">
               <a
                 class="nav-link text-dark py-4 px-6"
+                v-if="tab.showComponent"
                 :class="{
                   active: tabIndex === index,
                   disabled: tabIndex === index || isEmptySummary,
@@ -43,17 +44,19 @@ import PulseIcons from '@/view/pages/consultation/components/PulseIcons.vue';
 import PageSkeleton from '@/utils/PageSkeleton.vue';
 import History from '@/view/pages/consultation/tabs/History.vue';
 import Surgery from '@/view/pages/consultation/tabs/Surgery.vue';
+import WardRound from '@/view/pages/consultation/tabs/WardRound.vue';
 import { isEmpty } from '@/common/common';
 
 const ComponentMapping = {
   observations: Observations,
   tests: TestOrders,
-  investigations: InvestigationOrders,
+  radiology: InvestigationOrders,
   medications: Medications,
   services: ServicesOrder,
   disposition: Disposition,
   history: History,
   surgery: Surgery,
+  wardRound: WardRound,
 };
 
 export default {
@@ -68,34 +71,47 @@ export default {
         {
           name: 'History',
           component: 'history',
+          showComponent: true,
         },
         {
           name: 'Observations',
           component: 'observations',
+          showComponent: true,
         },
         {
           name: 'Tests',
           component: 'tests',
+          showComponent: true,
         },
         {
           name: 'Medications',
           component: 'medications',
+          showComponent: true,
         },
         {
           name: 'Radiology',
           component: 'radiology',
+          showComponent: true,
         },
         {
           name: 'Disposition',
           component: 'disposition',
+          showComponent: true,
         },
         {
           name: 'Services',
           component: 'services',
+          showComponent: true,
         },
         {
           name: 'Surgery',
           component: 'surgery',
+          showComponent: true,
+        },
+        {
+          name: 'Ward Round',
+          component: 'wardRound',
+          showComponent: false,
         },
       ],
     };
@@ -116,6 +132,19 @@ export default {
           isEmpty(summary.observations.histories) &&
           isEmpty(summary.observations.complaints)
       );
+    },
+    visit() {
+      return this.$store.state.visit.visit;
+    },
+  },
+  watch: {
+    visit(value) {
+      this.tabs.filter(tab => {
+        if (tab.component === 'wardRound' && value.category === 'Inpatient') {
+          tab.showComponent = true;
+          return tab;
+        }
+      });
     },
   },
   methods: {
