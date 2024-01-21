@@ -29,6 +29,8 @@ import { Inventory } from './inventory';
 import { PrescribedAdditionalItem } from './prescribedAdditionalItem';
 import { Antenatal } from './antenatal';
 import { SurgeryRequest } from './surgeryRequest';
+import { Immunization } from './immunization';
+import { NHISApprovalStatus } from '../../core/helpers/general';
 
 export enum DispenseStatus {
   DISPENSED = 'Dispensed',
@@ -58,6 +60,7 @@ export enum Source {
   ANC = 'Antenatal',
   CONSULTATION = 'Consultation',
   THEATER = 'Theater',
+  IMMUNIZATION = 'Immunization',
 }
 
 @Table({ timestamps: true, tableName: 'Prescribed_Drugs' })
@@ -91,7 +94,7 @@ export class PrescribedDrug extends Model {
   dosage_form_id: number;
 
   @Column({
-    type: DataType.ENUM(DrugType.CASH, DrugType.NHIS),
+    type: DataType.ENUM(DrugType.CASH, DrugType.NHIS, DrugType.PRIVATE),
     allowNull: false,
     validate: {
       notEmpty: {
@@ -269,10 +272,13 @@ export class PrescribedDrug extends Model {
   duration_unit: string;
 
   @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: false,
+    type: DataType.ENUM(
+      NHISApprovalStatus.APPROVED,
+      NHISApprovalStatus.DECLINED,
+      NHISApprovalStatus.PENDING
+    ),
   })
-  is_nhis_drug_approved: boolean;
+  nhis_status: NHISApprovalStatus;
 
   @Column({
     type: DataType.ENUM(DrugGroup.PRIMARY, DrugGroup.SECONDARY),
@@ -363,10 +369,21 @@ export class PrescribedDrug extends Model {
   surgery_id: number;
 
   @Column({
-    type: DataType.ENUM(Source.ANC, Source.CONSULTATION, Source.THEATER),
+    type: DataType.ENUM(Source.ANC, Source.CONSULTATION, Source.THEATER, Source.IMMUNIZATION),
     defaultValue: Source.CONSULTATION,
   })
   source: Source;
+
+  @ForeignKey(() => Immunization)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  immunization_id: number;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  auth_code: string;
 
   @BelongsTo(() => Staff, 'examiner')
   requester: Staff;
@@ -397,6 +414,9 @@ export class PrescribedDrug extends Model {
 
   @BelongsTo(() => Antenatal)
   antenatal: Antenatal;
+
+  @BelongsTo(() => Immunization)
+  immunization: Immunization;
 
   @BelongsTo(() => Inventory)
   inventory: Inventory;

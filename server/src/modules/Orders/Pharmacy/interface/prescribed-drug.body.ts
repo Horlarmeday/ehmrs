@@ -48,6 +48,7 @@ export class PrescribedDrugBody {
   source: string;
   drug_group?: string;
   ante_natal_id?: number;
+  immunization_id?: number;
 }
 
 export class PatientTreatmentBody {

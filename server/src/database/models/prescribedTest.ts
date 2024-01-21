@@ -25,11 +25,13 @@ import { Source, TestPrescription } from './testPrescription';
 import { TestResult } from './testResult';
 import { Antenatal } from './antenatal';
 import { SurgeryRequest } from './surgeryRequest';
+import { NHISApprovalStatus } from '../../core/helpers/general';
 
 export enum PrescriptionType {
   CASH = 'Cash',
   NHIS = 'NHIS',
   OTHER = 'Other',
+  PRIVATE = 'Private',
 }
 
 export enum TestStatus {
@@ -103,7 +105,12 @@ export class PrescribedTest extends Model {
   is_urgent: boolean;
 
   @Column({
-    type: DataType.ENUM(PrescriptionType.CASH, PrescriptionType.NHIS, PrescriptionType.OTHER),
+    type: DataType.ENUM(
+      PrescriptionType.CASH,
+      PrescriptionType.NHIS,
+      PrescriptionType.OTHER,
+      PrescriptionType.PRIVATE
+    ),
     allowNull: false,
     validate: {
       notEmpty: {
@@ -228,10 +235,13 @@ export class PrescribedTest extends Model {
   test_approved_by: number;
 
   @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: false,
+    type: DataType.ENUM(
+      NHISApprovalStatus.APPROVED,
+      NHISApprovalStatus.DECLINED,
+      NHISApprovalStatus.PENDING
+    ),
   })
-  is_nhis_test_approved: boolean;
+  nhis_status: NHISApprovalStatus;
 
   @ForeignKey(() => Antenatal)
   @Column({
@@ -250,6 +260,11 @@ export class PrescribedTest extends Model {
     defaultValue: Source.CONSULTATION,
   })
   source: Source;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  auth_code: string;
 
   @BelongsTo(() => Staff, {
     foreignKey: 'requester',

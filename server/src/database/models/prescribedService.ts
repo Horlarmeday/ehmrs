@@ -22,11 +22,13 @@ import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Service } from './service';
 import { Antenatal } from './antenatal';
 import { SurgeryRequest } from './surgeryRequest';
+import { NHISApprovalStatus } from '../../core/helpers/general';
 
 export enum ServiceType {
   CASH = 'Cash',
   NHIS = 'NHIS',
   OTHER = 'Other',
+  PRIVATE = 'Private',
 }
 
 @Table({ timestamps: true, tableName: 'Prescribed_Services' })
@@ -54,7 +56,7 @@ export class PrescribedService extends Model {
   is_urgent: boolean;
 
   @Column({
-    type: DataType.ENUM(ServiceType.CASH, ServiceType.NHIS, ServiceType.OTHER),
+    type: DataType.ENUM(ServiceType.CASH, ServiceType.NHIS, ServiceType.OTHER, ServiceType.PRIVATE),
     allowNull: false,
     validate: {
       notEmpty: {
@@ -135,6 +137,15 @@ export class PrescribedService extends Model {
   })
   quantity: number;
 
+  @Column({
+    type: DataType.ENUM(
+      NHISApprovalStatus.APPROVED,
+      NHISApprovalStatus.DECLINED,
+      NHISApprovalStatus.PENDING
+    ),
+  })
+  nhis_status: NHISApprovalStatus;
+
   @BelongsTo(() => Staff, {
     foreignKey: 'requester',
   })
@@ -151,6 +162,11 @@ export class PrescribedService extends Model {
     type: DataType.INTEGER,
   })
   surgery_id: number;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  auth_code: string;
 
   @BelongsTo(() => Service)
   service: Service;

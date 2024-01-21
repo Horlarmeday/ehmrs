@@ -26,6 +26,7 @@ import { InvestigationPrescription } from './investigationPrescription';
 import { Antenatal } from './antenatal';
 import { Imaging } from './imaging';
 import { SurgeryRequest } from './surgeryRequest';
+import { NHISApprovalStatus } from '../../core/helpers/general';
 
 export enum InvestigationStatus {
   PENDING = 'Pending',
@@ -72,7 +73,12 @@ export class PrescribedInvestigation extends Model {
   is_urgent: boolean;
 
   @Column({
-    type: DataType.ENUM(PrescriptionType.CASH, PrescriptionType.NHIS, PrescriptionType.OTHER),
+    type: DataType.ENUM(
+      PrescriptionType.CASH,
+      PrescriptionType.NHIS,
+      PrescriptionType.OTHER,
+      PrescriptionType.PRIVATE
+    ),
     allowNull: false,
     validate: {
       notEmpty: {
@@ -207,10 +213,13 @@ export class PrescribedInvestigation extends Model {
   investigation_approved_by: number;
 
   @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: false,
+    type: DataType.ENUM(
+      NHISApprovalStatus.APPROVED,
+      NHISApprovalStatus.DECLINED,
+      NHISApprovalStatus.PENDING
+    ),
   })
-  is_nhis_investigation_approved: boolean;
+  nhis_status: NHISApprovalStatus;
 
   @ForeignKey(() => Antenatal)
   @Column({
@@ -229,6 +238,11 @@ export class PrescribedInvestigation extends Model {
     defaultValue: Source.CONSULTATION,
   })
   source: Source;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  auth_code: string;
 
   @BelongsTo(() => Staff, {
     foreignKey: 'requester',
@@ -265,6 +279,9 @@ export class PrescribedInvestigation extends Model {
 
   @BelongsTo(() => Imaging)
   imaging: Imaging;
+
+  @BelongsTo(() => SurgeryRequest)
+  surgeryRequest: SurgeryRequest;
 
   static async paginate(param: {
     paginate: number;
