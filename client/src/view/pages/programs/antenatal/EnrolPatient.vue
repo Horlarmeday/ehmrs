@@ -18,12 +18,15 @@
               :reduce="
                 patients => ({
                   fullname: patients.fullname,
+                  firstname: patients.firstname,
+                  lastname: patients.lastname,
                   id: patients.id,
                   phone: patients?.phone,
                   address: patients.address,
                   photo: patients.photo,
                   hospital_id: patients.hospital_id,
                   gender: patients?.gender,
+                  date_of_birth: patients?.date_of_birth,
                 })
               "
             />
