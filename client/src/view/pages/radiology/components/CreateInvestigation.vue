@@ -51,6 +51,19 @@
           <span class="text-danger text-sm">{{ errors.first('imaging_id') }}</span>
         </div>
       </div>
+      <div class="form-group row">
+        <label class="col-lg-3 col-form-label">Type</label>
+        <div class="col-lg-8">
+          <div class="radio-inline mt-3">
+            <label class="radio" v-for="(type, i) in investigationTypes" :key="i">
+              <input type="radio" v-model="investigationType" :value="type" />
+              <span></span>
+              {{ type }}
+            </label>
+          </div>
+          <span class="text-danger text-sm">{{ errors.first('type') }}</span>
+        </div>
+      </div>
     </div>
     <button
       class="mt-3 btn btn-primary"
@@ -86,6 +99,8 @@ export default {
       price: '',
       investigation_id: '',
       imaging_id: '',
+      investigationType: '',
+      investigationTypes: ['Primary', 'Secondary'],
       isDisabled: false,
     };
   },
@@ -118,10 +133,11 @@ export default {
         this.initValues();
         this.$validator.reset();
       } else {
-        const { price, name, imaging_id, id } = JSON.parse(JSON.stringify(this.data));
+        const { price, name, imaging_id, id, type } = JSON.parse(JSON.stringify(this.data));
         this.price = price;
         this.name = name;
         this.imaging_id = imaging_id;
+        this.investigationType = type;
         this.investigation_id = id;
       }
     },
@@ -155,6 +171,7 @@ export default {
             imaging_id: this.imaging_id,
             name: this.name,
             price: this.price,
+            type: this.investigationType,
             investigation_id: this.investigation_id,
           };
           // set spinner to submit button
@@ -181,6 +198,7 @@ export default {
       this.price = '';
       this.imaging_id = '';
       this.investigation_id = '';
+      this.investigationType = '';
     },
   },
 };

@@ -102,6 +102,7 @@ export default {
       this.$emit('closeModal');
       this.initValues();
     },
+
     createInsurance() {
       this.$validator.validateAll().then(result => {
         if (result) {
@@ -129,6 +130,7 @@ export default {
         }
       });
     },
+
     initValues() {
       this.name = '';
       this.description = '';

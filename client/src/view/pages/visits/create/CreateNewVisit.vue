@@ -121,9 +121,7 @@
             data-vv-validate-on="blur"
             name="priority"
           >
-            <option :value="type" v-for="(priority, i) in priorities" :key="i">{{
-              priority
-            }}</option>
+            <option :value="prior" v-for="(prior, i) in priorities" :key="i">{{ prior }}</option>
           </select>
           <span class="text-danger text-sm">{{ errors.first('priority') }}</span>
         </div>
@@ -140,13 +138,14 @@
 import { getRolesById } from '@/view/pages/employees/create/employeeRoles';
 import { debounce } from '@/common/common';
 import vSelect from 'vue-select';
+import dayjs from 'dayjs';
 
 export default {
   name: 'CreateVisit',
   components: { vSelect },
   data() {
     return {
-      categories: ['Antenatal', 'Emergency', 'Inpatient', 'Outpatient'],
+      categories: ['Antenatal', 'Emergency', 'Immunization', 'Inpatient', 'Outpatient'],
       priorities: ['Not Urgent', 'Urgent', 'Emergency'],
       visitTypes: [
         'New visit',
@@ -223,7 +222,8 @@ export default {
     createVisit() {
       this.$validator.validateAll().then(result => {
         if (result) {
-          const date = `${this.date_of_visit} ${this.time_of_visit}`;
+          const date = `${dayjs(this.date_of_visit).format('YYYY-MM-DD')} ${this.time_of_visit}`;
+          console.log(new Date(date));
           const obj = {
             category: this.category,
             type: this.type,

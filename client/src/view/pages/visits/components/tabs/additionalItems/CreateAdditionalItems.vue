@@ -3,15 +3,12 @@
     <div class="card-header p-0">
       <div class="card-title mb-2">
         <span class="card-label font-weight-bolder text-dark"></span>
-        <span v-if="showSwitch" class="switch switch-sm switch-icon">
-          <label>
-            <input
-              @change="flipSwitch($event)"
-              type="checkbox"
-              :checked="switchPosition && switchSpot"
-            />
-            <span />
-          </label>
+        <span v-if="showSwitch">
+          <switch-box
+            :switch-position="switchPosition"
+            :switch-spot="switchSpot"
+            @switchSpot="flipSwitch"
+          />
         </span>
       </div>
     </div>
@@ -79,9 +76,10 @@
 <script>
 import vSelect from 'vue-select';
 import { debounce } from '@/common/common';
+import SwitchBox from '@/utils/SwitchBox.vue';
 
 export default {
-  components: { vSelect },
+  components: { SwitchBox, vSelect },
   props: {
     switchPosition: {
       type: Boolean,
@@ -237,8 +235,8 @@ export default {
         .catch(() => this.removeSpinner(submitButton));
     },
 
-    flipSwitch(event) {
-      this.switchSpot = !!event.target.checked;
+    flipSwitch(value) {
+      this.switchSpot = value;
     },
   },
 };

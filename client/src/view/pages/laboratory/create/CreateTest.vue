@@ -78,6 +78,19 @@
           <span class="text-danger text-sm">{{ errors.first('valid_range') }}</span>
         </div>
       </div>
+      <div class="form-group row">
+        <label class="col-lg-3 col-form-label">Type</label>
+        <div class="col-lg-8">
+          <div class="radio-inline mt-3">
+            <label class="radio" v-for="(type, i) in testTypes" :key="i">
+              <input type="radio" v-model="testType" :value="type" />
+              <span></span>
+              {{ type }}
+            </label>
+          </div>
+          <span class="text-danger text-sm">{{ errors.first('type') }}</span>
+        </div>
+      </div>
     </div>
     <button
       class="mt-3 btn btn-primary"
@@ -110,7 +123,9 @@ export default {
       sample_id: '',
       valid_range: '',
       result_unit: '',
+      testType: '',
       isDisabled: false,
+      testTypes: ['Primary', 'Secondary'],
     };
   },
   computed: {
@@ -136,7 +151,7 @@ export default {
         this.initValues();
         this.$validator.reset();
       } else {
-        const { id, name, price, sample_id, result_unit, valid_range } = JSON.parse(
+        const { id, name, price, sample_id, result_unit, valid_range, type } = JSON.parse(
           JSON.stringify(this.data)
         );
         this.test_id = id;
@@ -145,6 +160,7 @@ export default {
         this.sample_id = sample_id;
         this.result_unit = result_unit;
         this.valid_range = valid_range;
+        this.testType = type;
       }
     },
   },
@@ -173,6 +189,7 @@ export default {
             test_id: this.test_id,
             result_unit: this.result_unit,
             valid_range: this.valid_range,
+            type: this.testType,
           };
           // set spinner to submit button
           const submitButton = this.$refs['kt_test_submit'];
@@ -200,6 +217,7 @@ export default {
       this.sample_id = '';
       this.valid_range = '';
       this.result_unit = '';
+      this.testType = '';
     },
   },
   created() {

@@ -13,7 +13,7 @@
             v-model="name"
             name="name"
           />
-          <span class="text-danger text-sm">{{ errors.first("name") }}</span>
+          <span class="text-danger text-sm">{{ errors.first('name') }}</span>
         </div>
       </div>
       <div class="form-group row">
@@ -28,7 +28,20 @@
             v-model="price"
             name="price"
           />
-          <span class="text-danger text-sm">{{ errors.first("price") }}</span>
+          <span class="text-danger text-sm">{{ errors.first('price') }}</span>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-lg-3 col-form-label">Type</label>
+        <div class="col-lg-8">
+          <div class="radio-inline mt-3">
+            <label class="radio" v-for="(type, i) in serviceTypes" :key="i">
+              <input type="radio" v-model="serviceType" :value="type" />
+              <span></span>
+              {{ type }}
+            </label>
+          </div>
+          <span class="text-danger text-sm">{{ errors.first('type') }}</span>
         </div>
       </div>
     </div>
@@ -48,33 +61,35 @@ export default {
   props: {
     displayPrompt: {
       type: Boolean,
-      required: true
+      required: true,
     },
     data: {
       type: Object,
-      default: () => {}
-    }
+      default: () => {},
+    },
   },
   data() {
     return {
-      name: "",
-      price: "",
-      service_id: "",
-      isDisabled: false
+      name: '',
+      price: '',
+      service_id: '',
+      serviceType: '',
+      serviceTypes: ['Primary', 'Secondary'],
+      isDisabled: false,
     };
   },
   computed: {
     validateForm() {
-      return !this.errors.any() && this.name !== "" && this.price !== "";
+      return !this.errors.any() && this.name !== '' && this.price !== '';
     },
     activePrompt: {
       get() {
         return this.displayPrompt;
       },
       set(value) {
-        this.$emit("closeModal", value);
-      }
-    }
+        this.$emit('closeModal', value);
+      },
+    },
   },
   watch: {
     displayPrompt(val) {
@@ -83,31 +98,28 @@ export default {
         this.initValues();
         this.$validator.reset();
       } else {
-        const { id, name, price } = JSON.parse(JSON.stringify(this.data));
+        const { id, name, price, type } = JSON.parse(JSON.stringify(this.data));
         this.service_id = id;
         this.name = name;
         this.price = price;
+        this.serviceType = type;
       }
-    }
+    },
   },
   methods: {
     addSpinner(submitButton) {
       this.isDisabled = true;
-      submitButton.classList.add("spinner", "spinner-light", "spinner-right");
+      submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');
     },
 
     removeSpinner(submitButton) {
       this.isDisabled = false;
-      submitButton.classList.remove(
-        "spinner",
-        "spinner-light",
-        "spinner-right"
-      );
+      submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
     },
 
     initializeRequest(button) {
       this.removeSpinner(button);
-      this.$emit("closeModal");
+      this.$emit('closeModal');
       this.initValues();
     },
 
@@ -117,21 +129,22 @@ export default {
           const obj = {
             service_id: this.service_id,
             name: this.name,
-            price: this.price
+            price: this.price,
+            type: this.serviceType,
           };
           // set spinner to submit button
-          const submitButton = this.$refs["kt_service_submit"];
+          const submitButton = this.$refs['kt_service_submit'];
           this.addSpinner(submitButton);
 
           if (this.service_id && this.service_id >= 0) {
             this.$store
-              .dispatch("model/updateService", obj)
+              .dispatch('model/updateService', obj)
               .then(() => this.initializeRequest(submitButton))
               .catch(() => this.removeSpinner(submitButton));
           } else {
             delete obj.service_id;
             this.$store
-              .dispatch("model/addService", obj)
+              .dispatch('model/addService', obj)
               .then(() => this.initializeRequest(submitButton))
               .catch(() => this.removeSpinner(submitButton));
           }
@@ -139,11 +152,12 @@ export default {
       });
     },
     initValues() {
-      this.name = "";
-      this.price = "";
-      this.service_id = "";
-    }
-  }
+      this.name = '';
+      this.price = '';
+      this.service_id = '';
+      this.serviceType = '';
+    },
+  },
 };
 </script>
 
