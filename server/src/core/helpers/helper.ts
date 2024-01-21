@@ -11,7 +11,6 @@ import { exportDataToCSV, exportDataToExcel, exportDataToPDF } from './fileExpor
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 import { Op } from 'sequelize';
-import { PrescribedDrugBody } from '../../modules/Orders/Pharmacy/interface/prescribed-drug.body';
 
 const writeFile = promisify(fs.writeFile);
 
@@ -21,6 +20,15 @@ export type ExportSelectedDataType = {
   data: any;
   dataType: ExportDataType;
 };
+export const staffAttributes = ['fullname', 'firstname', 'lastname'];
+export const patientAttributes = [
+  'fullname',
+  'photo',
+  'hospital_id',
+  'firstname',
+  'lastname',
+  'gender',
+];
 
 /**
  * process base64 image string into an actual image a writes to disk
@@ -192,3 +200,15 @@ export const backlogQuery = (field: string) => ({
       .toDate(),
   },
 });
+
+export function calculateAge(birthday: string | number | Date) {
+  const dateOfBirth = new Date(birthday);
+  const today = new Date();
+  let age = today.getFullYear() - dateOfBirth.getFullYear();
+  const month = today.getMonth() - dateOfBirth.getMonth();
+
+  if (month < 0 || (month === 0 && today.getDate() < dateOfBirth.getDate())) {
+    age--;
+  }
+  return age;
+}

@@ -37,3 +37,9 @@ export const getPeriodQuery = (period: SamplePeriod | null, field: string) => {
   if (period === SamplePeriod.TODAY) return todayQuery(field);
   if (period === SamplePeriod.BACKLOG) return backlogQuery(field);
 };
+
+export enum NHISApprovalStatus {
+  PENDING = 'Pending',
+  APPROVED = 'Approved',
+  DECLINED = 'Declined',
+}

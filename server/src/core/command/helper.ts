@@ -2,7 +2,8 @@ import { padNumberWithZero } from '../helpers/general';
 import { generateRandomNumbers } from '../helpers/helper';
 import { getPatientByHospitalId } from '../../modules/Patient/patient.repository';
 import { getOneAntenatalAccount } from '../../modules/Antenatal/antenatal.repository';
-import { Antenatal, Patient } from '../../database/models';
+import { Antenatal, Immunization, Patient } from '../../database/models';
+import { getOneImmunization } from '../../modules/Immunization/immunization.repository';
 
 const generateUniqueNumber = async (dataId: number, count: number, prefix: string) => {
   if (count === 1) return `${prefix}/${padNumberWithZero(dataId, 6)}`;
@@ -35,4 +36,19 @@ export const getAntenatalNumber = async (antenatalId: number) => {
   } while (antenatalNumber);
 
   return generatedAntenatalNumber;
+};
+
+export const getImmunizationNumber = async (immunizationId: number) => {
+  let immunization: Immunization;
+  let generatedImmunizationNumber: string;
+  let count = 0;
+  do {
+    count++;
+    generatedImmunizationNumber = await generateUniqueNumber(immunizationId, count, 'IMM');
+    immunization = await getOneImmunization({
+      immunization_number: generatedImmunizationNumber,
+    });
+  } while (immunization);
+
+  return generatedImmunizationNumber;
 };

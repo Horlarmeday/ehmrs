@@ -7,6 +7,7 @@ import {
   updatePrincipalRelationship,
   uploadPatientImage,
   assignAntenatalNumber,
+  assignImmunizationNumber,
 } from '../jobs';
 import { logger } from '../../helpers/logger';
 import { updatePatientHealthInsurance } from '../jobs/now/updatePatientHealthInsurance.job';
@@ -19,6 +20,7 @@ const Jobs = {
   [JobName.PATIENT_HEALTH_INSURANCE]: updatePatientHealthInsurance,
   [JobName.PRINCIPAL_RELATIONSHIP]: updatePrincipalRelationship,
   [JobName.ASSIGN_ANTENATAL_NUMBER]: assignAntenatalNumber,
+  [JobName.ASSIGN_IMMUNIZATION_NUMBER]: assignImmunizationNumber,
 };
 
 export default (agenda: Agenda) => {
