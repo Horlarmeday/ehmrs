@@ -1,105 +1,25 @@
 <template>
-  <div class="card card-custom card-stretch gutter-b card-shadowless">
-    <div v-if="!isEmptySummary">
-      <div class="card-body">
-        <div
-          v-for="(summary, i) in summaries"
-          :key="i"
-          class="card card-custom card-stretch card-stretch-fourth gutter-b"
-        >
-          <!-- <div class="card-body"> -->
-          <div
-            class="accordion accordion-solid accordion-panel accordion-svg-toggle"
-            role="tablist"
-          >
-            <div class="card">
-              <div class="card-header" header-tag="header" role="tab" style="background: blue">
-                <div class="card-title accord" v-b-toggle="`accordion-${i}`">
-                  <div class="card-label text-dark-50">
-                    <span class="mr-5">
-                      <span class="mr-2 text-dark">Start:</span>
-                      <span>{{ summary.date_visit_start | dayjs('ddd, MMM Do YYYY, h:mma') }}</span>
-                    </span>
-                    <span v-if="summary.date_visit_ended">
-                      <span class="mr-2 text-dark">End:</span>
-                      <span>{{ summary.date_visit_ended | dayjs('ddd, MMM Do YYYY, h:mma') }}</span>
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <b-collapse :id="`accordion-${i}`" accordion="my-accordion" role="tabpanel">
-                <div class="mt-3 card-body border-bottom border-left border-right">
-                  <b-tabs content-class="mt-5">
-                    <b-tab title="Triages" active>
-                      <triage-table :triages="summary.triages" />
-                    </b-tab>
-                    <b-tab title="Observations">
-                      <observations-table :observations="summary.observations" />
-                    </b-tab>
-                    <b-tab title="Diagnoses">
-                      <diagnoses-table :diagnoses="summary.diagnoses" />
-                    </b-tab>
-                    <b-tab title="Tests">
-                      <tests-table :tests="summary.tests" />
-                    </b-tab>
-                    <b-tab title="Medications">
-                      <medications-table :drugs="summary.drugs" />
-                    </b-tab>
-                    <b-tab title="Radiology">
-                      <radiology-table :investigations="summary.investigations" />
-                    </b-tab>
-                    <b-tab title="Clinical Notes">
-                      <clinical-notes-table :notes="summary.notes" />
-                    </b-tab>
-                  </b-tabs>
-                </div>
-              </b-collapse>
-            </div>
-          </div>
-          <!-- </div> -->
-        </div>
-        <div class="text-center">
-          <a
-            href="#"
-            :disabled="isInLastPage"
-            :class="isInLastPage ? disabled : ''"
-            @click="onFetchMore"
-            class="btn btn-outline-secondary mb-3 padding-right padding-left"
-          >
-            <i class="flaticon2-circle-vol-2"></i> See more
-          </a>
-        </div>
-      </div>
-    </div>
-    <div v-else>
-      <empty-data-card @addData="goToObservation" :text="content" />
-    </div>
-  </div>
+  <history-accordion
+    :content="content"
+    source="Antenatal"
+    :is-in-last-page="isInLastPage"
+    :is-empty-summary="isEmptySummary"
+    :summaries="summaries"
+    @openObservation="goToObservation"
+    @fetchMore="onFetchMore"
+  />
 </template>
 <script>
-import TriageTable from '@/view/components/table/AntenatalTriageTable.vue';
-import ObservationsTable from '@/view/components/table/AntenatalObservationsTable.vue';
-import DiagnosesTable from '@/view/components/table/DiagnosesTable.vue';
-import TestsTable from '@/view/components/table/TestsTable.vue';
-import MedicationsTable from '@/view/components/table/MedicationsTable.vue';
-import RadiologyTable from '@/view/components/table/RadiologyTable.vue';
-import ClinicalNotesTable from '@/view/components/table/ClinicalNotesTable.vue';
-import EmptyDataCard from '@/utils/EmptyDataCard.vue';
 import { isEmpty } from '@/common/common';
+import HistoryAccordion from '@/view/components/accordion/HistoryAccordion.vue';
 export default {
   name: 'Summary',
   components: {
-    EmptyDataCard,
-    ClinicalNotesTable,
-    RadiologyTable,
-    MedicationsTable,
-    TestsTable,
-    DiagnosesTable,
-    ObservationsTable,
-    TriageTable,
+    HistoryAccordion,
   },
   data: () => ({
     currentPage: 1,
+    tabIndex: 6,
     itemsPerPage: 5,
     disabled: 'disabled',
     content:
@@ -133,6 +53,9 @@ export default {
           isEmpty(summary.notes)
       );
     },
+    antenatal() {
+      return this.$store.state.antenatal.antenatal;
+    },
   },
   methods: {
     onFetchMore() {
@@ -151,10 +74,12 @@ export default {
     goToObservation() {
       this.$router.push({
         query: {
-          tab: 'observations',
+          tab: 'observation',
           tabIndex: this.tabIndex,
+          antenatal: this.antenatal.id,
         },
       });
+      window.location.reload();
     },
   },
   created() {
@@ -163,12 +88,4 @@ export default {
 };
 </script>
 
-<style scoped>
-.padding-left {
-  padding-left: 50px;
-}
-
-.padding-right {
-  padding-right: 70px;
-}
-</style>
+<style scoped></style>
