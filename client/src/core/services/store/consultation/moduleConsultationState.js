@@ -8,4 +8,6 @@ export default {
   histories: [],
   totalHistories: 0,
   totalHistoryPages: 0,
+
+  clinicalFinding: null,
 };

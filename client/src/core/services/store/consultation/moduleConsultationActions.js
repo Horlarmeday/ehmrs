@@ -58,4 +58,18 @@ export default {
         });
     });
   },
+
+  fetchDiagnosesAndFindings({ commit }, visitId) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/consultations/diagnoses/get/${visitId}`)
+        .then(response => {
+          commit('SET_DIAGNOSES_FINDINGS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
 };

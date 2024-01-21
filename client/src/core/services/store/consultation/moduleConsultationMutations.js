@@ -29,4 +29,11 @@ export default {
   SET_VISITS_HISTORY_PAGES(state, pages) {
     state.totalHistoryPages = pages;
   },
+
+  /**
+   * CONSULTATION DIAGNOSES AND FINDINGS
+   */
+  SET_DIAGNOSES_FINDINGS(state, finding) {
+    state.clinicalFinding = finding;
+  },
 };
