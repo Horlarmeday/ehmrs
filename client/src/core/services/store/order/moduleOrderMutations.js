@@ -49,6 +49,11 @@ export default {
     state.pages = pages;
   },
 
+  UPDATE_TEST_ORDER(state, test) {
+    const testIndex = state.lab_orders.findIndex(p => p.id === test.id);
+    Object.assign(state.lab_orders[testIndex], test);
+  },
+
   /**************
    RADIOLOGY ORDERS
    *************/
@@ -113,19 +118,32 @@ export default {
     state.selectedInvestigationsButtons.splice(buttonIndex, 1);
   },
 
+  UPDATE_INVESTIGATION_ORDER(state, investigation) {
+    const investigationIndex = state.radiology_orders.findIndex(p => p.id === investigation.id);
+    Object.assign(state.radiology_orders[investigationIndex], investigation);
+  },
+
   /**************
    DRUG ORDERS
    *************/
   ORDER_DRUG(state, drug) {
-    console.log(drug);
+    state.drug_order = drug;
   },
 
   SET_DRUG_ORDERS(state, drugs) {
     state.drug_orders = drugs;
   },
 
+  SET_DRUGS_ORDERS_TOTAL(state, total) {
+    state.totalDrugsOrders = total;
+  },
+
+  SET_DRUGS_ORDERS_PAGES(state, pages) {
+    state.drugsPages = pages;
+  },
+
   ORDER_ADD_ITEMS(state, items) {
-    console.log(items);
+    state.additional_item = items;
   },
 
   SET_ADD_ITEMS_ORDERS(state, items) {
@@ -138,6 +156,11 @@ export default {
 
   SET_ADD_ITEMS_ORDERS_PAGES(state, pages) {
     state.additionalItemsOrdersPages = pages;
+  },
+
+  UPDATE_DRUG_ORDER(state, drug) {
+    const drugIndex = state.drug_orders.findIndex(p => p.id === drug.id);
+    Object.assign(state.drug_orders[drugIndex], drug);
   },
 
   /*********************
@@ -198,6 +221,11 @@ export default {
     const button = state.selectedServicesButtons.find(({ button_id }) => button_id === buttonId);
     button.button.classList.remove('btn-danger');
     state.selectedServicesButtons.splice(buttonIndex, 1);
+  },
+
+  UPDATE_SERVICE_ORDER(state, service) {
+    const serviceIndex = state.service_orders.findIndex(p => p.id === service.id);
+    Object.assign(state.service_orders[serviceIndex], service);
   },
 
   /**************

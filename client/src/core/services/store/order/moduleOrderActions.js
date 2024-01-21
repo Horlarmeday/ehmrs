@@ -40,6 +40,20 @@ export default {
     });
   },
 
+  updatePrescribedTest({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/orders/laboratory/update`, payload.data)
+        .then(response => {
+          commit('UPDATE_TEST_ORDER', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
   addSelectedTest({ commit }, test) {
     commit('ADD_SELECTED_TEST', test);
   },
@@ -101,6 +115,20 @@ export default {
     });
   },
 
+  updatePrescribedInvestigation({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/orders/radiology/update`, payload.data)
+        .then(response => {
+          commit('UPDATE_INVESTIGATION_ORDER', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
   addSelectedInvestigation({ commit }, investigation) {
     commit('ADD_SELECTED_INVESTIGATION', investigation);
   },
@@ -154,10 +182,31 @@ export default {
         .then(response => {
           if (payload.fetchWithItems) {
             commit('SET_DRUG_ORDERS', response.data.data.prescribedDrugs.docs);
+            commit('SET_DRUGS_ORDERS_TOTAL', response.data.data.prescribedDrugs.total);
+            commit('SET_DRUGS_ORDERS_PAGES', response.data.data.prescribedDrugs.pages);
+            // Additional Items
             commit('SET_ADD_ITEMS_ORDERS', response.data.data.additionalItems.docs);
+            commit('SET_ADD_ITEMS_ORDERS_TOTAL', response.data.data.additionalItems.total);
+            commit('SET_ADD_ITEMS_ORDERS_PAGES', response.data.data.additionalItems.pages);
             return;
           }
           commit('SET_DRUG_ORDERS', response.data.data.docs);
+          commit('SET_DRUGS_ORDERS_TOTAL', response.data.data.total);
+          commit('SET_DRUGS_ORDERS_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  updatePrescribedDrug({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/orders/pharmacy/update`, payload.data)
+        .then(response => {
+          commit('UPDATE_DRUG_ORDER', response.data.data);
           resolve(response);
         })
         .catch(error => {
@@ -233,6 +282,20 @@ export default {
           commit('SET_SERVICES_ORDERS', response.data.data.docs);
           commit('SET_SERVICES_ORDERS_TOTAL', response.data.data.total);
           commit('SET_SERVICES_ORDERS_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  updatePrescribedService({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/orders/service/update`, payload.data)
+        .then(response => {
+          commit('UPDATE_SERVICE_ORDER', response.data.data);
           resolve(response);
         })
         .catch(error => {

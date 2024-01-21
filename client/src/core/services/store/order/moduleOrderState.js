@@ -28,6 +28,10 @@ export default {
    *************/
   drug_order: null,
   drug_orders: [],
+  totalDrugsOrders: 0,
+  drugsPages: 0,
+
+  additional_item: null,
   additional_items_orders: [],
   totalAdditionalItemsOrders: 0,
   additionalItemsOrdersPages: 0,
