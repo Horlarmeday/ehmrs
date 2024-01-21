@@ -7,6 +7,7 @@ import sequelizeConnection from '../../database/config/config';
 import { BadException } from '../../common/util/api-error';
 import { PATIENT_HAS_INSURANCE } from './messages/response-messages';
 import { getPatientInsuranceQuery, setInsuranceAsDefault } from '../Insurance/insurance.repository';
+import { dateIntervalQuery } from '../../core/helpers/helper';
 
 /**
  * query staff account in the DB by phone
@@ -279,13 +280,13 @@ export async function createDependant(data) {
  * @param currentPage
  * @param pageLimit
  */
-export async function getPatients(currentPage = 1, pageLimit = 10) {
-  return Patient.paginate({
-    page: currentPage,
-    paginate: pageLimit,
-    order: [['createdAt', 'DESC']],
-  });
-}
+// export async function getPatients(currentPage = 1, pageLimit = 10) {
+//   return Patient.paginate({
+//     page: +currentPage,
+//     paginate: +pageLimit,
+//     order: [['createdAt', 'DESC']],
+//   });
+// }
 
 /**
  * get patients by date
@@ -297,19 +298,19 @@ export async function getPatients(currentPage = 1, pageLimit = 10) {
  * @param start
  * @param end
  */
-export async function getPatientsByDate(currentPage = 1, pageLimit = 10, start, end) {
-  return Patient.paginate({
-    page: currentPage,
-    paginate: pageLimit,
-    order: [['createdAt', 'DESC']],
-    where: {
-      createdAt: {
-        [Op.gte]: new Date(new Date(start).setHours(0, 0, 0)),
-        [Op.lt]: new Date(new Date(end).setHours(23, 59, 59)),
-      },
-    },
-  });
-}
+// export async function getPatientsByDate(currentPage = 1, pageLimit = 10, start, end) {
+//   return Patient.paginate({
+//     page: +currentPage,
+//     paginate: +pageLimit,
+//     order: [['createdAt', 'DESC']],
+//     where: {
+//       createdAt: {
+//         [Op.gte]: new Date(new Date(start).setHours(0, 0, 0)),
+//         [Op.lt]: new Date(new Date(end).setHours(23, 59, 59)),
+//       },
+//     },
+//   });
+// }
 
 /**
  * search patients
@@ -320,31 +321,43 @@ export async function getPatientsByDate(currentPage = 1, pageLimit = 10, start, 
  * @param pageLimit
  * @param search
  * @param filter
+ * @param start
+ * @param end
  */
-export async function searchPatients({ currentPage = 1, pageLimit = 10, search, filter = null }) {
+export async function getPatients({
+  currentPage = 1,
+  pageLimit = 10,
+  search = null,
+  filter = null,
+  start = null,
+  end = null,
+}) {
   return Patient.paginate({
-    page: currentPage,
-    paginate: pageLimit,
+    page: +currentPage,
+    paginate: +pageLimit,
     order: [['createdAt', 'DESC']],
     where: {
       ...(filter && JSON.parse(filter)),
-      [Op.or]: [
-        {
-          firstname: {
-            [Op.like]: `%${search}%`,
+      ...(start && end && dateIntervalQuery('createdAt', start, end)),
+      ...(search && {
+        [Op.or]: [
+          {
+            firstname: {
+              [Op.like]: `%${search}%`,
+            },
           },
-        },
-        {
-          lastname: {
-            [Op.like]: `%${search}%`,
+          {
+            lastname: {
+              [Op.like]: `%${search}%`,
+            },
           },
-        },
-        {
-          hospital_id: {
-            [Op.like]: `%${search}`,
+          {
+            hospital_id: {
+              [Op.like]: `%${search}`,
+            },
           },
-        },
-      ],
+        ],
+      }),
     },
   });
 }
