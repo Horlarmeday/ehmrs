@@ -19,6 +19,14 @@ export default {
     state.admission = admission;
   },
 
+  SET_DOCTOR_PRESCRIPTIONS(state, summary) {
+    state.summary = summary;
+  },
+
+  SET_ADMISSION_HISTORY(state, history) {
+    state.history = history;
+  },
+
   /**
    * Observations
    */
@@ -61,5 +69,39 @@ export default {
 
   SET_NURSING_NOTES(state, notes) {
     state.nursingNotes = notes;
+  },
+
+  /**
+   * Ward Round
+   */
+  CREATE_WARD_ROUND(state, wardRound) {
+    state.wardRound = wardRound;
+  },
+
+  SET_WARD_ROUNDS(state, wardRounds) {
+    state.wardRounds = wardRounds;
+  },
+
+  /**
+   * Discharge
+   */
+  DISCHARGE_PATIENT(state, discharge) {
+    state.discharge = discharge;
+  },
+
+  SET_DISCHARGE_RECORDS(state, discharges) {
+    state.discharges = discharges;
+  },
+
+  SET_DISCHARGE_RECORDS_TOTAL(state, total) {
+    state.totalDischarges = total;
+  },
+
+  SET_DISCHARGE_RECORDS_PAGES(state, pages) {
+    state.dischargePages = pages;
+  },
+
+  SET_DISCHARGE_RECORD(state, discharge) {
+    state.discharge = discharge;
   },
 };

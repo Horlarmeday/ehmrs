@@ -24,6 +24,7 @@ export default {
             pageLimit: payload.itemsPerPage,
             search: payload.search,
             filter: payload.filter,
+            visitType: payload.visitType,
             start: payload.start,
             end: payload.end,
           },
@@ -65,6 +66,48 @@ export default {
         .put(`/admission/recommend-discharge`, payload)
         .then(response => {
           commit('ADMIT_PATIENT', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  changeWard({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/admission/change-ward/${payload.id}`, payload.data)
+        .then(response => {
+          commit('SET_ADMISSION', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchDoctorPrescriptions({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/admission/summary/${payload.id}`)
+        .then(response => {
+          commit('SET_DOCTOR_PRESCRIPTIONS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchAdmissionHistory({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/admission/history/${payload.id}`)
+        .then(response => {
+          commit('SET_ADMISSION_HISTORY', response.data.data);
           resolve(response);
         })
         .catch(error => {
@@ -189,6 +232,92 @@ export default {
         .get(`/admission/nursing-notes/${payload.id}`)
         .then(response => {
           commit('SET_NURSING_NOTES', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * Ward Round
+   */
+  createWardRound({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/admission/ward-round/${payload.id}`, payload.data)
+        .then(response => {
+          commit('CREATE_WARD_ROUND', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchWardRounds({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/admission/ward-round/${payload.id}`)
+        .then(response => {
+          commit('SET_WARD_ROUNDS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * Discharge
+   */
+  dischargePatient({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/admission/discharge/${payload.id}`, payload.data)
+        .then(response => {
+          commit('DISCHARGE_PATIENT', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchDischargeRecord({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/admission/discharge/${payload.id}`)
+        .then(response => {
+          commit('SET_DISCHARGE_RECORD', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchDischargeRecords({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/admission/discharge', {
+          params: {
+            currentPage: payload.currentPage,
+            pageLimit: payload.itemsPerPage,
+            search: payload.search,
+            start: payload.start,
+            end: payload.end,
+          },
+        })
+        .then(response => {
+          commit('SET_DISCHARGE_RECORDS', response.data.data.docs);
+          commit('SET_DISCHARGE_RECORDS_TOTAL', response.data.data.total);
+          commit('SET_DISCHARGE_RECORDS_PAGES', response.data.data.pages);
           resolve(response);
         })
         .catch(error => {
