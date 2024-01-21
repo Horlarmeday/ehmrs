@@ -1,6 +1,9 @@
 import { Imaging, Investigation, PrescribedInvestigation, Staff } from '../../../database/models';
 import { WhereOptions } from 'sequelize';
 import { staffAttributes } from '../../Antenatal/antenatal.repository';
+import { StatusCodes } from '../../../core/helpers/helper';
+import { BadException } from '../../../common/util/api-error';
+import { ERROR_UPDATING_INVESTIGATION } from './messages/response-messages';
 
 /**
  * prescribe an investigation for patient
@@ -42,6 +45,19 @@ export const orderBulkInvestigation = async data => {
 };
 
 /**
+ * update prescribed investigation
+ * @param data
+ */
+export const updatePrescribedInvestigation = async (data: Partial<PrescribedInvestigation>) => {
+  try {
+    await PrescribedInvestigation.update({ ...data }, { where: { id: data.id } });
+  } catch (e) {
+    throw new BadException('Error', StatusCodes.SERVER_ERROR, ERROR_UPDATING_INVESTIGATION);
+  }
+  return getOnePrescribedInvestigation({ id: data.id });
+};
+
+/**
  * get prescribed investigations
  * @param currentPage
  * @param pageLimit
@@ -53,10 +69,10 @@ export const getPrescribedInvestigations = ({ currentPage = 1, pageLimit = 10, f
     paginate: +pageLimit,
     order: [['date_requested', 'DESC']],
     where: {
-      ...(filter && { ...JSON.parse(filter) }),
+      ...(filter && JSON.parse(filter)),
     },
     include: [
-      { model: Investigation, attributes: ['name'] },
+      { model: Investigation, attributes: ['name', 'type'] },
       { model: Imaging, attributes: ['name'] },
       { model: Staff, as: 'examiner', attributes: staffAttributes },
     ],
@@ -71,10 +87,28 @@ export const getPrescribedInvestigations = ({ currentPage = 1, pageLimit = 10, f
 export const getPrescriptionInvestigations = async (
   query: WhereOptions<PrescribedInvestigation>
 ): Promise<PrescribedInvestigation[]> => {
-  return await PrescribedInvestigation.findAll({
+  return PrescribedInvestigation.findAll({
     where: { ...query },
     include: [
-      { model: Investigation, attributes: ['name'] },
+      { model: Investigation, attributes: ['name', 'type'] },
+      { model: Imaging, attributes: ['name'] },
+      { model: Staff, as: 'examiner', attributes: staffAttributes },
+    ],
+  });
+};
+
+/**
+ * get one prescribed investigations
+ * @param query
+ * @returns {Promise<PrescribedInvestigation>} prescribed investigation data
+ */
+export const getOnePrescribedInvestigation = async (
+  query: WhereOptions<PrescribedInvestigation>
+): Promise<PrescribedInvestigation> => {
+  return PrescribedInvestigation.findOne({
+    where: { ...query },
+    include: [
+      { model: Investigation, attributes: ['name', 'type'] },
       { model: Imaging, attributes: ['name'] },
       { model: Staff, as: 'examiner', attributes: staffAttributes },
     ],

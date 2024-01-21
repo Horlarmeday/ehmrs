@@ -1,12 +1,13 @@
 import { successResponse, SuccessResponse } from '../../../common/responses/success-responses';
 import { errorResponse } from '../../../common/responses/error-responses';
 import { StatusCodes } from '../../../core/helpers/helper';
-import { DATA_SAVED } from '../../AdminSettings/messages/response-messages';
+import { DATA_SAVED, DATA_UPDATED } from '../../AdminSettings/messages/response-messages';
 import { RadiologyOrderService } from './radiology-order.service';
 import { validateBulkInvestigationTest } from './validations';
 import { NextFunction, Request, Response } from 'express';
-import { LabOrderService } from '../Laboratory/lab-order.service';
 import { SUCCESS } from '../../../core/constants';
+import { isEmpty } from 'lodash';
+import { EMPTY_REQUEST_BODY } from './messages/response-messages';
 
 export class RadiologyOrderController {
   /**
@@ -18,7 +19,11 @@ export class RadiologyOrderController {
    * @param {object} next next middleware
    * @returns {json} json object with status, investigation tests data
    */
-  static async orderInvestigationTest(req, res, next): Promise<SuccessResponse> {
+  static async orderInvestigationTest(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
     const { error } = validateBulkInvestigationTest(req.body);
     if (error)
       return errorResponse({
@@ -62,6 +67,41 @@ export class RadiologyOrderController {
         httpCode: StatusCodes.OK,
         message: SUCCESS,
         data: investigations,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * update a prescribed investigation
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {SuccessResponse} json object with status, prescribed investigation data
+   */
+  static async updatePrescribedInvestigation(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    const empty = isEmpty(req.body);
+    if (empty)
+      return errorResponse({
+        res,
+        message: EMPTY_REQUEST_BODY,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+    try {
+      const investigation = await RadiologyOrderService.updatePrecribedInvestigation(req.body);
+
+      return successResponse({
+        res,
+        data: investigation,
+        message: DATA_UPDATED,
+        httpCode: StatusCodes.CREATED,
       });
     } catch (e) {
       return next(e);

@@ -2,6 +2,7 @@ import {
   getPrescribedInvestigations,
   orderBulkInvestigation,
   prescribeInvestigation,
+  updatePrescribedInvestigation,
 } from './radiology-order.repository';
 import VisitService from '../../Visit/visit.service';
 import PatientService from '../../Patient/patient.service';
@@ -14,6 +15,8 @@ import { PrescribedInvestigationBody } from './types/radiology-order.types';
 import { InvestigationPrescription, PrescribedInvestigation } from '../../../database/models';
 import { isToday } from '../../../core/helpers/helper';
 import { InvestigationStatus } from '../../../database/models/investigationPrescription';
+import { NHISApprovalStatus } from '../../../core/helpers/general';
+import { PrescriptionType } from '../../../database/models/prescribedTest';
 
 export class RadiologyOrderService {
   /**
@@ -54,9 +57,24 @@ export class RadiologyOrderService {
         patient_id: visit.patient_id,
         date_requested: Date.now(),
         investigation_prescription_id: prescription.id,
+        ...(investigation.investigation_type === PrescriptionType.NHIS && {
+          nhis_status: NHISApprovalStatus.PENDING,
+        }),
       }))
     );
     return orderBulkInvestigation(bulkInvestigations);
+  }
+
+  /**
+   * update a prescribed investigation
+   *
+   * @static
+   * @returns {json} json object with prescribed investigation data
+   * @param body
+   * @memberOf RadiologyOrderService
+   */
+  static async updatePrecribedInvestigation(body) {
+    return updatePrescribedInvestigation(body);
   }
 
   /**
@@ -98,15 +116,11 @@ export class RadiologyOrderService {
   static async getPrescribedInvestigations(body) {
     const { currentPage, pageLimit, filter } = body;
 
-    if (filter) {
+    if (Object.values(body).length) {
       return getPrescribedInvestigations({ currentPage, pageLimit, filter });
     }
 
-    if (Object.values(body).length) {
-      return getPrescribedInvestigations({ currentPage, pageLimit });
-    }
-
-    return getPrescribedInvestigations({});
+    return getPrescribedInvestigations({ filter });
   }
 
   private static investigationData(body: PrescribedInvestigationBody, patient_id: number) {
