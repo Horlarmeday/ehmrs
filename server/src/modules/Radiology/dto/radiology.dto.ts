@@ -1,4 +1,5 @@
 import { Price } from '../../Laboratory/dto/test-tariff.dto';
+import { InvestigationType } from '../../../database/models/investigation';
 
 export class CreateImagingDto {
   name: string;
@@ -10,7 +11,9 @@ export class CreateInvestigationDto {
   name: string;
   description?: string;
   imaging_id: number;
+  price: number;
   staff_id?: number;
+  type?: InvestigationType;
 }
 
 export class InvestigationQueryDto {

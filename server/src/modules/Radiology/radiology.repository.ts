@@ -20,6 +20,7 @@ import { InvestigationStatus } from '../../database/models/prescribedInvestigati
 import sequelizeConnection from '../../database/config/config';
 import { ResultStatus } from '../../database/models/testResult';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
+import { CreateInvestigationDto } from './dto/radiology.dto';
 
 /**
  * create new imaging
@@ -111,13 +112,14 @@ const investigationResultFieldsToUpdate = (fields: string[] = []) => [
  * @param data
  * @returns {object} investigation data
  */
-export const createInvestigation = async data => {
-  const { name, imaging_id, staff_id, price } = data;
+export const createInvestigation = async (data: CreateInvestigationDto) => {
+  const { name, imaging_id, staff_id, price, type } = data;
   const investigation = await Investigation.create({
     name,
     imaging_id,
     staff_id,
     price,
+    type,
   });
   return Investigation.findOne({
     where: { id: investigation.id },
