@@ -106,6 +106,7 @@ export class TestPrescription extends Model {
 
   @Column({
     type: DataType.STRING,
+    unique: true,
   })
   accession_number: string;
 

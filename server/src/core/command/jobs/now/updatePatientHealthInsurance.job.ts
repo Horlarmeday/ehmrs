@@ -4,7 +4,13 @@ import { logger, taggedMessaged } from '../../../helpers/logger';
 import { processArray } from '../../../helpers/general';
 
 const createPatientInsuranceRecord = async (
-  patient: Patient & { hmo_id: number; insurance_id: number }
+  patient: Patient & {
+    hmo_id: number;
+    insurance_id: number;
+    plan: string;
+    enrollee_code: string;
+    organization: string;
+  }
 ) => {
   const message = taggedMessaged('createPatientInsuranceRecord');
 

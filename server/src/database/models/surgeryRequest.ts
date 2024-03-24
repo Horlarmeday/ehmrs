@@ -20,6 +20,7 @@ import { Patient } from './patient';
 import { Visit } from './visit';
 import { Service } from './service';
 import { Antenatal } from './antenatal';
+import { PatientInsurance } from './patientInsurance';
 
 @Table({ timestamps: true, tableName: 'Surgery_Requests' })
 export class SurgeryRequest extends Model {
@@ -86,6 +87,12 @@ export class SurgeryRequest extends Model {
   })
   staff_id: number;
 
+  @ForeignKey(() => PatientInsurance)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  patient_insurance_id: number;
+
   @Column({
     type: DataType.STRING,
   })
@@ -102,6 +109,9 @@ export class SurgeryRequest extends Model {
 
   @BelongsTo(() => Service)
   service: Service;
+
+  @BelongsTo(() => PatientInsurance)
+  patientInsurance: PatientInsurance;
 
   static async paginate(param: {
     paginate: number;
