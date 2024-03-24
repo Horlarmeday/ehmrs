@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import sequelize, { Op, WhereOptions } from 'sequelize';
 import {
   calcLimitAndOffset,
@@ -6,6 +5,8 @@ import {
   dateIntervalQuery,
   generateRandomNumbers,
   paginate,
+  patientAttributes,
+  StatusCodes,
 } from '../../core/helpers/helper';
 import { getModelById, getPeriodQuery } from '../../core/helpers/general';
 
@@ -22,6 +23,7 @@ import {
   PrescribedAdditionalItem,
   PrescribedDrug,
   RoutesOfAdministration,
+  Unit,
 } from '../../database/models';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { DispenseStatus } from '../../database/models/prescribedDrug';
@@ -33,6 +35,8 @@ import {
   getPrescriptionAdditionalItems,
   getPrescriptionDrugs,
 } from '../Orders/Pharmacy/pharmacy-order.repository';
+import { BadException } from '../../common/util/api-error';
+import { PRESCRIPTION_NOT_FOUND } from './messages/response-messages';
 
 async function includeOneModel({ model, modelToInclude, id, includeAs }) {
   return model.findOne({
@@ -404,15 +408,7 @@ export const getDrugPrescriptions = async ({
           ),
           'dispensed_drugs_count',
         ],
-        [
-          sequelize.fn(
-            'COUNT',
-            sequelize.literal(
-              `DISTINCT CASE WHEN drugs.dispense_status = '${DispenseStatus.RETURNED}' THEN drugs.id END`
-            )
-          ),
-          'returned_drugs_count',
-        ],
+        [sequelize.fn('COUNT', sequelize.col('items.id')), 'items_count'],
       ],
     },
     order: [['date_prescribed', 'DESC']],
@@ -450,6 +446,11 @@ export const getDrugPrescriptions = async ({
           }),
         },
       },
+      {
+        model: PrescribedAdditionalItem,
+        as: 'items',
+        attributes: [], // Exclude all columns from the PrescribedDrug table (we only need the count)
+      },
     ],
     group: ['DrugPrescription.id'], // Group the results by DrugPrescription.id to get the count per sample
     subQuery: false,
@@ -467,16 +468,14 @@ export const getDrugPrescriptions = async ({
  * @returns {json} json object with drugs prescriptions data
  * @param drugPrescriptionId
  */
-export const getOneDrugPrescription = async (
-  drugPrescriptionId: number | string
-): Promise<DrugPrescription> => {
-  return await DrugPrescription.findOne({
+export const getOneDrugPrescription = async (drugPrescriptionId: number | string): Promise<any> => {
+  const drugPrescription = await DrugPrescription.findOne({
     where: { id: drugPrescriptionId },
     attributes: ['status'],
     include: [
       {
         model: Patient,
-        attributes: ['firstname', 'lastname', 'hospital_id', 'gender', 'id'],
+        attributes: patientAttributes,
       },
       {
         model: PrescribedDrug,
@@ -487,8 +486,25 @@ export const getOneDrugPrescription = async (
           { model: Measurement, attributes: ['name'] },
         ],
       },
+      {
+        model: PrescribedAdditionalItem,
+        include: [
+          { model: Drug, attributes: ['name'] },
+          { model: Unit, attributes: ['name'] },
+        ],
+      },
     ],
   });
+  if (!drugPrescription)
+    throw new BadException('NOT_FOUND', StatusCodes.NOT_FOUND, PRESCRIPTION_NOT_FOUND);
+  const insurance = await getPatientInsuranceQuery({
+    patient_id: drugPrescription?.patient?.id,
+    is_default: true,
+  });
+  return {
+    ...drugPrescription.toJSON(),
+    insurance: { ...insurance?.toJSON() },
+  };
 };
 
 const getDispenseStatus = (
@@ -522,15 +538,15 @@ export const dispenseDrug = async (
         history_date: Date.now(),
         history_type: HistoryType.DISPENSED,
         patient_id: prescribedDrug.patient_id,
-        drug_prescription_id: data.prescription_id,
+        drug_prescription_id: data?.prescription_id,
         visit_id: prescribedDrug.visit_id,
         additional_item_id: data?.additional_item_id,
       },
       { transaction: t }
     );
 
-    prescribedDrug.dispense_status = getDispenseStatus(quantity_to_dispense, prescribedDrug);
-    prescribedDrug.quantity_dispensed += data.quantity_to_dispense;
+    prescribedDrug.dispense_status = getDispenseStatus(+quantity_to_dispense, prescribedDrug);
+    prescribedDrug.quantity_dispensed += +quantity_to_dispense;
     prescribedDrug.dispensed_by = data.staff_id;
     const drug = await prescribedDrug.save({ transaction: t });
 
@@ -539,10 +555,10 @@ export const dispenseDrug = async (
       getPrescriptionAdditionalItems({ drug_prescription_id }),
     ]);
 
-    const isDrugsAllDispensed = prescriptions.every(
+    const isDrugsAllDispensed = prescriptions?.every(
       drug => drug.dispense_status === DispenseStatus.DISPENSED
     );
-    const isAdditionalItemsAllDispensed = additionalItems.every(
+    const isAdditionalItemsAllDispensed = additionalItems?.every(
       drug => drug.dispense_status === DispenseStatus.DISPENSED
     );
     await DrugPrescription.update(
@@ -564,7 +580,7 @@ export const returnDrugToInventory = async (
   data: ReturnDrugType
 ) => {
   return await sequelizeConnection.transaction(async t => {
-    const { quantity_to_return, staff_id } = data;
+    const { quantity_to_return, staff_id, drug_prescription_id } = data;
     inventoryItem.quantity_consumed -= +quantity_to_return;
     inventoryItem.quantity_remaining += +quantity_to_return;
     const item = await inventoryItem.save({ transaction: t });
@@ -580,7 +596,7 @@ export const returnDrugToInventory = async (
         history_date: Date.now(),
         history_type: HistoryType.RETURNED,
         patient_id: prescribedDrug.patient_id,
-        drug_prescription_id: data.prescription_id,
+        drug_prescription_id: data?.prescription_id,
         visit_id: prescribedDrug.visit_id,
         additional_item_id: data?.additional_item_id,
       },
@@ -589,8 +605,16 @@ export const returnDrugToInventory = async (
 
     prescribedDrug.dispense_status = DispenseStatus.RETURNED;
     prescribedDrug.quantity_returned += +quantity_to_return;
+    prescribedDrug.quantity_dispensed -= +quantity_to_return;
     prescribedDrug.returned_by = data.staff_id;
     await prescribedDrug.save({ transaction: t });
+
+    await DrugPrescription.update(
+      {
+        status: DrugStatus.PARTIAL_DISPENSED,
+      },
+      { where: { id: drug_prescription_id }, transaction: t }
+    );
 
     return history;
   });

@@ -3,7 +3,8 @@ import {
   validateDispenseDrug,
   validateDosageForm,
   validateGenericDrug,
-  validateMeasurement, validateReturnDrug,
+  validateMeasurement,
+  validateReturnDrug,
   validateRouteOfAdministration,
 } from './validations';
 import PharmacyService from './pharmacy.service';
@@ -12,8 +13,10 @@ import { StatusCodes } from '../../core/helpers/helper';
 import { SuccessResponse, successResponse } from '../../common/responses/success-responses';
 import { DATA_SAVED, DATA_UPDATED } from '../AdminSettings/messages/response-messages';
 import {
-  DOSAGE_FORM_REQUIRED, DRUG_DISPENSED,
-  DRUG_REQUIRED, DRUG_RETURNED,
+  DOSAGE_FORM_REQUIRED,
+  DRUG_DISPENSED,
+  DRUG_REQUIRED,
+  DRUG_RETURNED,
   MEASUREMENT_REQUIRED,
   ROUTE_REQUIRED,
 } from './messages/response-messages';
@@ -499,6 +502,7 @@ class PharmacyController {
       const drug = await PharmacyService.returnDrugToInventory({
         ...req.body,
         staff_id: req.user.sub,
+        drug_prescription_id: req.params.id,
       });
 
       return successResponse({

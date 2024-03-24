@@ -33,7 +33,6 @@ import {
 import {
   getOneAdditionalItem,
   getOnePrescribedDrug,
-  getPrescriptionDrugs,
 } from '../Orders/Pharmacy/pharmacy-order.repository';
 import { DispenseDrugType, ReturnDrugType } from './interface/prescribed-drug.type';
 import { BadException } from '../../common/util/api-error';
