@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="!loading">
+    <div v-if="investigations">
       <div class="mt-3">
         <search
           @search="onHandleSearch"
@@ -12,7 +12,7 @@
         <table class="table table-head-custom table-head-bg table-borderless table-vertical-center">
           <thead>
             <tr class="text-uppercase">
-              <th style="min-width: 150px" class="pl-7">
+              <th style="min-width: 150px" class="pl-4">
                 <span class="text-dark-75">Patient ID</span>
               </th>
               <th style="min-width: 250px">Patient Name</th>
@@ -23,7 +23,6 @@
               <th style="min-width: 100px">Status</th>
               <th v-if="period !== 'Today'" style="min-width: 100px">Date Requested</th>
               <th class="pr-0 text-right" style="min-width: 120px">Action</th>
-              <th style="min-width: 20px"></th>
             </tr>
           </thead>
           <tbody>
@@ -31,7 +30,7 @@
               <td colspan="9" align="center" class="text-muted">No Data</td>
             </tr>
             <tr v-for="investigation in investigations" :key="investigation.id">
-              <td class="pl-7 py-8">
+              <td class="pl-4 py-8">
                 <div class="d-flex align-items-center">
                   <div>
                     <a
@@ -115,9 +114,7 @@
         @pagechanged="onPageChange"
       />
     </div>
-    <div v-else>
-      <b-progress :value="count" variant="primary" show-progress animated :max="200" />
-    </div>
+    <table-skeleton v-else :columns="7" />
   </div>
 </template>
 <script>
@@ -127,6 +124,7 @@ import Pagination from '@/utils/Pagination.vue';
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
 import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
 import dayjs from 'dayjs';
+import TableSkeleton from '@/view/pages/nhis/components/TableSkeleton.vue';
 
 export default {
   computed: {
@@ -143,7 +141,7 @@ export default {
       return this.investigations.length;
     },
   },
-  components: { ArrowRightIcon, Pagination, Search, ApproveIcon },
+  components: { TableSkeleton, ArrowRightIcon, Pagination, Search, ApproveIcon },
   props: {
     period: {
       type: String,
@@ -152,8 +150,6 @@ export default {
   },
 
   data: () => ({
-    count: 0,
-    loading: false,
     currentPage: 1,
     itemsPerPage: 10,
     start: null,
@@ -178,12 +174,12 @@ export default {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
       });
-      this.$store.dispatch('radiology/fetchRequestedInvestigations', {
+      this.fetchRequestedInvestigations({
+        currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         search: this.$route.query.search || null,
         start: this.$route.query.startDate,
         end: this.$route.query.endDate,
-        period: this.period,
       });
     },
 
@@ -201,14 +197,12 @@ export default {
         startDate: dayjs(start).format('YYYY-MM-DD'),
         endDate: dayjs(end).format('YYYY-MM-DD'),
       });
-      this.$store
-        .dispatch('radiology/fetchRequestedInvestigations', {
-          currentPage: this.$route.query.currentPage,
-          itemsPerPage: this.$route.query.itemsPerPage,
-          start: this.$route.query.startDate,
-          end: this.$route.query.endDate,
-          period: this.period,
-        })
+      this.fetchRequestedInvestigations({
+        currentPage: this.$route.query.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
+      })
         .then(() => removeSpinner(dateSpin))
         .catch(() => removeSpinner(dateSpin));
     },
@@ -224,37 +218,37 @@ export default {
     },
 
     debounceSearch: debounce((search, vm, spinDiv) => {
-      vm.$store
-        .dispatch('radiology/fetchRequestedInvestigations', {
-          currentPage: 1,
-          itemsPerPage: vm.itemsPerPage,
-          period: this.period,
-          search,
-        })
+      vm.fetchRequestedInvestigations({
+        currentPage: 1,
+        itemsPerPage: vm.itemsPerPage,
+        search,
+      })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));
     }, 500),
 
-    countToHundred() {
-      for (let i = 1; i <= 100; i++) {
-        this.count = i;
-        if (this.investigations.length) break;
-      }
+    fetchRequestedInvestigations({ currentPage, itemsPerPage, search, start, end }) {
+      return this.$store.dispatch('radiology/fetchRequestedInvestigations', {
+        currentPage,
+        itemsPerPage,
+        ...(search && { search }),
+        ...(start && end && { start, end }),
+        period: this.period,
+      });
     },
   },
-  created() {
-    this.loading = true;
-    this.countToHundred();
-    this.$store
-      .dispatch('radiology/fetchRequestedInvestigations', {
-        currentPage: this.$route.query.currentPage || this.currentPage,
-        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
-        search: this.$route.query.search || null,
-        start: this.$route.query.startDate || null,
-        end: this.$route.query.endDate || null,
-        period: this.period,
-      })
-      .then(() => (this.loading = false));
+  watch: {
+    period: {
+      handler() {
+        this.fetchRequestedInvestigations({
+          currentPage: this.$route.query.currentPage || this.currentPage,
+          itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+          start: this.$route.query.startDate || null,
+          end: this.$route.query.endDate || null,
+        });
+      },
+      immediate: true,
+    },
   },
 };
 </script>
