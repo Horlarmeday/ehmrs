@@ -1,5 +1,9 @@
 import { SuccessResponse, successResponse } from '../../common/responses/success-responses';
-import { DATA_SAVED, DATA_UPDATED } from '../AdminSettings/messages/response-messages';
+import {
+  DATA_RETRIEVED,
+  DATA_SAVED,
+  DATA_UPDATED,
+} from '../AdminSettings/messages/response-messages';
 import { NextFunction, Response, Request } from 'express';
 import { errorResponse } from '../../common/responses/error-responses';
 import { StatusCodes } from '../../core/helpers/helper';
@@ -12,9 +16,11 @@ import {
   validateIOChart,
   validateNursingNote,
   validateObservation,
+  validatePostnatalInfo,
   validateWardRound,
 } from './validations';
 import { SUCCESS } from '../../core/constants';
+import { validateCreateDeliveryInfo } from './validations';
 
 export class AdmissionController {
   /**
@@ -558,6 +564,94 @@ export class AdmissionController {
       const wardRounds = await AdmissionService.getWardRounds(+req.params.id);
 
       return successResponse({ res, message: SUCCESS, data: wardRounds, httpCode: 200 });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  static async createDeliveryInfo(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
+    const { error } = validateCreateDeliveryInfo(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+    try {
+      const delivery = await AdmissionService.createDeliveryInfo(
+        req.body,
+        +req.params.id,
+        req.user.sub
+      );
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_SAVED,
+        data: delivery,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  static async getDeliveryInfo(req: Request, res: Response, next: NextFunction) {
+    try {
+      const deliveries = await AdmissionService.getDeliveryInfo(+req.params.id);
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: DATA_RETRIEVED,
+        data: deliveries,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  static async createPostNatal(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
+    const { error } = validatePostnatalInfo(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+    try {
+      const postNatal = await AdmissionService.createPostnatal(
+        req.body,
+        +req.params.id,
+        req.user.sub
+      );
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_SAVED,
+        data: postNatal,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  static async getPostnatalInfo(req: Request, res: Response, next: NextFunction) {
+    try {
+      const deliveries = await AdmissionService.getPostnatal(+req.params.id);
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: DATA_RETRIEVED,
+        data: deliveries,
+      });
     } catch (e) {
       return next(e);
     }

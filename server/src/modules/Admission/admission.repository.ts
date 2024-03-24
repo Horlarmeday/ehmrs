@@ -1,10 +1,12 @@
 import sequelize from '../../database/config/config';
 import sequelizeConnection from '../../database/config/config';
-import { Op, Transaction, WhereOptions } from 'sequelize';
+import { Op, Optional, Transaction, WhereOptions } from 'sequelize';
 import {
   Admission,
+  Antenatal,
   Bed,
   CarePlan,
+  Delivery,
   Discharge,
   Inventory,
   IOChart,
@@ -12,6 +14,7 @@ import {
   Observation,
   Patient,
   PatientInsurance,
+  PostNatal,
   PrescribedService,
   Staff,
   Visit,
@@ -41,13 +44,17 @@ import { Gender } from '../../database/models/staff';
 import { DrugType } from '../../database/models/pharmacyStore';
 import { getInventories } from '../Inventory/inventory.repository';
 import { staffAttributes } from '../Antenatal/antenatal.repository';
-import { dateIntervalQuery } from '../../core/helpers/helper';
+import { dateIntervalQuery, StatusCodes } from '../../core/helpers/helper';
 import { DischargeStatus } from '../../database/models/admission';
 import { DischargeType } from '../../database/models/discharge';
 import { getPrescriptionTests } from '../Orders/Laboratory/lab-order.repository';
 import { getPrescriptionInvestigations } from '../Orders/Radiology/radiology-order.repository';
 import { getPrescriptionServices } from '../Orders/Service/service-order.repository';
 import { getPatientDiagnoses } from '../Consultation/consultation.repository';
+import { AccountStatus } from '../../database/models/antenatal';
+import { CreatePostNatal } from '../Antenatal/types/antenatal.types';
+import { BadException } from '../../common/util/api-error';
+import { NO_AVAILABLE_BED } from './messages/response-messages';
 
 enum Ages {
   ALL_AGES = 'ALL_AGES',
@@ -71,6 +78,18 @@ export const admitPatient = async (data: AdmissionBodyType) => {
     getInventories(),
   ]);
 
+  let bedId = bed_id;
+  // bed_id is only sent from client when the ward is VIP else we have to search the ward for
+  // available bed space
+  if (!bed_id) {
+    const beds = ward.beds.filter(bed => bed.status === BedStatus.UNTAKEN);
+    if (beds?.length) {
+      bedId = beds[0].id;
+    } else {
+      throw new BadException('INVALID', StatusCodes.BAD_REQUEST, NO_AVAILABLE_BED);
+    }
+  }
+
   return sequelize.transaction(async (t: Transaction) => {
     // end existing visit
     await Visit.update(
@@ -86,18 +105,24 @@ export const admitPatient = async (data: AdmissionBodyType) => {
         professional: admitted_by.role,
         department: admitted_by.department,
         date_visit_start: Date.now(),
-        staff_id: admitted_by,
+        staff_id: admitted_by.sub,
         ...(ante_natal_id && { ante_natal_id }),
       },
       { transaction: t }
     );
 
     const admission = await Admission.create(
-      { ...data, visit_id: visit.id, admitted_by: admitted_by.sub, date_admitted: Date.now() },
+      {
+        ...data,
+        visit_id: visit.id,
+        admitted_by: admitted_by.sub,
+        date_admitted: Date.now(),
+        bed_id: bedId,
+      },
       { transaction: t }
     );
 
-    await Bed.update({ status: BedStatus.TAKEN }, { where: { id: bed_id }, transaction: t });
+    await Bed.update({ status: BedStatus.TAKEN }, { where: { id: bedId }, transaction: t });
 
     if (!patient.has_insurance || !EXCLUDED_INSURANCE.includes(insurance?.insurance?.name))
       await PrescribedService.create(
@@ -745,5 +770,68 @@ export const getOneDischargeRecord = async (query: WhereOptions<Discharge>) => {
       { model: Ward, attributes: ['name'] },
       { model: Staff, attributes: staffAttributes },
     ],
+  });
+};
+
+/***************************
+ * DELIVERY INFO
+ ***************************/
+/**
+ * Create a patient delivery information
+ * @param data
+ */
+export const createDeliveryInfo = async data => {
+  return Delivery.create({ ...data });
+};
+
+/**
+ * get a patient delivery information
+ * @param query
+ */
+export const getDeliveryInfo = async (query: WhereOptions<Delivery>) => {
+  return Delivery.findAll({
+    where: { ...query },
+    include: [{ model: Staff, attributes: staffAttributes }],
+  });
+};
+
+/***************************
+ * POST NATAL
+ ***************************/
+/**
+ * Create a patient postnatal information
+ * @param data
+ * @param antenatalId
+ */
+export const createPostnatal = async (
+  data: Optional<CreatePostNatal, keyof CreatePostNatal>,
+  antenatalId: number
+) => {
+  return await sequelizeConnection.transaction(async t => {
+    const postnatal = await PostNatal.create({ ...data }, { transaction: t });
+
+    if (antenatalId) {
+      await Antenatal.update(
+        { account_status: AccountStatus.COMPLETED, end_date: Date.now() },
+        { where: { id: antenatalId }, transaction: t }
+      );
+    }
+
+    await Visit.update(
+      { status: VisitStatus.ENDED, date_visit_ended: Date.now() },
+      { where: { id: data.visit_id }, transaction: t }
+    );
+    return postnatal;
+  });
+};
+
+/**
+ * get a patient delivery information
+ * @param query
+ */
+export const getPostnatalInfo = async (query: WhereOptions<PostNatal>) => {
+  return PostNatal.findAll({
+    where: { ...query },
+    include: [{ model: Staff, attributes: staffAttributes }],
   });
 };

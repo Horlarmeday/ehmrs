@@ -22,6 +22,7 @@ import { Bed } from './bed';
 import { Visit } from './visit';
 import { Antenatal } from './antenatal';
 import { Immunization } from './immunization';
+import { PatientInsurance } from './patientInsurance';
 
 export enum DischargeStatus {
   DISCHARGED = 'Discharged',
@@ -135,6 +136,12 @@ export class Admission extends Model {
   })
   date_admitted: Date;
 
+  @ForeignKey(() => PatientInsurance)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  patient_insurance_id: number;
+
   @BelongsTo(() => Staff, 'admitted_by')
   examiner: Staff;
 
@@ -161,6 +168,9 @@ export class Admission extends Model {
 
   @BelongsTo(() => Antenatal)
   antenatal: Antenatal;
+
+  @BelongsTo(() => PatientInsurance)
+  patientInsurance: PatientInsurance;
 
   static async paginate(param: {
     paginate: number;

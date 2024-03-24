@@ -10,6 +10,9 @@ router.post('/iocharts/:id', verify, AdmissionController.createIOChart);
 router.post('/nursing-notes/:id', verify, AdmissionController.createNursingNote);
 router.post('/discharge/:id', verify, AdmissionController.dischargePatient);
 router.post('/ward-round/:id', verify, AdmissionController.createWardRound);
+router.post('/delivery-info/:id', verify, AdmissionController.createDeliveryInfo);
+router.post('/postnatal-info/:id', verify, AdmissionController.createPostNatal);
+
 router.put('/recommend-discharge', verify, AdmissionController.sendForDischarge);
 router.put('/change-ward/:id', verify, AdmissionController.changeWard);
 router.get('/patient/get', verify, AdmissionController.getPatientAdmission);
@@ -23,4 +26,7 @@ router.get('/discharge/:id', verify, AdmissionController.getOneDischargeRecord);
 router.get('/summary/:id', verify, AdmissionController.getDoctorPrescriptions);
 router.get('/history/:id', verify, AdmissionController.getAdmissionHistory);
 router.get('/ward-round/:id', verify, AdmissionController.getWardRounds);
+router.get('/delivery-info/:id', verify, AdmissionController.getDeliveryInfo);
+router.get('/postnatal-info/:id', verify, AdmissionController.getPostnatalInfo);
+
 export default router;

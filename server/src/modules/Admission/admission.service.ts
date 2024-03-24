@@ -11,9 +11,11 @@ import {
   admitPatient,
   changePatientWard,
   createCarePlan,
+  createDeliveryInfo,
   createIOChart,
   createNursingNote,
   createObservation,
+  createPostnatal,
   createWardRound,
   dischargePatient,
   getAdmissionHistory,
@@ -21,12 +23,14 @@ import {
   getAdmittedPatients,
   getAntenatalAdmittedPatients,
   getCarePlans,
+  getDeliveryInfo,
   getDischargeRecords,
   getIOCharts,
   getNursingNotes,
   getObservations,
   getOneAdmission,
   getOneDischargeRecord,
+  getPostnatalInfo,
   getWardRounds,
   updateAdmission,
 } from './admission.repository';
@@ -45,6 +49,9 @@ import {
 } from '../../database/models';
 import { getPrescriptions } from '../Consultation/consultation.repository';
 import { VisitCategory } from '../../database/models/visit';
+import { CreateDeliveryInfo, CreatePostNatal } from '../Antenatal/types/antenatal.types';
+import { getOneAntenatalAccount } from '../Antenatal/antenatal.repository';
+import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 
 export class AdmissionService {
   /**
@@ -57,11 +64,22 @@ export class AdmissionService {
    */
   static async admitPatient(body: AdmissionBodyType): Promise<Admission> {
     const visit = await getVisitById(body.visit_id);
-    const admission = await getOneAdmission({ patient_id: visit.patient_id });
+    const [admission, insurance] = await Promise.all([
+      getOneAdmission({ patient_id: visit.patient_id }),
+      getPatientInsuranceQuery({
+        patient_id: visit.patient_id,
+        is_default: true,
+      }),
+    ]);
+
     if (admission && admission?.discharge_status === DischargeStatus.ON_ADMISSION) {
       throw new BadException('Invalid', StatusCodes.BAD_REQUEST, PATIENT_ON_ADMISSION);
     }
-    return admitPatient({ ...body, patient_id: visit.patient_id });
+    return admitPatient({
+      ...body,
+      patient_id: visit.patient_id,
+      patient_insurance_id: insurance?.id,
+    });
   }
 
   /**
@@ -432,5 +450,64 @@ export class AdmissionService {
    */
   static async getWardRounds(admissionId: number): Promise<WardRound[]> {
     return getWardRounds({ admission_id: admissionId });
+  }
+
+  /**
+   * Create patient delivery information
+   * @memberof AdmissionService
+   * @param body
+   * @param admissionId
+   * @param staff_id
+   */
+  static async createDeliveryInfo(body: CreateDeliveryInfo, admissionId: number, staff_id: number) {
+    const admission = await getOneAdmission({ id: admissionId });
+    return createDeliveryInfo({
+      ...body,
+      patient_id: admission.patient_id,
+      ante_natal_id: admission?.ante_natal_id,
+      staff_id,
+      admission_id: admission.id,
+      visit_id: admission?.visit_id,
+    });
+  }
+
+  /**
+   * Get patient delivery information
+   * @memberof AdmissionService
+   * @param admissionId
+   */
+  static async getDeliveryInfo(admissionId: number) {
+    return getDeliveryInfo({ admission_id: admissionId });
+  }
+
+  /**
+   * Create patient postnatal information
+   * @memberof AntenatalService
+   * @param body
+   * @param admissionId
+   * @param staff_id
+   */
+  static async createPostnatal(body: CreatePostNatal, admissionId: number, staff_id: number) {
+    const admission = await getOneAdmission({ id: admissionId });
+    return createPostnatal(
+      {
+        ...body,
+        patient_id: admission.patient_id,
+        ante_natal_id: admission.ante_natal_id,
+        staff_id,
+        admission_id: admission.id,
+        visit_id: admission?.visit_id,
+      },
+      admission.ante_natal_id
+    );
+  }
+
+  /**
+   * Get patient postnatal information
+   * @memberof AntenatalService
+   * @param admissionId
+   */
+  static async getPostnatal(admissionId: number) {
+    return getPostnatalInfo({ admission_id: admissionId });
   }
 }

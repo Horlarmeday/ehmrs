@@ -8,6 +8,7 @@ export type AdmissionBodyType = {
   visit_id: number;
   admitted_by: JwtTokenType;
   ante_natal_id?: number;
+  patient_insurance_id?: number;
 };
 
 export type UpdateAdmissionBody = {
