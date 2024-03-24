@@ -1,16 +1,14 @@
 <template>
   <div>
-    <div class="card card-custom gutter-b">
+    <div v-if="result" class="card card-custom gutter-b">
       <page-title title="Result" />
-      <div v-if="loading">
-        <b-progress :value="count" variant="primary" show-progress animated :max="100" />
-      </div>
-      <div v-else class="card-body">
+      <div class="card-body pt-0">
         <section-title text="Patient Information" />
-        <patient-section :patient="result.patient" />
+        <patient-section :patient="result.patient" :insurance="result.insurance" />
         <result-section :results="result.results" />
       </div>
     </div>
+    <result-skeleton v-else title="Result" />
   </div>
 </template>
 
@@ -19,32 +17,17 @@ import SectionTitle from '../../../utils/SectionTitle.vue';
 import PatientSection from '../../../utils/PatientSection.vue';
 import PageTitle from '../../../utils/PageTitle.vue';
 import ResultSection from './result/ResultSection.vue';
+import ResultSkeleton from '@/view/pages/radiology/components/skeleton/ResultSkeleton.vue';
 export default {
   name: 'RadiologyResult',
-  components: { ResultSection, PageTitle, PatientSection, SectionTitle },
-  data: () => ({
-    loading: false,
-    count: 0,
-  }),
+  components: { ResultSkeleton, ResultSection, PageTitle, PatientSection, SectionTitle },
   computed: {
     result() {
       return this.$store.state.radiology.result;
     },
   },
-  methods: {
-    countToHundred() {
-      for (let i = 1; i <= 100; i++) {
-        this.count = i;
-        if (this.result) break;
-      }
-    },
-  },
   created() {
-    this.loading = true;
-    this.countToHundred();
-    this.$store
-      .dispatch('radiology/fetchOneInvestigationResult', { id: this.$route.params.id })
-      .then(() => (this.loading = false));
+    this.$store.dispatch('radiology/fetchOneInvestigationResult', { id: this.$route.params.id });
   },
 };
 </script>

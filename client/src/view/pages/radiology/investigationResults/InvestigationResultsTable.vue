@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="!loading">
+    <div v-if="results">
       <div class="mt-3">
         <search
           @search="onHandleSearch"
@@ -69,9 +69,7 @@
         @pagechanged="onPageChange"
       />
     </div>
-    <div v-else>
-      <b-progress :value="count" variant="primary" show-progress animated :max="200" />
-    </div>
+    <table-skeleton v-else :columns="5" />
   </div>
 </template>
 
@@ -81,9 +79,10 @@ import Search from '@/utils/Search.vue';
 import Pagination from '@/utils/Pagination.vue';
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
 import dayjs from 'dayjs';
+import TableSkeleton from '@/view/pages/nhis/components/TableSkeleton.vue';
 
 export default {
-  components: { ArrowRightIcon, Pagination, Search },
+  components: { TableSkeleton, ArrowRightIcon, Pagination, Search },
   computed: {
     results() {
       return this.$store.state.radiology.results;
@@ -101,8 +100,6 @@ export default {
   data: () => ({
     currentPage: 1,
     itemsPerPage: 10,
-    loading: false,
-    count: 0,
     start: null,
     end: null,
   }),
@@ -112,13 +109,12 @@ export default {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
       });
-      this.$store.dispatch('radiology/fetchInvestigationsResults', {
+      this.fetchInvestigationsResults({
         currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         search: this.$route.query.search || null,
         start: this.$route.query.startDate,
         end: this.$route.query.endDate,
-        period: this.period,
       });
     },
 
@@ -138,13 +134,11 @@ export default {
     },
 
     debounceSearch: debounce((search, vm, spinDiv) => {
-      vm.$store
-        .dispatch('radiology/fetchInvestigationsResults', {
-          currentPage: 1,
-          itemsPerPage: vm.itemsPerPage,
-          period: this.period,
-          search,
-        })
+      vm.fetchInvestigationsResults({
+        currentPage: 1,
+        itemsPerPage: vm.itemsPerPage,
+        search,
+      })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));
     }, 500),
@@ -158,38 +152,33 @@ export default {
         startDate: dayjs(start).format('YYYY-MM-DD'),
         endDate: dayjs(end).format('YYYY-MM-DD'),
       });
-      this.$store
-        .dispatch('radiology/fetchInvestigationsResults', {
-          currentPage: this.$route.query.currentPage,
-          itemsPerPage: this.$route.query.itemsPerPage,
-          start: this.$route.query.startDate,
-          end: this.$route.query.endDate,
-          period: this.period,
-        })
+      this.fetchInvestigationsResults({
+        currentPage: this.$route.query.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
+      })
         .then(() => removeSpinner(dateSpin))
         .catch(() => removeSpinner(dateSpin));
     },
 
-    countToHundred() {
-      for (let i = 1; i <= 100; i++) {
-        this.count = i;
-        if (this.results.length) break;
-      }
+    fetchInvestigationsResults({ currentPage, itemsPerPage, search, start, end }) {
+      return this.$store.dispatch('radiology/fetchInvestigationsResults', {
+        currentPage,
+        itemsPerPage,
+        ...(search && { search }),
+        ...(start && end && { start, end }),
+      });
     },
   },
   created() {
-    this.loading = true;
-    this.countToHundred();
-    this.$store
-      .dispatch('radiology/fetchInvestigationsResults', {
-        currentPage: this.$route.query.currentPage || this.currentPage,
-        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
-        search: this.$route.query.search || null,
-        start: this.$route.query.startDate || null,
-        end: this.$route.query.endDate || null,
-        period: this.period,
-      })
-      .then(() => (this.loading = false));
+    this.fetchInvestigationsResults({
+      currentPage: this.$route.query.currentPage || this.currentPage,
+      itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+      search: this.$route.query.search || null,
+      start: this.$route.query.startDate || null,
+      end: this.$route.query.endDate || null,
+    });
   },
 };
 </script>

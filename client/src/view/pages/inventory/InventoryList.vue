@@ -29,8 +29,8 @@
 
 <script>
 import InventoryTable from './components/InventoryTable';
-import Search from '../../../utils/Search.vue';
-import { debounce, removeSpinner, setUrlQueryParams } from "../../../common/common";
+import Search from '@/utils/Search.vue';
+import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
 export default {
   name: 'InventoryList',
   data() {
@@ -53,8 +53,8 @@ export default {
       return this.items.length;
     },
     inventoryName() {
-      return this.$route.query.name
-    }
+      return this.$route.query.name;
+    },
   },
   components: { InventoryTable, Search },
   methods: {
@@ -63,10 +63,9 @@ export default {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
       });
-      this.$store.dispatch('inventory/fetchInventoryItems', {
+      this.fetchInventoryItems({
         currentPage: this.$route.query.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage,
-        inventory: this.$route.params.id,
       });
     },
 
@@ -81,13 +80,11 @@ export default {
     },
 
     debounceSearch: debounce((search, vm, spinDiv) => {
-      vm.$store
-        .dispatch('inventory/fetchInventoryItems', {
-          currentPage: 1,
-          itemsPerPage: vm.itemsPerPage,
-          search,
-          inventory: this.$route.params.id,
-        })
+      vm.fetchInventoryItems({
+        currentPage: 1,
+        itemsPerPage: vm.itemsPerPage,
+        search,
+      })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));
     }, 500),
@@ -103,18 +100,25 @@ export default {
         currentPage: this.currentPage,
         itemsPerPage: pagecount,
       });
-      this.$store.dispatch('inventory/fetchInventoryItems', {
+      this.fetchInventoryItems({
         currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: pagecount,
+      });
+    },
+
+    fetchInventoryItems({ currentPage, itemsPerPage, search }) {
+      return this.$store.dispatch('inventory/fetchInventoryItems', {
+        currentPage,
+        itemsPerPage,
         inventory: this.$route.params.id,
+        ...(search && { search }),
       });
     },
   },
   created() {
-    this.$store.dispatch('inventory/fetchInventoryItems', {
+    this.fetchInventoryItems({
       currentPage: this.$route.query.currentPage || this.currentPage,
       itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
-      inventory: this.$route.params.id,
     });
   },
 };
