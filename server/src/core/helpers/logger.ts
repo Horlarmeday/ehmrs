@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 
-type Message = (message: string) => string;
-type TaggedMessage = (tag: string) => Message;
+export type Message = (message: string) => string;
+export type TaggedMessage = (tag: string) => Message;
 export const taggedMessaged: TaggedMessage = (tag: string) => (message: string) =>
   `[${tag}] - ${message}`;
 
