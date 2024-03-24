@@ -4,6 +4,7 @@ import verify from '../../core/middleware/verify';
 
 const router = Router();
 router.post('/create/:id', verify, TriageController.createTriage);
-router.get('/visit/get/:id', verify, TriageController.getTriageVisit);
+router.get('/visit/get/:id', verify, TriageController.getVisitTriage);
+router.get('/visit/get', verify, TriageController.getOneTriage);
 
 export default router;

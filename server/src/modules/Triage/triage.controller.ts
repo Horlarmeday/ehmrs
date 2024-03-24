@@ -1,10 +1,12 @@
-import { validateTriage } from './validations';
+import { validateFetchTriage, validateTriage } from './validations';
 import TriageService from './triage.service';
 import { errorResponse } from '../../common/responses/error-responses';
 import { StatusCodes } from '../../core/helpers/helper';
 import { successResponse } from '../../common/responses/success-responses';
 import { DATA_RETRIEVED, DATA_SAVED } from '../AdminSettings/messages/response-messages';
 import { NextFunction, Request, Response } from 'express';
+import { isEmpty } from 'lodash';
+import { EMPTY_BODY } from './messages/response.messages';
 
 class TriageController {
   /**
@@ -49,9 +51,36 @@ class TriageController {
    * @param {object} next next middleware
    * @returns {json} json object with triage data
    */
-  static async getTriageVisit(req: Request, res: Response, next: NextFunction) {
+  static async getVisitTriage(req: Request, res: Response, next: NextFunction) {
     try {
       const triage = await TriageService.getVisitTriage(req.params.id);
+
+      return successResponse({ res, httpCode: 200, data: triage, message: DATA_RETRIEVED });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get one triage
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with triage data
+   */
+  static async getOneTriage(req: Request, res: Response, next: NextFunction) {
+    const error = isEmpty(req.query);
+    if (error)
+      return errorResponse({
+        res,
+        httpCode: StatusCodes.BAD_REQUEST,
+        message: EMPTY_BODY,
+      });
+
+    try {
+      const triage = await TriageService.getOneTriage(req.query);
 
       return successResponse({ res, httpCode: 200, data: triage, message: DATA_RETRIEVED });
     } catch (e) {

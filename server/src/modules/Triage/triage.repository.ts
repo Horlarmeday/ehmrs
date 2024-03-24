@@ -66,3 +66,22 @@ export async function getTriageInAVisit(data) {
 export const getTriages = async (query: WhereOptions<Triage>): Promise<Triage[]> => {
   return Triage.findAll({ where: { ...query } });
 };
+
+/**
+ * get one triage done in a visit
+ *
+ * @function
+ * @returns {Promise<Triage>} json object with triage data
+ * @param query
+ * @param attributes
+ */
+export const getOneTriage = async (
+  query: WhereOptions<Triage>,
+  attributes = null
+): Promise<Triage> => {
+  return Triage.findOne({
+    where: { ...query },
+    ...(attributes && attributes),
+    order: [['createdAt', 'DESC']],
+  });
+};

@@ -1,4 +1,4 @@
-import { createTriage, getTriageInAVisit } from './triage.repository';
+import { createTriage, getOneTriage, getTriageInAVisit } from './triage.repository';
 import VisitService from '../Visit/visit.service';
 import { updateVisit } from '../Visit/visit.repository';
 import { Triage } from '../../database/models';
@@ -29,6 +29,18 @@ class TriageService {
    */
   static async getVisitTriage(body) {
     return getTriageInAVisit(body);
+  }
+
+  /**
+   * get one triage
+   *
+   * @static
+   * @returns {json} json object with triage data
+   * @param body
+   * @memberOf TriageService
+   */
+  static async getOneTriage(body) {
+    return getOneTriage({ patient_id: body.patientId }, ['height']);
   }
 }
 export default TriageService;
