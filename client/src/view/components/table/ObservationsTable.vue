@@ -5,7 +5,7 @@
       <histories-table :histories="observations.histories" />
     </div>
     <hr />
-    <div class="border">
+    <div v-if="observations?.complaints?.length" class="border">
       <div class="font-weight-boldest">Complaints</div>
       <complaints-table :complaints="observations.complaints" />
     </div>

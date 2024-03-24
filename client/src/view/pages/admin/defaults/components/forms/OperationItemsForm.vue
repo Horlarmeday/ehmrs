@@ -24,6 +24,7 @@
                 unit_name: drugs?.unit_name,
                 dosage_form: drugs?.dosage_form,
                 drug_type: drugs?.drug_type,
+                drug_form: drugs?.drug_form,
               })
             "
             :options="drugOptions"
@@ -98,6 +99,7 @@ export default {
         unit_id: item?.unit?.id,
         dosage_form: item?.dosage_form,
         drug_type: item?.drug_type,
+        drug_form: item?.drug_form,
       }));
     },
   },

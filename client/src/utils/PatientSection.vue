@@ -20,22 +20,9 @@
         <i class="flaticon-confetti display-4 text-muted font-weight-bold" />
       </span>
       <div class="d-flex flex-column text-dark-75">
-        <span class="font-weight-bolder font-size-sm">First Name</span>
+        <span class="font-weight-bolder font-size-sm">Name</span>
         <span class="font-weight-bolder font-size-h5"
-          ><span class="text-dark-50 font-weight-bold"></span>{{ patient.firstname }}</span
-        >
-      </div>
-    </div>
-    <!--end::Item-->
-    <!--begin::Item-->
-    <div class="d-flex align-items-center flex-lg-fill mr-5 mb-2">
-      <span class="mr-4">
-        <i class="flaticon-confetti display-4 text-muted font-weight-bold" />
-      </span>
-      <div class="d-flex flex-column text-dark-75">
-        <span class="font-weight-bolder font-size-sm">Last Name</span>
-        <span class="font-weight-bolder font-size-h5"
-          ><span class="text-dark-50 font-weight-bold"></span>{{ patient.lastname }}</span
+          ><span class="text-dark-50 font-weight-bold"></span>{{ patient.fullname }}</span
         >
       </div>
     </div>
@@ -53,6 +40,32 @@
       </div>
     </div>
     <!--end::Item-->
+    <!--begin::Item-->
+    <div v-if="insurance?.insurance" class="d-flex align-items-center flex-lg-fill mr-5 mb-2">
+      <span class="mr-4">
+        <i class="flaticon-folder-1 display-4 text-muted font-weight-bold" />
+      </span>
+      <div class="d-flex flex-column text-dark-75">
+        <span class="font-weight-bolder font-size-sm">Insurance Type</span>
+        <span class="font-weight-bolder font-size-h5"
+          ><span class="text-dark-50 font-weight-bold"></span>{{ insurance?.insurance?.name }}</span
+        >
+      </div>
+    </div>
+    <!--end::Item-->
+    <!--begin::Item-->
+    <div v-if="insurance?.hmo" class="d-flex align-items-center flex-lg-fill mr-5 mb-2">
+      <span class="mr-4">
+        <i class="flaticon-file-2 display-4 text-muted font-weight-bold" />
+      </span>
+      <div class="d-flex flex-column text-dark-75">
+        <span class="font-weight-bolder font-size-sm text-dark-55">HMO</span>
+        <span class="font-weight-bolder font-size-h5"
+          ><span class="text-dark-50 font-weight-bold"></span>{{ insurance?.hmo?.name }}</span
+        >
+      </div>
+    </div>
+    <!--end::Item-->
   </div>
 </template>
 
@@ -61,6 +74,11 @@ export default {
   name: 'PatientSection',
   props: {
     patient: {
+      type: Object,
+      required: true,
+      default: () => {},
+    },
+    insurance: {
       type: Object,
       required: true,
       default: () => {},

@@ -2,7 +2,7 @@
   <div>
     <div>
       <div class="form-group row">
-        <label class="col-2 col-form-label">Accession Number</label>
+        <label class="col-2 col-form-label">Laboratory Number</label>
         <div class="col-3">
           <input v-model="accession_number" class="form-control form-control-sm" type="text" />
         </div>
@@ -13,7 +13,7 @@
         </div>
       </div>
       <div class="form-group row">
-        <label class="col-2 col-form-label">Received date</label>
+        <label class="col-2 col-form-label">Logged in time</label>
         <div class="col-3">
           <input
             class="form-control form-control-sm"
@@ -38,7 +38,7 @@
     <div class="separator separator-solid mb-6"></div>
     <div class="text-center">
       <button
-        :disabled="!accession_number && isDisabled"
+        :disabled="!accession_number || isDisabled"
         ref="kt-collectSamples-submit"
         @click="collectSamples"
         class="btn btn-lg btn-primary"
