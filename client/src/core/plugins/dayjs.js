@@ -42,7 +42,7 @@ export default function install() {
 
     if (!input || !date.isValid()) {
       // Log a warning if dayjs couldn't reconcile the input. Better than throwing an error?
-      console.warn('Could not build a valid `dayjs` object from input.');
+      // console.warn('Could not build a valid `dayjs` object from input.');
       return input;
     }
 
@@ -218,8 +218,9 @@ export default function install() {
     function createDuration(time) {
       if (!Array.isArray(time)) time = [time];
       const result = dayjs.duration(...time);
-      if (!result.isValid()) console.warn('Could not build a valid `duration` object from input.');
-      return result;
+      if (!result.isValid())
+        //console.warn('Could not build a valid `duration` object from input.');
+        return result;
     }
     let duration = createDuration(input);
 

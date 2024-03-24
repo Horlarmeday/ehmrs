@@ -101,14 +101,11 @@ export default {
     },
 
     debounceSearch: debounce((search, vm, spinDiv) => {
-      vm.$store
-        .dispatch('visit/fetchCategoryVisits', {
-          currentPage: 1,
-          itemsPerPage: vm.$route.query.itemsPerPage || vm.itemsPerPage,
-          search,
-          category: this.category,
-          ...(this.filter && { filter: this.filter }),
-        })
+      vm.fetchQueue({
+        currentPage: 1,
+        itemsPerPage: vm.$route.query.itemsPerPage || vm.itemsPerPage,
+        search,
+      })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));
     }, 500),

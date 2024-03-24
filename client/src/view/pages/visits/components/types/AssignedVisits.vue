@@ -32,6 +32,7 @@ import Search from '@/utils/Search.vue';
 import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
 import QueueTable from '@/view/pages/visits/components/table/VisitsTable.vue';
 import dayjs from 'dayjs';
+import { parseJwt } from '@/core/plugins/parseJwt';
 
 export default {
   name: 'AssignedVisits',
@@ -42,7 +43,8 @@ export default {
     loading: false,
     start: null,
     end: null,
-    currentUser: '',
+    MEDICAL_PRACTITIONER: 'Medical Practitioners',
+    currentUser: parseJwt(localStorage.getItem('user_token')),
   }),
   props: {
     url: {
@@ -151,14 +153,28 @@ export default {
         ...(this.filter && { filter: this.filter }),
       });
     },
+
+    todayDate() {
+      if (this.currentUser.department === this.MEDICAL_PRACTITIONER) {
+        return {
+          startDate: dayjs()
+            .startOf('day')
+            .format('YYYY-MM-DD'),
+          endDate: dayjs()
+            .endOf('day')
+            .format('YYYY-MM-DD'),
+        };
+      }
+      return null;
+    },
   },
   created() {
     this.fetchQueue({
       currentPage: this.$route.query.currentPage || this.currentPage,
       itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
       search: this.$route.query.search || null,
-      start: this.$route.query.startDate || null,
-      end: this.$route.query.endDate || null,
+      start: this.todayDate().startDate || this.$route.query.startDate,
+      end: this.todayDate().endDate || this.$route.query.endDate,
     });
   },
 };

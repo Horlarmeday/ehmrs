@@ -45,6 +45,7 @@ export default {
       return new Promise(function(resolve, reject) {
         if (err.status === 401 && err.config && !err.config.__isRetryRequest) {
           this.$store.dispatch('auth/logout');
+          window.location.reload();
         }
         throw err;
       });

@@ -1,13 +1,10 @@
 <template>
   <div>
-    <div class="card card-custom gutter-b">
+    <div v-if="sample" class="card card-custom gutter-b">
       <page-title title="Add Test Sample" />
-      <div v-if="loading">
-        <b-progress :value="count" variant="primary" show-progress animated :max="100" />
-      </div>
-      <div v-else class="card-body">
+      <div class="card-body pt-0">
         <section-title text="Patient Information" />
-        <patient-section :patient="sample.patient" />
+        <patient-section :patient="sample.patient" :insurance="sample?.insurance" />
 
         <section-title text="Test Information" />
         <tests-order-section :tests="sample.tests" />
@@ -16,6 +13,7 @@
         <order-section />
       </div>
     </div>
+    <test-skeleton v-else title="Add Test Sample" section-title="Order" />
   </div>
 </template>
 
@@ -25,13 +23,11 @@ import TestsOrderSection from './collectTestSample/TestsOrderSection';
 import PatientSection from '../../../utils/PatientSection.vue';
 import OrderSection from './collectTestSample/OrderSection';
 import PageTitle from '../../../utils/PageTitle.vue';
+import TestSkeleton from '@/view/pages/laboratory/components/skeleton/TestSkeleton.vue';
 export default {
   name: 'CollectTestSample',
-  data: () => ({
-    loading: false,
-    count: 0,
-  }),
   components: {
+    TestSkeleton,
     PageTitle,
     OrderSection,
     PatientSection,
@@ -39,23 +35,11 @@ export default {
     SectionTitle,
   },
   created() {
-    this.loading = true;
-    this.countToHundred()
-    this.$store
-      .dispatch('laboratory/fetchOneSampleToCollect', { id: this.$route.params.id })
-      .then(() => (this.loading = false));
+    this.$store.dispatch('laboratory/fetchOneSampleToCollect', { id: this.$route.params.id });
   },
   computed: {
     sample() {
       return this.$store.state.laboratory.sampleToCollect;
-    },
-  },
-  methods: {
-    countToHundred() {
-      for (let i = 1; i <= 100; i++) {
-        this.count = i;
-        if (this.sample) break;
-      }
     },
   },
 };
