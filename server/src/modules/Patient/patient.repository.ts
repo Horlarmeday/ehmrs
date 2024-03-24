@@ -158,13 +158,13 @@ export const addPatientInsurance = async data => {
               hmo_id,
               plan,
               staff_id,
-              enrollee_code: dependant.enrollee_code,
+              enrollee_code,
               organization,
               patient_id: dependant.id,
             },
             { transaction: t }
           );
-          await JobSchedule.assignHospitalNumber(dependant.id);
+          JobSchedule.assignHospitalNumber(dependant.id);
         })
       );
     }
