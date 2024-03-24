@@ -18,6 +18,10 @@ export default {
     state.activeVisitPages = pages;
   },
 
+  UPDATE_VISIT(state, visit) {
+    console.log(visit);
+  },
+
   /**
    * CATEGORY VISITS
    */

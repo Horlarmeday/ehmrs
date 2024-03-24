@@ -146,4 +146,18 @@ export default {
         });
     });
   },
+
+  updateVisit({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/visits/update/${payload.id}`, payload.data)
+        .then(response => {
+          commit('UPDATE_VISIT', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
 };
