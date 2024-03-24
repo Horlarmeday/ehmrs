@@ -91,6 +91,8 @@ export type CreateDeliveryInfo = {
   vitaminA_IU: string;
   birth_weight: string;
   sex: string;
+  visit_id: number;
+  admission_id: number;
   time_surgery_ended: Date;
 };
 
@@ -118,4 +120,5 @@ export type CreatePostNatal = {
   ante_natal_id?: number;
   staff_id?: number;
   visit_id?: number;
+  admission_id: number;
 };

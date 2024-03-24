@@ -3,14 +3,11 @@ import {
   AntenatalObservation,
   AntenatalTriage,
   ClinicalNote,
-  Delivery,
   Patient,
-  PostNatal,
   PreviousPregnancy,
   Staff,
-  Visit,
 } from '../../database/models';
-import { Op, Optional, WhereOptions } from 'sequelize';
+import { Op, WhereOptions } from 'sequelize';
 import { getVisitsQuery, patientAttributes } from '../Visit/visit.repository';
 import { getPrescriptionTests } from '../Orders/Laboratory/lab-order.repository';
 import {
@@ -20,10 +17,6 @@ import {
 import { getPrescriptionInvestigations } from '../Orders/Radiology/radiology-order.repository';
 import { paginate } from '../../core/helpers/helper';
 import { getPatientDiagnoses } from '../Consultation/consultation.repository';
-import sequelizeConnection from '../../database/config/config';
-import { AccountStatus } from '../../database/models/antenatal';
-import { CreatePostNatal } from './types/antenatal.types';
-import { VisitStatus } from '../../database/models/visit';
 
 export const staffAttributes = ['fullname', 'firstname', 'lastname'];
 
@@ -203,6 +196,12 @@ export const getAncTriages = async (query: WhereOptions<AntenatalTriage>) => {
   return AntenatalTriage.findAll({ where: { ...query } });
 };
 
+export const getOneAntenatalTriage = async (
+  query: WhereOptions<AntenatalTriage>,
+  attributes: string[]
+) => {
+  return AntenatalTriage.findOne({ where: { ...query }, attributes });
+};
 /******************
  * CLINICAL NOTES
  ******************/
@@ -402,65 +401,4 @@ export const getVisitsSummary = async (currentPage = 1, pageLimit = 5, antenatal
     )
   );
   return paginate({ rows: summary, count }, currentPage, limit);
-};
-
-/***************************
- * DELIVERY INFO
- ***************************/
-/**
- * Create a patient delivery information
- * @param data
- */
-export const createDeliveryInfo = async data => {
-  return Delivery.create({ ...data });
-};
-
-/**
- * get a patient delivery information
- * @param query
- */
-export const getDeliveryInfo = async (query: WhereOptions<Delivery>) => {
-  return Delivery.findAll({
-    where: { ...query },
-    include: [{ model: Staff, attributes: staffAttributes }],
-  });
-};
-
-/***************************
- * POST NATAL
- ***************************/
-/**
- * Create a patient postnatal information
- * @param data
- * @param antenatalId
- */
-export const createPostnatal = async (
-  data: Optional<CreatePostNatal, keyof CreatePostNatal>,
-  antenatalId: number
-) => {
-  return await sequelizeConnection.transaction(async t => {
-    const postnatal = await PostNatal.create({ ...data }, { transaction: t });
-
-    await Antenatal.update(
-      { account_status: AccountStatus.COMPLETED, end_date: Date.now() },
-      { where: { id: antenatalId }, transaction: t }
-    );
-
-    await Visit.update(
-      { status: VisitStatus.ENDED, date_visit_ended: Date.now() },
-      { where: { id: data.visit_id }, transaction: t }
-    );
-    return postnatal;
-  });
-};
-
-/**
- * get a patient delivery information
- * @param query
- */
-export const getPostnatalInfo = async (query: WhereOptions<PostNatal>) => {
-  return PostNatal.findAll({
-    where: { ...query },
-    include: [{ model: Staff, attributes: staffAttributes }],
-  });
 };

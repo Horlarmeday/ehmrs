@@ -2,9 +2,7 @@ import {
   CreateAntenatal,
   CreateAntenatalTriage,
   CreateClinicalNote,
-  CreateDeliveryInfo,
   CreateObservation,
-  CreatePostNatal,
   UpdateAntenatalAccount,
 } from './types/antenatal.types';
 import { getPatientById } from '../Patient/patient.repository';
@@ -26,11 +24,8 @@ import {
   updateObservation,
   getObservations,
   getVisitsSummary,
-  createDeliveryInfo,
-  getDeliveryInfo,
-  createPostnatal,
-  getPostnatalInfo,
   getPreviousPregnancies,
+  getOneAntenatalTriage,
 } from './antenatal.repository';
 import { AccountStatus } from '../../database/models/antenatal';
 import { prescribeService } from '../Orders/Service/service-order.repository';
@@ -40,6 +35,7 @@ import { JobSchedule } from '../../core/command/worker/schedule';
 import dayjs from 'dayjs';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { bulkCreateDiagnosis } from '../Consultation/consultation.repository';
+import { Op } from 'sequelize';
 
 export class AntenatalService {
   /**
@@ -54,7 +50,7 @@ export class AntenatalService {
       start_date: dayjs().toDate(),
       end_date: dayjs()
         .add(9, 'months')
-        .add(2, 'weeks')
+        .add(6, 'weeks')
         .toDate(),
     };
 
@@ -62,7 +58,7 @@ export class AntenatalService {
       ...body,
       ...dates,
     });
-    await JobSchedule.assignAntenatalNumber(antenatal.id, patient_id); // update antenatal number
+    JobSchedule.assignAntenatalNumber(antenatal.id, patient_id); // update antenatal number
 
     if (service_id) {
       const service = await getOneService({ id: service_id });
@@ -104,11 +100,22 @@ export class AntenatalService {
    */
   static async getOneAntenatalAccount(antenatalId: number) {
     const antenatal = await getOneAntenatalAccount({ id: antenatalId });
-    const insurance = await getPatientInsuranceQuery({
-      patient_id: antenatal.patient_id,
-      is_default: true,
-    });
-    return { ...antenatal.toJSON(), insurance };
+    const [insurance, triage] = await Promise.all([
+      getPatientInsuranceQuery({
+        patient_id: antenatal.patient_id,
+        is_default: true,
+      }),
+      getOneAntenatalTriage(
+        {
+          patient_id: antenatal.patient_id,
+          height: {
+            [Op.ne]: null,
+          },
+        },
+        ['height']
+      ),
+    ]);
+    return { ...antenatal.toJSON(), insurance, triage };
   }
 
   /**
@@ -315,61 +322,6 @@ export class AntenatalService {
     }
 
     return getVisitsSummary(1, 5, antenatalId);
-  }
-
-  /**
-   * Create patient delivery information
-   * @memberof AntenatalService
-   * @param body
-   * @param antenatalId
-   * @param staff_id
-   */
-  static async createDeliveryInfo(body: CreateDeliveryInfo, antenatalId: number, staff_id: number) {
-    const antenatal = await getOneAntenatalAccount({ id: antenatalId });
-    return await createDeliveryInfo({
-      ...body,
-      patient_id: antenatal.patient_id,
-      ante_natal_id: antenatal.id,
-      staff_id,
-    });
-  }
-
-  /**
-   * Get patient delivery information
-   * @memberof AntenatalService
-   * @param antenatalId
-   */
-  static async getDeliveryInfo(antenatalId: number) {
-    return getDeliveryInfo({ ante_natal_id: antenatalId });
-  }
-
-  /**
-   * Create patient postnatal information
-   * @memberof AntenatalService
-   * @param body
-   * @param antenatalId
-   * @param staff_id
-   */
-  static async createPostnatal(body: CreatePostNatal, antenatalId: number, staff_id: number) {
-    const antenatal = await getOneAntenatalAccount({ id: antenatalId });
-    return await createPostnatal(
-      {
-        ...body,
-        patient_id: antenatal.patient_id,
-        ante_natal_id: antenatal.id,
-        staff_id,
-      },
-      antenatalId
-    );
-  }
-
-  /**
-   * Get patient postnatal information
-   * @memberof AntenatalService
-   * @param antenatalId
-   */
-  static async getPostnatal(antenatalId: number) {
-    return getPostnatalInfo({ ante_natal_id: antenatalId });
   }
 
   private static async antenatalValidations(patient_id: number) {

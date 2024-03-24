@@ -12,9 +12,7 @@ import {
   validateCreateAntenatal,
   validateCreateAntenatalTriage,
   validateCreateClinicalNote,
-  validateCreateDeliveryInfo,
   validateCreateObservation,
-  validatePostnatalInfo,
   validateUpdateAntenatalAccount,
 } from './validations';
 
@@ -301,94 +299,6 @@ export class AntenatalController {
         httpCode: StatusCodes.OK,
         message: DATA_RETRIEVED,
         data: summary,
-      });
-    } catch (e) {
-      return next(e);
-    }
-  }
-
-  static async createDeliveryInfo(
-    req: Request & { user: { sub: number } },
-    res: Response,
-    next: NextFunction
-  ) {
-    const { error } = validateCreateDeliveryInfo(req.body);
-    if (error)
-      return errorResponse({
-        res,
-        message: error.details[0].message,
-        httpCode: StatusCodes.BAD_REQUEST,
-      });
-    try {
-      const delivery = await AntenatalService.createDeliveryInfo(
-        req.body,
-        +req.params.id,
-        req.user.sub
-      );
-
-      return successResponse({
-        res,
-        httpCode: StatusCodes.CREATED,
-        message: DATA_SAVED,
-        data: delivery,
-      });
-    } catch (e) {
-      return next(e);
-    }
-  }
-
-  static async getDeliveryInfo(req: Request, res: Response, next: NextFunction) {
-    try {
-      const deliveries = await AntenatalService.getDeliveryInfo(+req.params.id);
-      return successResponse({
-        res,
-        httpCode: StatusCodes.OK,
-        message: DATA_RETRIEVED,
-        data: deliveries,
-      });
-    } catch (e) {
-      return next(e);
-    }
-  }
-
-  static async createPostNatal(
-    req: Request & { user: { sub: number } },
-    res: Response,
-    next: NextFunction
-  ) {
-    const { error } = validatePostnatalInfo(req.body);
-    if (error)
-      return errorResponse({
-        res,
-        message: error.details[0].message,
-        httpCode: StatusCodes.BAD_REQUEST,
-      });
-    try {
-      const postNatal = await AntenatalService.createPostnatal(
-        req.body,
-        +req.params.id,
-        req.user.sub
-      );
-
-      return successResponse({
-        res,
-        httpCode: StatusCodes.CREATED,
-        message: DATA_SAVED,
-        data: postNatal,
-      });
-    } catch (e) {
-      return next(e);
-    }
-  }
-
-  static async getPostnatalInfo(req: Request, res: Response, next: NextFunction) {
-    try {
-      const deliveries = await AntenatalService.getPostnatal(+req.params.id);
-      return successResponse({
-        res,
-        httpCode: StatusCodes.OK,
-        message: DATA_RETRIEVED,
-        data: deliveries,
       });
     } catch (e) {
       return next(e);
