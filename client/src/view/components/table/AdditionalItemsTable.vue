@@ -36,7 +36,14 @@
             </td>
             <td>
               <span>
-                <a href="#"><i class="flaticon-delete text-danger"></i></a>
+                <a
+                  href="#"
+                  :class="loading && 'disabled'"
+                  @click="showDeleteAlert(item)"
+                  v-if="item.billing_status === UNBILLED && item.payment_status === PENDING"
+                >
+                  <i class="flaticon-delete text-danger"></i>
+                </a>
               </span>
             </td>
           </tr>
@@ -46,12 +53,48 @@
   </div>
 </template>
 <script>
+import Swal from 'sweetalert2';
+
 export default {
+  data: () => ({
+    loading: false,
+    UNBILLED: 'Unbilled',
+    PENDING: 'Pending',
+  }),
+
   props: {
     items: {
       type: Array,
       required: true,
       default: () => [],
+    },
+  },
+  methods: {
+    showDeleteAlert(item) {
+      const self = this;
+      Swal.fire({
+        title: 'Are you sure?',
+        text: 'You want to delete this item',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Delete!',
+        customClass: {
+          confirmButton: 'btn btn-danger',
+          cancelButton: 'btn btn-default',
+        },
+      }).then(function(result) {
+        if (result.value) {
+          self.deleteAdditionalItem(item);
+        }
+      });
+    },
+
+    deleteAdditionalItem(item) {
+      this.loading = true;
+      this.$store
+        .dispatch('order/deleteAdditionalItem', { itemId: item.id })
+        .then(() => (this.loading = false))
+        .catch(() => (this.loading = false));
     },
   },
 };

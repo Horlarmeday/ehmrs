@@ -12,6 +12,7 @@
       source="Consultation"
       :show-switch="showSwitch"
       :switch-position="switchPosition"
+      :is-visible="false"
     />
   </div>
 </template>
