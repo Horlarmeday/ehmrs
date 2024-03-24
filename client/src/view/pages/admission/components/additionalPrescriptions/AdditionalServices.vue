@@ -1,19 +1,39 @@
 <template>
   <div>
-    <service-card
-      :source="source"
-      :show-switch="showSwitch"
-      :switch-position="switchPosition"
-      :filter="filter"
-      :visible="false"
-    />
+    <div class="accordion accordion-solid accordion-panel accordion-svg-toggle">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title" v-b-toggle.accordion-78>
+            <div class="card-label">Additional Services</div>
+            <accordion-icon />
+          </div>
+        </div>
+        <b-collapse id="accordion-78" :visible="isVisible">
+          <div class="card-body">
+            <services-accordion :filter="filter" />
+            <create-additional-services
+              :source="source"
+              :show-switch="showSwitch"
+              :switch-position="switchPosition"
+              :filter="filter"
+            />
+          </div>
+        </b-collapse>
+      </div>
+    </div>
   </div>
 </template>
 <script>
-import ServiceCard from '@/view/pages/consultation/components/services/ServiceCard.vue';
+import AccordionIcon from '@/assets/icons/AccordionIcon.vue';
+import ServicesAccordion from '@/view/components/accordion/ServicesAccordion.vue';
+import CreateAdditionalServices from '@/view/pages/admission/components/additionalPrescriptions/CreateAdditionalServices.vue';
 
 export default {
-  components: { ServiceCard },
+  components: {
+    CreateAdditionalServices,
+    ServicesAccordion,
+    AccordionIcon,
+  },
   props: {
     switchPosition: {
       type: Boolean,
@@ -32,6 +52,11 @@ export default {
     filter: {
       type: Object,
       required: true,
+    },
+    isVisible: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
   },
 };
