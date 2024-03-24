@@ -1,13 +1,18 @@
 import { successResponse, SuccessResponse } from '../../../common/responses/success-responses';
 import { errorResponse } from '../../../common/responses/error-responses';
 import { StatusCodes } from '../../../core/helpers/helper';
-import { DATA_SAVED, DATA_UPDATED } from '../../AdminSettings/messages/response-messages';
+import {
+  DATA_DELETED,
+  DATA_SAVED,
+  DATA_UPDATED,
+} from '../../AdminSettings/messages/response-messages';
 import { ServiceOrderService } from './service-order.service';
-import { validateBulkService } from './validations';
+import { validateBulkService, validateDeleteService } from './validations';
 import { NextFunction, Request, Response } from 'express';
 import { SUCCESS } from '../../../core/constants';
 import { isEmpty } from 'lodash';
 import { EMPTY_REQUEST_BODY } from './messages/response-messages';
+import { PrescribedBulkServiceBody } from './types/service-order.types';
 
 export class ServiceOrderController {
   /**
@@ -19,7 +24,11 @@ export class ServiceOrderController {
    * @param {object} next next middleware
    * @returns {json} json object with status, prescribed services data
    */
-  static async orderBulkService(req, res, next): Promise<SuccessResponse> {
+  static async orderBulkService(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
     const { error } = validateBulkService(req.body);
     if (error)
       return errorResponse({
@@ -101,6 +110,41 @@ export class ServiceOrderController {
         res,
         data: service,
         message: DATA_UPDATED,
+        httpCode: StatusCodes.CREATED,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * delete services
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, prescribed services data
+   */
+  static async deletePrescribedService(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    const { error } = validateDeleteService(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+    try {
+      const services = await ServiceOrderService.deletePrescribedService(req.body);
+
+      return successResponse({
+        res,
+        data: services,
+        message: DATA_DELETED,
         httpCode: StatusCodes.CREATED,
       });
     } catch (e) {

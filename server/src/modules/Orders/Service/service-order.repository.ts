@@ -22,8 +22,16 @@ export const orderBulkService = async data => {
  * @returns {Promise<PrescribedService>} prescribed service data
  */
 export const prescribeService = async (data: PrescribeServiceBody): Promise<PrescribedService> => {
-  const { service_id, requester, price, patient_id, visit_id, service_type, ante_natal_id } =
-    data || {};
+  const {
+    service_id,
+    requester,
+    price,
+    patient_id,
+    visit_id,
+    service_type,
+    ante_natal_id,
+    surgery_id,
+  } = data || {};
 
   return PrescribedService.create({
     service_id,
@@ -33,6 +41,7 @@ export const prescribeService = async (data: PrescribeServiceBody): Promise<Pres
     patient_id,
     date_requested: Date.now(),
     visit_id,
+    surgery_id,
     ante_natal_id,
   });
 };
@@ -110,4 +119,13 @@ export const getOnePrescribedService = async (
       { model: Staff, attributes: staffAttributes },
     ],
   });
+};
+
+/**
+ * delete prescribed service
+ * @returns {number} prescribed service data
+ * @param serviceId
+ */
+export const deleteService = async serviceId => {
+  return PrescribedService.destroy({ where: { id: serviceId } });
 };

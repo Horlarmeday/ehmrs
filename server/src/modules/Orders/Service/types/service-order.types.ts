@@ -3,13 +3,15 @@ import { ServiceType } from '../../../../database/models/prescribedService';
 type Services = {
   service_id: number;
   service_type: ServiceType;
-  price: string | number;
+  price: number;
+  quantity?: number;
 };
 export class PrescribedBulkServiceBody {
   services: Array<Services>;
   staff_id: number;
   visit_id: number;
   ante_natal_id?: number;
+  surgery_id?: number;
 }
 
 export class PrescribeServiceBody {
@@ -20,4 +22,5 @@ export class PrescribeServiceBody {
   requester?: number;
   visit_id?: number;
   ante_natal_id?: number;
+  surgery_id?: number;
 }
