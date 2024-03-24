@@ -19,7 +19,7 @@
               <th style="min-width: 50px">Source</th>
               <th style="min-width: 50px">Code</th>
               <th style="min-width: 100px">Requester</th>
-              <th style="min-width: 150px">Date Prescribed</th>
+              <th style="min-width: 150px">Date</th>
               <th class="pr-0 text-right" style="min-width: 150px">action</th>
             </tr>
           </thead>
@@ -29,11 +29,16 @@
             </tr>
             <tr v-for="drug in drugs" :key="drug.id">
               <td class="pr-0">
-                <router-link
+                <span title="Dispensed" v-b-tooltip.hover v-if="drug.dispense_status === DISPENSED"
+                  ><i class="fas fa-check-circle text-success mr-1"></i
+                ></span>
+                <a
+                  @click="viewPopover(drug)"
                   class="font-weight-bolder text-hover-primary mb-1 font-size-lg"
                   :class="getDrugTextStatus(drug.nhis_status)"
-                  to="#"
-                  >{{ drug.drug.name }}</router-link
+                  href="#"
+                  :id="popOverId"
+                  >{{ drug.drug.name }}</a
                 >
               </td>
               <td>
@@ -77,7 +82,7 @@
                 <a
                   title="Add Authorization Code"
                   v-b-tooltip.hover
-                  :class="drug.drug_group === SECONDARY || (drug.auth_code && DISABLED)"
+                  :class="drug.drug_group === PRIMARY || drug.auth_code ? DISABLED : ''"
                   href="#"
                   class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
                   @click="addAuthCode(drug)"
@@ -109,6 +114,12 @@
           </tbody>
         </table>
       </div>
+      <drug-popover
+        :drug="item"
+        :target="popOverId"
+        :show="showPopover"
+        @closePopover="hidePopover"
+      />
       <pagination
         :total-pages="pages"
         :total="queriedItems"
@@ -126,9 +137,10 @@ import CancelIcon from '@/assets/icons/CancelIcon.vue';
 import Pagination from '@/utils/Pagination.vue';
 import Swal from 'sweetalert2';
 import AuthCodeModal from '@/view/pages/nhis/components/AuthCodeModal.vue';
+import DrugPopover from '@/view/components/popover/DrugPopover.vue';
 
 export default {
-  components: { AuthCodeModal, Pagination, CancelIcon, ApproveIcon, EditIcon },
+  components: { DrugPopover, AuthCodeModal, Pagination, CancelIcon, ApproveIcon, EditIcon },
   data: () => ({
     PENDING: 'Pending',
     PRIMARY: 'Primary',
@@ -136,11 +148,15 @@ export default {
     DISABLED: 'disabled',
     APPROVED: 'Approved',
     CLEARED: 'Cleared',
+    DISPENSED: 'Dispensed',
     currentPage: 1,
     itemsPerPage: 15,
     displayPrompt: false,
+    item: {},
     drug: {},
     dispatchType: 'order/updatePrescribedDrug',
+    showPopover: false,
+    popOverId: 'popover-reactive-90',
   }),
   computed: {
     drugs() {
@@ -235,6 +251,15 @@ export default {
       if (status === 'Approved') return 'text-success';
       if (status === 'Declined') return 'text-danger';
       return 'text-dark-75';
+    },
+
+    viewPopover(drug) {
+      this.item = drug;
+      this.showPopover = true;
+    },
+
+    hidePopover() {
+      this.showPopover = false;
     },
   },
   created() {

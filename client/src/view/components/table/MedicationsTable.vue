@@ -38,8 +38,20 @@
             </td>
             <td>
               <span v-if="allowedRoles.includes(currentUser.role)">
-                <a href="#"><i class="flaticon-delete mr-2 text-danger"></i></a>
-                <a href="#"><i class="flaticon-edit-1 text-success"></i></a>
+                <a
+                  href="#"
+                  :class="loading && 'disabled'"
+                  @click="showDeleteAlert(drug)"
+                  v-if="drug.billing_status === UNBILLED && drug.payment_status === PENDING"
+                >
+                  <i class="flaticon-delete mr-2 text-danger"></i>
+                </a>
+                <!--                <a-->
+                <!--                  href="#"-->
+                <!--                  v-if="drug.billing_status === UNBILLED && drug.payment_status === PENDING"-->
+                <!--                >-->
+                <!--                  <i class="flaticon-edit-1 text-success"></i>-->
+                <!--                </a>-->
               </span>
             </td>
           </tr>
@@ -57,6 +69,7 @@
 <script>
 import DrugPopover from '@/view/components/popover/DrugPopover.vue';
 import { parseJwt } from '@/core/plugins/parseJwt';
+import Swal from 'sweetalert2';
 
 export default {
   name: 'MedicationsTable',
@@ -64,9 +77,12 @@ export default {
   data: () => ({
     item: {},
     showPopover: false,
+    loading: false,
     popOverId: 'popover-reactive-1',
     currentUser: parseJwt(localStorage.getItem('user_token')),
     allowedRoles: ['General Practitioner', 'Super Admin'],
+    PENDING: 'Pending',
+    UNBILLED: 'Unbilled',
   }),
   props: {
     drugs: {
@@ -80,8 +96,44 @@ export default {
       this.item = item;
       this.showPopover = true;
     },
+
     hidePopover() {
       this.showPopover = false;
+    },
+
+    showDeleteAlert(drug) {
+      const self = this;
+      Swal.fire({
+        title: 'Are you sure?',
+        text: 'You want to delete this drug',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Delete!',
+        customClass: {
+          confirmButton: 'btn btn-danger',
+          cancelButton: 'btn btn-default',
+        },
+      }).then(function(result) {
+        if (result.value) {
+          self.deletePrescribedDrug(drug);
+        }
+      });
+    },
+
+    endRequest() {
+      this.loading = false;
+      this.$store.dispatch('order/fetchPrescribedDrugs', {
+        fetchWithItems: true,
+        filter: { visit_id: this.$route.params.id },
+      });
+    },
+
+    deletePrescribedDrug(drug) {
+      this.loading = true;
+      this.$store
+        .dispatch('order/deletePrescribedDrug', { drugId: drug.id })
+        .then(() => this.endRequest())
+        .catch(() => (this.loading = false));
     },
   },
 };
