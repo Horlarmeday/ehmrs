@@ -16,7 +16,7 @@
             v-b-tooltip.hover
             title="Strength"
             class="text-dark-50 text-hover-primary font-weight-bold mr-lg-8 mr-5 mb-lg-0 mb-2"
-            ><i class="fas fa-flask mr-2 font-size-lg icon-lg"></i>Prescribed Strength:
+            ><i class="fas fa-flask mr-2 font-size-lg icon-lg"></i>Strength:
             <span class="text-dark ml-2"
               >{{ prescription.prescribed_strength }} {{ prescription?.strength }}</span
             ></a
@@ -36,7 +36,7 @@
             v-b-tooltip.hover
             title="Quantity to Dispense"
             class="text-dark-50 text-hover-primary font-weight-bold mr-lg-8 mr-5 mb-lg-0 mb-2"
-            ><i class="fas fa-flask mr-2 font-size-lg icon-lg"></i>Quantity to Dispense<span
+            ><i class="fas fa-flask mr-2 font-size-lg icon-lg"></i>Qty to Dispense<span
               class="text-dark ml-2"
               >{{ prescription.quantity_to_dispense }} {{ prescription?.dosage_form }}</span
             ></a
@@ -69,8 +69,7 @@
             v-b-tooltip.hover
             title="Quantity Prescribed"
             class="text-dark-50 text-hover-primary font-weight-bold mr-lg-8 mr-5 mb-lg-0 mb-2"
-            ><i class="fab fa-creative-commons-remix mr-2 font-size-lg icon-lg"></i>Quantity
-            Prescribed:
+            ><i class="fab fa-creative-commons-remix mr-2 font-size-lg icon-lg"></i>Qty Prescribed:
             <span class="ml-2 text-dark"
               >{{ prescription.quantity }} {{ prescription?.dosage_form }}</span
             ></a
@@ -100,9 +99,9 @@
             v-b-tooltip.hover
             title="Date Drug Prescribed"
             class="text-dark-50 text-hover-primary font-weight-bold mr-lg-8 mr-5 mb-lg-0 mb-2"
-            ><i class="flaticon2-calendar-2 mr-2 font-size-lg icon-lg"></i>Date Prescribed:
+            ><i class="flaticon2-calendar-2 mr-2 font-size-lg icon-lg"></i>Date:
             <span class="ml-2 text-dark">{{
-              prescription.date_prescribed | dayjs('ddd, MMM Do YYYY')
+              prescription.date_prescribed | dayjs('MMM D, YYYY, h:mma')
             }}</span></a
           >
         </div>

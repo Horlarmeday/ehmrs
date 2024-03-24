@@ -40,9 +40,9 @@
         <tr>
           <th scope="row">Dispense Status</th>
           <td>
-            <span :class="getDispenseStatus(drug.dispense_status)" class="label label-inline"
-              >Pending</span
-            >
+            <span :class="getDispenseStatus(drug.dispense_status)" class="label label-inline">{{
+              drug.dispense_status
+            }}</span>
           </td>
         </tr>
         <tr>
@@ -54,9 +54,9 @@
         <tr>
           <th scope="row">Payment Status</th>
           <td>
-            <span :class="getPaymentStatus(drug.payment_status)" class="label label-inline"
-              >Pending</span
-            >
+            <span :class="getPaymentStatus(drug.payment_status)" class="label label-inline">{{
+              drug.payment_status
+            }}</span>
           </td>
         </tr>
         <tr>

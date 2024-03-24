@@ -42,7 +42,7 @@ export const downloadTestResult = (
   return doc.end();
 };
 
-function generateHeader(doc) {
+function generateHeader(doc: PDFDocument) {
   doc
     .image('src/public/images/logo-letter-1.png', 50, 45, { width: 50 })
     .fillColor('#444444')
@@ -54,7 +54,7 @@ function generateHeader(doc) {
     .moveDown(1.5);
 }
 
-function generateFooter(doc) {
+function generateFooter(doc: PDFDocument) {
   doc
     .fontSize(10)
     .text(
@@ -65,7 +65,7 @@ function generateFooter(doc) {
     );
 }
 
-function generateStampAndSignature(doc, y) {
+function generateStampAndSignature(doc: PDFDocument, y: number) {
   doc
     .strokeColor('#aaaaaa')
     .lineWidth(1)
@@ -76,7 +76,7 @@ function generateStampAndSignature(doc, y) {
   doc.fontSize(10).text('Stamp, Signature and Date', 240, y + 15);
 }
 
-function generateHr(doc, y, lineWidth = 1) {
+function generateHr(doc: PDFDocument, y: number, lineWidth = 1) {
   doc
     .strokeColor('#aaaaaa')
     .lineWidth(lineWidth)
@@ -85,7 +85,7 @@ function generateHr(doc, y, lineWidth = 1) {
     .stroke();
 }
 
-function generatePatientInformation(doc, patientInfo) {
+function generatePatientInformation(doc: PDFDocument, patientInfo: PatientInfo) {
   doc
     .fillColor('#444444')
     .fontSize(20)
@@ -119,7 +119,7 @@ function generatePatientInformation(doc, patientInfo) {
   generateHr(doc, 252);
 }
 
-function generateResultTable(doc, testResults) {
+function generateResultTable(doc: PDFDocument, testResults: TestResults[]) {
   doc.moveDown(1.5);
   doc.table(
     {

@@ -1,24 +1,32 @@
 <template>
   <div>
-    <div class="accordion accordion-toggle-arrow" id="accordionExample1">
+    <div class="accordion accordion-solid accordion-toggle-arrow">
       <div class="card" v-for="(prescription, i) in prescriptions" :key="i">
         <div class="card-header">
-          <div class="card-title" v-b-toggle="`collapse-${i}`">
-            <span class="mr-5 text-black-50">Drug Name.:</span>
+          <div class="card-title" v-b-toggle="`collapse-d${i}`">
+            <span class="mr-5 text-black-50 lead font-size-h4">Drug Name:</span>
             <span class="mr-5 text-dark">{{ prescription.drug_name }}</span>
 
-            <span class="mr-3 text-black-50">Drug Type.:</span
+            <span class="mr-3 text-black-50 lead font-size-h4">Drug Type:</span
             ><span class="text-dark mr-5">{{ prescription.drug_type }}</span>
 
-            <span class="mr-3 text-black-50">Status.:</span>
-            <span :class="getStatusColor(status)" class="label label-pill label-inline mr-2">{{
-              status
-            }}</span>
+            <span class="mr-3 text-black-50 lead font-size-h4">Dispense Status:</span>
+            <span
+              :class="getStatusColor(prescription.dispense_status)"
+              class="label label-pill label-inline mr-2"
+              >{{ prescription.dispense_status }}</span
+            >
           </div>
         </div>
         <div>
-          <b-collapse visible :id="`collapse-${i}`">
-            <b-card>
+          <b-collapse :visible="i === 0" :id="`collapse-d${i}`">
+            <b-card
+              :class="
+                prescription?.drug_type === NHIS && prescription?.nhis_status !== APPROVED
+                  ? DISABLED
+                  : ''
+              "
+            >
               <drug-info-banner :prescription="prescription" />
               <div class="form-group row">
                 <div class="col-lg-6">
@@ -34,11 +42,11 @@
                     <div class="input-group-append">
                       <span class="input-group-text">of</span>
                       <span class="input-group-text"
-                        >{{ prescription.quantity_remaining }}
-                        {{ prescription.dosage_form.name }}</span
+                        >{{ prescription.quantity_to_dispense }}
+                        {{ prescription.dosage_form }}</span
                       >
                       <button
-                        :disabled="isDisabled || !prescription.quantity_remaining"
+                        :disabled="isDisabled || !prescription.quantity_remaining_to_dispense"
                         class="btn btn-primary"
                         ref="kt_dispense_submit"
                         @click="dispenseDrug(prescription, i)"
@@ -53,12 +61,10 @@
                   <div class="input-group">
                     <label class="checkbox mr-3 checkbox-lg">
                       <input
-                        v-b-tooltip.hover
-                        title="Enable if result is referred"
                         type="checkbox"
                         class="mr-2"
-                        :checked="prescription.disabledReturn"
-                        @change="toggleCheck(prescription, $event, i)"
+                        v-model="prescription.disabledReturn"
+                        @input="toggleCheck(prescription, $event, i)"
                       />
                       <span></span>
                     </label>
@@ -72,8 +78,8 @@
                     <div class="input-group-append">
                       <span class="input-group-text">of</span>
                       <span class="input-group-text"
-                        >{{ prescription.quantity_prescribed }}
-                        {{ prescription.strength.name }}</span
+                        >{{ prescription.quantity_to_dispense }}
+                        {{ prescription.dosage_form }}</span
                       >
                       <button
                         ref="kt_return_submit"
@@ -113,13 +119,16 @@ export default {
   },
   data: () => ({
     isDisabled: false,
+    APPROVED: 'Approved',
+    DISABLED: 'disabledCard',
+    NHIS: 'NHIS',
   }),
 
   methods: {
     getStatusColor(status) {
       if (status === 'Pending') return 'label-warning';
-      if (status === 'Complete Dispense') return 'label-success';
-      if (status === 'Partial Dispense') return 'label-danger';
+      if (status === 'Dispensed') return 'label-success';
+      if (status === 'Partial Dispense') return 'label-primary';
       return 'label-info';
     },
 
@@ -134,7 +143,7 @@ export default {
     },
 
     fetchPrescription() {
-      this.$store.dispatch('pharmacy/fetchOnePrescription', this.$route.params.id)
+      this.$store.dispatch('pharmacy/fetchOnePrescription', this.$route.params.id);
     },
 
     endRequest(button) {
@@ -179,4 +188,9 @@ export default {
 };
 </script>
 
-<style></style>
+<style scoped>
+.disabledCard {
+  pointer-events: none;
+  opacity: 0.4;
+}
+</style>
