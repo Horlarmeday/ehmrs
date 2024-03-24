@@ -367,6 +367,23 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            //CUSTOMER CARE
+            {
+              path: 'prescriptions',
+              name: 'visit-prescriptions',
+              component: () => import('@/view/pages/customerCare/ActiveVisits.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'prescriptions/:id',
+              name: 'visit-prescription',
+              component: () => import('@/view/pages/customerCare/Tabs.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
           ],
         },
         // CONSULTATION
@@ -766,6 +783,22 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            {
+              path: 'reports',
+              name: 'reports',
+              component: () => import('@/view/pages/laboratory/Reports.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'reports/aggregate',
+              name: 'aggregate-reports',
+              component: () => import('@/view/pages/laboratory/reports/AggregateReport.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
           ],
         },
         // ORDERS
@@ -1050,6 +1083,45 @@ const router = new Router({
               path: 'history/:id',
               name: 'admission-history',
               component: () => import('@/view/pages/admission/page/AdmissionHistory.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'delivery/:id',
+              name: 'delivery',
+              component: () => import('@/view/pages/admission/page/Delivery.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'postnatal/:id',
+              name: 'postnatal',
+              component: () => import('@/view/pages/admission/page/Postnatal.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+          ],
+        },
+        {
+          path: '/surgery',
+          name: 'surgery-module',
+          component: () => import('@/view/pages/surgery/Surgery.vue'),
+          children: [
+            {
+              path: 'requests',
+              name: 'surgery-requests',
+              component: () => import('@/view/pages/surgery/pages/Requests.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'requests/:id',
+              name: 'surgery-request',
+              component: () => import('@/view/pages/surgery/pages/Tabs.vue'),
               meta: {
                 requiresAuth: true,
               },
