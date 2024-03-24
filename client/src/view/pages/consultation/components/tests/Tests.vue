@@ -1,9 +1,16 @@
 <template>
   <div class="flex-row-fluid ml-lg-8">
+    <RoutineTests
+      :display-prompt="displayPrompt"
+      @closeModal="hideModal"
+      :show-switch="showSwitch"
+      :source="source"
+      :switch-position="switchPosition"
+    />
     <div class="card-custom">
       <div class="card-header">
         <tests-accordion />
-        <div class="card-title">
+        <div class="card-title mt-2">
           <span class="card-label font-weight-bolder text-dark"></span>
           <span v-if="showSwitch">
             <switch-box
@@ -12,19 +19,29 @@
               @switchSpot="flipSwitch"
             />
           </span>
-          <div class="">
+          <div class="mr-2">
             <button
               v-if="selectedTests.length"
               ref="kt-orderTest-submit"
-              class="btn btn-primary btn-sm float-right mr-2"
+              class="btn btn-primary btn-sm float-right ml-2 mb-3"
               @click="submitLabTest"
             >
               Submit
             </button>
           </div>
+          <div v-if="currentUser?.sub_role === ANTENATAL" class="">
+            <a
+              title="Routine Tests"
+              v-b-tooltip.hover
+              href="#"
+              @click="openModal"
+              class="btn btn-icon btn-light-primary mr-3"
+            >
+              <i class="fas fa-syringe"></i>
+            </a>
+          </div>
         </div>
       </div>
-
       <hr />
       <div class="card-body">
         <div class="row">
@@ -46,15 +63,20 @@
 <script>
 import TestsAccordion from '@/view/components/accordion/TestsAccordion.vue';
 import SwitchBox from '@/utils/SwitchBox.vue';
+import { parseJwt } from '@/common/common';
+import RoutineTests from '@/view/pages/programs/antenatal/components/RoutineTests.vue';
 
 export default {
   name: 'Tests',
-  components: { SwitchBox, TestsAccordion },
+  components: { RoutineTests, SwitchBox, TestsAccordion },
   data() {
     return {
       checkmark: 'flaticon2-check-mark',
       isDisabled: false,
+      displayPrompt: false,
       switchSpot: true,
+      currentUser: parseJwt(localStorage.getItem('user_token')),
+      ANTENATAL: 'ANC',
     };
   },
   props: {
@@ -143,6 +165,14 @@ export default {
 
     flipSwitch(value) {
       this.switchSpot = value;
+    },
+
+    openModal() {
+      this.displayPrompt = true;
+    },
+
+    hideModal() {
+      this.displayPrompt = false;
     },
   },
 };

@@ -27,6 +27,9 @@
             </tr>
             <tr v-for="test in tests" :key="test.id">
               <td class="pr-0">
+                <span title="Result added" v-b-tooltip.hover v-if="test.result_status === ACCEPTED"
+                  ><i class="fas fa-check-circle text-success mr-1"></i
+                ></span>
                 <router-link
                   class="font-weight-bolder text-hover-primary mb-1 font-size-lg"
                   :class="getTextStatus(test.nhis_status)"
@@ -63,14 +66,14 @@
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ test.date_requested | dayjs('ddd, MMM Do YYYY, h:mma') }}
+                  {{ test.date_requested | dayjs('MMM Do YYYY, h:mma') }}
                 </span>
               </td>
               <td class="pr-0 text-right">
                 <a
                   title="Add Authorization Code"
                   v-b-tooltip.hover
-                  :class="test.test.type === SECONDARY || (test.auth_code && DISABLED)"
+                  :class="test.test.type === PRIMARY || test.auth_code ? DISABLED : ''"
                   href="#"
                   class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
                   @click="addAuthCode(test)"
@@ -131,6 +134,7 @@ export default {
     CLEARED: 'Cleared',
     APPROVED: 'Approved',
     SECONDARY: 'Secondary',
+    ACCEPTED: 'Accepted',
     test: {},
     displayPrompt: false,
     dispatchType: 'order/updatePrescribedTest',
@@ -228,6 +232,12 @@ export default {
       if (status === 'Approved') return 'text-success';
       if (status === 'Declined') return 'text-danger';
       return 'text-dark-75';
+    },
+
+    getLabelDotStatus(type) {
+      if (type === 'Cash') return 'label-success';
+      if (type === 'Private') return 'label-info';
+      return 'label-primary';
     },
   },
   created() {

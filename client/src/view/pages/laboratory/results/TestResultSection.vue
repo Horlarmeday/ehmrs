@@ -30,7 +30,7 @@
             </td>
             <td>
               <span class="text-dark-75 font-weight-bolder d-block font-size-md">
-                0.0 - 0.9 d/mml
+                {{ test?.test?.valid_range }} {{ test?.test?.result_unit }}
               </span>
             </td>
             <td>
