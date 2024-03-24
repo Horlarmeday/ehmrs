@@ -17,6 +17,7 @@ import {
 import { canUsePriceTariff } from '../../core/helpers/helper';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { staffAttributes } from '../Antenatal/antenatal.repository';
+import { BedStatus } from '../../database/models/bed';
 
 /** ***********************
  * DEPARTMENT
@@ -230,7 +231,18 @@ export async function getWards(currentPage = 1, pageLimit = 20) {
  * @param ward_id
  */
 export const getWardWithService = async (ward_id: number) => {
-  return Ward.findByPk(ward_id, { include: [{ model: Service }] });
+  return Ward.findByPk(ward_id, {
+    include: [
+      { model: Service },
+      {
+        model: Bed,
+        where: {
+          status: BedStatus.UNTAKEN,
+        },
+        attributes: ['bed_type', 'id', 'code', 'status'],
+      },
+    ],
+  });
 };
 
 /** ***********************
@@ -294,6 +306,9 @@ export const getWardsAndBeds = (search: string = null): Promise<Ward[]> => {
     include: [
       {
         model: Bed,
+        where: {
+          status: BedStatus.UNTAKEN,
+        },
         attributes: ['bed_type', 'id', 'code', 'status'],
       },
     ],

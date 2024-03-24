@@ -62,6 +62,7 @@ export async function createObservation(data) {
     visit_id,
     staff_id,
     patient_id,
+    patient_insurance_id,
   } = data;
 
   return History.create({
@@ -72,6 +73,7 @@ export async function createObservation(data) {
     visit_id,
     staff_id,
     patient_id,
+    patient_insurance_id,
   });
 }
 

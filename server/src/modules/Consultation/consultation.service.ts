@@ -12,7 +12,8 @@ import { checkValueExists } from '../../core/helpers/helper';
 import VisitService from '../Visit/visit.service';
 import { Observation } from './interface/consultation.interface';
 import { AntenatalObservation, Complaint, Diagnosis, History } from '../../database/models';
-import { getVisitById } from '../Visit/visit.repository';
+import { getVisitById, updateVisit } from '../Visit/visit.repository';
+import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 
 class ConsultationService {
   /**
@@ -27,17 +28,26 @@ class ConsultationService {
     const { complaints, staff_id, visit_id, diagnosis } = body;
     let history: History;
     const visit = await VisitService.getVisitById(visit_id);
+    const insurance = await getPatientInsuranceQuery({
+      patient_id: visit.patient_id,
+      is_default: true,
+    });
 
     if (checkValueExists(body)) {
-      history = await createObservation({ ...body, patient_id: visit.patient_id });
+      history = await createObservation({
+        ...body,
+        patient_id: visit.patient_id,
+        patient_insurance_id: insurance?.id,
+      });
     }
 
-    let mappedComplaints: string | any[];
+    let mappedComplaints: Complaint[];
     if (complaints?.length) {
       mappedComplaints = complaints.map(complain => {
         complain.staff_id = staff_id;
         complain.visit_id = visit_id;
         complain.patient_id = visit.patient_id;
+        complain.patient_insurance_id = insurance?.id;
         return complain;
       });
     }
@@ -52,6 +62,7 @@ class ConsultationService {
     const [createdComplaints, diagnoses] = await Promise.all([
       mappedComplaints?.length && bulkCreateComplaint(mappedComplaints),
       bulkCreateDiagnosis(mappedDiagnosis),
+      updateVisit({ id: visit_id }, { is_taken: true }),
     ]);
 
     return { history, createdComplaints, diagnoses };

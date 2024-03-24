@@ -15,6 +15,7 @@ import {
   INVALID_USER,
 } from './messages/response-messages';
 import { Staff } from '../../database/models';
+import { StatusCodes } from '../../core/helpers/helper';
 
 class AuthService {
   /**
@@ -40,7 +41,7 @@ class AuthService {
 
   static checkStaffStatus(staff: Staff) {
     if (staff.status === Status.INACTIVE)
-      throw new BadException('INVALID', 401, DEACTIVATED_ACCOUNT);
+      throw new BadException('INVALID', StatusCodes.UNAUTHORIZED, DEACTIVATED_ACCOUNT);
     return true;
   }
 
