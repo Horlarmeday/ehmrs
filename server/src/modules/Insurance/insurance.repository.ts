@@ -183,6 +183,7 @@ export const getPatientInsuranceQuery = async (
 ): Promise<PatientInsurance | null> => {
   return PatientInsurance.findOne({
     where: { ...query },
+    attributes: ['hmo_id', 'insurance_id', 'id'],
     include: [
       {
         model: Insurance,

@@ -13,7 +13,6 @@ import { Inventory, InventoryItem } from '../../database/models';
 import { InventoryTypes } from './types/inventory.types';
 import { GetInventoryItemsBody } from './types/inventory-item.types';
 import { BadException } from '../../common/util/api-error';
-import { getOnePrescribedDrug, getPrescriptionDrugs } from '../Orders/Pharmacy/pharmacy-order.repository';
 
 class InventoryService {
   /**

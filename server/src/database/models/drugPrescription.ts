@@ -118,7 +118,6 @@ export class DrugPrescription extends Model {
 
   @HasMany(() => PrescribedDrug, {
     foreignKey: 'drug_prescription_id',
-    onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
     hooks: true,
   })
@@ -126,7 +125,6 @@ export class DrugPrescription extends Model {
 
   @HasMany(() => PrescribedAdditionalItem, {
     foreignKey: 'drug_prescription_id',
-    onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
     hooks: true,
   })

@@ -4,13 +4,15 @@ import { promisify } from 'util';
 import fs from 'fs';
 import { BadException } from '../../common/util/api-error';
 import { DEVELOPMENT } from '../constants';
-import { Patient } from '../../database/models';
+import { Patient, TestPrescription } from '../../database/models';
 import { Response } from 'express';
 import { ExportDataType } from '../../modules/Store/types/pharmacy-item.types';
 import { exportDataToCSV, exportDataToExcel, exportDataToPDF } from './fileExport';
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 import { Op } from 'sequelize';
+import { countRecords, padNumberWithZero } from './general';
+import { PrescribedAdditionalItemBody } from '../../modules/Orders/Pharmacy/interface/prescribed-drug.body';
 
 const writeFile = promisify(fs.writeFile);
 
@@ -28,6 +30,9 @@ export const patientAttributes = [
   'firstname',
   'lastname',
   'gender',
+  'id',
+  'has_insurance',
+  'date_of_birth',
 ];
 
 /**
@@ -156,13 +161,13 @@ export const mapToUnique = (arr: Iterable<unknown>) => {
   return Array.from(uniqueSet);
 };
 
-export const generateLabAccessionNumber = () => {
-  const uuid = uuidv4();
-  const splittedStr = uuid.split('-');
-  const randomFirst = splittedStr[4]?.toUpperCase();
-  const randomSecond = splittedStr[1]?.toUpperCase();
+export const generateLabAccessionNumber = async () => {
+  const today = dayjs().format('YYYY-MM-DD');
+  const initialPart = today.split('-').join('');
+  let count = await countRecords(TestPrescription, {}, 'date_requested');
+  if (!count) count = count + 1;
   const prefix = 'LAB';
-  return `${prefix}-${randomFirst}-${randomSecond}`;
+  return `${prefix}-${initialPart}-${padNumberWithZero(count, 2)}`;
 };
 
 export const isToday = (specificDateTime: Date) => {
@@ -201,7 +206,15 @@ export const backlogQuery = (field: string) => ({
   },
 });
 
-export function calculateAge(birthday: string | number | Date) {
+export const dateQuery = (field: string, date: Date) => ({
+  [field]: {
+    [Op.lt]: dayjs(date)
+      .startOf('day')
+      .toDate(),
+  },
+});
+
+export const calculateAge = (birthday: string | number | Date) => {
   const dateOfBirth = new Date(birthday);
   const today = new Date();
   let age = today.getFullYear() - dateOfBirth.getFullYear();
@@ -211,4 +224,7 @@ export function calculateAge(birthday: string | number | Date) {
     age--;
   }
   return age;
-}
+};
+
+export const flattenArray = (arrayOfArrays: PrescribedAdditionalItemBody[][]) =>
+  arrayOfArrays.reduce((acc, curr) => acc.concat(curr), []);

@@ -1,5 +1,7 @@
 import { SamplePeriod } from '../../modules/Orders/Laboratory/interface/prescribed-test.interface';
 import { backlogQuery, todayQuery } from './helper';
+import { TestStatus } from '../../database/models/prescribedTest';
+import { WhereOptions } from 'sequelize';
 
 export function padNumberWithZero(num, targetLength = 6) {
   return num.toString().padStart(targetLength, 0);
@@ -43,3 +45,7 @@ export enum NHISApprovalStatus {
   APPROVED = 'Approved',
   DECLINED = 'Declined',
 }
+
+export const countRecords = async (model, query: WhereOptions<any>, dateField: string) => {
+  return model.count({ where: { ...query, ...todayQuery(dateField) } });
+};

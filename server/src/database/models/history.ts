@@ -18,6 +18,7 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
+import { PatientInsurance } from './patientInsurance';
 
 @Table({ timestamps: true })
 export class History extends Model {
@@ -66,6 +67,12 @@ export class History extends Model {
   })
   staff_id: number;
 
+  @ForeignKey(() => PatientInsurance)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  patient_insurance_id: number;
+
   @BelongsTo(() => Staff)
   staff: Staff;
 
@@ -74,6 +81,9 @@ export class History extends Model {
 
   @BelongsTo(() => Patient)
   patient: Patient;
+
+  @BelongsTo(() => PatientInsurance)
+  patientInsurance: PatientInsurance;
 
   static async paginate(param: {
     paginate: number;
