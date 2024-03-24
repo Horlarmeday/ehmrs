@@ -12,6 +12,7 @@ import {
   searchCategoryVisits,
   getProfessionalAssignedVisits,
   getVisitPrescriptions,
+  updateVisit,
 } from './visit.repository';
 import { Visit } from '../../database/models';
 import { CreateVisit } from './interface/visit.interface';
@@ -47,8 +48,9 @@ class VisitService {
       getPatientById(patient_id),
       getLastActiveVisit(patient_id),
     ]);
-    if (category === VisitCategory.ANC && patient.gender !== Gender.FEMALE)
+    if (category === VisitCategory.ANC && patient.gender !== Gender.FEMALE) {
       throw new BadException('INVALID', StatusCodes.BAD_REQUEST, FEMALE_REQUIRED);
+    }
 
     if (visit) await endVisit(visit); // end existing visit - since 2 visits cannot be active
 
@@ -236,6 +238,19 @@ class VisitService {
    */
   static async getVisitPrescriptions(id: number) {
     return getVisitPrescriptions(id);
+  }
+
+  /**
+   * update a visit
+   *
+   * @static
+   * @returns {json} json object with visit data
+   * @memberOf VisitService
+   * @param visitId
+   * @param body
+   */
+  static async updateVisit(visitId: number, body: Partial<Visit>) {
+    return updateVisit({ id: visitId }, body);
   }
 }
 

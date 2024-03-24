@@ -4,8 +4,10 @@ import { SuccessResponse, successResponse } from '../../common/responses/success
 import { StatusCodes } from '../../core/helpers/helper';
 import { SUCCESS } from '../../core/constants';
 import { errorResponse } from '../../common/responses/error-responses';
-import { DATA_SAVED } from '../AdminSettings/messages/response-messages';
+import { DATA_SAVED, DATA_UPDATED } from '../AdminSettings/messages/response-messages';
 import { NextFunction, Request, Response } from 'express';
+import { isEmpty } from 'lodash';
+import { EMPTY_BODY } from './messages/response.messages';
 
 class VisitController {
   /**
@@ -180,6 +182,41 @@ class VisitController {
         httpCode: StatusCodes.OK,
         message: SUCCESS,
         data: prescriptions,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  /**
+   * update a visit
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with visit data
+   */
+  static async updateVisit(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse> {
+    const error = isEmpty(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: EMPTY_BODY,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+    try {
+      const visit = await VisitService.updateVisit(+req.params.id, req.body);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_UPDATED,
+        data: visit,
       });
     } catch (e) {
       next(e);

@@ -8,6 +8,7 @@ import { VisitCategory, VisitStatus } from '../../database/models/visit';
 import { calcLimitAndOffset, dateIntervalQuery } from '../../core/helpers/helper';
 import { FindAttributeOptions } from 'sequelize/types/model';
 import { getPrescriptions } from '../Consultation/consultation.repository';
+import { getOneTriage } from '../Triage/triage.repository';
 
 export const patientAttributes = [
   'fullname',
@@ -106,11 +107,19 @@ export async function getVisit(id: number) {
       },
     ],
   });
-  const insurance = await getPatientInsuranceQuery({
-    patient_id: visit.patient_id,
-    is_default: true,
-  });
-  return { ...visit.toJSON(), insurance };
+  if (visit) {
+    const [insurance, triage] = await Promise.all([
+      getPatientInsuranceQuery({
+        patient_id: visit.patient_id,
+        is_default: true,
+      }),
+      getOneTriage({
+        patient_id: visit.patient_id,
+      }),
+    ]);
+    return { ...visit.toJSON(), insurance, triage };
+  }
+  return null;
 }
 
 /**
@@ -118,7 +127,7 @@ export async function getVisit(id: number) {
  * @param query
  * @param fieldsToUpdate
  */
-export const updateVisit = (query: WhereOptions<Visit>, fieldsToUpdate: Record<string, any>) => {
+export const updateVisit = (query: WhereOptions<Visit>, fieldsToUpdate: Partial<Visit>) => {
   return Visit.update({ ...fieldsToUpdate }, { where: { ...query } });
 };
 
@@ -319,7 +328,13 @@ export const getVisitsQuery = async (
   attributes: FindAttributeOptions
 ) => {
   const { limit, offset } = calcLimitAndOffset(+currentPage, +pageLimit);
-  const visits = await Visit.findAll({ where: { ...query }, offset, limit, attributes });
+  const visits = await Visit.findAll({
+    where: { ...query },
+    order: [['date_visit_start', 'DESC']],
+    offset,
+    limit,
+    attributes,
+  });
   const count = await Visit.count({ where: { ...query } });
   return { visits, limit, offset, count };
 };
