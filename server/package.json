@@ -6,10 +6,11 @@
   "scripts": {
     "test": "jest --detectOpenHandles",
     "start:dev": "nodemon",
-    "start": "tsc && node dist/app.js",
+    "start": "node dist/app.js",
     "build": "rimraf ./dist && tsc",
     "migration": "sequelize db:migrate",
-    "__eslint_fix": "./node_modules/eslint/bin/eslint.js . --ext .js,.ts --quiet --fix"
+    "__eslint_fix": "./node_modules/eslint/bin/eslint.js . --ext .js,.ts --quiet --fix",
+    "postbuild": "cp {package.json,yarn.lock} dist"
   },
   "lint-staged": {
     "*.{js,ts,vue}": [
@@ -69,6 +70,7 @@
   },
   "dependencies": {
     "@hokify/agenda": "^6.3.0",
+    "@supercharge/promise-pool": "^3.1.1",
     "@types/pdfkit": "^0.12.10",
     "agendash": "^4.0.0",
     "axios": "^0.21.1",
