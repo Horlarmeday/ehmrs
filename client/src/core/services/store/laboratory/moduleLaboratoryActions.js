@@ -362,6 +362,7 @@ export default {
             search: payload.search,
             start: payload.start,
             end: payload.end,
+            period: payload.period,
           },
         })
         .then(response => {
@@ -395,7 +396,24 @@ export default {
   },
 
   /**
-   * NHIS TESTS
+   * TEST PRESCRIPTION
+   */
+  fetchTestPrescription({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/laboratory/test-prescription/get/${payload.id}`)
+        .then(response => {
+          commit('SET_TEST_PRESCRIPTION', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * NHIS TESTS - DEPRECATED
    */
   addNhisTest({ commit }, test) {
     return new Promise((resolve, reject) => {

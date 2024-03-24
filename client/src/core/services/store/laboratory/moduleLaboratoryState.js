@@ -43,7 +43,7 @@ export default {
    */
   result: null,
   results: [],
-  totalTestResults: 0,
+  totalTestResults: null,
   totalTestResultsPages: 0,
 
   /***
@@ -57,5 +57,10 @@ export default {
   /***
    * STATS
    */
-  stats: {}
+  stats: {},
+
+  /***
+   * TEST PRESCRIPTION
+   */
+  testPrescription: null,
 };

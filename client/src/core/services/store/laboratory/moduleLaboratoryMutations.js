@@ -45,7 +45,7 @@ export default {
   },
 
   /**
-   * NHIS TESTS
+   * NHIS TESTS - DEPRECATED
    */
   ADD_NHIS_TEST(state, test) {
     state.nhisTests.unshift(test);
@@ -157,5 +157,12 @@ export default {
    */
   SET_TODAY_STATS(state, stat) {
     state.stats = stat;
+  },
+
+  /****
+   * TEST PRESCRIPTION
+   */
+  SET_TEST_PRESCRIPTION(state, test) {
+    state.testPrescription = test;
   },
 };
