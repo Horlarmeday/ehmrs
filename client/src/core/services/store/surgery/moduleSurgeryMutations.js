@@ -18,4 +18,13 @@ export default {
   SET_SURGERY(state, surgery) {
     state.surgery = surgery;
   },
+
+  // Operation Note
+  CREATE_OPERATION_NOTE(state, note) {
+    state.operationNote = note;
+  },
+
+  SET_OPERATION_NOTES(state, notes) {
+    state.operationNotes = notes;
+  },
 };
