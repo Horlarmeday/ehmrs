@@ -12,7 +12,14 @@
             @search="searchTests"
             v-model="item.test"
             label="name"
-            :reduce="tests => ({ id: tests.id, name: tests.name, price: tests.price })"
+            :reduce="
+              tests => ({
+                id: tests.id,
+                name: tests.name,
+                price: tests.price,
+                sample_id: tests.sample_id,
+              })
+            "
             :options="labTests"
           />
         </div>

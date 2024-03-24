@@ -26,9 +26,9 @@
               }}</span>
             </td>
             <td class="pr-0">
-              <router-link to="#" class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3">
+              <a href="#" class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3">
                 <delete-icon />
-              </router-link>
+              </a>
             </td>
           </tr>
         </tbody>

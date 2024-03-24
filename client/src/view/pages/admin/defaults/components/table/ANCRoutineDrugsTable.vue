@@ -20,6 +20,12 @@
           <tr v-for="drug in routineDrugs" :key="drug.id">
             <td class="pl-5">
               <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                <span
+                  :title="`${drug?.drug?.drug_type}`"
+                  v-b-tooltip.hover
+                  :class="getLabelDotStatus(drug?.drug?.drug_type)"
+                  class="label label-dot label-lg mr-2"
+                ></span>
                 {{ drug?.drug?.name }}
               </span>
             </td>
@@ -44,9 +50,9 @@
               }}</span>
             </td>
             <td class="pr-0">
-              <router-link to="#" class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3">
+              <a href="#" class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3">
                 <delete-icon />
-              </router-link>
+              </a>
             </td>
           </tr>
         </tbody>
@@ -69,6 +75,12 @@ export default {
     },
     routineDrugs() {
       return this.defaults.find(def => def.id?.toString() === this.$route.params.id)?.data;
+    },
+  },
+  methods: {
+    getLabelDotStatus(type) {
+      if (type === 'Cash') return 'label-success';
+      return 'label-primary';
     },
   },
 };

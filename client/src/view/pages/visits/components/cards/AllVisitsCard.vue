@@ -12,7 +12,7 @@
         :title="visit.patient.fullname"
         style="min-width: 150px"
       >
-        <div v-if="visit.category !== outPatientVisit" class="displayIcon">
+        <div v-if="visit.category !== OUTPATIENT" class="displayIcon">
           <i :class="displayIcon(visit.category)" class="text-white"></i>
         </div>
         <div class="pr-4 pl-4 pb-4">
@@ -52,7 +52,9 @@ export default {
       currentPage: 1,
       itemsPerPage: 10,
       imageError: false,
-      outPatientVisit: 'Outpatient',
+      OUTPATIENT: 'Outpatient',
+      ANTENATAL: 'Antenatal',
+      IMMUNIZATION: 'Immunization',
     };
   },
   computed: {
@@ -114,6 +116,7 @@ export default {
     displayIcon(category) {
       if (category === 'Inpatient') return 'fas fa-bed';
       if (category === 'Antenatal') return 'fas fa-female';
+      if (category === 'Immunization') return 'fas fa-baby';
     },
 
     displayEllipsis(name) {
@@ -127,22 +130,31 @@ export default {
     },
 
     visitDetailsPage(visit) {
-      if (visit.category === 'Antenatal') {
+      if (visit.category === this.ANTENATAL) {
         return this.$router.push(
           `/program/ante-natal/visit/${visit.id}?antenatal=${visit.ante_natal_id}`
         );
       }
+      if (visit.category === this.IMMUNIZATION) {
+        return this.$router.push(
+          `/program/immunization/visit/${visit.id}?immunization=${visit.immunization_id}`
+        );
+      }
       return this.$router.push(`/consultation/${visit.id}`);
     },
+
     imageUrl(url) {
       return `${window.location.origin}/static/images/${url}`;
     },
+
     handleImageLoad() {
       this.imageError = false;
     },
+
     handleImageError() {
       this.imageError = true;
     },
+
     searchByDate(range) {
       const { start, end, dateSpin } = range;
       this.currentPage = 1;

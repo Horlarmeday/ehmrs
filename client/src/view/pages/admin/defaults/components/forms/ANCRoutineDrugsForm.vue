@@ -26,6 +26,7 @@
                 unit_name: drugs?.unit_name,
                 dosage_form: drugs?.dosage_form,
                 drug_type: drugs?.drug_type,
+                route: drugs?.route,
               })
             "
             :options="drugOptions"
@@ -47,17 +48,7 @@
         </div>
         <div class="d-flex flex-column flex-root">
           <label>Route:</label>
-          <select
-            class="form-control form-control-sm"
-            name="route"
-            v-model="item.route"
-            v-validate="'required'"
-            data-vv-validate-on="blur"
-          >
-            <option :value="route.id" v-for="route in routes" :key="route.id">{{
-              route.name
-            }}</option>
-          </select>
+          <input readonly type="text" class="form-control-sm form-control" v-model="item.route" />
         </div>
         <div class="d-flex flex-column flex-root">
           <label>Strength:</label>
@@ -174,6 +165,7 @@ export default {
         unit_id: item?.unit?.id,
         dosage_form: item?.dosage_form,
         drug_type: item?.drug_type,
+        route: item?.route,
       }));
     },
     routes() {
@@ -225,7 +217,9 @@ export default {
     setDrugInfo(index) {
       this.strength = this.items[index].drug.strength;
       this.dosage_form = this.items[index].drug.dosage_form;
+      this.route = this.items[index].drug.route;
       this.items[index].dosage_form = this.items[index].drug.dosage_form.name;
+      this.items[index].route = this.items[index].drug.route.name;
       this.items[index].prescribed_strength = this.items[index].drug.strength_input;
       this.items[index].price = this.items[index].drug.price;
       this.getRoutes();
