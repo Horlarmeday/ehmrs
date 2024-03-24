@@ -378,7 +378,7 @@
 <script>
 import Datepicker from 'vuejs-datepicker';
 import vSelect from 'vue-select';
-import AccordionIcon from '../../../../assets/icons/AccordionIcon';
+import AccordionIcon from '@/assets/icons/AccordionIcon';
 import Swal from 'sweetalert2';
 export default {
   components: {

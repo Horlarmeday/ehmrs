@@ -1,68 +1,75 @@
 <template>
   <div>
     <div class="mt-3">
-      <div v-for="(item, i) in treatments" :key="i">
-        <div class="d-flex justify-content-between">
-          <div class="d-flex flex-column flex-root" style="flex: 2">
-            <label>Drug:</label>
-            <v-select
-              @search="onSearch"
-              v-model="item.drug_id"
-              label="name"
-              :options="drugs"
-              :reduce="items => items.id"
-            />
+      <div v-if="!loading">
+        <div v-if="!treatments?.length">
+          <div class="alert alert-custom alert-light-primary fade show mb-5" role="alert">
+            <div class="alert-icon"><i class="flaticon-exclamation-1"></i></div>
+            <div class="alert-text">No drugs has been prescribed for this patient</div>
           </div>
-          <div class="d-flex flex-column flex-root">
-            <label>Dosage Form:</label>
-            <select
-              @change="getRoutes(item.dosage_form_id)"
-              v-model="item.dosage_form_id"
-              class="form-control form-control-sm"
+        </div>
+        <div v-for="(item, i) in treatments" :key="i">
+          <div class="bg-light-primary p-1">
+            <label class="mr-3"
+              >Drug:
+              <span class="font-weight-bolder">{{ item.drug_name }}</span>
+              <span v-if="item.drug_type === 'NHIS'" class="font-weight-lighter"
+                >({{ item.drug_type }})</span
+              >
+            </label>
+            <span class="vertical-line"></span>
+            <label class="mr-3"
+              >Quantity:
+              <span class="font-weight-bolder"
+                >{{ item.quantity }} {{ item.dosage_form }}</span
+              ></label
             >
-              <option :value="dose.id" v-for="dose in dosageForms" :key="dose.id">{{
-                dose.name
-              }}</option>
-            </select>
+            <span class="vertical-line"></span>
+            <label class="mr-3"
+              >Route: <span class="font-weight-bolder">{{ item.route }}</span></label
+            >
+            <span class="vertical-line"></span>
+            <label class=""
+              >Strength: <span class="font-weight-bolder">{{ item.strength }}</span></label
+            >
           </div>
-          <div class="d-flex flex-column flex-root">
-            <label>Route:</label>
-            <select v-model="item.route_id" class="form-control form-control-sm">
-              <option :value="route.id" v-for="route in routes" :key="route.id">{{
-                route.name
-              }}</option>
-            </select>
-          </div>
-          <div class="d-flex flex-column flex-root">
-            <label>Dosage Administered:</label>
-            <input
-              type="text"
-              v-model="item.dosage_administered"
-              class="form-control form-control-sm"
-            />
-          </div>
-          <div class="d-flex flex-column flex-root">
-            <label>Remarks:</label>
-            <input type="text" v-model="item.remarks" class="form-control form-control-sm" />
-          </div>
-          <div class="d-flex flex-column flex-root">
-            <br />
-            <a href="#" class="col-lg-1 col-form-label">
-              <i
-                v-if="i === 0"
-                class="far fa-plus-square mr-3 text-primary icon-lg mt-lg-3"
-                @click="addNewDrug"
+          <div
+            class="d-flex justify-content-between mb-3"
+            :class="item.dosage_completed && 'disabled'"
+          >
+            <div class="d-flex flex-column flex-root">
+              <label>Dosage Administered:</label>
+              <input
+                type="text"
+                v-model="item.dosage_administered"
+                class="form-control form-control-sm"
               />
-              <i
-                class="far fa-trash-alt icon-md text-danger icon-lg mt-lg-3"
-                v-if="i !== 0"
-                @click="removeDrug(i)"
-              />
-            </a>
+            </div>
+            <div class="d-flex flex-column flex-root">
+              <label>Remarks:</label>
+              <div class="input-group">
+                <input type="text" v-model="item.remarks" class="form-control form-control-sm" />
+                <div class="input-group-append">
+                  <a
+                    v-b-tooltip.hover
+                    title="Click to complete dosage"
+                    href="#"
+                    class="btn btn-success btn-sm"
+                    @click="displayPrompt(item.drug_id)"
+                  >
+                    Complete
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      <div class="col-lg-12 offset-10">
+      <div v-else>
+        <DefaultSkeleton />
+        <DefaultSkeleton />
+      </div>
+      <div class="float-right">
         <button
           class="btn btn-primary mb-3"
           @click="submitDrugs"
@@ -76,11 +83,11 @@
   </div>
 </template>
 <script>
-import vSelect from 'vue-select';
-import { debounce } from '@/common/common';
+import DefaultSkeleton from '@/utils/DefaultSkeleton.vue';
+import Swal from 'sweetalert2';
 
 export default {
-  components: { vSelect },
+  components: { DefaultSkeleton },
   props: {
     source: {
       type: String,
@@ -94,30 +101,38 @@ export default {
   },
   data: () => ({
     isDisabled: false,
-    treatments: [
-      {
-        drug_id: '',
-        dosage_form_id: '',
-        route_id: '',
-        dosage_administered: '',
-        remarks: '',
-      },
-    ],
+    attemptMade: false,
+    continueRetry: true,
+    loading: true,
+    currentPage: 1,
+    itemsPerPage: 15,
   }),
   created() {
-    this.getDosageForms();
+    if (this.source === 'Admission') this.fetchPrescribedDrugsWithRetry();
+    else this.fetchPrescribedDrugs();
   },
   computed: {
-    dosageForms() {
-      return this.$store.state.pharmacy.dosageForms;
+    admission() {
+      return this.$store.state.admission.admission;
     },
 
-    routes() {
-      return this.$store.state.pharmacy.routes;
+    orders() {
+      return this.$store.state.order.drug_orders;
     },
 
-    drugs() {
-      return this.$store.state.pharmacy.drugs;
+    treatments() {
+      return this.orders.map(order => ({
+        drug_name: order.drug.name,
+        drug_id: order.id,
+        drug_type: order.drug_type,
+        dosage_form: order.dosage_form.name,
+        route: order.route.name,
+        dosage_administered: '',
+        remarks: '',
+        quantity: order.quantity_to_dispense,
+        strength: order.strength.name,
+        dosage_completed: order.dosage_completed,
+      }));
     },
   },
   methods: {
@@ -131,45 +146,6 @@ export default {
       submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
     },
 
-    addNewDrug() {
-      this.treatments.push({
-        drug_id: '',
-        dosage_form_id: '',
-        route_id: '',
-        dosage_administered: '',
-        remarks: '',
-      });
-    },
-
-    onSearch(search, loading) {
-      if (search.length > 2) {
-        loading(true);
-        this.search(loading, search, this);
-      }
-    },
-
-    search: debounce((loading, search, vm) => {
-      vm.$store
-        .dispatch('pharmacy/fetchGenericDrugs', {
-          search,
-        })
-        .then(() => loading(false));
-    }, 500),
-
-    getRoutes(dosage_form_id) {
-      this.$store.dispatch('pharmacy/fetchRoutesAndMeasurements', {
-        dosage_form_id,
-      });
-    },
-
-    getDosageForms() {
-      this.$store.dispatch('pharmacy/fetchDosageForms');
-    },
-
-    removeDrug(i) {
-      this.treatments.splice(i, 1);
-    },
-
     endRequest(button) {
       this.removeSpinner(button);
       this.initValues();
@@ -180,44 +156,105 @@ export default {
       });
     },
 
+    async fetchPrescribedDrugsWithRetry() {
+      while (this.continueRetry) {
+        // Check again if admission is available before attempting to fetch
+        if (this.admission) {
+          this.fetchPrescribedDrugs();
+          this.continueRetry = false;
+          break;
+        }
+
+        // Admission is null, wait for 5 seconds before retrying
+        await this.delay(3000);
+      }
+    },
+
     initValues() {
-      this.treatments = [
-        {
-          drug_id: '',
-          dosage_form_id: '',
-          route_id: '',
-          dosage_administered: '',
-          remarks: '',
-        },
-      ];
+      this.treatments.forEach(treatment => {
+        treatment.dosage_administered = '';
+        treatment.remarks = '';
+      });
+    },
+
+    fetchPrescribedDrugs() {
+      this.loading = true;
+      this.$store
+        .dispatch('order/fetchPrescribedDrugs', {
+          currentPage: this.currentPage,
+          itemsPerPage: this.itemsPerPage,
+          filter: {
+            visit_id:
+              this.source === 'Consultation' ? this.$route.params.id : this.admission.visit_id,
+          },
+        })
+        .then(() => (this.loading = false));
     },
 
     submitDrugs() {
-      if (this.treatments.some(({ drug_id }) => !drug_id)) {
-        return this.$notify({
-          group: 'foo',
-          title: 'Error message',
-          text: 'A drug cannot be empty',
-          type: 'error',
-        });
-      }
-
       // set spinner to submit button
       const submitButton = this.$refs['kt_addTreatment_submit'];
       this.addSpinner(submitButton);
 
-      const treatments = this.treatments.map(treatment => ({
-        ...treatment,
-        source: this.source,
-      }));
+      const treatments = this.treatments
+        .filter(treatment => treatment.dosage_administered)
+        .map(({ // eslint-disable-next-line no-unused-vars
+          drug_name, strength, dosage_form, drug_type, quantity, route, dosage_completed, ...rest }) => ({
+          ...rest,
+          source: this.source,
+        }));
 
       this.$store
         .dispatch('order/orderTreatment', { data: treatments, id: this.$route.params.id })
         .then(() => this.endRequest(submitButton))
         .catch(() => this.removeSpinner(submitButton));
     },
+
+    delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    },
+
+    displayPrompt(drugId) {
+      Swal.fire({
+        title: 'Are you sure?',
+        text: 'Patient has completed dosage, this action cannot be reversed',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Continue!',
+        cancelButtonText: 'No, cancel!',
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+          return this.completeDosage(drugId);
+        },
+      });
+    },
+
+    completeDosage(drugId) {
+      this.$store.dispatch('order/updatePrescribedDrug', {
+        data: {
+          id: drugId,
+          dosage_completed: true,
+        },
+      });
+      // .then(() => {
+      //   const drugIndex = this.treatments.findIndex(p => p.drug_id === drugId);
+      //   Object.assign(this.treatments[drugIndex], drug);
+      // });
+    },
   },
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.disabled {
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+.vertical-line {
+  border-left: 1px solid #858992; /* Adjust color and thickness as needed */
+  height: 150px; /* Adjust height as needed */
+  margin-left: 5px; /* Adjust margin as needed */
+  margin-right: 15px; /* Adjust margin as needed */
+}
+</style>

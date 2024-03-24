@@ -1,36 +1,33 @@
 <template>
   <div>
-    <div class="card card-custom gutter-b">
+    <div v-if="investigation" class="card card-custom gutter-b">
       <page-title title="Add Test Result" />
-      <div v-if="loading">
-        <b-progress :value="count" variant="primary" show-progress animated :max="100" />
-      </div>
-      <div v-else class="card-body">
+      <div class="card-body pt-0">
         <section-title text="Patient Information" />
-        <patient-section :patient="investigation.patient" />
+        <patient-section :patient="investigation.patient" :insurance="investigation.insurance" />
         <investigation-result-section
           :tests="investigation.investigations"
           :patient_id="investigation.patient.id"
           :investigation-status="investigation.status"
+          :key="uniqueKey"
         />
       </div>
     </div>
+    <result-skeleton v-else title="Add Test Result" />
   </div>
 </template>
 
 <script>
-import SectionTitle from '../../../utils/SectionTitle.vue';
-import PatientSection from '../../../utils/PatientSection.vue';
-import PageTitle from '../../../utils/PageTitle.vue';
+import SectionTitle from '@/utils/SectionTitle.vue';
+import PatientSection from '@/utils/PatientSection.vue';
+import PageTitle from '@/utils/PageTitle.vue';
 import InvestigationResultSection from './result/InputResultSection.vue';
+import ResultSkeleton from '@/view/pages/radiology/components/skeleton/ResultSkeleton.vue';
 export default {
   name: 'AddInvestigationTestResult',
-  data: () => ({
-    count: 0,
-    loading: false,
-  }),
 
   components: {
+    ResultSkeleton,
     InvestigationResultSection,
     PageTitle,
     PatientSection,
@@ -38,27 +35,17 @@ export default {
   },
 
   created() {
-    this.loading = true;
-    this.countToHundred();
-    this.$store
-      .dispatch('radiology/fetchOneRequestedInvestigation', {
-        id: this.$route.params.id,
-      })
-      .then(() => (this.loading = false));
+    this.$store.dispatch('radiology/fetchOneRequestedInvestigation', {
+      id: this.$route.params.id,
+    });
   },
 
   computed: {
     investigation() {
       return this.$store.state.radiology.reqInvestigation;
     },
-  },
-
-  methods: {
-    countToHundred() {
-      for (let i = 1; i <= 100; i++) {
-        this.count = i;
-        if (this.investigation) break;
-      }
+    uniqueKey() {
+      return this.investigation.patient.id;
     },
   },
 };

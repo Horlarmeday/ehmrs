@@ -1,13 +1,10 @@
 <template>
   <div>
-    <div class="card card-custom gutter-b">
+    <div v-if="sample" class="card card-custom gutter-b">
       <page-title title="Add Test Result" />
-      <div v-if="loading">
-        <b-progress :value="count" variant="primary" show-progress animated :max="100" />
-      </div>
-      <div v-else class="card-body">
+      <div class="card-body pt-0">
         <section-title text="Patient Information" />
-        <patient-section :patient="sample.patient" />
+        <patient-section :patient="sample.patient" :insurance="sample.insurance" />
         <banner />
 
         <section-title text="Tests Information" />
@@ -15,9 +12,11 @@
           :prescriptions="sample.tests"
           :accession_number="sample.accession_number"
           :patient_id="sample.patient.id"
+          :key="accessionNumberKey"
         />
       </div>
     </div>
+    <test-skeleton v-else title="Add Test Result" />
   </div>
 </template>
 
@@ -27,35 +26,21 @@ import PatientSection from '../../../utils/PatientSection.vue';
 import Banner from './results/Banner';
 import ResultSection from './results/ResultSection';
 import PageTitle from '../../../utils/PageTitle.vue';
+import TestSkeleton from '@/view/pages/laboratory/components/skeleton/TestSkeleton.vue';
 export default {
   name: 'AddTestResult',
-  data: () => ({
-    count: 0,
-    loading: false,
-  }),
-
-  components: { PageTitle, ResultSection, Banner, PatientSection, SectionTitle },
+  components: { TestSkeleton, PageTitle, ResultSection, Banner, PatientSection, SectionTitle },
 
   created() {
-    this.loading = true;
-    this.countToHundred();
-    this.$store
-      .dispatch('laboratory/fetchOneCollectedSample', { id: this.$route.params.id })
-      .then(() => (this.loading = false));
+    this.$store.dispatch('laboratory/fetchOneCollectedSample', { id: this.$route.params.id });
   },
 
   computed: {
     sample() {
       return this.$store.state.laboratory.sampleCollected;
     },
-  },
-
-  methods: {
-    countToHundred() {
-      for (let i = 1; i <= 100; i++) {
-        this.count = i;
-        if (this.sample) break;
-      }
+    accessionNumberKey() {
+      return this.sample.accession_number;
     },
   },
 };
