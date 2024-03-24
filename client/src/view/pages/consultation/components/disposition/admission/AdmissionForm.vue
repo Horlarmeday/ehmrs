@@ -10,6 +10,7 @@
           :reduce="
             wards => ({
               id: wards.id,
+              name: wards.name,
               beds: wards.beds,
             })
           "
@@ -23,21 +24,22 @@
       </div>
     </div>
     <div v-if="ward" class="form-group row">
-      <label class="col-2 col-form-label">Bed Space</label>
+      <label v-if="isVIPWard" class="col-2 col-form-label">Bed Space</label>
+      <label v-else class="col-2 col-form-label"></label>
       <div class="col-6">
         <div v-if="!beds.length">
           <div class="alert alert-custom alert-notice alert-light-danger fade show" role="alert">
             <div class="alert-text">There are no beds in this ward!</div>
           </div>
         </div>
-        <div class="row">
+        <div v-if="isVIPWard" class="row">
           <div v-for="bed in beds" :key="bed.id" class="ml-3">
             <div
               class="bg-gray-100 rounded-lg text-dark text-center pr-4 pl-4 pt-4 pb-4 mr-2 inline-display mb-2"
-              :class="bed.status === 'Untaken' && 'bg-hover-state-primary shadow bg-gray-400'"
+              :class="bed.status === UNTAKEN && 'bg-hover-state-primary shadow bg-gray-400'"
               @click="setActiveTab($event, bed)"
               v-b-tooltip.hover
-              :title="bed.status === 'Taken' ? 'Bed is already taken' : 'Click to select bed'"
+              :title="bed.status === TAKEN ? 'Bed is already taken' : 'Click to select bed'"
             >
               <span class="navi-icon"
                 ><i class="fas fa-bed text-primary"></i>
@@ -57,7 +59,7 @@
     <div class="form-group row">
       <div class="col-2 offset-3"></div>
       <button
-        :disabled="isDisabled || !bed_id"
+        :disabled="isDisabled || !ward"
         @click="admitPatient"
         ref="kt-admit-submit"
         class="float-right btn btn-primary"
@@ -80,6 +82,9 @@ export default {
     bed_id: '',
     comment: '',
     isDisabled: false,
+    isVIPWard: false,
+    TAKEN: 'Taken',
+    UNTAKEN: 'Untaken',
   }),
 
   computed: {
@@ -111,6 +116,7 @@ export default {
 
     getBeds() {
       this.beds = this.ward.beds;
+      this.isVIPWard = /VIP/.test(this.ward.name);
     },
 
     setActiveTab(event, bed) {
@@ -148,7 +154,7 @@ export default {
     endRequest(button) {
       this.removeSpinner(button);
       this.initValues();
-      this.$store.dispatch('admission/fetchAdmission', { visitId: this.$route.params.id });
+      window.location.href = '/';
     },
 
     initValues() {
@@ -161,6 +167,7 @@ export default {
     admitPatient() {
       const submitButton = this.$refs['kt-admit-submit'];
       this.addSpinner(submitButton);
+
       this.$store
         .dispatch('admission/admitPatient', {
           bed_id: this.bed_id,

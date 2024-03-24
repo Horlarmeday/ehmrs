@@ -2,7 +2,7 @@
   <div>
     <div class="row mb-10">
       <div v-for="(route, i) in routes" :key="i" class="col-lg-6 col-xl-4 mb-10">
-        <div class="card card-custom mb-2 bg-diagonal">
+        <div v-if="route.showComponent" class="card card-custom mb-2 bg-diagonal">
           <div class="card-body">
             <div
               class="d-flex align-items-center justify-content-between p-4 flex-lg-wrap flex-xl-nowrap"
@@ -35,59 +35,109 @@
 </template>
 
 <script>
+import { parseJwt } from '@/common/common';
+
 export default {
   data: () => ({
+    user: parseJwt(localStorage.getItem('user_token')),
     routes: [
       {
         name: 'Doctor Prescriptions',
         link: '/admission/doctor-prescriptions/',
         desc: 'View doctor prescriptions',
+        showComponent: true,
       },
       {
         name: 'Additional Prescriptions',
         link: '/admission/additional-prescriptions/',
         desc: 'Patient additional prescriptions',
+        showComponent: true,
       },
       {
         name: 'Observations',
         link: '/admission/observations/',
         desc: 'Record patient daily observations',
+        showComponent: true,
       },
       {
         name: 'Care Plan',
         link: '/admission/careplans/',
         desc: 'Patient care plan',
+        showComponent: true,
       },
       {
         name: 'IO Chart',
         link: '/admission/iocharts/',
         desc: 'Patient IO Chart',
+        showComponent: true,
       },
       {
         name: 'Treatment',
         link: '/admission/treatments/',
         desc: 'Record patient treatments',
+        showComponent: true,
       },
       {
         name: 'Nursing Note',
         link: '/admission/nursing-notes/',
         desc: 'Nursing notes',
+        showComponent: true,
       },
       {
         name: 'Discharge Patient',
         link: '/admission/discharge/',
         desc: 'Discharge patient from ward',
+        showComponent: true,
       },
       {
         name: 'Move Patient',
         link: '/admission/change-ward/',
         desc: 'Move patient to another ward',
+        showComponent: true,
+      },
+      {
+        name: 'Post Natal',
+        link: '/admission/postnatal/',
+        desc: 'Add post natal information',
+        showComponent: false,
+      },
+      {
+        name: 'Delivery',
+        link: '/admission/delivery/',
+        desc: 'Add delivery information',
+        showComponent: false,
       },
     ],
+    MATERNITY: 'Maternity',
+    POST_NATAL: 'Post Natal',
+    DELIVERY: 'Delivery',
+    FEMALE: 'Female',
   }),
   computed: {
     routeId() {
       return this.$route.params.id;
+    },
+
+    admission() {
+      return this.$store.state.admission.admission;
+    },
+  },
+  watch: {
+    admission: {
+      handler() {
+        this.routes.filter(tab => {
+          if (tab.name === this.POST_NATAL || tab.name === this.DELIVERY) {
+            if (
+              this.user.sub_role === this.MATERNITY &&
+              this.admission?.patient?.gender === this.FEMALE
+            ) {
+              tab.showComponent = true;
+              return tab;
+            }
+          }
+        });
+      },
+      immediate: true,
     },
   },
   created() {

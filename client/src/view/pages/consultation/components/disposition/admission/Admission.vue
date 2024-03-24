@@ -9,15 +9,15 @@
       </div>
       <b-collapse id="accordion-4" visible>
         <div class="card-body py-2">
-          <div v-if="loading">
-            <b-progress :value="count" variant="primary" show-progress animated :max="100" />
-          </div>
-          <div v-else>
+          <div v-if="!loading">
             <admission-details
-              v-if="admission && admission.discharge_status === admissionStatus"
+              v-if="admission && admission.discharge_status === ON_ADMISSION"
               :admission="admission"
             />
             <admission-form v-else />
+          </div>
+          <div v-else>
+            <DefaultSkeleton />
           </div>
         </div>
       </b-collapse>
@@ -29,27 +29,18 @@
 import AccordionIcon from '@/assets/icons/AccordionIcon.vue';
 import AdmissionForm from './AdmissionForm.vue';
 import AdmissionDetails from './AdmissionDetails.vue';
+import DefaultSkeleton from '@/utils/DefaultSkeleton.vue';
 
 export default {
-  components: { AdmissionDetails, AdmissionForm, AccordionIcon },
+  components: { DefaultSkeleton, AdmissionDetails, AdmissionForm, AccordionIcon },
   data: () => ({
+    ON_ADMISSION: 'On Admission',
     loading: false,
-    count: 0,
-    admissionStatus: 'On Admission',
   }),
 
   computed: {
     admission() {
       return this.$store.state.admission.admission;
-    },
-  },
-
-  methods: {
-    countToHundred() {
-      for (let i = 1; i <= 100; i++) {
-        this.count = i;
-        if (this.admission) break;
-      }
     },
   },
 
