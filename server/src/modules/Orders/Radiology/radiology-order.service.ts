@@ -1,4 +1,6 @@
 import {
+  deletePrescribedInvestigation,
+  getOnePrescribedInvestigation,
   getPrescribedInvestigations,
   orderBulkInvestigation,
   prescribeInvestigation,
@@ -13,10 +15,15 @@ import {
 } from '../../Radiology/radiology.repository';
 import { PrescribedInvestigationBody } from './types/radiology-order.types';
 import { InvestigationPrescription, PrescribedInvestigation } from '../../../database/models';
-import { isToday } from '../../../core/helpers/helper';
+import { isToday, StatusCodes } from '../../../core/helpers/helper';
 import { InvestigationStatus } from '../../../database/models/investigationPrescription';
 import { NHISApprovalStatus } from '../../../core/helpers/general';
 import { PrescriptionType } from '../../../database/models/prescribedTest';
+import { PaymentStatus } from '../../../database/models/prescribedDrug';
+import { BadException } from '../../../common/util/api-error';
+import { CANNOT_DELETE_DRUG } from '../Pharmacy/messages/response-messages';
+import { CANNOT_DELETE_INVESTIGATION } from './messages/response-messages';
+import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
 
 export class RadiologyOrderService {
   /**
@@ -44,8 +51,16 @@ export class RadiologyOrderService {
   ): Promise<PrescribedInvestigation[]> {
     const { investigations, staff_id, visit_id } = body;
     const visit = await VisitService.getVisitById(visit_id);
-    const patient = await PatientService.getPatientById(visit.patient_id);
-    const prescription = await this.getInvestigationPrescription(visit.patient_id, body);
+
+    const [patient, prescription, insurance] = await Promise.all([
+      PatientService.getPatientById(visit.patient_id),
+      this.getInvestigationPrescription(visit.patient_id, body),
+      getPatientInsuranceQuery({
+        patient_id: visit.patient_id,
+        is_default: true,
+      }),
+    ]);
+
     const bulkInvestigations = await Promise.all(
       investigations.map(async investigation => ({
         ...investigation,
@@ -60,6 +75,7 @@ export class RadiologyOrderService {
         ...(investigation.investigation_type === PrescriptionType.NHIS && {
           nhis_status: NHISApprovalStatus.PENDING,
         }),
+        patient_insurance_id: insurance?.id,
       }))
     );
     return orderBulkInvestigation(bulkInvestigations);
@@ -75,6 +91,23 @@ export class RadiologyOrderService {
    */
   static async updatePrecribedInvestigation(body) {
     return updatePrescribedInvestigation(body);
+  }
+
+  /**
+   * prescribe an investigation for patient
+   *
+   * @static
+   * @returns {json} json object with prescribed investigation data
+   * @param body
+   * @memberOf RadiologyOrderService
+   */
+  static async deleteInvestigation(body) {
+    const allowedStatuses = [PaymentStatus.PAID, PaymentStatus.PERMITTED, PaymentStatus.CLEARED];
+    const investigation = await getOnePrescribedInvestigation({ id: body.investigationId });
+    if (investigation && allowedStatuses.includes(investigation.payment_status))
+      throw new BadException('Error', StatusCodes.BAD_REQUEST, CANNOT_DELETE_INVESTIGATION);
+
+    return deletePrescribedInvestigation(body.investigationId);
   }
 
   /**

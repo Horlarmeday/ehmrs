@@ -114,3 +114,11 @@ export const getOnePrescribedInvestigation = async (
     ],
   });
 };
+
+/**
+ * delete prescribed investigation
+ * @param investigationId
+ */
+export const deletePrescribedInvestigation = async (investigationId: number) => {
+  return PrescribedInvestigation.destroy({ where: { id: investigationId } });
+};

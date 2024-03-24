@@ -1,9 +1,13 @@
 import { successResponse, SuccessResponse } from '../../../common/responses/success-responses';
 import { errorResponse } from '../../../common/responses/error-responses';
 import { StatusCodes } from '../../../core/helpers/helper';
-import { DATA_SAVED, DATA_UPDATED } from '../../AdminSettings/messages/response-messages';
+import {
+  DATA_DELETED,
+  DATA_SAVED,
+  DATA_UPDATED,
+} from '../../AdminSettings/messages/response-messages';
 import { RadiologyOrderService } from './radiology-order.service';
-import { validateBulkInvestigationTest } from './validations';
+import { validateBulkInvestigationTest, validateDeleteInvestigation } from './validations';
 import { NextFunction, Request, Response } from 'express';
 import { SUCCESS } from '../../../core/constants';
 import { isEmpty } from 'lodash';
@@ -101,6 +105,42 @@ export class RadiologyOrderController {
         res,
         data: investigation,
         message: DATA_UPDATED,
+        httpCode: StatusCodes.CREATED,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * delete a prescribed investigation
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {SuccessResponse} json object with status, prescribed investigation data
+   */
+  static async deletePrescribedInvestigation(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    const { error } = validateDeleteInvestigation(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+
+    try {
+      const investigation = await RadiologyOrderService.deleteInvestigation(req.body);
+
+      return successResponse({
+        res,
+        data: investigation,
+        message: DATA_DELETED,
         httpCode: StatusCodes.CREATED,
       });
     } catch (e) {
