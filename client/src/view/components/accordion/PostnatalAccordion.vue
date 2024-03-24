@@ -22,12 +22,12 @@ export default {
   components: { PostnatalTable },
   computed: {
     postNatals() {
-      return this.$store.state.antenatal.postNatals;
+      return this.$store.state.admission.postNatals;
     },
   },
   methods: {
     fetchPostNatalInfo() {
-      this.$store.dispatch('antenatal/fetchPostNatalInfo', { id: this.$route.query.antenatal });
+      this.$store.dispatch('admission/fetchPostNatalInfo', { id: this.$route.params.id });
     },
   },
   created() {

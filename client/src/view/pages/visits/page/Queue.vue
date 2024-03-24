@@ -11,17 +11,14 @@ export default {
   components: { AssignedVisits },
   data: () => ({
     url: `/consultation/{queueId}`,
-    currentUser: '',
-    GENERAL_PRACTITIONER: 'General Practitioner',
+    currentUser: parseJwt(localStorage.getItem('user_token')),
+    MEDICAL_PRACTITIONER: 'Medical Practitioners',
   }),
-  created() {
-    this.currentUser = parseJwt(localStorage.getItem('user_token'));
-  },
   computed: {
     filter() {
       return {
-        has_done_vitals: this.currentUser.role === this.GENERAL_PRACTITIONER,
-        ...(this.currentUser.role === this.GENERAL_PRACTITIONER && { is_taken: false }),
+        has_done_vitals: this.currentUser.department === this.MEDICAL_PRACTITIONER,
+        ...(this.currentUser.role === this.MEDICAL_PRACTITIONER && { is_taken: false }),
       };
     },
   },
