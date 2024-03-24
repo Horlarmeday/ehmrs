@@ -1,15 +1,17 @@
 <template>
   <div class="flex-row-fluid ml-lg-8">
     <div class="card card-custom gutter-b">
-      <div class="card-header pt-5">
-        <h3 class="card-title align-items-start flex-column">
-          <span class="card-label font-weight-bolder text-dark">History and Observation</span>
-        </h3>
-      </div>
+      <!--      <div class="card-body">-->
+      <!--        &lt;!&ndash;        <h3 class="card-title align-items-start flex-column">&ndash;&gt;-->
+      <!--        &lt;!&ndash;          <span class="card-label font-weight-bolder text-dark">History and Observation</span>&ndash;&gt;-->
+      <!--        &lt;!&ndash;        </h3>&ndash;&gt;-->
+      <!--     -->
+      <!--      </div>-->
 
-      <div class="card-body py-2">
+      <div class="card-body py-4">
+        <diagnosis-accordion />
         <div class="form-group row">
-          <label class="col-2 col-form-label">Chief Complaint</label>
+          <label class="col-2 col-form-label">Presenting Complaint</label>
           <div class="col-9">
             <textarea
               v-model="complaint_note"
@@ -206,9 +208,10 @@
 <script>
 import vSelect from 'vue-select';
 import { debounce } from '@/common/common';
+import DiagnosisAccordion from '@/view/components/accordion/DiagnosisAccordion.vue';
 export default {
   name: 'Examination',
-  components: { vSelect },
+  components: { DiagnosisAccordion, vSelect },
   data() {
     return {
       complaints: [
@@ -269,38 +272,35 @@ export default {
     createExamination() {
       this.removeEmptyDiagnosis();
       if (this.checkDiagnosisNotSelected()) return this.errorMessage();
-      this.$validator
-        .validateAll()
-        .then(result => {
-          if (result) {
-            const obj = {
-              ...(this.complaints.some(({ complaint }) => complaint) && {
-                complaints: this.complaints,
-              }),
-              has_smoking_history: this.has_smoking_history,
-              examination_note: this.examination_note,
-              history_note: this.history_note,
-              complaint_note: this.complaint_note,
-              diagnosis: this.diagnosis.map(({ diagnosis, certainty, notes }) => ({
-                diagnosis_id: diagnosis.id,
-                type: diagnosis.type,
-                certainty,
-                notes,
-              })),
-            };
-            const submitButton = this.$refs['kt_observation_submit'];
-            this.addSpinner(submitButton);
+      this.$validator.validateAll().then(result => {
+        if (result) {
+          const obj = {
+            ...(this.complaints.some(({ complaint }) => complaint) && {
+              complaints: this.complaints,
+            }),
+            has_smoking_history: this.has_smoking_history,
+            examination_note: this.examination_note,
+            history_note: this.history_note,
+            complaint_note: this.complaint_note,
+            diagnosis: this.diagnosis.map(({ diagnosis, certainty, notes }) => ({
+              diagnosis_id: diagnosis.id,
+              type: diagnosis.type,
+              certainty,
+              notes,
+            })),
+          };
+          const submitButton = this.$refs['kt_observation_submit'];
+          this.addSpinner(submitButton);
 
-            this.$store
-              .dispatch('consultation/addObservation', {
-                visit_id: this.$route.params.id,
-                complaint: obj,
-              })
-              .then(() => this.endRequest(submitButton))
-              .catch(() => this.removeSpinner(submitButton));
-          }
-        })
-        .catch(e => console.error(e));
+          this.$store
+            .dispatch('consultation/addObservation', {
+              visit_id: this.$route.params.id,
+              complaint: obj,
+            })
+            .then(() => this.endRequest(submitButton))
+            .catch(() => this.removeSpinner(submitButton));
+        }
+      });
     },
 
     checkDiagnosisNotSelected() {

@@ -14,11 +14,11 @@ export default [
   //   link: 'anc',
   //   class: '',
   // },
-  {
-    name: 'Gynaecology',
-    link: '#gynaecology',
-    class: '',
-  },
+  // {
+  //   name: 'Gynaecology',
+  //   link: '#gynaecology',
+  //   class: '',
+  // },
   {
     name: 'Treatments',
     link: '#treatments',

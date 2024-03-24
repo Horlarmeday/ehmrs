@@ -15,6 +15,7 @@
               label="fullname"
               v-model="patient"
               :options="patients"
+              @input="getPatient"
               :reduce="
                 patients => ({
                   fullname: patients.fullname,
@@ -33,7 +34,8 @@
           </div>
         </div>
         <transition name="fade-in-up">
-          <patient-banner v-if="patient" :patient="patient" />
+          <patient-banner v-if="patient && !invalidGender" :patient="patient" />
+          <error-banner v-if="invalidGender" :message="message" />
         </transition>
         <transition name="fade-in-up">
           <div v-if="patient && !patient.has_insurance" class="form-group mt-2">
@@ -82,8 +84,10 @@ import vSelect from 'vue-select';
 import { debounce } from '@/common/common';
 import PatientBanner from '@/view/pages/programs/components/PatientBanner.vue';
 import Swal from 'sweetalert2';
+import ErrorBanner from '@/view/pages/programs/immunization/ErrorBanner.vue';
 export default {
   components: {
+    ErrorBanner,
     PatientBanner,
     vSelect,
   },
@@ -91,7 +95,9 @@ export default {
     service_id: '',
     patient: '',
     antenatal: '',
+    message: 'Error! you cannot register a male for antenatal program',
     isDisabled: false,
+    invalidGender: false,
     ancRegistration: 'ANC Registration',
     genderFilter: { gender: 'Female' },
   }),
@@ -206,6 +212,10 @@ export default {
     initValues() {
       this.patient = '';
       this.service_id = '';
+    },
+
+    getPatient(patient) {
+      this.invalidGender = patient?.gender === 'Male';
     },
   },
   created() {

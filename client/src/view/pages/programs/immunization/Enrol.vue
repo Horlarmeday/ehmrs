@@ -34,8 +34,7 @@
           </div>
         </div>
         <transition name="fade-in-up">
-          <patient-banner v-if="patient && !isInvalidAge" :patient="patient" />
-          <error-banner v-if="isInvalidAge" />
+          <patient-banner v-if="patient" :patient="patient" />
         </transition>
         <transition name="fade-in-up">
           <div v-if="patient && !isInvalidAge">
@@ -200,10 +199,8 @@ import { calculateAge, debounce, parseJwt } from '@/common/common';
 import PatientBanner from '@/view/pages/programs/components/PatientBanner.vue';
 import Swal from 'sweetalert2';
 import SectionTitle from '@/utils/SectionTitle.vue';
-import ErrorBanner from '@/view/pages/programs/immunization/ErrorBanner.vue';
 export default {
   components: {
-    ErrorBanner,
     SectionTitle,
     PatientBanner,
     vSelect,
