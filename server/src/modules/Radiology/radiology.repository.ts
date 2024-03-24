@@ -8,12 +8,14 @@ import {
   PatientInsurance,
   PrescribedInvestigation,
 } from '../../database/models';
-import sequelize, { Op } from 'sequelize';
+import sequelize, { Op, WhereOptions } from 'sequelize';
 import {
   calcLimitAndOffset,
   canUsePriceTariff,
   dateIntervalQuery,
   paginate,
+  patientAttributes,
+  StatusCodes,
 } from '../../core/helpers/helper';
 import { getModelById, getPeriodQuery } from '../../core/helpers/general';
 import { InvestigationStatus } from '../../database/models/prescribedInvestigation';
@@ -21,6 +23,8 @@ import sequelizeConnection from '../../database/config/config';
 import { ResultStatus } from '../../database/models/testResult';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { CreateInvestigationDto } from './dto/radiology.dto';
+import { BadException } from '../../common/util/api-error';
+import { INVESTIGATION_NOT_FOUND, RESULT_NOT_FOUND } from './messages/response-messages';
 
 /**
  * create new imaging
@@ -249,6 +253,21 @@ export const getInvestigationPrescription = async query => {
   return InvestigationPrescription.findOne({ where: { ...query } });
 };
 
+export const getOneInvestigationPrescription = async (
+  query: WhereOptions<InvestigationPrescription>
+) => {
+  return InvestigationPrescription.findOne({
+    where: { ...query },
+    include: [
+      {
+        model: PrescribedInvestigation,
+        attributes: ['investigation_id', 'id', 'status', 'payment_status'],
+        include: [{ model: Investigation, attributes: ['name'] }],
+      },
+    ],
+  });
+};
+
 /**
  * get requested investigation
  *
@@ -320,7 +339,7 @@ export const getRequestedInvestigations = async ({
       },
       {
         model: Patient,
-        attributes: ['firstname', 'lastname', 'fullname', 'hospital_id'],
+        attributes: patientAttributes,
         where: {
           ...(search && {
             [Op.or]: [
@@ -356,13 +375,13 @@ export const getRequestedInvestigations = async ({
 export const getOneRequestedInvestigation = async (
   investigationPrescriptionId: number | string
 ) => {
-  return await InvestigationPrescription.findOne({
+  const investigation = await InvestigationPrescription.findOne({
     where: { id: investigationPrescriptionId },
     attributes: ['status'],
     include: [
       {
         model: Patient,
-        attributes: ['firstname', 'lastname', 'hospital_id', 'gender', 'id'],
+        attributes: patientAttributes,
       },
       {
         model: PrescribedInvestigation,
@@ -377,6 +396,16 @@ export const getOneRequestedInvestigation = async (
       },
     ],
   });
+  if (!investigation)
+    throw new BadException('NOT_FOUND', StatusCodes.NOT_FOUND, INVESTIGATION_NOT_FOUND);
+  const insurance = await getPatientInsuranceQuery({
+    patient_id: investigation?.patient?.id,
+    is_default: true,
+  });
+  return {
+    ...investigation.toJSON(),
+    insurance: { ...insurance?.toJSON() },
+  };
 };
 
 export const appendInvestigationResults = async (data: any[]) => {
@@ -391,6 +420,7 @@ export const appendInvestigationResults = async (data: any[]) => {
 
     const results = await InvestigationResult.findAll({
       where: { prescribed_investigation_id: testIds },
+      transaction: t,
     });
 
     await Promise.all(
@@ -398,7 +428,7 @@ export const appendInvestigationResults = async (data: any[]) => {
         PrescribedInvestigation.update(
           {
             status: investigation.testStatus,
-            result_id: results.find(
+            result_id: results?.find(
               ({ prescribed_investigation_id }) =>
                 prescribed_investigation_id === investigation.prescribed_investigation_id
             )?.id,
@@ -409,7 +439,7 @@ export const appendInvestigationResults = async (data: any[]) => {
     );
     await InvestigationPrescription.update(
       { status: InvestigationStatus.RESULT_ADDED },
-      { where: { id: data[0].investigation_prescription_id } }
+      { where: { id: data[0].investigation_prescription_id }, transaction: t }
     );
     return testResults;
   });
@@ -440,6 +470,15 @@ export const getInvestigationsApprovals = async ({
           ),
           'pending_approvals_count',
         ],
+        [
+          sequelize.fn(
+            'COUNT',
+            sequelize.literal(
+              `DISTINCT CASE WHEN investigations.status = '${InvestigationStatus.APPROVED}' THEN investigations.id END`
+            )
+          ),
+          'approved_count',
+        ],
       ],
     },
     order: [['date_requested', 'DESC']],
@@ -454,7 +493,7 @@ export const getInvestigationsApprovals = async ({
       },
       {
         model: Patient,
-        attributes: ['firstname', 'lastname', 'fullname', 'hospital_id'],
+        attributes: patientAttributes,
         where: {
           ...(search && {
             [Op.or]: [
@@ -525,7 +564,7 @@ export const getInvestigationsResults = async ({
     include: [
       {
         model: Patient,
-        attributes: ['firstname', 'lastname', 'fullname', 'hospital_id'],
+        attributes: patientAttributes,
         where: {
           ...(search && {
             [Op.or]: [
@@ -557,13 +596,13 @@ export const getInvestigationsResults = async ({
 };
 
 export const getInvestigationResult = async (investigationPrescriptionId: number | string) => {
-  return await InvestigationPrescription.findOne({
+  const result = await InvestigationPrescription.findOne({
     where: { id: investigationPrescriptionId, status: InvestigationStatus.COMPLETED },
     attributes: [],
     include: [
       {
         model: Patient,
-        attributes: ['firstname', 'lastname', 'hospital_id', 'gender', 'id'],
+        attributes: patientAttributes,
       },
       {
         model: InvestigationResult,
@@ -578,4 +617,13 @@ export const getInvestigationResult = async (investigationPrescriptionId: number
       },
     ],
   });
+  if (!result) throw new BadException('NOT_FOUND', StatusCodes.NOT_FOUND, RESULT_NOT_FOUND);
+  const insurance = await getPatientInsuranceQuery({
+    patient_id: result?.patient?.id,
+    is_default: true,
+  });
+  return {
+    ...result.toJSON(),
+    insurance: { ...insurance?.toJSON() },
+  };
 };

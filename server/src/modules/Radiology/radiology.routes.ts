@@ -36,5 +36,10 @@ router.get(
 router.get('/investigations-approval/get', verify, RadiologyController.getInvestigationsApproval);
 router.get('/investigations-results/get', verify, RadiologyController.getInvestigationsResults);
 router.get('/investigations-results/get/:id', verify, RadiologyController.getInvestigationResult);
+router.get(
+  '/investigation-prescription/get/:id',
+  verify,
+  RadiologyController.getOneInvestigationPrescription
+);
 
 export default router;

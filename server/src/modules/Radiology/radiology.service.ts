@@ -10,6 +10,7 @@ import {
   getInvestigations,
   getInvestigationsApprovals,
   getInvestigationsResults,
+  getOneInvestigationPrescription,
   getOneRequestedInvestigation,
   getRequestedInvestigations,
   searchImaging,
@@ -250,6 +251,14 @@ export class RadiologyService {
   static async getInvestigationResult(body) {
     const { prescriptionId } = body;
     return getInvestigationResult(prescriptionId);
+  }
+
+  /***
+   * get one investigation prescription
+   * @param visitId
+   */
+  static async getOneInvestigationPrescription(visitId: number) {
+    return getOneInvestigationPrescription({ visit_id: visitId });
   }
 
   static getTestStatus(result) {

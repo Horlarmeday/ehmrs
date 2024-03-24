@@ -6,7 +6,7 @@ import {
 import { RadiologyService } from './radiology.service';
 import { errorResponse } from '../../common/responses/error-responses';
 import { StatusCodes } from '../../core/helpers/helper';
-import { validateAddTestResult, validateTestTariff } from '../Laboratory/validations';
+import { validateTestTariff } from '../Laboratory/validations';
 import { successResponse } from '../../common/responses/success-responses';
 import {
   DATA_SAVED,
@@ -437,6 +437,32 @@ export class RadiologyController {
         httpCode: StatusCodes.OK,
         message: DATA_RETRIEVED,
         data: result,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get one investigation prescription
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, investigation prescription data
+   */
+  static async getOneInvestigationPrescription(req, res, next) {
+    try {
+      const investigationPrescription = await RadiologyService.getOneInvestigationPrescription(
+        +req.params.id
+      );
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: DATA_RETRIEVED,
+        data: investigationPrescription,
       });
     } catch (e) {
       return next(e);
