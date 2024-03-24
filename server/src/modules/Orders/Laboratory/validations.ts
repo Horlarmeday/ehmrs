@@ -23,3 +23,11 @@ export function validateBulkLabTest(tests) {
 
   return schema.validate(tests);
 }
+
+export function validateLabTestDelete(req) {
+  const schema = Joi.object({
+    testId: Joi.number().required(),
+  });
+
+  return schema.validate(req);
+}

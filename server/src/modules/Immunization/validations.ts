@@ -12,6 +12,7 @@ export function validateCreateImmunization(req: any) {
         .required(),
       weight: Joi.string().required(),
       createdAt: Joi.date().required(),
+      staff: Joi.any().required(),
     }),
     other_children: Joi.array()
       .items(

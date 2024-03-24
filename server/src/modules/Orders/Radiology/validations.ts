@@ -23,3 +23,11 @@ export function validateBulkInvestigationTest(investigations) {
 
   return schema.validate(investigations);
 }
+
+export function validateDeleteInvestigation(req) {
+  const schema = Joi.object({
+    investigationId: Joi.number().required(),
+  });
+
+  return schema.validate(req);
+}

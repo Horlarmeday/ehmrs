@@ -70,7 +70,9 @@ export function validateAddTestResult(result) {
           status: Joi.string()
             .optional()
             .allow(''),
-          result: Joi.string().required(),
+          result: Joi.string()
+            .optional()
+            .allow(''),
           is_abnormal: Joi.boolean().required(),
           institute_referred: Joi.string()
             .optional()

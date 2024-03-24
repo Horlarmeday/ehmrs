@@ -15,8 +15,14 @@ export function validateOrderAdditionalItems(item: any) {
         drug_form: Joi.string()
           .valid(DrugForm.DRUG, DrugForm.CONSUMABLE)
           .required(),
-        drug_type: Joi.string().valid(DrugType.CASH, DrugType.NHIS),
-        source: Joi.string().valid('Antenatal', 'Consultation'),
+        drug_type: Joi.string().valid(DrugType.CASH, DrugType.NHIS, DrugType.PRIVATE),
+        source: Joi.string().valid('Antenatal', 'Consultation', 'Theater'),
+        ante_natal_id: Joi.number()
+          .allow('')
+          .optional(),
+        surgery_id: Joi.number()
+          .allow('')
+          .optional(),
       })
     )
     .required();
@@ -48,15 +54,62 @@ export function validateDrugPrescription(drug: any) {
       .allow(''),
     total_price: Joi.number().required(),
     drug_id: Joi.number().required(),
-    drug_type: Joi.string().valid(DrugType.CASH, DrugType.NHIS),
-    source: Joi.string().valid('Antenatal', 'Consultation', 'Immunization'),
+    drug_type: Joi.string().valid(DrugType.CASH, DrugType.NHIS, DrugType.PRIVATE),
+    source: Joi.string().valid('Antenatal', 'Consultation', 'Immunization', 'Theater'),
     ante_natal_id: Joi.number()
       .optional()
       .allow(''),
     immunization_id: Joi.number()
       .optional()
       .allow(''),
+    surgery_id: Joi.number()
+      .optional()
+      .allow(''),
   });
+
+  return schema.validate(drug);
+}
+
+export function validateBulkDrugsPrescription(drug: any) {
+  const schema = Joi.array()
+    .items(
+      Joi.object({
+        start_date: Joi.string().required(),
+        quantity_prescribed: Joi.number().required(),
+        quantity_to_dispense: Joi.number().required(),
+        route_id: Joi.number().required(),
+        frequency: Joi.string().required(),
+        dosage_form_id: Joi.number().required(),
+        dosage_form_name: Joi.string().required(),
+        strength_id: Joi.number().required(),
+        inventory_id: Joi.number().required(),
+        prescribed_strength: Joi.string()
+          .allow('')
+          .optional(),
+        duration: Joi.string().required(),
+        duration_unit: Joi.string().required(),
+        notes: Joi.string()
+          .optional()
+          .allow(''),
+        drug_group: Joi.string()
+          .optional()
+          .allow(''),
+        total_price: Joi.number().required(),
+        drug_id: Joi.number().required(),
+        drug_type: Joi.string().valid(DrugType.CASH, DrugType.NHIS, DrugType.PRIVATE),
+        source: Joi.string().valid('Antenatal', 'Consultation', 'Immunization', 'Theater'),
+        ante_natal_id: Joi.number()
+          .optional()
+          .allow(''),
+        immunization_id: Joi.number()
+          .optional()
+          .allow(''),
+        surgery_id: Joi.number()
+          .optional()
+          .allow(''),
+      })
+    )
+    .required();
 
   return schema.validate(drug);
 }
@@ -66,8 +119,6 @@ export function validateCreateTreatmentData(item: any) {
     .items(
       Joi.object({
         drug_id: Joi.number().required(),
-        dosage_form_id: Joi.number().required(),
-        route_id: Joi.number().required(),
         dosage_administered: Joi.string().required(),
         remarks: Joi.string().required(),
         source: Joi.string()
@@ -78,4 +129,20 @@ export function validateCreateTreatmentData(item: any) {
     .required();
 
   return schema.validate(item);
+}
+
+export function validateDeleteDrug(req: any) {
+  const schema = Joi.object({
+    drugId: Joi.number().required(),
+  }).required();
+
+  return schema.validate(req);
+}
+
+export function validateDeleteAdditionalItem(req: any) {
+  const schema = Joi.object({
+    itemId: Joi.number().required(),
+  }).required();
+
+  return schema.validate(req);
 }

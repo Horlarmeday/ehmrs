@@ -14,6 +14,9 @@ export function validateVisit(visit: any) {
     ante_natal_id: Joi.number()
       .allow('')
       .optional(),
+    immunization_id: Joi.number()
+      .allow('')
+      .optional(),
     priority: Joi.string()
       .allow('')
       .optional(),

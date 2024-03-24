@@ -37,3 +37,10 @@ export function validateTriage(triage) {
   });
   return schema.validate(triage);
 }
+
+export function validateFetchTriage(req) {
+  const schema = Joi.object({
+    patientId: Joi.number().required(),
+  });
+  return schema.validate(req);
+}
