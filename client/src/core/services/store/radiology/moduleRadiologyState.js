@@ -27,7 +27,7 @@ export default {
    * RESULTS
    */
   resultImages: [],
-  results: [],
+  results: null,
   result: null,
   totalInvestigationResults: 0,
   totalInvestigationResultsPages: [],
@@ -38,4 +38,9 @@ export default {
   investigationsApprovals: [],
   totalInvestigationsApproval: 0,
   totalInvestigationsApprovalPages: 0,
+
+  /**
+   * INVESTIGATION PRESCRIPTION
+   */
+  investigationPrescription: null,
 };

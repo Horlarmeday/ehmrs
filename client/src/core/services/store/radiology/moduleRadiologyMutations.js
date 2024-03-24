@@ -111,4 +111,11 @@ export default {
   SET_INVESTIGATIONS_APPROVAL_PAGES(state, pages) {
     state.totalInvestigationsApprovalPages = pages;
   },
+
+  /**
+   * INVESTIGATION PRESCRIPTION
+   */
+  SET_INVESTIGATION_PRESCRIPTION(state, investigation) {
+    state.investigationPrescription = investigation;
+  },
 };

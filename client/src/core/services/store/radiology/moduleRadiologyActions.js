@@ -255,4 +255,21 @@ export default {
         });
     });
   },
+
+  /**
+   * INVESTIGATION PRESCRIPTION
+   */
+  fetchOneInvestigationPrescription({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/radiology/investigation-prescription/get/${payload.id}`)
+        .then(response => {
+          commit('SET_INVESTIGATION_PRESCRIPTION', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
 };
