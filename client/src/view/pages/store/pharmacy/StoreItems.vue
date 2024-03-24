@@ -205,6 +205,7 @@ export default {
     selectedItems() {
       return this.$store.state.store.selectedItems;
     },
+
     isAllSelected: {
       get() {
         return this.selectedItems.length === this.items.length;

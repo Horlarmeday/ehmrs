@@ -9,12 +9,12 @@
       </div>
       <b-collapse id="accordion-5" visible>
         <div class="card-body py-2">
-          <div v-if="loading">
-            <b-progress :value="count" variant="primary" show-progress animated :max="100" />
-          </div>
-          <div v-else>
+          <div v-if="!loading">
             <surgery-details v-if="surgery" :surgery="surgery" />
             <surgery-form v-else />
+          </div>
+          <div v-else>
+            <DefaultSkeleton />
           </div>
         </div>
       </b-collapse>
@@ -26,26 +26,17 @@
 import AccordionIcon from '@/assets/icons/AccordionIcon.vue';
 import SurgeryDetails from './SurgeryDetails.vue';
 import SurgeryForm from './SurgeryForm.vue';
+import DefaultSkeleton from '@/utils/DefaultSkeleton.vue';
 
 export default {
-  components: { SurgeryForm, SurgeryDetails, AccordionIcon },
+  components: { DefaultSkeleton, SurgeryForm, SurgeryDetails, AccordionIcon },
   data: () => ({
     loading: false,
-    count: 0,
   }),
 
   computed: {
     surgery() {
       return this.$store.state.surgery.surgery;
-    },
-  },
-
-  methods: {
-    countToHundred() {
-      for (let i = 1; i <= 100; i++) {
-        this.count = i;
-        if (this.surgery) break;
-      }
     },
   },
 
