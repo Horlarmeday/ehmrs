@@ -1,7 +1,14 @@
 <template>
   <div class="col-4 offcanvas-mobile w-xl-250px" id="kt_profile_aside">
+    <RoutineDrugs
+      :display-prompt="displayPrompt"
+      @closeModal="hideModal"
+      :show-switch="showSwitch"
+      :source="source"
+      :switch-position="switchPosition"
+    />
     <div class="card card-custom gutter-b">
-      <div class="card-header py-5">
+      <div class="card-header py-2">
         <div class="card-title">
           <span class="card-label font-weight-bolder text-dark">Order Drug</span>
           <span v-if="showSwitch" class="ml-5">
@@ -11,6 +18,16 @@
               @switchSpot="flipSwitch"
             />
           </span>
+          <a
+            v-if="currentUser?.sub_role === ANTENATAL"
+            title="Routine Drugs"
+            v-b-tooltip.hover
+            href="#"
+            class="btn btn-icon btn-light-primary ml-lg-5"
+            @click="openModal"
+          >
+            <i class="fas fa-tablets"></i>
+          </a>
         </div>
       </div>
       <div class="card-body pt-4 p-0">
@@ -179,7 +196,7 @@
                   class="form-control-sm form-control"
                   type="number"
                   name="quantity_to_dispense"
-                  v-validate="'required'"
+                  v-validate="'required|min:1'"
                   data-vv-validate-on="blur"
                   @input="getTotalPrice"
                   :disabled="!quantity_prescribed"
@@ -246,13 +263,14 @@
 <script>
 import Datepicker from 'vuejs-datepicker';
 import vSelect from 'vue-select';
-import { debounce, isToday } from '@/common/common';
+import { debounce, isToday, parseJwt } from '@/common/common';
 import KTUtil from '@/assets/js/components/util';
 import SwitchBox from '@/utils/SwitchBox.vue';
+import RoutineDrugs from '@/view/pages/programs/antenatal/components/RoutineDrugs.vue';
 
 export default {
   name: 'MedicationSideBar',
-  components: { SwitchBox, vSelect, Datepicker },
+  components: { RoutineDrugs, SwitchBox, vSelect, Datepicker },
   computed: {
     dosageForms() {
       return this.$store.state.pharmacy.dosageForms;
@@ -291,6 +309,7 @@ export default {
 
   watch: {
     // check NHIS drugs quota is reached
+    // TODO: only get drugs prescribed today and not all drug orders
     drugOrders(value) {
       if (this.switchPosition && this.switchSpot) {
         const total = this.getTotalDrugsPrescribedToday(value);
@@ -316,7 +335,7 @@ export default {
 
   data: () => ({
     nhisPriceQuotaExceeded: false,
-    quotaPrice: 3500, // todo: select this from settings
+    quotaPrice: 13500, // todo: select this from settings
     switchSpot: true,
     dosage_form: '',
     route: '',
@@ -331,6 +350,8 @@ export default {
     drug_id: '',
     drug_group: null,
     inventory_id: '',
+    currentUser: parseJwt(localStorage.getItem('user_token')),
+    ANTENATAL: 'ANC',
 
     price: null,
     total_price: null,
@@ -355,6 +376,7 @@ export default {
       { val: 30, label: 'Months' },
     ],
     drugTypes: ['Primary', 'Secondary'],
+    displayPrompt: false,
   }),
   methods: {
     getInventories() {
@@ -427,6 +449,14 @@ export default {
     submitDrugOrder() {
       this.$validator.validateAll().then(result => {
         if (result) {
+          if (this.switchPosition && this.switchSpot && !this.drug_group) {
+            return this.$notify({
+              group: 'foo',
+              title: 'Error message',
+              text: 'You need to select if drug is either primary or secondary',
+              type: 'error',
+            });
+          }
           const submitButton = this.$refs['kt-drugOrder-submit'];
           this.addSpinner(submitButton);
           this.$store
@@ -463,6 +493,7 @@ export default {
         ...(this.drug_group && { drug_group: this.drug_group }),
         ...(this.source === 'Antenatal' && { ante_natal_id: this.$route.query.antenatal }),
         ...(this.source === 'Immunization' && { immunization_id: this.$route.query.immunization }),
+        ...(this.source === 'Theater' && { surgery_id: this.$route.query.surgery }),
       };
     },
 
@@ -545,6 +576,14 @@ export default {
     getTotalDrugsPrescribedToday(arr) {
       const drugsToday = arr.filter(({ date_prescribed }) => isToday(date_prescribed));
       return this.sumTotalPrice(drugsToday);
+    },
+
+    openModal() {
+      this.displayPrompt = true;
+    },
+
+    hideModal() {
+      this.displayPrompt = false;
     },
   },
 

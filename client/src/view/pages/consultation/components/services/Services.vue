@@ -5,7 +5,7 @@
         <services-accordion :filter="filter" />
         <div class="card-title">
           <span class="card-label font-weight-bolder text-dark"></span>
-          <span v-if="showSwitch">
+          <span v-if="showSwitch" class="mr-3 mt-3">
             <switch-box
               :switch-position="switchPosition"
               :switch-spot="switchSpot"
@@ -102,8 +102,9 @@ export default {
         service_type: this.switchPosition && this.switchSpot ? 'NHIS' : 'CASH',
         price: service.price,
         name: service.name,
-        // source: this.source,
+        source: this.source,
         ...(this.source === 'Antenatal' && { ante_natal_id: this.$route.query.antenatal }),
+        ...(this.source === 'Theater' && { surgery_id: this.$route.query.surgery }),
       };
     },
 

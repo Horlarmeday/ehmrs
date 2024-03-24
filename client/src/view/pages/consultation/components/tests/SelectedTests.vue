@@ -10,6 +10,12 @@
         <div class="row">
           <div class="col-lg-12 mb-2 select-order" v-for="(test, i) in selectedTests" :key="i">
             <div class="p-2">
+              <span
+                :title="`${test.test_type}`"
+                v-b-tooltip.hover
+                :class="getLabelDotStatus(test.test_type)"
+                class="label label-dot label-lg mr-2"
+              ></span>
               <span class="mr-3">{{ truncateText(test.name) }}</span>
               <span class="float-right ml-4" v-b-tooltip.hover title="Delete">
                 <a href="#" @click="removeSelectedTest(test)"
@@ -58,6 +64,11 @@ export default {
         icon.classList.add('text-warning');
         this.$store.dispatch('order/toggleTestUrgent', testId);
       }
+    },
+    getLabelDotStatus(type) {
+      if (type === 'CASH') return 'label-success';
+      if (type === 'PRIVATE') return 'label-primary';
+      return 'label-danger';
     },
   },
 };

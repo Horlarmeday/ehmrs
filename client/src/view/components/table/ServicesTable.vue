@@ -28,7 +28,11 @@
             <td>{{ service.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
             <td>
               <span v-if="allowedRoles.includes(currentUser.role)">
-                <a href="#" :class="service.payment_status !== 'Pending' ? 'disabled' : ''"
+                <a
+                  href="#"
+                  :class="loading && 'disabled'"
+                  @click="showDeleteAlert(service)"
+                  v-if="service.billing_status === UNBILLED && service.payment_status === PENDING"
                   ><i class="flaticon-delete text-danger"></i
                 ></a>
               </span>
@@ -41,12 +45,16 @@
 </template>
 <script>
 import { parseJwt } from '@/core/plugins/parseJwt';
+import Swal from 'sweetalert2';
 
 export default {
   name: 'ServicesTable',
   data: () => ({
     currentUser: parseJwt(localStorage.getItem('user_token')),
     allowedRoles: ['General Practitioner', 'Super Admin'],
+    loading: false,
+    UNBILLED: 'Unbilled',
+    PENDING: 'Pending',
   }),
   props: {
     services: {
@@ -60,6 +68,33 @@ export default {
       if (type === 'NHIS') return 'label label-inline label-light-warning font-weight-bold';
       if (type === 'Cash') return 'label label-inline label-light-success font-weight-bold';
       return 'label label-inline label-light-danger font-weight-bold';
+    },
+
+    showDeleteAlert(service) {
+      const self = this;
+      Swal.fire({
+        title: 'Are you sure?',
+        text: 'You want to delete this service',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Delete!',
+        customClass: {
+          confirmButton: 'btn btn-danger',
+          cancelButton: 'btn btn-default',
+        },
+      }).then(function(result) {
+        if (result.value) {
+          self.deletePrescribedService(service);
+        }
+      });
+    },
+
+    deletePrescribedService(service) {
+      this.loading = true;
+      this.$store
+        .dispatch('order/deletePrescribedService', { serviceId: service.id })
+        .then(() => (this.loading = false))
+        .catch(() => (this.loading = false));
     },
   },
 };

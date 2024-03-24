@@ -64,7 +64,7 @@
                 <a
                   title="Add Authorization Code"
                   v-b-tooltip.hover
-                  :class="service.service.type === SECONDARY || (service.auth_code && DISABLED)"
+                  :class="service.service.type === PRIMARY || service.auth_code ? DISABLED : ''"
                   href="#"
                   class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
                   @click="addAuthCode(service)"
