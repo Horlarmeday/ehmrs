@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="!loading">
+    <div v-if="investigations">
       <div class="mt-3">
         <search
           @search="onHandleSearch"
@@ -9,7 +9,7 @@
         />
       </div>
       <div class="table-responsive">
-        <table class="table table-head-custom table-head-bg table-borderless table-vertical-center">
+        <table class="table table-head-custom table-head-bg table-vertical-center">
           <thead>
             <tr class="text-uppercase">
               <th style="min-width: 100px" class="pl-7">
@@ -94,9 +94,7 @@
         @pagechanged="onPageChange"
       />
     </div>
-    <div v-else>
-      <b-progress :value="count" variant="primary" show-progress animated :max="200" />
-    </div>
+    <table-skeleton v-else :columns="7" />
   </div>
 </template>
 
@@ -106,9 +104,10 @@ import Search from '@/utils/Search.vue';
 import Pagination from '@/utils/Pagination.vue';
 import ApproveIcon from '@/assets/icons/ApproveIcon.vue';
 import dayjs from 'dayjs';
+import TableSkeleton from '@/view/pages/nhis/components/TableSkeleton.vue';
 
 export default {
-  components: { ApproveIcon, Pagination, Search },
+  components: { TableSkeleton, ApproveIcon, Pagination, Search },
   computed: {
     investigations() {
       return this.$store.state.radiology.investigationsApprovals;
@@ -126,8 +125,6 @@ export default {
   data: () => ({
     currentPage: 1,
     itemsPerPage: 10,
-    loading: false,
-    count: 0,
     start: null,
     end: null,
   }),
@@ -137,7 +134,8 @@ export default {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
       });
-      this.$store.dispatch('radiology/fetchInvestigationsApproval', {
+      this.fetchInvestigationsApproval({
+        currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         search: this.$route.query.search || null,
         start: this.$route.query.startDate,
@@ -161,12 +159,11 @@ export default {
     },
 
     debounceSearch: debounce((search, vm, spinDiv) => {
-      vm.$store
-        .dispatch('radiology/fetchInvestigationsApproval', {
-          currentPage: 1,
-          itemsPerPage: vm.itemsPerPage,
-          search,
-        })
+      vm.fetchInvestigationsApproval({
+        currentPage: 1,
+        itemsPerPage: vm.itemsPerPage,
+        search,
+      })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));
     }, 500),
@@ -180,13 +177,12 @@ export default {
         startDate: dayjs(start).format('YYYY-MM-DD'),
         endDate: dayjs(end).format('YYYY-MM-DD'),
       });
-      this.$store
-        .dispatch('radiology/fetchInvestigationsApproval', {
-          currentPage: this.$route.query.currentPage,
-          itemsPerPage: this.$route.query.itemsPerPage,
-          start: this.$route.query.startDate,
-          end: this.$route.query.endDate,
-        })
+      this.fetchInvestigationsApproval({
+        currentPage: this.$route.query.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
+      })
         .then(() => removeSpinner(dateSpin))
         .catch(() => removeSpinner(dateSpin));
     },
@@ -203,25 +199,22 @@ export default {
       return 'text-primary';
     },
 
-    countToHundred() {
-      for (let i = 1; i <= 100; i++) {
-        this.count = i;
-        if (this.investigations.length) break;
-      }
+    fetchInvestigationsApproval({ currentPage, itemsPerPage, search, start, end }) {
+      return this.$store.dispatch('radiology/fetchInvestigationsApproval', {
+        currentPage,
+        itemsPerPage,
+        ...(search && { search }),
+        ...(start && end && { start, end }),
+      });
     },
   },
   created() {
-    this.loading = true;
-    this.countToHundred();
-    this.$store
-      .dispatch('radiology/fetchInvestigationsApproval', {
-        currentPage: this.$route.query.currentPage || this.currentPage,
-        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
-        search: this.$route.query.search || null,
-        start: this.$route.query.startDate || null,
-        end: this.$route.query.endDate || null,
-      })
-      .then(() => (this.loading = false));
+    this.fetchInvestigationsApproval({
+      currentPage: this.$route.query.currentPage || this.currentPage,
+      itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+      start: this.$route.query.startDate || null,
+      end: this.$route.query.endDate || null,
+    });
   },
 };
 </script>
