@@ -5,7 +5,7 @@
         <span class="card-label font-weight-bolder text-dark">Active Visits</span>
       </h3>
     </div>
-    <div class="card-body">
+    <div class="card-body pt-0">
       <div class="mt-3">
         <search
           @search="onHandleSearch"
