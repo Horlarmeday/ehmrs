@@ -34,7 +34,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-if="samples.length == 0">
+            <tr v-if="samples.length === 0">
               <td colspan="9" align="center" class="text-muted">No Data</td>
             </tr>
             <tr v-for="sample in samples" :key="sample.id">

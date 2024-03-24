@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="!loading">
+    <div v-if="samples">
       <div class="mt-3">
         <search
           @search="onHandleSearch"
@@ -9,22 +9,21 @@
         />
       </div>
       <div class="table-responsive">
-        <table class="table table-head-custom table-head-bg table-borderless table-vertical-center">
+        <table class="table table-head-custom table-head-bg table-vertical-center">
           <thead>
             <tr class="text-uppercase">
-              <th style="min-width: 100px" class="pl-7">
-                <span class="text-dark-75">Accession number</span>
+              <th style="min-width: 100px" class="pl-4">
+                <span class="text-dark-75">Lab number</span>
               </th>
               <th style="min-width: 100px">Patient ID</th>
-              <th style="min-width: 150px">Patient Name</th>
+              <th style="min-width: 200px">Patient Name</th>
               <th style="min-width: 70px">Pending Tests</th>
               <th style="min-width: 70px">Referred Tests</th>
               <th style="min-width: 70px">Pending Validation</th>
-              <th style="min-width: 30px">Total</th>
+              <th style="min-width: 70px">Total</th>
               <th style="min-width: 80px">Status</th>
-              <th v-if="period !== 'Today'" style="min-width: 100px">Date Collected</th>
+              <th style="min-width: 100px">Date Collected</th>
               <th class="text-right" style="min-width: 120px">Action</th>
-              <th style="min-width: 20px"></th>
             </tr>
           </thead>
           <tbody>
@@ -32,7 +31,7 @@
               <td colspan="9" align="center" class="text-muted">No Data</td>
             </tr>
             <tr v-for="sample in samples" :key="sample.id">
-              <td class="pl-7 py-8">
+              <td class="pl-4 py-8">
                 <div class="d-flex align-items-center">
                   <div>
                     <a
@@ -127,9 +126,7 @@
         @pagechanged="onPageChange"
       />
     </div>
-    <div v-else>
-      <b-progress :value="count" variant="primary" show-progress animated :max="200" />
-    </div>
+    <table-skeleton v-else :columns="9" />
   </div>
 </template>
 
@@ -141,9 +138,10 @@ import ValidateIcon from '@/assets/icons/ValidateIcon.vue';
 import Pagination from '@/utils/Pagination.vue';
 import ApproveIcon from '@/assets/icons/ApproveIcon.vue';
 import dayjs from 'dayjs';
+import TableSkeleton from '@/view/pages/nhis/components/TableSkeleton.vue';
 
 export default {
-  components: { ApproveIcon, Pagination, ValidateIcon, ArrowRightIcon, Search },
+  components: { TableSkeleton, ApproveIcon, Pagination, ValidateIcon, ArrowRightIcon, Search },
   props: {
     period: {
       type: String,
@@ -167,10 +165,9 @@ export default {
   data: () => ({
     currentPage: 1,
     itemsPerPage: 10,
-    loading: false,
-    count: 0,
     start: null,
     end: null,
+    TODAY: 'Today',
   }),
   methods: {
     handlePageChange() {
@@ -178,13 +175,12 @@ export default {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
       });
-      this.$store.dispatch('laboratory/fetchSamplesCollected', {
+      this.fetchSamplesCollected({
         currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         search: this.$route.query.search || null,
         start: this.$route.query.startDate,
         end: this.$route.query.endDate,
-        period: this.period,
       });
     },
 
@@ -204,13 +200,11 @@ export default {
     },
 
     debounceSearch: debounce((search, vm, spinDiv) => {
-      vm.$store
-        .dispatch('laboratory/fetchSamplesCollected', {
-          currentPage: 1,
-          itemsPerPage: vm.itemsPerPage,
-          period: this.period,
-          search,
-        })
+      vm.fetchSamplesCollected({
+        currentPage: 1,
+        itemsPerPage: vm.itemsPerPage,
+        search,
+      })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));
     }, 500),
@@ -224,14 +218,12 @@ export default {
         startDate: dayjs(start).format('YYYY-MM-DD'),
         endDate: dayjs(end).format('YYYY-MM-DD'),
       });
-      this.$store
-        .dispatch('laboratory/fetchSamplesCollected', {
-          currentPage: this.currentPage,
-          itemsPerPage: this.itemsPerPage,
-          start: this.$route.query.startDate,
-          end: this.$route.query.endDate,
-          period: this.period,
-        })
+      this.fetchSamplesCollected({
+        currentPage: this.currentPage,
+        itemsPerPage: this.itemsPerPage,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
+      })
         .then(() => removeSpinner(dateSpin))
         .catch(() => removeSpinner(dateSpin));
     },
@@ -248,26 +240,28 @@ export default {
       return 'text-primary';
     },
 
-    countToHundred() {
-      for (let i = 1; i <= 100; i++) {
-        this.count = i;
-        if (this.samples.length) break;
-      }
+    fetchSamplesCollected({ currentPage, itemsPerPage, search, start, end }) {
+      return this.$store.dispatch('laboratory/fetchSamplesCollected', {
+        currentPage,
+        itemsPerPage,
+        ...(search && { search }),
+        ...(start && end && { start, end }),
+        period: this.period,
+      });
     },
   },
-  created() {
-    this.loading = true;
-    this.countToHundred();
-    this.$store
-      .dispatch('laboratory/fetchSamplesCollected', {
-        currentPage: this.$route.query.currentPage || this.currentPage,
-        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
-        search: this.$route.query.search || null,
-        start: this.$route.query.startDate,
-        end: this.$route.query.endDate,
-        period: this.period,
-      })
-      .then(() => (this.loading = false));
+  watch: {
+    period: {
+      handler() {
+        this.fetchSamplesCollected({
+          currentPage: this.$route.query.currentPage || this.currentPage,
+          itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+          start: this.$route.query.startDate || null,
+          end: this.$route.query.endDate || null,
+        });
+      },
+      immediate: true,
+    },
   },
 };
 </script>
