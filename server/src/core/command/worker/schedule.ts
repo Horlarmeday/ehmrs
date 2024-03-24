@@ -2,7 +2,7 @@ import agenda from '../agenda';
 import { Patient } from '../../../database/models';
 import { JobName } from '../index';
 
-const agendaSchedule = async (when: string, jobName: string, data: { [p: string]: any }) =>
+const agendaSchedule = async (when: string, jobName: string, data: { [p: string]: unknown }) =>
   await agenda.schedule(when, jobName, data);
 
 export const JobSchedule = {

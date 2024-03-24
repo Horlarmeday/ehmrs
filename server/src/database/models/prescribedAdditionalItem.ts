@@ -27,6 +27,7 @@ import { DrugPrescription } from './drugPrescription';
 import { Antenatal } from './antenatal';
 import { SurgeryRequest } from './surgeryRequest';
 import { NHISApprovalStatus } from '../../core/helpers/general';
+import { PatientInsurance } from './patientInsurance';
 
 export enum DispenseStatus {
   DISPENSED = 'Dispensed',
@@ -161,7 +162,7 @@ export class PrescribedAdditionalItem extends Model {
     allowNull: false,
     defaultValue: PaymentStatus.PENDING,
   })
-  payment_status: DispenseStatus;
+  payment_status: PaymentStatus;
 
   @Column({
     type: DataType.ENUM(BillingStatus.BILLED, BillingStatus.UNBILLED),
@@ -222,6 +223,12 @@ export class PrescribedAdditionalItem extends Model {
     type: DataType.INTEGER,
   })
   prescribed_drug_id: number;
+
+  @ForeignKey(() => PatientInsurance)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  patient_insurance_id: number;
 
   @Column({
     type: DataType.DATE,
@@ -327,6 +334,9 @@ export class PrescribedAdditionalItem extends Model {
 
   @BelongsTo(() => SurgeryRequest)
   surgeryRequest: SurgeryRequest;
+
+  @BelongsTo(() => PatientInsurance)
+  patientInsurance: PatientInsurance;
 
   static async paginate(param: {
     paginate: number;

@@ -11,4 +11,5 @@ export type ReturnDrugType = {
   quantity_to_return: number;
   staff_id: number;
   additional_item_id?: number;
+  drug_prescription_id: number;
 };

@@ -9,7 +9,6 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { Staff } from './staff';
-import { NhisTest } from './nhisTest';
 import { Test } from './test';
 import {
   FindAttributeOptions,
@@ -45,9 +44,6 @@ export class Sample extends Model {
 
   @BelongsTo(() => Staff)
   staff: Staff;
-
-  @HasMany(() => NhisTest)
-  nhis_tests: NhisTest[];
 
   @HasMany(() => Test)
   tests: Test[];
