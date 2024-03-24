@@ -1,9 +1,16 @@
 import { successResponse, SuccessResponse } from '../../../common/responses/success-responses';
 import { errorResponse } from '../../../common/responses/error-responses';
 import { StatusCodes } from '../../../core/helpers/helper';
-import { DATA_SAVED, DATA_UPDATED } from '../../AdminSettings/messages/response-messages';
 import {
+  DATA_DELETED,
+  DATA_SAVED,
+  DATA_UPDATED,
+} from '../../AdminSettings/messages/response-messages';
+import {
+  validateBulkDrugsPrescription,
   validateCreateTreatmentData,
+  validateDeleteAdditionalItem,
+  validateDeleteDrug,
   validateDrugPrescription,
   validateOrderAdditionalItems,
 } from './validations';
@@ -36,7 +43,7 @@ export class PharmacyOrderController {
         httpCode: StatusCodes.BAD_REQUEST,
       });
     try {
-      const tests = await PharmacyOrderService.prescribeDrug({
+      const drug = await PharmacyOrderService.prescribeDrug({
         ...req.body,
         staff_id: req.user.sub,
         visit_id: req.params.id,
@@ -44,7 +51,46 @@ export class PharmacyOrderController {
 
       return successResponse({
         res,
-        data: tests,
+        data: drug,
+        message: DATA_SAVED,
+        httpCode: StatusCodes.CREATED,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * prescribe bulk drugs
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {SuccessResponse} json object with status, prescribed drugs data
+   */
+  static async orderBulkDrugs(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    const { error } = validateBulkDrugsPrescription(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+    try {
+      const drugs = await PharmacyOrderService.prescribedBulkDrugs(
+        req.body,
+        req.user.sub,
+        +req.params.id
+      );
+
+      return successResponse({
+        res,
+        data: drugs,
         message: DATA_SAVED,
         httpCode: StatusCodes.CREATED,
       });
@@ -232,6 +278,76 @@ export class PharmacyOrderController {
         httpCode: StatusCodes.OK,
         message: SUCCESS,
         data: treatments,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * delete prescribed drug
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {SuccessResponse} json object with status, prescribed drug data
+   */
+  static async deletePrescribedDrug(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    const { error } = validateDeleteDrug(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+    try {
+      const drug = await PharmacyOrderService.deletePrescribedDrug(req.body);
+
+      return successResponse({
+        res,
+        data: drug,
+        message: DATA_DELETED,
+        httpCode: StatusCodes.CREATED,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * delete additional item
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {SuccessResponse} json object with status, additional item data
+   */
+  static async deleteAdditionalItem(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    const { error } = validateDeleteAdditionalItem(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+    try {
+      const item = await PharmacyOrderService.deleteAdditionalItem(req.body);
+
+      return successResponse({
+        res,
+        data: item,
+        message: DATA_DELETED,
+        httpCode: StatusCodes.CREATED,
       });
     } catch (e) {
       return next(e);

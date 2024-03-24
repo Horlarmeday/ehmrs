@@ -1,9 +1,14 @@
 import {
   bulkCreateAdditionalItems,
   createBulkTreatmentData,
+  deleteAdditionalItem,
+  deletePrescribedDrug,
+  getOneAdditionalItem,
+  getOnePrescribedDrug,
   getPatientTreatments,
   getPrescribedAdditionalItems,
   getPrescribedDrugs,
+  prescribeBulkDrugs,
   prescribeDrug,
   syringeNeedleCalculation,
   updatePrescribedDrug,
@@ -27,18 +32,85 @@ import {
   getDrugPrice,
   getLastDrugPrescription,
 } from '../../Pharmacy/pharmacy.repository';
-import { isToday } from '../../../core/helpers/helper';
+import { isToday, StatusCodes } from '../../../core/helpers/helper';
 import { DrugStatus } from '../../../database/models/drugPrescription';
 import { getOneDefault } from '../../AdminSettings/admin.repository';
 import { DefaultType } from '../../../database/models/default';
 import { BadException } from '../../../common/util/api-error';
-import { INJECTION_SYRINGES_NOT_FOUND } from './messages/response-messages';
-import { getInventoryItemQuery } from '../../Inventory/inventory.repository';
+import { CANNOT_DELETE_DRUG, INJECTION_SYRINGES_NOT_FOUND } from './messages/response-messages';
+import {
+  getInventoryItemByDrugId,
+  getInventoryItemQuery,
+} from '../../Inventory/inventory.repository';
 import { getVisitById } from '../../Visit/visit.repository';
 import { getOneAdmission } from '../../Admission/admission.repository';
 import { NHISApprovalStatus } from '../../../core/helpers/general';
+import { PaymentStatus } from '../../../database/models/prescribedDrug';
+import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
+import { lt } from 'lodash';
+import { INVALID_QUANTITY } from '../../Inventory/messages/response-messages';
 
 class PharmacyOrderService {
+  /**
+   * prescribe a bulk drugs for patient
+   *
+   * @static
+   * @returns {Promise<PrescribedDrug[]>} json object with prescribed drugs data
+   * @param body
+   * @param visit_id
+   * @param staff_id
+   * @memberOf PharmacyOrderService
+   */
+  static async prescribedBulkDrugs(
+    body: PrescribedDrugBody[],
+    staff_id: number,
+    visit_id: number
+  ): Promise<PrescribedDrug[]> {
+    const visit = await VisitService.getVisitById(visit_id);
+    const [insurance, patient] = await Promise.all([
+      getPatientInsuranceQuery({
+        patient_id: visit.patient_id,
+        is_default: true,
+      }),
+      PatientService.getPatientById(visit.patient_id),
+    ]);
+
+    const mappedPrescribedDrugs = await Promise.all(
+      body.map(async data => {
+        const { drug_type, drug_id, inventory_id, quantity_to_dispense, drug_group } = data;
+        const drugPrescription = await this.getDrugPrescription(visit.patient_id, {
+          ...data,
+          visit_id,
+        });
+        const inventory = await getInventoryItemQuery({ inventory_id, drug_id });
+        const drugPrice = (await getDrugPrice(patient, drug_id)) * +quantity_to_dispense;
+        const totalPrice = +inventory.selling_price * +quantity_to_dispense;
+
+        return {
+          ...data,
+          patient_id: patient.id,
+          examiner: staff_id,
+          total_price: this.getTotalPrice(totalPrice, drugPrice, drug_type),
+          drug_prescription_id: drugPrescription.id,
+          ...(drug_type === DrugType.NHIS && {
+            nhis_status: NHISApprovalStatus.PENDING,
+          }),
+          patient_insurance_id: insurance?.id,
+          visit_id,
+          date_prescribed: Date.now(),
+          drug_group: drug_group || null,
+        };
+      })
+    );
+
+    const injections = body.filter(
+      ({ dosage_form_name }) =>
+        /\binjection\b/i.test(dosage_form_name) || /\bInj\b/i.test(dosage_form_name)
+    );
+
+    return prescribeBulkDrugs(mappedPrescribedDrugs, injections, patient);
+  }
+
   /**
    * prescribe a drug for patient
    *
@@ -58,10 +130,16 @@ class PharmacyOrderService {
       quantity_to_dispense,
     } = body;
     const visit = await VisitService.getVisitById(visit_id);
-    const patient = await PatientService.getPatientById(visit.patient_id);
+    const [drugPrescription, inventory, insurance, patient] = await Promise.all([
+      this.getDrugPrescription(visit.patient_id, body),
+      getInventoryItemQuery({ inventory_id, drug_id }),
+      getPatientInsuranceQuery({
+        patient_id: visit.patient_id,
+        is_default: true,
+      }),
+      PatientService.getPatientById(visit.patient_id),
+    ]);
     const drugPrice = (await getDrugPrice(patient, drug_id)) * +quantity_to_dispense;
-    const drugPrescription = await this.getDrugPrescription(patient.id, body);
-    const inventory = await getInventoryItemQuery({ inventory_id, drug_id });
     const totalPrice = +inventory.selling_price * +quantity_to_dispense;
 
     //todo: Add check for daily NHIS drug quota
@@ -75,8 +153,9 @@ class PharmacyOrderService {
       ...(drug_type === DrugType.NHIS && {
         nhis_status: NHISApprovalStatus.PENDING,
       }),
+      patient_insurance_id: insurance?.id,
     });
-    if (/\binjection\b/i.test(dosage_form_name)) {
+    if (/\binjection\b/i.test(dosage_form_name) || /\bInj\b/i.test(dosage_form_name)) {
       const injectionDefaults = await getOneDefault({ type: DefaultType.INJECTION_ITEMS });
       if (!injectionDefaults) {
         throw new BadException('Error', 400, INJECTION_SYRINGES_NOT_FOUND);
@@ -85,6 +164,7 @@ class PharmacyOrderService {
         patient,
         prescription: prescribedDrug,
         injectionItems: injectionDefaults.data,
+        patient_insurance_id: insurance?.id,
       });
     }
     return prescribedDrug;
@@ -106,15 +186,36 @@ class PharmacyOrderService {
     visitId: number
   ): Promise<PrescribedAdditionalItem[]> {
     const visit = await VisitService.getVisitById(visitId);
-    const patient = await PatientService.getPatientById(visit.patient_id);
+    const [drugPrescription, insurance, patient] = await Promise.all([
+      this.getDrugPrescription(visit.patient_id, {
+        ...body[0],
+        examiner: staffId,
+        visit_id: visitId,
+      }),
+      getPatientInsuranceQuery({
+        patient_id: visit.patient_id,
+        is_default: true,
+      }),
+      PatientService.getPatientById(visit.patient_id),
+    ]);
+
+    // check that the quantity is not low in the dispensary
+    for await (const item of body) {
+      const drug = await getInventoryItemQuery({
+        drug_id: item.drug_id,
+        inventory_id: item.inventory_id,
+      });
+      if (lt(drug.quantity_remaining, item.quantity_to_dispense)) {
+        throw new BadException('Invalid', 400, INVALID_QUANTITY.replace('drug', item.name));
+      }
+    }
 
     const data = await Promise.all(
       body.map(async item => {
-        const { drug_id, drug_type, quantity_to_dispense, price } = item;
+        const { drug_id, drug_type, quantity_to_dispense, price, inventory_id } = item;
         const drugPrice = (await getDrugPrice(patient, drug_id)) * quantity_to_dispense;
         const totalPrice = +price * +quantity_to_dispense;
 
-        this.getTotalPrice(totalPrice, drugPrice, drug_type);
         return {
           ...item,
           total_price: this.getTotalPrice(totalPrice, drugPrice, drug_type),
@@ -124,6 +225,8 @@ class PharmacyOrderService {
           visit_id: visit.id,
           start_date: Date.now(),
           date_prescribed: Date.now(),
+          drug_prescription_id: drugPrescription.id,
+          patient_insurance_id: insurance?.id,
         };
       })
     );
@@ -141,6 +244,40 @@ class PharmacyOrderService {
    */
   static async updatePrescribedDrug(body: Partial<PrescribedDrug>): Promise<PrescribedDrug> {
     return updatePrescribedDrug(body);
+  }
+
+  /**
+   * delete prescribed drug
+   *
+   * @static
+   * @returns {Promise<number>} json object with prescribed drug data
+   * @param body
+   * @memberOf PharmacyOrderService
+   */
+  static async deletePrescribedDrug(body): Promise<number> {
+    const allowedStatuses = [PaymentStatus.PAID, PaymentStatus.PERMITTED, PaymentStatus.CLEARED];
+    const drug = await getOnePrescribedDrug({ id: body.drugId });
+    if (drug && allowedStatuses.includes(drug.payment_status))
+      throw new BadException('Error', StatusCodes.BAD_REQUEST, CANNOT_DELETE_DRUG);
+
+    return deletePrescribedDrug(body.drugId);
+  }
+
+  /**
+   * delete prescribed additional item
+   *
+   * @static
+   * @returns {Promise<number>} json object with prescribed drug data
+   * @param body
+   * @memberOf PharmacyOrderService
+   */
+  static async deleteAdditionalItem(body): Promise<number> {
+    const allowedStatuses = [PaymentStatus.PAID, PaymentStatus.PERMITTED, PaymentStatus.CLEARED];
+    const item = await getOneAdditionalItem({ id: body.itemId });
+    if (item && allowedStatuses.includes(item.payment_status))
+      throw new BadException('Error', StatusCodes.BAD_REQUEST, CANNOT_DELETE_DRUG);
+
+    return deleteAdditionalItem(body.itemId);
   }
 
   /**
@@ -206,7 +343,10 @@ class PharmacyOrderService {
    * @param patient_id
    * @param data
    */
-  static async getDrugPrescription(patient_id: number, data: PrescribedDrugBody) {
+  static async getDrugPrescription(
+    patient_id: number,
+    data: PrescribedDrugBody | PrescribedAdditionalItemBody
+  ) {
     const lastPrescription = await getLastDrugPrescription(patient_id);
 
     if (lastPrescription && !isToday(lastPrescription?.date_prescribed))
@@ -276,10 +416,13 @@ class PharmacyOrderService {
     return getPatientTreatments({ filter });
   }
 
-  private static drugPrescriptionData(body: PrescribedDrugBody, patient_id: number) {
+  private static drugPrescriptionData(
+    body: PrescribedDrugBody | PrescribedAdditionalItemBody,
+    patient_id: number
+  ) {
     return {
       source: body.source,
-      requester: body.staff_id,
+      requester: 'staff_id' in body ? body.staff_id : body.examiner,
       visit_id: body.visit_id,
       patient_id,
       date_prescribed: Date.now(),
