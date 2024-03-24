@@ -104,26 +104,4 @@ export default {
   SET_VISITS_SUMMARY_PAGES(state, pages) {
     state.totalSummaryPages = pages;
   },
-
-  /**
-   * DELIVERY INFO
-   */
-  CREATE_DELIVERY_INFO(state, delivery) {
-    state.deliveries.push(delivery);
-  },
-
-  SET_DELIVERY_INFO(state, deliveries) {
-    state.deliveries = deliveries;
-  },
-
-  /**
-   * POST NATAL INFO
-   */
-  CREATE_POSTNATAL_INFO(state, delivery) {
-    state.postNatals.push(delivery);
-  },
-
-  SET_POSTNATAL_INFO(state, postnatal) {
-    state.postNatals = postnatal;
-  },
 };

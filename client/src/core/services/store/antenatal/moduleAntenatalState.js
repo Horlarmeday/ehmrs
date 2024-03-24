@@ -24,7 +24,4 @@ export default {
   summaries: [],
   totalSummaries: 0,
   totalSummaryPages: 0,
-
-  deliveries: [],
-  postNatals: [],
 };
