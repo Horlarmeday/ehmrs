@@ -8,23 +8,32 @@
       </div>
       <div class="card-body">
         <div class="form-group row">
-          <label class="col-lg-2 col-form-label">Height (cm)</label>
+          <label class="col-lg-2 col-form-label">Height (m)</label>
           <div class="col-lg-2">
             <input
+              v-validate="'required|between:0,2'"
+              data-vv-validate-on="blur"
+              name="height"
               @keyup="calculateBMI"
               v-model="height"
               type="number"
+              max="2"
               class="form-control form-control-sm"
             />
+            <span class="text-danger text-sm">{{ errors.first('height') }}</span>
           </div>
           <label class="col-lg-1 col-form-label">Weight (kg)</label>
           <div class="col-lg-2">
             <input
+              v-validate="'required'"
+              data-vv-validate-on="blur"
+              name="weight"
               @keyup="calculateBMI"
               v-model="weight"
               type="number"
               class="form-control form-control-sm"
             />
+            <span class="text-danger text-sm">{{ errors.first('weight') }}</span>
           </div>
           <label class="col-lg-1 col-form-label">BMI (kg/m²)</label>
           <div class="col-lg-2">
@@ -33,7 +42,10 @@
           <p v-if="bmiCategory" class="text-danger">{{ bmiCategory }}</p>
         </div>
         <div class="form-group row">
-          <label class="col-2 col-form-label">Pulse (b/min*)</label>
+          <label class="col-2 col-form-label" v-if="date_of_birth && date_of_birth <= 2"
+            >Heart Rate (b/min*)</label
+          >
+          <label class="col-2 col-form-label" v-else>Pulse (b/min*)</label>
           <div class="col-6">
             <input
               v-validate="'required'"
@@ -47,36 +59,34 @@
           </div>
           <label class="col-lg-2 col-form-label">(72 - 72)</label>
         </div>
-        <div class="form-group row">
-          <label class="col-2 col-form-label">Heart Rate (b/min*)</label>
-          <div class="col-6">
-            <input
-              class="form-control form-control-sm"
-              type="text"
-              v-model="heart_rate"
-              name="heart_rate"
-            />
-          </div>
-          <label class="col-lg-2 col-form-label">(60 - 100)</label>
-        </div>
         <hr />
         <h5 class="text-primary">Blood Pressure</h5>
         <div class="form-group row">
           <label class="col-2 col-form-label">Systolic (b/min*)</label>
           <div class="col-6">
             <input
+              ref="systolic"
+              name="systolic"
               class="form-control form-control-sm"
               type="text"
               v-model="systolic"
-              name="systolic"
             />
+            <span class="text-danger text-sm">{{ errors.first('systolic') }}</span>
           </div>
           <label class="col-lg-2 col-form-label">(110 - 140)</label>
         </div>
         <div class="form-group row">
           <label class="col-2 col-form-label">Diastolic (mmHg*)</label>
           <div class="col-6">
-            <input class="form-control form-control-sm" type="text" v-model="diastolic" />
+            <input
+              v-validate="'bp:systolic'"
+              data-vv-validate-on="blur"
+              name="diastolic"
+              class="form-control form-control-sm"
+              type="text"
+              v-model="diastolic"
+            />
+            <span class="text-danger text-sm">{{ errors.first('diastolic') }}</span>
           </div>
           <label class="col-lg-2 col-form-label">(70 - 85)</label>
         </div>
@@ -144,6 +154,8 @@
 </template>
 
 <script>
+import dayjs from 'dayjs';
+
 export default {
   name: 'Vitals',
   data() {
@@ -159,11 +171,11 @@ export default {
       bmi: '',
       rvs: '',
       muac: '',
-      heart_rate: '',
       isDisabled: false,
       bmiCategory: '',
       rvsOptions: ['-ve', '+ve', 'Not Done', 'Declined'],
       muacOptions: ['Green', 'Blue', 'Red'],
+      date_of_birth: '',
     };
   },
   methods: {
@@ -215,7 +227,7 @@ export default {
     },
 
     calculateBMI() {
-      this.bmi = (this.weight / (this.height / 100) ** 2).toFixed(1);
+      this.bmi = (this.weight / this.height ** 2).toFixed(1);
     },
 
     initValues() {
@@ -241,6 +253,23 @@ export default {
       if (value > 30 && value < 40) return (this.bmiCategory = 'Obese');
       if (value >= 40) return (this.bmiCategory = 'Severe Obesity');
     },
+
+    BPValidation() {
+      this.$validator.extend(
+        'bp',
+        {
+          getMessage(field, params) {
+            return `${field} should be less than ${params}`;
+          },
+          validate(value, [target]) {
+            return +value < +target;
+          },
+        },
+        {
+          hasTarget: true,
+        }
+      );
+    },
   },
   watch: {
     bmi(value) {
@@ -250,8 +279,11 @@ export default {
   created() {
     this.$store.dispatch('visit/fetchVisit', this.$route.params.id).then(response => {
       const res = response.data.data;
+      this.height = res?.triage?.height;
+      this.date_of_birth = dayjs().diff(res.patient.date_of_birth, 'weeks');
       this.$store.dispatch('patient/setCurrentPatient', { ...res.patient, ...res.insurance });
     });
+    this.BPValidation();
   },
 };
 </script>

@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!--begin::Accordion-->
     <div
       class="accordion accordion-solid accordion-panel accordion-svg-toggle"
       id="accordionExample8"
@@ -13,12 +12,7 @@
             <accordion-icon />
           </div>
         </div>
-        <b-collapse
-          id="accordion-1"
-          visible
-          accordion="my-accordion"
-          role="tabpanel"
-        >
+        <b-collapse id="accordion-1" visible accordion="my-accordion" role="tabpanel">
           <div class="card-body">
             <!-- NAME -->
             <div class="form-group row">
@@ -33,9 +27,7 @@
                   placeholder="First Name"
                   name="firstname"
                 />
-                <span class="text-danger text-sm">{{
-                  errors.first("firstname")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('firstname') }}</span>
               </div>
               <div class="col-lg-4">
                 <label>Middle Name</label>
@@ -46,9 +38,7 @@
                   placeholder="Middle Name"
                   name="middlename"
                 />
-                <span class="text-danger text-sm">{{
-                  errors.first("middlename")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('middlename') }}</span>
               </div>
               <div class="col-lg-4">
                 <label>Last Name <span class="text-danger">*</span></label>
@@ -61,9 +51,7 @@
                   placeholder="Last Name"
                   name="lastname"
                 />
-                <span class="text-danger text-sm">{{
-                  errors.first("lastname")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('lastname') }}</span>
               </div>
             </div>
             <!-- Contact -->
@@ -77,9 +65,7 @@
                   placeholder="Enter email (Optional)"
                   v-model="email"
                 />
-                <span class="text-danger text-sm">{{
-                  errors.first("email")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('email') }}</span>
               </div>
               <div class="col-lg-4">
                 <label>Phone Number <span class="text-danger">*</span></label>
@@ -93,9 +79,7 @@
                   placeholder="Phone Number"
                   name="phone"
                 />
-                <span class="text-danger text-sm">{{
-                  errors.first("phone")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('phone') }}</span>
               </div>
               <div class="col-lg-4">
                 <label>Religion <span class="text-danger">*</span></label>
@@ -111,9 +95,7 @@
                   <option value="Traditional">Traditional</option>
                   <option value="Other">Other</option>
                 </select>
-                <span class="text-danger text-sm">{{
-                  errors.first("religion")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('religion') }}</span>
               </div>
             </div>
             <div class="form-group row">
@@ -127,9 +109,7 @@
                   input-class="form-control form-control-sm"
                   placeholder="Date of Birth"
                 ></datepicker>
-                <span class="text-danger text-sm">{{
-                  errors.first("date_of_birth")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('date_of_birth') }}</span>
               </div>
               <div class="col-lg-4">
                 <label>Gender <span class="text-danger">*</span></label>
@@ -144,9 +124,7 @@
                   <option value="Female">Female</option>
                   <option value="Other">Other</option>
                 </select>
-                <span class="text-danger text-sm">{{
-                  errors.first("gender")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('gender') }}</span>
               </div>
               <div class="col-lg-4">
                 <label>Marital Status <span class="text-danger">*</span></label>
@@ -163,58 +141,46 @@
                   <option value="Widower">Widower</option>
                   <option value="Divorced">Divorced</option>
                 </select>
-                <span class="text-danger text-sm">{{
-                  errors.first("marital_status")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('marital_status') }}</span>
               </div>
             </div>
             <div class="form-group row">
               <div class="col-lg-4">
-                <label>Country <span class="text-danger">*</span></label>
+                <label>Country (Residential)<span class="text-danger">*</span></label>
                 <select
                   class="form-control form-control-sm"
                   v-model="country"
                   name="country"
                   v-validate="'required'"
                   data-vv-validate-on="blur"
-                  @change="getStates"
                 >
-                  <option
-                    v-for="country in countries"
-                    :key="country.id"
-                    :value="{ id: country.id, text: country.name }"
+                  <option v-for="country in countries" :key="country.id" :value="country.name"
                     >{{ country.name }}
                   </option>
                 </select>
-                <span class="text-danger text-sm">{{
-                  errors.first("country")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('country') }}</span>
               </div>
               <div class="col-lg-4">
-                <label>States <span class="text-danger">*</span></label>
+                <label>States (Residential) <span class="text-danger">*</span></label>
                 <select
                   class="form-control form-control-sm"
                   v-model="state"
                   name="state"
                   v-validate="'required'"
                   data-vv-validate-on="blur"
-                  @change="getCities"
+                  @change="getLga"
                 >
                   <option
                     v-for="state in states"
                     :key="state.id"
-                    :value="{ id: state.id, text: state.name }"
+                    :value="{ name: state.name, lga: state.lga }"
                     >{{ state.name }}
                   </option>
                 </select>
-                <span class="text-danger text-sm">{{
-                  errors.first("state")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('state') }}</span>
               </div>
               <div class="col-lg-4">
-                <label
-                  >Local Government <span class="text-danger">*</span></label
-                >
+                <label>Local Government (Residential) <span class="text-danger">*</span></label>
                 <select
                   class="form-control form-control-sm"
                   v-model="lga"
@@ -222,16 +188,11 @@
                   v-validate="'required'"
                   data-vv-validate-on="blur"
                 >
-                  <option
-                    v-for="city in cities"
-                    :key="city.id"
-                    :value="{ id: city.id, text: city.name }"
+                  <option v-for="city in cities" :key="city.name" :value="city.name"
                     >{{ city.name }}
                   </option>
                 </select>
-                <span class="text-danger text-sm">{{
-                  errors.first("lga")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('lga') }}</span>
               </div>
             </div>
             <div class="form-group row">
@@ -246,9 +207,7 @@
                   placeholder="Home Address"
                   name="address"
                 />
-                <span class="text-danger text-sm">{{
-                  errors.first("address")
-                }}</span>
+                <span class="text-danger text-sm">{{ errors.first('address') }}</span>
               </div>
             </div>
           </div>
@@ -269,36 +228,32 @@
 </template>
 
 <script>
-import Datepicker from "vuejs-datepicker";
-import {
-  getCountries,
-  getStateById,
-  getCityById
-} from "../../../../assets/json/index";
-import AccordionIcon from "../../../../assets/icons/AccordionIcon";
-import Swal from "sweetalert2";
+import Datepicker from 'vuejs-datepicker';
+import { getCountryStates } from '@/assets/json';
+import AccordionIcon from '@/assets/icons/AccordionIcon';
+import Swal from 'sweetalert2';
 export default {
   components: {
     Datepicker,
-    AccordionIcon
+    AccordionIcon,
   },
   data() {
     return {
-      gender: "",
-      firstname: "",
-      lastname: "",
-      middlename: "",
-      religion: "",
-      email: "",
-      phone: "",
-      date_of_birth: "",
-      marital_status: "",
-      country: "",
-      state: "",
-      lga: "",
-      address: "",
-      countries: [],
-      states: [],
+      gender: '',
+      firstname: '',
+      lastname: '',
+      middlename: '',
+      religion: '',
+      email: '',
+      phone: '',
+      date_of_birth: '',
+      marital_status: '',
+      country: '',
+      state: '',
+      lga: '',
+      address: '',
+      countries: [{ id: 1, name: 'Nigeria' }],
+      states: getCountryStates(),
       cities: [],
 
       showFinish: false,
@@ -308,7 +263,7 @@ export default {
       isDisabled: false,
       video: {},
       canvas: {},
-      image: ""
+      image: '',
     };
   },
   computed: {
@@ -328,20 +283,15 @@ export default {
         this.image &&
         this.lga
       );
-    }
+    },
   },
 
   created() {
-    this.countries = getCountries();
-    this.phoneValidation()
+    this.phoneValidation();
   },
   methods: {
-    getStates() {
-      this.states = getStateById(this.country.id);
-    },
-
-    getCities() {
-      this.cities = getCityById(this.state.id);
+    getLga() {
+      this.cities = this.state.lga;
     },
 
     phoneValidation() {
@@ -358,59 +308,55 @@ export default {
     },
 
     initValues() {
-      this.gender = "";
-      this.firstname = "";
-      this.lastname = "";
-      this.middlename = "";
-      this.religion = "";
-      this.email = "";
-      this.phone = "";
-      this.date_of_birth = "";
-      this.marital_status = "";
-      this.country = "";
-      this.state = "";
-      this.lga = "";
-      this.address = "";
+      this.gender = '';
+      this.firstname = '';
+      this.lastname = '';
+      this.middlename = '';
+      this.religion = '';
+      this.email = '';
+      this.phone = '';
+      this.date_of_birth = '';
+      this.marital_status = '';
+      this.country = '';
+      this.state = '';
+      this.lga = '';
+      this.address = '';
     },
 
     addSpinner(submitButton) {
-      submitButton.classList.add("spinner", "spinner-light", "spinner-right");
+      submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');
     },
 
     removeSpinner(submitButton) {
       this.isDisabled = false;
-      submitButton.classList.remove(
-        "spinner",
-        "spinner-light",
-        "spinner-right"
-      );
+      submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
     },
 
     handleError(error) {
       this.$notify({
-        group: "foo",
-        title: "Error message",
+        group: 'foo',
+        title: 'Error message',
         text: error.response.data,
-        type: "error"
+        type: 'error',
       });
     },
 
     handleSuccess(response) {
       Swal.fire({
-        title: "Success!",
+        title: 'Success!',
         html: `${response.data.message}`,
-        icon: "success",
-        confirmButtonClass: "btn btn-primary",
-        heightAuto: false
+        icon: 'success',
+        confirmButtonClass: 'btn btn-primary',
+        heightAuto: false,
       });
     },
 
     notifyPhoto() {
       return this.$notify({
-        group: "foo",
-        title: "Error message",
-        text: "Please take photo",
-        type: "error"
+        group: 'foo',
+        title: 'Error message',
+        text: 'Please take photo',
+        type: 'error',
       });
     },
 
@@ -418,7 +364,7 @@ export default {
       this.$validator.validateAll().then(result => {
         if (result) {
           // set spinner to submit button
-          const submitButton = this.$refs["kt-submit"];
+          const submitButton = this.$refs['kt-submit'];
           this.addSpinner(submitButton);
           this.isDisabled = true;
 
@@ -432,13 +378,13 @@ export default {
             phone: this.phone,
             date_of_birth: this.date_of_birth,
             marital_status: this.marital_status,
-            country: this.country.text,
-            state: this.state.text,
-            lga: this.lga.text,
-            address: this.address
+            country: this.country,
+            state: this.state.name,
+            lga: this.lga,
+            address: this.address,
           };
           this.$store
-            .dispatch("patient/createEmergencyPatient", data)
+            .dispatch('patient/createEmergencyPatient', data)
             .then(response => {
               this.removeSpinner(submitButton);
               this.handleSuccess(response);
@@ -450,8 +396,8 @@ export default {
             });
         }
       });
-    }
-  }
+    },
+  },
 };
 </script>
 

@@ -196,45 +196,41 @@
             </div>
             <div class="form-group row">
               <div class="col-lg-4">
-                <label>Country <span class="text-danger">*</span></label>
+                <label>Country (Residential)<span class="text-danger">*</span></label>
                 <select
                   class="form-control form-control-sm"
                   v-model="country"
                   name="country"
                   v-validate="'required'"
                   data-vv-validate-on="blur"
-                  @change="getStates"
                 >
-                  <option
-                    v-for="country in countries"
-                    :key="country.id"
-                    :value="{ id: country.id, text: country.name }"
+                  <option v-for="country in countries" :key="country.id" :value="country.name"
                     >{{ country.name }}
                   </option>
                 </select>
                 <span class="text-danger text-sm">{{ errors.first('country') }}</span>
               </div>
               <div class="col-lg-4">
-                <label>States <span class="text-danger">*</span></label>
+                <label>States (Residential)<span class="text-danger">*</span></label>
                 <select
                   class="form-control form-control-sm"
                   v-model="state"
                   name="state"
                   v-validate="'required'"
                   data-vv-validate-on="blur"
-                  @change="getCities"
+                  @change="getLga"
                 >
                   <option
                     v-for="state in states"
-                    :key="state.id"
-                    :value="{ id: state.id, text: state.name }"
+                    :key="state.name"
+                    :value="{ name: state.name, lga: state.lga }"
                     >{{ state.name }}
                   </option>
                 </select>
                 <span class="text-danger text-sm">{{ errors.first('state') }}</span>
               </div>
               <div class="col-lg-4">
-                <label>Local Government <span class="text-danger">*</span></label>
+                <label>Local Government (Residential)<span class="text-danger">*</span></label>
                 <select
                   class="form-control form-control-sm"
                   v-model="lga"
@@ -242,10 +238,7 @@
                   v-validate="'required'"
                   data-vv-validate-on="blur"
                 >
-                  <option
-                    v-for="city in cities"
-                    :key="city.id"
-                    :value="{ id: city.id, text: city.name }"
+                  <option v-for="city in cities" :key="city.name" :value="city.name"
                     >{{ city.name }}
                   </option>
                 </select>
@@ -399,7 +392,7 @@
 <script>
 import AccordionIcon from '@/assets/icons/AccordionIcon';
 import Datepicker from 'vuejs-datepicker';
-import { getCityById, getCountries, getStateById } from '@/assets/json';
+import { getCountryStates } from '@/assets/json';
 import Swal from 'sweetalert2';
 export default {
   components: {
@@ -427,8 +420,8 @@ export default {
       next_of_kin_phone: '',
       next_of_kin_address: '',
       relationship: '',
-      countries: [],
-      states: [],
+      countries: [{ id: 1, name: 'Nigeria' }],
+      states: getCountryStates(),
       cities: [],
 
       showFinish: false,
@@ -468,25 +461,20 @@ export default {
     },
   },
   created() {
-    this.countries = getCountries();
     this.fetchData('Registration', 'model/fetchServices').then(
       res => (this.registrationFees = res.data.data.docs)
     );
     this.phoneValidation();
   },
   methods: {
-    getStates() {
-      this.states = getStateById(this.country.id);
+    getLga() {
+      this.cities = this.state.lga;
     },
 
     fetchData(search, dispatchType) {
       return this.$store.dispatch(dispatchType, {
         search,
       });
-    },
-
-    getCities() {
-      this.cities = getCityById(this.state.id);
     },
 
     phoneValidation() {
@@ -634,9 +622,9 @@ export default {
             phone: this.phone,
             date_of_birth: this.date_of_birth,
             marital_status: this.marital_status,
-            country: this.country.text,
-            state: this.state.text,
-            lga: this.lga.text,
+            country: this.country,
+            state: this.state.name,
+            lga: this.lga,
             address: this.address,
             occupation: this.occupation,
             alt_phone: this.alt_phone,

@@ -86,7 +86,7 @@ export default {
       isDisabled: false,
       service_id: '',
       occupant_type: '',
-      occupantTypes: ['Male', 'Female', 'Children', 'All'],
+      occupantTypes: ['Male', 'Female', 'Children', 'All', 'Maternity', 'Emergency'],
     };
   },
   computed: {

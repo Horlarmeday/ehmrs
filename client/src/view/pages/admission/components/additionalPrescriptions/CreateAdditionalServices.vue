@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="card-header p-0">
-      <div class="card-title mb-2">
+      <div class="card-title mb-2 mt-3">
         <span class="card-label font-weight-bolder text-dark"></span>
         <span v-if="showSwitch">
           <switch-box
@@ -13,24 +13,20 @@
       </div>
     </div>
     <div class="">
-      <div v-for="(item, i) in additionalItems" :key="i">
+      <div v-for="(service, i) in additionalServices" :key="i">
         <div class="form-group row">
           <div class="col-lg-6">
-            <label>Item</label>
+            <label>Service</label>
             <v-select
               @search="onSearch"
-              v-model="item.item"
+              v-model="service.service"
               label="name"
-              :options="drugOptions"
+              :options="serviceOptions"
               :reduce="
                 items => ({
                   name: items.name,
-                  drug_id: items.id,
-                  drug_type: items?.drug_type,
-                  drug_form: items?.drug_form,
+                  id: items.id,
                   price: items.price,
-                  unit_id: items.unit_id,
-                  quantity_remaining: items?.quantity_remaining,
                 })
               "
             />
@@ -38,7 +34,7 @@
           <div class="col-lg-5">
             <label>Quantity:</label>
             <input
-              v-model="item.quantity"
+              v-model="service.quantity"
               type="number"
               class="form-control form-control-sm"
               placeholder="Quantity"
@@ -50,12 +46,12 @@
               <i
                 v-if="i === 0"
                 class="far fa-plus-square mr-3 text-primary icon-lg mt-lg-3"
-                @click="addNewItem"
+                @click="addNewService"
               />
               <i
                 class="far fa-trash-alt icon-md text-danger icon-lg mt-lg-3"
                 v-if="i !== 0"
-                @click="removeItem(i)"
+                @click="removeService(i)"
               />
             </a>
           </div>
@@ -67,9 +63,9 @@
       <div class="mb-3">
         <button
           class="btn btn-primary float-right  mb-lg-5"
-          @click="submitItems"
-          :disabled="isDisabled || !additionalItems.length"
-          ref="kt_addItems_submit"
+          @click="submitServices"
+          :disabled="isDisabled || !additionalServices.length"
+          ref="kt_addServices_submit"
         >
           Submit
         </button>
@@ -112,38 +108,24 @@ export default {
     showError: false,
     errorMessage: '',
     errorList: [],
-    additionalItems: [
+    additionalServices: [
       {
-        item: '',
+        service: '',
         quantity: 1,
       },
     ],
   }),
-  created() {
-    this.getInventories();
-  },
   computed: {
-    inventories() {
-      return this.$store.state.inventory.inventories;
+    services() {
+      return this.$store.state.model.services;
     },
-    items() {
-      return this.$store.state.inventory.items;
-    },
-    drugOptions: {
+    serviceOptions: {
       get() {
-        return this.items.map(item => ({
-          name: item?.drug?.name,
-          id: item?.drug?.id,
-          price: item.selling_price,
-          drug_type: item.drug_type,
-          unit_id: item?.unit_id,
-          drug_form: item?.drug_form,
-          quantity_remaining: item?.quantity_remaining,
+        return this.services.map(service => ({
+          name: service?.name,
+          id: service?.id,
+          price: service.price,
         }));
-      },
-      set() {
-        this.$store.commit('inventory/SET_ITEMS', []);
-        this.drug = '';
       },
     },
   },
@@ -158,13 +140,9 @@ export default {
       submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
     },
 
-    getInventories() {
-      this.$store.dispatch('inventory/fetchInventories');
-    },
-
-    addNewItem() {
-      this.additionalItems.push({
-        item: '',
+    addNewService() {
+      this.additionalServices.push({
+        service: '',
         quantity: 1,
       });
     },
@@ -177,31 +155,21 @@ export default {
     },
 
     search: debounce((loading, search, vm) => {
-      const inventory = vm.getInventoryId();
-      vm.inventory_id = inventory;
       vm.$store
-        .dispatch('inventory/fetchInventoryItems', {
+        .dispatch('model/fetchServices', {
           search,
-          inventory,
         })
         .then(() => loading(false));
     }, 500),
 
-    getInventoryId() {
-      const type = this.switchPosition && this.switchSpot ? 'NHIS' : 'Cash';
-      return this.inventories.find(inventory =>
-        inventory.name.toLowerCase().includes(type.toLowerCase())
-      )?.id;
-    },
-
-    removeItem(i) {
-      this.additionalItems.splice(i, 1);
+    removeService(i) {
+      this.additionalServices.splice(i, 1);
     },
 
     endRequest(button) {
       this.removeSpinner(button);
       this.initValues();
-      this.$store.dispatch('order/fetchPrescribedAdditionalItems', {
+      this.$store.dispatch('order/fetchPrescribedServices', {
         currentPage: 1,
         itemsPerPage: 10,
         filter: this.filter,
@@ -209,9 +177,9 @@ export default {
     },
 
     initValues() {
-      this.additionalItems = [
+      this.additionalServices = [
         {
-          item: '',
+          service: '',
           quantity: 1,
         },
       ];
@@ -219,45 +187,33 @@ export default {
       this.errorList = '';
     },
 
-    submitItems() {
+    submitServices() {
       this.showError = false;
-      if (this.additionalItems.some(({ item }) => !item)) {
+      if (this.additionalServices.some(({ service }) => !service)) {
         return this.$notify({
           group: 'foo',
           title: 'Error message',
-          text: 'An item cannot be empty',
+          text: 'A service cannot be empty',
           type: 'error',
         });
       }
 
-      const invalidItems = this.additionalItems.filter(
-        item => item.item.quantity_remaining === 0 || +item.quantity > +item.item.quantity_remaining
-      );
-
-      if (invalidItems?.length) {
-        this.showError = true;
-        this.errorMessage = `The following drugs are currently low in quantity in the dispensary`;
-        this.errorList = invalidItems.map(item => {
-          return `${item.item.name}; Quantity remaining: ${item.item.quantity_remaining}`;
-        });
-        return;
-      }
-
-      const data = this.additionalItems.map(({ item, quantity }) => ({
-        ...item,
-        quantity_to_dispense: quantity,
-        inventory_id: this.getInventoryId(),
+      const data = this.additionalServices.map(({ service, quantity }) => ({
+        service_id: service.id,
+        service_type: this.switchPosition && this.switchSpot ? 'NHIS' : 'CASH',
+        price: service.price,
         source: this.source,
+        quantity,
         ...(this.source === 'Theater' && { surgery_id: this.$route.query.surgery }),
         ...(this.source === 'Antenatal' && { ante_natal_id: this.$route.query.antenatal }),
       }));
 
       // set spinner to submit button
-      const submitButton = this.$refs['kt_addItems_submit'];
+      const submitButton = this.$refs['kt_addServices_submit'];
       this.addSpinner(submitButton);
 
       this.$store
-        .dispatch('order/orderAdditionalItems', { data, id: this.filter.visit_id })
+        .dispatch('order/orderAdditionalService', { services: data, id: this.filter.visit_id })
         .then(() => this.endRequest(submitButton))
         .catch(() => this.removeSpinner(submitButton));
     },

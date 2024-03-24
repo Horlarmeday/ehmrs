@@ -147,22 +147,17 @@ export default {
     return {
       categories: ['Antenatal', 'Emergency', 'Immunization', 'Inpatient', 'Outpatient'],
       priorities: ['Not Urgent', 'Urgent', 'Emergency'],
-      visitTypes: [
-        'New visit',
-        'Postoperative follow-up visit',
-        'Visit out of hours',
-        'Weekend visit',
-      ],
-      departments: [
-        {
-          id: 2,
-          department: 'Nursing',
-        },
-        {
-          id: 9,
-          department: 'Medical Practitioner',
-        },
-      ],
+      visitTypes: ['New visit', 'Follow-up visit'],
+      // departments: [
+      //   {
+      //     id: 2,
+      //     department: 'Nursing',
+      //   },
+      //   {
+      //     id: 9,
+      //     department: 'Medical Practitioner',
+      //   },
+      // ],
       category: '',
       professional: '',
       professionals: null,
@@ -179,6 +174,22 @@ export default {
   computed: {
     services() {
       return this.$store.state.model.services;
+    },
+
+    departments() {
+      const data = [
+        {
+          id: 9,
+          department: 'Medical Practitioner',
+        },
+      ];
+      if (this.category === 'Antenatal') {
+        data.push({
+          id: 2,
+          department: 'Nursing',
+        });
+      }
+      return data;
     },
   },
   methods: {
@@ -223,7 +234,6 @@ export default {
       this.$validator.validateAll().then(result => {
         if (result) {
           const date = `${dayjs(this.date_of_visit).format('YYYY-MM-DD')} ${this.time_of_visit}`;
-          console.log(new Date(date));
           const obj = {
             category: this.category,
             type: this.type,
