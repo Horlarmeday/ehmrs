@@ -3,7 +3,9 @@
     <div class="card" v-for="(result, i) in results" :key="i">
       <div class="card-title section-title p-5">
         <span class="mr-5 text-black-50">Investigation:</span>
-        <span class="mr-5 text-dark-75 font-weight-boldest">{{ result.investigation.investigation.name }}</span>
+        <span class="mr-5 text-dark-75 font-weight-boldest">{{
+          result.investigation.investigation.name
+        }}</span>
       </div>
       <div>
         <b-card>

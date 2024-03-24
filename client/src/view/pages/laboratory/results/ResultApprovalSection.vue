@@ -20,7 +20,8 @@
             <td>
               <span class="text-dark-75 font-weight-bolder d-block font-size-md">
                 {{ result.result }}
-              </span>
+                <span class="font-weight-light">{{ result.result_unit }}</span></span
+              >
             </td>
             <td>
               <label class="checkbox">
@@ -100,6 +101,7 @@ export default {
           prescribed_test_id: test.id,
           test_prescription_id: this.$route.params.id,
           name: test.test.name,
+          result_unit: test.test.result_unit,
           patient_id: this.patient_id,
           result: test?.result?.result,
           is_abnormal: test?.result?.is_abnormal,
@@ -126,17 +128,20 @@ export default {
     },
 
     approveTests() {
-      const results = this.results.filter(({ status }) => status === 'Accepted');
+      let results = this.results.filter(({ status }) => status === 'Accepted');
       if (!results.some(({ test_status }) => test_status)) {
         return this.$notify({
           group: 'foo',
           title: 'Error message',
-          text: 'Approve atleast one result',
+          text: 'Approve at least one result',
           type: 'error',
         });
       }
       const submitButton = this.$refs['kt-approveResult-submit'];
       this.addSpinner(submitButton);
+
+      // eslint-disable-next-line no-unused-vars
+      results = results.map(({ result_unit, ...rest }) => rest);
 
       this.$store
         .dispatch('laboratory/approveTestResults', results)

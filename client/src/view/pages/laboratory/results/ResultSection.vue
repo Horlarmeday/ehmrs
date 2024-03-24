@@ -5,7 +5,7 @@
         <tr>
           <th>Name</th>
           <th>Result</th>
-          <th>Abnormal</th>
+          <th class="text-center">Abnormal</th>
           <th>Referral Reason</th>
           <th>Institute</th>
           <th>Note</th>
@@ -31,7 +31,8 @@
                     <th scope="row" align="middle">{{ test.name }}</th>
                     <td style="vertical-align: middle"></td>
                     <td>
-                      <input v-model="test.result" type="text" class="" />
+                      <textarea v-model="test.result" cols="25" rows="2" class="" />
+                      <span class="font-weight-bold ml-2">{{ test?.result_unit }}</span>
                     </td>
                     <td>
                       <span
@@ -52,7 +53,7 @@
                       />
                     </td>
                     <td>
-                      <div>
+                      <div class="float-right">
                         <input
                           v-b-tooltip.hover
                           title="Enable if result is referred"
@@ -75,12 +76,18 @@
                       <input
                         type="text"
                         v-model="test.institute_referred"
-                        class=""
+                        class="float-right"
                         :disabled="test.disabledReferral"
                       />
                     </td>
                     <td>
-                      <textarea v-model="test.comments" name="" class="" cols="20" rows="2" />
+                      <textarea
+                        v-model="test.comments"
+                        name=""
+                        class="float-right"
+                        cols="25"
+                        rows="2"
+                      />
                     </td>
                   </tr>
                 </tbody>
@@ -129,6 +136,7 @@ export default {
           prescribed_test_id: test.id,
           test_prescription_id: this.$route.params.id,
           name: test.test.name,
+          result_unit: test.test.result_unit,
           patient_id: this.patient_id,
           disabledReferral: true,
           result: test?.result?.result || '',
@@ -164,11 +172,20 @@ export default {
 
     addResult() {
       const results = this.tests
-        .map(
-          // eslint-disable-next-line no-unused-vars
-          ({ sample, ...tests }) => tests
-        )
-        .flatMap(r => r.tests);
+        // eslint-disable-next-line no-unused-vars
+        .map(({ sample, ...tests }) => tests)
+        .flatMap(r => r.tests)
+        // eslint-disable-next-line no-unused-vars
+        .map(({ result_unit, ...rest }) => rest);
+
+      if (!results.some(({ result }) => result)) {
+        return this.$notify({
+          group: 'foo',
+          title: 'Error message',
+          text: 'Input at least one result',
+          type: 'error',
+        });
+      }
       const submitButton = this.$refs['kt-addResult-submit'];
       this.addSpinner(submitButton);
 

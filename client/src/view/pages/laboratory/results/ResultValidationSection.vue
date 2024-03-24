@@ -18,12 +18,17 @@
             <td>{{ accession_number }}</td>
             <td>{{ result.name }}</td>
             <td>
-              <input
-                readonly
-                type="text"
-                class="form-control form-control-sm"
-                v-model="result.result"
-              />
+              <div class="input-group">
+                <input
+                  v-model="result.result"
+                  readonly
+                  type="text"
+                  class="form-control form-control-sm"
+                />
+                <div class="input-group-append">
+                  <span class="input-group-text pb-1">{{ result.result_unit }}</span>
+                </div>
+              </div>
             </td>
             <td>
               <label class="checkbox">
@@ -44,7 +49,7 @@
               </label>
             </td>
             <td>
-              <textarea readonly v-model="result.comments" cols="20" rows="1" />
+              <textarea readonly v-model="result.comments" cols="25" rows="2" />
             </td>
           </tr>
         </tbody>
@@ -67,6 +72,7 @@
     <div class="text-center">
       <button
         @click="validateTests"
+        :disabled="shouldDisable"
         ref="kt-validateResult-submit"
         class="text-center btn btn-lg btn-primary"
       >
@@ -93,6 +99,11 @@ export default {
       required: true,
     },
   },
+  computed: {
+    shouldDisable() {
+      return this.results.every(result => !result.result);
+    },
+  },
   data() {
     return {
       isDisabled: false,
@@ -102,6 +113,7 @@ export default {
           prescribed_test_id: test.id,
           test_prescription_id: this.$route.params.id,
           name: test.test.name,
+          result_unit: test.test.result_unit,
           patient_id: this.patient_id,
           result: test?.result?.result,
           is_abnormal: test?.result?.is_abnormal,
@@ -132,10 +144,14 @@ export default {
           const submitButton = this.$refs['kt-validateResult-submit'];
           this.addSpinner(submitButton);
 
+          const results = this.results
+            // eslint-disable-next-line no-unused-vars
+            .map(({ result_unit, ...rest }) => rest);
+
           this.$store
             .dispatch('laboratory/validateTestResults', {
               result_notes: this.result_notes,
-              results: this.results,
+              results,
             })
             .then(() => this.endRequest(submitButton))
             .catch(() => this.removeSpinner(submitButton));
