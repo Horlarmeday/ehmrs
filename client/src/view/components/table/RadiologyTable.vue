@@ -28,10 +28,21 @@
             <td>{{ test.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
             <td>
               <span v-if="allowedRoles.includes(currentUser.role)">
-                <a href="#" :class="test.status !== 'Approved' ? 'disabled' : ''">
+                <router-link
+                  :to="`/radiology/investigations-results/${test.result_id}`"
+                  :class="test.status"
+                  v-if="test.result_status === APPROVED"
+                >
                   <i class="flaticon-file-2 text-success mr-2"></i>
+                </router-link>
+                <a
+                  href="#"
+                  :class="loading && 'disabled'"
+                  @click="showDeleteAlert(test)"
+                  v-if="test.billing_status === UNBILLED && test.payment_status === PENDING"
+                >
+                  <i class="flaticon-delete text-danger"></i>
                 </a>
-                <a href="#"><i class="flaticon-delete text-danger"></i></a>
               </span>
             </td>
           </tr>
@@ -42,11 +53,16 @@
 </template>
 <script>
 import { parseJwt } from '@/core/plugins/parseJwt';
+import Swal from 'sweetalert2';
 
 export default {
   data: () => ({
     currentUser: parseJwt(localStorage.getItem('user_token')),
     allowedRoles: ['General Practitioner', 'Super Admin'],
+    loading: false,
+    UNBILLED: 'Unbilled',
+    PENDING: 'Pending',
+    APPROVED: 'Approved',
   }),
   props: {
     investigations: {
@@ -60,6 +76,33 @@ export default {
       if (status === 'Pending') return 'label label-inline label-light-warning font-weight-bold';
       if (status === 'Approved') return 'label label-inline label-light-success font-weight-bold';
       return 'label label-inline label-light-info font-weight-bold';
+    },
+
+    showDeleteAlert(item) {
+      const self = this;
+      Swal.fire({
+        title: 'Are you sure?',
+        text: 'You want to delete this investigation',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Delete!',
+        customClass: {
+          confirmButton: 'btn btn-danger',
+          cancelButton: 'btn btn-default',
+        },
+      }).then(function(result) {
+        if (result.value) {
+          self.deletePrescribedInvestigation(item);
+        }
+      });
+    },
+
+    deletePrescribedInvestigation(investigation) {
+      this.loading = true;
+      this.$store
+        .dispatch('order/deletePrescribedInvestigation', { investigationId: investigation.id })
+        .then(() => (this.loading = false))
+        .catch(() => (this.loading = false));
     },
   },
 };

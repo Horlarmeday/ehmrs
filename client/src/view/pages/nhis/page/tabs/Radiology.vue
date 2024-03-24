@@ -19,7 +19,7 @@
               <th style="min-width: 50px">Source</th>
               <th style="min-width: 50px">Code</th>
               <th style="min-width: 100px">Requester</th>
-              <th style="min-width: 150px">Date Prescribed</th>
+              <th style="min-width: 150px">Date</th>
               <th class="pr-0 text-right" style="min-width: 150px">action</th>
             </tr>
           </thead>
@@ -29,11 +29,14 @@
             </tr>
             <tr v-for="investigation in investigations" :key="investigation.id">
               <td class="pr-0">
-                <router-link
+                <span title="Approved" v-b-tooltip.hover v-if="investigation.status === APPROVED"
+                  ><i class="fas fa-check-circle text-success mr-1"></i
+                ></span>
+                <a
                   class="font-weight-bolder text-hover-primary mb-1 font-size-lg"
                   :class="getTextStatus(investigation.nhis_status)"
-                  to="#"
-                  >{{ investigation.investigation.name }}</router-link
+                  href="#"
+                  >{{ investigation.investigation.name }}</a
                 >
               </td>
               <td>
@@ -78,8 +81,9 @@
                   title="Add Authorization Code"
                   v-b-tooltip.hover
                   :class="
-                    investigation.investigation.type === SECONDARY ||
-                      (investigation.auth_code && DISABLED)
+                    investigation.investigation.type === PRIMARY || investigation.auth_code
+                      ? DISABLED
+                      : ''
                   "
                   href="#"
                   class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
