@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="!loading">
+    <div v-if="prescriptions">
       <div class="mt-3">
         <search
           @search="onHandleSearch"
@@ -9,19 +9,20 @@
         />
       </div>
       <div class="table-responsive">
-        <table class="table table-head-custom table-head-bg table-borderless table-vertical-center">
+        <table class="table table-head-custom table-head-bg table-vertical-center">
           <thead>
             <tr class="text-uppercase">
-              <th style="min-width: 150px" class="pl-7">
+              <th style="min-width: 120px" class="pl-4">
                 <span class="text-dark-75">Patient ID</span>
               </th>
-              <th style="min-width: 200px">Patient Name</th>
-              <th style="min-width: 150px">Total Drugs</th>
-              <th style="min-width: 150px">Dispensed Drugs</th>
-              <th style="min-width: 150px">Status</th>
-              <th v-if="period !== 'Today'" style="min-width: 100px">Date Collected</th>
-              <th class="text-right" style="min-width: 130px">Action</th>
-              <th style="min-width: 120px"></th>
+              <th style="min-width: 220px">Patient Name</th>
+              <th style="min-width: 120px">Drugs</th>
+              <th style="min-width: 120px">Dispensed Drugs</th>
+              <th style="min-width: 120px">Items</th>
+              <th style="min-width: 120px">Source</th>
+              <th style="min-width: 120px">Status</th>
+              <th v-if="period !== TODAY" style="min-width: 100px">Date Collected</th>
+              <th class="text-right" style="min-width: 50px">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -29,7 +30,7 @@
               <td colspan="9" align="center" class="text-muted">No Data</td>
             </tr>
             <tr v-for="prescription in prescriptions" :key="prescription.id">
-              <td class="pl-7 py-8">
+              <td class="pl-4 py-8">
                 <div class="d-flex align-items-center">
                   <div>
                     <a
@@ -56,21 +57,31 @@
                 </span>
               </td>
               <td>
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg pl-7">
+                  {{ prescription.items_count }}
+                </span>
+              </td>
+              <td>
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ prescription.source }}
+                </span>
+              </td>
+              <td>
                 <span
                   :class="getSampleStatus(prescription.status)"
-                  class="label label-lg label-inline"
+                  class="label label-md label-inline"
                   >{{ prescription.status }}</span
                 >
               </td>
               <td v-if="period !== 'Today'">
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
-                  prescription.date_prescribed | dayjs('DD/MM/YYYY, h:mma')
+                  prescription.date_prescribed | dayjs('YYYY/MM/DD, h:mma')
                 }}</span>
               </td>
               <td class="text-right pr-0">
                 <router-link
                   v-b-tooltip.hover
-                  title="Collect Sample"
+                  title="Dispense drug"
                   :to="`/pharmacy/prescriptions/${prescription.id}`"
                   class="btn btn-icon btn-light btn-hover-primary btn-sm"
                 >
@@ -89,9 +100,7 @@
         @pagechanged="onPageChange"
       />
     </div>
-    <div v-else>
-      <b-progress :value="count" variant="primary" show-progress animated :max="200" />
-    </div>
+    <table-skeleton v-else :columns="7" />
   </div>
 </template>
 
@@ -101,9 +110,10 @@ import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
 import Search from '../../../../utils/Search.vue';
 import Pagination from '@/utils/Pagination.vue';
 import dayjs from 'dayjs';
+import TableSkeleton from '@/view/pages/nhis/components/TableSkeleton.vue';
 
 export default {
-  components: { Pagination, ArrowRightIcon, Search },
+  components: { TableSkeleton, Pagination, ArrowRightIcon, Search },
   props: {
     period: {
       type: String,
@@ -113,10 +123,9 @@ export default {
   data: () => ({
     currentPage: 1,
     itemsPerPage: 10,
-    loading: false,
-    count: 0,
     start: null,
     end: null,
+    TODAY: 'Today',
   }),
   computed: {
     prescriptions() {
@@ -139,18 +148,11 @@ export default {
       return 'label-light-danger ';
     },
 
-    fetchPrescriptions({
-      currentPage,
-      itemsPerPage,
-      search = null,
-      period = 'Today',
-      start = null,
-      end = null,
-    }) {
+    fetchPrescriptions({ currentPage, itemsPerPage, search = null, start = null, end = null }) {
       return this.$store.dispatch('pharmacy/fetchPrescriptions', {
         currentPage,
         itemsPerPage,
-        period,
+        period: this.period,
         ...(search && { search }),
         ...(start && end && { start, end }),
       });
@@ -167,7 +169,6 @@ export default {
         search: this.$route.query.search || null,
         start: this.$route.query.startDate,
         end: this.$route.query.endDate,
-        period: this.period,
       });
     },
 
@@ -187,13 +188,11 @@ export default {
     },
 
     debounceSearch: debounce((search, vm, spinDiv) => {
-      vm.$store
-        .dispatch('pharmacy/fetchPrescriptions', {
-          currentPage: 1,
-          itemsPerPage: vm.itemsPerPage,
-          search,
-          period: this.period,
-        })
+      vm.fetchPrescriptions({
+        currentPage: 1,
+        itemsPerPage: vm.itemsPerPage,
+        search,
+      })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));
     }, 500),
@@ -208,7 +207,6 @@ export default {
         endDate: dayjs(end).format('YYYY-MM-DD'),
       });
       this.fetchPrescriptions({
-        period: this.period,
         currentPage: this.$route.query.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage,
         start: this.$route.query.startDate,
@@ -217,25 +215,20 @@ export default {
         .then(() => removeSpinner(dateSpin))
         .catch(() => removeSpinner(dateSpin));
     },
-
-    countToHundred() {
-      for (let i = 1; i <= 100; i++) {
-        this.count = i;
-        if (this.prescriptions.length) break;
-      }
-    },
   },
-  created() {
-    this.loading = true;
-    this.countToHundred();
-    this.fetchPrescriptions({
-      currentPage: this.$route.query.currentPage || this.currentPage,
-      itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
-      search: this.$route.query.search || null,
-      start: this.$route.query.startDate || null,
-      end: this.$route.query.endDate || null,
-      period: this.period,
-    }).then(() => (this.loading = false));
+
+  watch: {
+    period: {
+      handler() {
+        this.fetchPrescriptions({
+          currentPage: this.$route.query.currentPage || this.currentPage,
+          itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+          start: this.$route.query.startDate || null,
+          end: this.$route.query.endDate || null,
+        });
+      },
+      immediate: true,
+    },
   },
 };
 </script>

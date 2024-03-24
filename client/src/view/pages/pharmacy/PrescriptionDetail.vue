@@ -1,20 +1,25 @@
 <template>
   <div>
-    <div class="card card-custom gutter-b">
+    <div v-if="prescription" class="card card-custom gutter-b">
       <page-title title="Dispense Drug" />
-      <div v-if="loading">
-        <b-progress :value="count" variant="primary" show-progress animated :max="100" />
-      </div>
-      <div v-else class="card-body">
+      <div class="card-body pt-0">
         <section-title text="Patient Information" />
-        <patient-section :patient="prescription.patient" />
+        <patient-section :patient="prescription.patient" :insurance="prescription.insurance" />
 
         <div>
           <section-title text="Drugs Information" />
-          <drug-dispense-section :status="prescription.status" :prescriptions="prescriptions" />
+          <div class="mb-4 border p-2" v-if="prescriptions?.length">
+            <h6>Drugs</h6>
+            <drug-dispense-section :status="prescription.status" :prescriptions="prescriptions" />
+          </div>
+          <div class="border p-2" v-if="items?.length">
+            <h6>Additional Items</h6>
+            <additional-item-dispense-section :status="prescription.status" :items="items" />
+          </div>
         </div>
       </div>
     </div>
+    <prescription-skeleton v-else title="Dispense Drug" />
   </div>
 </template>
 <script>
@@ -22,14 +27,23 @@ import SectionTitle from '@/utils/SectionTitle.vue';
 import PatientSection from '@/utils/PatientSection.vue';
 import PageTitle from '@/utils/PageTitle.vue';
 import DrugDispenseSection from '@/view/pages/pharmacy/drugDispense/DrugDispenseSection.vue';
+import PrescriptionSkeleton from '@/view/pages/pharmacy/components/skeleton/PrescriptionSkeleton.vue';
+import AdditionalItemDispenseSection from '@/view/pages/pharmacy/drugDispense/AdditionalItemDispenseSection.vue';
 
 export default {
-  components: { DrugDispenseSection, SectionTitle, PageTitle, PatientSection },
+  components: {
+    AdditionalItemDispenseSection,
+    PrescriptionSkeleton,
+    DrugDispenseSection,
+    SectionTitle,
+    PageTitle,
+    PatientSection,
+  },
   name: 'PrescriptionDetail',
   data: () => ({
-    count: 0,
-    loading: false,
     prescriptions: [],
+    items: [],
+    COMPLETE_DISPENSE: 'Complete Dispense',
   }),
   computed: {
     prescription() {
@@ -59,24 +73,29 @@ export default {
         frequency: drug.frequency,
         date_prescribed: drug.date_prescribed,
         notes: drug.notes,
-        disabledReturn: val.status === 'Complete Dispense',
+        dispense_status: drug.dispense_status,
+        disabledReturn: val.status === this.COMPLETE_DISPENSE,
+        payment_status: drug.payment_status,
+      }));
+
+      this.items = val.items.map(item => ({
+        id: item.id,
+        item_name: item.drug.name,
+        drug_type: item.drug_type,
+        quantity_to_dispense: item.quantity_to_dispense,
+        quantity_remaining_to_dispense: item.quantity_to_dispense - item.quantity_dispensed,
+        quantity_to_return: item.quantity_to_dispense,
+        quantity_remaining: item.quantity_to_dispense - item.quantity_dispensed,
+        payment_status: item.payment_status,
+        dispense_status: item.dispense_status,
+        date_prescribed: item.date_prescribed,
+        unit: item.unit.name,
+        total_price: item.total_price,
       }));
     },
   },
-  methods: {
-    countToHundred() {
-      for (let i = 1; i <= 100; i++) {
-        this.count = i;
-        if (this.prescription) break;
-      }
-    },
-  },
   created() {
-    this.loading = true;
-    this.countToHundred();
-    this.$store
-      .dispatch('pharmacy/fetchOnePrescription', this.$route.params.id)
-      .then(() => (this.loading = false));
+    this.$store.dispatch('pharmacy/fetchOnePrescription', this.$route.params.id);
   },
 };
 </script>
