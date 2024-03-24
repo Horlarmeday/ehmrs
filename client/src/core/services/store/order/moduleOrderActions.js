@@ -54,6 +54,20 @@ export default {
     });
   },
 
+  deletePrescribedTest({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .delete(`/orders/laboratory/delete`, { data: payload })
+        .then(response => {
+          commit('DELETE_TEST_ORDER', payload);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
   addSelectedTest({ commit }, test) {
     commit('ADD_SELECTED_TEST', test);
   },
@@ -129,6 +143,20 @@ export default {
     });
   },
 
+  deletePrescribedInvestigation({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .delete(`/orders/radiology/delete`, { data: payload })
+        .then(response => {
+          commit('DELETE_INVESTIGATION_ORDER', payload);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
   addSelectedInvestigation({ commit }, investigation) {
     commit('ADD_SELECTED_INVESTIGATION', investigation);
   },
@@ -166,6 +194,43 @@ export default {
           reject(error);
         });
     });
+  },
+
+  bulkOrderDrug({ commit }, payload) {
+    const drugs = payload?.drugs?.map(
+      // eslint-disable-next-line no-unused-vars
+      ({ strength_name, drug_name, route_name, price, strength_input, id, ...rest }) => ({
+        ...rest,
+      })
+    );
+
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/orders/pharmacy/create/bulk/${payload.id}`, drugs)
+        .then(response => {
+          commit('ORDER_DRUG', drugs);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  addTempDrug({ commit }, payload) {
+    commit('SET_DRUG_TEMP_PRESCRIPTION', payload);
+  },
+
+  deleteTempDrug({ commit }, payload) {
+    commit('DELETE_DRUG_TEMP_PRESCRIPTION', payload);
+  },
+
+  editTempDrug({ commit }, payload) {
+    commit('UPDATE_DRUG_TEMP_PRESCRIPTION', payload);
+  },
+
+  emptyTempDrug({ commit }, payload) {
+    commit('EMPTY_DRUG_TEMP_PRESCRIPTION', payload);
   },
 
   fetchPrescribedDrugs({ commit }, payload) {
@@ -215,6 +280,20 @@ export default {
     });
   },
 
+  deletePrescribedDrug({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .delete(`/orders/pharmacy/delete`, { data: payload })
+        .then(response => {
+          commit('DELETE_DRUG_ORDER', payload);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
   orderAdditionalItems({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
@@ -243,6 +322,20 @@ export default {
           commit('SET_ADD_ITEMS_ORDERS', response.data.data.docs);
           commit('SET_ADD_ITEMS_ORDERS_TOTAL', response.data.data.total);
           commit('SET_ADD_ITEMS_ORDERS_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  deleteAdditionalItem({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .delete(`/orders/pharmacy/additional-items/delete`, { data: payload })
+        .then(response => {
+          commit('DELETE_ITEM_ORDER', payload);
           resolve(response);
         })
         .catch(error => {
@@ -296,6 +389,20 @@ export default {
         .put(`/orders/service/update`, payload.data)
         .then(response => {
           commit('UPDATE_SERVICE_ORDER', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  deletePrescribedService({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .delete(`/orders/service/delete`, { data: payload })
+        .then(response => {
+          commit('DELETE_SERVICE_ORDER', payload);
           resolve(response);
         })
         .catch(error => {

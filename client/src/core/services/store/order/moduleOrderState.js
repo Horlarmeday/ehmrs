@@ -28,6 +28,7 @@ export default {
    *************/
   drug_order: null,
   drug_orders: [],
+  drug_prescriptions: [],
   totalDrugsOrders: 0,
   drugsPages: 0,
 

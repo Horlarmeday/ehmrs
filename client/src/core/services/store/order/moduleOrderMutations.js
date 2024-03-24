@@ -54,6 +54,11 @@ export default {
     Object.assign(state.lab_orders[testIndex], test);
   },
 
+  DELETE_TEST_ORDER(state, test) {
+    const testIndex = state.lab_orders.findIndex(({ id }) => id === test.testId);
+    state.lab_orders.splice(testIndex, 1);
+  },
+
   /**************
    RADIOLOGY ORDERS
    *************/
@@ -123,6 +128,13 @@ export default {
     Object.assign(state.radiology_orders[investigationIndex], investigation);
   },
 
+  DELETE_INVESTIGATION_ORDER(state, investigation) {
+    const investigationIndex = state.radiology_orders.findIndex(
+      ({ id }) => id === investigation.investigationId
+    );
+    state.radiology_orders.splice(investigationIndex, 1);
+  },
+
   /**************
    DRUG ORDERS
    *************/
@@ -132,6 +144,24 @@ export default {
 
   SET_DRUG_ORDERS(state, drugs) {
     state.drug_orders = drugs;
+  },
+
+  SET_DRUG_TEMP_PRESCRIPTION(state, drug) {
+    state.drug_prescriptions.push(drug);
+  },
+
+  DELETE_DRUG_TEMP_PRESCRIPTION(state, drugId) {
+    const drugIndex = state.drug_prescriptions.findIndex(({ id }) => id === drugId);
+    state.drug_prescriptions.splice(drugIndex, 1);
+  },
+
+  UPDATE_DRUG_TEMP_PRESCRIPTION(state, drug) {
+    const drugIndex = state.drug_prescriptions.findIndex(p => p.id === drug.id);
+    Object.assign(state.drug_prescriptions[drugIndex], drug);
+  },
+
+  EMPTY_DRUG_TEMP_PRESCRIPTION(state, payload) {
+    state.drug_prescriptions = payload;
   },
 
   SET_DRUGS_ORDERS_TOTAL(state, total) {
@@ -161,6 +191,16 @@ export default {
   UPDATE_DRUG_ORDER(state, drug) {
     const drugIndex = state.drug_orders.findIndex(p => p.id === drug.id);
     Object.assign(state.drug_orders[drugIndex], drug);
+  },
+
+  DELETE_DRUG_ORDER(state, drug) {
+    const drugIndex = state.drug_orders.findIndex(({ id }) => id === drug.drugId);
+    state.drug_orders.splice(drugIndex, 1);
+  },
+
+  DELETE_ITEM_ORDER(state, item) {
+    const itemIndex = state.additional_items_orders.findIndex(({ id }) => id === item.itemId);
+    state.additional_items_orders.splice(itemIndex, 1);
   },
 
   /*********************
@@ -226,6 +266,11 @@ export default {
   UPDATE_SERVICE_ORDER(state, service) {
     const serviceIndex = state.service_orders.findIndex(p => p.id === service.id);
     Object.assign(state.service_orders[serviceIndex], service);
+  },
+
+  DELETE_SERVICE_ORDER(state, service) {
+    const serviceIndex = state.service_orders.findIndex(({ id }) => id === service.serviceId);
+    state.service_orders.splice(serviceIndex, 1);
   },
 
   /**************
