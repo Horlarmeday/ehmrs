@@ -1,11 +1,9 @@
 /* eslint-disable camelcase */
-import { PrescribedDrug, PrescribedTest, Staff, Test } from '../../../database/models';
+import { PrescribedTest, Staff, Test } from '../../../database/models';
 import sequelize, { WhereOptions } from 'sequelize';
 import { staffAttributes } from '../../Antenatal/antenatal.repository';
 import { BadException } from '../../../common/util/api-error';
 import { StatusCodes } from '../../../core/helpers/helper';
-import { ERROR_UPDATING_DRUG } from '../Pharmacy/messages/response-messages';
-import { getOnePrescribedDrug } from '../Pharmacy/pharmacy-order.repository';
 import { ERROR_UPDATING_TEST } from './messages/response-messages';
 
 /**
@@ -93,4 +91,12 @@ export const getOnePrescribedTest = async (query: WhereOptions<PrescribedTest>) 
       { model: Staff, as: 'examiner', attributes: staffAttributes },
     ],
   });
+};
+
+/**
+ * delete prescribed test
+ * @param testId
+ */
+export const deletePrescribedTest = async (testId: number) => {
+  return PrescribedTest.destroy({ where: { id: testId } });
 };

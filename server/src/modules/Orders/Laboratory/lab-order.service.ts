@@ -1,5 +1,7 @@
 /* eslint-disable camelcase,no-param-reassign */
 import {
+  deletePrescribedTest,
+  getOnePrescribedTest,
   getPrescribedTests,
   orderBulkTest,
   prescribeTest,
@@ -13,11 +15,15 @@ import {
   getLastTestPrescription,
   getTestPrice,
 } from '../../Laboratory/laboratory.repository';
-import { isToday } from '../../../core/helpers/helper';
+import { isToday, StatusCodes } from '../../../core/helpers/helper';
 import { TestStatus } from '../../../database/models/testPrescription';
 import { getVisitById } from '../../Visit/visit.repository';
 import { NHISApprovalStatus } from '../../../core/helpers/general';
 import { PrescriptionType } from '../../../database/models/prescribedTest';
+import { PaymentStatus } from '../../../database/models/prescribedDrug';
+import { BadException } from '../../../common/util/api-error';
+import { CANNOT_DELETE_TEST } from './messages/response-messages';
+import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
 
 export class LabOrderService {
   /**
@@ -43,8 +49,15 @@ export class LabOrderService {
   static async orderBulkTestService(body: PrescribedTestBody): Promise<PrescribedTest[]> {
     const { tests, staff_id, visit_id } = body;
     const visit = await getVisitById(visit_id);
-    const patient = await PatientService.getPatientById(visit.patient_id);
-    const prescription = await this.getTestPrescription(visit.patient_id, body);
+    const [patient, prescription, insurance] = await Promise.all([
+      PatientService.getPatientById(visit.patient_id),
+      this.getTestPrescription(visit.patient_id, body),
+      getPatientInsuranceQuery({
+        patient_id: visit.patient_id,
+        is_default: true,
+      }),
+    ]);
+
     const bulkTests = await Promise.all(
       tests.map(async test => ({
         ...test,
@@ -57,6 +70,7 @@ export class LabOrderService {
         ...(test.test_type === PrescriptionType.NHIS && {
           nhis_status: NHISApprovalStatus.PENDING,
         }),
+        patient_insurance_id: insurance?.id,
       }))
     );
     return orderBulkTest(bulkTests);
@@ -94,6 +108,23 @@ export class LabOrderService {
    */
   static async updatePrescribedTest(body: Partial<PrescribedTest>): Promise<PrescribedTest> {
     return updatePrescribedTest(body);
+  }
+
+  /**
+   * delete prescribed test
+   *
+   * @static
+   * @returns {json} json object with prescribed test data
+   * @param body
+   * @memberOf LabOrderService
+   */
+  static async deletePrescribedTest(body) {
+    const allowedStatuses = [PaymentStatus.PAID, PaymentStatus.PERMITTED, PaymentStatus.CLEARED];
+    const test = await getOnePrescribedTest({ id: body.testId });
+    if (test && allowedStatuses.includes(test.payment_status))
+      throw new BadException('Error', StatusCodes.BAD_REQUEST, CANNOT_DELETE_TEST);
+
+    return deletePrescribedTest(body.testId);
   }
 
   /**

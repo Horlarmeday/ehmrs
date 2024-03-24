@@ -1,7 +1,11 @@
-import { validateBulkLabTest } from './validations';
+import { validateBulkLabTest, validateLabTestDelete } from './validations';
 import { LabOrderService } from './lab-order.service';
 import { SuccessResponse, successResponse } from '../../../common/responses/success-responses';
-import { DATA_SAVED, DATA_UPDATED } from '../../AdminSettings/messages/response-messages';
+import {
+  DATA_DELETED,
+  DATA_SAVED,
+  DATA_UPDATED,
+} from '../../AdminSettings/messages/response-messages';
 import { errorResponse } from '../../../common/responses/error-responses';
 import { StatusCodes } from '../../../core/helpers/helper';
 import { NextFunction, Request, Response } from 'express';
@@ -97,6 +101,41 @@ class LabOrderController {
         res,
         data: test,
         message: DATA_UPDATED,
+        httpCode: StatusCodes.CREATED,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * delete a prescribed test
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {SuccessResponse} json object with status, prescribed test data
+   */
+  static async deletePrescribedTest(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    const { error } = validateLabTestDelete(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+    try {
+      const test = await LabOrderService.deletePrescribedTest(req.body);
+
+      return successResponse({
+        res,
+        data: test,
+        message: DATA_DELETED,
         httpCode: StatusCodes.CREATED,
       });
     } catch (e) {
