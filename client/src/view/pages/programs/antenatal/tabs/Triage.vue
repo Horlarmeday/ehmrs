@@ -5,7 +5,16 @@
       <div class="form-group row">
         <div class="col-lg-4">
           <label>Height (cm):</label>
-          <input @input="calculateBMI" type="number" class="form-control" v-model="height" />
+          <input
+            v-validate="'required|between:0,2'"
+            data-vv-validate-on="blur"
+            name="height"
+            @input="calculateBMI"
+            type="number"
+            class="form-control"
+            v-model="height"
+          />
+          <span class="text-danger text-sm">{{ errors.first('height') }}</span>
         </div>
         <div class="col-lg-4">
           <label>Weight (kg):</label>
@@ -130,6 +139,11 @@ export default {
     TriageAccordion,
     Datepicker,
   },
+  computed: {
+    triage() {
+      return this.$store.state.antenatal.antenatal.triage;
+    },
+  },
   methods: {
     addSpinner(submitButton) {
       this.isDisabled = true;
@@ -147,7 +161,7 @@ export default {
     },
 
     calculateBMI() {
-      this.body_mass_index = (this.weight / (this.height / 100) ** 2).toFixed(2);
+      this.body_mass_index = (this.weight / this.height ** 2).toFixed(1);
     },
 
     initValues() {
@@ -193,7 +207,7 @@ export default {
       if (emptyValues) {
         return this.$notify({
           group: 'foo',
-          text: 'Atleast one field should be filled',
+          text: 'At least one field should be filled',
           type: 'error',
           title: 'Error Message',
         });
