@@ -31,6 +31,7 @@ import { Antenatal } from './antenatal';
 import { SurgeryRequest } from './surgeryRequest';
 import { Immunization } from './immunization';
 import { NHISApprovalStatus } from '../../core/helpers/general';
+import { PatientInsurance } from './patientInsurance';
 
 export enum DispenseStatus {
   DISPENSED = 'Dispensed',
@@ -222,7 +223,7 @@ export class PrescribedDrug extends Model {
     allowNull: false,
     defaultValue: PaymentStatus.PENDING,
   })
-  payment_status: DispenseStatus;
+  payment_status: PaymentStatus;
 
   @Column({
     type: DataType.ENUM(BillingStatus.BILLED, BillingStatus.UNBILLED),
@@ -385,6 +386,18 @@ export class PrescribedDrug extends Model {
   })
   auth_code: string;
 
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+  })
+  dosage_completed: boolean;
+
+  @ForeignKey(() => PatientInsurance)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  patient_insurance_id: number;
+
   @BelongsTo(() => Staff, 'examiner')
   requester: Staff;
 
@@ -424,9 +437,11 @@ export class PrescribedDrug extends Model {
   @BelongsTo(() => SurgeryRequest)
   surgeryRequest: SurgeryRequest;
 
+  @BelongsTo(() => PatientInsurance)
+  patientInsurance: PatientInsurance;
+
   @HasMany(() => PrescribedAdditionalItem, {
     foreignKey: 'prescribed_drug_id',
-    onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
     hooks: true,
   })

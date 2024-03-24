@@ -104,7 +104,7 @@ export class PatientInsurance extends Model {
   static async paginate(param: {
     paginate: number;
     attributes?: FindAttributeOptions;
-    where?: WhereOptions<any>;
+    where?: WhereOptions;
     page?: number;
     order?: Order;
     group?: GroupOption;

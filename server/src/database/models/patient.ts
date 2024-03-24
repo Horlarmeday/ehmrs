@@ -196,11 +196,6 @@ export class Patient extends Model {
   @Column({
     type: DataType.STRING,
   })
-  enrollee_code: string;
-
-  @Column({
-    type: DataType.STRING,
-  })
   religion: string;
 
   @Column({
@@ -211,16 +206,6 @@ export class Patient extends Model {
   @ForeignKey(() => Staff)
   @Column({ type: DataType.INTEGER })
   staff_id?: number;
-
-  @Column({
-    type: DataType.STRING,
-  })
-  organization?: string;
-
-  @Column({
-    type: DataType.STRING,
-  })
-  plan?: string;
 
   @Column({
     type: DataType.BOOLEAN,
@@ -259,6 +244,7 @@ export class Patient extends Model {
 
   @HasMany(() => Patient)
   dependants: Patient[];
+
   static async paginate(param: {
     paginate: number;
     attributes?: FindAttributeOptions;

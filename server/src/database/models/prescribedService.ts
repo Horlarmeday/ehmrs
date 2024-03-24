@@ -23,12 +23,19 @@ import { Service } from './service';
 import { Antenatal } from './antenatal';
 import { SurgeryRequest } from './surgeryRequest';
 import { NHISApprovalStatus } from '../../core/helpers/general';
+import { PatientInsurance } from './patientInsurance';
 
 export enum ServiceType {
   CASH = 'Cash',
   NHIS = 'NHIS',
   OTHER = 'Other',
   PRIVATE = 'Private',
+}
+
+export enum Source {
+  ANC = 'Antenatal',
+  CONSULTATION = 'Consultation',
+  THEATER = 'Theater',
 }
 
 @Table({ timestamps: true, tableName: 'Prescribed_Services' })
@@ -122,7 +129,7 @@ export class PrescribedService extends Model {
     allowNull: false,
     defaultValue: PaymentStatus.PENDING,
   })
-  payment_status: DispenseStatus;
+  payment_status: PaymentStatus;
 
   @Column({
     type: DataType.ENUM(BillingStatus.BILLED, BillingStatus.UNBILLED),
@@ -146,6 +153,12 @@ export class PrescribedService extends Model {
   })
   nhis_status: NHISApprovalStatus;
 
+  @Column({
+    type: DataType.ENUM(Source.ANC, Source.CONSULTATION, Source.THEATER),
+    defaultValue: Source.CONSULTATION,
+  })
+  source: Source;
+
   @BelongsTo(() => Staff, {
     foreignKey: 'requester',
   })
@@ -156,6 +169,12 @@ export class PrescribedService extends Model {
     type: DataType.INTEGER,
   })
   ante_natal_id: number;
+
+  @ForeignKey(() => PatientInsurance)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  patient_insurance_id: number;
 
   @ForeignKey(() => SurgeryRequest)
   @Column({
@@ -182,6 +201,9 @@ export class PrescribedService extends Model {
 
   @BelongsTo(() => SurgeryRequest)
   surgeryRequest: SurgeryRequest;
+
+  @BelongsTo(() => PatientInsurance)
+  patientInsurance: PatientInsurance;
 
   static async paginate(param: {
     paginate: number;

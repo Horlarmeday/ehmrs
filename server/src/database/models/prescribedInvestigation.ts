@@ -27,6 +27,7 @@ import { Antenatal } from './antenatal';
 import { Imaging } from './imaging';
 import { SurgeryRequest } from './surgeryRequest';
 import { NHISApprovalStatus } from '../../core/helpers/general';
+import { PatientInsurance } from './patientInsurance';
 
 export enum InvestigationStatus {
   PENDING = 'Pending',
@@ -244,6 +245,12 @@ export class PrescribedInvestigation extends Model {
   })
   auth_code: string;
 
+  @ForeignKey(() => PatientInsurance)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  patient_insurance_id: number;
+
   @BelongsTo(() => Staff, {
     foreignKey: 'requester',
   })
@@ -282,6 +289,9 @@ export class PrescribedInvestigation extends Model {
 
   @BelongsTo(() => SurgeryRequest)
   surgeryRequest: SurgeryRequest;
+
+  @BelongsTo(() => PatientInsurance)
+  patientInsurance: PatientInsurance;
 
   static async paginate(param: {
     paginate: number;

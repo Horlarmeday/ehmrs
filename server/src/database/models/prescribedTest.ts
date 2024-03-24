@@ -26,6 +26,7 @@ import { TestResult } from './testResult';
 import { Antenatal } from './antenatal';
 import { SurgeryRequest } from './surgeryRequest';
 import { NHISApprovalStatus } from '../../core/helpers/general';
+import { PatientInsurance } from './patientInsurance';
 
 export enum PrescriptionType {
   CASH = 'Cash',
@@ -266,6 +267,12 @@ export class PrescribedTest extends Model {
   })
   auth_code: string;
 
+  @ForeignKey(() => PatientInsurance)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  patient_insurance_id: number;
+
   @BelongsTo(() => Staff, {
     foreignKey: 'requester',
   })
@@ -304,6 +311,9 @@ export class PrescribedTest extends Model {
 
   @BelongsTo(() => SurgeryRequest)
   surgeryRequest: SurgeryRequest;
+
+  @BelongsTo(() => PatientInsurance)
+  patientInsurance: PatientInsurance;
 
   static async paginate(param: {
     paginate: number;
