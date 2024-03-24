@@ -7,7 +7,6 @@ import {
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
-import { Drug } from './drug';
 import { Staff } from './staff';
 import { Visit } from './visit';
 import { Patient } from './patient';
@@ -19,9 +18,8 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
-import { DosageForm } from './dosageForm';
-import { RoutesOfAdministration } from './routesOfAdministration';
 import { Admission } from './admission';
+import { PrescribedDrug } from './prescribedDrug';
 
 @Table({ timestamps: true, tableName: 'Patient_Treatments' })
 export class PatientTreatment extends Model {
@@ -29,7 +27,7 @@ export class PatientTreatment extends Model {
   @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
   id: number;
 
-  @ForeignKey(() => Drug)
+  @ForeignKey(() => PrescribedDrug)
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
@@ -40,30 +38,6 @@ export class PatientTreatment extends Model {
     },
   })
   drug_id: number;
-
-  @ForeignKey(() => DosageForm)
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'dosage form id is required',
-      },
-    },
-  })
-  dosage_form_id: number;
-
-  @ForeignKey(() => RoutesOfAdministration)
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'route id is required',
-      },
-    },
-  })
-  route_id: number;
 
   @Column({
     type: DataType.TEXT,
@@ -138,20 +112,14 @@ export class PatientTreatment extends Model {
   @BelongsTo(() => Staff)
   staff: Staff;
 
-  @BelongsTo(() => Drug)
-  drug: Drug;
+  @BelongsTo(() => PrescribedDrug)
+  drug: PrescribedDrug;
 
   @BelongsTo(() => Visit)
   visit: Visit;
 
   @BelongsTo(() => Patient)
   patient: Patient;
-
-  @BelongsTo(() => DosageForm)
-  dosageForm: DosageForm;
-
-  @BelongsTo(() => RoutesOfAdministration)
-  route: RoutesOfAdministration;
 
   @BelongsTo(() => Admission)
   admission: Admission;

@@ -7,6 +7,7 @@ import {
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
+import { Patient } from './patient';
 import { Staff } from './staff';
 import {
   FindAttributeOptions,
@@ -16,16 +17,37 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
-import { Patient } from './patient';
-import { Antenatal } from './antenatal';
 import { Visit } from './visit';
-import { Admission } from './admission';
 
-@Table({ timestamps: true })
-export class PostNatal extends Model {
+@Table({ timestamps: true, tableName: 'Operation_Notes' })
+export class OperationNote extends Model {
   @PrimaryKey
   @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
   id: number;
+
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  anaesthetist_id: number;
+
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  scrub_nurse_id: number;
+
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'surgeon is required',
+      },
+    },
+  })
+  surgeon_id: number;
 
   @ForeignKey(() => Patient)
   @Column({
@@ -33,130 +55,80 @@ export class PostNatal extends Model {
     allowNull: false,
     validate: {
       notEmpty: {
-        msg: 'patient id is required',
+        msg: 'patient_id is required',
       },
     },
   })
   patient_id: number;
 
-  @ForeignKey(() => Antenatal)
-  @Column({
-    type: DataType.INTEGER,
-  })
-  ante_natal_id: number;
-
-  @ForeignKey(() => Admission)
+  @ForeignKey(() => Visit)
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
     validate: {
       notEmpty: {
-        msg: 'admission id is required',
+        msg: 'visit_id is required',
       },
     },
-  })
-  admission_id: number;
-
-  @ForeignKey(() => Visit)
-  @Column({
-    type: DataType.INTEGER,
   })
   visit_id: number;
 
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.DATE,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'time_in is required',
+      },
+    },
   })
-  weight: number;
-
-  @Column({
-    type: DataType.INTEGER,
-  })
-  height: number;
-
-  @Column({
-    type: DataType.STRING,
-  })
-  temperature: string;
-
-  @Column({
-    type: DataType.STRING,
-  })
-  pulse: string;
-
-  @Column({
-    type: DataType.STRING,
-  })
-  respiration: string;
-
-  @Column({
-    type: DataType.STRING,
-  })
-  general_condition: string;
-
-  @Column({
-    type: DataType.STRING,
-  })
-  blood_pressure: string;
-
-  @Column({
-    type: DataType.STRING,
-  })
-  involution_of_uterus: string;
-
-  @Column({
-    type: DataType.STRING,
-  })
-  lochia: string;
-
-  @Column({
-    type: DataType.STRING,
-  })
-  episotomy: string;
+  time_in: Date;
 
   @Column({
     type: DataType.DATE,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'time_out is required',
+      },
+    },
   })
-  pap_smear_date: Date;
+  time_out: Date;
+
+  @Column({
+    type: DataType.JSON,
+  })
+  assistance: string;
 
   @Column({
     type: DataType.TEXT,
   })
-  result: string;
-
-  @Column({
-    type: DataType.STRING,
-  })
-  pcv: string;
+  surgery: string;
 
   @Column({
     type: DataType.TEXT,
   })
-  comments: string;
-
-  @Column({
-    type: DataType.STRING,
-  })
-  baby_condition: string;
-
-  @Column({
-    type: DataType.STRING,
-  })
-  reflexes: string;
-
-  @Column({
-    type: DataType.STRING,
-  })
-  feeding: string;
-
-  @Column({
-    type: DataType.STRING,
-  })
-  umbilical_cord: string;
+  post_operation_order: string;
 
   @Column({
     type: DataType.TEXT,
   })
-  pelvic_examination: string;
+  anaesthesia: string;
+
+  @Column({
+    type: DataType.TEXT,
+  })
+  findings: string;
+
+  @Column({
+    type: DataType.TEXT,
+  })
+  procedure: string;
+
+  @Column({
+    type: DataType.TEXT,
+  })
+  indications: string;
 
   @ForeignKey(() => Staff)
   @Column({
@@ -167,22 +139,25 @@ export class PostNatal extends Model {
   @BelongsTo(() => Staff)
   staff: Staff;
 
+  @BelongsTo(() => Staff)
+  anaesthetist: Staff;
+
+  @BelongsTo(() => Staff)
+  scrub_nurse: Staff;
+
+  @BelongsTo(() => Staff)
+  surgeon: Staff;
+
   @BelongsTo(() => Patient)
   patient: Patient;
-
-  @BelongsTo(() => Antenatal)
-  antenatal: Antenatal;
 
   @BelongsTo(() => Visit)
   visit: Visit;
 
-  @BelongsTo(() => Admission)
-  admission: Admission;
-
   static async paginate(param: {
     paginate: number;
     attributes?: FindAttributeOptions;
-    where?: WhereOptions<any>;
+    where?: WhereOptions;
     page?: number;
     order?: Order;
     group?: GroupOption;
