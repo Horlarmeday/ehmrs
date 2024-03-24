@@ -11,15 +11,13 @@
     <!--begin::Row-->
     <div v-if="inventories.length" class="row mb-10">
       <div class="col-lg-6 col-xl-4 mb-10" v-for="(inventory, i) in inventories" :key="i">
-        <!--begin::Callout-->
         <callout-card
           :name="inventory.name"
           :desc="inventory.desc || `Click here to view items in the ${inventory.name}`"
           :link="`/inventory/${inventory.id}?name=${inventory.name}`"
         />
-        <!--end::Callout-->
       </div>
-      <div class="col-lg-6 col-xl-4 mb-10">
+      <div v-if="ALLOWED_ROLES.includes(user.role)" class="col-lg-6 col-xl-4 mb-10">
         <div class="card card-custom mb-2 bg-diagonal">
           <div class="card-body">
             <div class="text-center cursor-pointer" @click="addNewData">
@@ -38,6 +36,7 @@
 import CreateInventory from './components/CreateInventory.vue';
 import CalloutCard from '@/utils/CalloutCard.vue';
 import EmptyDataCard from '@/utils/EmptyDataCard.vue';
+import { parseJwt } from '@/common/common';
 
 export default {
   name: 'Home.vue',
@@ -47,6 +46,8 @@ export default {
       displayPrompt: false,
       inventoryToEdit: {},
       content: 'There are no inventories, kindly click on the plus icon to create one',
+      user: parseJwt(localStorage.getItem('user_token')),
+      ALLOWED_ROLES: ['Super Admin'],
     };
   },
   computed: {

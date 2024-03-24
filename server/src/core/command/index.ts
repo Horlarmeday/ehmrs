@@ -8,6 +8,8 @@ export enum JobName {
   ASSIGN_ANTENATAL_NUMBER = 'Assign antenatal number',
   ASSIGN_IMMUNIZATION_NUMBER = 'Assign immunization number',
   SEND_PATIENT_SMS = 'Registration SMS',
+  END_VISIT = 'End visit',
+  CLOSE_ANTENATAL_ACCOUNT = 'Close antenatal account',
 }
 
 export const CronTimer = {
