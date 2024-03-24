@@ -35,4 +35,10 @@ export default {
   // Ward rounds
   wardRound: null,
   wardRounds: [],
+
+  // Deliveries
+  deliveries: [],
+
+  // post natals
+  postNatals: [],
 };

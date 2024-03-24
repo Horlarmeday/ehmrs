@@ -24,7 +24,6 @@ export default {
             pageLimit: payload.itemsPerPage,
             search: payload.search,
             filter: payload.filter,
-            visitType: payload.visitType,
             start: payload.start,
             end: payload.end,
           },
@@ -318,6 +317,68 @@ export default {
           commit('SET_DISCHARGE_RECORDS', response.data.data.docs);
           commit('SET_DISCHARGE_RECORDS_TOTAL', response.data.data.total);
           commit('SET_DISCHARGE_RECORDS_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * POST NATAL INFO
+   */
+  createPostNatalInfo({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/admission/postnatal-info/${payload.id}`, payload.data)
+        .then(response => {
+          commit('CREATE_POSTNATAL_INFO', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchPostNatalInfo({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/admission/postnatal-info/${payload.id}`)
+        .then(response => {
+          commit('SET_POSTNATAL_INFO', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * DELIVERY INFO
+   */
+  createDeliveryInfo({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/admission/delivery-info/${payload.id}`, payload.data)
+        .then(response => {
+          commit('CREATE_DELIVERY_INFO', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchDeliveryInfo({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/admission/delivery-info/${payload.id}`)
+        .then(response => {
+          commit('SET_DELIVERY_INFO', response.data.data);
           resolve(response);
         })
         .catch(error => {
