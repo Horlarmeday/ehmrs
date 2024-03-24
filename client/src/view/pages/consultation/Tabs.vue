@@ -1,35 +1,38 @@
 <template>
   <div>
-    <div class="header-top mb-6">
-      <div class="container white">
-        <div class="d-none d-lg-flex align-items-center mr-3">
-          <ul class="header-tabs nav align-self-end font-size-lg" role="tablist">
-            <li class="nav-item mr-1" v-for="(tab, index) in tabs" :key="index">
-              <a
-                class="nav-link text-dark py-4 px-6"
-                v-if="tab.showComponent"
-                :class="{
-                  active: tabIndex === index,
-                  disabled: tabIndex === index || isEmptySummary,
-                }"
-                @click="setActiveTab($event, tab.component)"
-                :data-tab="index"
-                data-toggle="tab"
-                href="#"
-                role="tab"
-                aria-selected="true"
-                >{{ tab.name }}</a
-              >
-            </li>
-          </ul>
-          <div class="ml-auto">
-            <pulse-icons />
+    <div v-if="visit">
+      <div class="header-top mb-6">
+        <triage-card v-if="visit?.triage" :triage="visit.triage" />
+        <div class="container white">
+          <div class="d-none d-lg-flex align-items-center mr-3">
+            <ul class="header-tabs nav align-self-end font-size-lg" role="tablist">
+              <li class="nav-item mr-1" v-for="(tab, index) in tabs" :key="index">
+                <a
+                  class="nav-link text-dark py-4 px-6"
+                  v-if="tab.showComponent"
+                  :class="{
+                    active: tabIndex === index,
+                    disabled: tabIndex === index || isEmptySummary,
+                  }"
+                  @click="setActiveTab($event, tab.component)"
+                  :data-tab="index"
+                  data-toggle="tab"
+                  href="#"
+                  role="tab"
+                  aria-selected="true"
+                  >{{ tab.name }}</a
+                >
+              </li>
+            </ul>
+            <div class="ml-auto">
+              <pulse-icons />
+            </div>
           </div>
         </div>
       </div>
+      <component :is="activeComponent" :isEmptySummary="isEmptySummary" />
     </div>
-    <page-skeleton v-if="loading" title="Consultation" :times="6" />
-    <component :is="activeComponent" :isEmptySummary="isEmptySummary" />
+    <page-skeleton v-else :tabs="tabs" />
   </div>
 </template>
 
@@ -37,15 +40,16 @@
 import Observations from './tabs/Observations.vue';
 import TestOrders from './tabs/TestOrders.vue';
 import InvestigationOrders from './tabs/InvestigationOrders.vue';
-import Medications from './tabs/MedicationOrders.vue';
+import Medications from './tabs/BulkMedicationsOrders.vue';
 import ServicesOrder from './tabs/ServiceOrders.vue';
 import Disposition from '@/view/pages/consultation/tabs/Disposition.vue';
 import PulseIcons from '@/view/pages/consultation/components/PulseIcons.vue';
-import PageSkeleton from '@/utils/PageSkeleton.vue';
+import PageSkeleton from './components/skeleton/PageSkeleton.vue';
 import History from '@/view/pages/consultation/tabs/History.vue';
 import Surgery from '@/view/pages/consultation/tabs/Surgery.vue';
 import WardRound from '@/view/pages/consultation/tabs/WardRound.vue';
 import { isEmpty } from '@/common/common';
+import TriageCard from '@/view/components/util/TriageCard.vue';
 
 const ComponentMapping = {
   observations: Observations,
@@ -61,7 +65,7 @@ const ComponentMapping = {
 
 export default {
   name: 'Tabs',
-  components: { PageSkeleton, PulseIcons },
+  components: { TriageCard, PageSkeleton, PulseIcons },
   data() {
     return {
       tabIndex: 0,
@@ -69,12 +73,12 @@ export default {
       loading: false,
       tabs: [
         {
-          name: 'History',
+          name: 'Past History',
           component: 'history',
           showComponent: true,
         },
         {
-          name: 'Observations',
+          name: 'History',
           component: 'observations',
           showComponent: true,
         },
@@ -94,7 +98,7 @@ export default {
           showComponent: true,
         },
         {
-          name: 'Disposition',
+          name: 'Admission',
           component: 'disposition',
           showComponent: true,
         },

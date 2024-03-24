@@ -14,7 +14,7 @@
                 href="#"
                 role="tab"
                 aria-selected="true"
-                >Summary</a
+                >Past Visits</a
               >
             </li>
             <li v-if="doctorAllowedTabs.includes(currentUser.role)" class="nav-item mr-1">
@@ -27,7 +27,7 @@
                 href="#"
                 role="tab"
                 aria-selected="true"
-                >Observations</a
+                >History</a
               >
             </li>
             <li v-if="nurseAllowedTabs.includes(currentUser.role)" class="nav-item">
@@ -118,7 +118,7 @@
                 href="#"
                 role="tab"
                 aria-selected="true"
-                >Disposition</a
+                >Admission</a
               >
             </li>
             <li v-if="doctorAllowedTabs.includes(currentUser.role)" class="nav-item">
@@ -138,26 +138,13 @@
               <a
                 class="nav-link text-dark py-4 px-6"
                 :class="{ active: tabIndex === 9, disabled: tabIndex === 9 }"
-                @click="setActiveTab($event, 'deliveryInfo')"
+                @click="setActiveTab($event, 'alert')"
                 data-tab="9"
                 data-toggle="tab"
                 href="#"
                 role="tab"
                 aria-selected="true"
-                >Delivery</a
-              >
-            </li>
-            <li v-if="nurseAllowedTabs.includes(currentUser.role)" class="nav-item">
-              <a
-                class="nav-link text-dark py-4 px-6"
-                :class="{ active: tabIndex === 10, disabled: tabIndex === 10 }"
-                @click="setActiveTab($event, 'postNatal')"
-                data-tab="10"
-                data-toggle="tab"
-                href="#"
-                role="tab"
-                aria-selected="true"
-                >Post Natal</a
+                >Alerts</a
               >
             </li>
           </ul>
@@ -186,8 +173,7 @@ import { parseJwt } from '@/core/plugins/parseJwt';
 import Observation from '@/view/pages/programs/antenatal/tabs/Observation.vue';
 import Disposition from '@/view/pages/consultation/tabs/Disposition.vue';
 import Surgery from '@/view/pages/consultation/tabs/Surgery.vue';
-import Delivery from '@/view/pages/programs/antenatal/tabs/Delivery.vue';
-import Postnatal from '@/view/pages/programs/antenatal/tabs/Postnatal.vue';
+import Alerts from '@/view/pages/programs/antenatal/tabs/Alerts.vue';
 
 const ComponentMapping = {
   accountUpdate: AccountUpdate,
@@ -200,8 +186,7 @@ const ComponentMapping = {
   observation: Observation,
   disposition: Disposition,
   surgery: Surgery,
-  deliveryInfo: Delivery,
-  postNatal: Postnatal,
+  alert: Alerts,
 };
 export default {
   components: {
@@ -212,7 +197,7 @@ export default {
     tabIndex: 0,
     activeComponent: '',
     loading: false,
-    currentUser: '',
+    currentUser: parseJwt(localStorage.getItem('user_token')),
     doctorAllowedTabs: ['Super Admin', 'General Practitioner'],
     nurseAllowedTabs: ['Super Admin', 'Nurse'],
     Active: 'ACTIVE',
@@ -296,6 +281,10 @@ export default {
       setTimeout(() => this.getActiveTab(), 300);
     },
 
+    fetchVisit() {
+      this.$store.dispatch('visit/fetchVisit', this.$route.params.id);
+    },
+
     fetchAntenatalRecord() {
       this.$store
         .dispatch('antenatal/fetchOneAntenatalAccount', this.$route.query.antenatal)
@@ -308,8 +297,8 @@ export default {
   },
   created() {
     this.loading = true;
-    this.currentUser = parseJwt(localStorage.getItem('user_token'));
     this.fetchAntenatalRecord();
+    this.fetchVisit();
     setTimeout(() => this.getActiveTab(), 300);
   },
 };

@@ -10,7 +10,7 @@
       <b-tab title="Treatments">
         <treatment-table :drugs="history.treatments" />
       </b-tab>
-      <b-tab title="CarePlans">
+      <b-tab title="Care Plans">
         <care-plan-table :plans="history.plans" />
       </b-tab>
       <b-tab title="IO Charts">

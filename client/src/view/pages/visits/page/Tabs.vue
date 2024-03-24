@@ -29,15 +29,17 @@
 <script>
 import PageSkeleton from '@/utils/PageSkeleton.vue';
 import DoctorPrescriptions from '../components/tabs/doctorPrescriptions/DoctorPrescriptions.vue';
-import ServiceOrders from '@/view/pages/consultation/tabs/ServiceOrders.vue';
 import AdditionalItems from '@/view/pages/visits/components/tabs/additionalItems/AdditionalItems.vue';
 import Treatments from '@/view/pages/visits/components/tabs/treatments/Treatments.vue';
+import AdditionalServices from '@/view/pages/visits/components/tabs/additionalServices/AdditionalServices.vue';
+import Alerts from '@/view/pages/programs/antenatal/tabs/Alerts.vue';
 
 const ComponentMapping = {
   doctorPrescriptions: DoctorPrescriptions,
-  services: ServiceOrders,
+  services: AdditionalServices,
   additionalItems: AdditionalItems,
   treatmentData: Treatments,
+  alert: Alerts,
 };
 
 export default {
@@ -64,6 +66,10 @@ export default {
         {
           name: 'Items',
           component: 'additionalItems',
+        },
+        {
+          name: 'Alerts',
+          component: 'alert',
         },
       ],
     };

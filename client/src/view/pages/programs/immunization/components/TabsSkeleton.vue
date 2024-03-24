@@ -1,7 +1,7 @@
 <template>
   <div class="example">
     <b-tabs content-class="mt-3">
-      <b-tab v-for="(tab, i) in tabs" :key="i" :title="tab" active>
+      <b-tab v-for="(tab, i) in tabs" :key="i" :title="tab" :active="i === 0">
         <DefaultSkeleton />
       </b-tab>
     </b-tabs>

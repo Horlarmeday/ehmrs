@@ -15,13 +15,13 @@
               <b-tab title="Tests" active>
                 <Tests />
               </b-tab>
-              <b-tab title="Drugs">
+              <b-tab title="Drugs" lazy>
                 <medications />
               </b-tab>
-              <b-tab title="Radiology">
+              <b-tab title="Radiology" lazy>
                 <radiology />
               </b-tab>
-              <b-tab title="Services">
+              <b-tab title="Services" lazy>
                 <services />
               </b-tab>
             </b-tabs>
