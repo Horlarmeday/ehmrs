@@ -1,14 +1,11 @@
 import {
   appendTestResults,
   approveTestResults,
-  createNhisTest,
   createTest,
   createTestSample,
   createTestTariff,
-  filterNhisTests,
   filterTests,
   getCollectedSamples,
-  getNhisTests,
   getOneCollectedSample,
   getOneSampleToCollect,
   getSamplesToCollect,
@@ -17,21 +14,20 @@ import {
   getTestResults,
   getTests,
   getTestSamples,
-  searchNhisTests,
   searchTests,
   searchTestSamples,
   searchTestsInASample,
-  updateNhisTest,
   updateTest,
   updateTestPrescription,
   updateTestSample,
   validateTestResults,
   getVerifiedTestResults,
   todayTestStats,
+  getOneTestPrescription,
 } from './laboratory.repository';
 import { TestTariffDto } from './dto/test-tariff.dto';
 import { TestStatus } from '../../database/models/prescribedTest';
-import { generateLabAccessionNumber } from '../../core/helpers/helper';
+import { generateLabAccessionNumber, StatusCodes } from '../../core/helpers/helper';
 import { isEmpty } from 'lodash';
 import {
   LaboratoryResultApprovalDto,
@@ -39,6 +35,9 @@ import {
   LaboratoryResultValidationDto,
 } from './dto/laboratory-result.dto';
 import dayjs from 'dayjs';
+import { TestPrescription } from '../../database/models';
+import { BadException } from '../../common/util/api-error';
+import { ACCESSION_NUMB_EXIST } from './messages/response-messages';
 
 class LaboratoryService {
   /** ***********************
@@ -201,10 +200,10 @@ class LaboratoryService {
   }
 
   static async generateLabAccessionNumber() {
-    let testPrescription;
-    let accessionNumber;
+    let testPrescription: TestPrescription;
+    let accessionNumber: string;
     do {
-      accessionNumber = generateLabAccessionNumber();
+      accessionNumber = await generateLabAccessionNumber();
       testPrescription = await getTestPrescription({ accession_number: accessionNumber });
     } while (testPrescription);
     return accessionNumber;
@@ -212,6 +211,10 @@ class LaboratoryService {
 
   static async collectTestSample(body) {
     const { accession_number, id, staff_id } = body;
+    const testPrescription = await getTestPrescription({ accession_number });
+    if (testPrescription)
+      throw new BadException('Exists', StatusCodes.BAD_REQUEST, ACCESSION_NUMB_EXIST);
+
     return updateTestPrescription(
       { id },
       {
@@ -245,16 +248,38 @@ class LaboratoryService {
     return getCollectedSamples({ period });
   }
 
+  /**
+   * Get one sample to collect
+   * @memberOf LaboratoryService
+   * @param prescriptionId
+   */
   static async getOneCollectedSample(prescriptionId: number | string) {
     return getOneCollectedSample(prescriptionId);
   }
 
+  /**
+   * Get one test result
+   * @memberOf LaboratoryService
+   * @param prescriptionId
+   */
   static async getTestResult(prescriptionId: number) {
     return getOneTestResult(prescriptionId);
   }
 
+  /**
+   * Get today stats about samples
+   * @memberOf LaboratoryService
+   */
   static async getTodayTestStats() {
     return todayTestStats();
+  }
+
+  /**
+   * Get one test prescription
+   * @memberOf LaboratoryService
+   */
+  static async getTestPrescription(visitId: number) {
+    return getOneTestPrescription({ visit_id: visitId });
   }
 
   /**
@@ -289,12 +314,14 @@ class LaboratoryService {
    */
   static async appendTestResults(laboratoryResultDto: LaboratoryResultDto) {
     const { results, staff_id } = laboratoryResultDto;
-    const data = results.map(result => ({
-      ...result,
-      staff_id,
-      testStatus: this.getTestStatus(result),
-      date_created: Date.now(),
-    }));
+    const data = results
+      .filter(({ result }) => !isEmpty(result))
+      .map(result => ({
+        ...result,
+        staff_id,
+        testStatus: this.getTestStatus(result),
+        date_created: Date.now(),
+      }));
     return appendTestResults(data);
   }
 
@@ -370,54 +397,54 @@ class LaboratoryService {
   /** ***********************
    * NHIS TEST DEPRECATED
    ********************** */
-
-  /**
-   * create a NHIS test
-   *
-   * @static
-   * @returns {json} json object with NHIS test data
-   * @param body
-   * @memberOf LaboratoryService
-   */
-  static async createNhisTestService(body) {
-    return createNhisTest(body);
-  }
-
-  /**
-   * update NHIS test
-   *
-   * @static
-   * @returns {json} json object with NHIS test data
-   * @param body
-   * @memberOf LaboratoryService
-   */
-  static async updateNhisTestService(body) {
-    return updateNhisTest(body);
-  }
-
-  /**
-   * get NHIS tests
-   *
-   * @static
-   * @returns {json} json object with NHIS tests data
-   * @param body
-   * @memberOf LaboratoryService
-   */
-  static async getNhisTests(body) {
-    const { currentPage, pageLimit, search, filter } = body;
-    if (search) {
-      return searchNhisTests(+currentPage, +pageLimit, search);
-    }
-
-    if (filter) {
-      return filterNhisTests(+currentPage, +pageLimit, filter);
-    }
-
-    if (Object.values(body).length) {
-      return getNhisTests(+currentPage, +pageLimit);
-    }
-
-    return getNhisTests();
-  }
+  //
+  // /**
+  //  * create a NHIS test
+  //  *
+  //  * @static
+  //  * @returns {json} json object with NHIS test data
+  //  * @param body
+  //  * @memberOf LaboratoryService
+  //  */
+  // static async createNhisTestService(body) {
+  //   return createNhisTest(body);
+  // }
+  //
+  // /**
+  //  * update NHIS test
+  //  *
+  //  * @static
+  //  * @returns {json} json object with NHIS test data
+  //  * @param body
+  //  * @memberOf LaboratoryService
+  //  */
+  // static async updateNhisTestService(body) {
+  //   return updateNhisTest(body);
+  // }
+  //
+  // /**
+  //  * get NHIS tests
+  //  *
+  //  * @static
+  //  * @returns {json} json object with NHIS tests data
+  //  * @param body
+  //  * @memberOf LaboratoryService
+  //  */
+  // static async getNhisTests(body) {
+  //   const { currentPage, pageLimit, search, filter } = body;
+  //   if (search) {
+  //     return searchNhisTests(+currentPage, +pageLimit, search);
+  //   }
+  //
+  //   if (filter) {
+  //     return filterNhisTests(+currentPage, +pageLimit, filter);
+  //   }
+  //
+  //   if (Object.values(body).length) {
+  //     return getNhisTests(+currentPage, +pageLimit);
+  //   }
+  //
+  //   return getNhisTests();
+  // }
 }
 export default LaboratoryService;

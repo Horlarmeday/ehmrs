@@ -562,85 +562,107 @@ class LaboratoryController {
     }
   }
 
+  /**
+   * Get one test prescription
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, test prescription data
+   */
+  static async getOneTestPrescription(req: Request, res: Response, next: NextFunction) {
+    try {
+      const testPrescription = await LaboratoryService.getTestPrescription(+req.params.id);
+
+      return res.status(200).json({
+        message: 'Success',
+        data: testPrescription,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
   /** ***********************
    * NHIS TESTS - DEPRECATED
    ********************** */
 
-  /**
-   * create a test
-   *
-   * @static
-   * @param {object} req express request object
-   * @param {object} res express response object
-   * @param {object} next next middleware
-   * @returns {json} json object with status, test data
-   */
-  static async createNhisTest(req, res, next) {
-    const { error } = validateNhisTest(req.body);
-    if (error)
-      return errorResponse({
-        res,
-        message: error.details[0].message,
-        httpCode: StatusCodes.BAD_REQUEST,
-      });
-
-    try {
-      const test = await LaboratoryService.createNhisTestService({
-        ...req.body,
-        staff_id: req.user.sub,
-      });
-
-      return successResponse({
-        res,
-        data: test,
-        httpCode: StatusCodes.CREATED,
-        message: DATA_SAVED,
-      });
-    } catch (e) {
-      return next(e);
-    }
-  }
-
-  /**
-   * update a NHIS test
-   *
-   * @static
-   * @param {object} req express request object
-   * @param {object} res express response object
-   * @param {object} next next middleware
-   * @returns {json} json object with status, NHIS test data
-   */
-  static async updateNhisTest(req: Request, res: Response, next: NextFunction) {
-    const { test_id } = req.body;
-    if (!test_id)
-      return errorResponse({ res, message: TEST_REQUIRED, httpCode: StatusCodes.BAD_REQUEST });
-
-    try {
-      const test = await LaboratoryService.updateNhisTestService(req.body);
-
-      return successResponse({ res, httpCode: StatusCodes.OK, message: DATA_UPDATED, data: test });
-    } catch (e) {
-      return next(e);
-    }
-  }
-
-  /**
-   * get NHIS tests
-   *
-   * @static
-   * @param {object} req express request object
-   * @param {object} res express response object
-   * @param {object} next next middleware
-   * @returns {json} json object with NHIS tests data
-   */
-  static async getNhisTests(req: Request, res: Response, next: NextFunction) {
-    try {
-      const tests = await LaboratoryService.getNhisTests(req.query);
-
-      return successResponse({ res, httpCode: StatusCodes.OK, message: SUCCESS, data: tests });
-    } catch (e) {
-      return next(e);
-    }
-  }
+  // /**
+  //  * create a test
+  //  *
+  //  * @static
+  //  * @param {object} req express request object
+  //  * @param {object} res express response object
+  //  * @param {object} next next middleware
+  //  * @returns {json} json object with status, test data
+  //  */
+  // static async createNhisTest(req, res, next) {
+  //   const { error } = validateNhisTest(req.body);
+  //   if (error)
+  //     return errorResponse({
+  //       res,
+  //       message: error.details[0].message,
+  //       httpCode: StatusCodes.BAD_REQUEST,
+  //     });
+  //
+  //   try {
+  //     const test = await LaboratoryService.createNhisTestService({
+  //       ...req.body,
+  //       staff_id: req.user.sub,
+  //     });
+  //
+  //     return successResponse({
+  //       res,
+  //       data: test,
+  //       httpCode: StatusCodes.CREATED,
+  //       message: DATA_SAVED,
+  //     });
+  //   } catch (e) {
+  //     return next(e);
+  //   }
+  // }
+  //
+  // /**
+  //  * update a NHIS test
+  //  *
+  //  * @static
+  //  * @param {object} req express request object
+  //  * @param {object} res express response object
+  //  * @param {object} next next middleware
+  //  * @returns {json} json object with status, NHIS test data
+  //  */
+  // static async updateNhisTest(req: Request, res: Response, next: NextFunction) {
+  //   const { test_id } = req.body;
+  //   if (!test_id)
+  //     return errorResponse({ res, message: TEST_REQUIRED, httpCode: StatusCodes.BAD_REQUEST });
+  //
+  //   try {
+  //     const test = await LaboratoryService.updateNhisTestService(req.body);
+  //
+  //     return successResponse({ res, httpCode: StatusCodes.OK, message: DATA_UPDATED, data: test });
+  //   } catch (e) {
+  //     return next(e);
+  //   }
+  // }
+  //
+  // /**
+  //  * get NHIS tests
+  //  *
+  //  * @static
+  //  * @param {object} req express request object
+  //  * @param {object} res express response object
+  //  * @param {object} next next middleware
+  //  * @returns {json} json object with NHIS tests data
+  //  */
+  // static async getNhisTests(req: Request, res: Response, next: NextFunction) {
+  //   try {
+  //     const tests = await LaboratoryService.getNhisTests(req.query);
+  //
+  //     return successResponse({ res, httpCode: StatusCodes.OK, message: SUCCESS, data: tests });
+  //   } catch (e) {
+  //     return next(e);
+  //   }
+  // }
 }
 export default LaboratoryController;

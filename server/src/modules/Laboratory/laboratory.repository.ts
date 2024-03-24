@@ -1,9 +1,12 @@
-/* eslint-disable camelcase */
-import sequelize, { Op } from 'sequelize';
-import { getModelById, getNumberOfRecords, getPeriodQuery } from '../../core/helpers/general';
+import sequelize, { Op, WhereOptions } from 'sequelize';
+import {
+  countRecords,
+  getModelById,
+  getNumberOfRecords,
+  getPeriodQuery,
+} from '../../core/helpers/general';
 
 import {
-  NhisTest,
   Patient,
   PatientInsurance,
   PrescribedTest,
@@ -18,13 +21,17 @@ import {
   canUsePriceTariff,
   dateIntervalQuery,
   paginate,
-  todayQuery,
+  patientAttributes,
+  StatusCodes,
 } from '../../core/helpers/helper';
 import { chain } from 'lodash';
 import { TestStatus } from '../../database/models/prescribedTest';
 import sequelizeConnection from '../../database/config/config';
 import { ResultStatus } from '../../database/models/testResult';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
+import { BadException } from '../../common/util/api-error';
+import { CANNOT_ADD_RESULTS, RESULT_NOT_FOUND, TEST_NOT_FOUND } from './messages/response-messages';
+import { Result } from './dto/laboratory-result.dto';
 
 const testResultFieldsToUpdate = (fields: string[] = []) => [
   'prescribed_test_id',
@@ -301,8 +308,8 @@ export const getSamplesToCollect = async ({
   const samples = await TestPrescription.findAll({
     attributes: {
       include: [
-        // Count the number of tests in each sample and alias it as 'testCount'
-        [sequelize.fn('COUNT', sequelize.col('tests.id')), 'testCount'],
+        // Count the number of tests in each sample and alias it as 'test_count'
+        [sequelize.fn('COUNT', sequelize.col('tests.id')), 'test_count'],
       ],
     },
     where: {
@@ -354,7 +361,7 @@ export const getSamplesToCollect = async ({
  * get all collected samples
  *
  * @function
- * @returns {json} json object with test samples data
+ * @returns json object with test samples data
  * @param currentPage
  * @param pageLimit
  * @param period
@@ -406,15 +413,6 @@ export const getCollectedSamples = async ({
             )
           ),
           'pending_validations_count',
-        ],
-        [
-          sequelize.fn(
-            'COUNT',
-            sequelize.literal(
-              `DISTINCT CASE WHEN tests.status = '${TestStatus.VERIFIED}' THEN tests.id END`
-            )
-          ),
-          'pending_approved_count',
         ],
       ],
     },
@@ -471,46 +469,68 @@ export const createTestPrescription = async (data: any) => {
   return TestPrescription.create({ ...data });
 };
 
-export const getTestPrescription = async query => {
+export const getTestPrescription = async (query: WhereOptions<TestPrescription>) => {
   return TestPrescription.findOne({ where: { ...query } });
 };
 
+export const getOneTestPrescription = async (query: WhereOptions<TestPrescription>) => {
+  return TestPrescription.findOne({
+    where: { ...query },
+    include: [
+      {
+        model: PrescribedTest,
+        attributes: ['test_id', 'status', 'payment_status', 'id'],
+        include: [{ model: Test, attributes: ['name', 'result_unit'] }],
+      },
+    ],
+  });
+};
+
 export const getOneSampleToCollect = async (testPrescriptionId: number | string) => {
-  const testPrescriptions = await TestPrescription.findOne({
+  const testPrescription = await TestPrescription.findOne({
     where: { id: testPrescriptionId, status: TestStatus.PENDING },
     attributes: [],
     include: [
       {
         model: Patient,
-        attributes: ['firstname', 'lastname', 'hospital_id', 'gender'],
+        attributes: patientAttributes,
       },
       {
         model: PrescribedTest,
         attributes: ['test_id'],
         include: [
-          { model: Test, attributes: ['name'] },
+          { model: Test, attributes: ['name', 'result_unit'] },
           { model: Sample, attributes: ['name'] },
         ],
       },
     ],
   });
-  return { ...testPrescriptions.toJSON(), tests: groupTestsBySample(testPrescriptions.tests) };
+  if (!testPrescription) throw new BadException('NOT_FOUND', StatusCodes.NOT_FOUND, TEST_NOT_FOUND);
+  const insurance = await getPatientInsuranceQuery({
+    patient_id: testPrescription?.patient?.id,
+    is_default: true,
+  });
+  return {
+    ...testPrescription.toJSON(),
+    tests: groupTestsBySample(testPrescription.tests),
+    insurance: { ...insurance?.toJSON() },
+  };
 };
 
 export const getOneCollectedSample = async (testPrescriptionId: number | string) => {
-  const testPrescriptions = await TestPrescription.findOne({
+  const testPrescription = await TestPrescription.findOne({
     where: { id: testPrescriptionId, status: TestStatus.SAMPLE_COLLECTED },
     attributes: ['accession_number', 'result_notes'],
     include: [
       {
         model: Patient,
-        attributes: ['firstname', 'lastname', 'hospital_id', 'gender', 'id'],
+        attributes: patientAttributes,
       },
       {
         model: PrescribedTest,
         attributes: ['test_id', 'id', 'status'],
         include: [
-          { model: Test, attributes: ['name'] },
+          { model: Test, attributes: ['name', 'result_unit'] },
           { model: Sample, attributes: ['name'] },
           {
             model: TestResult,
@@ -527,7 +547,16 @@ export const getOneCollectedSample = async (testPrescriptionId: number | string)
       },
     ],
   });
-  return { ...testPrescriptions.toJSON(), tests: groupTestsBySample(testPrescriptions.tests) };
+  if (!testPrescription) throw new BadException('NOT_FOUND', StatusCodes.NOT_FOUND, TEST_NOT_FOUND);
+  const insurance = await getPatientInsuranceQuery({
+    patient_id: testPrescription?.patient?.id,
+    is_default: true,
+  });
+  return {
+    ...testPrescription.toJSON(),
+    tests: groupTestsBySample(testPrescription.tests),
+    insurance: { ...insurance?.toJSON() },
+  };
 };
 
 export const updateTestPrescription = (
@@ -537,13 +566,17 @@ export const updateTestPrescription = (
   return TestPrescription.update({ ...fieldsToUpdate }, { where: { ...query } });
 };
 
-export const validateTestResults = async (data, result_notes) => {
+export const validateTestResults = async (
+  data: Partial<Result & { staff_id: number; date_created: number }>[],
+  result_notes: string
+) => {
   return sequelizeConnection.transaction(async t => {
     // append results
     const result = await TestResult.bulkCreate(data, {
       updateOnDuplicate: testResultFieldsToUpdate(),
       transaction: t,
     });
+
     await Promise.all(
       data.map(async test =>
         PrescribedTest.update(
@@ -560,7 +593,7 @@ export const validateTestResults = async (data, result_notes) => {
   });
 };
 
-export const approveTestResults = async data => {
+export const approveTestResults = async (data: Partial<Result & { staff_id: number }>[]) => {
   return sequelizeConnection.transaction(async t => {
     const result = await Promise.all(
       data.map(async test => {
@@ -583,6 +616,7 @@ export const approveTestResults = async data => {
           [Op.ne]: TestStatus.REFERRED,
         },
       },
+      transaction: t,
     });
     if (data.length === testsCount) {
       await TestPrescription.update(
@@ -596,20 +630,25 @@ export const approveTestResults = async data => {
 
 export const appendTestResults = async (data: any[]) => {
   return sequelizeConnection.transaction(async t => {
-    const testResults = await TestResult.bulkCreate(data, {
-      updateOnDuplicate: testResultFieldsToUpdate(['institute_referred', 'referral_reason']),
+    const testResults = await Promise.all(
+      data.map(result => TestResult.upsert(result, { transaction: t }))
+    );
+
+    const testIds = data.map(({ prescribed_test_id }) => prescribed_test_id) as number[];
+    const results = await TestResult.findAll({
+      where: { prescribed_test_id: testIds },
       transaction: t,
     });
-    const testIds = data.map(({ prescribed_test_id }) => prescribed_test_id) as number[];
 
-    const results = await TestResult.findAll({ where: { prescribed_test_id: testIds } });
+    if (!results?.length)
+      throw new BadException('Error', StatusCodes.BAD_REQUEST, CANNOT_ADD_RESULTS);
 
     await Promise.all(
       data.map(async test =>
         PrescribedTest.update(
           {
             status: test.testStatus,
-            result_id: results.find(
+            result_id: results?.find(
               ({ prescribed_test_id }) => prescribed_test_id === test.prescribed_test_id
             )?.id,
           },
@@ -638,7 +677,7 @@ export const getTestResults = async ({
         [Op.or]: [
           {
             accession_number: {
-              [Op.eq]: search,
+              [Op.like]: `%${search}%`,
             },
           },
           {
@@ -673,7 +712,7 @@ export const getTestResults = async ({
       {
         model: Patient,
         as: 'patient',
-        attributes: ['firstname', 'lastname', 'fullname', 'hospital_id'],
+        attributes: patientAttributes,
         required: true,
       },
     ],
@@ -681,13 +720,13 @@ export const getTestResults = async ({
 };
 
 export const getOneTestResult = async (testPrescriptionId: number) => {
-  return TestPrescription.findOne({
+  const testPrescription = await TestPrescription.findOne({
     where: { id: testPrescriptionId },
     attributes: ['result_notes', 'accession_number', 'date_requested'],
     include: [
       {
         model: Patient,
-        attributes: ['firstname', 'lastname', 'hospital_id', 'gender'],
+        attributes: patientAttributes,
       },
       {
         model: PrescribedTest,
@@ -706,6 +745,18 @@ export const getOneTestResult = async (testPrescriptionId: number) => {
       },
     ],
   });
+  if (!testPrescription)
+    throw new BadException('NOT_FOUND', StatusCodes.NOT_FOUND, RESULT_NOT_FOUND);
+
+  const insurance = await getPatientInsuranceQuery({
+    patient_id: testPrescription?.patient?.id,
+    is_default: true,
+  });
+
+  return {
+    ...testPrescription.toJSON(),
+    insurance: { ...insurance?.toJSON() },
+  };
 };
 
 export const getVerifiedTestResults = async ({
@@ -766,7 +817,7 @@ export const getVerifiedTestResults = async ({
               `DISTINCT CASE WHEN tests.status = '${TestStatus.RESULT_ADDED}' THEN tests.id END`
             )
           ),
-          'pending_validations_count',
+          'pending_verification_count',
         ],
         [
           sequelize.fn(
@@ -775,7 +826,16 @@ export const getVerifiedTestResults = async ({
               `DISTINCT CASE WHEN tests.status = '${TestStatus.VERIFIED}' THEN tests.id END`
             )
           ),
-          'pending_approved_count',
+          'verified_tests_count',
+        ],
+        [
+          sequelize.fn(
+            'COUNT',
+            sequelize.literal(
+              `DISTINCT CASE WHEN tests.status = '${TestStatus.APPROVED}' THEN tests.id END`
+            )
+          ),
+          'approved_tests_count',
         ],
       ],
     },
@@ -793,7 +853,7 @@ export const getVerifiedTestResults = async ({
       },
       {
         model: Patient,
-        attributes: ['firstname', 'lastname', 'fullname', 'hospital_id'],
+        attributes: patientAttributes,
         required: true,
       },
     ],
@@ -814,11 +874,11 @@ export const todayTestStats = async () => {
     resultCompleted,
     awaitingApproval,
   ] = await Promise.all([
-    countRecords(TestPrescription, TestStatus.PENDING, 'date_requested'),
-    countRecords(TestPrescription, TestStatus.SAMPLE_COLLECTED, 'date_sample_received'),
-    countRecords(PrescribedTest, TestStatus.RESULT_ADDED, 'date_requested'),
-    countRecords(TestPrescription, TestStatus.COMPLETED, 'date_requested'),
-    countRecords(PrescribedTest, TestStatus.VERIFIED, 'date_requested'),
+    countRecords(TestPrescription, { status: TestStatus.PENDING }, 'date_requested'),
+    countRecords(TestPrescription, { status: TestStatus.SAMPLE_COLLECTED }, 'date_sample_received'),
+    countRecords(PrescribedTest, { status: TestStatus.RESULT_ADDED }, 'date_requested'),
+    countRecords(TestPrescription, { status: TestStatus.COMPLETED }, 'date_requested'),
+    countRecords(PrescribedTest, { status: TestStatus.VERIFIED }, 'date_requested'),
   ]);
   return {
     samplesToCollect,
@@ -827,10 +887,6 @@ export const todayTestStats = async () => {
     resultCompleted,
     awaitingApproval,
   };
-};
-
-const countRecords = async (model, status: TestStatus, dateField: string) => {
-  return model.count({ where: { status, ...todayQuery(dateField) } });
 };
 
 const groupTestsBySample = (tests: PrescribedTest[]) => {
@@ -843,7 +899,7 @@ const groupTestsBySample = (tests: PrescribedTest[]) => {
     .value();
 };
 
-const statusToUpdate = test => {
+const statusToUpdate = (test: Partial<Result & { staff_id: number; date_created: number }>) => {
   switch (test.status) {
     case ResultStatus.ACCEPTED:
       return {
@@ -862,90 +918,90 @@ const statusToUpdate = test => {
 /** ***********************
  * NHIS TESTS - DEPRECATED
  ********************** */
-
-/**
- * create a NHIS test
- * @param data
- * @returns {object} NHIS test data
- */
-export async function createNhisTest(data) {
-  const { name, price, sample_id, code, staff_id, type } = data;
-
-  return NhisTest.create({
-    name,
-    staff_id,
-    price,
-    sample_id,
-    code,
-    type,
-  });
-}
-
-/**
- * update a NHIS test
- * @param data
- * @returns {object} NHIS test data
- */
-export async function updateNhisTest(data) {
-  const { test_id } = data;
-  const test = await getModelById(NhisTest, test_id);
-  return test.update(data);
-}
-
-/**
- * search NHIS tests
- *
- * @function
- * @returns {json} json object with NHIS tests data
- * @param currentPage
- * @param pageLimit
- * @param search
- */
-export async function searchNhisTests(currentPage = 1, pageLimit = 10, search) {
-  return NhisTest.paginate({
-    page: currentPage,
-    paginate: pageLimit,
-    order: [['createdAt', 'DESC']],
-    where: {
-      name: {
-        [Op.like]: `%${search}%`,
-      },
-    },
-  });
-}
-
-/**
- * filter NHIS tests
- *
- * @function
- * @returns {json} json object with NHIS tests data
- * @param currentPage
- * @param pageLimit
- * @param filter
- */
-export async function filterNhisTests(currentPage = 1, pageLimit = 10, filter) {
-  return NhisTest.paginate({
-    page: currentPage,
-    paginate: pageLimit,
-    order: [['createdAt', 'DESC']],
-    where: {
-      sample_id: filter,
-    },
-  });
-}
-
-/**
- * get NHIS tests
- *
- * @function
- * @returns {json} json object with NHIS tests data
- * @param currentPage
- * @param pageLimit
- */
-export async function getNhisTests(currentPage = 1, pageLimit = 10) {
-  return NhisTest.paginate({
-    page: currentPage,
-    paginate: pageLimit,
-    order: [['createdAt', 'DESC']],
-  });
-}
+//
+// /**
+//  * create a NHIS test
+//  * @param data
+//  * @returns {object} NHIS test data
+//  */
+// export async function createNhisTest(data) {
+//   const { name, price, sample_id, code, staff_id, type } = data;
+//
+//   return NhisTest.create({
+//     name,
+//     staff_id,
+//     price,
+//     sample_id,
+//     code,
+//     type,
+//   });
+// }
+//
+// /**
+//  * update a NHIS test
+//  * @param data
+//  * @returns {object} NHIS test data
+//  */
+// export async function updateNhisTest(data) {
+//   const { test_id } = data;
+//   const test = await getModelById(NhisTest, test_id);
+//   return test.update(data);
+// }
+//
+// /**
+//  * search NHIS tests
+//  *
+//  * @function
+//  * @returns {json} json object with NHIS tests data
+//  * @param currentPage
+//  * @param pageLimit
+//  * @param search
+//  */
+// export async function searchNhisTests(currentPage = 1, pageLimit = 10, search) {
+//   return NhisTest.paginate({
+//     page: currentPage,
+//     paginate: pageLimit,
+//     order: [['createdAt', 'DESC']],
+//     where: {
+//       name: {
+//         [Op.like]: `%${search}%`,
+//       },
+//     },
+//   });
+// }
+//
+// /**
+//  * filter NHIS tests
+//  *
+//  * @function
+//  * @returns {json} json object with NHIS tests data
+//  * @param currentPage
+//  * @param pageLimit
+//  * @param filter
+//  */
+// export async function filterNhisTests(currentPage = 1, pageLimit = 10, filter) {
+//   return NhisTest.paginate({
+//     page: currentPage,
+//     paginate: pageLimit,
+//     order: [['createdAt', 'DESC']],
+//     where: {
+//       sample_id: filter,
+//     },
+//   });
+// }
+//
+// /**
+//  * get NHIS tests
+//  *
+//  * @function
+//  * @returns {json} json object with NHIS tests data
+//  * @param currentPage
+//  * @param pageLimit
+//  */
+// export async function getNhisTests(currentPage = 1, pageLimit = 10) {
+//   return NhisTest.paginate({
+//     page: currentPage,
+//     paginate: pageLimit,
+//     order: [['createdAt', 'DESC']],
+//   });
+// }

@@ -6,6 +6,7 @@ export class Result {
   disabledReferral: boolean;
   result?: string;
   status?: string;
+  test_status?: string;
   is_abnormal: boolean;
   institute_referred?: string;
   referral_reason?: string;
