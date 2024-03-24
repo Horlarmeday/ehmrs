@@ -15,7 +15,7 @@ module.exports = {
       },
     },
   },
-  publicPath: process.env.NODE_ENV === 'production' ? '/metronic/vue/demo7/' : '/',
+  publicPath: process.env.NODE_ENV === 'production' ? '/' : '/',
   configureWebpack: {
     resolve: {
       alias: {
@@ -24,7 +24,7 @@ module.exports = {
         // Or if using full build of Vue (runtime + compiler)
         // vue$: 'vue/dist/vue.esm.js'      // 'vue/dist/vue.common.js' for webpack 1
       },
-      symlinks: false,
+      //symlinks: false,
     },
     watch: true,
   },
@@ -49,5 +49,5 @@ module.exports = {
   //     }
   //   }
   // },
-  transpileDependencies: ['vuetify'],
+  // transpileDependencies: ['vuetify'],
 };
