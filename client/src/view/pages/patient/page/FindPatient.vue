@@ -48,9 +48,9 @@
                   <span class="text-primary">Gender</span>
                 </th>
                 <th style="min-width: 100px">Age</th>
-                <th style="min-width: 100px">status</th>
+                <th style="min-width: 100px">account type</th>
                 <th style="min-width: 160px">Registration Date</th>
-                <th class="pr-0 " style="min-width: 150px">Action</th>
+                <th class="pr-0 " style="min-width: 70px">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -112,6 +112,7 @@
           :per-page="perPage"
           :current-page="+$route.query.currentPage || currentPage"
           @pagechanged="onPageChange"
+          @changepagecount="handlePageCount"
         />
       </div>
       <p v-if="queriedItems === 0" class="card-body pt-0 pb-3 text-center">
@@ -197,7 +198,7 @@ export default {
         startDate: dayjs(start).format('YYYY-MM-DD'),
         endDate: dayjs(end).format('YYYY-MM-DD'),
       });
-      this.$store.dispatch('patient/fetchPatients', {
+      this.fetchPatients({
         currentPage: this.$route.query.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage,
         start: this.$route.query.startDate,
@@ -213,7 +214,7 @@ export default {
         itemsPerPage: this.itemsPerPage,
         search: this.patient_name,
       });
-      this.$store.dispatch('patient/fetchPatients', {
+      this.fetchPatients({
         currentPage: this.$route.query.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage,
         search: this.$route.query.search,
@@ -225,11 +226,12 @@ export default {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
       });
-      this.$store.dispatch('patient/fetchPatients', {
+      this.fetchPatients({
         currentPage: this.$route.query.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage,
         start: this.$route.query.startDate,
         end: this.$route.query.endDate,
+        search: this.$route.query.search || null,
       });
     },
 
@@ -237,9 +239,32 @@ export default {
       this.currentPage = page;
       this.handlePageChange();
     },
+
+    handlePageCount(count) {
+      setUrlQueryParams({
+        currentPage: this.currentPage,
+        itemsPerPage: count,
+      });
+      this.fetchPatients({
+        currentPage: this.$route.query.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
+        search: this.$route.query.search || null,
+      });
+    },
+
+    fetchPatients({ currentPage, itemsPerPage, search, start, end }) {
+      return this.$store.dispatch('patient/fetchPatients', {
+        currentPage,
+        itemsPerPage,
+        ...(search && { search }),
+        ...(start && end && { start, end }),
+      });
+    },
   },
   created() {
-    this.$store.dispatch('patient/fetchPatients', {
+    this.fetchPatients({
       currentPage: this.$route.query.currentPage,
       itemsPerPage: this.$route.query.itemsPerPage,
       search: this.$route.query.search,

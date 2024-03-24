@@ -118,7 +118,7 @@ const roles = [
   },
   {
     id: 15,
-    role: 'Obstetrics and gynaecology',
+    role: 'Obstetrics and gynaecologist',
     dept_id: 9,
   },
   {
@@ -138,7 +138,7 @@ const roles = [
   },
   {
     id: 19,
-    role: 'Ophthalmology',
+    role: 'Ophthalmologist',
     dept_id: 9,
   },
   {
@@ -155,9 +155,25 @@ const roles = [
     id: 22,
     role: 'Psychiatrist',
     dept_id: 9,
-  },{
+  },
+  {
     id: 23,
     role: 'Orthopaedist',
+    dept_id: 9,
+  },
+  {
+    id: 24,
+    role: 'Urologist',
+    dept_id: 9,
+  },
+  {
+    id: 25,
+    role: 'Endocrinologist',
+    dept_id: 9,
+  },
+  {
+    id: 26,
+    role: 'Gastroenterologist',
     dept_id: 9,
   },
 ];
@@ -231,6 +247,11 @@ const sub_roles = [
   {
     id: 14,
     sub: 'ANC',
+    role_id: 2,
+  },
+  {
+    id: 15,
+    sub: 'Theater',
     role_id: 2,
   },
 ];

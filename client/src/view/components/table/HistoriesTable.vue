@@ -6,7 +6,7 @@
           <th scope="col">Complaint Note</th>
           <th scope="col">History Note</th>
           <th scope="col">Examination</th>
-          <th scope="col">Has Smoking History</th>
+          <th scope="col">Smoking History</th>
           <th scope="col">Added By</th>
           <th scope="col">Date Added</th>
           <th scope="col"></th>

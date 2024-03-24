@@ -1,101 +1,119 @@
 <template>
   <div class="card card-custom card-stretch gutter-b card-shadowless">
-    <div v-if="!isEmptySummary">
-      <div class="card-body">
-        <div
-          v-for="(summary, i) in summaries"
-          :key="i"
-          class="card card-custom card-stretch card-stretch-fourth gutter-b"
-        >
+    <div v-if="summaries">
+      <div v-if="!isEmptySummary">
+        <div class="card-body">
           <div
-            class="accordion accordion-solid accordion-panel accordion-svg-toggle"
-            role="tablist"
+            v-for="(summary, i) in summaries"
+            :key="i"
+            class="card card-custom card-stretch card-stretch-fourth gutter-b"
           >
-            <div class="card">
-              <div class="card-header" header-tag="header" role="tab" style="background: blue">
-                <div class="card-title accord" v-b-toggle="`accordion-${i}`">
-                  <span
-                    :title="`Visit ${summary.status}`"
-                    v-b-tooltip.hover
-                    :class="getLabelDotStatus(summary.status)"
-                    class="label label-dot label-xl mr-3"
-                  ></span>
-                  <div class="card-label text-dark-50">
-                    <span class="mr-5">
-                      <span class="mr-2 text-dark">Start:</span>
-                      <span>{{ summary.date_visit_start | dayjs('ddd, MMM Do YYYY, h:mma') }}</span>
-                    </span>
-                    <span v-if="summary.date_visit_ended">
-                      <span class="mr-2 text-dark">End:</span>
-                      <span>{{ summary.date_visit_ended | dayjs('ddd, MMM Do YYYY, h:mma') }}</span>
-                    </span>
+            <div
+              class="accordion accordion-solid accordion-panel accordion-svg-toggle"
+              role="tablist"
+            >
+              <div class="card">
+                <div class="card-header" header-tag="header" role="tab" style="background: blue">
+                  <div class="card-title accord" v-b-toggle="`accordion-${i}`">
                     <span
-                      :class="getLabelStatusColor(summary.category)"
-                      class="label label-pill label-inline mr-2 ml-2"
-                      >{{ summary.category }}</span
-                    >
+                      :title="`Visit ${summary.status}`"
+                      v-b-tooltip.hover
+                      :class="getLabelDotStatus(summary.status)"
+                      class="label label-dot label-xl mr-3"
+                    ></span>
+                    <div class="card-label text-dark-50">
+                      <span class="mr-5">
+                        <span class="mr-2 text-dark">Start:</span>
+                        <span>{{
+                          summary.date_visit_start | dayjs('ddd, MMM Do YYYY, h:mma')
+                        }}</span>
+                      </span>
+                      <span v-if="summary.date_visit_ended">
+                        <span class="mr-2 text-dark">End:</span>
+                        <span>{{
+                          summary.date_visit_ended | dayjs('ddd, MMM Do YYYY, h:mma')
+                        }}</span>
+                      </span>
+                      <span
+                        :class="getLabelStatusColor(summary.category)"
+                        class="label label-pill label-inline mr-2 ml-2"
+                        >{{ summary.category }}</span
+                      >
+                    </div>
                   </div>
                 </div>
+                <b-collapse :id="`accordion-${i}`" accordion="my-accordion" role="tabpanel">
+                  <div class="mt-3 card-body border-bottom border-left border-right">
+                    <b-tabs content-class="mt-5">
+                      <b-tab title="Vitals" active>
+                        <antenatal-triage-table
+                          v-if="summary.category === ANTENATAL"
+                          :triages="summary.triages"
+                        />
+                        <triage-table v-else :triages="summary.triages" />
+                      </b-tab>
+                      <b-tab title="Observations">
+                        <antenatal-observations-table
+                          v-if="summary.category === ANTENATAL"
+                          :observations="summary.observations"
+                        />
+                        <observations-table v-else :observations="summary.observations" />
+                      </b-tab>
+                      <b-tab title="Diagnoses">
+                        <diagnoses-table :diagnoses="summary.diagnoses" />
+                      </b-tab>
+                      <b-tab title="Tests">
+                        <tests-table :tests="summary.tests" />
+                      </b-tab>
+                      <b-tab title="Medications">
+                        <medications-table :drugs="summary.drugs" />
+                      </b-tab>
+                      <b-tab title="Items">
+                        <additional-items-table :items="summary.items" />
+                      </b-tab>
+                      <b-tab title="Radiology">
+                        <radiology-table :investigations="summary.investigations" />
+                      </b-tab>
+                      <b-tab title="Services">
+                        <services-table :services="summary.services" />
+                      </b-tab>
+                      <b-tab v-if="summary.category === ANTENATAL" title="Clinical Notes">
+                        <clinical-notes-table :notes="summary.notes" />
+                      </b-tab>
+                    </b-tabs>
+                  </div>
+                </b-collapse>
               </div>
-              <b-collapse :id="`accordion-${i}`" accordion="my-accordion" role="tabpanel">
-                <div class="mt-3 card-body border-bottom border-left border-right">
-                  <b-tabs content-class="mt-5">
-                    <b-tab title="Vitals" active>
-                      <antenatal-triage-table
-                        v-if="summary.category === ANTENATAL"
-                        :triages="summary.triages"
-                      />
-                      <triage-table v-else :triages="summary.triages" />
-                    </b-tab>
-                    <b-tab title="Observations">
-                      <antenatal-observations-table
-                        v-if="summary.category === ANTENATAL"
-                        :observations="summary.observations"
-                      />
-                      <observations-table v-else :observations="summary.observations" />
-                    </b-tab>
-                    <b-tab title="Diagnoses">
-                      <diagnoses-table :diagnoses="summary.diagnoses" />
-                    </b-tab>
-                    <b-tab title="Tests">
-                      <tests-table :tests="summary.tests" />
-                    </b-tab>
-                    <b-tab title="Medications">
-                      <medications-table :drugs="summary.drugs" />
-                    </b-tab>
-                    <b-tab title="Items">
-                      <additional-items-table :items="summary.items" />
-                    </b-tab>
-                    <b-tab title="Radiology">
-                      <radiology-table :investigations="summary.investigations" />
-                    </b-tab>
-                    <b-tab title="Services">
-                      <services-table :services="summary.services" />
-                    </b-tab>
-                    <b-tab v-if="summary.category === ANTENATAL" title="Clinical Notes">
-                      <clinical-notes-table :notes="summary.notes" />
-                    </b-tab>
-                  </b-tabs>
-                </div>
-              </b-collapse>
+            </div>
+          </div>
+          <div class="text-center">
+            <a
+              href="#"
+              :disabled="isInLastPage"
+              :class="isInLastPage ? disabled : ''"
+              @click="onFetchMore"
+              class="btn btn-outline-secondary mb-3 padding-left padding-right"
+            >
+              <i class="flaticon2-circle-vol-2"></i> See more
+            </a>
+          </div>
+        </div>
+      </div>
+      <div v-else>
+        <empty-data-card @addData="goToObservation" :text="content" />
+      </div>
+    </div>
+    <div v-else class="card card-custom card-stretch gutter-b card-shadowless">
+      <div class="card-body">
+        <div class="card card-custom card-stretch card-stretch-fourth gutter-b">
+          <div class="accordion accordion-solid accordion-panel accordion-svg-toggle">
+            <div class="accord">
+              <b-skeleton animation="wave" width="85%"></b-skeleton>
+              <b-skeleton animation="wave" width="70%"></b-skeleton>
             </div>
           </div>
         </div>
-        <div class="text-center">
-          <a
-            href="#"
-            :disabled="isInLastPage"
-            :class="isInLastPage ? disabled : ''"
-            @click="onFetchMore"
-            class="btn btn-outline-secondary mb-3 padding-left padding-right"
-          >
-            <i class="flaticon2-circle-vol-2"></i> See more
-          </a>
-        </div>
       </div>
-    </div>
-    <div v-else>
-      <empty-data-card @addData="goToObservation" :text="content" />
     </div>
   </div>
 </template>

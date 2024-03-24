@@ -254,6 +254,10 @@ export default {
         'admission-history',
         'immunization-visit',
         'nhis-visits',
+        'visit-prescription',
+        'surgery-request',
+        'delivery',
+        'postnatal',
       ];
       return pagesToDisplay.includes(this.$route.name);
     },

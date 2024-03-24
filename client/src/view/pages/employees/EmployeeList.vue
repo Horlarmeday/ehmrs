@@ -40,7 +40,7 @@
           <table class="table table-head-custom table-vertical-center table-head-bg">
             <thead>
               <tr class="text-uppercase">
-                <th class="pl-5" style="min-width: 150px">Name</th>
+                <th class="pl-5" style="min-width: 200px">Name</th>
                 <th style="min-width: 100px">Username</th>
                 <th style="min-width: 100px">Phone</th>
                 <th style="min-width: 100px">Role</th>
@@ -91,7 +91,7 @@
                 </td>
                 <td>
                   <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
-                    staff.createdAt | dayjs('ddd, MMM Do YYYY, h:mma')
+                    staff.createdAt | dayjs('MMM Do YYYY, h:mma')
                   }}</span>
                 </td>
                 <td class="pr-0">
@@ -126,6 +126,7 @@
 import Pagination from '@/utils/Pagination.vue';
 import EditIcon from '../../../assets/icons/EditIcon.vue';
 import EditEmployee from './create/EditEmployee';
+import { setUrlQueryParams } from '@/common/common';
 export default {
   data() {
     return {
@@ -170,17 +171,28 @@ export default {
     searchByName() {
       if (!this.search) return this.notifyEmptyField();
       this.currentPage = 1;
-      this.$store.dispatch('employee/fetchEmployees', {
+      setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
         search: this.search,
       });
+      this.fetchEmployees({
+        currentPage: this.$route.query.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage,
+        search: this.$route.query.search || null,
+      });
     },
 
     handlePageChange() {
-      this.$store.dispatch('employee/fetchEmployees', {
+      setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
+      });
+      this.$store.dispatch('employee/fetchEmployees', {
+        currentPage: this.$route.query.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
       });
     },
 
@@ -197,6 +209,21 @@ export default {
     hideModal() {
       this.displayPrompt = false;
     },
+
+    fetchEmployees({ currentPage, itemsPerPage, search }) {
+      return this.$store.dispatch('employee/fetchEmployees', {
+        currentPage,
+        itemsPerPage,
+        ...(search && { search }),
+      });
+    },
+  },
+  created() {
+    this.fetchEmployees({
+      currentPage: this.$route.query.currentPage,
+      itemsPerPage: this.$route.query.itemsPerPage,
+      search: this.$route.query.search,
+    });
   },
 };
 </script>

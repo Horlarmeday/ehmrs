@@ -100,8 +100,6 @@ export default {
           'code',
           'fullscreen',
           'insertdatetime',
-          'powerpaste',
-          'mediaembed',
           'media',
           'table',
           'help',
@@ -144,8 +142,7 @@ export default {
           success(`${host}/${response.data.data}`);
         })
         .catch(error => {
-          console.error(error);
-          failure('Image upload failed');
+          failure(`Image upload failed, ${error}`);
         });
     },
 

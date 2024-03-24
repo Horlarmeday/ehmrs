@@ -38,7 +38,7 @@
       </div>
 
       <!--begin::Body-->
-      <div v-if="results.length" class="card-body pt-0 pb-3">
+      <div v-if="results?.length" class="card-body pt-0 pb-3">
         <!--begin::Table-->
         <div class="table-responsive">
           <table class="table table-head-custom table-vertical-center table-head-bg">
@@ -49,7 +49,7 @@
                 <th style="min-width: 150px">Patient Name</th>
                 <th style="min-width: 100px">Source</th>
                 <th class="pr-0" style="min-width: 160px">Date</th>
-                <th class="pr-0 " style="min-width: 150px">Action</th>
+                <th class="pr-0 " style="min-width: 100px">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -105,7 +105,7 @@
         />
       </div>
       <p
-        v-if="!queriedItems"
+        v-if="queriedItems === 0"
         class="font-weight-bolder card-body pt-0 pb-3 text-center text-dark-40"
       >
         No Results
@@ -160,7 +160,7 @@ export default {
         itemsPerPage: this.itemsPerPage,
         search: this.search,
       });
-      this.$store.dispatch('laboratory/fetchTestResults', {
+      this.fetchTestResults({
         currentPage: this.$route.query.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage,
         search: this.$route.query.search,
@@ -172,17 +172,27 @@ export default {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
       });
-      this.$store.dispatch('laboratory/fetchTestResults', {
+      this.fetchTestResults({
         currentPage: this.$route.query.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage,
         start: this.$route.query.startDate,
         end: this.$route.query.endDate,
+        search: this.$route.query.search || null,
       });
     },
 
     onPageChange(page) {
       this.currentPage = page;
       this.handlePageChange();
+    },
+
+    fetchTestResults({ currentPage, itemsPerPage, search, start, end }) {
+      return this.$store.dispatch('laboratory/fetchTestResults', {
+        currentPage,
+        itemsPerPage,
+        ...(search && { search }),
+        ...(start && end && { start, end }),
+      });
     },
 
     searchByDate(start, end) {
@@ -193,7 +203,7 @@ export default {
         startDate: dayjs(start).format('YYYY-MM-DD'),
         endDate: dayjs(end).format('YYYY-MM-DD'),
       });
-      this.$store.dispatch('laboratory/fetchTestResults', {
+      this.fetchTestResults({
         currentPage: this.$route.query.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage,
         start: this.$route.query.startDate,
