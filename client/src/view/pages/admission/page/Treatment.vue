@@ -22,6 +22,14 @@ export default {
       return { admission_id: this.$route.params.id };
     },
   },
+  created() {
+    this.$store
+      .dispatch('admission/fetchAdmission', { admissionId: this.$route.params.id })
+      .then(response => {
+        const res = response.data.data;
+        this.$store.dispatch('patient/setCurrentPatient', { ...res.patient, ...res.insurance });
+      });
+  },
 };
 </script>
 

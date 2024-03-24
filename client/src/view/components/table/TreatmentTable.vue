@@ -7,9 +7,9 @@
             <th scope="col">Drug</th>
             <th scope="col">Dosage Form</th>
             <th scope="col">Route</th>
-            <th scope="col">Dosage Administered</th>
+            <th scope="col">Dose Given</th>
             <th scope="col">Remarks</th>
-            <th scope="col">Date Prescribed.</th>
+            <th scope="col">Date</th>
             <th scope="col">Added By</th>
             <th scope="col"></th>
           </tr>
@@ -20,13 +20,13 @@
           </tr>
           <tr v-for="item in drugs" :key="item.id">
             <th>
-              <span>{{ item?.drug?.name || '-' }}</span>
+              <span>{{ item?.drug?.drug?.name || '-' }}</span>
             </th>
             <td>
-              <span> {{ item?.dosageForm?.name }} </span>
+              <span> {{ item?.drug?.dosage_form?.name }} </span>
             </td>
             <td>
-              <span> {{ item?.route?.name }} </span>
+              <span> {{ item?.drug.route?.name }} </span>
             </td>
             <td>
               <span> {{ item.dosage_administered }} </span>
@@ -35,10 +35,10 @@
               <span> {{ item.remarks }} </span>
             </td>
             <td>
-              <span>{{ item.createdAt | dayjs('ddd, MMM Do YYYY, h:mma') }}</span>
+              <span>{{ item.createdAt | dayjs('MMM Do YYYY, h:mma') }}</span>
             </td>
             <td>
-              <span>{{ item?.staff?.firstname }} {{ item?.staff?.lastname?.charAt(0) }}</span>
+              <span>{{ item?.staff?.fullname }}</span>
             </td>
             <td>
               <span>
