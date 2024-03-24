@@ -1,6 +1,6 @@
 <template>
   <!--begin: Search Form-->
-  <div class="card-body py-1">
+  <div class="card-body py-1 px-0">
     <div class="d-flex align-items-center justify-content-between flex-wrap mt-2">
       <div class="col-lg-3">
         <div ref="spin">
