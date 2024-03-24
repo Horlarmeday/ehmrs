@@ -1,8 +1,8 @@
 import { Patient } from '../../../../database/models';
 import { Op } from 'sequelize';
-import { processArray } from '../../../helpers/general';
 import { logger, taggedMessaged } from '../../../helpers/logger';
 import { getHospitalNumber } from '../../helper';
+import { processTasksExecution } from '../../../helpers/tasksProcessor';
 
 const updateHospitalNumber = async (patient: Patient) => {
   const message = taggedMessaged('updateHospitalNumber');
@@ -17,7 +17,13 @@ export const checkEmptyHospitalNumber = async () => {
   const patients = await Patient.findAll({ where: { hospital_id: { [Op.eq]: null } } });
   try {
     if (patients?.length) {
-      await processArray(patients, updateHospitalNumber);
+      await processTasksExecution({
+        tasks: patients,
+        message,
+        handler: updateHospitalNumber,
+        concurrency: 10,
+      });
+      return;
     }
     logger.warning(message(`No patients with empty hospital number, skipping...`));
   } catch (e) {

@@ -13,6 +13,7 @@ import { Visit } from './visit';
 import { FindAttributeOptions, GroupOption, Includeable } from 'sequelize/types/model';
 import { Order, WhereOptions } from 'sequelize';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
+import { PatientInsurance } from './patientInsurance';
 
 @Table({ timestamps: true })
 export class Complaint extends Model {
@@ -75,6 +76,12 @@ export class Complaint extends Model {
   })
   patient_id: number;
 
+  @ForeignKey(() => PatientInsurance)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  patient_insurance_id: number;
+
   @BelongsTo(() => Staff)
   staff: Staff;
 
@@ -83,6 +90,9 @@ export class Complaint extends Model {
 
   @BelongsTo(() => Visit)
   visit: Visit;
+
+  @BelongsTo(() => PatientInsurance)
+  patientInsurance: PatientInsurance;
 
   static async paginate(param: {
     paginate: number;

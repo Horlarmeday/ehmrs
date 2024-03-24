@@ -19,6 +19,7 @@ import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Patient } from './patient';
 import { Antenatal } from './antenatal';
 import { Visit } from './visit';
+import { Admission } from './admission';
 
 @Table({ timestamps: true, tableName: 'Deliveries' })
 export class Delivery extends Model {
@@ -41,14 +42,20 @@ export class Delivery extends Model {
   @ForeignKey(() => Antenatal)
   @Column({
     type: DataType.INTEGER,
+  })
+  ante_natal_id: number;
+
+  @ForeignKey(() => Admission)
+  @Column({
+    type: DataType.INTEGER,
     allowNull: false,
     validate: {
       notEmpty: {
-        msg: 'antenatal id is required',
+        msg: 'admission id is required',
       },
     },
   })
-  ante_natal_id: number;
+  admission_id: number;
 
   @ForeignKey(() => Visit)
   @Column({
@@ -203,6 +210,9 @@ export class Delivery extends Model {
 
   @BelongsTo(() => Visit)
   visit: Visit;
+
+  @BelongsTo(() => Admission)
+  admission: Admission;
 
   static async paginate(param: {
     paginate: number;

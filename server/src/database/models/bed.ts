@@ -18,7 +18,7 @@ export enum BedStatus {
 export class Bed extends Model {
   @PrimaryKey
   @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
-  id: string;
+  id: number;
 
   @Column({
     type: DataType.STRING,
