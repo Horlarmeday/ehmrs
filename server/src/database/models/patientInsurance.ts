@@ -87,7 +87,7 @@ export class PatientInsurance extends Model {
   @Column({
     type: DataType.INTEGER,
   })
-  staff_id!: number;
+  staff_id: number;
 
   @BelongsTo(() => Staff)
   staff: Staff;

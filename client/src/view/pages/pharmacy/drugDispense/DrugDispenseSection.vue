@@ -1,7 +1,12 @@
 <template>
   <div>
     <div class="accordion accordion-solid accordion-toggle-arrow">
-      <div class="card" v-for="(prescription, i) in prescriptions" :key="i">
+      <div v-if="!prescriptions?.length">
+        <DefaultSkeleton />
+        <DefaultSkeleton />
+        <DefaultSkeleton />
+      </div>
+      <div v-else class="card" v-for="(prescription, i) in prescriptions" :key="i">
         <div class="card-header">
           <div class="card-title" v-b-toggle="`collapse-d${i}`">
             <span class="mr-5 text-black-50 lead font-size-h4">Drug Name:</span>
@@ -19,21 +24,15 @@
           </div>
         </div>
         <div>
-          <b-collapse :visible="i === 0" :id="`collapse-d${i}`">
-            <b-card
-              :class="
-                prescription?.drug_type === NHIS && prescription?.nhis_status !== APPROVED
-                  ? DISABLED
-                  : ''
-              "
-            >
+          <b-collapse :id="`collapse-d${i}`">
+            <b-card :class="prescription.payment_status === PENDING && DISABLED">
               <drug-info-banner :prescription="prescription" />
               <div class="form-group row">
                 <div class="col-lg-6">
                   <label>Dispense</label>
                   <div class="input-group">
                     <input
-                      :disabled="!prescription.quantity_remaining"
+                      :disabled="prescription.shouldDisableDispense"
                       type="number"
                       class="form-control"
                       v-model="prescription.quantity_remaining_to_dispense"
@@ -61,6 +60,7 @@
                   <div class="input-group">
                     <label class="checkbox mr-3 checkbox-lg">
                       <input
+                        :disabled="!prescription.quantity_remaining_to_return"
                         type="checkbox"
                         class="mr-2"
                         v-model="prescription.disabledReturn"
@@ -91,6 +91,14 @@
                       </button>
                     </div>
                   </div>
+                  <label>Reason for Return</label>
+                  <input
+                    :disabled="!prescription.disabledReturn"
+                    type="text"
+                    class="form-control"
+                    v-model="prescription.reason_for_return"
+                    aria-label="Reason for return"
+                  />
                 </div>
               </div>
             </b-card>
@@ -103,10 +111,11 @@
 
 <script>
 import DrugInfoBanner from '@/view/pages/pharmacy/drugDispense/DrugInfoBanner.vue';
+import DefaultSkeleton from '@/utils/DefaultSkeleton.vue';
 
 export default {
   name: 'DrugDispenseSection',
-  components: { DrugInfoBanner },
+  components: { DefaultSkeleton, DrugInfoBanner },
   props: {
     prescriptions: {
       type: Array,
@@ -121,6 +130,7 @@ export default {
     isDisabled: false,
     APPROVED: 'Approved',
     DISABLED: 'disabledCard',
+    PENDING: 'Pending',
     NHIS: 'NHIS',
   }),
 

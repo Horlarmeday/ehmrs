@@ -3,7 +3,7 @@
     <div class="card card-custom gutter-b">
       <div class="card-header pt-5">
         <h3 class="card-title align-items-start flex-column">
-          <span class="card-label font-weight-bolder text-dark">Medications {{ isDisabled }}</span>
+          <span class="card-label font-weight-bolder text-dark">Medications</span>
         </h3>
         <div>
           <button

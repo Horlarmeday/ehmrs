@@ -6,10 +6,8 @@
 
 <script>
 export default {
-  name: "RadiologyPage"
+  name: 'RadiologyPage',
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

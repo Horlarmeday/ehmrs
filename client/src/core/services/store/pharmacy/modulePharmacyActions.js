@@ -300,4 +300,26 @@ export default {
         });
     });
   },
+
+  fetchDrugsPrescriptionsHistory({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/pharmacy/prescriptions/history/get`, {
+          params: {
+            currentPage: payload.currentPage,
+            pageLimit: payload.itemsPerPage,
+            visitId: payload.visitId,
+          },
+        })
+        .then(response => {
+          commit('SET_PRESCRIPTIONS_HISTORY', response.data.data.docs);
+          commit('SET_HISTORY_TOTAL', response.data.data.total);
+          commit('SET_HISTORY_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
 };

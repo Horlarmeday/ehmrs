@@ -5,6 +5,7 @@ import {
   deletePrescribedDrug,
   getOneAdditionalItem,
   getOnePrescribedDrug,
+  getOnePrescribedDrugWithoutJoins,
   getPatientTreatments,
   getPrescribedAdditionalItems,
   getPrescribedDrugs,
@@ -67,21 +68,22 @@ class PharmacyOrderService {
     visit_id: number
   ): Promise<PrescribedDrug[]> {
     const visit = await VisitService.getVisitById(visit_id);
-    const [insurance, patient] = await Promise.all([
+    const [insurance, patient, drugPrescription] = await Promise.all([
       getPatientInsuranceQuery({
         patient_id: visit.patient_id,
         is_default: true,
       }),
       PatientService.getPatientById(visit.patient_id),
+      this.getDrugPrescription(visit.patient_id, {
+        ...body[0],
+        visit_id,
+        staff_id,
+      }),
     ]);
 
     const mappedPrescribedDrugs = await Promise.all(
       body.map(async data => {
         const { drug_type, drug_id, inventory_id, quantity_to_dispense, drug_group } = data;
-        const drugPrescription = await this.getDrugPrescription(visit.patient_id, {
-          ...data,
-          visit_id,
-        });
         const inventory = await getInventoryItemQuery({ inventory_id, drug_id });
         const drugPrice = (await getDrugPrice(patient, drug_id)) * +quantity_to_dispense;
         const totalPrice = +inventory.selling_price * +quantity_to_dispense;
@@ -256,7 +258,7 @@ class PharmacyOrderService {
    */
   static async deletePrescribedDrug(body): Promise<number> {
     const allowedStatuses = [PaymentStatus.PAID, PaymentStatus.PERMITTED, PaymentStatus.CLEARED];
-    const drug = await getOnePrescribedDrug({ id: body.drugId });
+    const drug = await getOnePrescribedDrugWithoutJoins({ id: body.drugId });
     if (drug && allowedStatuses.includes(drug.payment_status))
       throw new BadException('Error', StatusCodes.BAD_REQUEST, CANNOT_DELETE_DRUG);
 

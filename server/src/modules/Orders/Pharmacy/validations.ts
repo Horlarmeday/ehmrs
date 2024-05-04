@@ -34,7 +34,10 @@ export function validateDrugPrescription(drug: any) {
   const schema = Joi.object({
     start_date: Joi.string().required(),
     quantity_prescribed: Joi.number().required(),
-    quantity_to_dispense: Joi.number().required(),
+    quantity_to_dispense: Joi.number()
+      .min(1)
+      .positive()
+      .required(),
     route_id: Joi.number().required(),
     frequency: Joi.string().required(),
     dosage_form_id: Joi.number().required(),
@@ -76,7 +79,10 @@ export function validateBulkDrugsPrescription(drug: any) {
       Joi.object({
         start_date: Joi.string().required(),
         quantity_prescribed: Joi.number().required(),
-        quantity_to_dispense: Joi.number().required(),
+        quantity_to_dispense: Joi.number()
+          .min(1)
+          .positive()
+          .required(),
         route_id: Joi.number().required(),
         frequency: Joi.string().required(),
         dosage_form_id: Joi.number().required(),

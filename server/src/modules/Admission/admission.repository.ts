@@ -37,8 +37,8 @@ import { Source } from '../../database/models/prescribedDrug';
 import {
   bulkCreateAdditionalItems,
   getPatientTreatments,
-  getPrescriptionAdditionalItems,
-  getPrescriptionDrugs,
+  getAdditionalItems,
+  getDrugsPrescribed,
 } from '../Orders/Pharmacy/pharmacy-order.repository';
 import { Gender } from '../../database/models/staff';
 import { DrugType } from '../../database/models/pharmacyStore';
@@ -242,12 +242,12 @@ export const getAdmissionHistory = async (admissionId: number) => {
     wardRounds,
   ] = await Promise.all([
     getPrescriptionTests({ visit_id: admission.visit_id }),
-    getPrescriptionDrugs({ visit_id: admission.visit_id }),
+    getDrugsPrescribed({ visit_id: admission.visit_id }),
     getPrescriptionInvestigations({ visit_id: admission.visit_id }),
     getObservations({ admission_id: admissionId }),
     getCarePlans({ admission_id: admissionId }),
     getPatientDiagnoses({ visit_id: admission.visit_id }),
-    getPrescriptionAdditionalItems({ visit_id: admission.visit_id }),
+    getAdditionalItems({ visit_id: admission.visit_id }),
     getPrescriptionServices({ visit_id: admission.visit_id }),
     getIOCharts({ admission_id: admissionId }),
     getNursingNotes({ admission_id: admissionId }),

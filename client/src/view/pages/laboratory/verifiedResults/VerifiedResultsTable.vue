@@ -17,8 +17,6 @@
               </th>
               <th style="min-width: 100px">Patient ID</th>
               <th style="min-width: 200px">Patient Name</th>
-              <th style="min-width: 70px">Pending Tests</th>
-              <th style="min-width: 70px">Pending Verification</th>
               <th style="min-width: 70px">Verified Tests</th>
               <th style="min-width: 30px">Total</th>
               <th style="min-width: 80px">Status</th>
@@ -53,16 +51,6 @@
                 </span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
-                  {{ sample.pending_tests_count }}
-                </span>
-              </td>
-              <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-md">{{
-                  sample.pending_verification_count
-                }}</span>
-              </td>
-              <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-md">{{
                   sample.verified_tests_count
                 }}</span>
@@ -87,7 +75,7 @@
               </td>
               <td class="text-right pr-0">
                 <router-link
-                  :class="{ disabled: !sample.pending_approved_count }"
+                  :class="{ disabled: sample.verified_tests_count === 0 }"
                   v-b-tooltip.hover
                   title="Approve"
                   :to="`/laboratory/result-approval/${sample.id}`"

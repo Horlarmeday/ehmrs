@@ -136,3 +136,9 @@ export function calculateAge(birthday) {
   }
   return age;
 }
+
+export const getLabelDotStatus = type => {
+  if (type === 'Cash') return 'label-success';
+  if (type === 'Private') return 'label-primary';
+  return 'label-danger';
+};

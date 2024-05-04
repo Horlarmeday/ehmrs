@@ -10,10 +10,7 @@
               class="d-flex align-items-center justify-content-between p-4 flex-lg-wrap flex-xl-nowrap"
             >
               <div class="d-flex flex-column mr-5">
-                <router-link
-                  :to="card.link"
-                  class="h4 text-dark text-hover-primary mb-5"
-                >
+                <router-link :to="card.link" class="h4 text-dark text-hover-primary mb-5">
                   {{ card.name }}
                 </router-link>
                 <p class="text-dark-50">
@@ -54,13 +51,13 @@ export default {
           desc: 'Click here to view all health insurance HMOs',
         },
         {
-          name: 'Policies',
-          link: '/insurance/hmo',
-          desc: 'Click here to view the various health insurance policies',
+          name: 'Tariffs',
+          link: '/insurance/tariffs',
+          desc: 'Click here to view the various health insurance tariffs',
         },
       ],
     };
-  }
+  },
 };
 </script>
 

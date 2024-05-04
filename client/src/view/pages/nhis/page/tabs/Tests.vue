@@ -233,12 +233,6 @@ export default {
       if (status === 'Declined') return 'text-danger';
       return 'text-dark-75';
     },
-
-    getLabelDotStatus(type) {
-      if (type === 'Cash') return 'label-success';
-      if (type === 'Private') return 'label-info';
-      return 'label-primary';
-    },
   },
   created() {
     this.fetchPrescribedTests();

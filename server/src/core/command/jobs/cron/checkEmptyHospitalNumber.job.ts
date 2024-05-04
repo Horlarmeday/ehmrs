@@ -21,7 +21,7 @@ export const checkEmptyHospitalNumber = async () => {
         tasks: patients,
         message,
         handler: updateHospitalNumber,
-        concurrency: 10,
+        concurrency: 1000,
       });
       return;
     }

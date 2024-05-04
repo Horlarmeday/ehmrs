@@ -220,8 +220,8 @@ export class Patient extends Model {
   principal_id?: number;
 
   @Column({
-    type: DataType.ENUM(PatientType.DEPENDANT, PatientType.PRINCIPAL, PatientType.INDEPENDENT),
-    defaultValue: PatientType.INDEPENDENT,
+    type: DataType.ENUM(PatientType.DEPENDANT, PatientType.PATIENT),
+    defaultValue: PatientType.PATIENT,
   })
   patient_type: PatientType;
 
@@ -231,9 +231,15 @@ export class Patient extends Model {
   })
   patient_status: PatientStatus;
 
+  @Column({
+    type: DataType.INTEGER,
+  })
+  old_patient_id?: number;
+
   @Column(DataType.VIRTUAL)
   get fullname(): unknown {
-    return `${this.getDataValue('firstname')} ${this.getDataValue('lastname')}`;
+    return `${this.getDataValue('firstname')} ${this.getDataValue('middlename') ||
+      ''} ${this.getDataValue('lastname')}`;
   }
 
   @BelongsTo(() => Staff)

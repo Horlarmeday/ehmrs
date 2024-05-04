@@ -9,10 +9,21 @@ export function validateObservation(observation) {
     examination_note: Joi.string()
       .allow('')
       .optional(),
-    has_smoking_history: Joi.boolean()
-      .allow('')
-      .default(false)
-      .optional(),
+    chest: Joi.string()
+      .optional()
+      .allow(''),
+    cvs: Joi.string()
+      .optional()
+      .allow(''),
+    other_examination: Joi.string()
+      .optional()
+      .allow(''),
+    mss: Joi.string()
+      .optional()
+      .allow(''),
+    abdomen: Joi.string()
+      .optional()
+      .allow(''),
     complaints: Joi.array()
       .items(
         Joi.object({

@@ -1,6 +1,6 @@
 <template>
   <div class="card card-custom card-stretch gutter-b card-shadowless">
-    <div v-if="summaries">
+    <div v-if="!loading">
       <div v-if="!isEmptySummary">
         <div class="card-body">
           <div
@@ -18,7 +18,7 @@
                     <span
                       :title="`Visit ${summary.status}`"
                       v-b-tooltip.hover
-                      :class="getLabelDotStatus(summary.status)"
+                      :class="getVisitDotStatus(summary.status)"
                       class="label label-dot label-xl mr-3"
                     ></span>
                     <div class="card-label text-dark-50">
@@ -110,6 +110,7 @@
             <div class="accord">
               <b-skeleton animation="wave" width="85%"></b-skeleton>
               <b-skeleton animation="wave" width="70%"></b-skeleton>
+              <b-skeleton animation="wave" width="90%"></b-skeleton>
             </div>
           </div>
         </div>
@@ -154,6 +155,10 @@ export default {
       type: String,
       required: true,
     },
+    loading: {
+      type: Boolean,
+      required: false,
+    },
   },
   data: () => ({
     disabled: 'disabled',
@@ -187,7 +192,7 @@ export default {
       if (category === 'Antenatal') return 'label-primary';
       return 'label-dark';
     },
-    getLabelDotStatus(status) {
+    getVisitDotStatus(status) {
       if (status === 'Ongoing') return 'label-success';
       return 'label-danger';
     },

@@ -10,18 +10,18 @@ export default [
     name: 'Samples Collected',
   },
   {
+    url: '/laboratory/verified-results',
+    icon: 'flaticon-like',
+    name: 'Verified Tests',
+  },
+  {
     url: '/laboratory/find-results',
     icon: 'flaticon2-poll-symbol',
     name: 'Results',
-  },
-  {
-    url: '/laboratory/verified-results',
-    icon: 'flaticon-like',
-    name: 'Approvals',
   },
   {
     url: '/laboratory/reports',
     icon: 'flaticon2-list-1',
     name: 'Reports',
   },
-]
+];

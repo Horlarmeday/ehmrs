@@ -1,7 +1,7 @@
 <template>
   <div>
     <h3 class="card-title align-items-start">
-      <span class="card-label font-weight-bolder text-dark">Samples to Collect</span>
+      <span class="card-label font-weight-bolder text-dark">Requested Investigations</span>
     </h3>
     <div class="header-top mb-6">
       <div class="container white">

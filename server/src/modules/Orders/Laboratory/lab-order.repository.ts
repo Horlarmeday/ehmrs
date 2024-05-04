@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { PrescribedTest, Staff, Test } from '../../../database/models';
+import { PrescribedTest, Staff, Test, TestResult } from '../../../database/models';
 import sequelize, { WhereOptions } from 'sequelize';
 import { staffAttributes } from '../../Antenatal/antenatal.repository';
 import { BadException } from '../../../common/util/api-error';
@@ -69,6 +69,10 @@ export const getPrescribedTests = ({ currentPage = 1, pageLimit = 10, filter = n
         as: 'examiner',
         attributes: staffAttributes,
       },
+      {
+        model: TestResult,
+        attributes: ['result', 'status'],
+      },
     ],
   });
 };
@@ -76,6 +80,7 @@ export const getPrescribedTests = ({ currentPage = 1, pageLimit = 10, filter = n
 export const getPrescriptionTests = async (query: sequelize.WhereOptions<PrescribedTest>) => {
   return PrescribedTest.findAll({
     where: { ...query },
+    order: [['createdAt', 'DESC']],
     include: [
       { model: Test, attributes: ['name'] },
       { model: Staff, as: 'examiner', attributes: staffAttributes },

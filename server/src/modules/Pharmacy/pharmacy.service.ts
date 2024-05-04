@@ -9,6 +9,7 @@ import {
   getDosageFormRoutes,
   getDosageForms,
   getDrugPrescriptions,
+  getDrugPrescriptionsHistory,
   getGenericDrugs,
   getMeasurements,
   getOneDrugPrescription,
@@ -33,6 +34,7 @@ import {
 import {
   getOneAdditionalItem,
   getOnePrescribedDrug,
+  getOnePrescribedDrugWithoutJoins,
 } from '../Orders/Pharmacy/pharmacy-order.repository';
 import { DispenseDrugType, ReturnDrugType } from './interface/prescribed-drug.type';
 import { BadException } from '../../common/util/api-error';
@@ -40,6 +42,7 @@ import { StatusCodes } from '../../core/helpers/helper';
 import { gt, gte } from 'lodash';
 import { getInventoryItemQuery, getQuantitySum } from '../Inventory/inventory.repository';
 import {
+  INVENTORY_ITEM_NOT_FOUND,
   INVENTORY_QUANTITY_LOW,
   QUANTITY_MORE_THAN_DOCTOR_QUANTITY,
   QUANTITY_MORE_THAN_QUANTITY_LEFT,
@@ -47,6 +50,7 @@ import {
   RETURN_QUANTITY_MORE_THAN_QUANTITY_PRESCRIBED,
 } from './messages/response-messages';
 import { HistoryType } from '../../database/models/inventoryItemHistory';
+import { getVisitById } from '../Visit/visit.repository';
 
 class PharmacyService {
   /** ***********************
@@ -243,16 +247,9 @@ class PharmacyService {
    */
   static async getDrugPrescriptions(body) {
     const { currentPage, pageLimit, search, start, end, period } = body;
-    if (start && end) {
-      return getDrugPrescriptions({ currentPage, pageLimit, period, search, end, start });
-    }
-
-    if (search) {
-      return getDrugPrescriptions({ currentPage, pageLimit, period, search });
-    }
 
     if (Object.values(body).length) {
-      return getDrugPrescriptions({ currentPage, pageLimit, period });
+      return getDrugPrescriptions({ currentPage, pageLimit, period, search, start, end });
     }
 
     return getDrugPrescriptions({ period });
@@ -280,7 +277,7 @@ class PharmacyService {
     const { prescription_id, additional_item_id } = body;
 
     const fetchPrescribedDrug = prescription_id
-      ? getOnePrescribedDrug({ id: prescription_id })
+      ? getOnePrescribedDrugWithoutJoins({ id: prescription_id })
       : getOneAdditionalItem({ id: additional_item_id });
 
     const prescribedDrug = await fetchPrescribedDrug;
@@ -288,6 +285,9 @@ class PharmacyService {
       inventory_id: prescribedDrug.inventory_id,
       drug_id: prescribedDrug.drug_id,
     });
+    if (!inventoryItem) {
+      throw new BadException('NOT_FOUND', StatusCodes.NOT_FOUND, INVENTORY_ITEM_NOT_FOUND);
+    }
     this.dispenseDrugValidations(body, prescribedDrug, inventoryItem);
     return dispenseDrug(inventoryItem, prescribedDrug, body);
   }
@@ -303,7 +303,7 @@ class PharmacyService {
   static async returnDrugToInventory(body: ReturnDrugType): Promise<InventoryItemHistory> {
     const { prescription_id, additional_item_id } = body || {};
     const fetchPrescribedDrug = prescription_id
-      ? getOnePrescribedDrug({ id: prescription_id })
+      ? getOnePrescribedDrugWithoutJoins({ id: prescription_id })
       : getOneAdditionalItem({ id: additional_item_id });
 
     const prescribedDrug = await fetchPrescribedDrug;
@@ -311,9 +311,28 @@ class PharmacyService {
       inventory_id: prescribedDrug.inventory_id,
       drug_id: prescribedDrug.drug_id,
     });
-
-    await this.returnDrugValidations(body, prescribedDrug);
+    if (!inventoryItem) {
+      throw new BadException('NOT_FOUND', StatusCodes.NOT_FOUND, INVENTORY_ITEM_NOT_FOUND);
+    }
+    this.returnDrugValidations(body, prescribedDrug);
     return returnDrugToInventory(inventoryItem, prescribedDrug, body);
+  }
+
+  /**
+   * Get drugs and prescriptions history
+   * @param body
+   * @memberof PharmacyService
+   */
+  static async getDrugsPrescriptionsHistory(body) {
+    const { currentPage, pageLimit, visitId } = body;
+
+    const visit = await getVisitById(visitId);
+
+    if (Object.keys(body).length) {
+      return getDrugPrescriptionsHistory(currentPage, pageLimit, visit.patient_id);
+    }
+
+    return getDrugPrescriptionsHistory(1, 5, visit.patient_id);
   }
 
   static dispenseDrugValidations(
@@ -337,7 +356,7 @@ class PharmacyService {
       throw new BadException('INVALID', StatusCodes.BAD_REQUEST, INVENTORY_QUANTITY_LOW);
   }
 
-  static async returnDrugValidations(
+  static returnDrugValidations(
     data: ReturnDrugType,
     prescribedDrug: PrescribedDrug | PrescribedAdditionalItem
   ) {
@@ -348,15 +367,16 @@ class PharmacyService {
         RETURN_QUANTITY_MORE_THAN_DOCTOR_QUANTITY
       );
 
-    const quantitySum = await getQuantitySum('quantity_returned', {
-      history_type: HistoryType.RETURNED,
-      drug_prescription_id: prescribedDrug.id,
-    });
-    if (gt(+quantitySum + +data.quantity_to_return, prescribedDrug.quantity_to_dispense))
+    if (
+      gt(
+        +prescribedDrug.quantity_returned + +data.quantity_to_return,
+        prescribedDrug.quantity_to_dispense
+      )
+    )
       throw new BadException(
         'INVALID',
         StatusCodes.BAD_REQUEST,
-        RETURN_QUANTITY_MORE_THAN_QUANTITY_PRESCRIBED
+        RETURN_QUANTITY_MORE_THAN_DOCTOR_QUANTITY
       );
   }
 

@@ -5,15 +5,15 @@
         <tr>
           <th>Name</th>
           <th>Result</th>
-          <th class="text-center">Abnormal</th>
-          <th>Referral Reason</th>
+          <th class="text-center">Referral Reason</th>
           <th>Institute</th>
           <th>Note</th>
         </tr>
       </thead>
     </table>
     <div class="accordion accordion-toggle-arrow" id="accordionExample1">
-      <div class="card" v-for="(order, i) in tests" :key="i">
+      <DefaultSkeleton v-if="!tests?.length" />
+      <div v-else class="card" v-for="(order, i) in tests" :key="i">
         <div class="card-header">
           <div class="card-title" v-b-toggle="`collapse-${i}`">
             <span class="mr-5 text-black-50">Lab No.:</span>
@@ -25,10 +25,30 @@
         <div>
           <b-collapse visible :id="`collapse-${i}`">
             <b-card>
+              <DefaultSkeleton v-if="!order.tests?.length" />
               <table class="table">
                 <tbody v-for="(test, index) in order.tests" :key="index">
-                  <tr>
-                    <th scope="row" align="middle">{{ test.name }}</th>
+                  <tr :class="{ disabled: test.payment_status === PENDING }">
+                    <th scope="row" align="middle">
+                      <span
+                        :title="`${test.test_type}`"
+                        v-b-tooltip.hover
+                        :class="getLabelDotStatus(test.test_type)"
+                        class="label label-dot label-lg mr-2"
+                      ></span>
+                      {{ test.name }}
+                      <span
+                        v-if="test.is_urgent"
+                        class="label pulse pulse-warning ml-5"
+                        title="Urgent"
+                        v-b-tooltip.hover
+                      >
+                        <span class="position-relative">
+                          <i class="fas fa-lightbulb text-warning icon-lg"
+                        /></span>
+                        <span class="pulse-ring"></span>
+                      </span>
+                    </th>
                     <td style="vertical-align: middle"></td>
                     <td>
                       <textarea v-model="test.result" cols="25" rows="2" class="" />
@@ -39,18 +59,9 @@
                         v-b-tooltip.hover
                         title="Result was rejected"
                         class="mr-4"
-                        v-if="test.status === 'Rejected'"
+                        v-if="test.status === REJECTED"
                         ><i class="flaticon2-warning text-warning icon-lg" />
                       </span>
-                    </td>
-                    <td>
-                      <input
-                        v-b-tooltip.hover
-                        title="Enable if result is abnormal"
-                        v-model="test.is_abnormal"
-                        type="checkbox"
-                        class=""
-                      />
                     </td>
                     <td>
                       <div class="float-right">
@@ -112,8 +123,12 @@
 </template>
 
 <script>
+import DefaultSkeleton from '@/utils/DefaultSkeleton.vue';
+import { getLabelDotStatus } from '@/common/common';
+
 export default {
   name: 'ResultSection',
+  components: { DefaultSkeleton },
   props: {
     prescriptions: {
       type: Array,
@@ -140,18 +155,25 @@ export default {
           patient_id: this.patient_id,
           disabledReferral: true,
           result: test?.result?.result || '',
-          is_abnormal: test?.result?.is_abnormal || false,
+          valid_range: test?.test?.valid_range,
           institute_referred: test?.result?.institute_referred || '',
           referral_reason: test?.result?.referral_reason || '',
           comments: test?.result?.comments || '',
           status: test?.result?.status,
+          payment_status: test?.payment_status,
+          test_type: test?.test_type,
+          is_urgent: test?.is_urgent,
         })),
       })),
       accession_numb: this.accession_number,
       isDisabled: false,
+      ACCEPTED: 'Accepted',
+      REJECTED: 'Rejected',
+      PENDING: 'Pending',
     };
   },
   methods: {
+    getLabelDotStatus,
     addSpinner(submitButton) {
       this.isDisabled = true;
       submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');
@@ -175,8 +197,9 @@ export default {
         // eslint-disable-next-line no-unused-vars
         .map(({ sample, ...tests }) => tests)
         .flatMap(r => r.tests)
+        .filter(test => test.status !== this.ACCEPTED)
         // eslint-disable-next-line no-unused-vars
-        .map(({ result_unit, ...rest }) => rest);
+        .map(({ result_unit, payment_status, test_type, is_urgent, ...rest }) => rest);
 
       if (!results.some(({ result }) => result)) {
         return this.$notify({
@@ -198,4 +221,9 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+tr.disabled {
+  pointer-events: none; /* Disable pointer events to prevent interaction */
+  opacity: 0.5; /* Optionally, reduce the opacity to visually indicate the disabled state */
+}
+</style>

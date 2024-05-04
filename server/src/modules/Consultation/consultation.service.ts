@@ -26,20 +26,17 @@ class ConsultationService {
    */
   static async createObservationService(body: Observation) {
     const { complaints, staff_id, visit_id, diagnosis } = body;
-    let history: History;
     const visit = await VisitService.getVisitById(visit_id);
     const insurance = await getPatientInsuranceQuery({
       patient_id: visit.patient_id,
       is_default: true,
     });
 
-    if (checkValueExists(body)) {
-      history = await createObservation({
-        ...body,
-        patient_id: visit.patient_id,
-        patient_insurance_id: insurance?.id,
-      });
-    }
+    const history = await createObservation({
+      ...body,
+      patient_id: visit.patient_id,
+      patient_insurance_id: insurance?.id,
+    });
 
     let mappedComplaints: Complaint[];
     if (complaints?.length) {

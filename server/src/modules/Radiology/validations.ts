@@ -53,7 +53,28 @@ export function validateAddInvestigationResults(result) {
           status: Joi.string()
             .valid('Accepted', 'Rejected', 'Pending')
             .required(),
+          result: Joi.string()
+            .optional()
+            .allow(''),
+        })
+      )
+      .required(),
+  });
+
+  return schema.validate(result);
+}
+
+export function validateResultApproval(result) {
+  const schema = Joi.object({
+    results: Joi.array()
+      .items(
+        Joi.object({
+          prescribed_investigation_id: Joi.number().required(),
+          investigation_prescription_id: Joi.number().required(),
           result: Joi.string().required(),
+          name: Joi.string()
+            .optional()
+            .allow(''),
         })
       )
       .required(),

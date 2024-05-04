@@ -87,12 +87,8 @@ export class LabOrderService {
   static async getPrescribedTests(body) {
     const { currentPage, pageLimit, filter } = body;
 
-    if (filter) {
-      return getPrescribedTests({ currentPage, pageLimit, filter });
-    }
-
     if (Object.values(body).length) {
-      return getPrescribedTests({ currentPage, pageLimit });
+      return getPrescribedTests({ currentPage, pageLimit, filter });
     }
 
     return getPrescribedTests({});

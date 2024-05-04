@@ -64,9 +64,7 @@ export default {
   },
 
   UPDATE_MEASUREMENT(state, measurement) {
-    const measurementIndex = state.measurements.findIndex(
-      p => p.id === measurement.id
-    );
+    const measurementIndex = state.measurements.findIndex(p => p.id === measurement.id);
     Object.assign(state.measurements[measurementIndex], measurement);
   },
 
@@ -111,5 +109,20 @@ export default {
 
   DISPENSE_DRUG(state, prescription) {
     console.log(prescription);
+  },
+
+  /**
+   * PRESCRIPTIONS HISTORY
+   */
+  SET_PRESCRIPTIONS_HISTORY(state, prescriptions) {
+    state.prescriptionsHistory = prescriptions;
+  },
+
+  SET_HISTORY_TOTAL(state, total) {
+    state.totalHistory = total;
+  },
+
+  SET_HISTORY_PAGES(state, pages) {
+    state.historyPages = pages;
   },
 };

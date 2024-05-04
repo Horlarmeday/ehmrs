@@ -7,7 +7,8 @@ export class Result {
   result?: string;
   status?: string;
   test_status?: string;
-  is_abnormal: boolean;
+  is_abnormal?: boolean;
+  valid_range?: string;
   institute_referred?: string;
   referral_reason?: string;
   comments?: string;

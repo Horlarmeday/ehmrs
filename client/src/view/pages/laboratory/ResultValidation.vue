@@ -33,7 +33,7 @@ export default {
       return this.$store.state.laboratory.sampleCollected;
     },
     accessionNumberKey() {
-      return this.sample.accession_number;
+      return this.sample.accession_number + Date.now();
     },
   },
   created() {

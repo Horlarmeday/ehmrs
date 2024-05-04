@@ -196,7 +196,7 @@
                   class="form-control-sm form-control"
                   type="number"
                   name="quantity_to_dispense"
-                  v-validate="'required|min:1'"
+                  v-validate="'required|min_value:1'"
                   data-vv-validate-on="blur"
                   @input="getTotalPrice"
                   :disabled="!quantity_prescribed"
@@ -304,6 +304,10 @@ export default {
     },
     drugOrders() {
       return this.$store.state.order.drug_orders;
+    },
+
+    tempDrugOrders() {
+      return this.$store.state.order.drug_prescriptions;
     },
   },
 
@@ -431,7 +435,10 @@ export default {
       this.total_price = this.price * this.quantity_to_dispense;
       // check NHIS drugs quota is reached
       if (this.switchPosition && this.switchSpot) {
-        const totalDrugsPrescribedToday = this.getTotalDrugsPrescribedToday(this.drugOrders);
+        const totalDrugsPrescribedToday = this.getTotalDrugsPrescribedToday([
+          ...this.drugOrders,
+          ...this.tempDrugOrders,
+        ]);
         const total = +this.total_price + +totalDrugsPrescribedToday;
         this.nhisPriceQuotaExceeded = total > this.quotaPrice;
       }
@@ -581,7 +588,9 @@ export default {
     },
 
     getTotalDrugsPrescribedToday(arr) {
-      const drugsToday = arr.filter(({ date_prescribed }) => isToday(date_prescribed));
+      const drugsToday = arr.filter(
+        ({ date_prescribed, drug_group }) => isToday(date_prescribed) && drug_group === 'Primary'
+      );
       return this.sumTotalPrice(drugsToday);
     },
 

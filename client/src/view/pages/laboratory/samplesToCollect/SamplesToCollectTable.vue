@@ -12,7 +12,7 @@
         <table class="table table-head-custom table-head-bg table-vertical-center">
           <thead>
             <tr class="text-uppercase">
-              <th style="min-width: 150px" class="pl-7">
+              <th style="min-width: 150px" class="pl-4">
                 <span class="text-dark-75">Patient ID</span>
               </th>
               <th style="min-width: 200px">Patient Name</th>
@@ -23,12 +23,14 @@
               <th class="text-right" style="min-width: 130px">Action</th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-if="samples.length === 0">
+          <tbody v-if="samples.length === 0">
+            <tr>
               <td colspan="9" align="center" class="text-muted">No Data</td>
             </tr>
-            <tr v-for="sample in samples" :key="sample.id">
-              <td class="pl-7 py-8">
+          </tbody>
+          <tbody v-for="sample in samples" :key="sample.id">
+            <tr :class="{ disabled: sample.test_count === sample.total_pending_payments }">
+              <td class="pl-4">
                 <div class="d-flex align-items-center">
                   <div>
                     <a
@@ -222,5 +224,9 @@ export default {
 <style scoped>
 .card-body {
   padding: 0;
+}
+tr.disabled {
+  pointer-events: none; /* Disable pointer events to prevent interaction */
+  opacity: 0.5; /* Optionally, reduce the opacity to visually indicate the disabled state */
 }
 </style>

@@ -7,7 +7,7 @@
             <div class="card-label">Tests</div>
           </div>
         </div>
-        <b-collapse id="accordion-9" accordion="my-accordion" role="tabpanel">
+        <b-collapse @show="fetchTests" id="accordion-9" accordion="my-accordion" role="tabpanel">
           <div class="card-body border">
             <tests-table :tests="tests" />
             <pagination
@@ -70,9 +70,6 @@ export default {
         filter: { visit_id: this.$route.params.id },
       });
     },
-  },
-  created() {
-    this.fetchTests();
   },
 };
 </script>

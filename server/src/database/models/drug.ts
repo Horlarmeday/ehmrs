@@ -65,6 +65,11 @@ export class Drug extends Model {
   })
   staff_id: number;
 
+  @Column({
+    type: DataType.BOOLEAN,
+  })
+  has_nhis: boolean;
+
   @BelongsTo(() => Staff)
   staff: Staff;
 

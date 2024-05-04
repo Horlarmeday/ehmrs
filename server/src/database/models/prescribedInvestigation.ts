@@ -251,6 +251,11 @@ export class PrescribedInvestigation extends Model {
   })
   patient_insurance_id: number;
 
+  @Column({
+    type: DataType.INTEGER,
+  })
+  old_id: number;
+
   @BelongsTo(() => Staff, {
     foreignKey: 'requester',
   })

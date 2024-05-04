@@ -1,7 +1,12 @@
 <template>
   <div>
     <div class="accordion accordion-solid accordion-toggle-arrow">
-      <div class="card" v-for="(item, i) in items" :key="i">
+      <div v-if="!items?.length">
+        <DefaultSkeleton />
+        <DefaultSkeleton />
+        <DefaultSkeleton />
+      </div>
+      <div v-else class="card" v-for="(item, i) in items" :key="i">
         <div class="card-header">
           <div class="card-title" v-b-toggle="`collapse-a${i}`">
             <span class="mr-5 text-black-50 lead font-size-h4">Item Name:</span>
@@ -19,14 +24,14 @@
           </div>
         </div>
         <div>
-          <b-collapse :visible="i === 0" :id="`collapse-a${i}`">
-            <b-card>
+          <b-collapse :id="`collapse-a${i}`">
+            <b-card :class="item.payment_status === PENDING && DISABLED">
               <div class="form-group row">
                 <div class="col-lg-6">
                   <label>Dispense</label>
                   <div class="input-group">
                     <input
-                      :disabled="!item.quantity_remaining"
+                      :disabled="item.shouldDisableDispense"
                       type="number"
                       class="form-control"
                       v-model="item.quantity_remaining_to_dispense"
@@ -54,7 +59,7 @@
                     <label class="checkbox mr-3 checkbox-lg">
                       <input
                         type="checkbox"
-                        :disabled="!item.quantity_remaining_to_dispense"
+                        :disabled="!item.quantity_remaining_to_return"
                         class="mr-2"
                         v-model="item.disabledReturn"
                         @input="toggleCheck(item, $event, i)"
@@ -83,6 +88,14 @@
                       </button>
                     </div>
                   </div>
+                  <label>Reason for Return</label>
+                  <input
+                    :disabled="!item.disabledReturn"
+                    type="text"
+                    class="form-control"
+                    v-model="item.reason_for_return"
+                    aria-label="Reason for return"
+                  />
                 </div>
               </div>
             </b-card>
@@ -94,8 +107,11 @@
 </template>
 
 <script>
+import DefaultSkeleton from '@/utils/DefaultSkeleton.vue';
+
 export default {
   name: 'AdditionalItemDispenseSection',
+  components: { DefaultSkeleton },
   props: {
     items: {
       type: Array,
@@ -108,6 +124,8 @@ export default {
   },
   data: () => ({
     isDisabled: false,
+    DISABLED: 'disabledCard',
+    PENDING: 'Pending',
   }),
 
   methods: {
@@ -115,6 +133,7 @@ export default {
       if (status === 'Pending') return 'label-warning';
       if (status === 'Dispensed') return 'label-success';
       if (status === 'Partial Dispense') return 'label-primary';
+      if (status === 'Returned') return 'label-danger';
       return 'label-info';
     },
 
@@ -133,8 +152,8 @@ export default {
     },
 
     endRequest(button) {
-      this.fetchPrescription();
       this.removeSpinner(button);
+      this.fetchPrescription();
     },
 
     toggleCheck(item, event, i) {
@@ -157,9 +176,18 @@ export default {
     },
 
     returnDrug(item, i) {
+      if (!item.reason_for_return) {
+        return this.$notify({
+          group: 'foo',
+          title: 'Error message',
+          text: 'Reason for returning item cannot be empty',
+          type: 'error',
+        });
+      }
       const obj = {
         additional_item_id: item.id,
         quantity_to_return: item.quantity_to_return,
+        reason_for_return: item.reason_for_return,
       };
 
       const submitButton = this.$refs['kt_return_submit'][i];
@@ -174,4 +202,9 @@ export default {
 };
 </script>
 
-<style></style>
+<style>
+.disabledCard {
+  pointer-events: none;
+  opacity: 0.4;
+}
+</style>

@@ -18,7 +18,17 @@
             <td colspan="9" align="center" class="text-muted">No Data</td>
           </tr>
           <tr v-for="(test, i) in investigations" :key="i">
-            <td>{{ test.investigation.name }}</td>
+            <td>
+              <span
+                :title="`${test.investigation_type}`"
+                v-b-tooltip.hover
+                :class="getLabelDotStatus(test.investigation_type)"
+                class="label label-dot label-lg mr-2"
+              ></span>
+              <span>
+                {{ test.investigation.name }}
+              </span>
+            </td>
             <td>{{ test.imaging.name }}</td>
             <td>{{ test.billing_status }}</td>
             <td>
@@ -54,6 +64,7 @@
 <script>
 import { parseJwt } from '@/core/plugins/parseJwt';
 import Swal from 'sweetalert2';
+import { getLabelDotStatus } from '@/common/common';
 
 export default {
   data: () => ({
@@ -72,6 +83,7 @@ export default {
     },
   },
   methods: {
+    getLabelDotStatus,
     getResultColor(status) {
       if (status === 'Pending') return 'label label-inline label-light-warning font-weight-bold';
       if (status === 'Approved') return 'label label-inline label-light-success font-weight-bold';

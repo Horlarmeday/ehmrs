@@ -43,17 +43,15 @@
       </table>
     </div>
     <div class="separator separator-solid mb-6"></div>
-    <div>
+    <div v-if="result_notes">
       <label>Result Verification Notes</label>
-      <textarea
-        disabled
-        v-model="result_notes"
-        class="form-control-sm form-control mb-6"
-        cols="30"
-        rows="5"
-      />
+      <div class="example">
+        <div class="example-code">
+          <div class="example-highlight">{{ result_notes }}</div>
+        </div>
+      </div>
     </div>
-    <div class="text-center">
+    <div class="text-center mt-3">
       <button
         @click="downloadTestResult"
         ref="kt-downloadResult-submit"

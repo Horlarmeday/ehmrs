@@ -341,15 +341,38 @@ export const getOnePrescribedDrug = async (
 };
 
 /**
+ * get one prescribed drug without joining other tables
+ * @param query
+ * @returns {Promise<PrescribedDrug>} prescribed drug data
+ */
+export const getOnePrescribedDrugWithoutJoins = async (
+  query: WhereOptions<PrescribedDrug>
+): Promise<PrescribedDrug> => {
+  return PrescribedDrug.findOne({ where: { ...query } });
+};
+
+/**
+ * get all prescribed drugs in a query without joins
+ * @param query
+ * @returns {Promise<PrescribedDrug[]>} prescribed drug data
+ */
+export const getPrescribedDrugsWithoutJoins = async (
+  query: WhereOptions<PrescribedDrug>
+): Promise<PrescribedDrug[]> => {
+  return PrescribedDrug.findAll({ where: { ...query } });
+};
+
+/**
  * get all prescribed drugs in a query
  * @param query
  * @returns {Promise<PrescribedDrug[]>} prescribed drug data
  */
-export const getPrescriptionDrugs = async (
+export const getDrugsPrescribed = async (
   query: WhereOptions<PrescribedDrug>
 ): Promise<PrescribedDrug[]> => {
-  return await PrescribedDrug.findAll({
+  return PrescribedDrug.findAll({
     where: { ...query },
+    order: [['createdAt', 'DESC']],
     include: [
       {
         model: Drug,
@@ -389,15 +412,16 @@ export const getOneAdditionalItem = async (
 };
 
 /**
- * get all additional items in a drug prescription
+ * get all additional items in a query
  * @param query
  * @returns {Promise<PrescribedAdditionalItem[]>} additional items data
  */
-export const getPrescriptionAdditionalItems = async (
+export const getAdditionalItems = async (
   query: WhereOptions<PrescribedAdditionalItem>
 ): Promise<PrescribedAdditionalItem[]> => {
   return await PrescribedAdditionalItem.findAll({
     where: { ...query },
+    order: [['createdAt', 'DESC']],
     include: [
       { model: Staff, attributes: staffAttributes },
       {
@@ -410,6 +434,17 @@ export const getPrescriptionAdditionalItems = async (
       },
     ],
   });
+};
+
+/**
+ * get all additional items in a query without table joins
+ * @param query
+ * @returns {Promise<PrescribedAdditionalItem[]>} additional items data
+ */
+export const getAdditionalItemsWithoutJoins = async (
+  query: WhereOptions<PrescribedAdditionalItem>
+): Promise<PrescribedAdditionalItem[]> => {
+  return PrescribedAdditionalItem.findAll({ where: { ...query } });
 };
 
 export const syringeNeedleCalculation = async ({

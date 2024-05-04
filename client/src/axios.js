@@ -25,14 +25,14 @@ NProgress.setColor = color => {
   }
   #nprogress .peg {
     width: 250px;
-    box-shadow: 0 0 10px #ffffff, 0 0 5px #f3f5f6;  }
+    box-shadow: 0 0 10px #ffffff, 0 0 10px #000;  }
   `;
   document.body.appendChild(style);
 };
 
 axios.interceptors.request.use(
   config => {
-    NProgress.setColor('blue');
+    NProgress.setColor('black');
     NProgress.start();
     return config;
   },

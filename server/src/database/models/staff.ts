@@ -1,11 +1,11 @@
 import {
   Column,
   DataType,
-  ForeignKey,
   PrimaryKey,
   Table,
   Model,
   BeforeCreate,
+  DefaultScope,
 } from 'sequelize-typescript';
 import bcrypt from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
@@ -28,7 +28,11 @@ export enum Status {
   ACTIVE = 'Active',
   INACTIVE = 'Inactive',
 }
-
+@DefaultScope(() => ({
+  where: {
+    status: Status.ACTIVE,
+  },
+}))
 @Table({ timestamps: true })
 export class Staff extends Model {
   @PrimaryKey

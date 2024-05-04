@@ -32,6 +32,8 @@ export enum InvestigationStatus {
   PENDING = 'Pending',
   COMPLETED = 'Completed',
   RESULT_ADDED = 'Result Added',
+  PARTIAL_RESULT = 'Partial Result',
+  PARTIAL_APPROVED = 'Partial Approved',
   REFERRED = 'Referred',
 }
 
@@ -104,7 +106,9 @@ export class InvestigationPrescription extends Model {
     type: DataType.ENUM(
       InvestigationStatus.PENDING,
       InvestigationStatus.COMPLETED,
-      InvestigationStatus.RESULT_ADDED
+      InvestigationStatus.RESULT_ADDED,
+      InvestigationStatus.PARTIAL_RESULT,
+      InvestigationStatus.PARTIAL_APPROVED
     ),
     allowNull: false,
     defaultValue: InvestigationStatus.PENDING,

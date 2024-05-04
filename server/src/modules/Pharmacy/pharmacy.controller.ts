@@ -515,5 +515,29 @@ class PharmacyController {
       return next(e);
     }
   }
+
+  /**
+   * get drugs prescription history
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns json object with drug prescription data
+   */
+  static async getDrugPrescriptionsHistory(req: Request, res: Response, next: NextFunction) {
+    try {
+      const drugPrescriptions = await PharmacyService.getDrugsPrescriptionsHistory(req.query);
+
+      return successResponse({
+        res,
+        data: drugPrescriptions,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
 }
 export default PharmacyController;

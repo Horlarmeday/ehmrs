@@ -313,10 +313,7 @@ class LaboratoryController {
         httpCode: StatusCodes.BAD_REQUEST,
       });
     try {
-      const testPrescription = await LaboratoryService.collectTestSample({
-        ...req.body,
-        staff_id: req.user.sub,
-      });
+      const testPrescription = await LaboratoryService.collectTestSample(req.body);
 
       return res.status(StatusCodes.CREATED).json({
         message: DATA_UPDATED,
@@ -376,7 +373,11 @@ class LaboratoryController {
    * @param {object} next next middleware
    * @returns {json} json object with status, test result data
    */
-  static async addTestResults(req, res: Response, next: NextFunction) {
+  static async addTestResults(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
     const { error } = validateAddTestResult(req.body);
     if (error)
       return errorResponse({
@@ -408,7 +409,11 @@ class LaboratoryController {
    * @param {object} next next middleware
    * @returns {json} json object with status, test result data
    */
-  static async validateTestResults(req, res: Response, next: NextFunction) {
+  static async validateTestResults(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
     const { error } = validateTestResults(req.body);
     if (error)
       return errorResponse({

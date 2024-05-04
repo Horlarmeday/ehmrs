@@ -2,6 +2,7 @@ import {
   validateAddInvestigationResults,
   validateImaging,
   validateInvestigation,
+  validateResultApproval,
 } from './validations';
 import { RadiologyService } from './radiology.service';
 import { errorResponse } from '../../common/responses/error-responses';
@@ -13,7 +14,7 @@ import {
   DATA_UPDATED,
   DATA_RETRIEVED,
 } from '../AdminSettings/messages/response-messages';
-import { NextFunction, Response } from 'express';
+import { NextFunction, Response, Request } from 'express';
 
 export class RadiologyController {
   /**
@@ -380,9 +381,23 @@ export class RadiologyController {
    * @param {object} next next middleware
    * @returns {json} json object with status, investigation result data
    */
-  static async approveInvestigationResults(req, res: Response, next: NextFunction) {
+  static async approveInvestigationResults(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
+    const { error } = validateResultApproval(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
     try {
-      const investigationResult = await RadiologyService.approveInvestigationResults(req.params.id);
+      const investigationResult = await RadiologyService.approveInvestigationResults({
+        ...req.body,
+        staff_id: req.user.sub,
+      });
 
       return res.status(StatusCodes.CREATED).json({
         message: DATA_UPDATED,

@@ -1,9 +1,6 @@
-import Joi from 'joi';
-
 export enum PatientType {
-  PRINCIPAL = 'Principal',
+  PATIENT = 'Patient',
   DEPENDANT = 'Dependant',
-  INDEPENDENT = 'Independent',
 }
 
 export type Dependant = {

@@ -17,7 +17,7 @@
               v-model="complaint_note"
               class="form-control form-control-sm"
               cols="10"
-              rows="2"
+              rows="3"
               name="chief_complaint"
               v-validate="'required'"
               data-vv-validate-on="blur"
@@ -76,7 +76,7 @@
           </a>
         </div>
         <div class="form-group row">
-          <label class="col-2 col-form-label">History Notes</label>
+          <label class="col-2 col-form-label">Treatment Procedure</label>
           <div class="col-9">
             <textarea
               v-model="history_note"
@@ -98,18 +98,34 @@
           </div>
         </div>
         <div class="form-group row">
-          <label class="col-2 col-form-label">Smoking History</label>
-          <div class="radio-inline col-9">
-            <label class="radio radio-lg">
-              <input type="radio" name="" v-model="has_smoking_history" :value="true" />
-              <span></span>
-              Yes
-            </label>
-            <label class="radio radio-lg">
-              <input type="radio" name="" v-model="has_smoking_history" :value="false" />
-              <span></span>
-              No
-            </label>
+          <label class="col-lg-2 col-form-label">Chest:</label>
+          <div class="col-4">
+            <textarea v-model="chest" class="form-control form-control-sm" cols="30" rows="2" />
+          </div>
+          <label class="col-lg-1 col-form-label">CVS:</label>
+          <div class="col-4">
+            <textarea v-model="cvs" class="form-control form-control-sm" cols="30" rows="2" />
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-lg-2 col-form-label">Abdomen:</label>
+          <div class="col-4">
+            <textarea v-model="abdomen" class="form-control form-control-sm" cols="30" rows="2" />
+          </div>
+          <label class="col-lg-1 col-form-label">MSS:</label>
+          <div class="col-4">
+            <textarea v-model="mss" class="form-control form-control-sm" cols="30" rows="2" />
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-2 col-form-label">Other</label>
+          <div class="col-9">
+            <textarea
+              v-model="other_examination"
+              class="form-control form-control-sm"
+              cols="30"
+              rows="2"
+            />
           </div>
         </div>
         <hr />
@@ -209,6 +225,7 @@
 import vSelect from 'vue-select';
 import { debounce } from '@/common/common';
 import DiagnosisAccordion from '@/view/components/accordion/DiagnosisAccordion.vue';
+import KTUtil from '@/assets/js/components/util';
 export default {
   name: 'Examination',
   components: { DiagnosisAccordion, vSelect },
@@ -231,8 +248,12 @@ export default {
       ],
       complaint_note: '',
       history_note: '',
+      chest: '',
+      other_examination: '',
+      cvs: '',
+      mss: '',
+      abdomen: '',
       examination_note: '',
-      has_smoking_history: '',
       isDisabled: false,
       diagnosisType: 'ICD10',
       certainties: ['Confirmed', 'Presumed'],
@@ -266,7 +287,10 @@ export default {
     endRequest(button) {
       this.removeSpinner(button);
       this.initValues();
-      this.fetchVisitsHistory();
+      setTimeout(() => {
+        KTUtil.scrollTop();
+      }, 500);
+      this.fetchDiagnosesAndFindings();
     },
 
     createExamination() {
@@ -282,6 +306,11 @@ export default {
             examination_note: this.examination_note,
             history_note: this.history_note,
             complaint_note: this.complaint_note,
+            chest: this.chest,
+            cvs: this.cvs,
+            mss: this.mss,
+            abdomen: this.abdomen,
+            other_examination: this.other_examination,
             diagnosis: this.diagnosis.map(({ diagnosis, certainty, notes }) => ({
               diagnosis_id: diagnosis.id,
               type: diagnosis.type,
@@ -366,6 +395,11 @@ export default {
       this.examination_note = '';
       this.history_note = '';
       this.complaint_note = '';
+      this.chest = '';
+      this.other_examination = '';
+      this.cvs = '';
+      this.mss = '';
+      this.abdomen = '';
     },
 
     searchDiagnosis(search, loading) {
@@ -387,12 +421,8 @@ export default {
         .then(() => loading(false));
     }, 500),
 
-    fetchVisitsHistory() {
-      this.$store.dispatch('consultation/fetchVisitsHistory', {
-        currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage,
-        visitId: this.$route.params.id,
-      });
+    fetchDiagnosesAndFindings() {
+      this.$store.dispatch('consultation/fetchDiagnosesAndFindings', this.$route.params.id);
     },
   },
 };

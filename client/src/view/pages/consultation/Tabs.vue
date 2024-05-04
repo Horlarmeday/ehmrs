@@ -12,7 +12,7 @@
                   v-if="tab.showComponent"
                   :class="{
                     active: tabIndex === index,
-                    disabled: tabIndex === index || isEmptySummary,
+                    disabled: tabIndex === index,
                   }"
                   @click="setActiveTab($event, tab.component)"
                   :data-tab="index"
@@ -30,7 +30,7 @@
           </div>
         </div>
       </div>
-      <component :is="activeComponent" :isEmptySummary="isEmptySummary" />
+      <component :is="activeComponent" />
     </div>
     <page-skeleton v-else :tabs="tabs" />
   </div>
@@ -48,7 +48,6 @@ import PageSkeleton from './components/skeleton/PageSkeleton.vue';
 import History from '@/view/pages/consultation/tabs/History.vue';
 import Surgery from '@/view/pages/consultation/tabs/Surgery.vue';
 import WardRound from '@/view/pages/consultation/tabs/WardRound.vue';
-import { isEmpty } from '@/common/common';
 import TriageCard from '@/view/components/util/TriageCard.vue';
 
 const ComponentMapping = {
@@ -121,22 +120,6 @@ export default {
     };
   },
   computed: {
-    summaries() {
-      return this.$store.state.consultation.histories;
-    },
-    isEmptySummary() {
-      return this.summaries.every(
-        summary =>
-          isEmpty(summary.drugs) &&
-          isEmpty(summary.tests) &&
-          isEmpty(summary.investigations) &&
-          isEmpty(summary.items) &&
-          isEmpty(summary.diagnoses) &&
-          isEmpty(summary.triages) &&
-          isEmpty(summary.observations.histories) &&
-          isEmpty(summary.observations.complaints)
-      );
-    },
     visit() {
       return this.$store.state.visit.visit;
     },
@@ -205,14 +188,6 @@ export default {
         this.loading = false;
       }
     },
-
-    fetchVisitsHistory() {
-      this.$store.dispatch('consultation/fetchVisitsHistory', {
-        currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage,
-        visitId: this.$route.params.id,
-      });
-    },
   },
   created() {
     this.loading = true;
@@ -221,7 +196,6 @@ export default {
       const res = response.data.data;
       this.$store.dispatch('patient/setCurrentPatient', { ...res.patient, ...res.insurance });
     });
-    this.fetchVisitsHistory();
   },
 };
 </script>

@@ -8,7 +8,6 @@ import { Patient, TestPrescription } from '../../database/models';
 import { Response } from 'express';
 import { ExportDataType } from '../../modules/Store/types/pharmacy-item.types';
 import { exportDataToCSV, exportDataToExcel, exportDataToPDF } from './fileExport';
-import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 import { Op } from 'sequelize';
 import { countRecords, padNumberWithZero } from './general';

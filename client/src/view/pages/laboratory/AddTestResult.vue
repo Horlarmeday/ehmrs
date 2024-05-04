@@ -5,7 +5,7 @@
       <div class="card-body pt-0">
         <section-title text="Patient Information" />
         <patient-section :patient="sample.patient" :insurance="sample.insurance" />
-        <banner />
+        <banner :visit-id="sample.visit_id" />
 
         <section-title text="Tests Information" />
         <result-section
@@ -40,7 +40,7 @@ export default {
       return this.$store.state.laboratory.sampleCollected;
     },
     accessionNumberKey() {
-      return this.sample.accession_number;
+      return this.sample.accession_number + Date.now();
     },
   },
 };

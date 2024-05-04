@@ -160,6 +160,11 @@ export class InventoryItemHistory extends Model {
   })
   visit_id: number;
 
+  @Column({
+    type: DataType.TEXT,
+  })
+  reason_for_return: string;
+
   @BelongsTo(() => Unit)
   unit: Unit;
 

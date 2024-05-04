@@ -8,22 +8,22 @@ import {
   getCollectedSamples,
   getOneCollectedSample,
   getOneSampleToCollect,
+  getOneTestPrescription,
+  getOneTestResult,
   getSamplesToCollect,
   getTestPrescription,
-  getOneTestResult,
   getTestResults,
   getTests,
   getTestSamples,
+  getVerifiedTestResults,
   searchTests,
   searchTestSamples,
   searchTestsInASample,
+  todayTestStats,
   updateTest,
   updateTestPrescription,
   updateTestSample,
   validateTestResults,
-  getVerifiedTestResults,
-  todayTestStats,
-  getOneTestPrescription,
 } from './laboratory.repository';
 import { TestTariffDto } from './dto/test-tariff.dto';
 import { TestStatus } from '../../database/models/prescribedTest';
@@ -33,6 +33,7 @@ import {
   LaboratoryResultApprovalDto,
   LaboratoryResultDto,
   LaboratoryResultValidationDto,
+  Result,
 } from './dto/laboratory-result.dto';
 import dayjs from 'dayjs';
 import { TestPrescription } from '../../database/models';
@@ -180,16 +181,8 @@ class LaboratoryService {
    */
   static async samplesToCollect(body) {
     const { search, pageLimit, currentPage, period, start, end } = body;
-    if (start && end) {
-      return getSamplesToCollect({ currentPage, pageLimit, period, search, start, end });
-    }
-
-    if (search) {
-      return getSamplesToCollect({ currentPage, pageLimit, period, search });
-    }
-
     if (Object.values(body).length) {
-      return getSamplesToCollect({ currentPage, pageLimit, period });
+      return getSamplesToCollect({ currentPage, pageLimit, period, start, end, search });
     }
 
     return getSamplesToCollect({ period });
@@ -233,16 +226,8 @@ class LaboratoryService {
    */
   static async samplesCollected(body) {
     const { search, pageLimit, currentPage, period, start, end } = body;
-    if (start && end) {
-      return getCollectedSamples({ currentPage, pageLimit, period, search, end, start });
-    }
-
-    if (search) {
-      return getCollectedSamples({ currentPage, pageLimit, period, search });
-    }
-
     if (Object.values(body).length) {
-      return getCollectedSamples({ currentPage, pageLimit, period });
+      return getCollectedSamples({ currentPage, pageLimit, period, search, end, start });
     }
 
     return getCollectedSamples({ period });
@@ -321,6 +306,7 @@ class LaboratoryService {
         staff_id,
         testStatus: this.getTestStatus(result),
         date_created: Date.now(),
+        is_abnormal: !this.getTestAbnormalState(result.result, result.valid_range),
       }));
     return appendTestResults(data);
   }
@@ -331,11 +317,13 @@ class LaboratoryService {
    */
   static async validateTestResults(laboratoryResultValidationDto: LaboratoryResultValidationDto) {
     const { results, result_notes, staff_id } = laboratoryResultValidationDto;
-    const data = results.map(result => ({
-      ...result,
-      staff_id,
-      date_created: Date.now(),
-    }));
+    const data = results
+      .filter(({ result }) => !isEmpty(result))
+      .map(result => ({
+        ...result,
+        staff_id,
+        date_created: Date.now(),
+      }));
     return validateTestResults(data, result_notes);
   }
 
@@ -388,63 +376,19 @@ class LaboratoryService {
     return getVerifiedTestResults({ period });
   }
 
-  static getTestStatus(result) {
+  static getTestStatus(result: Result) {
     if (result.referral_reason) return TestStatus.REFERRED;
     if (result.result) return TestStatus.RESULT_ADDED;
     if (isEmpty(result.result)) return TestStatus.PENDING;
   }
 
-  /** ***********************
-   * NHIS TEST DEPRECATED
-   ********************** */
-  //
-  // /**
-  //  * create a NHIS test
-  //  *
-  //  * @static
-  //  * @returns {json} json object with NHIS test data
-  //  * @param body
-  //  * @memberOf LaboratoryService
-  //  */
-  // static async createNhisTestService(body) {
-  //   return createNhisTest(body);
-  // }
-  //
-  // /**
-  //  * update NHIS test
-  //  *
-  //  * @static
-  //  * @returns {json} json object with NHIS test data
-  //  * @param body
-  //  * @memberOf LaboratoryService
-  //  */
-  // static async updateNhisTestService(body) {
-  //   return updateNhisTest(body);
-  // }
-  //
-  // /**
-  //  * get NHIS tests
-  //  *
-  //  * @static
-  //  * @returns {json} json object with NHIS tests data
-  //  * @param body
-  //  * @memberOf LaboratoryService
-  //  */
-  // static async getNhisTests(body) {
-  //   const { currentPage, pageLimit, search, filter } = body;
-  //   if (search) {
-  //     return searchNhisTests(+currentPage, +pageLimit, search);
-  //   }
-  //
-  //   if (filter) {
-  //     return filterNhisTests(+currentPage, +pageLimit, filter);
-  //   }
-  //
-  //   if (Object.values(body).length) {
-  //     return getNhisTests(+currentPage, +pageLimit);
-  //   }
-  //
-  //   return getNhisTests();
-  // }
+  static getTestAbnormalState(result: string, range: string) {
+    if (!range) return false;
+    // Split the range string into minimum and maximum values
+    const [minValue, maxValue] = range.split('-').map(parseFloat);
+
+    // Check if the number is within the range
+    return +result >= minValue && +result <= maxValue;
+  }
 }
 export default LaboratoryService;

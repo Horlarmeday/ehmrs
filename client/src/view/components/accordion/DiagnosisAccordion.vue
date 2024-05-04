@@ -7,7 +7,12 @@
             <div class="card-label">Diagnosis and Findings</div>
           </div>
         </div>
-        <b-collapse id="accordion-65" accordion="my-accordion" role="tabpanel">
+        <b-collapse
+          @show="fetchDiagnosesAndFindings"
+          id="accordion-65"
+          accordion="my-accordion"
+          role="tabpanel"
+        >
           <div class="card-body border">
             <div class="mt-3" v-if="clinicalFinding">
               <b-tabs content-class="mt-3">
@@ -53,9 +58,6 @@ export default {
     fetchDiagnosesAndFindings() {
       this.$store.dispatch('consultation/fetchDiagnosesAndFindings', this.$route.params.id);
     },
-  },
-  created() {
-    this.fetchDiagnosesAndFindings();
   },
 };
 </script>

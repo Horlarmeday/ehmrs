@@ -17,11 +17,11 @@
               </th>
               <th style="min-width: 220px">Patient Name</th>
               <th style="min-width: 120px">Drugs</th>
-              <th style="min-width: 120px">Dispensed Drugs</th>
               <th style="min-width: 120px">Items</th>
+              <th style="min-width: 120px">Dispensed Drugs</th>
               <th style="min-width: 120px">Source</th>
               <th style="min-width: 120px">Status</th>
-              <th v-if="period !== TODAY" style="min-width: 100px">Date Collected</th>
+              <th style="min-width: 100px">Date Collected</th>
               <th class="text-right" style="min-width: 50px">Action</th>
             </tr>
           </thead>
@@ -53,12 +53,12 @@
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg pl-7">
-                  {{ prescription.dispensed_drugs_count }}
+                  {{ prescription.items_count }}
                 </span>
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg pl-7">
-                  {{ prescription.items_count }}
+                  {{ prescription.dispensed_drugs_count }}
                 </span>
               </td>
               <td>
@@ -73,9 +73,9 @@
                   >{{ prescription.status }}</span
                 >
               </td>
-              <td v-if="period !== 'Today'">
+              <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
-                  prescription.date_prescribed | dayjs('YYYY/MM/DD, h:mma')
+                  prescription.date_prescribed | dayjs('DD/MM/YYYY, h:mma')
                 }}</span>
               </td>
               <td class="text-right pr-0">

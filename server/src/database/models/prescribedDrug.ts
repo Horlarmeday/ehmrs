@@ -38,6 +38,7 @@ export enum DispenseStatus {
   PENDING = 'Pending',
   RETURNED = 'Returned',
   PARTIAL_DISPENSED = 'Partial Dispense',
+  PARTIAL_RETURNED = 'Partial Returned',
 }
 
 export enum PaymentStatus {
@@ -206,7 +207,8 @@ export class PrescribedDrug extends Model {
       DispenseStatus.DISPENSED,
       DispenseStatus.PENDING,
       DispenseStatus.RETURNED,
-      DispenseStatus.PARTIAL_DISPENSED
+      DispenseStatus.PARTIAL_DISPENSED,
+      DispenseStatus.PARTIAL_RETURNED
     ),
     allowNull: false,
     defaultValue: DispenseStatus.PENDING,
@@ -397,6 +399,16 @@ export class PrescribedDrug extends Model {
     type: DataType.INTEGER,
   })
   patient_insurance_id: number;
+
+  @Column({
+    type: DataType.TEXT,
+  })
+  reason_for_return: string;
+
+  @Column({
+    type: DataType.INTEGER,
+  })
+  old_id: number;
 
   @BelongsTo(() => Staff, 'examiner')
   requester: Staff;

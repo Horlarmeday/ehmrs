@@ -204,7 +204,7 @@ export default {
   approveInvestigationResult({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
-        .post(`/radiology/requested-investigations/approve/${payload.id}`)
+        .post(`/radiology/requested-investigations/approve/`, { results: payload })
         .then(response => {
           commit('SET_INVESTIGATION_RESULT', response.data.data);
           resolve(response);

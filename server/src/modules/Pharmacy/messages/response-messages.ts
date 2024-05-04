@@ -14,5 +14,5 @@ export const RETURN_QUANTITY_MORE_THAN_DOCTOR_QUANTITY =
   'You cannot return more than the prescribed quantity';
 export const RETURN_QUANTITY_MORE_THAN_QUANTITY_PRESCRIBED =
   'You already returned upto the quantity prescribed';
-
 export const PRESCRIPTION_NOT_FOUND = 'Drug prescription not found';
+export const INVENTORY_ITEM_NOT_FOUND = 'This item cannot be found in the inventory';

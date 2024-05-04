@@ -187,6 +187,11 @@ export class PrescribedService extends Model {
   })
   auth_code: string;
 
+  @Column({
+    type: DataType.INTEGER,
+  })
+  old_id: number;
+
   @BelongsTo(() => Service)
   service: Service;
 

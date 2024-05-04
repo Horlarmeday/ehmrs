@@ -4,7 +4,8 @@ import {
   getHMOs,
   getInsuranceHMOs,
   getInsurances,
-  getPatientHealthInsurances, getPatientInsuranceQuery,
+  getPatientHealthInsurances,
+  getPatientInsuranceQuery,
   searchHMOs,
   searchInsurances,
   setInsuranceAsDefault,
@@ -68,15 +69,15 @@ class InsuranceService {
   static async getHMOs(body) {
     const { search, pageLimit, currentPage, filter } = body;
     if (search) {
-      return searchHMOs(Number(currentPage), Number(pageLimit), search);
+      return searchHMOs(currentPage, pageLimit, search);
     }
 
     if (filter) {
-      return getInsuranceHMOs(Number(currentPage), Number(pageLimit), filter);
+      return getInsuranceHMOs(currentPage, pageLimit, filter);
     }
 
     if (Object.values(body).length) {
-      return getHMOs(Number(currentPage), Number(pageLimit));
+      return getHMOs(currentPage, pageLimit);
     }
 
     return getHMOs();

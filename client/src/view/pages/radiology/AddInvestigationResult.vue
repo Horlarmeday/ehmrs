@@ -8,7 +8,6 @@
         <investigation-result-section
           :tests="investigation.investigations"
           :patient_id="investigation.patient.id"
-          :investigation-status="investigation.status"
           :key="uniqueKey"
         />
       </div>
@@ -45,7 +44,7 @@ export default {
       return this.$store.state.radiology.reqInvestigation;
     },
     uniqueKey() {
-      return this.investigation.patient.id;
+      return this.investigation.patient.id + Date.now();
     },
   },
 };

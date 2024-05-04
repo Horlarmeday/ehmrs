@@ -18,19 +18,21 @@
               <th style="min-width: 100px">Patient ID</th>
               <th style="min-width: 200px">Patient Name</th>
               <th style="min-width: 70px">Pending Tests</th>
-              <th style="min-width: 70px">Referred Tests</th>
-              <th style="min-width: 70px">Pending Validation</th>
+              <th style="min-width: 70px">Result Added Tests</th>
+              <th style="min-width: 70px">Verified Tests</th>
               <th style="min-width: 70px">Total</th>
               <th style="min-width: 80px">Status</th>
               <th style="min-width: 100px">Date Collected</th>
               <th class="text-right" style="min-width: 120px">Action</th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-if="samples.length === 0">
+          <tbody v-if="samples.length === 0">
+            <tr>
               <td colspan="9" align="center" class="text-muted">No Data</td>
             </tr>
-            <tr v-for="sample in samples" :key="sample.id">
+          </tbody>
+          <tbody v-for="sample in samples" :key="sample.id">
+            <tr :class="{ disabled: sample.total === sample.total_pending_payments }">
               <td class="pl-4 py-8">
                 <div class="d-flex align-items-center">
                   <div>
@@ -59,12 +61,12 @@
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-md">{{
-                  sample.referred_tests_count
+                  sample.pending_validations_count
                 }}</span>
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-md">{{
-                  sample.pending_validations_count
+                  sample.verified_tests_count
                 }}</span>
               </td>
               <td>
@@ -80,7 +82,7 @@
                   >{{ sample.status }}</span
                 >
               </td>
-              <td v-if="period !== 'Today'">
+              <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
                   sample.date_sample_received | dayjs('DD/MM/YYYY, h:mma')
                 }}</span>
@@ -96,7 +98,7 @@
                   <ArrowRightIcon />
                 </router-link>
                 <router-link
-                  :class="{ disabled: !sample.pending_validations_count }"
+                  :class="{ disabled: sample.pending_validations_count === 0 }"
                   v-b-tooltip.hover
                   title="Validate"
                   :to="`/laboratory/result-validation/${sample.id}`"
@@ -105,7 +107,7 @@
                   <ValidateIcon />
                 </router-link>
                 <router-link
-                  :class="{ disabled: !sample.pending_approved_count }"
+                  :class="{ disabled: sample.verified_tests_count === 0 }"
                   v-b-tooltip.hover
                   title="Approve"
                   :to="`/laboratory/result-approval/${sample.id}`"
@@ -274,5 +276,10 @@ export default {
 .disabled {
   opacity: 0.5;
   pointer-events: none;
+}
+
+tr.disabled {
+  pointer-events: none; /* Disable pointer events to prevent interaction */
+  opacity: 0.5; /* Optionally, reduce the opacity to visually indicate the disabled state */
 }
 </style>

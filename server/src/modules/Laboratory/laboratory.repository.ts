@@ -32,6 +32,7 @@ import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { BadException } from '../../common/util/api-error';
 import { CANNOT_ADD_RESULTS, RESULT_NOT_FOUND, TEST_NOT_FOUND } from './messages/response-messages';
 import { Result } from './dto/laboratory-result.dto';
+import { PaymentStatus } from '../../database/models/prescribedDrug';
 
 const testResultFieldsToUpdate = (fields: string[] = []) => [
   'prescribed_test_id',
@@ -310,6 +311,15 @@ export const getSamplesToCollect = async ({
       include: [
         // Count the number of tests in each sample and alias it as 'test_count'
         [sequelize.fn('COUNT', sequelize.col('tests.id')), 'test_count'],
+        [
+          sequelize.fn(
+            'COUNT',
+            sequelize.literal(
+              `DISTINCT CASE WHEN tests.payment_status = '${PaymentStatus.PENDING}' THEN tests.id END`
+            )
+          ),
+          'total_pending_payments',
+        ],
       ],
     },
     where: {
@@ -324,7 +334,7 @@ export const getSamplesToCollect = async ({
       },
       {
         model: Patient,
-        attributes: ['firstname', 'lastname', 'fullname', 'hospital_id'],
+        attributes: patientAttributes,
         where: {
           ...(search && {
             [Op.or]: [
@@ -400,10 +410,10 @@ export const getCollectedSamples = async ({
           sequelize.fn(
             'COUNT',
             sequelize.literal(
-              `DISTINCT CASE WHEN tests.status = '${TestStatus.REFERRED}' THEN tests.id END`
+              `DISTINCT CASE WHEN tests.status = '${TestStatus.VERIFIED}' THEN tests.id END`
             )
           ),
-          'referred_tests_count',
+          'verified_tests_count',
         ],
         [
           sequelize.fn(
@@ -413,6 +423,15 @@ export const getCollectedSamples = async ({
             )
           ),
           'pending_validations_count',
+        ],
+        [
+          sequelize.fn(
+            'COUNT',
+            sequelize.literal(
+              `DISTINCT CASE WHEN tests.payment_status = '${PaymentStatus.PENDING}' THEN tests.id END`
+            )
+          ),
+          'total_pending_payments',
         ],
       ],
     },
@@ -520,7 +539,7 @@ export const getOneSampleToCollect = async (testPrescriptionId: number | string)
 export const getOneCollectedSample = async (testPrescriptionId: number | string) => {
   const testPrescription = await TestPrescription.findOne({
     where: { id: testPrescriptionId, status: TestStatus.SAMPLE_COLLECTED },
-    attributes: ['accession_number', 'result_notes'],
+    attributes: ['accession_number', 'result_notes', 'visit_id'],
     include: [
       {
         model: Patient,
@@ -528,9 +547,9 @@ export const getOneCollectedSample = async (testPrescriptionId: number | string)
       },
       {
         model: PrescribedTest,
-        attributes: ['test_id', 'id', 'status'],
+        attributes: ['test_id', 'id', 'status', 'test_type', 'payment_status', 'is_urgent'],
         include: [
-          { model: Test, attributes: ['name', 'result_unit'] },
+          { model: Test, attributes: ['name', 'result_unit', 'valid_range'] },
           { model: Sample, attributes: ['name'] },
           {
             model: TestResult,
@@ -585,10 +604,13 @@ export const validateTestResults = async (
         )
       )
     );
-    await TestPrescription.update(
-      { result_notes },
-      { where: { id: data[0].test_prescription_id }, transaction: t }
-    );
+    if (result_notes) {
+      await TestPrescription.update(
+        { result_notes },
+        { where: { id: data[0].test_prescription_id }, transaction: t }
+      );
+    }
+
     return result;
   });
 };
@@ -805,37 +827,10 @@ export const getVerifiedTestResults = async ({
           sequelize.fn(
             'COUNT',
             sequelize.literal(
-              `DISTINCT CASE WHEN tests.status = '${TestStatus.PENDING}' THEN tests.id END`
-            )
-          ),
-          'pending_tests_count',
-        ],
-        [
-          sequelize.fn(
-            'COUNT',
-            sequelize.literal(
-              `DISTINCT CASE WHEN tests.status = '${TestStatus.RESULT_ADDED}' THEN tests.id END`
-            )
-          ),
-          'pending_verification_count',
-        ],
-        [
-          sequelize.fn(
-            'COUNT',
-            sequelize.literal(
               `DISTINCT CASE WHEN tests.status = '${TestStatus.VERIFIED}' THEN tests.id END`
             )
           ),
           'verified_tests_count',
-        ],
-        [
-          sequelize.fn(
-            'COUNT',
-            sequelize.literal(
-              `DISTINCT CASE WHEN tests.status = '${TestStatus.APPROVED}' THEN tests.id END`
-            )
-          ),
-          'approved_tests_count',
         ],
       ],
     },

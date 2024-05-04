@@ -42,10 +42,29 @@ export class History extends Model {
   examination_note: string;
 
   @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: false,
+    type: DataType.TEXT,
   })
-  has_smoking_history: boolean;
+  chest: string;
+
+  @Column({
+    type: DataType.TEXT,
+  })
+  cvs: string;
+
+  @Column({
+    type: DataType.TEXT,
+  })
+  other_examination: string;
+
+  @Column({
+    type: DataType.TEXT,
+  })
+  mss: string;
+
+  @Column({
+    type: DataType.TEXT,
+  })
+  abdomen: string;
 
   @ForeignKey(() => Visit)
   @Column({

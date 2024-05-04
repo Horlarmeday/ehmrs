@@ -19,6 +19,12 @@
           </tr>
           <tr v-for="drug in drugs" :key="drug.id">
             <th>
+              <span
+                :title="`${drug.drug_type}`"
+                v-b-tooltip.hover
+                :class="getLabelDotStatus(drug.drug_type)"
+                class="label label-dot label-lg mr-2"
+              ></span>
               <a @click="viewPopover(drug)" href="#" :id="popOverId"> {{ drug.drug.name }}</a>
             </th>
             <td>
@@ -70,6 +76,7 @@
 import DrugPopover from '@/view/components/popover/DrugPopover.vue';
 import { parseJwt } from '@/core/plugins/parseJwt';
 import Swal from 'sweetalert2';
+import { getLabelDotStatus } from '@/common/common';
 
 export default {
   name: 'MedicationsTable',
@@ -92,6 +99,7 @@ export default {
     },
   },
   methods: {
+    getLabelDotStatus,
     viewPopover(item) {
       this.item = item;
       this.showPopover = true;

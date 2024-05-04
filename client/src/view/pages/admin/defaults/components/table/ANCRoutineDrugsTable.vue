@@ -63,8 +63,10 @@
 
 <script>
 import DeleteIcon from '@/assets/icons/DeleteIcon.vue';
+import { getLabelDotStatus } from '@/common/common';
 
 export default {
+  methods: { getLabelDotStatus },
   components: { DeleteIcon },
   computed: {
     defaults() {
@@ -75,12 +77,6 @@ export default {
     },
     routineDrugs() {
       return this.defaults.find(def => def.id?.toString() === this.$route.params.id)?.data;
-    },
-  },
-  methods: {
-    getLabelDotStatus(type) {
-      if (type === 'Cash') return 'label-success';
-      return 'label-primary';
     },
   },
 };

@@ -11,8 +11,8 @@ import { Op, WhereOptions } from 'sequelize';
 import { getVisitsQuery, patientAttributes } from '../Visit/visit.repository';
 import { getPrescriptionTests } from '../Orders/Laboratory/lab-order.repository';
 import {
-  getPrescriptionAdditionalItems,
-  getPrescriptionDrugs,
+  getAdditionalItems,
+  getDrugsPrescribed,
 } from '../Orders/Pharmacy/pharmacy-order.repository';
 import { getPrescriptionInvestigations } from '../Orders/Radiology/radiology-order.repository';
 import { paginate } from '../../core/helpers/helper';
@@ -193,7 +193,7 @@ export const getAntenatalTriages = async ({
 };
 
 export const getAncTriages = async (query: WhereOptions<AntenatalTriage>) => {
-  return AntenatalTriage.findAll({ where: { ...query } });
+  return AntenatalTriage.findAll({ where: { ...query }, order: [['createdAt', 'DESC']] });
 };
 
 export const getOneAntenatalTriage = async (
@@ -347,6 +347,7 @@ export const getObservations = async ({
 export const getAntenatalObservations = async (query: WhereOptions<AntenatalObservation>) => {
   return AntenatalObservation.findAll({
     where: { ...query },
+    order: [['createdAt', 'DESC']],
     include: [{ model: Staff, attributes: staffAttributes }],
   });
 };
@@ -367,13 +368,13 @@ const getPrescriptions = async (visit_id: number) => {
     items,
   ] = await Promise.all([
     getPrescriptionTests({ visit_id }),
-    getPrescriptionDrugs({ visit_id }),
+    getDrugsPrescribed({ visit_id }),
     getPrescriptionInvestigations({ visit_id }),
     getAntenatalObservations({ visit_id }),
     getAncTriages({ visit_id }),
     getAntenatalClinicalNotes({ visit_id }),
     getPatientDiagnoses({ visit_id }),
-    getPrescriptionAdditionalItems({ visit_id }),
+    getAdditionalItems({ visit_id }),
   ]);
   return { tests, drugs, investigations, observations, triages, notes, diagnoses, items };
 };

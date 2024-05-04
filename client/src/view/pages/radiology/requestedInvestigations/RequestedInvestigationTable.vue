@@ -17,19 +17,21 @@
               </th>
               <th style="min-width: 250px">Patient Name</th>
               <th style="min-width: 100px">Pending Tests</th>
-              <th style="min-width: 100px">Referred Tests</th>
-              <th style="min-width: 100px">Pending Approvals</th>
+              <th style="min-width: 100px">Scan Tests</th>
+              <th style="min-width: 100px">Xray Tests</th>
               <th style="min-width: 100px">Total</th>
               <th style="min-width: 100px">Status</th>
-              <th v-if="period !== 'Today'" style="min-width: 100px">Date Requested</th>
+              <th style="min-width: 100px">Date Requested</th>
               <th class="pr-0 text-right" style="min-width: 120px">Action</th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-if="investigations.length === 0">
+          <tbody v-if="investigations.length === 0">
+            <tr>
               <td colspan="9" align="center" class="text-muted">No Data</td>
             </tr>
-            <tr v-for="investigation in investigations" :key="investigation.id">
+          </tbody>
+          <tbody v-for="investigation in investigations" :key="investigation.id">
+            <tr :class="{ disabled: investigation.total === investigation.total_pending_payments }">
               <td class="pl-4 py-8">
                 <div class="d-flex align-items-center">
                   <div>
@@ -53,12 +55,12 @@
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-md">{{
-                  investigation.referred_investigations_count
+                  investigation.scan_investigations_count
                 }}</span>
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-md">{{
-                  investigation.pending_approvals_count
+                  investigation.xray_investigations_count
                 }}</span>
               </td>
               <td>
@@ -77,7 +79,7 @@
                   >{{ investigation.status }}</span
                 >
               </td>
-              <td v-if="period !== 'Today'">
+              <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
                   investigation.date_requested | dayjs('DD/MM/YYYY, h:mma')
                 }}</span>
@@ -93,10 +95,10 @@
                   <ArrowRightIcon />
                 </router-link>
                 <router-link
-                  :class="{ disabled: !investigation.pending_approvals_count }"
+                  :class="{ disabled: investigation.pending_approvals_count === 0 }"
                   v-b-tooltip.hover
                   title="Approve"
-                  :to="`/laboratory/result-approval/${investigation.id}`"
+                  :to="`/radiology/result-approval/${investigation.id}`"
                   class="btn btn-icon btn-light btn-hover-primary btn-sm"
                 >
                   <ApproveIcon />
@@ -252,3 +254,9 @@ export default {
   },
 };
 </script>
+<style scoped>
+tr.disabled {
+  pointer-events: none; /* Disable pointer events to prevent interaction */
+  opacity: 0.5; /* Optionally, reduce the opacity to visually indicate the disabled state */
+}
+</style>

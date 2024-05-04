@@ -1,6 +1,6 @@
 import { Agenda } from '@hokify/agenda';
 import Jobs from './worker/jobDefinition';
-import { CronJobs } from './worker/worker';
+import { CronJobs, InstantJobs } from './worker/worker';
 import { logger } from '../helpers/logger';
 
 if (!process.env.DB_MONGO) throw new Error('Cannot find Mongo url');
@@ -27,7 +27,7 @@ agenda
 Jobs(agenda);
 
 agenda.start().then(() => {
-  //InstantJobs(agenda);
+  InstantJobs(agenda);
   CronJobs(agenda);
 });
 

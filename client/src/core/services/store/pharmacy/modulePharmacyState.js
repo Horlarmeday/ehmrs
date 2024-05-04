@@ -37,5 +37,12 @@ export default {
   prescription: null,
   prescriptions: [],
   totalPrescription: 0,
-  prescriptionPages: 0
+  prescriptionPages: 0,
+
+  /**
+   * PRESCRIPTIONS HISTORY
+   */
+  prescriptionsHistory: [],
+  totalHistory: 0,
+  historyPages: 0,
 };

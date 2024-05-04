@@ -24,6 +24,7 @@ export function validateTest(test) {
 export function validateUpdateTestPrescription(number) {
   const schema = Joi.object({
     accession_number: Joi.string().required(),
+    staff_id: Joi.number().required(),
     id: Joi.string().required(),
   });
 
@@ -73,7 +74,9 @@ export function validateAddTestResult(result) {
           result: Joi.string()
             .optional()
             .allow(''),
-          is_abnormal: Joi.boolean().required(),
+          valid_range: Joi.string()
+            .optional()
+            .allow(''),
           institute_referred: Joi.string()
             .optional()
             .allow(''),
@@ -111,7 +114,9 @@ export function validateTestResults(result) {
         })
       )
       .required(),
-    result_notes: Joi.string().required(),
+    result_notes: Joi.string()
+      .optional()
+      .allow(''),
   });
 
   return schema.validate(result);

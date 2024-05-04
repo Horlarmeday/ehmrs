@@ -1,6 +1,5 @@
 import { SamplePeriod } from '../../modules/Orders/Laboratory/interface/prescribed-test.interface';
 import { backlogQuery, todayQuery } from './helper';
-import { TestStatus } from '../../database/models/prescribedTest';
 import { WhereOptions } from 'sequelize';
 
 export function padNumberWithZero(num, targetLength = 6) {

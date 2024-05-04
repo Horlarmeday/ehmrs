@@ -46,7 +46,7 @@ class PatientService {
       );
 
       const createdPatient = await createPatientAccount({ ...createPatientBody, fileName });
-      await JobSchedule.assignHospitalNumber(createdPatient.id);
+      JobSchedule.assignHospitalNumber(createdPatient.id);
 
       if (createPatientBody.service_id)
         await prescribeService({

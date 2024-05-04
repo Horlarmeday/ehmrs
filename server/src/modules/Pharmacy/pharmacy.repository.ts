@@ -32,11 +32,28 @@ import { HistoryType } from '../../database/models/inventoryItemHistory';
 import { DrugStatus } from '../../database/models/drugPrescription';
 import { DispenseDrugType, ReturnDrugType } from './interface/prescribed-drug.type';
 import {
-  getPrescriptionAdditionalItems,
-  getPrescriptionDrugs,
+  getAdditionalItems,
+  getAdditionalItemsWithoutJoins,
+  getDrugsPrescribed,
+  getPrescribedDrugsWithoutJoins,
 } from '../Orders/Pharmacy/pharmacy-order.repository';
 import { BadException } from '../../common/util/api-error';
 import { PRESCRIPTION_NOT_FOUND } from './messages/response-messages';
+import { getVisitsQuery } from '../Visit/visit.repository';
+import { VisitCategory } from '../../database/models/visit';
+import { getPrescriptionTests } from '../Orders/Laboratory/lab-order.repository';
+import { getPrescriptionInvestigations } from '../Orders/Radiology/radiology-order.repository';
+import {
+  getAncTriages,
+  getAntenatalClinicalNotes,
+  getAntenatalObservations,
+} from '../Antenatal/antenatal.repository';
+import { getTriages } from '../Triage/triage.repository';
+import { getPrescriptionServices } from '../Orders/Service/service-order.repository';
+import {
+  getConsultationSummary,
+  getPatientDiagnoses,
+} from '../Consultation/consultation.repository';
 
 async function includeOneModel({ model, modelToInclude, id, includeAs }) {
   return model.findOne({
@@ -392,6 +409,7 @@ export const getDrugPrescriptions = async ({
 }> => {
   const { limit, offset } = calcLimitAndOffset(+currentPage, +pageLimit);
   const query = {
+    [Op.or]: [{ status: DrugStatus.PENDING }, { status: DrugStatus.PARTIAL_DISPENSED }],
     ...(period && getPeriodQuery(period, 'date_prescribed')),
     ...(start && end && dateIntervalQuery('date_prescribed', start, end)),
   };
@@ -408,7 +426,12 @@ export const getDrugPrescriptions = async ({
           ),
           'dispensed_drugs_count',
         ],
-        [sequelize.fn('COUNT', sequelize.col('items.id')), 'items_count'],
+        [
+          sequelize.literal(
+            `(SELECT COUNT(*) FROM Additional_item_prescriptions AS items WHERE items.drug_prescription_id = DrugPrescription.id)`
+          ),
+          'items_count',
+        ],
       ],
     },
     order: [['date_prescribed', 'DESC']],
@@ -423,7 +446,7 @@ export const getDrugPrescriptions = async ({
       },
       {
         model: Patient,
-        attributes: ['firstname', 'lastname', 'fullname', 'hospital_id'],
+        attributes: patientAttributes,
         where: {
           ...(search && {
             [Op.or]: [
@@ -446,11 +469,6 @@ export const getDrugPrescriptions = async ({
           }),
         },
       },
-      {
-        model: PrescribedAdditionalItem,
-        as: 'items',
-        attributes: [], // Exclude all columns from the PrescribedDrug table (we only need the count)
-      },
     ],
     group: ['DrugPrescription.id'], // Group the results by DrugPrescription.id to get the count per sample
     subQuery: false,
@@ -471,7 +489,7 @@ export const getDrugPrescriptions = async ({
 export const getOneDrugPrescription = async (drugPrescriptionId: number | string): Promise<any> => {
   const drugPrescription = await DrugPrescription.findOne({
     where: { id: drugPrescriptionId },
-    attributes: ['status'],
+    attributes: ['status', 'visit_id'],
     include: [
       {
         model: Patient,
@@ -516,6 +534,15 @@ const getDispenseStatus = (
   return DispenseStatus.DISPENSED;
 };
 
+const getReturnStatus = (
+  quantityToReturn: number,
+  prescribedDrug: PrescribedDrug | PrescribedAdditionalItem
+) => {
+  const quantityRemaining = prescribedDrug.quantity_dispensed - prescribedDrug.quantity_returned;
+  if (quantityToReturn < quantityRemaining) return DispenseStatus.PARTIAL_RETURNED;
+  return DispenseStatus.RETURNED;
+};
+
 export const dispenseDrug = async (
   inventoryItem: InventoryItem,
   prescribedDrug: PrescribedDrug | PrescribedAdditionalItem,
@@ -551,8 +578,8 @@ export const dispenseDrug = async (
     const drug = await prescribedDrug.save({ transaction: t });
 
     const [prescriptions, additionalItems] = await Promise.all([
-      getPrescriptionDrugs({ drug_prescription_id }),
-      getPrescriptionAdditionalItems({ drug_prescription_id }),
+      getPrescribedDrugsWithoutJoins({ drug_prescription_id }),
+      getAdditionalItemsWithoutJoins({ drug_prescription_id }),
     ]);
 
     const isDrugsAllDispensed = prescriptions?.every(
@@ -580,7 +607,7 @@ export const returnDrugToInventory = async (
   data: ReturnDrugType
 ) => {
   return await sequelizeConnection.transaction(async t => {
-    const { quantity_to_return, staff_id, drug_prescription_id } = data;
+    const { quantity_to_return, staff_id, drug_prescription_id, reason_for_return } = data;
     inventoryItem.quantity_consumed -= +quantity_to_return;
     inventoryItem.quantity_remaining += +quantity_to_return;
     const item = await inventoryItem.save({ transaction: t });
@@ -599,14 +626,15 @@ export const returnDrugToInventory = async (
         drug_prescription_id: data?.prescription_id,
         visit_id: prescribedDrug.visit_id,
         additional_item_id: data?.additional_item_id,
+        reason_for_return,
       },
       { transaction: t }
     );
 
-    prescribedDrug.dispense_status = DispenseStatus.RETURNED;
+    prescribedDrug.dispense_status = getReturnStatus(quantity_to_return, prescribedDrug);
     prescribedDrug.quantity_returned += +quantity_to_return;
-    prescribedDrug.quantity_dispensed -= +quantity_to_return;
     prescribedDrug.returned_by = data.staff_id;
+    prescribedDrug.reason_for_return = data.reason_for_return;
     await prescribedDrug.save({ transaction: t });
 
     await DrugPrescription.update(
@@ -618,4 +646,59 @@ export const returnDrugToInventory = async (
 
     return history;
   });
+};
+
+export const getPrescriptionsAndHistory = async (visit_id: number, category: VisitCategory) => {
+  const [tests, drugs, observations, triages, diagnoses, items] = await Promise.all([
+    getPrescriptionTests({ visit_id }),
+    getDrugsPrescribed({ visit_id }),
+    (category === VisitCategory.ANC ? getAntenatalObservations : getConsultationSummary)({
+      visit_id,
+    }),
+    (category === VisitCategory.ANC ? getAncTriages : getTriages)({ visit_id }),
+    getPatientDiagnoses({ visit_id }),
+    getAdditionalItems({ visit_id }),
+  ]);
+  return { tests, drugs, observations, triages, diagnoses, items };
+};
+
+/**
+ * get drug prescriptions history
+ * @param currentPage
+ * @param pageLimit
+ * @param patientId
+ */
+export const getDrugPrescriptionsHistory = async (
+  currentPage = 1,
+  pageLimit = 5,
+  patientId: number
+): Promise<{
+  total: number;
+  docs: any[];
+  pages: number;
+  perPage: number;
+  currentPage: number;
+}> => {
+  const { visits, limit, count } = await getVisitsQuery(
+    currentPage,
+    pageLimit,
+    {
+      patient_id: patientId,
+    },
+    ['id', 'date_visit_start', 'date_visit_ended', 'patient_id', 'category', 'status']
+  );
+  const summary = await Promise.all(
+    visits.map(
+      async ({ id, date_visit_start, date_visit_ended, patient_id, category, status }) => ({
+        id,
+        date_visit_start,
+        date_visit_ended,
+        patient_id,
+        category,
+        status,
+        ...(await getPrescriptionsAndHistory(id, category)),
+      })
+    )
+  );
+  return paginate({ rows: summary, count }, currentPage, limit);
 };

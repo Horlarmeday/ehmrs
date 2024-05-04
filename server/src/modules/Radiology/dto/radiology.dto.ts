@@ -30,7 +30,7 @@ export class InvestigationTariffDto {
 
 export class Result {
   prescribed_investigation_id: number;
-  investigation_prescription_id: string;
+  investigation_prescription_id: number;
   name: string;
   patient_id: number;
   result?: string;
@@ -39,5 +39,9 @@ export class Result {
 }
 export class RadiologyResultDto {
   results: Array<Result>;
+  staff_id: number;
+}
+export class RadiologyApprovalDto {
+  results: Array<Pick<Result, 'prescribed_investigation_id' | 'investigation_prescription_id'>>;
   staff_id: number;
 }

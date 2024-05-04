@@ -34,6 +34,7 @@ export enum DispenseStatus {
   PENDING = 'Pending',
   RETURNED = 'Returned',
   PARTIAL_DISPENSED = 'Partial Dispense',
+  PARTIAL_RETURNED = 'Partial Returned',
 }
 
 export enum PaymentStatus {
@@ -145,7 +146,8 @@ export class PrescribedAdditionalItem extends Model {
       DispenseStatus.DISPENSED,
       DispenseStatus.PENDING,
       DispenseStatus.RETURNED,
-      DispenseStatus.PARTIAL_DISPENSED
+      DispenseStatus.PARTIAL_DISPENSED,
+      DispenseStatus.PARTIAL_RETURNED
     ),
     allowNull: false,
     defaultValue: DispenseStatus.PENDING,
@@ -305,6 +307,16 @@ export class PrescribedAdditionalItem extends Model {
   })
   nhis_status: NHISApprovalStatus;
 
+  @Column({
+    type: DataType.TEXT,
+  })
+  reason_for_return: string;
+
+  @Column({
+    type: DataType.INTEGER,
+  })
+  old_id: number;
+
   @BelongsTo(() => Staff)
   requester: Staff;
 
@@ -341,7 +353,7 @@ export class PrescribedAdditionalItem extends Model {
   static async paginate(param: {
     paginate: number;
     attributes?: FindAttributeOptions;
-    where?: WhereOptions<any>;
+    where?: WhereOptions;
     page?: number;
     order?: Order;
     group?: GroupOption;

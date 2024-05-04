@@ -64,7 +64,7 @@ export async function getTriageInAVisit(data) {
  * @param query
  */
 export const getTriages = async (query: WhereOptions<Triage>): Promise<Triage[]> => {
-  return Triage.findAll({ where: { ...query } });
+  return Triage.findAll({ where: { ...query }, order: [['createdAt', 'DESC']] });
 };
 
 /**

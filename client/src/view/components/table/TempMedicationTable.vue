@@ -16,8 +16,14 @@
           <tr v-if="drugs.length === 0">
             <td colspan="9" align="center" class="text-muted">No Data</td>
           </tr>
-          <tr v-for="drug in drugs" :key="drug.id">
+          <tr v-for="drug in drugs" :key="drug.drug_id">
             <th>
+              <span
+                :title="`${drug.drug_type}`"
+                v-b-tooltip.hover
+                :class="getLabelDotStatus(drug.drug_type)"
+                class="label label-dot label-lg mr-2"
+              ></span>
               <a @click="viewPopover(drug)" href="#" :id="popOverId"> {{ drug.drug_name }}</a>
             </th>
             <td>
@@ -56,6 +62,7 @@
 </template>
 <script>
 import DrugPopover from '@/view/components/popover/DrugPopover.vue';
+import { getLabelDotStatus } from '@/common/common';
 
 export default {
   name: 'TempMedicationTable',
@@ -74,6 +81,7 @@ export default {
     },
   },
   methods: {
+    getLabelDotStatus,
     viewPopover(item) {
       this.item = item;
       this.showPopover = true;

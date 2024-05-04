@@ -18,13 +18,19 @@ import {
   StatusCodes,
 } from '../../core/helpers/helper';
 import { getModelById, getPeriodQuery } from '../../core/helpers/general';
+import { InvestigationStatus as Status } from '../../database/models/investigationPrescription';
 import { InvestigationStatus } from '../../database/models/prescribedInvestigation';
 import sequelizeConnection from '../../database/config/config';
 import { ResultStatus } from '../../database/models/testResult';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
-import { CreateInvestigationDto } from './dto/radiology.dto';
+import { CreateInvestigationDto, Result } from './dto/radiology.dto';
 import { BadException } from '../../common/util/api-error';
-import { INVESTIGATION_NOT_FOUND, RESULT_NOT_FOUND } from './messages/response-messages';
+import {
+  ERROR_ADDING_RESULTS,
+  INVESTIGATION_NOT_FOUND,
+  RESULT_NOT_FOUND,
+} from './messages/response-messages';
+import { PaymentStatus } from '../../database/models/prescribedDrug';
 
 /**
  * create new imaging
@@ -272,7 +278,6 @@ export const getOneInvestigationPrescription = async (
  * get requested investigation
  *
  * @function
- * @returns {json} json object with test samples data
  * @param currentPage
  * @param pageLimit
  * @param period
@@ -290,7 +295,7 @@ export const getRequestedInvestigations = async ({
 }) => {
   const { limit, offset } = calcLimitAndOffset(+currentPage, +pageLimit);
   const query = {
-    status: InvestigationStatus.PENDING,
+    [Op.or]: [{ status: Status.PENDING }, { status: Status.PARTIAL_RESULT }],
     ...(period && getPeriodQuery(period, 'date_requested')),
     ...(start && end && dateIntervalQuery('date_requested', start, end)),
   };
@@ -298,6 +303,24 @@ export const getRequestedInvestigations = async ({
     attributes: {
       include: [
         [sequelize.fn('COUNT', sequelize.col('investigations.id')), 'total'],
+        [
+          sequelize.fn(
+            'COUNT',
+            sequelize.literal(
+              `DISTINCT CASE WHEN investigations.imaging_id = '${1}' THEN investigations.id END`
+            )
+          ),
+          'scan_investigations_count',
+        ],
+        [
+          sequelize.fn(
+            'COUNT',
+            sequelize.literal(
+              `DISTINCT CASE WHEN investigations.imaging_id = '${2}' THEN investigations.id END`
+            )
+          ),
+          'xray_investigations_count',
+        ],
         [
           sequelize.fn(
             'COUNT',
@@ -311,19 +334,19 @@ export const getRequestedInvestigations = async ({
           sequelize.fn(
             'COUNT',
             sequelize.literal(
-              `DISTINCT CASE WHEN investigations.status = '${InvestigationStatus.REFERRED}' THEN investigations.id END`
+              `DISTINCT CASE WHEN investigations.status = '${InvestigationStatus.RESULT_ADDED}' THEN investigations.id END`
             )
           ),
-          'referred_investigations_count',
+          'pending_approvals_count',
         ],
         [
           sequelize.fn(
             'COUNT',
             sequelize.literal(
-              `DISTINCT CASE WHEN investigations.status = '${InvestigationStatus.RESULT_ADDED}' THEN investigations.id END`
+              `DISTINCT CASE WHEN investigations.payment_status = '${PaymentStatus.PENDING}' THEN investigations.id END`
             )
           ),
-          'pending_approvals_count',
+          'total_pending_payments',
         ],
       ],
     },
@@ -335,7 +358,7 @@ export const getRequestedInvestigations = async ({
       {
         model: PrescribedInvestigation,
         as: 'investigations',
-        attributes: [], // Exclude all columns from the PrescribedTest table (we only need the count)
+        attributes: [], // Exclude all columns from the PrescribedInvestigation table (we only need the count)
       },
       {
         model: Patient,
@@ -385,7 +408,7 @@ export const getOneRequestedInvestigation = async (
       },
       {
         model: PrescribedInvestigation,
-        attributes: ['investigation_id', 'id', 'status'],
+        attributes: ['investigation_id', 'id', 'status', 'payment_status'],
         include: [
           { model: Investigation, attributes: ['name', 'id'] },
           {
@@ -423,6 +446,9 @@ export const appendInvestigationResults = async (data: any[]) => {
       transaction: t,
     });
 
+    if (!results?.length)
+      throw new BadException('Error', StatusCodes.BAD_REQUEST, ERROR_ADDING_RESULTS);
+
     await Promise.all(
       data.map(async investigation =>
         PrescribedInvestigation.update(
@@ -437,15 +463,27 @@ export const appendInvestigationResults = async (data: any[]) => {
         )
       )
     );
+    const prescribedInvestigationCount = await PrescribedInvestigation.count({
+      where: {
+        investigation_prescription_id: data[0].investigation_prescription_id,
+        status: {
+          [Op.ne]: InvestigationStatus.REFERRED,
+        },
+      },
+      transaction: t,
+    });
+    const statusToUpdate =
+      prescribedInvestigationCount === results.length ? Status.RESULT_ADDED : Status.PARTIAL_RESULT;
+
     await InvestigationPrescription.update(
-      { status: InvestigationStatus.RESULT_ADDED },
+      { status: statusToUpdate },
       { where: { id: data[0].investigation_prescription_id }, transaction: t }
     );
     return testResults;
   });
 };
 
-export const getInvestigationsApprovals = async ({
+export const getInvestigationsForApproval = async ({
   currentPage = 1,
   pageLimit = 10,
   search = null,
@@ -454,7 +492,7 @@ export const getInvestigationsApprovals = async ({
 }) => {
   const { limit, offset } = calcLimitAndOffset(+currentPage, +pageLimit);
   const query = {
-    status: InvestigationStatus.RESULT_ADDED,
+    [Op.or]: [{ status: Status.RESULT_ADDED }, { status: Status.PARTIAL_RESULT }],
     ...(start && end && dateIntervalQuery('date_requested', start, end)),
   };
   const investigations = await InvestigationPrescription.findAll({
@@ -526,21 +564,57 @@ export const getInvestigationsApprovals = async ({
   return paginate({ rows: investigations, count }, currentPage, limit);
 };
 
-export const approveInvestigationResults = async (investigationResultId: number) => {
+export const approveInvestigationResults = async (
+  data: Partial<Result & { staff_id: number }>[]
+) => {
   return sequelizeConnection.transaction(async t => {
-    await InvestigationPrescription.update(
-      { status: InvestigationStatus.COMPLETED },
-      { where: { id: investigationResultId }, transaction: t }
+    await Promise.all(
+      data.map(async test => {
+        await PrescribedInvestigation.update(
+          {
+            status: InvestigationStatus.APPROVED,
+            investigation_approved_date: Date.now(),
+            investigation_approved_by: test.staff_id,
+          },
+          { where: { id: test.prescribed_investigation_id }, transaction: t }
+        );
+        await InvestigationResult.update(
+          { status: ResultStatus.ACCEPTED },
+          {
+            where: { prescribed_investigation_id: test.prescribed_investigation_id },
+            transaction: t,
+          }
+        );
+      })
     );
-    await InvestigationResult.update(
-      { status: ResultStatus.ACCEPTED },
-      { where: { investigation_prescription_id: investigationResultId }, transaction: t }
-    );
-    await PrescribedInvestigation.update(
-      { status: InvestigationStatus.APPROVED },
-      { where: { investigation_prescription_id: investigationResultId }, transaction: t }
-    );
-    return InvestigationPrescription.findByPk(investigationResultId, { attributes: ['status'] });
+
+    const prescribedInvestigationsCount = await PrescribedInvestigation.count({
+      where: {
+        investigation_prescription_id: data[0].investigation_prescription_id,
+        status: {
+          [Op.ne]: Status.REFERRED,
+        },
+      },
+      transaction: t,
+    });
+    const approvedInvestigationsCount = await PrescribedInvestigation.count({
+      where: {
+        investigation_prescription_id: data[0].investigation_prescription_id,
+        status: InvestigationStatus.APPROVED,
+      },
+      transaction: t,
+    });
+    const statusToUpdate =
+      prescribedInvestigationsCount === approvedInvestigationsCount
+        ? Status.COMPLETED
+        : Status.PARTIAL_APPROVED;
+    if (prescribedInvestigationsCount === data.length) {
+      await InvestigationPrescription.update(
+        { status: statusToUpdate },
+        { where: { id: data[0].investigation_prescription_id }, transaction: t }
+      );
+    }
+    return prescribedInvestigationsCount;
   });
 };
 
@@ -553,7 +627,7 @@ export const getInvestigationsResults = async ({
 }) => {
   const { limit, offset } = calcLimitAndOffset(+currentPage, +pageLimit);
   const query = {
-    status: InvestigationStatus.COMPLETED,
+    [Op.or]: [{ status: Status.COMPLETED }, { status: Status.PARTIAL_RESULT }],
     ...(start && end && dateIntervalQuery('date_requested', start, end)),
   };
   const investigations = await InvestigationPrescription.findAll({
@@ -597,7 +671,9 @@ export const getInvestigationsResults = async ({
 
 export const getInvestigationResult = async (investigationPrescriptionId: number | string) => {
   const result = await InvestigationPrescription.findOne({
-    where: { id: investigationPrescriptionId, status: InvestigationStatus.COMPLETED },
+    where: {
+      id: investigationPrescriptionId,
+    },
     attributes: [],
     include: [
       {
@@ -607,6 +683,9 @@ export const getInvestigationResult = async (investigationPrescriptionId: number
       {
         model: InvestigationResult,
         attributes: ['result', 'prescribed_investigation_id', 'status'],
+        where: {
+          status: ResultStatus.ACCEPTED,
+        },
         include: [
           {
             model: PrescribedInvestigation,

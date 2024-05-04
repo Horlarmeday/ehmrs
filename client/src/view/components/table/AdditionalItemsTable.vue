@@ -18,6 +18,12 @@
           </tr>
           <tr v-for="item in items" :key="item.id">
             <th>
+              <span
+                :title="`${item.drug_type}`"
+                v-b-tooltip.hover
+                :class="getLabelDotStatus(item.drug_type)"
+                class="label label-dot label-lg mr-2"
+              ></span>
               <a href="#">{{ item?.drug?.name || '-' }}</a>
             </th>
             <td>
@@ -54,6 +60,7 @@
 </template>
 <script>
 import Swal from 'sweetalert2';
+import { getLabelDotStatus } from '@/common/common';
 
 export default {
   data: () => ({
@@ -70,6 +77,7 @@ export default {
     },
   },
   methods: {
+    getLabelDotStatus,
     showDeleteAlert(item) {
       const self = this;
       Swal.fire({

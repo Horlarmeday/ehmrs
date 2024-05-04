@@ -19,6 +19,12 @@
             </span>
           </td>
         </tr>
+        <tr v-if="drug?.drug_group">
+          <th scope="row">Drug Group</th>
+          <td>
+            <span>{{ drug.drug_group }}</span>
+          </td>
+        </tr>
         <tr>
           <th scope="row">Starting Date</th>
           <td>

@@ -5,8 +5,8 @@ import { Complaint, Diagnosis, History, Staff, Visit } from '../../database/mode
 import { WhereOptions } from 'sequelize';
 import { getPrescriptionTests } from '../Orders/Laboratory/lab-order.repository';
 import {
-  getPrescriptionAdditionalItems,
-  getPrescriptionDrugs,
+  getAdditionalItems,
+  getDrugsPrescribed,
 } from '../Orders/Pharmacy/pharmacy-order.repository';
 import { getPrescriptionInvestigations } from '../Orders/Radiology/radiology-order.repository';
 import { getTriages } from '../Triage/triage.repository';
@@ -58,18 +58,26 @@ export async function createObservation(data) {
     complaint_note,
     history_note,
     examination_note,
-    has_smoking_history,
+    chest,
+    other_examination,
+    cvs,
+    mss,
+    abdomen,
     visit_id,
     staff_id,
     patient_id,
     patient_insurance_id,
-  } = data;
+  } = data || {};
 
   return History.create({
     complaint_note,
     history_note,
     examination_note,
-    has_smoking_history: has_smoking_history || false,
+    chest,
+    other_examination,
+    cvs,
+    mss,
+    abdomen,
     visit_id,
     staff_id,
     patient_id,
@@ -94,6 +102,7 @@ export async function bulkCreateDiagnosis(data): Promise<Diagnosis[]> {
 export const getPatientDiagnoses = async (query: WhereOptions<Diagnosis>): Promise<Diagnosis[]> => {
   return Diagnosis.findAll({
     where: { ...query },
+    order: [['createdAt', 'DESC']],
     include: [{ model: Staff, attributes: staffAttributes }],
   });
 };
@@ -106,6 +115,7 @@ export const getPatientDiagnoses = async (query: WhereOptions<Diagnosis>): Promi
  */
 export async function getModelByVisitId(model, query: WhereOptions<Visit>): Promise<any> {
   return model.findAll({
+    order: [['createdAt', 'DESC']],
     where: { ...query },
     include: [{ model: Staff, attributes: staffAttributes }],
   });
@@ -144,14 +154,14 @@ export const getPrescriptions = async (visit_id: number, category: VisitCategory
     notes,
   ] = await Promise.all([
     getPrescriptionTests({ visit_id }),
-    getPrescriptionDrugs({ visit_id }),
+    getDrugsPrescribed({ visit_id }),
     getPrescriptionInvestigations({ visit_id }),
     (category === VisitCategory.ANC ? getAntenatalObservations : getConsultationSummary)({
       visit_id,
     }),
     (category === VisitCategory.ANC ? getAncTriages : getTriages)({ visit_id }),
     getPatientDiagnoses({ visit_id }),
-    getPrescriptionAdditionalItems({ visit_id }),
+    getAdditionalItems({ visit_id }),
     getPrescriptionServices({ visit_id }),
     category === VisitCategory.ANC
       ? getAntenatalClinicalNotes({ visit_id })

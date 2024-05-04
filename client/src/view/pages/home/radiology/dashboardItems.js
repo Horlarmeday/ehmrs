@@ -5,14 +5,14 @@ export default [
     name: 'Investigations',
   },
   {
+    url: '/radiology/investigations-approval',
+    icon: 'flaticon-like',
+    name: 'Verified Investigations',
+  },
+  {
     url: '/radiology/investigations-results',
     icon: 'flaticon2-poll-symbol',
     name: 'Results',
-  },
-  {
-    url: '/radiology/investigations-approval',
-    icon: 'flaticon-like',
-    name: 'Approvals',
   },
   {
     url: '/radiology/reports',

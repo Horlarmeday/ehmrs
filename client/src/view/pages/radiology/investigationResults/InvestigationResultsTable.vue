@@ -50,7 +50,7 @@
               <td class="text-right">
                 <router-link
                   v-b-tooltip.hover
-                  title="Approve"
+                  title="View"
                   :to="`/radiology/investigations-results/${result.id}`"
                   class="btn btn-icon btn-light btn-hover-primary btn-sm"
                 >

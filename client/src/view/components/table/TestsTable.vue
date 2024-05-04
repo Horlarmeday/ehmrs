@@ -5,7 +5,8 @@
         <thead class="thead-light">
           <tr class="text-uppercase">
             <th scope="col">Test</th>
-            <th scope="col">Billing Status</th>
+            <th scope="col">Result</th>
+            <th scope="col">Payment Status</th>
             <th scope="col">Result Status</th>
             <th scope="col">Requested By</th>
             <th scope="col">Date Requested</th>
@@ -26,7 +27,15 @@
               ></span>
               {{ test.test.name }}
             </td>
-            <td>{{ test.billing_status }}</td>
+            <td>
+              <span class="font-weight-boldest" v-if="test.result_status === ACCEPTED">
+                {{ test?.result?.result || '-' }}
+              </span>
+              <span v-else>-</span>
+            </td>
+            <td>
+              <span :class="getPaymentColor(test.payment_status)">{{ test.payment_status }}</span>
+            </td>
             <td>
               <span :class="getResultColor(test.result_status)">{{ test.result_status }}</span>
             </td>
@@ -34,12 +43,6 @@
             <td>{{ test.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
             <td>
               <span v-if="allowedRoles.includes(currentUser.role)">
-                <router-link
-                  :to="`/laboratory/test-result/${test.test_prescription_id}`"
-                  v-if="test.result_status === ACCEPTED"
-                >
-                  <i class="flaticon-file-2 text-success mr-2"></i>
-                </router-link>
                 <a
                   v-if="test.billing_status === UNBILLED && test.payment_status === PENDING"
                   @click="showDeleteAlert(test)"
@@ -59,6 +62,7 @@
 <script>
 import { parseJwt } from '@/core/plugins/parseJwt';
 import Swal from 'sweetalert2';
+import { getLabelDotStatus } from '@/common/common';
 
 export default {
   name: 'TestsTable',
@@ -78,6 +82,7 @@ export default {
     },
   },
   methods: {
+    getLabelDotStatus,
     showDeleteAlert(test) {
       const self = this;
       Swal.fire({
@@ -103,9 +108,11 @@ export default {
       return 'label label-inline label-light-danger font-weight-bold';
     },
 
-    getLabelDotStatus(type) {
-      if (type === 'Cash') return 'label-success';
-      return 'label-danger';
+    getPaymentColor(status) {
+      if (status === 'Pending') return 'label label-inline label-light-warning font-weight-bold';
+      if (status === 'Paid') return 'label label-inline label-light-success font-weight-bold';
+      if (status === 'Cleared') return 'label label-inline label-light-info font-weight-bold';
+      return 'label label-inline label-light-danger font-weight-bold';
     },
 
     deletePrescribedTest(test) {

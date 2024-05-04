@@ -81,8 +81,8 @@ export async function getInsurances(currentPage = 1, pageLimit = 10) {
  */
 export async function searchInsurances(currentPage = 1, pageLimit = 10, search) {
   return Insurance.paginate({
-    page: currentPage,
-    paginate: pageLimit,
+    page: +currentPage,
+    paginate: +pageLimit,
     order: [['createdAt', 'DESC']],
     where: {
       name: {
@@ -102,10 +102,10 @@ export async function searchInsurances(currentPage = 1, pageLimit = 10, search) 
  */
 export async function getHMOs(currentPage = 1, pageLimit = 10) {
   return HMO.paginate({
-    page: currentPage,
-    paginate: pageLimit,
+    page: +currentPage,
+    paginate: +pageLimit,
     order: [['createdAt', 'DESC']],
-    include: [{ model: Insurance, as: 'insurance' }],
+    include: [{ model: Insurance, as: 'insurance', attributes: ['name', 'id'] }],
   });
 }
 
@@ -120,10 +120,10 @@ export async function getHMOs(currentPage = 1, pageLimit = 10) {
  */
 export async function getInsuranceHMOs(currentPage = 1, pageLimit = 10, filter) {
   return HMO.paginate({
-    page: currentPage,
-    paginate: pageLimit,
+    page: +currentPage,
+    paginate: +pageLimit,
     order: [['createdAt', 'DESC']],
-    include: [{ model: Insurance, as: 'insurance' }],
+    include: [{ model: Insurance, as: 'insurance', attributes: ['name', 'id'] }],
     where: {
       insurance_id: filter,
     },
@@ -141,8 +141,8 @@ export async function getInsuranceHMOs(currentPage = 1, pageLimit = 10, filter) 
  */
 export async function searchHMOs(currentPage = 1, pageLimit = 10, search) {
   return HMO.paginate({
-    page: currentPage,
-    paginate: pageLimit,
+    page: +currentPage,
+    paginate: +pageLimit,
     order: [['createdAt', 'DESC']],
     include: [{ model: Insurance, as: 'insurance' }],
     where: {

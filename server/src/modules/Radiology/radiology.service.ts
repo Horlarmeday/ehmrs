@@ -8,7 +8,7 @@ import {
   getImaging,
   getInvestigationResult,
   getInvestigations,
-  getInvestigationsApprovals,
+  getInvestigationsForApproval,
   getInvestigationsResults,
   getOneInvestigationPrescription,
   getOneRequestedInvestigation,
@@ -23,6 +23,7 @@ import {
   CreateInvestigationDto,
   InvestigationQueryDto,
   InvestigationTariffDto,
+  RadiologyApprovalDto,
   RadiologyResultDto,
 } from './dto/radiology.dto';
 import { TestStatus } from '../../database/models/prescribedTest';
@@ -183,12 +184,14 @@ export class RadiologyService {
    */
   static async appendInvestigationResults(radiologyResultDto: RadiologyResultDto) {
     const { results, staff_id } = radiologyResultDto;
-    const data = results.map(result => ({
-      ...result,
-      staff_id,
-      testStatus: this.getTestStatus(result),
-      date_created: Date.now(),
-    }));
+    const data = results
+      .filter(({ result }) => !isEmpty(result))
+      .map(result => ({
+        ...result,
+        staff_id,
+        testStatus: this.getTestStatus(result),
+        date_created: Date.now(),
+      }));
     return appendInvestigationResults(data);
   }
 
@@ -200,26 +203,31 @@ export class RadiologyService {
   static async getInvestigationsApproval(body) {
     const { search, pageLimit, currentPage, start, end } = body;
     if (start && end) {
-      return getInvestigationsApprovals({ currentPage, pageLimit, start, end });
+      return getInvestigationsForApproval({ currentPage, pageLimit, start, end });
     }
 
     if (search) {
-      return getInvestigationsApprovals({ currentPage, pageLimit, search });
+      return getInvestigationsForApproval({ currentPage, pageLimit, search });
     }
 
     if (Object.values(body).length) {
-      return getInvestigationsApprovals({ currentPage, pageLimit });
+      return getInvestigationsForApproval({ currentPage, pageLimit });
     }
 
-    return getInvestigationsApprovals({});
+    return getInvestigationsForApproval({});
   }
 
   /**
    * Approve investigation results
-   * @param investigationResultId
+   * @param radiologyApprovalDto
    */
-  static async approveInvestigationResults(investigationResultId: number) {
-    return approveInvestigationResults(investigationResultId);
+  static async approveInvestigationResults(radiologyApprovalDto: RadiologyApprovalDto) {
+    const { results, staff_id } = radiologyApprovalDto;
+    const data = results.map(result => ({
+      ...result,
+      staff_id,
+    }));
+    return approveInvestigationResults(data);
   }
 
   /**

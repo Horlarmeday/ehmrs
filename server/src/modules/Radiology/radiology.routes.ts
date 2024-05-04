@@ -19,7 +19,7 @@ router.post(
   RadiologyController.addInvestigationResults
 );
 router.post(
-  '/requested-investigations/approve/:id',
+  '/requested-investigations/approve',
   verify,
   RadiologyController.approveInvestigationResults
 );

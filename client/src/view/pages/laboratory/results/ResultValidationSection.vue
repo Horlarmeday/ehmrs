@@ -1,7 +1,11 @@
 <template>
   <div>
     <div class="table-responsive">
-      <table class="table table-head-custom table-head-bg table-borderless table-vertical-center">
+      <TableSkeleton v-if="!results?.length" columns="6" />
+      <table
+        v-else
+        class="table table-head-custom table-head-bg table-borderless table-vertical-center"
+      >
         <thead>
           <tr>
             <th>Lab No</th>
@@ -14,42 +18,30 @@
           </tr>
         </thead>
         <tbody v-for="(result, i) in results" :key="i">
-          <tr :class="{ disabled: !result.result }">
+          <tr :class="{ disabled: result.shouldDisable }">
             <td>{{ accession_number }}</td>
             <td>{{ result.name }}</td>
             <td>
-              <div class="input-group">
-                <input
-                  v-model="result.result"
-                  readonly
-                  type="text"
-                  class="form-control form-control-sm"
-                />
-                <div class="input-group-append">
-                  <span class="input-group-text pb-1">{{ result.result_unit }}</span>
-                </div>
-              </div>
+              <span class="font-weight-boldest mr-2">{{ result.result || '-' }}</span>
+              <span class="font-weight-light">{{ result.result_unit }}</span>
             </td>
             <td>
-              <label class="checkbox">
-                <input disabled type="checkbox" v-model="result.is_abnormal" />
+              <span>{{ result.is_abnormal ? 'Yes' : 'No' }}</span>
+            </td>
+            <td>
+              <label class="radio radio-square">
+                <input type="radio" v-model="result.status" :value="ACCEPTED" />
                 <span></span>
               </label>
             </td>
             <td>
               <label class="radio radio-square">
-                <input type="radio" v-model="result.status" value="Accepted" />
+                <input type="radio" v-model="result.status" :value="REJECTED" />
                 <span></span>
               </label>
             </td>
             <td>
-              <label class="radio radio-square">
-                <input type="radio" v-model="result.status" value="Rejected" />
-                <span></span>
-              </label>
-            </td>
-            <td>
-              <textarea readonly v-model="result.comments" cols="25" rows="2" />
+              <span>{{ result.comments }}</span>
             </td>
           </tr>
         </tbody>
@@ -60,14 +52,11 @@
       <label>Lab Result Notes</label>
       <textarea
         name="notes"
-        v-validate="'required'"
-        data-vv-validate-on="blur"
         v-model="result_notes"
         class="form-control-sm form-control mb-6"
         cols="30"
         rows="5"
       />
-      <span class="text-danger text-sm">{{ errors.first('notes') }}</span>
     </div>
     <div class="text-center">
       <button
@@ -83,8 +72,12 @@
 </template>
 
 <script>
+import TableSkeleton from '@/view/pages/nhis/components/TableSkeleton.vue';
+import { isEmpty } from '@/common/common';
+
 export default {
   name: 'ResultValidationSection',
+  components: { TableSkeleton },
   props: {
     tests: {
       type: Array,
@@ -108,6 +101,10 @@ export default {
     return {
       isDisabled: false,
       result_notes: '',
+      APPROVED: 'Approved',
+      ACCEPTED: 'Accepted',
+      REJECTED: 'Rejected',
+      PENDING: 'Pending',
       results: this.tests.flatMap(({ data }) =>
         data.map(test => ({
           prescribed_test_id: test.id,
@@ -115,10 +112,12 @@ export default {
           name: test.test.name,
           result_unit: test.test.result_unit,
           patient_id: this.patient_id,
-          result: test?.result?.result,
+          result: test?.result?.result || '',
           is_abnormal: test?.result?.is_abnormal,
           status: test?.result?.status,
           comments: test?.result?.comments,
+          testStatus: test.status,
+          shouldDisable: !test?.result?.result || test.status === 'Approved',
         }))
       ),
     };
@@ -141,12 +140,21 @@ export default {
     validateTests() {
       this.$validator.validateAll().then(result => {
         if (result) {
+          const results = this.results
+            .filter(({ result, testStatus }) => !isEmpty(result) && testStatus !== this.APPROVED)
+            // eslint-disable-next-line no-unused-vars
+            .map(({ result_unit, shouldDisable, testStatus, ...rest }) => rest);
+
+          if (!results?.length || results.every(result => result.status === this.PENDING)) {
+            return this.$notify({
+              group: 'foo',
+              title: 'Error message',
+              text: 'Validate at least one result',
+              type: 'error',
+            });
+          }
           const submitButton = this.$refs['kt-validateResult-submit'];
           this.addSpinner(submitButton);
-
-          const results = this.results
-            // eslint-disable-next-line no-unused-vars
-            .map(({ result_unit, ...rest }) => rest);
 
           this.$store
             .dispatch('laboratory/validateTestResults', {

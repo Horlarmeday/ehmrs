@@ -1,18 +1,28 @@
 <template>
   <div class="mt-3">
     <div class="accordion accordion-toggle-arrow" id="accordionExample1">
-      <div class="card" v-for="(investigation, i) in investigations" :key="i">
+      <div v-if="!investigations?.length">
+        <DefaultSkeleton />
+        <DefaultSkeleton />
+      </div>
+      <div v-else class="card" v-for="(investigation, i) in investigations" :key="i">
         <div class="card-header">
           <div class="card-title" v-b-toggle="`collapse-${i}`">
             <span class="mr-5 text-black-50">Investigation:</span>
             <span class="mr-5 text-dark">{{ investigation.name }}</span>
           </div>
         </div>
-        <div>
-          <b-collapse visible :id="`collapse-${i}`">
+        <div :class="investigation.payment_status === PENDING && 'disabledCard'">
+          <b-collapse
+            :disabled="investigation.payment_status === PENDING"
+            visible
+            :id="`collapse-${i}`"
+          >
             <b-card>
               <editor
-                :disabled="showApproveButton"
+                :disabled="
+                  investigation.status === ACCEPTED || investigation.payment_status === PENDING
+                "
                 :api-key="apiKey"
                 v-model="investigation.result"
                 :init="editorConfig"
@@ -25,16 +35,6 @@
     <div class="separator separator-solid mb-6"></div>
     <div class="text-center">
       <button
-        v-if="showApproveButton && resultStatus !== 'Completed'"
-        :disabled="isDisabled"
-        @click="approveResult"
-        ref="kt-addInvestigationResult-submit"
-        class="btn btn-lg btn-primary"
-      >
-        Approve
-      </button>
-      <button
-        v-if="!showApproveButton"
         :disabled="isDisabled"
         @click="addResult"
         ref="kt-addInvestigationResult-submit"
@@ -48,6 +48,7 @@
 
 <script>
 import Editor from '@tinymce/tinymce-vue';
+import DefaultSkeleton from '@/utils/DefaultSkeleton.vue';
 export default {
   name: 'InvestigationResultSection',
   props: {
@@ -55,20 +56,13 @@ export default {
       type: Array,
       required: true,
     },
-    investigationStatus: {
-      type: String,
-      required: true,
-    },
     patient_id: {
       type: Number,
       required: true,
     },
-    showApproveButton: {
-      type: Boolean,
-      default: false,
-    },
   },
   components: {
+    DefaultSkeleton,
     Editor,
   },
   data() {
@@ -81,6 +75,7 @@ export default {
           investigation_prescription_id: this.$route.params.id,
           prescribed_investigation_id: test.id,
           status: test?.result?.status || 'Pending',
+          payment_status: test?.payment_status,
         };
       }),
       isDisabled: false,
@@ -113,7 +108,9 @@ export default {
         images_upload_handler: this.handleImageUpload,
         images_upload_base_path: '/static',
       },
-      resultStatus: this.investigationStatus || '',
+      COMPLETED: 'Completed',
+      ACCEPTED: 'Accepted',
+      PENDING: 'Pending',
     };
   },
   methods: {
@@ -147,29 +144,35 @@ export default {
     },
 
     addResult() {
+      const investigations = this.investigations
+        .filter(investigation => investigation.status !== this.ACCEPTED)
+        // eslint-disable-next-line no-unused-vars
+        .map(({ payment_status, ...rest }) => rest);
+
+      if (!investigations.some(({ result }) => result)) {
+        return this.$notify({
+          group: 'foo',
+          title: 'Error message',
+          text: 'Result cannot be empty',
+          type: 'error',
+        });
+      }
+
       const submitButton = this.$refs['kt-addInvestigationResult-submit'];
       this.addSpinner(submitButton);
 
       this.$store
-        .dispatch('radiology/addInvestigationResult', this.investigations)
+        .dispatch('radiology/addInvestigationResult', investigations)
         .then(() => this.endRequest(submitButton))
-        .catch(() => this.removeSpinner(submitButton));
-    },
-
-    approveResult() {
-      const submitButton = this.$refs['kt-addInvestigationResult-submit'];
-      this.addSpinner(submitButton);
-
-      this.$store
-        .dispatch('radiology/approveInvestigationResult', { id: this.$route.params.id })
-        .then(response => {
-          this.resultStatus = response.data.data.status;
-          this.endRequest(submitButton);
-        })
         .catch(() => this.removeSpinner(submitButton));
     },
   },
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.disabledCard {
+  pointer-events: none;
+  opacity: 0.4;
+}
+</style>

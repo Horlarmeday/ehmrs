@@ -252,10 +252,7 @@ export async function searchVisits({
   return Visit.paginate({
     page: currentPage,
     paginate: pageLimit,
-    attributes: [
-      [Sequelize.fn('MAX', Sequelize.col('patient_id')), 'patient_id'],
-      [Sequelize.fn('MAX', Sequelize.col('category')), 'category'],
-    ],
+    order: [['date_visit_start', 'DESC']],
     group: ['patient_id'],
     include: [
       {
@@ -304,14 +301,10 @@ export async function getVisits({
   return Visit.paginate({
     page: +currentPage,
     paginate: +pageLimit,
-    attributes: [
-      [Sequelize.fn('MAX', Sequelize.col('patient_id')), 'patient_id'],
-      [Sequelize.fn('MAX', Sequelize.col('category')), 'category'],
-    ],
+    order: [['date_visit_start', 'DESC']],
     where: {
       ...(start && end && dateIntervalQuery('date_visit_start', start, end)),
     },
-    group: ['patient_id'],
     include: [
       {
         model: Patient,

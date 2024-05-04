@@ -10,14 +10,40 @@ export enum JobName {
   SEND_PATIENT_SMS = 'Registration SMS',
   END_VISIT = 'End visit',
   CLOSE_ANTENATAL_ACCOUNT = 'Close antenatal account',
+  MIGRATE_PATIENTS_DATA = 'Migrate patient account data',
+  MIGRATE_DEPENDANTS_DATA = 'Migrate dependant account data',
+  MIGRATE_STAFFS_DATA = 'Migrate staffs account data',
+  MIGRATE_HMO_DATA = 'Migrate hmos data',
+  CREATE_PATIENT_INSURANCE_ACCOUNT = 'Create patient insurance account',
+  MIGRATE_WARDS = 'Migrate Wards',
+  MIGRATE_BEDS = 'Migrate Beds',
+  MIGRATE_ANTENATAL_ACCOUNTS = 'Migrate antenatal accounts',
+  MIGRATE_VISITS = 'Migrate visits',
+  MIGRATE_ADMIN_UTILS = 'Migrate admin utils',
+  MIGRATE_TRIAGES = 'Migrate triages',
+  MIGRATE_DRUGS = 'Migrate drugs',
 }
 
 export const CronTimer = {
   [JobName.EMPTY_HOSPITAL_NUMBER]: '2am',
+  [JobName.CLOSE_ANTENATAL_ACCOUNT]: '1am',
+  [JobName.END_VISIT]: '12am',
 };
 
 export const ImmediateJob = {
-  [JobName.EMPTY_HOSPITAL_NUMBER]: JobName.EMPTY_HOSPITAL_NUMBER,
-  [JobName.PATIENT_HEALTH_INSURANCE]: JobName.PATIENT_HEALTH_INSURANCE,
-  [JobName.PRINCIPAL_RELATIONSHIP]: JobName.PRINCIPAL_RELATIONSHIP,
+  // [JobName.EMPTY_HOSPITAL_NUMBER]: JobName.EMPTY_HOSPITAL_NUMBER,
+  // [JobName.PATIENT_HEALTH_INSURANCE]: JobName.PATIENT_HEALTH_INSURANCE,
+  // [JobName.PRINCIPAL_RELATIONSHIP]: JobName.PRINCIPAL_RELATIONSHIP,
+  // [JobName.MIGRATE_STAFFS_DATA]: JobName.MIGRATE_STAFFS_DATA,
+  // [JobName.MIGRATE_PATIENTS_DATA]: JobName.MIGRATE_PATIENTS_DATA,
+  // [JobName.MIGRATE_DEPENDANTS_DATA]: JobName.MIGRATE_DEPENDANTS_DATA,
+  // [JobName.MIGRATE_HMO_DATA]: JobName.MIGRATE_HMO_DATA,
+  // [JobName.EMPTY_HOSPITAL_NUMBER]: JobName.EMPTY_HOSPITAL_NUMBER,
+  // [JobName.CREATE_PATIENT_INSURANCE_ACCOUNT]: JobName.CREATE_PATIENT_INSURANCE_ACCOUNT,
+  // [JobName.MIGRATE_WARDS]: JobName.MIGRATE_WARDS,
+  // [JobName.MIGRATE_BEDS]: JobName.MIGRATE_BEDS,
+  // [JobName.MIGRATE_VISITS]: JobName.MIGRATE_VISITS,
+  // [JobName.MIGRATE_ANTENATAL_ACCOUNTS]: JobName.MIGRATE_ANTENATAL_ACCOUNTS,
+  // [JobName.MIGRATE_ADMIN_UTILS]: JobName.MIGRATE_ADMIN_UTILS,
+  // [JobName.MIGRATE_TRIAGES]: JobName.MIGRATE_TRIAGES,
 };

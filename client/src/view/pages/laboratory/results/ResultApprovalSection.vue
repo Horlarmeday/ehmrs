@@ -1,6 +1,7 @@
 <template>
   <div>
     <div class="table-responsive">
+      <TableSkeleton v-if="!results?.length" columns="6" />
       <table class="table table-head-custom table-head-bg table-borderless table-vertical-center">
         <thead>
           <tr>
@@ -14,7 +15,7 @@
           </tr>
         </thead>
         <tbody v-for="(result, i) in results" :key="i">
-          <tr v-if="result.status === 'Accepted'">
+          <tr :class="{ disabled: result.shouldDisable }" v-if="result.status === 'Accepted'">
             <td>{{ accession_number }}</td>
             <td>{{ result.name }}</td>
             <td>
@@ -24,10 +25,7 @@
               >
             </td>
             <td>
-              <label class="checkbox">
-                <input disabled type="checkbox" v-model="result.is_abnormal" />
-                <span></span>
-              </label>
+              <span>{{ result.is_abnormal ? 'Yes' : 'No' }}</span>
             </td>
             <td>
               <label :class="getLabelStatus(result.status)" class="label label-inline">
@@ -50,17 +48,15 @@
       </table>
     </div>
     <div class="separator separator-solid mb-6"></div>
-    <div>
+    <div v-if="result_notes">
       <label>Result Verification Notes</label>
-      <textarea
-        disabled
-        v-model="result_notes"
-        class="form-control-sm form-control mb-6"
-        cols="30"
-        rows="5"
-      />
+      <div class="example">
+        <div class="example-code">
+          <div class="example-highlight">{{ result_notes }}</div>
+        </div>
+      </div>
     </div>
-    <div class="text-center">
+    <div class="text-center mt-3">
       <button
         @click="approveTests"
         ref="kt-approveResult-submit"
@@ -73,8 +69,11 @@
 </template>
 
 <script>
+import TableSkeleton from '@/view/pages/nhis/components/TableSkeleton.vue';
+
 export default {
   name: 'ResultApprovalSection',
+  components: { TableSkeleton },
   props: {
     tests: {
       type: Array,
@@ -106,7 +105,8 @@ export default {
           result: test?.result?.result,
           is_abnormal: test?.result?.is_abnormal,
           status: test?.result?.status,
-          test_status: false,
+          shouldDisable: test.status === 'Approved',
+          test_status: test.status === 'Approved',
           comments: test?.result?.comments,
         }))
       ),
@@ -129,7 +129,7 @@ export default {
 
     approveTests() {
       let results = this.results.filter(({ status }) => status === 'Accepted');
-      if (!results.some(({ test_status }) => test_status)) {
+      if (results.every(({ test_status }) => !test_status)) {
         return this.$notify({
           group: 'foo',
           title: 'Error message',
@@ -141,7 +141,7 @@ export default {
       this.addSpinner(submitButton);
 
       // eslint-disable-next-line no-unused-vars
-      results = results.map(({ result_unit, ...rest }) => rest);
+      results = results.map(({ result_unit, shouldDisable, ...rest }) => rest);
 
       this.$store
         .dispatch('laboratory/approveTestResults', results)
@@ -158,4 +158,9 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+tr.disabled {
+  pointer-events: none; /* Disable pointer events to prevent interaction */
+  opacity: 0.5; /* Optionally, reduce the opacity to visually indicate the disabled state */
+}
+</style>
