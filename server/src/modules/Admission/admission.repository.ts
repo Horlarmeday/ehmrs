@@ -36,9 +36,9 @@ import { DefaultType } from '../../database/models/default';
 import { Source } from '../../database/models/prescribedDrug';
 import {
   bulkCreateAdditionalItems,
-  getPatientTreatments,
   getAdditionalItems,
   getDrugsPrescribed,
+  getPatientTreatments,
 } from '../Orders/Pharmacy/pharmacy-order.repository';
 import { Gender } from '../../database/models/staff';
 import { DrugType } from '../../database/models/pharmacyStore';
@@ -186,17 +186,7 @@ export const getAdmissionQuery = async (query: WhereOptions<Admission>) => {
     include: [
       {
         model: Patient,
-        attributes: [
-          'fullname',
-          'firstname',
-          'lastname',
-          'date_of_birth',
-          'photo',
-          'photo_url',
-          'gender',
-          'hospital_id',
-          'has_insurance',
-        ],
+        attributes: patientAttributes,
       },
       { model: Ward, as: 'ward', attributes: ['name'] },
       { model: Bed, attributes: ['code'] },
@@ -414,6 +404,25 @@ export const getAntenatalAdmittedPatients = async ({
 };
 
 /**
+ * get discharge recommended patients
+ */
+export const getDischargeRecommendedPatients = async () => {
+  return await Admission.findAll({
+    where: {
+      should_discharge: true,
+      discharge_status: DischargeStatus.ON_ADMISSION,
+    },
+    include: [
+      {
+        model: Patient,
+        attributes: patientAttributes,
+      },
+      { model: Ward, as: 'ward', attributes: ['name', 'occupant_type'] },
+    ],
+  });
+};
+
+/**
  * change patient ward
  *
  * @function
@@ -438,6 +447,18 @@ export const changePatientWard = async (
   });
 };
 
+const getDrugType = (has_insurance: boolean, insurance: PatientInsurance) => {
+  if (!has_insurance) return DrugType.CASH;
+
+  const insuranceMapping = {
+    NHIS: DrugType.NHIS,
+    PHIS: DrugType.PRIVATE,
+    FHSS: DrugType.NHIS,
+    Retainership: DrugType.RETAINERSHIP,
+  };
+
+  return insuranceMapping[insurance.insurance.name] || DrugType.CASH;
+};
 /**
  * insert the default items for patient admission
  *
@@ -466,10 +487,7 @@ export const insertDefaultAdmissionItems = async ({
   const age = dayjs().diff(dayjs(formattedDate), 'year');
   const sex = patient.gender;
   const source = admission.ante_natal_id ? Source.ANC : Source.CONSULTATION;
-  const drugType =
-    patient.has_insurance && EXCLUDED_INSURANCE.includes(insurance.insurance.name)
-      ? DrugType.NHIS
-      : DrugType.CASH;
+  const drugType = getDrugType(patient.has_insurance, insurance);
 
   const inventory = inventories.find(({ accepted_drug_type }) =>
     new RegExp(`\\b${drugType}\\b`, 'i').test(accepted_drug_type)
@@ -481,7 +499,7 @@ export const insertDefaultAdmissionItems = async ({
       quantity_prescribed: +item.quantity,
       quantity_to_dispense: +item.quantity,
       visit_id: admission.visit_id,
-      inventory_id: inventory.id,
+      inventory_id: inventory?.id || 1,
       start_date: Date.now(),
       date_prescribed: Date.now(),
       ante_natal_id: admission.ante_natal_id,

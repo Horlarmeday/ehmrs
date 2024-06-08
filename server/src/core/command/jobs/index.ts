@@ -18,3 +18,15 @@ export { migrateAntenatalAccountsAndHistory } from './now/migrateAntenatalAndHis
 export { migrateVisits } from './now/migrateVisits.job';
 export { migrateTriages } from './now/migrateTriages.job';
 export { migrateDrugs } from './now/migrateDrugs.job';
+export { migrateInvestigations } from './now/migrateInvestigations.job';
+export { migrateAdmissions } from './now/migrateAdmission.job';
+export { migratePrescribedInvestigations } from './now/migratePrescribedInvestigations.job';
+export { migratePrescribedServices } from './now/migratePrescribedServices.job';
+export { migrateLaboratoryTests } from './now/migrateLaboratoryTests.job';
+export { migratePrescribedTests } from './now/migratePrescribedTests.job';
+export { migratePrescribedDrugs } from './now/migratePrescribedDrugs.job';
+export { migrateAdditionalItems } from './now/migrateAdditionalItems.job';
+export { migratePharmacyStoreItems } from './now/migratePharmacyStoreItems.job';
+export { dispenseToInventory } from './now/dispenseToInventory.job';
+export { migratePatientHistories } from './now/migratePatientHistories.job';
+export { migratePatientDiagnoses } from './now/migratePatientDiagnoses.job';

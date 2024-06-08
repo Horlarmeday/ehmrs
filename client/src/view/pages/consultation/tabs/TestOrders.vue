@@ -1,6 +1,11 @@
 <template>
   <div>
-    <test-card :show-switch="showSwitch" :switch-position="switchPosition" source="Consultation" />
+    <test-card
+      :insurance-name="insuranceName"
+      :show-switch="showSwitch"
+      :switch-position="switchPosition"
+      source="Consultation"
+    />
   </div>
 </template>
 
@@ -14,6 +19,9 @@ export default {
   computed: {
     visit() {
       return this.$store.state.visit.visit;
+    },
+    insuranceName() {
+      return this.visit?.insurance?.insurance?.name;
     },
     showSwitch() {
       return (

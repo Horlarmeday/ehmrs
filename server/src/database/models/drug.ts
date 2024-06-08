@@ -68,7 +68,17 @@ export class Drug extends Model {
   @Column({
     type: DataType.BOOLEAN,
   })
-  has_nhis: boolean;
+  is_available_for_nhis: boolean;
+
+  @Column({
+    type: DataType.INTEGER,
+  })
+  old_id: number;
+
+  @Column({
+    type: DataType.INTEGER,
+  })
+  nhis_old_id: number;
 
   @BelongsTo(() => Staff)
   staff: Staff;

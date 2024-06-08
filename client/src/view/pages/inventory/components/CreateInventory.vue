@@ -85,7 +85,7 @@ export default {
       refill_level: '',
       desc: '',
       isDisabled: false,
-      acceptedDrugTypes: ['Cash Drug', 'NHIS Drug', 'Both'],
+      acceptedDrugTypes: ['Cash Drug', 'NHIS Drug', 'Private Drug', 'Both'],
     };
   },
   computed: {

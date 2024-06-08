@@ -115,6 +115,20 @@ export default {
     });
   },
 
+  fetchRecommendedDischarges({ commit }) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/admission//discharge-recommended-patients')
+        .then(response => {
+          commit('SET_RECOMMENDED_DISCHARGES', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
   /**
    * Observations
    */

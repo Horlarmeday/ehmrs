@@ -15,7 +15,7 @@
         <div>
           <b-collapse visible :id="`collapse-${i}`">
             <b-card>
-              <editor :api-key="apiKey" v-model="investigation.result" :init="editorConfig" />
+              <text-editor :key="i" v-model="investigation.result" />
             </b-card>
           </b-collapse>
         </div>
@@ -36,8 +36,8 @@
 </template>
 
 <script>
-import Editor from '@tinymce/tinymce-vue';
 import DefaultSkeleton from '@/utils/DefaultSkeleton.vue';
+import TextEditor from '@/utils/TextEditor.vue';
 export default {
   name: 'ApproveResultSection',
   props: {
@@ -47,8 +47,8 @@ export default {
     },
   },
   components: {
+    TextEditor,
     DefaultSkeleton,
-    Editor,
   },
   data() {
     return {
@@ -63,35 +63,6 @@ export default {
           };
         }),
       isDisabled: false,
-      apiKey: process.env.VUE_APP_TINY_API_KEY,
-      editorConfig: {
-        plugins: [
-          'advlist',
-          'autolink',
-          'lists',
-          'link',
-          'image',
-          'charmap',
-          'preview',
-          'anchor',
-          'searchreplace',
-          'visualblocks',
-          'code',
-          'fullscreen',
-          'insertdatetime',
-          'media',
-          'table',
-          'help',
-          'wordcount',
-          'autosave',
-          'save',
-          'visualchars',
-        ],
-        toolbar:
-          'undo redo | blocks | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | insertfile image media pageembed link anchor codesample | help',
-        images_upload_handler: this.handleImageUpload,
-        images_upload_base_path: '/static',
-      },
       COMPLETED: 'Completed',
     };
   },
@@ -108,21 +79,6 @@ export default {
 
     endRequest(button) {
       this.removeSpinner(button);
-    },
-
-    handleImageUpload(blobInfo, success, failure) {
-      const formData = new FormData();
-      formData.append('image', blobInfo.blob(), blobInfo.filename());
-
-      return this.$store
-        .dispatch('radiology/uploadResultImages', formData)
-        .then(response => {
-          const host = window.location.origin;
-          success(`${host}/${response.data.data}`);
-        })
-        .catch(error => {
-          failure(`Image upload failed, ${error}`);
-        });
     },
 
     approveResult() {

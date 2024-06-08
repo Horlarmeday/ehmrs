@@ -94,6 +94,7 @@ export default {
     endRequest(button) {
       this.removeSpinner(button);
       this.$emit('closeModal');
+      this.$store.commit('request/EMPTY_SELECTED_REQUESTS', []);
       this.$store.dispatch('request/fetchRequests', {
         currentPage: this.$route.query.currentPage || 1,
         itemsPerPage: this.$route.query.itemsPerPage || 10,

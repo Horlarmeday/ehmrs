@@ -21,7 +21,6 @@ import { NHISApprovalStatus } from '../../../core/helpers/general';
 import { PrescriptionType } from '../../../database/models/prescribedTest';
 import { PaymentStatus } from '../../../database/models/prescribedDrug';
 import { BadException } from '../../../common/util/api-error';
-import { CANNOT_DELETE_DRUG } from '../Pharmacy/messages/response-messages';
 import { CANNOT_DELETE_INVESTIGATION } from './messages/response-messages';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
 

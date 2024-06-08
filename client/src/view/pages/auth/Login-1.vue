@@ -3,29 +3,31 @@
     <div
       class="login login-1 d-flex flex-column flex-lg-row flex-column-fluid bg-white"
       :class="{
-        'login-signin-on': this.state == 'signin',
-        'login-forgot-on': this.state == 'forgot'
+        'login-signin-on': this.state === 'signin',
+        'login-forgot-on': this.state === 'forgot',
       }"
       id="kt_login"
     >
       <!--begin::Aside-->
-      <div
-        class="login-aside d-flex flex-column flex-row-auto"
-        style="background-color: #D3E4FE;"
-      >
+      <div class="login-aside d-flex flex-column flex-row-auto" style="background-color: #D3E4FE;">
         <div class="d-flex flex-column-auto flex-column pt-lg-40 pt-15">
           <a href="#" class="text-center mb-10">
             <img
-              src="/media/logos/logo-letter-1.png"
-              class="max-h-70px"
-              alt=""
+              v-if="!imageError"
+              alt="Pic"
+              class="max-h-120px"
+              :src="imageUrl()"
+              @load="handleImageLoad"
+              @error="handleImageError"
             />
+            <img v-else src="/media/logos/logo-letter-1.png" class="max-h-70px" alt="" />
           </a>
           <h3
             class="font-weight-bolder text-center font-size-h4 font-size-h1-lg"
             style="color: #000;"
           >
-            Electronic Hospital Management <br />Resource System
+            {{ settings?.name_of_organization }}
+            <br />Resource System
           </h3>
         </div>
         <div
@@ -41,27 +43,15 @@
         <div class="d-flex flex-column-fluid flex-center">
           <!--begin::Signin-->
           <div class="login-form login-signin">
-            <form
-              class="form"
-              id="kt_login_signin_form"
-              @keypress.enter="onSubmitLogin"
-            >
+            <form class="form" id="kt_login_signin_form" @keypress.enter="onSubmitLogin">
               <div class="pb-13 pt-lg-0 pt-5">
-                <h3
-                  class="font-weight-bolder text-dark font-size-h4 font-size-h1-lg"
-                >
+                <h3 class="font-weight-bolder text-dark font-size-h4 font-size-h1-lg">
                   Log in to your Account
                 </h3>
               </div>
               <div class="form-group">
-                <label class="font-size-h6 font-weight-bolder text-dark"
-                  >Username</label
-                >
-                <div
-                  id="example-input-group-1"
-                  label=""
-                  label-for="example-input-1"
-                >
+                <label class="font-size-h6 font-weight-bolder text-dark">Username</label>
+                <div id="example-input-group-1" label="" label-for="example-input-1">
                   <input
                     v-validate="'required|min:3'"
                     data-vv-validate-on="blur"
@@ -73,22 +63,14 @@
                     name="username"
                     v-model="form.username"
                   />
-                  <span class="text-danger text-sm">{{
-                    errors.first("username")
-                  }}</span>
+                  <span class="text-danger text-sm">{{ errors.first('username') }}</span>
                 </div>
               </div>
               <div class="form-group">
                 <div class="d-flex justify-content-between mt-n5">
-                  <label class="font-size-h6 font-weight-bolder text-dark pt-5"
-                    >Password</label
-                  >
+                  <label class="font-size-h6 font-weight-bolder text-dark pt-5">Password</label>
                 </div>
-                <div
-                  id="example-input-group-2"
-                  label=""
-                  label-for="example-input-2"
-                >
+                <div id="example-input-group-2" label="" label-for="example-input-2">
                   <input
                     data-vv-validate-on="blur"
                     v-validate="'required|min:6'"
@@ -99,9 +81,7 @@
                     v-model="form.password"
                     autocomplete="off"
                   />
-                  <span class="text-danger text-sm">{{
-                    errors.first("password")
-                  }}</span>
+                  <span class="text-danger text-sm">{{ errors.first('password') }}</span>
                 </div>
               </div>
               <a
@@ -136,9 +116,7 @@
               @submit.prevent="onSubmitForgot"
             >
               <div class="pb-13 pt-lg-0 pt-5">
-                <h3
-                  class="font-weight-bolder text-dark font-size-h4 font-size-h1-lg"
-                >
+                <h3 class="font-weight-bolder text-dark font-size-h4 font-size-h1-lg">
                   Forgotten Password ?
                 </h3>
                 <p class="text-muted font-weight-bold font-size-h4">
@@ -186,24 +164,29 @@
 
 <!-- Load login custom page styles -->
 <style lang="scss">
-@import "@/assets/sass/pages/login/login-1.scss";
+@import '@/assets/sass/pages/login/login-1.scss';
 </style>
 
 <script>
-import KTUtil from "@/assets/js/components/util";
+import KTUtil from '@/assets/js/components/util';
 
 export default {
-  name: "login-1",
+  name: 'login-1',
   data() {
     return {
-      state: "signin",
+      state: 'signin',
       form: {
-        username: "",
-        password: ""
+        username: '',
+        password: '',
       },
-      phone: "",
-      isDisabled: false
+      phone: '',
+      isDisabled: false,
+      imageError: false,
+      loading: false,
     };
+  },
+  created() {
+    this.fetchSettings();
   },
   computed: {
     isFormValid() {
@@ -211,26 +194,25 @@ export default {
     },
 
     backgroundImage() {
-      return process.env.BASE_URL + "media/users/health.png";
-    }
+      return process.env.BASE_URL + 'media/users/health.png';
+    },
+
+    settings() {
+      const settings = localStorage.getItem('settings');
+      const parsedSettings = settings ? JSON.parse(settings) : null;
+      return parsedSettings || this.$store.state.settings.settings;
+    },
   },
   methods: {
     showForm(form) {
       this.state = form;
-      const form_name = "kt_login_" + form + "_form";
-      KTUtil.animateClass(
-        KTUtil.getById(form_name),
-        "animate__animated animate__backInUp"
-      );
+      const form_name = 'kt_login_' + form + '_form';
+      KTUtil.animateClass(KTUtil.getById(form_name), 'animate__animated animate__backInUp');
     },
 
     removeSpinner(submitButton) {
       this.isDisabled = false;
-      submitButton.classList.remove(
-        "spinner",
-        "spinner-light",
-        "spinner-right"
-      );
+      submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
     },
 
     initialValues() {
@@ -244,19 +226,15 @@ export default {
           let password = this.form.password;
 
           // set spinner to submit button
-          const submitButton = this.$refs["kt_login_signin_submit"];
+          const submitButton = this.$refs['kt_login_signin_submit'];
           this.isDisabled = true;
-          submitButton.classList.add(
-            "spinner",
-            "spinner-light",
-            "spinner-right"
-          );
+          submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');
 
           this.$store
-            .dispatch("auth/login", { username, password })
+            .dispatch('auth/login', { username, password })
             .then(() => {
               this.initialValues();
-              this.$router.push("/dashboard");
+              this.$router.push('/dashboard');
               this.removeSpinner(submitButton);
             })
             .catch(() => this.removeSpinner(submitButton));
@@ -267,19 +245,45 @@ export default {
     onSubmitForgot() {
       this.fv1.validate();
 
-      this.fv1.on("core.form.valid", () => {
+      this.fv1.on('core.form.valid', () => {
         const phone = this.phone;
 
         // set spinner to submit button
-        const submitButton = this.$refs["kt_login_forgot_submit"];
-        submitButton.classList.add("spinner", "spinner-light", "spinner-right");
+        const submitButton = this.$refs['kt_login_forgot_submit'];
+        submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');
 
         this.$store
-          .dispatch("auth/forgot", { phone })
+          .dispatch('auth/forgot', { phone })
           .then(() => this.removeSpinner(submitButton))
           .catch(() => this.removeSpinner(submitButton));
       });
-    }
-  }
+    },
+
+    fetchSettings() {
+      this.loading = true;
+      this.$store
+        .dispatch('settings/fetchSettings')
+        .then(response => {
+          localStorage.setItem('settings', JSON.stringify(response.data.data));
+          this.loading = false;
+        })
+        .catch(e => {
+          this.loading = false;
+          console.error(e);
+        });
+    },
+
+    imageUrl() {
+      return `${window.location.origin}/static/images/${this.settings?.organization_logo}`;
+    },
+
+    handleImageLoad() {
+      this.imageError = false;
+    },
+
+    handleImageError() {
+      this.imageError = true;
+    },
+  },
 };
 </script>

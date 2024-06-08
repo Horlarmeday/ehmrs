@@ -3,7 +3,7 @@ export default {
    * INVENTORY
    */
   ADD_INVENTORY(state, inventory) {
-    state.inventories.unshift(inventory);
+    state.inventories.push(inventory);
   },
 
   SET_INVENTORIES(state, inventories) {

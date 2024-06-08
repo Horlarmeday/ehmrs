@@ -94,4 +94,9 @@ export default [
     icon: 'flaticon2-laptop',
     name: 'Inventory Requests',
   },
+  {
+    url: '/system/settings',
+    icon: 'flaticon-settings-1',
+    name: 'System Settings',
+  },
 ];

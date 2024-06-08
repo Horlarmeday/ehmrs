@@ -12,6 +12,7 @@ import {
   getDepartments,
   getOneDefault,
   getServices,
+  getSystemSettings,
   getUnits,
   getWards,
   getWardsAndBeds,
@@ -22,10 +23,11 @@ import {
   updateBed,
   updateDepartment,
   updateService,
+  updateSystemSettings,
   updateUnit,
   updateWard,
 } from './admin.repository';
-import { Default, Department, Ward } from '../../database/models';
+import { Default, Department, SystemSettings, Ward } from '../../database/models';
 
 class AdminService {
   /** create a department
@@ -312,6 +314,29 @@ class AdminService {
    */
   static async deleteDefaultData(body): Promise<Default> {
     return deleteDefaultData({ id: body.id }, body.dataId);
+  }
+
+  /**
+   * update system settings
+   *
+   * @static
+   * @returns {json} json object with system settings data
+   * @param body
+   * @memberOf AdminService
+   */
+  static async updateSystemSettings(body) {
+    return updateSystemSettings(body);
+  }
+
+  /**
+   * get system settings
+   *
+   * @static
+   * @returns {Promise<SystemSettings>} json object with system settings data
+   * @memberOf AdminService
+   */
+  static async getSystemSettings(): Promise<SystemSettings> {
+    return getSystemSettings();
   }
 }
 export default AdminService;

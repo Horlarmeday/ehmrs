@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 
-import { Op, Sequelize, WhereOptions } from 'sequelize';
+import { Op, WhereOptions } from 'sequelize';
 
 import { Patient, Visit } from '../../database/models';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
@@ -14,10 +14,13 @@ export const patientAttributes = [
   'fullname',
   'photo',
   'hospital_id',
+  'photo_url',
   'firstname',
   'lastname',
   'gender',
+  'id',
   'has_insurance',
+  'date_of_birth',
 ];
 
 /**
@@ -250,10 +253,9 @@ export async function searchVisits({
   search,
 }): Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }> {
   return Visit.paginate({
-    page: currentPage,
-    paginate: pageLimit,
+    page: +currentPage,
+    paginate: +pageLimit,
     order: [['date_visit_start', 'DESC']],
-    group: ['patient_id'],
     include: [
       {
         model: Patient,

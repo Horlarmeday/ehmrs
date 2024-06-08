@@ -10,6 +10,7 @@
               :switch-position="switchPosition"
               :switch-spot="switchSpot"
               @switchSpot="flipSwitch"
+              :insurance-name="insuranceName"
             />
           </span>
           <div>
@@ -73,6 +74,10 @@ export default {
       type: Object,
       required: true,
     },
+    insuranceName: {
+      type: String,
+      required: false,
+    },
   },
   computed: {
     services() {
@@ -95,11 +100,18 @@ export default {
       }
     },
 
+    getServiceType(insuranceName) {
+      const types = ['FHSS', 'NHIS'];
+      if (types.includes(insuranceName)) return 'NHIS';
+      if (insuranceName === 'PHIS') return 'Private';
+      return 'NHIS';
+    },
+
     mapSelectedService(service) {
       return {
         service_id: service.id,
         is_urgent: false,
-        service_type: this.switchPosition && this.switchSpot ? 'NHIS' : 'CASH',
+        service_type: this.switchPosition && this.switchSpot ? this.getServiceType(this.insuranceName) : 'CASH',
         price: service.price,
         name: service.name,
         source: this.source,

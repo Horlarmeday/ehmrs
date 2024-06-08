@@ -102,6 +102,9 @@
                   >
                     <edit-icon />
                   </a>
+                  <a href="#" class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3">
+                    <view-icon />
+                  </a>
                 </td>
               </tr>
             </tbody>
@@ -127,6 +130,7 @@ import Pagination from '@/utils/Pagination.vue';
 import EditIcon from '../../../assets/icons/EditIcon.vue';
 import EditEmployee from './create/EditEmployee';
 import { setUrlQueryParams } from '@/common/common';
+import ViewIcon from '@/assets/icons/ViewIcon.vue';
 export default {
   data() {
     return {
@@ -138,6 +142,7 @@ export default {
     };
   },
   components: {
+    ViewIcon,
     Pagination,
     EditIcon,
     EditEmployee,

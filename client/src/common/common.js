@@ -96,7 +96,7 @@ export const parseJwt = token => {
   }
 };
 
-export const EXCLUDED_INSURANCE = ['Retainership'];
+export const EXCLUDED_INSURANCE = ['Retainership', 'PHIS'];
 
 export const isContainEmptyValues = array => {
   return array.some(obj =>

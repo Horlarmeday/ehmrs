@@ -11,6 +11,15 @@ export function validateTest(test) {
   const schema = Joi.object({
     name: Joi.string().required(),
     price: Joi.number().required(),
+    nhis_price: Joi.number()
+      .optional()
+      .allow(''),
+    phis_price: Joi.number()
+      .optional()
+      .allow(''),
+    retainership_price: Joi.number()
+      .optional()
+      .allow(''),
     sample_id: Joi.number().required(),
     result_unit: Joi.string().required(),
     valid_range: Joi.string().required(),

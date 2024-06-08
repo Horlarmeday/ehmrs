@@ -152,3 +152,25 @@ export function validateDeleteAdditionalItem(req: any) {
 
   return schema.validate(req);
 }
+
+export function validateAdditionalCreateTreatment(item: any) {
+  const schema = Joi.array()
+    .items(
+      Joi.object({
+        drug: Joi.string().required(),
+        quantity: Joi.number().required(),
+        dosage_administered: Joi.string()
+          .optional()
+          .allow(''),
+        remarks: Joi.string()
+          .optional()
+          .allow(''),
+        source: Joi.string()
+          .valid('Admission', 'Consultation')
+          .required(),
+      })
+    )
+    .required();
+
+  return schema.validate(item);
+}

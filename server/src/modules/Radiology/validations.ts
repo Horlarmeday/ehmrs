@@ -14,6 +14,15 @@ export function validateInvestigation(investigation) {
   const schema = Joi.object({
     name: Joi.string().required(),
     price: Joi.number().required(),
+    nhis_price: Joi.number()
+      .optional()
+      .allow(''),
+    phis_price: Joi.number()
+      .optional()
+      .allow(''),
+    retainership_price: Joi.number()
+      .optional()
+      .allow(''),
     imaging_id: Joi.number().required(),
     type: Joi.string()
       .valid('Primary', 'Secondary')

@@ -4,6 +4,7 @@
       source="Consultation"
       :show-switch="showSwitch"
       :switch-position="switchPosition"
+      :insurance-name="insuranceName"
     />
   </div>
 </template>
@@ -19,6 +20,9 @@ export default {
   computed: {
     visit() {
       return this.$store.state.visit.visit;
+    },
+    insuranceName() {
+      return this.visit?.insurance?.insurance?.name;
     },
     showSwitch() {
       return (

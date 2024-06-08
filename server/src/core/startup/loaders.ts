@@ -22,6 +22,7 @@ export default (
   server.use(cors({ credentials: true, origin: [], optionsSuccessStatus: 200 }));
   server.use(morgan('dev'));
   server.use(bodyParser.json({ limit: '50mb' }));
+  server.use(bodyParser.urlencoded({ extended: true }));
   server.use(express.static('download'));
   server.use('/static', express.static(path.join(__dirname, '../../public')));
   server.use('/dash', verify, () => {

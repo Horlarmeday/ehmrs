@@ -3,16 +3,17 @@ import { Op, Optional, WhereOptions } from 'sequelize';
 import { getModelById, getNumberOfRecords } from '../../core/helpers/general';
 
 import {
-  Department,
-  Unit,
-  Ward,
   Bed,
-  Service,
-  ServiceTariff,
+  Default,
+  Department,
   Patient,
   PatientInsurance,
-  Default,
+  Service,
+  ServiceTariff,
   Staff,
+  SystemSettings,
+  Unit,
+  Ward,
 } from '../../database/models';
 import { canUsePriceTariff } from '../../core/helpers/helper';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
@@ -506,3 +507,25 @@ export const deleteDefaultData = async (
   const filteredData = dbData.filter(({ id }) => id !== dataId);
   return await oneDefault.update({ data: filteredData });
 };
+
+/********************
+ * SYSTEM SETTINGS
+ *******************/
+/**
+ * update system settings
+ * @param data
+ * @returns {object} system settings
+ */
+export async function updateSystemSettings(data) {
+  const settings = await SystemSettings.findOne();
+  return await settings.update(data);
+}
+
+/**
+ * get system settings
+ * @param data
+ * @returns {object} system settings
+ */
+export async function getSystemSettings() {
+  return await SystemSettings.findOne();
+}

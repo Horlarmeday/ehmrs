@@ -4,6 +4,7 @@
       source="Antenatal"
       :show-switch="showSwitch"
       :switch-position="switchPosition"
+      :insurance-name="insuranceName"
     />
   </div>
 </template>
@@ -23,6 +24,10 @@ export default {
 
     insurance() {
       return this.$store.state.insurance.patientInsurance;
+    },
+
+    insuranceName() {
+      return this.insurance?.insurance?.name;
     },
 
     showSwitch() {

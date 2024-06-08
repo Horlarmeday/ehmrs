@@ -31,6 +31,8 @@ export default {
   drug_prescriptions: [],
   totalDrugsOrders: 0,
   drugsPages: 0,
+  drugOrders: [],
+  additionalItemOrders: [],
 
   additional_item: null,
   additional_items_orders: [],
@@ -54,4 +56,12 @@ export default {
   treatment: null,
   totalTreatments: 0,
   treatmentPages: 0,
+
+  /**********************
+   * ADDITIONAL TREATMENTS
+   *********************/
+  additionalTreatments: [],
+  additionalTreatment: null,
+  totalAdditionalTreatments: 0,
+  additionalTreatmentsPages: 0,
 };

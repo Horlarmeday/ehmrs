@@ -81,6 +81,29 @@ export class AdmissionController {
   }
 
   /**
+   * get discharge recommended patients
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with admission data
+   */
+  static async getDischargeRecommendedPatients(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    try {
+      const admissions = await AdmissionService.getDischargeRecommendedPatients();
+
+      return successResponse({ res, message: SUCCESS, data: admissions, httpCode: 200 });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
    * Recommend patient for discharge
    *
    * @static

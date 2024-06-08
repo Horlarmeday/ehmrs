@@ -47,7 +47,7 @@ export default {
       inventoryToEdit: {},
       content: 'There are no inventories, kindly click on the plus icon to create one',
       user: parseJwt(localStorage.getItem('user_token')),
-      ALLOWED_ROLES: ['Super Admin'],
+      ALLOWED_ROLES: ['Super Admin', 'Pharmacy Store'],
     };
   },
   computed: {

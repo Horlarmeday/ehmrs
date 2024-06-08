@@ -22,6 +22,7 @@ import antenatal from './antenatal/moduleAntenatal';
 import surgery from './surgery/moduleSurgery';
 import immunization from './immunization/moduleImmunization';
 import alert from './alert/moduleAlert';
+import settings from './settings/moduleSettings';
 import htmlClass from './htmlclass.module';
 import config from './config.module';
 import breadcrumbs from './breadcrumbs.module';
@@ -51,6 +52,7 @@ export default new Vuex.Store({
     surgery,
     immunization,
     alert,
+    settings,
     htmlClass,
     config,
     breadcrumbs,

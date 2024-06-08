@@ -176,6 +176,11 @@ const roles = [
     role: 'Gastroenterologist',
     dept_id: 9,
   },
+  {
+    id: 27,
+    role: 'Optician',
+    dept_id: 9,
+  },
 ];
 
 const sub_roles = [

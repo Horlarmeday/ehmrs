@@ -34,6 +34,7 @@
               :show-switch="showSwitch"
               :switch-position="switchPosition"
               :filter="filter"
+              :insurance-name="insuranceName"
             />
           </div>
         </b-collapse>
@@ -69,6 +70,10 @@ export default {
     source: {
       type: String,
       required: true,
+    },
+    insuranceName: {
+      type: String,
+      required: false,
     },
     filter: {
       type: Object,

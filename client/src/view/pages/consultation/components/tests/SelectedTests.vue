@@ -67,7 +67,7 @@ export default {
     },
     getLabelDotStatus(type) {
       if (type === 'CASH') return 'label-success';
-      if (type === 'PRIVATE') return 'label-primary';
+      if (type === 'Private') return 'label-primary';
       return 'label-danger';
     },
   },

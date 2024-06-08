@@ -17,6 +17,7 @@
               :switch-position="switchPosition"
               :switch-spot="switchSpot"
               @switchSpot="flipSwitch"
+              :insurance-name="insuranceName"
             />
           </span>
           <div class="mr-2">
@@ -92,6 +93,10 @@ export default {
       type: String,
       required: true,
     },
+    insuranceName: {
+      type: String,
+      required: false,
+    },
   },
   computed: {
     tests() {
@@ -118,13 +123,20 @@ export default {
       return {
         test_id: test.id,
         is_urgent: false,
-        test_type: this.switchPosition && this.switchSpot ? 'NHIS' : 'CASH',
+        test_type: this.switchPosition && this.switchSpot ? this.getTestType(this.insuranceName) : 'CASH',
         price: test.price,
         name: test.name,
         sample_id: test.sample_id,
         source: this.source,
         ...(this.source === 'Antenatal' && { ante_natal_id: this.$route.query.antenatal }),
       };
+    },
+
+    getTestType(insuranceName) {
+      const types = ['FHSS', 'NHIS'];
+      if (types.includes(insuranceName)) return 'NHIS';
+      if (insuranceName === 'PHIS') return 'Private';
+      return 'Other';
     },
 
     addSpinner(submitButton) {

@@ -45,3 +45,4 @@ dist/
 .idea/
 config.json
 images/
+public/

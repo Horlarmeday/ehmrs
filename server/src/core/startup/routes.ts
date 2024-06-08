@@ -26,6 +26,7 @@ import antenatalRoutes from '../../modules/Antenatal/antenatal.routes';
 import surgeryRoutes from '../../modules/Surgery/surgery.routes';
 import immunizationRoutes from '../../modules/Immunization/immunization.routes';
 import alertRoutes from '../../modules/Alert/alert.routes';
+import accountRoutes from '../../modules/Account/account.routes';
 
 export default (server: express.Application) => {
   server.use('/api/staffs', staffRoutes);
@@ -48,6 +49,7 @@ export default (server: express.Application) => {
   server.use('/api/surgeries', surgeryRoutes);
   server.use('/api/immunizations', immunizationRoutes);
   server.use('/api/alerts', alertRoutes);
+  server.use('/api/account', accountRoutes);
   server.use('/api/orders/laboratory', labOrderRoutes);
   server.use('/api/orders/pharmacy', pharmacyOrderRoutes);
   server.use('/api/orders/radiology', radiologyOrderRoutes);

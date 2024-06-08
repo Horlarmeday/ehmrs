@@ -274,6 +274,7 @@ export default {
     closeOffcanvas() {
       new KTOffcanvas(KTLayoutQuickUser.getElement()).hide();
     },
+
     imageUrl(url) {
       return `${window.location.origin}/static/images/${url}`;
     },

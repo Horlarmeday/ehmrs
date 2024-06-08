@@ -16,6 +16,7 @@
               :switch-position="switchPosition"
               :switch-spot="switchSpot"
               @switchSpot="flipSwitch"
+              :insurance-name="insuranceName"
             />
           </span>
           <a
@@ -241,9 +242,9 @@
               </div>
             </div>
             <div class="mt-3">
-              <div v-if="nhisPriceQuotaExceeded" class="alert alert-warning" role="alert">
-                <span class="font-size-sm font-weight-bold">NHIS drugs limit is reached</span>
-              </div>
+<!--              <div v-if="nhisPriceQuotaExceeded" class="alert alert-warning" role="alert">-->
+<!--                <span class="font-size-sm font-weight-bold">NHIS drugs limit is reached</span>-->
+<!--              </div>-->
               <button
                 @click="submitDrugOrder"
                 :disabled="quantity_remaining <= 0 || nhisPriceQuotaExceeded"
@@ -263,7 +264,7 @@
 <script>
 import Datepicker from 'vuejs-datepicker';
 import vSelect from 'vue-select';
-import { debounce, isToday, parseJwt } from '@/common/common';
+import { debounce, parseJwt } from '@/common/common';
 // import KTUtil from '@/assets/js/components/util';
 import SwitchBox from '@/utils/SwitchBox.vue';
 import RoutineDrugs from '@/view/pages/programs/antenatal/components/RoutineDrugs.vue';
@@ -314,12 +315,12 @@ export default {
   watch: {
     // check NHIS drugs quota is reached
     // TODO: only get drugs prescribed today and not all drug orders
-    drugOrders(value) {
-      if (this.switchPosition && this.switchSpot) {
-        const total = this.getTotalDrugsPrescribedToday(value);
-        if (total > this.quotaPrice) this.nhisPriceQuotaExceeded = true;
-      }
-    },
+    // drugOrders(value) {
+    //   if (this.switchPosition && this.switchSpot) {
+    //     const total = this.getTotalDrugsPrescribedToday(value);
+    //     if (total > this.quotaPrice) this.nhisPriceQuotaExceeded = true;
+    //   }
+    // },
   },
 
   props: {
@@ -334,6 +335,10 @@ export default {
     source: {
       type: String,
       required: true,
+    },
+    insuranceName: {
+      type: String,
+      required: false,
     },
   },
 
@@ -434,14 +439,14 @@ export default {
       this.quantity_to_dispense = Math.floor(Math.abs(this.quantity_to_dispense));
       this.total_price = this.price * this.quantity_to_dispense;
       // check NHIS drugs quota is reached
-      if (this.switchPosition && this.switchSpot) {
-        const totalDrugsPrescribedToday = this.getTotalDrugsPrescribedToday([
-          ...this.drugOrders,
-          ...this.tempDrugOrders,
-        ]);
-        const total = +this.total_price + +totalDrugsPrescribedToday;
-        this.nhisPriceQuotaExceeded = total > this.quotaPrice;
-      }
+      // if (this.switchPosition && this.switchSpot) {
+      //   const totalDrugsPrescribedToday = this.getTotalDrugsPrescribedToday([
+      //     ...this.drugOrders,
+      //     ...this.tempDrugOrders,
+      //   ]);
+      //   const total = +this.total_price + +totalDrugsPrescribedToday;
+      //   this.nhisPriceQuotaExceeded = total > this.quotaPrice;
+      // }
     },
 
     calculateDosageQuantity() {
@@ -479,6 +484,16 @@ export default {
       });
     },
 
+    getDrugType(insuranceName) {
+      const insuranceMapping = {
+        FHSS: 'NHIS',
+        NHIS: 'NHIS',
+        PHIS: 'Private',
+        Retainership: 'Retainership',
+      };
+      return insuranceMapping[insuranceName] || 'Cash';
+    },
+
     drugData() {
       return {
         dosage_form_id: this.dosage_form.id,
@@ -498,7 +513,7 @@ export default {
         strength_id: this.strength.id,
         drug_id: this.drug_id,
         total_price: this.total_price,
-        drug_type: this.switchPosition && this.switchSpot ? 'NHIS' : 'Cash',
+        drug_type: this.getDrugType(this.insuranceName),
         inventory_id: this.getInventoryId(),
         source: this.source,
         ...(this.drug_group && { drug_group: this.drug_group }),
@@ -577,7 +592,7 @@ export default {
     }, 500),
 
     getInventoryId() {
-      const type = this.switchPosition && this.switchSpot ? 'NHIS' : 'Cash';
+      const type = this.getDrugType(this.insuranceName);
       return this.inventories.find(inventory =>
         inventory.name.toLowerCase().includes(type.toLowerCase())
       )?.id;
@@ -587,12 +602,12 @@ export default {
       return arr.reduce((a, b) => a + +b.total_price, 0);
     },
 
-    getTotalDrugsPrescribedToday(arr) {
-      const drugsToday = arr.filter(
-        ({ date_prescribed, drug_group }) => isToday(date_prescribed) && drug_group === 'Primary'
-      );
-      return this.sumTotalPrice(drugsToday);
-    },
+    // getTotalDrugsPrescribedToday(arr) {
+    //   const drugsToday = arr.filter(
+    //     ({ date_prescribed, drug_group }) => isToday(date_prescribed) && drug_group === 'Primary'
+    //   );
+    //   return this.sumTotalPrice(drugsToday);
+    // },
 
     openModal() {
       this.displayPrompt = true;

@@ -24,6 +24,7 @@ import {
   getAntenatalAdmittedPatients,
   getCarePlans,
   getDeliveryInfo,
+  getDischargeRecommendedPatients,
   getDischargeRecords,
   getIOCharts,
   getNursingNotes,
@@ -96,6 +97,17 @@ export class AdmissionService {
       ...(body?.admissionId && { id: body.admissionId }),
     };
     return getAdmissionQuery({ ...query });
+  }
+
+  /**
+   * get a discharge recommended patients data
+   *
+   * @method
+   * @returns {json} json object with admission data
+   * @memberOf AdmissionService
+   */
+  static async getDischargeRecommendedPatients(): Promise<Admission[]> {
+    return getDischargeRecommendedPatients();
   }
 
   /**

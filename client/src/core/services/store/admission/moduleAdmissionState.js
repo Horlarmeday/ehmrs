@@ -41,4 +41,8 @@ export default {
 
   // post natals
   postNatals: [],
+
+  // discharge recommended
+  recommendedDischarges: [],
+  recommendedDischargesCount: 0,
 };

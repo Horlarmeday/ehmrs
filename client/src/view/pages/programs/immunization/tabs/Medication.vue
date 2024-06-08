@@ -4,6 +4,7 @@
       :show-switch="showSwitch"
       :switch-position="switchPosition"
       source="Immunization"
+      :insurance-name="insuranceName"
     />
   </div>
 </template>
@@ -20,6 +21,10 @@ export default {
   computed: {
     insurance() {
       return this.$store.state.insurance.patientInsurance;
+    },
+
+    insuranceName() {
+      return this.insurance?.insurance?.name;
     },
 
     showSwitch() {

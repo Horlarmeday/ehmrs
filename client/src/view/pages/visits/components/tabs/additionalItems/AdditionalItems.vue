@@ -12,6 +12,7 @@
         :show-switch="showSwitch"
         :switch-position="switchPosition"
         :filter="filter"
+        :insurance-name="insuranceName"
       />
     </div>
   </div>
@@ -29,6 +30,9 @@ export default {
   computed: {
     visit() {
       return this.$store.state.visit.visit;
+    },
+    insuranceName() {
+      return this.visit?.insurance?.insurance?.name;
     },
     filter() {
       return { visit_id: this.$route.params.id };

@@ -161,8 +161,8 @@ class PatientService {
    * @memberOf PatientService
    */
   static async updatePatientService(body) {
-    let photo;
-    if (body.picture) {
+    let photo: string;
+    if (body?.picture) {
       photo = await processSnappedPhoto(body.picture, body.patient.firstname);
     }
     return updatePatient({

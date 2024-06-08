@@ -103,7 +103,7 @@
     "displayDesc": false,
     "displayDaterangepicker": true,
     "breadcrumb": {
-      "display": true
+      "display": false
     },
     "layout": "subheader-v6",
     "fixed": false,

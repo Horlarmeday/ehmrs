@@ -2,7 +2,7 @@
   <div class="row">
     <search @search="onHandleSearch" />
 
-    <div class="col-lg-12">
+    <div>
       <div
         class="bg-gray-200 rounded-lg pointer text-center mr-2 inline-display mb-2"
         v-for="visit in visits"
@@ -38,18 +38,29 @@
         </div>
       </div>
     </div>
+    <div class="card-body pb-0">
+      <pagination
+        v-if="visits?.length"
+        :total-pages="pages"
+        :total="queriedItems"
+        :per-page="perPage"
+        :current-page="currentPage"
+        @pagechanged="onPageChange"
+      />
+    </div>
   </div>
 </template>
 
 <script>
 import Search from '../../../../../utils/Search.vue';
 import { debounce, removeSpinner } from '@/common/common';
+import Pagination from '@/utils/Pagination.vue';
 export default {
-  components: { Search },
+  components: { Pagination, Search },
   data() {
     return {
       currentPage: 1,
-      itemsPerPage: 10,
+      itemsPerPage: 20,
       imageError: false,
       OUTPATIENT: 'Outpatient',
       ANTENATAL: 'Antenatal',

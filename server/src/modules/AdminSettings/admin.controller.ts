@@ -16,6 +16,10 @@ import { NextFunction, Request, Response } from 'express';
 import { errorResponse } from '../../common/responses/error-responses';
 import { StatusCodes } from '../../core/helpers/helper';
 import { Default } from '../../database/models';
+import { isEmpty } from 'lodash';
+import { upload } from '../../core/helpers/multer';
+import fileUpload from 'express-fileupload';
+import { string } from 'joi';
 
 /**
  *
@@ -526,6 +530,75 @@ class AdminController {
       });
 
       return successResponse({ res, httpCode: 201, data: adminDefault, message: DATA_DELETED });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get system settings
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with default data
+   */
+  static async getSystemSettings(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    try {
+      const systemSettings = await AdminService.getSystemSettings();
+
+      return successResponse({ res, message: SUCCESS, data: systemSettings, httpCode: 200 });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * delete a default data
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {Promise<Default>} json object with status, default data
+   */
+  static async updateSystemSettings(
+    req,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    const error = isEmpty(req.body);
+
+    if (error)
+      return errorResponse({
+        res,
+        message: 'Body cannot be empty',
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+    let logo: string;
+    let stamp: string;
+    const files = req.files;
+
+    try {
+      if (files?.logo) {
+        logo = files?.logo?.[0]?.fieldname === 'logo' ? files?.logo?.[0]?.filename : null;
+      }
+      if (files?.stamp) {
+        stamp = files?.stamp?.[0]?.fieldname === 'stamp' ? files?.stamp?.[0]?.filename : null;
+      }
+
+      const response = await AdminService.updateSystemSettings({
+        ...req.body,
+        organization_logo: logo,
+        stamp_image: stamp,
+      });
+
+      return successResponse({ res, httpCode: 201, data: response, message: DATA_UPDATED });
     } catch (e) {
       return next(e);
     }

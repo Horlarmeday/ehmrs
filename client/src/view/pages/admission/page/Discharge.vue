@@ -19,6 +19,14 @@ import DischargeForm from '@/view/pages/admission/components/discharge/Discharge
 
 export default {
   components: { DischargeForm, DischargeAccordion },
+  created() {
+    this.$store
+      .dispatch('admission/fetchAdmission', { admissionId: this.$route.params.id })
+      .then(response => {
+        const res = response.data.data;
+        this.$store.dispatch('patient/setCurrentPatient', { ...res.patient, ...res.insurance });
+      });
+  },
 };
 </script>
 

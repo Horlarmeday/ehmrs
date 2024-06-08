@@ -358,12 +358,17 @@ const drugPriceTariff = async (insurance: PatientInsurance, drug_id: number) => 
   return price;
 };
 
-export const getDrugPrice = async (patient: Patient, drug_id: number) => {
-  if (canUsePriceTariff(patient)) {
-    const insurance = await getPatientInsuranceQuery({ patient_id: patient.id, is_default: true });
-    return drugPriceTariff(insurance, drug_id);
-  }
-  return null;
+export const getDrugPrice = async (
+  patient: Patient,
+  drug_id: number,
+  inventoryItem: InventoryItem
+) => {
+  if (!canUsePriceTariff(patient)) return inventoryItem.selling_price;
+
+  const insurance = await getPatientInsuranceQuery({ patient_id: patient.id, is_default: true });
+  if (!insurance) return inventoryItem.selling_price;
+
+  return (await drugPriceTariff(insurance, drug_id)) || inventoryItem.selling_price;
 };
 
 /** ***********************

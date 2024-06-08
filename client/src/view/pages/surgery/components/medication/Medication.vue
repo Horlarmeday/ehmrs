@@ -1,6 +1,11 @@
 <template>
   <div>
-    <medication-card source="Theater" :show-switch="showSwitch" :switch-position="switchPosition" />
+    <medication-card
+      :insurance-name="insuranceName"
+      source="Theater"
+      :show-switch="showSwitch"
+      :switch-position="switchPosition"
+    />
   </div>
 </template>
 
@@ -15,6 +20,9 @@ export default {
   computed: {
     surgery() {
       return this.$store.state.surgery.surgery;
+    },
+    insuranceName() {
+      return this.surgery?.insurance?.insurance?.name;
     },
     showSwitch() {
       return (

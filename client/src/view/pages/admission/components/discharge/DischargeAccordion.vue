@@ -7,7 +7,12 @@
             <div class="card-label">Discharge Record</div>
           </div>
         </div>
-        <b-collapse id="accordion-74" accordion="my-accordion" role="tabpanel">
+        <b-collapse
+          @show="fetchDischargeRecord"
+          id="accordion-74"
+          accordion="my-accordion"
+          role="tabpanel"
+        >
           <div class="card-body border">
             <discharge-table :discharge="discharge" />
           </div>
@@ -30,9 +35,6 @@ export default {
     fetchDischargeRecord() {
       this.$store.dispatch('admission/fetchDischargeRecord', { id: this.$route.params.id });
     },
-  },
-  created() {
-    this.fetchDischargeRecord();
   },
 };
 </script>

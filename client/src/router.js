@@ -803,13 +803,13 @@ const router = new Router({
         },
         // ORDERS
         {
-          path: '/tests',
+          path: '/orders',
           name: 'orders',
           component: () => import('@/view/pages/orders/Orders.vue'),
           children: [
             {
-              path: 'tests-type',
-              name: 'tests-type',
+              path: 'orders-type',
+              name: 'orders-type',
               component: () => import('@/view/pages/orders/Home.vue'),
               meta: {
                 requiresAuth: true,
@@ -1103,6 +1103,14 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            {
+              path: 'recommended-discharge-patients',
+              name: 'recommended-discharge-patients',
+              component: () => import('@/view/pages/visits/page/DischargeRecommendations.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
           ],
         },
         {
@@ -1122,6 +1130,44 @@ const router = new Router({
               path: 'requests/:id',
               name: 'surgery-request',
               component: () => import('@/view/pages/surgery/pages/Tabs.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+          ],
+        },
+        {
+          path: '/system',
+          name: 'system-module',
+          component: () => import('@/view/pages/settings/Settings.vue'),
+          children: [
+            {
+              path: 'settings',
+              name: 'system-settings',
+              component: () => import('@/view/pages/settings/page/SystemSettings.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+          ],
+        },
+        {
+          path: '/account',
+          name: 'account-module',
+          component: () => import('@/view/pages/account/Account.vue'),
+          children: [
+            {
+              path: 'transactions',
+              name: 'transactions',
+              component: () => import('@/view/pages/account/page/Transactions.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'transactions/:id',
+              name: 'transaction',
+              component: () => import('@/view/pages/account/page/Transaction.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1184,7 +1230,17 @@ const router = new Router({
           path: '/auth/register',
           component: () => import('@/view/pages/auth/Register'),
         },
+        {
+          name: 'quill',
+          path: '/auth/quill',
+          component: () => import('@/view/pages/Quill.vue'),
+        },
       ],
+    },
+    {
+      name: 'quill',
+      path: '/quill',
+      component: () => import('@/view/pages/Quill.vue'),
     },
     {
       path: '*',

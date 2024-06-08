@@ -123,13 +123,27 @@ const investigationResultFieldsToUpdate = (fields: string[] = []) => [
  * @returns {object} investigation data
  */
 export const createInvestigation = async (data: CreateInvestigationDto) => {
-  const { name, imaging_id, staff_id, price, type } = data;
+  const {
+    name,
+    imaging_id,
+    staff_id,
+    price,
+    type,
+    retainership_price,
+    nhis_price,
+    phis_price,
+  } = data;
   const investigation = await Investigation.create({
     name,
     imaging_id,
     staff_id,
     price,
     type,
+    retainership_price,
+    phis_price,
+    nhis_price,
+    is_available_for_nhis: !!nhis_price,
+    is_available_for_phis: !!phis_price,
   });
   return Investigation.findOne({
     where: { id: investigation.id },
@@ -233,11 +247,22 @@ const investigationPriceTariff = async (insurance: PatientInsurance, investigati
 };
 
 export const getInvestigationPrice = async (patient: Patient, investigation_id: number) => {
-  if (canUsePriceTariff(patient)) {
-    const insurance = await getPatientInsuranceQuery({ patient_id: patient.id, is_default: true });
-    return investigationPriceTariff(insurance, investigation_id);
-  }
-  return null;
+  if (!canUsePriceTariff(patient)) return null;
+
+  const insurance = await getPatientInsuranceQuery({ patient_id: patient.id, is_default: true });
+  if (!insurance) return null;
+
+  const price = await investigationPriceTariff(insurance, investigation_id);
+  if (price) return price;
+
+  const investigation = await Investigation.findByPk(investigation_id);
+  const investigationPrices = {
+    NHIS: investigation.nhis_price,
+    PHIS: investigation.phis_price,
+    Retainership: investigation.retainership_price,
+    FHSS: investigation.nhis_price,
+  };
+  return investigationPrices[insurance.insurance.name] || null;
 };
 
 /*************************

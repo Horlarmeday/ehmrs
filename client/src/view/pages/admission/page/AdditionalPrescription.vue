@@ -1,19 +1,28 @@
 <template>
   <div>
-    <additional-items
-      source="Consultation"
-      :show-switch="showSwitch"
-      :switch-position="switchPosition"
-      :filter="filter"
-    />
-    <br />
-    <additional-services
-      :filter="filter"
-      source="Consultation"
-      :show-switch="showSwitch"
-      :switch-position="switchPosition"
-      :is-visible="false"
-    />
+    <div class="card-body card-header-tabs-line">
+      <b-tabs content-class="mt-3">
+        <b-tab title="Additional Items" active>
+          <additional-items
+            source="Consultation"
+            :show-switch="showSwitch"
+            :switch-position="switchPosition"
+            :filter="filter"
+            :insurance-name="insuranceName"
+          />
+        </b-tab>
+        <b-tab title="Additional Services">
+          <additional-services
+            :filter="filter"
+            source="Consultation"
+            :show-switch="showSwitch"
+            :switch-position="switchPosition"
+            :is-visible="true"
+            :insurance-name="insuranceName"
+          />
+        </b-tab>
+      </b-tabs>
+    </div>
   </div>
 </template>
 <script>
@@ -29,6 +38,9 @@ export default {
   computed: {
     admission() {
       return this.$store.state.admission.admission;
+    },
+    insuranceName() {
+      return this.admission?.insurance?.insurance?.name;
     },
     filter() {
       return { visit_id: this.admission?.visit_id };

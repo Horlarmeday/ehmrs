@@ -21,7 +21,6 @@ import { Ward } from './ward';
 import { Bed } from './bed';
 import { Visit } from './visit';
 import { Antenatal } from './antenatal';
-import { Immunization } from './immunization';
 import { PatientInsurance } from './patientInsurance';
 
 export enum DischargeStatus {

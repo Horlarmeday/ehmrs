@@ -203,6 +203,19 @@ export default {
     state.additional_items_orders.splice(itemIndex, 1);
   },
 
+  SET_PRESCRIBED_DRUGS(state, drugs) {
+    state.drugOrders = drugs;
+  },
+
+  SET_PRESCRIBED_ADDITIONAL_ITEMS(state, items) {
+    state.additionalItemOrders = items;
+  },
+
+  // eslint-disable-next-line no-unused-vars
+  UPDATE_PRESCRIBED_ADDITIONAL_ITEMS(state, items) {},
+  // eslint-disable-next-line no-unused-vars
+  UPDATE_PRESCRIBED_DRUGS(state, drugs) {},
+
   /*********************
    * ADDITIONAL SERVICES
    **********************/
@@ -290,5 +303,24 @@ export default {
 
   SET_TREATMENTS_PAGES(state, total) {
     state.treatmentPages = total;
+  },
+
+  /**************
+   ADDITIONAL TREATMENTS
+   *************/
+  ADD_ADDITIONAL_TREATMENT(state, treatments) {
+    console.log(treatments);
+  },
+
+  SET_ADDITIONAL_TREATMENTS(state, treatments) {
+    state.additionalTreatments = treatments;
+  },
+
+  SET_ADDITIONAL_TREATMENTS_TOTAL(state, total) {
+    state.totalAdditionalTreatments = total;
+  },
+
+  SET_ADDITIONAL_TREATMENTS_PAGES(state, total) {
+    state.additionalTreatmentsPages = total;
   },
 };

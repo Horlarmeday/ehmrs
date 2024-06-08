@@ -1,6 +1,11 @@
 <template>
   <div>
-    <test-card :show-switch="showSwitch" :switch-position="switchPosition" source="Antenatal" />
+    <test-card
+      :insurance-name="insuranceName"
+      :show-switch="showSwitch"
+      :switch-position="switchPosition"
+      source="Antenatal"
+    />
   </div>
 </template>
 
@@ -20,6 +25,10 @@ export default {
 
     insurance() {
       return this.$store.state.insurance.patientInsurance;
+    },
+
+    insuranceName() {
+      return this.insurance?.insurance?.name;
     },
 
     showSwitch() {

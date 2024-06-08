@@ -12,6 +12,9 @@ import dayjs from 'dayjs';
 import { Op } from 'sequelize';
 import { countRecords, padNumberWithZero } from './general';
 import { PrescribedAdditionalItemBody } from '../../modules/Orders/Pharmacy/interface/prescribed-drug.body';
+import { getSystemSettings } from '../../modules/AdminSettings/admin.repository';
+import { getPatientByHospitalId } from '../../modules/Patient/patient.repository';
+import { getTestPrescription } from '../../modules/Laboratory/laboratory.repository';
 
 const writeFile = promisify(fs.writeFile);
 
@@ -26,6 +29,7 @@ export const patientAttributes = [
   'fullname',
   'photo',
   'hospital_id',
+  'photo_url',
   'firstname',
   'lastname',
   'gender',
@@ -163,10 +167,17 @@ export const mapToUnique = (arr: Iterable<unknown>) => {
 export const generateLabAccessionNumber = async () => {
   const today = dayjs().format('YYYY-MM-DD');
   const initialPart = today.split('-').join('');
-  let count = await countRecords(TestPrescription, {}, 'date_requested');
-  if (!count) count = count + 1;
-  const prefix = 'LAB';
-  return `${prefix}-${initialPart}-${padNumberWithZero(count, 2)}`;
+
+  let accessionNumber: string;
+  let testPrescription: TestPrescription;
+  do {
+    const recordCount = Date.now() + generateRandomNumbers(5);
+    const prefix = 'LAB';
+    accessionNumber = `${prefix}-${initialPart}-${padNumberWithZero(recordCount, 2)}`;
+    testPrescription = await getTestPrescription({ accession_number: accessionNumber });
+  } while (testPrescription);
+
+  return accessionNumber;
 };
 
 export const isToday = (specificDateTime: Date) => {

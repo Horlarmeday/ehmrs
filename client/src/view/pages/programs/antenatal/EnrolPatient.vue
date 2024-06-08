@@ -34,8 +34,10 @@
           </div>
         </div>
         <transition name="fade-in-up">
-          <patient-banner v-if="patient && !invalidGender" :patient="patient" />
-          <error-banner v-if="invalidGender" :message="message" />
+          <div>
+            <patient-banner v-if="patient && !invalidGender" :patient="patient" />
+            <error-banner v-if="invalidGender" :message="message" />
+          </div>
         </transition>
         <transition name="fade-in-up">
           <div v-if="patient && !patient.has_insurance" class="form-group mt-2">

@@ -16,6 +16,7 @@
               :switch-position="switchPosition"
               :switch-spot="switchSpot"
               @switchSpot="flipSwitch"
+              :insurance-name="insuranceName"
             />
           </span>
           <a
@@ -331,6 +332,10 @@ export default {
       type: String,
       required: true,
     },
+    insuranceName: {
+      type: String,
+      required: false,
+    },
   },
 
   data: () => ({
@@ -470,6 +475,13 @@ export default {
       });
     },
 
+    getDrugType(insuranceName) {
+      const types = ['FHSS', 'NHIS'];
+      if (types.includes(insuranceName)) return 'NHIS';
+      if (insuranceName === 'PHIS') return 'Private';
+      return 'NHIS';
+    },
+
     drugData() {
       return {
         dosage_form_id: this.dosage_form.id,
@@ -487,7 +499,8 @@ export default {
         strength_id: this.strength.id,
         drug_id: this.drug_id,
         total_price: this.total_price,
-        drug_type: this.switchPosition && this.switchSpot ? 'NHIS' : 'Cash',
+        drug_type:
+          this.switchPosition && this.switchSpot ? this.getDrugType(this.insuranceName) : 'Cash',
         inventory_id: this.getInventoryId(),
         source: this.source,
         ...(this.drug_group && { drug_group: this.drug_group }),
@@ -563,7 +576,8 @@ export default {
     }, 500),
 
     getInventoryId() {
-      const type = this.switchPosition && this.switchSpot ? 'NHIS' : 'Cash';
+      const type =
+        this.switchPosition && this.switchSpot ? this.getDrugType(this.insuranceName) : 'Cash';
       return this.inventories.find(inventory =>
         inventory.name.toLowerCase().includes(type.toLowerCase())
       )?.id;

@@ -11,7 +11,9 @@
         <span class="card-label font-weight-bolder text-dark">Requests</span>
       </h3>
     </div>
-    <search @search="onHandleSearch" :show-date-filter="true" />
+    <div class="card-header border-0">
+      <search @search="onHandleSearch" :show-date-filter="true" />
+    </div>
 
     <div class="card-body py-0">
       <selected-group
@@ -65,8 +67,13 @@ export default {
     perPage() {
       return this.requests.length;
     },
-    selectedRequests() {
-      return this.$store.state.request.selectedRequests;
+    selectedRequests: {
+      get() {
+        return this.$store.state.request.selectedRequests;
+      },
+      set() {
+        this.$store.commit('request/EMPTY_SELECTED_REQUESTS', []);
+      },
     },
   },
   components: { RequestsTable, SelectedGroup, RequestModal, Pagination, Search },
@@ -150,6 +157,9 @@ export default {
         quantity,
       }));
     },
+  },
+  watch: {
+    selectedRequests() {},
   },
   created() {
     this.$store.dispatch('request/fetchRequests', {

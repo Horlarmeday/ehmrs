@@ -26,6 +26,7 @@ export enum DrugType {
   CASH = 'Cash',
   NHIS = 'NHIS',
   PRIVATE = 'Private',
+  RETAINERSHIP = 'Retainership',
 }
 
 @Table({ timestamps: true, tableName: 'Pharmacy_Store_Items' })
@@ -159,7 +160,7 @@ export class PharmacyStore extends Model {
   drug_form: DrugForm;
 
   @Column({
-    type: DataType.ENUM(DrugType.CASH, DrugType.NHIS, DrugType.PRIVATE),
+    type: DataType.ENUM(DrugType.CASH, DrugType.NHIS, DrugType.PRIVATE, DrugType.RETAINERSHIP),
     allowNull: false,
     validate: {
       notEmpty: {
@@ -194,6 +195,11 @@ export class PharmacyStore extends Model {
     type: DataType.INTEGER,
   })
   dosage_form_id: number;
+
+  @Column({
+    type: DataType.INTEGER,
+  })
+  old_id: number;
 
   @BelongsTo(() => Unit)
   unit: Unit;

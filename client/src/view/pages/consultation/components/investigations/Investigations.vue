@@ -10,6 +10,7 @@
               :switch-position="switchPosition"
               :switch-spot="switchSpot"
               @switchSpot="flipSwitch"
+              :insurance-name="insuranceName"
             />
           </span>
           <div>
@@ -73,6 +74,10 @@ export default {
       type: String,
       required: true,
     },
+    insuranceName: {
+      type: String,
+      required: false,
+    },
   },
   computed: {
     investigations() {
@@ -106,12 +111,22 @@ export default {
       }
     },
 
+    getInvestigationType(insuranceName) {
+      const types = ['FHSS', 'NHIS'];
+      if (types.includes(insuranceName)) return 'NHIS';
+      if (insuranceName === 'PHIS') return 'Private';
+      return 'NHIS';
+    },
+
     mapSelectedInvestigation(investigation) {
       return {
         investigation_id: investigation.id,
         imaging_id: investigation.imaging_id,
         is_urgent: false,
-        investigation_type: this.switchPosition && this.switchSpot ? 'NHIS' : 'CASH',
+        investigation_type:
+          this.switchPosition && this.switchSpot
+            ? this.getInvestigationType(this.insuranceName)
+            : 'CASH',
         price: investigation.price,
         name: investigation.name,
         source: this.source,

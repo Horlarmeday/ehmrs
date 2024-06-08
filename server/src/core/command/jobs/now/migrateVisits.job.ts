@@ -6,6 +6,9 @@ import { VisitCategory, VisitStatus } from '../../../../database/models/visit';
 import { processTasksExecution } from '../../../helpers/tasksProcessor';
 import dayjs from 'dayjs';
 
+// TODO: Drop triages, copy all antenatal visits, drop visits table
+// TODO: Re-insert all antenatal visits, migrate visits and migrate triages table
+
 const mapVisitData = async visit => {
   const patientId = visit?.patient_id || visit?.dependant_id;
   const patientType = visit?.patient_id ? 'Patient' : 'Dependant';
@@ -14,12 +17,17 @@ const mapVisitData = async visit => {
     where: { old_patient_id: patientId, patient_type: patientType },
   });
 
+  if (!patient) {
+    logger.info('Cannot find patient with id ' + patientId);
+    return;
+  }
+
   return {
     patient_id: patient?.id,
     category: VisitCategory.OPD,
     date_visit_start: visit?.createdAt,
-    date_visit_ended: dayjs(visit?.createdAt)
-      .add(2, 'day')
+    date_visit_ended: dayjs(visit?.updatedAt)
+      .add(3, 'day')
       .toDate(),
     department: 'General Practitioner',
     professional: 'Medical Practitioner',
@@ -30,16 +38,21 @@ const mapVisitData = async visit => {
     staff_id: visit?.staff_id || 1,
     createdAt: visit.createdAt,
     updatedAt: visit.updatedAt,
+    consultation_id: visit?.consultation_id,
   };
 };
+
 const insertVisits = async visit => {
   try {
     const mappedVisit = await mapVisitData(visit);
-    await Visit.create(mappedVisit);
+    if (mappedVisit) {
+      await Visit.create(mappedVisit);
+    }
   } catch (e) {
     console.error(e);
   }
 };
+
 export const migrateVisits = async () => {
   const message = taggedMessaged('migrateVisits');
   const filePath = path.join(__dirname, '../../../../public/ehmrs_dumps/visits.json');
@@ -48,7 +61,7 @@ export const migrateVisits = async () => {
     const readFile = fs.readFileSync(filePath, { encoding: 'utf8', flag: 'r' });
     if (readFile) {
       const visits = JSON.parse(readFile);
-      const validVisits = visits.filter(visit => visit.consultation_id);
+      const validVisits = visits.filter(visit => visit?.consultation_id);
 
       await processTasksExecution({
         tasks: validVisits,

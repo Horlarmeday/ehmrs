@@ -8,6 +8,7 @@
             :switch-position="switchPosition"
             :switch-spot="switchSpot"
             @switchSpot="flipSwitch"
+            :insurance-name="insuranceName"
           />
         </span>
       </div>
@@ -100,6 +101,10 @@ export default {
       type: String,
       required: true,
     },
+    insuranceName: {
+      type: String,
+      required: false,
+    },
     filter: {
       type: Object,
       required: true,
@@ -187,8 +192,15 @@ export default {
         .then(() => loading(false));
     }, 500),
 
+    getItemType(insuranceName) {
+      const types = ['FHSS', 'NHIS'];
+      if (types.includes(insuranceName)) return 'NHIS';
+      if (insuranceName === 'PHIS') return 'Private';
+      return 'NHIS';
+    },
+
     getInventoryId() {
-      const type = this.switchPosition && this.switchSpot ? 'NHIS' : 'Cash';
+      const type = this.switchPosition && this.switchSpot ? this.getItemType(this.insuranceName) : 'Cash';
       return this.inventories.find(inventory =>
         inventory.name.toLowerCase().includes(type.toLowerCase())
       )?.id;

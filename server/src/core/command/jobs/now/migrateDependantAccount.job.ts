@@ -1,5 +1,4 @@
 import fs from 'fs';
-import * as readline from 'readline';
 import { logger, taggedMessaged } from '../../../helpers/logger';
 import { Patient } from '../../../../database/models';
 import path from 'path';
@@ -64,7 +63,7 @@ const bulkInsertDependants = async dependants => {
 
 export const migrateDependantAccount = async () => {
   const message = taggedMessaged('migrateDependantAccount');
-  const filePath = path.join(__dirname, '../../../../public/ehmrs_dumps/dependants.json');
+  const filePath = path.join(__dirname, '../../../../public/ehmrs_new_dumps/dependants.json');
 
   const CHUNK_SIZE = 1000;
   try {

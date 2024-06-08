@@ -93,7 +93,7 @@ export default {
       Swal.fire({
         title: 'Are you sure?',
         text:
-          'Note that this action will not discharge the patient, but only place the patient up for it. The rest is upto the nurses',
+          'Note that this action will not discharge the patient, but only place the patient up for it. The rest is up to the nurses',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Yes, Discharge!',

@@ -105,6 +105,10 @@ export default {
     state.discharge = discharge;
   },
 
+  SET_RECOMMENDED_DISCHARGES(state, discharges) {
+    state.recommendedDischarges = discharges;
+  },
+
   /**
    * DELIVERY INFO
    */

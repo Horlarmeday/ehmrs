@@ -80,7 +80,7 @@ const insertTriageData = async triage => {
 
 export const migrateTriages = async () => {
   const message = taggedMessaged('migrateTriages');
-  const filePath = path.join(__dirname, '../../../../public/ehmrs_dumps/triages.json');
+  const filePath = path.join(__dirname, '../../../../public/ehmrs_new_dumps/triages.json');
 
   try {
     const readFile = fs.readFileSync(filePath, { encoding: 'utf8', flag: 'r' });
@@ -89,7 +89,7 @@ export const migrateTriages = async () => {
     await processTasksExecution({
       tasks: data,
       message,
-      concurrency: 5,
+      concurrency: 10,
       handler: insertTriageData,
     });
     logger.info(message('Migrated all triages ==ENDED==='));

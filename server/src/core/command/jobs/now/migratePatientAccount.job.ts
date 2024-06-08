@@ -1,9 +1,7 @@
 import fs from 'fs';
-import * as readline from 'readline';
 import { logger, taggedMessaged } from '../../../helpers/logger';
-import { Patient, PatientInsurance } from '../../../../database/models';
+import { Patient } from '../../../../database/models';
 import path from 'path';
-import { processTasksExecution } from '../../../helpers/tasksProcessor';
 
 const mappedPatientData = patients => {
   return patients.map(patient => ({
@@ -46,7 +44,7 @@ const bulkInsertPatients = async patients => {
 
 export const migratePatientAccount = async () => {
   const message = taggedMessaged('migratePatientAccount');
-  const filePath = path.join(__dirname, '../../../../public/ehmrs_dumps/patients.json');
+  const filePath = path.join(__dirname, '../../../../public/ehmrs_new_dumps/patients.json');
 
   const CHUNK_SIZE = 1000;
   try {

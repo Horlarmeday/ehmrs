@@ -22,6 +22,7 @@ import {
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { ICD10Disease } from './icd10_disease';
 import { ICPC2Disease } from './icpc2_disease';
+import { PatientInsurance } from './patientInsurance';
 
 export enum Certainty {
   PRESUMED = 'Presumed',
@@ -103,6 +104,12 @@ export class Diagnosis extends Model {
     type: DataType.INTEGER,
   })
   staff_id: number;
+
+  @ForeignKey(() => PatientInsurance)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  patient_insurance_id: number;
 
   @BelongsTo(() => Staff)
   staff: Staff;

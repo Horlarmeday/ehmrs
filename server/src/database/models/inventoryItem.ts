@@ -23,7 +23,7 @@ import {
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Inventory } from './inventory';
 
-@Table({ timestamps: true, tableName: 'inventory_items' })
+@Table({ timestamps: true, tableName: 'Inventory_Items' })
 export class InventoryItem extends Model {
   @PrimaryKey
   @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
@@ -154,7 +154,7 @@ export class InventoryItem extends Model {
   drug_form: DrugForm;
 
   @Column({
-    type: DataType.ENUM(DrugType.CASH, DrugType.NHIS, DrugType.PRIVATE),
+    type: DataType.ENUM(DrugType.CASH, DrugType.NHIS, DrugType.PRIVATE, DrugType.RETAINERSHIP),
     allowNull: false,
     validate: {
       notEmpty: {

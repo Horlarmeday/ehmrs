@@ -33,16 +33,16 @@
       right
       no-flip
     >
-      <template v-slot:button-content>
-        <div
-          class="btn btn-icon btn-hover-transparent-white btn-dropdown btn-lg mr-1 pulse pulse-primary"
-        >
-          <span class="svg-icon svg-icon-xl">
-            <inline-svg src="/media/svg/icons/Code/Compiling.svg" />
-          </span>
-          <span class="pulse-ring"></span>
-        </div>
-      </template>
+      <!--      <template v-slot:button-content>-->
+      <!--        <div-->
+      <!--          class="btn btn-icon btn-hover-transparent-white btn-dropdown btn-lg mr-1 pulse pulse-primary"-->
+      <!--        >-->
+      <!--          <span class="svg-icon svg-icon-xl">-->
+      <!--            <inline-svg src="/media/svg/icons/Code/Compiling.svg" />-->
+      <!--          </span>-->
+      <!--          <span class="pulse-ring"></span>-->
+      <!--        </div>-->
+      <!--      </template>-->
       <b-dropdown-text tag="div" class="min-w-md-350px">
         <form>
           <KTDropdownNotification></KTDropdownNotification>
@@ -52,7 +52,7 @@
     <!--end: Notifications -->
 
     <!--begin: Quick panel toggle -->
-    <KTQuickPanel></KTQuickPanel>
+    <!--    <KTQuickPanel></KTQuickPanel>-->
     <!--end: Quick panel toggle -->
 
     <!--begin: User Bar -->
@@ -92,7 +92,7 @@
 import KTSearchDefault from '@/view/layout/extras/dropdown/SearchDefault.vue';
 import KTDropdownNotification from '@/view/layout/extras/dropdown/DropdownNotification.vue';
 import KTQuickUser from '@/view/layout/extras/offcanvas/QuickUser.vue';
-import KTQuickPanel from '@/view/layout/extras/offcanvas/QuickPanel.vue';
+// import KTQuickPanel from '@/view/layout/extras/offcanvas/QuickPanel.vue';
 import i18nService from '@/core/services/i18n.service.js';
 
 export default {
@@ -107,7 +107,7 @@ export default {
     KTSearchDefault,
     KTDropdownNotification,
     KTQuickUser,
-    KTQuickPanel,
+    // KTQuickPanel,
   },
   methods: {
     onLanguageChanged() {

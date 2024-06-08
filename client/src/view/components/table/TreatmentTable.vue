@@ -11,7 +11,6 @@
             <th scope="col">Remarks</th>
             <th scope="col">Date</th>
             <th scope="col">Added By</th>
-            <th scope="col"></th>
           </tr>
         </thead>
         <tbody>
@@ -39,11 +38,6 @@
             </td>
             <td>
               <span>{{ item?.staff?.fullname }}</span>
-            </td>
-            <td>
-              <span>
-                <a href="#"><i class="flaticon-delete text-danger"></i></a>
-              </span>
             </td>
           </tr>
         </tbody>

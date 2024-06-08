@@ -16,6 +16,7 @@
               :show-switch="showSwitch"
               :switch-position="switchPosition"
               :filter="filter"
+              :insurance-name="insuranceName"
             />
           </div>
         </b-collapse>
@@ -57,6 +58,10 @@ export default {
       type: Boolean,
       required: false,
       default: false,
+    },
+    insuranceName: {
+      type: String,
+      required: false,
     },
   },
 };

@@ -12,6 +12,9 @@ export class CreateInvestigationDto {
   description?: string;
   imaging_id: number;
   price: number;
+  nhis_price?: number;
+  phis_price?: number;
+  retainership_price?: number;
   staff_id?: number;
   type?: InvestigationType;
 }

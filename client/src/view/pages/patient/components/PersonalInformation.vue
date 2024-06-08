@@ -1,6 +1,9 @@
 <template>
   <div>
-    <div v-if="patient" class="row">
+    <div v-if="loading">
+      <PatientProfileSkeleton />
+    </div>
+    <div v-else class="row">
       <div class="col-5">
         <b-list-group>
           <b-list-group-item href="#" variant="dark">Personal Information</b-list-group-item>
@@ -82,12 +85,13 @@
           </b-list-group-item>
         </b-list-group>
       </div>
+
       <div class="col-2">
         <div class="symbol symbol-150 mr-3">
           <img
             v-if="!imageError"
             alt="Pic"
-            :src="imageUrl(patient.photo)"
+            :src="imageUrl()"
             @load="handleImageLoad"
             @error="handleImageError"
           />
@@ -158,13 +162,13 @@
         </b-list-group>
       </div>
     </div>
-    <div v-else>
-      <b-progress :value="count" variant="primary" show-progress animated :max="200" />
-    </div>
   </div>
 </template>
 <script>
+import PatientProfileSkeleton from '@/view/pages/patient/page/skeleton/PatientProfileSkeleton.vue';
+
 export default {
+  components: { PatientProfileSkeleton },
   data: () => ({
     count: 0,
     imageError: false,
@@ -176,21 +180,14 @@ export default {
       required: true,
       default: () => {},
     },
-  },
-
-  mounted() {
-    this.countToHundred();
+    loading: {
+      type: Boolean,
+    },
   },
 
   methods: {
-    countToHundred() {
-      for (let i = 1; i <= 100; i++) {
-        this.count = i;
-        if (this.patient) break;
-      }
-    },
-    imageUrl(url) {
-      return `${window.location.origin}/static/images/${url}`;
+    imageUrl() {
+      return `${window.location.origin}/static/images/${this.patient.photo}`;
     },
     handleImageLoad() {
       this.imageError = false;

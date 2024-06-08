@@ -21,6 +21,7 @@
           <td v-if="shouldSelectRequest" class="pl-0">
             <label class="checkbox checkbox-md checkbox-inline">
               <input
+                :disabled="request.status !== 'Pending'"
                 type="checkbox"
                 :checked="isSelected(request)"
                 @change="toggleRequest(request)"

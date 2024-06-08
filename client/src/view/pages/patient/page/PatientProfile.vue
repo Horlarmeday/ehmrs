@@ -27,7 +27,7 @@
       <div class="example">
         <b-tabs content-class="mt-3">
           <b-tab title="Personal">
-            <personal-information :patient="patient" />
+            <personal-information :patient="patient" :loading="loading" />
           </b-tab>
           <b-tab title="History" lazy>
             <History />
@@ -74,6 +74,7 @@ export default {
         status: 'primary',
       },
     ],
+    loading: false,
   }),
 
   computed: {
@@ -114,7 +115,8 @@ export default {
   },
 
   created() {
-    this.$store.dispatch('patient/fetchPatientProfile', this.$route.params.id);
+    this.loading = true;
+    this.$store.dispatch('patient/fetchPatientProfile', this.$route.params.id).then(() => this.loading = false);
   },
 };
 </script>

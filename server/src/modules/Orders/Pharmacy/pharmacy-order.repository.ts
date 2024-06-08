@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import { PrescribedAdditionalItemBody, PrescribedDrugBody } from './interface/prescribed-drug.body';
 import {
+  AdditionalTreatment,
   DosageForm,
   Drug,
   Measurement,
@@ -22,7 +23,11 @@ import { DefaultType } from '../../../database/models/default';
 import { staffAttributes } from '../../Antenatal/antenatal.repository';
 import { BadException } from '../../../common/util/api-error';
 import { flattenArray, StatusCodes } from '../../../core/helpers/helper';
-import { ERROR_UPDATING_DRUG, INJECTION_SYRINGES_NOT_FOUND } from './messages/response-messages';
+import {
+  ERROR_UPDATING_DRUG,
+  ERROR_UPDATING_ITEM,
+  INJECTION_SYRINGES_NOT_FOUND,
+} from './messages/response-messages';
 import sequelizeConnection from '../../../database/config/config';
 
 type PrescribeDrugType = PrescribedDrugBody & {
@@ -304,6 +309,20 @@ export const bulkCreateAdditionalItems = async (data): Promise<PrescribedAdditio
 };
 
 /**
+ * update additional items
+ * @param data
+ */
+export const updateAdditionalItem = async (data: Partial<PrescribedAdditionalItem>) => {
+  try {
+    await PrescribedAdditionalItem.update({ ...data }, { where: { id: data.id } });
+  } catch (e) {
+    console.error(e);
+    throw new BadException('Error', StatusCodes.SERVER_ERROR, ERROR_UPDATING_ITEM);
+  }
+  return getOneAdditionalItemWithJoins({ id: data.id });
+};
+
+/**
  * get one prescribed drug
  * @param query
  * @returns {Promise<PrescribedDrug>} prescribed drug data
@@ -420,6 +439,31 @@ export const getAdditionalItems = async (
   query: WhereOptions<PrescribedAdditionalItem>
 ): Promise<PrescribedAdditionalItem[]> => {
   return await PrescribedAdditionalItem.findAll({
+    where: { ...query },
+    order: [['createdAt', 'DESC']],
+    include: [
+      { model: Staff, attributes: staffAttributes },
+      {
+        model: Drug,
+        attributes: ['name'],
+      },
+      {
+        model: Unit,
+        attributes: ['name'],
+      },
+    ],
+  });
+};
+
+/**
+ * get one additional item
+ * @param query
+ * @returns {Promise<PrescribedAdditionalItem>} additional item data
+ */
+export const getOneAdditionalItemWithJoins = async (
+  query: WhereOptions<PrescribedAdditionalItem>
+): Promise<PrescribedAdditionalItem> => {
+  return await PrescribedAdditionalItem.findOne({
     where: { ...query },
     order: [['createdAt', 'DESC']],
     include: [
@@ -708,4 +752,37 @@ export const deletePrescribedDrug = async (drugId: number) => {
  */
 export const deleteAdditionalItem = async (itemId: number) => {
   return PrescribedAdditionalItem.destroy({ where: { id: itemId } });
+};
+
+/**
+ * add additional treatments data for patient
+ * @param data
+ * @returns {Promise<AdditionalTreatment[]>} patient additional treatment data
+ */
+export const createBulkAdditionalTreatment = async (data): Promise<AdditionalTreatment[]> => {
+  return AdditionalTreatment.bulkCreate(data);
+};
+
+/**
+ * get patient additional treatments
+ *
+ * @param currentPage
+ * @param pageLimit
+ * @param filter
+ */
+export const getAdditionalTreatments = ({ currentPage = 1, pageLimit = 10, filter = null }) => {
+  return AdditionalTreatment.paginate({
+    page: +currentPage,
+    paginate: +pageLimit,
+    order: [['date_entered', 'DESC']],
+    where: {
+      ...(filter && JSON.parse(filter)),
+    },
+    include: [
+      {
+        model: Staff,
+        attributes: staffAttributes,
+      },
+    ],
+  });
 };

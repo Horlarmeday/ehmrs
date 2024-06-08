@@ -38,18 +38,29 @@
         </div>
       </div>
     </div>
+    <div class="card-body pb-0">
+      <pagination
+        v-if="visits?.length"
+        :total-pages="pages"
+        :total="queriedItems"
+        :per-page="perPage"
+        :current-page="currentPage"
+        @pagechanged="onPageChange"
+      />
+    </div>
   </div>
 </template>
 
 <script>
 import Search from '@/utils/Search.vue';
 import { debounce, removeSpinner } from '@/common/common';
+import Pagination from '@/utils/Pagination.vue';
 export default {
-  components: { Search },
+  components: { Pagination, Search },
   data() {
     return {
       currentPage: 1,
-      itemsPerPage: 10,
+      itemsPerPage: 20,
       imageError: false,
       OUTPATIENT: 'Outpatient',
       ANTENATAL: 'Antenatal',
@@ -168,5 +179,15 @@ export default {
 
 .pointer {
   cursor: pointer;
+}
+
+.displayIcon {
+  position: absolute;
+  right: 1;
+  background: #88af28;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 0 5px 0 0;
+  font-size: 18px;
 }
 </style>

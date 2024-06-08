@@ -9,6 +9,7 @@ import SuperAdmin from './superadmin/Dashboard.vue';
 import Laboratory from './laboratory/Dashboard.vue';
 import Radiology from './radiology/Dashboard.vue';
 import Pharmacy from './pharmacy/Dashboard.vue';
+import PharmacyStore from './pharmacyStore/Dashboard.vue';
 import MedicalRecords from './medicalrecords/Dashboard.vue';
 import Doctor from './medicalPractitioners/generalPractitioner/Dashboard.vue';
 import Pediatrician from './medicalPractitioners/pediatrician/Dashboard.vue';
@@ -32,6 +33,7 @@ import Antenatal from './nurse/antenatal/Dashboard.vue';
 import NHIS from './nhis/Dashboard.vue';
 import CustomerCare from './reception/Dashboard.vue';
 import Theater from './nurse/theater/Dashboard.vue';
+import FinancialOfficer from './financeOfficer/Dashboard.vue';
 import { parseJwt } from '@/common/common';
 
 const Roles = {
@@ -56,6 +58,8 @@ const Roles = {
   NURSE: 'Nurse',
   NHIS: 'NHIS',
   CUSTOMER_CARE: 'Customer Care',
+  PHARMACY_STORE: 'Pharmacy Store',
+  FINANCE_OFFICER: 'Finance Officer',
 };
 const SubRoles = {
   G_OPD: 'G-OPD',
@@ -116,6 +120,10 @@ export default {
           return (this.dashboardComponent = Endocrinologist);
         case Roles.GASTROENTEROLOGIST:
           return (this.dashboardComponent = Gastroenterologist);
+        case Roles.PHARMACY_STORE:
+          return (this.dashboardComponent = PharmacyStore);
+        case Roles.FINANCE_OFFICER:
+          return (this.dashboardComponent = FinancialOfficer);
         default:
           return (this.dashboardComponent = MedicalRecords);
       }

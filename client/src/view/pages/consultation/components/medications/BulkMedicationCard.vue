@@ -7,6 +7,7 @@
             :show-switch="showSwitch"
             :source="source"
             :switch-position="switchPosition"
+            :insurance-name="insuranceName"
           />
           <component :is="activeTab" />
         </div>
@@ -39,6 +40,10 @@ export default {
     source: {
       type: String,
       required: true,
+    },
+    insuranceName: {
+      type: String,
+      required: false,
     },
   },
   created() {

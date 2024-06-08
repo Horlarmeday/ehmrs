@@ -28,5 +28,10 @@ router.get('/history/:id', verify, AdmissionController.getAdmissionHistory);
 router.get('/ward-round/:id', verify, AdmissionController.getWardRounds);
 router.get('/delivery-info/:id', verify, AdmissionController.getDeliveryInfo);
 router.get('/postnatal-info/:id', verify, AdmissionController.getPostnatalInfo);
+router.get(
+  '/discharge-recommended-patients',
+  verify,
+  AdmissionController.getDischargeRecommendedPatients
+);
 
 export default router;

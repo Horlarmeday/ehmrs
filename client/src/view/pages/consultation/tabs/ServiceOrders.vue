@@ -5,6 +5,7 @@
       :switch-position="switchPosition"
       source="Consultation"
       :filter="filter"
+      :insurance-name="insuranceName"
     />
   </div>
 </template>
@@ -20,6 +21,9 @@ export default {
   computed: {
     visit() {
       return this.$store.state.visit.visit;
+    },
+    insuranceName() {
+      return this.visit?.insurance?.insurance?.name;
     },
     filter() {
       return { visit_id: this.$route.params.id };

@@ -121,7 +121,18 @@ export async function getTestSamples(currentPage = 1, pageLimit = 10) {
  * @returns {object} test data
  */
 export async function createTest(data) {
-  const { name, price, sample_id, staff_id, result_unit, valid_range, type } = data;
+  const {
+    name,
+    price,
+    sample_id,
+    staff_id,
+    result_unit,
+    valid_range,
+    type,
+    nhis_price,
+    phis_price,
+    retainership_price,
+  } = data;
   const count = await getNumberOfRecords(Test);
 
   return Test.create({
@@ -133,6 +144,11 @@ export async function createTest(data) {
     valid_range,
     code: `D${count + 1}`,
     type,
+    nhis_price,
+    phis_price,
+    retainership_price,
+    is_available_for_nhis: !!nhis_price,
+    is_available_for_phis: !!phis_price,
   });
 }
 
@@ -263,11 +279,22 @@ const testPriceTariff = async (insurance: PatientInsurance, test_id: number) => 
 };
 
 export const getTestPrice = async (patient: Patient, test_id: number) => {
-  if (canUsePriceTariff(patient)) {
-    const insurance = await getPatientInsuranceQuery({ patient_id: patient.id, is_default: true });
-    return testPriceTariff(insurance, test_id);
-  }
-  return null;
+  if (!canUsePriceTariff(patient)) return null;
+
+  const insurance = await getPatientInsuranceQuery({ patient_id: patient.id, is_default: true });
+  if (!insurance) return null;
+
+  const price = await testPriceTariff(insurance, test_id);
+  if (price) return price;
+
+  const test = await Test.findByPk(test_id);
+  const insurancePrices = {
+    NHIS: test.nhis_price,
+    PHIS: test.phis_price,
+    Retainership: test.retainership_price,
+    FHSS: test.nhis_price,
+  };
+  return insurancePrices[insurance.insurance.name] || null;
 };
 
 /** ***********************

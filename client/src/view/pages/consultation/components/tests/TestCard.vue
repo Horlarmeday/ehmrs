@@ -28,6 +28,7 @@
                 :showSwitch="showSwitch"
                 :source="source"
                 :is="activeTab"
+                :insurance-name="insuranceName"
               />
             </div>
           </div>
@@ -59,6 +60,10 @@ export default {
     source: {
       type: String,
       required: true,
+    },
+    insuranceName: {
+      type: String,
+      required: false,
     },
   },
   data() {

@@ -52,6 +52,31 @@ export class Investigation extends Model {
   price: number;
 
   @Column({
+    type: DataType.DECIMAL(12, 2),
+  })
+  nhis_price: number;
+
+  @Column({
+    type: DataType.DECIMAL(12, 2),
+  })
+  phis_price: number;
+
+  @Column({
+    type: DataType.DECIMAL(12, 2),
+  })
+  retainership_price: number;
+
+  @Column({
+    type: DataType.BOOLEAN,
+  })
+  is_available_for_nhis: boolean;
+
+  @Column({
+    type: DataType.BOOLEAN,
+  })
+  is_available_for_phis: boolean;
+
+  @Column({
     type: DataType.ENUM(InvestigationType.PRIMARY, InvestigationType.SECONDARY),
     allowNull: false,
     validate: {
@@ -79,6 +104,16 @@ export class Investigation extends Model {
     type: DataType.INTEGER,
   })
   staff_id?: number;
+
+  @Column({
+    type: DataType.INTEGER,
+  })
+  old_id?: number;
+
+  @Column({
+    type: DataType.INTEGER,
+  })
+  nhis_old_id?: number;
 
   @BelongsTo(() => Staff)
   staff: Staff;

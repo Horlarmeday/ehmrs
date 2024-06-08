@@ -1,9 +1,9 @@
 <template>
-  <b-modal v-model="activePrompt" hide-footer title="Test">
+  <b-modal v-model="activePrompt" hide-footer title="Test" size="lg">
     <div class="mb-15">
       <div class="form-group row">
-        <label class="col-lg-3 col-form-label">Name</label>
-        <div class="col-lg-8">
+        <div class="col-lg-6">
+          <label>Name:</label>
           <input
             v-validate="'required'"
             data-vv-validate-on="blur"
@@ -15,10 +15,8 @@
           />
           <span class="text-danger text-sm">{{ errors.first('name') }}</span>
         </div>
-      </div>
-      <div class="form-group row">
-        <label class="col-lg-3 col-form-label">Price</label>
-        <div class="col-lg-8">
+        <div class="col-lg-6">
+          <label>Price:</label>
           <input
             v-validate="'required'"
             data-vv-validate-on="blur"
@@ -32,8 +30,37 @@
         </div>
       </div>
       <div class="form-group row">
-        <label class="col-lg-3 col-form-label">Sample Type</label>
-        <div class="col-lg-8">
+        <div class="col-lg-6">
+          <label>NHIS Price:</label>
+          <input
+            type="number"
+            class="form-control form-control-sm"
+            placeholder="NHIS Price"
+            v-model="nhis_price"
+          />
+        </div>
+        <div class="col-lg-6">
+          <label>PHIS Price:</label>
+          <input
+            type="number"
+            class="form-control form-control-sm"
+            placeholder="PHIS Price"
+            v-model="phis_price"
+          />
+        </div>
+      </div>
+      <div class="form-group row">
+        <div class="col-lg-6">
+          <label>Retainership Price:</label>
+          <input
+            type="number"
+            class="form-control form-control-sm"
+            placeholder="PHIS Price"
+            v-model="retainership_price"
+          />
+        </div>
+        <div class="col-lg-6">
+          <label>Sample Type:</label>
           <select
             class="form-control form-control-sm"
             v-model="sample_id"
@@ -49,8 +76,8 @@
         </div>
       </div>
       <div class="form-group row">
-        <label class="col-lg-3 col-form-label">Result Unit</label>
-        <div class="col-lg-8">
+        <div class="col-lg-6">
+          <label>Result Unit:</label>
           <input
             v-validate="'required'"
             data-vv-validate-on="blur"
@@ -62,10 +89,8 @@
           />
           <span class="text-danger text-sm">{{ errors.first('result_unit') }}</span>
         </div>
-      </div>
-      <div class="form-group row">
-        <label class="col-lg-3 col-form-label">Result Valid Range</label>
-        <div class="col-lg-8">
+        <div class="col-lg-6">
+          <label>Result Valid Range:</label>
           <input
             v-validate="'required'"
             data-vv-validate-on="blur"
@@ -79,8 +104,8 @@
         </div>
       </div>
       <div class="form-group row">
-        <label class="col-lg-3 col-form-label">Type</label>
-        <div class="col-lg-8">
+        <div class="col-lg-6">
+          <label>Type:</label>
           <div class="radio-inline mt-3">
             <label class="radio" v-for="(type, i) in testTypes" :key="i">
               <input type="radio" v-model="testType" :value="type" />
@@ -119,6 +144,9 @@ export default {
     return {
       name: '',
       price: '',
+      nhis_price: '',
+      phis_price: '',
+      retainership_price: '',
       test_id: '',
       sample_id: '',
       valid_range: '',
@@ -151,9 +179,18 @@ export default {
         this.initValues();
         this.$validator.reset();
       } else {
-        const { id, name, price, sample_id, result_unit, valid_range, type } = JSON.parse(
-          JSON.stringify(this.data)
-        );
+        const {
+          id,
+          name,
+          price,
+          sample_id,
+          result_unit,
+          valid_range,
+          type,
+          nhis_price,
+          phis_price,
+          retainership_price,
+        } = JSON.parse(JSON.stringify(this.data));
         this.test_id = id;
         this.name = name;
         this.price = price;
@@ -161,6 +198,9 @@ export default {
         this.result_unit = result_unit;
         this.valid_range = valid_range;
         this.testType = type;
+        this.nhis_price = nhis_price;
+        this.phis_price = phis_price;
+        this.retainership_price = retainership_price;
       }
     },
   },
@@ -186,6 +226,9 @@ export default {
             sample_id: this.sample_id,
             name: this.name,
             price: this.price,
+            phis_price: this.phis_price,
+            nhis_price: this.nhis_price,
+            retainership_price: this.retainership_price,
             test_id: this.test_id,
             result_unit: this.result_unit,
             valid_range: this.valid_range,
@@ -213,6 +256,9 @@ export default {
     initValues() {
       this.name = '';
       this.price = '';
+      this.nhis_price = '';
+      this.phis_price = '';
+      this.retainership_price = '';
       this.test_id = '';
       this.sample_id = '';
       this.valid_range = '';

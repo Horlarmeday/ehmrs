@@ -280,6 +280,20 @@ export default {
     });
   },
 
+  updateBulkPrescribedDrugs({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/orders/pharmacy/bulk-update`, payload)
+        .then(response => {
+          commit('UPDATE_PRESCRIBED_DRUGS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
   deletePrescribedDrug({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
@@ -336,6 +350,49 @@ export default {
         .delete(`/orders/pharmacy/additional-items/delete`, { data: payload })
         .then(response => {
           commit('DELETE_ITEM_ORDER', payload);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  updateBulkAdditionalItems({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/orders/pharmacy/additional-items/bulk-update`, payload)
+        .then(response => {
+          commit('UPDATE_PRESCRIBED_ADDITIONAL_ITEMS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+
+  fetchAdditionalItemsPerVisit({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/orders/pharmacy/additional-items/${payload.id}`)
+        .then(response => {
+          commit('SET_PRESCRIBED_ADDITIONAL_ITEMS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchPrescribedDrugsPerVisit({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/orders/pharmacy/prescribed-drugs/${payload.id}`)
+        .then(response => {
+          commit('SET_PRESCRIBED_DRUGS', response.data.data);
           resolve(response);
         })
         .catch(error => {
@@ -464,6 +521,45 @@ export default {
           commit('SET_TREATMENTS', response.data.data.docs);
           commit('SET_TREATMENTS_TOTAL', response.data.data.total);
           commit('SET_TREATMENTS_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /**************
+   ADDITIONAL TREATMENTS
+   *************/
+  addAdditionalTreatment({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/orders/pharmacy/additional-treatment/create/${payload.id}`, payload.data)
+        .then(response => {
+          commit('ADD_ADDITIONAL_TREATMENT', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchAdditionalTreatments({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/orders/pharmacy/additional-treatment/get', {
+          params: {
+            currentPage: payload?.currentPage,
+            pageLimit: payload?.itemsPerPage,
+            filter: payload?.filter,
+          },
+        })
+        .then(response => {
+          commit('SET_ADDITIONAL_TREATMENTS', response.data.data.docs);
+          commit('SET_ADDITIONAL_TREATMENTS_TOTAL', response.data.data.total);
+          commit('SET_ADDITIONAL_TREATMENTS_PAGES', response.data.data.pages);
           resolve(response);
         })
         .catch(error => {

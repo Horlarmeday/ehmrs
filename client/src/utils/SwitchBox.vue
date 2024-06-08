@@ -2,7 +2,7 @@
   <label class="toggle">
     <input type="checkbox" @change="flipSwitch($event)" :checked="switchPosition && switchSpot" />
     <span class="slider"></span>
-    <span class="labels" data-on="NHIS" data-off="CASH"></span>
+    <span class="labels" :data-on="insuranceName" data-off="CASH"></span>
   </label>
 </template>
 <script>
@@ -15,6 +15,10 @@ export default {
     switchSpot: {
       type: Boolean,
       required: true,
+    },
+    insuranceName: {
+      type: String,
+      required: false,
     },
   },
   methods: {

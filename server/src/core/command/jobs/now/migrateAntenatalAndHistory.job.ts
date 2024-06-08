@@ -14,6 +14,7 @@ import dayjs from 'dayjs';
 import { AccountStatus } from '../../../../database/models/antenatal';
 import { VisitCategory, VisitStatus } from '../../../../database/models/visit';
 import { processTasksExecution } from '../../../helpers/tasksProcessor';
+import { file } from 'pdfkit';
 
 const mapAntenatalData = async antenatal => {
   try {
@@ -53,6 +54,7 @@ const mapAntenatalData = async antenatal => {
     throw new Error(e);
   }
 };
+
 const mapAntenatalTriages = async triage => {
   let visit;
   try {
@@ -108,28 +110,33 @@ const mapAntenatalTriages = async triage => {
     console.error(e);
   }
 };
+
 const mapAntenatalObservations = async observation => {
   const antenatal = await Antenatal.findOne({ where: { id: observation.ante_natal_id } });
   if (!antenatal) return;
 
-  const visit = await Visit.create({
-    patient_id: antenatal.patient_id,
-    category: VisitCategory.ANC,
-    date_visit_start: observation?.createdAt,
-    date_visit_ended: dayjs(observation?.createdAt)
-      .add(6, 'hours')
-      .toDate(),
-    department: 'Nursing',
-    professional: 'Nurse',
-    type: 'New Visit',
-    has_done_vitals: false,
-    is_taken: false,
-    status: VisitStatus.ENDED,
-    staff_id: observation?.staff_id || 1,
-    createdAt: observation.createdAt,
-    updatedAt: observation.updatedAt,
-    ante_natal_id: antenatal.id,
-  });
+  let visit = await Visit.findOne({ where: { ante_natal_id: observation.ante_natal_id } });
+
+  if (!visit) {
+    visit = await Visit.create({
+      patient_id: antenatal.patient_id,
+      category: VisitCategory.ANC,
+      date_visit_start: observation?.createdAt,
+      date_visit_ended: dayjs(observation?.createdAt)
+        .add(6, 'hours')
+        .toDate(),
+      department: 'Nursing',
+      professional: 'Nurse',
+      type: 'New Visit',
+      has_done_vitals: false,
+      is_taken: false,
+      status: VisitStatus.ENDED,
+      staff_id: observation?.staff_id || 1,
+      createdAt: observation.createdAt,
+      updatedAt: observation.updatedAt,
+      ante_natal_id: antenatal.id,
+    });
+  }
 
   return {
     patient_id: antenatal.patient_id,
@@ -144,6 +151,7 @@ const mapAntenatalObservations = async observation => {
     updatedAt: observation.updatedAt,
   };
 };
+
 const mapAntenatalClinicalNotes = async note => {
   let visit;
   try {
@@ -257,29 +265,31 @@ const bulkInsertAntenatalPrevPregnancy = async pregnancy => {
 
 export const migrateAntenatalAccountsAndHistory = async () => {
   const message = taggedMessaged('migrateAntenatalAccountsAndHistory');
-  // const filePath = path.join(__dirname, '../../../../public/ehmrs_dumps/antenatals.json');
+  // const filePath = path.join(__dirname, '../../../../public/ehmrs_new_dumps/antenatals.json');
+
   // const ANCHistoryFilePath = path.join(
   //   __dirname,
-  //   '../../../../public/ehmrs_dumps/antenatal_histories.json'
-  // );
-  // const vitalsFilePath = path.join(
-  //   __dirname,
-  //   '../../../../public/ehmrs_dumps/antenatalVitals.json'
-  // );
-  // const clinicalNotesFilePath = path.join(
-  //   __dirname,
-  //   '../../../../public/ehmrs_dumps/clinicalnotes.json'
+  //   '../../../../public/ehmrs_new_dumps/antenatal_histories.json'
   // );
 
-  const prevPregFilePath = path.join(
+  // const vitalsFilePath = path.join(
+  //   __dirname,
+  //   '../../../../public/ehmrs_new_dumps/antenatal_vitals.json'
+  // );
+
+  const clinicalNotesFilePath = path.join(
     __dirname,
-    '../../../../public/ehmrs_dumps/previousPregnancy.json'
+    '../../../../public/ehmrs_new_dumps/clinical_notes.json'
   );
+
+  // const prevPregFilePath = path.join(
+  //   __dirname,
+  //   '../../../../public/ehmrs_new_dumps/previousPregnancy.json'
+  // );
 
   try {
     // const fileData = fs.readFileSync(filePath, 'utf8');
     // const antenatals = JSON.parse(fileData);
-    // Insert antenatals in batches of the specified size
     // await processTasksExecution({
     //   tasks: antenatals,
     //   message,
@@ -290,6 +300,7 @@ export const migrateAntenatalAccountsAndHistory = async () => {
     // /**
     //  * Start inserting antenatal observations
     //  */
+
     // const ANCHistoryFileData = fs.readFileSync(ANCHistoryFilePath, 'utf8');
     // const history = JSON.parse(ANCHistoryFileData);
     //
@@ -300,9 +311,8 @@ export const migrateAntenatalAccountsAndHistory = async () => {
     //   handler: bulkInsertAntenatalObservations,
     // });
     // logger.info(message('Antenatal Observations ==ENDED==='));
-    /**
-     * Start inserting antenatal vitals
-     */
+
+    //
     // const ANCVitalsFileData = fs.readFileSync(vitalsFilePath, 'utf8');
     // const vitals = JSON.parse(ANCVitalsFileData);
     //
@@ -317,30 +327,30 @@ export const migrateAntenatalAccountsAndHistory = async () => {
     // /**
     //  * Start inserting antenatal clinical notes
     //  */
-    // const clinicalNotesFileData = fs.readFileSync(clinicalNotesFilePath, 'utf8');
-    // const notes = JSON.parse(clinicalNotesFileData);
-    //
-    // await processTasksExecution({
-    //   tasks: notes,
-    //   message,
-    //   concurrency: 5,
-    //   handler: bulkInsertAntenatalClinicalNotes,
-    // });
-    // logger.info(message('Antenatal Clinical Notes ==ENDED==='));
-
-    /**
-     * Start inserting antenatal clinical notes
-     */
-    const prevPregFileData = fs.readFileSync(prevPregFilePath, 'utf8');
-    const notes = JSON.parse(prevPregFileData);
+    const clinicalNotesFileData = fs.readFileSync(clinicalNotesFilePath, 'utf8');
+    const notes = JSON.parse(clinicalNotesFileData);
 
     await processTasksExecution({
       tasks: notes,
       message,
       concurrency: 5,
-      handler: bulkInsertAntenatalPrevPregnancy,
+      handler: bulkInsertAntenatalClinicalNotes,
     });
-    logger.info(message('Antenatal Previous Pregnancy ==ENDED==='));
+    logger.info(message('Antenatal Clinical Notes ==ENDED==='));
+
+    /**
+     * Start inserting antenatal clinical notes
+     */
+    // const prevPregFileData = fs.readFileSync(prevPregFilePath, 'utf8');
+    // const notes = JSON.parse(prevPregFileData);
+    //
+    // await processTasksExecution({
+    //   tasks: notes,
+    //   message,
+    //   concurrency: 5,
+    //   handler: bulkInsertAntenatalPrevPregnancy,
+    // });
+    // logger.info(message('Antenatal Previous Pregnancy ==ENDED==='));
   } catch (e) {
     throw new Error(e);
   }

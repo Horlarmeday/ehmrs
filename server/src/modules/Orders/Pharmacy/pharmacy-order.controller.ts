@@ -7,6 +7,7 @@ import {
   DATA_UPDATED,
 } from '../../AdminSettings/messages/response-messages';
 import {
+  validateAdditionalCreateTreatment,
   validateBulkDrugsPrescription,
   validateCreateTreatmentData,
   validateDeleteAdditionalItem,
@@ -165,6 +166,76 @@ export class PharmacyOrderController {
       return successResponse({
         res,
         data: drug,
+        message: DATA_UPDATED,
+        httpCode: StatusCodes.CREATED,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * update bulk prescribed drug
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {SuccessResponse} json object with status, prescribed drug data
+   */
+  static async updateBulkPrescribedDrug(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    const empty = isEmpty(req.body);
+    if (empty)
+      return errorResponse({
+        res,
+        message: EMPTY_REQUEST_BODY,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+    try {
+      const drugs = await PharmacyOrderService.updateBulkPrescribedDrug(req.body);
+
+      return successResponse({
+        res,
+        data: drugs,
+        message: DATA_UPDATED,
+        httpCode: StatusCodes.CREATED,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * update bulk additional items
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {SuccessResponse} json object with status, additional items data
+   */
+  static async updateBulkAdditionalItems(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    const empty = isEmpty(req.body);
+    if (empty)
+      return errorResponse({
+        res,
+        message: EMPTY_REQUEST_BODY,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+    try {
+      const items = await PharmacyOrderService.updateBulkAdditionalItems(req.body);
+
+      return successResponse({
+        res,
+        data: items,
         message: DATA_UPDATED,
         httpCode: StatusCodes.CREATED,
       });
@@ -348,6 +419,119 @@ export class PharmacyOrderController {
         data: item,
         message: DATA_DELETED,
         httpCode: StatusCodes.CREATED,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * create additional treatment data
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {SuccessResponse} json object with status, patient additional treatment data
+   */
+  static async createAdditionalTreatments(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    const { error } = validateAdditionalCreateTreatment(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+    try {
+      const treatments = await PharmacyOrderService.createAdditionalTreatment(
+        req.body,
+        +req.params.id,
+        req.user.sub
+      );
+
+      return successResponse({
+        res,
+        data: treatments,
+        message: DATA_SAVED,
+        httpCode: StatusCodes.CREATED,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get patient additional treatment data
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with patient treatment data
+   */
+  static async getAdditionalTreatments(req: Request, res: Response, next: NextFunction) {
+    try {
+      const treatments = await PharmacyOrderService.getAdditionalTreatments(req.query);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data: treatments,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get additional items per visit
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with additional items data
+   */
+  static async getAdditionalItemsPerVisit(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    try {
+      const items = await PharmacyOrderService.getAdditionalItems(+id);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data: items,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get drugs prescribed per visit
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with prescribed drugs data
+   */
+  static async getPrescribedDrugsPerVisit(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    try {
+      const drugs = await PharmacyOrderService.getDrugsPrescribed(+id);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data: drugs,
       });
     } catch (e) {
       return next(e);

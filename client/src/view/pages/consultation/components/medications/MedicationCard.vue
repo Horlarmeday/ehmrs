@@ -3,7 +3,12 @@
     <div class="d-flex flex-column-fluid">
       <div class="container">
         <div class="row">
-          <sidebar :show-switch="showSwitch" :source="source" :switch-position="switchPosition" />
+          <sidebar
+            :show-switch="showSwitch"
+            :source="source"
+            :switch-position="switchPosition"
+            :insurance-name="insuranceName"
+          />
           <component :is="activeTab" />
         </div>
       </div>
@@ -35,6 +40,10 @@ export default {
     source: {
       type: String,
       required: true,
+    },
+    insuranceName: {
+      type: String,
+      required: false,
     },
   },
   created() {

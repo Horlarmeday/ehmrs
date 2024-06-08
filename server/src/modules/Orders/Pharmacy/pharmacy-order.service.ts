@@ -1,10 +1,13 @@
 import {
   bulkCreateAdditionalItems,
+  createBulkAdditionalTreatment,
   createBulkTreatmentData,
   deleteAdditionalItem,
   deletePrescribedDrug,
+  getAdditionalItems,
+  getAdditionalTreatments,
+  getDrugsPrescribed,
   getOneAdditionalItem,
-  getOnePrescribedDrug,
   getOnePrescribedDrugWithoutJoins,
   getPatientTreatments,
   getPrescribedAdditionalItems,
@@ -12,6 +15,7 @@ import {
   prescribeBulkDrugs,
   prescribeDrug,
   syringeNeedleCalculation,
+  updateAdditionalItem,
   updatePrescribedDrug,
 } from './pharmacy-order.repository';
 import {
@@ -20,10 +24,12 @@ import {
   PrescribedDrugBody,
 } from './interface/prescribed-drug.body';
 import {
+  AdditionalTreatment,
   Admission,
   PatientTreatment,
   PrescribedAdditionalItem,
   PrescribedDrug,
+  SystemSettings,
 } from '../../../database/models';
 import PatientService from '../../Patient/patient.service';
 import VisitService from '../../Visit/visit.service';
@@ -39,10 +45,7 @@ import { getOneDefault } from '../../AdminSettings/admin.repository';
 import { DefaultType } from '../../../database/models/default';
 import { BadException } from '../../../common/util/api-error';
 import { CANNOT_DELETE_DRUG, INJECTION_SYRINGES_NOT_FOUND } from './messages/response-messages';
-import {
-  getInventoryItemByDrugId,
-  getInventoryItemQuery,
-} from '../../Inventory/inventory.repository';
+import { getInventoryItemQuery } from '../../Inventory/inventory.repository';
 import { getVisitById } from '../../Visit/visit.repository';
 import { getOneAdmission } from '../../Admission/admission.repository';
 import { NHISApprovalStatus } from '../../../core/helpers/general';
@@ -81,18 +84,24 @@ class PharmacyOrderService {
       }),
     ]);
 
+    //todo: Add check for daily NHIS drug quota
+    // const settings = await SystemSettings.findOne();
+    //TODO:
+    // check if drug is primary, check the drugs prescrined today and sum them
+    // check if sum of primary is higher than sum prescribed today
+
     const mappedPrescribedDrugs = await Promise.all(
       body.map(async data => {
         const { drug_type, drug_id, inventory_id, quantity_to_dispense, drug_group } = data;
-        const inventory = await getInventoryItemQuery({ inventory_id, drug_id });
-        const drugPrice = (await getDrugPrice(patient, drug_id)) * +quantity_to_dispense;
-        const totalPrice = +inventory.selling_price * +quantity_to_dispense;
+        const inventoryItem = await getInventoryItemQuery({ inventory_id, drug_id });
+        const drugPrice =
+          (await getDrugPrice(patient, drug_id, inventoryItem)) * +quantity_to_dispense;
 
         return {
           ...data,
           patient_id: patient.id,
           examiner: staff_id,
-          total_price: this.getTotalPrice(totalPrice, drugPrice, drug_type),
+          total_price: drugPrice,
           drug_prescription_id: drugPrescription.id,
           ...(drug_type === DrugType.NHIS && {
             nhis_status: NHISApprovalStatus.PENDING,
@@ -132,7 +141,7 @@ class PharmacyOrderService {
       quantity_to_dispense,
     } = body;
     const visit = await VisitService.getVisitById(visit_id);
-    const [drugPrescription, inventory, insurance, patient] = await Promise.all([
+    const [drugPrescription, inventoryItem, insurance, patient] = await Promise.all([
       this.getDrugPrescription(visit.patient_id, body),
       getInventoryItemQuery({ inventory_id, drug_id }),
       getPatientInsuranceQuery({
@@ -141,16 +150,13 @@ class PharmacyOrderService {
       }),
       PatientService.getPatientById(visit.patient_id),
     ]);
-    const drugPrice = (await getDrugPrice(patient, drug_id)) * +quantity_to_dispense;
-    const totalPrice = +inventory.selling_price * +quantity_to_dispense;
-
-    //todo: Add check for daily NHIS drug quota
+    const drugPrice = (await getDrugPrice(patient, drug_id, inventoryItem)) * +quantity_to_dispense;
 
     const prescribedDrug = await prescribeDrug({
       ...body,
       patient_id: patient.id,
       examiner: staff_id,
-      total_price: this.getTotalPrice(totalPrice, drugPrice, drug_type),
+      total_price: drugPrice,
       drug_prescription_id: drugPrescription.id,
       ...(drug_type === DrugType.NHIS && {
         nhis_status: NHISApprovalStatus.PENDING,
@@ -215,12 +221,14 @@ class PharmacyOrderService {
     const data = await Promise.all(
       body.map(async item => {
         const { drug_id, drug_type, quantity_to_dispense, price, inventory_id } = item;
-        const drugPrice = (await getDrugPrice(patient, drug_id)) * quantity_to_dispense;
+        const inventoryItem = await getInventoryItemQuery({ inventory_id, drug_id });
+        const drugPrice =
+          +(await getDrugPrice(patient, drug_id, inventoryItem)) * +quantity_to_dispense;
         const totalPrice = +price * +quantity_to_dispense;
 
         return {
           ...item,
-          total_price: this.getTotalPrice(totalPrice, drugPrice, drug_type),
+          total_price: drugPrice || totalPrice,
           quantity_prescribed: item.quantity_to_dispense,
           examiner: staffId,
           patient_id: patient.id,
@@ -246,6 +254,30 @@ class PharmacyOrderService {
    */
   static async updatePrescribedDrug(body: Partial<PrescribedDrug>): Promise<PrescribedDrug> {
     return updatePrescribedDrug(body);
+  }
+
+  /**
+   * update bulk prescribed drug
+   *
+   * @static
+   * @returns {Promise<PrescribedDrug>} json object with prescribed drug data
+   * @param body
+   * @memberOf PharmacyOrderService
+   */
+  static async updateBulkPrescribedDrug(body: Partial<PrescribedDrug>[]) {
+    return await Promise.all(body.map(async data => await updatePrescribedDrug(data)));
+  }
+
+  /**
+   * update bulk additional items
+   *
+   * @static
+   * @returns {Promise<PrescribedAdditionalItem>} json object with additional items data
+   * @param body
+   * @memberOf PharmacyOrderService
+   */
+  static async updateBulkAdditionalItems(body: Partial<PrescribedAdditionalItem>[]) {
+    return await Promise.all(body.map(async data => await updateAdditionalItem(data)));
   }
 
   /**
@@ -328,6 +360,30 @@ class PharmacyOrderService {
     }
 
     return getPrescribedAdditionalItems({ filter });
+  }
+
+  /**
+   * get prescribed drugs
+   *
+   * @static
+   * @returns {json} json object with prescribed drugs data
+   * @memberOf PharmacyOrderService
+   * @param visitId
+   */
+  static async getDrugsPrescribed(visitId: number) {
+    return getDrugsPrescribed({ visit_id: visitId });
+  }
+
+  /**
+   * get additional items
+   *
+   * @static
+   * @returns {json} json object with additional items data
+   * @memberOf PharmacyOrderService
+   * @param visitId
+   */
+  static async getAdditionalItems(visitId: number) {
+    return getAdditionalItems({ visit_id: visitId });
   }
 
   static getTotalPrice(totalPrice: number, hmoPrice: number, drug_type: DrugType) {
@@ -416,6 +472,55 @@ class PharmacyOrderService {
     }
 
     return getPatientTreatments({ filter });
+  }
+
+  /**
+   * create patient additional treatment data
+   *
+   * @static
+   * @returns {json} json object with patient additional treatment data
+   * @param body
+   * @param paramId
+   * @param staff_id
+   * @memberOf PharmacyOrderService
+   */
+  static async createAdditionalTreatment(
+    body: PatientTreatmentBody[],
+    paramId: number,
+    staff_id: number
+  ): Promise<AdditionalTreatment[]> {
+    const isAdmission = body?.[0].source === 'Admission';
+    const entityPromise = isAdmission ? getOneAdmission({ id: paramId }) : getVisitById(paramId);
+    const entity = await entityPromise;
+
+    const data = body.map(treatment => ({
+      ...treatment,
+      patient_id: isAdmission ? entity.patient_id : entity.patient_id,
+      date_entered: Date.now(),
+      visit_id: isAdmission ? (entity instanceof Admission ? entity?.visit_id : null) : entity.id,
+      staff_id,
+      admission_id: isAdmission ? entity.id : null,
+    }));
+
+    return createBulkAdditionalTreatment(data);
+  }
+
+  /**
+   * get patient additional treatments data
+   *
+   * @static
+   * @returns {json} json object with patient additional treatments data
+   * @param body
+   * @memberOf PharmacyOrderService
+   */
+  static async getAdditionalTreatments(body) {
+    const { currentPage, pageLimit, filter } = body;
+
+    if (Object.values(body).length) {
+      return getAdditionalTreatments({ currentPage, pageLimit, filter });
+    }
+
+    return getAdditionalTreatments({ filter });
   }
 
   private static drugPrescriptionData(

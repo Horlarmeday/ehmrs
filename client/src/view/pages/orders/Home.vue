@@ -42,17 +42,17 @@ export default {
       {
         name: 'Laboratory Tests Orders',
         desc: 'Click here to view all laboratory tests orders',
-        link: '/orders/laboratory',
+        link: '/laboratory/samples-to-collect',
       },
       {
         name: 'Pharmacy Orders',
         desc: 'Click here to view all pharmacy orders',
-        link: '/orders/laboratory',
+        link: '/pharmacy/prescriptions',
       },
       {
         name: 'Radiology Orders',
         desc: 'Click here to view all radiology orders',
-        link: '/orders/radiology',
+        link: '/radiology/requested-investigations',
       },
     ],
   }),

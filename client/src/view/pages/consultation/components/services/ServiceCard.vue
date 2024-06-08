@@ -29,6 +29,7 @@
                 :source="source"
                 :is="activeTab"
                 :filter="filter"
+                :insurance-name="insuranceName"
               />
             </div>
           </div>
@@ -75,6 +76,10 @@ export default {
     visible: {
       type: Boolean,
       default: true,
+    },
+    insuranceName: {
+      type: String,
+      required: false,
     },
   },
   components: { AccordionIcon, ServiceSidebar, Services },

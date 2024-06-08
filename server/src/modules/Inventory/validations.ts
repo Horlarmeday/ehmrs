@@ -13,7 +13,8 @@ export const validateCreateInventory = inventory => {
     accepted_drug_type: Joi.string().valid(
       AcceptedDrugType.NHIS,
       AcceptedDrugType.BOTH,
-      AcceptedDrugType.CASH
+      AcceptedDrugType.CASH,
+      AcceptedDrugType.PRIVATE
     ),
   });
   return schema.validate(inventory);

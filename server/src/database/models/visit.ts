@@ -151,6 +151,11 @@ export class Visit extends Model {
   })
   immunization_id: number;
 
+  @Column({
+    type: DataType.INTEGER,
+  })
+  consultation_id: number;
+
   @BelongsTo(() => Staff)
   staff: Staff;
 
