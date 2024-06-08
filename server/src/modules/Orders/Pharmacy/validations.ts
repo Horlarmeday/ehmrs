@@ -12,6 +12,9 @@ export function validateOrderAdditionalItems(item: any) {
         price: Joi.number().required(),
         unit_id: Joi.number().required(),
         name: Joi.string(),
+        quantity_remaining: Joi.number()
+          .allow('')
+          .optional(),
         drug_form: Joi.string()
           .valid(DrugForm.DRUG, DrugForm.CONSUMABLE)
           .required(),
