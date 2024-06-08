@@ -12,15 +12,7 @@
       <div class="login-aside d-flex flex-column flex-row-auto" style="background-color: #D3E4FE;">
         <div class="d-flex flex-column-auto flex-column pt-lg-40 pt-15">
           <a href="#" class="text-center mb-10">
-            <img
-              v-if="!imageError"
-              alt="Pic"
-              class="max-h-120px"
-              :src="imageUrl()"
-              @load="handleImageLoad"
-              @error="handleImageError"
-            />
-            <img v-else src="/media/logos/logo-letter-1.png" class="max-h-70px" alt="" />
+            <img src="/media/logos/ms.png" width="90" alt="" />
           </a>
           <h3
             class="font-weight-bolder text-center font-size-h4 font-size-h1-lg"
