@@ -6,10 +6,12 @@ import { VisitCategory, VisitStatus } from '../../../../database/models/visit';
 import dayjs from 'dayjs';
 import { DischargeStatus } from '../../../../database/models/admission';
 
-const isInLast3Days = date => {
-  const now = dayjs();
-  const dateToCompare = dayjs(date);
-  return dateToCompare.isAfter(now.subtract(1, 'day')) && dateToCompare.isBefore(now.add(1, 'day'));
+const insertIntoJSON = invalidAdmissions => {
+  const jsonContent = JSON.stringify(invalidAdmissions, null, 2);
+  const filePath = path.join(__dirname, '../../../../public/ehmrs_today/invalidAdmissions.json');
+  // Write JSON content to a file
+  fs.writeFileSync(filePath, jsonContent);
+  logger.info('File has been saved.');
 };
 
 const createVisit = async (admission, patient: Patient) => {
@@ -34,6 +36,7 @@ const createVisit = async (admission, patient: Patient) => {
   });
 };
 
+const invalidAdmissions = [];
 const mapAdmissionData = async admission => {
   const patientId = admission?.patient_id || admission?.dependant_id;
   const patientType = admission?.patient_id ? 'Patient' : 'Dependant';
@@ -43,12 +46,18 @@ const mapAdmissionData = async admission => {
     where: { old_patient_id: patientId, patient_type: patientType },
   });
 
-  if (!patient) return;
+  if (!patient) {
+    invalidAdmissions.push({ ...admission, reason: 'Patient not found' });
+    return;
+  }
 
   const isExists = await Admission.findOne({
     where: { patient_id: patient.id, ward_id: admission?.ward_id, bed_id: admission?.bed_id },
   });
-  if (isExists) return;
+  if (isExists) {
+    invalidAdmissions.push({ ...admission, reason: 'Patient already on admission' });
+    return;
+  }
 
   if (patient?.has_insurance) {
     patientInsurance = await PatientInsurance.findOne({ where: { patient_id: patient.id } });
@@ -96,6 +105,7 @@ const insertAdmission = async admission => {
       );
     }
   } catch (e) {
+    invalidAdmissions.push({ ...admission, reason: `Error, ${e?.message}` });
     console.error(e);
   }
 };
@@ -120,6 +130,7 @@ export const migrateAdmissions = async () => {
       // });
       logger.info(message('Successfully migrated all visits data'));
     }
+    insertIntoJSON(invalidAdmissions);
   } catch (e) {
     throw new Error(e);
   }
