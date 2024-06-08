@@ -63,7 +63,7 @@ const Jobs = {
   // [JobName.MIGRATE_TRIAGES]: migrateTriages,
   // // [JobName.MIGRATE_DRUGS]: migrateDrugs,
   // // [JobName.MIGRATE_INVESTIGATIONS]: migrateInvestigations,
-  // [JobName.MIGRATE_ADMISSIONS]: migrateAdmissions,
+  [JobName.MIGRATE_ADMISSIONS]: migrateAdmissions,
   // [JobName.MIGRATE_PRESCRIBED_INVESTIGATIONS]: migratePrescribedInvestigations,
   // [JobName.MIGRATE_PRESCRIBED_SERVICES]: migratePrescribedServices,
   // [JobName.MIGRATE_PRESCRIBED_TESTS]: migratePrescribedTests,
