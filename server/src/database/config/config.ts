@@ -4,8 +4,9 @@ import * as models from '../models';
 import { logger } from '../../core/helpers/logger';
 
 const env = process.env.NODE_ENV || 'development';
-const { host, dialect, password, username, database } = DBConfig[env];
+const { host, dialect, password, username, database, port } = DBConfig[env];
 const sequelizeConnection = new Sequelize(database, username, password, {
+  port,
   host,
   dialect,
   models: Object.values(models),
