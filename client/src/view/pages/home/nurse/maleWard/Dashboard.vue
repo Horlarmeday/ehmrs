@@ -1,17 +1,6 @@
 <template>
   <div>
-    <div
-      class="alert alert-shadow shadow-sm alert-custom alert-notice alert-light-warning fade show"
-      role="alert"
-    >
-      <div class="alert-icon"><i class="flaticon-warning"></i></div>
-      <div class="alert-text">A simple primary alert—check it out!</div>
-      <div class="alert-close">
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-          <span aria-hidden="true"><i class="ki ki-close"></i></span>
-        </button>
-      </div>
-    </div>
+    <discharge-recommendation-card v-if="recommendedCount" :recommended-count="recommendedCount" />
     <!--Begin::Row-->
     <div class="row">
       <div class="col-xl-3" v-for="(route, index) in routes" :key="index">
@@ -40,13 +29,34 @@
 </template>
 <script>
 import items from './dashboardItems';
+import DischargeRecommendationCard from '@/view/pages/visits/components/cards/DischargeRecommendationCard.vue';
 export default {
+  components: { DischargeRecommendationCard },
   data: () => ({
     routes: items,
+    recommendedCount: 0,
+    MALE: 'Male',
+    ALL: 'All',
   }),
+  created() {
+    this.getRecommendedDischarges();
+  },
   methods: {
     openPage(route) {
       this.$router.push(route);
+    },
+    getRecommendedDischarges() {
+      this.$store.dispatch('admission/fetchRecommendedDischarges').then(response => {
+        const discharges = response.data.data;
+        const recommendedDischarges = discharges.filter(discharge => {
+          return (
+            discharge.ward.occupant_type === this.MALE || discharge.ward.occupant_type === this.ALL
+          );
+        });
+        localStorage.setItem('recommendedDischarges', JSON.stringify(recommendedDischarges));
+        this.$store.commit('admission/SET_RECOMMENDED_DISCHARGES', recommendedDischarges);
+        this.recommendedCount = recommendedDischarges?.length;
+      });
     },
   },
 };

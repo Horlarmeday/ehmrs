@@ -27,7 +27,6 @@
             style="color: #000;"
           >
             {{ settings?.name_of_organization }}
-            <br />Resource System
           </h3>
         </div>
         <div
