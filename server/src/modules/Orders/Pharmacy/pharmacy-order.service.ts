@@ -29,16 +29,11 @@ import {
   PatientTreatment,
   PrescribedAdditionalItem,
   PrescribedDrug,
-  SystemSettings,
 } from '../../../database/models';
 import PatientService from '../../Patient/patient.service';
 import VisitService from '../../Visit/visit.service';
 import { DrugType } from '../../../database/models/pharmacyStore';
-import {
-  createDrugPrescription,
-  getDrugPrice,
-  getLastDrugPrescription,
-} from '../../Pharmacy/pharmacy.repository';
+import { createDrugPrescription, getDrugPrice, getLastDrugPrescription } from '../../Pharmacy/pharmacy.repository';
 import { isToday, StatusCodes } from '../../../core/helpers/helper';
 import { DrugStatus } from '../../../database/models/drugPrescription';
 import { getOneDefault } from '../../AdminSettings/admin.repository';
@@ -101,7 +96,7 @@ class PharmacyOrderService {
           ...data,
           patient_id: patient.id,
           examiner: staff_id,
-          total_price: drugPrice,
+          total_price: drug_type === DrugType.NHIS ? drugPrice * 0.1 : drugPrice,
           drug_prescription_id: drugPrescription.id,
           ...(drug_type === DrugType.NHIS && {
             nhis_status: NHISApprovalStatus.PENDING,
@@ -156,7 +151,7 @@ class PharmacyOrderService {
       ...body,
       patient_id: patient.id,
       examiner: staff_id,
-      total_price: drugPrice,
+      total_price: drug_type === DrugType.NHIS ? drugPrice * 0.1 : drugPrice,
       drug_prescription_id: drugPrescription.id,
       ...(drug_type === DrugType.NHIS && {
         nhis_status: NHISApprovalStatus.PENDING,
@@ -228,7 +223,7 @@ class PharmacyOrderService {
 
         return {
           ...item,
-          total_price: drugPrice || totalPrice,
+          total_price: drug_type === DrugType.NHIS ? drugPrice * 0.1 : drugPrice || totalPrice,
           quantity_prescribed: item.quantity_to_dispense,
           examiner: staffId,
           patient_id: patient.id,

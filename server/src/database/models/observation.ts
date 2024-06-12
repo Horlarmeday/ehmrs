@@ -133,6 +133,11 @@ export class Observation extends Model {
   })
   comment: string;
 
+  @Column({
+    type: DataType.TEXT,
+  })
+  observation: string;
+
   @ForeignKey(() => Staff)
   @Column({
     type: DataType.INTEGER,
