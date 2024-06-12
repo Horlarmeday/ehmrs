@@ -81,7 +81,7 @@
         :total="queriedItems"
         :per-page="perPage"
         :current-page="currentPage"
-        @pagechanged="handlePageChange"
+        @pagechanged="onPageChange"
         @changepagecount="onChangePageCount"
       />
     </div>
@@ -156,7 +156,7 @@ export default {
           currentPage: 1,
           itemsPerPage: vm.$route.query.itemsPerPage || vm.itemsPerPage,
           search,
-          ...(this.filter && { filter: { occupant_type: this.filter } }),
+          ...(vm.filter && { filter: { occupant_type: vm.filter } }),
         })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));

@@ -80,11 +80,6 @@
                 <a
                   title="Add Authorization Code"
                   v-b-tooltip.hover
-                  :class="
-                    investigation.investigation.type === PRIMARY || investigation.auth_code
-                      ? DISABLED
-                      : ''
-                  "
                   href="#"
                   class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
                   @click="addAuthCode(investigation)"
@@ -94,7 +89,6 @@
                 <a
                   title="Approve"
                   v-b-tooltip.hover
-                  :class="investigation.nhis_status !== PENDING && DISABLED"
                   href="#"
                   class="btn btn-icon btn-light btn-hover-success btn-sm mr-2"
                   @click="showDischargeAlert('Approved', investigation.id)"
@@ -104,7 +98,6 @@
                 <a
                   title="Decline"
                   v-b-tooltip.hover
-                  :class="investigation.nhis_status !== PENDING && DISABLED"
                   href="#"
                   class="btn btn-icon btn-light btn-hover-danger btn-sm"
                   @click="showDischargeAlert('Declined', investigation.id)"

@@ -106,7 +106,7 @@ export default {
           currentPage: 1,
           itemsPerPage: vm.$route.query.itemsPerPage || vm.itemsPerPage,
           search,
-          ...(this.filter && { filter: this.filter }),
+          ...(vm.filter && { filter: vm.filter }),
         })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));

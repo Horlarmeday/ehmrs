@@ -184,6 +184,7 @@ export default {
       const obj = {
         prescription_id: prescription.id,
         quantity_to_return: prescription.quantity_to_return,
+        reason_for_return: prescription.reason_for_return,
       };
 
       const submitButton = this.$refs['kt_return_submit'][i];

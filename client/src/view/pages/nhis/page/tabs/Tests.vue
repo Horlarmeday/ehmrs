@@ -73,7 +73,6 @@
                 <a
                   title="Add Authorization Code"
                   v-b-tooltip.hover
-                  :class="test.test.type === PRIMARY || test.auth_code ? DISABLED : ''"
                   href="#"
                   class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
                   @click="addAuthCode(test)"
@@ -83,7 +82,6 @@
                 <a
                   title="Approve"
                   v-b-tooltip.hover
-                  :class="test.nhis_status !== PENDING && DISABLED"
                   href="#"
                   class="btn btn-icon btn-light btn-hover-success btn-sm mr-2"
                   @click="showDischargeAlert('Approved', test.id)"
@@ -93,7 +91,6 @@
                 <a
                   title="Decline"
                   v-b-tooltip.hover
-                  :class="test.nhis_status !== PENDING && DISABLED"
                   href="#"
                   class="btn btn-icon btn-light btn-hover-danger btn-sm"
                   @click="showDischargeAlert('Declined', test.id)"

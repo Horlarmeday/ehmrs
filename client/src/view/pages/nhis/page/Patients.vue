@@ -193,7 +193,7 @@ export default {
           currentPage: 1,
           itemsPerPage: vm.$route.query.itemsPerPage || vm.itemsPerPage,
           search,
-          filter: this.filter,
+          filter: vm.filter,
         })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));
@@ -224,6 +224,7 @@ export default {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: count,
+        search: this.$route.query.search,
       });
       this.fetchQueue({
         currentPage: this.$route.query.currentPage || this.currentPage,

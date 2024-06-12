@@ -64,7 +64,6 @@
                 <a
                   title="Add Authorization Code"
                   v-b-tooltip.hover
-                  :class="service.service.type === PRIMARY || service.auth_code ? DISABLED : ''"
                   href="#"
                   class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
                   @click="addAuthCode(service)"
@@ -74,7 +73,6 @@
                 <a
                   title="Approve"
                   v-b-tooltip.hover
-                  :class="service.nhis_status !== PENDING && DISABLED"
                   href="#"
                   class="btn btn-icon btn-light btn-hover-success btn-sm mr-2"
                   @click="showDischargeAlert('Approved', service.id)"
@@ -84,7 +82,6 @@
                 <a
                   title="Decline"
                   v-b-tooltip.hover
-                  :class="service.nhis_status !== PENDING && DISABLED"
                   href="#"
                   class="btn btn-icon btn-light btn-hover-danger btn-sm"
                   @click="showDischargeAlert('Declined', service.id)"

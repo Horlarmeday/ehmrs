@@ -55,7 +55,7 @@ export async function processSnappedPhoto(param: string, patient: string): Promi
 
   if (process.env.NODE_ENV === DEVELOPMENT) {
     filepath = `src/public/images/${fileName}`;
-  } else filepath = `server/src/public/images/${fileName}`;
+  } else filepath = `ehmrs-api/public/images/${fileName}`;
   try {
     await writeFile(filepath, imageBuffer, 'utf8');
     return fileName;

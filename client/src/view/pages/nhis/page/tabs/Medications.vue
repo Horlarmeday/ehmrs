@@ -82,7 +82,6 @@
                 <a
                   title="Add Authorization Code"
                   v-b-tooltip.hover
-                  :class="drug.drug_group === PRIMARY || drug.auth_code ? DISABLED : ''"
                   href="#"
                   class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
                   @click="addAuthCode(drug)"
@@ -92,7 +91,6 @@
                 <a
                   title="Approve"
                   v-b-tooltip.hover
-                  :class="drug.nhis_status !== PENDING && DISABLED"
                   href="#"
                   class="btn btn-icon btn-light btn-hover-success btn-sm mr-2"
                   @click="showDischargeAlert('Approved', drug.id)"
@@ -102,7 +100,6 @@
                 <a
                   title="Decline"
                   v-b-tooltip.hover
-                  :class="drug.nhis_status !== PENDING && DISABLED"
                   href="#"
                   class="btn btn-icon btn-light btn-hover-danger btn-sm"
                   @click="showDischargeAlert('Declined', drug.id)"

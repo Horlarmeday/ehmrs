@@ -225,6 +225,7 @@ export default {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
+        search: this.patient_name,
       });
       this.fetchPatients({
         currentPage: this.$route.query.currentPage,
@@ -244,6 +245,7 @@ export default {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: count,
+        search: this.patient_name,
       });
       this.fetchPatients({
         currentPage: this.$route.query.currentPage,
