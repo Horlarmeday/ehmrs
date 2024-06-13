@@ -15,7 +15,6 @@
               label="fullname"
               v-model="patient"
               :options="patients"
-              @input="getPatient"
               :reduce="
                 patients => ({
                   fullname: patients.fullname,
@@ -37,7 +36,7 @@
           <patient-banner v-if="patient" :patient="patient" />
         </transition>
         <transition name="fade-in-up">
-          <div v-if="patient && !isInvalidAge">
+          <div v-if="patient">
             <div class="form-group row">
               <div class="col-lg-4">
                 <label>Birth Weight</label>
@@ -195,7 +194,7 @@
 
 <script>
 import vSelect from 'vue-select';
-import { calculateAge, debounce, parseJwt } from '@/common/common';
+import { debounce, parseJwt } from '@/common/common';
 import PatientBanner from '@/view/pages/programs/components/PatientBanner.vue';
 import Swal from 'sweetalert2';
 import SectionTitle from '@/utils/SectionTitle.vue';
@@ -386,11 +385,6 @@ export default {
 
     removeChild(index) {
       this.children.splice(index, 1);
-    },
-
-    getPatient(patient) {
-      const age = calculateAge(patient.date_of_birth);
-      this.isInvalidAge = age > 2;
     },
   },
   created() {

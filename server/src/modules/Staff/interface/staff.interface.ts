@@ -27,6 +27,7 @@ export class StaffQueryParam {
   currentPage?: number;
   pageLimit?: number;
   search?: string;
+  filter?: string;
 }
 
 export type JwtTokenType = {

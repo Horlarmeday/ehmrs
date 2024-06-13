@@ -259,6 +259,11 @@ const sub_roles = [
     sub: 'Theater',
     role_id: 2,
   },
+  {
+    id: 16,
+    sub: 'VIP/Private',
+    role_id: 2,
+  },
 ];
 
 function getRolesById(id) {

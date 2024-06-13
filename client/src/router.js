@@ -1152,6 +1152,29 @@ const router = new Router({
           ],
         },
         {
+          path: '/nurses',
+          name: 'nurses-module',
+          component: () => import('@/view/pages/nurse/Nurse.vue'),
+          children: [
+            {
+              path: 'list',
+              name: 'nurses-list',
+              component: () => import('@/view/pages/nurse/NursesList.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'change-department/:id',
+              name: 'nurses-change-department',
+              component: () => import('@/view/pages/nurse/ChangeDepartment.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+          ],
+        },
+        {
           path: '/account',
           name: 'account-module',
           component: () => import('@/view/pages/account/Account.vue'),

@@ -51,16 +51,16 @@ class StaffService {
    * @memberOf StaffService
    */
   static async getStaffs(body: StaffQueryParam) {
-    const { currentPage, pageLimit, search } = body;
+    const { currentPage, pageLimit, search, filter } = body;
     if (search) {
-      return searchStaffs(+currentPage, +pageLimit, search);
+      return searchStaffs({ currentPage, pageLimit, search, filter });
     }
 
     if (Object.values(body).length) {
-      return getStaffs(+currentPage, +pageLimit);
+      return getStaffs({ currentPage, pageLimit, filter });
     }
 
-    return getStaffs();
+    return getStaffs({ filter });
   }
 
   /**

@@ -34,6 +34,8 @@ import NHIS from './nhis/Dashboard.vue';
 import CustomerCare from './reception/Dashboard.vue';
 import Theater from './nurse/theater/Dashboard.vue';
 import FinancialOfficer from './financeOfficer/Dashboard.vue';
+import HODNurse from './nurse/hod/Dashboard.vue';
+import Emergency from './nurse/emergency/Dashboard.vue';
 import { parseJwt } from '@/common/common';
 
 const Roles = {
@@ -69,6 +71,8 @@ const SubRoles = {
   MATERNITY: 'Maternity',
   ANTENATAL: 'ANC',
   THEATER: 'Theater',
+  HOD: 'HOD',
+  EMERGENCY: 'Accident & Emergency',
 };
 export default {
   data: () => ({
@@ -145,6 +149,10 @@ export default {
           return (this.dashboardComponent = Antenatal);
         case SubRoles.THEATER:
           return (this.dashboardComponent = Theater);
+        case SubRoles.HOD:
+          return (this.dashboardComponent = HODNurse);
+        case SubRoles.EMERGENCY:
+          return (this.dashboardComponent = Emergency);
       }
     },
   },

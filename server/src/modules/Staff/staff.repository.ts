@@ -100,7 +100,7 @@ export async function getStaffById(id: number) {
  * @param data
  */
 export async function updateStaff(data) {
-  const staff = await getStaffById(data.staff_id);
+  const staff = await getStaffById(data.id);
   return staff.update(data);
 }
 
@@ -111,13 +111,19 @@ export async function updateStaff(data) {
  * @returns {json} json object with staffs data
  * @param currentPage
  * @param pageLimit
+ * @param filter
  */
-export async function getStaffs(currentPage = 1, pageLimit = 10) {
+export async function getStaffs({ currentPage = 1, pageLimit = 10, filter }) {
   return Staff.paginate({
-    page: currentPage,
-    paginate: pageLimit,
+    page: +currentPage,
+    paginate: +pageLimit,
     order: [['createdAt', 'DESC']],
     attributes: { exclude: ['password'] },
+    ...(filter && {
+      where: {
+        ...(filter && { ...JSON.parse(filter) }),
+      },
+    }),
   });
 }
 
@@ -129,14 +135,21 @@ export async function getStaffs(currentPage = 1, pageLimit = 10) {
  * @param currentPage
  * @param pageLimit
  * @param search
+ * @param filter
  */
-export async function searchStaffs(currentPage = 1, pageLimit = 10, search) {
+export async function searchStaffs({
+  currentPage = 1,
+  pageLimit = 10,
+  search,
+  filter = null,
+}) {
   return Staff.paginate({
-    page: currentPage,
-    paginate: pageLimit,
+    page: +currentPage,
+    paginate: +pageLimit,
     order: [['createdAt', 'DESC']],
     attributes: { exclude: ['password'] },
     where: {
+      ...(filter && { ...JSON.parse(filter) }),
       [Op.or]: [
         {
           firstname: {

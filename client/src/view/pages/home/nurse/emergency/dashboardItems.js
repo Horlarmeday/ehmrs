@@ -1,6 +1,6 @@
 export default [
   {
-    url: '/visit/admitted-patients?occupantType=Children',
+    url: '/visit/admitted-patients?occupantType=Emergency',
     icon: 'fas fa-bed',
     name: 'Admitted Patients',
   },
@@ -8,11 +8,6 @@ export default [
     url: '/admission/discharge-patients',
     icon: 'fas far fa-smile',
     name: 'Discharge Records',
-  },
-  {
-    url: '/program/ante-natal/list',
-    icon: 'flaticon-users-1',
-    name: 'Antenatal Patients',
   },
   {
     url: '/reports/active',
