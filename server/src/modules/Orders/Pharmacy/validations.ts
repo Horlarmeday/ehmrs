@@ -18,7 +18,12 @@ export function validateOrderAdditionalItems(item: any) {
         drug_form: Joi.string()
           .valid(DrugForm.DRUG, DrugForm.CONSUMABLE)
           .required(),
-        drug_type: Joi.string().valid(DrugType.CASH, DrugType.NHIS, DrugType.PRIVATE),
+        drug_type: Joi.string().valid(
+          DrugType.CASH,
+          DrugType.NHIS,
+          DrugType.PRIVATE,
+          DrugType.RETAINERSHIP
+        ),
         source: Joi.string().valid('Antenatal', 'Consultation', 'Theater'),
         ante_natal_id: Joi.number()
           .allow('')
@@ -60,7 +65,12 @@ export function validateDrugPrescription(drug: any) {
       .allow(''),
     total_price: Joi.number().required(),
     drug_id: Joi.number().required(),
-    drug_type: Joi.string().valid(DrugType.CASH, DrugType.NHIS, DrugType.PRIVATE),
+    drug_type: Joi.string().valid(
+      DrugType.CASH,
+      DrugType.NHIS,
+      DrugType.PRIVATE,
+      DrugType.RETAINERSHIP
+    ),
     source: Joi.string().valid('Antenatal', 'Consultation', 'Immunization', 'Theater'),
     ante_natal_id: Joi.number()
       .optional()
@@ -105,7 +115,12 @@ export function validateBulkDrugsPrescription(drug: any) {
           .allow(''),
         total_price: Joi.number().required(),
         drug_id: Joi.number().required(),
-        drug_type: Joi.string().valid(DrugType.CASH, DrugType.NHIS, DrugType.PRIVATE),
+        drug_type: Joi.string().valid(
+          DrugType.CASH,
+          DrugType.NHIS,
+          DrugType.PRIVATE,
+          DrugType.RETAINERSHIP
+        ),
         source: Joi.string().valid('Antenatal', 'Consultation', 'Immunization', 'Theater'),
         ante_natal_id: Joi.number()
           .optional()

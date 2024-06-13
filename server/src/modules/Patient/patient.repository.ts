@@ -127,6 +127,13 @@ export const addPatientInsurance = async data => {
     });
     if (patientInsurance) throw new BadException('Exist', 400, PATIENT_HAS_INSURANCE);
 
+    await PatientInsurance.update(
+      {
+        is_default: false,
+      },
+      { where: { patient_id } }
+    );
+
     const insurance = await PatientInsurance.create(
       {
         insurance_id,
@@ -136,6 +143,7 @@ export const addPatientInsurance = async data => {
         enrollee_code,
         organization,
         patient_id,
+        is_default: true,
       },
       { transaction: t }
     );
@@ -161,6 +169,7 @@ export const addPatientInsurance = async data => {
               enrollee_code,
               organization,
               patient_id: dependant.id,
+              is_default: true,
             },
             { transaction: t }
           );
@@ -221,7 +230,7 @@ export async function createEmergencyPatient(data) {
  * @returns {object} return patient data
  */
 export async function findDependantByEnrolleeCode(data) {
-  return Patient.findOne({ where: { enrollee_code: data } });
+  return PatientInsurance.findOne({ where: { enrollee_code: data } });
 }
 
 /**
@@ -239,7 +248,6 @@ export async function createDependant(data) {
     hmo_id,
     date_of_birth,
     address,
-    enrollee_code,
     photo,
     relationship,
     plan,
@@ -258,7 +266,6 @@ export async function createDependant(data) {
     hmo_id,
     date_of_birth,
     address,
-    enrollee_code,
     photo,
     relationship,
     plan,

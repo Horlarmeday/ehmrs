@@ -489,7 +489,7 @@ export default {
         FHSS: 'NHIS',
         NHIS: 'NHIS',
         PHIS: 'Private',
-        Retainership: 'Retainership',
+        Retainership: 'Cash',
       };
       return insuranceMapping[insuranceName] || 'Cash';
     },

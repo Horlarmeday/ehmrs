@@ -451,7 +451,7 @@ export default {
     getHMOs() {
       this.$store.dispatch('insurance/fetchHMOs', {
         currentPage: 1,
-        itemsPerPage: 25,
+        itemsPerPage: 200,
         filter: this.insurance_id,
       });
     },

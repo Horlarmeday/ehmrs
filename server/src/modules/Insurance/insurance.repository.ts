@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { GroupedCountResultItem, Op, WhereOptions } from 'sequelize';
+import { Op, WhereOptions } from 'sequelize';
 
 import { Insurance, HMO, PatientInsurance } from '../../database/models';
 

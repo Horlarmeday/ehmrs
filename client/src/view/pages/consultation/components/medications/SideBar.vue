@@ -479,7 +479,7 @@ export default {
       const types = ['FHSS', 'NHIS'];
       if (types.includes(insuranceName)) return 'NHIS';
       if (insuranceName === 'PHIS') return 'Private';
-      return 'NHIS';
+      return 'Cash';
     },
 
     drugData() {
