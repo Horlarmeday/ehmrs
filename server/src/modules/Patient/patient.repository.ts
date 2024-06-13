@@ -352,6 +352,11 @@ export async function getPatients({
             },
           },
           {
+            complete_name: {
+              [Op.like]: `%${search}%`,
+            },
+          },
+          {
             phone: {
               [Op.like]: `%${search}%`,
             },

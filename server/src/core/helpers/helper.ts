@@ -36,6 +36,7 @@ export const patientAttributes = [
   'id',
   'has_insurance',
   'date_of_birth',
+  'complete_name',
 ];
 
 /**

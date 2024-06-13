@@ -470,6 +470,11 @@ export const getDrugPrescriptions = async ({
                   [Op.like]: `%${search}%`,
                 },
               },
+              {
+                complete_name: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
             ],
           }),
         },

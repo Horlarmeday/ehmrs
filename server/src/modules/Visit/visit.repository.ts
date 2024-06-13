@@ -21,6 +21,7 @@ export const patientAttributes = [
   'id',
   'has_insurance',
   'date_of_birth',
+  'complete_name',
 ];
 
 /**
@@ -189,6 +190,11 @@ export async function searchActiveVisits({
                 [Op.like]: `%${search}%`,
               },
             },
+            {
+              complete_name: {
+                [Op.like]: `%${search}%`,
+              },
+            },
           ],
         },
       },
@@ -269,6 +275,11 @@ export async function searchVisits({
             },
             {
               lastname: {
+                [Op.like]: `%${search}%`,
+              },
+            },
+            {
+              complete_name: {
                 [Op.like]: `%${search}%`,
               },
             },
@@ -398,6 +409,11 @@ export async function searchCategoryVisits({
                 [Op.like]: `%${search}%`,
               },
             },
+            {
+              complete_name: {
+                [Op.like]: `%${search}%`,
+              },
+            },
           ],
         },
       },
@@ -507,6 +523,11 @@ export const getProfessionalAssignedVisits = async ({
               },
               {
                 hospital_id: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+              {
+                complete_name: {
                   [Op.like]: `%${search}%`,
                 },
               },

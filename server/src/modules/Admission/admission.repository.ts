@@ -325,6 +325,11 @@ export const getAdmittedPatients = async ({
                   [Op.like]: `%${search}%`,
                 },
               },
+              {
+                complete_name: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
             ],
           }),
         },
@@ -392,6 +397,11 @@ export const getAntenatalAdmittedPatients = async ({
               },
               {
                 hospital_id: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+              {
+                complete_name: {
                   [Op.like]: `%${search}%`,
                 },
               },
@@ -766,6 +776,11 @@ export const getDischargeRecords = async ({
               },
               {
                 hospital_id: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+              {
+                complete_name: {
                   [Op.like]: `%${search}%`,
                 },
               },

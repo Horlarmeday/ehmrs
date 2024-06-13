@@ -236,6 +236,11 @@ export class Patient extends Model {
   })
   old_patient_id?: number;
 
+  @Column({
+    type: DataType.TEXT,
+  })
+  complete_name?: string;
+
   @Column(DataType.VIRTUAL)
   get fullname(): unknown {
     return `${this.getDataValue('firstname')} ${this.getDataValue('middlename') ||

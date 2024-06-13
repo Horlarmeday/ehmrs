@@ -380,6 +380,11 @@ export const getSamplesToCollect = async ({
                   [Op.like]: `%${search}%`,
                 },
               },
+              {
+                complete_name: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
             ],
           }),
         },
@@ -490,6 +495,11 @@ export const getCollectedSamples = async ({
               },
               {
                 hospital_id: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+              {
+                complete_name: {
                   [Op.like]: `%${search}%`,
                 },
               },
@@ -744,6 +754,11 @@ export const getTestResults = async ({
               [Op.like]: `%${search}%`,
             },
           },
+          {
+            '$patient.complete_name$': {
+              [Op.like]: `%${search}%`,
+            },
+          },
         ],
       }),
       ...(start && end && dateIntervalQuery('date_sample_received', start, end)),
@@ -839,6 +854,11 @@ export const getVerifiedTestResults = async ({
         },
         {
           '$patient.hospital_id$': {
+            [Op.like]: `%${search}%`,
+          },
+        },
+        {
+          '$patient.complete_name$': {
             [Op.like]: `%${search}%`,
           },
         },
