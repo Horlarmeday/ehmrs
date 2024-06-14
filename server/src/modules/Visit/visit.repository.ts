@@ -17,6 +17,7 @@ export const patientAttributes = [
   'photo_url',
   'firstname',
   'lastname',
+  'middlename',
   'gender',
   'id',
   'has_insurance',
@@ -97,17 +98,7 @@ export async function getVisit(id: number) {
     include: [
       {
         model: Patient,
-        attributes: [
-          'fullname',
-          'firstname',
-          'lastname',
-          'date_of_birth',
-          'photo',
-          'photo_url',
-          'gender',
-          'hospital_id',
-          'has_insurance',
-        ],
+        attributes: patientAttributes,
       },
     ],
   });

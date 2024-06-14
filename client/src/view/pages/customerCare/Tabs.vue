@@ -25,7 +25,7 @@
             <div class="ml-auto">
               <button
                 @click="sendForReviewAlert"
-                :disabled="isDisabled || !shouldSendForReview"
+                :disabled="isDisabled"
                 ref="kt-sendForReview-submit"
                 class="text-center btn btn-md btn-primary"
               >

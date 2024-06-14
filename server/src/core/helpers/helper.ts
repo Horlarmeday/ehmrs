@@ -32,6 +32,7 @@ export const patientAttributes = [
   'photo_url',
   'firstname',
   'lastname',
+  'middlename',
   'gender',
   'id',
   'has_insurance',
