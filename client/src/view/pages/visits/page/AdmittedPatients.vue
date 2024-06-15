@@ -66,7 +66,7 @@
               </td>
               <td class="text-right pr-0">
                 <router-link
-                  :to="`/admission/operations/${admission.id}`"
+                  :to="getRouteLink(admission)"
                   class="btn btn-icon btn-light btn-hover-primary btn-sm"
                 >
                   <ArrowRightIcon />
@@ -93,6 +93,7 @@ import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
 import dayjs from 'dayjs';
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
 import Pagination from '@/utils/Pagination.vue';
+import { parseJwt } from '@/core/plugins/parseJwt';
 
 export default {
   components: { Pagination, ArrowRightIcon, Search },
@@ -102,6 +103,7 @@ export default {
     loading: false,
     start: null,
     end: null,
+    currentUser: parseJwt(localStorage.getItem('user_token')),
   }),
   computed: {
     admissions() {
@@ -121,6 +123,11 @@ export default {
     },
   },
   methods: {
+    getRouteLink(admission) {
+      if (this.currentUser.role === 'Nurse') return `/admission/operations/${admission.id}`;
+      return `/consultation/${admission.visit_id}`;
+    },
+
     handlePageChange() {
       setUrlQueryParams({
         currentPage: this.currentPage,

@@ -8,10 +8,7 @@
               class="d-flex align-items-center justify-content-between p-4 flex-lg-wrap flex-xl-nowrap"
             >
               <div class="d-flex flex-column mr-5">
-                <router-link
-                  :to="`${route.link}${routeId}`"
-                  class="h4 text-dark text-hover-primary mb-5"
-                >
+                <router-link :to="getRouteLink(route)" class="h4 text-dark text-hover-primary mb-5">
                   {{ route.name }}
                 </router-link>
                 <p class="text-dark-50">
@@ -20,7 +17,7 @@
               </div>
               <div class="ml-6 ml-lg-0 ml-xxl-6 flex-shrink-0">
                 <router-link
-                  :to="`${route.link}${routeId}`"
+                  :to="getRouteLink(route)"
                   class="btn font-weight-bolder text-uppercase btn-light-primary py-4 px-6"
                 >
                   View
@@ -107,10 +104,17 @@ export default {
         desc: 'Add delivery information',
         showComponent: false,
       },
+      {
+        name: 'Ante-natal',
+        link: '/program/ante-natal/visit/',
+        desc: 'View antenatal records',
+        showComponent: false,
+      },
     ],
     MATERNITY: 'Maternity',
     POST_NATAL: 'Post Natal',
     DELIVERY: 'Delivery',
+    ANTE_NATAL: 'Ante-natal',
     FEMALE: 'Female',
   }),
   computed: {
@@ -122,18 +126,30 @@ export default {
       return this.$store.state.admission.admission;
     },
   },
+  methods: {
+    getRouteLink(route) {
+      if (route.name !== this.ANTE_NATAL) {
+        return route.link + this.$route.params.id;
+      }
+      return route.link + `${this.admission?.visit_id}?antenatal=${this.admission?.ante_natal_id}`;
+    },
+  },
   watch: {
     admission: {
       handler() {
         this.routes.filter(tab => {
-          if (tab.name === this.POST_NATAL || tab.name === this.DELIVERY) {
+          if (
+            tab.name === this.POST_NATAL ||
+            tab.name === this.DELIVERY ||
+            tab.name === this.ANTE_NATAL
+          ) {
             if (
               this.user.sub_role === this.MATERNITY &&
               this.admission?.patient?.gender === this.FEMALE
             ) {
               tab.showComponent = true;
-              return tab;
             }
+            return tab;
           }
         });
       },
