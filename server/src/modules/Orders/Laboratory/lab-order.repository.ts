@@ -84,6 +84,7 @@ export const getPrescriptionTests = async (query: sequelize.WhereOptions<Prescri
     include: [
       { model: Test, attributes: ['name'] },
       { model: Staff, as: 'examiner', attributes: staffAttributes },
+      { model: TestResult, as: 'result', attributes: ['result', 'status'] },
     ],
   });
 };
