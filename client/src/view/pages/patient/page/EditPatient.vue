@@ -268,11 +268,33 @@
               name="next_of_kin_phone"
             />
           </div>
+        </div>
+        <div class="form-group row">
           <div class="col-lg-4">
-            <label>Relationship <span class="text-danger">*</span></label>
+            <label>Next of Kin Relationship <span class="text-danger">*</span></label>
             <select
               class="form-control form-control-sm"
               v-model="patient.next_of_kin_relationship"
+              name="relationship"
+            >
+              <option disabled selected>Select</option>
+              <option value="Brother">Brother</option>
+              <option value="Sister">Sister</option>
+              <option value="Father">Father</option>
+              <option value="Mother">Mother</option>
+              <option value="Wife">Wife</option>
+              <option value="Husband">Husband</option>
+              <option value="Son">Son</option>
+              <option value="Daughter">Daughter</option>
+              <option value="Uncle">Uncle</option>
+              <option value="Aunt">Aunt</option>
+            </select>
+          </div>
+          <div v-if="patient?.patient_type === DEPENDANT" class="col-lg-4">
+            <label>Relationship to principal <span class="text-danger">*</span></label>
+            <select
+              class="form-control form-control-sm"
+              v-model="patient.relationship_to_principal"
               name="relationship"
             >
               <option disabled selected>Select</option>
@@ -307,8 +329,8 @@
 </template>
 
 <script>
-import Datepicker from "vuejs-datepicker";
-import { getCityById, getCountries, getStateById } from "@/assets/json";
+import Datepicker from 'vuejs-datepicker';
+import { getCityById, getCountries, getStateById } from '@/assets/json';
 
 export default {
   components: {
@@ -330,6 +352,7 @@ export default {
       image: '',
       count: 0,
       patient: '',
+      DEPENDANT: 'Dependant',
     };
   },
   computed: {
