@@ -121,13 +121,8 @@ export function validateDependant(dependant) {
     gender: Joi.string().required(),
     lastname: Joi.string().required(),
     date_of_birth: Joi.date().required(),
-    insurance_id: Joi.number().required(),
     relationship_to_principal: Joi.string().required(),
     photo: Joi.string().required(),
-    hmo_id: Joi.number().required(),
-    plan: Joi.string()
-      .optional()
-      .allow(null),
     enrollee_code: Joi.string().required(),
     address: Joi.string().required(),
     phone: Joi.string().required(),
@@ -144,4 +139,29 @@ export function validateFindPatient(patient) {
     phone: Joi.string().required(),
   });
   return schema.validate(patient);
+}
+
+export function validateUpdatePatientInsurance(insurance) {
+  const schema = Joi.object({
+    patient_insurance_id: Joi.number().required(),
+    insurance_id: Joi.number().required(),
+    organization: Joi.string()
+      .optional()
+      .allow(''),
+    hmo_id: Joi.number().required(),
+    enrollee_code: Joi.string()
+      .optional()
+      .allow(''),
+    plan: Joi.string()
+      .optional()
+      .allow(''),
+  });
+  return schema.validate(insurance);
+}
+
+export function validateTogglePatientInsurance(insurance) {
+  const schema = Joi.object({
+    has_insurance: Joi.boolean().required(),
+  });
+  return schema.validate(insurance);
 }

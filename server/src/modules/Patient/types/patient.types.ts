@@ -71,3 +71,18 @@ export type CreatePatientBody = {
   registration_fee: number;
   service_id: number;
 };
+
+export type UpdatePatientInsurance = {
+  insurance_id: number;
+  hmo_id: number;
+  plan: string;
+  organization: string;
+  enrollee_code: string;
+  patient_insurance_id: number;
+  patient_id: number;
+};
+
+export type TogglePatientInsurance = {
+  has_insurance: boolean;
+  patient_id: number;
+};

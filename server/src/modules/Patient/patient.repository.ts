@@ -1,12 +1,21 @@
 /* eslint-disable camelcase */
 import { Op } from 'sequelize';
 import { JobSchedule } from '../../core/command/worker/schedule';
-import { PatientType } from './types/patient.types';
+import { PatientType, TogglePatientInsurance, UpdatePatientInsurance } from './types/patient.types';
 import { Insurance, Patient, PatientInsurance } from '../../database/models';
 import sequelizeConnection from '../../database/config/config';
 import { BadException } from '../../common/util/api-error';
-import { PATIENT_HAS_INSURANCE } from './messages/response-messages';
-import { getPatientInsuranceQuery, setInsuranceAsDefault } from '../Insurance/insurance.repository';
+import {
+  PATIENT_HAS_INSURANCE,
+  PATIENT_HAS_NO_INSURANCE,
+  PATIENT_NOT_FOUND,
+} from './messages/response-messages';
+import {
+  getInsuranceWithoutJoinQuery,
+  getPatientInsuranceQuery,
+  setInsuranceAsDefault,
+  updatePatientInsurance,
+} from '../Insurance/insurance.repository';
 import { dateIntervalQuery } from '../../core/helpers/helper';
 
 /**
@@ -124,6 +133,7 @@ export const addPatientInsurance = async data => {
   const result = await sequelizeConnection.transaction(async t => {
     const patientInsurance = await PatientInsurance.findOne({
       where: { patient_id, insurance_id, hmo_id },
+      transaction: t,
     });
     if (patientInsurance) throw new BadException('Exist', 400, PATIENT_HAS_INSURANCE);
 
@@ -131,7 +141,7 @@ export const addPatientInsurance = async data => {
       {
         is_default: false,
       },
-      { where: { patient_id } }
+      { where: { patient_id }, transaction: t }
     );
 
     const insurance = await PatientInsurance.create(
@@ -154,6 +164,32 @@ export const addPatientInsurance = async data => {
       },
       { where: { id: patient_id }, transaction: t }
     );
+
+    // disabling dependants default insurance and the same new insurance for dependants
+    const patientDependants = await Patient.findAll({
+      where: { principal_id: patient_id, patient_type: PatientType.DEPENDANT },
+      transaction: t,
+    });
+    if (patientDependants?.length) {
+      const dependantIds = patientDependants.map(dependant => dependant.id);
+      const dependantsInsurances = patientDependants.map(dependant => ({
+        insurance_id,
+        hmo_id,
+        plan,
+        staff_id,
+        enrollee_code,
+        organization,
+        patient_id: dependant.id,
+        is_default: true,
+      }));
+      await PatientInsurance.update(
+        {
+          is_default: false,
+        },
+        { where: { patient_id: dependantIds }, transaction: t }
+      );
+      await PatientInsurance.bulkCreate(dependantsInsurances, { transaction: t });
+    }
 
     // check if there are dependants in the body
     if (dependants?.length) {
@@ -179,7 +215,7 @@ export const addPatientInsurance = async data => {
     }
     return insurance;
   });
-  await setInsuranceAsDefault(result.id, patient_id);
+  // await setInsuranceAsDefault(result.id, patient_id);
   return result;
 };
 
@@ -244,31 +280,30 @@ export async function createDependant(data) {
     lastname,
     phone,
     gender,
-    insurance_id,
-    hmo_id,
     date_of_birth,
     address,
     photo,
     relationship,
-    plan,
     staff_id,
     patient_id,
     lga,
     country,
     state,
+    relationship_to_principal,
+    enrollee_code,
   } = data;
-  return Patient.create({
+  const patientInsurance = await PatientInsurance.findOne({ where: { patient_id } });
+  if (!patientInsurance) throw new BadException('Error', 400, PATIENT_HAS_NO_INSURANCE);
+
+  const dependant = await Patient.create({
     firstname: firstname.replace(/ +(?= )/g, '').trim(),
     lastname: lastname.replace(/ +(?= )/g, '').trim(),
     phone,
     gender,
-    insurance_id,
-    hmo_id,
     date_of_birth,
     address,
     photo,
     relationship,
-    plan,
     staff_id,
     lga,
     country,
@@ -276,48 +311,21 @@ export async function createDependant(data) {
     principal_id: patient_id,
     patient_type: PatientType.DEPENDANT,
     has_insurance: true,
+    relationship_to_principal,
   });
+
+  await PatientInsurance.create({
+    insurance_id: patientInsurance.insurance_id,
+    hmo_id: patientInsurance.hmo_id,
+    plan: patientInsurance.plan,
+    staff_id,
+    enrollee_code,
+    organization: patientInsurance.organization,
+    patient_id: dependant.id,
+    is_default: true,
+  });
+  return dependant;
 }
-
-/**
- * get patients
- *
- * @function
- * @returns {json} json object with patients data
- * @param currentPage
- * @param pageLimit
- */
-// export async function getPatients(currentPage = 1, pageLimit = 10) {
-//   return Patient.paginate({
-//     page: +currentPage,
-//     paginate: +pageLimit,
-//     order: [['createdAt', 'DESC']],
-//   });
-// }
-
-/**
- * get patients by date
- *
- * @function
- * @returns {json} json object with patients data
- * @param currentPage
- * @param pageLimit
- * @param start
- * @param end
- */
-// export async function getPatientsByDate(currentPage = 1, pageLimit = 10, start, end) {
-//   return Patient.paginate({
-//     page: +currentPage,
-//     paginate: +pageLimit,
-//     order: [['createdAt', 'DESC']],
-//     where: {
-//       createdAt: {
-//         [Op.gte]: new Date(new Date(start).setHours(0, 0, 0)),
-//         [Op.lt]: new Date(new Date(end).setHours(23, 59, 59)),
-//       },
-//     },
-//   });
-// }
 
 /**
  * search patients
@@ -410,4 +418,48 @@ export async function getPatientProfile(patient_id: number) {
  */
 export const getPatientByNameAndPhone = async data => {
   return await Patient.findOne({ where: { firstname: data.firstname, phone: data.phone } });
+};
+
+export const updateInsurance = async (data: UpdatePatientInsurance) => {
+  const { patient_id, patient_insurance_id, ...rest } = data;
+  const dependants = await Patient.findAll({ where: { principal_id: patient_id } });
+  const patientInsurance = await getInsuranceWithoutJoinQuery({ id: patient_insurance_id });
+
+  // Update principal
+  const updatedInsurance = await updatePatientInsurance(
+    { patient_id, id: patient_insurance_id },
+    { ...rest }
+  );
+
+  if (dependants?.length) {
+    const dependantIds = dependants.map(dependant => dependant.id);
+    await updatePatientInsurance(
+      {
+        patient_id: dependantIds,
+        insurance_id: patientInsurance.insurance_id,
+        hmo_id: patientInsurance.hmo_id,
+      },
+      { ...rest }
+    );
+  }
+  return updatedInsurance;
+};
+
+export const togglePatientInsurance = async (data: TogglePatientInsurance) => {
+  const { patient_id, has_insurance } = data;
+  const updatedPatient = await updatePatient(data); // disable principal insurance
+  const dependants = await Patient.findAll({ where: { principal_id: patient_id } });
+
+  if (dependants?.length) {
+    await Patient.update(
+      { has_insurance },
+      {
+        where: {
+          principal_id: patient_id,
+          patient_type: PatientType.DEPENDANT,
+        },
+      }
+    );
+  }
+  return updatedPatient;
 };

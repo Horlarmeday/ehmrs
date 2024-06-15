@@ -9,6 +9,8 @@ router.post('/create/emergency', verify, PatientController.createEmergencyPatien
 router.post('/create/dependant/:id', verify, PatientController.createDependant);
 router.post('/find-patient', verify, PatientController.getPatientByNameAndPhone);
 router.put('/update/:id', verify, PatientController.updatePatient);
+router.put('/update-insurance/:id', verify, PatientController.updatePatientInsurance);
+router.put('/toggle-insurance/:id', verify, PatientController.togglePatientInsurance);
 router.get('/get', verify, PatientController.getPatients);
 router.get('/profile/get/:id', verify, PatientController.getPatientProfile);
 router.get('/get/:id', verify, PatientController.getOnePatient);

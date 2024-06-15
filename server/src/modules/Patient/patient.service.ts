@@ -11,7 +11,7 @@ import {
   getPatients,
   updatePatient,
   addPatientInsurance,
-  getPatientByNameAndPhone,
+  getPatientByNameAndPhone, updateInsurance, togglePatientInsurance,
 } from './patient.repository';
 import { processSnappedPhoto, StatusCodes } from '../../core/helpers/helper';
 import { JobSchedule } from '../../core/command/worker/schedule';
@@ -20,7 +20,7 @@ import {
   AddPatientInsuranceBody,
   CreatePatientBody,
   EmergencyPatientBody,
-  PatientType,
+  PatientType, TogglePatientInsurance, UpdatePatientInsurance,
 } from './types/patient.types';
 import { prescribeService } from '../Orders/Service/service-order.repository';
 import { Patient } from '../../database/models';
@@ -129,7 +129,7 @@ class PatientService {
     const fileName = await processSnappedPhoto(body.photo, body.firstname);
 
     const patient = await createDependant({ ...body, photo: fileName });
-    await JobSchedule.assignHospitalNumber(patient.id);
+    JobSchedule.assignHospitalNumber(patient.id);
 
     return patient;
   }
@@ -170,6 +170,30 @@ class PatientService {
       patient_id: body.patient_id,
       ...(body.picture && { photo }),
     });
+  }
+
+  /**
+   * update a patient insurance
+   *
+   * @static
+   * @returns {json} json object with patient data
+   * @param body
+   * @memberOf PatientService
+   */
+  static async updatePatientInsurance(body: UpdatePatientInsurance) {
+    return updateInsurance(body);
+  }
+
+  /**
+   * toggle a patient insurance state
+   *
+   * @static
+   * @returns {json} json object with patient data
+   * @param body
+   * @memberOf PatientService
+   */
+  static async togglePatientInsurance(body: TogglePatientInsurance) {
+    return togglePatientInsurance(body);
   }
 
   /**

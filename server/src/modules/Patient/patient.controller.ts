@@ -4,7 +4,7 @@ import {
   validateDependant,
   validatePatientHealthInsurance,
   validateCreateEmergencyPatient,
-  validateFindPatient,
+  validateFindPatient, validateUpdatePatientInsurance, validateTogglePatientInsurance,
 } from './validations';
 import PatientService from './patient.service';
 import { errorResponse } from '../../common/responses/error-responses';
@@ -206,6 +206,82 @@ class PatientController {
   ): Promise<SuccessResponse> {
     try {
       const patient = await PatientService.updatePatientService({
+        ...req.body,
+        patient_id: req.params.id,
+      });
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_UPDATED,
+        data: patient,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  /**
+   * update a patient insurance
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, patient data
+   */
+  static async updatePatientInsurance(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse> {
+    const { error } = validateUpdatePatientInsurance(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+    try {
+      const patient = await PatientService.updatePatientInsurance({
+        ...req.body,
+        patient_id: req.params.id,
+      });
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_UPDATED,
+        data: patient,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  /**
+   * toggle on/off a patient insurance
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, patient data
+   */
+  static async togglePatientInsurance(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse> {
+    const { error } = validateTogglePatientInsurance(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+    try {
+      const patient = await PatientService.togglePatientInsurance({
         ...req.body,
         patient_id: req.params.id,
       });

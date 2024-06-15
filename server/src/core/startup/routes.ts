@@ -27,6 +27,7 @@ import surgeryRoutes from '../../modules/Surgery/surgery.routes';
 import immunizationRoutes from '../../modules/Immunization/immunization.routes';
 import alertRoutes from '../../modules/Alert/alert.routes';
 import accountRoutes from '../../modules/Account/account.routes';
+import path from 'path';
 
 export default (server: express.Application) => {
   server.use('/api/staffs', staffRoutes);
@@ -87,6 +88,15 @@ export default (server: express.Application) => {
       next(err);
     });
     next();
+  });
+  server.get('*', (req, res, next) => {
+    // Check if the request is for a static file
+    if (req.accepts('html')) {
+      res.sendFile(path.join(__dirname, '../../../../client/dist', 'index.html'));
+    } else {
+      // Pass to the next route handler
+      next();
+    }
   });
   server.use((req, res, next) => {
     const err = res
