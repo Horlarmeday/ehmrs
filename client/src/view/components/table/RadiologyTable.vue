@@ -39,9 +39,9 @@
             <td>
               <span v-if="allowedRoles.includes(currentUser.role)">
                 <router-link
-                  :to="`/radiology/investigations-results/${test.result_id}`"
+                  :to="`/radiology/investigations-results/${test.investigation_prescription_id}`"
                   :class="test.status"
-                  v-if="test.result_status === APPROVED"
+                  v-if="test.status === APPROVED && test.result_id"
                 >
                   <i class="flaticon-file-2 text-success mr-2"></i>
                 </router-link>

@@ -28,7 +28,7 @@
               {{ test.test.name }}
             </td>
             <td>
-              <span class="font-weight-boldest" v-if="test.result_status === ACCEPTED">
+              <span class="font-weight-boldest" v-if="test.status === APPROVED">
                 {{ test?.result?.result || '-' }}
               </span>
               <span v-else>-</span>
@@ -37,7 +37,7 @@
               <span :class="getPaymentColor(test.payment_status)">{{ test.payment_status }}</span>
             </td>
             <td>
-              <span :class="getResultColor(test.result_status)">{{ test.result_status }}</span>
+              <span :class="getResultColor(test.status)">{{ test.status }}</span>
             </td>
             <td>{{ test.examiner.fullname }}</td>
             <td>{{ test.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
@@ -72,6 +72,7 @@ export default {
     ACCEPTED: 'Accepted',
     UNBILLED: 'Unbilled',
     PENDING: 'Pending',
+    APPROVED: 'Approved',
     loading: false,
   }),
   props: {
@@ -104,7 +105,8 @@ export default {
 
     getResultColor(status) {
       if (status === 'Pending') return 'label label-inline label-light-warning font-weight-bold';
-      if (status === 'Accepted') return 'label label-inline label-light-success font-weight-bold';
+      if (status === 'Approved') return 'label label-inline label-light-success font-weight-bold';
+      if (status === 'Verified') return 'label label-inline label-light-primary font-weight-bold';
       return 'label label-inline label-light-danger font-weight-bold';
     },
 

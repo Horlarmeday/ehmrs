@@ -51,7 +51,7 @@
                     </th>
                     <td style="vertical-align: middle"></td>
                     <td>
-                      <textarea v-model="test.result" cols="25" rows="2" class="" />
+                      <textarea v-model="test.result" cols="50" rows="5" class="" />
                       <span class="font-weight-bold ml-2">{{ test?.result_unit }}</span>
                     </td>
                     <td>
@@ -96,7 +96,7 @@
                         v-model="test.comments"
                         name=""
                         class="float-right"
-                        cols="25"
+                        cols="35"
                         rows="2"
                       />
                     </td>
