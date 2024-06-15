@@ -6,6 +6,17 @@
         <h3 class="card-label">Patient Profile</h3>
       </div>
       <div class="card-title">
+        <span
+          :title="`Switch patient account to ${patient?.has_insurance ? 'Cash' : 'NHIS'}`"
+          v-b-tooltip.hover
+          class="switch mr-4"
+          v-if="patient?.insurance"
+        >
+          <label>
+            <input @change="showAlert($event)" :checked="patient?.has_insurance" type="checkbox" />
+            <span></span>
+          </label>
+        </span>
         <div v-for="(route, i) in routes" :key="i">
           <router-link
             v-b-tooltip:hover
@@ -60,6 +71,7 @@
 <script>
 import History from '../components/History.vue';
 import PersonalInformation from '@/view/pages/patient/components/PersonalInformation.vue';
+import Swal from 'sweetalert2';
 export default {
   components: {
     PersonalInformation,
@@ -108,15 +120,55 @@ export default {
             link: '/patient/health-insurance/default/',
             status: 'success',
             query: true,
+          },
+          {
+            icon: 'far fa-edit',
+            desc: 'Edit Insurance',
+            link: '/patient/edit-health-insurance/',
+            status: 'info',
+            query: true,
           }
         );
       }
     },
   },
 
+  methods: {
+    showAlert(event) {
+      const self = this;
+      Swal.fire({
+        title: 'Are you sure?',
+        text: 'You want to switch this patient to a Cash Patient!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Change!',
+      }).then(function(result) {
+        if (result.value) {
+          self.flipSwitch(event);
+        }
+      });
+    },
+
+    flipSwitch(event) {
+      const hasInsurance = !!event.target.checked;
+      const data = {
+        has_insurance: hasInsurance,
+      };
+      this.$store
+        .dispatch('patient/togglePatientInsurance', { data, id: this.$route.params.id })
+        .then(() => this.fetchPatientDetails());
+    },
+
+    fetchPatientDetails() {
+      this.$store
+        .dispatch('patient/fetchPatientProfile', this.$route.params.id)
+        .then(() => (this.loading = false));
+    },
+  },
+
   created() {
     this.loading = true;
-    this.$store.dispatch('patient/fetchPatientProfile', this.$route.params.id).then(() => this.loading = false);
+    this.fetchPatientDetails();
   },
 };
 </script>

@@ -83,6 +83,12 @@
             Additional Phone Number
             <div class="font-weight-boldest text-dark">{{ patient.alt_phone || '-' }}</div>
           </b-list-group-item>
+          <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
+            Date Created
+            <div class="font-weight-boldest text-dark">
+              {{ patient.createdAt | dayjs('DD/MM/YYYY, h:mma') }}
+            </div>
+          </b-list-group-item>
         </b-list-group>
       </div>
 

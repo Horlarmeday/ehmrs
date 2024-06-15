@@ -11,7 +11,7 @@
           <label>Make Insurance Default:</label>
           <div class="row">
             <div class="col-lg-6" v-for="(insurance, i) in insurances" :key="i">
-              <label class="option">
+              <label class="option" :class="insurance.is_default ? 'border-success' : ''">
                 <span class="option-control">
                   <span class="radio">
                     <input
@@ -33,7 +33,7 @@
                         ><i class="flaticon2-correct text-success font-size-h5"></i
                       ></a>
                       <a v-else href="#"
-                        ><i class="flaticon2-correct text-default font-size-h5"></i
+                        ><i class="flaticon2-correct text-danger font-size-h5"></i
                       ></a>
                     </span>
                   </span>
