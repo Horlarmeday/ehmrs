@@ -127,6 +127,34 @@ export default {
     });
   },
 
+  updatePatientInsurance({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/patients/update-insurance/${payload.id}`, payload.data)
+        .then(response => {
+          commit('UPDATE_PATIENT_INSURANCE', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  togglePatientInsurance({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/patients/toggle-insurance/${payload.id}`, payload.data)
+        .then(response => {
+          commit('UPDATE_PATIENT_INSURANCE', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
   /**
    * DEPENDANTS
    */

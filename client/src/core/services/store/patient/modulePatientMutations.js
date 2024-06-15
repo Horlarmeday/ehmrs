@@ -32,6 +32,9 @@ export default {
     Object.assign(state.patients[patientIndex], patient);
   },
 
+  // eslint-disable-next-line no-unused-vars
+  UPDATE_PATIENT_INSURANCE(state, patient) {},
+
   /**
    * DEPENDANTS
    */
