@@ -117,6 +117,7 @@
           :per-page="perPage"
           :current-page="currentPage"
           @pagechanged="onPageChange"
+          @changepagecount="handlePageCount"
         />
       </div>
       <!--end::Body-->
@@ -192,12 +193,29 @@ export default {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
+        search: this.$route.query.search,
       });
       this.$store.dispatch('employee/fetchEmployees', {
         currentPage: this.$route.query.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage,
         start: this.$route.query.startDate,
         end: this.$route.query.endDate,
+        search: this.$route.query.search,
+      });
+    },
+
+    handlePageCount(count) {
+      setUrlQueryParams({
+        currentPage: this.currentPage,
+        itemsPerPage: count,
+        search: this.$route.query.search,
+      });
+      this.$store.dispatch('employee/fetchEmployees', {
+        currentPage: this.$route.query.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
+        search: this.$route.query.search,
       });
     },
 

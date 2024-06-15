@@ -45,6 +45,7 @@
                                   <div class="symbol symbol-50 symbol-light mr-4">
                                     <span class="symbol-label">
                                       <img
+                                        width="70"
                                         v-if="!imageError"
                                         alt="Pic"
                                         :src="imageUrl(patient.photo)"
