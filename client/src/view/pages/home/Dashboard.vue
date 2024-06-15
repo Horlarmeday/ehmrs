@@ -179,6 +179,15 @@ export default {
           return (this.dashboardComponent = Pharmacy);
       }
     },
+
+    getLaboratoryDashboard(subRole) {
+      switch (subRole) {
+        case SubRoles.HOD:
+          return (this.dashboardComponent = HODLaboratory);
+        default:
+          return (this.dashboardComponent = Laboratory);
+      }
+    },
   },
   created() {
     const token = this.$store.state.auth.token;
