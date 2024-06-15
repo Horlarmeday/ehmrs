@@ -431,7 +431,7 @@ const servicePriceTariff = async (
 ): Promise<number> => {
   const { price } =
     (await ServiceTariff.findOne({
-      where: { service_id, hmo_id: insurance.hmo_id, insurance_id: insurance.insurance_id },
+      where: { service_id, hmo_id: insurance?.hmo_id, insurance_id: insurance?.insurance_id },
       order: [['createdAt', 'DESC']],
     })) || {};
   return price;
@@ -440,7 +440,8 @@ const servicePriceTariff = async (
 export const getServicePrice = async (patient: Patient, service_id: number) => {
   if (canUsePriceTariff(patient)) {
     const insurance = await getPatientInsuranceQuery({ patient_id: patient.id, is_default: true });
-    return servicePriceTariff(insurance, service_id);
+    if (insurance) return servicePriceTariff(insurance, service_id);
+    return null;
   }
   return null;
 };

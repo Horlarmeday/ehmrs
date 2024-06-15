@@ -178,12 +178,25 @@ export async function updateHMO(data) {
  * @returns {Promise<PatientInsurance | null>} return patient insurance data
  * @param query
  */
+export const getInsuranceWithoutJoinQuery = async (
+  query: WhereOptions<PatientInsurance>
+): Promise<PatientInsurance | null> => {
+  return PatientInsurance.findOne({
+    where: { ...query },
+  });
+};
+
+/**
+ * get patient insurance by id
+ * @returns {Promise<PatientInsurance | null>} return patient insurance data
+ * @param query
+ */
 export const getPatientInsuranceQuery = async (
   query: WhereOptions<PatientInsurance>
 ): Promise<PatientInsurance | null> => {
   return PatientInsurance.findOne({
     where: { ...query },
-    attributes: ['hmo_id', 'insurance_id', 'id', 'organization', 'enrollee_code'],
+    attributes: ['hmo_id', 'insurance_id', 'id', 'organization', 'enrollee_code', 'plan'],
     include: [
       {
         model: Insurance,
