@@ -108,7 +108,13 @@
                 >Clinical Notes</a
               >
             </li>
-            <li v-if="doctorAllowedTabs.includes(currentUser.role)" class="nav-item">
+            <li
+              v-if="
+                doctorAllowedTabs.includes(currentUser.role) ||
+                  subRolesAllowedTabs.includes(currentUser.sub_role)
+              "
+              class="nav-item"
+            >
               <a
                 class="nav-link text-dark py-4 px-6"
                 :class="{ active: tabIndex === 7, disabled: tabIndex === 7 }"
@@ -199,6 +205,7 @@ export default {
     loading: false,
     currentUser: parseJwt(localStorage.getItem('user_token')),
     doctorAllowedTabs: ['Super Admin', 'General Practitioner'],
+    subRolesAllowedTabs: ['Maternity'],
     nurseAllowedTabs: ['Super Admin', 'Nurse'],
     Active: 'ACTIVE',
     Inactive: 'INACTIVE',

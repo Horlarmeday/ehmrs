@@ -1,4 +1,4 @@
-**+<template>
+<template>
   <div>
     <!--begin::Accordion-->
     <div
@@ -39,7 +39,7 @@
                             </tr>
                           </thead>
                           <tbody>
-                            <tr v-for="(dependant, index) in patient?.dependants" :key="index">
+                            <tr v-for="dependant in patient?.dependants" :key="dependant.id">
                               <td class="pl-0 py-8">
                                 <div class="d-flex align-items-center">
                                   <div class="symbol symbol-50 symbol-light mr-4">
@@ -87,7 +87,7 @@
                               </td>
                               <td>
                                 <span class="text-muted font-weight-bold d-block font-size-sm">
-                                  {{ dependant.enrollee_code }}
+                                  {{ dependant.enrollee_code || '-' }}
                                 </span>
                               </td>
                             </tr>
@@ -452,11 +452,8 @@ export default {
         lga: this.patient.lga,
         relationship_to_principal: this.dependant_relationship,
         enrollee_code: this.dependant_enrollee_id,
-        insurance_id: this.patient.insurance.insurance_id,
-        hmo_id: this.patient.insurance.hmo_id,
         gender: this.dependant_gender,
         address: this.dependant_address || this.patient.address,
-        plan: this.patient.plan || 'Social',
         date_of_birth: this.dependant_date_of_birth,
         photo: this.dependant_image,
       };

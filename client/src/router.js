@@ -140,6 +140,14 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            {
+              path: 'edit-health-insurance/:id',
+              name: 'edit-health-insurance',
+              component: () => import('@/view/pages/patient/page/EditPatientInsurance.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
           ],
         },
         // EMPLOYEE
