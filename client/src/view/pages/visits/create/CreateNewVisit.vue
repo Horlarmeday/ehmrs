@@ -88,16 +88,17 @@
           <span class="form-text text-danger">{{ errors.first('date_of_visit') }}</span>
         </div>
         <div class="col-lg-4">
-          <label>Time of Visit:</label>
-          <b-form-timepicker
-            name="time_of_visit"
+          <label>Priority:</label>
+          <select
+            class="form-control"
+            v-model="priority"
             v-validate="'required'"
             data-vv-validate-on="blur"
-            v-model="time_of_visit"
-            locale="en"
-            required
-          />
-          <span class="form-text text-danger">{{ errors.first('time_of_visit') }}</span>
+            name="priority"
+          >
+            <option :value="prior" v-for="(prior, i) in priorities" :key="i">{{ prior }}</option>
+          </select>
+          <span class="text-danger text-sm">{{ errors.first('priority') }}</span>
         </div>
       </div>
       <div class="form-group row">
@@ -111,19 +112,6 @@
             :options="services"
             :reduce="services => services.id"
           />
-        </div>
-        <div class="col-lg-4">
-          <label>Priority:</label>
-          <select
-            class="form-control"
-            v-model="priority"
-            v-validate="'required'"
-            data-vv-validate-on="blur"
-            name="priority"
-          >
-            <option :value="prior" v-for="(prior, i) in priorities" :key="i">{{ prior }}</option>
-          </select>
-          <span class="text-danger text-sm">{{ errors.first('priority') }}</span>
         </div>
       </div>
       <div>
