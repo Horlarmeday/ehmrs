@@ -175,6 +175,11 @@ export class InventoryItem extends Model {
   })
   date_received: Date;
 
+  @Column({
+    type: DataType.STRING,
+  })
+  brand: string;
+
   @ForeignKey(() => Staff)
   @Column({
     type: DataType.INTEGER,
