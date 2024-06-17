@@ -308,16 +308,16 @@ export default {
     },
   },
 
-  watch: {
-    // check NHIS drugs quota is reached
-    // TODO: only get drugs prescribed today and not all drug orders
-    drugOrders(value) {
-      if (this.switchPosition && this.switchSpot) {
-        const total = this.getTotalDrugsPrescribedToday(value);
-        if (total > this.quotaPrice) this.nhisPriceQuotaExceeded = true;
-      }
-    },
-  },
+  // watch: {
+  //   // check NHIS drugs quota is reached
+  //   // TODO: only get drugs prescribed today and not all drug orders
+  //   drugOrders(value) {
+  //     if (this.switchPosition && this.switchSpot) {
+  //       const total = this.getTotalDrugsPrescribedToday(value);
+  //       if (total > this.quotaPrice) this.nhisPriceQuotaExceeded = true;
+  //     }
+  //   },
+  // },
 
   props: {
     switchPosition: {
@@ -397,6 +397,8 @@ export default {
     flipSwitch(value) {
       this.switchSpot = value;
       this.initValues();
+      this.$store.commit('inventory/SET_ITEMS', []);
+      this.drug = '';
     },
 
     removeValues() {
@@ -431,11 +433,11 @@ export default {
       this.quantity_to_dispense = Math.floor(Math.abs(this.quantity_to_dispense));
       this.total_price = this.price * this.quantity_to_dispense;
       // check NHIS drugs quota is reached
-      if (this.switchPosition && this.switchSpot) {
-        const totalDrugsPrescribedToday = this.getTotalDrugsPrescribedToday(this.drugOrders);
-        const total = +this.total_price + +totalDrugsPrescribedToday;
-        this.nhisPriceQuotaExceeded = total > this.quotaPrice;
-      }
+      // if (this.switchPosition && this.switchSpot) {
+      //   const totalDrugsPrescribedToday = this.getTotalDrugsPrescribedToday(this.drugOrders);
+      //   const total = +this.total_price + +totalDrugsPrescribedToday;
+      //   this.nhisPriceQuotaExceeded = total > this.quotaPrice;
+      // }
     },
 
     calculateDosageQuantity() {

@@ -242,9 +242,9 @@
               </div>
             </div>
             <div class="mt-3">
-<!--              <div v-if="nhisPriceQuotaExceeded" class="alert alert-warning" role="alert">-->
-<!--                <span class="font-size-sm font-weight-bold">NHIS drugs limit is reached</span>-->
-<!--              </div>-->
+              <!--              <div v-if="nhisPriceQuotaExceeded" class="alert alert-warning" role="alert">-->
+              <!--                <span class="font-size-sm font-weight-bold">NHIS drugs limit is reached</span>-->
+              <!--              </div>-->
               <button
                 @click="submitDrugOrder"
                 :disabled="quantity_remaining <= 0 || nhisPriceQuotaExceeded"
@@ -403,6 +403,8 @@ export default {
     flipSwitch(value) {
       this.switchSpot = value;
       this.initValues();
+      this.$store.commit('inventory/SET_ITEMS', []);
+      this.drug = '';
     },
 
     removeValues() {
@@ -513,7 +515,8 @@ export default {
         strength_id: this.strength.id,
         drug_id: this.drug_id,
         total_price: this.total_price,
-        drug_type: this.getDrugType(this.insuranceName),
+        drug_type:
+          this.switchSpot && this.switchPosition ? this.getDrugType(this.insuranceName) : 'Cash',
         inventory_id: this.getInventoryId(),
         source: this.source,
         ...(this.drug_group && { drug_group: this.drug_group }),
@@ -592,7 +595,8 @@ export default {
     }, 500),
 
     getInventoryId() {
-      const type = this.getDrugType(this.insuranceName);
+      const type =
+        this.switchSpot && this.switchPosition ? this.getDrugType(this.insuranceName) : 'Cash';
       return this.inventories.find(inventory =>
         inventory.name.toLowerCase().includes(type.toLowerCase())
       )?.id;
