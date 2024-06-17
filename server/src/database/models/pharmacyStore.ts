@@ -201,6 +201,11 @@ export class PharmacyStore extends Model {
   })
   old_id: number;
 
+  @Column({
+    type: DataType.STRING,
+  })
+  brand: string;
+
   @BelongsTo(() => Unit)
   unit: Unit;
 

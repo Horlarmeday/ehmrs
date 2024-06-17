@@ -41,6 +41,9 @@ export function validatePharmacyItem(item) {
     expiration: Joi.date()
       .optional()
       .allow(''),
+    brand: Joi.string()
+      .optional()
+      .allow(''),
     quantity_received: Joi.number().required(),
     unit_id: Joi.number().required(),
     unit_price: Joi.number().required(),

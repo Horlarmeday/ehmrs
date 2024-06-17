@@ -187,6 +187,16 @@
               <span class="text-danger text-sm">{{ errors.first('date_received') }}</span>
             </div>
             <div class="col-lg-4 mt-3">
+              <label>Brand</label>
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                v-model="brand"
+                placeholder="Brand"
+                name="brand"
+              />
+            </div>
+            <div class="col-lg-4 mt-3">
               <div class="form-group">
                 <label>Item Type</label>
                 <div class="checkbox-inline">
@@ -281,6 +291,7 @@ export default {
       private_selling_price: '',
       date_received: new Date(),
       drug_form: '',
+      brand: '',
 
       isDisabled: false,
       create_cash_item: true,
@@ -341,6 +352,7 @@ export default {
       this.private_selling_price = '';
       this.date_received = new Date();
       this.drug_form = '';
+      this.brand = '';
       this.create_cash_item = true;
       this.create_nhis_item = false;
       this.create_private_item = false;
@@ -409,6 +421,7 @@ export default {
             private_selling_price: this.private_selling_price,
             date_received: this.date_received,
             drug_form: this.drug_form,
+            brand: this.brand,
             create_cash_item: this.create_cash_item,
             create_nhis_item: this.create_nhis_item,
             create_private_item: this.create_private_item,

@@ -43,6 +43,7 @@ export async function createCashItem(data) {
     strength_input,
     route_id,
     drug_form,
+    brand,
   } = data;
 
   return PharmacyStore.create({
@@ -65,6 +66,7 @@ export async function createCashItem(data) {
     strength_input,
     route_id,
     drug_form,
+    brand,
     drug_type: DrugType.CASH,
   });
 }
@@ -93,6 +95,7 @@ export async function createNHISItem(data) {
     strength_input,
     route_id,
     drug_form,
+    brand,
   } = data;
 
   return PharmacyStore.create({
@@ -115,6 +118,7 @@ export async function createNHISItem(data) {
     strength_input,
     route_id,
     drug_form,
+    brand,
     drug_type: DrugType.NHIS,
   });
 }
@@ -142,6 +146,7 @@ export async function createPrivateItem(data) {
     measurement_id,
     strength_input,
     route_id,
+    brand,
     drug_form,
   } = data;
 
@@ -165,6 +170,7 @@ export async function createPrivateItem(data) {
     strength_input,
     route_id,
     drug_form,
+    brand,
     drug_type: DrugType.PRIVATE,
   });
 }

@@ -312,6 +312,7 @@ class StoreService {
       quantity_remaining: item.quantity_to_dispense,
       drug_form: storeItem.drug_form,
       drug_type: storeItem.drug_type,
+      brand: storeItem.brand,
       date_received: Date.now(),
       staff_id,
     };
