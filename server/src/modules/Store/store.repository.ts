@@ -120,6 +120,56 @@ export async function createNHISItem(data) {
 }
 
 /**
+ * create a Private pharmacy item
+ * @param data
+ * @returns {object} item data
+ */
+export async function createPrivateItem(data) {
+  const {
+    drug_id,
+    shelf,
+    product_code,
+    batch,
+    voucher,
+    quantity_received,
+    unit_id,
+    unit_price,
+    private_selling_price,
+    expiration,
+    dosage_form_id,
+    staff_id,
+    date_received,
+    measurement_id,
+    strength_input,
+    route_id,
+    drug_form,
+  } = data;
+
+  return PharmacyStore.create({
+    drug_id,
+    shelf,
+    product_code,
+    batch,
+    voucher,
+    quantity_received,
+    quantity_remaining: quantity_received,
+    unit_id,
+    unit_price,
+    total_price: quantity_received * unit_price,
+    selling_price: private_selling_price,
+    expiration,
+    dosage_form_id,
+    staff_id,
+    date_received,
+    measurement_id,
+    strength_input,
+    route_id,
+    drug_form,
+    drug_type: DrugType.PRIVATE,
+  });
+}
+
+/**
  * get pharmacy items drugs
  *
  * @function

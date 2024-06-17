@@ -5,6 +5,7 @@ import {
   createLaboratoryItem,
   createNHISItem,
   createPharmacyStoreLogs,
+  createPrivateItem,
   findPharmacyStoreItems,
   getLaboratoryItems,
   getOnePharmacyStoreItem,
@@ -29,7 +30,9 @@ import {
 import {
   INVALID_INVENTORY,
   INVALID_QUANTITY,
-  ITEM_EXISTS,
+  ITEM_EXISTS_CASH,
+  ITEM_EXISTS_NHIS,
+  ITEM_EXISTS_PRIVATE,
 } from '../Inventory/messages/response-messages';
 import { HistoryType } from '../../database/models/inventoryItemHistory';
 import {
@@ -50,12 +53,18 @@ class StoreService {
    * @memberOf StoreService
    */
   static async createPharmacyItemService(body): Promise<PharmacyStore> {
-    const { create_cash_item, create_nhis_item, drug_id } = body;
+    const { create_cash_item, create_nhis_item, drug_id, create_private_item } = body;
     let item: PharmacyStore;
-    await this.pharmacyStoreValidations(drug_id, create_cash_item, create_nhis_item);
+    await this.pharmacyStoreValidations(
+      drug_id,
+      create_cash_item,
+      create_nhis_item,
+      create_private_item
+    );
 
     if (create_cash_item) item = await createCashItem(body);
     if (create_nhis_item) item = await createNHISItem(body);
+    if (create_private_item) item = await createPrivateItem(body);
     return item;
   }
 
@@ -363,15 +372,19 @@ class StoreService {
   private static async pharmacyStoreValidations(
     drugId: number,
     create_cash_item: boolean,
-    create_nhis_item: boolean
+    create_nhis_item: boolean,
+    create_private_item: boolean
   ) {
-    const [cashItem, nhisItem] = await Promise.all([
+    const [cashItem, nhisItem, privateItem] = await Promise.all([
       getOnePharmacyStoreItem({ drug_id: drugId, drug_type: DrugType.CASH }),
       getOnePharmacyStoreItem({ drug_id: drugId, drug_type: DrugType.NHIS }),
+      getOnePharmacyStoreItem({ drug_id: drugId, drug_type: DrugType.PRIVATE }),
     ]);
 
-    if (cashItem && create_cash_item) throw new BadException('Invalid', 400, ITEM_EXISTS);
-    if (nhisItem && create_nhis_item) throw new BadException('Invalid', 400, ITEM_EXISTS);
+    if (cashItem && create_cash_item) throw new BadException('Invalid', 400, ITEM_EXISTS_CASH);
+    if (nhisItem && create_nhis_item) throw new BadException('Invalid', 400, ITEM_EXISTS_NHIS);
+    if (privateItem && create_private_item)
+      throw new BadException('Invalid', 400, ITEM_EXISTS_PRIVATE);
   }
 
   /**************************

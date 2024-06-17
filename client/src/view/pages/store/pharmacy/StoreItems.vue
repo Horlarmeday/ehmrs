@@ -48,7 +48,8 @@
       place-holder="Search Items"
       @search="onHandleSearch"
       @sort="onHandleSort"
-      @filter="onFilter"
+      @filterByDrugForm="onFilterByDrugForm"
+      @filterByDrugType="onFilterByDrugType"
     />
 
     <!--begin::Body-->
@@ -71,11 +72,12 @@
                   <span></span>
                 </label>
               </th>
-              <th class="pr-0" style="width: 300px">Name</th>
+              <th class="pr-0" style="width: 350px">Name</th>
               <th style="min-width: 150px">Quantity Remaining</th>
               <th style="min-width: 100px">Dosage Form</th>
               <th style="min-width: 100px">Unit Price (₦)</th>
-              <th style="min-width: 50px">Strength/Volume</th>
+              <th style="min-width: 100px">Selling Price (₦)</th>
+              <th style="min-width: 50px">Strength</th>
               <th style="min-width: 150px">Date Created</th>
             </tr>
           </thead>
@@ -96,9 +98,9 @@
                   :to="`/store/pharmacy/items/${item.id}`"
                   >{{ item.drug.name }}</router-link
                 >
-                <span v-if="item.drug_type === 'NHIS'" class="label label-inline label-success ml-2"
-                  >NHIS</span
-                >
+                <span :class="itemType(item.drug_type)" class="label label-inline ml-2">{{
+                  item.drug_type
+                }}</span>
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
@@ -120,6 +122,11 @@
                 </span>
               </td>
               <td>
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ item.selling_price || 'None' }}
+                </span>
+              </td>
+              <td>
                 <span
                   v-if="item.measurement_id"
                   class="text-dark-75 font-weight-bolder d-block font-size-lg"
@@ -130,7 +137,7 @@
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ item.createdAt | dayjs('ddd, MMM Do YYYY, h:mma') }}
+                  {{ item.createdAt | dayjs('DD/MM/YYYY, h:mma') }}
                 </span>
               </td>
             </tr>
@@ -168,6 +175,7 @@ export default {
       displayPrompt: false,
       displayDispenseModal: false,
       itemToEdit: {},
+      filter: { drug_type: 'Cash', drug_form: 'Drug' },
       currentPage: 1,
       itemsPerPage: 10,
       selected: [],
@@ -298,8 +306,16 @@ export default {
     },
 
     handlePageChange() {
-      this.queryParams({});
-      this.fetchPharmacyItems({ currentPage: this.currentPage });
+      this.queryParams({
+        currentPage: this.$route.query.currentPage || this.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || null,
+      });
+      this.fetchPharmacyItems({
+        currentPage: this.$route.query.currentPage || this.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || null,
+      });
     },
 
     onPageChange(page) {
@@ -320,10 +336,11 @@ export default {
     }, 500),
 
     onChangePageCount(pagecount) {
-      this.queryParams({ pagecount });
+      this.queryParams({ pagecount, search: this.$route.query.search || null });
       this.$store.dispatch('store/fetchPharmacyItems', {
         currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: pagecount,
+        search: this.$route.query.search || null,
       });
     },
 
@@ -332,10 +349,20 @@ export default {
       this.fetchPharmacyItems({
         sort,
         currentPage: this.$route.query.currentPage || this.currentPage,
+        search: this.$route.query.search || null,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
       });
     },
 
-    onFilter(filter) {
+    onFilterByDrugForm(filter) {
+      this.queryParams({ filter });
+      this.fetchPharmacyItems({
+        filter,
+        currentPage: this.$route.query.currentPage || this.currentPage,
+      });
+    },
+
+    onFilterByDrugType(filter) {
       this.queryParams({ filter });
       this.fetchPharmacyItems({
         filter,
@@ -374,6 +401,13 @@ export default {
       );
     },
 
+    itemType(type) {
+      if (type === 'NHIS') return ' label-light-success ';
+      if (type === 'Private') return ' label-light-primary ';
+      if (type === 'Retainership') return ' label-light-info ';
+      return 'label-default';
+    },
+
     mapReorderItems() {
       this.itemsToReorder = this.selectedItems.map(
         ({
@@ -408,6 +442,9 @@ export default {
   created() {
     this.fetchPharmacyItems({
       currentPage: this.$route.query.currentPage || this.currentPage,
+      itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+      filter: this.filter,
+      search: this.$route.query.search || null,
     });
   },
 };
