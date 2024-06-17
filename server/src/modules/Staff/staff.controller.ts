@@ -113,6 +113,25 @@ class StaffController {
   }
 
   /**
+   * Reset staff password
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with staff profile data
+   */
+  static async resetStaffPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const staff = await StaffService.resetStaffPassword(+req.params.id);
+
+      return successResponse({ res, message: UPDATED_PROFILE, data: staff, httpCode: 201 });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
    * get all staffs
    *
    * @static
