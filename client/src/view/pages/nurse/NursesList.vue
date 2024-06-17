@@ -112,6 +112,7 @@ export default {
       itemsPerPage: 10,
       displayPrompt: false,
       staffToEdit: {},
+      NURSE: 'Nurse',
     };
   },
   components: {
@@ -182,6 +183,7 @@ export default {
         currentPage,
         itemsPerPage,
         ...(search && { search }),
+        filter: { role: this.NURSE },
       });
     },
   },

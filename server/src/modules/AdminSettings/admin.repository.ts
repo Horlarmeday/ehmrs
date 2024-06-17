@@ -307,9 +307,6 @@ export const getWardsAndBeds = (search: string = null): Promise<Ward[]> => {
     include: [
       {
         model: Bed,
-        where: {
-          status: BedStatus.UNTAKEN,
-        },
         attributes: ['bed_type', 'id', 'code', 'status'],
       },
     ],

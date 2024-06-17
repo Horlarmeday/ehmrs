@@ -49,9 +49,13 @@ export function validatePharmacyItem(item) {
     nhis_selling_price: Joi.number()
       .optional()
       .allow(''),
+    private_selling_price: Joi.number()
+      .optional()
+      .allow(''),
     drug_id: Joi.number().required(),
     create_cash_item: Joi.boolean().required(),
     create_nhis_item: Joi.boolean().required(),
+    create_private_item: Joi.boolean().required(),
   });
   return schema.validate(item);
 }
