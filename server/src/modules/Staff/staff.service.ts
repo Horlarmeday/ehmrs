@@ -5,12 +5,14 @@ import {
   getStaffs,
   searchStaffs,
   updateStaff,
+  updateStaffAccount,
 } from './staff.repository';
 import { BadException } from '../../common/util/api-error';
 import { processSnappedPhoto } from '../../core/helpers/helper';
 import { EXISTING_STAFF, INVALID_STAFF_ID, STAFF_NOT_FOUND } from './messages/response-messages';
 import { Staff, StaffQueryParam } from './interface/staff.interface';
 import bcrypt from 'bcryptjs';
+import { logger } from '../../core/helpers/logger';
 
 class StaffService {
   /**
@@ -44,9 +46,9 @@ class StaffService {
     if (!staff) throw new BadException('INVALID', 404, STAFF_NOT_FOUND);
 
     const salt = await bcrypt.genSalt(12);
-    staff.password = await bcrypt.hash('123456', salt);
+    const newPassword = await bcrypt.hash('123456', salt);
 
-    return updateStaff({ ...staff, id: staffId });
+    return updateStaffAccount({ password: newPassword }, staffId);
   }
 
   /**

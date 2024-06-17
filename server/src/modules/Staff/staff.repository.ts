@@ -105,6 +105,18 @@ export async function updateStaff(data) {
 }
 
 /**
+ * update staff details
+ *
+ * @function
+ * @returns {json} json object with staff data
+ * @param data
+ * @param staffId
+ */
+export async function updateStaffAccount(data: Partial<Staff>, staffId: any) {
+  return Staff.update({ ...data }, { where: { id: staffId } });
+}
+
+/**
  * get staffs
  *
  * @function
