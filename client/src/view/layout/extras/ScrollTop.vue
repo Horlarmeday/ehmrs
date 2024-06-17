@@ -2,20 +2,22 @@
   <!-- begin::Scrolltop -->
   <div id="kt_scrolltop" ref="kt_scrolltop" class="scrolltop">
     <span class="svg-icon">
-      <inline-svg src="media/svg/icons/Navigation/Up-2.svg" />
+      <up-icon />
     </span>
   </div>
   <!-- end::Scrolltop -->
 </template>
 
 <script>
-import KTLayoutScrolltop from "@/assets/js/layout/extended/scrolltop.js";
+import KTLayoutScrolltop from '@/assets/js/layout/extended/scrolltop.js';
+import UpIcon from '@/assets/icons/UpIcon.vue';
 
 export default {
-  name: "KTScrollTop",
+  name: 'KTScrollTop',
+  components: { UpIcon },
   mounted() {
     // Init Scrolltop
-    KTLayoutScrolltop.init(this.$refs["kt_scrolltop"]);
-  }
+    KTLayoutScrolltop.init(this.$refs['kt_scrolltop']);
+  },
 };
 </script>

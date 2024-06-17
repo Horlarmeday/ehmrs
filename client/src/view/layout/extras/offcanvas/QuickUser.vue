@@ -67,8 +67,9 @@
                 <span class="navi-link p-0 pb-2">
                   <span class="navi-icon mr-1">
                     <span class="svg-icon svg-icon-lg svg-icon-primary">
+                      <mail-icon />
                       <!--begin::Svg Icon-->
-                      <inline-svg src="/media/svg/icons/Communication/Mail-notification.svg" />
+<!--                      <inline-svg src="/media/svg/icons/Communication/Mail-notification.svg" />-->
                       <!--end::Svg Icon-->
                     </span>
                   </span>
@@ -94,7 +95,7 @@
                 <div class="symbol-label">
                   <span class="svg-icon svg-icon-md svg-icon-success">
                     <!--begin::Svg Icon-->
-                    <inline-svg src="/media/svg/icons/General/Notification2.svg" />
+                    <notification2 />
                     <!--end::Svg Icon-->
                   </span>
                 </div>
@@ -222,8 +223,11 @@
 import KTLayoutQuickUser from '@/assets/js/layout/extended/quick-user.js';
 import KTOffcanvas from '@/assets/js/components/offcanvas.js';
 import { parseJwt } from '../../../../core/plugins/parseJwt';
+import MailIcon from '@/assets/icons/MailIcon.vue';
+import Notification2 from '@/assets/icons/Notification2.vue';
 export default {
   name: 'KTQuickUser',
+  components: { Notification2, MailIcon },
   data() {
     return {
       list: [
@@ -285,11 +289,6 @@ export default {
 
     handleImageError() {
       this.imageError = true;
-    },
-  },
-  computed: {
-    picture() {
-      return process.env.BASE_URL + 'media/users/300_21.jpg';
     },
   },
 };

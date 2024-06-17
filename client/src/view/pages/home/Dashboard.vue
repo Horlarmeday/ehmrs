@@ -37,6 +37,7 @@ import FinancialOfficer from './financeOfficer/Dashboard.vue';
 import HODNurse from './nurse/hod/Dashboard.vue';
 import HODLaboratory from './laboratory/hod/Dashboard.vue';
 import Emergency from './nurse/emergency/Dashboard.vue';
+import VIPWard from './nurse/vip/Dashboard.vue';
 import { parseJwt } from '@/common/common';
 
 const Roles = {
@@ -74,6 +75,7 @@ const SubRoles = {
   THEATER: 'Theater',
   HOD: 'HOD',
   EMERGENCY: 'Accident & Emergency',
+  VIP_PRIVATE: 'VIP/Private',
 };
 export default {
   data: () => ({
@@ -154,6 +156,8 @@ export default {
           return (this.dashboardComponent = HODNurse);
         case SubRoles.EMERGENCY:
           return (this.dashboardComponent = Emergency);
+        case SubRoles.VIP_PRIVATE:
+          return (this.dashboardComponent = VIPWard);
       }
     },
 

@@ -142,9 +142,13 @@ export default {
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Yes, Change!',
+        cancelButtonText: 'No, cancel!',
+        showLoaderOnConfirm: true,
       }).then(function(result) {
         if (result.value) {
           self.flipSwitch(event);
+        } else {
+          event.target.checked = !event.target.checked;
         }
       });
     },

@@ -147,14 +147,14 @@ export function validateUpdatePatientInsurance(insurance) {
     insurance_id: Joi.number().required(),
     organization: Joi.string()
       .optional()
-      .allow(''),
+      .allow(null),
     hmo_id: Joi.number().required(),
     enrollee_code: Joi.string()
       .optional()
-      .allow(''),
+      .allow(null),
     plan: Joi.string()
       .optional()
-      .allow(''),
+      .allow(null),
   });
   return schema.validate(insurance);
 }

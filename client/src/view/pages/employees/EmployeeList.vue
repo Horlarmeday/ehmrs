@@ -96,14 +96,22 @@
                 </td>
                 <td class="pr-0">
                   <a
+                    v-b-tooltip.hover
+                    title="Edit Employee"
                     href="#"
                     class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
                     @click.stop="editData(staff)"
                   >
                     <edit-icon />
                   </a>
-                  <a href="#" class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3">
-                    <view-icon />
+                  <a
+                    v-b-tooltip.hover
+                    title="Reset Employee Password"
+                    @click.stop="showResetAlert(staff.id)"
+                    href="#"
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
+                  >
+                    <refresh-icon />
                   </a>
                 </td>
               </tr>
@@ -131,7 +139,8 @@ import Pagination from '@/utils/Pagination.vue';
 import EditIcon from '../../../assets/icons/EditIcon.vue';
 import EditEmployee from './create/EditEmployee';
 import { setUrlQueryParams } from '@/common/common';
-import ViewIcon from '@/assets/icons/ViewIcon.vue';
+import RefreshIcon from '@/assets/icons/RefreshIcon.vue';
+import Swal from 'sweetalert2';
 export default {
   data() {
     return {
@@ -140,10 +149,11 @@ export default {
       itemsPerPage: 10,
       displayPrompt: false,
       staffToEdit: {},
+      NURSE: 'Nurse',
     };
   },
   components: {
-    ViewIcon,
+    RefreshIcon,
     Pagination,
     EditIcon,
     EditEmployee,
@@ -172,6 +182,26 @@ export default {
         text: 'Field cannot be left empty',
         type: 'error',
       });
+    },
+
+    showResetAlert(employeeId) {
+      const self = this;
+      Swal.fire({
+        title: 'Are you sure?',
+        text: 'You want to reset this employee password!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Continue!',
+        cancelButtonText: 'No, cancel!',
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+          return self.resetEmployeePassword(employeeId);
+        },
+      });
+    },
+
+    resetEmployeePassword(employeeId) {
+      this.$store.dispatch('employee/resetEmployeePassword', employeeId);
     },
 
     searchByName() {
@@ -238,6 +268,7 @@ export default {
         currentPage,
         itemsPerPage,
         ...(search && { search }),
+        filter: { role: this.NURSE },
       });
     },
   },

@@ -137,12 +137,7 @@ export async function getStaffs({ currentPage = 1, pageLimit = 10, filter }) {
  * @param search
  * @param filter
  */
-export async function searchStaffs({
-  currentPage = 1,
-  pageLimit = 10,
-  search,
-  filter = null,
-}) {
+export async function searchStaffs({ currentPage = 1, pageLimit = 10, search, filter = null }) {
   return Staff.paginate({
     page: +currentPage,
     paginate: +pageLimit,

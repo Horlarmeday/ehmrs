@@ -294,6 +294,7 @@ export default {
       this.role = '';
       this.sub_role = '';
     },
+
     updateEmployee() {
       this.$validator.validateAll().then(result => {
         if (result) {
@@ -316,10 +317,10 @@ export default {
             sub_role: this.sub_role.text,
             address: this.address,
             photo: this.image,
-            staff_id: this.image,
+            staff_id: this.id,
           };
           this.$store
-            .dispatch('employee/addEmployee', data)
+            .dispatch('employee/updateEmployee', data)
             .then(response => this.initializeRequest(submitButton, response))
             .catch(() => this.removeSpinner(submitButton));
         }

@@ -72,9 +72,9 @@
       </div>
       <div>
         <button
-          ref="kt-submit"
+          ref="kt-updateEmployee-submit"
           class="btn btn-primary font-weight-bold float-right"
-          @click="addEmployee"
+          @click="updateEmployee"
         >
           Save
         </button>
@@ -144,7 +144,7 @@ export default {
       this.$validator.validateAll().then(result => {
         if (result) {
           // set spinner to submit button
-          const submitButton = this.$refs['kt-submit'];
+          const submitButton = this.$refs['kt-updateEmployee-submit'];
           this.addSpinner(submitButton);
 
           const data = {
@@ -157,6 +157,7 @@ export default {
         }
       });
     },
+
     countToHundred() {
       for (let i = 1; i <= 10000; i++) {
         this.count = i;

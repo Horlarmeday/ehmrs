@@ -420,6 +420,11 @@ export const getPatientByNameAndPhone = async data => {
   return await Patient.findOne({ where: { firstname: data.firstname, phone: data.phone } });
 };
 
+/**
+ * update patient insurance
+ * @returns {object} return patient data
+ * @param data
+ */
 export const updateInsurance = async (data: UpdatePatientInsurance) => {
   const { patient_id, patient_insurance_id, ...rest } = data;
   const dependants = await Patient.findAll({ where: { principal_id: patient_id } });
@@ -445,10 +450,17 @@ export const updateInsurance = async (data: UpdatePatientInsurance) => {
   return updatedInsurance;
 };
 
-export const togglePatientInsurance = async (data: TogglePatientInsurance) => {
+/**
+ * toggle patient insurance
+ * @returns {Promise<Patient>} return patient data
+ * @param data
+ */
+export const togglePatientInsurance = async (data: TogglePatientInsurance): Promise<Patient> => {
   const { patient_id, has_insurance } = data;
   const updatedPatient = await updatePatient(data); // disable principal insurance
-  const dependants = await Patient.findAll({ where: { principal_id: patient_id } });
+  const dependants = await Patient.findAll({
+    where: { principal_id: patient_id, patient_type: PatientType.DEPENDANT },
+  });
 
   if (dependants?.length) {
     await Patient.update(

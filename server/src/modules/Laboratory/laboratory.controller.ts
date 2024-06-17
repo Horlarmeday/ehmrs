@@ -34,7 +34,11 @@ class LaboratoryController {
    * @param {object} next next middleware
    * @returns {json} json object with status, test sample data
    */
-  static async createTestSample(req, res, next) {
+  static async createTestSample(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
     const { error } = validateTestSample(req.body);
     if (error)
       return errorResponse({
@@ -67,7 +71,7 @@ class LaboratoryController {
    * @param {object} next next middleware
    * @returns {json} json object with status, test sample data
    */
-  static async updateTestSample(req, res, next) {
+  static async updateTestSample(req: Request, res: Response, next: NextFunction) {
     const { sample_id } = req.body;
     if (!sample_id) return res.status(400).json({ message: 'Sample id is required' });
 
@@ -92,7 +96,7 @@ class LaboratoryController {
    * @param {object} next next middleware
    * @returns {json} json object with test samples data
    */
-  static async getTestSamples(req, res, next) {
+  static async getTestSamples(req: Request, res: Response, next: NextFunction) {
     try {
       const samples = await LaboratoryService.getTestSamples(req.query);
 
@@ -118,7 +122,11 @@ class LaboratoryController {
    * @param {object} next next middleware
    * @returns {json} json object with status, test data
    */
-  static async createTest(req, res, next) {
+  static async createTest(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
     const { error } = validateTest(req.body);
     if (error)
       return errorResponse({
@@ -199,7 +207,7 @@ class LaboratoryController {
    * @param {object} next next middleware
    * @returns {json} json object with status, test data
    */
-  static async createTestTariff(req, res, next) {
+  static async createTestTariff(req: Request & { user: { sub: number } }, res: Response, next: NextFunction) {
     const { error } = validateTestTariff(req.body);
     if (error)
       return errorResponse({
@@ -445,7 +453,11 @@ class LaboratoryController {
    * @param {object} next next middleware
    * @returns {json} json object with status, prescribed test data
    */
-  static async approveTestResults(req, res: Response, next: NextFunction) {
+  static async approveTestResults(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
     const { error } = validateApproveTestResults(req.body);
     if (error)
       return errorResponse({

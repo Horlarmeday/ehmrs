@@ -144,9 +144,9 @@ export async function createTest(data) {
     valid_range,
     code: `D${count + 1}`,
     type,
-    nhis_price,
-    phis_price,
-    retainership_price,
+    nhis_price: nhis_price || null,
+    phis_price: phis_price || null,
+    retainership_price: retainership_price || null,
     is_available_for_nhis: !!nhis_price,
     is_available_for_phis: !!phis_price,
   });

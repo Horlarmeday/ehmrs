@@ -36,47 +36,32 @@
         <label>Policy Number <span class="text-danger">*</span></label>
         <input
           :disabled="!insurance?.enrollee_code"
-          v-validate="'required'"
-          data-vv-validate-on="blur"
           type="text"
           class="form-control form-control-sm"
           v-model="enrollee_code"
           placeholder="Policy Number"
-          name="enrollee_id"
         />
-        <span class="text-danger text-sm">{{ errors.first('enrollee_id') }}</span>
       </div>
       <div class="col-lg-4">
         <label>Organization <span class="text-danger">*</span></label>
         <input
           :disabled="!insurance?.organization"
-          v-validate="'required'"
-          data-vv-validate-on="blur"
           type="text"
           class="form-control"
           v-model="organization"
           placeholder="Organization"
           name="organization"
         />
-        <span class="text-danger text-sm">{{ errors.first('organization') }}</span>
       </div>
       <div class="col-lg-4">
         <label>Plan <span class="text-danger">*</span></label>
-        <select
-          :disabled="!insurance?.plan"
-          class="form-control"
-          v-model="plan"
-          name="plan"
-          v-validate="'required'"
-          data-vv-validate-on="blur"
-        >
+        <select :disabled="!insurance?.plan" class="form-control" v-model="plan" name="plan">
           <option value="Social">Social </option>
           <option value="Gold">Gold</option>
           <option value="Bronze">Bronze</option>
           <option value="Silver">Silver</option>
           <option value="Emerald">Emerald</option>
         </select>
-        <span class="text-danger text-sm">{{ errors.first('plan') }}</span>
       </div>
     </div>
     <div>
@@ -132,9 +117,9 @@ export default {
       const { id, insurance_id, hmo_id, plan, organization, enrollee_code } = val;
       this.insurance_id = insurance_id;
       this.hmo_id = hmo_id;
-      this.plan = plan;
-      this.organization = organization;
-      this.enrollee_code = enrollee_code;
+      this.plan = plan || null;
+      this.organization = organization || null;
+      this.enrollee_code = enrollee_code || null;
       this.patient_insurance_id = id;
     },
   },
@@ -163,7 +148,7 @@ export default {
       this.addSpinner(submitButton);
 
       const data = {
-        enrollee_code: this.enrollee_id,
+        enrollee_code: this.enrollee_code,
         organization: this.organization,
         hmo_id: this.hmo_id,
         insurance_id: this.insurance_id,
@@ -174,7 +159,6 @@ export default {
       this.$store
         .dispatch('patient/updatePatientInsurance', { data, id: this.$route.params.id })
         .then(() => {
-          console.log('here');
           this.removeSpinner(submitButton);
           this.initValues();
           this.$router.push(`/patient/profile/${this.$route.params.id}`);
