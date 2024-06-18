@@ -46,6 +46,7 @@
         :per-page="perPage"
         :current-page="currentPage"
         @pagechanged="onPageChange"
+        @changepagecount="handlePageCount"
       />
     </div>
   </div>
@@ -98,6 +99,14 @@ export default {
       });
     },
 
+    handlePageCount(count) {
+      this.$store.dispatch('visit/fetchCategoryVisits', {
+        currentPage: this.$route.query.currentPage || this.currentPage,
+        itemsPerPage: count,
+        category: this.category,
+      });
+    },
+
     onPageChange(page) {
       this.currentPage = page;
       this.handlePageChange();
@@ -114,7 +123,7 @@ export default {
           currentPage: 1,
           itemsPerPage: vm.itemsPerPage,
           search,
-          category: this.category,
+          category: vm.category,
         })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));

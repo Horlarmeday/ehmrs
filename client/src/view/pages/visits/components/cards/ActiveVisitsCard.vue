@@ -2,7 +2,7 @@
   <div class="row">
     <search @search="onHandleSearch" />
 
-    <div>
+    <div class="col-lg-12">
       <div
         class="bg-gray-200 rounded-lg pointer text-center mr-2 inline-display mb-2"
         v-for="visit in visits"
@@ -46,6 +46,7 @@
         :per-page="perPage"
         :current-page="currentPage"
         @pagechanged="onPageChange"
+        @changepagecount="handlePageCount"
       />
     </div>
   </div>
@@ -93,6 +94,13 @@ export default {
     onPageChange(page) {
       this.currentPage = page;
       this.handlePageChange();
+    },
+
+    handlePageCount(count) {
+      this.$store.dispatch('visit/fetchActiveVisits', {
+        currentPage: this.$route.query.currentPage || this.currentPage,
+        itemsPerPage: count,
+      });
     },
 
     onHandleSearch(prop) {
