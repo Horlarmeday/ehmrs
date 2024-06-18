@@ -142,3 +142,10 @@ export const getLabelDotStatus = type => {
   if (type === 'Private') return 'label-primary';
   return 'label-danger';
 };
+
+export const getItemType = type => {
+  if (type === 'NHIS') return 'label-light-success';
+  if (type === 'Private') return 'label-light-primary';
+  if (type === 'Retainership') return 'label-light-info';
+  return 'label-default';
+};

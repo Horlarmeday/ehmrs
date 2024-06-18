@@ -567,6 +567,14 @@ const router = new Router({
                   },
                 },
                 {
+                  path: 'update-items',
+                  name: 'pharmacy-items-update',
+                  component: () => import('@/view/pages/store/pharmacy/update/UpdateStoreItem.vue'),
+                  meta: {
+                    requiresAuth: true,
+                  },
+                },
+                {
                   path: 'items/:item',
                   name: 'item-details',
                   component: () => import('@/view/pages/store/pharmacy/StoreItem.vue'),

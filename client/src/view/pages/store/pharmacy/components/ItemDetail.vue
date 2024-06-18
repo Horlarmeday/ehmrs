@@ -89,6 +89,12 @@
             <span class="opacity-70">{{ item.expiration | dayjs('ddd, MMM Do YYYY') }}</span>
           </div>
         </div>
+        <div class="col-3 mb-lg-5">
+          <div class="col d-flex flex-column flex-root">
+            <span class="font-weight-bolder mb-2">BRAND</span>
+            <span class="opacity-70">{{ item?.brand || '-' }}</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>

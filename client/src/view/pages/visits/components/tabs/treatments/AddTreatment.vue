@@ -8,6 +8,16 @@
             <div class="alert-text">No drugs has been prescribed for this patient</div>
           </div>
         </div>
+        <div>
+          <button
+            class="btn btn-primary mb-5"
+            @click="submitDrugs"
+            :disabled="isDisabled || !treatments.length"
+            ref="kt_addTreatment_submit"
+          >
+            Submit
+          </button>
+        </div>
         <div v-for="(item, i) in treatments" :key="i">
           <div class="bg-light-primary p-1">
             <label class="mr-3"
@@ -71,7 +81,7 @@
       </div>
       <div class="float-right">
         <button
-          class="btn btn-primary mb-3"
+          class="btn btn-primary mt-5"
           @click="submitDrugs"
           :disabled="isDisabled || !treatments.length"
           ref="kt_addTreatment_submit"

@@ -7,7 +7,7 @@
         {{ count ? count : null }} Selected
       </label>
     </b-button>
-    <b-button variant="outline-secondary">Edit Items</b-button>
+    <b-button @click="gotoUpdateItem" variant="outline-secondary">Edit Items</b-button>
     <b-dropdown text="More Actions" variant="outline-secondary">
       <b-dropdown-item @click="dispenseItems">Dispense</b-dropdown-item>
       <b-dropdown-item @click="reorderItems">Reorder</b-dropdown-item>
@@ -35,6 +35,10 @@ export default {
 
     exportData() {
       this.$emit('openExportModal', true);
+    },
+
+    gotoUpdateItem() {
+      this.$emit('gotoUpdateItem', true);
     },
   },
 };
