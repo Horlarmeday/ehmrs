@@ -1,12 +1,6 @@
 <template>
   <!--begin::Advance Table Widget 1-->
   <div class="card card-custom gutter-b">
-    <update-pharmacy-item
-      :displayPrompt="displayPrompt"
-      @closeModal="hideModal"
-      :data="itemToEdit"
-    />
-
     <dispense-modal
       :displayPrompt="displayDispenseModal"
       @closeModal="hideDispenseModal"
@@ -58,6 +52,7 @@
         @openDispenseModal="openDispenseModal"
         @openReorderModal="openReorderModal"
         @openExportModal="openExportModal"
+        @gotoUpdateItem="gotoUpdateItem"
         v-if="selectedItems.length"
         :count="selectedItems.length"
       />
@@ -98,7 +93,7 @@
                   :to="`/store/pharmacy/items/${item.id}`"
                   >{{ item.drug.name }}</router-link
                 >
-                <span :class="itemType(item.drug_type)" class="label label-inline ml-2">{{
+                <span :class="getItemType(item.drug_type)" class="label label-inline ml-2">{{
                   item.drug_type
                 }}</span>
               </td>
@@ -160,11 +155,10 @@
 </template>
 
 <script>
-import UpdatePharmacyItem from './update/UpdateStoreItem.vue';
 import Pagination from '@/utils/Pagination.vue';
 import AddIcon from '@/assets/icons/AddIcon.vue';
 import SearchAndFilter from '@/utils/SearchAndFilter';
-import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
+import { debounce, removeSpinner, setUrlQueryParams, getItemType } from '@/common/common';
 import ButtonGroup from '@/utils/ButtonGroup';
 import DispenseModal from '@/view/pages/store/pharmacy/components/DispenseModal.vue';
 import ReorderItemModal from '@/view/pages/store/pharmacy/components/ReorderItemModal.vue';
@@ -193,7 +187,6 @@ export default {
     DispenseModal,
     ButtonGroup,
     SearchAndFilter,
-    UpdatePharmacyItem,
     Pagination,
     AddIcon,
   },
@@ -231,6 +224,7 @@ export default {
     },
   },
   methods: {
+    getItemType,
     hideModal() {
       this.displayPrompt = false;
     },
@@ -401,11 +395,9 @@ export default {
       );
     },
 
-    itemType(type) {
-      if (type === 'NHIS') return ' label-light-success ';
-      if (type === 'Private') return ' label-light-primary ';
-      if (type === 'Retainership') return ' label-light-info ';
-      return 'label-default';
+    gotoUpdateItem() {
+      const itemsIds = this.selectedItems.map(item => item.id);
+      this.$router.push(`/store/pharmacy/update-items?itemIds=${itemsIds}`);
     },
 
     mapReorderItems() {
