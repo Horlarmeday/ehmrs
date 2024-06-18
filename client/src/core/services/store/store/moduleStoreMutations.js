@@ -27,6 +27,9 @@ export default {
     Object.assign(state.items[itemIndex], item);
   },
 
+  // eslint-disable-next-line no-unused-vars
+  UPDATE_PHARM_ITEMS(state, items) {},
+
   /***
    * SELECTED ITEMS
    */
@@ -62,7 +65,6 @@ export default {
   SET_PHARM_ITEM_HISTORY_PAGES(state, pages) {
     state.itemHistoryPages = pages;
   },
-
 
   /***
    * PHARMACY ITEM LOGS
