@@ -428,7 +428,6 @@ export const getPatientByNameAndPhone = async data => {
 export const updateInsurance = async (data: UpdatePatientInsurance) => {
   const { patient_id, patient_insurance_id, ...rest } = data;
   const dependants = await Patient.findAll({ where: { principal_id: patient_id } });
-  const patientInsurance = await getInsuranceWithoutJoinQuery({ id: patient_insurance_id });
 
   // Update principal
   const updatedInsurance = await updatePatientInsurance(
@@ -441,8 +440,6 @@ export const updateInsurance = async (data: UpdatePatientInsurance) => {
     await updatePatientInsurance(
       {
         patient_id: dependantIds,
-        insurance_id: patientInsurance.insurance_id,
-        hmo_id: patientInsurance.hmo_id,
       },
       { ...rest }
     );

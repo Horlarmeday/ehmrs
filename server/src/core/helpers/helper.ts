@@ -183,9 +183,7 @@ export const generateLabAccessionNumber = async () => {
 };
 
 export const isToday = (specificDateTime: Date) => {
-  const currentDateTime = dayjs();
-  const targetDateTime = dayjs(specificDateTime, 'YYYY-MM-DD HH:mm');
-  return currentDateTime.isSame(targetDateTime, 'day');
+  return dayjs(specificDateTime).isSame(dayjs(), 'day');
 };
 
 export const todayQuery = (field: string) => ({

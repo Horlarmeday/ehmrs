@@ -2,7 +2,7 @@
   "name": "ehmrs",
   "version": "1.0.0",
   "description": "Electronic Health Management Resource System",
-  "main": "src/app.ts",
+  "main": "app.js",
   "scripts": {
     "test": "jest --detectOpenHandles",
     "start:dev": "nodemon",
