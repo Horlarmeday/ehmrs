@@ -12,8 +12,11 @@ import {
   Inventory,
   Staff,
   PharmacyStoreLog,
+  InventoryItem,
 } from '../../database/models';
 import { DrugType } from '../../database/models/pharmacyStore';
+import sequelizeConnection from '../../database/config/config';
+import { query } from 'express';
 
 /** ***********************
  * PHARMACY STORE
@@ -371,6 +374,50 @@ export const addStoreItemHistory = async (item): Promise<PharmacyStoreHistory> =
  */
 export const updatePharmacyStoreItem = async (query: any, fieldsToUpdate: any) => {
   return await PharmacyStore.update({ ...fieldsToUpdate }, { where: { ...query } });
+};
+
+/**
+ * update a pharmacy store item
+ *
+ * @function
+ * @returns {Promise<[affectedCount: number]>} json object with item data
+ * @param fieldsToUpdate
+ */
+export const updatePharmacyStoreItems = async (fieldsToUpdate: Partial<PharmacyStore>[]) => {
+  return await Promise.all(
+    fieldsToUpdate.map(async field => {
+      return await sequelizeConnection.transaction(async t => {
+        await PharmacyStore.update({ ...field }, { where: { id: field.id }, transaction: t });
+
+        const inventoryItemToUpdate = {
+          selling_price: field.selling_price,
+          acquired_price: field.total_price,
+          product_code: field.product_code,
+          measurement_id: field.measurement_id,
+          dosage_form_id: field.dosage_form_id,
+          expiration: field.expiration,
+          unit_id: field.unit_id,
+          strength_input: field.strength_input,
+          drug_form: field.drug_form,
+          drug_type: field.drug_type,
+          brand: field.brand,
+        };
+
+        await InventoryItem.update(
+          { ...inventoryItemToUpdate },
+          {
+            where: {
+              drug_id: field.drug_id,
+              drug_type: field.drug_type,
+              drug_form: field.drug_form,
+            },
+            transaction: t,
+          }
+        );
+        return inventoryItemToUpdate;
+      });
+    })
+  );
 };
 
 /**

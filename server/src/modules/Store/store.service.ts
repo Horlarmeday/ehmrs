@@ -17,6 +17,7 @@ import {
   searchLaboratoryItems,
   searchPharmacyStoreItems,
   updatePharmacyStoreItem,
+  updatePharmacyStoreItems,
 } from './store.repository';
 import { splitSort } from '../../core/helpers/helper';
 import { InventoryItem, LaboratoryStore, PharmacyStore } from '../../database/models';
@@ -213,6 +214,18 @@ class StoreService {
   }
 
   /**
+   * Reorder pharmacy store
+   *
+   * @static
+   * @returns {Promise<PharmacyStore[]>} json object with pharmacy item history data
+   * @memberOf StoreService
+   * @param items
+   */
+  static async updatePharmacyStoreItems(items: Partial<PharmacyStore>[]) {
+    return updatePharmacyStoreItems(items);
+  }
+
+  /**
    * get pharmacy item logs
    *
    * @static
@@ -232,6 +245,27 @@ class StoreService {
     return getPharmacyStoreItemLogs({ storeId });
   }
 
+  /**
+   * get pharmacy store items
+   *
+   * @static
+   * @returns {Promise<PharmacyStore[]>} json object with pharmacy items data
+   * @memberOf StoreService
+   * @param itemIds
+   */
+  static async getPharmacyStoreItems(itemIds: number[]) {
+    const items = await findPharmacyStoreItems(itemIds);
+    return items;
+  }
+
+  /**
+   * Export pharmacy store items
+   *
+   * @static
+   * @returns {Promise<PharmacyStore[]>} json object with pharmacy item history data
+   * @memberOf StoreService
+   * @param selectedItemsId
+   */
   static async exportData(selectedItemsId: number[]) {
     const items = await findPharmacyStoreItems(selectedItemsId);
     const headers = [

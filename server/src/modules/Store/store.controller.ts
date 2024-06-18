@@ -16,6 +16,8 @@ import { NextFunction, Request, Response } from 'express';
 import { DISPENSE_SUCCESSFUL, REORDER_SUCCESSFUL } from './messages/response-messages';
 import { ExportDataType } from './types/pharmacy-item.types';
 import { exportDataToCSV, exportDataToExcel, exportDataToPDF } from '../../core/helpers/fileExport';
+import { isEmpty } from 'lodash';
+import { EMPTY_BODY } from '../Alert/messages/response.messages';
 
 /**
  *
@@ -59,6 +61,40 @@ class StoreController {
   }
 
   /**
+   * update pharmacy store items
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, item data
+   */
+  static async updatePharmacyItems(req, res, next) {
+    const empty = isEmpty(req.body);
+    if (empty)
+      return errorResponse({
+        res,
+        httpCode: StatusCodes.BAD_REQUEST,
+        message: EMPTY_BODY,
+      });
+
+    console.log(req.body);
+
+    try {
+      const items = await StoreService.updatePharmacyStoreItems(req.body.items);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_SAVED,
+        data: items,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
    * get pharmacy items
    *
    * @static
@@ -70,6 +106,36 @@ class StoreController {
   static async getPharmacyStoreItems(req: Request, res: Response, next: NextFunction) {
     try {
       const items = await StoreService.getPharmacyItems(req.query);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data: items,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get selected pharmacy items
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with items data
+   */
+  static async getSelectedPharmacyStoreItems(req: Request, res: Response, next: NextFunction) {
+    const { itemIds } = req.query;
+    let selectedItems;
+    if (typeof itemIds === 'string') {
+      selectedItems = itemIds.split(',').map(Number);
+    }
+    console.log(selectedItems);
+    try {
+      const items = await StoreService.getPharmacyStoreItems(selectedItems);
 
       return successResponse({
         res,
