@@ -67,7 +67,8 @@ export class Staff extends Model {
 
   @Column(DataType.VIRTUAL)
   get fullname(): unknown {
-    return `${this.getDataValue('firstname')} ${this.getDataValue('lastname')}`;
+    return `${this.getDataValue('firstname')} ${this.getDataValue('middlename') ||
+      ''} ${this.getDataValue('lastname')}`;
   }
 
   @Column({

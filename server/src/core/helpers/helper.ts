@@ -24,7 +24,7 @@ export type ExportSelectedDataType = {
   data: any;
   dataType: ExportDataType;
 };
-export const staffAttributes = ['fullname', 'firstname', 'lastname'];
+export const staffAttributes = ['fullname', 'firstname', 'lastname', 'middlename'];
 export const patientAttributes = [
   'fullname',
   'photo',

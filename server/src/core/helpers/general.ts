@@ -1,6 +1,7 @@
 import { SamplePeriod } from '../../modules/Orders/Laboratory/interface/prescribed-test.interface';
 import { backlogQuery, todayQuery } from './helper';
 import { WhereOptions } from 'sequelize';
+import { Period } from '../../modules/Orders/Pharmacy/interface/prescribed-drug.interface';
 
 export function padNumberWithZero(num, targetLength = 6) {
   return num.toString().padStart(targetLength, 0);
@@ -34,7 +35,7 @@ export async function getNumberOfRecords(model) {
   return model.count();
 }
 
-export const getPeriodQuery = (period: SamplePeriod | null, field: string) => {
+export const getPeriodQuery = (period: SamplePeriod | null | Period, field: string) => {
   if (period === SamplePeriod.TODAY) return todayQuery(field);
   if (period === SamplePeriod.BACKLOG) return backlogQuery(field);
 };
