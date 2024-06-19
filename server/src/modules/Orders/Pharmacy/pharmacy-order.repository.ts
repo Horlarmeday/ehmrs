@@ -669,7 +669,9 @@ export const bulkSyringeNeedlePrescriptions = async ({
   }
 
   const gloveData =
-    patient.patient_status === PatientStatus.OUTPATIENT ? selectSyringe('gloves per pair') : null;
+    patient.patient_status === PatientStatus.OUTPATIENT
+      ? selectSyringe('examination gloves/pair')
+      : null;
   if (gloveData) {
     additionalItems.push({
       ...prescribeAdditionalItemData,

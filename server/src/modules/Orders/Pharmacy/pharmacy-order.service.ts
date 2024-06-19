@@ -29,11 +29,16 @@ import {
   PatientTreatment,
   PrescribedAdditionalItem,
   PrescribedDrug,
+  SystemSettings,
 } from '../../../database/models';
 import PatientService from '../../Patient/patient.service';
 import VisitService from '../../Visit/visit.service';
 import { DrugType } from '../../../database/models/pharmacyStore';
-import { createDrugPrescription, getDrugPrice, getLastDrugPrescription } from '../../Pharmacy/pharmacy.repository';
+import {
+  createDrugPrescription,
+  getDrugPrice,
+  getLastDrugPrescription,
+} from '../../Pharmacy/pharmacy.repository';
 import { isToday, StatusCodes } from '../../../core/helpers/helper';
 import { DrugStatus } from '../../../database/models/drugPrescription';
 import { getOneDefault } from '../../AdminSettings/admin.repository';
@@ -43,11 +48,12 @@ import { CANNOT_DELETE_DRUG, INJECTION_SYRINGES_NOT_FOUND } from './messages/res
 import { getInventoryItemQuery } from '../../Inventory/inventory.repository';
 import { getVisitById } from '../../Visit/visit.repository';
 import { getOneAdmission } from '../../Admission/admission.repository';
-import { NHISApprovalStatus } from '../../../core/helpers/general';
-import { PaymentStatus } from '../../../database/models/prescribedDrug';
+import { getPeriodQuery, NHISApprovalStatus } from '../../../core/helpers/general';
+import { DrugGroup, PaymentStatus } from '../../../database/models/prescribedDrug';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
 import { lt } from 'lodash';
 import { INVALID_QUANTITY } from '../../Inventory/messages/response-messages';
+import { Period } from './interface/prescribed-drug.interface';
 
 class PharmacyOrderService {
   /**
@@ -80,9 +86,10 @@ class PharmacyOrderService {
     ]);
 
     //todo: Add check for daily NHIS drug quota
+    const settings = await SystemSettings.findOne();
     // const settings = await SystemSettings.findOne();
     //TODO:
-    // check if drug is primary, check the drugs prescrined today and sum them
+    // check if drug is primary, check the drugs prescribed today and sum them
     // check if sum of primary is higher than sum prescribed today
 
     const mappedPrescribedDrugs = await Promise.all(
@@ -108,6 +115,26 @@ class PharmacyOrderService {
         };
       })
     );
+
+    const sumOfDrugsToday = await PrescribedDrug.sum('total_price', {
+      where: {
+        ...getPeriodQuery(Period.TODAY, 'date_prescribed'),
+        drug_group: DrugGroup.PRIMARY,
+      },
+    });
+
+    const totalPrimaryDrugsPrice = mappedPrescribedDrugs
+      .filter(drug => drug.drug_group === DrugGroup.PRIMARY)
+      .reduce((a, b) => a + b.total_price, 0);
+
+    const totalSum = sumOfDrugsToday + totalPrimaryDrugsPrice;
+    if (totalSum > settings.nhis_daily_quota_amount) {
+      throw new BadException(
+        'Error',
+        400,
+        'Sum of drugs prescribed today is more than NHIS daily price quota'
+      );
+    }
 
     const injections = body.filter(
       ({ dosage_form_name }) =>

@@ -26,6 +26,8 @@ import { PharmacyStore } from './pharmacyStore';
 export enum DrugType {
   CASH = 'Cash',
   NHIS = 'NHIS',
+  PRIVATE = 'Private',
+  RETAINERSHIP = 'Retainership',
 }
 
 export enum LogType {
@@ -161,7 +163,7 @@ export class PharmacyStoreLog extends Model {
   drug_form: DrugForm;
 
   @Column({
-    type: DataType.ENUM(DrugType.CASH, DrugType.NHIS),
+    type: DataType.ENUM(DrugType.CASH, DrugType.NHIS, DrugType.PRIVATE, DrugType.RETAINERSHIP),
     allowNull: false,
     validate: {
       notEmpty: {

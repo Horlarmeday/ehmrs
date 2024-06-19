@@ -6,6 +6,7 @@ import {
   generateRandomNumbers,
   paginate,
   patientAttributes,
+  staffAttributes,
   StatusCodes,
 } from '../../core/helpers/helper';
 import { getModelById, getPeriodQuery } from '../../core/helpers/general';
@@ -23,6 +24,7 @@ import {
   PrescribedAdditionalItem,
   PrescribedDrug,
   RoutesOfAdministration,
+  Staff,
   Unit,
 } from '../../database/models';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
@@ -504,6 +506,11 @@ export const getOneDrugPrescription = async (drugPrescriptionId: number | string
       {
         model: Patient,
         attributes: patientAttributes,
+      },
+      {
+        model: Staff,
+        attributes: staffAttributes,
+        as: 'examiner',
       },
       {
         model: PrescribedDrug,
