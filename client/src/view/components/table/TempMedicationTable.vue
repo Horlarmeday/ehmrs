@@ -25,6 +25,13 @@
                 class="label label-dot label-lg mr-2"
               ></span>
               <a @click="viewPopover(drug)" href="#" :id="popOverId"> {{ drug.drug_name }}</a>
+              <span class="ml-2">
+                <label
+                  v-if="drug?.drug_group"
+                  class="label label-sm label-inline label-secondary"
+                  >{{ drug?.drug_group }}</label
+                >
+              </span>
             </th>
             <td>
               <span>{{ drug.quantity_to_dispense }} {{ drug?.dosage_form_name || '-' }}</span>

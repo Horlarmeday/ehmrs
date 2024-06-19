@@ -12,6 +12,7 @@
             <th v-if="$route.name !== antenatalRoute" style="min-width: 150px">Gender</th>
             <th style="min-width: 150px">Status</th>
             <th style="min-width: 150px">Date</th>
+            <th style="min-width: 150px">Visit Created By</th>
             <th class="text-right pr-0" style="min-width: 130px">Action</th>
             <th style="min-width: 10px"></th>
           </tr>
@@ -56,6 +57,11 @@
               <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                 {{ queue.date_visit_start | dayjs('ddd, MMM Do YYYY, h:mma') }}
               </span>
+            </td>
+            <td>
+              <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
+                queue?.staff?.fullname
+              }}</span>
             </td>
             <td class="text-right pr-0">
               <router-link
