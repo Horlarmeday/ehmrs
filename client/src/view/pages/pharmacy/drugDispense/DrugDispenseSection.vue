@@ -9,18 +9,20 @@
       <div v-else class="card" v-for="(prescription, i) in prescriptions" :key="i">
         <div class="card-header">
           <div class="card-title" v-b-toggle="`collapse-d${i}`">
-            <span class="mr-5 text-black-50 lead font-size-h4">Drug Name:</span>
+            <span class="mr-5 text-black-50 lead font-size-h4 font-italic">Drug Name:</span>
             <span class="mr-5 text-dark">{{ prescription.drug_name }}</span>
 
-            <span class="mr-3 text-black-50 lead font-size-h4">Drug Type:</span
+            <span class="mr-3 text-black-50 lead font-size-h4 font-italic">Drug Type:</span
             ><span class="text-dark mr-5">{{ prescription.drug_type }}</span>
 
-            <span class="mr-3 text-black-50 lead font-size-h4">Dispense Status:</span>
+            <span class="mr-3 text-black-50 lead font-size-h4 font-italic">Dispense Status:</span>
             <span
               :class="getStatusColor(prescription.dispense_status)"
               class="label label-pill label-inline mr-2"
               >{{ prescription.dispense_status }}</span
             >
+            <span class="mr-3 text-black-50 lead font-size-h4 font-italic ml-5">Prescribed By:</span
+            ><span class="text-dark mr-5">{{ prescription?.staff?.fullname }}</span>
           </div>
         </div>
         <div>
