@@ -11,12 +11,13 @@
                 <span></span>
               </label>
             </th>
-            <th class="pr-0" style="width: 250px">Name</th>
+            <th class="pr-0" style="width: 300px">Name</th>
             <th class="pr-0" style="width: 150px">Quantity</th>
-            <th class="pr-0" style="width: 150px">Price</th>
-            <th class="pr-0" style="width: 250px">Dosage Form</th>
+            <th class="pr-0" style="width: 150px">Price(₦)</th>
+            <th class="pr-0" style="width: 150px">Dosage Form</th>
+            <th class="pr-0" style="width: 100px">Strength</th>
             <th style="min-width: 150px">Date Created</th>
-            <th class="pr-0 text-right" style="min-width: 50px">action</th>
+            <th class="pr-0 text-right" style="min-width: 70px">action</th>
           </tr>
         </thead>
         <tbody>
@@ -57,6 +58,15 @@
               <span v-else class="text-dark-75 font-weight-bolder d-block font-size-lg">Nil</span>
             </td>
             <td>
+              <span
+                v-if="item.measurement_id"
+                class="text-dark-75 font-weight-bolder d-block font-size-lg"
+              >
+                {{ item.strength_input }} {{ item.strength.name || 'None' }}
+              </span>
+              <span v-else class="text-dark-75 font-weight-bolder d-block font-size-lg">Nil</span>
+            </td>
+            <td>
               <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                 {{ item.date_received | dayjs('ddd, MMM Do YYYY, h:mma') }}
               </span>
@@ -69,13 +79,13 @@
               >
                 <send-icon />
               </a>
-              <a
-                href="#"
-                class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
-                @click.stop="() => {}"
-              >
-                <edit-icon />
-              </a>
+              <!--              <a-->
+              <!--                href="#"-->
+              <!--                class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"-->
+              <!--                @click.stop="() => {}"-->
+              <!--              >-->
+              <!--                <edit-icon />-->
+              <!--              </a>-->
             </td>
           </tr>
         </tbody>
@@ -96,10 +106,9 @@
 <script>
 import Pagination from '../../../../utils/Pagination';
 import SendIcon from '@/assets/icons/SendIcon.vue';
-import EditIcon from '@/assets/icons/EditIcon.vue';
 export default {
   name: 'InventoryTable',
-  components: { EditIcon, SendIcon, Pagination },
+  components: { SendIcon, Pagination },
   props: {
     items: {
       type: Array,
