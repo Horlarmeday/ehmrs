@@ -7,7 +7,7 @@ export class CreateBulkRequestBody {
   requested_by: number;
 }
 
-export class UpdateRequestStatus {
+export class ProcessRequestBody {
   status: RequestStatus;
   id: number;
 }
