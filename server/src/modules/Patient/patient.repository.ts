@@ -2,7 +2,7 @@
 import { Op } from 'sequelize';
 import { JobSchedule } from '../../core/command/worker/schedule';
 import { PatientType, TogglePatientInsurance, UpdatePatientInsurance } from './types/patient.types';
-import { Insurance, Patient, PatientInsurance } from '../../database/models';
+import { Insurance, Patient, PatientInsurance, Staff } from '../../database/models';
 import sequelizeConnection from '../../database/config/config';
 import { BadException } from '../../common/util/api-error';
 import {
@@ -16,7 +16,7 @@ import {
   setInsuranceAsDefault,
   updatePatientInsurance,
 } from '../Insurance/insurance.repository';
-import { dateIntervalQuery } from '../../core/helpers/helper';
+import { dateIntervalQuery, patientAttributes, staffAttributes } from '../../core/helpers/helper';
 
 /**
  * query staff account in the DB by phone
@@ -351,6 +351,7 @@ export async function getPatients({
     page: +currentPage,
     paginate: +pageLimit,
     order: [['createdAt', 'DESC']],
+    include: [{ model: Staff, attributes: staffAttributes }],
     where: {
       ...(filter && JSON.parse(filter)),
       ...(start && end && dateIntervalQuery('createdAt', start, end)),
@@ -405,7 +406,14 @@ export async function updatePatient(data): Promise<Patient> {
 export async function getPatientProfile(patient_id: number) {
   const patient = await Patient.findOne({
     where: { id: patient_id },
-    include: [Patient],
+    include: [
+      { model: Patient, as: 'dependants' },
+      {
+        model: Patient,
+        as: 'principal',
+        attributes: ['firstname', 'lastname', 'middlename', 'fullname', 'id'],
+      },
+    ],
   });
   const insurance = await getPatientInsuranceQuery({ patient_id, is_default: true });
   return { ...patient.toJSON(), insurance };
@@ -437,11 +445,24 @@ export const updateInsurance = async (data: UpdatePatientInsurance) => {
 
   if (dependants?.length) {
     const dependantIds = dependants.map(dependant => dependant.id);
-    await updatePatientInsurance(
-      {
-        patient_id: dependantIds,
-      },
-      { ...rest }
+    await Promise.all(
+      dependantIds.map(async id => {
+        const healthInsurance = await PatientInsurance.findOne({ where: { patient_id: id } });
+        if (!healthInsurance) {
+          await PatientInsurance.create({
+            ...rest,
+            patient_id: id,
+            is_default: true,
+          });
+          return;
+        }
+        await updatePatientInsurance(
+          {
+            patient_id: id,
+          },
+          { ...rest }
+        );
+      })
     );
   }
   return updatedInsurance;

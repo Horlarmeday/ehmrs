@@ -194,17 +194,18 @@ export const getVisitsHistory = async (
     {
       patient_id: patientId,
     },
-    ['id', 'date_visit_start', 'date_visit_ended', 'patient_id', 'category', 'status']
+    ['id', 'date_visit_start', 'date_visit_ended', 'patient_id', 'category', 'status', 'staff_id']
   );
   const summary = await Promise.all(
     visits.map(
-      async ({ id, date_visit_start, date_visit_ended, patient_id, category, status }) => ({
+      async ({ id, date_visit_start, date_visit_ended, patient_id, category, status, staff }) => ({
         id,
         date_visit_start,
         date_visit_ended,
         patient_id,
         category,
         status,
+        staff,
         ...(await getPrescriptions(id, category)),
       })
     )

@@ -8,7 +8,8 @@ import {
   Inventory,
   InventoryItem,
   InventoryItemHistory,
-  Staff, Patient,
+  Staff,
+  Patient,
 } from '../../database/models';
 
 /**
@@ -204,7 +205,10 @@ export const getInventoryItemByDrugId = async (drugId: number) => {
 };
 
 export const getInventoryItemQuery = async (query: WhereOptions<InventoryItem>) => {
-  return await InventoryItem.findOne({ where: { ...query } });
+  return await InventoryItem.findOne({
+    where: { ...query },
+    include: [{ model: Drug, attributes: ['name'] }],
+  });
 };
 
 export const addItemToInventory = async (item: Optional<any, string>) => {

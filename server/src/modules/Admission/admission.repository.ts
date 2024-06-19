@@ -91,30 +91,10 @@ export const admitPatient = async (data: AdmissionBodyType) => {
   }
 
   return sequelize.transaction(async (t: Transaction) => {
-    // end existing visit
-    await Visit.update(
-      { status: VisitStatus.ENDED, date_visit_ended: Date.now() },
-      { where: { id: visit_id }, transaction: t }
-    );
-    // start a new visit
-    const visit = await Visit.create(
-      {
-        patient_id: patient.id,
-        category: VisitCategory.IPD,
-        type: 'New Visit',
-        professional: admitted_by.role,
-        department: admitted_by.department,
-        date_visit_start: Date.now(),
-        staff_id: admitted_by.sub,
-        ...(ante_natal_id && { ante_natal_id }),
-      },
-      { transaction: t }
-    );
-
     const admission = await Admission.create(
       {
         ...data,
-        visit_id: visit.id,
+        visit_id,
         admitted_by: admitted_by.sub,
         date_admitted: Date.now(),
         bed_id: bedId,
@@ -131,7 +111,7 @@ export const admitPatient = async (data: AdmissionBodyType) => {
           price: ward.service.price,
           service_type: ServiceType.CASH,
           requester: admitted_by.sub,
-          visit_id: visit.id,
+          visit_id,
           patient_id,
           date_requested: Date.now(),
         },
@@ -144,7 +124,15 @@ export const admitPatient = async (data: AdmissionBodyType) => {
     );
 
     // update the visit with the admission id
-    await Visit.update({ admission_id: admission.id }, { where: { id: visit.id }, transaction: t });
+    await Visit.update(
+      {
+        category: VisitCategory.IPD,
+        admission_id: admission.id,
+        status: VisitStatus.ONGOING,
+        ...(ante_natal_id && { ante_natal_id }),
+      },
+      { where: { id: visit_id }, transaction: t }
+    );
 
     if (admissionItems) {
       // don't await the result
@@ -464,10 +452,10 @@ const getDrugType = (has_insurance: boolean, insurance: PatientInsurance) => {
     NHIS: DrugType.NHIS,
     PHIS: DrugType.PRIVATE,
     FHSS: DrugType.NHIS,
-    Retainership: DrugType.RETAINERSHIP,
+    Retainership: DrugType.CASH,
   };
 
-  return insuranceMapping[insurance.insurance.name] || DrugType.CASH;
+  return insuranceMapping[insurance?.insurance?.name] || DrugType.CASH;
 };
 /**
  * insert the default items for patient admission
@@ -502,7 +490,7 @@ export const insertDefaultAdmissionItems = async ({
   const inventory = inventories.find(({ accepted_drug_type }) =>
     new RegExp(`\\b${drugType}\\b`, 'i').test(accepted_drug_type)
   );
-
+  const isNHIS = EXCLUDED_INSURANCE.includes(insurance?.insurance?.name);
   const createItems = (filteredItems: any[]) => {
     return filteredItems.map(item => ({
       drug_form: DrugForm.CONSUMABLE,
@@ -517,9 +505,9 @@ export const insertDefaultAdmissionItems = async ({
       drug_type: drugType,
       source,
       patient_id: patient.id,
-      drug_id: item.drug.drug_id,
-      unit_id: item.drug.unit_id,
-      total_price: item.drug.price * item.quantity * (patient.has_insurance ? 0.1 : 1),
+      drug_id: item?.drug?.drug_id,
+      unit_id: item?.drug?.unit_id,
+      total_price: item?.drug?.price * item.quantity * (isNHIS ? 0.1 : 1),
     }));
   };
 

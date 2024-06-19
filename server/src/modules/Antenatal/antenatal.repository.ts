@@ -390,13 +390,14 @@ export const getVisitsSummary = async (currentPage = 1, pageLimit = 5, antenatal
   );
   const summary = await Promise.all(
     visits.map(
-      async ({ id, date_visit_start, date_visit_ended, patient_id, category, status }) => ({
+      async ({ id, date_visit_start, date_visit_ended, patient_id, category, status, staff }) => ({
         id,
         date_visit_start,
         date_visit_ended,
         patient_id,
         category,
         status,
+        staff,
         ...(await getPrescriptions(id)),
       })
     )

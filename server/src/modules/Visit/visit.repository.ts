@@ -2,10 +2,10 @@
 
 import { Op, WhereOptions } from 'sequelize';
 
-import { Patient, Visit } from '../../database/models';
+import { Patient, Staff, Visit } from '../../database/models';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { VisitCategory, VisitStatus } from '../../database/models/visit';
-import { calcLimitAndOffset, dateIntervalQuery } from '../../core/helpers/helper';
+import { calcLimitAndOffset, dateIntervalQuery, staffAttributes } from '../../core/helpers/helper';
 import { FindAttributeOptions } from 'sequelize/types/model';
 import { getPrescriptions } from '../Consultation/consultation.repository';
 import { getOneTriage } from '../Triage/triage.repository';
@@ -189,6 +189,10 @@ export async function searchActiveVisits({
           ],
         },
       },
+      {
+        model: Staff,
+        attributes: staffAttributes,
+      },
     ],
   });
 }
@@ -226,6 +230,10 @@ export async function getActiveVisits({
         where: {
           ...(filter && JSON.parse(filter)),
         },
+      },
+      {
+        model: Staff,
+        attributes: staffAttributes,
       },
     ],
   });
@@ -282,6 +290,10 @@ export async function searchVisits({
           ],
         },
       },
+      {
+        model: Staff,
+        attributes: staffAttributes,
+      },
     ],
   });
 }
@@ -314,6 +326,10 @@ export async function getVisits({
         model: Patient,
         attributes: patientAttributes,
       },
+      {
+        model: Staff,
+        attributes: staffAttributes,
+      },
     ],
   });
 }
@@ -331,6 +347,7 @@ export const getVisitsQuery = async (
     offset,
     limit,
     attributes,
+    include: [{ model: Staff, attributes: staffAttributes }],
   });
   const count = await Visit.count({ where: { ...query } });
   return { visits, limit, offset, count };
@@ -408,6 +425,10 @@ export async function searchCategoryVisits({
           ],
         },
       },
+      {
+        model: Staff,
+        attributes: staffAttributes,
+      },
     ],
   });
 }
@@ -441,6 +462,10 @@ export async function getCategoryVisits({
       {
         model: Patient,
         attributes: patientAttributes,
+      },
+      {
+        model: Staff,
+        attributes: staffAttributes,
       },
     ],
   });
@@ -525,6 +550,10 @@ export const getProfessionalAssignedVisits = async ({
             ],
           }),
         },
+      },
+      {
+        model: Staff,
+        attributes: staffAttributes,
       },
     ],
   });
