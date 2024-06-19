@@ -43,6 +43,18 @@
             v-if="patient.patient_type === 'Dependant'"
             class="d-flex justify-content-between align-items-center opacity-75"
           >
+            Principal
+            <a
+              :href="`/patient/profile/${patient?.principal.id}`"
+              class="font-weight-boldest text-primary"
+            >
+              {{ patient?.principal?.fullname || '-' }}
+            </a>
+          </b-list-group-item>
+          <b-list-group-item
+            v-if="patient.patient_type === 'Dependant'"
+            class="d-flex justify-content-between align-items-center opacity-75"
+          >
             Relationship to Principal
             <div class="font-weight-boldest text-dark">
               {{ patient.relationship_to_principal || '-' }}

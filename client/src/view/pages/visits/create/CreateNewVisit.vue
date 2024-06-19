@@ -133,9 +133,9 @@ export default {
   components: { vSelect },
   data() {
     return {
-      categories: ['Antenatal', 'Emergency', 'Immunization', 'Inpatient', 'Outpatient'],
+      categories: ['Outpatient', 'Antenatal', 'Emergency', 'Immunization'],
       priorities: ['Not Urgent', 'Urgent', 'Emergency'],
-      visitTypes: ['New visit', 'Follow-up visit'],
+      visitTypes: ['New visit'],
       // departments: [
       //   {
       //     id: 2,
