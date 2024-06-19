@@ -140,6 +140,7 @@ export function calculateAge(birthday) {
 export const getLabelDotStatus = type => {
   if (type === 'Cash') return 'label-success';
   if (type === 'Private') return 'label-primary';
+  if (type === 'Retainership') return 'label-info';
   return 'label-danger';
 };
 
@@ -147,5 +148,5 @@ export const getItemType = type => {
   if (type === 'NHIS') return 'label-light-success';
   if (type === 'Private') return 'label-light-primary';
   if (type === 'Retainership') return 'label-light-info';
-  return 'label-default';
+  return 'label-light-default';
 };

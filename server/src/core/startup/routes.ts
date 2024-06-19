@@ -89,15 +89,15 @@ export default (server: express.Application) => {
     });
     next();
   });
-  server.get('*', (req, res, next) => {
-    // Check if the request is for a static file
-    if (req.accepts('html')) {
-      res.sendFile(path.join(__dirname, '../../../../client/dist', 'index.html'));
-    } else {
-      // Pass to the next route handler
-      next();
-    }
-  });
+  // server.get('*', (req, res, next) => {
+  //   // Check if the request is for a static file
+  //   if (req.accepts('html')) {
+  //     res.sendFile(path.join(__dirname, '../../../../client/dist', 'index.html'));
+  //   } else {
+  //     // Pass to the next route handler
+  //     next();
+  //   }
+  // });
   server.use((req, res, next) => {
     const err = res
       .status(StatusCodes.NOT_FOUND)

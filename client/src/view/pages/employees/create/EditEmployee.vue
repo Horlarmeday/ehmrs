@@ -1,5 +1,5 @@
 <template>
-  <b-modal v-model="activePrompt" hide-footer title="Staff" size="modal-xl">
+  <b-modal v-model="activePrompt" hide-footer title="Staff" size="xl">
     <div class="p-3">
       <!-- NAME -->
       <div class="form-group row">
@@ -217,7 +217,7 @@ export default {
       departments,
       roles,
       sub_roles,
-      staff_id: '',
+      id: '',
       isDisabled: false,
     };
   },
@@ -256,7 +256,7 @@ export default {
           phone,
           username,
         } = JSON.parse(JSON.stringify(this.data));
-        this.staff_id = id;
+        this.id = id;
         this.firstname = firstname;
         this.lastname = lastname;
         this.email = email;
@@ -273,6 +273,16 @@ export default {
     },
   },
   methods: {
+    addSpinner(submitButton) {
+      this.isDisabled = true;
+      submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');
+    },
+
+    removeSpinner(submitButton) {
+      this.isDisabled = false;
+      submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
+    },
+
     getRoles() {
       this.roles = getRolesById(this.department.id);
     },
@@ -280,6 +290,7 @@ export default {
     getSubRoles() {
       this.sub_roles = getSubRoleById(this.role.id);
     },
+
     initValues() {
       this.gender = '';
       this.firstname = '';
@@ -295,36 +306,48 @@ export default {
       this.sub_role = '';
     },
 
-    updateEmployee() {
-      this.$validator.validateAll().then(result => {
-        if (result) {
-          // set spinner to submit button
-          const submitButton = this.$refs['kt_employee_submit'];
-          this.addSpinner(submitButton);
+    initializeRequest(button) {
+      this.removeSpinner(button);
+      this.initValues();
+      this.$emit('closeModal', true);
+      this.fetchEmployees();
+    },
 
-          const data = {
-            gender: this.gender,
-            firstname: this.firstname,
-            lastname: this.lastname,
-            middlename: this.middlename,
-            username: this.username,
-            email: this.email,
-            phone: this.phone,
-            date_of_birth: this.date_of_birth,
-            password: this.password,
-            department: this.department.text,
-            role: this.role.text,
-            sub_role: this.sub_role.text,
-            address: this.address,
-            photo: this.image,
-            staff_id: this.id,
-          };
-          this.$store
-            .dispatch('employee/updateEmployee', data)
-            .then(response => this.initializeRequest(submitButton, response))
-            .catch(() => this.removeSpinner(submitButton));
-        }
+    fetchEmployees() {
+      return this.$store.dispatch('employee/fetchEmployees', {
+        currentPage: this.$route.query.currentPage || 1,
+        itemsPerPage: this.$route.query.itemsPerPage || 10,
+        search: this.$route.query.search || null,
       });
+    },
+
+    updateEmployee() {
+      // set spinner to submit button
+      const submitButton = this.$refs['kt_employee_submit'];
+      this.addSpinner(submitButton);
+
+      const data = {
+        gender: this.gender,
+        firstname: this.firstname,
+        lastname: this.lastname,
+        middlename: this.middlename,
+        username: this.username,
+        email: this.email,
+        phone: this.phone,
+        date_of_birth: this.date_of_birth,
+        department: this.department.text,
+        role: this.role.text,
+        sub_role: this.sub_role.text,
+        address: this.address,
+        photo: this.image,
+        id: this.id,
+      };
+
+      console.log(data);
+      this.$store
+        .dispatch('employee/updateEmployee', data)
+        .then(() => this.initializeRequest(submitButton))
+        .catch(() => this.removeSpinner(submitButton));
     },
   },
 };

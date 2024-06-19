@@ -44,7 +44,7 @@ export const downloadTestResult = (
 
 function generateHeader(doc: PDFDocument) {
   doc
-    .image('src/public/images/logo-letter-1.png', 50, 45, { width: 50 })
+    .image('ehmrs-api/public/images/logo-letter-1.png', 50, 45, { width: 50 })
     .fillColor('#444444')
     .fontSize(15)
     .text('St. Vincent Hospital', 110, 57)

@@ -50,6 +50,7 @@
                 <th style="min-width: 100px">Age</th>
                 <th style="min-width: 100px">account type</th>
                 <th style="min-width: 160px">Registration Date</th>
+                <th style="min-width: 160px">Registered By</th>
                 <th class="pr-0 " style="min-width: 70px">Action</th>
               </tr>
             </thead>
@@ -89,6 +90,11 @@
                 <td>
                   <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
                     patient.createdAt | dayjs('ddd, MMM Do YYYY')
+                  }}</span>
+                </td>
+                <td>
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
+                    patient?.staff?.fullname
                   }}</span>
                 </td>
                 <td class="pr-0">
