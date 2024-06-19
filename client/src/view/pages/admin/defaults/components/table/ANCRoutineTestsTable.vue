@@ -26,9 +26,12 @@
               }}</span>
             </td>
             <td class="pr-0">
-              <a href="#" class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3">
+              <button
+                @click="deleteDefaultData(test.id)"
+                class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
+              >
                 <delete-icon />
-              </a>
+              </button>
             </td>
           </tr>
         </tbody>
@@ -50,6 +53,19 @@ export default {
     },
     tests() {
       return this.defaults.find(def => def.id?.toString() === this.$route.params.id)?.data;
+    },
+  },
+  methods: {
+    fetchDefaults() {
+      this.$store
+        .dispatch('model/fetchDefaults')
+        .then(res => localStorage.setItem('defaults', JSON.stringify(res.data.data)));
+    },
+
+    deleteDefaultData(dataId) {
+      this.$store
+        .dispatch('model/deleteDefaultData', { id: this.$route.params.id, dataId })
+        .then(() => this.fetchDefaults());
     },
   },
 };
