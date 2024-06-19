@@ -40,6 +40,10 @@
                         >{{ summary.category }}</span
                       >
                     </div>
+                    <div class="">
+                      <span class="font-size-h6-md font-italic mr-4">Created By:</span>
+                      <span class="font-size-h6-md">{{ summary?.staff?.fullname }}</span>
+                    </div>
                   </div>
                 </div>
                 <b-collapse :id="`accordion-${i}`" accordion="my-accordion" role="tabpanel">

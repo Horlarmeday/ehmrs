@@ -41,9 +41,12 @@
               }}</span>
             </td>
             <td class="pr-0">
-              <router-link to="#" class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3">
+              <button
+                @click="deleteDefaultData(item.id)"
+                class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
+              >
                 <delete-icon />
-              </router-link>
+              </button>
             </td>
           </tr>
         </tbody>
@@ -56,7 +59,19 @@ import DeleteIcon from '@/assets/icons/DeleteIcon.vue';
 import { getItemType } from '@/common/common';
 
 export default {
-  methods: { getItemType },
+  methods: {
+    getItemType,
+    deleteDefaultData(dataId) {
+      this.$store
+        .dispatch('model/deleteDefaultData', { id: this.$route.params.id, dataId })
+        .then(() => this.fetchDefaults());
+    },
+    fetchDefaults() {
+      this.$store
+        .dispatch('model/fetchDefaults')
+        .then(res => localStorage.setItem('defaults', JSON.stringify(res.data.data)));
+    },
+  },
   components: { DeleteIcon },
   computed: {
     defaults() {

@@ -120,6 +120,7 @@ export default {
         disabledReturn: val.status === this.COMPLETE_DISPENSE,
         payment_status: drug.payment_status,
         reason_for_return: drug.reason_for_return,
+        staff: val.examiner,
         shouldDisableDispense:
           drug.quantity_dispensed === drug.quantity_to_dispense ||
           drug.quantity_returned === drug.quantity_to_dispense,
@@ -142,6 +143,7 @@ export default {
         total_price: item.total_price,
         reason_for_return: item.reason_for_return,
         disabledReturn: val.status === this.COMPLETE_DISPENSE,
+        staff: val.examiner,
         shouldDisableDispense:
           item.quantity_dispensed === item.quantity_to_dispense ||
           item.quantity_returned === item.quantity_to_dispense,

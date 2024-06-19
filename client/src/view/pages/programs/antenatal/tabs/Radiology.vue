@@ -32,14 +32,21 @@ export default {
 
     showSwitch() {
       return (
-        (this.insurance && !EXCLUDED_INSURANCE.includes(this.insurance?.insurance?.name)) || false
+        (this.insurance &&
+          this.insurance?.insurance?.name &&
+          !EXCLUDED_INSURANCE.includes(this.insurance?.insurance?.name)) ||
+        false
       );
     },
   },
   methods: {
     defaultSwitchPosition() {
       setTimeout(() => {
-        if (this.insurance && !EXCLUDED_INSURANCE.includes(this.insurance?.insurance?.name)) {
+        if (
+          this.insurance &&
+          this.insurance?.insurance?.name &&
+          !EXCLUDED_INSURANCE.includes(this.insurance?.insurance?.name)
+        ) {
           this.switchPosition = true;
         }
       }, 350);

@@ -242,8 +242,12 @@
               </div>
             </div>
             <div class="mt-3">
-              <div v-if="nhisPriceQuotaExceeded" class="alert alert-warning" role="alert">
-                <span class="font-size-sm font-weight-bold">NHIS drugs limit is reached</span>
+              <div
+                v-if="quantity_remaining !== null && quantity_remaining <= 0"
+                class="alert alert-warning"
+                role="alert"
+              >
+                <span class="font-size-sm font-weight-bold">Quantity is low in the dispensary</span>
               </div>
               <button
                 @click="submitDrugOrder"
@@ -478,10 +482,17 @@ export default {
     },
 
     getDrugType(insuranceName) {
-      const types = ['FHSS', 'NHIS'];
-      if (types.includes(insuranceName)) return 'NHIS';
-      if (insuranceName === 'PHIS') return 'Private';
-      return 'Cash';
+      const isSwitchOn = this.switchSpot && this.switchPosition;
+      if (isSwitchOn) return 'NHIS';
+      const insuranceMapping = {
+        FHSS: 'NHIS',
+        NHIS: 'NHIS',
+        PHIS: 'Private',
+        Retainership: 'Cash',
+      };
+      const selectedInsurance = insuranceMapping[insuranceName];
+      if (selectedInsurance === 'NHIS' && !isSwitchOn) return 'Cash';
+      return insuranceMapping[insuranceName] || 'Cash';
     },
 
     drugData() {
@@ -501,8 +512,7 @@ export default {
         strength_id: this.strength.id,
         drug_id: this.drug_id,
         total_price: this.total_price,
-        drug_type:
-          this.switchPosition && this.switchSpot ? this.getDrugType(this.insuranceName) : 'Cash',
+        drug_type: this.getDrugType(this.insuranceName),
         inventory_id: this.getInventoryId(),
         source: this.source,
         ...(this.drug_group && { drug_group: this.drug_group }),
@@ -578,8 +588,7 @@ export default {
     }, 500),
 
     getInventoryId() {
-      const type =
-        this.switchPosition && this.switchSpot ? this.getDrugType(this.insuranceName) : 'Cash';
+      const type = this.getDrugType(this.insuranceName);
       return this.inventories.find(inventory =>
         inventory.name.toLowerCase().includes(type.toLowerCase())
       )?.id;

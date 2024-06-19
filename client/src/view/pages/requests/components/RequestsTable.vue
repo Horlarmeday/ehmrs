@@ -33,17 +33,17 @@
             <router-link
               :to="`/inventory/items/${request.id}`"
               class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg"
-              >{{ request.item.drug.name }}</router-link
+              >{{ request?.item?.drug?.name }}</router-link
             >
           </td>
           <td>
             <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-              {{ request.inventory.name }}
+              {{ request?.inventory?.name }}
             </span>
           </td>
           <td>
             <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-              {{ request.quantity }} {{ request.item.unit.name }}
+              {{ request.quantity }} {{ request?.item?.unit?.name }}
             </span>
           </td>
           <td>
@@ -79,7 +79,7 @@ export default {
       type: Boolean,
       required: true,
       default: false,
-    }
+    },
   },
   computed: {
     selectedRequests() {
