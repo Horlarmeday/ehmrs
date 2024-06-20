@@ -57,6 +57,12 @@
             <tbody>
               <tr v-for="patient in patients" :key="patient.id">
                 <td class="pl-5">
+                  <span
+                    v-b-tooltip.hover
+                    :title="patient?.insurances?.[0]?.insurance?.name"
+                    class="label label-dot label-lg mr-2"
+                    :class="getPatientDotStatus(patient?.insurances?.[0]?.insurance?.name)"
+                  ></span>
                   <a
                     href="#"
                     class="text-dark-75 font-weight-bolder text-hover-primary font-size-lg"
@@ -135,7 +141,7 @@
 import Pagination from '@/utils/Pagination.vue';
 import DateFilter from '@/utils/DateFilter.vue';
 import CreateVisit from '../../visits/create/CreateVisit-Deprecated.vue';
-import { setUrlQueryParams } from '@/common/common';
+import { getPatientDotStatus, setUrlQueryParams } from '@/common/common';
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
 import dayjs from 'dayjs';
 export default {
@@ -174,6 +180,7 @@ export default {
   },
 
   methods: {
+    getPatientDotStatus,
     addNewData(patient) {
       this.patient = patient;
       this.displayPrompt = true;
@@ -199,8 +206,8 @@ export default {
       (this.start = start), (this.end = end);
       this.currentPage = 1;
       setUrlQueryParams({
-        currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage,
+        currentPage: this.$route.query.currentPage || this.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         startDate: dayjs(start).format('YYYY-MM-DD'),
         endDate: dayjs(end).format('YYYY-MM-DD'),
       });
@@ -217,13 +224,15 @@ export default {
       this.currentPage = 1;
       setUrlQueryParams({
         currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         search: this.patient_name,
       });
       this.fetchPatients({
         currentPage: this.$route.query.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage,
         search: this.$route.query.search,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
       });
     },
 
@@ -231,7 +240,9 @@ export default {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
-        search: this.patient_name,
+        search: this.$route.query.search || this.patient_name,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
       });
       this.fetchPatients({
         currentPage: this.$route.query.currentPage,
@@ -248,10 +259,13 @@ export default {
     },
 
     handlePageCount(count) {
+      console.log(this.$route.query.startDate, this.$route.query.endDate);
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: count,
-        search: this.patient_name,
+        search: this.$route.query.search || this.patient_name,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
       });
       this.fetchPatients({
         currentPage: this.$route.query.currentPage,
@@ -276,6 +290,8 @@ export default {
       currentPage: this.$route.query.currentPage,
       itemsPerPage: this.$route.query.itemsPerPage,
       search: this.$route.query.search,
+      start: this.$route.query.startDate,
+      end: this.$route.query.endDate,
     });
   },
 };

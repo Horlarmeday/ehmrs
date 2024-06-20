@@ -72,6 +72,8 @@ export default {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
         search: this.$route.query.search,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
       });
       this.fetchQueue({
         currentPage: this.$route.query.currentPage || this.currentPage,
@@ -131,6 +133,9 @@ export default {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: count,
+        search: this.$route.query.search || null,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
       });
       this.fetchQueue({
         currentPage: this.$route.query.currentPage || this.currentPage,
