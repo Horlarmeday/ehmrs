@@ -333,6 +333,7 @@ export const bulkCreateAdditionalItems = async (data): Promise<PrescribedAdditio
  * @param data
  */
 export const updateAdditionalItem = async (data: Partial<PrescribedAdditionalItem>) => {
+  console.log(data);
   try {
     await PrescribedAdditionalItem.update({ ...data }, { where: { id: data.id } });
   } catch (e) {
