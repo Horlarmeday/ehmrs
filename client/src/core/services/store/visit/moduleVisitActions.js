@@ -18,6 +18,20 @@ export default {
     });
   },
 
+  getLastActiveVisit({ commit }, visit) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/visits/last-active`, visit)
+        .then(response => {
+          commit('ADD_VISIT', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
   fetchActiveVisits({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios

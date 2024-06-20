@@ -115,7 +115,7 @@
         </div>
       </div>
       <div>
-        <button ref="kt_visit_submit" @click="createVisit" class="btn btn-primary">
+        <button ref="kt_visit_submit" @click="getLastActiveVisit" class="btn btn-primary">
           Submit
         </button>
       </div>
@@ -127,25 +127,15 @@ import { getRolesById } from '@/view/pages/employees/create/employeeRoles';
 import { debounce } from '@/common/common';
 import vSelect from 'vue-select';
 import dayjs from 'dayjs';
+import Swal from 'sweetalert2';
 
 export default {
   name: 'CreateVisit',
   components: { vSelect },
   data() {
     return {
-      categories: ['Outpatient', 'Antenatal', 'Emergency', 'Immunization'],
       priorities: ['Not Urgent', 'Urgent', 'Emergency'],
       visitTypes: ['New visit'],
-      // departments: [
-      //   {
-      //     id: 2,
-      //     department: 'Nursing',
-      //   },
-      //   {
-      //     id: 9,
-      //     department: 'Medical Practitioner',
-      //   },
-      // ],
       category: '',
       professional: '',
       professionals: null,
@@ -155,6 +145,7 @@ export default {
       time_of_visit: new Date().toLocaleTimeString(),
       service_id: '',
       priority: '',
+      gender: '',
       currentPage: 1,
       itemsPerPage: 20,
     };
@@ -179,6 +170,14 @@ export default {
       }
       return data;
     },
+
+    categories() {
+      const data = ['Outpatient', 'Emergency', 'Immunization'];
+      if (this?.gender === 'Female') {
+        data.push('Antenatal');
+      }
+      return data;
+    },
   },
   methods: {
     getRoles() {
@@ -193,6 +192,55 @@ export default {
     removeSpinner(submitButton) {
       this.isDisabled = false;
       submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
+    },
+
+    displayPrompt(obj, category) {
+      const self = this;
+      Swal.fire({
+        title: 'Are you sure, you want to override?',
+        text: `Patient has an active ${category} visit ongoing, this action cannot be reversed`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Override!',
+        cancelButtonText: 'No, cancel!',
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+          return self.createVisit(obj);
+        },
+      });
+    },
+
+    getLastActiveVisit() {
+      this.$validator.validateAll().then(result => {
+        if (result) {
+          const date = `${dayjs(this.date_of_visit).format('YYYY-MM-DD')} ${this.time_of_visit}`;
+          const obj = {
+            category: this.category,
+            type: this.type,
+            date_of_visit: new Date(date),
+            service_id: this.service_id,
+            priority: this.priority,
+            department: this.department.text,
+            professional: this.professional.text,
+            patient_id: this.$route.params.id,
+          };
+          const submitButton = this.$refs['kt_visit_submit'];
+          this.addSpinner(submitButton);
+
+          this.$store
+            .dispatch('visit/getLastActiveVisit', obj)
+            .then(response => {
+              if (response.status === 200) {
+                const category = response.data.data.category || 'Nil';
+                this.removeSpinner(submitButton);
+                this.displayPrompt(obj, category);
+                return true;
+              }
+              this.initializeRequest(submitButton);
+            })
+            .catch(() => this.removeSpinner(submitButton));
+        }
+      });
     },
 
     initializeRequest(button) {
@@ -218,29 +266,14 @@ export default {
         .catch(() => loading(false));
     }, 500),
 
-    createVisit() {
-      this.$validator.validateAll().then(result => {
-        if (result) {
-          const date = `${dayjs(this.date_of_visit).format('YYYY-MM-DD')} ${this.time_of_visit}`;
-          const obj = {
-            category: this.category,
-            type: this.type,
-            date_of_visit: new Date(date),
-            service_id: this.service_id,
-            priority: this.priority,
-            department: this.department.text,
-            professional: this.professional.text,
-            patient_id: this.$route.params.id,
-          };
-          const submitButton = this.$refs['kt_visit_submit'];
-          this.addSpinner(submitButton);
+    createVisit(obj) {
+      const submitButton = this.$refs['kt_visit_submit'];
+      this.addSpinner(submitButton);
 
-          this.$store
-            .dispatch('visit/addVisit', obj)
-            .then(() => this.initializeRequest(submitButton))
-            .catch(() => this.removeSpinner(submitButton));
-        }
-      });
+      this.$store
+        .dispatch('visit/addVisit', obj)
+        .then(() => this.initializeRequest(submitButton))
+        .catch(() => this.removeSpinner(submitButton));
     },
 
     initValues() {
@@ -257,6 +290,7 @@ export default {
   created() {
     this.$store.dispatch('patient/fetchPatientProfile', this.$route.params.id).then(response => {
       const res = response.data.data;
+      this.gender = res.gender;
       this.$store.dispatch('patient/setCurrentPatient', { ...res, ...res.insurance });
     });
   },

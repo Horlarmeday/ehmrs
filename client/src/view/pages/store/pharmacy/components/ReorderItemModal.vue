@@ -3,7 +3,7 @@
     <div class="mb-5" v-for="(item, i) in itemsToReorder" :key="i">
       <label class="font-weight-bolder"
         >{{ item.drug_name }}
-        <span v-if="item.drug_type === 'NHIS'" class="label label-primary label-inline">{{
+        <span :class="getItemType(item.drug_type)" class="label label-inline">{{
           item.drug_type
         }}</span>
       </label>
@@ -73,6 +73,7 @@
 
 <script>
 import Datepicker from 'vuejs-datepicker';
+import { getItemType } from '@/common/common';
 export default {
   data: () => ({
     isDisabled: false,
@@ -106,6 +107,7 @@ export default {
   },
 
   methods: {
+    getItemType,
     addSpinner(submitButton) {
       this.isDisabled = true;
       submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');

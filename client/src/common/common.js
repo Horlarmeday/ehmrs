@@ -150,3 +150,11 @@ export const getItemType = type => {
   if (type === 'Retainership') return 'label-light-info';
   return 'label-light-default';
 };
+
+export const getPatientDotStatus = type => {
+  if (type === 'NHIS') return 'label-danger';
+  if (type === 'FHSS') return 'label-success';
+  if (type === 'PHIS') return 'label-primary';
+  if (type === 'Retainership') return 'label-info';
+  return 'label-default';
+};
