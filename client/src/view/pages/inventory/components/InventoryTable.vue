@@ -16,7 +16,7 @@
             <th class="pr-0" style="width: 150px">Price(₦)</th>
             <th class="pr-0" style="width: 150px">Dosage Form</th>
             <th class="pr-0" style="width: 100px">Strength</th>
-            <th style="min-width: 150px">Date Created</th>
+            <th style="min-width: 150px">Expiration</th>
             <th class="pr-0 text-right" style="min-width: 70px">action</th>
           </tr>
         </thead>
@@ -68,7 +68,7 @@
             </td>
             <td>
               <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                {{ item.date_received | dayjs('ddd, MMM Do YYYY, h:mma') }}
+                {{ item.expiration | dayjs('ddd, MMM Do YYYY, h:mma') }}
               </span>
             </td>
             <td class="pr-0 text-right">

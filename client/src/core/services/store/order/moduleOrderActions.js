@@ -372,6 +372,19 @@ export default {
     });
   },
 
+  updateAdditionalItem({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/orders/pharmacy/additional-items/update`, payload)
+        .then(response => {
+          commit('UPDATE_ADD_ITEM_ORDER', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
 
   fetchAdditionalItemsPerVisit({ commit }, payload) {
     return new Promise((resolve, reject) => {

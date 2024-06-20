@@ -291,6 +291,18 @@ class PharmacyOrderService {
   }
 
   /**
+   * update additional items
+   *
+   * @static
+   * @returns {Promise<PrescribedAdditionalItem>} json object with additional items data
+   * @param body
+   * @memberOf PharmacyOrderService
+   */
+  static async updateAdditionalItem(body: Partial<PrescribedAdditionalItem>) {
+    return await updateAdditionalItem(body);
+  }
+
+  /**
    * update bulk additional items
    *
    * @static

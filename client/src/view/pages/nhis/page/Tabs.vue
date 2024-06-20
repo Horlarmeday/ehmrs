@@ -24,6 +24,9 @@
               <b-tab title="Services" lazy>
                 <services />
               </b-tab>
+              <b-tab title="Items" lazy>
+                <items />
+              </b-tab>
             </b-tabs>
           </div>
           <TabsSkeleton :tabs="tabs" v-else />
@@ -35,6 +38,7 @@
 <script>
 import TabsSkeleton from '@/view/pages/programs/immunization/components/TabsSkeleton.vue';
 import Tests from '@/view/pages/nhis/page/tabs/Tests.vue';
+import Items from '@/view/pages/nhis/page/tabs/Items.vue';
 import DiagnosisAccordion from '@/view/components/accordion/DiagnosisAccordion.vue';
 import Medications from '@/view/pages/nhis/page/tabs/Medications.vue';
 import Radiology from '@/view/pages/nhis/page/tabs/Radiology.vue';
@@ -51,6 +55,7 @@ export default {
     DiagnosisAccordion,
     Tests,
     TabsSkeleton,
+    Items,
   },
   computed: {
     visit() {

@@ -19,6 +19,7 @@ router.put(
   verify,
   PharmacyOrderController.updateBulkAdditionalItems
 );
+router.put('/additional-items/update', verify, PharmacyOrderController.updateAdditionalItem);
 router.get('/get', verify, PharmacyOrderController.getPrescribedDrugs);
 router.get('/additional-items/get', verify, PharmacyOrderController.getPrescribedAdditionalItems);
 router.get('/treatment/get', verify, PharmacyOrderController.getPatientTreatmentData);

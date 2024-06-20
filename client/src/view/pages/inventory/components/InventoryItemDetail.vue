@@ -22,7 +22,15 @@
         <div class="col-3">
           <div class="col d-flex flex-column flex-root">
             <span class="font-weight-bolder mb-2">ACQUIRED PRICE</span>
-            <span class="opacity-70">₦{{ item?.acquired_price?.toLocaleString() }}</span>
+            <span
+              v-if="
+                allowedUsers.includes(currentUser.role) ||
+                  allowedSubRole.includes(currentUser.sub_role)
+              "
+              class="opacity-70"
+              >₦{{ item?.acquired_price?.toLocaleString() }}</span
+            >
+            <span v-else class="opacity-70">-</span>
           </div>
         </div>
         <div class="col-3 mb-lg-5">
@@ -91,11 +99,14 @@
 </template>
 
 <script>
-import { getItemType, monthDiff } from '@/common/common';
+import { getItemType, monthDiff, parseJwt } from '@/common/common';
 
 export default {
   data: () => ({
     count: 0,
+    currentUser: parseJwt(localStorage.getItem('user_token')),
+    allowedUsers: ['Super Admin', 'Pharmacy Store'],
+    allowedSubRole: ['HOD'],
   }),
 
   computed: {

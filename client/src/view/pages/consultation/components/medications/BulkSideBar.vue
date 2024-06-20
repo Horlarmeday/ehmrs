@@ -597,6 +597,7 @@ export default {
         .dispatch('inventory/fetchInventoryItems', {
           inventory,
           search,
+          filter: { drug_form: 'Drug' },
         })
         .then(() => loading(false));
     }, 500),

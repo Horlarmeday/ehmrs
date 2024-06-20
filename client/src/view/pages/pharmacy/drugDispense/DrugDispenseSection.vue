@@ -26,7 +26,7 @@
           </div>
         </div>
         <div>
-          <b-collapse :id="`collapse-d${i}`">
+          <b-collapse visible :id="`collapse-d${i}`">
             <b-card :class="prescription.payment_status === PENDING && DISABLED">
               <drug-info-banner :prescription="prescription" />
               <div class="form-group row">

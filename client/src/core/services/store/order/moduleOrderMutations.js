@@ -180,6 +180,11 @@ export default {
     state.additional_items_orders = items;
   },
 
+  UPDATE_ADD_ITEM_ORDER(state, drug) {
+    const drugIndex = state.additional_items_orders.findIndex(p => p.id === drug.id);
+    Object.assign(state.additional_items_orders[drugIndex], drug);
+  },
+
   SET_ADD_ITEMS_ORDERS_TOTAL(state, total) {
     state.totalAdditionalItemsOrders = total;
   },

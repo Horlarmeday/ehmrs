@@ -245,6 +245,41 @@ export class PharmacyOrderController {
   }
 
   /**
+   * update additional items
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {SuccessResponse} json object with status, additional items data
+   */
+  static async updateAdditionalItem(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    const empty = isEmpty(req.body);
+    if (empty)
+      return errorResponse({
+        res,
+        message: EMPTY_REQUEST_BODY,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+    try {
+      const item = await PharmacyOrderService.updateAdditionalItem(req.body.data);
+
+      return successResponse({
+        res,
+        data: item,
+        message: DATA_UPDATED,
+        httpCode: StatusCodes.CREATED,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
    * get pharmacy prescribed drugs
    *
    * @static

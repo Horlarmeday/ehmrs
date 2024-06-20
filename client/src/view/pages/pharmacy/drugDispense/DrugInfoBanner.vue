@@ -67,28 +67,6 @@
           <a
             href="#"
             v-b-tooltip.hover
-            title="Quantity Prescribed"
-            class="text-dark-50 text-hover-primary font-weight-bold mr-lg-8 mr-5 mb-lg-0 mb-2"
-            ><i class="fab fa-creative-commons-remix mr-2 font-size-lg icon-lg"></i>Qty Prescribed:
-            <span class="ml-2 text-dark"
-              >{{ prescription.quantity }} {{ prescription?.dosage_form }}</span
-            ></a
-          >
-          <a
-            href="#"
-            v-b-tooltip.hover
-            title="Drug Starting Date"
-            class="text-dark-50 text-hover-primary font-weight-bold mr-lg-8 mr-5 mb-lg-0 mb-2"
-            ><i class="far fa-calendar-alt mr-2 font-size-lg icon-lg"></i>Starting Date:
-            <span class="text-dark ml-2">{{
-              prescription.start_date | dayjs('DD/MM/YYYY')
-            }}</span></a
-          >
-        </div>
-        <div class="d-flex flex-column flex-root">
-          <a
-            href="#"
-            v-b-tooltip.hover
             title="Frequency"
             class="text-dark-50 text-hover-primary font-weight-bold mr-lg-8 mr-5 mb-lg-0 mb-2"
             ><i class="far fa-chart-bar mr-2 font-size-lg icon-lg"></i>Frequency:
