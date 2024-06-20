@@ -206,6 +206,23 @@ class VisitService {
   }
 
   /**
+   * get patient last active visit or create new one
+   *
+   * @static
+   * @returns {Promise<Visit>} json object with item data
+   * @memberOf VisitService
+   * @param body
+   */
+  static async getLastActiveVisitOrCreate(body: CreateVisit) {
+    const visit = await getLastActiveVisit(body.patient_id);
+    if (!visit) {
+      const newVisit = await createVisit(body);
+      return { isExist: false, visit: newVisit };
+    }
+    return { isExist: true, visit };
+  }
+
+  /**
    * get patient visit by id
    *
    * @static

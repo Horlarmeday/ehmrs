@@ -28,11 +28,11 @@ export enum Status {
   ACTIVE = 'Active',
   INACTIVE = 'Inactive',
 }
-@DefaultScope(() => ({
-  where: {
-    status: Status.ACTIVE,
-  },
-}))
+// @DefaultScope(() => ({
+//   where: {
+//     status: Status.ACTIVE,
+//   },
+// }))
 @Table({ timestamps: true })
 export class Staff extends Model {
   @PrimaryKey

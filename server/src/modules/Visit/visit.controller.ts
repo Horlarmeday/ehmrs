@@ -47,6 +47,45 @@ class VisitController {
   }
 
   /**
+   * get a patient last active visit or create new one
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, visit data
+   */
+  static async getLastActiveVisitOrCreate(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    const { error } = validateVisit(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+
+    try {
+      const visit = await VisitService.getLastActiveVisitOrCreate({
+        ...req.body,
+        staff_id: req.user.sub,
+      });
+
+      return successResponse({
+        res,
+        httpCode: visit.isExist ? StatusCodes.OK : StatusCodes.CREATED,
+        message: DATA_SAVED,
+        data: visit.visit,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
    * get all visits
    *
    * @static
