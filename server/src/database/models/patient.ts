@@ -23,6 +23,7 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { PatientInsurance } from './patientInsurance';
+import { Visit } from './visit';
 
 export enum PatientStatus {
   INPATIENT = 'Inpatient',
@@ -256,6 +257,9 @@ export class Patient extends Model {
 
   @HasMany(() => Patient)
   dependants: Patient[];
+
+  @HasMany(() => Visit)
+  visits: Visit[];
 
   @BelongsTo(() => Patient, { foreignKey: 'principal_id' })
   principal: Patient;

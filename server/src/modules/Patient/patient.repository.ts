@@ -2,7 +2,7 @@
 import { Op } from 'sequelize';
 import { JobSchedule } from '../../core/command/worker/schedule';
 import { PatientType, TogglePatientInsurance, UpdatePatientInsurance } from './types/patient.types';
-import { Insurance, Patient, PatientInsurance, Staff } from '../../database/models';
+import { HMO, Insurance, Patient, PatientInsurance, Staff, Visit } from '../../database/models';
 import sequelizeConnection from '../../database/config/config';
 import { BadException } from '../../common/util/api-error';
 import {
@@ -17,6 +17,7 @@ import {
   updatePatientInsurance,
 } from '../Insurance/insurance.repository';
 import { dateIntervalQuery, patientAttributes, staffAttributes } from '../../core/helpers/helper';
+import { VisitStatus } from '../../database/models/visit';
 
 /**
  * query staff account in the DB by phone
@@ -351,7 +352,21 @@ export async function getPatients({
     page: +currentPage,
     paginate: +pageLimit,
     order: [['createdAt', 'DESC']],
-    include: [{ model: Staff, attributes: staffAttributes }],
+    include: [
+      { model: Staff, attributes: staffAttributes },
+      {
+        model: PatientInsurance,
+        where: { is_default: true },
+        limit: 1,
+        order: [['createdAt', 'DESC']],
+        attributes: ['id', 'insurance_id', 'hmo_id'],
+        include: [
+          { model: Insurance, attributes: ['name'] },
+          { model: HMO, attributes: ['name'] },
+        ],
+      },
+    ],
+    attributes: patientAttributes,
     where: {
       ...(filter && JSON.parse(filter)),
       ...(start && end && dateIntervalQuery('createdAt', start, end)),

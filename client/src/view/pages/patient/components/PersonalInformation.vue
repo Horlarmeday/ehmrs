@@ -32,7 +32,7 @@
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             Date of Birth
             <div class="font-weight-boldest text-dark">
-              {{ patient.date_of_birth | dayjs('DD/MM/YYYY') }}
+              {{ patient.date_of_birth | dayjs('Do MMM YYYY') }}
             </div>
           </b-list-group-item>
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">

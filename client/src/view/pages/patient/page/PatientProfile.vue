@@ -7,10 +7,10 @@
       </div>
       <div class="card-title">
         <span
-          :title="`Switch patient account to ${patient?.has_insurance ? 'Cash' : 'NHIS'}`"
+          :title="`${switchMessage} ${patient?.has_insurance ? CASH : NHIS}`"
           v-b-tooltip.hover
           class="switch mr-4"
-          v-if="patient?.insurance"
+          v-if="patient.patient_type !== DEPENDANT && patient?.insurance"
         >
           <label>
             <input @change="showAlert($event)" :checked="patient?.has_insurance" type="checkbox" />
@@ -87,6 +87,10 @@ export default {
       },
     ],
     loading: false,
+    DEPENDANT: 'Dependant',
+    CASH: 'Cash',
+    NHIS: 'NHIS',
+    switchMessage: 'Switch patient account to',
   }),
 
   computed: {
@@ -97,7 +101,7 @@ export default {
 
   watch: {
     patient: function(val) {
-      if (val && val.patient_type !== 'Dependant') {
+      if (val && val.patient_type !== this.DEPENDANT) {
         this.routes.push({
           icon: 'flaticon-security',
           desc: 'Add Insurance',
@@ -106,7 +110,7 @@ export default {
         });
       }
 
-      if (val && val.has_insurance && val.patient_type !== 'Dependant') {
+      if (val && val.has_insurance && val.patient_type !== this.DEPENDANT) {
         this.routes.push(
           {
             icon: 'flaticon2-avatar',
