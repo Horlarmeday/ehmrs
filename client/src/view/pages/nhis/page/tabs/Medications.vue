@@ -13,6 +13,7 @@
           <thead>
             <tr class="text-left">
               <th class="pr-0" style="width: 250px">Drug</th>
+              <th style="min-width: 100px">Drug Type</th>
               <th style="min-width: 100px">Type</th>
               <th style="min-width: 50px">Dose</th>
               <th style="min-width: 100px">Status</th>
@@ -43,7 +44,14 @@
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ drug.drug_group }}
+                  <label :class="getItemType(drug.drug_type)" class="label label-inline">{{
+                    drug.drug_type
+                  }}</label>
+                </span>
+              </td>
+              <td>
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ drug.drug_group || '-' }}
                 </span>
               </td>
               <td>
@@ -135,6 +143,7 @@ import Pagination from '@/utils/Pagination.vue';
 import Swal from 'sweetalert2';
 import AuthCodeModal from '@/view/pages/nhis/components/AuthCodeModal.vue';
 import DrugPopover from '@/view/components/popover/DrugPopover.vue';
+import { getItemType } from '@/common/common';
 
 export default {
   components: { DrugPopover, AuthCodeModal, Pagination, CancelIcon, ApproveIcon, EditIcon },
@@ -170,6 +179,7 @@ export default {
     },
   },
   methods: {
+    getItemType,
     addAuthCode(drug) {
       this.drug = {
         id: drug.id,

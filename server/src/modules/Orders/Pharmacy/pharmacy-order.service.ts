@@ -86,7 +86,7 @@ class PharmacyOrderService {
     ]);
 
     //todo: Add check for daily NHIS drug quota
-    const settings = await SystemSettings.findOne();
+    // const settings = await SystemSettings.findOne();
     // const settings = await SystemSettings.findOne();
     //TODO:
     // check if drug is primary, check the drugs prescribed today and sum them
@@ -116,25 +116,25 @@ class PharmacyOrderService {
       })
     );
 
-    const sumOfDrugsToday = await PrescribedDrug.sum('total_price', {
-      where: {
-        ...getPeriodQuery(Period.TODAY, 'date_prescribed'),
-        drug_group: DrugGroup.PRIMARY,
-      },
-    });
-
-    const totalPrimaryDrugsPrice = mappedPrescribedDrugs
-      .filter(drug => drug.drug_group === DrugGroup.PRIMARY)
-      .reduce((a, b) => a + b.total_price, 0);
-
-    const totalSum = sumOfDrugsToday + totalPrimaryDrugsPrice;
-    if (totalSum > settings.nhis_daily_quota_amount) {
-      throw new BadException(
-        'Error',
-        400,
-        'Sum of drugs prescribed today is more than NHIS daily price quota'
-      );
-    }
+    // const sumOfDrugsToday = await PrescribedDrug.sum('total_price', {
+    //   where: {
+    //     ...getPeriodQuery(Period.TODAY, 'date_prescribed'),
+    //     drug_group: DrugGroup.PRIMARY,
+    //   },
+    // });
+    //
+    // const totalPrimaryDrugsPrice = mappedPrescribedDrugs
+    //   .filter(drug => drug.drug_group === DrugGroup.PRIMARY)
+    //   .reduce((a, b) => a + b.total_price, 0);
+    //
+    // const totalSum = sumOfDrugsToday + totalPrimaryDrugsPrice;
+    // if (totalSum > settings.nhis_daily_quota_amount) {
+    //   throw new BadException(
+    //     'Error',
+    //     400,
+    //     'Sum of drugs prescribed today is more than NHIS daily price quota'
+    //   );
+    // }
 
     const injections = body.filter(
       ({ dosage_form_name }) =>

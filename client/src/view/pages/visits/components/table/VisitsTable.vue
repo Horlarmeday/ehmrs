@@ -4,16 +4,16 @@
       <table class="table table-head-custom table-head-bg table-vertical-center">
         <thead>
           <tr class="text-uppercase">
-            <th style="min-width: 150px" class="pl-7">
+            <th style="min-width: 120px" class="pl-4">
               <span class="text-dark-75">Patient ID</span>
             </th>
             <th style="min-width: 250px">Patient Name</th>
-            <th style="min-width: 150px">Category</th>
-            <th v-if="$route.name !== antenatalRoute" style="min-width: 150px">Gender</th>
-            <th style="min-width: 150px">Status</th>
+            <th style="min-width: 100px">Category</th>
+            <th v-if="$route.name !== antenatalRoute" style="min-width: 100px">Gender</th>
+            <th style="min-width: 70px">Status</th>
             <th style="min-width: 150px">Date</th>
-            <th style="min-width: 150px">Visit Created By</th>
-            <th class="text-right pr-0" style="min-width: 130px">Action</th>
+            <th style="min-width: 150px">Created By</th>
+            <th class="text-right pr-0" style="min-width: 100px">Action</th>
             <th style="min-width: 10px"></th>
           </tr>
         </thead>
@@ -22,7 +22,7 @@
             <td colspan="9" align="center" class="text-muted">No Data</td>
           </tr>
           <tr v-for="queue in queues" :key="queue.id">
-            <td class="pl-7 py-8">
+            <td class="pl-4 py-8">
               <div class="d-flex align-items-center">
                 <div>
                   <a
@@ -55,7 +55,7 @@
             </td>
             <td>
               <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                {{ queue.date_visit_start | dayjs('ddd, MMM Do YYYY, h:mma') }}
+                {{ queue.date_visit_start | dayjs('DD/MM/YYYY, h:mma') }}
               </span>
             </td>
             <td>
