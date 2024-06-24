@@ -72,6 +72,7 @@
               <th style="min-width: 100px">Dosage Form</th>
               <th style="min-width: 100px">Unit Price (₦)</th>
               <th style="min-width: 100px">Selling Price (₦)</th>
+              <th style="min-width: 100px">Expiration</th>
               <th style="min-width: 50px">Strength</th>
               <th style="min-width: 150px">Date Created</th>
             </tr>
@@ -119,6 +120,11 @@
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                   {{ item.selling_price || 'None' }}
+                </span>
+              </td>
+              <td>
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ item.expiration | dayjs('DD/MM/YYYY, h:mma') }}
                 </span>
               </td>
               <td>

@@ -189,9 +189,11 @@ class StoreService {
     return await Promise.all(
       items.map(async item => {
         const storeItem = await getPharmacyStoreItemById(item.id);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id, ...rest } = storeItem.toJSON();
         // update the store logs
         await createPharmacyStoreLogs({
-          ...storeItem.toJSON(),
+          ...rest,
           pharmacy_store_id: item.id,
           staff_id,
         });
