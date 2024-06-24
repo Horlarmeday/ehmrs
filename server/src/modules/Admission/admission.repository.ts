@@ -726,12 +726,19 @@ type DischargePatientType = DischargeBodyType & {
 export const dischargePatient = async (data: DischargePatientType) => {
   const { discharged_by, patient_id, admission_id, discharge_type } = data;
   return await sequelize.transaction(async (t: Transaction) => {
+    const admission = await Admission.findOne({ where: { id: admission_id }, transaction: t });
     // create discharge record
     const discharge = await Discharge.create({ ...data }, { transaction: t });
+
     // update the admission status
     await Admission.update(
       { discharged_by, discharge_status: DischargeStatus.DISCHARGED },
       { where: { id: admission_id }, transaction: t }
+    );
+
+    await Bed.update(
+      { status: BedStatus.UNTAKEN },
+      { where: { id: admission.bed_id }, transaction: t }
     );
     // update the patient status
     await Patient.update(

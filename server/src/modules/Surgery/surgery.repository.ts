@@ -28,6 +28,7 @@ export const requestSurgery = async (data): Promise<SurgeryRequest> => {
     await PrescribedService.create(
       {
         service_id: service.id,
+        surgery_id: surgeryRequest.id,
         price: service.price,
         service_type: ServiceType.CASH,
         requester: data.staff_id,
