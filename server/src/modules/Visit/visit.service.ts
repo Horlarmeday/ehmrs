@@ -216,7 +216,7 @@ class VisitService {
   static async getLastActiveVisitOrCreate(body: CreateVisit) {
     const visit = await getLastActiveVisit(body.patient_id);
     if (!visit) {
-      const newVisit = await createVisit(body);
+      const newVisit = await VisitService.createVisitService(body);
       return { isExist: false, visit: newVisit };
     }
     return { isExist: true, visit };

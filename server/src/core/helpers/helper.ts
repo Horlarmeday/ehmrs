@@ -4,7 +4,7 @@ import { promisify } from 'util';
 import fs from 'fs';
 import { BadException } from '../../common/util/api-error';
 import { DEVELOPMENT } from '../constants';
-import { Patient, TestPrescription } from '../../database/models';
+import { Patient, PatientInsurance, TestPrescription } from '../../database/models';
 import { Response } from 'express';
 import { ExportDataType } from '../../modules/Store/types/pharmacy-item.types';
 import { exportDataToCSV, exportDataToExcel, exportDataToPDF } from './fileExport';
@@ -15,6 +15,7 @@ import { PrescribedAdditionalItemBody } from '../../modules/Orders/Pharmacy/inte
 import { getSystemSettings } from '../../modules/AdminSettings/admin.repository';
 import { getPatientByHospitalId } from '../../modules/Patient/patient.repository';
 import { getTestPrescription } from '../../modules/Laboratory/laboratory.repository';
+import { DrugType } from '../../database/models/pharmacyStore';
 
 const writeFile = promisify(fs.writeFile);
 
@@ -240,3 +241,16 @@ export const calculateAge = (birthday: string | number | Date) => {
 
 export const flattenArray = (arrayOfArrays: PrescribedAdditionalItemBody[][]) =>
   arrayOfArrays.reduce((acc, curr) => acc.concat(curr), []);
+
+export const getDrugType = (has_insurance: boolean, insurance: PatientInsurance) => {
+  if (!has_insurance) return DrugType.CASH;
+
+  const insuranceMapping = {
+    NHIS: DrugType.NHIS,
+    PHIS: DrugType.PRIVATE,
+    FHSS: DrugType.NHIS,
+    Retainership: DrugType.CASH,
+  };
+
+  return insuranceMapping[insurance?.insurance?.name] || DrugType.CASH;
+};
