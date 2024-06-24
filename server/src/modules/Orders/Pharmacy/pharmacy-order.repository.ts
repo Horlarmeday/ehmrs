@@ -6,6 +6,7 @@ import {
   Drug,
   Measurement,
   Patient,
+  PatientInsurance,
   PatientTreatment,
   PrescribedAdditionalItem,
   PrescribedDrug,
@@ -22,13 +23,14 @@ import { getOneDefault } from '../../AdminSettings/admin.repository';
 import { DefaultType } from '../../../database/models/default';
 import { staffAttributes } from '../../Antenatal/antenatal.repository';
 import { BadException } from '../../../common/util/api-error';
-import { flattenArray, StatusCodes } from '../../../core/helpers/helper';
+import { flattenArray, getDrugType, StatusCodes } from '../../../core/helpers/helper';
 import {
   ERROR_UPDATING_DRUG,
   ERROR_UPDATING_ITEM,
   INJECTION_SYRINGES_NOT_FOUND,
 } from './messages/response-messages';
 import sequelizeConnection from '../../../database/config/config';
+import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
 
 type PrescribeDrugType = PrescribedDrugBody & {
   drug_prescription_id: number;
@@ -142,6 +144,8 @@ export const prescribeBulkDrugs = async (
         injections.some(injection => drug.dosage_form_id === injection.dosage_form_id)
       );
 
+      const patientInsurance = await getPatientInsuranceQuery({ patient_id: patient.id });
+
       const additionalItems = await Promise.all(
         prescribedInjections.map(async injection => {
           return bulkSyringeNeedlePrescriptions({
@@ -149,6 +153,7 @@ export const prescribeBulkDrugs = async (
             patient,
             injectionItems: injectionDefaults?.data,
             patient_insurance_id: injection?.patient_insurance_id,
+            insurance: patientInsurance,
           });
         })
       );
@@ -313,7 +318,6 @@ export const bulkCreateAdditionalItems = async (data): Promise<PrescribedAdditio
  * @param data
  */
 export const updateAdditionalItem = async (data: Partial<PrescribedAdditionalItem>) => {
-  console.log(data);
   try {
     await PrescribedAdditionalItem.update({ ...data }, { where: { id: data.id } });
   } catch (e) {
@@ -587,15 +591,20 @@ export const bulkSyringeNeedlePrescriptions = async ({
   patient,
   injectionItems,
   patient_insurance_id,
+  insurance,
 }: {
   prescription: PrescribedDrug;
   patient: Patient;
   injectionItems: Array<any>;
   patient_insurance_id?: number;
+  insurance: PatientInsurance;
 }) => {
+  const EXCLUDED_INSURANCE = ['NHIS', 'FHSS'];
   const formattedDate = dayjs(patient.date_of_birth).format('YYYY-MM-DD');
   const age = dayjs().diff(dayjs(formattedDate), 'year');
   const route = await getOneRouteOfAdministration({ id: prescription.route_id });
+  const isNHIS = EXCLUDED_INSURANCE.includes(insurance?.insurance?.name);
+  const drugType = getDrugType(patient.has_insurance, insurance);
 
   const prescriptionStrength = +prescription.prescribed_strength;
   const quantity =
@@ -624,14 +633,17 @@ export const bulkSyringeNeedlePrescriptions = async ({
   };
 
   const selectSyringe = (syringeName: string) => {
-    const syringe = injectionItems.find(({ drug }) =>
-      new RegExp(`\\b${syringeName}\\b`, 'i').test(drug.name)
+    const syringe = injectionItems.find(
+      ({ drug }) =>
+        new RegExp(`\\b${syringeName}\\b`, 'i').test(drug.name) && drug?.drug_type === drugType
     );
+
+    const isGloves = /gloves/i.test(syringeName);
     if (syringe) {
       return {
         drug_id: syringe.drug.drug_id,
         unit_id: syringe.drug.unit_id,
-        total_price: syringe.drug.price * quantity * (patient.has_insurance ? 0.1 : 1),
+        total_price: syringe.drug.price * quantity * (isNHIS && !isGloves ? 0.1 : 1),
       };
     }
     return null;

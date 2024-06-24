@@ -188,19 +188,27 @@ export default {
         .dispatch('inventory/fetchInventoryItems', {
           search,
           inventory,
+          filter: { drug_form: 'Consumable' },
         })
         .then(() => loading(false));
     }, 500),
 
     getItemType(insuranceName) {
-      const types = ['FHSS', 'NHIS'];
-      if (types.includes(insuranceName)) return 'NHIS';
-      if (insuranceName === 'PHIS') return 'Private';
-      return 'NHIS';
+      const isSwitchOn = this.switchSpot && this.switchPosition;
+      if (isSwitchOn) return 'NHIS';
+      const insuranceMapping = {
+        FHSS: 'NHIS',
+        NHIS: 'NHIS',
+        PHIS: 'Private',
+        Retainership: 'Cash',
+      };
+      const selectedInsurance = insuranceMapping[insuranceName];
+      if (selectedInsurance === 'NHIS' && !isSwitchOn) return 'Cash';
+      return insuranceMapping[insuranceName] || 'Cash';
     },
 
     getInventoryId() {
-      const type = this.switchPosition && this.switchSpot ? this.getItemType(this.insuranceName) : 'Cash';
+      const type = this.getItemType(this.insuranceName);
       return this.inventories.find(inventory =>
         inventory.name.toLowerCase().includes(type.toLowerCase())
       )?.id;
