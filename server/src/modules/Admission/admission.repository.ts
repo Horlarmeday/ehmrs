@@ -45,7 +45,7 @@ import { Gender } from '../../database/models/staff';
 import { DrugType } from '../../database/models/pharmacyStore';
 import { getInventories } from '../Inventory/inventory.repository';
 import { staffAttributes } from '../Antenatal/antenatal.repository';
-import { dateIntervalQuery, getDrugType, StatusCodes } from '../../core/helpers/helper';
+import { dateIntervalQuery, getDrugType, isToday, StatusCodes } from '../../core/helpers/helper';
 import { DischargeStatus } from '../../database/models/admission';
 import { DischargeType } from '../../database/models/discharge';
 import { getPrescriptionTests } from '../Orders/Laboratory/lab-order.repository';
@@ -56,6 +56,12 @@ import { AccountStatus } from '../../database/models/antenatal';
 import { CreatePostNatal } from '../Antenatal/types/antenatal.types';
 import { BadException } from '../../common/util/api-error';
 import { NO_AVAILABLE_BED } from './messages/response-messages';
+import {
+  PrescribedAdditionalItemBody,
+  PrescribedDrugBody,
+} from '../Orders/Pharmacy/interface/prescribed-drug.body';
+import { createDrugPrescription, getLastDrugPrescription } from '../Pharmacy/pharmacy.repository';
+import { DrugStatus } from '../../database/models/drugPrescription';
 
 enum Ages {
   ALL_AGES = 'ALL_AGES',
@@ -446,6 +452,31 @@ export const changePatientWard = async (
   });
 };
 
+const getDrugPrescription = async (patient_id: number, data: any) => {
+  const drugPrescriptionData = {
+    source: data.source,
+    requester: 'staff_id' in data ? data.staff_id : data.examiner,
+    visit_id: data.visit_id,
+    patient_id,
+    date_prescribed: Date.now(),
+    ...(data?.ante_natal_id && { ante_natal_id: data?.ante_natal_id }),
+  };
+
+  const lastPrescription = await getLastDrugPrescription(patient_id);
+
+  if (lastPrescription && !isToday(lastPrescription?.date_prescribed))
+    return createDrugPrescription(drugPrescriptionData);
+
+  // if drug has not been dispensed - pick the id and use it in prescribed drug
+  if (lastPrescription?.status === DrugStatus.PENDING) return lastPrescription;
+
+  // if drug was prescribed today and has been dispensed - create new one
+  if (lastPrescription?.status === DrugStatus.COMPLETE_DISPENSE)
+    return createDrugPrescription(drugPrescriptionData);
+
+  return createDrugPrescription(drugPrescriptionData);
+};
+
 /**
  * insert the default items for patient admission
  *
@@ -480,6 +511,12 @@ export const insertDefaultAdmissionItems = async ({
     new RegExp(`\\b${drugType}\\b`, 'i').test(accepted_drug_type)
   );
   const isNHIS = EXCLUDED_INSURANCE.includes(insurance?.insurance?.name);
+  const drugPrescription = await getDrugPrescription(patient.id, {
+    visit_id: admission.visit_id,
+    source: Source.CONSULTATION,
+    examiner: admission.admitted_by,
+    ante_natal_id: admission.ante_natal_id,
+  });
   const createItems = (filteredItems: any[]) => {
     const consumables = filteredItems?.filter(item => item?.drug?.drug_type === drugType);
     if (consumables?.length) {
@@ -498,6 +535,8 @@ export const insertDefaultAdmissionItems = async ({
         patient_id: patient.id,
         drug_id: item?.drug?.drug_id,
         unit_id: item?.drug?.unit_id,
+        drug_prescription_id: drugPrescription.id,
+        patient_insurance_id: insurance.id,
         total_price:
           item?.drug?.price * item.quantity * (isNHIS && !/gloves/i.test(item) ? 0.1 : 1),
       }));
