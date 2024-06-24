@@ -8,6 +8,7 @@ import {
   CarePlan,
   Delivery,
   Discharge,
+  Insurance,
   Inventory,
   IOChart,
   NursingNote,
@@ -44,7 +45,7 @@ import { Gender } from '../../database/models/staff';
 import { DrugType } from '../../database/models/pharmacyStore';
 import { getInventories } from '../Inventory/inventory.repository';
 import { staffAttributes } from '../Antenatal/antenatal.repository';
-import { dateIntervalQuery, StatusCodes } from '../../core/helpers/helper';
+import { dateIntervalQuery, getDrugType, StatusCodes } from '../../core/helpers/helper';
 import { DischargeStatus } from '../../database/models/admission';
 import { DischargeType } from '../../database/models/discharge';
 import { getPrescriptionTests } from '../Orders/Laboratory/lab-order.repository';
@@ -82,7 +83,7 @@ export const admitPatient = async (data: AdmissionBodyType) => {
   // bed_id is only sent from client when the ward is VIP else we have to search the ward for
   // available bed space
   if (!bed_id) {
-    const beds = ward.beds.filter(bed => bed.status === BedStatus.UNTAKEN);
+    const beds = ward?.beds?.filter(bed => bed.status === BedStatus.UNTAKEN);
     if (beds?.length) {
       bedId = beds[0].id;
     } else {
@@ -445,18 +446,6 @@ export const changePatientWard = async (
   });
 };
 
-const getDrugType = (has_insurance: boolean, insurance: PatientInsurance) => {
-  if (!has_insurance) return DrugType.CASH;
-
-  const insuranceMapping = {
-    NHIS: DrugType.NHIS,
-    PHIS: DrugType.PRIVATE,
-    FHSS: DrugType.NHIS,
-    Retainership: DrugType.CASH,
-  };
-
-  return insuranceMapping[insurance?.insurance?.name] || DrugType.CASH;
-};
 /**
  * insert the default items for patient admission
  *
@@ -492,31 +481,41 @@ export const insertDefaultAdmissionItems = async ({
   );
   const isNHIS = EXCLUDED_INSURANCE.includes(insurance?.insurance?.name);
   const createItems = (filteredItems: any[]) => {
-    return filteredItems.map(item => ({
-      drug_form: DrugForm.CONSUMABLE,
-      quantity_prescribed: +item.quantity,
-      quantity_to_dispense: +item.quantity,
-      visit_id: admission.visit_id,
-      inventory_id: inventory?.id || 1,
-      start_date: Date.now(),
-      date_prescribed: Date.now(),
-      ante_natal_id: admission.ante_natal_id,
-      examiner: admission.admitted_by,
-      drug_type: drugType,
-      source,
-      patient_id: patient.id,
-      drug_id: item?.drug?.drug_id,
-      unit_id: item?.drug?.unit_id,
-      total_price: item?.drug?.price * item.quantity * (isNHIS ? 0.1 : 1),
-    }));
+    const consumables = filteredItems?.filter(item => item?.drug?.drug_type === drugType);
+    if (consumables?.length) {
+      return consumables.map(item => ({
+        drug_form: DrugForm.CONSUMABLE,
+        quantity_prescribed: +item.quantity,
+        quantity_to_dispense: +item.quantity,
+        visit_id: admission.visit_id,
+        inventory_id: inventory?.id || 1,
+        start_date: Date.now(),
+        date_prescribed: Date.now(),
+        ante_natal_id: admission.ante_natal_id,
+        examiner: admission.admitted_by,
+        drug_type: drugType,
+        source,
+        patient_id: patient.id,
+        drug_id: item?.drug?.drug_id,
+        unit_id: item?.drug?.unit_id,
+        total_price:
+          item?.drug?.price * item.quantity * (isNHIS && !/gloves/i.test(item) ? 0.1 : 1),
+      }));
+    }
   };
 
   const allAgesItems = items.filter(item => item.age === Ages.ALL_AGES);
-  await bulkCreateAdditionalItems(createItems(allAgesItems));
+  const consumables = createItems(allAgesItems);
+  if (inventories?.length) {
+    await bulkCreateAdditionalItems(consumables);
+  }
 
   if (age <= 1) {
     const ageLessOneItems = items.filter(item => item.age === Ages.LESS_THAN_EQUAL_TO_ONE);
-    await bulkCreateAdditionalItems(createItems(ageLessOneItems));
+    const ageLessOneConsumables = createItems(ageLessOneItems);
+    if (ageLessOneConsumables?.length) {
+      await bulkCreateAdditionalItems(ageLessOneConsumables);
+    }
   }
 
   if (age > 1 && age <= 15) {
@@ -530,14 +529,20 @@ export const insertDefaultAdmissionItems = async ({
     const femaleItems = items.filter(
       item => item.age === Ages.GREATER_THAN_FIFTEEN && item.sex === Gender.FEMALE
     );
-    await bulkCreateAdditionalItems(createItems(femaleItems));
+    const femaleItemsConsumables = createItems(femaleItems);
+    if (femaleItemsConsumables?.length) {
+      await bulkCreateAdditionalItems(femaleItemsConsumables);
+    }
   }
 
   if (age > 15 && sex === Gender.MALE) {
     const maleItems = items.filter(
       item => item.age === Ages.GREATER_THAN_FIFTEEN && item.sex === Gender.MALE
     );
-    await bulkCreateAdditionalItems(createItems(maleItems));
+    const maleItemsConsumables = createItems(maleItems);
+    if (maleItemsConsumables?.length) {
+      await bulkCreateAdditionalItems(maleItemsConsumables);
+    }
   }
 
   return true;

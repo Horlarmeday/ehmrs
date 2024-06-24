@@ -5,6 +5,11 @@ export default [
     name: 'Results',
   },
   {
+    url: '/visit/admitted-patients',
+    icon: 'fas fa-bed',
+    name: 'Admitted Patients',
+  },
+  {
     url: '/radiology/investigations-approval',
     icon: 'flaticon-statistics',
     name: 'Statistics',

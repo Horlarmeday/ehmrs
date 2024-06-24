@@ -104,6 +104,8 @@ export default {
     start: null,
     end: null,
     currentUser: parseJwt(localStorage.getItem('user_token')),
+    NURSE: 'Nurse',
+    CUSTOMER_CARE: 'Customer Care',
   }),
   computed: {
     admissions() {
@@ -124,7 +126,8 @@ export default {
   },
   methods: {
     getRouteLink(admission) {
-      if (this.currentUser.role === 'Nurse') return `/admission/operations/${admission.id}`;
+      if (this.currentUser.role === this.NURSE) return `/admission/operations/${admission.id}`;
+      if (this.currentUser.role === this.CUSTOMER_CARE) return `#`;
       return `/consultation/${admission.visit_id}`;
     },
 
@@ -132,6 +135,9 @@ export default {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
+        search: this.$route.query.search || null,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
       });
       this.fetchAdmissions({
         currentPage: this.$route.query.currentPage || this.currentPage,
@@ -192,6 +198,9 @@ export default {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: count,
+        search: this.$route.query.search || null,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
       });
       this.fetchAdmissions({
         currentPage: this.$route.query.currentPage || this.currentPage,
