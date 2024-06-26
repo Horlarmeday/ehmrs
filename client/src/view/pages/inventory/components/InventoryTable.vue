@@ -75,17 +75,10 @@
               <a
                 href="#"
                 class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
-                @click.stop="() => {}"
+                @click.stop="deactivateItem(item)"
               >
                 <send-icon />
               </a>
-              <!--              <a-->
-              <!--                href="#"-->
-              <!--                class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"-->
-              <!--                @click.stop="() => {}"-->
-              <!--              >-->
-              <!--                <edit-icon />-->
-              <!--              </a>-->
             </td>
           </tr>
         </tbody>
@@ -126,6 +119,10 @@ export default {
 
     changePageCount(pagecount) {
       this.$emit('changePageCount', pagecount);
+    },
+
+    deactivateItem(item) {
+      this.$emit('deactivateItem', item);
     },
   },
 };

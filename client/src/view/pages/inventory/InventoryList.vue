@@ -17,11 +17,12 @@
       :pagination-params="{
         queriedItems,
         pages,
-        perPage,
+        perPage: +$route.query.currentPage || perPage,
         currentPage: +$route.query.currentPage || currentPage,
       }"
       @changePage="onPageChange"
       @changePageCount="onChangePageCount"
+      @deactivateItem="displayPrompt"
     />
     <!--end::Body-->
   </div>
@@ -31,6 +32,7 @@
 import InventoryTable from './components/InventoryTable';
 import Search from '@/utils/Search.vue';
 import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
+import Swal from 'sweetalert2';
 export default {
   name: 'InventoryList',
   data() {
@@ -61,11 +63,13 @@ export default {
     handlePageChange() {
       setUrlQueryParams({
         currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || null,
       });
       this.fetchInventoryItems({
-        currentPage: this.$route.query.currentPage,
-        itemsPerPage: this.$route.query.itemsPerPage,
+        currentPage: this.$route.query.currentPage || this.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || null,
       });
     },
 
@@ -97,12 +101,14 @@ export default {
     onChangePageCount(pagecount) {
       setUrlQueryParams({
         pathName: 'generic-drugs',
-        currentPage: this.currentPage,
+        currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: pagecount,
+        search: this.$route.query.search || null,
       });
       this.fetchInventoryItems({
         currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: pagecount,
+        search: this.$route.query.search || null,
       });
     },
 
@@ -114,11 +120,41 @@ export default {
         ...(search && { search }),
       });
     },
+
+    displayPrompt(item) {
+      const self = this;
+      Swal.fire({
+        title: 'Are you sure?',
+        text: 'You want to deactivate this item, this action cannot be reversed',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Continue!',
+        cancelButtonText: 'No, cancel!',
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+          return self.deactivateItem(item);
+        },
+      });
+    },
+
+    deactivateItem(item) {
+      const data = {
+        id: item.id,
+        status: 'Inactive',
+      };
+      this.$store.dispatch('inventory/updateInventoryItem', data).then(() => {
+        this.fetchInventoryItems({
+          currentPage: this.currentPage,
+          itemsPerPage: this.itemsPerPage,
+        });
+      });
+    },
   },
   created() {
     this.fetchInventoryItems({
       currentPage: this.$route.query.currentPage || this.currentPage,
       itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+      search: this.$route.query.search || null,
     });
   },
 };
