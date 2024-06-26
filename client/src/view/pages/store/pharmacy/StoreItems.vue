@@ -18,6 +18,7 @@
       action="store/exportData"
       :display-prompt="displayExportModal"
       @closeModal="hideExportModal"
+      :select-all="selectAll"
     />
     <!--begin::Header-->
     <div class="card-header border-0 py-5">
@@ -44,15 +45,17 @@
       @sort="onHandleSort"
       @filterByDrugForm="onFilterByDrugForm"
       @filterByDrugType="onFilterByDrugType"
+      @filterByDosageForm="onFilterByDrugDosageForm"
     />
 
     <!--begin::Body-->
-    <div class="card-body py-0">
+    <div class="card-body ">
       <button-group
         @openDispenseModal="openDispenseModal"
         @openReorderModal="openReorderModal"
         @openExportModal="openExportModal"
         @gotoUpdateItem="gotoUpdateItem"
+        @selectAllItems="selectAllItems"
         v-if="selectedItems.length"
         :count="selectedItems.length"
       />
@@ -70,10 +73,9 @@
               <th class="pr-0" style="width: 350px">Name</th>
               <th style="min-width: 150px">Quantity Remaining</th>
               <th style="min-width: 100px">Dosage Form</th>
-              <th style="min-width: 100px">Unit Price (₦)</th>
+              <th style="min-width: 50px">Strength</th>
               <th style="min-width: 100px">Selling Price (₦)</th>
               <th style="min-width: 100px">Expiration</th>
-              <th style="min-width: 50px">Strength</th>
               <th style="min-width: 150px">Date Created</th>
             </tr>
           </thead>
@@ -113,9 +115,13 @@
                 <span v-else class="text-dark-75 font-weight-bolder d-block font-size-lg">Nil</span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ item.unit_price || 'None' }}
+                <span
+                  v-if="item.measurement_id"
+                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
+                >
+                  {{ item.strength_input }} {{ item.strength.name || 'None' }}
                 </span>
+                <span v-else class="text-dark-75 font-weight-bolder d-block font-size-lg">Nil</span>
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
@@ -124,17 +130,8 @@
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ item.expiration | dayjs('DD/MM/YYYY, h:mma') }}
+                  {{ item.expiration | dayjs('DD/MM/YYYY') }}
                 </span>
-              </td>
-              <td>
-                <span
-                  v-if="item.measurement_id"
-                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                >
-                  {{ item.strength_input }} {{ item.strength.name || 'None' }}
-                </span>
-                <span v-else class="text-dark-75 font-weight-bolder d-block font-size-lg">Nil</span>
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
@@ -164,7 +161,7 @@
 import Pagination from '@/utils/Pagination.vue';
 import AddIcon from '@/assets/icons/AddIcon.vue';
 import SearchAndFilter from '@/utils/SearchAndFilter';
-import { debounce, removeSpinner, setUrlQueryParams, getItemType } from '@/common/common';
+import { debounce, removeSpinner, setUrlQueryParams, getItemType, isEmpty } from '@/common/common';
 import ButtonGroup from '@/utils/ButtonGroup';
 import DispenseModal from '@/view/pages/store/pharmacy/components/DispenseModal.vue';
 import ReorderItemModal from '@/view/pages/store/pharmacy/components/ReorderItemModal.vue';
@@ -175,7 +172,7 @@ export default {
       displayPrompt: false,
       displayDispenseModal: false,
       itemToEdit: {},
-      filter: { drug_type: 'Cash', drug_form: 'Drug' },
+      filter: { drug_type: '', drug_form: '' },
       currentPage: 1,
       itemsPerPage: 10,
       selected: [],
@@ -185,6 +182,7 @@ export default {
       itemsToExport: {},
       displayReorderModal: false,
       displayExportModal: false,
+      selectAll: false,
     };
   },
   components: {
@@ -310,11 +308,15 @@ export default {
         currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         search: this.$route.query.search || null,
+        filter: this.$route.query.filter || null,
+        sort: this.$route.query.sort || null,
       });
       this.fetchPharmacyItems({
         currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         search: this.$route.query.search || null,
+        filter: this.$route.query.filter || null,
+        sort: this.$route.query.sort || null,
       });
     },
 
@@ -336,11 +338,18 @@ export default {
     }, 500),
 
     onChangePageCount(pagecount) {
-      this.queryParams({ pagecount, search: this.$route.query.search || null });
+      this.queryParams({
+        pagecount,
+        search: this.$route.query.search || null,
+        filter: this.$route.query.filter || null,
+        sort: this.$route.query.sort || null,
+      });
       this.$store.dispatch('store/fetchPharmacyItems', {
         currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: pagecount,
         search: this.$route.query.search || null,
+        filter: this.$route.query.filter || null,
+        sort: this.$route.query.sort || null,
       });
     },
 
@@ -363,6 +372,14 @@ export default {
     },
 
     onFilterByDrugType(filter) {
+      this.queryParams({ filter });
+      this.fetchPharmacyItems({
+        filter,
+        currentPage: this.$route.query.currentPage || this.currentPage,
+      });
+    },
+
+    onFilterByDrugDosageForm(filter) {
       this.queryParams({ filter });
       this.fetchPharmacyItems({
         filter,
@@ -406,6 +423,10 @@ export default {
       this.$router.push(`/store/pharmacy/update-items?itemIds=${itemsIds}`);
     },
 
+    selectAllItems(value) {
+      this.selectAll = value;
+    },
+
     mapReorderItems() {
       this.itemsToReorder = this.selectedItems.map(
         ({
@@ -441,7 +462,7 @@ export default {
     this.fetchPharmacyItems({
       currentPage: this.$route.query.currentPage || this.currentPage,
       itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
-      filter: this.filter,
+      filter: !isEmpty(this.filter) ? this.filter : null,
       search: this.$route.query.search || null,
     });
   },
