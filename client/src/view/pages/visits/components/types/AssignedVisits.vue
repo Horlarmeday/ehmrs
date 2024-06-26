@@ -10,7 +10,7 @@
         <search
           @search="onHandleSearch"
           @filterByDateRange="searchByDate"
-          :show-date-filter="true"
+          :show-date-filter="currentUser.department !== MEDICAL_PRACTITIONER"
         />
       </div>
       <queue-table
@@ -109,6 +109,8 @@ export default {
           currentPage: 1,
           itemsPerPage: vm.$route.query.itemsPerPage || vm.itemsPerPage,
           search,
+          start: vm.todayDate().startDate,
+          end: vm.todayDate().endDate,
           ...(vm.filter && { filter: vm.filter }),
         })
         .then(() => removeSpinner(spinDiv))
