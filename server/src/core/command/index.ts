@@ -37,9 +37,9 @@ export enum JobName {
 }
 
 export const CronTimer = {
-  [JobName.EMPTY_HOSPITAL_NUMBER]: '2am',
-  [JobName.CLOSE_ANTENATAL_ACCOUNT]: '1am',
-  [JobName.END_VISIT]: '12am',
+  [JobName.EMPTY_HOSPITAL_NUMBER]: '0 2 * * *', // every 2am
+  [JobName.CLOSE_ANTENATAL_ACCOUNT]: '0 1 * * *', // every 1am
+  [JobName.END_VISIT]: '0 0 * * *', // 12am
 };
 
 export const ImmediateJob = {
