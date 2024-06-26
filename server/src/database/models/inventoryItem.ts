@@ -2,6 +2,7 @@ import {
   BelongsTo,
   Column,
   DataType,
+  DefaultScope,
   ForeignKey,
   Model,
   PrimaryKey,
@@ -23,6 +24,15 @@ import {
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Inventory } from './inventory';
 
+export enum Status {
+  ACTIVE = 'Active',
+  INACTIVE = 'Inactive',
+}
+@DefaultScope(() => ({
+  where: {
+    status: Status.ACTIVE,
+  },
+}))
 @Table({ timestamps: true, tableName: 'Inventory_Items' })
 export class InventoryItem extends Model {
   @PrimaryKey
@@ -185,6 +195,12 @@ export class InventoryItem extends Model {
     type: DataType.INTEGER,
   })
   staff_id: number;
+
+  @Column({
+    type: DataType.ENUM(Status.INACTIVE, Status.ACTIVE),
+    defaultValue: Status.ACTIVE,
+  })
+  status: Status;
 
   @BelongsTo(() => Staff)
   staff: Staff;

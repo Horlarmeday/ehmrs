@@ -2,6 +2,7 @@ import {
   BelongsTo,
   Column,
   DataType,
+  DefaultScope,
   ForeignKey,
   Model,
   PrimaryKey,
@@ -28,7 +29,11 @@ export enum DrugType {
   PRIVATE = 'Private',
   RETAINERSHIP = 'Retainership',
 }
-
+@DefaultScope(() => ({
+  where: {
+    status: Status.ACTIVE,
+  },
+}))
 @Table({ timestamps: true, tableName: 'Pharmacy_Store_Items' })
 export class PharmacyStore extends Model {
   @PrimaryKey
