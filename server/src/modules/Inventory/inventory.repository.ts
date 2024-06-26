@@ -231,6 +231,16 @@ export const addItemToInventory = async (item: Optional<any, string>) => {
   return inventoryItem;
 };
 
+/**
+ * update an inventory item
+ * @param data
+ * @returns {Inventory} inventory product data
+ */
+export const updateInventoryItem = (data: Partial<InventoryItem>) => {
+  const { id, ...rest } = data;
+  return InventoryItem.update({ ...rest }, { where: { id } });
+};
+
 export const addInventoryItemHistory = async (item): Promise<InventoryItemHistory> => {
   return InventoryItemHistory.create({
     ...item,

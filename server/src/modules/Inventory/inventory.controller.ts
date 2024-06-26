@@ -4,6 +4,9 @@ import { StatusCodes } from '../../core/helpers/helper';
 import { SUCCESS } from '../../core/constants';
 import { validateCreateInventory } from './validations';
 import { errorResponse } from '../../common/responses/error-responses';
+import { isEmpty } from 'lodash';
+import { EMPTY_BODY } from '../Alert/messages/response.messages';
+import { NextFunction, Request, Response } from 'express';
 
 class InventoryController {
   /**
@@ -33,6 +36,38 @@ class InventoryController {
       return successResponse({
         res,
         data: inventory,
+        httpCode: StatusCodes.CREATED,
+        message: SUCCESS,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * update inventory item
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with inventory data
+   */
+  static async updateInventoryItem(req: Request, res: Response, next: NextFunction) {
+    const error = isEmpty(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: EMPTY_BODY,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+
+    try {
+      const inventoryItem = await InventoryService.updateInventoryItem(req.body);
+
+      return successResponse({
+        res,
+        data: inventoryItem,
         httpCode: StatusCodes.CREATED,
         message: SUCCESS,
       });

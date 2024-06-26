@@ -8,6 +8,7 @@ import {
   getInventoryItems,
   receiveBulkItem,
   searchInventoryItems,
+  updateInventoryItem,
 } from './inventory.repository';
 import { Inventory, InventoryItem } from '../../database/models';
 import { InventoryTypes } from './types/inventory.types';
@@ -63,6 +64,18 @@ class InventoryService {
       quantity_received: item.quantity_received,
     }));
     return receiveBulkItem(items);
+  }
+
+  /**
+   * update the inventory item
+   *
+   * @static
+   * @returns {json} json object with inventory items data
+   * @param body
+   * @memberOf InventoryService
+   */
+  static async updateInventoryItem(body) {
+    return updateInventoryItem(body);
   }
 
   /**
