@@ -101,4 +101,18 @@ export default {
         });
     });
   },
+
+  updateInventoryItem({ commit }, inventory) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/inventory/item/update/`, inventory)
+        .then(response => {
+          commit('UPDATE_ITEM', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
 };

@@ -34,9 +34,10 @@ export default {
     state.pages = pages;
   },
 
+  // eslint-disable-next-line no-unused-vars
   UPDATE_ITEM(state, item) {
-    const itemIndex = state.items.findIndex(p => p.id === item.id);
-    Object.assign(state.items[itemIndex], item);
+    // const itemIndex = state.items.findIndex(p => p.id === item.id);
+    // Object.assign(state.items[itemIndex], item);
   },
 
   SET_ITEM(state, item) {
