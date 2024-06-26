@@ -1,7 +1,6 @@
 import { logger, taggedMessaged } from '../../../helpers/logger';
 import { Antenatal } from '../../../../database/models';
 import dayjs from 'dayjs';
-import { dateQuery } from '../../../helpers/helper';
 import { AccountStatus } from '../../../../database/models/antenatal';
 import { processTasksExecution } from '../../../helpers/tasksProcessor';
 import { Op } from 'sequelize';
@@ -22,7 +21,7 @@ export const closeAntenatalAccount = async () => {
   const antenatalAccounts = await Antenatal.findAll({
     where: {
       end_date: {
-        [Op.lte]: dayjs().toDate(),
+        [Op.lt]: dayjs().toDate(),
       },
     },
   });

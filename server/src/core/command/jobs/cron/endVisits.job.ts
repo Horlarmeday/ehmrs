@@ -17,10 +17,10 @@ const visitHandler = async (visit: Visit) => {
 export const endVisits = async () => {
   const message = taggedMessaged('EndVisits');
   const sevenDaysAgo = dayjs()
-    .subtract(7, 'days')
+    .subtract(5, 'days')
     .toDate();
 
-  const [todayUntakenVisits, antenatalVisits, sevenDaysAgoVisits] = await Promise.all([
+  const [todayUntakenVisits, antenatalVisits, fiveDaysAgoVisits] = await Promise.all([
     Visit.findAll({
       where: { ...todayQuery('createdAt'), is_taken: false },
     }),
@@ -32,7 +32,7 @@ export const endVisits = async () => {
     }),
   ]);
 
-  const visits = [...antenatalVisits, ...todayUntakenVisits, ...sevenDaysAgoVisits];
+  const visits = [...antenatalVisits, ...todayUntakenVisits, ...fiveDaysAgoVisits];
 
   try {
     if (visits?.length) {

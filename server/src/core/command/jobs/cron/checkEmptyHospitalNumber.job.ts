@@ -17,6 +17,7 @@ export const checkEmptyHospitalNumber = async () => {
   const patients = await Patient.findAll({ where: { hospital_id: { [Op.eq]: null } } });
   try {
     if (patients?.length) {
+      logger.info(message(`Fetched ${patients?.length} patients with no hospital numbers`));
       await processTasksExecution({
         tasks: patients,
         message,
