@@ -133,6 +133,7 @@ export const validateExportedData = items => {
     dataType: Joi.string()
       .valid(ExportDataType.CSV, ExportDataType.PDF, ExportDataType.EXCEL)
       .required(),
+    selectAll: Joi.boolean(),
   });
   return schema.validate(items);
 };

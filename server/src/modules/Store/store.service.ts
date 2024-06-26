@@ -7,6 +7,7 @@ import {
   createPharmacyStoreLogs,
   createPrivateItem,
   findPharmacyStoreItems,
+  getAllPharmacyStoreItems,
   getLaboratoryItems,
   getOnePharmacyStoreItem,
   getPharmacyItemByDrugId,
@@ -90,7 +91,7 @@ class StoreService {
       return getPharmacyStoreItems({ currentPage, pageLimit, sort_by, order });
     }
 
-    if (filter) {
+    if (filter && Object.values(JSON.parse(filter)).filter(Boolean)?.length) {
       return getPharmacyStoreItems({ currentPage, pageLimit, filter });
     }
 
@@ -267,9 +268,15 @@ class StoreService {
    * @returns {Promise<PharmacyStore[]>} json object with pharmacy item history data
    * @memberOf StoreService
    * @param selectedItemsId
+   * @param selectAll
    */
-  static async exportData(selectedItemsId: number[]) {
-    const items = await findPharmacyStoreItems(selectedItemsId);
+  static async exportData(selectedItemsId: number[], selectAll: boolean) {
+    let items;
+    if (selectAll) {
+      items = await getAllPharmacyStoreItems();
+    } else {
+      items = await findPharmacyStoreItems(selectedItemsId);
+    }
     const headers = [
       [
         'Drug',

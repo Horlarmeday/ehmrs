@@ -14,8 +14,6 @@ import { DATA_SAVED } from '../AdminSettings/messages/response-messages';
 import { SUCCESS } from '../../core/constants';
 import { NextFunction, Request, Response } from 'express';
 import { DISPENSE_SUCCESSFUL, REORDER_SUCCESSFUL } from './messages/response-messages';
-import { ExportDataType } from './types/pharmacy-item.types';
-import { exportDataToCSV, exportDataToExcel, exportDataToPDF } from '../../core/helpers/fileExport';
 import { isEmpty } from 'lodash';
 import { EMPTY_BODY } from '../Alert/messages/response.messages';
 
@@ -78,8 +76,6 @@ class StoreController {
         message: EMPTY_BODY,
       });
 
-    console.log(req.body);
-
     try {
       const items = await StoreService.updatePharmacyStoreItems(req.body.items);
 
@@ -133,7 +129,7 @@ class StoreController {
     if (typeof itemIds === 'string') {
       selectedItems = itemIds.split(',').map(Number);
     }
-    console.log(selectedItems);
+
     try {
       const items = await StoreService.getPharmacyStoreItems(selectedItems);
 
@@ -345,9 +341,9 @@ class StoreController {
         httpCode: StatusCodes.BAD_REQUEST,
         message: error.details[0].message,
       });
-    const { selectedItemsId, dataType } = req.body;
+    const { selectedItemsId, dataType, selectAll } = req.body;
     try {
-      const { headers, mappedData } = await StoreService.exportData(selectedItemsId);
+      const { headers, mappedData } = await StoreService.exportData(selectedItemsId, selectAll);
       return exportSelectedData({ res, dataType, data: mappedData, headers });
     } catch (e) {
       return next(e);

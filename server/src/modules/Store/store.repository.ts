@@ -215,6 +215,40 @@ export async function findPharmacyStoreItems(selectedItemsId: number[]) {
 }
 
 /**
+ * get all pharmacy items drugs
+ *
+ * @function
+ * @returns {json} json object with items data
+ */
+export async function getAllPharmacyStoreItems() {
+  return PharmacyStore.findAll({
+    include: [
+      {
+        model: Drug,
+        attributes: ['name'],
+        order: [['name', 'ASC']],
+      },
+      {
+        model: Unit,
+        attributes: ['name', 'id'],
+      },
+      {
+        model: DosageForm,
+        attributes: ['name', 'id'],
+      },
+      {
+        model: Measurement,
+        attributes: ['name', 'id'],
+      },
+      {
+        model: RoutesOfAdministration,
+        attributes: ['name', 'id'],
+      },
+    ],
+  });
+}
+
+/**
  * search pharmacy items
  *
  * @function
