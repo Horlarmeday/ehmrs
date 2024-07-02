@@ -129,6 +129,10 @@ export default {
       type: String,
       required: true,
     },
+    insuranceName: {
+      type: String,
+      required: false,
+    },
   },
   computed: {
     activePrompt: {
@@ -151,37 +155,41 @@ export default {
       get() {
         const drugs = this.defaults?.find(def => def.type === this.defaultData)?.data;
         if (drugs) {
-          return drugs.map(drug => ({
-            id: randomId(),
-            drug_name: drug.drug?.name,
-            dosage_form_id: drug.drug.dosage_form?.id,
-            dosage_form_name: drug.dosage_form,
-            strength_name: drug.drug?.strength?.name,
-            route_id: drug.drug.route?.id,
-            route_name: drug.drug.route?.name,
-            start_date: new Date(),
-            duration_unit: '',
-            quantity_to_dispense: drug.quantity,
-            quantity_prescribed: drug.quantity,
-            duration: '',
-            frequency: drug.frequency,
-            price: drug.drug?.price,
-            inventory_id: this.getInventoryId(),
+          return drugs
+            .filter(
+              drug => drug.drug.drug_type === this.insuranceName || drug.drug.drug_type === 'Cash'
+            )
+            .map(drug => ({
+              id: randomId(),
+              drug_name: drug.drug?.name,
+              dosage_form_id: drug.drug.dosage_form?.id,
+              dosage_form_name: drug.dosage_form,
+              strength_name: drug.drug?.strength?.name,
+              route_id: drug.drug.route?.id,
+              route_name: drug.drug.route?.name,
+              start_date: new Date(),
+              duration_unit: '',
+              quantity_to_dispense: drug.quantity,
+              quantity_prescribed: drug.quantity,
+              duration: '',
+              frequency: drug.frequency,
+              price: drug.drug?.price,
+              inventory_id: this.getInventoryId(),
 
-            prescribed_strength: drug.prescribed_strength,
-            strength_id: drug.drug.strength?.id,
-            strength_input: drug.drug.strength_input,
-            drug_id: drug.drug.drug_id,
-            total_price: '',
-            drug_type: this.switchPosition && this.switchSpot ? 'NHIS' : 'Cash',
-            source: this.source,
-            ...(this.drug_group && { drug_group: this.drug_group }),
-            ...(this.source === 'Antenatal' && { ante_natal_id: this.$route.query.antenatal }),
-            ...(this.source === 'Immunization' && {
-              immunization_id: this.$route.query.immunization,
-            }),
-            ...(this.source === 'Theater' && { surgery_id: this.$route.query.surgery }),
-          }));
+              prescribed_strength: drug.prescribed_strength,
+              strength_id: drug.drug.strength?.id,
+              strength_input: drug.drug.strength_input,
+              drug_id: drug.drug.drug_id,
+              total_price: '',
+              drug_type: this.getDrugType(this.insuranceName),
+              source: this.source,
+              ...(this.drug_group && { drug_group: this.drug_group }),
+              ...(this.source === 'Antenatal' && { ante_natal_id: this.$route.query.antenatal }),
+              ...(this.source === 'Immunization' && {
+                immunization_id: this.$route.query.immunization,
+              }),
+              ...(this.source === 'Theater' && { surgery_id: this.$route.query.surgery }),
+            }));
         }
         return [];
       },
@@ -277,8 +285,22 @@ export default {
       this.$store.dispatch('inventory/fetchInventories');
     },
 
+    getDrugType(insuranceName) {
+      const isSwitchOn = this.switchSpot && this.switchPosition;
+      if (isSwitchOn) return 'NHIS';
+      const insuranceMapping = {
+        FHSS: 'NHIS',
+        NHIS: 'NHIS',
+        PHIS: 'Private',
+        Retainership: 'Cash',
+      };
+      const selectedInsurance = insuranceMapping[insuranceName];
+      if (selectedInsurance === 'NHIS' && !isSwitchOn) return 'Cash';
+      return insuranceMapping[insuranceName] || 'Cash';
+    },
+
     getInventoryId() {
-      const type = this.switchPosition && this.switchSpot ? 'NHIS' : 'Cash';
+      const type = this.getDrugType(this.insuranceName);
       return this.inventories.find(inventory =>
         inventory.name.toLowerCase().includes(type.toLowerCase())
       )?.id;
