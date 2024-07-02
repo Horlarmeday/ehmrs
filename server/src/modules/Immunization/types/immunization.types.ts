@@ -33,4 +33,6 @@ export type CreateImmunizationBody = {
   are_siblings_under_weight?: boolean;
   need_extra_care?: boolean;
   reason_for_extra_care?: string;
+  service_id: number | number[];
+  staff_id: number;
 };
