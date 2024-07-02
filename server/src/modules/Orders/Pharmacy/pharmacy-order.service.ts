@@ -116,25 +116,28 @@ class PharmacyOrderService {
       })
     );
 
-    // const sumOfDrugsToday = await PrescribedDrug.sum('total_price', {
-    //   where: {
-    //     ...getPeriodQuery(Period.TODAY, 'date_prescribed'),
-    //     drug_group: DrugGroup.PRIMARY,
-    //   },
-    // });
+    const sumOfDrugsToday = await PrescribedDrug.sum('total_price', {
+      where: {
+        ...getPeriodQuery(Period.TODAY, 'date_prescribed'),
+        drug_group: DrugGroup.PRIMARY,
+      },
+    });
     //
-    // const totalPrimaryDrugsPrice = mappedPrescribedDrugs
-    //   .filter(drug => drug.drug_group === DrugGroup.PRIMARY)
-    //   .reduce((a, b) => a + b.total_price, 0);
-    //
-    // const totalSum = sumOfDrugsToday + totalPrimaryDrugsPrice;
-    // if (totalSum > settings.nhis_daily_quota_amount) {
-    //   throw new BadException(
-    //     'Error',
-    //     400,
-    //     'Sum of drugs prescribed today is more than NHIS daily price quota'
-    //   );
-    // }
+    const totalPrimaryDrugsPrice = mappedPrescribedDrugs
+      .filter(drug => drug.drug_group === DrugGroup.PRIMARY)
+      .reduce((a, b) => a + b.total_price, 0);
+
+    const totalSum = sumOfDrugsToday + totalPrimaryDrugsPrice;
+    const settings = await SystemSettings.findOne();
+    if (settings) {
+      if (totalSum > settings.nhis_daily_quota_amount) {
+        throw new BadException(
+          'Error',
+          400,
+          'Sum of drugs prescribed today and ones you are trying to prescribe is more than NHIS daily price quota'
+        );
+      }
+    }
 
     const injections = body.filter(
       ({ dosage_form_name }) =>

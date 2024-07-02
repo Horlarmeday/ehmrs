@@ -58,8 +58,7 @@ export class ServiceOrderService {
         ...service,
         price:
           (await getServicePrice(patient, service.service_id)) ||
-          +service.price * +service.quantity ||
-          1,
+          +service.price * (+service.quantity || 1),
         requester: staff_id,
         visit_id,
         patient_id: visit.patient_id,

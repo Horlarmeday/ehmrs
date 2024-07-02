@@ -1,11 +1,22 @@
 import { Router } from 'express';
 import verify from '../../../core/middleware/verify';
 import { PharmacyOrderController } from './pharmacy-order.controller';
+import patientMustBeDiagnosed from '../../../core/middleware/patientMustBeDiagnosed';
 
 const router = Router();
-router.post('/create/:id', verify, PharmacyOrderController.orderDrug);
-router.post('/create/bulk/:id', verify, PharmacyOrderController.orderBulkDrugs);
-router.post('/additional-items/create/:id', verify, PharmacyOrderController.orderAdditionalItems);
+router.post('/create/:id', verify, patientMustBeDiagnosed, PharmacyOrderController.orderDrug);
+router.post(
+  '/create/bulk/:id',
+  verify,
+  patientMustBeDiagnosed,
+  PharmacyOrderController.orderBulkDrugs
+);
+router.post(
+  '/additional-items/create/:id',
+  verify,
+  patientMustBeDiagnosed,
+  PharmacyOrderController.orderAdditionalItems
+);
 router.post('/treatment/create/:id', verify, PharmacyOrderController.createTreatmentData);
 router.post(
   '/additional-treatment/create/:id',
