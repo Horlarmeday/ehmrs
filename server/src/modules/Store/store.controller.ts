@@ -91,6 +91,39 @@ class StoreController {
   }
 
   /**
+   * deactivate pharmacy store items
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, item data
+   */
+  static async deactivatePharmacyItems(req, res, next) {
+    const empty = isEmpty(req.body);
+    console.log(req.body);
+    if (empty)
+      return errorResponse({
+        res,
+        httpCode: StatusCodes.BAD_REQUEST,
+        message: EMPTY_BODY,
+      });
+
+    try {
+      const items = await StoreService.deactivatePharmacyStoreItems(req.body.items);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_SAVED,
+        data: items,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
    * get pharmacy items
    *
    * @static

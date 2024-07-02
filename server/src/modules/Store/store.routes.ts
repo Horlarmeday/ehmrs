@@ -14,6 +14,7 @@ router.get('/pharmacy/items/:id', verify, StoreController.getPharmacyStoreItem);
 router.get('/pharmacy/items/history/:id', verify, StoreController.getPharmacyStoreItemHistory);
 router.get('/pharmacy/items/logs/:id', verify, StoreController.getPharmacyStoreItemLogs);
 router.get('/laboratory/items/get', verify, StoreController.getLaboratoryItems);
+router.put('/pharmacy/items/deactivate', verify, StoreController.deactivatePharmacyItems);
 router.put('/pharmacy/items/update', verify, StoreController.updatePharmacyItems);
 
 export default router;

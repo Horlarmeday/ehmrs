@@ -1,11 +1,10 @@
 /* eslint-disable camelcase */
 import {
-  addStoreItemHistory,
   createCashItem,
   createLaboratoryItem,
   createNHISItem,
-  createPharmacyStoreLogs,
   createPrivateItem,
+  dispensePharmacyItems,
   findPharmacyStoreItems,
   getAllPharmacyStoreItems,
   getLaboratoryItems,
@@ -15,35 +14,24 @@ import {
   getPharmacyStoreItemHistory,
   getPharmacyStoreItemLogs,
   getPharmacyStoreItems,
+  reorderPharmacyItems,
   searchLaboratoryItems,
   searchPharmacyStoreItems,
   updatePharmacyStoreItem,
   updatePharmacyStoreItems,
 } from './store.repository';
 import { splitSort } from '../../core/helpers/helper';
-import { InventoryItem, LaboratoryStore, PharmacyStore } from '../../database/models';
+import { LaboratoryStore, PharmacyStore } from '../../database/models';
 import { BadException } from '../../common/util/api-error';
 import { ItemsToDispensedBody } from '../Inventory/types/inventory-item.types';
 import {
-  addInventoryItemHistory,
-  addItemToInventory,
-  getAnInventory,
-} from '../Inventory/inventory.repository';
-import {
-  INVALID_INVENTORY,
-  INVALID_QUANTITY,
   ITEM_EXISTS_CASH,
   ITEM_EXISTS_NHIS,
   ITEM_EXISTS_PRIVATE,
 } from '../Inventory/messages/response-messages';
-import { HistoryType } from '../../database/models/inventoryItemHistory';
-import {
-  ItemsToReorder,
-  MapDispenseStoreItemHistoryType,
-  MapSupplyStoreItemHistoryType,
-} from './types/pharmacy-item.types';
-import { lt } from 'lodash';
+import { ItemsToReorder } from './types/pharmacy-item.types';
 import { DrugType } from '../../database/models/pharmacyStore';
+import { Status } from '../../database/models/staff';
 
 class StoreService {
   /**
@@ -122,32 +110,21 @@ class StoreService {
     return item;
   }
 
+  /**
+   * Reorder pharmacy store
+   *
+   * @static
+   * @returns {Promise<PharmacyStore[]>} json object with pharmacy item history data
+   * @memberOf StoreService
+   * @param items
+   * @param staff_id
+   */
+  static async reorderPharmacyStoreItems(items: ItemsToReorder[], staff_id: number): Promise<void> {
+    return reorderPharmacyItems(items, staff_id);
+  }
+
   static async dispenseItemsFromStore(items: ItemsToDispensedBody[], staff_id: number) {
-    return await Promise.all(
-      items.map(async item => {
-        const storeItem = await this.dispenseValidations(item);
-        // send item to inventory - either create or update existing
-        const inventoryItem = await addItemToInventory(
-          this.mapInventoryItem(storeItem, item, staff_id)
-        );
-        // create a history of supply to inventory
-        await addInventoryItemHistory(this.mapInventoryItemHistory(item, inventoryItem, staff_id));
-        // create a dispense history in store history
-        await addStoreItemHistory(
-          this.mapDispenseStoreItemHistory({
-            item,
-            storeItem,
-            staff_id,
-          })
-        );
-        // update the store to the current quantity
-        await updatePharmacyStoreItem(
-          { id: storeItem.id },
-          { quantity_remaining: storeItem.quantity_remaining - item.quantity_to_dispense }
-        );
-        return storeItem;
-      })
-    );
+    return dispensePharmacyItems(items, staff_id);
   }
 
   /**
@@ -175,49 +152,7 @@ class StoreService {
   }
 
   /**
-   * Reorder pharmacy store
-   *
-   * @static
-   * @returns {Promise<PharmacyStore[]>} json object with pharmacy item history data
-   * @memberOf StoreService
-   * @param items
-   * @param staff_id
-   */
-  static async reorderPharmacyStoreItems(
-    items: ItemsToReorder[],
-    staff_id: number
-  ): Promise<PharmacyStore[]> {
-    return await Promise.all(
-      items.map(async item => {
-        const storeItem = await getPharmacyStoreItemById(item.id);
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { id, ...rest } = storeItem.toJSON();
-        // update the store logs
-        await createPharmacyStoreLogs({
-          ...rest,
-          pharmacy_store_id: item.id,
-          staff_id,
-        });
-        // update the store with new data
-        await updatePharmacyStoreItem(
-          { id: item.id },
-          { ...item, quantity_remaining: +storeItem.quantity_remaining + +item.quantity_received }
-        );
-        // add store supply history
-        await addStoreItemHistory(
-          this.mapSupplyStoreItemHistory({
-            item,
-            storeItem,
-            staff_id,
-          })
-        );
-        return storeItem;
-      })
-    );
-  }
-
-  /**
-   * Reorder pharmacy store
+   * update pharmacy store items
    *
    * @static
    * @returns {Promise<PharmacyStore[]>} json object with pharmacy item history data
@@ -226,6 +161,18 @@ class StoreService {
    */
   static async updatePharmacyStoreItems(items: Partial<PharmacyStore>[]) {
     return updatePharmacyStoreItems(items);
+  }
+
+  /**
+   * deactivate pharmacy store items
+   *
+   * @static
+   * @returns {Promise<PharmacyStore[]>} json object with pharmacy item data
+   * @memberOf StoreService
+   * @param items
+   */
+  static async deactivatePharmacyStoreItems(items: number[]) {
+    return updatePharmacyStoreItem({ id: items }, { status: Status.INACTIVE });
   }
 
   /**
@@ -309,108 +256,6 @@ class StoreService {
       strength: item.strength_input ? `${item?.strength_input} ${item?.strength?.name}` : '-',
       drugType: item.drug_type || '-',
     }));
-  }
-
-  private static async dispenseValidations(item: ItemsToDispensedBody) {
-    const [storeItem, inventory] = await Promise.all([
-      getPharmacyStoreItemById(item.id),
-      getAnInventory(item.dispensary),
-    ]);
-    if (lt(storeItem.quantity_remaining, item.quantity_to_dispense)) {
-      throw new BadException('Invalid', 400, INVALID_QUANTITY.replace('drug', item.drug_name));
-    }
-
-    if (!inventory.accepted_drug_type.includes(storeItem.drug_type)) {
-      const matchObj = {
-        drug: item.drug_name,
-        inventory: inventory.name,
-      };
-      throw new BadException(
-        'Invalid',
-        400,
-        INVALID_INVENTORY.replace(/drug|inventory/gi, function(matched) {
-          return matchObj[matched];
-        })
-      );
-    }
-    return storeItem;
-  }
-
-  private static mapInventoryItem(
-    storeItem: PharmacyStore,
-    item: ItemsToDispensedBody,
-    staff_id: number
-  ) {
-    return {
-      inventory_id: item.dispensary,
-      drug_id: storeItem.drug_id,
-      quantity_received: item.quantity_to_dispense,
-      unit_id: item.unit_id,
-      selling_price: storeItem.selling_price,
-      acquired_price: storeItem.unit_price,
-      expiration: storeItem.expiration,
-      dosage_form_id: storeItem.dosage_form_id,
-      measurement_id: storeItem.measurement_id,
-      strength_input: storeItem.strength_input,
-      quantity_remaining: item.quantity_to_dispense,
-      drug_form: storeItem.drug_form,
-      drug_type: storeItem.drug_type,
-      brand: storeItem.brand,
-      date_received: Date.now(),
-      staff_id,
-    };
-  }
-
-  private static mapInventoryItemHistory(
-    item: ItemsToDispensedBody,
-    inventoryItem: InventoryItem,
-    staff_id: number
-  ) {
-    return {
-      quantity_supplied: item.quantity_to_dispense,
-      quantity_remaining: inventoryItem.quantity_remaining,
-      inventory_item_id: inventoryItem.id,
-      inventory_id: inventoryItem.inventory_id,
-      unit_id: item.unit_id,
-      item_receiver: item.receiver,
-      staff_id,
-      history_date: Date.now(),
-      history_type: HistoryType.SUPPLIED,
-    };
-  }
-
-  private static mapDispenseStoreItemHistory({
-    item,
-    storeItem,
-    staff_id,
-  }: MapDispenseStoreItemHistoryType) {
-    return {
-      quantity_dispensed: item?.quantity_to_dispense,
-      pharmacy_store_id: storeItem.id,
-      quantity_remaining: +storeItem.quantity_remaining - +item.quantity_to_dispense,
-      inventory_id: item.dispensary,
-      unit_id: item.unit_id,
-      item_receiver: item.receiver,
-      dispensed_by: staff_id,
-      history_date: Date.now(),
-      history_type: HistoryType.DISPENSED,
-    };
-  }
-
-  private static mapSupplyStoreItemHistory({
-    item,
-    storeItem,
-    staff_id,
-  }: MapSupplyStoreItemHistoryType) {
-    return {
-      quantity_supplied: item?.quantity_received,
-      pharmacy_store_id: storeItem.id,
-      quantity_remaining: +storeItem.quantity_remaining + +item.quantity_received,
-      unit_id: storeItem.unit_id,
-      dispensed_by: staff_id,
-      history_date: Date.now(),
-      history_type: HistoryType.SUPPLIED,
-    };
   }
 
   private static async pharmacyStoreValidations(
