@@ -4,6 +4,7 @@ import { dateQuery, todayQuery } from '../../../helpers/helper';
 import { VisitCategory, VisitStatus } from '../../../../database/models/visit';
 import dayjs from 'dayjs';
 import { processTasksExecution } from '../../../helpers/tasksProcessor';
+import { Op } from 'sequelize';
 
 const visitHandler = async (visit: Visit) => {
   const message = taggedMessaged('visitHandler');
@@ -28,7 +29,13 @@ export const endVisits = async () => {
       where: { category: VisitCategory.ANC },
     }),
     Visit.findAll({
-      where: { ...dateQuery('createdAt', sevenDaysAgo), status: VisitStatus.ONGOING },
+      where: {
+        ...dateQuery('createdAt', sevenDaysAgo),
+        status: VisitStatus.ONGOING,
+        category: {
+          [Op.notIn]: [VisitCategory.IPD, VisitCategory.EMERGENCY],
+        },
+      },
     }),
   ]);
 

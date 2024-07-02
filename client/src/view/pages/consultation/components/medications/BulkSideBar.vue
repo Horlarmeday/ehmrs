@@ -6,6 +6,7 @@
       :show-switch="showSwitch"
       :source="source"
       :switch-position="switchPosition"
+      :insurance-name="insuranceName"
     />
     <div class="card card-custom gutter-b">
       <div class="card-header py-2">

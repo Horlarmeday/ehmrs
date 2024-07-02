@@ -105,6 +105,7 @@
         <div class="col-lg-4">
           <label>Associated Service:</label>
           <v-select
+            :multiple="category === IMMUNIZATION"
             name="service"
             @search="onHandleSearch"
             v-model="service_id"
@@ -148,6 +149,7 @@ export default {
       gender: '',
       currentPage: 1,
       itemsPerPage: 20,
+      IMMUNIZATION: 'Immunization',
     };
   },
   computed: {
@@ -175,6 +177,7 @@ export default {
       const data = ['Outpatient', 'Emergency', 'Immunization'];
       if (this?.gender === 'Female') {
         data.push('Antenatal');
+        data.push('Maternity');
       }
       return data;
     },
@@ -194,8 +197,17 @@ export default {
       submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
     },
 
+    handleResponse(category) {
+      Swal.fire({
+        title: 'Error!',
+        html: `Patient has an active <b>${category}</b> visit ongoing, please send to Customer Care`,
+        icon: 'error',
+        confirmButtonClass: 'btn btn-primary',
+        heightAuto: false,
+      });
+    },
+
     displayPrompt(obj, category) {
-      const self = this;
       Swal.fire({
         title: 'Are you sure, you want to override?',
         text: `Patient has an active ${category} visit ongoing, this action cannot be reversed`,
@@ -204,9 +216,6 @@ export default {
         confirmButtonText: 'Yes, Override!',
         cancelButtonText: 'No, cancel!',
         showLoaderOnConfirm: true,
-        preConfirm: () => {
-          return self.createVisit(obj);
-        },
       });
     },
 
@@ -233,7 +242,7 @@ export default {
               if (response.status === 200) {
                 const category = response.data.data.category || 'Nil';
                 this.removeSpinner(submitButton);
-                this.displayPrompt(obj, category);
+                this.handleResponse(category);
                 return true;
               }
               this.initializeRequest(submitButton);

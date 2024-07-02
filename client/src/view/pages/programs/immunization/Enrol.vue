@@ -173,6 +173,18 @@
                     type="text"
                   />
                 </div>
+                <label class="col-2 col-form-label">Associated Service:</label>
+                <div class="col-3">
+                  <v-select
+                    multiple
+                    name="service"
+                    @search="onHandleSearch"
+                    v-model="service_id"
+                    label="name"
+                    :options="services"
+                    :reduce="services => services.id"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -206,6 +218,7 @@ export default {
   },
   data: () => ({
     patient: '',
+    service_id: '',
     isDisabled: false,
     isInvalidAge: false,
     years: [],
@@ -272,47 +285,17 @@ export default {
 
     endRequest(submitButton) {
       this.removeSpinner(submitButton);
-      this.displayPrompt();
+      this.handleSuccess();
+      this.initValues();
     },
 
-    displayPrompt() {
-      Swal.fire({
-        title: 'Important! A visit is required to continue',
-        text: 'Would you like to create a visit for this patient?',
-        icon: 'info',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, Continue!',
-        cancelButtonText: 'No, cancel!',
-        showLoaderOnConfirm: true,
-        preConfirm: () => {
-          return this.createVisit();
-        },
-      });
-    },
-
-    handleSuccess(response) {
+    handleSuccess() {
       Swal.fire({
         title: 'Success!',
-        html: `${response.data.message}`,
+        html: `Immunization created successfully, A visit has already been created too`,
         icon: 'success',
         confirmButtonClass: 'btn btn-primary',
         heightAuto: false,
-      });
-    },
-
-    createVisit() {
-      const obj = {
-        patient_id: this.patient.id,
-        category: 'Immunization',
-        immunization_id: this.immunization.id,
-        type: 'New visit',
-        date_of_visit: new Date(),
-        department: 'Nursing',
-        professional: 'Nurse',
-      };
-      this.$store.dispatch('visit/addVisit', obj).then(response => {
-        this.initValues();
-        this.handleSuccess(response);
       });
     },
 
@@ -329,6 +312,7 @@ export default {
         reason_for_extra_care: this.reason_for_extra_care,
         mother_name: this.mother_name,
         father_name: this.father_name,
+        service_id: this.service_id,
         at_birth: {
           medications: this.medications_at_birth,
           weight: this.weight,
@@ -366,6 +350,7 @@ export default {
       this.reason_for_extra_care = '';
       this.mother_name = '';
       this.father_name = '';
+      this.service_id = '';
     },
 
     getYears(startYear) {
@@ -386,6 +371,24 @@ export default {
     removeChild(index) {
       this.children.splice(index, 1);
     },
+
+    onHandleSearch(search, loading) {
+      if (search.length > 2) {
+        loading(true);
+        this.debounceSearchServices(loading, search, this);
+      }
+    },
+
+    debounceSearchServices: debounce((loading, search, vm) => {
+      vm.$store
+        .dispatch('model/fetchServices', {
+          currentPage: 1,
+          itemsPerPage: vm.itemsPerPage,
+          search,
+        })
+        .then(() => loading(false))
+        .catch(() => loading(false));
+    }, 500),
   },
   created() {
     this.getYears(1990);

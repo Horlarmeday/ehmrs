@@ -19,6 +19,7 @@
       <b-dropdown-item @click="dispenseItems">Dispense</b-dropdown-item>
       <b-dropdown-item @click="reorderItems">Reorder</b-dropdown-item>
       <b-dropdown-item @click="exportData">Export</b-dropdown-item>
+      <b-dropdown-item @click="deactivateItems">Deactivate</b-dropdown-item>
     </b-dropdown>
   </b-button-group>
 </template>
@@ -53,6 +54,10 @@ export default {
 
     selectAllItems(event) {
       this.$emit('selectAllItems', event.target.checked);
+    },
+
+    deactivateItems() {
+      this.$emit('deactivateItems', true);
     },
   },
 };

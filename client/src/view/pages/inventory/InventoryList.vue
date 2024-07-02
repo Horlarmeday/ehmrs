@@ -1,6 +1,11 @@
 <template>
   <!--begin::Advance Table Widget 1-->
   <div class="card card-custom gutter-b">
+    <return-items-modal
+      :display-prompt="displayPrompt"
+      @closeModal="hideModal"
+      :items-to-return="itemsToReturn"
+    />
     <!--begin::Header-->
     <div class="card-header border-0 py-5">
       <h3 class="card-title align-items-start flex-column">
@@ -22,7 +27,8 @@
       }"
       @changePage="onPageChange"
       @changePageCount="onChangePageCount"
-      @deactivateItem="displayPrompt"
+      @deactivateItem="displayDeactivatePrompt"
+      @openReturnModal="openReturnModal"
     />
     <!--end::Body-->
   </div>
@@ -33,12 +39,15 @@ import InventoryTable from './components/InventoryTable';
 import Search from '@/utils/Search.vue';
 import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
 import Swal from 'sweetalert2';
+import ReturnItemsModal from '@/view/pages/inventory/components/ReturnItemsModal.vue';
 export default {
   name: 'InventoryList',
   data() {
     return {
       currentPage: 1,
       itemsPerPage: 10,
+      displayPrompt: false,
+      itemsToReturn: [],
     };
   },
   computed: {
@@ -57,14 +66,22 @@ export default {
     inventoryName() {
       return this.$route.query.name;
     },
+    selectedItems() {
+      return this.$store.state.inventory.selectedItems;
+    },
   },
-  components: { InventoryTable, Search },
+  components: { ReturnItemsModal, InventoryTable, Search },
   methods: {
+    hideModal() {
+      this.displayPrompt = false;
+    },
+
     handlePageChange() {
       setUrlQueryParams({
-        currentPage: this.currentPage,
+        currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         search: this.$route.query.search || null,
+        name: this.inventoryName,
       });
       this.fetchInventoryItems({
         currentPage: this.$route.query.currentPage || this.currentPage,
@@ -77,8 +94,9 @@ export default {
       const { search, spinDiv } = prop;
       setUrlQueryParams({
         currentPage: 1,
-        itemsPerPage: this.itemsPerPage,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         search,
+        name: this.inventoryName,
       });
       this.debounceSearch(search, this, spinDiv);
     },
@@ -100,10 +118,10 @@ export default {
 
     onChangePageCount(pagecount) {
       setUrlQueryParams({
-        pathName: 'generic-drugs',
         currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: pagecount,
         search: this.$route.query.search || null,
+        name: this.inventoryName,
       });
       this.fetchInventoryItems({
         currentPage: this.$route.query.currentPage || this.currentPage,
@@ -121,7 +139,7 @@ export default {
       });
     },
 
-    displayPrompt(item) {
+    displayDeactivatePrompt(item) {
       const self = this;
       Swal.fire({
         title: 'Are you sure?',
@@ -148,6 +166,32 @@ export default {
           itemsPerPage: this.itemsPerPage,
         });
       });
+    },
+
+    openReturnModal(value) {
+      this.mapReturnItems();
+      if (this.itemsToReturn.length > 10) {
+        return this.$notify({
+          group: 'foo',
+          title: 'Error message',
+          text: 'You cannot return more than 10 items at a time',
+          type: 'error',
+        });
+      }
+      this.displayPrompt = value;
+    },
+
+    mapReturnItems() {
+      this.itemsToReturn = this.selectedItems.map(({ id, drug, unit, quantity_remaining }) => ({
+        receiver: null,
+        inventory_item_id: id,
+        quantity: null,
+        drug_name: drug.name,
+        quantity_left: quantity_remaining,
+        unit_name: unit.name,
+        unit_id: unit.id,
+        isInvalid: false,
+      }));
     },
   },
   created() {

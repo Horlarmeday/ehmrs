@@ -135,6 +135,7 @@ export const admitPatient = async (data: AdmissionBodyType) => {
       {
         category: VisitCategory.IPD,
         admission_id: admission.id,
+        date_visit_start: Date.now(),
         status: VisitStatus.ONGOING,
         ...(ante_natal_id && { ante_natal_id }),
       },
@@ -561,7 +562,10 @@ export const insertDefaultAdmissionItems = async ({
     const betweenOneAndFifteenItems = items.filter(
       item => item.age === Ages.GREATER_THAN_ONE_LESS_THAN_FIFTEEN
     );
-    await bulkCreateAdditionalItems(createItems(betweenOneAndFifteenItems));
+    const betweenOneAndFifteenConsumables = createItems(betweenOneAndFifteenItems);
+    if (betweenOneAndFifteenConsumables?.length) {
+      await bulkCreateAdditionalItems(betweenOneAndFifteenConsumables);
+    }
   }
 
   if (age > 15 && sex === Gender.FEMALE) {

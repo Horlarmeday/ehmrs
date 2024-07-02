@@ -43,19 +43,19 @@
           <b-tab title="History" lazy>
             <History />
           </b-tab>
-          <b-tab title="Diagnosis" lazy><b-alert show>I'm lazy mounted!</b-alert></b-tab>
+          <b-tab title="Services" lazy><b-alert show>I'm lazy mounted!</b-alert></b-tab>
 
-          <b-tab title="Visits" lazy><b-alert show>I'm lazy mounted!</b-alert></b-tab>
+          <b-tab title="Medications" lazy><b-alert show>I'm lazy mounted!</b-alert></b-tab>
 
           <b-tab title="Treatments" lazy><b-alert show>I'm lazy mounted!</b-alert></b-tab>
 
-          <b-tab title="Lab Orders" lazy><b-alert show>I'm lazy mounted!</b-alert></b-tab>
+          <b-tab title="Tests" lazy><b-alert show>I'm lazy mounted!</b-alert></b-tab>
 
           <b-tab title="Radiology"><b-alert show>I'm always mounted</b-alert></b-tab>
 
           <b-tab title="Vitals" lazy><b-alert show>I'm lazy mounted!</b-alert></b-tab>
 
-          <b-tab title="Admission Details" lazy><b-alert show>I'm lazy mounted!</b-alert></b-tab>
+          <b-tab title="Items" lazy><b-alert show>I'm lazy mounted!</b-alert></b-tab>
 
           <b-tab title="Programs" lazy><b-alert show>I'm lazy mounted!</b-alert></b-tab>
 

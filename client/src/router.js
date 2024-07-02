@@ -983,6 +983,14 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            {
+              path: 'returns',
+              name: 'user-returns',
+              component: () => import('@/view/pages/requests/Returns.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
           ],
         },
         // TRIAGE - VITALS
@@ -1207,6 +1215,21 @@ const router = new Router({
               path: 'transactions/:id',
               name: 'transaction',
               component: () => import('@/view/pages/account/page/Transaction.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+          ],
+        },
+        {
+          path: '/settings',
+          name: 'account-settings',
+          component: () => import('@/view/pages/settings/Settings.vue'),
+          children: [
+            {
+              path: 'change-password',
+              name: 'transactions',
+              component: () => import('@/view/pages/settings/page/ChangePassword.vue'),
               meta: {
                 requiresAuth: true,
               },

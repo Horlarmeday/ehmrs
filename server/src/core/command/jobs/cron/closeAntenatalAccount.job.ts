@@ -23,6 +23,7 @@ export const closeAntenatalAccount = async () => {
       end_date: {
         [Op.lt]: dayjs().toDate(),
       },
+      account_status: AccountStatus.ACTIVE,
     },
   });
   try {

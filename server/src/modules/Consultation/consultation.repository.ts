@@ -108,6 +108,15 @@ export const getPatientDiagnoses = async (query: WhereOptions<Diagnosis>): Promi
 };
 
 /**
+ * get one diagnosis
+ * @returns {Promise<Diagnosis>} diagnosis data
+ * @param query
+ */
+export const getOneDiagnosis = async (query: WhereOptions<Diagnosis>): Promise<Diagnosis> => {
+  return Diagnosis.findOne({ where: { ...query } });
+};
+
+/**
  * get a model by visit id
  * @param model
  * @param query

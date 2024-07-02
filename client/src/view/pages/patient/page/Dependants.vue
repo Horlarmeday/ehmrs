@@ -32,6 +32,7 @@
                               <th style="min-width: 250px" class="pl-7">
                                 <span class="text-dark-75">Name</span>
                               </th>
+                              <th style="min-width: 100px">Hospital ID</th>
                               <th style="min-width: 100px">Phone</th>
                               <th style="min-width: 100px">Gender</th>
                               <th style="min-width: 100px">Date of Birth</th>
@@ -69,6 +70,11 @@
                                     }}</span>
                                   </div>
                                 </div>
+                              </td>
+                              <td>
+                                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                                  {{ dependant.hospital_id }}
+                                </span>
                               </td>
                               <td>
                                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">

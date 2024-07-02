@@ -69,7 +69,7 @@
                     <span class="svg-icon svg-icon-lg svg-icon-primary">
                       <mail-icon />
                       <!--begin::Svg Icon-->
-<!--                      <inline-svg src="/media/svg/icons/Communication/Mail-notification.svg" />-->
+                      <!--                      <inline-svg src="/media/svg/icons/Communication/Mail-notification.svg" />-->
                       <!--end::Svg Icon-->
                     </span>
                   </span>
@@ -110,23 +110,23 @@
           </router-link>
           <!--end:Item-->
           <!--begin::Item-->
-          <!--          <router-link to="/builder" @click.native="closeOffcanvas" href="#" class="navi-item">-->
-          <!--            <div class="navi-link">-->
-          <!--              <div class="symbol symbol-40 bg-light mr-3">-->
-          <!--                <div class="symbol-label">-->
-          <!--                  <span class="svg-icon svg-icon-md svg-icon-warning">-->
-          <!--                    &lt;!&ndash;begin::Svg Icon&ndash;&gt;-->
-          <!--                    <inline-svg src="media/svg/icons/Shopping/Chart-bar1.svg" />-->
-          <!--                    &lt;!&ndash;end::Svg Icon&ndash;&gt;-->
-          <!--                  </span>-->
-          <!--                </div>-->
-          <!--              </div>-->
-          <!--              <div class="navi-text">-->
-          <!--                <div class="font-weight-bold">My Messages</div>-->
-          <!--                <div class="text-muted">Inbox and tasks</div>-->
-          <!--              </div>-->
-          <!--            </div>-->
-          <!--          </router-link>-->
+          <router-link to="/settings/change-password" class="navi-item">
+            <div class="navi-link">
+              <div class="symbol symbol-40 bg-light mr-3">
+                <div class="symbol-label">
+                  <span class="svg-icon svg-icon-md svg-icon-warning">
+                    <!--begin::Svg Icon-->
+                    <EraserIcon />
+                    <!--end::Svg Icon-->
+                  </span>
+                </div>
+              </div>
+              <div class="navi-text">
+                <div class="font-weight-bold">Change Password</div>
+                <div class="text-muted">Login password</div>
+              </div>
+            </div>
+          </router-link>
           <!--          &lt;!&ndash;end:Item&ndash;&gt;-->
           <!--          &lt;!&ndash;begin::Item&ndash;&gt;-->
           <!--          <router-link to="/builder" @click.native="closeOffcanvas" href="#" class="navi-item">-->
@@ -225,9 +225,10 @@ import KTOffcanvas from '@/assets/js/components/offcanvas.js';
 import { parseJwt } from '../../../../core/plugins/parseJwt';
 import MailIcon from '@/assets/icons/MailIcon.vue';
 import Notification2 from '@/assets/icons/Notification2.vue';
+import EraserIcon from '@/assets/icons/EraserIcon.vue';
 export default {
   name: 'KTQuickUser',
-  components: { Notification2, MailIcon },
+  components: { EraserIcon, Notification2, MailIcon },
   data() {
     return {
       list: [

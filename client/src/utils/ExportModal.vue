@@ -68,6 +68,7 @@ export default {
     endRequest(button) {
       this.removeSpinner(button);
       this.$emit('closeModal');
+      this.$store.commit('store/REMOVE_ALL_SELECTED_ITEMS', []);
       this.initValues();
     },
 

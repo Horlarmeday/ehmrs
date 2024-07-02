@@ -1,5 +1,8 @@
 <template>
   <b-modal size="xl" v-model="activePrompt" hide-footer title="Reorder Items">
+    <div v-if="error" class="alert alert-danger mb-5" role="alert">
+      <div class="alert-text">{{ error }}</div>
+    </div>
     <div class="mb-5" v-for="(item, i) in itemsToReorder" :key="i">
       <label class="font-weight-bolder"
         >{{ item.drug_name }}
@@ -15,6 +18,7 @@
               <span class="input-group-text">{{ item.unit_name }}</span>
             </div>
             <input
+              @input="validateInput"
               v-model="item.quantity_received"
               type="number"
               class="form-control form-control-sm"
@@ -53,7 +57,6 @@
           <a href="#" class="col-lg-1 col-form-label">
             <i
               class="far fa-trash-alt icon-md text-danger icon-lg mt-lg-3"
-              v-if="i !== 0"
               @click="removeItem(i)"
             />
           </a>
@@ -73,11 +76,16 @@
 
 <script>
 import Datepicker from 'vuejs-datepicker';
-import { getItemType } from '@/common/common';
+import { getItemType, parseJwt } from '@/common/common';
+
 export default {
   data: () => ({
     isDisabled: false,
     itemIsInvalid: false,
+    allowedRoles: ['Super Admin'],
+    allowedSubRoles: ['HOD'],
+    currentUser: parseJwt(localStorage.getItem('user_token')),
+    error: null,
   }),
 
   components: {
@@ -121,10 +129,25 @@ export default {
     endRequest(button) {
       this.removeSpinner(button);
       this.$emit('closeModal');
+      this.$store.commit('store/REMOVE_ALL_SELECTED_ITEMS', []);
       this.$store.dispatch('store/fetchPharmacyItems', {
         currentPage: this.$route.query.currentPage || 1,
         itemsPerPage: this.$route.query.itemsPerPage || 10,
       });
+    },
+
+    validateInput(input) {
+      if (
+        this.allowedRoles.includes(this.currentUser.role) ||
+        this.allowedSubRoles.includes(this.currentUser.sub_role)
+      )
+        return;
+      // Use regex to allow only positive numbers and decimal points
+      input.target.value = input.target.value.replace(/[^0-9.]/g, '');
+      // Ensure there is only one decimal point
+      if (input.target.value.split('.').length > 2) {
+        input.target.value = input.target.value.replace(/\.+$/, '');
+      }
     },
 
     removeItem(i) {
@@ -136,6 +159,7 @@ export default {
     },
 
     reorderItems() {
+      this.error = null;
       if (this.itemsToReorder.some(({ quantity_received }) => !quantity_received)) {
         return this.$notify({
           group: 'foo',
@@ -156,7 +180,10 @@ export default {
       this.$store
         .dispatch('store/reorderPharmacyItems', itemsToReorder)
         .then(() => this.endRequest(submitButton))
-        .catch(() => this.removeSpinner(submitButton));
+        .catch(err => {
+          this.removeSpinner(submitButton);
+          this.error = err?.message;
+        });
     },
   },
 };

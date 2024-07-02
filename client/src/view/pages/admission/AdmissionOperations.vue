@@ -131,7 +131,12 @@ export default {
       if (route.name !== this.ANTE_NATAL) {
         return route.link + this.$route.params.id;
       }
-      return route.link + `${this.admission?.visit_id}?antenatal=${this.admission?.ante_natal_id}`;
+      if (this.admission?.ante_natal_id) {
+        return (
+          route.link + `${this.admission?.visit_id}?antenatal=${this.admission?.ante_natal_id}`
+        );
+      }
+      return route.link;
     },
   },
   watch: {

@@ -87,7 +87,7 @@ export class PharmacyStore extends Model {
     type: DataType.INTEGER,
     defaultValue: 0,
     validate: {
-      min: 0,
+      min: { args: [0], msg: 'The minimum quantity_remaining cannot be less than zero' },
     },
   })
   quantity_remaining: number;

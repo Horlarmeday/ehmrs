@@ -1,5 +1,8 @@
 <template>
   <b-modal size="xl" v-model="activePrompt" hide-footer title="Dispense">
+    <div v-if="error" class="alert alert-danger mb-5" role="alert">
+      <div class="alert-text">{{ error }}</div>
+    </div>
     <div class="p-2">
       <div v-for="(item, i) in itemsToDispense" :key="i">
         <label class="font-weight-bolder"
@@ -59,7 +62,6 @@
             <a href="#" class="col-lg-1 col-form-label">
               <i
                 class="far fa-trash-alt icon-md text-danger icon-lg mt-lg-3"
-                v-if="i !== 0"
                 @click="removeItem(i)"
               />
             </a>
@@ -99,6 +101,7 @@ export default {
     return {
       isDisabled: false,
       itemIsInvalid: false,
+      error: null,
     };
   },
   computed: {
@@ -135,6 +138,7 @@ export default {
       this.removeSpinner(button);
       this.$emit('closeModal');
       // this.initValues();
+      this.$store.commit('store/REMOVE_ALL_SELECTED_ITEMS', []);
       this.$store.dispatch('store/fetchPharmacyItems', {
         currentPage: this.$route.query.currentPage || 1,
         itemsPerPage: this.$route.query.itemsPerPage || 10,
@@ -174,7 +178,10 @@ export default {
       this.$store
         .dispatch('store/dispensePharmacyItems', itemsToDispense)
         .then(() => this.endRequest(submitButton))
-        .catch(() => this.removeSpinner(submitButton));
+        .catch(err => {
+          this.removeSpinner(submitButton);
+          this.error = err?.message;
+        });
     },
 
     checkQuantity(index, event) {

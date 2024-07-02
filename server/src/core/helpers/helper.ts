@@ -4,7 +4,7 @@ import { promisify } from 'util';
 import fs from 'fs';
 import { BadException } from '../../common/util/api-error';
 import { DEVELOPMENT } from '../constants';
-import { Patient, PatientInsurance, TestPrescription } from '../../database/models';
+import { Patient, PatientInsurance, TestPrescription, Visit } from '../../database/models';
 import { Response } from 'express';
 import { ExportDataType } from '../../modules/Store/types/pharmacy-item.types';
 import { exportDataToCSV, exportDataToExcel, exportDataToPDF } from './fileExport';
@@ -12,10 +12,11 @@ import dayjs from 'dayjs';
 import { Op } from 'sequelize';
 import { countRecords, padNumberWithZero } from './general';
 import { PrescribedAdditionalItemBody } from '../../modules/Orders/Pharmacy/interface/prescribed-drug.body';
-import { getSystemSettings } from '../../modules/AdminSettings/admin.repository';
+import { getOneService, getSystemSettings } from '../../modules/AdminSettings/admin.repository';
 import { getPatientByHospitalId } from '../../modules/Patient/patient.repository';
 import { getTestPrescription } from '../../modules/Laboratory/laboratory.repository';
 import { DrugType } from '../../database/models/pharmacyStore';
+import { prescribeService } from '../../modules/Orders/Service/service-order.repository';
 
 const writeFile = promisify(fs.writeFile);
 
@@ -253,4 +254,51 @@ export const getDrugType = (has_insurance: boolean, insurance: PatientInsurance)
   };
 
   return insuranceMapping[insurance?.insurance?.name] || DrugType.CASH;
+};
+
+type SingleOrMultipleServices = {
+  service_id: number | number[];
+  staff_id: number;
+  visit: Visit;
+  patient_id: number;
+  ante_natal_id?: number;
+};
+
+export const insertSingleOrMultipleServices = async ({
+  service_id,
+  staff_id,
+  visit,
+  patient_id,
+  ante_natal_id,
+}: SingleOrMultipleServices) => {
+  if (service_id || (typeof service_id !== 'number' && service_id?.length)) {
+    if (Array.isArray(service_id)) {
+      await Promise.all(
+        service_id.map(async id => {
+          const service = await getOneService({ id });
+          await prescribeService({
+            service_id: id,
+            service_type: 'Cash',
+            price: service.price,
+            patient_id,
+            requester: staff_id,
+            ante_natal_id: ante_natal_id || null,
+            visit_id: visit.id,
+          });
+        })
+      );
+    } else {
+      const service = await getOneService({ id: service_id });
+      await prescribeService({
+        service_id,
+        service_type: 'Cash',
+        price: service.price,
+        patient_id,
+        requester: staff_id,
+        ante_natal_id: ante_natal_id || null,
+        visit_id: visit.id,
+      });
+    }
+  }
+  return;
 };

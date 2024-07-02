@@ -25,7 +25,12 @@
       <h3 class="card-title align-items-start flex-column">
         <span class="card-label font-weight-bolder text-dark">Store Items</span>
       </h3>
-      <div class="card-toolbar">
+      <div
+        class="card-toolbar"
+        v-if="
+          allowedSubRoles.includes(currentUser.sub_role) || allowedRoles.includes(currentUser.role)
+        "
+      >
         <b-dropdown
           href="/store/pharmacy/add-item"
           split
@@ -56,6 +61,7 @@
         @openExportModal="openExportModal"
         @gotoUpdateItem="gotoUpdateItem"
         @selectAllItems="selectAllItems"
+        @deactivateItems="showDeactivateAlert"
         v-if="selectedItems.length"
         :count="selectedItems.length"
       />
@@ -74,6 +80,7 @@
               <th style="min-width: 150px">Quantity Remaining</th>
               <th style="min-width: 100px">Dosage Form</th>
               <th style="min-width: 50px">Strength</th>
+              <th style="min-width: 70px">Cost Price (₦)</th>
               <th style="min-width: 100px">Selling Price (₦)</th>
               <th style="min-width: 100px">Expiration</th>
               <th style="min-width: 150px">Date Created</th>
@@ -125,6 +132,11 @@
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ item.unit_price || 'None' }}
+                </span>
+              </td>
+              <td>
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                   {{ item.selling_price || 'None' }}
                 </span>
               </td>
@@ -161,11 +173,19 @@
 import Pagination from '@/utils/Pagination.vue';
 import AddIcon from '@/assets/icons/AddIcon.vue';
 import SearchAndFilter from '@/utils/SearchAndFilter';
-import { debounce, removeSpinner, setUrlQueryParams, getItemType, isEmpty } from '@/common/common';
+import {
+  debounce,
+  removeSpinner,
+  setUrlQueryParams,
+  getItemType,
+  isEmpty,
+  parseJwt,
+} from '@/common/common';
 import ButtonGroup from '@/utils/ButtonGroup';
 import DispenseModal from '@/view/pages/store/pharmacy/components/DispenseModal.vue';
 import ReorderItemModal from '@/view/pages/store/pharmacy/components/ReorderItemModal.vue';
 import ExportModal from '@/utils/ExportModal.vue';
+import Swal from 'sweetalert2';
 export default {
   data() {
     return {
@@ -183,6 +203,9 @@ export default {
       displayReorderModal: false,
       displayExportModal: false,
       selectAll: false,
+      currentUser: parseJwt(localStorage.getItem('user_token')),
+      allowedSubRoles: ['HOD'],
+      allowedRoles: ['Super Admin'],
     };
   },
   components: {
@@ -267,6 +290,33 @@ export default {
       const selectedItemsId = this.selectedItems.map(({ id }) => id);
       this.itemsToExport = { selectedItemsId };
       this.displayExportModal = value;
+    },
+
+    showDeactivateAlert() {
+      const self = this;
+      Swal.fire({
+        title: 'Are you sure?',
+        text: `You want deactivate these ${this.selectedItems?.length} items, this action cannot reverted!`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: `Yes Deactivate`,
+        cancelButtonText: 'No, cancel!',
+        reverseButtons: true,
+        preConfirm: () => {
+          self.deactivateItems();
+        },
+      });
+    },
+
+    deactivateItems() {
+      const selectedItemsId = this.selectedItems.map(({ id }) => id);
+      this.$store.dispatch('store/deactivatePharmacyItems', selectedItemsId).then(() => {
+        this.$store.commit('store/REMOVE_ALL_SELECTED_ITEMS', []);
+        this.fetchPharmacyItems({
+          currentPage: this.$route.query.currentPage || this.currentPage,
+          itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        });
+      });
     },
 
     hideReorderModal() {

@@ -70,7 +70,6 @@
               href="javascript:"
               data-repeater-delete=""
               class="btn font-weight-bold btn-danger btn-icon"
-              v-if="i !== 0"
               @click="removeItem(i)"
             >
               <i class="la la-remove"></i>

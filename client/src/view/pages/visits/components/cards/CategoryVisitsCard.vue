@@ -18,6 +18,7 @@
         <div class="pr-4 pl-4 pb-4">
           <div>
             <img
+              width="70"
               v-if="!imageError"
               alt="Pic"
               :src="imageUrl(visit.patient.photo)"
