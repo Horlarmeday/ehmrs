@@ -58,4 +58,41 @@ export default {
   SET_ITEM_HISTORY_PAGES(state, pages) {
     state.itemHistoryPages = pages;
   },
+
+  /***
+   * SELECTED ITEMS
+   */
+
+  ADD_SELECTED_ITEM(state, item) {
+    state.selectedItems.push(item);
+  },
+
+  ADD_ALL_SELECTED_ITEMS(state, items) {
+    state.selectedItems.push(...items);
+  },
+
+  REMOVE_SELECTED_ITEM(state, item) {
+    const itemIndex = state.selectedItems.findIndex(({ id }) => id === item.id);
+    state.selectedItems.splice(itemIndex, 1);
+  },
+
+  REMOVE_ALL_SELECTED_ITEMS(state, items) {
+    state.selectedItems = items;
+  },
+
+  /**
+   * INVENTORY ITEMS RETURNS REQUESTS
+   */
+
+  SET_RETURN_REQUESTS(state, items) {
+    state.returnRequests = items;
+  },
+
+  SET_RETURN_REQUESTS_TOTAL(state, total) {
+    state.totalReturnRequests = total;
+  },
+
+  SET_RETURN_REQUESTS_PAGES(state, pages) {
+    state.returnRequestsPages = pages;
+  },
 };

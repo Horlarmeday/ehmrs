@@ -153,6 +153,20 @@ export default {
     });
   },
 
+  deactivatePharmacyItems({ commit }, items) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put('/store/pharmacy/items/deactivate', { items })
+        .then(response => {
+          commit('UPDATE_PHARM_ITEMS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
   /***
    * PHARMACY ITEM HISTORY
    */

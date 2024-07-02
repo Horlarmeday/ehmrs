@@ -28,4 +28,18 @@ export default {
         });
     });
   },
+
+  changePassword({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/auth/change-password`, payload)
+        .then(response => {
+          commit('CHANGE_PASSWORD');
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
 };

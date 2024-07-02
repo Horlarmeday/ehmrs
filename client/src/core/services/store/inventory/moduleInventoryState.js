@@ -10,4 +10,10 @@ export default {
   itemHistories: [],
   totalItemHistory: 0,
   itemHistoryPages: 0,
+
+  selectedItems: [],
+
+  returnRequests: [],
+  totalReturnRequests: 0,
+  returnRequestsPages: 0,
 };
