@@ -210,6 +210,7 @@ export default {
     this.getRoutes();
     this.getDosageForms();
     this.getMeasurements();
+    this.getUnits();
   },
   methods: {
     addSpinner(submitButton) {
@@ -240,6 +241,10 @@ export default {
 
     getDosageForms() {
       this.$store.dispatch('pharmacy/fetchDosageForms');
+    },
+
+    getUnits() {
+      this.$store.dispatch('model/fetchUnits', { currentPage: 1, itemsPerPage: 100 });
     },
 
     endRequest(submitButton) {
