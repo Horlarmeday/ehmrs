@@ -10,7 +10,16 @@ import {
   InventoryItemHistory,
   Staff,
   Patient,
+  ReturnItem,
+  PharmacyStore,
+  PharmacyStoreHistory,
 } from '../../database/models';
+import { RequestReturnToStore, UpdateReturnRequest } from './types/inventory.types';
+import { dateIntervalQuery, staffAttributes } from '../../core/helpers/helper';
+import sequelizeConnection from '../../database/config/config';
+import { HistoryType } from '../../database/models/inventoryItemHistory';
+import { getOnePharmacyStoreItem, getPharmacyStoreItemById } from '../Store/store.repository';
+import { Status } from '../../database/models/returnItem';
 
 /**
  * receive product(s) into the inventory
@@ -177,7 +186,12 @@ export const getAnInventory = async (inventoryId: number): Promise<Inventory> =>
   return Inventory.findOne({ where: { id: inventoryId } });
 };
 
-export const getInventoryItemById = async (inventoryId: number) => {
+/**
+ * get one inventory item
+ * @returns {Inventory} inventory product data
+ * @param inventoryId
+ */
+export const getInventoryItemById = async (inventoryId: number): Promise<InventoryItem> => {
   return await InventoryItem.findByPk(inventoryId, {
     include: [
       {
@@ -200,35 +214,25 @@ export const getInventoryItemById = async (inventoryId: number) => {
   });
 };
 
-export const getInventoryItemByDrugId = async (drugId: number) => {
+/**
+ * get an inventory item drug id
+ * @returns {Inventory} inventory item data
+ * @param drugId
+ */
+export const getInventoryItemByDrugId = async (drugId: number): Promise<InventoryItem> => {
   return await InventoryItem.findOne({ where: { drug_id: drugId } });
 };
 
+/**
+ * get inventory item query
+ * @param data
+ * @returns {Inventory} inventory item data
+ */
 export const getInventoryItemQuery = async (query: WhereOptions<InventoryItem>) => {
   return await InventoryItem.findOne({
     where: { ...query },
     include: [{ model: Drug, attributes: ['name'] }],
   });
-};
-
-export const addItemToInventory = async (item: Optional<any, string>) => {
-  const [inventoryItem, created] = await InventoryItem.findOrCreate({
-    where: { drug_id: item.drug_id, inventory_id: item.inventory_id },
-    defaults: { ...item },
-  });
-
-  if (!created) {
-    await InventoryItem.update(
-      {
-        ...item,
-        quantity_remaining: literal(`quantity_remaining + ${item.quantity_remaining}`),
-        quantity_received: literal(`quantity_received + ${item.quantity_remaining}`),
-      },
-      { where: { drug_id: item.drug_id, inventory_id: item.inventory_id } }
-    );
-  }
-
-  return inventoryItem;
 };
 
 /**
@@ -239,12 +243,6 @@ export const addItemToInventory = async (item: Optional<any, string>) => {
 export const updateInventoryItem = (data: Partial<InventoryItem>) => {
   const { id, ...rest } = data;
   return InventoryItem.update({ ...rest }, { where: { id } });
-};
-
-export const addInventoryItemHistory = async (item): Promise<InventoryItemHistory> => {
-  return InventoryItemHistory.create({
-    ...item,
-  });
 };
 
 export const getQuantitySum = async (
@@ -296,4 +294,170 @@ export const getInventoryItemHistory = async ({
       },
     ],
   });
+};
+
+/**
+ * request a return to the store
+ * @param data
+ * @param staff_id
+ * @returns {ReturnItem} inventory items data
+ */
+export const requestReturnDrugsToStore = async (
+  data: RequestReturnToStore[],
+  staff_id: number
+): Promise<ReturnItem[]> => {
+  const mappedData = data.map(drug => ({
+    ...drug,
+    date_received: Date.now(),
+    staff_id,
+  }));
+  return ReturnItem.bulkCreate(mappedData);
+};
+
+/**
+ * get inventory return requests
+ *
+ * @function
+ * @returns {Promise<{currentPage, docs, pages, perPage, total}>} json object with return items data
+ * @param currentPage
+ * @param pageLimit
+ * @param search
+ * @param start
+ * @param end
+ */
+export const getInventoryReturnRequests = async ({
+  currentPage = 1,
+  pageLimit = 10,
+  search = null,
+  start = null,
+  end = null,
+}): Promise<{
+  currentPage: number;
+  docs: InventoryItemHistory[];
+  pages: number;
+  perPage: number;
+  total: number;
+}> => {
+  return ReturnItem.paginate({
+    page: +currentPage,
+    paginate: +pageLimit,
+    order: [['date_received', 'DESC']],
+    ...(start && end && dateIntervalQuery('date_received', start, end)),
+    include: [
+      {
+        model: InventoryItem,
+        attributes: ['drug_id', 'unit_id', 'dosage_form_id', 'measurement_id', 'strength_input'],
+        include: [
+          {
+            model: Drug,
+            attributes: ['name'],
+            ...(search && {
+              where: {
+                name: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+            }),
+          },
+          { model: Unit, attributes: ['name'] },
+          { model: DosageForm, attributes: ['name'] },
+          { model: Measurement, attributes: ['name'] },
+        ],
+      },
+      {
+        model: Staff,
+        attributes: staffAttributes,
+      },
+    ],
+  });
+};
+
+/**
+ * update a return request to the store
+ * @param items
+ * @param staff_id
+ * @returns {Promise<void>} inventory items data
+ */
+export const updateReturnRequests = async (
+  items: UpdateReturnRequest[],
+  staff_id: number
+): Promise<void> => {
+  const declinedRequests = items.filter(item => item.status === 'Declined');
+  const grantedRequests = items.filter(item => item.status === 'Granted');
+
+  if (declinedRequests?.length) {
+    const declinedRequestIds = declinedRequests.map(item => item.id);
+    await ReturnItem.update({ status: Status.DECLINED }, { where: { id: declinedRequestIds } });
+  }
+
+  for await (const item of grantedRequests) {
+    // find the inventory item
+    const inventoryItem = await getInventoryItemQuery({ id: item.inventory_item_id });
+    const [storeItem, returnItem] = await Promise.all([
+      getOnePharmacyStoreItem({
+        drug_id: inventoryItem.drug_id,
+        drug_type: inventoryItem.drug_type,
+        drug_form: inventoryItem.drug_form,
+      }),
+      ReturnItem.findOne({ where: { id: item.id } }),
+    ]);
+
+    await sequelizeConnection.transaction(async t => {
+      // update the inventory item quantity_remaining
+      await InventoryItem.update(
+        {
+          quantity_remaining: literal(`quantity_remaining - ${+item.quantity}`),
+        },
+        {
+          where: { id: inventoryItem.id },
+          transaction: t,
+        }
+      );
+      // add it to inventory item history
+      await InventoryItemHistory.create(
+        {
+          quantity_returned: item.quantity,
+          quantity_remaining: inventoryItem.quantity_remaining - +item.quantity,
+          inventory_item_id: inventoryItem.id,
+          inventory_id: inventoryItem.inventory_id,
+          unit_id: inventoryItem.unit_id,
+          staff_id,
+          history_date: Date.now(),
+          history_type: HistoryType.RETURNED,
+          reason_for_return: returnItem.reason_for_return,
+        },
+        { transaction: t }
+      );
+      // update/add to the pharmacy store quantity_remaining and the quantity_returned
+      await PharmacyStore.update(
+        {
+          quantity_remaining: literal(`quantity_remaining + ${+item.quantity}`),
+        },
+        {
+          where: {
+            drug_id: inventoryItem.drug_id,
+            drug_type: inventoryItem.drug_type,
+            drug_form: inventoryItem.drug_form,
+          },
+          transaction: t,
+        }
+      );
+      // add to pharmacy store history
+      await PharmacyStoreHistory.create(
+        {
+          quantity_returned: item?.quantity,
+          pharmacy_store_id: storeItem.id,
+          quantity_remaining: +storeItem.quantity_remaining + +item.quantity,
+          inventory_id: inventoryItem.inventory_id,
+          unit_id: inventoryItem.unit_id,
+          dispensed_by: staff_id,
+          history_date: Date.now(),
+          history_type: HistoryType.RETURNED,
+        },
+        { transaction: t }
+      );
+      // update teh return items status to RETURNED
+      await ReturnItem.update({ status: Status.RETURNED }, { where: { id: item.id } });
+    });
+  }
 };

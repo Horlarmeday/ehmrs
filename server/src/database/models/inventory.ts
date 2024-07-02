@@ -23,6 +23,7 @@ export enum AcceptedDrugType {
   CASH = 'Cash Drug',
   NHIS = 'NHIS Drug',
   PRIVATE = 'Private Drug',
+  RETAINERSHIP = 'Retainership Drug',
   BOTH = 'Both',
   ALL = 'All',
 }
@@ -55,7 +56,8 @@ export class Inventory extends Model {
       AcceptedDrugType.BOTH,
       AcceptedDrugType.NHIS,
       AcceptedDrugType.ALL,
-      AcceptedDrugType.PRIVATE
+      AcceptedDrugType.PRIVATE,
+      AcceptedDrugType.RETAINERSHIP
     ),
     allowNull: false,
     validate: {
