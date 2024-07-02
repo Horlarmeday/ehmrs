@@ -13,14 +13,15 @@ import {
   getProfessionalAssignedVisits,
   getVisitPrescriptions,
   updateVisit,
+  getOneVisitQuery,
 } from './visit.repository';
 import { Visit } from '../../database/models';
 import { CreateVisit } from './interface/visit.interface';
-import { VisitCategory } from '../../database/models/visit';
+import { VisitCategory, VisitStatus } from '../../database/models/visit';
 import { getOneAntenatalAccount } from '../Antenatal/antenatal.repository';
 import { AccountStatus } from '../../database/models/antenatal';
 import { BadException } from '../../common/util/api-error';
-import { StatusCodes } from '../../core/helpers/helper';
+import { insertSingleOrMultipleServices, StatusCodes } from '../../core/helpers/helper';
 import { Op } from 'sequelize';
 import {
   ANTENATAL_ACCOUNT_REQUIRED,
@@ -80,19 +81,13 @@ class VisitService {
     }
 
     const createdVisit = await createVisit(body);
-
-    if (service_id) {
-      const service = await getOneService({ id: service_id });
-      await prescribeService({
-        service_id,
-        service_type: 'Cash',
-        price: service.price,
-        patient_id,
-        requester: staff_id,
-        ante_natal_id: body?.ante_natal_id,
-        visit_id: createdVisit.id,
-      });
-    }
+    await insertSingleOrMultipleServices({
+      service_id,
+      patient_id,
+      staff_id,
+      visit: createdVisit,
+      ante_natal_id: body?.ante_natal_id,
+    });
     return createdVisit;
   }
 
@@ -214,7 +209,13 @@ class VisitService {
    * @param body
    */
   static async getLastActiveVisitOrCreate(body: CreateVisit) {
-    const visit = await getLastActiveVisit(body.patient_id);
+    const { category, professional, patient_id } = body;
+    const visit = await getOneVisitQuery({
+      category,
+      status: VisitStatus.ONGOING,
+      professional,
+      patient_id,
+    });
     if (!visit) {
       const newVisit = await VisitService.createVisitService(body);
       return { isExist: false, visit: newVisit };

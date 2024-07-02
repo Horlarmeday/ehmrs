@@ -19,3 +19,26 @@ export const validateCreateInventory = inventory => {
   });
   return schema.validate(inventory);
 };
+
+export const validateRequestDrugsToStore = inventory => {
+  const schema = Joi.array().items(
+    Joi.object({
+      reason_for_return: Joi.string().required(),
+      quantity: Joi.number().required(),
+      inventory_item_id: Joi.number().required(),
+    })
+  );
+  return schema.validate(inventory);
+};
+
+export const validateUpdateReturnRequest = inventory => {
+  const schema = Joi.array().items(
+    Joi.object({
+      id: Joi.number().required(),
+      status: Joi.string().required(),
+      quantity: Joi.number().required(),
+      inventory_item_id: Joi.number().required(),
+    })
+  );
+  return schema.validate(inventory);
+};

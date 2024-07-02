@@ -8,9 +8,13 @@ export function validateVisit(visit: any) {
     professional: Joi.string().required(),
     date_of_visit: Joi.date().required(),
     type: Joi.string().required(),
-    service_id: Joi.number()
-      .optional()
-      .allow(''),
+    service_id: Joi.alternatives()
+      .try(Joi.number(), Joi.array().items(Joi.number()))
+      .allow('')
+      .optional(),
+    // service_id: Joi.number()
+    //   .optional()
+    //   .allow(''),
     ante_natal_id: Joi.number()
       .allow('')
       .optional(),

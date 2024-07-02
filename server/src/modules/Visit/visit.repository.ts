@@ -89,6 +89,15 @@ export async function getVisitById(id: number): Promise<Visit> {
 }
 
 /**
+ * get patient visit
+ * @returns {Promise<Visit>} visit data
+ * @param query
+ */
+export const getOneVisitQuery = (query: WhereOptions<Visit>): Promise<Visit> => {
+  return Visit.findOne({ where: { ...query } });
+};
+
+/**
  * get a visit by Id and including patient details
  * @param id
  */
@@ -505,7 +514,7 @@ export const getProfessionalAssignedVisits = async ({
   return Visit.paginate({
     page: +currentPage,
     paginate: +pageLimit,
-    order: [['date_visit_start', 'DESC']],
+    order: [['updatedAt', 'DESC']],
     where: {
       status: VisitStatus.ONGOING,
       professional: role,
@@ -518,7 +527,7 @@ export const getProfessionalAssignedVisits = async ({
           category: VisitCategory.EMERGENCY,
         },
       ],
-      ...(start && end && dateIntervalQuery('date_visit_start', start, end)),
+      ...(start && end && dateIntervalQuery('updatedAt', start, end)),
     },
     include: [
       {
