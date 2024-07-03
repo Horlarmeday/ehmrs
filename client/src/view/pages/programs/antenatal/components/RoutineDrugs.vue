@@ -7,7 +7,8 @@
     @show="getInventories"
   >
     <div v-if="defaults">
-      <div class="mb-5" v-for="drug in routineDrugs" :key="drug.drug_id">
+      <ErrorBanner v-if="error" :message="error" />
+      <div class="mb-5 border" v-for="drug in routineDrugs" :key="drug.drug_id">
         <div class="bg-light-primary p-1">
           <label class="mr-3"
             >Drug:
@@ -22,12 +23,17 @@
             >Route: <span class="font-weight-bolder">{{ drug.route_name }}</span></label
           >
           <span class="vertical-line"></span>
-          <label class=""
+          <label class="mr-3"
             >Strength:
             <span class="font-weight-bolder"
               >{{ drug.prescribed_strength }} {{ drug.strength_name }}</span
             ></label
           >
+          <span class="vertical-line"></span>
+          <label class="mr-3"
+            >Drug Type:
+            <span class="font-weight-bolder">{{ drug.drug_type }}</span>
+          </label>
         </div>
         <div class="form-group row">
           <div class="col-sm-1">
@@ -73,7 +79,7 @@
           </div>
         </div>
       </div>
-      <div class="separator separator-solid separator-border-2"></div>
+
       <div class="mt-2">
         <button class="btn btn-primary btn-md" ref="kt-routineDrugs-submit" @click="submitDrugs">
           Submit
@@ -89,6 +95,7 @@
 <script>
 import DefaultSkeleton from '@/utils/DefaultSkeleton.vue';
 import { randomId } from '@/common/common';
+import ErrorBanner from '@/view/pages/programs/immunization/ErrorBanner.vue';
 
 const Frequency = {
   OD: 1,
@@ -102,10 +109,11 @@ const Frequency = {
 };
 
 export default {
-  components: { DefaultSkeleton },
+  components: { ErrorBanner, DefaultSkeleton },
   data: () => ({
     defaultData: 'ANC_ROUTINE_DRUGS',
     switchSpot: true,
+    error: null,
     units: [
       { val: 1, label: 'Days' },
       { val: 7, label: 'Weeks' },
@@ -307,7 +315,7 @@ export default {
     },
 
     submitDrugs() {
-      console.log(this.routineDrugs);
+      this.error = null;
       const emptyQuantity = this.routineDrugs.some(
         drug => !drug.quantity_to_dispense || !drug.duration_unit
       );
@@ -329,7 +337,11 @@ export default {
           id: this.$route.params.id,
         })
         .then(() => this.endRequest(submitButton))
-        .catch(() => this.removeSpinner(submitButton));
+        .catch(err => {
+          console.log(err);
+          this.removeSpinner(submitButton);
+          this.error = err?.message;
+        });
     },
   },
 };
