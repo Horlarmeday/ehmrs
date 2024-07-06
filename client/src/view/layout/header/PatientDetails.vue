@@ -10,16 +10,20 @@
             @load="handleImageLoad"
             @error="handleImageError"
           />
-          <span v-else class="symbol-label font-size-h4">
+          <router-link
+            :to="`/patient/profile/${patient.id}`"
+            v-else
+            class="symbol-label font-size-h4"
+          >
             {{ patient?.firstname?.charAt(0)?.toUpperCase() }}
             {{ patient?.lastname?.charAt(0)?.toUpperCase() }}
-          </span>
+          </router-link>
         </div>
       </li>
       <li class="menu-item">
         <div class="menu-link">
-          <span class="font-weight-bolder text-dark"
-            >{{ patient.fullname }} ({{ patient.hospital_id }})</span
+          <router-link :to="`/patient/profile/${patient.id}`" class="font-weight-bolder text-dark"
+            >{{ patient.fullname }} ({{ patient.hospital_id }})</router-link
           >
         </div>
       </li>

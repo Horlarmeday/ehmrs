@@ -281,7 +281,7 @@ export default {
       const res = response.data.data;
       this.height = res?.triage?.height;
       this.date_of_birth = dayjs().diff(res.patient.date_of_birth, 'weeks');
-      this.$store.dispatch('patient/setCurrentPatient', { ...res.patient, ...res.insurance });
+      this.$store.dispatch('patient/setCurrentPatient', { ...res.insurance, ...res.patient });
     });
     this.BPValidation();
   },

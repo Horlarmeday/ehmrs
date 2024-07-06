@@ -3,7 +3,7 @@
     <SectionTitle text="Antenatal Routine Drugs" />
     <div class="mb-5" v-for="(item, i) in items" :key="i">
       <div class="d-flex justify-content-between">
-        <div class="d-flex flex-column flex-root">
+        <div class="d-flex flex-column flex-root flex-grow-2">
           <label>Drug:</label>
           <v-select
             v-validate="'required'"

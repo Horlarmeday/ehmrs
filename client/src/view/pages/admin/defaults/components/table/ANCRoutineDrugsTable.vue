@@ -20,14 +20,11 @@
           <tr v-for="drug in routineDrugs" :key="drug.id">
             <td class="pl-5">
               <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                <span
-                  :title="`${drug?.drug?.drug_type}`"
-                  v-b-tooltip.hover
-                  :class="getLabelDotStatus(drug?.drug?.drug_type)"
-                  class="label label-dot label-lg mr-2"
-                ></span>
                 {{ drug?.drug?.name }}
               </span>
+              <span :class="getItemType(drug?.drug?.drug_type)" class="label label-inline ml-2">{{
+                drug?.drug?.drug_type
+              }}</span>
             </td>
             <td>
               <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
@@ -66,11 +63,11 @@
 
 <script>
 import DeleteIcon from '@/assets/icons/DeleteIcon.vue';
-import { getLabelDotStatus } from '@/common/common';
+import { getItemType } from '@/common/common';
 
 export default {
   methods: {
-    getLabelDotStatus,
+    getItemType,
     deleteDefaultData(dataId) {
       this.$store
         .dispatch('model/deleteDefaultData', { id: this.$route.params.id, dataId })

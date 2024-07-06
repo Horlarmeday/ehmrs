@@ -164,7 +164,11 @@ export default {
           department: 'Medical Practitioner',
         },
       ];
-      if (this.category === 'Antenatal') {
+      if (
+        this.category === 'Antenatal' ||
+        this.category === 'Immunization' ||
+        this.category === 'Maternity'
+      ) {
         data.push({
           id: 2,
           department: 'Nursing',
@@ -300,7 +304,7 @@ export default {
     this.$store.dispatch('patient/fetchPatientProfile', this.$route.params.id).then(response => {
       const res = response.data.data;
       this.gender = res.gender;
-      this.$store.dispatch('patient/setCurrentPatient', { ...res, ...res.insurance });
+      this.$store.dispatch('patient/setCurrentPatient', { ...res.insurance, ...res });
     });
   },
 };
