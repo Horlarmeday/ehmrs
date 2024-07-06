@@ -26,6 +26,9 @@
                   drug?.drug?.drug_type
                 }}</span>
               </span>
+              <span :class="getItemType(drug?.drug?.drug_type)" class="label label-inline ml-2">{{
+                drug?.drug?.drug_type
+              }}</span>
             </td>
             <td>
               <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
