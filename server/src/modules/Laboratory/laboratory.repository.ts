@@ -7,10 +7,12 @@ import {
 } from '../../core/helpers/general';
 
 import {
+  Insurance,
   Patient,
   PatientInsurance,
   PrescribedTest,
   Sample,
+  Staff,
   Test,
   TestPrescription,
   TestResult,
@@ -22,10 +24,11 @@ import {
   dateIntervalQuery,
   paginate,
   patientAttributes,
+  staffAttributes,
   StatusCodes,
 } from '../../core/helpers/helper';
 import { chain } from 'lodash';
-import { TestStatus } from '../../database/models/prescribedTest';
+import { PrescriptionType, TestStatus } from '../../database/models/prescribedTest';
 import sequelizeConnection from '../../database/config/config';
 import { ResultStatus } from '../../database/models/testResult';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
@@ -33,6 +36,7 @@ import { BadException } from '../../common/util/api-error';
 import { CANNOT_ADD_RESULTS, RESULT_NOT_FOUND, TEST_NOT_FOUND } from './messages/response-messages';
 import { Result } from './dto/laboratory-result.dto';
 import { PaymentStatus } from '../../database/models/prescribedDrug';
+import { Test as TestType } from '../Orders/Laboratory/interface/prescribed-test.body';
 
 const testResultFieldsToUpdate = (fields: string[] = []) => [
   'prescribed_test_id',
@@ -128,10 +132,10 @@ export async function createTest(data) {
     staff_id,
     result_unit,
     valid_range,
-    type,
     nhis_price,
     phis_price,
     retainership_price,
+    result_form,
   } = data;
   const count = await getNumberOfRecords(Test);
 
@@ -143,22 +147,13 @@ export async function createTest(data) {
     result_unit,
     valid_range,
     code: `D${count + 1}`,
-    type,
+    result_form,
     nhis_price: nhis_price || null,
     phis_price: phis_price || null,
     retainership_price: retainership_price || null,
     is_available_for_nhis: !!nhis_price,
     is_available_for_phis: !!phis_price,
   });
-}
-
-/**
- * get a test
- * @param data
- * @returns {object} test data
- */
-export async function getTestById(data) {
-  return getModelById(Test, data);
 }
 
 /**
@@ -173,84 +168,28 @@ export async function updateTest(data) {
 }
 
 /**
- * search tests
- *
- * @function
- * @returns {json} json object with tests data
- * @param currentPage
- * @param pageLimit
- * @param search
- */
-export async function searchTests(currentPage = 1, pageLimit = 10, search) {
-  return Test.paginate({
-    page: currentPage,
-    paginate: pageLimit,
-    order: [['createdAt', 'DESC']],
-    where: {
-      name: {
-        [Op.like]: `%${search}%`,
-      },
-    },
-  });
-}
-
-/**
- * search tests
- *
- * @function
- * @returns {json} json object with tests data
- * @param currentPage
- * @param pageLimit
- * @param search
- * @param id
- */
-export async function searchTestsInASample({ currentPage = 1, pageLimit = 10, search, sampleId }) {
-  return Test.paginate({
-    page: currentPage,
-    paginate: pageLimit,
-    order: [['createdAt', 'DESC']],
-    where: {
-      sample_id: sampleId,
-      name: {
-        [Op.like]: `%${search}%`,
-      },
-    },
-  });
-}
-
-/**
- * filter tests
- *
- * @function
- * @returns {json} json object with tests data
- * @param currentPage
- * @param pageLimit
- * @param filter
- */
-export async function filterTests(currentPage = 1, pageLimit = 10, filter) {
-  return Test.paginate({
-    page: currentPage,
-    paginate: pageLimit,
-    order: [['createdAt', 'DESC']],
-    where: {
-      sample_id: filter,
-    },
-  });
-}
-
-/**
  * get tests
  *
  * @function
  * @returns {json} json object with tests data
  * @param currentPage
  * @param pageLimit
+ * @param filter
+ * @param search
  */
-export async function getTests(currentPage = 1, pageLimit = 10) {
+export async function getTests({ currentPage = 1, pageLimit = 20, filter = null, search = null }) {
   return Test.paginate({
-    page: currentPage,
-    paginate: pageLimit,
-    order: [['createdAt', 'DESC']],
+    page: +currentPage,
+    paginate: +pageLimit,
+    order: [['name', 'ASC']],
+    where: {
+      ...(filter && JSON.parse(filter)),
+      ...(search && {
+        name: {
+          [Op.like]: `%${search}%`,
+        },
+      }),
+    },
   });
 }
 
@@ -278,21 +217,22 @@ const testPriceTariff = async (insurance: PatientInsurance, test_id: number) => 
   return price;
 };
 
-export const getTestPrice = async (patient: Patient, test_id: number) => {
-  if (!canUsePriceTariff(patient)) return null;
+export const getTestPrice = async (patient: Patient, test: TestType) => {
+  if (!canUsePriceTariff(patient)) return test.price;
+  if (test.test_type === PrescriptionType.CASH) return test.price;
 
   const insurance = await getPatientInsuranceQuery({ patient_id: patient.id, is_default: true });
-  if (!insurance) return null;
+  if (!insurance) return test.price;
 
-  const price = await testPriceTariff(insurance, test_id);
+  const price = await testPriceTariff(insurance, test.test_id);
   if (price) return price;
 
-  const test = await Test.findByPk(test_id);
+  const foundTest = await Test.findByPk(test.test_id);
   const insurancePrices = {
-    NHIS: test.nhis_price,
-    PHIS: test.phis_price,
-    Retainership: test.retainership_price,
-    FHSS: test.nhis_price,
+    NHIS: foundTest?.nhis_price,
+    PHIS: foundTest?.phis_price,
+    Retainership: foundTest?.retainership_price,
+    FHSS: foundTest?.nhis_price,
   };
   return insurancePrices[insurance.insurance.name] || null;
 };
@@ -388,6 +328,16 @@ export const getSamplesToCollect = async ({
             ],
           }),
         },
+        include: [
+          {
+            model: PatientInsurance,
+            where: { is_default: true },
+            limit: 1,
+            order: [['createdAt', 'DESC']],
+            attributes: ['id', 'insurance_id'],
+            include: [{ model: Insurance, attributes: ['name'] }],
+          },
+        ],
       },
     ],
     group: ['TestPrescription.id'], // Group the results by testPrescription.id to get the count per sample
@@ -506,6 +456,16 @@ export const getCollectedSamples = async ({
             ],
           }),
         },
+        include: [
+          {
+            model: PatientInsurance,
+            where: { is_default: true },
+            limit: 1,
+            order: [['createdAt', 'DESC']],
+            attributes: ['id', 'insurance_id'],
+            include: [{ model: Insurance, attributes: ['name'] }],
+          },
+        ],
       },
     ],
     group: ['TestPrescription.id'], // Group the results by testPrescription.id to get the count per sample

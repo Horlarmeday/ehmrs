@@ -95,7 +95,7 @@ class LabOrderController {
         httpCode: StatusCodes.BAD_REQUEST,
       });
     try {
-      const test = await LabOrderService.updatePrescribedTest(req.body);
+      const test = await LabOrderService.updatePrescribedTest(req.body, req.user.sub);
 
       return successResponse({
         res,

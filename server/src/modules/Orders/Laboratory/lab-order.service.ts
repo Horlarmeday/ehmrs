@@ -8,7 +8,7 @@ import {
   updatePrescribedTest,
 } from './lab-order.repository';
 import { PrescribedTestBody } from './interface/prescribed-test.body';
-import { PrescribedDrug, PrescribedTest } from '../../../database/models';
+import { PrescribedTest } from '../../../database/models';
 import PatientService from '../../Patient/patient.service';
 import {
   createTestPrescription,
@@ -24,6 +24,7 @@ import { PaymentStatus } from '../../../database/models/prescribedDrug';
 import { BadException } from '../../../common/util/api-error';
 import { CANNOT_DELETE_TEST } from './messages/response-messages';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
+import { TestType } from '../../../database/models/test';
 
 export class LabOrderService {
   /**
@@ -61,7 +62,7 @@ export class LabOrderService {
     const bulkTests = await Promise.all(
       tests.map(async test => ({
         ...test,
-        price: (await getTestPrice(patient, test.test_id)) || test.price,
+        price: (await getTestPrice(patient, test)) || test.price,
         requester: staff_id,
         visit_id,
         patient_id: visit.patient_id,
@@ -71,6 +72,10 @@ export class LabOrderService {
           nhis_status: NHISApprovalStatus.PENDING,
         }),
         patient_insurance_id: insurance?.id,
+        test_group:
+          patient?.has_insurance && test.test_type !== PrescriptionType.CASH
+            ? TestType.SECONDARY
+            : null,
       }))
     );
     return orderBulkTest(bulkTests);
@@ -100,10 +105,14 @@ export class LabOrderService {
    * @static
    * @returns {Promise<PrescribedTest>} json object with prescribed test data
    * @param body
+   * @param staffId
    * @memberOf LabOrderService
    */
-  static async updatePrescribedTest(body: Partial<PrescribedTest>): Promise<PrescribedTest> {
-    return updatePrescribedTest(body);
+  static async updatePrescribedTest(
+    body: Partial<PrescribedTest>,
+    staffId: number
+  ): Promise<PrescribedTest> {
+    return updatePrescribedTest({ ...body, test_changed_by: staffId });
   }
 
   /**

@@ -11,16 +11,20 @@ import {
   getPatients,
   updatePatient,
   addPatientInsurance,
-  getPatientByNameAndPhone, updateInsurance, togglePatientInsurance,
+  getPatientByNameAndPhone,
+  updateInsurance,
+  togglePatientInsurance,
 } from './patient.repository';
-import { processSnappedPhoto, StatusCodes } from '../../core/helpers/helper';
+import { getAge, processSnappedPhoto, StatusCodes } from '../../core/helpers/helper';
 import { JobSchedule } from '../../core/command/worker/schedule';
 import { DEPENDANT_EXIST, INTERNAL_ERROR, PATIENT_EXIST } from './messages/response-messages';
 import {
   AddPatientInsuranceBody,
   CreatePatientBody,
   EmergencyPatientBody,
-  PatientType, TogglePatientInsurance, UpdatePatientInsurance,
+  PatientType,
+  TogglePatientInsurance,
+  UpdatePatientInsurance,
 } from './types/patient.types';
 import { prescribeService } from '../Orders/Service/service-order.repository';
 import { Patient } from '../../database/models';
@@ -36,7 +40,9 @@ class PatientService {
    */
   static async createPatientAccount(createPatientBody: CreatePatientBody) {
     const patient = await findPatientByPhone(createPatientBody.phone);
-    if (patient) throw new BadException('INVALID', StatusCodes.BAD_REQUEST, PATIENT_EXIST);
+    const age = getAge(createPatientBody.date_of_birth);
+    if (patient && age >= 18)
+      throw new BadException('INVALID', StatusCodes.BAD_REQUEST, PATIENT_EXIST);
 
     try {
       // Save photo to disk

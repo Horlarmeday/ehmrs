@@ -4,7 +4,6 @@ import {
   createTest,
   createTestSample,
   createTestTariff,
-  filterTests,
   getCollectedSamples,
   getOneCollectedSample,
   getOneSampleToCollect,
@@ -16,9 +15,7 @@ import {
   getTests,
   getTestSamples,
   getVerifiedTestResults,
-  searchTests,
   searchTestSamples,
-  searchTestsInASample,
   todayTestStats,
   updateTest,
   updateTestPrescription,
@@ -127,24 +124,13 @@ class LaboratoryService {
    * @memberOf LaboratoryService
    */
   static async getTests(body) {
-    const { currentPage, pageLimit, search, filter, sampleId } = body;
-    if (search) return searchTests(+currentPage, +pageLimit, search);
-
-    if (filter) return filterTests(+currentPage, +pageLimit, filter);
-
-    if (sampleId && search)
-      return searchTestsInASample({
-        currentPage: +currentPage,
-        pageLimit: +pageLimit,
-        search,
-        sampleId,
-      });
+    const { currentPage, pageLimit, search, filter } = body;
 
     if (Object.values(body).length) {
-      return getTests(+currentPage, +pageLimit);
+      return getTests({ currentPage, pageLimit, search, filter });
     }
 
-    return getTests();
+    return getTests({});
   }
 
   /** ***********************

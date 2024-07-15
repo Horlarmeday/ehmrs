@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { Op } from 'sequelize';
+import { Op, WhereOptions } from 'sequelize';
 import { JobSchedule } from '../../core/command/worker/schedule';
 import { PatientType, TogglePatientInsurance, UpdatePatientInsurance } from './types/patient.types';
 import { HMO, Insurance, Patient, PatientInsurance, Staff, Visit } from '../../database/models';
@@ -51,13 +51,13 @@ export async function getPatientById(data: number) {
 }
 
 /**
- * get patient with its insurance
- * @returns {Promise<Patient>} return patient data
- * @param patient_id
+ * get patient query
+ * @returns {object} return patient data
+ * @param query
  */
-export const getPatientWithInsurance = (patient_id: number): Promise<Patient> => {
-  return Patient.findByPk(patient_id, { include: [{ model: Insurance }] });
-};
+export async function getPatientQuery(query: WhereOptions<Patient>) {
+  return Patient.findOne({ where: { ...query } });
+}
 
 /**
  * create a patient account
@@ -455,7 +455,7 @@ export const updateInsurance = async (data: UpdatePatientInsurance) => {
   // Update principal
   const updatedInsurance = await updatePatientInsurance(
     { patient_id, id: patient_insurance_id },
-    { ...rest }
+    { ...rest, is_default: true }
   );
 
   if (dependants?.length) {
@@ -475,7 +475,7 @@ export const updateInsurance = async (data: UpdatePatientInsurance) => {
           {
             patient_id: id,
           },
-          { ...rest }
+          { ...rest, is_default: true }
         );
       })
     );
