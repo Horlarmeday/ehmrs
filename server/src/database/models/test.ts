@@ -22,6 +22,24 @@ export enum TestType {
   PRIMARY = 'Primary',
   SECONDARY = 'Secondary',
 }
+
+export enum ResultForm {
+  DEFAULT_RESULT_FORM = 'DefaultResultForm',
+  WIDAL_REACTION_FORM = 'WidalReactionForm',
+  ANALYTE_FORM = 'AnalyteForm',
+  BILIRUBIN_FORM = 'BilirubinForm',
+  OGTT_FORM = 'OGTTForm',
+  SERUM_FORM = 'SerumForm',
+  LFT_FORM = 'LFTForm',
+  LIPID_PROFILE_FORM = 'LipidProfileForm',
+  SEUCR_FORM = 'SEUCrForm',
+  SPUTUM_FORM = 'SputumForm',
+  STOOL_ANALYSIS_FORM = 'StoolAnalysisForm',
+  SEMEN_ANALYSIS_FORM = 'SemenAnalysisForm',
+  URINALYSIS_FORM = 'UrinalysisForm',
+  URINE_SWAB_FORM = 'UrineSwabForm',
+}
+
 @Table({ timestamps: true })
 export class Test extends Model {
   @PrimaryKey
@@ -100,12 +118,7 @@ export class Test extends Model {
 
   @Column({
     type: DataType.ENUM(TestType.PRIMARY, TestType.SECONDARY),
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'type of test is required',
-      },
-    },
+    defaultValue: TestType.SECONDARY,
   })
   type: TestType;
 
@@ -122,14 +135,14 @@ export class Test extends Model {
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'result valid range is required',
-      },
-    },
   })
   valid_range: string;
+
+  @Column({
+    type: DataType.STRING,
+    defaultValue: ResultForm.DEFAULT_RESULT_FORM,
+  })
+  result_form: string;
 
   @Column({
     type: DataType.INTEGER,

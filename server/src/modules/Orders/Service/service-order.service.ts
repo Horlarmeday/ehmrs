@@ -100,10 +100,11 @@ export class ServiceOrderService {
    * @static
    * @returns {json} json object with prescribed service data
    * @param body
+   * @param staffId
    * @memberOf ServiceOrderService
    */
-  static async updatePrescribedService(body) {
-    return updatePrescribedService(body);
+  static async updatePrescribedService(body: Partial<PrescribedService>, staffId: number) {
+    return updatePrescribedService({ ...body, service_changed_by: staffId });
   }
 
   /**

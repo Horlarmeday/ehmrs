@@ -104,7 +104,7 @@ export class ServiceOrderController {
         httpCode: StatusCodes.BAD_REQUEST,
       });
     try {
-      const service = await ServiceOrderService.updatePrescribedService(req.body);
+      const service = await ServiceOrderService.updatePrescribedService(req.body, req.user.sub);
 
       return successResponse({
         res,

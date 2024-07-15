@@ -71,7 +71,7 @@ export const getPrescriptionServices = async (
     where: { ...query },
     include: [
       { model: Service, attributes: ['name', 'type'] },
-      { model: Staff, attributes: staffAttributes },
+      { model: Staff, as: 'examiner', attributes: staffAttributes },
     ],
   });
 };
@@ -116,7 +116,7 @@ export const getOnePrescribedService = async (
     where: { ...query },
     include: [
       { model: Service, attributes: ['name', 'type'] },
-      { model: Staff, attributes: staffAttributes },
+      { model: Staff, as: 'examiner', attributes: staffAttributes },
     ],
   });
 };
