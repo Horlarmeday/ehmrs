@@ -12,7 +12,7 @@
         <table class="table table-head-custom table-head-bg table-vertical-center">
           <thead>
             <tr class="text-uppercase">
-              <th style="min-width: 100px" class="pl-4">
+              <th style="min-width: 80px" class="pl-2">
                 <span class="text-dark-75">Lab number</span>
               </th>
               <th style="min-width: 100px">Patient ID</th>
@@ -33,9 +33,17 @@
           </tbody>
           <tbody v-for="sample in samples" :key="sample.id">
             <tr :class="{ disabled: sample.total === sample.total_pending_payments }">
-              <td class="pl-4 py-8">
+              <td class="pl-2 py-8">
                 <div class="d-flex align-items-center">
                   <div>
+                    <span
+                      v-b-tooltip.hover
+                      :title="sample?.patient?.insurances?.[0]?.insurance?.name"
+                      class="label label-dot label-lg mr-2"
+                      :class="
+                        getPatientDotStatus(sample?.patient?.insurances?.[0]?.insurance?.name)
+                      "
+                    ></span>
                     <a
                       href="#"
                       class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-md"
@@ -50,9 +58,11 @@
                 </span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
-                  {{ sample.patient.fullname }}
-                </span>
+                <router-link :to="`/patient/profile/${sample.patient_id}`">
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                    {{ sample.patient.fullname }}
+                  </span>
+                </router-link>
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-md">
@@ -83,7 +93,7 @@
                 >
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">{{
                   sample.date_sample_received | dayjs('DD/MM/YYYY, h:mma')
                 }}</span>
               </td>
@@ -134,7 +144,7 @@
 
 <script>
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
-import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
+import { debounce, getPatientDotStatus, removeSpinner, setUrlQueryParams } from '@/common/common';
 import Search from '@/utils/Search.vue';
 import ValidateIcon from '@/assets/icons/ValidateIcon.vue';
 import Pagination from '@/utils/Pagination.vue';
@@ -172,6 +182,7 @@ export default {
     TODAY: 'Today',
   }),
   methods: {
+    getPatientDotStatus,
     handlePageChange() {
       setUrlQueryParams({
         currentPage: this.currentPage,

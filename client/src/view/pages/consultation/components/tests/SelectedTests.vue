@@ -36,6 +36,8 @@
 </template>
 
 <script>
+import { getLabelDotStatus } from '@/common/common';
+
 export default {
   name: 'SelectedTests',
   props: {
@@ -45,6 +47,7 @@ export default {
     // sBackgroundColor: { type: String },
   },
   methods: {
+    getLabelDotStatus,
     truncateText(test) {
       if (!test.length || test.length <= 17) return test;
       const truncatedText = test.substring(0, 17);
@@ -64,11 +67,6 @@ export default {
         icon.classList.add('text-warning');
         this.$store.dispatch('order/toggleTestUrgent', testId);
       }
-    },
-    getLabelDotStatus(type) {
-      if (type === 'CASH') return 'label-success';
-      if (type === 'Private') return 'label-primary';
-      return 'label-danger';
     },
   },
 };

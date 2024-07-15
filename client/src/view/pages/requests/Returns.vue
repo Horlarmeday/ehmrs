@@ -6,7 +6,7 @@
       :items-to-return="itemsToReturn"
     />
     <!--begin::Header-->
-    <div class="card-header border-0 py-5">
+    <div class="card-header py-5">
       <h3 class="card-title align-items-start flex-column">
         <span class="card-label font-weight-bolder text-dark">Inventory Returns</span>
       </h3>

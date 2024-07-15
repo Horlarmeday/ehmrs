@@ -66,6 +66,7 @@
 </template>
 
 <script>
+/* eslint-disable no-unused-vars */
 export default {
   props: {
     displayPrompt: {
@@ -135,12 +136,20 @@ export default {
           // set spinner to submit button
           const submitButton = this.$refs['kt_return_submit'];
           this.addSpinner(submitButton);
-
+          console.log(this.itemsToReturn);
           const itemsToReturn = this.itemsToReturn.map(
-            // eslint-disable-next-line no-unused-vars
-            ({ drug_type, isInvalid, quantity_left, unit_name, receiver, drug_name, ...item }) =>
-              item
+            ({
+              drug_type,
+              isInvalid,
+              quantity_left,
+              unit_name,
+              unit_id,
+              receiver,
+              drug_name,
+              ...item
+            }) => item
           );
+          console.log(itemsToReturn);
           this.$store
             .dispatch('inventory/createInventoryItemsReturnRequest', itemsToReturn)
             .then(() => this.endRequest(submitButton))

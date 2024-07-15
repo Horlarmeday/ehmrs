@@ -9,7 +9,7 @@
           <th class="pr-0" style="width: 250px">Inventory</th>
           <th class="pr-0" style="width: 150px">Quantity</th>
           <th class="pr-0" style="width: 150px">Status</th>
-          <th v-if="shouldSelectRequest" class="pr-0" style="width: 150px">Requester</th>
+          <th v-if="shouldSelectRequest" class="pr-0" style="width: 150px">Requested By</th>
           <th class="pr-0" style="min-width: 150px">Date Created</th>
         </tr>
       </thead>

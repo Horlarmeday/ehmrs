@@ -5,14 +5,20 @@
     hide-footer
     title="Routine Drugs"
     @show="getInventories"
+    scrollable
   >
     <div v-if="defaults">
+      <div class="m-2">
+        <button class="btn btn-primary btn-md" ref="kt-routineDrugs-submit" @click="submitDrugs">
+          Submit
+        </button>
+      </div>
       <ErrorBanner v-if="error" :message="error" />
       <div class="mb-5 border" v-for="drug in routineDrugs" :key="drug.drug_id">
         <div class="bg-light-primary p-1">
           <label class="mr-3"
             >Drug:
-            <span class="font-weight-bolder">{{ drug.drug_name }}</span>
+            <span class="font-weight-bolder font-size-lg">{{ drug.drug_name }}</span>
           </label>
           <span class="vertical-line"></span>
           <label class="mr-3"
@@ -131,7 +137,7 @@ export default {
     },
     showSwitch: {
       type: Boolean,
-      required: true,
+      required: false,
     },
     source: {
       type: String,
@@ -320,10 +326,11 @@ export default {
         drug => !drug.quantity_to_dispense || !drug.duration_unit
       );
       if (emptyQuantity) {
+        this.error = 'You need to fill all selected inputs';
         return this.$notify({
           group: 'foo',
           title: 'Error message',
-          text: 'You need to fill all inputs',
+          text: 'You need to fill all selected inputs',
           type: 'error',
         });
       }
@@ -338,7 +345,6 @@ export default {
         })
         .then(() => this.endRequest(submitButton))
         .catch(err => {
-          console.log(err);
           this.removeSpinner(submitButton);
           this.error = err?.message;
         });

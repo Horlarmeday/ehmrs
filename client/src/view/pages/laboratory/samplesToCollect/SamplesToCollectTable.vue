@@ -33,18 +33,28 @@
               <td class="pl-4">
                 <div class="d-flex align-items-center">
                   <div>
-                    <a
-                      href="#"
+                    <span
+                      v-b-tooltip.hover
+                      :title="sample?.patient?.insurances?.[0]?.insurance?.name"
+                      class="label label-dot label-lg mr-2"
+                      :class="
+                        getPatientDotStatus(sample?.patient?.insurances?.[0]?.insurance?.name)
+                      "
+                    ></span>
+                    <router-link
+                      :to="`/patient/profile/${sample.patient_id}`"
                       class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg"
-                      >{{ sample.patient.hospital_id }}</a
+                      >{{ sample.patient.hospital_id }}</router-link
                     >
                   </div>
                 </div>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ sample.patient.fullname }}
-                </span>
+                <router-link :to="`/patient/profile/${sample.patient_id}`">
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                    {{ sample.patient.fullname }}
+                  </span>
+                </router-link>
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg pl-7">
@@ -94,7 +104,7 @@
 
 <script>
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
-import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
+import { debounce, getPatientDotStatus, removeSpinner, setUrlQueryParams } from '@/common/common';
 import Search from '../../../../utils/Search.vue';
 import Pagination from '@/utils/Pagination.vue';
 import dayjs from 'dayjs';
@@ -131,6 +141,7 @@ export default {
     },
   },
   methods: {
+    getPatientDotStatus,
     getSampleStatus(status) {
       if (status === 'Pending') return 'label-light-warning ';
       if (status === 'Completed') return 'label-light-success ';
