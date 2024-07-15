@@ -14,6 +14,7 @@ import {
   getVisitPrescriptions,
   updateVisit,
   getOneVisitQuery,
+  getPatientPendingPrescriptions,
 } from './visit.repository';
 import { Visit } from '../../database/models';
 import { CreateVisit } from './interface/visit.interface';
@@ -26,9 +27,8 @@ import { Op } from 'sequelize';
 import {
   ANTENATAL_ACCOUNT_REQUIRED,
   IMMUNIZATION_ACCOUNT_REQUIRED,
+  PATIENT_ON_ADMISSION,
 } from './messages/response.messages';
-import { getOneService } from '../AdminSettings/admin.repository';
-import { prescribeService } from '../Orders/Service/service-order.repository';
 import { getPatientById } from '../Patient/patient.repository';
 import { Gender } from '../../database/models/staff';
 import { FEMALE_REQUIRED } from '../Antenatal/messages/antenatal.messages';
@@ -53,6 +53,10 @@ class VisitService {
       throw new BadException('INVALID', StatusCodes.BAD_REQUEST, FEMALE_REQUIRED);
     }
 
+    if (visit && visit.category === VisitCategory.IPD) {
+      throw new BadException('INVALID', StatusCodes.BAD_REQUEST, PATIENT_ON_ADMISSION);
+    }
+
     if (visit) await endVisit(visit); // end existing visit - since 2 visits cannot be active
 
     // This check happens if the visit category is ANC and a visit wants to be created when an antenatal account already exists
@@ -71,13 +75,24 @@ class VisitService {
       body.ante_natal_id = antenatal.id;
     }
 
-    if (category === VisitCategory.Immunization && !immunization_id) {
+    if (category === VisitCategory.IMMUNIZATION && !immunization_id) {
       const immunization = await getOneImmunization({
         patient_id,
       });
       if (!immunization)
         throw new BadException('INVALID', StatusCodes.BAD_REQUEST, IMMUNIZATION_ACCOUNT_REQUIRED);
       body.immunization_id = immunization.id;
+    }
+
+    if (category === VisitCategory.MATERNITY) {
+      const antenatal = await getOneAntenatalAccount({
+        patient_id,
+        [Op.or]: [
+          { account_status: AccountStatus.ACTIVE },
+          { account_status: AccountStatus.INACTIVE },
+        ],
+      });
+      body.ante_natal_id = antenatal?.id;
     }
 
     const createdVisit = await createVisit(body);
@@ -269,6 +284,17 @@ class VisitService {
    */
   static async updateVisit(visitId: number, body: Partial<Visit>) {
     return updateVisit({ id: visitId }, body);
+  }
+
+  /**
+   * get pending prescriptions in a visit
+   *
+   * @static
+   * @memberOf VisitService
+   * @param id
+   */
+  static async getPendingVisitPrescriptions(id: number) {
+    return getPatientPendingPrescriptions(id);
   }
 }
 

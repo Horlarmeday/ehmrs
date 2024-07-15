@@ -12,5 +12,6 @@ router.get('/category/get', verify, VisitController.getCategoryVisits);
 router.get('/professional-assigned/get', verify, VisitController.getProfessionalAssignedVisits);
 router.get('/prescriptions/:id', verify, VisitController.getVisitPrescriptions);
 router.get('/:id', verify, VisitController.getVisitById);
+router.get('/pending-prescriptions/:id', verify, VisitController.getPendingVisitPrescriptions);
 
 export default router;
