@@ -20,7 +20,7 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { PrescriptionType } from './prescribedTest';
-import { Investigation } from './investigation';
+import { Investigation, InvestigationType } from './investigation';
 import { InvestigationResult } from './investigationResult';
 import { InvestigationPrescription } from './investigationPrescription';
 import { Antenatal } from './antenatal';
@@ -256,6 +256,17 @@ export class PrescribedInvestigation extends Model {
   })
   old_id: number;
 
+  @Column({
+    type: DataType.ENUM(InvestigationType.PRIMARY, InvestigationType.SECONDARY),
+  })
+  investigation_group: InvestigationType;
+
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  investigation_changed_by: number;
+
   @BelongsTo(() => Staff, {
     foreignKey: 'requester',
   })
@@ -270,6 +281,11 @@ export class PrescribedInvestigation extends Model {
     foreignKey: 'investigation_approved_by',
   })
   investigation_approver: Staff;
+
+  @BelongsTo(() => Staff, {
+    foreignKey: 'investigation_changed_by',
+  })
+  investigation_changer: Staff;
 
   @BelongsTo(() => Investigation)
   investigation: Investigation;

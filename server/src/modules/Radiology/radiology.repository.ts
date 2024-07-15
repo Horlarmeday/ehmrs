@@ -31,6 +31,8 @@ import {
   RESULT_NOT_FOUND,
 } from './messages/response-messages';
 import { PaymentStatus } from '../../database/models/prescribedDrug';
+import { Investigation as InvestigationType } from '../Orders/Radiology/types/radiology-order.types';
+import { PrescriptionType } from '../../database/models/prescribedTest';
 
 /**
  * create new imaging
@@ -158,56 +160,27 @@ export const createInvestigation = async (data: CreateInvestigationDto) => {
  * @returns {json} json object with Investigations data
  * @param currentPage
  * @param pageLimit
- */
-export async function getInvestigations(currentPage = 1, pageLimit = 10) {
-  return Investigation.paginate({
-    page: currentPage,
-    paginate: pageLimit,
-    order: [['createdAt', 'DESC']],
-    include: [{ model: Imaging, attributes: ['name'] }],
-  });
-}
-
-/**
- * get Investigations under an imaging
- *
- * @function
- * @returns {json} json object with Investigations data
- * @param currentPage
- * @param pageLimit
+ * @param search
  * @param filter
  */
-export async function filterInvestigations(currentPage = 1, pageLimit = 10, filter) {
+export async function getInvestigations({
+  currentPage = 1,
+  pageLimit = 20,
+  search = null,
+  filter = null,
+}) {
   return Investigation.paginate({
-    page: currentPage,
-    paginate: pageLimit,
-    order: [['createdAt', 'DESC']],
+    page: +currentPage,
+    paginate: +pageLimit,
+    order: [['name', 'ASC']],
     include: [{ model: Imaging, attributes: ['name'] }],
     where: {
-      imaging_id: filter,
-    },
-  });
-}
-
-/**
- * search Investigations
- *
- * @function
- * @returns {json} json object with Investigations data
- * @param currentPage
- * @param pageLimit
- * @param search
- */
-export async function searchInvestigations(currentPage = 1, pageLimit = 10, search) {
-  return Investigation.paginate({
-    page: currentPage,
-    paginate: pageLimit,
-    order: [['createdAt', 'DESC']],
-    include: [{ model: Imaging, attributes: ['name'] }],
-    where: {
-      name: {
-        [Op.like]: `%${search}%`,
-      },
+      ...(filter && JSON.parse(filter)),
+      ...(search && {
+        name: {
+          [Op.like]: `%${search}%`,
+        },
+      }),
     },
   });
 }
@@ -246,21 +219,22 @@ const investigationPriceTariff = async (insurance: PatientInsurance, investigati
   return price;
 };
 
-export const getInvestigationPrice = async (patient: Patient, investigation_id: number) => {
-  if (!canUsePriceTariff(patient)) return null;
+export const getInvestigationPrice = async (patient: Patient, investigation: InvestigationType) => {
+  if (!canUsePriceTariff(patient)) return investigation.price;
+  if (investigation.investigation_type === PrescriptionType.CASH) return investigation.price;
 
   const insurance = await getPatientInsuranceQuery({ patient_id: patient.id, is_default: true });
-  if (!insurance) return null;
+  if (!insurance) return investigation.price;
 
-  const price = await investigationPriceTariff(insurance, investigation_id);
+  const price = await investigationPriceTariff(insurance, investigation.investigation_id);
   if (price) return price;
 
-  const investigation = await Investigation.findByPk(investigation_id);
+  const foundInvestigation = await Investigation.findByPk(investigation.investigation_id);
   const investigationPrices = {
-    NHIS: investigation.nhis_price,
-    PHIS: investigation.phis_price,
-    Retainership: investigation.retainership_price,
-    FHSS: investigation.nhis_price,
+    NHIS: foundInvestigation?.nhis_price,
+    PHIS: foundInvestigation?.phis_price,
+    Retainership: foundInvestigation?.retainership_price,
+    FHSS: foundInvestigation?.nhis_price,
   };
   return investigationPrices[insurance.insurance.name] || null;
 };

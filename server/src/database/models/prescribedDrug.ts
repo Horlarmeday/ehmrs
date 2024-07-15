@@ -335,6 +335,12 @@ export class PrescribedDrug extends Model {
   })
   returned_by: number;
 
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  drug_changed_by: number;
+
   @ForeignKey(() => DrugPrescription)
   @Column({
     type: DataType.INTEGER,
@@ -415,6 +421,9 @@ export class PrescribedDrug extends Model {
 
   @BelongsTo(() => Staff, 'dispensed_by')
   dispenser: Staff;
+
+  @BelongsTo(() => Staff, 'drug_changed_by')
+  changer: Staff;
 
   @BelongsTo(() => Drug)
   drug: Drug;

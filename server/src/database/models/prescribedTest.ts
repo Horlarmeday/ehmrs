@@ -7,7 +7,7 @@ import {
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
-import { Test } from './test';
+import { Test, TestType } from './test';
 import { Staff } from './staff';
 import { Visit } from './visit';
 import { Patient } from './patient';
@@ -235,6 +235,12 @@ export class PrescribedTest extends Model {
   })
   test_approved_by: number;
 
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  test_changed_by: number;
+
   @Column({
     type: DataType.ENUM(
       NHISApprovalStatus.APPROVED,
@@ -278,6 +284,11 @@ export class PrescribedTest extends Model {
   })
   old_id: number;
 
+  @Column({
+    type: DataType.ENUM(TestType.SECONDARY, TestType.PRIMARY),
+  })
+  test_group: TestType;
+
   @BelongsTo(() => Staff, {
     foreignKey: 'requester',
   })
@@ -292,6 +303,11 @@ export class PrescribedTest extends Model {
     foreignKey: 'test_approved_by',
   })
   test_approver: Staff;
+
+  @BelongsTo(() => Staff, {
+    foreignKey: 'test_changed_by',
+  })
+  test_changer: Staff;
 
   @BelongsTo(() => Test)
   test: Test;
