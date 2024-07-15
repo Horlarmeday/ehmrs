@@ -18,7 +18,7 @@ import { RequestReturnToStore, UpdateReturnRequest } from './types/inventory.typ
 import { dateIntervalQuery, staffAttributes } from '../../core/helpers/helper';
 import sequelizeConnection from '../../database/config/config';
 import { HistoryType } from '../../database/models/inventoryItemHistory';
-import { getOnePharmacyStoreItem, getPharmacyStoreItemById } from '../Store/store.repository';
+import { getOnePharmacyStoreItem } from '../Store/store.repository';
 import { Status } from '../../database/models/returnItem';
 
 /**
@@ -290,7 +290,7 @@ export const getInventoryItemHistory = async ({
       },
       {
         model: Patient,
-        attributes: ['firstname', 'lastname'],
+        attributes: ['firstname', 'lastname', 'hospital_id'],
       },
     ],
   });

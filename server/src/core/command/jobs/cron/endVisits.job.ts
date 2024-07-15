@@ -21,12 +21,17 @@ export const endVisits = async () => {
     .subtract(5, 'days')
     .toDate();
 
-  const [todayUntakenVisits, antenatalVisits, fiveDaysAgoVisits] = await Promise.all([
+  const [
+    todayUntakenVisits,
+    antenatalVisits,
+    fiveDaysAgoVisits,
+    immunizationVisits,
+  ] = await Promise.all([
     Visit.findAll({
-      where: { ...todayQuery('createdAt'), is_taken: false },
+      where: { ...todayQuery('createdAt'), status: VisitStatus.ONGOING, is_taken: false },
     }),
     Visit.findAll({
-      where: { category: VisitCategory.ANC },
+      where: { category: VisitCategory.ANC, status: VisitStatus.ONGOING },
     }),
     Visit.findAll({
       where: {
@@ -37,9 +42,17 @@ export const endVisits = async () => {
         },
       },
     }),
+    Visit.findAll({
+      where: { category: VisitCategory.IMMUNIZATION, status: VisitStatus.ONGOING },
+    }),
   ]);
 
-  const visits = [...antenatalVisits, ...todayUntakenVisits, ...fiveDaysAgoVisits];
+  const visits = [
+    ...antenatalVisits,
+    ...todayUntakenVisits,
+    ...fiveDaysAgoVisits,
+    ...immunizationVisits,
+  ];
 
   try {
     if (visits?.length) {

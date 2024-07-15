@@ -10,10 +10,9 @@ import { ExportDataType } from '../../modules/Store/types/pharmacy-item.types';
 import { exportDataToCSV, exportDataToExcel, exportDataToPDF } from './fileExport';
 import dayjs from 'dayjs';
 import { Op } from 'sequelize';
-import { countRecords, padNumberWithZero } from './general';
+import { padNumberWithZero } from './general';
 import { PrescribedAdditionalItemBody } from '../../modules/Orders/Pharmacy/interface/prescribed-drug.body';
-import { getOneService, getSystemSettings } from '../../modules/AdminSettings/admin.repository';
-import { getPatientByHospitalId } from '../../modules/Patient/patient.repository';
+import { getOneService } from '../../modules/AdminSettings/admin.repository';
 import { getTestPrescription } from '../../modules/Laboratory/laboratory.repository';
 import { DrugType } from '../../database/models/pharmacyStore';
 import { prescribeService } from '../../modules/Orders/Service/service-order.repository';
@@ -26,12 +25,12 @@ export type ExportSelectedDataType = {
   data: any;
   dataType: ExportDataType;
 };
+export const EXCLUDED_INSURANCE = ['NHIS', 'FHSS'];
 export const staffAttributes = ['fullname', 'firstname', 'lastname', 'middlename'];
 export const patientAttributes = [
   'fullname',
   'photo',
   'hospital_id',
-  'photo_url',
   'firstname',
   'lastname',
   'middlename',
@@ -228,16 +227,9 @@ export const dateQuery = (field: string, date: Date) => ({
   },
 });
 
-export const calculateAge = (birthday: string | number | Date) => {
-  const dateOfBirth = new Date(birthday);
-  const today = new Date();
-  let age = today.getFullYear() - dateOfBirth.getFullYear();
-  const month = today.getMonth() - dateOfBirth.getMonth();
-
-  if (month < 0 || (month === 0 && today.getDate() < dateOfBirth.getDate())) {
-    age--;
-  }
-  return age;
+export const getAge = (date_of_birth: string | number | Date) => {
+  const formattedDate = dayjs(date_of_birth).format('YYYY-MM-DD');
+  return dayjs().diff(dayjs(formattedDate), 'year');
 };
 
 export const flattenArray = (arrayOfArrays: PrescribedAdditionalItemBody[][]) =>

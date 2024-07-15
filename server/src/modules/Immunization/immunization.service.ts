@@ -29,7 +29,7 @@ export class ImmunizationService {
 
     const visit = await createVisit({
       patient_id: immunization.patient_id,
-      category: VisitCategory.Immunization,
+      category: VisitCategory.IMMUNIZATION,
       immunization_id: immunization.id,
       type: 'New visit',
       date_of_visit: new Date(),

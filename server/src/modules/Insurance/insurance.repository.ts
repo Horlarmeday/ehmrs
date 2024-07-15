@@ -226,7 +226,7 @@ export const getPatientInsuranceCount = async (query: Record<string, any>): Prom
  * @param fieldsToUpdate
  */
 export const updatePatientInsurance = async (
-  query: Record<string, any>,
+  query: WhereOptions<PatientInsurance>,
   fieldsToUpdate: Record<string, any>
 ) => {
   return PatientInsurance.update({ ...fieldsToUpdate }, { where: { ...query } });
