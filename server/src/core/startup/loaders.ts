@@ -9,7 +9,7 @@ import { RequestHandler } from 'express-serve-static-core';
 import { ParsedQs } from 'qs';
 import agenda from '../command/agenda';
 import verify from '../middleware/verify';
-import serveStatic from 'serve-static';
+// import serveStatic from 'serve-static';
 
 export default (
   server: express.Application,

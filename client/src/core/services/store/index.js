@@ -23,6 +23,7 @@ import surgery from './surgery/moduleSurgery';
 import immunization from './immunization/moduleImmunization';
 import alert from './alert/moduleAlert';
 import settings from './settings/moduleSettings';
+import account from './account/moduleAccount';
 import htmlClass from './htmlclass.module';
 import config from './config.module';
 import breadcrumbs from './breadcrumbs.module';
@@ -53,6 +54,7 @@ export default new Vuex.Store({
     immunization,
     alert,
     settings,
+    account,
     htmlClass,
     config,
     breadcrumbs,
