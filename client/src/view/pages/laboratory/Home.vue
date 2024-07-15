@@ -67,6 +67,11 @@ export default {
           desc: 'Click here to change laboratory result status',
           showComponent: true,
         },
+        {
+          name: 'Result Forms',
+          link: '/laboratory/forms',
+          desc: 'Click here to view all laboratory result forms',
+        },
       ],
     };
   },
