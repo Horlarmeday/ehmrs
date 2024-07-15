@@ -8,3 +8,5 @@ export const CANNOT_DELETE_DRUG = 'Payment made, You cannot delete this drug';
 export const INVALID_QUANTITY = `The quantity of drug you are trying to prescribe is low compared to the quantity in dispensary`;
 export const NHIS_DRUG_QUOTA =
   'Sum of drugs prescribed today and ones you are trying to prescribe is more than the NHIS daily price quota';
+export const DRUG_QUANTITY_UNAVAILABLE =
+  'The quantity of drug you are trying to prescribe is more than the available quantity in the dispensary';

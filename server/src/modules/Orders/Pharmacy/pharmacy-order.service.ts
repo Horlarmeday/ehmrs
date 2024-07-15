@@ -26,6 +26,7 @@ import {
 import {
   AdditionalTreatment,
   Admission,
+  InventoryItem,
   PatientTreatment,
   PrescribedAdditionalItem,
   PrescribedDrug,
@@ -46,6 +47,7 @@ import { DefaultType } from '../../../database/models/default';
 import { BadException } from '../../../common/util/api-error';
 import {
   CANNOT_DELETE_DRUG,
+  DRUG_QUANTITY_UNAVAILABLE,
   INJECTION_SYRINGES_NOT_FOUND,
   NHIS_DRUG_QUOTA,
 } from './messages/response-messages';
@@ -55,7 +57,7 @@ import { getOneAdmission, getOneAdmissionQuery } from '../../Admission/admission
 import { getPeriodQuery, NHISApprovalStatus } from '../../../core/helpers/general';
 import { DrugGroup, PaymentStatus } from '../../../database/models/prescribedDrug';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
-import { isEmpty, lt } from 'lodash';
+import { gt, isEmpty, lt } from 'lodash';
 import { INVALID_QUANTITY } from '../../Inventory/messages/response-messages';
 import { Period } from './interface/prescribed-drug.interface';
 import { DischargeStatus } from '../../../database/models/admission';
@@ -116,47 +118,29 @@ class PharmacyOrderService {
           date_prescribed: Date.now(),
           drug_group: drug_group || null,
           drugPrice: inventoryItem.selling_price * +quantity_to_dispense,
+          quantity_remaining: inventoryItem.quantity_remaining,
+          drugName: inventoryItem?.drug?.name,
         };
       })
     );
+
+    // check that the quantity is not low in the dispensary
+    for (const drug of mappedPrescribedDrugs) {
+      this.prescribeDrugValidations(
+        drug.quantity_to_dispense,
+        drug.quantity_remaining,
+        drug.drugName
+      );
+    }
 
     if (
       insurance &&
       isEmpty(admission) &&
       EXCLUDED_INSURANCE.includes(insurance?.insurance?.name)
     ) {
-      const hasPrimaryDrugs = mappedPrescribedDrugs.some(
-        drug => drug?.drug_group === DrugGroup.PRIMARY
-      );
-      if (hasPrimaryDrugs) {
-        const sumOfDrugsToday = await PrescribedDrug.sum('total_price', {
-          where: {
-            patient_id: patient.id,
-            ...getPeriodQuery(Period.TODAY, 'date_prescribed'),
-            drug_group: DrugGroup.PRIMARY,
-          },
-        });
-
-        const sumOfItemsPrescribedToday = await PrescribedAdditionalItem.sum('total_price', {
-          where: {
-            patient_id: patient.id,
-            ...getPeriodQuery(Period.TODAY, 'date_prescribed'),
-          },
-        });
-
-        const totalPrimaryDrugsPrice = mappedPrescribedDrugs
-          .filter(drug => drug?.drug_group === DrugGroup.PRIMARY)
-          .reduce((a, b) => a + b.drugPrice, 0);
-
-        const totalSum = sumOfDrugsToday + sumOfItemsPrescribedToday + totalPrimaryDrugsPrice;
-        const settings = await SystemSettings.findOne();
-        if (settings) {
-          if (totalSum > +settings.nhis_daily_quota_amount) {
-            throw new BadException('Error', 400, NHIS_DRUG_QUOTA);
-          }
-        }
-      }
+      await this.checkNHISDailyQuotaLimit(mappedPrescribedDrugs, patient.id);
     }
+
     const injections = body.filter(
       ({ dosage_form_name }) =>
         /\binjection\b/i.test(dosage_form_name) || /\bInj\b/i.test(dosage_form_name)
@@ -632,6 +616,66 @@ class PharmacyOrderService {
       date_prescribed: Date.now(),
       ...(body?.ante_natal_id && { ante_natal_id: body?.ante_natal_id }),
     };
+  }
+
+  /**
+   * prescribed drugs validations
+   *
+   * @static
+   * @param quantityToDispense
+   * @param quantityRemaining
+   * @param drugName
+   */
+  private static prescribeDrugValidations(
+    quantityToDispense: number,
+    quantityRemaining: number,
+    drugName: string
+  ) {
+    if (gt(+quantityToDispense, +quantityRemaining))
+      throw new BadException(
+        'INVALID',
+        StatusCodes.BAD_REQUEST,
+        DRUG_QUANTITY_UNAVAILABLE.replace('drug', drugName)
+      );
+  }
+
+  /**
+   * check if patient has reached daily NHIS limit quota
+   *
+   * @static
+   * @param drugs
+   * @param patient_id
+   */
+  private static async checkNHISDailyQuotaLimit(drugs, patient_id: number) {
+    const hasPrimaryDrugs = drugs.some(drug => drug?.drug_group === DrugGroup.PRIMARY);
+    if (hasPrimaryDrugs) {
+      const sumOfDrugsToday = await PrescribedDrug.sum('total_price', {
+        where: {
+          patient_id,
+          ...getPeriodQuery(Period.TODAY, 'date_prescribed'),
+          drug_group: DrugGroup.PRIMARY,
+        },
+      });
+
+      const sumOfItemsPrescribedToday = await PrescribedAdditionalItem.sum('total_price', {
+        where: {
+          patient_id,
+          ...getPeriodQuery(Period.TODAY, 'date_prescribed'),
+        },
+      });
+
+      const totalPrimaryDrugsPrice = drugs
+        .filter(drug => drug?.drug_group === DrugGroup.PRIMARY)
+        .reduce((a, b) => a + b.drugPrice, 0);
+
+      const totalSum = sumOfDrugsToday + sumOfItemsPrescribedToday + totalPrimaryDrugsPrice;
+      const settings = await SystemSettings.findOne();
+      if (settings) {
+        if (totalSum > +settings.nhis_daily_quota_amount) {
+          throw new BadException('Error', 400, NHIS_DRUG_QUOTA);
+        }
+      }
+    }
   }
 }
 export default PharmacyOrderService;
