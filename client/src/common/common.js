@@ -35,6 +35,8 @@ export const setUrlQueryParams = ({
   endDate,
   sort,
   filter,
+  occupantType,
+  name,
 }) => {
   router
     .push({
@@ -47,6 +49,8 @@ export const setUrlQueryParams = ({
         startDate,
         endDate,
         filter,
+        occupantType,
+        name,
       },
     })
 
@@ -157,4 +161,14 @@ export const getPatientDotStatus = type => {
   if (type === 'PHIS') return 'label-primary';
   if (type === 'Retainership') return 'label-info';
   return 'label-default';
+};
+
+export const getTestTypeToFetch = (insuranceName, isSwitchOn = true) => {
+  if (insuranceName && !isSwitchOn) return null;
+  const insuranceMapping = {
+    NHIS: { is_available_for_nhis: true },
+    FHSS: { is_available_for_nhis: true },
+    PHIS: { is_available_for_phis: true },
+  };
+  return insuranceMapping[insuranceName] || null;
 };

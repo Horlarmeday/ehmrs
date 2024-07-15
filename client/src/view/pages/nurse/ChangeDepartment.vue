@@ -154,9 +154,9 @@ export default {
           this.addSpinner(submitButton);
 
           const data = {
-            department: this.department.text,
-            role: this.role.text,
-            sub_role: this.sub_role.text,
+            department: this.department?.text,
+            role: this.role?.text,
+            sub_role: this.sub_role?.text,
             id: this.id,
           };
           this.$store

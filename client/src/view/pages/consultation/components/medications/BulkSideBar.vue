@@ -270,7 +270,6 @@
 import Datepicker from 'vuejs-datepicker';
 import vSelect from 'vue-select';
 import { debounce, parseJwt } from '@/common/common';
-// import KTUtil from '@/assets/js/components/util';
 import SwitchBox from '@/utils/SwitchBox.vue';
 import RoutineDrugs from '@/view/pages/programs/antenatal/components/RoutineDrugs.vue';
 

@@ -22,6 +22,7 @@
         }"
         :queues="queues"
         @changePage="onPageChange"
+        @changePageCount="onChangePageCount"
         :url="url"
       />
     </div>
