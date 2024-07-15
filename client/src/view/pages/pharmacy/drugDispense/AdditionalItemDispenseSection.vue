@@ -11,9 +11,11 @@
           <div class="card-title" v-b-toggle="`collapse-a${i}`">
             <span class="mr-5 text-black-50 lead font-italic font-size-h4">Item Name:</span>
             <span class="mr-5 text-dark">{{ item.item_name }}</span>
+            <span class="vertical-line"></span>
 
             <span class="mr-3 text-black-50 lead font-italic font-size-h4">Item Type:</span
             ><span class="text-dark mr-5">{{ item.drug_type }}</span>
+            <span class="vertical-line"></span>
 
             <span class="mr-3 text-black-50 lead font-italic font-size-h4">Dispense Status:</span>
             <span
@@ -21,8 +23,11 @@
               class="label label-pill label-inline mr-2"
               >{{ item.dispense_status }}</span
             >
+            <span class="vertical-line"></span>
+
             <span class="mr-5 text-black-50 lead font-italic font-size-h4 ml-5">Price:</span>
             <span class="mr-5 text-dark">₦{{ item.total_price }}</span>
+            <span class="vertical-line"></span>
 
             <span class="mr-3 text-black-50 lead font-size-h4 font-italic ml-5">Prescribed By:</span
             ><span class="text-dark mr-5">{{ item?.staff?.fullname }}</span>
@@ -211,5 +216,12 @@ export default {
 .disabledCard {
   pointer-events: none;
   opacity: 0.4;
+}
+
+.vertical-line {
+  border-left: 1px solid #858992; /* Adjust color and thickness as needed */
+  height: 25px; /* Adjust height as needed */
+  margin-left: 5px; /* Adjust margin as needed */
+  margin-right: 15px; /* Adjust margin as needed */
 }
 </style>

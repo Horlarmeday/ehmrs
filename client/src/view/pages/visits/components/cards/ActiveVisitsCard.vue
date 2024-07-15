@@ -34,6 +34,12 @@
             >
           </p>
           <p class="mb-0">
+            <span
+              v-b-tooltip.hover
+              :title="visit?.patient?.insurances?.[0]?.insurance?.name"
+              class="label label-dot label-lg mr-2"
+              :class="getPatientDotStatus(visit?.patient?.insurances?.[0]?.insurance?.name)"
+            ></span>
             <small class="font-size-lg font-weight-bolder">{{ visit.patient.hospital_id }}</small>
           </p>
         </div>
@@ -55,7 +61,7 @@
 
 <script>
 import Search from '../../../../../utils/Search.vue';
-import { debounce, removeSpinner } from '@/common/common';
+import { debounce, getPatientDotStatus, removeSpinner } from '@/common/common';
 import Pagination from '@/utils/Pagination.vue';
 export default {
   components: { Pagination, Search },
@@ -85,6 +91,7 @@ export default {
   },
 
   methods: {
+    getPatientDotStatus,
     handlePageChange() {
       this.$store.dispatch('visit/fetchActiveVisits', {
         currentPage: this.currentPage,
