@@ -4,7 +4,6 @@ import {
   createImaging,
   createInvestigation,
   createInvestigationTariff,
-  filterInvestigations,
   getImaging,
   getInvestigationResult,
   getInvestigations,
@@ -14,7 +13,6 @@ import {
   getOneRequestedInvestigation,
   getRequestedInvestigations,
   searchImaging,
-  searchInvestigations,
   updateImaging,
   updateInvestigation,
 } from './radiology.repository';
@@ -97,19 +95,12 @@ export class RadiologyService {
    */
   static async getInvestigations(investigationQueryDto: InvestigationQueryDto) {
     const { search, pageLimit, currentPage, filter } = investigationQueryDto;
-    if (search) {
-      return searchInvestigations(+currentPage, +pageLimit, search);
-    }
-
-    if (filter) {
-      return filterInvestigations(+currentPage, +pageLimit, filter);
-    }
 
     if (Object.values(investigationQueryDto).length) {
-      return getInvestigations(+currentPage, +pageLimit);
+      return getInvestigations({ currentPage, pageLimit, search, filter });
     }
 
-    return getInvestigations();
+    return getInvestigations({});
   }
 
   /**

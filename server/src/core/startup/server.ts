@@ -3,9 +3,9 @@ import express from 'express';
 import routes from './routes';
 // import error from '../middleware/error';
 import loaders from './loaders';
-import { initSystemSettings } from '../../database/config/init-systemSettings';
+// import { initSystemSettings } from '../../database/config/init-systemSettings';
 
-initSystemSettings();
+// initSystemSettings();
 const server: express.Application = express();
 loaders(server, express);
 routes(server);
