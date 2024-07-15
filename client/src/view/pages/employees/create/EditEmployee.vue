@@ -336,7 +336,7 @@ export default {
         phone: this.phone,
         date_of_birth: this.date_of_birth,
         department: this.department?.text,
-        role: this.role.text,
+        role: this.role?.text,
         sub_role: this.sub_role?.text,
         address: this.address,
         photo: this.image,

@@ -259,7 +259,6 @@ export default {
     },
 
     handlePageCount(count) {
-      console.log(this.$route.query.startDate, this.$route.query.endDate);
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: count,

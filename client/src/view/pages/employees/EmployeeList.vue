@@ -85,7 +85,7 @@
                     class="label label-lg label-light-primary label-inline"
                     >Active</span
                   >
-                  <span v-else class="label label-lg label-light-warning label-inline"
+                  <span v-else class="label label-lg label-light-danger label-inline"
                     >Inactive</span
                   >
                 </td>
@@ -112,6 +112,18 @@
                     class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
                   >
                     <refresh-icon />
+                  </a>
+                  <a
+                    v-b-tooltip.hover
+                    :title="
+                      `${staff.status === ACTIVE ? DEACTIVATE_EMPLOYEE : REACTIVATE_EMPLOYEE}`
+                    "
+                    @click.stop="showActivateAlert(staff)"
+                    href="#"
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
+                  >
+                    <deactivate-icon v-if="staff.status === ACTIVE" />
+                    <reactivate-icon v-else />
                   </a>
                 </td>
               </tr>
@@ -141,6 +153,8 @@ import EditEmployee from './create/EditEmployee';
 import { setUrlQueryParams } from '@/common/common';
 import RefreshIcon from '@/assets/icons/RefreshIcon.vue';
 import Swal from 'sweetalert2';
+import DeactivateIcon from '@/assets/icons/DeactivateIcon.vue';
+import ReactivateIcon from '@/assets/icons/ReactivateIcon.vue';
 export default {
   data() {
     return {
@@ -149,9 +163,14 @@ export default {
       itemsPerPage: 10,
       displayPrompt: false,
       staffToEdit: {},
+      ACTIVE: 'Active',
+      DEACTIVATE_EMPLOYEE: 'Deactivate Employee',
+      REACTIVATE_EMPLOYEE: 'Reactivate Employee',
     };
   },
   components: {
+    ReactivateIcon,
+    DeactivateIcon,
     RefreshIcon,
     Pagination,
     EditIcon,
@@ -196,6 +215,38 @@ export default {
         preConfirm: () => {
           return self.resetEmployeePassword(employeeId);
         },
+      });
+    },
+
+    showActivateAlert(employee) {
+      const self = this;
+      Swal.fire({
+        title: 'Are you sure?',
+        html: `You want to ${employee.status === this.ACTIVE ? 'Deactivate' : 'Reactivate'} ${
+          employee.firstname
+        } account`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Continue!',
+        cancelButtonText: 'No, cancel!',
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+          return self.updateEmployee(employee);
+        },
+      });
+    },
+
+    updateEmployee(employee) {
+      const data = {
+        id: employee.id,
+        status: `${employee.status === this.ACTIVE ? 'Inactive' : 'Active'}`,
+      };
+      this.$store.dispatch('employee/updateEmployee', data).then(() => {
+        this.fetchEmployees({
+          currentPage: this.$route.query.currentPage || 1,
+          itemsPerPage: this.$route.query.itemsPerPage || 10,
+          search: this.$route.query.search || null,
+        });
       });
     },
 

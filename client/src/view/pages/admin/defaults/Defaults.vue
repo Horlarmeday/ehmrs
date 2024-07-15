@@ -30,10 +30,10 @@
           <table class="table table-head-custom table-vertical-center table-head-bg">
             <thead>
               <tr class="text-uppercase">
-                <th class="pl-5" style="min-width: 150px">Type</th>
+                <th class="pl-5" style="min-width: 250px">Type</th>
                 <th style="min-width: 100px">Created By</th>
                 <th style="min-width: 160px">Date</th>
-                <th class="pr-0 " style="min-width: 150px">action</th>
+                <th class="pr-0 float-right" style="min-width: 150px">action</th>
               </tr>
             </thead>
             <tbody>
@@ -59,9 +59,12 @@
                     adminDefault.createdAt | dayjs('ddd, MMM Do YYYY, h:mma')
                   }}</span>
                 </td>
-                <td class="pr-0">
-                  <router-link to="#" class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3">
-                    <edit-icon />
+                <td class="pr-0 float-right" style="min-width: 150px">
+                  <router-link
+                    :to="`/settings/defaults/${adminDefault.id}?table=${adminDefault.type}`"
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
+                  >
+                    <view-icon />
                   </router-link>
                 </td>
               </tr>
@@ -76,8 +79,8 @@
 </template>
 
 <script>
-import EditIcon from '@/assets/icons/EditIcon.vue';
 import AddIcon from '@/assets/icons/AddIcon.vue';
+import ViewIcon from '@/assets/icons/ViewIcon.vue';
 export default {
   data() {
     return {
@@ -92,11 +95,13 @@ export default {
         INJECTION_ITEMS: 'Injection Items',
         OPERATION_ITEMS: 'Theater Operation Items',
         WATER_INJECTIONS: 'Injections Needing Water',
+        CIRCUMCISION_ROUTINE_DRUGS: 'Circumcision Routine Drugs',
+        HSG_ADDITIONAL_ITEMS: 'HSG Additional Items',
       },
     };
   },
   components: {
-    EditIcon,
+    ViewIcon,
     AddIcon,
   },
 

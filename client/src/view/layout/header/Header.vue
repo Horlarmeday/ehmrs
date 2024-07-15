@@ -258,6 +258,7 @@ export default {
         'surgery-request',
         'delivery',
         'postnatal',
+        'maternity-admit-patient',
       ];
       return pagesToDisplay.includes(this.$route.name);
     },

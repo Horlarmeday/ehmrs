@@ -292,7 +292,7 @@ export default {
     handleSuccess() {
       Swal.fire({
         title: 'Success!',
-        html: `Immunization created successfully, A visit has already been created too`,
+        html: `Patient enrolled for Immunization program successfully, A visit has already been created too, do not create a new one!`,
         icon: 'success',
         confirmButtonClass: 'btn btn-primary',
         heightAuto: false,
