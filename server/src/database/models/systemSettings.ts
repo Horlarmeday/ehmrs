@@ -59,7 +59,7 @@ export class SystemSettings extends Model {
   organization_logo: string;
 
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.DECIMAL(12, 2),
   })
   nhis_daily_quota_amount: number;
 

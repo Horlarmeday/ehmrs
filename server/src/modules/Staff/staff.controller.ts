@@ -87,7 +87,7 @@ class StaffController {
     try {
       const staff = await StaffService.updateStaffService(req.body);
 
-      return successResponse({ res, message: UPDATED_PROFILE, data: staff, httpCode: 200 });
+      return successResponse({ res, message: UPDATED_PROFILE, data: staff, httpCode: 201 });
     } catch (e) {
       return next(e);
     }
