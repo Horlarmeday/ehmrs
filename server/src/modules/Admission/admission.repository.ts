@@ -63,6 +63,7 @@ import { BadException } from '../../common/util/api-error';
 import { NO_AVAILABLE_BED } from './messages/response-messages';
 import { createDrugPrescription, getLastDrugPrescription } from '../Pharmacy/pharmacy.repository';
 import { DrugStatus } from '../../database/models/drugPrescription';
+import dayjs from 'dayjs';
 
 enum Ages {
   ALL_AGES = 'ALL_AGES',
@@ -110,7 +111,11 @@ export const admitPatient = async (data: AdmissionBodyType) => {
 
     await Bed.update({ status: BedStatus.TAKEN }, { where: { id: bedId }, transaction: t });
 
-    if (!patient.has_insurance || !EXCLUDED_INSURANCE.includes(insurance?.insurance?.name))
+    if (
+      !patient.has_insurance ||
+      !EXCLUDED_INSURANCE.includes(insurance?.insurance?.name) ||
+      patient.admitted_days_in_year > 21
+    )
       await PrescribedService.create(
         {
           service_id: ward.service.id,
@@ -788,6 +793,12 @@ export const dischargePatient = async (data: DischargePatientType) => {
     await Visit.update(
       { status: VisitStatus.ENDED, date_visit_ended: Date.now() },
       { where: { id: data.visit_id }, transaction: t }
+    );
+
+    const numberOfDaysAddmitted = dayjs().diff(dayjs(admission.date_admitted), 'days');
+    await Patient.increment(
+      { admitted_days_in_year: numberOfDaysAddmitted },
+      { where: { id: patient_id }, transaction: t }
     );
     return getOneDischargeRecord({ id: discharge.id });
   });
