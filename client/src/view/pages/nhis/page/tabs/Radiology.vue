@@ -7,6 +7,12 @@
       :data="investigation"
     />
 
+    <change-investigation-group
+      :investigation="investigationGroupData"
+      :display-prompt="displayInvestigationGroupPrompt"
+      @closeModal="hideInvestigationGroupModal"
+    />
+
     <div class="card-body pr-5 pl-5 pt-2">
       <div class="table-responsive">
         <table class="table table-head-custom table-vertical-center">
@@ -15,6 +21,7 @@
               <th class="pr-0" style="width: 250px">Investigation</th>
               <th style="min-width: 100px">Type</th>
               <th style="min-width: 50px">Imaging</th>
+              <th style="min-width: 50px">Price(₦)</th>
               <th style="min-width: 100px">Status</th>
               <th style="min-width: 50px">Source</th>
               <th style="min-width: 50px">Code</th>
@@ -36,17 +43,27 @@
                   class="font-weight-bolder text-hover-primary mb-1 font-size-lg"
                   :class="getTextStatus(investigation.nhis_status)"
                   href="#"
-                  >{{ investigation.investigation.name }}</a
+                  >{{ investigation?.investigation?.name }}</a
+                >
+                <span
+                  :class="getItemType(investigation?.investigation_type)"
+                  class="label label-sm label-inline ml-2"
+                  >{{ investigation.investigation_type }}</span
                 >
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ investigation.investigation.type }}
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
+                  {{ investigation?.investigation_group || '-' }}
                 </span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ investigation.imaging.name }}
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
+                  {{ investigation?.imaging?.name }}
+                </span>
+              </td>
+              <td>
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
+                  {{ investigation.price }}
                 </span>
               </td>
               <td>
@@ -57,27 +74,40 @@
                 >
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
                   {{ investigation.source }}
                 </span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
                   {{ investigation.auth_code || '-' }}
                 </span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">{{
                   investigation?.examiner?.fullname
                 }}</span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ investigation.date_requested | dayjs('ddd, MMM Do YYYY, h:mma') }}
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
+                  {{ investigation.date_requested | dayjs('MMM Do YYYY, h:mma') }}
                 </span>
               </td>
               <td class="pr-0 text-right">
-                <a
+                <button
+                  :disabled="
+                    investigation.nhis_status === APPROVED || investigation.nhis_status === DECLINED
+                  "
+                  title="Change Investigation Type"
+                  v-b-tooltip.hover
+                  href="#"
+                  class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
+                  @click="openInvestigationGroupModal(investigation)"
+                >
+                  <open-icon />
+                </button>
+                <button
+                  :disabled="disableAddAuthCode(investigation)"
                   title="Add Authorization Code"
                   v-b-tooltip.hover
                   href="#"
@@ -85,8 +115,9 @@
                   @click="addAuthCode(investigation)"
                 >
                   <edit-icon />
-                </a>
-                <a
+                </button>
+                <button
+                  :disabled="disableStatusChange(investigation)"
                   title="Approve"
                   v-b-tooltip.hover
                   href="#"
@@ -94,8 +125,9 @@
                   @click="showDischargeAlert('Approved', investigation.id)"
                 >
                   <approve-icon />
-                </a>
-                <a
+                </button>
+                <button
+                  :disabled="disableStatusChange(investigation)"
                   title="Decline"
                   v-b-tooltip.hover
                   href="#"
@@ -103,7 +135,7 @@
                   @click="showDischargeAlert('Declined', investigation.id)"
                 >
                   <cancel-icon />
-                </a>
+                </button>
               </td>
             </tr>
           </tbody>
@@ -126,9 +158,20 @@ import CancelIcon from '@/assets/icons/CancelIcon.vue';
 import Pagination from '@/utils/Pagination.vue';
 import Swal from 'sweetalert2';
 import AuthCodeModal from '@/view/pages/nhis/components/AuthCodeModal.vue';
+import ChangeInvestigationGroup from '@/view/pages/nhis/components/ChangeInvestigationGroup.vue';
+import { getItemType } from '@/common/common';
+import OpenIcon from '@/assets/icons/OpenIcon.vue';
 
 export default {
-  components: { AuthCodeModal, Pagination, CancelIcon, ApproveIcon, EditIcon },
+  components: {
+    OpenIcon,
+    ChangeInvestigationGroup,
+    AuthCodeModal,
+    Pagination,
+    CancelIcon,
+    ApproveIcon,
+    EditIcon,
+  },
   data: () => ({
     PENDING: 'Pending',
     PRIMARY: 'Primary',
@@ -136,9 +179,12 @@ export default {
     CLEARED: 'Cleared',
     APPROVED: 'Approved',
     SECONDARY: 'Secondary',
+    DECLINED: 'Declined',
     currentPage: 1,
     itemsPerPage: 15,
     investigation: {},
+    investigationGroupData: {},
+    displayInvestigationGroupPrompt: false,
     displayPrompt: false,
     dispatchType: 'order/updatePrescribedInvestigation',
   }),
@@ -155,8 +201,12 @@ export default {
     perPage() {
       return this.investigations.length;
     },
+    visit() {
+      return this.$store.state.visit.visit;
+    },
   },
   methods: {
+    getItemType,
     addAuthCode(investigation) {
       this.investigation = {
         id: investigation.id,
@@ -167,6 +217,18 @@ export default {
 
     hideModal() {
       this.displayPrompt = false;
+    },
+
+    openInvestigationGroupModal(investigation) {
+      this.investigationGroupData = {
+        id: investigation.id,
+        name: investigation?.investigation?.name,
+      };
+      this.displayInvestigationGroupPrompt = true;
+    },
+
+    hideInvestigationGroupModal() {
+      this.displayInvestigationGroupPrompt = false;
     },
 
     fetchPrescribedInvestigations() {
@@ -235,6 +297,31 @@ export default {
       if (status === 'Approved') return 'text-success';
       if (status === 'Declined') return 'text-danger';
       return 'text-dark-75';
+    },
+
+    disableStatusChange(investigation) {
+      const INCLUDED_INSURANCE = ['NHIS', 'FHSS'];
+      if (
+        investigation.investigation_group === this.SECONDARY &&
+        !investigation.auth_code &&
+        INCLUDED_INSURANCE.includes(this.visit?.insurance?.insurance?.name)
+      ) {
+        return true;
+      }
+      if (
+        investigation.nhis_status === this.APPROVED ||
+        investigation.nhis_status === this.DECLINED
+      )
+        return true;
+    },
+
+    disableAddAuthCode(investigation) {
+      if (investigation.investigation_group === this.PRIMARY) return true;
+      if (
+        investigation.nhis_status === this.APPROVED ||
+        investigation.nhis_status === this.DECLINED
+      )
+        return true;
     },
   },
   created() {

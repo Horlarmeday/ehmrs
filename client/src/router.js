@@ -392,6 +392,23 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            //MATERNITY
+            {
+              path: 'maternity',
+              name: 'maternity-visits',
+              component: () => import('@/view/pages/visits/page/MaternityVisits.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'admit-patient/:id',
+              name: 'maternity-admit-patient',
+              component: () => import('@/view/pages/admission/page/AdmitPatient.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
           ],
         },
         // CONSULTATION
@@ -811,6 +828,14 @@ const router = new Router({
               path: 'reports/aggregate',
               name: 'aggregate-reports',
               component: () => import('@/view/pages/laboratory/reports/AggregateReport.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'forms',
+              name: 'result-forms',
+              component: () => import('@/view/pages/laboratory/ResultFormsList.vue'),
               meta: {
                 requiresAuth: true,
               },

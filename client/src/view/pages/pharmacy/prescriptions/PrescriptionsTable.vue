@@ -12,16 +12,17 @@
         <table class="table table-head-custom table-head-bg table-vertical-center">
           <thead>
             <tr class="text-uppercase">
-              <th style="min-width: 120px" class="pl-4">
+              <th style="min-width: 120px" class="pl-2">
                 <span class="text-dark-75">Patient ID</span>
               </th>
-              <th style="min-width: 220px">Patient Name</th>
-              <th style="min-width: 120px">Drugs</th>
-              <th style="min-width: 120px">Items</th>
-              <th style="min-width: 120px">Dispensed Drugs</th>
-              <th style="min-width: 120px">Source</th>
-              <th style="min-width: 120px">Status</th>
-              <th style="min-width: 100px">Date Collected</th>
+              <th style="min-width: 250px">Patient Name</th>
+              <th style="min-width: 100px">Drugs</th>
+              <th style="min-width: 100px">Items</th>
+              <th style="min-width: 70px">Dispensed Drugs</th>
+              <th style="min-width: 70px">Dispensed Items</th>
+              <th style="min-width: 100px">Source</th>
+              <th style="min-width: 100px">Status</th>
+              <th style="min-width: 100px">Date Prescribed</th>
               <th class="text-right" style="min-width: 50px">Action</th>
             </tr>
           </thead>
@@ -30,21 +31,31 @@
               <td colspan="9" align="center" class="text-muted">No Data</td>
             </tr>
             <tr v-for="prescription in prescriptions" :key="prescription.id">
-              <td class="pl-4 py-8">
+              <td class="pl-2 py-8">
                 <div class="d-flex align-items-center">
                   <div>
-                    <a
-                      href="#"
+                    <span
+                      v-b-tooltip.hover
+                      :title="prescription?.patient?.insurances?.[0]?.insurance?.name"
+                      class="label label-dot label-lg mr-2"
+                      :class="
+                        getPatientDotStatus(prescription?.patient?.insurances?.[0]?.insurance?.name)
+                      "
+                    ></span>
+                    <router-link
+                      :to="`/patient/profile/${prescription.patient_id}`"
                       class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg"
-                      >{{ prescription.patient.hospital_id }}</a
+                      >{{ prescription.patient.hospital_id }}</router-link
                     >
                   </div>
                 </div>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ prescription.patient.fullname }}
-                </span>
+                <router-link :to="`/patient/profile/${prescription.patient_id}`">
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                    {{ prescription.patient.fullname }}
+                  </span>
+                </router-link>
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg pl-7">
@@ -62,6 +73,11 @@
                 </span>
               </td>
               <td>
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg pl-7">
+                  {{ prescription.dispensed_items_count }}
+                </span>
+              </td>
+              <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                   {{ prescription.source }}
                 </span>
@@ -69,7 +85,7 @@
               <td>
                 <span
                   :class="getSampleStatus(prescription.status)"
-                  class="label label-md label-inline"
+                  class="label label-sm label-inline"
                   >{{ prescription.status }}</span
                 >
               </td>
@@ -106,7 +122,7 @@
 
 <script>
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
-import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
+import { debounce, getPatientDotStatus, removeSpinner, setUrlQueryParams } from '@/common/common';
 import Search from '../../../../utils/Search.vue';
 import Pagination from '@/utils/Pagination.vue';
 import dayjs from 'dayjs';
@@ -142,6 +158,7 @@ export default {
     },
   },
   methods: {
+    getPatientDotStatus,
     getSampleStatus(status) {
       if (status === 'Pending') return 'label-light-warning ';
       if (status === 'Complete Dispense') return 'label-light-success ';
