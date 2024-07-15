@@ -245,6 +245,7 @@ export class Patient extends Model {
 
   @Column({
     type: DataType.INTEGER,
+    defaultValue: 0,
   })
   admitted_days_in_year?: number;
 
