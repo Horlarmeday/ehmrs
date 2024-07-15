@@ -16,6 +16,8 @@ import {
   Drug,
   DrugPrescription,
   DrugTariff,
+  HMO,
+  Insurance,
   InventoryItem,
   InventoryItemHistory,
   Measurement,
@@ -365,12 +367,12 @@ export const getDrugPrice = async (
   drug_id: number,
   inventoryItem: InventoryItem
 ) => {
-  if (!canUsePriceTariff(patient)) return inventoryItem.selling_price;
+  if (!canUsePriceTariff(patient)) return inventoryItem?.selling_price;
 
   const insurance = await getPatientInsuranceQuery({ patient_id: patient.id, is_default: true });
-  if (!insurance) return inventoryItem.selling_price;
+  if (!insurance) return inventoryItem?.selling_price;
 
-  return (await drugPriceTariff(insurance, drug_id)) || inventoryItem.selling_price;
+  return (await drugPriceTariff(insurance, drug_id)) || inventoryItem?.selling_price;
 };
 
 /** ***********************
@@ -439,6 +441,12 @@ export const getDrugPrescriptions = async ({
           ),
           'items_count',
         ],
+        [
+          sequelize.literal(
+            `(SELECT COUNT(*) FROM Additional_item_prescriptions AS items WHERE items.drug_prescription_id = DrugPrescription.id AND items.dispense_status = '${DispenseStatus.DISPENSED}')`
+          ),
+          'dispensed_items_count',
+        ],
       ],
     },
     order: [['date_prescribed', 'DESC']],
@@ -480,6 +488,16 @@ export const getDrugPrescriptions = async ({
             ],
           }),
         },
+        include: [
+          {
+            model: PatientInsurance,
+            where: { is_default: true },
+            limit: 1,
+            order: [['createdAt', 'DESC']],
+            attributes: ['id', 'insurance_id'],
+            include: [{ model: Insurance, attributes: ['name'] }],
+          },
+        ],
       },
     ],
     group: ['DrugPrescription.id'], // Group the results by DrugPrescription.id to get the count per sample
@@ -560,6 +578,14 @@ const getReturnStatus = (
   return DispenseStatus.RETURNED;
 };
 
+/**
+ * dispense drug from inventory
+ *
+ * @function
+ * @param inventoryItem
+ * @param prescribedDrug
+ * @param data
+ */
 export const dispenseDrug = async (
   inventoryItem: InventoryItem,
   prescribedDrug: PrescribedDrug | PrescribedAdditionalItem,
@@ -618,6 +644,14 @@ export const dispenseDrug = async (
   });
 };
 
+/**
+ * return drug back to inventory
+ *
+ * @function
+ * @param inventoryItem
+ * @param prescribedDrug
+ * @param data
+ */
 export const returnDrugToInventory = async (
   inventoryItem: InventoryItem,
   prescribedDrug: PrescribedDrug | PrescribedAdditionalItem,
@@ -665,6 +699,13 @@ export const returnDrugToInventory = async (
   });
 };
 
+/**
+ * get visit prescriptions history
+ *
+ * @function
+ * @param visit_id
+ * @param category
+ */
 export const getPrescriptionsAndHistory = async (visit_id: number, category: VisitCategory) => {
   const [tests, drugs, observations, triages, diagnoses, items] = await Promise.all([
     getPrescriptionTests({ visit_id }),

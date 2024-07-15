@@ -161,7 +161,7 @@ export class PharmacyOrderController {
         httpCode: StatusCodes.BAD_REQUEST,
       });
     try {
-      const drug = await PharmacyOrderService.updatePrescribedDrug(req.body);
+      const drug = await PharmacyOrderService.updatePrescribedDrug(req.body, req.user.sub);
 
       return successResponse({
         res,

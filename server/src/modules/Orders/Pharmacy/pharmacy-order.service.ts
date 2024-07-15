@@ -1,5 +1,6 @@
 import {
   bulkCreateAdditionalItems,
+  bulkSyringeNeedlePrescriptions,
   createBulkAdditionalTreatment,
   createBulkTreatmentData,
   deleteAdditionalItem,
@@ -14,7 +15,6 @@ import {
   getPrescribedDrugs,
   prescribeBulkDrugs,
   prescribeDrug,
-  syringeNeedleCalculation,
   updateAdditionalItem,
   updatePrescribedDrug,
 } from './pharmacy-order.repository';
@@ -39,21 +39,26 @@ import {
   getDrugPrice,
   getLastDrugPrescription,
 } from '../../Pharmacy/pharmacy.repository';
-import { isToday, StatusCodes } from '../../../core/helpers/helper';
+import { EXCLUDED_INSURANCE, isToday, StatusCodes } from '../../../core/helpers/helper';
 import { DrugStatus } from '../../../database/models/drugPrescription';
 import { getOneDefault } from '../../AdminSettings/admin.repository';
 import { DefaultType } from '../../../database/models/default';
 import { BadException } from '../../../common/util/api-error';
-import { CANNOT_DELETE_DRUG, INJECTION_SYRINGES_NOT_FOUND } from './messages/response-messages';
+import {
+  CANNOT_DELETE_DRUG,
+  INJECTION_SYRINGES_NOT_FOUND,
+  NHIS_DRUG_QUOTA,
+} from './messages/response-messages';
 import { getInventoryItemQuery } from '../../Inventory/inventory.repository';
 import { getVisitById } from '../../Visit/visit.repository';
-import { getOneAdmission } from '../../Admission/admission.repository';
+import { getOneAdmission, getOneAdmissionQuery } from '../../Admission/admission.repository';
 import { getPeriodQuery, NHISApprovalStatus } from '../../../core/helpers/general';
 import { DrugGroup, PaymentStatus } from '../../../database/models/prescribedDrug';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
-import { lt } from 'lodash';
+import { isEmpty, lt } from 'lodash';
 import { INVALID_QUANTITY } from '../../Inventory/messages/response-messages';
 import { Period } from './interface/prescribed-drug.interface';
+import { DischargeStatus } from '../../../database/models/admission';
 
 class PharmacyOrderService {
   /**
@@ -72,7 +77,7 @@ class PharmacyOrderService {
     visit_id: number
   ): Promise<PrescribedDrug[]> {
     const visit = await VisitService.getVisitById(visit_id);
-    const [insurance, patient, drugPrescription] = await Promise.all([
+    const [insurance, patient, drugPrescription, admission] = await Promise.all([
       getPatientInsuranceQuery({
         patient_id: visit.patient_id,
         is_default: true,
@@ -83,19 +88,17 @@ class PharmacyOrderService {
         visit_id,
         staff_id,
       }),
+      getOneAdmissionQuery({
+        patient_id: visit.patient_id,
+        discharge_status: DischargeStatus.ON_ADMISSION,
+      }),
     ]);
-
-    //todo: Add check for daily NHIS drug quota
-    // const settings = await SystemSettings.findOne();
-    // const settings = await SystemSettings.findOne();
-    //TODO:
-    // check if drug is primary, check the drugs prescribed today and sum them
-    // check if sum of primary is higher than sum prescribed today
 
     const mappedPrescribedDrugs = await Promise.all(
       body.map(async data => {
         const { drug_type, drug_id, inventory_id, quantity_to_dispense, drug_group } = data;
         const inventoryItem = await getInventoryItemQuery({ inventory_id, drug_id });
+
         const drugPrice =
           (await getDrugPrice(patient, drug_id, inventoryItem)) * +quantity_to_dispense;
 
@@ -112,33 +115,48 @@ class PharmacyOrderService {
           visit_id,
           date_prescribed: Date.now(),
           drug_group: drug_group || null,
+          drugPrice: inventoryItem.selling_price * +quantity_to_dispense,
         };
       })
     );
 
-    const sumOfDrugsToday = await PrescribedDrug.sum('total_price', {
-      where: {
-        ...getPeriodQuery(Period.TODAY, 'date_prescribed'),
-        drug_group: DrugGroup.PRIMARY,
-      },
-    });
-    //
-    const totalPrimaryDrugsPrice = mappedPrescribedDrugs
-      .filter(drug => drug.drug_group === DrugGroup.PRIMARY)
-      .reduce((a, b) => a + b.total_price, 0);
+    if (
+      insurance &&
+      isEmpty(admission) &&
+      EXCLUDED_INSURANCE.includes(insurance?.insurance?.name)
+    ) {
+      const hasPrimaryDrugs = mappedPrescribedDrugs.some(
+        drug => drug?.drug_group === DrugGroup.PRIMARY
+      );
+      if (hasPrimaryDrugs) {
+        const sumOfDrugsToday = await PrescribedDrug.sum('total_price', {
+          where: {
+            patient_id: patient.id,
+            ...getPeriodQuery(Period.TODAY, 'date_prescribed'),
+            drug_group: DrugGroup.PRIMARY,
+          },
+        });
 
-    const totalSum = sumOfDrugsToday + totalPrimaryDrugsPrice;
-    const settings = await SystemSettings.findOne();
-    if (settings) {
-      if (totalSum > settings.nhis_daily_quota_amount) {
-        throw new BadException(
-          'Error',
-          400,
-          'Sum of drugs prescribed today and ones you are trying to prescribe is more than NHIS daily price quota'
-        );
+        const sumOfItemsPrescribedToday = await PrescribedAdditionalItem.sum('total_price', {
+          where: {
+            patient_id: patient.id,
+            ...getPeriodQuery(Period.TODAY, 'date_prescribed'),
+          },
+        });
+
+        const totalPrimaryDrugsPrice = mappedPrescribedDrugs
+          .filter(drug => drug?.drug_group === DrugGroup.PRIMARY)
+          .reduce((a, b) => a + b.drugPrice, 0);
+
+        const totalSum = sumOfDrugsToday + sumOfItemsPrescribedToday + totalPrimaryDrugsPrice;
+        const settings = await SystemSettings.findOne();
+        if (settings) {
+          if (totalSum > +settings.nhis_daily_quota_amount) {
+            throw new BadException('Error', 400, NHIS_DRUG_QUOTA);
+          }
+        }
       }
     }
-
     const injections = body.filter(
       ({ dosage_form_name }) =>
         /\binjection\b/i.test(dosage_form_name) || /\bInj\b/i.test(dosage_form_name)
@@ -166,7 +184,7 @@ class PharmacyOrderService {
       quantity_to_dispense,
     } = body;
     const visit = await VisitService.getVisitById(visit_id);
-    const [drugPrescription, inventoryItem, insurance, patient] = await Promise.all([
+    const [drugPrescription, inventoryItem, insurance, patient, admission] = await Promise.all([
       this.getDrugPrescription(visit.patient_id, body),
       getInventoryItemQuery({ inventory_id, drug_id }),
       getPatientInsuranceQuery({
@@ -174,8 +192,44 @@ class PharmacyOrderService {
         is_default: true,
       }),
       PatientService.getPatientById(visit.patient_id),
+      getOneAdmissionQuery({
+        patient_id: visit.patient_id,
+        discharge_status: DischargeStatus.ON_ADMISSION,
+      }),
     ]);
     const drugPrice = (await getDrugPrice(patient, drug_id, inventoryItem)) * +quantity_to_dispense;
+
+    if (
+      insurance &&
+      isEmpty(admission) &&
+      EXCLUDED_INSURANCE.includes(insurance?.insurance?.name)
+    ) {
+      const sumOfDrugsPrescribedToday = await PrescribedDrug.sum('total_price', {
+        where: {
+          patient_id: patient.id,
+          ...getPeriodQuery(Period.TODAY, 'date_prescribed'),
+          drug_group: DrugGroup.PRIMARY,
+        },
+      });
+
+      const sumOfItemsPrescribedToday = await PrescribedAdditionalItem.sum('total_price', {
+        where: {
+          patient_id: patient.id,
+          ...getPeriodQuery(Period.TODAY, 'date_prescribed'),
+        },
+      });
+
+      if (body?.drug_group === DrugGroup.PRIMARY) {
+        const totalPrice = inventoryItem.selling_price * +quantity_to_dispense;
+        const totalSum = sumOfDrugsPrescribedToday + sumOfItemsPrescribedToday + totalPrice;
+        const settings = await SystemSettings.findOne();
+        if (settings) {
+          if (totalSum > +settings.nhis_daily_quota_amount) {
+            throw new BadException('Error', 400, NHIS_DRUG_QUOTA);
+          }
+        }
+      }
+    }
 
     const prescribedDrug = await prescribeDrug({
       ...body,
@@ -193,12 +247,14 @@ class PharmacyOrderService {
       if (!injectionDefaults) {
         throw new BadException('Error', 400, INJECTION_SYRINGES_NOT_FOUND);
       }
-      await syringeNeedleCalculation({
+      const items = await bulkSyringeNeedlePrescriptions({
         patient,
         prescription: prescribedDrug,
         injectionItems: injectionDefaults.data,
         patient_insurance_id: insurance?.id,
+        insurance,
       });
+      await bulkCreateAdditionalItems(items);
     }
     return prescribedDrug;
   }
@@ -234,11 +290,11 @@ class PharmacyOrderService {
 
     // check that the quantity is not low in the dispensary
     for await (const item of body) {
-      const drug = await getInventoryItemQuery({
+      const inventoryItem = await getInventoryItemQuery({
         drug_id: item.drug_id,
         inventory_id: item.inventory_id,
       });
-      if (lt(drug.quantity_remaining, item.quantity_to_dispense)) {
+      if (lt(inventoryItem.quantity_remaining, item.quantity_to_dispense)) {
         throw new BadException('Invalid', 400, INVALID_QUANTITY.replace('drug', item.name));
       }
     }
@@ -275,10 +331,14 @@ class PharmacyOrderService {
    * @static
    * @returns {Promise<PrescribedDrug>} json object with prescribed drug data
    * @param body
+   * @param staffId
    * @memberOf PharmacyOrderService
    */
-  static async updatePrescribedDrug(body: Partial<PrescribedDrug>): Promise<PrescribedDrug> {
-    return updatePrescribedDrug(body);
+  static async updatePrescribedDrug(
+    body: Partial<PrescribedDrug>,
+    staffId: number
+  ): Promise<PrescribedDrug> {
+    return updatePrescribedDrug({ ...body, drug_changed_by: staffId });
   }
 
   /**
