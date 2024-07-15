@@ -304,7 +304,29 @@ export default {
     this.$store.dispatch('patient/fetchPatientProfile', this.$route.params.id).then(response => {
       const res = response.data.data;
       this.gender = res.gender;
-      this.$store.dispatch('patient/setCurrentPatient', { ...res.insurance, ...res });
+      const {
+        id,
+        firstname,
+        lastname,
+        hospital_id,
+        photo,
+        gender,
+        fullname,
+        date_of_birth,
+        has_insurance,
+      } = res;
+      const patient = {
+        id,
+        firstname,
+        lastname,
+        hospital_id,
+        photo,
+        gender,
+        fullname,
+        date_of_birth,
+        has_insurance,
+      };
+      this.$store.dispatch('patient/setCurrentPatient', { ...res.insurance, ...patient });
     });
   },
 };
