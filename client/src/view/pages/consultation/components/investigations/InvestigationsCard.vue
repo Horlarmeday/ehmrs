@@ -27,6 +27,7 @@
                 :source="source"
                 :is="activeTab"
                 :insurance-name="insuranceName"
+                @switchFlipped="switchFlipped"
               />
             </div>
           </div>
@@ -40,7 +41,7 @@ import Investigations from './Investigations.vue';
 import AccordionIcon from '@/assets/icons/AccordionIcon.vue';
 import InvestigationSideBar from './InvestigationSideBar.vue';
 import SearchWithFilter from '@/utils/SearchWithFilter.vue';
-import { debounce, removeSpinner } from '@/common/common';
+import { debounce, getTestTypeToFetch, removeSpinner } from '@/common/common';
 
 export default {
   name: 'InvestigationCard',
@@ -52,6 +53,7 @@ export default {
       searchString: '',
       currentPage: 1,
       itemsPerPage: 100,
+      isSwitchOn: true,
     };
   },
   props: {
@@ -81,11 +83,14 @@ export default {
     },
 
     debounceSearch: debounce((search, vm, spinDiv) => {
+      const investigationType = getTestTypeToFetch(vm.insuranceName, vm.isSwitchOn);
+
       vm.$store
         .dispatch('radiology/fetchInvestigations', {
           currentPage: vm.currentPage,
           itemsPerPage: vm.itemsPerPage,
           search,
+          ...(investigationType && { filter: investigationType }),
         })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));
@@ -95,7 +100,7 @@ export default {
       this.$store.dispatch('radiology/fetchInvestigations', {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
-        filter,
+        filter: { imaging_id: filter },
       });
     },
 
@@ -103,7 +108,7 @@ export default {
       this.$store.dispatch('radiology/fetchInvestigations', {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
-        filter: 1,
+        filter: { imaging_id: 1 },
       });
     },
 
@@ -111,6 +116,15 @@ export default {
       this.$store.dispatch('radiology/fetchImagings', {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
+      });
+    },
+
+    switchFlipped(value) {
+      this.isSwitchOn = !!value;
+      this.$store.dispatch('radiology/fetchInvestigations', {
+        currentPage: 1,
+        itemsPerPage: 100,
+        ...(value && { filter: { is_available_for_nhis: true } }),
       });
     },
   },

@@ -78,7 +78,7 @@ export default {
 
     handlePageChange() {
       setUrlQueryParams({
-        currentPage: this.$route.query.currentPage || this.currentPage,
+        currentPage: this.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         search: this.$route.query.search || null,
         name: this.inventoryName,
@@ -162,8 +162,8 @@ export default {
       };
       this.$store.dispatch('inventory/updateInventoryItem', data).then(() => {
         this.fetchInventoryItems({
-          currentPage: this.currentPage,
-          itemsPerPage: this.itemsPerPage,
+          currentPage: this.$route.query.currentPage || this.currentPage,
+          itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         });
       });
     },

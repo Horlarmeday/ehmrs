@@ -165,7 +165,6 @@ export default {
     },
 
     toggleItem(item) {
-      console.log(item);
       if (this.isSelected(item)) {
         // If the item is already selected, remove it from selectedItems
         this.$store.dispatch('inventory/removeSelectedItem', item);

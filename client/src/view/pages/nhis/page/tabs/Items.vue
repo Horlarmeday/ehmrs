@@ -13,8 +13,9 @@
           <thead>
             <tr class="text-left">
               <th class="pr-0" style="width: 250px">Item</th>
-              <th style="min-width: 100px">Drug Type</th>
+              <th style="min-width: 100px">Item Type</th>
               <th style="min-width: 100px">Quantity</th>
+              <th style="min-width: 50px">Price(₦)</th>
               <th style="min-width: 100px">Status</th>
               <th style="min-width: 50px">Source</th>
               <th style="min-width: 100px">Requester</th>
@@ -40,15 +41,20 @@
                 >
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
                   <label :class="getItemType(item.drug_type)" class="label label-inline">{{
                     item.drug_type
                   }}</label>
                 </span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
                   {{ item.quantity_to_dispense }} {{ item?.unit?.name || '-' }}
+                </span>
+              </td>
+              <td>
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
+                  {{ item.total_price }}
                 </span>
               </td>
               <td>
@@ -59,17 +65,17 @@
                 >
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
                   {{ item.source }}
                 </span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">{{
                   item?.requester?.fullname
                 }}</span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
                   {{ item.date_prescribed | dayjs('MMM D, YYYY, h:mma') }}
                 </span>
               </td>

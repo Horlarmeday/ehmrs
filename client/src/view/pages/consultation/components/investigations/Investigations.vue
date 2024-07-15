@@ -3,7 +3,7 @@
     <div class="card-custom">
       <div class="card-header">
         <investigation-accordion />
-        <div class="card-title">
+        <div class="card-title mt-2">
           <span class="card-label font-weight-bolder text-dark"></span>
           <span v-if="showSwitch">
             <switch-box
@@ -13,11 +13,11 @@
               :insurance-name="insuranceName"
             />
           </span>
-          <div>
+          <div class="mr-2">
             <button
               v-if="selectedInvestigations.length"
               ref="kt-orderInvestigation-submit"
-              class="btn btn-primary btn-sm float-right mr-2"
+              class="btn btn-primary btn-sm float-right ml-2 mb-3"
               @click="submitRadiologyTest"
             >
               Submit
@@ -112,10 +112,17 @@ export default {
     },
 
     getInvestigationType(insuranceName) {
-      const types = ['FHSS', 'NHIS'];
-      if (types.includes(insuranceName)) return 'NHIS';
-      if (insuranceName === 'PHIS') return 'Private';
-      return 'NHIS';
+      const isSwitchOn = this.switchSpot && this.switchPosition;
+      if (isSwitchOn) return 'NHIS';
+      const insuranceMapping = {
+        FHSS: 'NHIS',
+        NHIS: 'NHIS',
+        PHIS: 'Private',
+        Retainership: 'Cash',
+      };
+      const selectedInsurance = insuranceMapping[insuranceName];
+      if (selectedInsurance === 'NHIS' && !isSwitchOn) return 'Cash';
+      return insuranceMapping[insuranceName] || 'Cash';
     },
 
     mapSelectedInvestigation(investigation) {
@@ -123,10 +130,7 @@ export default {
         investigation_id: investigation.id,
         imaging_id: investigation.imaging_id,
         is_urgent: false,
-        investigation_type:
-          this.switchPosition && this.switchSpot
-            ? this.getInvestigationType(this.insuranceName)
-            : 'CASH',
+        investigation_type: this.getInvestigationType(this.insuranceName),
         price: investigation.price,
         name: investigation.name,
         source: this.source,
@@ -152,13 +156,10 @@ export default {
     submitRadiologyTest() {
       const submitButton = this.$refs['kt-orderInvestigation-submit'];
       this.addSpinner(submitButton);
-      const investigations = this.selectedInvestigations.map(investigation => {
-        delete investigation.name;
-        return investigation;
-      });
+
       this.$store
         .dispatch('order/orderInvestigationTest', {
-          investigations,
+          investigations: this.selectedInvestigations,
           id: this.$route.params.id,
         })
         .then(() => this.initializeRequest(submitButton))
@@ -172,6 +173,7 @@ export default {
 
     flipSwitch(value) {
       this.switchSpot = value;
+      this.$emit('switchFlipped', value);
     },
   },
 };
