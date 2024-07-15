@@ -372,7 +372,7 @@ export async function searchServices(currentPage = 1, pageLimit = 10, search) {
   return Service.paginate({
     page: currentPage,
     paginate: pageLimit,
-    order: [['createdAt', 'DESC']],
+    order: [['name', 'ASC']],
     where: {
       name: {
         [Op.like]: `%${search}%`,
@@ -393,7 +393,7 @@ export async function getServices(currentPage = 1, pageLimit = 10) {
   return Service.paginate({
     page: currentPage,
     paginate: pageLimit,
-    order: [['createdAt', 'DESC']],
+    order: [['name', 'ASC']],
   });
 }
 

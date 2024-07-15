@@ -13,7 +13,11 @@ const closeAccountHandler = async (antenatal: Antenatal) => {
     },
     { where: { id: antenatal.id } }
   );
-  logger.notice(message(`Closed antenatal account for patient ${antenatal.patient_id}`));
+  logger.notice(
+    message(
+      `Closed antenatal account for patient ${antenatal.patient_id}: date ended: ${antenatal?.end_date}`
+    )
+  );
 };
 
 export const closeAntenatalAccount = async () => {

@@ -19,6 +19,7 @@ import {
   staffAttributes,
 } from '../Antenatal/antenatal.repository';
 import { VisitCategory } from '../../database/models/visit';
+import { getWardRounds } from '../Admission/admission.repository';
 
 /**
  * create a patient complaint
@@ -161,6 +162,7 @@ export const getPrescriptions = async (visit_id: number, category: VisitCategory
     items,
     services,
     notes,
+    wardRounds,
   ] = await Promise.all([
     getPrescriptionTests({ visit_id }),
     getDrugsPrescribed({ visit_id }),
@@ -175,8 +177,20 @@ export const getPrescriptions = async (visit_id: number, category: VisitCategory
     category === VisitCategory.ANC
       ? getAntenatalClinicalNotes({ visit_id })
       : Promise.resolve(null),
+    category === VisitCategory.IPD ? getWardRounds({ visit_id }) : Promise.resolve(null),
   ]);
-  return { tests, drugs, investigations, observations, triages, diagnoses, items, services, notes };
+  return {
+    tests,
+    drugs,
+    investigations,
+    observations,
+    triages,
+    diagnoses,
+    items,
+    services,
+    notes,
+    wardRounds,
+  };
 };
 
 /**

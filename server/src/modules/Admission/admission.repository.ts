@@ -29,9 +29,7 @@ import { getOneDefault, getWardWithService } from '../AdminSettings/admin.reposi
 import { getPatientById } from '../Patient/patient.repository';
 import { AdmissionBodyType, ChangeWardBodyType, DischargeBodyType } from './types/admission.types';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
-import { patientAttributes } from '../Visit/visit.repository';
 import { VisitCategory, VisitStatus } from '../../database/models/visit';
-import dayjs from 'dayjs';
 import { DrugForm } from '../../database/models/drug';
 import { DefaultType } from '../../database/models/default';
 import { Source } from '../../database/models/prescribedDrug';
@@ -42,10 +40,17 @@ import {
   getPatientTreatments,
 } from '../Orders/Pharmacy/pharmacy-order.repository';
 import { Gender } from '../../database/models/staff';
-import { DrugType } from '../../database/models/pharmacyStore';
 import { getInventories } from '../Inventory/inventory.repository';
 import { staffAttributes } from '../Antenatal/antenatal.repository';
-import { dateIntervalQuery, getDrugType, isToday, StatusCodes } from '../../core/helpers/helper';
+import {
+  dateIntervalQuery,
+  EXCLUDED_INSURANCE,
+  getAge,
+  getDrugType,
+  isToday,
+  patientAttributes,
+  StatusCodes,
+} from '../../core/helpers/helper';
 import { DischargeStatus } from '../../database/models/admission';
 import { DischargeType } from '../../database/models/discharge';
 import { getPrescriptionTests } from '../Orders/Laboratory/lab-order.repository';
@@ -56,10 +61,6 @@ import { AccountStatus } from '../../database/models/antenatal';
 import { CreatePostNatal } from '../Antenatal/types/antenatal.types';
 import { BadException } from '../../common/util/api-error';
 import { NO_AVAILABLE_BED } from './messages/response-messages';
-import {
-  PrescribedAdditionalItemBody,
-  PrescribedDrugBody,
-} from '../Orders/Pharmacy/interface/prescribed-drug.body';
 import { createDrugPrescription, getLastDrugPrescription } from '../Pharmacy/pharmacy.repository';
 import { DrugStatus } from '../../database/models/drugPrescription';
 
@@ -69,8 +70,6 @@ enum Ages {
   GREATER_THAN_ONE_LESS_THAN_FIFTEEN = 'GREATER_THAN_ONE_LESS_THAN_FIFTEEN',
   GREATER_THAN_FIFTEEN = 'GREATER_THAN_FIFTEEN',
 }
-const EXCLUDED_INSURANCE = ['NHIS', 'FHSS'];
-
 /**
  * Admit patient into a ward
  * @param data
@@ -169,6 +168,16 @@ export const getOneAdmission = async (query: WhereOptions<Admission>) => {
       { model: Bed, attributes: ['code'] },
       { model: Staff, as: 'examiner', attributes: staffAttributes },
     ],
+  });
+};
+
+/**
+ * get one admission query
+ * @param query
+ */
+export const getOneAdmissionQuery = async (query: WhereOptions<Admission>) => {
+  return Admission.findOne({
+    where: { ...query },
   });
 };
 
@@ -329,6 +338,16 @@ export const getAdmittedPatients = async ({
             ],
           }),
         },
+        include: [
+          {
+            model: PatientInsurance,
+            where: { is_default: true },
+            limit: 1,
+            order: [['createdAt', 'DESC']],
+            attributes: ['id', 'insurance_id'],
+            include: [{ model: Insurance, attributes: ['name'] }],
+          },
+        ],
       },
     ],
   });
@@ -404,6 +423,16 @@ export const getAntenatalAdmittedPatients = async ({
             ],
           }),
         },
+        include: [
+          {
+            model: PatientInsurance,
+            where: { is_default: true },
+            limit: 1,
+            order: [['createdAt', 'DESC']],
+            attributes: ['id', 'insurance_id'],
+            include: [{ model: Insurance, attributes: ['name'] }],
+          },
+        ],
       },
     ],
   });
@@ -502,8 +531,7 @@ export const insertDefaultAdmissionItems = async ({
   insurance: PatientInsurance;
   inventories: Inventory[];
 }): Promise<boolean> => {
-  const formattedDate = dayjs(patient.date_of_birth).format('YYYY-MM-DD');
-  const age = dayjs().diff(dayjs(formattedDate), 'year');
+  const age = getAge(patient.date_of_birth);
   const sex = patient.gender;
   const source = admission.ante_natal_id ? Source.ANC : Source.CONSULTATION;
   const drugType = getDrugType(patient.has_insurance, insurance);
@@ -521,32 +549,33 @@ export const insertDefaultAdmissionItems = async ({
   const createItems = (filteredItems: any[]) => {
     const consumables = filteredItems?.filter(item => item?.drug?.drug_type === drugType);
     if (consumables?.length) {
-      return consumables.map(item => ({
+      return consumables?.map(item => ({
         drug_form: DrugForm.CONSUMABLE,
         quantity_prescribed: +item.quantity,
         quantity_to_dispense: +item.quantity,
-        visit_id: admission.visit_id,
+        visit_id: admission?.visit_id,
         inventory_id: inventory?.id || 1,
         start_date: Date.now(),
         date_prescribed: Date.now(),
-        ante_natal_id: admission.ante_natal_id,
-        examiner: admission.admitted_by,
+        ante_natal_id: admission?.ante_natal_id,
+        examiner: admission?.admitted_by,
         drug_type: drugType,
         source,
         patient_id: patient.id,
         drug_id: item?.drug?.drug_id,
         unit_id: item?.drug?.unit_id,
-        drug_prescription_id: drugPrescription.id,
-        patient_insurance_id: insurance.id,
+        drug_prescription_id: drugPrescription?.id,
+        patient_insurance_id: insurance?.id,
         total_price:
           item?.drug?.price * item.quantity * (isNHIS && !/gloves/i.test(item) ? 0.1 : 1),
       }));
     }
+    return [];
   };
 
   const allAgesItems = items.filter(item => item.age === Ages.ALL_AGES);
   const consumables = createItems(allAgesItems);
-  if (inventories?.length) {
+  if (consumables?.length) {
     await bulkCreateAdditionalItems(consumables);
   }
 
