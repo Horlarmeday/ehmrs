@@ -227,6 +227,13 @@ export default {
       this.fetchPrescribedServices();
     },
 
+    handlePageCount(count) {
+      this.fetchPrescribedServices({
+        currentPage: this.currentPage,
+        itemsPerPage: count,
+      });
+    },
+
     getPaymentStatus(status) {
       if (status === 'Paid') return 'label-light-success ';
       if (status === 'Pending') return 'label-light-warning ';

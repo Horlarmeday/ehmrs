@@ -36,75 +36,69 @@
             </td>
             <td>{{ service?.examiner?.fullname }}</td>
             <td>{{ service.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
-            <td>
-              <span v-if="allowedRoles.includes(currentUser.role)">
-                <a
-                  href="#"
-                  :class="loading && 'disabled'"
-                  @click="showDeleteAlert(service)"
-                  v-if="service.billing_status === UNBILLED && service.payment_status === PENDING"
-                  ><i class="flaticon-delete text-danger"></i
-                ></a>
-              </span>
-            </td>
           </tr>
         </tbody>
       </table>
     </div>
+    <pagination
+      :total-pages="pages"
+      :total="queriedItems"
+      :per-page="perPage"
+      :current-page="currentPage"
+      @pagechanged="onPageChange"
+      @changepagecount="handlePageCount"
+    />
   </div>
 </template>
 <script>
-import { parseJwt } from '@/core/plugins/parseJwt';
-import Swal from 'sweetalert2';
+import Pagination from '@/utils/Pagination.vue';
 
 export default {
   name: 'ServicesTable',
+  components: { Pagination },
   data: () => ({
-    currentUser: parseJwt(localStorage.getItem('user_token')),
-    allowedRoles: ['General Practitioner', 'Super Admin'],
-    loading: false,
-    UNBILLED: 'Unbilled',
-    PENDING: 'Pending',
+    currentPage: 1,
+    itemsPerPage: 10,
   }),
-  props: {
-    services: {
-      type: Array,
-      required: true,
-      default: () => [],
+  computed: {
+    services() {
+      return this.$store.state.order.service_orders;
+    },
+    queriedItems() {
+      return this.$store.state.order.totalServices || 0;
+    },
+    pages() {
+      return this.$store.state.order.servicePages;
+    },
+    perPage() {
+      return this.services.length;
     },
   },
   methods: {
+    fetchPrescribedServices({ itemsPerPage = 10 }) {
+      this.$store.dispatch('order/fetchPrescribedServices', {
+        currentPage: this.currentPage,
+        itemsPerPage,
+        filter: { patient_id: this.$route.params.id },
+      });
+    },
+
+    onPageChange(page) {
+      this.currentPage = page;
+      this.fetchPrescribedServices({ itemsPerPage: this.itemsPerPage });
+    },
+
+    handlePageCount(count) {
+      this.itemsPerPage = count;
+      this.fetchPrescribedServices({
+        itemsPerPage: count,
+      });
+    },
+
     getServiceTypeColor(type) {
       if (type === 'NHIS') return 'label label-inline label-light-warning font-weight-bold';
       if (type === 'Cash') return 'label label-inline label-light-success font-weight-bold';
       return 'label label-inline label-light-danger font-weight-bold';
-    },
-
-    showDeleteAlert(service) {
-      const self = this;
-      Swal.fire({
-        title: 'Are you sure?',
-        text: 'You want to delete this service',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, Delete!',
-        customClass: {
-          confirmButton: 'btn btn-danger',
-          cancelButton: 'btn btn-default',
-        },
-      }).then(function(result) {
-        if (result.value) {
-          self.deletePrescribedService(service);
-        }
-      });
-    },
-
-    deletePrescribedService(service) {
-      this.loading = true;
-      this.$store
-        .dispatch('order/deletePrescribedService', { serviceId: service.id })
-        .then(() => (this.loading = false))
-        .catch(() => (this.loading = false));
     },
 
     getPaymentColor(status) {
@@ -113,6 +107,9 @@ export default {
       if (status === 'Cleared') return 'label label-inline label-light-info font-weight-bold';
       return 'label label-inline label-light-danger font-weight-bold';
     },
+  },
+  created() {
+    this.fetchPrescribedServices({ itemsPerPage: this.itemsPerPage });
   },
 };
 </script>
