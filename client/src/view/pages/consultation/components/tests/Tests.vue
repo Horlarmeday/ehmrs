@@ -123,7 +123,7 @@ export default {
       return {
         test_id: test.id,
         is_urgent: false,
-        test_type: this.switchPosition && this.switchSpot ? this.getTestType(this.insuranceName) : 'CASH',
+        test_type: this.getTestType(this.insuranceName),
         price: test.price,
         name: test.name,
         sample_id: test.sample_id,
@@ -133,10 +133,17 @@ export default {
     },
 
     getTestType(insuranceName) {
-      const types = ['FHSS', 'NHIS'];
-      if (types.includes(insuranceName)) return 'NHIS';
-      if (insuranceName === 'PHIS') return 'Private';
-      return 'Other';
+      const isSwitchOn = this.switchSpot && this.switchPosition;
+      if (isSwitchOn) return 'NHIS';
+      const insuranceMapping = {
+        FHSS: 'NHIS',
+        NHIS: 'NHIS',
+        PHIS: 'Private',
+        Retainership: 'Cash',
+      };
+      const selectedInsurance = insuranceMapping[insuranceName];
+      if (selectedInsurance === 'NHIS' && !isSwitchOn) return 'Cash';
+      return insuranceMapping[insuranceName] || 'Cash';
     },
 
     addSpinner(submitButton) {
@@ -177,6 +184,7 @@ export default {
 
     flipSwitch(value) {
       this.switchSpot = value;
+      this.$emit('switchFlipped', value);
     },
 
     openModal() {

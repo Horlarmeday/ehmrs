@@ -6,6 +6,7 @@
           <tr class="text-uppercase">
             <th scope="col">Test</th>
             <th scope="col">Result</th>
+            <th scope="col">Price (₦)</th>
             <th scope="col">Payment Status</th>
             <th scope="col">Result Status</th>
             <th scope="col">Requested By</th>
@@ -34,6 +35,11 @@
               <span v-else>-</span>
             </td>
             <td>
+              <span class="font-weight-boldest">
+                {{ test?.price || '-' }}
+              </span>
+            </td>
+            <td>
               <span :class="getPaymentColor(test.payment_status)">{{ test.payment_status }}</span>
             </td>
             <td>
@@ -42,7 +48,9 @@
             <td>{{ test.examiner.fullname }}</td>
             <td>{{ test.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
             <td>
-              <span v-if="allowedRoles.includes(currentUser.role)">
+              <span
+                v-if="allowedRoles.includes(currentUser.role) || currentUser.sub === test.requester"
+              >
                 <a
                   v-if="test.billing_status === UNBILLED && test.payment_status === PENDING"
                   @click="showDeleteAlert(test)"
