@@ -25,6 +25,12 @@
             <td class="pl-4 py-8">
               <div class="d-flex align-items-center">
                 <div>
+                  <span
+                    v-b-tooltip.hover
+                    :title="queue?.patient?.insurances?.[0]?.insurance?.name"
+                    class="label label-dot label-lg mr-2"
+                    :class="getPatientDotStatus(queue?.patient?.insurances?.[0]?.insurance?.name)"
+                  ></span>
                   <router-link
                     :to="`/patient/profile/${queue.patient_id}`"
                     class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg"
@@ -91,6 +97,7 @@
 <script>
 import Pagination from '@/utils/Pagination.vue';
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
+import { getPatientDotStatus } from '@/common/common';
 
 export default {
   data: () => ({
@@ -119,13 +126,19 @@ export default {
   },
 
   methods: {
+    getPatientDotStatus,
     getRoute(queue) {
       let url = this.url;
       url = url.replaceAll('{queueId}', queue.id);
-      if (url.includes('{antenatalId}'))
-        url = url.replaceAll('{antenatalId}', queue?.ante_natal_id);
-      else if (url.includes('{immunizationId}'))
+      if (url.includes('{antenatalId}')) {
+        if (queue?.ante_natal_id) {
+          url = url.replaceAll('{antenatalId}', queue?.ante_natal_id);
+        } else {
+          url = url.replace('antenatal={antenatalId}', '');
+        }
+      } else if (url.includes('{immunizationId}')) {
         url = url.replaceAll('{immunizationId}', queue?.immunization_id);
+      }
       return url;
     },
 

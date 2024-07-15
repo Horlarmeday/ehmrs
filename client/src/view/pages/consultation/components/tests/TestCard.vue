@@ -22,13 +22,14 @@
               </div>
             </div>
             <div class="d-flex flex-row">
-              <test-side-bar />
+              <test-side-bar :insurance-name="insuranceName" />
               <component
                 :switchPosition="switchPosition"
                 :showSwitch="showSwitch"
                 :source="source"
                 :is="activeTab"
                 :insurance-name="insuranceName"
+                @switchFlipped="switchFlipped"
               />
             </div>
           </div>
@@ -41,7 +42,7 @@
 import Tests from './Tests.vue';
 import AccordionIcon from '@/assets/icons/AccordionIcon.vue';
 import TestSideBar from './TestSideBar.vue';
-import { addSpinner, debounce, removeSpinner } from '@/common/common';
+import { addSpinner, debounce, getTestTypeToFetch, removeSpinner } from '@/common/common';
 
 export default {
   name: 'TestCard',
@@ -71,6 +72,8 @@ export default {
       activeTab: '',
       backgroundColor: '#3699ff29',
       searchString: '',
+      testType: null,
+      isSwitchOn: true,
     };
   },
   methods: {
@@ -85,15 +88,27 @@ export default {
     },
 
     search: debounce((search, vm, spinDiv) => {
+      const testType = getTestTypeToFetch(vm.insuranceName, vm.isSwitchOn);
+
       vm.$store
         .dispatch('laboratory/fetchTests', {
           currentPage: 1,
           itemsPerPage: 100,
           search,
+          ...(testType && { filter: testType }),
         })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));
     }, 500),
+
+    switchFlipped(value) {
+      this.isSwitchOn = !!value;
+      this.$store.dispatch('laboratory/fetchTests', {
+        currentPage: 1,
+        itemsPerPage: 100,
+        ...(value && { filter: { is_available_for_nhis: true } }),
+      });
+    },
   },
 
   created() {

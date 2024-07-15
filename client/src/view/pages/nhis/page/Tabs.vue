@@ -6,8 +6,19 @@
           <span class="card-label font-weight-bolder text-dark">Prescriptions</span>
         </h3>
       </div>
+      <patient-history-modal :display-prompt="displayPrompt" />
       <!--end::Header-->
       <div class="card-body card-header-tabs-line">
+        <a
+          v-b-tooltip.hover
+          title="View Past Prescriptions"
+          @click="showModal"
+          href="#"
+          class="btn btn-icon btn-light-primary pulse pulse-primary mb-4"
+        >
+          <i class="flaticon2-document"></i>
+          <span class="pulse-ring"></span>
+        </a>
         <div class="card-toolbar">
           <diagnosis-accordion />
           <div v-if="visit" class="example">
@@ -43,12 +54,15 @@ import DiagnosisAccordion from '@/view/components/accordion/DiagnosisAccordion.v
 import Medications from '@/view/pages/nhis/page/tabs/Medications.vue';
 import Radiology from '@/view/pages/nhis/page/tabs/Radiology.vue';
 import Services from '@/view/pages/nhis/page/tabs/Services.vue';
+import PatientHistoryModal from '@/view/pages/nhis/components/PatientHistoryModal.vue';
 
 export default {
   data: () => ({
     tabs: ['Tests', 'Drugs', 'Items', 'Radiology', 'Services'],
+    displayPrompt: false,
   }),
   components: {
+    PatientHistoryModal,
     Services,
     Radiology,
     Medications,
@@ -60,6 +74,15 @@ export default {
   computed: {
     visit() {
       return this.$store.state.visit.visit;
+    },
+  },
+  methods: {
+    hideModal() {
+      this.displayPrompt = false;
+    },
+
+    showModal() {
+      this.displayPrompt = true;
     },
   },
   created() {
