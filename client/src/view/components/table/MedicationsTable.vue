@@ -50,7 +50,9 @@
               <span>{{ drug.date_prescribed | dayjs('DD/MM/YYYY, h:mma') }}</span>
             </td>
             <td>
-              <span v-if="allowedRoles.includes(currentUser.role)">
+              <span
+                v-if="allowedRoles.includes(currentUser.role) || currentUser.sub === drug.examiner"
+              >
                 <a
                   href="#"
                   :class="loading && 'disabled'"

@@ -28,11 +28,12 @@
             <tr class="text-left">
               <th class="pr-0" style="width: 150px">Patient ID</th>
               <th style="width: 250px">Patient Name</th>
-              <th style="width: 150px">Antenatal No.</th>
-              <th style="width: 150px">Status</th>
+              <th style="width: 120px">Antenatal No.</th>
+              <th style="width: 100px">Status</th>
               <th style="min-width: 200px">Date Created</th>
               <th style="min-width: 150px">Created By</th>
-              <th class="pr-0 text-right" style="min-width: 100px">action</th>
+              <th style="min-width: 150px">Account Expiry Date</th>
+              <th class="pr-0 text-right" style="min-width: 50px">action</th>
             </tr>
           </thead>
           <tbody>
@@ -41,6 +42,12 @@
             </tr>
             <tr v-for="account in accounts" :key="account.id">
               <td class="pr-0">
+                <span
+                  v-b-tooltip.hover
+                  :title="account?.patient?.insurances?.[0]?.insurance?.name"
+                  class="label label-dot label-lg mr-2"
+                  :class="getPatientDotStatus(account?.patient?.insurances?.[0]?.insurance?.name)"
+                ></span>
                 <span
                   class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg"
                   >{{ account?.patient?.hospital_id }}</span
@@ -70,7 +77,7 @@
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ account.createdAt | dayjs('ddd, MMM Do YYYY, h:mma') }}
+                  {{ account.createdAt | dayjs('MMM Do YYYY, h:mma') }}
                 </span>
               </td>
               <td class="pr-0">
@@ -78,6 +85,11 @@
                   class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg"
                   >{{ account?.staff?.fullname }}</span
                 >
+              </td>
+              <td>
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ account.end_date | dayjs('MMM Do YYYY') }}
+                </span>
               </td>
               <td class="pr-0 text-right">
                 <router-link
@@ -108,7 +120,7 @@
 <script>
 import Pagination from '@/utils/Pagination.vue';
 import AddIcon from '@/assets/icons/AddIcon.vue';
-import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
+import { debounce, getPatientDotStatus, removeSpinner, setUrlQueryParams } from '@/common/common';
 import Search from '@/utils/Search.vue';
 import { parseJwt } from '@/core/plugins/parseJwt';
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
@@ -142,6 +154,7 @@ export default {
     },
   },
   methods: {
+    getPatientDotStatus,
     handlePageChange() {
       this.$store.dispatch('antenatal/fetchAntenatalAccounts', {
         currentPage: this.$route.query.currentPage || this.currentPage,

@@ -18,9 +18,8 @@ export default {
     state.activeVisitPages = pages;
   },
 
-  UPDATE_VISIT(state, visit) {
-    console.log(visit);
-  },
+  // eslint-disable-next-line no-unused-vars
+  UPDATE_VISIT(state, visit) {},
 
   /**
    * CATEGORY VISITS
@@ -77,5 +76,9 @@ export default {
    */
   SET_VISIT_PRESCRIPTIONS(state, prescriptions) {
     state.visitPrescriptions = prescriptions;
+  },
+
+  SET_PENDING_PRESCRIPTIONS(state, prescriptions) {
+    state.pendingPrescriptions = prescriptions;
   },
 };

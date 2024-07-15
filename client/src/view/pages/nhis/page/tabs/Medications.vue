@@ -7,16 +7,22 @@
       :data="drug"
     />
 
+    <change-drug-group
+      :drug="drugGroupData"
+      :display-prompt="displayDrugGroupPrompt"
+      @closeModal="hideDrugGroupModal"
+    />
+
     <div class="card-body pr-5 pl-5 pt-2">
       <div class="table-responsive">
         <table class="table table-head-custom table-vertical-center">
           <thead>
             <tr class="text-left">
               <th class="pr-0" style="width: 250px">Drug</th>
-              <th style="min-width: 100px">Drug Type</th>
-              <th style="min-width: 100px">Type</th>
+              <th style="min-width: 100px">Group</th>
               <th style="min-width: 50px">Dose</th>
-              <th style="min-width: 100px">Status</th>
+              <th style="min-width: 50px">Status</th>
+              <th style="min-width: 50px">Price(₦)</th>
               <th style="min-width: 50px">Source</th>
               <th style="min-width: 50px">Code</th>
               <th style="min-width: 100px">Requester</th>
@@ -35,27 +41,25 @@
                 ></span>
                 <a
                   @click="viewPopover(drug)"
-                  class="font-weight-bolder text-hover-primary mb-1 font-size-lg"
+                  class="font-weight-bolder text-hover-primary mb-1 font-size-md"
                   :class="getDrugTextStatus(drug.nhis_status)"
                   href="#"
                   :id="popOverId"
                   >{{ drug.drug.name }}</a
                 >
-              </td>
-              <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
                   <label :class="getItemType(drug.drug_type)" class="label label-inline">{{
                     drug.drug_type
                   }}</label>
                 </span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
                   {{ drug.drug_group || '-' }}
                 </span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
                   {{ drug.quantity_to_dispense }} {{ drug?.dosage_form?.name || '-' }}
                 </span>
               </td>
@@ -67,27 +71,43 @@
                 >
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
+                  {{ drug.total_price }}
+                </span>
+              </td>
+              <td>
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
                   {{ drug.source }}
                 </span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
                   {{ drug.auth_code || '-' }}
                 </span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">{{
                   drug?.requester?.fullname
                 }}</span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
                   {{ drug.date_prescribed | dayjs('MMM D, YYYY, h:mma') }}
                 </span>
               </td>
               <td class="pr-0 text-right">
-                <a
+                <button
+                  :disabled="drug.nhis_status === APPROVED || drug.nhis_status === DECLINED"
+                  title="Change Drug Group"
+                  v-b-tooltip.hover
+                  href="#"
+                  class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
+                  @click="openDrugGroupModal(drug)"
+                >
+                  <open-icon />
+                </button>
+                <button
+                  :disabled="disableAddAuthCode(drug)"
                   title="Add Authorization Code"
                   v-b-tooltip.hover
                   href="#"
@@ -95,8 +115,9 @@
                   @click="addAuthCode(drug)"
                 >
                   <edit-icon />
-                </a>
-                <a
+                </button>
+                <button
+                  :disabled="disableStatusChange(drug)"
                   title="Approve"
                   v-b-tooltip.hover
                   href="#"
@@ -104,8 +125,9 @@
                   @click="showDischargeAlert('Approved', drug.id)"
                 >
                   <approve-icon />
-                </a>
-                <a
+                </button>
+                <button
+                  :disabled="disableStatusChange(drug)"
                   title="Decline"
                   v-b-tooltip.hover
                   href="#"
@@ -113,7 +135,7 @@
                   @click="showDischargeAlert('Declined', drug.id)"
                 >
                   <cancel-icon />
-                </a>
+                </button>
               </td>
             </tr>
           </tbody>
@@ -144,9 +166,20 @@ import Swal from 'sweetalert2';
 import AuthCodeModal from '@/view/pages/nhis/components/AuthCodeModal.vue';
 import DrugPopover from '@/view/components/popover/DrugPopover.vue';
 import { getItemType } from '@/common/common';
+import ChangeDrugGroup from '@/view/pages/nhis/components/ChangeDrugGroup.vue';
+import OpenIcon from '@/assets/icons/OpenIcon.vue';
 
 export default {
-  components: { DrugPopover, AuthCodeModal, Pagination, CancelIcon, ApproveIcon, EditIcon },
+  components: {
+    OpenIcon,
+    ChangeDrugGroup,
+    DrugPopover,
+    AuthCodeModal,
+    Pagination,
+    CancelIcon,
+    ApproveIcon,
+    EditIcon,
+  },
   data: () => ({
     PENDING: 'Pending',
     PRIMARY: 'Primary',
@@ -155,11 +188,14 @@ export default {
     APPROVED: 'Approved',
     CLEARED: 'Cleared',
     DISPENSED: 'Dispensed',
+    DECLINED: 'Declined',
     currentPage: 1,
     itemsPerPage: 15,
     displayPrompt: false,
     item: {},
     drug: {},
+    drugGroupData: {},
+    displayDrugGroupPrompt: false,
     dispatchType: 'order/updatePrescribedDrug',
     showPopover: false,
     popOverId: 'popover-reactive-90',
@@ -177,6 +213,9 @@ export default {
     perPage() {
       return this.drugs.length;
     },
+    visit() {
+      return this.$store.state.visit.visit;
+    },
   },
   methods: {
     getItemType,
@@ -190,6 +229,18 @@ export default {
 
     hideModal() {
       this.displayPrompt = false;
+    },
+
+    openDrugGroupModal(drug) {
+      this.drugGroupData = {
+        id: drug.id,
+        name: drug?.drug?.name,
+      };
+      this.displayDrugGroupPrompt = true;
+    },
+
+    hideDrugGroupModal() {
+      this.displayDrugGroupPrompt = false;
     },
 
     fetchPrescribedDrugs() {
@@ -267,6 +318,23 @@ export default {
 
     hidePopover() {
       this.showPopover = false;
+    },
+
+    disableStatusChange(drug) {
+      const INCLUDED_INSURANCE = ['NHIS', 'FHSS'];
+      if (
+        drug.drug_group === this.SECONDARY &&
+        !drug.auth_code &&
+        INCLUDED_INSURANCE.includes(this.visit?.insurance?.insurance?.name)
+      ) {
+        return true;
+      }
+      if (drug.nhis_status === this.APPROVED || drug.nhis_status === this.DECLINED) return true;
+    },
+
+    disableAddAuthCode(drug) {
+      if (drug.drug_group === this.PRIMARY) return true;
+      if (drug.nhis_status === this.APPROVED || drug.nhis_status === this.DECLINED) return true;
     },
   },
   created() {

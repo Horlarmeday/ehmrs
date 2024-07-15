@@ -174,4 +174,18 @@ export default {
         });
     });
   },
+
+  fetchPendingPrescriptions({ commit }, visitId) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/visits/pending-prescriptions/${visitId}`)
+        .then(response => {
+          commit('SET_PENDING_PRESCRIPTIONS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
 };

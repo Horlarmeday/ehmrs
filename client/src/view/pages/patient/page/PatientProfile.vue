@@ -45,6 +45,8 @@
           </b-tab>
           <b-tab title="Services" lazy><b-alert show>I'm lazy mounted!</b-alert></b-tab>
 
+          <b-tab title="Payments" lazy><b-alert show>I'm lazy mounted!</b-alert></b-tab>
+
           <b-tab title="Medications" lazy><b-alert show>I'm lazy mounted!</b-alert></b-tab>
 
           <b-tab title="Treatments" lazy><b-alert show>I'm lazy mounted!</b-alert></b-tab>
@@ -58,8 +60,6 @@
           <b-tab title="Items" lazy><b-alert show>I'm lazy mounted!</b-alert></b-tab>
 
           <b-tab title="Programs" lazy><b-alert show>I'm lazy mounted!</b-alert></b-tab>
-
-          <b-tab title="Payments" lazy><b-alert show>I'm lazy mounted!</b-alert></b-tab>
         </b-tabs>
       </div>
       <!--end::Example-->

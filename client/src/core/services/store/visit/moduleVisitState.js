@@ -32,4 +32,5 @@ export default {
    * VISIT PRESCRIPTIONS
    */
   visitPrescriptions: null,
+  pendingPrescriptions: null,
 };
