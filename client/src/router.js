@@ -292,6 +292,14 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            {
+              path: 'update/:id',
+              name: 'update-visit',
+              component: () => import('@/view/pages/visits/page/EditVisit.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
             // DOCTOR
             {
               path: 'queue',
@@ -405,6 +413,23 @@ const router = new Router({
               path: 'admit-patient/:id',
               name: 'maternity-admit-patient',
               component: () => import('@/view/pages/admission/page/AdmitPatient.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            // MEDICAL RECORDS
+            {
+              path: 'active',
+              name: 'active-visits',
+              component: () => import('@/view/pages/medicalRecords/page/ActiveVisits.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'active/:id',
+              name: 'active-visit',
+              component: () => import('@/view/pages/medicalRecords/page/AddActiveServices.vue'),
               meta: {
                 requiresAuth: true,
               },
