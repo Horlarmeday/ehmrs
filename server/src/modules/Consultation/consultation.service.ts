@@ -7,6 +7,8 @@ import {
   getConsultationSummary,
   getVisitsHistory,
   getDiagnosesAndFindings,
+  getDiagnoses,
+  getHistories,
 } from './consultation.repository';
 import { checkValueExists } from '../../core/helpers/helper';
 import VisitService from '../Visit/visit.service';
@@ -130,6 +132,40 @@ class ConsultationService {
     findings: { histories: History[]; complaints: Complaint[] } | AntenatalObservation[];
   }> {
     return getDiagnosesAndFindings(body);
+  }
+
+  /**
+   * get diagnoses
+   *
+   * @static
+   * @returns {json} json object with diagnoses data
+   * @param body
+   * @memberOf ConsultationService
+   */
+  static async getDiagnoses(body) {
+    const { currentPage, pageLimit, filter } = body;
+
+    if (Object.keys(body).length) {
+      return getDiagnoses({ currentPage, pageLimit, filter });
+    }
+    return getDiagnoses({ filter });
+  }
+
+  /**
+   * get consultation histories
+   *
+   * @static
+   * @returns {json} json object with diagnoses data
+   * @param body
+   * @memberOf ConsultationService
+   */
+  static async getConsultationHistories(body) {
+    const { currentPage, pageLimit, filter } = body;
+
+    if (Object.keys(body).length) {
+      return getHistories({ currentPage, pageLimit, filter });
+    }
+    return getHistories({ filter });
   }
 }
 

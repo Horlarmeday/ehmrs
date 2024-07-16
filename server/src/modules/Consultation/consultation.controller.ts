@@ -134,6 +134,44 @@ class ConsultationController {
       return next(e);
     }
   }
+
+  /**
+   * get consultation diagnoses
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with diagnoses data
+   */
+  static async getDiagnoses(req: Request, res: Response, next: NextFunction) {
+    try {
+      const diagnoses = await ConsultationService.getDiagnoses(req.query);
+
+      return successResponse({ res, message: SUCCESS, data: diagnoses, httpCode: 200 });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get consultation histories
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with histories data
+   */
+  static async getConsultationHistories(req: Request, res: Response, next: NextFunction) {
+    try {
+      const histories = await ConsultationService.getConsultationHistories(req.query);
+
+      return successResponse({ res, message: SUCCESS, data: histories, httpCode: 200 });
+    } catch (e) {
+      return next(e);
+    }
+  }
 }
 
 export default ConsultationController;

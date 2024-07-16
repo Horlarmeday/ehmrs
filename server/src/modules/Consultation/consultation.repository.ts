@@ -250,3 +250,37 @@ export const getDiagnosesAndFindings = async (visit_id: number) => {
   ]);
   return { diagnoses, findings };
 };
+
+/**
+ * get diagnoses
+ * @param currentPage
+ * @param pageLimit
+ * @param filter
+ */
+export const getDiagnoses = async ({ currentPage = 1, pageLimit = 10, filter = null }) => {
+  return Diagnosis.paginate({
+    page: +currentPage,
+    paginate: +pageLimit,
+    order: [['createdAt', 'DESC']],
+    where: {
+      ...(filter && JSON.parse(filter)),
+    },
+  });
+};
+
+/**
+ * get consultation histories
+ * @param currentPage
+ * @param pageLimit
+ * @param filter
+ */
+export const getHistories = async ({ currentPage = 1, pageLimit = 10, filter = null }) => {
+  return History.paginate({
+    page: +currentPage,
+    paginate: +pageLimit,
+    order: [['createdAt', 'DESC']],
+    where: {
+      ...(filter && JSON.parse(filter)),
+    },
+  });
+};
