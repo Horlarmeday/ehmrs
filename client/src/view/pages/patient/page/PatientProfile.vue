@@ -40,9 +40,15 @@
           <b-tab title="Personal">
             <personal-information :patient="patient" :loading="loading" />
           </b-tab>
+
           <b-tab title="Consultations" lazy>
-            <History />
+            <histories-table />
           </b-tab>
+
+          <b-tab title="Diagnoses" lazy>
+            <diagnoses-table />
+          </b-tab>
+
           <b-tab title="Services" lazy>
             <services-table />
           </b-tab>
@@ -59,7 +65,7 @@
             <tests-table />
           </b-tab>
 
-          <b-tab title="Radiology">
+          <b-tab title="Radiology" lazy>
             <radiology-table investigations="" />
           </b-tab>
 
@@ -67,9 +73,13 @@
             <items-table />
           </b-tab>
 
-          <b-tab title="Treatments" lazy><b-alert show>I'm lazy mounted!</b-alert></b-tab>
+          <b-tab title="Treatments" lazy>
+            <treatments-table />
+          </b-tab>
 
-          <b-tab title="Vitals" lazy><b-alert show>I'm lazy mounted!</b-alert></b-tab>
+          <b-tab title="Vitals" lazy>
+            <triages-table />
+          </b-tab>
 
           <b-tab title="Programs" lazy><b-alert show>I'm lazy mounted!</b-alert></b-tab>
         </b-tabs>
@@ -81,7 +91,6 @@
 </template>
 
 <script>
-import History from '../components/History.vue';
 import PersonalInformation from '@/view/pages/patient/components/PersonalInformation.vue';
 import Swal from 'sweetalert2';
 import PaymentsTable from './components/tables/PaymentsTable.vue';
@@ -90,15 +99,22 @@ import DrugsTable from './components/tables/DrugsTable.vue';
 import TestsTable from './components/tables/TestsTable.vue';
 import RadiologyTable from './components/tables/RadiologyTable.vue';
 import ItemsTable from './components/tables/ItemsTable.vue';
+import TreatmentsTable from './components/tables/TreatmentsTable.vue';
+import TriagesTable from './components/tables/TriagesTable.vue';
+import HistoriesTable from './components/tables/HistoriesTable.vue';
+import DiagnosesTable from './components/tables/DiagnosesTable.vue';
 export default {
   components: {
+    DiagnosesTable,
+    HistoriesTable,
+    TriagesTable,
+    TreatmentsTable,
     ItemsTable,
     RadiologyTable,
     DrugsTable,
     ServicesTable,
     PaymentsTable,
     PersonalInformation,
-    History,
     TestsTable,
   },
   data: () => ({

@@ -259,6 +259,8 @@ export default {
         'delivery',
         'postnatal',
         'maternity-admit-patient',
+        'update-visit',
+        'active-visit',
       ];
       return pagesToDisplay.includes(this.$route.name);
     },
