@@ -183,8 +183,8 @@ export default {
       currentPage: this.$route.query.currentPage || this.currentPage,
       itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
       search: this.$route.query.search || null,
-      start: this.todayDate().startDate || this.$route.query.startDate,
-      end: this.todayDate().endDate || this.$route.query.endDate,
+      start: this.todayDate()?.startDate || this.$route.query.startDate,
+      end: this.todayDate()?.endDate || this.$route.query.endDate,
     });
   },
 };
