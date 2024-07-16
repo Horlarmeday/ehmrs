@@ -87,5 +87,24 @@ class TriageController {
       return next(e);
     }
   }
+
+  /**
+   * get all triages
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with triage data
+   */
+  static async getPatientTriages(req: Request, res: Response, next: NextFunction) {
+    try {
+      const triages = await TriageService.getPatientTriages(req.query);
+
+      return successResponse({ res, httpCode: 200, data: triages, message: DATA_RETRIEVED });
+    } catch (e) {
+      return next(e);
+    }
+  }
 }
 export default TriageController;

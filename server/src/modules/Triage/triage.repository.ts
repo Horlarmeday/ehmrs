@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import { Triage } from '../../database/models';
 import { WhereOptions } from 'sequelize';
+import { async } from 'rxjs';
 
 /**
  * create a patient vital signs
@@ -83,5 +84,23 @@ export const getOneTriage = async (
     where: { ...query },
     ...(attributes && attributes),
     order: [['createdAt', 'DESC']],
+  });
+};
+
+/**
+ * get triages
+ *
+ * @function
+ * @returns {Promise<Triage[]>} json object with triage data
+ * @param query
+ */
+export const getPatientTriages = async ({ currentPage = 1, pageLimit = 10, filter = null }) => {
+  return Triage.paginate({
+    page: +currentPage,
+    paginate: +pageLimit,
+    order: [['createdAt', 'DESC']],
+    where: {
+      ...(filter && JSON.parse(filter)),
+    },
   });
 };
