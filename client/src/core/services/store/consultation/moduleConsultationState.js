@@ -1,6 +1,5 @@
 export default {
   observations: [],
-  diagnosis: [],
   testType: 'CASH',
   sampleId: 1,
 
@@ -10,4 +9,12 @@ export default {
   totalHistoryPages: 0,
 
   clinicalFinding: null,
+
+  diagnosis: [],
+  totalDiagnosisPages: 0,
+  totalDiagnosis: 0,
+
+  patientHistories: [],
+  totalPatientHistories: 0,
+  totalPatientHistoryPages: 0,
 };

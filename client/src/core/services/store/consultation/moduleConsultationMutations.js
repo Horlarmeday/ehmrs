@@ -36,4 +36,34 @@ export default {
   SET_DIAGNOSES_FINDINGS(state, finding) {
     state.clinicalFinding = finding;
   },
+
+  /**
+   * DIAGNOSES
+   */
+  SET_DIAGNOSES(state, diagnoses) {
+    state.diagnoses = diagnoses;
+  },
+
+  SET_DIAGNOSES_TOTAL(state, total) {
+    state.totalDiagnosis = total;
+  },
+
+  SET_DIAGNOSES_PAGES(state, pages) {
+    state.totalDiagnosisPages = pages;
+  },
+
+  /**
+   * PATIENT HISTORIES
+   */
+  SET_PATIENT_HISTORIES(state, histories) {
+    state.patientHistories = histories;
+  },
+
+  SET_PATIENT_HISTORY_TOTAL(state, total) {
+    state.totalPatientHistories = total;
+  },
+
+  SET_PATIENT_HISTORY_PAGES(state, pages) {
+    state.totalPatientHistoryPages = pages;
+  },
 };
