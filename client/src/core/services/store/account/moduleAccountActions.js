@@ -25,9 +25,9 @@ export default {
           },
         })
         .then(response => {
-          commit('SET_ACCOUNTS', response.data.data.docs);
-          commit('SET_ACCOUNTS_TOTAL', response.data.data.total);
-          commit('SET_ACCOUNTS_PAGES', response.data.data.pages);
+          commit('SET_PAYMENTS', response.data.data.docs);
+          commit('SET_PAYMENTS_TOTAL', response.data.data.total);
+          commit('SET_PAYMENTS_PAGES', response.data.data.pages);
           resolve(response);
         })
         .catch(error => {

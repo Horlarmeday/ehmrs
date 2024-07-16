@@ -1,6 +1,6 @@
 export default {
   ADD_PAYMENT(state, payment) {
-    state.alert = payment;
+    state.payment = payment;
   },
 
   SET_PAYMENTS(state, payments) {
