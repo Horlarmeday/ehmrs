@@ -429,7 +429,7 @@ export const getCollectedSamples = async ({
       },
       {
         model: Patient,
-        attributes: ['firstname', 'lastname', 'fullname', 'hospital_id'],
+        attributes: patientAttributes,
         where: {
           ...(search && {
             [Op.or]: [

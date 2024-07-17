@@ -22,7 +22,7 @@
             <td>{{ payment.narration || '-' }}</td>
             <td>{{ payment.batch_no || '-' }}</td>
             <td>{{ payment.payment_type || '-' }}</td>
-            <td>{{ payment.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
+            <td>{{ payment.confirmed_date | dayjs('DD/MM/YYYY, h:mma') }}</td>
           </tr>
         </tbody>
       </table>
