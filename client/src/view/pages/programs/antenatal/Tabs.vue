@@ -1,6 +1,11 @@
 <template>
   <div>
     <div class="header-top mb-6">
+      <a-n-c-triage-card
+        :estimated_delivery_date="antenatal?.estimated_delivery_date"
+        v-if="antenatal?.triage"
+        :triage="antenatal?.triage"
+      />
       <div class="container white">
         <div class="d-none d-lg-flex align-items-center mr-1">
           <ul class="header-tabs nav align-self-end font-size-lg" role="tablist">
@@ -195,6 +200,7 @@ import Alerts from '@/view/pages/programs/antenatal/tabs/Alerts.vue';
 import Medication from '@/view/pages/programs/antenatal/tabs/Medication.vue';
 import MedicationDoctor from '@/view/pages/programs/antenatal/tabs/MedicationDoctor.vue';
 import Services from '@/view/pages/programs/antenatal/tabs/Services.vue';
+import ANCTriageCard from '@/view/components/util/ANCTriageCard.vue';
 
 const ComponentMapping = {
   accountUpdate: AccountUpdate,
@@ -212,6 +218,7 @@ const ComponentMapping = {
 };
 export default {
   components: {
+    ANCTriageCard,
     PageSkeleton,
     PulseIcons,
   },

@@ -94,6 +94,7 @@
         :per-page="perPage"
         :current-page="currentPage"
         @pagechanged="onPageChange"
+        @changepagecount="handlePageCount"
       />
     </div>
     <table-skeleton v-else :columns="9" />
@@ -139,7 +140,7 @@ export default {
     handlePageChange() {
       setUrlQueryParams({
         currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
       });
       this.fetchVerifiedResults({
         currentPage: this.$route.query.currentPage || this.currentPage,
@@ -153,6 +154,23 @@ export default {
     onPageChange(page) {
       this.currentPage = page;
       this.handlePageChange();
+    },
+
+    handlePageCount(count) {
+      setUrlQueryParams({
+        currentPage: this.currentPage,
+        itemsPerPage: count,
+        search: this.$route.query.search || null,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
+      });
+      this.fetchVerifiedResults({
+        currentPage: this.$route.query.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
+        search: this.$route.query.search || null,
+      });
     },
 
     onHandleSearch(prop) {

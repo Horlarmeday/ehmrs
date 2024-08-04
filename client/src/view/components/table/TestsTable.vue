@@ -5,7 +5,6 @@
         <thead class="thead-light">
           <tr class="text-uppercase">
             <th scope="col">Test</th>
-            <th scope="col">Result</th>
             <th scope="col">Price (₦)</th>
             <th scope="col">Payment Status</th>
             <th scope="col">Result Status</th>
@@ -27,12 +26,6 @@
                 class="label label-dot label-lg mr-2"
               ></span>
               {{ test.test.name }}
-            </td>
-            <td>
-              <span class="font-weight-boldest" v-if="test.status === APPROVED">
-                {{ test?.result?.result || '-' }}
-              </span>
-              <span v-else>-</span>
             </td>
             <td>
               <span class="font-weight-boldest">
@@ -58,6 +51,15 @@
                   :class="loading && 'disabled'"
                 >
                   <i class="flaticon-delete text-danger"></i>
+                </a>
+              </span>
+              <span>
+                <a
+                  target="_blank"
+                  :href="`/laboratory/test-result/${test.test_prescription_id}?lab_test=${test.id}`"
+                  v-if="test.status === APPROVED && test.result_id"
+                >
+                  <i class="flaticon-file-2 text-success"></i>
                 </a>
               </span>
             </td>
