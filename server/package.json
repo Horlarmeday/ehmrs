@@ -7,10 +7,11 @@
     "test": "jest --detectOpenHandles",
     "start:dev": "nodemon",
     "start": "node dist/app.js",
-    "build": "rimraf ./dist && tsc",
+    "build": "rimraf ./dist && tsc && yarn sentry:sourcemaps",
     "migration": "sequelize db:migrate",
     "__eslint_fix": "./node_modules/eslint/bin/eslint.js . --ext .js,.ts --quiet --fix",
-    "postbuild": "cp {package.json,yarn.lock} dist"
+    "postbuild": "cp {package.json,yarn.lock} dist",
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org prismaspark-dynamics --project node-express ./dist && sentry-cli sourcemaps upload --org prismaspark-dynamics --project node-express ./dist"
   },
   "lint-staged": {
     "*.{js,ts,vue}": [
@@ -67,10 +68,14 @@
     "supertest": "^4.0.2",
     "ts-node": "^10.2.1",
     "tsconfig-paths": "^3.11.0",
-    "typescript": "^4.4.2"
+    "typescript": "^4.4.2",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "dependencies": {
     "@hokify/agenda": "^6.3.0",
+    "@sentry/cli": "^2.33.1",
+    "@sentry/node": "^8.22.0",
+    "@sentry/profiling-node": "^8.22.0",
     "@supercharge/promise-pool": "^3.1.1",
     "@types/pdfkit": "^0.12.10",
     "agendash": "^4.0.0",
