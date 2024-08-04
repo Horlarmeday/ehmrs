@@ -10,7 +10,7 @@
         <tests-order-section :tests="sample.tests" />
 
         <section-title text="Order" />
-        <order-section />
+        <order-section :has-pending-payment="hasPendingPayment" />
       </div>
     </div>
     <test-skeleton v-else title="Add Test Sample" section-title="Order" />
@@ -40,6 +40,11 @@ export default {
   computed: {
     sample() {
       return this.$store.state.laboratory.sampleToCollect;
+    },
+
+    hasPendingPayment() {
+      const tests = this.sample?.tests.map(test => test.data.map(t => t.payment_status)).flat();
+      return tests.every(test => test === 'Pending');
     },
   },
 };

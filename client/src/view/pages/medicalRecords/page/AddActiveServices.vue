@@ -25,9 +25,15 @@
                 services => ({
                   id: services.id,
                   price: services.price,
+                  name: services.name,
                 })
               "
-            />
+            >
+              <template #option="{ price, name }">
+                <span>{{ name }} - </span>
+                <strong> {{ price || '' }}</strong>
+              </template>
+            </v-select>
           </div>
         </div>
         <div class="col-lg-9 col-form-label">
