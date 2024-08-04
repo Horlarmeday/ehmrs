@@ -18,7 +18,7 @@
               </select>
             </div>
           </div>
-          <Component :is="currentForm" />
+          <Component :result="result" :testId="testId" :section="section" :is="currentForm" />
         </div>
       </div>
     </div>
@@ -49,6 +49,9 @@ export default {
     forms: resultFormList,
     form: '',
     currentForm: '',
+    testId: 2,
+    section: 'ResultListSection',
+    result: {},
   }),
   methods: {
     selectResultForm() {
