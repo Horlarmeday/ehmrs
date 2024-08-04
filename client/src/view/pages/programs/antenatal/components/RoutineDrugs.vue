@@ -4,7 +4,7 @@
     size="xl"
     hide-footer
     title="Routine Drugs"
-    @show="getInventories"
+    @show="getInventoriesAndANCDrugs"
     scrollable
   >
     <div v-if="defaults">
@@ -14,7 +14,7 @@
         </button>
       </div>
       <ErrorBanner v-if="error" :message="error" />
-      <div class="mb-5 border" v-for="drug in routineDrugs" :key="drug.drug_id">
+      <div class="mb-5 border" v-for="drug in routineDrugs" :key="drug.id">
         <div class="bg-light-primary p-1">
           <label class="mr-3"
             >Drug:
@@ -159,20 +159,16 @@ export default {
     },
 
     defaults() {
-      if (this.$store.state.model.defaults?.length) {
-        return this.$store.state.model.defaults;
-      }
-      return JSON.parse(localStorage.getItem('defaults'));
+      return this.$store.state.model.defaults;
     },
 
     routineDrugs: {
       get() {
         const drugs = this.defaults?.find(def => def.type === this.defaultData)?.data;
         if (drugs) {
+          const insurance = this.insuranceName || 'Cash';
           return drugs
-            .filter(
-              drug => drug.drug.drug_type === this.insuranceName || drug.drug.drug_type === 'Cash'
-            )
+            .filter(drug => drug.drug.drug_type === insurance)
             .map(drug => ({
               id: randomId(),
               drug_name: drug.drug?.name,
@@ -295,8 +291,17 @@ export default {
       foundDrug.total_price = +foundDrug.price * +foundDrug.quantity_to_dispense;
     },
 
+    getInventoriesAndANCDrugs() {
+      this.getDefaults();
+      this.getInventories();
+    },
+
     getInventories() {
       this.$store.dispatch('inventory/fetchInventories');
+    },
+
+    getDefaults() {
+      this.$store.dispatch('model/fetchDefaults');
     },
 
     getDrugType(insuranceName) {

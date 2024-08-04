@@ -1,59 +1,15 @@
 export const resultFormList = [
   {
-    name: 'Urine/Swab Form',
-    code: 'UrineSwabForm',
-  },
-  {
-    name: 'Urinalysis Form',
-    code: 'UrinalysisForm',
-  },
-  {
-    name: 'Stool Analysis Form',
-    code: 'StoolAnalysisForm',
-  },
-  {
-    name: 'Sputum Form',
-    code: 'SputumForm',
-  },
-  {
-    name: 'Semen Analysis Form',
-    code: 'SemenAnalysisForm',
-  },
-  {
-    name: 'SEUCr Form',
-    code: 'SEUCrForm',
-  },
-  {
-    name: 'Lipid Profile Form',
-    code: 'LipidProfileForm',
-  },
-  {
-    name: 'LFT Form',
-    code: 'LFTForm',
-  },
-  {
-    name: 'Serum Form',
-    code: 'SerumForm',
-  },
-  {
-    name: 'OGTT Form',
-    code: 'OGTTForm',
-  },
-  {
-    name: 'Neonate Bilirubin Form',
-    code: 'BilirubinForm',
-  },
-  {
     name: 'Analyte Form',
     code: 'AnalyteForm',
   },
   {
-    name: 'FBC Form',
-    code: 'FBCForm',
+    name: 'Default Form',
+    code: 'DefaultResultForm',
   },
   {
-    name: 'Widal Reaction Form',
-    code: 'WidalReactionForm',
+    name: 'FBC Form',
+    code: 'FBCForm',
   },
   {
     name: 'Glucose Form',
@@ -64,7 +20,51 @@ export const resultFormList = [
     code: 'HormonalAssayForm',
   },
   {
-    name: 'Default Form',
-    code: 'DefaultResultForm',
+    name: 'Lipid Profile Form',
+    code: 'LipidProfileForm',
+  },
+  {
+    name: 'LFT Form',
+    code: 'LFTForm',
+  },
+  {
+    name: 'Microbiology Form',
+    code: 'UrineSwabForm',
+  },
+  {
+    name: 'Neonate Bilirubin Form',
+    code: 'BilirubinForm',
+  },
+  {
+    name: 'OGTT Form',
+    code: 'OGTTForm',
+  },
+  {
+    name: 'Semen Analysis Form',
+    code: 'SemenAnalysisForm',
+  },
+  {
+    name: 'Serum Form',
+    code: 'SerumForm',
+  },
+  {
+    name: 'SEUCr Form',
+    code: 'SEUCrForm',
+  },
+  {
+    name: 'Sputum Form',
+    code: 'SputumForm',
+  },
+  {
+    name: 'Stool Analysis Form',
+    code: 'StoolAnalysisForm',
+  },
+  {
+    name: 'Urinalysis Form',
+    code: 'UrinalysisForm',
+  },
+  {
+    name: 'Widal Reaction Form',
+    code: 'WidalReactionForm',
   },
 ];

@@ -1,6 +1,6 @@
 <template>
   <div class="card-body py-1">
-    <div class="form-group row mb-2">
+    <div class="form-group row mb-2 mt-2">
       <div class="col-lg-6">
         <label>Search:</label>
         <div ref="spinning">

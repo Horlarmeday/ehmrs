@@ -865,6 +865,23 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            {
+              path: 'results-update',
+              name: 'results-update',
+              component: () =>
+                import('@/view/pages/laboratory/approvedResults/ApprovedResults.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'results-update/:id',
+              name: 'results-update-one',
+              component: () => import('@/view/pages/laboratory/approvedResults/ApprovedResult.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
           ],
         },
         // ORDERS
@@ -1278,7 +1295,7 @@ const router = new Router({
           children: [
             {
               path: 'change-password',
-              name: 'transactions',
+              name: 'change-password',
               component: () => import('@/view/pages/settings/page/ChangePassword.vue'),
               meta: {
                 requiresAuth: true,
@@ -1341,11 +1358,6 @@ const router = new Router({
           name: 'register',
           path: '/auth/register',
           component: () => import('@/view/pages/auth/Register'),
-        },
-        {
-          name: 'quill',
-          path: '/auth/quill',
-          component: () => import('@/view/pages/Quill.vue'),
         },
       ],
     },

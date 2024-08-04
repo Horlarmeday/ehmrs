@@ -29,7 +29,7 @@
             </tr>
           </tbody>
           <tbody v-for="sample in samples" :key="sample.id">
-            <tr :class="{ disabled: sample.test_count === sample.total_pending_payments }">
+            <tr>
               <td class="pl-4">
                 <div class="d-flex align-items-center">
                   <div>
@@ -96,6 +96,7 @@
         :per-page="perPage"
         :current-page="currentPage"
         @pagechanged="onPageChange"
+        @changepagecount="handlePageCount"
       />
     </div>
     <table-skeleton v-else :columns="7" />
@@ -152,6 +153,11 @@ export default {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
+        period: this.period,
+        tabIndex: this.$route.query.tabIndex,
+        search: this.$route.query.search || null,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
       });
       this.fetchSamplesToCollect({
         currentPage: this.$route.query.currentPage || this.currentPage,
@@ -159,6 +165,25 @@ export default {
         search: this.$route.query.search || null,
         start: this.$route.query.startDate || null,
         end: this.$route.query.endDate || null,
+      });
+    },
+
+    handlePageCount(count) {
+      setUrlQueryParams({
+        currentPage: this.currentPage,
+        itemsPerPage: count,
+        period: this.period,
+        tabIndex: this.$route.query.tabIndex,
+        search: this.$route.query.search || null,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
+      });
+      this.fetchSamplesToCollect({
+        currentPage: this.$route.query.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
+        search: this.$route.query.search || null,
       });
     },
 
@@ -173,6 +198,8 @@ export default {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
         search,
+        period: this.period,
+        tabIndex: this.$route.query.tabIndex,
       });
       this.debounceSearch(search, this, spinDiv);
     },
@@ -193,6 +220,8 @@ export default {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
+        period: this.period,
+        tabIndex: this.$route.query.tabIndex,
         startDate: dayjs(start).format('YYYY-MM-DD'),
         endDate: dayjs(end).format('YYYY-MM-DD'),
       });
@@ -224,6 +253,7 @@ export default {
           itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
           start: this.$route.query.startDate || null,
           end: this.$route.query.endDate || null,
+          search: this.$route.query.search || null,
         });
       },
       immediate: true,

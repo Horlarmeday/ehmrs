@@ -136,6 +136,7 @@
         :per-page="perPage"
         :current-page="currentPage"
         @pagechanged="onPageChange"
+        @changepagecount="handlePageCount"
       />
     </div>
     <table-skeleton v-else :columns="9" />
@@ -187,6 +188,11 @@ export default {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
+        period: this.period,
+        tabIndex: this.$route.query.tabIndex,
+        search: this.$route.query.search || null,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
       });
       this.fetchSamplesCollected({
         currentPage: this.$route.query.currentPage || this.currentPage,
@@ -202,11 +208,32 @@ export default {
       this.handlePageChange();
     },
 
+    handlePageCount(count) {
+      setUrlQueryParams({
+        currentPage: this.currentPage,
+        itemsPerPage: count,
+        period: this.period,
+        tabIndex: this.$route.query.tabIndex,
+        search: this.$route.query.search || null,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
+      });
+      this.fetchSamplesCollected({
+        currentPage: this.$route.query.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
+        search: this.$route.query.search || null,
+      });
+    },
+
     onHandleSearch(prop) {
       const { search, spinDiv } = prop;
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
+        period: this.period,
+        tabIndex: this.$route.query.tabIndex,
         search,
       });
       this.debounceSearch(search, this, spinDiv);
@@ -228,8 +255,10 @@ export default {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
+        tabIndex: this.$route.query.tabIndex,
         startDate: dayjs(start).format('YYYY-MM-DD'),
         endDate: dayjs(end).format('YYYY-MM-DD'),
+        period: this.period,
       });
       this.fetchSamplesCollected({
         currentPage: this.currentPage,
@@ -271,6 +300,7 @@ export default {
           itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
           start: this.$route.query.startDate || null,
           end: this.$route.query.endDate || null,
+          search: this.$route.query.search || null,
         });
       },
       immediate: true,

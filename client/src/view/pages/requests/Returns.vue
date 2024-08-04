@@ -117,6 +117,7 @@
         :per-page="perPage"
         :current-page="currentPage"
         @pagechanged="onPageChange"
+        @changepagecount="onChangePageCount"
       />
     </div>
   </div>
@@ -192,7 +193,7 @@ export default {
 
     handlePageChange() {
       setUrlQueryParams({
-        currentPage: this.$route.query.currentPage || this.currentPage,
+        currentPage: this.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         search: this.$route.query.search || null,
       });
@@ -208,6 +209,21 @@ export default {
     onPageChange(page) {
       this.currentPage = page;
       this.handlePageChange();
+    },
+
+    onChangePageCount(pagecount) {
+      setUrlQueryParams({
+        currentPage: this.currentPage,
+        itemsPerPage: pagecount,
+        search: this.$route.query.search || null,
+      });
+      this.$store.dispatch('inventory/fetchReturnRequests', {
+        currentPage: this.$route.query.currentPage || this.currentPage,
+        itemsPerPage: pagecount,
+        search: this.$route.query.search || null,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
+      });
     },
 
     onHandleSearch(prop) {
