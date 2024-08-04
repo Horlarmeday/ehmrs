@@ -491,11 +491,14 @@ export const updateInsurance = async (data: UpdatePatientInsurance) => {
 export const togglePatientInsurance = async (data: TogglePatientInsurance): Promise<Patient> => {
   const { patient_id, has_insurance } = data;
   const updatedPatient = await updatePatient(data); // disable principal insurance
+  await PatientInsurance.update({ is_default: false }, { where: { patient_id } }); // disable principal insurance
+
   const dependants = await Patient.findAll({
     where: { principal_id: patient_id, patient_type: PatientType.DEPENDANT },
   });
 
   if (dependants?.length) {
+    const dependantIds = dependants.map(dependant => dependant.id);
     await Patient.update(
       { has_insurance },
       {
@@ -505,6 +508,20 @@ export const togglePatientInsurance = async (data: TogglePatientInsurance): Prom
         },
       }
     );
+    await PatientInsurance.update({ is_default: false }, { where: { patient_id: dependantIds } });
   }
   return updatedPatient;
+};
+
+export const convertDependantToPrincipal = async (patientId: number) => {
+  const data = {
+    patient_id: patientId,
+    patient_type: PatientType.PATIENT,
+    principal_id: null,
+    has_insurance: false,
+    relationship_to_principal: null,
+  };
+  const patient = await updatePatient(data);
+  await PatientInsurance.update({ is_default: false }, { where: { patient_id: patientId } }); // disable insurance
+  return patient;
 };

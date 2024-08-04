@@ -14,6 +14,7 @@ import {
   getPatientByNameAndPhone,
   updateInsurance,
   togglePatientInsurance,
+  convertDependantToPrincipal,
 } from './patient.repository';
 import { getAge, processSnappedPhoto, StatusCodes } from '../../core/helpers/helper';
 import { JobSchedule } from '../../core/command/worker/schedule';
@@ -236,6 +237,18 @@ class PatientService {
    */
   static async getPatientByNameAndPhone(body) {
     return getPatientByNameAndPhone(body);
+  }
+
+  /**
+   * convert dependant account to patient account
+   *
+   * @static
+   * @returns {json} json object with patient data
+   * @memberOf PatientService
+   * @param patientId
+   */
+  static async convertDependantToPatient(patientId: number) {
+    return convertDependantToPrincipal(patientId);
   }
 }
 export default PatientService;

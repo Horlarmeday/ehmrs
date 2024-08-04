@@ -4,7 +4,9 @@ import {
   validateDependant,
   validatePatientHealthInsurance,
   validateCreateEmergencyPatient,
-  validateFindPatient, validateUpdatePatientInsurance, validateTogglePatientInsurance,
+  validateFindPatient,
+  validateUpdatePatientInsurance,
+  validateTogglePatientInsurance,
 } from './validations';
 import PatientService from './patient.service';
 import { errorResponse } from '../../common/responses/error-responses';
@@ -60,7 +62,11 @@ class PatientController {
    * @param {object} next next middleware
    * @returns {json} json object with status, patient data
    */
-  static async addPatientHealthInsurance(req, res, next): Promise<SuccessResponse> {
+  static async addPatientHealthInsurance(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse> {
     const { error } = validatePatientHealthInsurance(req.body);
     if (error)
       return errorResponse({
@@ -83,7 +89,7 @@ class PatientController {
         data: patient,
       });
     } catch (e) {
-      return next(e);
+      next(e);
     }
   }
 
@@ -97,7 +103,7 @@ class PatientController {
    * @returns {json} json object with status, patient data
    */
   static async createEmergencyPatientAccount(
-    req,
+    req: Request & { user: { sub: number } },
     res: Response,
     next: NextFunction
   ): Promise<SuccessResponse> {
@@ -135,7 +141,11 @@ class PatientController {
    * @param {object} next next middleware
    * @returns {json} json object with status, dependant data
    */
-  static async createDependant(req, res, next) {
+  static async createDependant(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
     const { error } = validateDependant(req.body);
     if (error)
       return errorResponse({
@@ -384,6 +394,35 @@ class PatientController {
         res,
         httpCode: StatusCodes.OK,
         message: SUCCESS,
+        data: patient,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  /**
+   * convert dependant account to a patient account
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, patient data
+   */
+  static async convertDependantToPatient(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse> {
+    const { id } = req.params;
+    try {
+      const patient = await PatientService.convertDependantToPatient(+id);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_UPDATED,
         data: patient,
       });
     } catch (e) {
