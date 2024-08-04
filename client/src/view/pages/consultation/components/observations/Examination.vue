@@ -1,13 +1,6 @@
 <template>
   <div class="flex-row-fluid ml-lg-8">
     <div class="card card-custom gutter-b">
-      <!--      <div class="card-body">-->
-      <!--        &lt;!&ndash;        <h3 class="card-title align-items-start flex-column">&ndash;&gt;-->
-      <!--        &lt;!&ndash;          <span class="card-label font-weight-bolder text-dark">History and Observation</span>&ndash;&gt;-->
-      <!--        &lt;!&ndash;        </h3>&ndash;&gt;-->
-      <!--     -->
-      <!--      </div>-->
-
       <div class="card-body py-4">
         <diagnosis-accordion />
         <div class="form-group row">
@@ -76,17 +69,6 @@
           </a>
         </div>
         <div class="form-group row">
-          <label class="col-2 col-form-label">Treatment Procedure</label>
-          <div class="col-9">
-            <textarea
-              v-model="history_note"
-              class="form-control form-control-sm"
-              cols="30"
-              rows="2"
-            />
-          </div>
-        </div>
-        <div class="form-group row">
           <label class="col-2 col-form-label">Examination Notes</label>
           <div class="col-9">
             <textarea
@@ -122,6 +104,17 @@
           <div class="col-9">
             <textarea
               v-model="other_examination"
+              class="form-control form-control-sm"
+              cols="30"
+              rows="2"
+            />
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-2 col-form-label">Treatment Procedure</label>
+          <div class="col-9">
+            <textarea
+              v-model="history_note"
               class="form-control form-control-sm"
               cols="30"
               rows="2"

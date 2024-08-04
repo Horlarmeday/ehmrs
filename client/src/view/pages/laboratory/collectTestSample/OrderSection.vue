@@ -37,7 +37,7 @@
     <div class="separator separator-solid mb-6"></div>
     <div class="text-center">
       <button
-        :disabled="!accession_number || !receiver || isDisabled"
+        :disabled="!accession_number || !receiver || isDisabled || hasPendingPayment"
         ref="kt-collectSamples-submit"
         @click="collectSamples"
         class="btn btn-lg btn-primary"
@@ -56,6 +56,12 @@ export default {
     receiver: '',
     isDisabled: false,
   }),
+  props: {
+    hasPendingPayment: {
+      type: Boolean,
+      required: true,
+    },
+  },
   computed: {
     staffs() {
       return this.$store.state.employee.employees;
@@ -88,6 +94,14 @@ export default {
     },
 
     collectSamples() {
+      if (this.hasPendingPayment) {
+        return this.$notify({
+          group: 'foo',
+          title: 'Error message',
+          text: 'Patient has pending payments',
+          type: 'error',
+        });
+      }
       const submitButton = this.$refs['kt-collectSamples-submit'];
       this.addSpinner(submitButton);
 
@@ -104,7 +118,7 @@ export default {
         .catch(() => this.removeSpinner(submitButton));
     },
 
-    fetchEmployees({ currentPage = 1, itemsPerPage = 15, search }) {
+    fetchEmployees({ currentPage = 1, itemsPerPage = 100, search }) {
       return this.$store.dispatch('employee/fetchEmployees', {
         currentPage,
         itemsPerPage,

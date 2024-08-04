@@ -118,7 +118,7 @@ export default {
 
     onChangePageCount(pagecount) {
       setUrlQueryParams({
-        currentPage: this.$route.query.currentPage || this.currentPage,
+        currentPage: this.currentPage,
         itemsPerPage: pagecount,
         search: this.$route.query.search || null,
         name: this.inventoryName,

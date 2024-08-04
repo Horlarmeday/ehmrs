@@ -17,6 +17,20 @@
             <span></span>
           </label>
         </span>
+
+        <!-- CONVERT TO PATIENT ACCOUNT -->
+        <span v-if="patient.patient_type === this.DEPENDANT">
+          <a
+            v-b-tooltip:hover
+            title="Convert to Patient Account"
+            class="btn btn-icon btn-light-danger pulse-danger pulse mr-5"
+            @click="showConvertAccountAlert"
+          >
+            <i class="fas fa-compress-arrows-alt"></i>
+            <span class="pulse-ring"></span>
+          </a>
+        </span>
+
         <div v-for="(route, i) in routes" :key="i">
           <router-link
             v-b-tooltip:hover
@@ -150,6 +164,15 @@ export default {
         });
       }
 
+      // if (val && val.patient_type === this.DEPENDANT) {
+      //   this.routes.push({
+      //     icon: 'fas fa-compress-arrows-alt',
+      //     desc: 'Convert to Patient Account',
+      //     link: '/patient/edit/',
+      //     status: 'danger',
+      //   });
+      // }
+
       if (val && val.has_insurance && val.patient_type !== this.DEPENDANT) {
         this.routes.push(
           {
@@ -211,6 +234,28 @@ export default {
       this.$store
         .dispatch('patient/fetchPatientProfile', this.$route.params.id)
         .then(() => (this.loading = false));
+    },
+
+    convertDependantAccount() {
+      this.$store
+        .dispatch('patient/convertDependantAccount', this.$route.params.id)
+        .then(() => this.fetchPatientDetails());
+    },
+
+    showConvertAccountAlert() {
+      const self = this;
+      Swal.fire({
+        title: 'Are you sure?',
+        html: 'You want to switch this <b>Dependant</b> account to a <b>Patient</b> account!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Convert!',
+        cancelButtonText: 'No, cancel',
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+          return self.convertDependantAccount();
+        },
+      });
     },
   },
 

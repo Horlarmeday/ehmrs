@@ -4,7 +4,7 @@
     <div class="row mb-10">
       <div v-for="(item, i) in items" class="col-lg-6 col-xl-4 mb-10" :key="i">
         <!--begin::Callout-->
-        <div class="card card-custom mb-2 bg-diagonal">
+        <div v-if="item.showComponent" class="card card-custom mb-2 bg-diagonal">
           <div class="card-body">
             <div
               class="d-flex align-items-center justify-content-between p-4 flex-lg-wrap flex-xl-nowrap"
@@ -36,27 +36,52 @@
 </template>
 
 <script>
+import { parseJwt } from '@/common/common';
+
 export default {
   data() {
     return {
+      currentUser: parseJwt(localStorage.getItem('user_token')),
       items: [
         {
           name: 'Sample Type',
           link: '/laboratory/sample-types',
           desc: 'Click here to view all test sample type',
+          showComponent: true,
         },
         {
           name: 'Tests',
           link: '/laboratory/tests',
           desc: 'Click here to view all laboratory tests',
+          showComponent: true,
         },
         {
           name: 'Result Forms',
           link: '/laboratory/forms',
           desc: 'Click here to view all laboratory result forms',
+          showComponent: true,
+        },
+        {
+          name: 'Results Update',
+          link: '/laboratory/results-update',
+          desc: 'Click here to change laboratory result status',
+          showComponent: true,
         },
       ],
     };
+  },
+  watch: {
+    currentUser: {
+      handler(val) {
+        this.items.filter(tab => {
+          if (val.role !== 'Super Admin' && tab.name === 'Results Update') {
+            tab.showComponent = false;
+          }
+          return tab;
+        });
+      },
+      immediate: true,
+    },
   },
   methods: {
     openPage(value) {

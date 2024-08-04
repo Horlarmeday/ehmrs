@@ -239,7 +239,7 @@ export default {
     handlePageChange() {
       setUrlQueryParams({
         currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         search: this.$route.query.search || this.patient_name,
         startDate: this.$route.query.startDate,
         endDate: this.$route.query.endDate,
