@@ -18,228 +18,67 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <th scope="row">WBC</th>
-          <td>
-            <input v-model="wbc" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>
-            5 - 19
-          </td>
-          <td>3.3 - 10.0</td>
-          <td>3.4 - 9.8</td>
-          <td>x10^3/ul</td>
-        </tr>
-        <tr>
-          <th scope="row">RBC</th>
-          <td>
-            <input v-model="rbc" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>
-            3.9 - 5.3
-          </td>
-          <td>4.35 - 5.9</td>
-          <td>3.69 - 5.19</td>
-          <td>x10^4/ul</td>
-        </tr>
-        <tr>
-          <th scope="row">HGB</th>
-          <td>
-            <input v-model="hgb" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>
-            9.5 - 14.1
-          </td>
-          <td>13.7 - 16.7</td>
-          <td>11.7 - 14.5</td>
-          <td>g/dl</td>
-        </tr>
-        <tr>
-          <th scope="row">HCT</th>
-          <td>
-            <input v-model="hct" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>
-            30 - 40
-          </td>
-          <td>40.5 - 49.7</td>
-          <td>34.1 - 44.3</td>
-          <td>%</td>
-        </tr>
-        <tr>
-          <th scope="row">MCV</th>
-          <td>
-            <input v-model="mcv" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>
-            70 - 84
-          </td>
-          <td>79.7 - 92.0</td>
-          <td>81.5 - 96.7</td>
-          <td>fl</td>
-        </tr>
-        <tr>
-          <th scope="row">MCH</th>
-          <td>
-            <input v-model="mch" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>
-            23 - 29
-          </td>
-          <td>26.1 - 33.3</td>
-          <td>26.5 - 33.5</td>
-          <td>pg</td>
-        </tr>
-        <tr>
-          <th scope="row">MCHC</th>
-          <td>
-            <input v-model="mchc" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>
-            31 - 35
-          </td>
-          <td>32.2 - 35.0</td>
-          <td>31.9 - 35.3</td>
-          <td>g/dl</td>
-        </tr>
-        <tr>
-          <th scope="row">RDW</th>
-          <td>
-            <input v-model="rdw" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>
-            11.6 - 14.4
-          </td>
-          <td colspan="2">11.6 - 14.4</td>
-          <td>%</td>
-        </tr>
-        <tr>
-          <th scope="row">PLT</th>
-          <td>
-            <input v-model="plt" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>
-            140 - 450
-          </td>
-          <td colspan="2">140 - 450</td>
-          <td>x10^3/ul</td>
-        </tr>
-        <tr>
-          <th>Differential</th>
-          <th>Result</th>
-          <th>Children Range</th>
-          <th colspan="2">Adult Range</th>
-          <th>Unit</th>
-        </tr>
-        <tr>
-          <th>Neutrophils</th>
-          <td>
-            <input v-model="neutrophils" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>20 - 45</td>
-          <td colspan="2">45 - 66</td>
-          <td>%</td>
-        </tr>
-        <tr>
-          <th>Bands (Neutrophilic)</th>
-          <td>
-            <input v-model="bands" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>1 - 12</td>
-          <td colspan="2">1 - 12</td>
-          <td>%</td>
-        </tr>
-        <tr>
-          <th>Lymphocytes</th>
-          <td>
-            <input v-model="lymphocytes" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>46 - 76</td>
-          <td colspan="2">20 - 40</td>
-          <td>%</td>
-        </tr>
-        <tr>
-          <th>Atypical Lymphocytes</th>
-          <td>
-            <input
-              v-model="atypical_lymphocytes"
-              type="text"
-              class="form-control form-control-sm"
-            />
-          </td>
-          <td>0 - 2</td>
-          <td colspan="2">0 - 2</td>
-          <td>%</td>
-        </tr>
-        <tr>
-          <th>Monocytes</th>
-          <td>
-            <input v-model="monocytes" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>1 - 5</td>
-          <td colspan="2">4 - 10</td>
-          <td>%</td>
-        </tr>
-        <tr>
-          <th>Eosinophils</th>
-          <td>
-            <input v-model="eosinophils" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>1 - 3</td>
-          <td colspan="2">1 - 6</td>
-          <td>%</td>
-        </tr>
-        <tr>
-          <th>Basophils</th>
-          <td>
-            <input v-model="basophils" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>0 - 2</td>
-          <td colspan="2">0 - 2</td>
-          <td>%</td>
-        </tr>
-        <tr>
-          <th class="text-center" colspan="6">RBC Morphology</th>
-        </tr>
-        <tr>
-          <th>Anisocytosis</th>
-          <td colspan="6">
-            <input v-model="anisocytosis" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th>Microcytosis</th>
-          <td colspan="6">
-            <input v-model="microcytosis" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th>Macrocytosis</th>
-          <td colspan="6">
-            <input v-model="macrocytosis" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th>Hypochromia</th>
-          <td colspan="6">
-            <input v-model="hypochromia" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th>Poikliocytosis</th>
-          <td colspan="6">
-            <input v-model="poikliocytosis" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th colspan="2">Slight = 1</th>
-          <th colspan="2">Moderate = 2</th>
-          <th colspan="2">Marked = 3</th>
-        </tr>
-        <tr>
+        <FBCFormRow
+          v-for="row in rows"
+          :key="row.id"
+          :label="row.label"
+          :value.sync="fbc[row.model]"
+          :childRange="row.childRange"
+          :adultRangeMale="row.adultRangeMale"
+          :adultRangeFemale="row.adultRangeFemale"
+          :section="section"
+          :unit="row.unit"
+          @updateValue="updateFBCValue(row.model, $event)"
+        />
+        <!-- Conditional Rows -->
+        <template v-if="showDifferential">
+          <tr>
+            <th>Differential</th>
+            <th>Result</th>
+            <th>Children Range</th>
+            <th colspan="2">Adult Range</th>
+            <th>Unit</th>
+          </tr>
+          <FBCFormRow
+            v-for="row in differentialRows"
+            row-type="differential"
+            :key="row.id"
+            :label="row.label"
+            :value.sync="fbc[row.model]"
+            :childRange="row.childRange"
+            :section="section"
+            :adultRangeMale="row.adultRangeMale"
+            :adultRangeFemale="row.adultRangeFemale"
+            :unit="row.unit"
+            @updateValue="updateFBCValue(row.model, $event)"
+          />
+        </template>
+        <template v-if="showMorphology">
+          <tr>
+            <th class="text-center" colspan="6">RBC Morphology</th>
+          </tr>
+          <FBCFormRow
+            v-for="row in morphologyRows"
+            row-type="morphology"
+            :key="row.id"
+            :label="row.label"
+            :value.sync="fbc[row.model]"
+            :unit="row.unit"
+            :section="section"
+            @updateValue="updateFBCValue(row.model, $event)"
+          />
+        </template>
+        <tr v-if="shouldCommentRow">
           <th scope="row">Comments</th>
           <td colspan="6">
-            <textarea v-model="comments" class="form-control" cols="30" rows="2"></textarea>
+            <textarea
+              @input="emitFBCResult"
+              v-model="fbc.comments"
+              class="form-control"
+              :disabled="shouldDisableRow"
+              cols="30"
+              rows="2"
+            ></textarea>
           </td>
         </tr>
       </tbody>
@@ -247,31 +86,275 @@
   </div>
 </template>
 <script>
+import { debounce, randomId } from '@/common/common';
+import FBCFormRow from '@/view/pages/laboratory/forms/rows/FBCFormRow.vue';
+
 export default {
-  data: () => ({
-    wbc: '',
-    rbc: '',
-    hgb: '',
-    hct: '',
-    mcv: '',
-    mch: '',
-    mchc: '',
-    rdw: '',
-    plt: '',
-    poikliocytosis: '',
-    hypochromia: '',
-    macrocytosis: '',
-    microcytosis: '',
-    anisocytosis: '',
-    basophils: '',
-    eosinophils: '',
-    monocytes: '',
-    atypical_lymphocytes: '',
-    lymphocytes: '',
-    bands: '',
-    neutrophils: '',
-    comments: '',
-  }),
+  components: { FBCFormRow },
+  data() {
+    return {
+      fbc: {
+        wbc: '',
+        rbc: '',
+        hgb: '',
+        hct: '',
+        mcv: '',
+        mch: '',
+        mchc: '',
+        rdw: '',
+        plt: '',
+        // differential
+        basophils: '',
+        eosinophils: '',
+        neutrophils: '',
+        monocytes: '',
+        atypical_lymphocytes: '',
+        lymphocytes: '',
+        bands: '',
+        // morphology
+        macrocytosis: '',
+        poikliocytosis: '',
+        hypochromia: '',
+        microcytosis: '',
+        anisocytosis: '',
+        comments: '',
+      },
+      rows: [
+        {
+          id: randomId(),
+          label: 'WBC',
+          model: 'wbc',
+          childRange: '5 - 19',
+          adultRangeMale: '3.3 - 10.0',
+          adultRangeFemale: '3.4 - 9.8',
+          unit: 'x10^3/ul',
+        },
+        {
+          id: randomId(),
+          label: 'RBC',
+          model: 'rbc',
+          childRange: '3.9 - 5.3',
+          adultRangeMale: '4.35 - 5.9',
+          adultRangeFemale: '3.69 - 5.19',
+          unit: 'x10^4/ul',
+        },
+        {
+          id: randomId(),
+          label: 'HGB',
+          model: 'hgb',
+          childRange: '9.5 - 14.1',
+          adultRangeMale: '13.7 - 16.7',
+          adultRangeFemale: '11.7 - 14.5',
+          unit: 'g/dl',
+        },
+        {
+          id: randomId(),
+          label: 'HCT',
+          model: 'hct',
+          childRange: '30 - 40',
+          adultRangeMale: '40.5 - 49.7',
+          adultRangeFemale: '34.1 - 44.3',
+          unit: '%',
+        },
+        {
+          id: randomId(),
+          label: 'MCV',
+          model: 'mcv',
+          childRange: '70 - 84',
+          adultRangeMale: '79.7 - 92.0',
+          adultRangeFemale: '81.5 - 96.7',
+          unit: 'fl',
+        },
+        {
+          id: randomId(),
+          label: 'MCH',
+          model: 'mch',
+          childRange: '23 - 29',
+          adultRangeMale: '26.1 - 33.3',
+          adultRangeFemale: '26.5 - 33.5',
+          unit: 'pg',
+        },
+        {
+          id: randomId(),
+          label: 'MCHC',
+          model: 'mchc',
+          childRange: '31 - 35',
+          adultRangeMale: '32.2 - 35.0',
+          adultRangeFemale: '31.9 - 35.3',
+          unit: 'g/dl',
+        },
+        {
+          id: randomId(),
+          label: 'RDW',
+          model: 'rdw',
+          childRange: '11.6 - 14.4',
+          adultRangeMale: '11.6 - 14.4',
+          adultRangeFemale: '-',
+          unit: '%',
+        },
+        {
+          id: randomId(),
+          label: 'PLT',
+          model: 'plt',
+          childRange: '140 - 450',
+          adultRangeMale: '140 - 450',
+          adultRangeFemale: '-',
+          unit: 'x10^3/ul',
+        },
+      ],
+      differentialRows: [
+        {
+          id: randomId(),
+          label: 'Neutrophils',
+          model: 'neutrophils',
+          childRange: '20 - 45',
+          adultRangeMale: '45 - 66',
+          unit: '%',
+        },
+        {
+          id: randomId(),
+          label: 'Bands (Neutrophilic)',
+          model: 'bands',
+          childRange: '1 - 12',
+          adultRangeMale: '1 - 12',
+          unit: '%',
+        },
+        {
+          id: randomId(),
+          label: 'Lymphocytes',
+          model: 'lymphocytes',
+          childRange: '46 - 76',
+          adultRangeMale: '20 - 40',
+          unit: '%',
+        },
+        {
+          id: randomId(),
+          label: 'Atypical Lymphocytes',
+          model: 'atypical_lymphocytes',
+          childRange: '0 - 2',
+          adultRangeMale: '0 - 2',
+          unit: '%',
+        },
+        {
+          id: randomId(),
+          label: 'Monocytes',
+          model: 'monocytes',
+          childRange: '1 - 5',
+          adultRangeMale: '4 - 10',
+          unit: '%',
+        },
+        {
+          id: randomId(),
+          label: 'Eosinophils',
+          model: 'eosinophils',
+          childRange: '1 - 3',
+          adultRangeMale: '1 - 6',
+          unit: '%',
+        },
+        {
+          id: randomId(),
+          label: 'Basophils',
+          model: 'basophils',
+          childRange: '0 - 2',
+          adultRangeMale: '0 - 2',
+          unit: '%',
+        },
+      ],
+      morphologyRows: [
+        { id: randomId(), label: 'Anisocytosis', model: 'anisocytosis', unit: '' },
+        { id: randomId(), label: 'Microcytosis', model: 'microcytosis', unit: '' },
+        { id: randomId(), label: 'Macrocytosis', model: 'macrocytosis', unit: '' },
+        { id: randomId(), label: 'Hypochromia', model: 'hypochromia', unit: '' },
+        { id: randomId(), label: 'Poikliocytosis', model: 'poikliocytosis', unit: '' },
+      ],
+    };
+  },
+  props: {
+    result: {
+      type: Object,
+      required: true,
+    },
+    testId: {
+      type: Number,
+      required: true,
+    },
+    section: {
+      type: String,
+      required: true,
+    },
+  },
+  watch: {
+    result: {
+      immediate: true,
+      handler(val) {
+        if (!val) return;
+        if (Object.entries(val)?.length) {
+          Object.assign(this.fbc, JSON.parse(JSON.stringify(val)));
+        }
+      },
+    },
+  },
+  computed: {
+    showDifferential() {
+      const differential = {
+        basophils: '',
+        eosinophils: '',
+        neutrophils: '',
+        monocytes: '',
+        atypical_lymphocytes: '',
+        lymphocytes: '',
+      };
+      const fbcDifferential = Object.keys(differential)
+        .map(key => this.fbc[key])
+        .filter(Boolean);
+      return (
+        (this.section !== 'ValidationSection' && this.section !== 'ApprovalSection') ||
+        !!fbcDifferential?.length
+      );
+    },
+
+    showMorphology() {
+      const morphology = {
+        macrocytosis: '',
+        poikliocytosis: '',
+        hypochromia: '',
+        microcytosis: '',
+        anisocytosis: '',
+      };
+      const fbcMorphology = Object.keys(morphology)
+        .map(key => this.fbc[key])
+        .filter(Boolean);
+      return (
+        (this.section !== 'ValidationSection' && this.section !== 'ApprovalSection') ||
+        !!fbcMorphology?.length
+      );
+    },
+
+    shouldDisableRow() {
+      return this.section === 'ValidationSection' || this.section === 'ApprovalSection';
+    },
+
+    shouldCommentRow() {
+      return (
+        (this.section !== 'ValidationSection' && this.section !== 'ApprovalSection') ||
+        !!this.fbc.comments
+      );
+    },
+  },
+  methods: {
+    emitFBCResult() {
+      this.debounceInput(this);
+    },
+
+    debounceInput: debounce(vm => {
+      vm.$emit('emitResult', vm.fbc, vm.testId);
+    }, 500),
+
+    updateFBCValue(model, value) {
+      this.fbc[model] = value;
+      this.emitFBCResult();
+    },
+  },
 };
 </script>
 

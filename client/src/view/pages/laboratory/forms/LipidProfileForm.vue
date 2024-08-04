@@ -9,61 +9,76 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <th scope="row">Chol</th>
-          <td>
-            <input v-model="chol" type="text" class="form-control" />
-          </td>
-          <td>140 - 220 mg/dl</td>
-        </tr>
-        <tr>
-          <th scope="row">VLDL</th>
-          <td>
-            <input v-model="vldl" type="text" class="form-control" />
-          </td>
-          <td>15 - 50 mg/dl</td>
-        </tr>
-        <tr>
-          <th scope="row">HDL</th>
-          <td>
-            <input v-model="hdl" type="text" class="form-control" />
-          </td>
-          <td>35 - 65 mg/dl</td>
-        </tr>
-        <tr>
-          <th scope="row">TG</th>
-          <td>
-            <input v-model="tg" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>60 - 165 mg/dl</td>
-        </tr>
-        <tr>
-          <th scope="row">LDL</th>
-          <td>
-            <input v-model="ldl" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>less than 130 mg/dl</td>
-        </tr>
-        <tr>
-          <th scope="row">Comments</th>
-          <td colspan="2">
-            <textarea v-model="comments" class="form-control" cols="30" rows="2"></textarea>
-          </td>
-        </tr>
+        <lipid-profile-form-row
+          v-for="row in rows"
+          :key="row.id"
+          :section="section"
+          :lipid-profile="lipidProfile"
+          :row="row"
+          @emitLipidProfileResult="emitLipidProfileResult"
+        />
       </tbody>
     </table>
   </div>
 </template>
 <script>
+import { debounce, randomId } from '@/common/common';
+import LipidProfileFormRow from '@/view/pages/laboratory/forms/rows/LipidProfileFormRow.vue';
+
 export default {
+  components: { LipidProfileFormRow },
   data: () => ({
-    ldl: '',
-    hdl: '',
-    tg: '',
-    vldl: '',
-    chol: '',
-    comments: '',
+    lipidProfile: {
+      ldl: '',
+      hdl: '',
+      tg: '',
+      vldl: '',
+      chol: '',
+      comments: '',
+    },
+    rows: [
+      { id: randomId(), label: 'Chol', model: 'chol', range: '140 - 220 mg/dl' },
+      { id: randomId(), label: 'VLDL', model: 'vldl', range: '15 - 50 mg/dl' },
+      { id: randomId(), label: 'HDL', model: 'hdl', range: '35 - 65 mg/dl' },
+      { id: randomId(), label: 'TG', model: 'tg', range: '60 - 165 mg/dl' },
+      { id: randomId(), label: 'LDL', model: 'ldl', range: 'less than 130 mg/dl' },
+      { id: randomId(), label: 'Comments', model: 'comments', isTextArea: true },
+    ],
   }),
+  props: {
+    result: {
+      type: Object,
+      required: true,
+    },
+    testId: {
+      type: Number,
+      required: true,
+    },
+    section: {
+      type: String,
+      required: true,
+    },
+  },
+  watch: {
+    result: {
+      immediate: true,
+      handler(val) {
+        if (!val) return;
+        if (Object.entries(val)?.length) {
+          Object.assign(this.lipidProfile, JSON.parse(JSON.stringify(val)));
+        }
+      },
+    },
+  },
+  methods: {
+    emitLipidProfileResult() {
+      this.debounceInput(this);
+    },
+
+    debounceInput: debounce(vm => {
+      vm.$emit('emitResult', vm.lipidProfile, vm.testId);
+    }, 500),
+  },
 };
 </script>
 

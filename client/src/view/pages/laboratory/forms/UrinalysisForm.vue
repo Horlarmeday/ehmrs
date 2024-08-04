@@ -8,112 +8,94 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <th scope="row">Culture</th>
-          <td>
-            <input v-model="culture" type="text" class="form-control" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Appearance</th>
-          <td>
-            <input v-model="appearance" type="text" class="form-control" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Leukocytes</th>
-          <td>
-            <input v-model="leukocytes" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Protein</th>
-          <td>
-            <input v-model="protein" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Glucose</th>
-          <td>
-            <input v-model="glucose" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Blood</th>
-          <td>
-            <input v-model="blood" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">PH</th>
-          <td>
-            <input v-model="ph" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Ascorbic Acid</th>
-          <td>
-            <input v-model="ascorbic_acid" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Urobilinogen</th>
-          <td>
-            <input v-model="urobilinogen" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Ketones</th>
-          <td>
-            <input v-model="ketones" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">S.gravity</th>
-          <td>
-            <input v-model="gravity" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Bilirubin</th>
-          <td>
-            <input v-model="bilirubin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Nitrite</th>
-          <td>
-            <input v-model="nitrite" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Comments</th>
-          <td>
-            <input v-model="comments" type="text" class="form-control" />
-          </td>
-        </tr>
+        <urinalysis-form-row
+          v-for="item in urinalysisFields"
+          :key="item.key"
+          :section="section"
+          :urinalysis="urinalysis"
+          :field="item"
+          @emitUrinalysisResult="emitUrinalysisResult"
+        />
       </tbody>
     </table>
   </div>
 </template>
 <script>
+import { debounce } from '@/common/common';
+import UrinalysisFormRow from '@/view/pages/laboratory/forms/rows/UrinalysisFormRow.vue';
+
 export default {
+  components: { UrinalysisFormRow },
   data: () => ({
-    leukocytes: '',
-    protein: '',
-    glucose: '',
-    culture: '',
-    appearance: '',
-    blood: '',
-    ph: '',
-    ascorbic_acid: '',
-    urobilinogen: '',
-    ketones: '',
-    gravity: '',
-    bilirubin: '',
-    nitrite: '',
-    comments: '',
+    urinalysis: {
+      leukocytes: '',
+      protein: '',
+      glucose: '',
+      culture: '',
+      appearance: '',
+      blood: '',
+      ph: '',
+      ascorbic_acid: '',
+      urobilinogen: '',
+      ketones: '',
+      gravity: '',
+      bilirubin: '',
+      nitrite: '',
+      comments: '',
+      others: '',
+    },
+    urinalysisFields: [
+      { key: 'culture', label: 'Culture' },
+      { key: 'appearance', label: 'Appearance' },
+      { key: 'leukocytes', label: 'Leukocytes', small: true },
+      { key: 'protein', label: 'Protein', small: true },
+      { key: 'glucose', label: 'Glucose', small: true },
+      { key: 'blood', label: 'Blood', small: true },
+      { key: 'ph', label: 'PH', small: true },
+      { key: 'ascorbic_acid', label: 'Ascorbic Acid', small: true },
+      { key: 'urobilinogen', label: 'Urobilinogen', small: true },
+      { key: 'ketones', label: 'Ketones', small: true },
+      { key: 'gravity', label: 'S.gravity', small: true },
+      { key: 'bilirubin', label: 'Bilirubin', small: true },
+      { key: 'nitrite', label: 'Nitrite', small: true },
+      { key: 'others', label: 'Others', small: true },
+      { key: 'comments', label: 'Comments', isTextArea: true },
+    ],
   }),
+  props: {
+    result: {
+      type: Object,
+      required: true,
+    },
+    testId: {
+      type: Number,
+      required: true,
+    },
+    section: {
+      type: String,
+      required: true,
+    },
+  },
+  watch: {
+    result: {
+      immediate: true,
+      handler(val) {
+        if (!val) return;
+        if (Object.entries(val)?.length) {
+          Object.assign(this.urinalysis, JSON.parse(JSON.stringify(val)));
+        }
+      },
+    },
+  },
+  methods: {
+    emitUrinalysisResult() {
+      this.debounceInput(this);
+    },
+
+    debounceInput: debounce(vm => {
+      vm.$emit('emitResult', vm.urinalysis, vm.testId);
+    }, 500),
+  },
 };
 </script>
 

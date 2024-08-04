@@ -9,69 +9,78 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <th scope="row">Na+</th>
-          <td>
-            <input v-model="sodium" type="text" class="form-control" />
-          </td>
-          <td>128 - 160 Mmol/L</td>
-        </tr>
-        <tr>
-          <th scope="row">K</th>
-          <td>
-            <input v-model="potassium" type="text" class="form-control" />
-          </td>
-          <td>3.5 - 5.5 Mmol/L</td>
-        </tr>
-        <tr>
-          <th scope="row">CL</th>
-          <td>
-            <input v-model="chlorine" type="text" class="form-control" />
-          </td>
-          <td>97 - 108 Mmol/L</td>
-        </tr>
-        <tr>
-          <th scope="row">HCO3</th>
-          <td>
-            <input v-model="hco3" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>24 - 32 Mmol/L</td>
-        </tr>
-        <tr>
-          <th scope="row">Urea</th>
-          <td>
-            <input v-model="urea" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>10 - 55 Mmol/L</td>
-        </tr>
-        <tr>
-          <th scope="row">Cr</th>
-          <td>
-            <input v-model="chromium" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>0.7 - 1.4 Mmol/L</td>
-        </tr>
-        <tr>
-          <th scope="row">Comments</th>
-          <td colspan="2">
-            <textarea v-model="comments" class="form-control" cols="30" rows="2"></textarea>
-          </td>
-        </tr>
+        <SEUCrFormRow
+          v-for="(item, index) in seucrFields"
+          :key="index"
+          :section="section"
+          :seucr="seucr"
+          :field="item"
+          @emitSeUCrResult="emitSeUCrResult"
+        />
       </tbody>
     </table>
   </div>
 </template>
 <script>
+import { debounce } from '@/common/common';
+import SEUCrFormRow from '@/view/pages/laboratory/forms/rows/SEUCrFormRow.vue';
+
 export default {
+  components: { SEUCrFormRow },
   data: () => ({
-    sodium: '',
-    potassium: '',
-    chlorine: '',
-    hco3: '',
-    urea: '',
-    chromium: '',
-    comments: '',
+    seucr: {
+      sodium: '',
+      potassium: '',
+      chlorine: '',
+      hco3: '',
+      urea: '',
+      chromium: '',
+      comments: '',
+    },
+    seucrFields: [
+      { key: 'sodium', label: 'Na+', range: '128 - 160 Mmol/L' },
+      { key: 'potassium', label: 'K', range: '3.5 - 5.5 Mmol/L' },
+      { key: 'chlorine', label: 'CL', range: '97 - 108 Mmol/L' },
+      { key: 'hco3', label: 'HCO3', range: '24 - 32 Mmol/L', small: true },
+      { key: 'urea', label: 'Urea', range: '10 - 55 Mmol/L', small: true },
+      { key: 'chromium', label: 'Cr', range: '0.7 - 1.4 Mmol/L', small: true },
+      { key: 'comments', label: 'Comments', isTextArea: true },
+    ],
   }),
+  props: {
+    result: {
+      type: Object,
+      required: true,
+    },
+    testId: {
+      type: Number,
+      required: true,
+    },
+    section: {
+      type: String,
+      required: true,
+    },
+  },
+  watch: {
+    result: {
+      immediate: true,
+      handler(val) {
+        if (!val) return;
+        if (Object.entries(val)?.length) {
+          Object.assign(this.seucr, JSON.parse(JSON.stringify(val)));
+        }
+      },
+    },
+  },
+  methods: {
+    emitSeUCrResult() {
+      this.debounceInput(this);
+    },
+
+    debounceInput: debounce(vm => {
+      vm.$emit('emitResult', vm.seucr, vm.testId);
+    }, 500),
+  },
 };
 </script>
 

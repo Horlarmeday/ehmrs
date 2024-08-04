@@ -8,155 +8,40 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <th scope="row">Culture</th>
-          <td>
-            <input v-model="culture" type="text" class="form-control" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Appearance</th>
-          <td>
-            <input v-model="appearance" type="text" class="form-control" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">PUS Cells</th>
-          <td>
-            <input v-model="pus_cells" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">RBC</th>
-          <td>
-            <input v-model="rbc" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">OVA/Cyst</th>
-          <td>
-            <input v-model="ova_cyst" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Undigested Food Particles</th>
-          <td>
-            <input
-              v-model="undigested_food_particles"
-              type="text"
-              class="form-control form-control-sm"
-            />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Schistoma Ova</th>
-          <td>
-            <input v-model="schistoma_ova" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">FOB</th>
-          <td>
-            <input v-model="fob" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th class="text-center" colspan="2">Antibiotic Sensitivity</th>
-        </tr>
-        <tr>
-          <th scope="row">Ciprofloxacin</th>
-          <td>
-            <input v-model="ciprofloxacin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Rifampicin</th>
-          <td>
-            <input v-model="rifampicin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Streptomycin</th>
-          <td>
-            <input v-model="streptomycin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Azithromycin</th>
-          <td>
-            <input v-model="azithromycin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Amoxicillin</th>
-          <td>
-            <input v-model="amoxicillin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Erythromycin</th>
-          <td>
-            <input v-model="erythromycin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Levofloxacin</th>
-          <td>
-            <input v-model="levofloxacin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Gentamycin</th>
-          <td>
-            <input v-model="gentamycin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Cefuroxime</th>
-          <td>
-            <input v-model="cefuroxime" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Ofloxacin</th>
-          <td>
-            <input v-model="ofloxacin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Augmentin</th>
-          <td>
-            <input v-model="augmentin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Peflacine</th>
-          <td>
-            <input v-model="peflacine" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Ceftazidime</th>
-          <td>
-            <input v-model="ceftazidime" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Ceporex</th>
-          <td>
-            <input v-model="ceporex" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Ceftriaxone</th>
-          <td>
-            <input v-model="ceftriaxone" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
+        <stool-analysis-form-row
+          v-for="field in stoolAnalysisFields"
+          :key="field.key"
+          :label="field.label"
+          :small="field.small"
+          :value.sync="stoolAnalysis[field.key]"
+          :section="section"
+          @updateStoolAnalysisValue="updateStoolAnalysisValue(field.key, $event)"
+        />
+        <template v-if="showAntibiotics">
+          <tr>
+            <th class="text-center" colspan="2">Antibiotic Sensitivity</th>
+          </tr>
+          <stool-analysis-form-row
+            v-for="field in antibiotics"
+            :key="field.key"
+            :label="field.label"
+            :small="field.small"
+            :value.sync="stoolAnalysis[field.key]"
+            :section="section"
+            @updateStoolAnalysisValue="updateStoolAnalysisValue(field.key, $event)"
+          />
+        </template>
+        <tr v-if="shouldCommentRow">
           <th scope="row">Comments</th>
           <td>
-            <input v-model="comments" type="text" class="form-control" />
+            <textarea
+              v-model="stoolAnalysis.comments"
+              @input="emitStoolAnalysisResult"
+              :disabled="shouldDisableRow"
+              class="form-control"
+              cols="30"
+              rows="2"
+            ></textarea>
           </td>
         </tr>
       </tbody>
@@ -164,33 +49,146 @@
   </div>
 </template>
 <script>
+import { debounce } from '@/common/common';
+import StoolAnalysisFormRow from '@/view/pages/laboratory/forms/rows/StoolAnalysisFormRow.vue';
+
 export default {
+  components: { StoolAnalysisFormRow },
   data: () => ({
-    pus_cells: '',
-    rbc: '',
-    ova_cyst: '',
-    culture: '',
-    appearance: '',
-    undigested_food_particles: '',
-    schistoma_ova: '',
-    fob: '',
-    comments: '',
-    ciprofloxacin: '',
-    rifampicin: '',
-    streptomycin: '',
-    azithromycin: '',
-    amoxicillin: '',
-    erythromycin: '',
-    levofloxacin: '',
-    gentamycin: '',
-    ceftazidime: '',
-    cefuroxime: '',
-    ofloxacin: '',
-    augmentin: '',
-    peflacine: '',
-    ceftriaxone: '',
-    ceporex: '',
+    stoolAnalysis: {
+      pus_cells: '',
+      rbc: '',
+      ova_cyst: '',
+      culture: '',
+      appearance: '',
+      undigested_food_particles: '',
+      schistoma_ova: '',
+      fob: '',
+      others: '',
+      comments: '',
+      ciprofloxacin: '',
+      rifampicin: '',
+      streptomycin: '',
+      azithromycin: '',
+      amoxicillin: '',
+      erythromycin: '',
+      levofloxacin: '',
+      gentamycin: '',
+      ceftazidime: '',
+      cefuroxime: '',
+      ofloxacin: '',
+      augmentin: '',
+      peflacine: '',
+      ceftriaxone: '',
+      ceporex: '',
+    },
+    stoolAnalysisFields: [
+      { key: 'culture', label: 'Culture' },
+      { key: 'appearance', label: 'Appearance' },
+      { key: 'pus_cells', label: 'PUS Cells', small: true },
+      { key: 'rbc', label: 'RBC', small: true },
+      { key: 'ova_cyst', label: 'OVA/Cyst', small: true },
+      { key: 'undigested_food_particles', label: 'Undigested Food Particles', small: true },
+      { key: 'schistoma_ova', label: 'Schistoma Ova', small: true },
+      { key: 'fob', label: 'FOB', small: true },
+      { key: 'others', label: 'Others', small: true },
+    ],
+    antibiotics: [
+      { label: 'Ciprofloxacin', key: 'ciprofloxacin', small: true },
+      { label: 'Rifampicin', key: 'rifampicin', small: true },
+      { label: 'Streptomycin', key: 'streptomycin', small: true },
+      { label: 'Azithromycin', key: 'azithromycin', small: true },
+      { label: 'Amoxicillin', key: 'amoxicillin', small: true },
+      { label: 'Erythromycin', key: 'erythromycin', small: true },
+      { label: 'Levofloxacin', key: 'levofloxacin', small: true },
+      { label: 'Gentamycin', key: 'gentamycin', small: true },
+      { label: 'Cefuroxime', key: 'cefuroxime', small: true },
+      { label: 'Ofloxacin', key: 'ofloxacin', small: true },
+      { label: 'Augmentin', key: 'augmentin', small: true },
+      { label: 'Peflacine', key: 'peflacine', small: true },
+      { label: 'Ceftazidime', key: 'ceftazidime', small: true },
+      { label: 'Ceporex', key: 'ceporex', small: true },
+      { label: 'Ceftriaxone', key: 'ceftriaxone', small: true },
+    ],
   }),
+  props: {
+    result: {
+      type: Object,
+      required: true,
+    },
+    testId: {
+      type: Number,
+      required: true,
+    },
+    section: {
+      type: String,
+      required: true,
+    },
+  },
+  computed: {
+    showAntibiotics() {
+      const antibiotics = {
+        ciprofloxacin: '',
+        rifampicin: '',
+        streptomycin: '',
+        azithromycin: '',
+        amoxicillin: '',
+        erythromycin: '',
+        levofloxacin: '',
+        gentamycin: '',
+        ceftazidime: '',
+        cefuroxime: '',
+        ofloxacin: '',
+        augmentin: '',
+        peflacine: '',
+        ceftriaxone: '',
+        ceporex: '',
+      };
+      const stoolAntibiotics = Object.keys(antibiotics)
+        .map(key => this.stoolAnalysis[key])
+        .filter(Boolean);
+      return (
+        (this.section !== 'ValidationSection' && this.section !== 'ApprovalSection') ||
+        !!stoolAntibiotics?.length
+      );
+    },
+
+    shouldCommentRow() {
+      return (
+        (this.section !== 'ValidationSection' && this.section !== 'ApprovalSection') ||
+        !!this.stoolAnalysis.comments
+      );
+    },
+
+    shouldDisableRow() {
+      return this.section === 'ValidationSection' || this.section === 'ApprovalSection';
+    },
+  },
+  watch: {
+    result: {
+      immediate: true,
+      handler(val) {
+        if (!val) return;
+        if (Object.entries(val)?.length) {
+          Object.assign(this.stoolAnalysis, JSON.parse(JSON.stringify(val)));
+        }
+      },
+    },
+  },
+  methods: {
+    emitStoolAnalysisResult() {
+      this.debounceInput(this);
+    },
+
+    debounceInput: debounce(vm => {
+      vm.$emit('emitResult', vm.stoolAnalysis, vm.testId);
+    }, 500),
+
+    updateStoolAnalysisValue(model, value) {
+      this.stoolAnalysis[model] = value;
+      this.emitStoolAnalysisResult();
+    },
+  },
 };
 </script>
 

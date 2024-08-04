@@ -9,46 +9,95 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <th scope="row">Fasting glu.</th>
-          <td>
-            <input v-model="fasting_glu" type="text" class="form-control" />
-          </td>
-          <td>3.9 - 5.8 Mmol/L</td>
-        </tr>
-        <tr>
-          <th scope="row">Random glu.</th>
-          <td>
-            <input v-model="random_glu" type="text" class="form-control" />
-          </td>
-          <td>3.9 - 6.7 Mmol/L</td>
-        </tr>
-        <tr>
-          <th scope="row">2hr pp</th>
-          <td>
-            <input v-model="two_hour_pp" type="text" class="form-control" />
-          </td>
-          <td>3.9 - 6.7 Mmol/L</td>
-        </tr>
-        <tr>
-          <th scope="row">Comments</th>
-          <td colspan="2">
-            <textarea v-model="comments" class="form-control" cols="30" rows="2"></textarea>
-          </td>
-        </tr>
+        <glucose-form-row
+          v-for="(item, index) in glucoseItems"
+          :key="index"
+          :section="section"
+          :glucose="glucose"
+          :item="item"
+          @emitGlucoseResult="emitGlucoseResult"
+        />
       </tbody>
     </table>
   </div>
 </template>
+
 <script>
+import { debounce } from '@/common/common';
+import GlucoseFormRow from '@/view/pages/laboratory/forms/rows/GlucoseFormRow.vue';
+
+const glucoseItems = [
+  { name: 'Fasting glu.', model: 'fasting_glu', range: '3.9 - 5.8 Mmol/L', type: 'input' },
+  { name: 'Random glu.', model: 'random_glu', range: '3.9 - 6.7 Mmol/L', type: 'input' },
+  { name: '2hr pp', model: 'two_hour_pp', range: '3.9 - 6.7 Mmol/L', type: 'input' },
+  { name: 'Comments', model: 'comments', range: '', type: 'textarea' },
+];
+
 export default {
+  components: { GlucoseFormRow },
   data: () => ({
-    fasting_glu: '',
-    random_glu: '',
-    two_hour_pp: '',
-    comments: '',
+    glucose: {
+      fasting_glu: '',
+      random_glu: '',
+      two_hour_pp: '',
+      comments: '',
+    },
   }),
+  props: {
+    result: {
+      type: Object,
+      required: true,
+    },
+    testId: {
+      type: Number,
+      required: true,
+    },
+    section: {
+      type: String,
+      required: true,
+    },
+  },
+  computed: {
+    glucoseItems() {
+      return glucoseItems;
+    },
+  },
+  watch: {
+    result: {
+      immediate: true,
+      handler(val) {
+        if (!val) return;
+        if (Object.entries(val)?.length) {
+          const { fasting_glu, random_glu, two_hour_pp, comments } = JSON.parse(
+            JSON.stringify(val)
+          );
+          this.glucose.fasting_glu = fasting_glu;
+          this.glucose.random_glu = random_glu;
+          this.glucose.two_hour_pp = two_hour_pp;
+          this.glucose.comments = comments;
+        }
+      },
+    },
+  },
+  methods: {
+    emitGlucoseResult() {
+      this.debounceInput(this);
+    },
+    debounceInput: debounce(function(vm) {
+      vm.$emit('emitResult', vm.glucose, vm.testId);
+    }, 500),
+  },
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.form-container {
+  padding: 16px;
+}
+.table {
+  width: 100%;
+}
+.form-control {
+  width: 100%;
+}
+</style>

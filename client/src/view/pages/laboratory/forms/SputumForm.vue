@@ -8,150 +8,110 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <th scope="row">Culture</th>
-          <td>
-            <input v-model="culture" type="text" class="form-control" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Appearance</th>
-          <td>
-            <input v-model="appearance" type="text" class="form-control" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Sputum</th>
-          <td>
-            <input v-model="sputum" type="text" class="form-control" />
-          </td>
-        </tr>
-        <tr>
-          <th class="text-center" colspan="2">Antibiotic Sensitivity</th>
-        </tr>
-        <tr>
-          <th scope="row">Ciprofloxacin</th>
-          <td>
-            <input v-model="ciprofloxacin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Rifampicin</th>
-          <td>
-            <input v-model="rifampicin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Streptomycin</th>
-          <td>
-            <input v-model="streptomycin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Azithromycin</th>
-          <td>
-            <input v-model="azithromycin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Amoxicillin</th>
-          <td>
-            <input v-model="amoxicillin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Erythromycin</th>
-          <td>
-            <input v-model="erythromycin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Levofloxacin</th>
-          <td>
-            <input v-model="levofloxacin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Gentamycin</th>
-          <td>
-            <input v-model="gentamycin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Cefuroxime</th>
-          <td>
-            <input v-model="cefuroxime" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Ofloxacin</th>
-          <td>
-            <input v-model="ofloxacin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Augmentin</th>
-          <td>
-            <input v-model="augmentin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Peflacine</th>
-          <td>
-            <input v-model="peflacine" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Ceftazidime</th>
-          <td>
-            <input v-model="ceftazidime" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Ceporex</th>
-          <td>
-            <input v-model="ceporex" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Ceftriaxone</th>
-          <td>
-            <input v-model="ceftriaxone" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Comments</th>
-          <td>
-            <input v-model="comments" type="text" class="form-control" />
-          </td>
-        </tr>
+        <sputum-form-row
+          v-for="(item, index) in sputumItems"
+          :key="index"
+          :section="section"
+          :sputum="sputum"
+          :item="item"
+          @emitSputumResult="emitSputumResult"
+        />
       </tbody>
     </table>
   </div>
 </template>
 <script>
+import { debounce } from '@/common/common';
+import SputumFormRow from '@/view/pages/laboratory/forms/rows/SputumFormRow.vue';
+
+const sputumItems = [
+  { name: 'Culture', model: 'culture' },
+  { name: 'Appearance', model: 'appearance' },
+  { name: 'Sputum', model: 'sputum' },
+  { name: 'Ciprofloxacin', model: 'ciprofloxacin' },
+  { name: 'Rifampicin', model: 'rifampicin' },
+  { name: 'Streptomycin', model: 'streptomycin' },
+  { name: 'Azithromycin', model: 'azithromycin' },
+  { name: 'Amoxicillin', model: 'amoxicillin' },
+  { name: 'Erythromycin', model: 'erythromycin' },
+  { name: 'Levofloxacin', model: 'levofloxacin' },
+  { name: 'Gentamycin', model: 'gentamycin' },
+  { name: 'Cefuroxime', model: 'cefuroxime' },
+  { name: 'Ofloxacin', model: 'ofloxacin' },
+  { name: 'Augmentin', model: 'augmentin' },
+  { name: 'Peflacine', model: 'peflacine' },
+  { name: 'Ceftazidime', model: 'ceftazidime' },
+  { name: 'Ceporex', model: 'ceporex' },
+  { name: 'Ceftriaxone', model: 'ceftriaxone' },
+  { name: 'Comments', model: 'comments', isTextArea: true },
+];
 export default {
+  components: { SputumFormRow },
   data: () => ({
-    sputum: '',
-    culture: '',
-    appearance: '',
-    ciprofloxacin: '',
-    rifampicin: '',
-    streptomycin: '',
-    azithromycin: '',
-    amoxicillin: '',
-    erythromycin: '',
-    levofloxacin: '',
-    gentamycin: '',
-    ceftazidime: '',
-    cefuroxime: '',
-    ofloxacin: '',
-    augmentin: '',
-    peflacine: '',
-    ceftriaxone: '',
-    ceporex: '',
-    comments: '',
+    sputum: {
+      sputum: '',
+      culture: '',
+      appearance: '',
+      ciprofloxacin: '',
+      rifampicin: '',
+      streptomycin: '',
+      azithromycin: '',
+      amoxicillin: '',
+      erythromycin: '',
+      levofloxacin: '',
+      gentamycin: '',
+      ceftazidime: '',
+      cefuroxime: '',
+      ofloxacin: '',
+      augmentin: '',
+      peflacine: '',
+      ceftriaxone: '',
+      ceporex: '',
+      comments: '',
+    },
   }),
+  props: {
+    result: {
+      type: Object,
+      required: true,
+    },
+    testId: {
+      type: Number,
+      required: true,
+    },
+    section: {
+      type: String,
+      required: true,
+    },
+  },
+  computed: {
+    sputumItems() {
+      return sputumItems;
+    },
+  },
+  watch: {
+    result: {
+      immediate: true,
+      handler(val) {
+        if (!val) return;
+        if (Object.entries(val)?.length) {
+          const sputumData = JSON.parse(JSON.stringify(val));
+          Object.keys(this.sputum).forEach(key => {
+            this.sputum[key] = sputumData[key] || '';
+          });
+        }
+      },
+    },
+  },
+  methods: {
+    emitSputumResult() {
+      this.debounceInput(this);
+    },
+
+    debounceInput: debounce(vm => {
+      vm.$emit('emitResult', vm.sputum, vm.testId);
+    }, 500),
+  },
 };
 </script>
 

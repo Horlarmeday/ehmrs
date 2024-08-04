@@ -9,77 +9,85 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <th scope="row">AST</th>
-          <td>
-            <input v-model="ast" type="text" class="form-control" />
-          </td>
-          <td>5.0 - 50 IU/L</td>
-        </tr>
-        <tr>
-          <th scope="row">ALT</th>
-          <td>
-            <input v-model="alt" type="text" class="form-control" />
-          </td>
-          <td>5.0 - 46 IU/L</td>
-        </tr>
-        <tr>
-          <th scope="row">ALP</th>
-          <td>
-            <input v-model="alp" type="text" class="form-control" />
-          </td>
-          <td>20 - 147 IU/L</td>
-        </tr>
-        <tr>
-          <th scope="row">TP</th>
-          <td>
-            <input v-model="tp" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>6.2 - 8.0 g/dl</td>
-        </tr>
-        <tr>
-          <th scope="row">ALB</th>
-          <td>
-            <input v-model="alb" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>3.5 - 5.5 g/dl</td>
-        </tr>
-        <tr>
-          <th scope="row">TB</th>
-          <td>
-            <input v-model="tb" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>0.2 - 1.2 mg/dl</td>
-        </tr>
-        <tr>
-          <th scope="row">DB</th>
-          <td>
-            <input v-model="db" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>0.0 - 0.4 mg/dl</td>
-        </tr>
-        <tr>
-          <th scope="row">Comments</th>
-          <td colspan="2">
-            <textarea v-model="comments" class="form-control" cols="30" rows="2"></textarea>
-          </td>
-        </tr>
+        <LFTFormRow
+          v-for="row in rows"
+          :key="row.id"
+          :section="section"
+          :lft="lft"
+          :row="row"
+          @emitLFTResult="emitLFTResult"
+        />
       </tbody>
     </table>
   </div>
 </template>
 <script>
+import { debounce, randomId } from '@/common/common';
+import LFTFormRow from '@/view/pages/laboratory/forms/rows/LFTFormRow.vue';
+
 export default {
-  data: () => ({
-    ast: '',
-    alt: '',
-    alp: '',
-    tp: '',
-    alb: '',
-    tb: '',
-    db: '',
-    comments: '',
-  }),
+  components: { LFTFormRow },
+  data() {
+    return {
+      lft: {
+        ast: '',
+        alt: '',
+        alp: '',
+        tp: '',
+        alb: '',
+        tb: '',
+        db: '',
+        comments: '',
+      },
+      rows: [
+        { id: randomId(), label: 'AST', model: 'ast', range: '5.0 - 50 IU/L' },
+        { id: randomId(), label: 'ALT', model: 'alt', range: '5.0 - 46 IU/L' },
+        { id: randomId(), label: 'ALP', model: 'alp', range: '20 - 147 IU/L' },
+        { id: randomId(), label: 'TP', model: 'tp', range: '6.2 - 8.0 g/dl' },
+        { id: randomId(), label: 'ALB', model: 'alb', range: '3.5 - 5.5 g/dl' },
+        { id: randomId(), label: 'TB', model: 'tb', range: '0.2 - 1.2 mg/dl' },
+        { id: randomId(), label: 'DB', model: 'db', range: '0.0 - 0.4 mg/dl' },
+        { id: randomId(), label: 'Comments', model: 'comments', isTextArea: true },
+      ],
+    };
+  },
+  props: {
+    result: {
+      type: Object,
+      required: true,
+    },
+    testId: {
+      type: Number,
+      required: true,
+    },
+    section: {
+      type: String,
+      required: true,
+    },
+  },
+  watch: {
+    result: {
+      immediate: true,
+      handler(val) {
+        if (!val) return;
+        if (Object.entries(val)?.length) {
+          const lftData = JSON.parse(JSON.stringify(val));
+          Object.keys(this.lft).forEach(key => {
+            this.lft[key] = lftData[key] || '';
+          });
+        }
+      },
+    },
+  },
+  methods: {
+    emitLFTResult() {
+      this.debounceInput(this);
+    },
+
+    debounceInput: debounce(vm => {
+      vm.$emit('emitResult', vm.lft, vm.testId);
+    }, 500),
+  },
 };
 </script>
 

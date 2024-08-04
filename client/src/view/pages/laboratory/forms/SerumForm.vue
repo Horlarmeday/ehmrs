@@ -9,85 +9,82 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <th scope="row">Total Ca+</th>
-          <td>
-            <input v-model="total_ca" type="text" class="form-control" />
-          </td>
-          <td>2.2 - 2.7 Mmol/L</td>
-        </tr>
-        <tr>
-          <th scope="row">Uric Acid</th>
-          <td>
-            <input v-model="uric_acid" type="text" class="form-control" />
-          </td>
-          <td>2.4 - 7.0 mg/dL</td>
-        </tr>
-        <tr>
-          <th scope="row">PO42+</th>
-          <td>
-            <input v-model="po42" type="text" class="form-control" />
-          </td>
-          <td>2.5 - 4.5 mg/dL</td>
-        </tr>
-        <tr>
-          <th scope="row">Mg2+</th>
-          <td>
-            <input v-model="mg" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>1.5 - 2.5 Mmol/dL</td>
-        </tr>
-        <tr>
-          <th scope="row">Iron</th>
-          <td>
-            <input v-model="iron" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>60 - 170 mcg/dl</td>
-        </tr>
-        <tr>
-          <th scope="row">TIBC</th>
-          <td>
-            <input v-model="tibc" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>240 - 450 mcg/dl</td>
-        </tr>
-        <tr>
-          <th scope="row">HB a/c</th>
-          <td>
-            <input v-model="hb_ac" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>4.0 - 5.6 %</td>
-        </tr>
-        <tr>
-          <th scope="row">Ionized Ca2+</th>
-          <td>
-            <input v-model="ionized_ca" type="text" class="form-control form-control-sm" />
-          </td>
-          <td>1.2 - 1.4 Mmol/L</td>
-        </tr>
-        <tr>
-          <th scope="row">Comments</th>
-          <td colspan="2">
-            <textarea v-model="comments" class="form-control" cols="30" rows="2"></textarea>
-          </td>
-        </tr>
+        <serum-form-row
+          v-for="(item, index) in serumFields"
+          :key="index"
+          :section="section"
+          :serum="serum"
+          :field="item"
+          @emitSerumResult="emitSerumResult"
+        />
       </tbody>
     </table>
   </div>
 </template>
 <script>
+import { debounce } from '@/common/common';
+import SerumFormRow from '@/view/pages/laboratory/forms/rows/SerumFormRow.vue';
+
 export default {
+  components: { SerumFormRow },
   data: () => ({
-    total_ca: '',
-    uric_acid: '',
-    mg: '',
-    po42: '',
-    ionized_ca: '',
-    hb_ac: '',
-    iron: '',
-    tibc: '',
-    comments: '',
+    serum: {
+      total_ca: '',
+      uric_acid: '',
+      mg: '',
+      po42: '',
+      ionized_ca: '',
+      hb_ac: '',
+      iron: '',
+      tibc: '',
+      comments: '',
+    },
+    serumFields: [
+      { key: 'total_ca', label: 'Total Ca+', range: '2.2 - 2.7 Mmol/L' },
+      { key: 'uric_acid', label: 'Uric Acid', range: '2.4 - 7.0 mg/dL' },
+      { key: 'po42', label: 'PO42+', range: '2.5 - 4.5 mg/dL' },
+      { key: 'mg', label: 'Mg2+', range: '1.5 - 2.5 Mmol/dL', small: true },
+      { key: 'iron', label: 'Iron', range: '60 - 170 mcg/dl', small: true },
+      { key: 'tibc', label: 'TIBC', range: '240 - 450 mcg/dl', small: true },
+      { key: 'hb_ac', label: 'HB a/c', range: '4.0 - 5.6 %', small: true },
+      { key: 'ionized_ca', label: 'Ionized Ca2+', range: '1.2 - 1.4 Mmol/L', small: true },
+      { key: 'comments', label: 'Comments', isTextArea: true },
+    ],
   }),
+  props: {
+    result: {
+      type: Object,
+      required: true,
+    },
+    testId: {
+      type: Number,
+      required: true,
+    },
+    section: {
+      type: String,
+      required: true,
+    },
+  },
+  watch: {
+    result: {
+      immediate: true,
+      handler(val) {
+        if (!val) return;
+        if (Object.entries(val)?.length) {
+          Object.assign(this.serum, JSON.parse(JSON.stringify(val)));
+        }
+      },
+    },
+  },
+  methods: {
+    emitSerumResult() {
+      this.debounceInput(this);
+    },
+
+    debounceInput: debounce(vm => {
+      vm.$emit('emitResult', vm.serum, vm.testId);
+    }, 500),
+  },
 };
 </script>
 

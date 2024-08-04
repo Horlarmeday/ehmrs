@@ -8,320 +8,327 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <th scope="row">Culture</th>
-          <td>
-            <input v-model="culture" type="text" class="form-control" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Appearance</th>
-          <td>
-            <input v-model="appearance" type="text" class="form-control" />
-          </td>
-        </tr>
-        <tr>
-          <th class="text-center" colspan="2">Method of Production</th>
-        </tr>
-        <tr>
-          <th scope="row">Time Produced</th>
-          <td>
-            <input v-model="time_produced" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Time Received</th>
-          <td>
-            <input v-model="time_received" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Time of Analysis</th>
-          <td>
-            <input v-model="time_of_analysis" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Period of Abstinence</th>
-          <td>
-            <input
-              v-model="period_of_abstinence"
-              type="text"
-              class="form-control form-control-sm"
-            />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Colour</th>
-          <td>
-            <input v-model="colour" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Viscosity</th>
-          <td>
-            <input v-model="viscosity" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Liquefaction</th>
-          <td>
-            <input v-model="liquefaction" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Spillage</th>
-          <td>
-            <input v-model="spillage" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Volume</th>
-          <td>
-            <input v-model="viscosity" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Odour</th>
-          <td>
-            <input v-model="odour" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">PH</th>
-          <td>
-            <input v-model="ph" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th class="text-center" colspan="2">Microscopy</th>
-        </tr>
-        <tr>
-          <th scope="row">PUS Cells</th>
-          <td>
-            <input v-model="pus_cells" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">RBC</th>
-          <td>
-            <input v-model="rbc" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Cellula Debris</th>
-          <td>
-            <input v-model="cellula_debris" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Spermatozoan</th>
-          <td>
-            <input v-model="spermatozoan" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Epithelial Cells</th>
-          <td>
-            <input v-model="epithelial_cells" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th class="text-center" colspan="2">Percentage Motility</th>
-        </tr>
-        <tr>
-          <th scope="row">Active</th>
-          <td>
-            <input v-model="active" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Sluggish</th>
-          <td>
-            <input v-model="sluggish" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Non-Progressive</th>
-          <td>
-            <input v-model="non_progressive" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Dead Cells</th>
-          <td>
-            <input v-model="dead_cells" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th class="text-center" colspan="2">Morphology</th>
-        </tr>
-        <tr>
-          <th scope="row">% Normal Cells</th>
-          <td>
-            <input v-model="normal_cells" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">% Abnormal Cells</th>
-          <td>
-            <input v-model="abnormal_cells" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Sperm Count</th>
-          <td>
-            <input v-model="sperm_count" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th class="text-center" colspan="2">Antibiotic Sensitivity</th>
-        </tr>
-        <tr>
-          <th scope="row">Ciprofloxacin</th>
-          <td>
-            <input v-model="ciprofloxacin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Rifampicin</th>
-          <td>
-            <input v-model="rifampicin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Streptomycin</th>
-          <td>
-            <input v-model="streptomycin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Azithromycin</th>
-          <td>
-            <input v-model="azithromycin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Amoxicillin</th>
-          <td>
-            <input v-model="amoxicillin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Erythromycin</th>
-          <td>
-            <input v-model="erythromycin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Levofloxacin</th>
-          <td>
-            <input v-model="levofloxacin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Gentamycin</th>
-          <td>
-            <input v-model="gentamycin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Cefuroxime</th>
-          <td>
-            <input v-model="cefuroxime" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Ofloxacin</th>
-          <td>
-            <input v-model="ofloxacin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Augmentin</th>
-          <td>
-            <input v-model="augmentin" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Peflacine</th>
-          <td>
-            <input v-model="peflacine" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Ceftazidime</th>
-          <td>
-            <input v-model="ceftazidime" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Ceporex</th>
-          <td>
-            <input v-model="ceporex" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Ceftriaxone</th>
-          <td>
-            <input v-model="ceftriaxone" type="text" class="form-control form-control-sm" />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Comments</th>
-          <td>
-            <input v-model="comments" type="text" class="form-control" />
-          </td>
-        </tr>
+        <semen-analysis-form-row
+          v-for="item in semenAnalysisItems"
+          :key="item.id"
+          :section="section"
+          :semen-analysis="semenAnalysis"
+          :item="item"
+          @emitSemenAnalysisResult="emitSemenAnalysisResult"
+        />
+        <template v-if="showMethodOfProduction">
+          <tr>
+            <th class="text-center" colspan="2">Method of Production</th>
+          </tr>
+          <semen-analysis-form-row
+            v-for="item in methodOfProduction"
+            :key="item.id"
+            :section="section"
+            :semen-analysis="semenAnalysis"
+            :item="item"
+            @emitSemenAnalysisResult="emitSemenAnalysisResult"
+          />
+        </template>
+        <template v-if="showMicroscopy">
+          <tr>
+            <th class="text-center" colspan="2">Microscopy</th>
+          </tr>
+          <semen-analysis-form-row
+            v-for="item in microscopy"
+            :key="item.id"
+            :section="section"
+            :semen-analysis="semenAnalysis"
+            :item="item"
+            @emitSemenAnalysisResult="emitSemenAnalysisResult"
+          />
+        </template>
+        <template v-if="showPercentageMortility">
+          <tr>
+            <th class="text-center" colspan="2">Percentage Motility</th>
+          </tr>
+          <semen-analysis-form-row
+            v-for="item in microscopy"
+            :key="item.id"
+            :section="section"
+            :semen-analysis="semenAnalysis"
+            :item="item"
+            @emitSemenAnalysisResult="emitSemenAnalysisResult"
+          />
+        </template>
+        <template v-if="showMorphology">
+          <tr>
+            <th class="text-center" colspan="2">Morphology</th>
+          </tr>
+          <semen-analysis-form-row
+            v-for="item in morphology"
+            :key="item.id"
+            :section="section"
+            :semen-analysis="semenAnalysis"
+            :item="item"
+            @emitSemenAnalysisResult="emitSemenAnalysisResult"
+          />
+        </template>
+        <template v-if="showAntibiotics">
+          <tr>
+            <th class="text-center" colspan="2">Antibiotic Sensitivity</th>
+          </tr>
+          <semen-analysis-form-row
+            v-for="item in antibiotics"
+            :key="item.id"
+            :section="section"
+            :semen-analysis="semenAnalysis"
+            :item="item"
+            @emitSemenAnalysisResult="emitSemenAnalysisResult"
+          />
+        </template>
       </tbody>
     </table>
   </div>
 </template>
 <script>
+import { debounce, randomId } from '@/common/common';
+import SemenAnalysisFormRow from '@/view/pages/laboratory/forms/rows/SemenAnalysisFormRow.vue';
+
 export default {
+  components: { SemenAnalysisFormRow },
   data: () => ({
-    culture: '',
-    appearance: '',
-    comments: '',
-    ciprofloxacin: '',
-    rifampicin: '',
-    streptomycin: '',
-    azithromycin: '',
-    amoxicillin: '',
-    erythromycin: '',
-    levofloxacin: '',
-    gentamycin: '',
-    ceftazidime: '',
-    cefuroxime: '',
-    ofloxacin: '',
-    augmentin: '',
-    peflacine: '',
-    ceftriaxone: '',
-    ceporex: '',
-    time_produced: '',
-    time_received: '',
-    time_of_analysis: '',
-    period_of_abstinence: '',
-    colour: '',
-    viscosity: '',
-    liquefaction: '',
-    spillage: '',
-    volume: '',
-    odour: '',
-    ph: '',
-    pus_cells: '',
-    rbc: '',
-    cellula_debris: '',
-    spermatozoan: '',
-    epithelial_cells: '',
-    active: '',
-    sluggish: '',
-    non_progressive: '',
-    dead_cells: '',
-    normal_cells: '',
-    abnormal_cells: '',
-    sperm_count: '',
+    semenAnalysis: {
+      culture: '',
+      appearance: '',
+      comments: '',
+      ciprofloxacin: '',
+      rifampicin: '',
+      streptomycin: '',
+      azithromycin: '',
+      amoxicillin: '',
+      erythromycin: '',
+      levofloxacin: '',
+      gentamycin: '',
+      ceftazidime: '',
+      cefuroxime: '',
+      ofloxacin: '',
+      augmentin: '',
+      peflacine: '',
+      ceftriaxone: '',
+      ceporex: '',
+      time_produced: '',
+      time_received: '',
+      time_of_analysis: '',
+      period_of_abstinence: '',
+      colour: '',
+      viscosity: '',
+      liquefaction: '',
+      spillage: '',
+      volume: '',
+      odour: '',
+      ph: '',
+      pus_cells: '',
+      rbc: '',
+      cellula_debris: '',
+      spermatozoan: '',
+      epithelial_cells: '',
+      active: '',
+      sluggish: '',
+      non_progressive: '',
+      dead_cells: '',
+      normal_cells: '',
+      abnormal_cells: '',
+      sperm_count: '',
+    },
+    methodOfProduction: [
+      { id: randomId(), label: 'Time Produced', model: 'time_produced', isSmall: true },
+      { id: randomId(), label: 'Time Received', model: 'time_received', isSmall: true },
+      { id: randomId(), label: 'Time of Analysis', model: 'time_of_analysis', isSmall: true },
+      {
+        id: randomId(),
+        label: 'Period of Abstinence',
+        model: 'period_of_abstinence',
+        isSmall: true,
+      },
+      { id: randomId(), label: 'Colour', model: 'colour', isSmall: true },
+      { id: randomId(), label: 'Viscosity', model: 'viscosity', isSmall: true },
+      { id: randomId(), label: 'Liquefaction', model: 'liquefaction', isSmall: true },
+      { id: randomId(), label: 'Spillage', model: 'spillage', isSmall: true },
+      { id: randomId(), label: 'Volume', model: 'volume', isSmall: true },
+      { id: randomId(), label: 'Odour', model: 'odour', isSmall: true },
+      { id: randomId(), label: 'PH', model: 'ph', isSmall: true },
+    ],
+    microscopy: [
+      { id: randomId(), label: 'PUS Cells', model: 'pus_cells', isSmall: true },
+      { id: randomId(), label: 'RBC', model: 'rbc', isSmall: true },
+      { id: randomId(), label: 'Cellula Debris', model: 'cellula_debris', isSmall: true },
+      { id: randomId(), label: 'Spermatozoan', model: 'spermatozoan', isSmall: true },
+      { id: randomId(), label: 'Epithelial Cells', model: 'epithelial_cells', isSmall: true },
+    ],
+    percentageMobility: [
+      { id: randomId(), label: 'Active', model: 'active', isSmall: true },
+      { id: randomId(), label: 'Sluggish', model: 'sluggish', isSmall: true },
+      { id: randomId(), label: 'Non-Progressive', model: 'non_progressive', isSmall: true },
+      { id: randomId(), label: 'Dead Cells', model: 'dead_cells', isSmall: true },
+    ],
+    morphology: [
+      { id: randomId(), label: '% Normal Cells', model: 'normal_cells', isSmall: true },
+      { id: randomId(), label: '% Abnormal Cells', model: 'abnormal_cells', isSmall: true },
+      { id: randomId(), label: 'Sperm Count', model: 'sperm_count', isSmall: true },
+    ],
+    antibiotics: [
+      { id: randomId(), label: 'Antibiotic Sensitivity', isHeader: true },
+      { id: randomId(), label: 'Ciprofloxacin', model: 'ciprofloxacin', isSmall: true },
+      { id: randomId(), label: 'Rifampicin', model: 'rifampicin', isSmall: true },
+      { id: randomId(), label: 'Streptomycin', model: 'streptomycin', isSmall: true },
+      { id: randomId(), label: 'Azithromycin', model: 'azithromycin', isSmall: true },
+      { id: randomId(), label: 'Amoxicillin', model: 'amoxicillin', isSmall: true },
+      { id: randomId(), label: 'Erythromycin', model: 'erythromycin', isSmall: true },
+      { id: randomId(), label: 'Levofloxacin', model: 'levofloxacin', isSmall: true },
+      { id: randomId(), label: 'Gentamycin', model: 'gentamycin', isSmall: true },
+      { id: randomId(), label: 'Cefuroxime', model: 'cefuroxime', isSmall: true },
+      { id: randomId(), label: 'Ofloxacin', model: 'ofloxacin', isSmall: true },
+      { id: randomId(), label: 'Augmentin', model: 'augmentin', isSmall: true },
+      { id: randomId(), label: 'Peflacine', model: 'peflacine', isSmall: true },
+      { id: randomId(), label: 'Ceftazidime', model: 'ceftazidime', isSmall: true },
+      { id: randomId(), label: 'Ceporex', model: 'ceporex', isSmall: true },
+      { id: randomId(), label: 'Ceftriaxone', model: 'ceftriaxone', isSmall: true },
+      { id: randomId(), label: 'Comments', model: 'comments', isTextArea: true },
+    ],
+    semenAnalysisItems: [
+      { id: randomId(), label: 'Culture', model: 'culture' },
+      { id: randomId(), label: 'Appearance', model: 'appearance' },
+    ],
   }),
+  props: {
+    result: {
+      type: Object,
+      required: true,
+    },
+    testId: {
+      type: Number,
+      required: true,
+    },
+    section: {
+      type: String,
+      required: true,
+    },
+  },
+  watch: {
+    result: {
+      immediate: true,
+      handler(val) {
+        if (!val) return;
+        if (Object.entries(val)?.length) {
+          const semenAnalysisData = JSON.parse(JSON.stringify(val));
+          Object.assign(this.semenAnalysis, semenAnalysisData);
+        }
+      },
+    },
+  },
+  computed: {
+    showPercentageMortility() {
+      const percentageMortility = {
+        active: '',
+        sluggish: '',
+        non_progressive: '',
+        dead_cells: '',
+      };
+      const semenPercentageMortility = Object.keys(percentageMortility)
+        .map(key => this.semenAnalysis[key])
+        .filter(Boolean);
+      return (
+        (this.section !== 'ValidationSection' && this.section !== 'ApprovalSection') ||
+        !!semenPercentageMortility?.length
+      );
+    },
+
+    showMicroscopy() {
+      const microscopy = {
+        pus_cells: '',
+        rbc: '',
+        cellula_debris: '',
+        spermatozoan: '',
+        epithelial_cells: '',
+      };
+      const semenMicroscopy = Object.keys(microscopy)
+        .map(key => this.semenAnalysis[key])
+        .filter(Boolean);
+      return (
+        (this.section !== 'ValidationSection' && this.section !== 'ApprovalSection') ||
+        !!semenMicroscopy?.length
+      );
+    },
+
+    showMorphology() {
+      const morphology = {
+        normal_cells: '',
+        abnormal_cells: '',
+        sperm_count: '',
+      };
+      const semenMorphology = Object.keys(morphology)
+        .map(key => this.semenAnalysis[key])
+        .filter(Boolean);
+      return (
+        (this.section !== 'ValidationSection' && this.section !== 'ApprovalSection') ||
+        !!semenMorphology?.length
+      );
+    },
+
+    showMethodOfProduction() {
+      const methodOfProduction = {
+        time_produced: '',
+        time_received: '',
+        time_of_analysis: '',
+        period_of_abstinence: '',
+        colour: '',
+        viscosity: '',
+        liquefaction: '',
+        spillage: '',
+        volume: '',
+        odour: '',
+        ph: '',
+      };
+      const semenMethodOfProduction = Object.keys(methodOfProduction)
+        .map(key => this.semenAnalysis[key])
+        .filter(Boolean);
+      return (
+        (this.section !== 'ValidationSection' && this.section !== 'ApprovalSection') ||
+        !!semenMethodOfProduction?.length
+      );
+    },
+
+    showAntibiotics() {
+      const antibiotics = {
+        ciprofloxacin: '',
+        rifampicin: '',
+        streptomycin: '',
+        azithromycin: '',
+        amoxicillin: '',
+        erythromycin: '',
+        levofloxacin: '',
+        gentamycin: '',
+        ceftazidime: '',
+        cefuroxime: '',
+        ofloxacin: '',
+        augmentin: '',
+        peflacine: '',
+        ceftriaxone: '',
+        ceporex: '',
+      };
+      const semenAntibiotics = Object.keys(antibiotics)
+        .map(key => this.semenAnalysis[key])
+        .filter(Boolean);
+      return (
+        (this.section !== 'ValidationSection' && this.section !== 'ApprovalSection') ||
+        !!semenAntibiotics?.length
+      );
+    },
+  },
+  methods: {
+    emitSemenAnalysisResult() {
+      this.debounceInput(this);
+    },
+
+    debounceInput: debounce(vm => {
+      vm.$emit('emitResult', vm.semenAnalysis, vm.testId);
+    }, 500),
+  },
 };
 </script>
 
