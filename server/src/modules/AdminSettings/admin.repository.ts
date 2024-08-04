@@ -368,7 +368,7 @@ export async function updateService(data) {
  * @param pageLimit
  * @param search
  */
-export async function searchServices(currentPage = 1, pageLimit = 10, search) {
+export async function searchServices(currentPage = 1, pageLimit = 20, search) {
   return Service.paginate({
     page: currentPage,
     paginate: pageLimit,
@@ -389,7 +389,7 @@ export async function searchServices(currentPage = 1, pageLimit = 10, search) {
  * @param currentPage
  * @param pageLimit
  */
-export async function getServices(currentPage = 1, pageLimit = 10) {
+export async function getServices(currentPage = 1, pageLimit = 20) {
   return Service.paginate({
     page: currentPage,
     paginate: pageLimit,

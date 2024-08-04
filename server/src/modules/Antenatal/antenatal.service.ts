@@ -105,15 +105,12 @@ export class AntenatalService {
         patient_id: antenatal.patient_id,
         is_default: true,
       }),
-      getOneAntenatalTriage(
-        {
-          patient_id: antenatal.patient_id,
-          height: {
-            [Op.ne]: null,
-          },
+      getOneAntenatalTriage({
+        patient_id: antenatal.patient_id,
+        height: {
+          [Op.ne]: null,
         },
-        ['height']
-      ),
+      }),
     ]);
     return { ...antenatal.toJSON(), insurance, triage };
   }

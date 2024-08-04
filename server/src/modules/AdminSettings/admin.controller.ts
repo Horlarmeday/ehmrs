@@ -360,7 +360,11 @@ class AdminController {
    * @param {object} next next middleware
    * @returns {json} json object with status, service data
    */
-  static async createService(req, res: Response, next: NextFunction) {
+  static async createService(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
     const { error } = validateService(req.body);
     if (error)
       return errorResponse({
@@ -390,7 +394,7 @@ class AdminController {
    * @param {object} next next middleware
    * @returns {json} json object with status, service data
    */
-  static async updateService(req, res, next) {
+  static async updateService(req: Request, res: Response, next: NextFunction) {
     const { service_id } = req.body;
     if (!service_id) return res.status(400).json({ message: 'Service id is required' });
 
@@ -412,7 +416,7 @@ class AdminController {
    * @param {object} next next middleware
    * @returns {json} json object with services data
    */
-  static async getServices(req, res, next) {
+  static async getServices(req: Request, res: Response, next: NextFunction) {
     try {
       const services = await AdminService.getServices(req.query);
 

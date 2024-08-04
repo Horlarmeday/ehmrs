@@ -210,7 +210,7 @@ export const getAncTriages = async (query: WhereOptions<AntenatalTriage>) => {
 
 export const getOneAntenatalTriage = async (
   query: WhereOptions<AntenatalTriage>,
-  attributes: string[]
+  attributes?: string[]
 ) => {
   return AntenatalTriage.findOne({ where: { ...query }, attributes });
 };

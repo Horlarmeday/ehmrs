@@ -26,7 +26,7 @@ export const checkEmptyHospitalNumber = async () => {
       });
       return;
     }
-    logger.warning(message(`No patients with empty hospital number, skipping...`));
+    logger.warn(message(`No patients with empty hospital number, skipping...`));
   } catch (e) {
     logger.error(message('Error occurred'), e);
   }

@@ -40,7 +40,7 @@ export const closeAntenatalAccount = async () => {
       });
       return;
     }
-    logger.warning(message(`No antenatal accounts to close, skipping...`));
+    logger.warn(message(`No antenatal accounts to close, skipping...`));
   } catch (e) {
     logger.error(message('Error occurred'), e);
   }

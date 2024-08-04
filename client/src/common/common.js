@@ -37,13 +37,15 @@ export const setUrlQueryParams = ({
   filter,
   occupantType,
   name,
+  period,
+  tabIndex,
 }) => {
   router
     .push({
       name: pathName,
       query: {
-        currentPage: currentPage,
-        itemsPerPage: itemsPerPage,
+        currentPage,
+        itemsPerPage,
         search,
         sort,
         startDate,
@@ -51,6 +53,8 @@ export const setUrlQueryParams = ({
         filter,
         occupantType,
         name,
+        period,
+        tabIndex,
       },
     })
 
