@@ -46,7 +46,7 @@ export class TestResult extends Model {
   prescribed_test_id: number;
 
   @Column({
-    type: DataType.TEXT,
+    type: DataType.JSON,
   })
   result: string;
 

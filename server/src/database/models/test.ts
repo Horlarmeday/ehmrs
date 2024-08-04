@@ -38,6 +38,8 @@ export enum ResultForm {
   SEMEN_ANALYSIS_FORM = 'SemenAnalysisForm',
   URINALYSIS_FORM = 'UrinalysisForm',
   URINE_SWAB_FORM = 'UrineSwabForm',
+  HORMONAL_ASSAY_FORM = 'HormonalAssayForm',
+  GLUCOSE_FORM = 'GlucoseForm',
 }
 
 @Table({ timestamps: true })

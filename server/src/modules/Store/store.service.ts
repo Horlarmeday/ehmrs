@@ -15,6 +15,7 @@ import {
   getPharmacyStoreItemLogs,
   getPharmacyStoreItems,
   reorderPharmacyItems,
+  resetPharmacyStoreItemsQuantities,
   searchLaboratoryItems,
   searchPharmacyStoreItems,
   updatePharmacyStoreItem,
@@ -240,6 +241,17 @@ class StoreService {
       ],
     ];
     return { headers, mappedData: this.mapExportedData(items) };
+  }
+
+  /**
+   * reset pharmacy store items
+   *
+   * @static
+   * @returns {Promise<PharmacyStore[]>} json object with pharmacy item data
+   * @memberOf StoreService
+   */
+  static async resetPharmacyStoreItemsQuantities() {
+    return resetPharmacyStoreItemsQuantities();
   }
 
   private static mapExportedData(items: PharmacyStore[]) {

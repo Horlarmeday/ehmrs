@@ -21,7 +21,7 @@
       :select-all="selectAll"
     />
     <!--begin::Header-->
-    <div class="card-header border-0 py-5">
+    <div class="card-header py-5">
       <h3 class="card-title align-items-start flex-column">
         <span class="card-label font-weight-bolder text-dark">Store Items</span>
       </h3>
@@ -35,12 +35,18 @@
           href="/store/pharmacy/add-item"
           split
           split-to="/store/pharmacy/add-item"
-          class="float-right"
+          class="float-right btn-shadow font-weight-bold"
           variant="primary"
         >
           <template #button-content> <add-icon /> Add Item </template>
           <b-dropdown-item to="/store/pharmacy/add-bulk-item">Add Bulk Items</b-dropdown-item>
         </b-dropdown>
+        <button
+          @click="showResetStoreQuantityAlert"
+          class="btn btn-danger ml-2 btn-shadow font-weight-bold"
+        >
+          Reset Store Quantity
+        </button>
       </div>
     </div>
     <!--end::Header-->
@@ -332,11 +338,11 @@ export default {
       this.displayPrompt = true;
     },
 
-    queryParams({ search = null, sort = null, filter = null, pagecount = null }) {
+    queryParams({ search = null, sort = null, filter = null, itemsPerPage = null }) {
       setUrlQueryParams({
-        pathName: 'pharmacy-items',
+        // pathName: 'pharmacy-items',
         currentPage: this.currentPage,
-        itemsPerPage: pagecount || this.itemsPerPage,
+        itemsPerPage: itemsPerPage || this.itemsPerPage,
         ...(search && { search }),
         ...(sort && { sort }),
         ...(filter && { filter }),
@@ -355,7 +361,6 @@ export default {
 
     handlePageChange() {
       this.queryParams({
-        currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         search: this.$route.query.search || null,
         filter: this.$route.query.filter || null,
@@ -377,7 +382,12 @@ export default {
 
     onHandleSearch(prop) {
       const { search, spinDiv } = prop;
-      this.queryParams({ search });
+      this.queryParams({
+        search,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        filter: this.$route.query.filter || null,
+        sort: this.$route.query.sort || null,
+      });
       this.debounceSearch(search, this, spinDiv);
     },
 
@@ -389,7 +399,8 @@ export default {
 
     onChangePageCount(pagecount) {
       this.queryParams({
-        pagecount,
+        currentPage: this.currentPage,
+        itemsPerPage: pagecount,
         search: this.$route.query.search || null,
         filter: this.$route.query.filter || null,
         sort: this.$route.query.sort || null,
@@ -404,36 +415,66 @@ export default {
     },
 
     onHandleSort(sort) {
-      this.queryParams({ sort });
-      this.fetchPharmacyItems({
+      this.queryParams({
         sort,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || null,
+        filter: this.$route.query.filter || null,
+      });
+      this.fetchPharmacyItems({
         currentPage: this.$route.query.currentPage || this.currentPage,
         search: this.$route.query.search || null,
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        filter: this.$route.query.filter || null,
+        sort: this.$route.query.sort || null,
       });
     },
 
     onFilterByDrugForm(filter) {
-      this.queryParams({ filter });
+      this.queryParams({
+        filter,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || null,
+        sort: this.$route.query.sort || null,
+      });
       this.fetchPharmacyItems({
         filter,
         currentPage: this.$route.query.currentPage || this.currentPage,
+        search: this.$route.query.search || null,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        sort: this.$route.query.sort || null,
       });
     },
 
     onFilterByDrugType(filter) {
-      this.queryParams({ filter });
+      this.queryParams({
+        filter,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || null,
+        sort: this.$route.query.sort || null,
+      });
       this.fetchPharmacyItems({
         filter,
         currentPage: this.$route.query.currentPage || this.currentPage,
+        search: this.$route.query.search || null,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        sort: this.$route.query.sort || null,
       });
     },
 
     onFilterByDrugDosageForm(filter) {
-      this.queryParams({ filter });
+      this.queryParams({
+        filter,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || null,
+        sort: this.$route.query.sort || null,
+      });
       this.fetchPharmacyItems({
         filter,
         currentPage: this.$route.query.currentPage || this.currentPage,
+        search: this.$route.query.search || null,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        sort: this.$route.query.sort || null,
       });
     },
 
@@ -506,6 +547,34 @@ export default {
         })
       );
     },
+
+    showResetStoreQuantityAlert() {
+      const self = this;
+      Swal.fire({
+        title: 'Are you sure?',
+        html:
+          'You want to <b>reset</b> the quantities of all items in this store, this action cannot reversed!',
+        icon: 'danger',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Reset!',
+        cancelButtonText: 'No, cancel',
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+          self.resetStoreQuantity();
+        },
+      });
+    },
+
+    resetStoreQuantity() {
+      this.$store.dispatch('store/resetPharmacyItemsQuantity').then(() => {
+        this.fetchPharmacyItems({
+          currentPage: this.$route.query.currentPage || this.currentPage,
+          itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+          filter: !isEmpty(this.filter) ? this.filter : null,
+          search: this.$route.query.search || null,
+        });
+      });
+    },
   },
 
   created() {
@@ -514,6 +583,7 @@ export default {
       itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
       filter: !isEmpty(this.filter) ? this.filter : null,
       search: this.$route.query.search || null,
+      sort: this.$route.query.sort || null,
     });
   },
 };

@@ -1,4 +1,6 @@
+import './sentry';
 import express, { NextFunction, Request, Response } from 'express';
+import * as Sentry from '@sentry/node';
 import { StatusCodes } from '../helpers/helper';
 import { handleError } from '../../common/responses/error-responses';
 import { logger } from '../helpers/logger';
@@ -27,7 +29,6 @@ import surgeryRoutes from '../../modules/Surgery/surgery.routes';
 import immunizationRoutes from '../../modules/Immunization/immunization.routes';
 import alertRoutes from '../../modules/Alert/alert.routes';
 import accountRoutes from '../../modules/Account/account.routes';
-import path from 'path';
 
 export default (server: express.Application) => {
   server.use('/api/staffs', staffRoutes);
@@ -55,6 +56,9 @@ export default (server: express.Application) => {
   server.use('/api/orders/pharmacy', pharmacyOrderRoutes);
   server.use('/api/orders/radiology', radiologyOrderRoutes);
   server.use('/api/orders/service', serviceOrderRoutes);
+
+  Sentry.setupExpressErrorHandler(server);
+
   server.use(
     (
       error: { statusCode: number; message: string },

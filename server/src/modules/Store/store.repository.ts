@@ -24,6 +24,7 @@ import { ItemsToDispensedBody } from '../Inventory/types/inventory-item.types';
 import { getAnInventory } from '../Inventory/inventory.repository';
 import { lt } from 'lodash';
 import { INVALID_INVENTORY, INVALID_QUANTITY } from '../Inventory/messages/response-messages';
+import { StatusCodes } from '../../core/helpers/helper';
 
 /** ***********************
  * PHARMACY STORE
@@ -418,6 +419,21 @@ export const updatePharmacyStoreItem = async (query: any, fieldsToUpdate: any) =
 };
 
 /**
+ * reset pharmacy store items quantities
+ *
+ * @function
+ * @returns {json} json object with item history data
+ */
+export const resetPharmacyStoreItemsQuantities = async () => {
+  const pharmacyItems = await PharmacyStore.findAll({ attributes: ['id'] });
+  const pharmacyItemIds = pharmacyItems.map(item => item.id);
+  return await PharmacyStore.update(
+    { quantity_remaining: 0, quantity_received: 0 },
+    { where: { id: pharmacyItemIds } }
+  );
+};
+
+/**
  * update a pharmacy store item
  *
  * @function
@@ -584,7 +600,7 @@ export const reorderPharmacyItems = async (items: ItemsToReorder[], staff_id: nu
       });
     }
   } catch (e) {
-    throw new BadException('Invalid', 400, e?.message);
+    throw new BadException('Invalid', StatusCodes.BAD_REQUEST, e?.message);
   }
 };
 
@@ -674,44 +690,89 @@ const mapDispenseStoreItemHistory = (
  * @param staff_id
  */
 export const dispensePharmacyItems = async (items: ItemsToDispensedBody[], staff_id: number) => {
-  for await (const item of items) {
-    const storeItem = await dispenseValidations(item);
-    const mappedItem = mapInventoryItem(storeItem, item, staff_id);
+  return await Promise.allSettled(
+    items.map(async item => {
+      const storeItem = await dispenseValidations(item);
+      const mappedItem = mapInventoryItem(storeItem, item, staff_id);
 
-    await sequelizeConnection.transaction(async t => {
-      const [inventoryItem, created] = await InventoryItem.findOrCreate({
-        where: { drug_id: mappedItem.drug_id, inventory_id: mappedItem.inventory_id },
-        defaults: { ...mappedItem },
-        transaction: t,
-      });
+      return await sequelizeConnection.transaction(async t => {
+        const [inventoryItem, created] = await InventoryItem.findOrCreate({
+          where: { drug_id: mappedItem.drug_id, inventory_id: mappedItem.inventory_id },
+          defaults: { ...mappedItem },
+          transaction: t,
+        });
 
-      if (!created) {
-        await InventoryItem.update(
-          {
-            ...mappedItem,
-            quantity_remaining: literal(`quantity_remaining + ${mappedItem.quantity_remaining}`),
-            quantity_received: literal(`quantity_received + ${mappedItem.quantity_remaining}`),
-          },
-          {
-            where: { drug_id: mappedItem.drug_id, inventory_id: mappedItem.inventory_id },
-            transaction: t,
-          }
+        if (!created) {
+          await InventoryItem.update(
+            {
+              ...mappedItem,
+              quantity_remaining: literal(`quantity_remaining + ${mappedItem.quantity_remaining}`),
+              quantity_received: literal(`quantity_received + ${mappedItem.quantity_remaining}`),
+            },
+            {
+              where: { drug_id: mappedItem.drug_id, inventory_id: mappedItem.inventory_id },
+              transaction: t,
+            }
+          );
+        }
+
+        await InventoryItemHistory.create(mapInventoryItemHistory(item, inventoryItem, staff_id), {
+          transaction: t,
+        });
+
+        await PharmacyStore.update(
+          { quantity_remaining: storeItem.quantity_remaining - item.quantity_to_dispense },
+          { where: { id: storeItem.id }, transaction: t }
         );
-      }
 
-      await InventoryItemHistory.create(mapInventoryItemHistory(item, inventoryItem, staff_id), {
-        transaction: t,
+        await PharmacyStoreHistory.create(mapDispenseStoreItemHistory(item, storeItem, staff_id), {
+          transaction: t,
+        });
+        return storeItem;
       });
-      await PharmacyStoreHistory.create(mapDispenseStoreItemHistory(item, storeItem, staff_id), {
-        transaction: t,
-      });
-      await PharmacyStore.update(
-        { quantity_remaining: storeItem.quantity_remaining - item.quantity_to_dispense },
-        { where: { id: storeItem.id }, transaction: t }
-      );
-      return inventoryItem;
-    });
-  }
+    })
+  );
+
+  // for await (const item of items) {
+  //   const storeItem = await dispenseValidations(item);
+  //   const mappedItem = mapInventoryItem(storeItem, item, staff_id);
+  //
+  //   await sequelizeConnection.transaction(async t => {
+  //     const [inventoryItem, created] = await InventoryItem.findOrCreate({
+  //       where: { drug_id: mappedItem.drug_id, inventory_id: mappedItem.inventory_id },
+  //       defaults: { ...mappedItem },
+  //       transaction: t,
+  //     });
+  //
+  //     if (!created) {
+  //       await InventoryItem.update(
+  //         {
+  //           ...mappedItem,
+  //           quantity_remaining: literal(`quantity_remaining + ${mappedItem.quantity_remaining}`),
+  //           quantity_received: literal(`quantity_received + ${mappedItem.quantity_remaining}`),
+  //         },
+  //         {
+  //           where: { drug_id: mappedItem.drug_id, inventory_id: mappedItem.inventory_id },
+  //           transaction: t,
+  //         }
+  //       );
+  //     }
+  //
+  //     await InventoryItemHistory.create(mapInventoryItemHistory(item, inventoryItem, staff_id), {
+  //       transaction: t,
+  //     });
+  //
+  //     await PharmacyStore.update(
+  //       { quantity_remaining: storeItem.quantity_remaining - item.quantity_to_dispense },
+  //       { where: { id: storeItem.id }, transaction: t }
+  //     );
+  //
+  //     await PharmacyStoreHistory.create(mapDispenseStoreItemHistory(item, storeItem, staff_id), {
+  //       transaction: t,
+  //     });
+  //     return inventoryItem;
+  //   });
+  // }
 };
 
 /** ***********************

@@ -101,7 +101,6 @@ class StoreController {
    */
   static async deactivatePharmacyItems(req, res, next) {
     const empty = isEmpty(req.body);
-    console.log(req.body);
     if (empty)
       return errorResponse({
         res,
@@ -291,6 +290,30 @@ class StoreController {
   }
 
   /**
+   * deactivate pharmacy store items
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, item data
+   */
+  static async resetPharmacyStoreItemsQuantity(req: Request, res: Response, next: NextFunction) {
+    try {
+      const items = await StoreService.resetPharmacyStoreItemsQuantities();
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_SAVED,
+        data: items,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
    * add item to laboratory store
    *
    * @static
@@ -299,7 +322,11 @@ class StoreController {
    * @param {object} next next middleware
    * @returns {json} json object with status, item data
    */
-  static async createLaboratoryItem(req, res, next) {
+  static async createLaboratoryItem(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
     const { error } = validateLaboratoryItem(req.body);
     if (error)
       return errorResponse({

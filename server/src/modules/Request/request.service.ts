@@ -6,7 +6,7 @@ import {
   getRequests,
   updateRequestStatus,
 } from './request.repository';
-import { Request } from '../../database/models';
+import { PharmacyStore, Request } from '../../database/models';
 import { ParsedQs } from 'qs';
 import { getInventoryItemQuery } from '../Inventory/inventory.repository';
 import { getOnePharmacyStoreItem } from '../Store/store.repository';
@@ -108,6 +108,12 @@ export class RequestService {
         })
     );
     await StoreService.dispenseItemsFromStore(dispenseItems, staffId);
+
+    // const results = await StoreService.dispenseItemsFromStore(dispenseItems, staffId);
+    // const response = (results.filter(
+    //   res => res.status === 'fulfilled'
+    // ) as unknown) as PromiseFulfilledResult<PharmacyStore>[];
+
     return updateRequestStatus(body, staffId);
   }
 
