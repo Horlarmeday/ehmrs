@@ -37,7 +37,8 @@ export enum JobName {
 }
 
 export const CronTimer = {
-  [JobName.EMPTY_HOSPITAL_NUMBER]: '0 2 * * *', // every 2am
+  [JobName.EMPTY_HOSPITAL_NUMBER]:
+    process.env.NODE_ENV === 'development' ? '0 2 * * *' : '*/5 * * * *', // every 5 minutes
   [JobName.CLOSE_ANTENATAL_ACCOUNT]: '0 1 * * *', // every 1am
   [JobName.END_VISIT]: '0 0 * * *', // 12am
 };

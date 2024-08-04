@@ -113,7 +113,7 @@ export const migrateDependantAccount = async () => {
     // });
     //
     // rl.on('pause', async () => {
-    //   logger.warning(message('Readline ==PAUSED==='));
+    //   logger.warn(message('Readline ==PAUSED==='));
     //   await bulkInsertDependants(dependants);
     //   dependants.length = 0;
     //   setTimeout(() => rl.resume(), 5 * 1000);

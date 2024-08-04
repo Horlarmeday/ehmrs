@@ -8,7 +8,6 @@ import bodyParser from 'body-parser';
 import { RequestHandler } from 'express-serve-static-core';
 import { ParsedQs } from 'qs';
 import agenda from '../command/agenda';
-import verify from '../middleware/verify';
 // import serveStatic from 'serve-static';
 
 export default (
@@ -27,7 +26,7 @@ export default (
   server.use(express.static('download'));
   // server.use(serveStatic(path.join(__dirname, '../../../../client/dist')));
   server.use('/static', express.static(path.join(__dirname, '../../public')));
-  server.use('/dash', verify, () => {
+  server.use('/dash', () => {
     agenda.on('ready', () => {
       Agendash(agenda);
     });

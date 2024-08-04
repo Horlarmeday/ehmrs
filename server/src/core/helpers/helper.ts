@@ -4,7 +4,13 @@ import { promisify } from 'util';
 import fs from 'fs';
 import { BadException } from '../../common/util/api-error';
 import { DEVELOPMENT } from '../constants';
-import { Patient, PatientInsurance, TestPrescription, Visit } from '../../database/models';
+import {
+  Patient,
+  PatientInsurance,
+  PrescribedTest,
+  TestPrescription,
+  Visit,
+} from '../../database/models';
 import { Response } from 'express';
 import { ExportDataType } from '../../modules/Store/types/pharmacy-item.types';
 import { exportDataToCSV, exportDataToExcel, exportDataToPDF } from './fileExport';
@@ -16,6 +22,7 @@ import { getOneService } from '../../modules/AdminSettings/admin.repository';
 import { getTestPrescription } from '../../modules/Laboratory/laboratory.repository';
 import { DrugType } from '../../database/models/pharmacyStore';
 import { prescribeService } from '../../modules/Orders/Service/service-order.repository';
+import { chain } from 'lodash';
 
 const writeFile = promisify(fs.writeFile);
 
@@ -176,7 +183,7 @@ export const generateLabAccessionNumber = async () => {
   let accessionNumber: string;
   let testPrescription: TestPrescription;
   do {
-    const recordCount = Date.now() + generateRandomNumbers(5);
+    const recordCount = generateRandomNumbers(5);
     const prefix = 'LAB';
     accessionNumber = `${prefix}-${initialPart}-${padNumberWithZero(recordCount, 2)}`;
     testPrescription = await getTestPrescription({ accession_number: accessionNumber });
@@ -293,4 +300,24 @@ export const insertSingleOrMultipleServices = async ({
     }
   }
   return;
+};
+
+export const groupDataByField = ({
+  array,
+  field,
+  resultKey,
+  resultData,
+}: {
+  array: any[];
+  field: string;
+  resultKey: string;
+  resultData: string;
+}) => {
+  return chain(array)
+    .groupBy(x => x[field])
+    .map((value, key) => ({
+      [resultKey]: key,
+      [resultData]: value,
+    }))
+    .value();
 };
