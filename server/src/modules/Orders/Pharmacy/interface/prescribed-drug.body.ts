@@ -27,6 +27,7 @@ export class PrescribedAdditionalItemBody {
 
 export class PrescribedDrugBody {
   drug_id: number;
+  drug_name: string;
   staff_id: number;
   drug_type: DrugType;
   quantity_prescribed: number;

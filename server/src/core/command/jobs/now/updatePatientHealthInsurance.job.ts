@@ -42,7 +42,7 @@ export const updatePatientHealthInsurance = async () => {
     if (patients?.length) {
       await processArray(patients, createPatientInsuranceRecord);
     }
-    logger.warning(message(`No patients with empty hospital number, skipping...`));
+    logger.warn(message(`No patients with empty hospital number, skipping...`));
   } catch (e) {
     logger.error(message('Error'), e);
   }

@@ -91,6 +91,9 @@ export function validateBulkDrugsPrescription(drug: any) {
     .items(
       Joi.object({
         start_date: Joi.string().required(),
+        drug_name: Joi.string()
+          .optional()
+          .allow(''),
         quantity_prescribed: Joi.number().required(),
         quantity_to_dispense: Joi.number()
           .min(1)

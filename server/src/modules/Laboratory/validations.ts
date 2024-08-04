@@ -78,9 +78,7 @@ export function validateAddTestResult(result) {
           status: Joi.string()
             .optional()
             .allow(''),
-          result: Joi.string()
-            .optional()
-            .allow(''),
+          result: Joi.object().required(),
           valid_range: Joi.string()
             .optional()
             .allow(''),
@@ -113,8 +111,10 @@ export function validateTestResults(result) {
           status: Joi.string()
             .valid('Accepted', 'Rejected', 'Pending')
             .required(),
-          result: Joi.string().required(),
-          is_abnormal: Joi.boolean().required(),
+          result: Joi.object().required(),
+          is_abnormal: Joi.boolean()
+            .optional()
+            .allow(''),
           comments: Joi.string()
             .optional()
             .allow(''),
@@ -142,8 +142,10 @@ export function validateApproveTestResults(result) {
           status: Joi.string()
             .valid('Accepted', 'Rejected', 'Pending')
             .required(),
-          result: Joi.string().required(),
-          is_abnormal: Joi.boolean().required(),
+          result: Joi.object().required(),
+          is_abnormal: Joi.boolean()
+            .optional()
+            .allow(''),
           comments: Joi.string()
             .optional()
             .allow(''),
@@ -153,4 +155,13 @@ export function validateApproveTestResults(result) {
   });
 
   return schema.validate(result);
+}
+
+export function validateChangeTestResultStatus(req) {
+  const schema = Joi.object({
+    selectedTests: Joi.array()
+      .items(Joi.number())
+      .required(),
+  });
+  return schema.validate(req);
 }

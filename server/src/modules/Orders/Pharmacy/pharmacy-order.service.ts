@@ -98,8 +98,18 @@ class PharmacyOrderService {
 
     const mappedPrescribedDrugs = await Promise.all(
       body.map(async data => {
-        const { drug_type, drug_id, inventory_id, quantity_to_dispense, drug_group } = data;
+        const {
+          drug_type,
+          drug_id,
+          inventory_id,
+          quantity_to_dispense,
+          drug_group,
+          drug_name,
+        } = data;
         const inventoryItem = await getInventoryItemQuery({ inventory_id, drug_id });
+        if (!inventoryItem) {
+          throw new BadException('Error', 400, `Cannot find drug ${drug_name} in the inventory`);
+        }
 
         const drugPrice =
           (await getDrugPrice(patient, drug_id, inventoryItem)) * +quantity_to_dispense;

@@ -8,7 +8,7 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 
-@Table({ timestamps: false, tableName: 'Payment' })
+@Table({ timestamps: true, tableName: 'Payment' })
 export class Payment extends Model {
   @PrimaryKey
   @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
