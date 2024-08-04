@@ -216,6 +216,20 @@ export default {
     });
   },
 
+  resetPharmacyItemsQuantity({ commit }) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put('/store/pharmacy/items/reset')
+        .then(response => {
+          commit('REMOVE_ALL_SELECTED_ITEMS', []);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
   /***
    * SELECTED ITEMS
    */

@@ -199,7 +199,7 @@ export default {
   bulkOrderDrug({ commit }, payload) {
     const drugs = payload?.drugs?.map(
       // eslint-disable-next-line no-unused-vars
-      ({ strength_name, drug_name, route_name, price, strength_input, id, ...rest }) => ({
+      ({ strength_name, route_name, price, strength_input, id, ...rest }) => ({
         ...rest,
       })
     );

@@ -172,6 +172,24 @@ export default {
     });
   },
 
+  convertDependantAccount({ commit }, patientId) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/patients/convert-dependant/${patientId}`)
+        .then(response => {
+          commit('UPDATE_PATIENT_INSURANCE', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /***********************
+   * DEPENDANTS DEPRECATED
+   **********************/
+
   fetchDependants({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios

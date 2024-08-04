@@ -63,4 +63,6 @@ export default {
    * TEST PRESCRIPTION
    */
   testPrescription: null,
+
+  selectedTests: [],
 };
