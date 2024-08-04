@@ -2,7 +2,7 @@
 import {
   validateAddTestResult,
   validateApproveTestResults,
-  validateNhisTest,
+  validateChangeTestResultStatus,
   validateTest,
   validateTestResults,
   validateTestSample,
@@ -18,7 +18,6 @@ import { NextFunction, Request, Response } from 'express';
 import { SUCCESS } from '../../core/constants';
 import { validateUpdateTestPrescription } from './validations';
 import { downloadTestResult } from '../../core/helpers/downloadTestResult';
-import { stat } from 'fs';
 
 class LaboratoryController {
   /** ***********************
@@ -207,7 +206,11 @@ class LaboratoryController {
    * @param {object} next next middleware
    * @returns {json} json object with status, test data
    */
-  static async createTestTariff(req: Request & { user: { sub: number } }, res: Response, next: NextFunction) {
+  static async createTestTariff(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
     const { error } = validateTestTariff(req.body);
     if (error)
       return errorResponse({
@@ -500,7 +503,7 @@ class LaboratoryController {
   }
 
   /**
-   * get one sample to collect
+   * get one test result
    *
    * @static
    * @param {object} req express request object
@@ -542,7 +545,7 @@ class LaboratoryController {
   }
 
   /**
-   * get all samples collected
+   * get all verified test results
    *
    * @static
    * @param {object} req express request object
@@ -561,7 +564,7 @@ class LaboratoryController {
   }
 
   /**
-   * get all samples collected
+   * get tests stats
    *
    * @static
    * @param {object} req express request object
@@ -592,8 +595,48 @@ class LaboratoryController {
     try {
       const testPrescription = await LaboratoryService.getTestPrescription(+req.params.id);
 
-      return res.status(200).json({
-        message: 'Success',
+      return successResponse({
+        res,
+        message: SUCCESS,
+        httpCode: StatusCodes.OK,
+        data: testPrescription,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * Change test results status
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, prescribed test data
+   */
+  static async changeTestResultStatus(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
+    const { error } = validateChangeTestResultStatus(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+    try {
+      const testPrescription = await LaboratoryService.changeTestResultStatus(
+        req.body.selectedTests,
+        +req.params.id
+      );
+
+      return successResponse({
+        res,
+        message: DATA_UPDATED,
+        httpCode: StatusCodes.CREATED,
         data: testPrescription,
       });
     } catch (e) {

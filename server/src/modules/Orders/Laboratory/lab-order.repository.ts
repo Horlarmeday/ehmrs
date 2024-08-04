@@ -69,10 +69,6 @@ export const getPrescribedTests = ({ currentPage = 1, pageLimit = 10, filter = n
         as: 'examiner',
         attributes: staffAttributes,
       },
-      {
-        model: TestResult,
-        attributes: ['result', 'status'],
-      },
     ],
   });
 };

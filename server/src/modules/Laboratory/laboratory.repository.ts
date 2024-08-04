@@ -1,4 +1,4 @@
-import sequelize, { Op, WhereOptions } from 'sequelize';
+import sequelize, { Op, where, WhereOptions } from 'sequelize';
 import {
   countRecords,
   getModelById,
@@ -37,6 +37,8 @@ import { CANNOT_ADD_RESULTS, RESULT_NOT_FOUND, TEST_NOT_FOUND } from './messages
 import { Result } from './dto/laboratory-result.dto';
 import { PaymentStatus } from '../../database/models/prescribedDrug';
 import { Test as TestType } from '../Orders/Laboratory/interface/prescribed-test.body';
+import { ERROR_UPDATING_TEST } from '../Orders/Laboratory/messages/response-messages';
+import { getOnePrescribedTest } from '../Orders/Laboratory/lab-order.repository';
 
 const testResultFieldsToUpdate = (fields: string[] = []) => [
   'prescribed_test_id',
@@ -278,15 +280,15 @@ export const getSamplesToCollect = async ({
       include: [
         // Count the number of tests in each sample and alias it as 'test_count'
         [sequelize.fn('COUNT', sequelize.col('tests.id')), 'test_count'],
-        [
-          sequelize.fn(
-            'COUNT',
-            sequelize.literal(
-              `DISTINCT CASE WHEN tests.payment_status = '${PaymentStatus.PENDING}' THEN tests.id END`
-            )
-          ),
-          'total_pending_payments',
-        ],
+        // [
+        //   sequelize.fn(
+        //     'COUNT',
+        //     sequelize.literal(
+        //       `DISTINCT CASE WHEN tests.payment_status = '${PaymentStatus.PENDING}' THEN tests.id END`
+        //     )
+        //   ),
+        //   'total_pending_payments',
+        // ],
       ],
     },
     where: {
@@ -513,7 +515,7 @@ export const getOneSampleToCollect = async (testPrescriptionId: number | string)
       },
       {
         model: PrescribedTest,
-        attributes: ['test_id'],
+        attributes: ['test_id', 'payment_status'],
         include: [
           { model: Test, attributes: ['name', 'result_unit'] },
           { model: Sample, attributes: ['name'] },
@@ -546,7 +548,7 @@ export const getOneCollectedSample = async (testPrescriptionId: number | string)
         model: PrescribedTest,
         attributes: ['test_id', 'id', 'status', 'test_type', 'payment_status', 'is_urgent'],
         include: [
-          { model: Test, attributes: ['name', 'result_unit', 'valid_range'] },
+          { model: Test, attributes: ['name', 'result_unit', 'valid_range', 'result_form'] },
           { model: Sample, attributes: ['name'] },
           {
             model: TestResult,
@@ -570,7 +572,7 @@ export const getOneCollectedSample = async (testPrescriptionId: number | string)
   });
   return {
     ...testPrescription.toJSON(),
-    tests: groupTestsBySample(testPrescription.tests),
+    tests: testPrescription.tests,
     insurance: { ...insurance?.toJSON() },
   };
 };
@@ -631,13 +633,16 @@ export const approveTestResults = async (data: Partial<Result & { staff_id: numb
     const testsCount = await PrescribedTest.count({
       where: {
         test_prescription_id: data[0].test_prescription_id,
-        status: {
-          [Op.ne]: TestStatus.REFERRED,
-        },
+        status: TestStatus.APPROVED,
       },
       transaction: t,
     });
-    if (data.length === testsCount) {
+    const testPrescriptionCount = await TestPrescription.count({
+      where: { id: data[0].test_prescription_id },
+      include: [PrescribedTest],
+      transaction: t,
+    });
+    if (testsCount === testPrescriptionCount) {
       await TestPrescription.update(
         { status: TestStatus.COMPLETED },
         { where: { id: data[0].test_prescription_id }, transaction: t }
@@ -689,7 +694,15 @@ export const getTestResults = async ({
   return TestPrescription.paginate({
     page: +currentPage,
     paginate: +pageLimit,
-    attributes: ['id', 'accession_number', 'source', 'date_sample_received', 'patient_id'],
+    attributes: [
+      'id',
+      'accession_number',
+      'source',
+      'date_sample_received',
+      'patient_id',
+      'createdAt',
+      'status',
+    ],
     order: [['date_sample_received', 'DESC']],
     where: {
       ...(search && {
@@ -754,12 +767,23 @@ export const getOneTestResult = async (testPrescriptionId: number) => {
       },
       {
         model: PrescribedTest,
-        attributes: ['test_id', 'id', 'status'],
+        attributes: ['test_id', 'id', 'status', 'test_approved_date', 'test_verified_date'],
         include: [
-          { model: Test, attributes: ['name', 'result_unit', 'valid_range'] },
+          { model: Test, attributes: ['name', 'result_unit', 'valid_range', 'result_form'] },
+          { model: Sample, attributes: ['name'] },
           {
             model: TestResult,
             attributes: ['result', 'is_abnormal', 'comments', 'status'],
+          },
+          {
+            model: Staff,
+            as: 'test_verifier',
+            attributes: staffAttributes,
+          },
+          {
+            model: Staff,
+            as: 'test_approver',
+            attributes: staffAttributes,
           },
         ],
         where: {
@@ -889,6 +913,31 @@ export const todayTestStats = async () => {
     resultCompleted,
     awaitingApproval,
   };
+};
+
+export const changeTestResultsStatus = async (data: number[], testPrescriptionId: number) => {
+  try {
+    return await sequelizeConnection.transaction(async t => {
+      const tests = await PrescribedTest.update(
+        {
+          status: TestStatus.PENDING,
+          result_status: ResultStatus.PENDING,
+        },
+        { where: { id: data }, transaction: t }
+      );
+      await TestResult.update(
+        { status: ResultStatus.PENDING },
+        { where: { prescribed_test_id: data }, transaction: t }
+      );
+      await TestPrescription.update(
+        { status: TestStatus.SAMPLE_COLLECTED },
+        { where: { id: testPrescriptionId }, transaction: t }
+      );
+      return tests;
+    });
+  } catch (e) {
+    throw new BadException('Error', StatusCodes.SERVER_ERROR, ERROR_UPDATING_TEST);
+  }
 };
 
 const groupTestsBySample = (tests: PrescribedTest[]) => {
