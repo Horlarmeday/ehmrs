@@ -114,6 +114,7 @@ export default {
       time_produced: '',
       time_received: '',
       time_of_analysis: '',
+      method_of_production: '',
       period_of_abstinence: '',
       colour: '',
       viscosity: '',
@@ -122,23 +123,33 @@ export default {
       volume: '',
       odour: '',
       ph: '',
+      microscopy: '',
       pus_cells: '',
       rbc: '',
       cellula_debris: '',
       spermatozoan: '',
       epithelial_cells: '',
+      percentage_motility: '',
       active: '',
       sluggish: '',
       non_progressive: '',
       dead_cells: '',
+      morphology: '',
       normal_cells: '',
       abnormal_cells: '',
       sperm_count: '',
+      others: '',
     },
     methodOfProduction: [
       { id: randomId(), label: 'Time Produced', model: 'time_produced', isSmall: true },
       { id: randomId(), label: 'Time Received', model: 'time_received', isSmall: true },
       { id: randomId(), label: 'Time of Analysis', model: 'time_of_analysis', isSmall: true },
+      {
+        id: randomId(),
+        label: 'Method of Production',
+        model: 'method_of_production',
+        isSmall: true,
+      },
       {
         id: randomId(),
         label: 'Period of Abstinence',
@@ -154,6 +165,7 @@ export default {
       { id: randomId(), label: 'PH', model: 'ph', isSmall: true },
     ],
     microscopy: [
+      { id: randomId(), label: 'Microscopy', model: 'microscopy', isSmall: true },
       { id: randomId(), label: 'PUS Cells', model: 'pus_cells', isSmall: true },
       { id: randomId(), label: 'RBC', model: 'rbc', isSmall: true },
       { id: randomId(), label: 'Cellula Debris', model: 'cellula_debris', isSmall: true },
@@ -161,15 +173,18 @@ export default {
       { id: randomId(), label: 'Epithelial Cells', model: 'epithelial_cells', isSmall: true },
     ],
     percentageMobility: [
+      { id: randomId(), label: 'Percentage Motility', model: 'percentage_motility', isSmall: true },
       { id: randomId(), label: 'Active', model: 'active', isSmall: true },
       { id: randomId(), label: 'Sluggish', model: 'sluggish', isSmall: true },
       { id: randomId(), label: 'Non-Progressive', model: 'non_progressive', isSmall: true },
       { id: randomId(), label: 'Dead Cells', model: 'dead_cells', isSmall: true },
     ],
     morphology: [
+      { id: randomId(), label: 'Morphology', model: 'morphology', isSmall: true },
       { id: randomId(), label: '% Normal Cells', model: 'normal_cells', isSmall: true },
       { id: randomId(), label: '% Abnormal Cells', model: 'abnormal_cells', isSmall: true },
       { id: randomId(), label: 'Sperm Count', model: 'sperm_count', isSmall: true },
+      { id: randomId(), label: 'Others', model: 'others', isSmall: true },
     ],
     antibiotics: [
       { id: randomId(), label: 'Antibiotic Sensitivity', isHeader: true },
@@ -215,8 +230,7 @@ export default {
       handler(val) {
         if (!val) return;
         if (Object.entries(val)?.length) {
-          const semenAnalysisData = JSON.parse(JSON.stringify(val));
-          Object.assign(this.semenAnalysis, semenAnalysisData);
+          Object.assign(this.semenAnalysis, JSON.parse(JSON.stringify(val)));
         }
       },
     },
@@ -228,6 +242,7 @@ export default {
         sluggish: '',
         non_progressive: '',
         dead_cells: '',
+        percentage_motility: '',
       };
       const semenPercentageMortility = Object.keys(percentageMortility)
         .map(key => this.semenAnalysis[key])
@@ -240,6 +255,7 @@ export default {
 
     showMicroscopy() {
       const microscopy = {
+        microscopy: '',
         pus_cells: '',
         rbc: '',
         cellula_debris: '',
@@ -257,9 +273,11 @@ export default {
 
     showMorphology() {
       const morphology = {
+        morphology: '',
         normal_cells: '',
         abnormal_cells: '',
         sperm_count: '',
+        others: '',
       };
       const semenMorphology = Object.keys(morphology)
         .map(key => this.semenAnalysis[key])
@@ -272,6 +290,7 @@ export default {
 
     showMethodOfProduction() {
       const methodOfProduction = {
+        method_of_production: '',
         time_produced: '',
         time_received: '',
         time_of_analysis: '',

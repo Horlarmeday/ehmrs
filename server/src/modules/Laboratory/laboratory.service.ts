@@ -320,13 +320,6 @@ class LaboratoryService {
             item?.glucoseModel ||
             item?.proteinModel
         );
-      // const results = form
-      //   .map(item => ({
-      //     name: test.result_form === 'DefaultResultForm' ? testName : item.name,
-      //     model: result.result[item.model]?.toString(),
-      //     range: item.range || '-',
-      //   }))
-      //   .filter(item => item.model);
 
       if (results?.length) {
         acc[testName] = acc[testName] || { test: testName, results: [] };
