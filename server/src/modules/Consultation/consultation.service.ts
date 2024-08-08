@@ -27,7 +27,7 @@ class ConsultationService {
    * @memberOf ConsultationService
    */
   static async createObservationService(body: Observation) {
-    const { complaints, staff_id, visit_id, diagnosis } = body;
+    const { staff_id, visit_id, diagnosis } = body;
     const visit = await VisitService.getVisitById(visit_id);
     const insurance = await getPatientInsuranceQuery({
       patient_id: visit.patient_id,
@@ -40,16 +40,16 @@ class ConsultationService {
       patient_insurance_id: insurance?.id,
     });
 
-    let mappedComplaints: Complaint[];
-    if (complaints?.length) {
-      mappedComplaints = complaints.map(complain => {
-        complain.staff_id = staff_id;
-        complain.visit_id = visit_id;
-        complain.patient_id = visit.patient_id;
-        complain.patient_insurance_id = insurance?.id;
-        return complain;
-      });
-    }
+    // let mappedComplaints: Complaint[];
+    // if (complaints?.length) {
+    //   mappedComplaints = complaints.map(complain => {
+    //     complain.staff_id = staff_id;
+    //     complain.visit_id = visit_id;
+    //     complain.patient_id = visit.patient_id;
+    //     complain.patient_insurance_id = insurance?.id;
+    //     return complain;
+    //   });
+    // }
 
     const mappedDiagnosis = diagnosis.map(result => {
       result.staff_id = staff_id;
@@ -58,13 +58,12 @@ class ConsultationService {
       return result;
     });
 
-    const [createdComplaints, diagnoses] = await Promise.all([
-      mappedComplaints?.length && bulkCreateComplaint(mappedComplaints),
+    const [diagnoses] = await Promise.all([
       bulkCreateDiagnosis(mappedDiagnosis),
       updateVisit({ id: visit_id }, { is_taken: true }),
     ]);
 
-    return { history, createdComplaints, diagnoses };
+    return { history, diagnoses };
   }
 
   /**

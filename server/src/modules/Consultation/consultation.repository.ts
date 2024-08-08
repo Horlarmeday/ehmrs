@@ -68,6 +68,10 @@ export async function createObservation(data) {
     staff_id,
     patient_id,
     patient_insurance_id,
+    ent,
+    cns,
+    respiratory,
+    additional_complaint,
   } = data || {};
 
   return History.create({
@@ -83,6 +87,10 @@ export async function createObservation(data) {
     staff_id,
     patient_id,
     patient_insurance_id,
+    ent,
+    cns,
+    respiratory,
+    additional_complaint,
   });
 }
 
