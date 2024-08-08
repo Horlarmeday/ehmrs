@@ -18,8 +18,10 @@
           </label>
         </span>
 
-        <!-- CONVERT TO PATIENT ACCOUNT -->
-        <span v-if="patient.patient_type === this.DEPENDANT">
+        <!-- CONVERT DEPENDANT TO PATIENT ACCOUNT -->
+        <span
+          v-if="patient.patient_type === this.DEPENDANT && allowedRoles.includes(currentUser.role)"
+        >
           <a
             v-b-tooltip:hover
             title="Convert to Patient Account"
@@ -117,6 +119,7 @@ import TreatmentsTable from './components/tables/TreatmentsTable.vue';
 import TriagesTable from './components/tables/TriagesTable.vue';
 import HistoriesTable from './components/tables/HistoriesTable.vue';
 import DiagnosesTable from './components/tables/DiagnosesTable.vue';
+import { parseJwt } from '@/common/common';
 export default {
   components: {
     DiagnosesTable,
@@ -145,6 +148,8 @@ export default {
     CASH: 'Cash',
     NHIS: 'NHIS',
     switchMessage: 'Switch patient account to',
+    currentUser: parseJwt(localStorage.getItem('user_token')),
+    allowedRoles: ['Super Admin'],
   }),
 
   computed: {

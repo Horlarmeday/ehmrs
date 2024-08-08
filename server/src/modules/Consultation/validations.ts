@@ -24,18 +24,30 @@ export function validateObservation(observation) {
     abdomen: Joi.string()
       .optional()
       .allow(''),
-    complaints: Joi.array()
-      .items(
-        Joi.object({
-          complaint: Joi.string().required(),
-          frequency: Joi.string().required(),
-          frequency_number: Joi.number().required(),
-          notes: Joi.string()
-            .allow('')
-            .optional(),
-        })
-      )
-      .optional(),
+    ent: Joi.string()
+      .optional()
+      .allow(''),
+    cns: Joi.string()
+      .optional()
+      .allow(''),
+    respiratory: Joi.string()
+      .optional()
+      .allow(''),
+    additional_complaint: Joi.string()
+      .optional()
+      .allow(''),
+    // complaints: Joi.array()
+    //   .items(
+    //     Joi.object({
+    //       complaint: Joi.string().required(),
+    //       frequency: Joi.string().required(),
+    //       frequency_number: Joi.number().required(),
+    //       notes: Joi.string()
+    //         .allow('')
+    //         .optional(),
+    //     })
+    //   )
+    //   .optional(),
     diagnosis: Joi.array()
       .items(
         Joi.object({
