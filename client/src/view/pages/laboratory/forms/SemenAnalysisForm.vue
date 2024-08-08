@@ -8,14 +8,16 @@
         </tr>
       </thead>
       <tbody>
-        <semen-analysis-form-row
-          v-for="item in semenAnalysisItems"
-          :key="item.id"
-          :section="section"
-          :semen-analysis="semenAnalysis"
-          :item="item"
-          @emitSemenAnalysisResult="emitSemenAnalysisResult"
-        />
+        <template v-if="showSemenAnalysis">
+          <semen-analysis-form-row
+            v-for="item in semenAnalysisItems"
+            :key="item.id"
+            :section="section"
+            :semen-analysis="semenAnalysis"
+            :item="item"
+            @emitSemenAnalysisResult="emitSemenAnalysisResult"
+          />
+        </template>
         <template v-if="showMethodOfProduction">
           <tr>
             <th class="text-center" colspan="2">Method of Production</th>
@@ -47,7 +49,7 @@
             <th class="text-center" colspan="2">Percentage Motility</th>
           </tr>
           <semen-analysis-form-row
-            v-for="item in microscopy"
+            v-for="item in percentageMotility"
             :key="item.id"
             :section="section"
             :semen-analysis="semenAnalysis"
@@ -141,9 +143,6 @@ export default {
       others: '',
     },
     methodOfProduction: [
-      { id: randomId(), label: 'Time Produced', model: 'time_produced', isSmall: true },
-      { id: randomId(), label: 'Time Received', model: 'time_received', isSmall: true },
-      { id: randomId(), label: 'Time of Analysis', model: 'time_of_analysis', isSmall: true },
       {
         id: randomId(),
         label: 'Method of Production',
@@ -172,7 +171,7 @@ export default {
       { id: randomId(), label: 'Spermatozoan', model: 'spermatozoan', isSmall: true },
       { id: randomId(), label: 'Epithelial Cells', model: 'epithelial_cells', isSmall: true },
     ],
-    percentageMobility: [
+    percentageMotility: [
       { id: randomId(), label: 'Percentage Motility', model: 'percentage_motility', isSmall: true },
       { id: randomId(), label: 'Active', model: 'active', isSmall: true },
       { id: randomId(), label: 'Sluggish', model: 'sluggish', isSmall: true },
@@ -208,6 +207,9 @@ export default {
     semenAnalysisItems: [
       { id: randomId(), label: 'Culture', model: 'culture' },
       { id: randomId(), label: 'Appearance', model: 'appearance' },
+      { id: randomId(), label: 'Time Produced', model: 'time_produced', isSmall: true },
+      { id: randomId(), label: 'Time Received', model: 'time_received', isSmall: true },
+      { id: randomId(), label: 'Time of Analysis', model: 'time_of_analysis', isSmall: true },
     ],
   }),
   props: {
@@ -236,6 +238,22 @@ export default {
     },
   },
   computed: {
+    showSemenAnalysis() {
+      const semenAnalysis = {
+        culture: '',
+        appearance: '',
+        time_produced: '',
+        time_of_analysis: '',
+        time_received: '',
+      };
+      const semenAnalysisKeys = Object.keys(semenAnalysis)
+        .map(key => this.semenAnalysis[key])
+        .filter(Boolean);
+      return (
+        (this.section !== 'ValidationSection' && this.section !== 'ApprovalSection') ||
+        !!semenAnalysisKeys?.length
+      );
+    },
     showPercentageMortility() {
       const percentageMortility = {
         active: '',

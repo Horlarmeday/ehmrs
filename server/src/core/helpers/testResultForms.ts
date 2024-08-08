@@ -85,6 +85,8 @@ export default {
     { name: 'Comments', model: 'comments' },
   ],
   SemenAnalysisForm: [
+    { name: 'Culture', model: 'culture' },
+    { name: 'Appearance', model: 'appearance' },
     { name: 'Time Produced', model: 'time_produced' },
     { name: 'Time Received', model: 'time_received' },
     { name: 'Time of Analysis', model: 'time_of_analysis' },
@@ -113,8 +115,6 @@ export default {
     { name: '% Abnormal Cells', model: 'abnormal_cells' },
     { name: 'Sperm Count', model: 'sperm_count' },
     { name: 'Others', model: 'others' },
-    { name: 'Culture', model: 'culture' },
-    { name: 'Appearance', model: 'appearance' },
     { name: 'Antibiotic Sensitivity' },
     { name: 'Ciprofloxacin', model: 'ciprofloxacin' },
     { name: 'Rifampicin', model: 'rifampicin' },
