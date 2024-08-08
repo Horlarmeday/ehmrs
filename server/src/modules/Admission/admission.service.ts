@@ -192,6 +192,7 @@ export class AdmissionService {
     const admission = await getOneAdmission({ id: admissionId });
     return createObservation({
       ...body,
+      temperature: +body.temperature,
       admission_id: admission.id,
       staff_id: staffId,
       visit_id: admission.visit_id,

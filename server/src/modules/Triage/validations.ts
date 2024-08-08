@@ -18,7 +18,7 @@ export function validateTriage(triage) {
     respiration: Joi.string()
       .optional()
       .allow(''),
-    temperature: Joi.string().required(),
+    temperature: Joi.alternatives(Joi.string(), Joi.number()).required(),
     systolic: Joi.string()
       .optional()
       .allow(''),

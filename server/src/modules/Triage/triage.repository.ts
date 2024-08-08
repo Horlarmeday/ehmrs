@@ -35,7 +35,7 @@ export async function createTriage(data) {
     bmi,
     pulse,
     respiration,
-    temperature,
+    temperature: +temperature,
     systolic,
     diastolic,
     heart_rate,
