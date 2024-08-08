@@ -18,58 +18,20 @@
             <span class="text-danger text-sm">{{ errors.first('complaint') }}</span>
           </div>
         </div>
-        <div class="form-group row mt-3" v-for="(complaint, index) in complaints" :key="index">
-          <label class="col-lg-2 col-form-label">Additional Complaint:</label>
-          <div class="col-lg-4">
-            <input
-              name="complaint"
-              v-model="complaint.complaint"
-              type="text"
-              class="form-control
-            form-control-sm"
-            />
-            <!--            <span class="text-danger text-sm">{{ errors.first('complaint') }}</span>-->
-          </div>
-          <label class="col-lg-1 col-form-label">For</label>
-          <div class="col-lg-2">
-            <input
-              name="frequency_number"
-              v-model="complaint.frequency_number"
-              type="number"
-              class="form-control form-control-sm"
-            />
-            <!--            <span class="text-danger text-sm">{{ errors.first('frequency_number') }}</span>-->
-          </div>
-          <div class="col-lg-2">
-            <select
-              name="frequency"
-              v-model="complaint.frequency"
-              class="form-control form-control-sm"
-            >
-              <option value="Minutes">Minutes</option>
-              <option value="Hours">Hours</option>
-              <option value="Days">Days</option>
-              <option value="Weeks">Weeks</option>
-              <option value="Months">Months</option>
-              <option value="Years">Years</option>
-            </select>
-            <!--            <span class="text-danger text-sm">{{ errors.first('frequency') }}</span>-->
-          </div>
-          <a href="#" class="col-lg-1 col-form-label">
-            <i
-              v-if="index === 0"
-              class="far fa-plus-square mr-3 text-primary icon-lg"
-              @click="addNewComplaint"
-            />
-            <i
-              class="far fa-trash-alt icon-md text-danger"
-              v-if="index !== 0"
-              @click="removeComplaints(index)"
-            />
-          </a>
-        </div>
         <div class="form-group row">
-          <label class="col-2 col-form-label">Examination Notes</label>
+          <label class="col-2 col-form-label">Additional Complaint</label>
+          <div class="col-9">
+            <textarea
+              v-model="additional_complaint"
+              class="form-control form-control-sm"
+              cols="10"
+              rows="3"
+            />
+          </div>
+        </div>
+        <h5 class="text-center mb-4">Physical Examination</h5>
+        <div class="form-group row">
+          <label class="col-2 col-form-label">General Examination</label>
           <div class="col-9">
             <textarea
               v-model="examination_note"
@@ -79,10 +41,16 @@
             />
           </div>
         </div>
+        <h5 class="text-center mb-4">Systemic Examination</h5>
         <div class="form-group row">
-          <label class="col-lg-2 col-form-label">Chest:</label>
+          <label class="col-lg-2 col-form-label">Respiratory:</label>
           <div class="col-4">
-            <textarea v-model="chest" class="form-control form-control-sm" cols="30" rows="2" />
+            <textarea
+              v-model="respiratory"
+              class="form-control form-control-sm"
+              cols="30"
+              rows="2"
+            />
           </div>
           <label class="col-lg-1 col-form-label">CVS:</label>
           <div class="col-4">
@@ -94,14 +62,28 @@
           <div class="col-4">
             <textarea v-model="abdomen" class="form-control form-control-sm" cols="30" rows="2" />
           </div>
+          <label class="col-lg-1 col-form-label">CNS:</label>
+          <div class="col-4">
+            <textarea v-model="cns" class="form-control form-control-sm" cols="30" rows="2" />
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-lg-2 col-form-label">Chest:</label>
+          <div class="col-4">
+            <textarea v-model="chest" class="form-control form-control-sm" cols="30" rows="2" />
+          </div>
           <label class="col-lg-1 col-form-label">MSS:</label>
           <div class="col-4">
             <textarea v-model="mss" class="form-control form-control-sm" cols="30" rows="2" />
           </div>
         </div>
         <div class="form-group row">
-          <label class="col-2 col-form-label">Other</label>
-          <div class="col-9">
+          <label class="col-lg-2 col-form-label">ENT:</label>
+          <div class="col-4">
+            <textarea v-model="ent" class="form-control form-control-sm" cols="30" rows="2" />
+          </div>
+          <label class="col-lg-1 col-form-label">Other:</label>
+          <div class="col-4">
             <textarea
               v-model="other_examination"
               class="form-control form-control-sm"
@@ -224,14 +206,6 @@ export default {
   components: { DiagnosisAccordion, vSelect },
   data() {
     return {
-      complaints: [
-        {
-          complaint: '',
-          frequency_number: '',
-          frequency: '',
-          notes: '',
-        },
-      ],
       diagnosis: [
         {
           certainty: '',
@@ -240,11 +214,15 @@ export default {
         },
       ],
       complaint_note: '',
+      additional_complaint: '',
       history_note: '',
       chest: '',
       other_examination: '',
       cvs: '',
       mss: '',
+      ent: '',
+      cns: '',
+      respiratory: '',
       abdomen: '',
       examination_note: '',
       isDisabled: false,
@@ -292,9 +270,6 @@ export default {
       this.$validator.validateAll().then(result => {
         if (result) {
           const obj = {
-            ...(this.complaints.some(({ complaint }) => complaint) && {
-              complaints: this.complaints,
-            }),
             has_smoking_history: this.has_smoking_history,
             examination_note: this.examination_note,
             history_note: this.history_note,
@@ -310,6 +285,10 @@ export default {
               certainty,
               notes,
             })),
+            ent: this.ent,
+            cns: this.cns,
+            respiratory: this.respiratory,
+            additional_complaint: this.additional_complaint,
           };
           const submitButton = this.$refs['kt_observation_submit'];
           this.addSpinner(submitButton);
@@ -338,19 +317,6 @@ export default {
       });
     },
 
-    addNewComplaint() {
-      this.complaints.push({
-        complaint: '',
-        frequency_number: '',
-        frequency: '',
-        notes: '',
-      });
-    },
-
-    removeComplaints(index) {
-      this.complaints.splice(index, 1);
-    },
-
     addNewDiagnosis() {
       this.diagnosis.push({
         certainty: '',
@@ -369,14 +335,6 @@ export default {
     },
 
     initValues() {
-      this.complaints = [
-        {
-          complaint: '',
-          frequency_number: '',
-          frequency: '',
-          notes: '',
-        },
-      ];
       this.diagnosis = [
         {
           certainty: '',
@@ -393,6 +351,10 @@ export default {
       this.cvs = '';
       this.mss = '';
       this.abdomen = '';
+      this.ent = '';
+      this.cns = '';
+      this.respiratory = '';
+      this.additional_complaint = '';
     },
 
     searchDiagnosis(search, loading) {
