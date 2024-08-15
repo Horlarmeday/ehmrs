@@ -49,6 +49,7 @@ import History from '@/view/pages/consultation/tabs/History.vue';
 import Surgery from '@/view/pages/consultation/tabs/Surgery.vue';
 import WardRound from '@/view/pages/consultation/tabs/WardRound.vue';
 import TriageCard from '@/view/components/util/TriageCard.vue';
+import AdditionalItems from '@/view/pages/visits/components/tabs/additionalItems/AdditionalItems.vue';
 
 const ComponentMapping = {
   observations: Observations,
@@ -60,6 +61,7 @@ const ComponentMapping = {
   history: History,
   surgery: Surgery,
   wardRound: WardRound,
+  additionalItems: AdditionalItems,
 };
 
 export default {
@@ -104,6 +106,11 @@ export default {
         {
           name: 'Services',
           component: 'services',
+          showComponent: true,
+        },
+        {
+          name: 'Items',
+          component: 'additionalItems',
           showComponent: true,
         },
         {
