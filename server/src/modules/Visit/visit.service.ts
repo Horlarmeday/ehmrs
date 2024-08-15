@@ -26,6 +26,7 @@ import { insertSingleOrMultipleServices, StatusCodes } from '../../core/helpers/
 import { Op } from 'sequelize';
 import {
   ANTENATAL_ACCOUNT_REQUIRED,
+  CANNOT_UPDATE_INPATIENT_VISIT,
   IMMUNIZATION_ACCOUNT_REQUIRED,
   PATIENT_ON_ADMISSION,
 } from './messages/response.messages';
@@ -283,6 +284,25 @@ class VisitService {
    * @param body
    */
   static async updateVisit(visitId: number, body: Partial<Visit>) {
+    const { category } = body;
+    const visit = await getVisitById(visitId);
+
+    if (visit.category === VisitCategory.IPD)
+      throw new BadException('INVALID', StatusCodes.BAD_REQUEST, CANNOT_UPDATE_INPATIENT_VISIT);
+
+    if (category === VisitCategory.ANC) {
+      const antenatal = await getOneAntenatalAccount({
+        patient_id: visit.patient_id,
+        [Op.or]: [
+          { account_status: AccountStatus.ACTIVE },
+          { account_status: AccountStatus.INACTIVE },
+        ],
+      });
+      if (!antenatal)
+        throw new BadException('INVALID', StatusCodes.BAD_REQUEST, ANTENATAL_ACCOUNT_REQUIRED);
+
+      body.ante_natal_id = antenatal.id;
+    }
     return updateVisit({ id: visitId }, body);
   }
 

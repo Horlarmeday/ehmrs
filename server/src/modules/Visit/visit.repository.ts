@@ -12,7 +12,7 @@ import {
   staffAttributes,
 } from '../../core/helpers/helper';
 import { FindAttributeOptions } from 'sequelize/types/model';
-import { getPrescriptions } from '../Consultation/consultation.repository';
+import { getVisitPrescriptions as getPrescriptions } from '../Consultation/consultation.repository';
 import { getOneTriage } from '../Triage/triage.repository';
 import { getOnePrescribedTest } from '../Orders/Laboratory/lab-order.repository';
 import {
@@ -624,8 +624,7 @@ export const getProfessionalAssignedVisits = async ({
  * @param visitId
  */
 export const getVisitPrescriptions = async (visitId: number) => {
-  const prescriptions = await getPrescriptions(visitId, VisitCategory.OPD);
-  return prescriptions;
+  return await getPrescriptions([visitId], [VisitCategory.OPD]);
 };
 
 /**
