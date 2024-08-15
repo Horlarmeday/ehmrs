@@ -19,7 +19,7 @@
           </div>
         </div>
         <div class="form-group row">
-          <label class="col-2 col-form-label">Additional Complaint</label>
+          <label class="col-2 col-form-label">History</label>
           <div class="col-9">
             <textarea
               v-model="additional_complaint"
@@ -38,7 +38,11 @@
               class="form-control form-control-sm"
               cols="30"
               rows="2"
+              name="general_examination"
+              v-validate="'required'"
+              data-vv-validate-on="blur"
             />
+            <span class="text-danger text-sm">{{ errors.first('general_examination') }}</span>
           </div>
         </div>
         <h5 class="text-center mb-4">Systemic Examination</h5>
@@ -68,22 +72,18 @@
           </div>
         </div>
         <div class="form-group row">
-          <label class="col-lg-2 col-form-label">Chest:</label>
-          <div class="col-4">
-            <textarea v-model="chest" class="form-control form-control-sm" cols="30" rows="2" />
-          </div>
-          <label class="col-lg-1 col-form-label">MSS:</label>
+          <label class="col-lg-2 col-form-label">MSS:</label>
           <div class="col-4">
             <textarea v-model="mss" class="form-control form-control-sm" cols="30" rows="2" />
           </div>
-        </div>
-        <div class="form-group row">
-          <label class="col-lg-2 col-form-label">ENT:</label>
+          <label class="col-lg-1 col-form-label">ENT:</label>
           <div class="col-4">
             <textarea v-model="ent" class="form-control form-control-sm" cols="30" rows="2" />
           </div>
-          <label class="col-lg-1 col-form-label">Other:</label>
-          <div class="col-4">
+        </div>
+        <div class="form-group row">
+          <label class="col-lg-2 col-form-label">Other:</label>
+          <div class="col-9">
             <textarea
               v-model="other_examination"
               class="form-control form-control-sm"
@@ -93,14 +93,18 @@
           </div>
         </div>
         <div class="form-group row">
-          <label class="col-2 col-form-label">Treatment Procedure</label>
+          <label class="col-2 col-form-label">Treatment Plan</label>
           <div class="col-9">
             <textarea
               v-model="history_note"
               class="form-control form-control-sm"
               cols="30"
               rows="2"
+              name="treatment_plan"
+              v-validate="'required'"
+              data-vv-validate-on="blur"
             />
+            <span class="text-danger text-sm">{{ errors.first('treatment_plan') }}</span>
           </div>
         </div>
         <hr />
