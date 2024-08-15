@@ -124,12 +124,7 @@ class ConsultationService {
    * @param body
    * @memberOf ConsultationService
    */
-  static async getDiagnosesAndFindings(
-    body
-  ): Promise<{
-    diagnoses: Diagnosis[];
-    findings: { histories: History[]; complaints: Complaint[] } | AntenatalObservation[];
-  }> {
+  static async getDiagnosesAndFindings(body) {
     return getDiagnosesAndFindings(body);
   }
 

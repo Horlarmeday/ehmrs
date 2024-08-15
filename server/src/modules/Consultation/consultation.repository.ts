@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import { BadException } from '../../common/util/api-error';
-import { paginate, StatusCodes } from '../../core/helpers/helper';
+import { getPrescriptionsByVisit, paginate, StatusCodes } from '../../core/helpers/helper';
 import { Complaint, Diagnosis, History, Staff, Visit } from '../../database/models';
 import { WhereOptions } from 'sequelize';
 import { getPrescriptionTests } from '../Orders/Laboratory/lab-order.repository';
@@ -20,6 +20,7 @@ import {
 } from '../Antenatal/antenatal.repository';
 import { VisitCategory } from '../../database/models/visit';
 import { getWardRounds } from '../Admission/admission.repository';
+import { getVisitsPrescriptions } from '../Pharmacy/pharmacy.repository';
 
 /**
  * create a patient complaint
@@ -141,25 +142,87 @@ export async function getModelByVisitId(model, query: WhereOptions<Visit>): Prom
 
 /**
  * get consultation/visit summary
- * @param data
  * @returns {object} consultation summary data
+ * @param query
  */
-export async function getConsultationSummary(data: WhereOptions<Visit>) {
-  const complaint = getModelByVisitId(Complaint, data) as Promise<Complaint[]>;
-  const history = getModelByVisitId(History, data) as Promise<History[]>;
-
-  try {
-    const [complaints, histories] = await Promise.all([complaint, history]);
-    return {
-      histories,
-      complaints,
-    };
-  } catch (e) {
-    throw new BadException('ERROR', StatusCodes.SERVER_ERROR, e);
-  }
+export async function getConsultationSummary(query: WhereOptions<History>) {
+  return History.findAll({
+    order: [['createdAt', 'DESC']],
+    where: { ...query },
+    include: [{ model: Staff, attributes: staffAttributes }],
+  });
 }
 
-export const getPrescriptions = async (visit_id: number, category: VisitCategory) => {
+/**
+ * get visit observations
+ *
+ * @function
+ * @param visitIds
+ * @param categories
+ */
+export const getObservations = async (visitIds: number[], categories: VisitCategory[]) => {
+  const ancVisitIds = visitIds.filter((_, index) => categories[index] === VisitCategory.ANC);
+  const nonAncVisitIds = visitIds.filter((_, index) => categories[index] !== VisitCategory.ANC);
+
+  const [ancObservations, consultationSummaries] = await Promise.all([
+    ancVisitIds.length > 0 ? getAntenatalObservations({ visit_id: ancVisitIds }) : [],
+    nonAncVisitIds.length > 0 ? getConsultationSummary({ visit_id: nonAncVisitIds }) : [],
+  ]);
+
+  return [...ancObservations, ...consultationSummaries];
+};
+
+/**
+ * get clinical notes
+ *
+ * @function
+ * @param visitIds
+ * @param categories
+ */
+export const getClinicalNotes = async (visitIds: number[], categories: VisitCategory[]) => {
+  const ancVisitIds = visitIds.filter((_, index) => categories[index] === VisitCategory.ANC);
+  return getAntenatalClinicalNotes({ visit_id: ancVisitIds });
+};
+
+/**
+ * get visit triages
+ *
+ * @function
+ * @param visitIds
+ * @param categories
+ */
+export const getVisitTriages = async (visitIds: number[], categories: VisitCategory[]) => {
+  const ancVisitIds = visitIds.filter((_, index) => categories[index] === VisitCategory.ANC);
+  const nonAncVisitIds = visitIds.filter((_, index) => categories[index] !== VisitCategory.ANC);
+
+  const [ancTriages, regularTriages] = await Promise.all([
+    ancVisitIds.length > 0 ? getAncTriages({ visit_id: ancVisitIds }) : [],
+    nonAncVisitIds.length > 0 ? getTriages({ visit_id: nonAncVisitIds }) : [],
+  ]);
+
+  return [...ancTriages, ...regularTriages];
+};
+
+/**
+ * get clinical notes
+ *
+ * @function
+ * @param visitIds
+ * @param categories
+ */
+export const getVisitsWardRounds = async (visitIds: number[], categories: VisitCategory[]) => {
+  const ipdVisitIds = visitIds.filter((_, index) => categories[index] === VisitCategory.IPD);
+  return getWardRounds({ visit_id: ipdVisitIds });
+};
+
+/**
+ * get visits prescriptions
+ *
+ * @function
+ * @param visitIds
+ * @param categories
+ */
+export const getVisitPrescriptions = async (visitIds: number[], categories: VisitCategory[]) => {
   const [
     tests,
     drugs,
@@ -172,37 +235,50 @@ export const getPrescriptions = async (visit_id: number, category: VisitCategory
     notes,
     wardRounds,
   ] = await Promise.all([
-    getPrescriptionTests({ visit_id }),
-    getDrugsPrescribed({ visit_id }),
-    getPrescriptionInvestigations({ visit_id }),
-    (category === VisitCategory.ANC ? getAntenatalObservations : getConsultationSummary)({
-      visit_id,
-    }),
-    (category === VisitCategory.ANC ? getAncTriages : getTriages)({ visit_id }),
-    getPatientDiagnoses({ visit_id }),
-    getAdditionalItems({ visit_id }),
-    getPrescriptionServices({ visit_id }),
-    category === VisitCategory.ANC
-      ? getAntenatalClinicalNotes({ visit_id })
-      : Promise.resolve(null),
-    category === VisitCategory.IPD ? getWardRounds({ visit_id }) : Promise.resolve(null),
+    getPrescriptionTests({ visit_id: visitIds }),
+    getDrugsPrescribed({ visit_id: visitIds }),
+    getPrescriptionInvestigations({ visit_id: visitIds }),
+    getObservations(visitIds, categories),
+    getVisitTriages(visitIds, categories),
+    getPatientDiagnoses({ visit_id: visitIds }),
+    getAdditionalItems({ visit_id: visitIds }),
+    getPrescriptionServices({ visit_id: visitIds }),
+    getClinicalNotes(visitIds, categories),
+    getVisitsWardRounds(visitIds, categories),
   ]);
-  return {
-    tests,
-    drugs,
-    investigations,
-    observations,
-    triages,
-    diagnoses,
-    items,
-    services,
-    notes,
-    wardRounds,
+
+  const data = {
+    tests: getPrescriptionsByVisit(tests.map(prescription => prescription.toJSON())),
+    drugs: getPrescriptionsByVisit(drugs.map(prescription => prescription.toJSON())),
+    investigations: getPrescriptionsByVisit(
+      investigations.map(prescription => prescription.toJSON())
+    ),
+    observations: getPrescriptionsByVisit(observations.map(prescription => prescription.toJSON())),
+    triages: getPrescriptionsByVisit(triages.map(prescription => prescription.toJSON())),
+    diagnoses: getPrescriptionsByVisit(diagnoses.map(prescription => prescription.toJSON())),
+    items: getPrescriptionsByVisit(items.map(prescription => prescription.toJSON())),
+    services: getPrescriptionsByVisit(services.map(prescription => prescription.toJSON())),
+    notes: getPrescriptionsByVisit(notes.map(prescription => prescription.toJSON())),
+    wardRounds: getPrescriptionsByVisit(wardRounds.map(prescription => prescription.toJSON())),
   };
+
+  return visitIds.map(id => ({
+    tests: data.tests[id] || [],
+    drugs: data.drugs[id] || [],
+    investigations: data.investigations[id] || [],
+    observations: data.observations[id] || [],
+    triages: data.triages[id] || [],
+    diagnoses: data.diagnoses[id] || [],
+    items: data.items[id] || [],
+    services: data.services[id] || [],
+    notes: data.notes[id] || [],
+    wardRounds: data.wardRounds[id] || [],
+  }));
 };
 
 /**
  * get consultation history
+ *
  * @returns {Promise<{total: number, docs: any[], pages: number, perPage: number, currentPage: number}>} consultation summary data
  * @param currentPage
  * @param pageLimit
@@ -227,20 +303,17 @@ export const getVisitsHistory = async (
     },
     ['id', 'date_visit_start', 'date_visit_ended', 'patient_id', 'category', 'status', 'staff_id']
   );
-  const summary = await Promise.all(
-    visits.map(
-      async ({ id, date_visit_start, date_visit_ended, patient_id, category, status, staff }) => ({
-        id,
-        date_visit_start,
-        date_visit_ended,
-        patient_id,
-        category,
-        status,
-        staff,
-        ...(await getPrescriptions(id, category)),
-      })
-    )
-  );
+  const visitJSON = visits.map(visit => visit.toJSON());
+  const visitIds = visitJSON.map(visit => visit.id);
+  const categories = visitJSON.map(visit => visit.category);
+
+  const prescriptions = await getVisitPrescriptions(visitIds, categories);
+
+  const summary = visitJSON.map((visit, index) => ({
+    ...visit,
+    ...prescriptions[index],
+  }));
+
   return paginate({ rows: summary, count }, currentPage, limit);
 };
 
