@@ -94,7 +94,10 @@ export function validateBulkDrugsPrescription(drug: any) {
         drug_name: Joi.string()
           .optional()
           .allow(''),
-        quantity_prescribed: Joi.number().required(),
+        quantity_prescribed: Joi.number()
+          .min(1)
+          .positive()
+          .required(),
         quantity_to_dispense: Joi.number()
           .min(1)
           .positive()
@@ -116,7 +119,9 @@ export function validateBulkDrugsPrescription(drug: any) {
         drug_group: Joi.string()
           .optional()
           .allow(''),
-        total_price: Joi.number().required(),
+        total_price: Joi.number()
+          .allow('')
+          .optional(),
         drug_id: Joi.number().required(),
         drug_type: Joi.string().valid(
           DrugType.CASH,

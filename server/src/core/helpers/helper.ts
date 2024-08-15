@@ -62,7 +62,7 @@ export async function processSnappedPhoto(param: string, patient: string): Promi
 
   const imageBuffer = Buffer.from(matches[2], 'base64');
   const extension = mime.getExtension(matches[1]);
-  const fileName = `${patient}${Date.now()}.${extension}`;
+  const fileName = `${patient.trim()}${Date.now()}.${extension}`;
   let filepath: fs.PathOrFileDescriptor;
 
   if (process.env.NODE_ENV === DEVELOPMENT) {
@@ -320,4 +320,22 @@ export const groupDataByField = ({
       [resultData]: value,
     }))
     .value();
+};
+
+/**
+ * helper function to shape prescriptions
+ *
+ * @function
+ * @param prescriptions
+ */
+export const getPrescriptionsByVisit = prescriptions => {
+  const prescriptionsByVisit: Record<number, any[]> = {};
+  prescriptions.forEach(obs => {
+    if (!prescriptionsByVisit[obs.visit_id]) {
+      prescriptionsByVisit[obs.visit_id] = [];
+    }
+    prescriptionsByVisit[obs.visit_id].push(obs);
+  });
+
+  return prescriptionsByVisit;
 };
