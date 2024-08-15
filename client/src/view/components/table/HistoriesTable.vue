@@ -22,7 +22,7 @@
           <td>{{ history?.staff?.fullname || '-' }}</td>
           <td>{{ history.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
           <td>
-            <a :id="popOverId" @click="viewPopover(history)" href="#"
+            <a @click="viewModal(history)" href="#"
               ><i class="icon-xl text-primary la la-eye"></i
             ></a>
           </td>
@@ -46,11 +46,10 @@ export default {
   },
   data: () => ({
     displayPrompt: false,
-    popOverId: 'popover-reactive-73',
     history: {},
   }),
   methods: {
-    viewPopover(history) {
+    viewModal(history) {
       this.history = history;
       this.displayPrompt = true;
     },

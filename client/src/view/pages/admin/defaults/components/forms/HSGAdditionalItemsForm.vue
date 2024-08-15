@@ -79,10 +79,11 @@
             v-model="item.quantity"
             class="form-control-sm form-control"
             type="number"
-            name="quantity_to_dispense"
+            name="quantity"
             v-validate="'required'"
             data-vv-validate-on="blur"
           />
+          <span class="text-danger text-sm">{{ errors.first('quantity') }}</span>
         </div>
         <div class="pt-lg-5">
           <a href="#" class="col-lg-1 col-form-label">
