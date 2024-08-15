@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="card-header p-0">
-      <div class="card-title mb-2">
+      <div class="card-title mb-4">
         <span class="card-label font-weight-bolder text-dark"></span>
         <span v-if="showSwitch">
           <switch-box
@@ -55,7 +55,6 @@
               />
               <i
                 class="far fa-trash-alt icon-md text-danger icon-lg mt-lg-3"
-                v-if="i !== 0"
                 @click="removeItem(i)"
               />
             </a>
