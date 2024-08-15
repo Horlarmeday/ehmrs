@@ -1,6 +1,7 @@
 import {
   AfterUpdate,
   BeforeCreate,
+  BeforeUpdate,
   BelongsTo,
   Column,
   DataType,
@@ -280,7 +281,7 @@ export class Patient extends Model {
     instance.complete_name = `${firstname} ${middlename ? middlename + ' ' : ''}${lastname}`;
   }
 
-  @AfterUpdate
+  @BeforeUpdate
   static async updateCompleteName(instance: Patient) {
     // this will be called when an instance is updated
     const firstname = instance.firstname;
