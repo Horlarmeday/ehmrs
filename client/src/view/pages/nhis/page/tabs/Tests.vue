@@ -87,46 +87,54 @@
                 </span>
               </td>
               <td class="pr-0 text-right">
-                <button
-                  :disabled="test.nhis_status === APPROVED || test.nhis_status === DECLINED"
-                  title="Change Test Type"
-                  v-b-tooltip.hover
-                  href="#"
-                  class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
-                  @click="openTestGroupModal(test)"
-                >
-                  <open-icon />
-                </button>
-                <button
-                  :disabled="disableAddAuthCode(test)"
-                  title="Add Authorization Code"
-                  v-b-tooltip.hover
-                  href="#"
-                  class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
-                  @click="addAuthCode(test)"
-                >
-                  <edit-icon />
-                </button>
-                <button
-                  :disabled="disableStatusChange(test)"
-                  title="Approve"
-                  v-b-tooltip.hover
-                  href="#"
-                  class="btn btn-icon btn-light btn-hover-success btn-sm mr-2"
-                  @click="showDischargeAlert('Approved', test.id)"
-                >
-                  <approve-icon />
-                </button>
-                <button
-                  :disabled="disableStatusChange(test)"
-                  title="Decline"
-                  v-b-tooltip.hover
-                  href="#"
-                  class="btn btn-icon btn-light btn-hover-danger btn-sm"
-                  @click="showDischargeAlert('Declined', test.id)"
-                >
-                  <cancel-icon />
-                </button>
+                <div v-if="!isTestProcessed(test)">
+                  <button
+                    :disabled="test.nhis_status === APPROVED || test.nhis_status === DECLINED"
+                    title="Change Test Type"
+                    v-b-tooltip.hover
+                    href="#"
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
+                    @click="openTestGroupModal(test)"
+                  >
+                    <open-icon />
+                  </button>
+                  <button
+                    :disabled="disableAddAuthCode(test)"
+                    title="Add Authorization Code"
+                    v-b-tooltip.hover
+                    href="#"
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
+                    @click="addAuthCode(test)"
+                  >
+                    <edit-icon />
+                  </button>
+                  <button
+                    :disabled="disableStatusChange(test)"
+                    title="Approve"
+                    v-b-tooltip.hover
+                    href="#"
+                    class="btn btn-icon btn-light btn-hover-success btn-sm mr-2"
+                    @click="showStatusChangeAlert('Approved', test)"
+                  >
+                    <approve-icon />
+                  </button>
+                  <button
+                    :disabled="disableStatusChange(test)"
+                    title="Decline"
+                    v-b-tooltip.hover
+                    href="#"
+                    class="btn btn-icon btn-light btn-hover-danger btn-sm"
+                    @click="showStatusChangeAlert('Declined', test)"
+                  >
+                    <cancel-icon />
+                  </button>
+                </div>
+                <div v-else>
+                  <span class="text-dark-50 mr-2">Processed By: </span>
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-md">{{
+                    test?.nhis_test_processor?.fullname || '-'
+                  }}</span>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -149,7 +157,7 @@ import CancelIcon from '@/assets/icons/CancelIcon.vue';
 import Pagination from '@/utils/Pagination.vue';
 import AuthCodeModal from '@/view/pages/nhis/components/AuthCodeModal.vue';
 import Swal from 'sweetalert2';
-import { getItemType } from '@/common/common';
+import { getItemType, parseJwt } from '@/common/common';
 import OpenIcon from '@/assets/icons/OpenIcon.vue';
 import ChangeTestGroup from '@/view/pages/nhis/components/ChangeTestGroup.vue';
 
@@ -174,11 +182,13 @@ export default {
     SECONDARY: 'Secondary',
     ACCEPTED: 'Accepted',
     DECLINED: 'Declined',
+    NHIS: 'NHIS',
     test: {},
     testGroupData: {},
     displayPrompt: false,
     displayTestGroupPrompt: false,
     dispatchType: 'order/updatePrescribedTest',
+    currentUser: parseJwt(localStorage.getItem('user_token')),
   }),
   computed: {
     tests() {
@@ -244,7 +254,7 @@ export default {
       return 'label-light-dark ';
     },
 
-    showDischargeAlert(nhis_status, testId) {
+    showStatusChangeAlert(nhis_status, test) {
       const self = this;
       Swal.fire({
         title: 'Are you sure?',
@@ -258,7 +268,7 @@ export default {
         reverseButtons: true,
       }).then(function(result) {
         if (result.value) {
-          self.changeTestNhisStatus({ nhis_status, testId });
+          self.changeTestNhisStatus({ nhis_status, test });
         }
       });
     },
@@ -273,13 +283,32 @@ export default {
       });
     },
 
-    changeTestNhisStatus({ nhis_status, testId }) {
+    processTestValidations(nhis_status, test) {
+      return (
+        nhis_status === this.APPROVED &&
+        test?.test_group === this.SECONDARY &&
+        test.test_type === this.NHIS &&
+        !test.auth_code
+      );
+    },
+
+    changeTestNhisStatus({ nhis_status, test }) {
+      if (this.processTestValidations(nhis_status, test)) {
+        return this.$notify({
+          group: 'foo',
+          title: 'Error message',
+          text: 'Secondary tests cannot be processed without authorization code!',
+          type: 'error',
+        });
+      }
       this.$store
         .dispatch('order/updatePrescribedTest', {
           data: {
             nhis_status,
-            id: testId,
+            id: test.id,
             payment_status: nhis_status === this.APPROVED ? this.CLEARED : this.PENDING,
+            nhis_test_processed_by: this.currentUser.sub,
+            date_nhis_test_processed: new Date(),
           },
         })
         .then(() => this.handleSuccess(nhis_status));
@@ -292,12 +321,7 @@ export default {
     },
 
     disableStatusChange(test) {
-      const INCLUDED_INSURANCE = ['NHIS', 'FHSS'];
-      if (
-        test.test_group === this.SECONDARY &&
-        !test.auth_code &&
-        INCLUDED_INSURANCE.includes(this.visit?.insurance?.insurance?.name)
-      ) {
+      if (test.test_group === this.SECONDARY && !test.auth_code && test.test_type === this.NHIS) {
         return true;
       }
       if (test.nhis_status === this.APPROVED || test.nhis_status === this.DECLINED) return true;
@@ -306,6 +330,10 @@ export default {
     disableAddAuthCode(test) {
       if (test.test_group === this.PRIMARY) return true;
       if (test.nhis_status === this.APPROVED || test.nhis_status === this.DECLINED) return true;
+    },
+
+    isTestProcessed(test) {
+      return test.nhis_status === this.APPROVED || test.nhis_status === this.DECLINED;
     },
   },
   created() {

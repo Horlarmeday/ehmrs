@@ -80,24 +80,32 @@
                 </span>
               </td>
               <td class="pr-0 text-right">
-                <a
-                  title="Approve"
-                  v-b-tooltip.hover
-                  href="#"
-                  class="btn btn-icon btn-light btn-hover-success btn-sm mr-2"
-                  @click="showDischargeAlert('Approved', item.id)"
-                >
-                  <approve-icon />
-                </a>
-                <a
-                  title="Decline"
-                  v-b-tooltip.hover
-                  href="#"
-                  class="btn btn-icon btn-light btn-hover-danger btn-sm"
-                  @click="showDischargeAlert('Declined', item.id)"
-                >
-                  <cancel-icon />
-                </a>
+                <div v-if="!isItemProcessed(item)">
+                  <button
+                    :disabled="disableStatusChange(item)"
+                    title="Approve"
+                    v-b-tooltip.hover
+                    class="btn btn-icon btn-light btn-hover-success btn-sm mr-2"
+                    @click="showStatusChangeAlert('Approved', item.id)"
+                  >
+                    <approve-icon />
+                  </button>
+                  <button
+                    :disabled="disableStatusChange(item)"
+                    title="Decline"
+                    v-b-tooltip.hover
+                    class="btn btn-icon btn-light btn-hover-danger btn-sm"
+                    @click="showStatusChangeAlert('Declined', item.id)"
+                  >
+                    <cancel-icon />
+                  </button>
+                </div>
+                <div v-else>
+                  <span class="text-dark-50 mr-2">Processed By: </span>
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-md">{{
+                    item?.nhis_item_processor?.fullname || '-'
+                  }}</span>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -119,7 +127,7 @@ import CancelIcon from '@/assets/icons/CancelIcon.vue';
 import Pagination from '@/utils/Pagination.vue';
 import Swal from 'sweetalert2';
 import AuthCodeModal from '@/view/pages/nhis/components/AuthCodeModal.vue';
-import { getItemType } from '@/common/common';
+import { getItemType, parseJwt } from '@/common/common';
 
 export default {
   components: { AuthCodeModal, Pagination, CancelIcon, ApproveIcon },
@@ -131,6 +139,8 @@ export default {
     APPROVED: 'Approved',
     CLEARED: 'Cleared',
     DISPENSED: 'Dispensed',
+    DECLINED: 'Declined',
+    NHIS: 'NHIS',
     currentPage: 1,
     itemsPerPage: 15,
     displayPrompt: false,
@@ -138,6 +148,7 @@ export default {
     dispatchType: 'order/updatePrescribedDrug',
     showPopover: false,
     popOverId: 'popover-reactive-90',
+    currentUser: parseJwt(localStorage.getItem('user_token')),
   }),
   computed: {
     items() {
@@ -151,6 +162,9 @@ export default {
     },
     perPage() {
       return this.items.length;
+    },
+    visit() {
+      return this.$store.state.visit.visit;
     },
   },
   methods: {
@@ -172,7 +186,7 @@ export default {
       this.fetchPrescribedDrugs();
     },
 
-    showDischargeAlert(nhis_status, itemId) {
+    showStatusChangeAlert(nhis_status, itemId) {
       const self = this;
       Swal.fire({
         title: 'Are you sure?',
@@ -208,6 +222,8 @@ export default {
             nhis_status,
             id: itemId,
             payment_status: nhis_status === this.APPROVED ? this.CLEARED : this.PENDING,
+            nhis_item_processed_by: this.currentUser.sub,
+            date_nhis_item_processed: new Date(),
           },
         })
         .then(() => this.handleSuccess(nhis_status));
@@ -234,6 +250,17 @@ export default {
 
     hidePopover() {
       this.showPopover = false;
+    },
+
+    disableStatusChange(item) {
+      if (item.test_group === this.SECONDARY && !item.auth_code && item.drug_type === this.NHIS) {
+        return true;
+      }
+      if (item.nhis_status === this.APPROVED || item.nhis_status === this.DECLINED) return true;
+    },
+
+    isItemProcessed(item) {
+      return item.nhis_status === this.APPROVED || item.nhis_status === this.DECLINED;
     },
   },
   created() {

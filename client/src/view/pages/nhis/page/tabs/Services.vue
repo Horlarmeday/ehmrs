@@ -79,46 +79,51 @@
                 </span>
               </td>
               <td class="pr-0 text-right">
-                <button
-                  :disabled="service.nhis_status === APPROVED || service.nhis_status === DECLINED"
-                  title="Change service Type"
-                  v-b-tooltip.hover
-                  href="#"
-                  class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
-                  @click="openServiceGroupModal(service)"
-                >
-                  <open-icon />
-                </button>
-                <button
-                  :disabled="disableAddAuthCode(service)"
-                  title="Add Authorization Code"
-                  v-b-tooltip.hover
-                  href="#"
-                  class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
-                  @click="addAuthCode(service)"
-                >
-                  <edit-icon />
-                </button>
-                <button
-                  :disabled="disableStatusChange(service)"
-                  title="Approve"
-                  v-b-tooltip.hover
-                  href="#"
-                  class="btn btn-icon btn-light btn-hover-success btn-sm mr-2"
-                  @click="showDischargeAlert('Approved', service.id)"
-                >
-                  <approve-icon />
-                </button>
-                <button
-                  :disabled="disableStatusChange(service)"
-                  title="Decline"
-                  v-b-tooltip.hover
-                  href="#"
-                  class="btn btn-icon btn-light btn-hover-danger btn-sm"
-                  @click="showDischargeAlert('Declined', service.id)"
-                >
-                  <cancel-icon />
-                </button>
+                <div v-if="!isServiceProcessed(service)">
+                  <button
+                    :disabled="service.nhis_status === APPROVED || service.nhis_status === DECLINED"
+                    title="Change service Type"
+                    v-b-tooltip.hover
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
+                    @click="openServiceGroupModal(service)"
+                  >
+                    <open-icon />
+                  </button>
+                  <button
+                    :disabled="disableAddAuthCode(service)"
+                    title="Add Authorization Code"
+                    v-b-tooltip.hover
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
+                    @click="addAuthCode(service)"
+                  >
+                    <edit-icon />
+                  </button>
+                  <button
+                    :disabled="disableStatusChange(service)"
+                    title="Approve"
+                    v-b-tooltip.hover
+                    href="#"
+                    class="btn btn-icon btn-light btn-hover-success btn-sm mr-2"
+                    @click="showStatusChangeAlert('Approved', service)"
+                  >
+                    <approve-icon />
+                  </button>
+                  <button
+                    :disabled="disableStatusChange(service)"
+                    title="Decline"
+                    v-b-tooltip.hover
+                    class="btn btn-icon btn-light btn-hover-danger btn-sm"
+                    @click="showStatusChangeAlert('Declined', service)"
+                  >
+                    <cancel-icon />
+                  </button>
+                </div>
+                <div v-else>
+                  <span class="text-dark-50 mr-2">Processed By: </span>
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-md">{{
+                    service?.nhis_service_processor?.fullname || '-'
+                  }}</span>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -141,7 +146,7 @@ import CancelIcon from '@/assets/icons/CancelIcon.vue';
 import Pagination from '@/utils/Pagination.vue';
 import AuthCodeModal from '@/view/pages/nhis/components/AuthCodeModal.vue';
 import Swal from 'sweetalert2';
-import { getItemType } from '@/common/common';
+import { getItemType, parseJwt } from '@/common/common';
 import OpenIcon from '@/assets/icons/OpenIcon.vue';
 import ChangeServiceGroup from '@/view/pages/nhis/components/ChangeServiceGroup.vue';
 
@@ -165,11 +170,13 @@ export default {
     APPROVED: 'Approved',
     SECONDARY: 'Secondary',
     DECLINED: 'Declined',
+    NHIS: 'NHIS',
     service: {},
     displayPrompt: false,
     dispatchType: 'order/updatePrescribedService',
     serviceGroupData: {},
     displayServiceGroupPrompt: false,
+    currentUser: parseJwt(localStorage.getItem('user_token')),
   }),
   computed: {
     services() {
@@ -242,7 +249,7 @@ export default {
       return 'label-light-dark ';
     },
 
-    showDischargeAlert(nhis_status, serviceId) {
+    showStatusChangeAlert(nhis_status, service) {
       const self = this;
       Swal.fire({
         title: 'Are you sure?',
@@ -256,7 +263,7 @@ export default {
         reverseButtons: true,
       }).then(function(result) {
         if (result.value) {
-          self.changeServiceNhisStatus({ nhis_status, serviceId });
+          self.changeServiceNhisStatus({ nhis_status, service });
         }
       });
     },
@@ -271,13 +278,32 @@ export default {
       });
     },
 
-    changeServiceNhisStatus({ nhis_status, serviceId }) {
+    processServiceValidations(nhis_status, service) {
+      return (
+        nhis_status === this.APPROVED &&
+        service?.service_group === this.SECONDARY &&
+        service.service_type === this.NHIS &&
+        !service.auth_code
+      );
+    },
+
+    changeServiceNhisStatus({ nhis_status, service }) {
+      if (this.processServiceValidations(nhis_status, service)) {
+        return this.$notify({
+          group: 'foo',
+          title: 'Error message',
+          text: 'Secondary services cannot be processed without authorization code!',
+          type: 'error',
+        });
+      }
       this.$store
         .dispatch('order/updatePrescribedService', {
           data: {
             nhis_status,
-            id: serviceId,
+            id: service.id,
             payment_status: nhis_status === this.APPROVED ? this.CLEARED : this.PENDING,
+            nhis_service_processed_by: this.currentUser.sub,
+            date_nhis_service_processed: new Date(),
           },
         })
         .then(() => this.handleSuccess(nhis_status));
@@ -290,11 +316,10 @@ export default {
     },
 
     disableStatusChange(service) {
-      const INCLUDED_INSURANCE = ['NHIS', 'FHSS'];
       if (
         service.service_group === this.SECONDARY &&
         !service.auth_code &&
-        INCLUDED_INSURANCE.includes(this.visit?.insurance?.insurance?.name)
+        service.service_type === this.NHIS
       ) {
         return true;
       }
@@ -306,6 +331,10 @@ export default {
       if (service.service_group === this.PRIMARY) return true;
       if (service.nhis_status === this.APPROVED || service.nhis_status === this.DECLINED)
         return true;
+    },
+
+    isServiceProcessed(service) {
+      return service.nhis_status === this.APPROVED || service.nhis_status === this.DECLINED;
     },
   },
   created() {

@@ -27,7 +27,7 @@
               <th style="min-width: 50px">Code</th>
               <th style="min-width: 100px">Requester</th>
               <th style="min-width: 150px">Date</th>
-              <th class="pr-0 text-right" style="min-width: 150px">action</th>
+              <th class="pr-0 text-right" style="min-width: 170px">action</th>
             </tr>
           </thead>
           <tbody>
@@ -96,46 +96,54 @@
                 </span>
               </td>
               <td class="pr-0 text-right">
-                <button
-                  :disabled="drug.nhis_status === APPROVED || drug.nhis_status === DECLINED"
-                  title="Change Drug Group"
-                  v-b-tooltip.hover
-                  href="#"
-                  class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
-                  @click="openDrugGroupModal(drug)"
-                >
-                  <open-icon />
-                </button>
-                <button
-                  :disabled="disableAddAuthCode(drug)"
-                  title="Add Authorization Code"
-                  v-b-tooltip.hover
-                  href="#"
-                  class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
-                  @click="addAuthCode(drug)"
-                >
-                  <edit-icon />
-                </button>
-                <button
-                  :disabled="disableStatusChange(drug)"
-                  title="Approve"
-                  v-b-tooltip.hover
-                  href="#"
-                  class="btn btn-icon btn-light btn-hover-success btn-sm mr-2"
-                  @click="showDischargeAlert('Approved', drug.id)"
-                >
-                  <approve-icon />
-                </button>
-                <button
-                  :disabled="disableStatusChange(drug)"
-                  title="Decline"
-                  v-b-tooltip.hover
-                  href="#"
-                  class="btn btn-icon btn-light btn-hover-danger btn-sm"
-                  @click="showDischargeAlert('Declined', drug.id)"
-                >
-                  <cancel-icon />
-                </button>
+                <div v-if="!isDrugProcessed(drug)">
+                  <button
+                    :disabled="drug.nhis_status === APPROVED || drug.nhis_status === DECLINED"
+                    title="Change Drug Group"
+                    v-b-tooltip.hover
+                    href="#"
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
+                    @click="openDrugGroupModal(drug)"
+                  >
+                    <open-icon />
+                  </button>
+                  <button
+                    :disabled="disableAddAuthCode(drug)"
+                    title="Add Authorization Code"
+                    v-b-tooltip.hover
+                    href="#"
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
+                    @click="addAuthCode(drug)"
+                  >
+                    <edit-icon />
+                  </button>
+                  <button
+                    :disabled="disableStatusChange(drug)"
+                    title="Approve"
+                    v-b-tooltip.hover
+                    href="#"
+                    class="btn btn-icon btn-light btn-hover-success btn-sm mr-2"
+                    @click="showStatusChangeAlert('Approved', drug)"
+                  >
+                    <approve-icon />
+                  </button>
+                  <button
+                    :disabled="disableStatusChange(drug)"
+                    title="Decline"
+                    v-b-tooltip.hover
+                    href="#"
+                    class="btn btn-icon btn-light btn-hover-danger btn-sm"
+                    @click="showStatusChangeAlert('Declined', drug)"
+                  >
+                    <cancel-icon />
+                  </button>
+                </div>
+                <div v-else>
+                  <span class="text-dark-50 mr-2">Processed By: </span>
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-md">{{
+                    drug?.nhis_drug_processor?.fullname || '-'
+                  }}</span>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -165,7 +173,7 @@ import Pagination from '@/utils/Pagination.vue';
 import Swal from 'sweetalert2';
 import AuthCodeModal from '@/view/pages/nhis/components/AuthCodeModal.vue';
 import DrugPopover from '@/view/components/popover/DrugPopover.vue';
-import { getItemType } from '@/common/common';
+import { getItemType, parseJwt } from '@/common/common';
 import ChangeDrugGroup from '@/view/pages/nhis/components/ChangeDrugGroup.vue';
 import OpenIcon from '@/assets/icons/OpenIcon.vue';
 
@@ -189,6 +197,7 @@ export default {
     CLEARED: 'Cleared',
     DISPENSED: 'Dispensed',
     DECLINED: 'Declined',
+    NHIS: 'NHIS',
     currentPage: 1,
     itemsPerPage: 15,
     displayPrompt: false,
@@ -199,6 +208,7 @@ export default {
     dispatchType: 'order/updatePrescribedDrug',
     showPopover: false,
     popOverId: 'popover-reactive-90',
+    currentUser: parseJwt(localStorage.getItem('user_token')),
   }),
   computed: {
     drugs() {
@@ -256,7 +266,7 @@ export default {
       this.fetchPrescribedDrugs();
     },
 
-    showDischargeAlert(nhis_status, drugId) {
+    showStatusChangeAlert(nhis_status, drug) {
       const self = this;
       Swal.fire({
         title: 'Are you sure?',
@@ -270,7 +280,7 @@ export default {
         reverseButtons: true,
       }).then(function(result) {
         if (result.value) {
-          self.changeDrugNhisStatus({ nhis_status, drugId });
+          self.changeDrugNhisStatus({ nhis_status, drug });
         }
       });
     },
@@ -285,13 +295,32 @@ export default {
       });
     },
 
-    changeDrugNhisStatus({ nhis_status, drugId }) {
+    processDrugsValidations(nhis_status, drug) {
+      return (
+        nhis_status === this.APPROVED &&
+        drug?.drug_group === this.SECONDARY &&
+        drug.drug_type === this.NHIS &&
+        !drug.auth_code
+      );
+    },
+
+    changeDrugNhisStatus({ nhis_status, drug }) {
+      if (this.processDrugsValidations(nhis_status, drug)) {
+        return this.$notify({
+          group: 'foo',
+          title: 'Error message',
+          text: 'Secondary drugs cannot be processed without authorization code!',
+          type: 'error',
+        });
+      }
       this.$store
         .dispatch('order/updatePrescribedDrug', {
           data: {
             nhis_status,
-            id: drugId,
+            id: drug.id,
             payment_status: nhis_status === this.APPROVED ? this.CLEARED : this.PENDING,
+            nhis_drug_processed_by: this.currentUser.sub,
+            date_nhis_drug_processed: new Date(),
           },
         })
         .then(() => this.handleSuccess(nhis_status));
@@ -321,12 +350,7 @@ export default {
     },
 
     disableStatusChange(drug) {
-      const INCLUDED_INSURANCE = ['NHIS', 'FHSS'];
-      if (
-        drug.drug_group === this.SECONDARY &&
-        !drug.auth_code &&
-        INCLUDED_INSURANCE.includes(this.visit?.insurance?.insurance?.name)
-      ) {
+      if (drug.drug_group === this.SECONDARY && !drug.auth_code && drug.drug_type === this.NHIS) {
         return true;
       }
       if (drug.nhis_status === this.APPROVED || drug.nhis_status === this.DECLINED) return true;
@@ -335,6 +359,10 @@ export default {
     disableAddAuthCode(drug) {
       if (drug.drug_group === this.PRIMARY) return true;
       if (drug.nhis_status === this.APPROVED || drug.nhis_status === this.DECLINED) return true;
+    },
+
+    isDrugProcessed(drug) {
+      return drug.nhis_status === this.APPROVED || drug.nhis_status === this.DECLINED;
     },
   },
   created() {
