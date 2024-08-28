@@ -60,6 +60,12 @@
               {{ patient.relationship_to_principal || '-' }}
             </div>
           </b-list-group-item>
+          <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
+            Days Admitted in a Year
+            <div class="font-weight-boldest text-dark">
+              {{ patient.admitted_days_in_year || 0 }}
+            </div>
+          </b-list-group-item>
         </b-list-group>
       </div>
       <div class="col-5">
