@@ -341,6 +341,12 @@ export class PrescribedDrug extends Model {
   })
   drug_changed_by: number;
 
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  nhis_drug_processed_by: number;
+
   @ForeignKey(() => DrugPrescription)
   @Column({
     type: DataType.INTEGER,
@@ -415,6 +421,16 @@ export class PrescribedDrug extends Model {
     type: DataType.INTEGER,
   })
   old_id: number;
+
+  @Column({
+    type: DataType.DATE,
+  })
+  date_nhis_drug_processed: Date;
+
+  @BelongsTo(() => Staff, {
+    foreignKey: 'nhis_drug_processed_by',
+  })
+  nhis_drug_processor: Staff;
 
   @BelongsTo(() => Staff, 'examiner')
   requester: Staff;

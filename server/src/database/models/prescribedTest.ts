@@ -241,6 +241,12 @@ export class PrescribedTest extends Model {
   })
   test_changed_by: number;
 
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  nhis_test_processed_by: number;
+
   @Column({
     type: DataType.ENUM(
       NHISApprovalStatus.APPROVED,
@@ -289,6 +295,11 @@ export class PrescribedTest extends Model {
   })
   test_group: TestType;
 
+  @Column({
+    type: DataType.DATE,
+  })
+  date_nhis_test_processed: Date;
+
   @BelongsTo(() => Staff, {
     foreignKey: 'requester',
   })
@@ -308,6 +319,11 @@ export class PrescribedTest extends Model {
     foreignKey: 'test_changed_by',
   })
   test_changer: Staff;
+
+  @BelongsTo(() => Staff, {
+    foreignKey: 'nhis_test_processed_by',
+  })
+  nhis_test_processor: Staff;
 
   @BelongsTo(() => Test)
   test: Test;

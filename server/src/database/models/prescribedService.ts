@@ -166,6 +166,7 @@ export class PrescribedService extends Model {
 
   @Column({
     type: DataType.ENUM(ServiceGroup.PRIMARY, ServiceGroup.SECONDARY),
+    defaultValue: ServiceGroup.SECONDARY,
   })
   service_group: ServiceGroup;
 
@@ -203,10 +204,26 @@ export class PrescribedService extends Model {
   })
   service_changed_by: number;
 
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  nhis_service_processed_by: number;
+
+  @Column({
+    type: DataType.DATE,
+  })
+  date_nhis_service_processed: Date;
+
   @BelongsTo(() => Staff, {
     foreignKey: 'service_changed_by',
   })
   service_changer: Staff;
+
+  @BelongsTo(() => Staff, {
+    foreignKey: 'nhis_service_processed_by',
+  })
+  nhis_service_processor: Staff;
 
   @BelongsTo(() => Staff, {
     foreignKey: 'requester',

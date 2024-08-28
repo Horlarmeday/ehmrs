@@ -261,11 +261,22 @@ export class PrescribedInvestigation extends Model {
   })
   investigation_group: InvestigationType;
 
+  @Column({
+    type: DataType.DATE,
+  })
+  date_nhis_investigation_processed: Date;
+
   @ForeignKey(() => Staff)
   @Column({
     type: DataType.INTEGER,
   })
   investigation_changed_by: number;
+
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  nhis_investigation_processed_by: number;
 
   @BelongsTo(() => Staff, {
     foreignKey: 'requester',
@@ -286,6 +297,11 @@ export class PrescribedInvestigation extends Model {
     foreignKey: 'investigation_changed_by',
   })
   investigation_changer: Staff;
+
+  @BelongsTo(() => Staff, {
+    foreignKey: 'nhis_investigation_processed_by',
+  })
+  nhis_investigation_processor: Staff;
 
   @BelongsTo(() => Investigation)
   investigation: Investigation;

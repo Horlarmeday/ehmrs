@@ -317,8 +317,24 @@ export class PrescribedAdditionalItem extends Model {
   })
   old_id: number;
 
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  nhis_item_processed_by: number;
+
+  @Column({
+    type: DataType.DATE,
+  })
+  date_nhis_item_processed: Date;
+
   @BelongsTo(() => Staff)
   requester: Staff;
+
+  @BelongsTo(() => Staff, {
+    foreignKey: 'nhis_item_processed_by',
+  })
+  nhis_item_processor: Staff;
 
   @BelongsTo(() => Drug)
   drug: Drug;
