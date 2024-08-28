@@ -100,6 +100,11 @@ export const getPrescribedServices = ({ currentPage = 1, pageLimit = 10, filter 
         as: 'examiner',
         attributes: staffAttributes,
       },
+      {
+        model: Staff,
+        as: 'nhis_service_processor',
+        attributes: staffAttributes,
+      },
     ],
   });
 };
@@ -117,6 +122,7 @@ export const getOnePrescribedService = async (
     include: [
       { model: Service, attributes: ['name', 'type'] },
       { model: Staff, as: 'examiner', attributes: staffAttributes },
+      { model: Staff, as: 'nhis_service_processor', attributes: staffAttributes },
     ],
   });
 };

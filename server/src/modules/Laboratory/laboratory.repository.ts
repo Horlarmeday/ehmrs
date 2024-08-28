@@ -571,7 +571,7 @@ export const getOneCollectedSample = async (testPrescriptionId: number | string)
     is_default: true,
   });
   return {
-    ...testPrescription.toJSON(),
+    ...testPrescription?.toJSON(),
     tests: testPrescription.tests,
     insurance: { ...insurance?.toJSON() },
   };

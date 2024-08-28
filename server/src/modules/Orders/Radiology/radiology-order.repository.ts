@@ -241,6 +241,7 @@ export const getPrescribedInvestigations = ({ currentPage = 1, pageLimit = 10, f
       { model: Investigation, attributes: ['name', 'type'] },
       { model: Imaging, attributes: ['name'] },
       { model: Staff, as: 'examiner', attributes: staffAttributes },
+      { model: Staff, as: 'nhis_investigation_processor', attributes: staffAttributes },
     ],
   });
 };
@@ -277,6 +278,7 @@ export const getOnePrescribedInvestigation = async (
       { model: Investigation, attributes: ['name', 'type'] },
       { model: Imaging, attributes: ['name'] },
       { model: Staff, as: 'examiner', attributes: staffAttributes },
+      { model: Staff, as: 'nhis_investigation_processor', attributes: staffAttributes },
     ],
   });
 };

@@ -200,6 +200,11 @@ export const getPrescribedDrugs = ({ currentPage = 1, pageLimit = 10, filter = n
         attributes: staffAttributes,
       },
       {
+        model: Staff,
+        as: 'nhis_drug_processor',
+        attributes: staffAttributes,
+      },
+      {
         model: DosageForm,
         attributes: ['name'],
       },
@@ -256,6 +261,11 @@ export const getPrescribedAdditionalItems = ({
       {
         model: Staff,
         as: 'requester',
+        attributes: staffAttributes,
+      },
+      {
+        model: Staff,
+        as: 'nhis_item_processor',
         attributes: staffAttributes,
       },
       {
@@ -351,6 +361,11 @@ export const getOnePrescribedDrug = async (
       {
         model: Staff,
         as: 'requester',
+        attributes: staffAttributes,
+      },
+      {
+        model: Staff,
+        as: 'nhis_drug_processor',
         attributes: staffAttributes,
       },
       {
@@ -477,7 +492,8 @@ export const getOneAdditionalItemWithJoins = async (
     where: { ...query },
     order: [['createdAt', 'DESC']],
     include: [
-      { model: Staff, attributes: staffAttributes },
+      { model: Staff, as: 'requester', attributes: staffAttributes },
+      { model: Staff, as: 'nhis_item_processor', attributes: staffAttributes },
       {
         model: Drug,
         attributes: ['name'],
