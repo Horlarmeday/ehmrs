@@ -23,19 +23,14 @@
             <td>{{ history?.staff?.fullname || '-' }}</td>
             <td>{{ history.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
             <td>
-              <a :id="popOverId" @click="viewPopover(history)" href="#"
+              <a :id="popOverId" @click="viewModal(history)" href="#"
                 ><i class="icon-xl text-primary la la-eye"></i
               ></a>
             </td>
           </tr>
         </tbody>
       </table>
-      <history-popover
-        :target="popOverId"
-        :show="showPopover"
-        @closePopover="hidePopover"
-        :history="history"
-      />
+      <history-modal :display-prompt="displayPrompt" @closeModal="hideModal" :history="history" />
     </div>
     <pagination
       :total-pages="pages"
@@ -48,17 +43,18 @@
   </div>
 </template>
 <script>
-import HistoryPopover from '@/view/components/popover/HistoryPopover.vue';
 import Pagination from '@/utils/Pagination.vue';
+import HistoryModal from '@/view/components/modal/HistoryModal.vue';
 
 export default {
-  components: { Pagination, HistoryPopover },
+  components: { HistoryModal, Pagination },
   data: () => ({
     showPopover: false,
     popOverId: 'popover-reactive-73',
     history: {},
     currentPage: 1,
     itemsPerPage: 10,
+    displayPrompt: false,
   }),
   computed: {
     histories() {
@@ -75,12 +71,12 @@ export default {
     },
   },
   methods: {
-    viewPopover(history) {
+    viewModal(history) {
       this.history = history;
-      this.showPopover = true;
+      this.displayPrompt = true;
     },
-    hidePopover() {
-      this.showPopover = false;
+    hideModal() {
+      this.displayPrompt = false;
     },
 
     handlePageCount(count) {

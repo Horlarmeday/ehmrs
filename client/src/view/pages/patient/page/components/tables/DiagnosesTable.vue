@@ -51,6 +51,12 @@ export default {
     currentPage: 1,
     itemsPerPage: 10,
   }),
+  created() {
+    this.fetchDiagnoses({
+      itemsPerPage: this.itemsPerPage,
+      currentPage: this.currentPage,
+    });
+  },
   methods: {
     handlePageCount(count) {
       this.itemsPerPage = count;
@@ -79,7 +85,7 @@ export default {
   },
   computed: {
     diagnoses() {
-      return this.$store.state.consultation.diagnosis;
+      return this.$store.state.consultation.diagnosis || [];
     },
     queriedItems() {
       return this.$store.state.consultation.totalDiagnosis || 0;
