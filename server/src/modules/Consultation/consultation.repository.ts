@@ -343,6 +343,7 @@ export const getDiagnoses = async ({ currentPage = 1, pageLimit = 10, filter = n
     page: +currentPage,
     paginate: +pageLimit,
     order: [['createdAt', 'DESC']],
+    include: [{ model: Staff, attributes: staffAttributes }],
     where: {
       ...(filter && JSON.parse(filter)),
     },
@@ -360,6 +361,7 @@ export const getHistories = async ({ currentPage = 1, pageLimit = 10, filter = n
     page: +currentPage,
     paginate: +pageLimit,
     order: [['createdAt', 'DESC']],
+    include: [{ model: Staff, attributes: staffAttributes }],
     where: {
       ...(filter && JSON.parse(filter)),
     },

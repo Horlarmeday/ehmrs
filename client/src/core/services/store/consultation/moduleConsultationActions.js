@@ -106,9 +106,9 @@ export default {
           },
         })
         .then(response => {
-          commit('SET_DIAGNOSES', response.data.data.docs);
-          commit('SET_DIAGNOSES_TOTAL', response.data.data.total);
-          commit('SET_DIAGNOSES_PAGES', response.data.data.pages);
+          commit('SET_PATIENT_HISTORIES', response.data.data.docs);
+          commit('SET_PATIENT_HISTORY_TOTAL', response.data.data.total);
+          commit('SET_PATIENT_HISTORY_PAGES', response.data.data.pages);
           resolve(response);
         })
         .catch(error => {

@@ -10,6 +10,11 @@ export default [
     name: 'Admitted Patients',
   },
   {
+    url: '/admission/discharge-patients',
+    icon: 'fab fa-rev',
+    name: 'Discharged Patients',
+  },
+  {
     url: '/radiology/investigations-approval',
     icon: 'flaticon-statistics',
     name: 'Statistics',

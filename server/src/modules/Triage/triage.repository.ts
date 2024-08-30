@@ -1,7 +1,8 @@
 /* eslint-disable camelcase */
-import { Triage } from '../../database/models';
+import { Staff, Triage } from '../../database/models';
 import { WhereOptions } from 'sequelize';
 import { async } from 'rxjs';
+import { staffAttributes } from '../../core/helpers/helper';
 
 /**
  * create a patient vital signs
@@ -54,7 +55,10 @@ export async function createTriage(data) {
  * @param data
  */
 export async function getTriageInAVisit(data) {
-  return Triage.findAll({ where: { visit_id: data } });
+  return Triage.findAll({
+    where: { visit_id: data },
+    include: [{ model: Staff, attributes: staffAttributes }],
+  });
 }
 
 /**
@@ -65,7 +69,11 @@ export async function getTriageInAVisit(data) {
  * @param query
  */
 export const getTriages = async (query: WhereOptions<Triage>): Promise<Triage[]> => {
-  return Triage.findAll({ where: { ...query }, order: [['createdAt', 'DESC']] });
+  return Triage.findAll({
+    where: { ...query },
+    include: [{ model: Staff, attributes: staffAttributes }],
+    order: [['createdAt', 'DESC']],
+  });
 };
 
 /**
@@ -84,6 +92,7 @@ export const getOneTriage = async (
     where: { ...query },
     ...(attributes && attributes),
     order: [['createdAt', 'DESC']],
+    include: [{ model: Staff, attributes: staffAttributes }],
   });
 };
 
@@ -99,6 +108,7 @@ export const getPatientTriages = async ({ currentPage = 1, pageLimit = 10, filte
     page: +currentPage,
     paginate: +pageLimit,
     order: [['createdAt', 'DESC']],
+    include: [{ model: Staff, attributes: staffAttributes }],
     where: {
       ...(filter && JSON.parse(filter)),
     },

@@ -41,7 +41,7 @@ export default {
    * DIAGNOSES
    */
   SET_DIAGNOSES(state, diagnoses) {
-    state.diagnoses = diagnoses;
+    state.diagnosis = diagnoses;
   },
 
   SET_DIAGNOSES_TOTAL(state, total) {
