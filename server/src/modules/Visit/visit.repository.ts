@@ -518,9 +518,9 @@ export async function getCategoryVisits({
   });
 }
 
-/** ***********************
+/** ****************************
  * PROFESSIONAL ASSIGNED VISITS
- ********************** */
+ ***************************** */
 /**
  * search professional assigned visits
  *
@@ -624,7 +624,8 @@ export const getProfessionalAssignedVisits = async ({
  * @param visitId
  */
 export const getVisitPrescriptions = async (visitId: number) => {
-  return await getPrescriptions([visitId], [VisitCategory.OPD]);
+  const [prescriptions] = await getPrescriptions([visitId], [VisitCategory.OPD]);
+  return prescriptions;
 };
 
 /**

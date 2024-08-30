@@ -467,7 +467,7 @@ export const getAdditionalItems = async (
     where: { ...query },
     order: [['createdAt', 'DESC']],
     include: [
-      { model: Staff, attributes: staffAttributes },
+      { model: Staff, as: 'requester', attributes: staffAttributes },
       {
         model: Drug,
         attributes: ['name'],

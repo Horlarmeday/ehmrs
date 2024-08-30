@@ -412,7 +412,8 @@ export class AdmissionService {
    */
   static async getDoctorPrescriptions(admissionId: number) {
     const admission = await getOneAdmission({ id: admissionId });
-    return await getVisitPrescriptions([admission.visit_id], [VisitCategory.IPD]);
+    const [prescriptions] = await getVisitPrescriptions([admission.visit_id], [VisitCategory.IPD]);
+    return prescriptions;
   }
 
   /**
