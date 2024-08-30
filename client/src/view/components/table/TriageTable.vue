@@ -8,6 +8,7 @@
           <th scope="col">BMI</th>
           <th scope="col">Blood Pressure</th>
           <th scope="col">Temperature</th>
+          <th scope="col">Done By</th>
           <th scope="col">Date Added</th>
           <th scope="col">Action</th>
         </tr>
@@ -22,6 +23,7 @@
           <td>{{ triage.bmi }}</td>
           <td>{{ triage.systolic }}/{{ triage.diastolic }}</td>
           <td>{{ triage.temperature }}</td>
+          <td>{{ triage.staff.fullname }}</td>
           <td>{{ triage.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
           <td>
             <a @click="viewModal(triage)" href="#"
