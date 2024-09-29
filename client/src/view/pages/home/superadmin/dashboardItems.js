@@ -65,7 +65,7 @@ export default [
     name: 'Reports',
   },
   {
-    url: '/statistics/active',
+    url: '/statistics',
     icon: 'flaticon-statistics',
     name: 'Statistics',
   },

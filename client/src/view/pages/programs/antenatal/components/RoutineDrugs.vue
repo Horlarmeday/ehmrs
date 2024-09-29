@@ -93,7 +93,7 @@ export default {
     routineDrugs() {
       const drugs = this.defaults?.find(def => def.type === this.defaultData)?.data;
       if (drugs) {
-        const insurance = this.insuranceName || 'Cash';
+        const insurance = this.getInsuranceName() || 'Cash';
         return drugs
           .filter(drug => drug.drug.drug_type === insurance)
           .map(drug => ({
@@ -165,6 +165,13 @@ export default {
     getInventoriesAndANCDrugs() {
       this.getDefaults();
       this.getInventories();
+    },
+
+    getInsuranceName() {
+      if (this.insuranceName === 'PHIS') return 'Private';
+      if (this.insuranceName === 'FHSS') return 'NHIS';
+      if (this.insuranceName === 'NHIS') return 'NHIS';
+      return 'Cash';
     },
 
     getInventories() {

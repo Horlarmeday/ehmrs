@@ -17,6 +17,7 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Visit } from './visit';
+import { Patient } from './patient';
 
 @Table({ timestamps: true })
 export class Encounter extends Model {
@@ -48,8 +49,26 @@ export class Encounter extends Model {
   })
   visit_id: number;
 
+  @ForeignKey(() => Patient)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'patient id is required',
+      },
+    },
+  })
+  patient_id: number;
+
   @Column({
     type: DataType.DATE,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'date of encounter is required',
+      },
+    },
   })
   time_of_encounter: Date;
 
@@ -58,6 +77,9 @@ export class Encounter extends Model {
 
   @BelongsTo(() => Visit)
   visit: Visit;
+
+  @BelongsTo(() => Patient)
+  patient: Patient;
 
   static async paginate(param: {
     paginate: number;

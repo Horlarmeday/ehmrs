@@ -268,6 +268,14 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            {
+              path: 'merge-accounts',
+              name: 'merge-accounts',
+              component: () => import('@/view/pages/admin/mergeAccounts/MergeAccounts.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
           ],
         },
         // VISITS
@@ -1297,6 +1305,29 @@ const router = new Router({
               path: 'change-password',
               name: 'change-password',
               component: () => import('@/view/pages/settings/page/ChangePassword.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+          ],
+        },
+        {
+          path: '/statistics',
+          name: 'statistics',
+          component: () => import('@/view/pages/statistics/Statistics.vue'),
+          children: [
+            {
+              path: '/',
+              name: 'statistics-home',
+              component: () => import('@/view/pages/statistics/page/Home.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'encounters',
+              name: 'encounters',
+              component: () => import('@/view/pages/statistics/page/Encounters.vue'),
               meta: {
                 requiresAuth: true,
               },

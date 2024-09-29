@@ -83,6 +83,26 @@
             }}</span></a
           >
         </div>
+        <div class="d-flex flex-column flex-root" v-if="prescription?.dispenser">
+          <a
+            href="#"
+            v-b-tooltip.hover
+            title="Frequency"
+            class="text-dark-50 text-hover-primary font-weight-bold mr-lg-8 mr-5 mb-lg-0 mb-2"
+            ><i class="far fa-chart-bar mr-2 font-size-lg icon-lg"></i>Dispensed By:
+            <span class="ml-2 text-dark">{{ prescription?.dispenser?.fullname }}</span></a
+          >
+          <a
+            href="#"
+            v-b-tooltip.hover
+            title="Date Drug Prescribed"
+            class="text-dark-50 text-hover-primary font-weight-bold mr-lg-8 mr-5 mb-lg-0 mb-2"
+            ><i class="flaticon2-calendar-2 mr-2 font-size-lg icon-lg"></i>Date Dispensed:
+            <span class="ml-2 text-dark">{{
+              prescription.date_dispensed | dayjs('DD/MM/YYYY, h:ma')
+            }}</span></a
+          >
+        </div>
       </div>
 
       <span v-if="prescription.notes" class="font-weight-bold text-dark-50"
