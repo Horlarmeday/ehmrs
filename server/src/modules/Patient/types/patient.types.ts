@@ -86,3 +86,8 @@ export type TogglePatientInsurance = {
   has_insurance: boolean;
   patient_id: number;
 };
+
+export type MergePatientAccounts = {
+  sourcePatientIds: number[];
+  targetPatientId: number;
+};

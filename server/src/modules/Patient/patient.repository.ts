@@ -2,10 +2,54 @@
 import { Op, WhereOptions } from 'sequelize';
 import { JobSchedule } from '../../core/command/worker/schedule';
 import { PatientType, TogglePatientInsurance, UpdatePatientInsurance } from './types/patient.types';
-import { HMO, Insurance, Patient, PatientInsurance, Staff, Visit } from '../../database/models';
+import {
+  AdditionalTreatment,
+  Admission,
+  Antenatal,
+  AntenatalObservation,
+  AntenatalTriage,
+  CarePlan,
+  ClinicalNote,
+  Delivery,
+  Diagnosis,
+  Discharge,
+  HMO,
+  Insurance,
+  Patient,
+  PatientInsurance,
+  PrescribedDrug,
+  PrescribedInvestigation,
+  PrescribedService,
+  PrescribedTest,
+  Staff,
+  Visit,
+  History,
+  Immunization,
+  DrugPrescription,
+  InvestigationPrescription,
+  InvestigationResult,
+  IOChart,
+  NursingNote,
+  Observation,
+  OperationNote,
+  PrescribedAdditionalItem,
+  PatientTreatment,
+  Payment,
+  PostNatal,
+  PreviousPregnancy,
+  SurgeryProcedure,
+  SurgeryRequest,
+  TestPrescription,
+  TestResult,
+  TestSample,
+  Triage,
+  WardRound,
+  PaymentHistory,
+} from '../../database/models';
 import sequelizeConnection from '../../database/config/config';
 import { BadException } from '../../common/util/api-error';
 import {
+  CANT_MERGE_SELF,
   PATIENT_HAS_INSURANCE,
   PATIENT_HAS_NO_INSURANCE,
   PATIENT_NOT_FOUND,
@@ -16,7 +60,12 @@ import {
   setInsuranceAsDefault,
   updatePatientInsurance,
 } from '../Insurance/insurance.repository';
-import { dateIntervalQuery, patientAttributes, staffAttributes } from '../../core/helpers/helper';
+import {
+  dateIntervalQuery,
+  patientAttributes,
+  staffAttributes,
+  StatusCodes,
+} from '../../core/helpers/helper';
 import { VisitStatus } from '../../database/models/visit';
 
 /**
@@ -513,7 +562,12 @@ export const togglePatientInsurance = async (data: TogglePatientInsurance): Prom
   return updatedPatient;
 };
 
-export const convertDependantToPrincipal = async (patientId: number) => {
+/**
+ * convert dependant to principal
+ * @returns {Promise<Patient>} return patient data
+ * @param patientId
+ */
+export const convertDependantToPrincipal = async (patientId: number): Promise<Patient> => {
   const data = {
     patient_id: patientId,
     patient_type: PatientType.PATIENT,
@@ -524,4 +578,89 @@ export const convertDependantToPrincipal = async (patientId: number) => {
   const patient = await updatePatient(data);
   await PatientInsurance.update({ is_default: false }, { where: { patient_id: patientId } }); // disable insurance
   return patient;
+};
+
+/**
+ * Merge multiple patient accounts into one account
+ * @returns {Promise<Patient>} return patient data
+ * @param sourcePatientIds
+ * @param targetPatientId
+ */
+export const mergePatientAccounts = async (
+  sourcePatientIds: number[],
+  targetPatientId: number
+): Promise<Patient> => {
+  return sequelizeConnection.transaction(async t => {
+    // Fetch the target patient
+    const targetPatient = await Patient.findByPk(targetPatientId, { transaction: t });
+    if (!targetPatient) throw new BadException('ERROR', StatusCodes.NOT_FOUND, PATIENT_NOT_FOUND);
+
+    if (sourcePatientIds.includes(targetPatientId))
+      throw new BadException('ERROR', StatusCodes.BAD_REQUEST, CANT_MERGE_SELF);
+
+    // Define the tables to update
+    const tablesToUpdate = [
+      { model: Patient, foreignKey: 'principal_id' },
+      { model: PrescribedTest, foreignKey: 'patient_id' },
+      { model: PrescribedDrug, foreignKey: 'patient_id' },
+      { model: PrescribedInvestigation, foreignKey: 'patient_id' },
+      { model: PrescribedService, foreignKey: 'patient_id' },
+      { model: PrescribedAdditionalItem, foreignKey: 'patient_id' },
+      { model: AdditionalTreatment, foreignKey: 'patient_id' },
+      { model: Admission, foreignKey: 'patient_id' },
+      { model: Antenatal, foreignKey: 'patient_id' },
+      { model: AntenatalObservation, foreignKey: 'patient_id' },
+      { model: AntenatalTriage, foreignKey: 'patient_id' },
+      { model: CarePlan, foreignKey: 'patient_id' },
+      { model: ClinicalNote, foreignKey: 'patient_id' },
+      { model: Delivery, foreignKey: 'patient_id' },
+      { model: Diagnosis, foreignKey: 'patient_id' },
+      { model: History, foreignKey: 'patient_id' },
+      { model: Discharge, foreignKey: 'patient_id' },
+      { model: Immunization, foreignKey: 'patient_id' },
+      { model: DrugPrescription, foreignKey: 'patient_id' },
+      { model: InvestigationPrescription, foreignKey: 'patient_id' },
+      { model: InvestigationResult, foreignKey: 'patient_id' },
+      { model: IOChart, foreignKey: 'patient_id' },
+      { model: NursingNote, foreignKey: 'patient_id' },
+      { model: Observation, foreignKey: 'patient_id' },
+      { model: OperationNote, foreignKey: 'patient_id' },
+      { model: PatientInsurance, foreignKey: 'patient_id' },
+      { model: PatientTreatment, foreignKey: 'patient_id' },
+      { model: Payment, foreignKey: 'uid' },
+      { model: PaymentHistory, foreignKey: 'patient_id' },
+      { model: PostNatal, foreignKey: 'patient_id' },
+      { model: PreviousPregnancy, foreignKey: 'patient_id' },
+      { model: SurgeryProcedure, foreignKey: 'patient_id' },
+      { model: SurgeryRequest, foreignKey: 'patient_id' },
+      { model: TestPrescription, foreignKey: 'patient_id' },
+      { model: TestResult, foreignKey: 'patient_id' },
+      { model: TestSample, foreignKey: 'patient_id' },
+      { model: Triage, foreignKey: 'patient_id' },
+      { model: Visit, foreignKey: 'patient_id' },
+      { model: WardRound, foreignKey: 'patient_id' },
+    ];
+
+    // Update all tables in parallel
+    await Promise.all(
+      tablesToUpdate.map(async ({ model, foreignKey }: { model: any; foreignKey: string }) => {
+        await model.update(
+          { [foreignKey]: targetPatientId },
+          {
+            where: { [foreignKey]: { [Op.in]: sourcePatientIds } },
+            transaction: t,
+          }
+        );
+      })
+    );
+
+    // Delete source patients
+    await Patient.destroy({
+      where: { id: { [Op.in]: sourcePatientIds } },
+      transaction: t,
+    });
+
+    // Return the updated target patient
+    return Patient.findByPk(targetPatientId, { transaction: t });
+  });
 };

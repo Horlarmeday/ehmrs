@@ -7,6 +7,7 @@ import {
   validateFindPatient,
   validateUpdatePatientInsurance,
   validateTogglePatientInsurance,
+  validatePatientAccountsMerge,
 } from './validations';
 import PatientService from './patient.service';
 import { errorResponse } from '../../common/responses/error-responses';
@@ -15,7 +16,7 @@ import { SuccessResponse, successResponse } from '../../common/responses/success
 import { DATA_SAVED, DATA_UPDATED } from '../AdminSettings/messages/response-messages';
 import { NextFunction, Request, Response } from 'express';
 import { SUCCESS } from '../../core/constants';
-import { PATIENT_ID_REQUIRED } from './messages/response-messages';
+import { PATIENT_ACCOUNTS_MERGED, PATIENT_ID_REQUIRED } from './messages/response-messages';
 
 class PatientController {
   /**
@@ -423,6 +424,42 @@ class PatientController {
         res,
         httpCode: StatusCodes.CREATED,
         message: DATA_UPDATED,
+        data: patient,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  /**
+   * merge patients accounts
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, patient data
+   */
+  static async mergePatientAccounts(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse> {
+    const { error } = validatePatientAccountsMerge(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+
+    try {
+      const patient = await PatientService.mergePatientAccounts(req.body);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: PATIENT_ACCOUNTS_MERGED,
         data: patient,
       });
     } catch (e) {

@@ -15,6 +15,7 @@ import {
   updateInsurance,
   togglePatientInsurance,
   convertDependantToPrincipal,
+  mergePatientAccounts,
 } from './patient.repository';
 import { getAge, processSnappedPhoto, StatusCodes } from '../../core/helpers/helper';
 import { JobSchedule } from '../../core/command/worker/schedule';
@@ -23,6 +24,7 @@ import {
   AddPatientInsuranceBody,
   CreatePatientBody,
   EmergencyPatientBody,
+  MergePatientAccounts,
   PatientType,
   TogglePatientInsurance,
   UpdatePatientInsurance,
@@ -249,6 +251,19 @@ class PatientService {
    */
   static async convertDependantToPatient(patientId: number) {
     return convertDependantToPrincipal(patientId);
+  }
+
+  /**
+   * merge patient accounts
+   *
+   * @static
+   * @returns {json} json object with patient data
+   * @param body
+   * @memberOf PatientService
+   */
+  static async mergePatientAccounts(body: MergePatientAccounts) {
+    const { sourcePatientIds, targetPatientId } = body;
+    return mergePatientAccounts(sourcePatientIds, targetPatientId);
   }
 }
 export default PatientService;
