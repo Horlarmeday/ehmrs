@@ -10,7 +10,9 @@ import {
   getBedsInAWard,
   getDefaults,
   getDepartments,
+  getEncounters,
   getOneDefault,
+  getOneEncounter,
   getServices,
   getSystemSettings,
   getUnits,
@@ -27,7 +29,7 @@ import {
   updateUnit,
   updateWard,
 } from './admin.repository';
-import { Default, Department, SystemSettings, Ward } from '../../database/models';
+import { Default, Department, Encounter, SystemSettings, Ward } from '../../database/models';
 
 class AdminService {
   /** create a department
@@ -337,6 +339,40 @@ class AdminService {
    */
   static async getSystemSettings(): Promise<SystemSettings> {
     return getSystemSettings();
+  }
+
+  /**
+   * get encounters
+   *
+   * @static
+   * @returns {json} json object with encounters data
+   * @param body
+   * @memberOf AdminService
+   */
+  static async getEncounters(body) {
+    const { search, start, end, currentPage, pageLimit } = body;
+    if (Object.values(body).length) {
+      return getEncounters({
+        currentPage,
+        pageLimit,
+        search,
+        start,
+        end,
+      });
+    }
+
+    return getEncounters({ start, end });
+  }
+
+  /**
+   * Get one encounter
+   * @static
+   * @returns {json} json object with encounters data
+   * @memberOf AdminService
+   * @param encounterId
+   */
+  static async getOneEncounter(encounterId: number): Promise<Encounter> {
+    return getOneEncounter({ id: encounterId });
   }
 }
 export default AdminService;

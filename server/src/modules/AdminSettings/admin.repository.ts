@@ -1,24 +1,33 @@
 /* eslint-disable camelcase */
-import { Op, Optional, WhereOptions } from 'sequelize';
+import sequelize, { Op, Optional, WhereOptions } from 'sequelize';
 import { getModelById, getNumberOfRecords } from '../../core/helpers/general';
 
 import {
   Bed,
   Default,
   Department,
+  Encounter,
   Patient,
   PatientInsurance,
   Service,
   ServiceTariff,
   Staff,
   SystemSettings,
+  TestPrescription,
   Unit,
   Ward,
 } from '../../database/models';
-import { canUsePriceTariff } from '../../core/helpers/helper';
+import {
+  calcLimitAndOffset,
+  canUsePriceTariff,
+  dateIntervalQuery,
+  paginate,
+  patientAttributes,
+} from '../../core/helpers/helper';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { staffAttributes } from '../Antenatal/antenatal.repository';
 import { BedStatus } from '../../database/models/bed';
+import dayjs from 'dayjs';
 
 /** ***********************
  * DEPARTMENT
@@ -527,3 +536,91 @@ export async function updateSystemSettings(data) {
 export async function getSystemSettings() {
   return await SystemSettings.findOne();
 }
+
+/** ***********************
+ * ENCOUNTER
+ ********************** */
+
+/**
+ * get encounters
+ *
+ * @function
+ * @returns {Promise<Encounter>} json object with encounters data
+ * @param currentPage
+ * @param pageLimit
+ * @param search
+ * @param start
+ * @param end
+ */
+export const getEncounters = async ({
+  currentPage = 1,
+  pageLimit = 20,
+  search = null,
+  start = dayjs()
+    .startOf('month')
+    .toDate(),
+  end = dayjs()
+    .endOf('month')
+    .toDate(),
+}): Promise<{
+  total: number;
+  pages: number;
+  perPage: number;
+  docs: any[];
+  currentPage: number;
+}> => {
+  const { limit, offset } = calcLimitAndOffset(+currentPage, +pageLimit);
+
+  const { rows, count } = await Encounter.findAndCountAll({
+    attributes: [
+      'staff_id',
+      [sequelize.fn('COUNT', sequelize.col('Encounter.id')), 'totalEncounters'],
+    ],
+    include: [
+      {
+        model: Staff,
+        as: 'examiner',
+        attributes: staffAttributes,
+        required: true,
+        ...(search && {
+          where: {
+            [Op.or]: [
+              { firstname: { [Op.like]: `%${search}%` } },
+              { lastname: { [Op.like]: `%${search}%` } },
+              { username: { [Op.like]: `%${search}%` } },
+            ],
+          },
+        }),
+      },
+    ],
+    where: {
+      ...(start && end && dateIntervalQuery('time_of_encounter', start, end)),
+    },
+    group: ['staff_id'],
+    order: [[sequelize.literal('totalEncounters'), 'DESC']],
+    subQuery: false,
+    limit,
+    offset,
+  });
+  const encounters = rows.map(count => ({
+    doctorId: count.staff_id,
+    doctorName: count.examiner.fullname,
+    totalEncounters: parseInt(<string>count.get('totalEncounters')),
+  }));
+  const totalPages = Math.ceil(count.length / limit);
+  return paginate({ rows: encounters, count: totalPages }, currentPage, limit);
+};
+
+/**
+ * Get one encounter
+ * @param query
+ */
+export const getOneEncounter = async (query: WhereOptions<Encounter>): Promise<Encounter> => {
+  return Encounter.findOne({
+    where: { ...query },
+    include: [
+      { model: Staff, attributes: staffAttributes },
+      { model: Patient, attributes: patientAttributes },
+    ],
+  });
+};

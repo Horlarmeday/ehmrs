@@ -26,6 +26,8 @@ router.get('/wards-and-beds/get', verify, AdminController.getWardsAndBeds);
 router.get('/defaults/get', verify, AdminController.getDefaults);
 router.get('/defaults/:id/get', verify, AdminController.getOneDefault);
 router.get('/system-settings/get', AdminController.getSystemSettings);
+router.get('/encounters/get', verify, AdminController.getEncounters);
+router.get('/encounters/:id/get', verify, AdminController.getOneEncounter);
 router.put('/departments/update', verify, AdminController.updateDepartment);
 router.put('/units/update', verify, AdminController.updateUnit);
 router.put('/wards/update', verify, AdminController.updateWard);

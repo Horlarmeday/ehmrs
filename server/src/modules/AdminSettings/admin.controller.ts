@@ -607,5 +607,51 @@ class AdminController {
       return next(e);
     }
   }
+
+  /**
+   * get encounters
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with encounter data
+   */
+  static async getEncounters(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    try {
+      const encounters = await AdminService.getEncounters(req.query);
+
+      return successResponse({ res, message: SUCCESS, data: encounters, httpCode: 200 });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get one encounter
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with encounter data
+   */
+  static async getOneEncounter(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    try {
+      const encounter = await AdminService.getOneEncounter(+req.params.id);
+
+      return successResponse({ res, message: SUCCESS, data: encounter, httpCode: 200 });
+    } catch (e) {
+      return next(e);
+    }
+  }
 }
 export default AdminController;
