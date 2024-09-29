@@ -120,6 +120,18 @@ export class PrescribedAdditionalItem extends Model {
   quantity_dispensed: number;
 
   @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  date_dispensed: Date;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  date_returned: Date;
+
+  @Column({
     type: DataType.ENUM(DrugForm.DRUG, DrugForm.CONSUMABLE),
     allowNull: false,
     validate: {
@@ -335,6 +347,16 @@ export class PrescribedAdditionalItem extends Model {
     foreignKey: 'nhis_item_processed_by',
   })
   nhis_item_processor: Staff;
+
+  @BelongsTo(() => Staff, {
+    foreignKey: 'dispensed_by',
+  })
+  dispenser: Staff;
+
+  @BelongsTo(() => Staff, {
+    foreignKey: 'returned_by',
+  })
+  returner: Staff;
 
   @BelongsTo(() => Drug)
   drug: Drug;

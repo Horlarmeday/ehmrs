@@ -427,6 +427,18 @@ export class PrescribedDrug extends Model {
   })
   date_nhis_drug_processed: Date;
 
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  date_dispensed: Date;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  date_returned: Date;
+
   @BelongsTo(() => Staff, {
     foreignKey: 'nhis_drug_processed_by',
   })
@@ -440,6 +452,11 @@ export class PrescribedDrug extends Model {
 
   @BelongsTo(() => Staff, 'drug_changed_by')
   changer: Staff;
+
+  @BelongsTo(() => Staff, {
+    foreignKey: 'returned_by',
+  })
+  returner: Staff;
 
   @BelongsTo(() => Drug)
   drug: Drug;
