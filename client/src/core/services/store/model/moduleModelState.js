@@ -24,4 +24,9 @@ export default {
 
   default: null,
   defaults: [],
+
+  encounter: null,
+  encounters: [],
+  totalEncounters: 0,
+  encountersPages: 0,
 };

@@ -356,4 +356,64 @@ export default {
         });
     });
   },
+
+  /**
+   * ENCOUNTERS
+   */
+
+  fetchEncounters({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/settings/encounters/get', {
+          params: {
+            currentPage: payload.currentPage,
+            pageLimit: payload.itemsPerPage,
+            search: payload.search,
+            start: payload.start,
+            end: payload.end,
+          },
+        })
+        .then(response => {
+          commit('SET_ENCOUNTERS', response.data.data.docs);
+          commit('SET_ENCOUNTERS_TOTAL', response.data.data.total);
+          commit('SET_ENCOUNTERS_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchEncounter({ commit }, encounterId) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/settings/encounter/${encounterId}/get`)
+        .then(response => {
+          commit('SET_ENCOUNTER', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * MERGE ACCOUNTS
+   */
+
+  mergePatientAccounts({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/patients/merge-patient-accounts`, payload)
+        .then(response => {
+          commit('SET_MERGE_ACCOUNTS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
 };

@@ -134,4 +134,26 @@ export default {
   SET_ADMIN_DEFAULT(state, adminDefault) {
     state.default = adminDefault;
   },
+
+  /**
+   * ENCOUNTER
+   */
+  SET_ENCOUNTER(state, encounter) {
+    state.encounter = encounter;
+  },
+
+  SET_ENCOUNTERS(state, encounters) {
+    state.encounters = encounters;
+  },
+
+  SET_ENCOUNTERS_TOTAL(state, total) {
+    state.totalEncounters = total;
+  },
+
+  SET_ENCOUNTERS_PAGES(state, pages) {
+    state.encountersPages = pages;
+  },
+
+  // eslint-disable-next-line no-unused-vars
+  SET_MERGE_ACCOUNTS(state, accounts) {},
 };
