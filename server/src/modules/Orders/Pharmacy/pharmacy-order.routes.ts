@@ -2,6 +2,7 @@ import { Router } from 'express';
 import verify from '../../../core/middleware/verify';
 import { PharmacyOrderController } from './pharmacy-order.controller';
 import patientMustBeDiagnosed from '../../../core/middleware/patientMustBeDiagnosed';
+import { createEncounter } from '../../../core/middleware/createEncounter';
 
 const router = Router();
 router.post('/create/:id', verify, patientMustBeDiagnosed, PharmacyOrderController.orderDrug);
@@ -9,12 +10,14 @@ router.post(
   '/create/bulk/:id',
   verify,
   patientMustBeDiagnosed,
+  createEncounter,
   PharmacyOrderController.orderBulkDrugs
 );
 router.post(
   '/additional-items/create/:id',
   verify,
   patientMustBeDiagnosed,
+  createEncounter,
   PharmacyOrderController.orderAdditionalItems
 );
 router.post('/treatment/create/:id', verify, PharmacyOrderController.createTreatmentData);

@@ -538,6 +538,11 @@ export const getOneDrugPrescription = async (drugPrescriptionId: number | string
           { model: RoutesOfAdministration, attributes: ['name'] },
           { model: DosageForm, attributes: ['name'] },
           { model: Measurement, attributes: ['name'] },
+          {
+            model: Staff,
+            attributes: staffAttributes,
+            as: 'dispenser',
+          },
         ],
       },
       {
@@ -545,6 +550,11 @@ export const getOneDrugPrescription = async (drugPrescriptionId: number | string
         include: [
           { model: Drug, attributes: ['name'] },
           { model: Unit, attributes: ['name'] },
+          {
+            model: Staff,
+            attributes: staffAttributes,
+            as: 'dispenser',
+          },
         ],
       },
     ],
@@ -619,6 +629,7 @@ export const dispenseDrug = async (
     prescribedDrug.dispense_status = getDispenseStatus(+quantity_to_dispense, prescribedDrug);
     prescribedDrug.quantity_dispensed += +quantity_to_dispense;
     prescribedDrug.dispensed_by = data.staff_id;
+    prescribedDrug.date_dispensed = new Date();
     const drug = await prescribedDrug.save({ transaction: t });
 
     const [prescriptions, additionalItems] = await Promise.all([
@@ -687,6 +698,7 @@ export const returnDrugToInventory = async (
     prescribedDrug.quantity_returned += +quantity_to_return;
     prescribedDrug.returned_by = data.staff_id;
     prescribedDrug.reason_for_return = data.reason_for_return;
+    prescribedDrug.date_returned = new Date();
     await prescribedDrug.save({ transaction: t });
 
     await DrugPrescription.update(

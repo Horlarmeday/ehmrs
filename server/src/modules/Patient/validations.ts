@@ -165,3 +165,13 @@ export function validateTogglePatientInsurance(insurance) {
   });
   return schema.validate(insurance);
 }
+
+export function validatePatientAccountsMerge(patient) {
+  const schema = Joi.object({
+    sourcePatientIds: Joi.array()
+      .items(Joi.number())
+      .required(),
+    targetPatientId: Joi.number().required(),
+  });
+  return schema.validate(patient);
+}

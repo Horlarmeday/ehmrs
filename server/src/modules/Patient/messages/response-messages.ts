@@ -5,3 +5,5 @@ export const INTERNAL_ERROR = 'Internal server error';
 export const PATIENT_ID_REQUIRED = 'Patient id is required';
 export const PATIENT_HAS_INSURANCE = 'Patient already subscribed to this HMO';
 export const PATIENT_HAS_NO_INSURANCE = 'Principal to this patient does not have insurance';
+export const PATIENT_ACCOUNTS_MERGED = 'Patient accounts merged successfully';
+export const CANT_MERGE_SELF = 'Can not merge account with itself';
