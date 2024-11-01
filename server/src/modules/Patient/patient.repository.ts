@@ -45,6 +45,8 @@ import {
   Triage,
   WardRound,
   PaymentHistory,
+  Alert,
+  Allergy,
 } from '../../database/models';
 import sequelizeConnection from '../../database/config/config';
 import { BadException } from '../../common/util/api-error';
@@ -609,6 +611,8 @@ export const mergePatientAccounts = async (
       { model: AdditionalTreatment, foreignKey: 'patient_id' },
       { model: Admission, foreignKey: 'patient_id' },
       { model: Antenatal, foreignKey: 'patient_id' },
+      { model: Alert, foreignKey: 'patient_id' },
+      { model: Allergy, foreignKey: 'patient_id' },
       { model: AntenatalObservation, foreignKey: 'patient_id' },
       { model: AntenatalTriage, foreignKey: 'patient_id' },
       { model: CarePlan, foreignKey: 'patient_id' },
