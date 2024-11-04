@@ -1313,7 +1313,7 @@ const router = new Router({
         },
         {
           path: '/statistics',
-          name: 'statistics',
+          name: 'statistics-module',
           component: () => import('@/view/pages/statistics/Statistics.vue'),
           children: [
             {
