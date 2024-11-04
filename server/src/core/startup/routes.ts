@@ -57,7 +57,9 @@ export default (server: express.Application) => {
   server.use('/api/orders/radiology', radiologyOrderRoutes);
   server.use('/api/orders/service', serviceOrderRoutes);
 
-  Sentry.setupExpressErrorHandler(server);
+  if (process.env.SENTRY_DSN) {
+    Sentry.setupExpressErrorHandler(server);
+  }
 
   server.use(
     (
