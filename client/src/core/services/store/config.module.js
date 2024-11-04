@@ -1,12 +1,12 @@
-import objectPath from "object-path";
-import merge from "deepmerge";
-import config from "@/core/config/layout.config.json";
+import objectPath from 'object-path';
+import merge from 'deepmerge';
+import config from '@/core/config/layout.config.json';
 
 // action types
-export const SET_LAYOUT_CONFIG = "setLayoutConfig";
-export const RESET_LAYOUT_CONFIG = "resetLayoutConfig";
-export const OVERRIDE_LAYOUT_CONFIG = "overrideLayoutConfig";
-export const OVERRIDE_PAGE_LAYOUT_CONFIG = "overridePageLayoutConfig";
+export const SET_LAYOUT_CONFIG = 'setLayoutConfig';
+export const RESET_LAYOUT_CONFIG = 'resetLayoutConfig';
+export const OVERRIDE_LAYOUT_CONFIG = 'overrideLayoutConfig';
+export const OVERRIDE_PAGE_LAYOUT_CONFIG = 'overridePageLayoutConfig';
 
 // mutation types
 
@@ -23,7 +23,7 @@ export default {
      */
     layoutConfig: state => (path, defaultValue) => {
       return objectPath.get(state.config, path, defaultValue);
-    }
+    },
   },
   actions: {
     /**
@@ -58,7 +58,7 @@ export default {
      */
     [OVERRIDE_PAGE_LAYOUT_CONFIG](state, payload) {
       state.commit(OVERRIDE_PAGE_LAYOUT_CONFIG, payload);
-    }
+    },
   },
   mutations: {
     [SET_LAYOUT_CONFIG](state, payload) {
@@ -71,11 +71,11 @@ export default {
       state.config = state.initial = Object.assign(
         {},
         state.initial,
-        JSON.parse(localStorage.getItem("config"))
+        JSON.parse(localStorage.getItem('config'))
       );
     },
     [OVERRIDE_PAGE_LAYOUT_CONFIG](state, payload) {
       state.config = merge(state.config, payload);
-    }
-  }
+    },
+  },
 };
