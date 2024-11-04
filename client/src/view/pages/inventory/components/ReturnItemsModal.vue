@@ -136,7 +136,6 @@ export default {
           // set spinner to submit button
           const submitButton = this.$refs['kt_return_submit'];
           this.addSpinner(submitButton);
-          console.log(this.itemsToReturn);
           const itemsToReturn = this.itemsToReturn.map(
             ({
               drug_type,
@@ -149,7 +148,6 @@ export default {
               ...item
             }) => item
           );
-          console.log(itemsToReturn);
           this.$store
             .dispatch('inventory/createInventoryItemsReturnRequest', itemsToReturn)
             .then(() => this.endRequest(submitButton))
