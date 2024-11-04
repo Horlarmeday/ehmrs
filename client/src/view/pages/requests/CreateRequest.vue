@@ -9,7 +9,7 @@
     <div class="card-body">
       <div v-for="(item, i) in itemsToRequest" :key="i">
         <div class="form-group row">
-          <div class="col-lg-4">
+          <div class="col-lg-3">
             <label>Inventory:</label>
             <select
               name="inventory"
@@ -36,7 +36,12 @@
                   unit_name: items?.unit_name,
                 })
               "
-            />
+            >
+              <template #option="{ drug_type, name }">
+                <span>{{ name }} - </span>
+                <em> {{ drug_type || '' }}</em>
+              </template>
+            </v-select>
           </div>
           <div class="col-lg-3">
             <label>Quantity to Request</label>
@@ -53,7 +58,7 @@
               />
             </div>
           </div>
-          <div class="col-lg-1">
+          <div class="col-lg-2">
             <br />
             <a
               title="Add more"
@@ -70,7 +75,6 @@
               href="javascript:"
               data-repeater-delete=""
               class="btn font-weight-bold btn-danger btn-icon"
-              v-if="i !== 0"
               @click="removeItem(i)"
             >
               <i class="la la-remove"></i>
@@ -122,6 +126,7 @@ export default {
         id: item?.id,
         drug_id: item?.drug?.id,
         unit_name: item?.unit?.name,
+        drug_type: item?.drug_type,
       }));
     },
   },
@@ -132,6 +137,7 @@ export default {
     },
 
     addMoreRequest() {
+      this.$store.commit('inventory/SET_ITEMS', []);
       this.itemsToRequest.push({
         inventory: null,
         quantity: 0,
@@ -150,6 +156,7 @@ export default {
     },
 
     getInventoryId(index) {
+      this.$store.commit('inventory/SET_ITEMS', []);
       this.inventory = this.itemsToRequest[index].inventory;
     },
 

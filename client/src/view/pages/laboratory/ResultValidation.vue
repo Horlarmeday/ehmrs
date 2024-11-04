@@ -22,7 +22,7 @@
 <script>
 import SectionTitle from '../../../utils/SectionTitle.vue';
 import PatientSection from '../../../utils/PatientSection.vue';
-import ResultValidationSection from './results/ResultValidationSection';
+import ResultValidationSection from './temp/ResultValidationSection';
 import PageTitle from '@/utils/PageTitle.vue';
 import TestSkeleton from '@/view/pages/laboratory/components/skeleton/TestSkeleton.vue';
 export default {

@@ -35,18 +35,26 @@ export const setUrlQueryParams = ({
   endDate,
   sort,
   filter,
+  occupantType,
+  name,
+  period,
+  tabIndex,
 }) => {
   router
     .push({
       name: pathName,
       query: {
-        currentPage: currentPage,
-        itemsPerPage: itemsPerPage,
+        currentPage,
+        itemsPerPage,
         search,
         sort,
         startDate,
         endDate,
         filter,
+        occupantType,
+        name,
+        period,
+        tabIndex,
       },
     })
 
@@ -140,5 +148,31 @@ export function calculateAge(birthday) {
 export const getLabelDotStatus = type => {
   if (type === 'Cash') return 'label-success';
   if (type === 'Private') return 'label-primary';
+  if (type === 'Retainership') return 'label-info';
   return 'label-danger';
+};
+
+export const getItemType = type => {
+  if (type === 'NHIS') return 'label-light-success';
+  if (type === 'Private') return 'label-light-primary';
+  if (type === 'Retainership') return 'label-light-info';
+  return 'label-light-default';
+};
+
+export const getPatientDotStatus = type => {
+  if (type === 'NHIS') return 'label-danger';
+  if (type === 'FHSS') return 'label-success';
+  if (type === 'PHIS') return 'label-primary';
+  if (type === 'Retainership') return 'label-info';
+  return 'label-default';
+};
+
+export const getTestTypeToFetch = (insuranceName, isSwitchOn = true) => {
+  if (insuranceName && !isSwitchOn) return null;
+  const insuranceMapping = {
+    NHIS: { is_available_for_nhis: true },
+    FHSS: { is_available_for_nhis: true },
+    PHIS: { is_available_for_phis: true },
+  };
+  return insuranceMapping[insuranceName] || null;
 };

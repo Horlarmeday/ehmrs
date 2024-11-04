@@ -29,18 +29,21 @@
               <td class="pl-7 py-8">
                 <div class="d-flex align-items-center">
                   <div>
-                    <a
-                      href="#"
+                    <router-link
+                      :to="`/patient/profile/${admission.patient_id}`"
                       class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg"
-                      >{{ admission.patient.hospital_id }}</a
+                      >{{ admission.patient.hospital_id }}</router-link
                     >
                   </div>
                 </div>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                <router-link
+                  :to="`/patient/profile/${admission.patient_id}`"
+                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
+                >
                   {{ admission?.patient?.fullname }}
-                </span>
+                </router-link>
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">

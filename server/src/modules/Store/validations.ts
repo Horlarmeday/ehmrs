@@ -41,6 +41,9 @@ export function validatePharmacyItem(item) {
     expiration: Joi.date()
       .optional()
       .allow(''),
+    brand: Joi.string()
+      .optional()
+      .allow(''),
     quantity_received: Joi.number().required(),
     unit_id: Joi.number().required(),
     unit_price: Joi.number().required(),
@@ -49,9 +52,13 @@ export function validatePharmacyItem(item) {
     nhis_selling_price: Joi.number()
       .optional()
       .allow(''),
+    private_selling_price: Joi.number()
+      .optional()
+      .allow(''),
     drug_id: Joi.number().required(),
     create_cash_item: Joi.boolean().required(),
     create_nhis_item: Joi.boolean().required(),
+    create_private_item: Joi.boolean().required(),
   });
   return schema.validate(item);
 }
@@ -126,6 +133,7 @@ export const validateExportedData = items => {
     dataType: Joi.string()
       .valid(ExportDataType.CSV, ExportDataType.PDF, ExportDataType.EXCEL)
       .required(),
+    selectAll: Joi.boolean(),
   });
   return schema.validate(items);
 };

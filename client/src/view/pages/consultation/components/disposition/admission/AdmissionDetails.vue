@@ -42,15 +42,12 @@
           <td>{{ admission.createdAt | dayjs('ddd, MMM Do YYYY, h:mma') }}</td>
           <td>
             <a
-              v-if="!admission.should_discharge"
+              v-if="doctorAllowedTabs.includes(currentUser.role) && !admission.should_discharge"
               @click="showDischargeAlert(admission.id)"
               v-b-tooltip.hover
               title="Discharge patient"
               href="#"
               ><i class="flaticon-logout mr-4 text-danger"></i
-            ></a>
-            <a v-b-tooltip.hover title="View admission details" href="#"
-              ><i class="flaticon-menu-1 icon-md text-dark"></i
             ></a>
           </td>
         </tr>
@@ -61,6 +58,7 @@
 
 <script>
 import Swal from 'sweetalert2';
+import { parseJwt } from '@/core/plugins/parseJwt';
 
 export default {
   props: {
@@ -70,6 +68,10 @@ export default {
       default: () => {},
     },
   },
+  data: () => ({
+    currentUser: parseJwt(localStorage.getItem('user_token')),
+    doctorAllowedTabs: ['Super Admin', 'General Practitioner'],
+  }),
   methods: {
     handleSuccess() {
       Swal.fire({

@@ -9,22 +9,27 @@
       <div v-else class="card" v-for="(prescription, i) in prescriptions" :key="i">
         <div class="card-header">
           <div class="card-title" v-b-toggle="`collapse-d${i}`">
-            <span class="mr-5 text-black-50 lead font-size-h4">Drug Name:</span>
+            <span class="mr-5 text-black-50 lead font-size-h4 font-italic">Drug Name:</span>
             <span class="mr-5 text-dark">{{ prescription.drug_name }}</span>
+            <span class="vertical-line"></span>
 
-            <span class="mr-3 text-black-50 lead font-size-h4">Drug Type:</span
+            <span class="mr-3 text-black-50 lead font-size-h4 font-italic">Drug Type:</span
             ><span class="text-dark mr-5">{{ prescription.drug_type }}</span>
+            <span class="vertical-line"></span>
 
-            <span class="mr-3 text-black-50 lead font-size-h4">Dispense Status:</span>
+            <span class="mr-3 text-black-50 lead font-size-h4 font-italic">Dispense Status:</span>
             <span
               :class="getStatusColor(prescription.dispense_status)"
               class="label label-pill label-inline mr-2"
               >{{ prescription.dispense_status }}</span
             >
+            <span class="vertical-line"></span>
+            <span class="mr-3 text-black-50 lead font-size-h4 font-italic ml-5">Prescribed By:</span
+            ><span class="text-dark mr-5">{{ prescription?.staff?.fullname }}</span>
           </div>
         </div>
         <div>
-          <b-collapse :id="`collapse-d${i}`">
+          <b-collapse visible :id="`collapse-d${i}`">
             <b-card :class="prescription.payment_status === PENDING && DISABLED">
               <drug-info-banner :prescription="prescription" />
               <div class="form-group row">
@@ -203,5 +208,12 @@ export default {
 .disabledCard {
   pointer-events: none;
   opacity: 0.4;
+}
+
+.vertical-line {
+  border-left: 1px solid #858992; /* Adjust color and thickness as needed */
+  height: 25px; /* Adjust height as needed */
+  margin-left: 5px; /* Adjust margin as needed */
+  margin-right: 15px; /* Adjust margin as needed */
 }
 </style>

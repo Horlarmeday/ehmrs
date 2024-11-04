@@ -48,10 +48,9 @@ import {
   Observation,
   WardRound,
 } from '../../database/models';
-import { getPrescriptions } from '../Consultation/consultation.repository';
+import { getVisitPrescriptions } from '../Consultation/consultation.repository';
 import { VisitCategory } from '../../database/models/visit';
 import { CreateDeliveryInfo, CreatePostNatal } from '../Antenatal/types/antenatal.types';
-import { getOneAntenatalAccount } from '../Antenatal/antenatal.repository';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 
 export class AdmissionService {
@@ -192,6 +191,7 @@ export class AdmissionService {
     const admission = await getOneAdmission({ id: admissionId });
     return createObservation({
       ...body,
+      temperature: +body.temperature,
       admission_id: admission.id,
       staff_id: staffId,
       visit_id: admission.visit_id,
@@ -412,7 +412,8 @@ export class AdmissionService {
    */
   static async getDoctorPrescriptions(admissionId: number) {
     const admission = await getOneAdmission({ id: admissionId });
-    return await getPrescriptions(admission.visit_id, VisitCategory.IPD);
+    const [prescriptions] = await getVisitPrescriptions([admission.visit_id], [VisitCategory.IPD]);
+    return prescriptions;
   }
 
   /**

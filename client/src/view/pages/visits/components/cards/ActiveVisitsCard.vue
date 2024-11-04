@@ -2,22 +2,29 @@
   <div class="row">
     <search @search="onHandleSearch" />
 
-    <div>
+    <div class="col-lg-12">
       <div
         class="bg-gray-200 rounded-lg pointer text-center mr-2 inline-display mb-2"
         v-for="visit in visits"
         :key="visit.id"
-        @click="visitDetailsPage(visit)"
         v-b-tooltip.hover
         :title="visit.patient.fullname"
-        style="min-width: 150px"
+        style="min-width: 150px; position: relative;"
       >
+        <router-link
+          :to="`/visit/update/${visit.id}`"
+          class="btn btn-xs btn-icon btn-circle btn-white btn-hover-text-primary btn-shadow"
+          style="position: absolute; top: -3px; right: -1px;"
+        >
+          <i class="fa fa-pen icon-sm text-muted"></i>
+        </router-link>
         <div v-if="visit.category !== OUTPATIENT" class="displayIcon">
           <i :class="displayIcon(visit.category)" class="text-white"></i>
         </div>
-        <div class="pr-4 pl-4 pb-4">
+        <div @click="visitDetailsPage(visit)" class="pr-4 pl-4 pb-4">
           <div>
             <img
+              width="70"
               v-if="!imageError"
               alt="Pic"
               :src="imageUrl(visit.patient.photo)"
@@ -33,6 +40,12 @@
             >
           </p>
           <p class="mb-0">
+            <span
+              v-b-tooltip.hover
+              :title="visit?.patient?.insurances?.[0]?.insurance?.name"
+              class="label label-dot label-lg mr-2"
+              :class="getPatientDotStatus(visit?.patient?.insurances?.[0]?.insurance?.name)"
+            ></span>
             <small class="font-size-lg font-weight-bolder">{{ visit.patient.hospital_id }}</small>
           </p>
         </div>
@@ -46,6 +59,7 @@
         :per-page="perPage"
         :current-page="currentPage"
         @pagechanged="onPageChange"
+        @changepagecount="handlePageCount"
       />
     </div>
   </div>
@@ -53,7 +67,7 @@
 
 <script>
 import Search from '../../../../../utils/Search.vue';
-import { debounce, removeSpinner } from '@/common/common';
+import { debounce, getPatientDotStatus, removeSpinner } from '@/common/common';
 import Pagination from '@/utils/Pagination.vue';
 export default {
   components: { Pagination, Search },
@@ -83,6 +97,7 @@ export default {
   },
 
   methods: {
+    getPatientDotStatus,
     handlePageChange() {
       this.$store.dispatch('visit/fetchActiveVisits', {
         currentPage: this.currentPage,
@@ -93,6 +108,13 @@ export default {
     onPageChange(page) {
       this.currentPage = page;
       this.handlePageChange();
+    },
+
+    handlePageCount(count) {
+      this.$store.dispatch('visit/fetchActiveVisits', {
+        currentPage: this.$route.query.currentPage || this.currentPage,
+        itemsPerPage: count,
+      });
     },
 
     onHandleSearch(prop) {

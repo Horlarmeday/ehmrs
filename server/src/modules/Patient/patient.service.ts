@@ -12,15 +12,22 @@ import {
   updatePatient,
   addPatientInsurance,
   getPatientByNameAndPhone,
+  updateInsurance,
+  togglePatientInsurance,
+  convertDependantToPrincipal,
+  mergePatientAccounts,
 } from './patient.repository';
-import { processSnappedPhoto, StatusCodes } from '../../core/helpers/helper';
+import { getAge, processSnappedPhoto, StatusCodes } from '../../core/helpers/helper';
 import { JobSchedule } from '../../core/command/worker/schedule';
 import { DEPENDANT_EXIST, INTERNAL_ERROR, PATIENT_EXIST } from './messages/response-messages';
 import {
   AddPatientInsuranceBody,
   CreatePatientBody,
   EmergencyPatientBody,
+  MergePatientAccounts,
   PatientType,
+  TogglePatientInsurance,
+  UpdatePatientInsurance,
 } from './types/patient.types';
 import { prescribeService } from '../Orders/Service/service-order.repository';
 import { Patient } from '../../database/models';
@@ -36,7 +43,9 @@ class PatientService {
    */
   static async createPatientAccount(createPatientBody: CreatePatientBody) {
     const patient = await findPatientByPhone(createPatientBody.phone);
-    if (patient) throw new BadException('INVALID', StatusCodes.BAD_REQUEST, PATIENT_EXIST);
+    const age = getAge(createPatientBody.date_of_birth);
+    if (patient && age >= 18)
+      throw new BadException('INVALID', StatusCodes.BAD_REQUEST, PATIENT_EXIST);
 
     try {
       // Save photo to disk
@@ -129,7 +138,7 @@ class PatientService {
     const fileName = await processSnappedPhoto(body.photo, body.firstname);
 
     const patient = await createDependant({ ...body, photo: fileName });
-    await JobSchedule.assignHospitalNumber(patient.id);
+    JobSchedule.assignHospitalNumber(patient.id);
 
     return patient;
   }
@@ -173,6 +182,30 @@ class PatientService {
   }
 
   /**
+   * update a patient insurance
+   *
+   * @static
+   * @returns {json} json object with patient data
+   * @param body
+   * @memberOf PatientService
+   */
+  static async updatePatientInsurance(body: UpdatePatientInsurance) {
+    return updateInsurance(body);
+  }
+
+  /**
+   * toggle a patient insurance state
+   *
+   * @static
+   * @returns {json} json object with patient data
+   * @param body
+   * @memberOf PatientService
+   */
+  static async togglePatientInsurance(body: TogglePatientInsurance) {
+    return togglePatientInsurance(body);
+  }
+
+  /**
    * get a patient by Id
    *
    * @static
@@ -206,6 +239,31 @@ class PatientService {
    */
   static async getPatientByNameAndPhone(body) {
     return getPatientByNameAndPhone(body);
+  }
+
+  /**
+   * convert dependant account to patient account
+   *
+   * @static
+   * @returns {json} json object with patient data
+   * @memberOf PatientService
+   * @param patientId
+   */
+  static async convertDependantToPatient(patientId: number) {
+    return convertDependantToPrincipal(patientId);
+  }
+
+  /**
+   * merge patient accounts
+   *
+   * @static
+   * @returns {json} json object with patient data
+   * @param body
+   * @memberOf PatientService
+   */
+  static async mergePatientAccounts(body: MergePatientAccounts) {
+    const { sourcePatientIds, targetPatientId } = body;
+    return mergePatientAccounts(sourcePatientIds, targetPatientId);
   }
 }
 export default PatientService;

@@ -4,81 +4,24 @@
     size="xl"
     hide-footer
     title="Routine Drugs"
-    @show="getInventories"
+    @show="getInventoriesAndANCDrugs"
+    scrollable
   >
     <div v-if="defaults">
-      <div class="mb-5" v-for="drug in routineDrugs" :key="drug.drug_id">
-        <div class="bg-light-primary p-1">
-          <label class="mr-3"
-            >Drug:
-            <span class="font-weight-bolder">{{ drug.drug_name }}</span>
-          </label>
-          <span class="vertical-line"></span>
-          <label class="mr-3"
-            >Dosage Form: <span class="font-weight-bolder">{{ drug.dosage_form_name }}</span></label
-          >
-          <span class="vertical-line"></span>
-          <label class="mr-3"
-            >Route: <span class="font-weight-bolder">{{ drug.route_name }}</span></label
-          >
-          <span class="vertical-line"></span>
-          <label class=""
-            >Strength:
-            <span class="font-weight-bolder"
-              >{{ drug.prescribed_strength }} {{ drug.strength_name }}</span
-            ></label
-          >
-        </div>
-        <div class="form-group row">
-          <div class="col-sm-1">
-            <label class="checkbox" style="margin-top: 30px">
-              <input type="checkbox" :checked="isSelected(drug)" @change="toggleDrug(drug)" />
-              <span></span>
-            </label>
-          </div>
-          <div class="col-lg-4">
-            <label>Duration:</label>
-            <input
-              v-model="drug.duration"
-              class="form-control-sm form-control"
-              type="number"
-              name="duration"
-              v-validate="'required'"
-              data-vv-validate-on="blur"
-              @input="calculateDosageQuantity(drug)"
-            />
-          </div>
-          <div class="col-lg-4">
-            <label>Unit:</label>
-            <select
-              @change="calculateDosageQuantity(drug)"
-              v-model="drug.duration_unit"
-              class="form-control form-control-sm"
-              name="unit"
-              v-validate="'required'"
-              data-vv-validate-on="blur"
-            >
-              <option :value="unit" v-for="(unit, i) in units" :key="i">{{ unit.label }}</option>
-            </select>
-          </div>
-          <div class="col-lg-3">
-            <label>Quantity:</label>
-            <input
-              v-model="drug.quantity_to_dispense"
-              class="form-control-sm form-control"
-              type="number"
-              @input="getTotalPrice(drug)"
-              :disabled="!drug.quantity_prescribed"
-            />
-          </div>
-        </div>
-      </div>
-      <div class="separator separator-solid separator-border-2"></div>
-      <div class="mt-2">
-        <button class="btn btn-primary btn-md" ref="kt-routineDrugs-submit" @click="submitDrugs">
-          Submit
-        </button>
-      </div>
+      <b-tabs content-class="mt-5">
+        <b-tab title="1 Week" active>
+          <routine-drug-input @closeModal="hideModal" :routine-drugs="oneWeekDrugs" />
+        </b-tab>
+        <b-tab title="2 Weeks">
+          <routine-drug-input @closeModal="hideModal" :routine-drugs="twoWeeksDrugs" />
+        </b-tab>
+        <b-tab title="3 Weeks">
+          <routine-drug-input @closeModal="hideModal" :routine-drugs="threeWeeksDrugs" />
+        </b-tab>
+        <b-tab title="4 Weeks">
+          <routine-drug-input @closeModal="hideModal" :routine-drugs="fourWeeksDrugs" />
+        </b-tab>
+      </b-tabs>
     </div>
     <div v-else>
       <DefaultSkeleton />
@@ -89,28 +32,23 @@
 <script>
 import DefaultSkeleton from '@/utils/DefaultSkeleton.vue';
 import { randomId } from '@/common/common';
-
-const Frequency = {
-  OD: 1,
-  Stat: 1,
-  BD: 2,
-  TDS: 3,
-  QDS: 4,
-  Q4H: 6,
-  Q2H: 12,
-  Q1H: 24,
-};
+import RoutineDrugInput from '@/view/pages/programs/antenatal/components/RoutineDrugInput.vue';
 
 export default {
-  components: { DefaultSkeleton },
+  components: { RoutineDrugInput, DefaultSkeleton },
   data: () => ({
     defaultData: 'ANC_ROUTINE_DRUGS',
     switchSpot: true,
+    error: null,
     units: [
       { val: 1, label: 'Days' },
       { val: 7, label: 'Weeks' },
       { val: 30, label: 'Months' },
     ],
+    ONE_WEEK: '1 week',
+    TWO_WEEKS: '2 weeks',
+    THREE_WEEKS: '3 weeks',
+    FOUR_WEEKS: '4 weeks',
   }),
   props: {
     displayPrompt: {
@@ -123,11 +61,15 @@ export default {
     },
     showSwitch: {
       type: Boolean,
-      required: true,
+      required: false,
     },
     source: {
       type: String,
       required: true,
+    },
+    insuranceName: {
+      type: String,
+      required: false,
     },
   },
   computed: {
@@ -141,17 +83,20 @@ export default {
     },
 
     defaults() {
-      if (this.$store.state.model.defaults?.length) {
-        return this.$store.state.model.defaults;
-      }
-      return JSON.parse(localStorage.getItem('defaults'));
+      return this.$store.state.model.defaults;
     },
 
-    routineDrugs: {
-      get() {
-        const drugs = this.defaults?.find(def => def.type === this.defaultData)?.data;
-        if (drugs) {
-          return drugs.map(drug => ({
+    inventories() {
+      return this.$store.state.inventory.inventories;
+    },
+
+    routineDrugs() {
+      const drugs = this.defaults?.find(def => def.type === this.defaultData)?.data;
+      if (drugs) {
+        const insurance = this.getInsuranceName() || 'Cash';
+        return drugs
+          .filter(drug => drug.drug.drug_type === insurance)
+          .map(drug => ({
             id: randomId(),
             drug_name: drug.drug?.name,
             dosage_form_id: drug.drug.dosage_form?.id,
@@ -167,13 +112,13 @@ export default {
             frequency: drug.frequency,
             price: drug.drug?.price,
             inventory_id: this.getInventoryId(),
-
+            group: drug.group,
             prescribed_strength: drug.prescribed_strength,
             strength_id: drug.drug.strength?.id,
             strength_input: drug.drug.strength_input,
             drug_id: drug.drug.drug_id,
             total_price: '',
-            drug_type: this.switchPosition && this.switchSpot ? 'NHIS' : 'Cash',
+            drug_type: this.getDrugType(this.insuranceName),
             source: this.source,
             ...(this.drug_group && { drug_group: this.drug_group }),
             ...(this.source === 'Antenatal' && { ante_natal_id: this.$route.query.antenatal }),
@@ -182,13 +127,24 @@ export default {
             }),
             ...(this.source === 'Theater' && { surgery_id: this.$route.query.surgery }),
           }));
-        }
-        return [];
-      },
+      }
+      return [];
     },
 
-    inventories() {
-      return this.$store.state.inventory.inventories;
+    oneWeekDrugs() {
+      return this.routineDrugs?.filter(drug => drug?.group === this.ONE_WEEK) || [];
+    },
+
+    twoWeeksDrugs() {
+      return this.routineDrugs?.filter(drug => drug?.group === this.TWO_WEEKS) || [];
+    },
+
+    threeWeeksDrugs() {
+      return this.routineDrugs?.filter(drug => drug?.group === this.THREE_WEEKS) || [];
+    },
+
+    fourWeeksDrugs() {
+      return this.routineDrugs?.filter(drug => drug?.group === this.FOUR_WEEKS) || [];
     },
   },
   watch: {
@@ -198,25 +154,6 @@ export default {
     },
   },
   methods: {
-    addSpinner(submitButton) {
-      this.isDisabled = true;
-      submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');
-    },
-
-    removeSpinner(submitButton) {
-      this.isDisabled = false;
-      submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
-    },
-
-    endRequest(button) {
-      this.removeSpinner(button);
-      this.$emit('closeModal');
-      this.$store.dispatch('order/fetchPrescribedDrugs', {
-        fetchWithItems: true,
-        filter: { visit_id: this.$route.params.id },
-      });
-    },
-
     fetchDrugs() {
       if (!localStorage.getItem('defaults')) {
         this.$store
@@ -225,99 +162,52 @@ export default {
       }
     },
 
-    isSelected(drug) {
-      return this.routineDrugs.some(t => t.drug_id === drug.drug_id);
+    getInventoriesAndANCDrugs() {
+      this.getDefaults();
+      this.getInventories();
     },
 
-    toggleDrug(drug) {
-      const index = this.routineDrugs.findIndex(t => t.drug_id === drug.drug_id);
-      if (index !== -1) {
-        this.routineDrugs.splice(index, 1); // Remove drug
-      } else {
-        this.routineDrugs.push(drug); // Add drug
-      }
-    },
-
-    getDrugIndex(drug) {
-      return this.routineDrugs.findIndex(routine => routine.id === drug.id);
-    },
-
-    calculateDosageQuantity(drug) {
-      const index = this.getDrugIndex(drug);
-      const foundDrug = this.routineDrugs[index];
-      if (foundDrug.frequency === 'Stat' || foundDrug.dosage_form_name === 'Cream') {
-        foundDrug.quantity_prescribed = 1;
-        foundDrug.quantity_to_dispense = 1;
-        foundDrug.duration_unit = foundDrug.duration_unit?.label;
-        foundDrug.quantity_to_dispense = Math.floor(Math.abs(foundDrug.quantity_to_dispense));
-        foundDrug.total_price = +foundDrug.price * +foundDrug.quantity_to_dispense;
-      } else {
-        const calculatedQuantity = Math.ceil(
-          (foundDrug.prescribed_strength / Number(foundDrug.strength_input)) *
-            Frequency[foundDrug.frequency] *
-            foundDrug.duration *
-            foundDrug.duration_unit?.val
-        );
-        foundDrug.quantity_prescribed = calculatedQuantity;
-        foundDrug.quantity_to_dispense = calculatedQuantity;
-        foundDrug.duration_unit = foundDrug.duration_unit?.label;
-        foundDrug.quantity_to_dispense = Math.floor(Math.abs(foundDrug.quantity_to_dispense));
-        foundDrug.total_price = +foundDrug.price * +foundDrug.quantity_to_dispense;
-      }
-    },
-
-    getTotalPrice(drug) {
-      const index = this.getDrugIndex(drug);
-      const foundDrug = this.routineDrugs[index];
-      foundDrug.quantity_to_dispense = Math.floor(Math.abs(foundDrug.quantity_to_dispense));
-      foundDrug.total_price = +foundDrug.price * +foundDrug.quantity_to_dispense;
+    getInsuranceName() {
+      if (this.insuranceName === 'PHIS') return 'Private';
+      if (this.insuranceName === 'FHSS') return 'NHIS';
+      if (this.insuranceName === 'NHIS') return 'NHIS';
+      return 'Cash';
     },
 
     getInventories() {
       this.$store.dispatch('inventory/fetchInventories');
     },
 
+    getDefaults() {
+      this.$store.dispatch('model/fetchDefaults');
+    },
+
+    getDrugType(insuranceName) {
+      const isSwitchOn = this.switchSpot && this.switchPosition;
+      if (isSwitchOn) return 'NHIS';
+      const insuranceMapping = {
+        FHSS: 'NHIS',
+        NHIS: 'NHIS',
+        PHIS: 'Private',
+        Retainership: 'Cash',
+      };
+      const selectedInsurance = insuranceMapping[insuranceName];
+      if (selectedInsurance === 'NHIS' && !isSwitchOn) return 'Cash';
+      return insuranceMapping[insuranceName] || 'Cash';
+    },
+
     getInventoryId() {
-      const type = this.switchPosition && this.switchSpot ? 'NHIS' : 'Cash';
+      const type = this.getDrugType(this.insuranceName);
       return this.inventories.find(inventory =>
         inventory.name.toLowerCase().includes(type.toLowerCase())
       )?.id;
     },
 
-    submitDrugs() {
-      console.log(this.routineDrugs);
-      const emptyQuantity = this.routineDrugs.some(
-        drug => !drug.quantity_to_dispense || !drug.duration_unit
-      );
-      if (emptyQuantity) {
-        return this.$notify({
-          group: 'foo',
-          title: 'Error message',
-          text: 'You need to fill all inputs',
-          type: 'error',
-        });
-      }
-
-      const submitButton = this.$refs['kt-routineDrugs-submit'];
-      this.addSpinner(submitButton);
-
-      this.$store
-        .dispatch('order/bulkOrderDrug', {
-          drugs: this.routineDrugs,
-          id: this.$route.params.id,
-        })
-        .then(() => this.endRequest(submitButton))
-        .catch(() => this.removeSpinner(submitButton));
+    hideModal() {
+      this.$emit('closeModal');
     },
   },
 };
 </script>
 
-<style scoped>
-.vertical-line {
-  border-left: 1px solid #858992; /* Adjust color and thickness as needed */
-  height: 150px; /* Adjust height as needed */
-  margin-left: 5px; /* Adjust margin as needed */
-  margin-right: 15px; /* Adjust margin as needed */
-}
-</style>
+<style scoped></style>

@@ -5,6 +5,7 @@
     hide-footer
     title="Prescriptions History"
     size="xl"
+    no-close-on-backdrop
   >
     <div>
       <history-accordion

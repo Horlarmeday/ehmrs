@@ -1,28 +1,26 @@
 <template>
   <div>
-    <div class="border">
-      <div class="font-weight-boldest">Histories</div>
-      <histories-table :histories="observations.histories" />
+    <div class="">
+      <histories-table :histories="observations" />
     </div>
     <hr />
-    <div v-if="observations?.complaints?.length" class="border">
-      <div class="font-weight-boldest">Complaints</div>
-      <complaints-table :complaints="observations.complaints" />
-    </div>
+    <!--    <div v-if="observations?.complaints?.length" class="border">-->
+    <!--      <div class="font-weight-boldest">Complaints</div>-->
+    <!--      <complaints-table :complaints="observations.complaints" />-->
+    <!--    </div>-->
   </div>
 </template>
 <script>
 import HistoriesTable from '@/view/components/table/HistoriesTable.vue';
-import ComplaintsTable from '@/view/components/table/ComplaintsTable.vue';
 
 export default {
   name: 'ObservationsTable',
-  components: { ComplaintsTable, HistoriesTable },
+  components: { HistoriesTable },
   props: {
     observations: {
-      type: Object,
+      type: Array,
       required: true,
-      default: () => {},
+      default: () => [],
     },
   },
 };

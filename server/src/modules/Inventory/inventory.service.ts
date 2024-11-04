@@ -6,11 +6,15 @@ import {
   getInventoryItemById,
   getInventoryItemHistory,
   getInventoryItems,
+  getInventoryReturnRequests,
   receiveBulkItem,
+  requestReturnDrugsToStore,
   searchInventoryItems,
+  updateInventoryItem,
+  updateReturnRequests,
 } from './inventory.repository';
-import { Inventory, InventoryItem } from '../../database/models';
-import { InventoryTypes } from './types/inventory.types';
+import { Inventory, InventoryItem, ReturnItem } from '../../database/models';
+import { InventoryTypes, RequestReturnToStore, UpdateReturnRequest } from './types/inventory.types';
 import { GetInventoryItemsBody } from './types/inventory-item.types';
 import { BadException } from '../../common/util/api-error';
 
@@ -63,6 +67,47 @@ class InventoryService {
       quantity_received: item.quantity_received,
     }));
     return receiveBulkItem(items);
+  }
+
+  /**
+   * receive item(s) into the inventory
+   *
+   * @static
+   * @returns {json} json object with inventory items data
+   * @param body
+   * @param staff_id
+   * @memberOf InventoryService
+   */
+  static async requestReturnDrugsToStore(
+    body: RequestReturnToStore[],
+    staff_id: number
+  ): Promise<ReturnItem[]> {
+    return requestReturnDrugsToStore(body, staff_id);
+  }
+
+  /**
+   * update the inventory item
+   *
+   * @static
+   * @returns {json} json object with inventory items data
+   * @param body
+   * @memberOf InventoryService
+   */
+  static async updateInventoryItem(body) {
+    return updateInventoryItem(body);
+  }
+
+  /**
+   * update return requests
+   *
+   * @static
+   * @returns {json} json object with inventory items data
+   * @param body
+   * @param staff_id
+   * @memberOf InventoryService
+   */
+  static async updateReturnRequests(body: UpdateReturnRequest[], staff_id: number): Promise<void> {
+    return updateReturnRequests(body, staff_id);
   }
 
   /**
@@ -143,6 +188,21 @@ class InventoryService {
     }
 
     return getInventoryItemHistory({ inventoryItemId });
+  }
+
+  /**
+   * get inventory item return requests
+   * @param body
+   */
+  static async getInventoryReturnRequests(
+    body
+  ): Promise<{ total: any; pages: number; perPage: number; docs: any; currentPage: number }> {
+    const { currentPage, pageLimit, search, start, end } = body;
+    if (Object.values(body).length) {
+      return getInventoryReturnRequests({ currentPage, pageLimit, search, start, end });
+    }
+
+    return getInventoryReturnRequests({});
   }
 }
 

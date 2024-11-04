@@ -3,7 +3,7 @@
     <SectionTitle text="Antenatal Routine Drugs" />
     <div class="mb-5" v-for="(item, i) in items" :key="i">
       <div class="d-flex justify-content-between">
-        <div class="d-flex flex-column flex-root">
+        <div class="d-flex flex-column flex-root flex-grow-2">
           <label>Drug:</label>
           <v-select
             v-validate="'required'"
@@ -73,15 +73,29 @@
           </select>
         </div>
         <div class="d-flex flex-column flex-root">
+          <label>Group:</label>
+          <select
+            v-validate="'required'"
+            data-vv-validate-on="blur"
+            v-model="item.group"
+            class="form-control form-control-sm"
+            name="group"
+          >
+            <option :value="group" v-for="(group, i) in groups" :key="i">{{ group }}</option>
+          </select>
+          <span class="text-danger text-sm">{{ errors.first('group') }}</span>
+        </div>
+        <div class="d-flex flex-column flex-root">
           <label>Quantity:</label>
           <input
             v-model="item.quantity"
             class="form-control-sm form-control"
             type="number"
-            name="quantity_to_dispense"
+            name="quantity"
             v-validate="'required'"
             data-vv-validate-on="blur"
           />
+          <span class="text-danger text-sm">{{ errors.first('quantity') }}</span>
         </div>
         <div class="pt-lg-5">
           <a href="#" class="col-lg-1 col-form-label">
@@ -134,8 +148,10 @@ export default {
         prescribed_strength: '',
         quantity: '',
         price: '',
+        group: '',
       },
     ],
+    groups: ['1 week', '2 weeks', '3 weeks', '4 weeks'],
     frequencies: [
       { val: 1, label: 'Stat' },
       { val: 1, label: 'OD' },
@@ -183,6 +199,7 @@ export default {
         prescribed_strength: '',
         quantity: '',
         price: '',
+        group: '',
       });
     },
 
@@ -242,6 +259,7 @@ export default {
           prescribed_strength: '',
           quantity: '',
           price: '',
+          group: '',
         },
       ];
     },
@@ -257,16 +275,20 @@ export default {
     },
 
     submitForm() {
-      const submitButton = this.$refs['kt-ancRoutineDrugsSubmit'];
-      this.addSpinner(submitButton);
+      this.$validator.validateAll(this.items).then(result => {
+        if (result) {
+          const submitButton = this.$refs['kt-ancRoutineDrugsSubmit'];
+          this.addSpinner(submitButton);
 
-      this.$store
-        .dispatch('model/addDefault', {
-          type: this.type,
-          data: this.items,
-        })
-        .then(() => this.endRequest(submitButton))
-        .catch(() => this.removeSpinner(submitButton));
+          this.$store
+            .dispatch('model/addDefault', {
+              type: this.type,
+              data: this.items,
+            })
+            .then(() => this.endRequest(submitButton))
+            .catch(() => this.removeSpinner(submitButton));
+        }
+      });
     },
   },
 };

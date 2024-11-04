@@ -6,6 +6,7 @@
       :show-switch="showSwitch"
       :source="source"
       :switch-position="switchPosition"
+      :insurance-name="insuranceName"
     />
     <div class="card card-custom gutter-b">
       <div class="card-header py-2">
@@ -242,12 +243,16 @@
               </div>
             </div>
             <div class="mt-3">
-<!--              <div v-if="nhisPriceQuotaExceeded" class="alert alert-warning" role="alert">-->
-<!--                <span class="font-size-sm font-weight-bold">NHIS drugs limit is reached</span>-->
-<!--              </div>-->
+              <div
+                v-if="quantity_remaining !== null && quantity_remaining <= 0"
+                class="alert alert-warning"
+                role="alert"
+              >
+                <span class="font-size-sm font-weight-bold">Quantity is low in the dispensary</span>
+              </div>
               <button
                 @click="submitDrugOrder"
-                :disabled="quantity_remaining <= 0 || nhisPriceQuotaExceeded"
+                :disabled="quantity_remaining <= 0"
                 ref="kt-drugOrder-submit"
                 class="btn btn-primary btn-md float-right mb-3"
               >
@@ -265,7 +270,6 @@
 import Datepicker from 'vuejs-datepicker';
 import vSelect from 'vue-select';
 import { debounce, parseJwt } from '@/common/common';
-// import KTUtil from '@/assets/js/components/util';
 import SwitchBox from '@/utils/SwitchBox.vue';
 import RoutineDrugs from '@/view/pages/programs/antenatal/components/RoutineDrugs.vue';
 
@@ -403,6 +407,8 @@ export default {
     flipSwitch(value) {
       this.switchSpot = value;
       this.initValues();
+      this.$store.commit('inventory/SET_ITEMS', []);
+      this.drug = '';
     },
 
     removeValues() {
@@ -485,12 +491,16 @@ export default {
     },
 
     getDrugType(insuranceName) {
+      const isSwitchOn = this.switchSpot && this.switchPosition;
+      if (isSwitchOn) return 'NHIS';
       const insuranceMapping = {
         FHSS: 'NHIS',
         NHIS: 'NHIS',
         PHIS: 'Private',
-        Retainership: 'Retainership',
+        Retainership: 'Cash',
       };
+      const selectedInsurance = insuranceMapping[insuranceName];
+      if (selectedInsurance === 'NHIS' && !isSwitchOn) return 'Cash';
       return insuranceMapping[insuranceName] || 'Cash';
     },
 
@@ -587,6 +597,7 @@ export default {
         .dispatch('inventory/fetchInventoryItems', {
           inventory,
           search,
+          filter: { drug_form: 'Drug' },
         })
         .then(() => loading(false));
     }, 500),

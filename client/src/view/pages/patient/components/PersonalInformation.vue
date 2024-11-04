@@ -32,7 +32,7 @@
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             Date of Birth
             <div class="font-weight-boldest text-dark">
-              {{ patient.date_of_birth | dayjs('DD/MM/YYYY') }}
+              {{ patient.date_of_birth | dayjs('Do MMM YYYY') }}
             </div>
           </b-list-group-item>
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
@@ -43,9 +43,27 @@
             v-if="patient.patient_type === 'Dependant'"
             class="d-flex justify-content-between align-items-center opacity-75"
           >
+            Principal
+            <a
+              :href="`/patient/profile/${patient?.principal.id}`"
+              class="font-weight-boldest text-primary"
+            >
+              {{ patient?.principal?.fullname || '-' }}
+            </a>
+          </b-list-group-item>
+          <b-list-group-item
+            v-if="patient.patient_type === 'Dependant'"
+            class="d-flex justify-content-between align-items-center opacity-75"
+          >
             Relationship to Principal
             <div class="font-weight-boldest text-dark">
               {{ patient.relationship_to_principal || '-' }}
+            </div>
+          </b-list-group-item>
+          <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
+            Days Admitted in a Year
+            <div class="font-weight-boldest text-dark">
+              {{ patient.admitted_days_in_year || 0 }}
             </div>
           </b-list-group-item>
         </b-list-group>
@@ -82,6 +100,12 @@
           <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
             Additional Phone Number
             <div class="font-weight-boldest text-dark">{{ patient.alt_phone || '-' }}</div>
+          </b-list-group-item>
+          <b-list-group-item class="d-flex justify-content-between align-items-center opacity-75">
+            Date Created
+            <div class="font-weight-boldest text-dark">
+              {{ patient.createdAt | dayjs('DD/MM/YYYY, h:mma') }}
+            </div>
           </b-list-group-item>
         </b-list-group>
       </div>

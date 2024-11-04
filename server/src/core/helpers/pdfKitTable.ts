@@ -87,7 +87,7 @@ export default class PDFDocumentWithTable extends PDFDocument {
 
       // Print all cells of the current row
       row.forEach((cell, i) => {
-        this.text(cell, startX + i * columnContainerWidth, startY, {
+        this.fontSize(11).text(cell, startX + i * columnContainerWidth, startY, {
           width: columnWidth,
           align: 'left',
         });

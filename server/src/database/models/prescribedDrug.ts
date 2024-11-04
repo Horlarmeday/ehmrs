@@ -335,6 +335,18 @@ export class PrescribedDrug extends Model {
   })
   returned_by: number;
 
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  drug_changed_by: number;
+
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  nhis_drug_processed_by: number;
+
   @ForeignKey(() => DrugPrescription)
   @Column({
     type: DataType.INTEGER,
@@ -410,11 +422,41 @@ export class PrescribedDrug extends Model {
   })
   old_id: number;
 
+  @Column({
+    type: DataType.DATE,
+  })
+  date_nhis_drug_processed: Date;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  date_dispensed: Date;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  date_returned: Date;
+
+  @BelongsTo(() => Staff, {
+    foreignKey: 'nhis_drug_processed_by',
+  })
+  nhis_drug_processor: Staff;
+
   @BelongsTo(() => Staff, 'examiner')
   requester: Staff;
 
   @BelongsTo(() => Staff, 'dispensed_by')
   dispenser: Staff;
+
+  @BelongsTo(() => Staff, 'drug_changed_by')
+  changer: Staff;
+
+  @BelongsTo(() => Staff, {
+    foreignKey: 'returned_by',
+  })
+  returner: Staff;
 
   @BelongsTo(() => Drug)
   drug: Drug;

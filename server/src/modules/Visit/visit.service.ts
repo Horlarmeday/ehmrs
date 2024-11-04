@@ -13,21 +13,23 @@ import {
   getProfessionalAssignedVisits,
   getVisitPrescriptions,
   updateVisit,
+  getOneVisitQuery,
+  getPatientPendingPrescriptions,
 } from './visit.repository';
 import { Visit } from '../../database/models';
 import { CreateVisit } from './interface/visit.interface';
-import { VisitCategory } from '../../database/models/visit';
+import { VisitCategory, VisitStatus } from '../../database/models/visit';
 import { getOneAntenatalAccount } from '../Antenatal/antenatal.repository';
 import { AccountStatus } from '../../database/models/antenatal';
 import { BadException } from '../../common/util/api-error';
-import { StatusCodes } from '../../core/helpers/helper';
+import { insertSingleOrMultipleServices, StatusCodes } from '../../core/helpers/helper';
 import { Op } from 'sequelize';
 import {
   ANTENATAL_ACCOUNT_REQUIRED,
+  CANNOT_UPDATE_INPATIENT_VISIT,
   IMMUNIZATION_ACCOUNT_REQUIRED,
+  PATIENT_ON_ADMISSION,
 } from './messages/response.messages';
-import { getOneService } from '../AdminSettings/admin.repository';
-import { prescribeService } from '../Orders/Service/service-order.repository';
 import { getPatientById } from '../Patient/patient.repository';
 import { Gender } from '../../database/models/staff';
 import { FEMALE_REQUIRED } from '../Antenatal/messages/antenatal.messages';
@@ -52,6 +54,10 @@ class VisitService {
       throw new BadException('INVALID', StatusCodes.BAD_REQUEST, FEMALE_REQUIRED);
     }
 
+    if (visit && visit.category === VisitCategory.IPD) {
+      throw new BadException('INVALID', StatusCodes.BAD_REQUEST, PATIENT_ON_ADMISSION);
+    }
+
     if (visit) await endVisit(visit); // end existing visit - since 2 visits cannot be active
 
     // This check happens if the visit category is ANC and a visit wants to be created when an antenatal account already exists
@@ -70,7 +76,7 @@ class VisitService {
       body.ante_natal_id = antenatal.id;
     }
 
-    if (category === VisitCategory.Immunization && !immunization_id) {
+    if (category === VisitCategory.IMMUNIZATION && !immunization_id) {
       const immunization = await getOneImmunization({
         patient_id,
       });
@@ -79,20 +85,25 @@ class VisitService {
       body.immunization_id = immunization.id;
     }
 
-    const createdVisit = await createVisit(body);
-
-    if (service_id) {
-      const service = await getOneService({ id: service_id });
-      await prescribeService({
-        service_id,
-        service_type: 'Cash',
-        price: service.price,
+    if (category === VisitCategory.MATERNITY) {
+      const antenatal = await getOneAntenatalAccount({
         patient_id,
-        requester: staff_id,
-        ante_natal_id: body?.ante_natal_id,
-        visit_id: createdVisit.id,
+        [Op.or]: [
+          { account_status: AccountStatus.ACTIVE },
+          { account_status: AccountStatus.INACTIVE },
+        ],
       });
+      body.ante_natal_id = antenatal?.id;
     }
+
+    const createdVisit = await createVisit(body);
+    await insertSingleOrMultipleServices({
+      service_id,
+      patient_id,
+      staff_id,
+      visit: createdVisit,
+      ante_natal_id: body?.ante_natal_id,
+    });
     return createdVisit;
   }
 
@@ -206,6 +217,29 @@ class VisitService {
   }
 
   /**
+   * get patient last active visit or create new one
+   *
+   * @static
+   * @returns {Promise<Visit>} json object with item data
+   * @memberOf VisitService
+   * @param body
+   */
+  static async getLastActiveVisitOrCreate(body: CreateVisit) {
+    const { category, professional, patient_id } = body;
+    const visit = await getOneVisitQuery({
+      category,
+      status: VisitStatus.ONGOING,
+      professional,
+      patient_id,
+    });
+    if (!visit) {
+      const newVisit = await VisitService.createVisitService(body);
+      return { isExist: false, visit: newVisit };
+    }
+    return { isExist: true, visit };
+  }
+
+  /**
    * get patient visit by id
    *
    * @static
@@ -250,7 +284,37 @@ class VisitService {
    * @param body
    */
   static async updateVisit(visitId: number, body: Partial<Visit>) {
+    const { category } = body;
+    const visit = await getVisitById(visitId);
+
+    if (visit.category === VisitCategory.IPD)
+      throw new BadException('INVALID', StatusCodes.BAD_REQUEST, CANNOT_UPDATE_INPATIENT_VISIT);
+
+    if (category === VisitCategory.ANC) {
+      const antenatal = await getOneAntenatalAccount({
+        patient_id: visit.patient_id,
+        [Op.or]: [
+          { account_status: AccountStatus.ACTIVE },
+          { account_status: AccountStatus.INACTIVE },
+        ],
+      });
+      if (!antenatal)
+        throw new BadException('INVALID', StatusCodes.BAD_REQUEST, ANTENATAL_ACCOUNT_REQUIRED);
+
+      body.ante_natal_id = antenatal.id;
+    }
     return updateVisit({ id: visitId }, body);
+  }
+
+  /**
+   * get pending prescriptions in a visit
+   *
+   * @static
+   * @memberOf VisitService
+   * @param id
+   */
+  static async getPendingVisitPrescriptions(id: number) {
+    return getPatientPendingPrescriptions(id);
   }
 }
 

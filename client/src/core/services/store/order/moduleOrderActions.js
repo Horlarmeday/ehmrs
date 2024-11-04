@@ -199,7 +199,7 @@ export default {
   bulkOrderDrug({ commit }, payload) {
     const drugs = payload?.drugs?.map(
       // eslint-disable-next-line no-unused-vars
-      ({ strength_name, drug_name, route_name, price, strength_input, id, ...rest }) => ({
+      ({ strength_name, route_name, price, strength_input, id, ...rest }) => ({
         ...rest,
       })
     );
@@ -372,6 +372,19 @@ export default {
     });
   },
 
+  updateAdditionalItem({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/orders/pharmacy/additional-items/update`, payload)
+        .then(response => {
+          commit('UPDATE_ADD_ITEM_ORDER', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
 
   fetchAdditionalItemsPerVisit({ commit }, payload) {
     return new Promise((resolve, reject) => {

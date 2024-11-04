@@ -10,6 +10,7 @@ export function validateBulkInvestigationTest(investigations) {
           investigation_type: Joi.string().required(),
           price: Joi.number().required(),
           is_urgent: Joi.boolean().required(),
+          name: Joi.string().required(),
           source: Joi.string()
             .valid('Antenatal', 'Consultation')
             .required(),

@@ -6,7 +6,7 @@
         <section-title text="Patient Information" />
         <patient-section :patient="sample.patient" :insurance="sample.insurance" />
 
-        <section-title text="Validate Result" />
+        <section-title text="Approve Result" />
         <result-approval-section
           :tests="sample.tests"
           :accession_number="sample.accession_number"
@@ -24,7 +24,7 @@
 import SectionTitle from '@/utils/SectionTitle.vue';
 import PatientSection from '@/utils/PatientSection.vue';
 import PageTitle from '@/utils/PageTitle.vue';
-import ResultApprovalSection from './results/ResultApprovalSection.vue';
+import ResultApprovalSection from './temp/ResultApprovalSection.vue';
 import TestSkeleton from '@/view/pages/laboratory/components/skeleton/TestSkeleton.vue';
 export default {
   name: 'ResultApproval',

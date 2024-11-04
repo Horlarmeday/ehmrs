@@ -10,6 +10,11 @@ export default [
     name: 'Register Patient',
   },
   {
+    url: '/visit/active',
+    icon: 'flaticon-users-1',
+    name: 'Active Visits',
+  },
+  {
     url: '/appointment/active',
     icon: 'flaticon-event-calendar-symbol',
     name: 'Appointment Scheduling',

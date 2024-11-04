@@ -38,7 +38,7 @@ const attributes = ['diagnosis', 'code', 'id'];
   include: [
     { model: ICPC2Disease, attributes },
     { model: ICD10Disease, attributes },
-    { model: Staff, attributes: ['firstname', 'lastname', 'fullname'] },
+    // { model: Staff, attributes: ['firstname', 'lastname', 'fullname'] },
   ],
 }))
 @Table({ timestamps: true })

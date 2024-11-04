@@ -25,7 +25,14 @@
                 :class="getLabelDotStatus(drug.drug_type)"
                 class="label label-dot label-lg mr-2"
               ></span>
-              <a @click="viewPopover(drug)" href="#" :id="popOverId"> {{ drug.drug.name }}</a>
+              <a @click="viewModal(drug)" href="#"> {{ drug.drug.name }}</a>
+              <span class="ml-2">
+                <label
+                  v-if="drug?.drug_group"
+                  class="label label-sm label-inline label-secondary"
+                  >{{ drug?.drug_group }}</label
+                >
+              </span>
             </th>
             <td>
               <span>{{ drug.quantity_to_dispense }} {{ drug?.dosage_form?.name || '-' }}</span>
@@ -43,7 +50,9 @@
               <span>{{ drug.date_prescribed | dayjs('DD/MM/YYYY, h:mma') }}</span>
             </td>
             <td>
-              <span v-if="allowedRoles.includes(currentUser.role)">
+              <span
+                v-if="allowedRoles.includes(currentUser.role) || currentUser.sub === drug.examiner"
+              >
                 <a
                   href="#"
                   :class="loading && 'disabled'"
@@ -52,6 +61,9 @@
                 >
                   <i class="flaticon-delete mr-2 text-danger"></i>
                 </a>
+                <a @click="viewModal(drug)" class="ml-3" href="#"
+                  ><i class="icon-xl text-primary la la-eye"></i
+                ></a>
                 <!--                <a-->
                 <!--                  href="#"-->
                 <!--                  v-if="drug.billing_status === UNBILLED && drug.payment_status === PENDING"-->
@@ -64,32 +76,26 @@
         </tbody>
       </table>
     </div>
-    <drug-popover
-      :drug="item"
-      :target="popOverId"
-      :show="showPopover"
-      @closePopover="hidePopover"
-    />
+    <drug-details-modal :display-prompt="displayPrompt" @closeModal="hideModal" :drug="item" />
   </div>
 </template>
 <script>
-import DrugPopover from '@/view/components/popover/DrugPopover.vue';
 import { parseJwt } from '@/core/plugins/parseJwt';
 import Swal from 'sweetalert2';
 import { getLabelDotStatus } from '@/common/common';
+import DrugDetailsModal from '@/view/components/modal/DrugDetailsModal.vue';
 
 export default {
   name: 'MedicationsTable',
-  components: { DrugPopover },
+  components: { DrugDetailsModal },
   data: () => ({
     item: {},
-    showPopover: false,
     loading: false,
-    popOverId: 'popover-reactive-1',
     currentUser: parseJwt(localStorage.getItem('user_token')),
     allowedRoles: ['General Practitioner', 'Super Admin'],
     PENDING: 'Pending',
     UNBILLED: 'Unbilled',
+    displayPrompt: false,
   }),
   props: {
     drugs: {
@@ -100,13 +106,13 @@ export default {
   },
   methods: {
     getLabelDotStatus,
-    viewPopover(item) {
+    viewModal(item) {
       this.item = item;
-      this.showPopover = true;
+      this.displayPrompt = true;
     },
 
-    hidePopover() {
-      this.showPopover = false;
+    hideModal() {
+      this.displayPrompt = false;
     },
 
     showDeleteAlert(drug) {

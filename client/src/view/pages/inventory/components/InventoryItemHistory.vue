@@ -17,6 +17,7 @@
             <tr class="text-left">
               <th class="pr-0" style="width: 180px">Quantity {{ table_type }}</th>
               <th style="min-width: 150px">Quantity Remaining</th>
+              <th v-if="table_type === 'Dispensed'" style="min-width: 150px">Patient ID</th>
               <th v-if="table_type === 'Dispensed'" style="min-width: 150px">Patient</th>
               <th style="min-width: 150px">{{ table_type }} By</th>
               <th style="min-width: 150px">Date {{ table_type }}</th>
@@ -37,6 +38,11 @@
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                   {{ history.quantity_remaining }} {{ history?.unit?.name }}
+                </span>
+              </td>
+              <td v-if="table_type === 'Dispensed'">
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ history?.patient?.hospital_id }}
                 </span>
               </td>
               <td v-if="table_type === 'Dispensed'">

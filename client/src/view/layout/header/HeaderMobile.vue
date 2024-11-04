@@ -1,9 +1,5 @@
 <template>
-  <div
-    id="kt_header_mobile"
-    class="header-mobile align-items-center"
-    v-bind:class="headerClasses"
-  >
+  <div id="kt_header_mobile" class="header-mobile align-items-center" v-bind:class="headerClasses">
     <!--begin::Logo-->
     <a href="/">
       <img alt="Logo" :src="headerLogo" class="logo-default max-h-30px" />
@@ -37,7 +33,8 @@
       >
         <span class="svg-icon svg-icon-xl">
           <!--begin::Svg Icon | path:svg/icons/General/User.svg-->
-          <inline-svg class="svg-icon" src="media/svg/icons/General/User.svg" />
+          <user-icon />
+<!--          <inline-svg class="svg-icon" src="media/svg/icons/General/User.svg" />-->
           <!--end::Svg Icon-->
         </span>
       </button>
@@ -48,25 +45,26 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
-import KTLayoutHeaderTopbar from "@/assets/js/layout/base/header-topbar.js";
+import { mapGetters } from 'vuex';
+import KTLayoutHeaderTopbar from '@/assets/js/layout/base/header-topbar.js';
+import UserIcon from '@/assets/icons/UserIcon.vue';
 
 export default {
-  name: "KTHeaderMobile",
-  components: {},
+  name: 'KTHeaderMobile',
+  components: { UserIcon },
   mounted() {
     // Init Header Topbar For Mobile Mode
-    KTLayoutHeaderTopbar.init(this.$refs["kt_header_mobile_topbar_toggle"]);
+    KTLayoutHeaderTopbar.init(this.$refs['kt_header_mobile_topbar_toggle']);
   },
   computed: {
-    ...mapGetters(["layoutConfig", "getClasses"]),
+    ...mapGetters(['layoutConfig', 'getClasses']),
 
     /**
      * Get header logo
      * @returns {string}
      */
     headerLogo() {
-      return process.env.BASE_URL + this.layoutConfig("self.logo.sticky");
+      return process.env.BASE_URL + this.layoutConfig('self.logo.sticky');
     },
 
     /**
@@ -74,9 +72,9 @@ export default {
      * @returns {null|*}
      */
     headerClasses() {
-      const classes = this.getClasses("header_mobile");
-      if (typeof classes !== "undefined") {
-        return classes.join(" ");
+      const classes = this.getClasses('header_mobile');
+      if (typeof classes !== 'undefined') {
+        return classes.join(' ');
       }
       return null;
     },
@@ -86,8 +84,8 @@ export default {
      * @returns {boolean}
      */
     asideEnabled() {
-      return !!this.layoutConfig("aside.self.display");
-    }
-  }
+      return !!this.layoutConfig('aside.self.display');
+    },
+  },
 };
 </script>

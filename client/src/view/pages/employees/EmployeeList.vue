@@ -85,7 +85,7 @@
                     class="label label-lg label-light-primary label-inline"
                     >Active</span
                   >
-                  <span v-else class="label label-lg label-light-warning label-inline"
+                  <span v-else class="label label-lg label-light-danger label-inline"
                     >Inactive</span
                   >
                 </td>
@@ -96,14 +96,34 @@
                 </td>
                 <td class="pr-0">
                   <a
+                    v-b-tooltip.hover
+                    title="Edit Employee"
                     href="#"
                     class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
                     @click.stop="editData(staff)"
                   >
                     <edit-icon />
                   </a>
-                  <a href="#" class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3">
-                    <view-icon />
+                  <a
+                    v-b-tooltip.hover
+                    title="Reset Employee Password"
+                    @click.stop="showResetAlert(staff.id)"
+                    href="#"
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
+                  >
+                    <refresh-icon />
+                  </a>
+                  <a
+                    v-b-tooltip.hover
+                    :title="
+                      `${staff.status === ACTIVE ? DEACTIVATE_EMPLOYEE : REACTIVATE_EMPLOYEE}`
+                    "
+                    @click.stop="showActivateAlert(staff)"
+                    href="#"
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
+                  >
+                    <deactivate-icon v-if="staff.status === ACTIVE" />
+                    <reactivate-icon v-else />
                   </a>
                 </td>
               </tr>
@@ -117,6 +137,7 @@
           :per-page="perPage"
           :current-page="currentPage"
           @pagechanged="onPageChange"
+          @changepagecount="handlePageCount"
         />
       </div>
       <!--end::Body-->
@@ -130,7 +151,10 @@ import Pagination from '@/utils/Pagination.vue';
 import EditIcon from '../../../assets/icons/EditIcon.vue';
 import EditEmployee from './create/EditEmployee';
 import { setUrlQueryParams } from '@/common/common';
-import ViewIcon from '@/assets/icons/ViewIcon.vue';
+import RefreshIcon from '@/assets/icons/RefreshIcon.vue';
+import Swal from 'sweetalert2';
+import DeactivateIcon from '@/assets/icons/DeactivateIcon.vue';
+import ReactivateIcon from '@/assets/icons/ReactivateIcon.vue';
 export default {
   data() {
     return {
@@ -139,10 +163,15 @@ export default {
       itemsPerPage: 10,
       displayPrompt: false,
       staffToEdit: {},
+      ACTIVE: 'Active',
+      DEACTIVATE_EMPLOYEE: 'Deactivate Employee',
+      REACTIVATE_EMPLOYEE: 'Reactivate Employee',
     };
   },
   components: {
-    ViewIcon,
+    ReactivateIcon,
+    DeactivateIcon,
+    RefreshIcon,
     Pagination,
     EditIcon,
     EditEmployee,
@@ -173,6 +202,58 @@ export default {
       });
     },
 
+    showResetAlert(employeeId) {
+      const self = this;
+      Swal.fire({
+        title: 'Are you sure?',
+        text: 'You want to reset this employee password!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Continue!',
+        cancelButtonText: 'No, cancel!',
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+          return self.resetEmployeePassword(employeeId);
+        },
+      });
+    },
+
+    showActivateAlert(employee) {
+      const self = this;
+      Swal.fire({
+        title: 'Are you sure?',
+        html: `You want to ${employee.status === this.ACTIVE ? 'Deactivate' : 'Reactivate'} ${
+          employee.firstname
+        } account`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Continue!',
+        cancelButtonText: 'No, cancel!',
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+          return self.updateEmployee(employee);
+        },
+      });
+    },
+
+    updateEmployee(employee) {
+      const data = {
+        id: employee.id,
+        status: `${employee.status === this.ACTIVE ? 'Inactive' : 'Active'}`,
+      };
+      this.$store.dispatch('employee/updateEmployee', data).then(() => {
+        this.fetchEmployees({
+          currentPage: this.$route.query.currentPage || 1,
+          itemsPerPage: this.$route.query.itemsPerPage || 10,
+          search: this.$route.query.search || null,
+        });
+      });
+    },
+
+    resetEmployeePassword(employeeId) {
+      this.$store.dispatch('employee/resetEmployeePassword', employeeId);
+    },
+
     searchByName() {
       if (!this.search) return this.notifyEmptyField();
       this.currentPage = 1;
@@ -192,12 +273,29 @@ export default {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
+        search: this.$route.query.search,
       });
       this.$store.dispatch('employee/fetchEmployees', {
         currentPage: this.$route.query.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage,
         start: this.$route.query.startDate,
         end: this.$route.query.endDate,
+        search: this.$route.query.search,
+      });
+    },
+
+    handlePageCount(count) {
+      setUrlQueryParams({
+        currentPage: this.currentPage,
+        itemsPerPage: count,
+        search: this.$route.query.search,
+      });
+      this.$store.dispatch('employee/fetchEmployees', {
+        currentPage: this.$route.query.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
+        search: this.$route.query.search,
       });
     },
 

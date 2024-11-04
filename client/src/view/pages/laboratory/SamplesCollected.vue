@@ -73,7 +73,7 @@ export default {
       // set clicked tab index to bootstrap tab
       this.tabIndex = parseInt(target.getAttribute('data-tab'));
 
-      // set current active tab
+      // set the current active tab
       target.classList.add('active');
       target.setAttribute('disabled', true);
 

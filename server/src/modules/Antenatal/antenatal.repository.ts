@@ -3,19 +3,21 @@ import {
   AntenatalObservation,
   AntenatalTriage,
   ClinicalNote,
+  Insurance,
   Patient,
+  PatientInsurance,
   PreviousPregnancy,
   Staff,
 } from '../../database/models';
 import { Op, WhereOptions } from 'sequelize';
-import { getVisitsQuery, patientAttributes } from '../Visit/visit.repository';
+import { getVisitsQuery } from '../Visit/visit.repository';
 import { getPrescriptionTests } from '../Orders/Laboratory/lab-order.repository';
 import {
   getAdditionalItems,
   getDrugsPrescribed,
 } from '../Orders/Pharmacy/pharmacy-order.repository';
 import { getPrescriptionInvestigations } from '../Orders/Radiology/radiology-order.repository';
-import { paginate } from '../../core/helpers/helper';
+import { paginate, patientAttributes } from '../../core/helpers/helper';
 import { getPatientDiagnoses } from '../Consultation/consultation.repository';
 
 export const staffAttributes = ['fullname', 'firstname', 'lastname'];
@@ -126,6 +128,16 @@ export const getAntenatalPatients = async ({
       {
         model: Patient,
         attributes: patientAttributes,
+        include: [
+          {
+            model: PatientInsurance,
+            where: { is_default: true },
+            limit: 1,
+            order: [['createdAt', 'DESC']],
+            attributes: ['id', 'insurance_id'],
+            include: [{ model: Insurance, attributes: ['name'] }],
+          },
+        ],
       },
     ],
   });
@@ -198,7 +210,7 @@ export const getAncTriages = async (query: WhereOptions<AntenatalTriage>) => {
 
 export const getOneAntenatalTriage = async (
   query: WhereOptions<AntenatalTriage>,
-  attributes: string[]
+  attributes?: string[]
 ) => {
   return AntenatalTriage.findOne({ where: { ...query }, attributes });
 };
@@ -390,13 +402,14 @@ export const getVisitsSummary = async (currentPage = 1, pageLimit = 5, antenatal
   );
   const summary = await Promise.all(
     visits.map(
-      async ({ id, date_visit_start, date_visit_ended, patient_id, category, status }) => ({
+      async ({ id, date_visit_start, date_visit_ended, patient_id, category, status, staff }) => ({
         id,
         date_visit_start,
         date_visit_ended,
         patient_id,
         category,
         status,
+        staff,
         ...(await getPrescriptions(id)),
       })
     )

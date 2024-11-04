@@ -23,7 +23,6 @@
   </b-modal>
 </template>
 <script>
-
 export default {
   props: {
     displayPrompt: {
@@ -38,6 +37,10 @@ export default {
       type: Object,
       required: true,
       default: () => {},
+    },
+    selectAll: {
+      type: Boolean,
+      required: true,
     },
   },
   data: () => ({
@@ -65,6 +68,7 @@ export default {
     endRequest(button) {
       this.removeSpinner(button);
       this.$emit('closeModal');
+      this.$store.commit('store/REMOVE_ALL_SELECTED_ITEMS', []);
       this.initValues();
     },
 
@@ -83,6 +87,7 @@ export default {
         if (result) {
           const obj = {
             dataType: this.dataType,
+            selectAll: this.selectAll,
             ...this.data,
           };
           // set spinner to submit button

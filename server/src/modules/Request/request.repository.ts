@@ -1,6 +1,7 @@
 import { Drug, Inventory, InventoryItem, Request, Staff, Unit } from '../../database/models';
-import { Op } from 'sequelize';
+import { Op, WhereOptions } from 'sequelize';
 import { dateIntervalQuery } from '../../core/helpers/helper';
+import { ProcessRequestBody } from './types/request.types';
 
 /**
  * Create bulk requests
@@ -8,6 +9,14 @@ import { dateIntervalQuery } from '../../core/helpers/helper';
  */
 export const createBulkRequest = async data => {
   return Request.bulkCreate(data);
+};
+
+/**
+ * get one request
+ * @param query
+ */
+export const getRequestQuery = async (query: WhereOptions<Request>) => {
+  return Request.findOne({ where: { ...query } });
 };
 
 /**
@@ -125,9 +134,15 @@ export const getCurrentUserRequests = ({
 /**
  * update request status
  * @param requestsBody
+ * @param staffId
  */
-export const updateRequestStatus = async (requestsBody: any[]) => {
+export const updateRequestStatus = async (requestsBody: ProcessRequestBody[], staffId: number) => {
   return await Promise.all(
-    requestsBody.map(({ status, id }) => Request.update({ status }, { where: { id } }))
+    requestsBody.map(({ status, id }) =>
+      Request.update(
+        { status, processed_by: staffId, date_processed: Date.now() },
+        { where: { id } }
+      )
+    )
   );
 };

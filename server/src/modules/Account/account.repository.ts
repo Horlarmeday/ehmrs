@@ -1,5 +1,6 @@
 import sequelizeConnection from '../../database/config/config';
 import {
+  Payment,
   PaymentHistory,
   PrescribedAdditionalItem,
   PrescribedDrug,
@@ -77,5 +78,15 @@ export const createPaymentHistory = async data => {
       return true;
     }
     return false;
+  });
+};
+
+export const getPatientPaymentHistory = async ({ currentPage = 1, pageLimit = 10, patient_id }) => {
+  return await Payment.paginate({
+    page: +currentPage,
+    paginate: +pageLimit,
+    where: {
+      uid: patient_id,
+    },
   });
 };

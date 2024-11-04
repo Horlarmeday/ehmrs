@@ -36,9 +36,7 @@
               <span>{{ item.date_prescribed | dayjs('ddd, MMM Do YYYY, h:mma') }}</span>
             </td>
             <td>
-              <span
-                >{{ item?.requester?.firstname }} {{ item?.requester?.lastname?.charAt(0) }}</span
-              >
+              <span>{{ item?.requester?.fullname }}</span>
             </td>
             <td>
               <span>

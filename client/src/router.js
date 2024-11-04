@@ -140,6 +140,14 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            {
+              path: 'edit-health-insurance/:id',
+              name: 'edit-health-insurance',
+              component: () => import('@/view/pages/patient/page/EditPatientInsurance.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
           ],
         },
         // EMPLOYEE
@@ -260,6 +268,14 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            {
+              path: 'merge-accounts',
+              name: 'merge-accounts',
+              component: () => import('@/view/pages/admin/mergeAccounts/MergeAccounts.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
           ],
         },
         // VISITS
@@ -280,6 +296,14 @@ const router = new Router({
               path: 'new/:id',
               name: 'new-visit',
               component: () => import('@/view/pages/visits/create/CreateNewVisit.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'update/:id',
+              name: 'update-visit',
+              component: () => import('@/view/pages/visits/page/EditVisit.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -380,6 +404,40 @@ const router = new Router({
               path: 'prescriptions/:id',
               name: 'visit-prescription',
               component: () => import('@/view/pages/customerCare/Tabs.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            //MATERNITY
+            {
+              path: 'maternity',
+              name: 'maternity-visits',
+              component: () => import('@/view/pages/visits/page/MaternityVisits.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'admit-patient/:id',
+              name: 'maternity-admit-patient',
+              component: () => import('@/view/pages/admission/page/AdmitPatient.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            // MEDICAL RECORDS
+            {
+              path: 'active',
+              name: 'active-visits',
+              component: () => import('@/view/pages/medicalRecords/page/ActiveVisits.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'active/:id',
+              name: 'active-visit',
+              component: () => import('@/view/pages/medicalRecords/page/AddActiveServices.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -554,6 +612,14 @@ const router = new Router({
                   path: 'items',
                   name: 'pharmacy-items',
                   component: () => import('@/view/pages/store/pharmacy/StoreItems.vue'),
+                  meta: {
+                    requiresAuth: true,
+                  },
+                },
+                {
+                  path: 'update-items',
+                  name: 'pharmacy-items-update',
+                  component: () => import('@/view/pages/store/pharmacy/update/UpdateStoreItem.vue'),
                   meta: {
                     requiresAuth: true,
                   },
@@ -799,6 +865,31 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            {
+              path: 'forms',
+              name: 'result-forms',
+              component: () => import('@/view/pages/laboratory/ResultFormsList.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'results-update',
+              name: 'results-update',
+              component: () =>
+                import('@/view/pages/laboratory/approvedResults/ApprovedResults.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'results-update/:id',
+              name: 'results-update-one',
+              component: () => import('@/view/pages/laboratory/approvedResults/ApprovedResult.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
           ],
         },
         // ORDERS
@@ -963,6 +1054,14 @@ const router = new Router({
               path: 'inventory-requests',
               name: 'user-requests',
               component: () => import('@/view/pages/requests/CurrentUserRequests.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'returns',
+              name: 'user-returns',
+              component: () => import('@/view/pages/requests/Returns.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1197,6 +1296,44 @@ const router = new Router({
             },
           ],
         },
+        {
+          path: '/settings',
+          name: 'account-settings',
+          component: () => import('@/view/pages/settings/Settings.vue'),
+          children: [
+            {
+              path: 'change-password',
+              name: 'change-password',
+              component: () => import('@/view/pages/settings/page/ChangePassword.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+          ],
+        },
+        {
+          path: '/statistics',
+          name: 'statistics',
+          component: () => import('@/view/pages/statistics/Statistics.vue'),
+          children: [
+            {
+              path: '/',
+              name: 'statistics-home',
+              component: () => import('@/view/pages/statistics/page/Home.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'encounters',
+              name: 'encounters',
+              component: () => import('@/view/pages/statistics/page/Encounters.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+          ],
+        },
       ],
     },
     {
@@ -1252,11 +1389,6 @@ const router = new Router({
           name: 'register',
           path: '/auth/register',
           component: () => import('@/view/pages/auth/Register'),
-        },
-        {
-          name: 'quill',
-          path: '/auth/quill',
-          component: () => import('@/view/pages/Quill.vue'),
         },
       ],
     },

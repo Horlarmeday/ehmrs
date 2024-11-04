@@ -7,6 +7,8 @@ import {
   getConsultationSummary,
   getVisitsHistory,
   getDiagnosesAndFindings,
+  getDiagnoses,
+  getHistories,
 } from './consultation.repository';
 import { checkValueExists } from '../../core/helpers/helper';
 import VisitService from '../Visit/visit.service';
@@ -25,7 +27,7 @@ class ConsultationService {
    * @memberOf ConsultationService
    */
   static async createObservationService(body: Observation) {
-    const { complaints, staff_id, visit_id, diagnosis } = body;
+    const { staff_id, visit_id, diagnosis } = body;
     const visit = await VisitService.getVisitById(visit_id);
     const insurance = await getPatientInsuranceQuery({
       patient_id: visit.patient_id,
@@ -38,16 +40,16 @@ class ConsultationService {
       patient_insurance_id: insurance?.id,
     });
 
-    let mappedComplaints: Complaint[];
-    if (complaints?.length) {
-      mappedComplaints = complaints.map(complain => {
-        complain.staff_id = staff_id;
-        complain.visit_id = visit_id;
-        complain.patient_id = visit.patient_id;
-        complain.patient_insurance_id = insurance?.id;
-        return complain;
-      });
-    }
+    // let mappedComplaints: Complaint[];
+    // if (complaints?.length) {
+    //   mappedComplaints = complaints.map(complain => {
+    //     complain.staff_id = staff_id;
+    //     complain.visit_id = visit_id;
+    //     complain.patient_id = visit.patient_id;
+    //     complain.patient_insurance_id = insurance?.id;
+    //     return complain;
+    //   });
+    // }
 
     const mappedDiagnosis = diagnosis.map(result => {
       result.staff_id = staff_id;
@@ -56,13 +58,12 @@ class ConsultationService {
       return result;
     });
 
-    const [createdComplaints, diagnoses] = await Promise.all([
-      mappedComplaints?.length && bulkCreateComplaint(mappedComplaints),
+    const [diagnoses] = await Promise.all([
       bulkCreateDiagnosis(mappedDiagnosis),
       updateVisit({ id: visit_id }, { is_taken: true }),
     ]);
 
-    return { history, createdComplaints, diagnoses };
+    return { history, diagnoses };
   }
 
   /**
@@ -123,13 +124,42 @@ class ConsultationService {
    * @param body
    * @memberOf ConsultationService
    */
-  static async getDiagnosesAndFindings(
-    body
-  ): Promise<{
-    diagnoses: Diagnosis[];
-    findings: { histories: History[]; complaints: Complaint[] } | AntenatalObservation[];
-  }> {
+  static async getDiagnosesAndFindings(body) {
     return getDiagnosesAndFindings(body);
+  }
+
+  /**
+   * get diagnoses
+   *
+   * @static
+   * @returns {json} json object with diagnoses data
+   * @param body
+   * @memberOf ConsultationService
+   */
+  static async getDiagnoses(body) {
+    const { currentPage, pageLimit, filter } = body;
+
+    if (Object.keys(body).length) {
+      return getDiagnoses({ currentPage, pageLimit, filter });
+    }
+    return getDiagnoses({ filter });
+  }
+
+  /**
+   * get consultation histories
+   *
+   * @static
+   * @returns {json} json object with diagnoses data
+   * @param body
+   * @memberOf ConsultationService
+   */
+  static async getConsultationHistories(body) {
+    const { currentPage, pageLimit, filter } = body;
+
+    if (Object.keys(body).length) {
+      return getHistories({ currentPage, pageLimit, filter });
+    }
+    return getHistories({ filter });
   }
 }
 

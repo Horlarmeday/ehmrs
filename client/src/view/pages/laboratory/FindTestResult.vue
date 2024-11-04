@@ -102,6 +102,7 @@
           :per-page="perPage"
           :current-page="+$route.query.currentPage || currentPage"
           @pagechanged="onPageChange"
+          @changepagecount="handlePageCount"
         />
       </div>
       <p
@@ -170,7 +171,24 @@ export default {
     handlePageChange() {
       setUrlQueryParams({
         currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+      });
+      this.fetchTestResults({
+        currentPage: this.$route.query.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
+        search: this.$route.query.search || null,
+      });
+    },
+
+    handlePageCount(count) {
+      setUrlQueryParams({
+        currentPage: this.currentPage,
+        itemsPerPage: count,
+        search: this.$route.query.search || null,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
       });
       this.fetchTestResults({
         currentPage: this.$route.query.currentPage,

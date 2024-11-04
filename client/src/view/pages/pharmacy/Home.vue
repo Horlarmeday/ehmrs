@@ -60,6 +60,11 @@ export default {
           desc: 'Click here to view all dosage measurements',
           link: '/pharmacy/dosage-measurements',
         },
+        {
+          name: 'Defaults',
+          link: '/settings/defaults',
+          desc: 'Click here to view all system defaults',
+        },
       ],
     };
   },

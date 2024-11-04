@@ -8,7 +8,7 @@
 
         <section-title :text="`Accession Number: ${result.accession_number}`" />
         <test-result-section
-          :tests="result.tests"
+          :tests="tests"
           :accession_number="result.accession_number"
           :result_notes="result.result_notes"
           :key="accessionNumberKey"
@@ -23,14 +23,20 @@
 import SectionTitle from '../../../utils/SectionTitle.vue';
 import PatientSection from '../../../utils/PatientSection.vue';
 import PageTitle from '@/utils/PageTitle.vue';
-import TestResultSection from '@/view/pages/laboratory/results/TestResultSection.vue';
+import TestResultSection from '@/view/pages/laboratory/temp/TestResultSection.vue';
 import TestSkeleton from '@/view/pages/laboratory/components/skeleton/TestSkeleton.vue';
+
 export default {
   name: 'TestResult',
   components: { TestSkeleton, TestResultSection, PageTitle, PatientSection, SectionTitle },
   computed: {
     result() {
       return this.$store.state.laboratory.result;
+    },
+    tests() {
+      const lab_test_id = this.$route.query.lab_test;
+      if (!lab_test_id) return this.result.tests;
+      return this.result.tests.filter(test => test.id === +lab_test_id);
     },
     accessionNumberKey() {
       return this.result.accession_number + Date.now();

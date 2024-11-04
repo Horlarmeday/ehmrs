@@ -17,7 +17,7 @@ export const updatePrincipalRelationship = async () => {
     if (patients?.length) {
       await processArray(patients, updateRelationship);
     }
-    logger.warning(message('No dependants with empty relationship to principal, skipping...'));
+    logger.warn(message('No dependants with empty relationship to principal, skipping...'));
   } catch (e) {
     logger.error(message('Error'), e);
   }

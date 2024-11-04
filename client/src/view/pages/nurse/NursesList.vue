@@ -11,7 +11,7 @@
       <search @search="onHandleSearch" />
 
       <!--begin::Body-->
-      <div v-if="employees.length" class="card-body pt-0 pb-3">
+      <div class="card-body pt-0 pb-3">
         <!--begin::Table-->
         <div class="table-responsive">
           <table class="table table-head-custom table-vertical-center table-head-bg">
@@ -72,13 +72,12 @@
                   }}</span>
                 </td>
                 <td class="pr-0">
-                  <a
-                    href="#"
+                  <router-link
+                    :to="`/nurses/change-department/${staff.id}`"
                     class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
-                    @click.stop="editData(staff)"
                   >
                     <edit-icon />
-                  </a>
+                  </router-link>
                 </td>
               </tr>
             </tbody>
@@ -112,6 +111,7 @@ export default {
       itemsPerPage: 10,
       displayPrompt: false,
       staffToEdit: {},
+      NURSE: 'Nurse',
     };
   },
   components: {
@@ -147,12 +147,11 @@ export default {
     },
 
     debounceSearch: debounce((search, vm, spinDiv) => {
-      vm.$store
-        .dispatch('antenatal/fetchAntenatalAccounts', {
-          currentPage: 1,
-          itemsPerPage: vm.itemsPerPage,
-          search,
-        })
+      vm.fetchEmployees({
+        currentPage: 1,
+        itemsPerPage: vm.itemsPerPage,
+        search,
+      })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));
     }, 500),
@@ -163,11 +162,9 @@ export default {
         itemsPerPage: this.itemsPerPage,
         search: this.$route.query.search,
       });
-      this.$store.dispatch('employee/fetchEmployees', {
+      this.fetchEmployees({
         currentPage: this.$route.query.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage,
-        start: this.$route.query.startDate,
-        end: this.$route.query.endDate,
         search: this.$route.query.search,
       });
     },
@@ -182,6 +179,7 @@ export default {
         currentPage,
         itemsPerPage,
         ...(search && { search }),
+        filter: { role: this.NURSE },
       });
     },
   },

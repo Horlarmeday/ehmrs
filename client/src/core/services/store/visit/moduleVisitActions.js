@@ -18,6 +18,20 @@ export default {
     });
   },
 
+  getLastActiveVisit({ commit }, visit) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`/visits/last-active`, visit)
+        .then(response => {
+          commit('ADD_VISIT', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
   fetchActiveVisits({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
@@ -153,6 +167,20 @@ export default {
         .put(`/visits/update/${payload.id}`, payload.data)
         .then(response => {
           commit('UPDATE_VISIT', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchPendingPrescriptions({ commit }, visitId) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/visits/pending-prescriptions/${visitId}`)
+        .then(response => {
+          commit('SET_PENDING_PRESCRIPTIONS', response.data.data);
           resolve(response);
         })
         .catch(error => {

@@ -5,7 +5,7 @@
         <thead class="thead-light">
           <tr class="text-uppercase">
             <th scope="col">Test</th>
-            <th scope="col">Result</th>
+            <th scope="col">Price (₦)</th>
             <th scope="col">Payment Status</th>
             <th scope="col">Result Status</th>
             <th scope="col">Requested By</th>
@@ -28,21 +28,22 @@
               {{ test.test.name }}
             </td>
             <td>
-              <span class="font-weight-boldest" v-if="test.result_status === ACCEPTED">
-                {{ test?.result?.result || '-' }}
+              <span class="font-weight-boldest">
+                {{ test?.price || '-' }}
               </span>
-              <span v-else>-</span>
             </td>
             <td>
               <span :class="getPaymentColor(test.payment_status)">{{ test.payment_status }}</span>
             </td>
             <td>
-              <span :class="getResultColor(test.result_status)">{{ test.result_status }}</span>
+              <span :class="getResultColor(test.status)">{{ test.status }}</span>
             </td>
             <td>{{ test.examiner.fullname }}</td>
             <td>{{ test.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
             <td>
-              <span v-if="allowedRoles.includes(currentUser.role)">
+              <span
+                v-if="allowedRoles.includes(currentUser.role) || currentUser.sub === test.requester"
+              >
                 <a
                   v-if="test.billing_status === UNBILLED && test.payment_status === PENDING"
                   @click="showDeleteAlert(test)"
@@ -50,6 +51,15 @@
                   :class="loading && 'disabled'"
                 >
                   <i class="flaticon-delete text-danger"></i>
+                </a>
+              </span>
+              <span>
+                <a
+                  target="_blank"
+                  :href="`/laboratory/test-result/${test.test_prescription_id}?lab_test=${test.id}`"
+                  v-if="test.status === APPROVED && test.result_id"
+                >
+                  <i class="flaticon-file-2 text-success"></i>
                 </a>
               </span>
             </td>
@@ -72,6 +82,7 @@ export default {
     ACCEPTED: 'Accepted',
     UNBILLED: 'Unbilled',
     PENDING: 'Pending',
+    APPROVED: 'Approved',
     loading: false,
   }),
   props: {
@@ -104,7 +115,8 @@ export default {
 
     getResultColor(status) {
       if (status === 'Pending') return 'label label-inline label-light-warning font-weight-bold';
-      if (status === 'Accepted') return 'label label-inline label-light-success font-weight-bold';
+      if (status === 'Approved') return 'label label-inline label-light-success font-weight-bold';
+      if (status === 'Verified') return 'label label-inline label-light-primary font-weight-bold';
       return 'label label-inline label-light-danger font-weight-bold';
     },
 

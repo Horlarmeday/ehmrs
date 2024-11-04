@@ -21,7 +21,21 @@
             </a>
           </div>
           <div class="mb-4 border p-4" v-if="prescriptions?.length">
-            <h6>Drugs</h6>
+            <div class="form-inline flex-lg-row">
+              <h6>Drugs</h6>
+              <h5 class="ml-auto" v-if="!isEmpty(prescription?.insurance)">
+                <span class="mr-2">NHIS 10% Total: </span>
+                ₦‎{{ nhis10PercentDrugsPrice }}
+              </h5>
+              <h5 class="ml-auto" v-if="!isEmpty(prescription?.insurance)">
+                <span class="mr-2">NHIS 90% Total: </span>
+                ₦‎{{ nhis90PercentDrugsPrice }}
+              </h5>
+              <h5 class="ml-auto" v-if="isEmpty(prescription?.insurance)">
+                <span class="mr-2">Total: </span>
+                ₦‎{{ totalDrugsPrice }}
+              </h5>
+            </div>
             <drug-dispense-section
               :key="prescriptionKey"
               :status="prescription.status"
@@ -29,7 +43,13 @@
             />
           </div>
           <div class="border p-4" v-if="items?.length">
-            <h6>Additional Items</h6>
+            <div class="form-inline flex-lg-row">
+              <h6>Additional Items</h6>
+              <h5 class="ml-auto">
+                <span class="mr-2">Total: </span>
+                ₦‎{{ totalItemsPrice }}
+              </h5>
+            </div>
             <additional-item-dispense-section
               :key="prescriptionKey"
               :status="prescription.status"
@@ -50,6 +70,7 @@ import DrugDispenseSection from '@/view/pages/pharmacy/drugDispense/DrugDispense
 import PrescriptionSkeleton from '@/view/pages/pharmacy/components/skeleton/PrescriptionSkeleton.vue';
 import AdditionalItemDispenseSection from '@/view/pages/pharmacy/drugDispense/AdditionalItemDispenseSection.vue';
 import HistoryModal from '@/view/pages/pharmacy/history/HistoryModal.vue';
+import { isEmpty } from '@/common/common';
 
 export default {
   components: {
@@ -81,8 +102,38 @@ export default {
     visitId() {
       return this.prescription.visit_id;
     },
+
+    totalDrugsPrice() {
+      const totalPrice = this.prescription.drugs?.map(pres => pres.total_price);
+      return totalPrice.reduce((acc, cur) => acc + +cur, 0);
+    },
+
+    totalItemsPrice() {
+      const totalPrice = this.prescription.items?.map(pres => pres.total_price);
+      return totalPrice.reduce((acc, cur) => acc + +cur, 0);
+    },
+
+    nhisMappedTotalPrice() {
+      return this.prescription.drugs
+        ?.filter(drug => drug?.drug_type === 'NHIS')
+        .map(pres => pres.total_price);
+    },
+
+    nhis90PercentDrugsPrice() {
+      const mappedTotal10PercentPrice = this.nhisMappedTotalPrice.reduce(
+        (acc, cur) => acc + +cur,
+        0
+      );
+      const totalActualPrice = mappedTotal10PercentPrice / 0.1;
+      return totalActualPrice * 0.9;
+    },
+
+    nhis10PercentDrugsPrice() {
+      return this.nhisMappedTotalPrice.reduce((acc, cur) => acc + +cur, 0);
+    },
   },
   methods: {
+    isEmpty,
     hideModal() {
       this.displayPrompt = false;
     },
@@ -115,11 +166,14 @@ export default {
         start_date: drug.start_date,
         frequency: drug.frequency,
         date_prescribed: drug.date_prescribed,
+        date_dispensed: drug.date_dispensed,
         notes: drug.notes,
         dispense_status: drug.dispense_status,
         disabledReturn: val.status === this.COMPLETE_DISPENSE,
         payment_status: drug.payment_status,
         reason_for_return: drug.reason_for_return,
+        staff: val.examiner,
+        dispenser: drug?.dispenser,
         shouldDisableDispense:
           drug.quantity_dispensed === drug.quantity_to_dispense ||
           drug.quantity_returned === drug.quantity_to_dispense,
@@ -138,10 +192,13 @@ export default {
         payment_status: item.payment_status,
         dispense_status: item.dispense_status,
         date_prescribed: item.date_prescribed,
+        date_dispensed: item.date_dispensed,
         unit: item.unit.name,
         total_price: item.total_price,
         reason_for_return: item.reason_for_return,
         disabledReturn: val.status === this.COMPLETE_DISPENSE,
+        staff: val.examiner,
+        dispenser: item?.dispenser,
         shouldDisableDispense:
           item.quantity_dispensed === item.quantity_to_dispense ||
           item.quantity_returned === item.quantity_to_dispense,

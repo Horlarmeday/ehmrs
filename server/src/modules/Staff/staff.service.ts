@@ -5,11 +5,14 @@ import {
   getStaffs,
   searchStaffs,
   updateStaff,
+  updateStaffAccount,
 } from './staff.repository';
 import { BadException } from '../../common/util/api-error';
 import { processSnappedPhoto } from '../../core/helpers/helper';
-import { EXISTING_STAFF, INVALID_STAFF_ID } from './messages/response-messages';
+import { EXISTING_STAFF, INVALID_STAFF_ID, STAFF_NOT_FOUND } from './messages/response-messages';
 import { Staff, StaffQueryParam } from './interface/staff.interface';
+import bcrypt from 'bcryptjs';
+import { logger } from '../../core/helpers/logger';
 
 class StaffService {
   /**
@@ -28,6 +31,24 @@ class StaffService {
     const fileName = await processSnappedPhoto(body.photo, body.firstname);
 
     return createStaff({ ...body, fileName });
+  }
+
+  /**
+   * reset staff password
+   *
+   * @static
+   * @returns {json} json object with user data
+   * @memberOf StaffService
+   * @param staffId
+   */
+  static async resetStaffPassword(staffId: number) {
+    const staff = await getStaffById(staffId);
+    if (!staff) throw new BadException('INVALID', 404, STAFF_NOT_FOUND);
+
+    const salt = await bcrypt.genSalt(12);
+    const newPassword = await bcrypt.hash('123456', salt);
+
+    return updateStaffAccount({ password: newPassword }, staffId);
   }
 
   /**

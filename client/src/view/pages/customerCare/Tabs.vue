@@ -25,7 +25,7 @@
             <div class="ml-auto">
               <button
                 @click="sendForReviewAlert"
-                :disabled="isDisabled || !shouldSendForReview"
+                :disabled="isDisabled"
                 ref="kt-sendForReview-submit"
                 class="text-center btn btn-md btn-primary"
               >
@@ -176,7 +176,7 @@ export default {
     this.getActiveTab();
     this.$store.dispatch('visit/fetchVisit', this.$route.params.id).then(response => {
       const res = response.data.data;
-      this.$store.dispatch('patient/setCurrentPatient', { ...res.patient, ...res.insurance });
+      this.$store.dispatch('patient/setCurrentPatient', { ...res.insurance, ...res.patient });
     });
   },
 };

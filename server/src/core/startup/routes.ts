@@ -1,4 +1,6 @@
+import './sentry';
 import express, { NextFunction, Request, Response } from 'express';
+import * as Sentry from '@sentry/node';
 import { StatusCodes } from '../helpers/helper';
 import { handleError } from '../../common/responses/error-responses';
 import { logger } from '../helpers/logger';
@@ -54,6 +56,9 @@ export default (server: express.Application) => {
   server.use('/api/orders/pharmacy', pharmacyOrderRoutes);
   server.use('/api/orders/radiology', radiologyOrderRoutes);
   server.use('/api/orders/service', serviceOrderRoutes);
+
+  Sentry.setupExpressErrorHandler(server);
+
   server.use(
     (
       error: { statusCode: number; message: string },
@@ -88,6 +93,15 @@ export default (server: express.Application) => {
     });
     next();
   });
+  // server.get('*', (req, res, next) => {
+  //   // Check if the request is for a static file
+  //   if (req.accepts('html')) {
+  //     res.sendFile(path.join(__dirname, '../../../../client/dist', 'index.html'));
+  //   } else {
+  //     // Pass to the next route handler
+  //     next();
+  //   }
+  // });
   server.use((req, res, next) => {
     const err = res
       .status(StatusCodes.NOT_FOUND)

@@ -105,15 +105,12 @@ export class AntenatalService {
         patient_id: antenatal.patient_id,
         is_default: true,
       }),
-      getOneAntenatalTriage(
-        {
-          patient_id: antenatal.patient_id,
-          height: {
-            [Op.ne]: null,
-          },
+      getOneAntenatalTriage({
+        patient_id: antenatal.patient_id,
+        height: {
+          [Op.ne]: null,
         },
-        ['height']
-      ),
+      }),
     ]);
     return { ...antenatal.toJSON(), insurance, triage };
   }
@@ -330,7 +327,7 @@ export class AntenatalService {
       throw new BadException('INVALID', StatusCodes.BAD_REQUEST, FEMALE_REQUIRED);
 
     const account = await getOneAntenatalAccount({ patient_id: patient.id });
-    if (account && account?.account_status !== AccountStatus.COMPLETED)
+    if (account && account?.account_status === AccountStatus.ACTIVE)
       throw new BadException('INVALID', StatusCodes.BAD_REQUEST, ANTENATAL_ACCOUNT_EXISTS);
   }
 }

@@ -8,6 +8,7 @@ import {
   CarePlan,
   Delivery,
   Discharge,
+  Insurance,
   Inventory,
   IOChart,
   NursingNote,
@@ -28,9 +29,7 @@ import { getOneDefault, getWardWithService } from '../AdminSettings/admin.reposi
 import { getPatientById } from '../Patient/patient.repository';
 import { AdmissionBodyType, ChangeWardBodyType, DischargeBodyType } from './types/admission.types';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
-import { patientAttributes } from '../Visit/visit.repository';
 import { VisitCategory, VisitStatus } from '../../database/models/visit';
-import dayjs from 'dayjs';
 import { DrugForm } from '../../database/models/drug';
 import { DefaultType } from '../../database/models/default';
 import { Source } from '../../database/models/prescribedDrug';
@@ -41,10 +40,17 @@ import {
   getPatientTreatments,
 } from '../Orders/Pharmacy/pharmacy-order.repository';
 import { Gender } from '../../database/models/staff';
-import { DrugType } from '../../database/models/pharmacyStore';
 import { getInventories } from '../Inventory/inventory.repository';
 import { staffAttributes } from '../Antenatal/antenatal.repository';
-import { dateIntervalQuery, StatusCodes } from '../../core/helpers/helper';
+import {
+  dateIntervalQuery,
+  EXCLUDED_INSURANCE,
+  getAge,
+  getDrugType,
+  isToday,
+  patientAttributes,
+  StatusCodes,
+} from '../../core/helpers/helper';
 import { DischargeStatus } from '../../database/models/admission';
 import { DischargeType } from '../../database/models/discharge';
 import { getPrescriptionTests } from '../Orders/Laboratory/lab-order.repository';
@@ -55,6 +61,9 @@ import { AccountStatus } from '../../database/models/antenatal';
 import { CreatePostNatal } from '../Antenatal/types/antenatal.types';
 import { BadException } from '../../common/util/api-error';
 import { NO_AVAILABLE_BED } from './messages/response-messages';
+import { createDrugPrescription, getLastDrugPrescription } from '../Pharmacy/pharmacy.repository';
+import { DrugStatus } from '../../database/models/drugPrescription';
+import dayjs from 'dayjs';
 
 enum Ages {
   ALL_AGES = 'ALL_AGES',
@@ -62,8 +71,6 @@ enum Ages {
   GREATER_THAN_ONE_LESS_THAN_FIFTEEN = 'GREATER_THAN_ONE_LESS_THAN_FIFTEEN',
   GREATER_THAN_FIFTEEN = 'GREATER_THAN_FIFTEEN',
 }
-const EXCLUDED_INSURANCE = ['NHIS', 'FHSS'];
-
 /**
  * Admit patient into a ward
  * @param data
@@ -82,7 +89,7 @@ export const admitPatient = async (data: AdmissionBodyType) => {
   // bed_id is only sent from client when the ward is VIP else we have to search the ward for
   // available bed space
   if (!bed_id) {
-    const beds = ward.beds.filter(bed => bed.status === BedStatus.UNTAKEN);
+    const beds = ward?.beds?.filter(bed => bed.status === BedStatus.UNTAKEN);
     if (beds?.length) {
       bedId = beds[0].id;
     } else {
@@ -91,30 +98,10 @@ export const admitPatient = async (data: AdmissionBodyType) => {
   }
 
   return sequelize.transaction(async (t: Transaction) => {
-    // end existing visit
-    await Visit.update(
-      { status: VisitStatus.ENDED, date_visit_ended: Date.now() },
-      { where: { id: visit_id }, transaction: t }
-    );
-    // start a new visit
-    const visit = await Visit.create(
-      {
-        patient_id: patient.id,
-        category: VisitCategory.IPD,
-        type: 'New Visit',
-        professional: admitted_by.role,
-        department: admitted_by.department,
-        date_visit_start: Date.now(),
-        staff_id: admitted_by.sub,
-        ...(ante_natal_id && { ante_natal_id }),
-      },
-      { transaction: t }
-    );
-
     const admission = await Admission.create(
       {
         ...data,
-        visit_id: visit.id,
+        visit_id,
         admitted_by: admitted_by.sub,
         date_admitted: Date.now(),
         bed_id: bedId,
@@ -124,14 +111,18 @@ export const admitPatient = async (data: AdmissionBodyType) => {
 
     await Bed.update({ status: BedStatus.TAKEN }, { where: { id: bedId }, transaction: t });
 
-    if (!patient.has_insurance || !EXCLUDED_INSURANCE.includes(insurance?.insurance?.name))
+    if (
+      !patient.has_insurance ||
+      !EXCLUDED_INSURANCE.includes(insurance?.insurance?.name) ||
+      patient.admitted_days_in_year > 21
+    )
       await PrescribedService.create(
         {
           service_id: ward.service.id,
           price: ward.service.price,
           service_type: ServiceType.CASH,
           requester: admitted_by.sub,
-          visit_id: visit.id,
+          visit_id,
           patient_id,
           date_requested: Date.now(),
         },
@@ -144,7 +135,16 @@ export const admitPatient = async (data: AdmissionBodyType) => {
     );
 
     // update the visit with the admission id
-    await Visit.update({ admission_id: admission.id }, { where: { id: visit.id }, transaction: t });
+    await Visit.update(
+      {
+        category: VisitCategory.IPD,
+        admission_id: admission.id,
+        date_visit_start: Date.now(),
+        status: VisitStatus.ONGOING,
+        ...(ante_natal_id && { ante_natal_id }),
+      },
+      { where: { id: visit_id }, transaction: t }
+    );
 
     if (admissionItems) {
       // don't await the result
@@ -173,6 +173,16 @@ export const getOneAdmission = async (query: WhereOptions<Admission>) => {
       { model: Bed, attributes: ['code'] },
       { model: Staff, as: 'examiner', attributes: staffAttributes },
     ],
+  });
+};
+
+/**
+ * get one admission query
+ * @param query
+ */
+export const getOneAdmissionQuery = async (query: WhereOptions<Admission>) => {
+  return Admission.findOne({
+    where: { ...query },
   });
 };
 
@@ -333,6 +343,16 @@ export const getAdmittedPatients = async ({
             ],
           }),
         },
+        include: [
+          {
+            model: PatientInsurance,
+            where: { is_default: true },
+            limit: 1,
+            order: [['createdAt', 'DESC']],
+            attributes: ['id', 'insurance_id'],
+            include: [{ model: Insurance, attributes: ['name'] }],
+          },
+        ],
       },
     ],
   });
@@ -408,6 +428,16 @@ export const getAntenatalAdmittedPatients = async ({
             ],
           }),
         },
+        include: [
+          {
+            model: PatientInsurance,
+            where: { is_default: true },
+            limit: 1,
+            order: [['createdAt', 'DESC']],
+            attributes: ['id', 'insurance_id'],
+            include: [{ model: Insurance, attributes: ['name'] }],
+          },
+        ],
       },
     ],
   });
@@ -457,18 +487,31 @@ export const changePatientWard = async (
   });
 };
 
-const getDrugType = (has_insurance: boolean, insurance: PatientInsurance) => {
-  if (!has_insurance) return DrugType.CASH;
-
-  const insuranceMapping = {
-    NHIS: DrugType.NHIS,
-    PHIS: DrugType.PRIVATE,
-    FHSS: DrugType.NHIS,
-    Retainership: DrugType.RETAINERSHIP,
+const getDrugPrescription = async (patient_id: number, data: any) => {
+  const drugPrescriptionData = {
+    source: data.source,
+    requester: 'staff_id' in data ? data.staff_id : data.examiner,
+    visit_id: data.visit_id,
+    patient_id,
+    date_prescribed: Date.now(),
+    ...(data?.ante_natal_id && { ante_natal_id: data?.ante_natal_id }),
   };
 
-  return insuranceMapping[insurance.insurance.name] || DrugType.CASH;
+  const lastPrescription = await getLastDrugPrescription(patient_id);
+
+  if (lastPrescription && !isToday(lastPrescription?.date_prescribed))
+    return createDrugPrescription(drugPrescriptionData);
+
+  // if drug has not been dispensed - pick the id and use it in prescribed drug
+  if (lastPrescription?.status === DrugStatus.PENDING) return lastPrescription;
+
+  // if drug was prescribed today and has been dispensed - create new one
+  if (lastPrescription?.status === DrugStatus.COMPLETE_DISPENSE)
+    return createDrugPrescription(drugPrescriptionData);
+
+  return createDrugPrescription(drugPrescriptionData);
 };
+
 /**
  * insert the default items for patient admission
  *
@@ -493,8 +536,7 @@ export const insertDefaultAdmissionItems = async ({
   insurance: PatientInsurance;
   inventories: Inventory[];
 }): Promise<boolean> => {
-  const formattedDate = dayjs(patient.date_of_birth).format('YYYY-MM-DD');
-  const age = dayjs().diff(dayjs(formattedDate), 'year');
+  const age = getAge(patient.date_of_birth);
   const sex = patient.gender;
   const source = admission.ante_natal_id ? Source.ANC : Source.CONSULTATION;
   const drugType = getDrugType(patient.has_insurance, insurance);
@@ -502,54 +544,82 @@ export const insertDefaultAdmissionItems = async ({
   const inventory = inventories.find(({ accepted_drug_type }) =>
     new RegExp(`\\b${drugType}\\b`, 'i').test(accepted_drug_type)
   );
-
+  const isNHIS = EXCLUDED_INSURANCE.includes(insurance?.insurance?.name);
+  const drugPrescription = await getDrugPrescription(patient.id, {
+    visit_id: admission.visit_id,
+    source: Source.CONSULTATION,
+    examiner: admission.admitted_by,
+    ante_natal_id: admission.ante_natal_id,
+  });
   const createItems = (filteredItems: any[]) => {
-    return filteredItems.map(item => ({
-      drug_form: DrugForm.CONSUMABLE,
-      quantity_prescribed: +item.quantity,
-      quantity_to_dispense: +item.quantity,
-      visit_id: admission.visit_id,
-      inventory_id: inventory?.id || 1,
-      start_date: Date.now(),
-      date_prescribed: Date.now(),
-      ante_natal_id: admission.ante_natal_id,
-      examiner: admission.admitted_by,
-      drug_type: drugType,
-      source,
-      patient_id: patient.id,
-      drug_id: item.drug.drug_id,
-      unit_id: item.drug.unit_id,
-      total_price: item.drug.price * item.quantity * (patient.has_insurance ? 0.1 : 1),
-    }));
+    const consumables = filteredItems?.filter(item => item?.drug?.drug_type === drugType);
+    if (consumables?.length) {
+      return consumables?.map(item => ({
+        drug_form: DrugForm.CONSUMABLE,
+        quantity_prescribed: +item.quantity,
+        quantity_to_dispense: +item.quantity,
+        visit_id: admission?.visit_id,
+        inventory_id: inventory?.id || 1,
+        start_date: Date.now(),
+        date_prescribed: Date.now(),
+        ante_natal_id: admission?.ante_natal_id,
+        examiner: admission?.admitted_by,
+        drug_type: drugType,
+        source,
+        patient_id: patient.id,
+        drug_id: item?.drug?.drug_id,
+        unit_id: item?.drug?.unit_id,
+        drug_prescription_id: drugPrescription?.id,
+        patient_insurance_id: insurance?.id,
+        total_price:
+          item?.drug?.price * item.quantity * (isNHIS && !/gloves/i.test(item) ? 0.1 : 1),
+      }));
+    }
+    return [];
   };
 
   const allAgesItems = items.filter(item => item.age === Ages.ALL_AGES);
-  await bulkCreateAdditionalItems(createItems(allAgesItems));
+  const consumables = createItems(allAgesItems);
+  if (consumables?.length) {
+    await bulkCreateAdditionalItems(consumables);
+  }
 
   if (age <= 1) {
     const ageLessOneItems = items.filter(item => item.age === Ages.LESS_THAN_EQUAL_TO_ONE);
-    await bulkCreateAdditionalItems(createItems(ageLessOneItems));
+    const ageLessOneConsumables = createItems(ageLessOneItems);
+    if (ageLessOneConsumables?.length) {
+      await bulkCreateAdditionalItems(ageLessOneConsumables);
+    }
   }
 
   if (age > 1 && age <= 15) {
     const betweenOneAndFifteenItems = items.filter(
       item => item.age === Ages.GREATER_THAN_ONE_LESS_THAN_FIFTEEN
     );
-    await bulkCreateAdditionalItems(createItems(betweenOneAndFifteenItems));
+    const betweenOneAndFifteenConsumables = createItems(betweenOneAndFifteenItems);
+    if (betweenOneAndFifteenConsumables?.length) {
+      await bulkCreateAdditionalItems(betweenOneAndFifteenConsumables);
+    }
   }
 
   if (age > 15 && sex === Gender.FEMALE) {
     const femaleItems = items.filter(
       item => item.age === Ages.GREATER_THAN_FIFTEEN && item.sex === Gender.FEMALE
     );
-    await bulkCreateAdditionalItems(createItems(femaleItems));
+    const femaleItemsConsumables = createItems(femaleItems);
+    if (femaleItemsConsumables?.length) {
+      await bulkCreateAdditionalItems(femaleItemsConsumables);
+    }
   }
 
   if (age > 15 && sex === Gender.MALE) {
     const maleItems = items.filter(
       item => item.age === Ages.GREATER_THAN_FIFTEEN && item.sex === Gender.MALE
     );
-    await bulkCreateAdditionalItems(createItems(maleItems));
+    const maleItemsConsumables = createItems(maleItems);
+    if (maleItemsConsumables?.length) {
+      await bulkCreateAdditionalItems(maleItemsConsumables);
+    }
   }
 
   return true;
@@ -694,12 +764,19 @@ type DischargePatientType = DischargeBodyType & {
 export const dischargePatient = async (data: DischargePatientType) => {
   const { discharged_by, patient_id, admission_id, discharge_type } = data;
   return await sequelize.transaction(async (t: Transaction) => {
+    const admission = await Admission.findOne({ where: { id: admission_id }, transaction: t });
     // create discharge record
     const discharge = await Discharge.create({ ...data }, { transaction: t });
+
     // update the admission status
     await Admission.update(
       { discharged_by, discharge_status: DischargeStatus.DISCHARGED },
       { where: { id: admission_id }, transaction: t }
+    );
+
+    await Bed.update(
+      { status: BedStatus.UNTAKEN },
+      { where: { id: admission.bed_id }, transaction: t }
     );
     // update the patient status
     await Patient.update(
@@ -716,6 +793,12 @@ export const dischargePatient = async (data: DischargePatientType) => {
     await Visit.update(
       { status: VisitStatus.ENDED, date_visit_ended: Date.now() },
       { where: { id: data.visit_id }, transaction: t }
+    );
+
+    const numberOfDaysAdmitted = dayjs().diff(dayjs(admission.date_admitted), 'days');
+    await Patient.increment(
+      { admitted_days_in_year: numberOfDaysAdmitted },
+      { where: { id: patient_id }, transaction: t }
     );
     return getOneDischargeRecord({ id: discharge.id });
   });

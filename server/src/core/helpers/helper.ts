@@ -4,17 +4,25 @@ import { promisify } from 'util';
 import fs from 'fs';
 import { BadException } from '../../common/util/api-error';
 import { DEVELOPMENT } from '../constants';
-import { Patient, TestPrescription } from '../../database/models';
+import {
+  Patient,
+  PatientInsurance,
+  PrescribedTest,
+  TestPrescription,
+  Visit,
+} from '../../database/models';
 import { Response } from 'express';
 import { ExportDataType } from '../../modules/Store/types/pharmacy-item.types';
 import { exportDataToCSV, exportDataToExcel, exportDataToPDF } from './fileExport';
 import dayjs from 'dayjs';
 import { Op } from 'sequelize';
-import { countRecords, padNumberWithZero } from './general';
+import { padNumberWithZero } from './general';
 import { PrescribedAdditionalItemBody } from '../../modules/Orders/Pharmacy/interface/prescribed-drug.body';
-import { getSystemSettings } from '../../modules/AdminSettings/admin.repository';
-import { getPatientByHospitalId } from '../../modules/Patient/patient.repository';
+import { getOneService } from '../../modules/AdminSettings/admin.repository';
 import { getTestPrescription } from '../../modules/Laboratory/laboratory.repository';
+import { DrugType } from '../../database/models/pharmacyStore';
+import { prescribeService } from '../../modules/Orders/Service/service-order.repository';
+import { chain } from 'lodash';
 
 const writeFile = promisify(fs.writeFile);
 
@@ -24,19 +32,22 @@ export type ExportSelectedDataType = {
   data: any;
   dataType: ExportDataType;
 };
-export const staffAttributes = ['fullname', 'firstname', 'lastname'];
+export const EXCLUDED_INSURANCE = ['NHIS', 'FHSS'];
+export const staffAttributes = ['fullname', 'firstname', 'lastname', 'middlename'];
 export const patientAttributes = [
   'fullname',
   'photo',
   'hospital_id',
-  'photo_url',
   'firstname',
   'lastname',
+  'middlename',
   'gender',
   'id',
   'has_insurance',
   'date_of_birth',
   'complete_name',
+  'createdAt',
+  'patient_type',
 ];
 
 /**
@@ -51,7 +62,7 @@ export async function processSnappedPhoto(param: string, patient: string): Promi
 
   const imageBuffer = Buffer.from(matches[2], 'base64');
   const extension = mime.getExtension(matches[1]);
-  const fileName = `${patient}${Date.now()}.${extension}`;
+  const fileName = `${patient.trim()}${Date.now()}.${extension}`;
   let filepath: fs.PathOrFileDescriptor;
 
   if (process.env.NODE_ENV === DEVELOPMENT) {
@@ -172,7 +183,7 @@ export const generateLabAccessionNumber = async () => {
   let accessionNumber: string;
   let testPrescription: TestPrescription;
   do {
-    const recordCount = Date.now() + generateRandomNumbers(5);
+    const recordCount = generateRandomNumbers(5);
     const prefix = 'LAB';
     accessionNumber = `${prefix}-${initialPart}-${padNumberWithZero(recordCount, 2)}`;
     testPrescription = await getTestPrescription({ accession_number: accessionNumber });
@@ -182,9 +193,7 @@ export const generateLabAccessionNumber = async () => {
 };
 
 export const isToday = (specificDateTime: Date) => {
-  const currentDateTime = dayjs();
-  const targetDateTime = dayjs(specificDateTime, 'YYYY-MM-DD HH:mm');
-  return currentDateTime.isSame(targetDateTime, 'day');
+  return dayjs(specificDateTime).isSame(dayjs(), 'day');
 };
 
 export const todayQuery = (field: string) => ({
@@ -225,17 +234,108 @@ export const dateQuery = (field: string, date: Date) => ({
   },
 });
 
-export const calculateAge = (birthday: string | number | Date) => {
-  const dateOfBirth = new Date(birthday);
-  const today = new Date();
-  let age = today.getFullYear() - dateOfBirth.getFullYear();
-  const month = today.getMonth() - dateOfBirth.getMonth();
-
-  if (month < 0 || (month === 0 && today.getDate() < dateOfBirth.getDate())) {
-    age--;
-  }
-  return age;
+export const getAge = (date_of_birth: string | number | Date) => {
+  const formattedDate = dayjs(date_of_birth).format('YYYY-MM-DD');
+  return dayjs().diff(dayjs(formattedDate), 'year');
 };
 
 export const flattenArray = (arrayOfArrays: PrescribedAdditionalItemBody[][]) =>
   arrayOfArrays.reduce((acc, curr) => acc.concat(curr), []);
+
+export const getDrugType = (has_insurance: boolean, insurance: PatientInsurance) => {
+  if (!has_insurance) return DrugType.CASH;
+
+  const insuranceMapping = {
+    NHIS: DrugType.NHIS,
+    PHIS: DrugType.PRIVATE,
+    FHSS: DrugType.NHIS,
+    Retainership: DrugType.CASH,
+  };
+
+  return insuranceMapping[insurance?.insurance?.name] || DrugType.CASH;
+};
+
+type SingleOrMultipleServices = {
+  service_id: number | number[];
+  staff_id: number;
+  visit: Visit;
+  patient_id: number;
+  ante_natal_id?: number;
+};
+
+export const insertSingleOrMultipleServices = async ({
+  service_id,
+  staff_id,
+  visit,
+  patient_id,
+  ante_natal_id,
+}: SingleOrMultipleServices) => {
+  if (service_id || (typeof service_id !== 'number' && service_id?.length)) {
+    if (Array.isArray(service_id)) {
+      await Promise.all(
+        service_id.map(async id => {
+          const service = await getOneService({ id });
+          await prescribeService({
+            service_id: id,
+            service_type: 'Cash',
+            price: service.price,
+            patient_id,
+            requester: staff_id,
+            ante_natal_id: ante_natal_id || null,
+            visit_id: visit.id,
+          });
+        })
+      );
+    } else {
+      const service = await getOneService({ id: service_id });
+      await prescribeService({
+        service_id,
+        service_type: 'Cash',
+        price: service.price,
+        patient_id,
+        requester: staff_id,
+        ante_natal_id: ante_natal_id || null,
+        visit_id: visit.id,
+      });
+    }
+  }
+  return;
+};
+
+export const groupDataByField = ({
+  array,
+  field,
+  resultKey,
+  resultData,
+}: {
+  array: any[];
+  field: string;
+  resultKey: string;
+  resultData: string;
+}) => {
+  return chain(array)
+    .groupBy(x => x[field])
+    .map((value, key) => ({
+      [resultKey]: key,
+      [resultData]: value,
+    }))
+    .value();
+};
+
+/**
+ * helper function to shape prescriptions
+ *
+ * @function
+ * @param prescriptions
+ */
+export const getPrescriptionsByVisit = prescriptions => {
+  const prescriptionsByVisit: Record<number, any[]> = {};
+  prescriptions.forEach(obs => {
+    if (!prescriptionsByVisit[obs.visit_id]) {
+      prescriptionsByVisit[obs.visit_id] = [];
+    }
+    prescriptionsByVisit[obs.visit_id].push(obs);
+  });
+
+  return prescriptionsByVisit;
+};

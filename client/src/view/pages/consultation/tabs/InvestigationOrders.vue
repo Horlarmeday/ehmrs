@@ -30,6 +30,7 @@ export default {
     showSwitch() {
       return (
         (this.visit?.patient?.has_insurance &&
+          this.visit?.insurance?.insurance?.name &&
           !EXCLUDED_INSURANCE.includes(this.visit?.insurance?.insurance?.name)) ||
         false
       );
@@ -40,6 +41,7 @@ export default {
       setTimeout(() => {
         if (
           this.visit?.patient?.has_insurance &&
+          this.visit?.insurance?.insurance?.name &&
           !EXCLUDED_INSURANCE.includes(this.visit?.insurance?.insurance?.name)
         ) {
           this.switchPosition = true;

@@ -7,6 +7,8 @@
             <th scope="col">Service</th>
             <th scope="col">Billing Status</th>
             <th scope="col">Type</th>
+            <th scope="col">Price(₦)</th>
+            <th scope="col">Payment Status</th>
             <th scope="col">Requested By</th>
             <th scope="col">Date Requested</th>
             <th scope="col"></th>
@@ -22,6 +24,14 @@
             <td>
               <span :class="getServiceTypeColor(service.service_type)">{{
                 service.service_type
+              }}</span>
+            </td>
+            <td>
+              {{ service.price }}
+            </td>
+            <td>
+              <span :class="getPaymentColor(service.payment_status)">{{
+                service.payment_status
               }}</span>
             </td>
             <td>{{ service?.examiner?.fullname }}</td>
@@ -95,6 +105,13 @@ export default {
         .dispatch('order/deletePrescribedService', { serviceId: service.id })
         .then(() => (this.loading = false))
         .catch(() => (this.loading = false));
+    },
+
+    getPaymentColor(status) {
+      if (status === 'Pending') return 'label label-inline label-light-warning font-weight-bold';
+      if (status === 'Paid') return 'label label-inline label-light-success font-weight-bold';
+      if (status === 'Cleared') return 'label label-inline label-light-info font-weight-bold';
+      return 'label label-inline label-light-danger font-weight-bold';
     },
   },
 };

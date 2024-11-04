@@ -72,4 +72,48 @@ export default {
         });
     });
   },
+
+  fetchDiagnoses({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/consultations/diagnoses/get/`, {
+          params: {
+            currentPage: payload.currentPage,
+            pageLimit: payload.itemsPerPage,
+            filter: payload.filter,
+          },
+        })
+        .then(response => {
+          commit('SET_DIAGNOSES', response.data.data.docs);
+          commit('SET_DIAGNOSES_TOTAL', response.data.data.total);
+          commit('SET_DIAGNOSES_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchHistories({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/consultations/histories/get/`, {
+          params: {
+            currentPage: payload.currentPage,
+            pageLimit: payload.itemsPerPage,
+            filter: payload.filter,
+          },
+        })
+        .then(response => {
+          commit('SET_PATIENT_HISTORIES', response.data.data.docs);
+          commit('SET_PATIENT_HISTORY_TOTAL', response.data.data.total);
+          commit('SET_PATIENT_HISTORY_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
 };

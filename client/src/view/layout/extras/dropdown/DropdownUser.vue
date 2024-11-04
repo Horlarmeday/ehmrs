@@ -10,8 +10,7 @@
 
       <!--begin::Text-->
       <div class="text-dark m-0 flex-grow-1 mr-3 font-size-h5">Sean Stone</div>
-      <span
-        class="label label-light-success label-lg font-weight-bold label-inline"
+      <span class="label label-light-success label-lg font-weight-bold label-inline"
         >3 messages</span
       >
       <!--end::Text-->
@@ -33,10 +32,7 @@
             </div>
             <div class="text-muted">
               Account settings and more
-              <span
-                class="label label-light-danger label-inline font-weight-bold"
-                >update</span
-              >
+              <span class="label label-light-danger label-inline font-weight-bold">update</span>
             </div>
           </div>
         </div>
@@ -100,12 +96,7 @@
       <!--begin::Footer-->
       <div class="navi-separator mt-3"></div>
       <div class="navi-footer  px-8 py-5">
-        <a
-          href="#"
-          class="btn btn-light-primary font-weight-bold"
-          @click="onLogout"
-          >Sign Out</a
-        >
+        <a href="#" class="btn btn-light-primary font-weight-bold" @click="onLogout">Sign Out</a>
         <a href="#" class="btn btn-clean font-weight-bold">Upgrade Plan</a>
       </div>
       <!--end::Footer-->
@@ -115,21 +106,19 @@
 </template>
 
 <script>
-import { LOGOUT } from "@/core/services/store/auth.module";
+import { LOGOUT } from '@/core/services/store/auth.module';
 
 export default {
-  name: "KTDropdownUser",
+  name: 'KTDropdownUser',
   methods: {
     onLogout() {
-      this.$store
-        .dispatch(LOGOUT)
-        .then(() => this.$router.push({ name: "login" }));
-    }
+      this.$store.dispatch(LOGOUT).then(() => this.$router.push({ name: 'login' }));
+    },
   },
   computed: {
     picture() {
-      return process.env.BASE_URL + "media/users/300_21.jpg";
-    }
-  }
+      return process.env.BASE_URL + 'media/users/blank.png';
+    },
+  },
 };
 </script>

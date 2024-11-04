@@ -29,6 +29,7 @@ router.get('/test-results/get/:id', verify, LaboratoryController.getTestResult);
 router.get('/verified-results/get', verify, LaboratoryController.getVerifiedTestResults);
 router.get('/today-stats/get', verify, LaboratoryController.getTestTodayStats);
 router.get('/test-prescription/get/:id', verify, LaboratoryController.getOneTestPrescription);
+router.put('/test-results/bulk-update/:id', verify, LaboratoryController.changeTestResultStatus);
 
 // NHIS tests deprecated
 router.post('/tests/tariff/create', verify, LaboratoryController.createTestTariff);

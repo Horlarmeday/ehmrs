@@ -35,7 +35,10 @@ import CustomerCare from './reception/Dashboard.vue';
 import Theater from './nurse/theater/Dashboard.vue';
 import FinancialOfficer from './financeOfficer/Dashboard.vue';
 import HODNurse from './nurse/hod/Dashboard.vue';
+import HODLaboratory from './laboratory/hod/Dashboard.vue';
 import Emergency from './nurse/emergency/Dashboard.vue';
+import VIPWard from './nurse/vip/Dashboard.vue';
+import HODPharmacy from './pharmacy/hod/Dashboard.vue';
 import { parseJwt } from '@/common/common';
 
 const Roles = {
@@ -73,6 +76,7 @@ const SubRoles = {
   THEATER: 'Theater',
   HOD: 'HOD',
   EMERGENCY: 'Accident & Emergency',
+  VIP_PRIVATE: 'VIP/Private',
 };
 export default {
   data: () => ({
@@ -85,11 +89,11 @@ export default {
         case Roles.SUPER_ADMIN:
           return (this.dashboardComponent = SuperAdmin);
         case Roles.LABORATORY:
-          return (this.dashboardComponent = Laboratory);
+          return this.getLaboratoryDashboard(role.sub_role);
         case Roles.RADIOLOGY:
           return (this.dashboardComponent = Radiology);
         case Roles.PHARMACY:
-          return (this.dashboardComponent = Pharmacy);
+          return this.getPharmacyDashboard(role.sub_role);
         case Roles.GENERAL_PRACTITIONER:
           return (this.dashboardComponent = Doctor);
         case Roles.MEDICAL_RECORDS:
@@ -153,6 +157,26 @@ export default {
           return (this.dashboardComponent = HODNurse);
         case SubRoles.EMERGENCY:
           return (this.dashboardComponent = Emergency);
+        case SubRoles.VIP_PRIVATE:
+          return (this.dashboardComponent = VIPWard);
+      }
+    },
+
+    getLaboratoryDashboard(subRole) {
+      switch (subRole) {
+        case SubRoles.HOD:
+          return (this.dashboardComponent = HODLaboratory);
+        default:
+          return (this.dashboardComponent = Laboratory);
+      }
+    },
+
+    getPharmacyDashboard(subRole) {
+      switch (subRole) {
+        case SubRoles.HOD:
+          return (this.dashboardComponent = HODPharmacy);
+        default:
+          return (this.dashboardComponent = Pharmacy);
       }
     },
   },

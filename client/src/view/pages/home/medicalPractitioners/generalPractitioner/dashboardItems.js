@@ -5,7 +5,7 @@ export default [
     name: 'Queue',
   },
   {
-    url: '/visit/inpatients',
+    url: '/visit/admitted-patients',
     icon: 'fas fa-bed',
     name: 'In-Patients',
   },

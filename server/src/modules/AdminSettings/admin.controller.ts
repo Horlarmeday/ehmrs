@@ -360,7 +360,11 @@ class AdminController {
    * @param {object} next next middleware
    * @returns {json} json object with status, service data
    */
-  static async createService(req, res: Response, next: NextFunction) {
+  static async createService(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
     const { error } = validateService(req.body);
     if (error)
       return errorResponse({
@@ -390,7 +394,7 @@ class AdminController {
    * @param {object} next next middleware
    * @returns {json} json object with status, service data
    */
-  static async updateService(req, res, next) {
+  static async updateService(req: Request, res: Response, next: NextFunction) {
     const { service_id } = req.body;
     if (!service_id) return res.status(400).json({ message: 'Service id is required' });
 
@@ -412,7 +416,7 @@ class AdminController {
    * @param {object} next next middleware
    * @returns {json} json object with services data
    */
-  static async getServices(req, res, next) {
+  static async getServices(req: Request, res: Response, next: NextFunction) {
     try {
       const services = await AdminService.getServices(req.query);
 
@@ -599,6 +603,52 @@ class AdminController {
       });
 
       return successResponse({ res, httpCode: 201, data: response, message: DATA_UPDATED });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get encounters
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with encounter data
+   */
+  static async getEncounters(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    try {
+      const encounters = await AdminService.getEncounters(req.query);
+
+      return successResponse({ res, message: SUCCESS, data: encounters, httpCode: 200 });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get one encounter
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with encounter data
+   */
+  static async getOneEncounter(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    try {
+      const encounter = await AdminService.getOneEncounter(+req.params.id);
+
+      return successResponse({ res, message: SUCCESS, data: encounter, httpCode: 200 });
     } catch (e) {
       return next(e);
     }

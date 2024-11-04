@@ -58,8 +58,7 @@ export class ServiceOrderService {
         ...service,
         price:
           (await getServicePrice(patient, service.service_id)) ||
-          +service.price * +service.quantity ||
-          1,
+          +service.price * (+service.quantity || 1),
         requester: staff_id,
         visit_id,
         patient_id: visit.patient_id,
@@ -101,10 +100,11 @@ export class ServiceOrderService {
    * @static
    * @returns {json} json object with prescribed service data
    * @param body
+   * @param staffId
    * @memberOf ServiceOrderService
    */
-  static async updatePrescribedService(body) {
-    return updatePrescribedService(body);
+  static async updatePrescribedService(body: Partial<PrescribedService>, staffId: number) {
+    return updatePrescribedService({ ...body, service_changed_by: staffId });
   }
 
   /**

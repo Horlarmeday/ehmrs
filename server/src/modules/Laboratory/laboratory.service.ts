@@ -1,10 +1,10 @@
 import {
   appendTestResults,
   approveTestResults,
+  changeTestResultsStatus,
   createTest,
   createTestSample,
   createTestTariff,
-  filterTests,
   getCollectedSamples,
   getOneCollectedSample,
   getOneSampleToCollect,
@@ -16,9 +16,7 @@ import {
   getTests,
   getTestSamples,
   getVerifiedTestResults,
-  searchTests,
   searchTestSamples,
-  searchTestsInASample,
   todayTestStats,
   updateTest,
   updateTestPrescription,
@@ -39,6 +37,8 @@ import dayjs from 'dayjs';
 import { TestPrescription } from '../../database/models';
 import { BadException } from '../../common/util/api-error';
 import { ACCESSION_NUMB_EXIST } from './messages/response-messages';
+import forms from '../../core/helpers/testResultForms';
+import { PatientInfo, TestResult } from '../../core/helpers/downloadTestResult';
 
 class LaboratoryService {
   /** ***********************
@@ -127,24 +127,13 @@ class LaboratoryService {
    * @memberOf LaboratoryService
    */
   static async getTests(body) {
-    const { currentPage, pageLimit, search, filter, sampleId } = body;
-    if (search) return searchTests(+currentPage, +pageLimit, search);
-
-    if (filter) return filterTests(+currentPage, +pageLimit, filter);
-
-    if (sampleId && search)
-      return searchTestsInASample({
-        currentPage: +currentPage,
-        pageLimit: +pageLimit,
-        search,
-        sampleId,
-      });
+    const { currentPage, pageLimit, search, filter } = body;
 
     if (Object.values(body).length) {
-      return getTests(+currentPage, +pageLimit);
+      return getTests({ currentPage, pageLimit, search, filter });
     }
 
-    return getTests();
+    return getTests({});
   }
 
   /** ***********************
@@ -188,10 +177,19 @@ class LaboratoryService {
     return getSamplesToCollect({ period });
   }
 
+  /**
+   * Get one sample to collect
+   * @memberOf LaboratoryService
+   * @param prescriptionId
+   */
   static async getOneSampleToCollect(prescriptionId: number | string) {
     return getOneSampleToCollect(prescriptionId);
   }
 
+  /**
+   * Generate lab accession number
+   * @memberOf LaboratoryService
+   */
   static async generateLabAccessionNumber() {
     let testPrescription: TestPrescription;
     let accessionNumber: string;
@@ -202,6 +200,11 @@ class LaboratoryService {
     return accessionNumber;
   }
 
+  /**
+   * Collect test sample
+   * @param body
+   * @memberOf LaboratoryService
+   */
   static async collectTestSample(body) {
     const { accession_number, id, staff_id } = body;
     const testPrescription = await getTestPrescription({ accession_number });
@@ -268,29 +271,191 @@ class LaboratoryService {
   }
 
   /**
+   * Change test results status
+   * @memberOf LaboratoryService
+   * @param selectedTests
+   * @param testPrescriptionId
+   */
+  static async changeTestResultStatus(selectedTests: number[], testPrescriptionId: number) {
+    return changeTestResultsStatus(selectedTests, testPrescriptionId);
+  }
+
+  /**
    * Download test result
    * @param prescriptionId
    */
-  static async downloadTestResult(prescriptionId: number) {
+  static async downloadTestResult(
+    prescriptionId: number
+  ): Promise<{ patientInfo: PatientInfo; testResults: TestResult[] }> {
     const testResult = await getOneTestResult(prescriptionId);
+    const { patient, date_requested, accession_number, tests } = testResult;
+
     const patientInfo = {
-      patientName: testResult.patient.fullname.toString(),
-      patientId: testResult.patient.hospital_id,
-      sex: testResult.patient.gender,
-      age: dayjs().diff(testResult.patient.date_of_birth, 'years'),
-      orderDate: dayjs(testResult.date_requested).format('YYYY-MM-DD, h:mma'),
-      reportDate: dayjs().format('YYYY-MM-DD, h:mma'),
-      accession_number: testResult.accession_number,
+      patientName: patient.fullname.toString(),
+      patientId: patient.hospital_id,
+      sex: patient.gender,
+      age: dayjs().diff(patient.date_of_birth, 'years'),
+      orderDate: dayjs(date_requested).format('MMM D, YYYY, h:mma'),
+      reportDate: dayjs().format('MMM D, YYYY, h:mma'),
+      accession_number,
+      test_verifier: tests?.[0]?.test_verifier?.fullname,
+      test_approver: tests?.[0]?.test_approver?.fullname,
     };
-    const testResults = testResult.tests.map(test => ({
-      testName: test.test.name,
-      result: test.result.result,
-      comments: test.result.comments,
-      abnormalState: test.result.is_abnormal ? 'Yes' : 'No',
-      unit: test.test.result_unit,
-      validRange: test.test.valid_range,
-    }));
-    return { patientInfo, testResults };
+
+    const testResults = tests.reduce((acc, { test, result }) => {
+      const form = forms[test.result_form];
+      const testName = test.name;
+
+      const results = form
+        .map(item => {
+          return this.getTestResultForm(test.result_form, test, item, result, patientInfo.sex);
+        })
+        .filter(
+          item =>
+            item?.model ||
+            item?.oModel ||
+            item?.hModel ||
+            item?.totalModel ||
+            item?.directModel ||
+            item?.glucoseModel ||
+            item?.proteinModel
+        );
+
+      if (results?.length) {
+        acc[testName] = acc[testName] || { test: testName, results: [] };
+        acc[testName].results.push(...results);
+      }
+
+      return acc;
+    }, {});
+
+    return { patientInfo, testResults: Object.values(testResults) };
+  }
+
+  static getTestResultForm(
+    result_form: any,
+    test: { result_form: string; name: string },
+    item: {
+      name: string;
+      oModel: string | number;
+      hModel: string | number;
+      range: string;
+      totalModel: string | number;
+      directModel: string | number;
+      totalRange: string;
+      directRange: string;
+      adultRangeFemale: string;
+      adultRangeMale: string;
+      childRange: string;
+      unit: string;
+      model: string | number;
+      ranges: string[];
+      glucoseModel: string | number;
+      proteinModel: string | number;
+    },
+    result: { result: { [x: string]: { toString: () => string } } },
+    sex: string
+  ) {
+    switch (result_form) {
+      case 'WidalReactionForm': {
+        const data = {
+          name: item.name,
+          oModel: result.result[item.oModel]?.toString(),
+          hModel: result.result[item.hModel]?.toString(),
+        };
+        return {
+          ...data,
+          headers: ['Test', 'O', 'H'],
+          align: ['left', 'right', 'left'],
+          rows: [data.name, data.oModel, data.hModel],
+        };
+      }
+      case 'BilirubinForm': {
+        const data = {
+          name: item.name,
+          totalModel: result?.result[item.totalModel]?.toString(),
+          directModel: result?.result[item.directModel]?.toString(),
+          totalRange: item?.totalRange || '-',
+          directRange: item?.directRange || '-',
+        };
+        return {
+          ...data,
+          headers: ['Test', 'Total', 'Direct', 'Total Range', 'Direct Range'],
+          align: ['left', 'right', 'right', 'left', 'left'],
+          rows: [data.name, data.totalModel, data.directModel, data.totalRange, data.directRange],
+        };
+      }
+      case 'FBCForm': {
+        const adultRange = sex === 'Female' ? item.adultRangeFemale : item.adultRangeMale;
+        const childrenRange =
+          !item?.childRange || item?.childRange === '-' ? '-' : `${item?.childRange}${item.unit}`;
+
+        const data = {
+          name: item.name,
+          model: result?.result[item.model]?.toString(),
+          childRange: childrenRange,
+          adultRange: !adultRange || adultRange === '-' ? '-' : `${adultRange}${item.unit}`,
+        };
+        return {
+          ...data,
+          headers: ['Test', 'Result', 'Children Range', 'Adult Range'],
+          align: ['left', 'right', 'left', 'left'],
+          rows: [data.name, data.model, data.childRange, data.adultRange],
+        };
+      }
+      case 'HormonalAssayForm': {
+        const data = {
+          name: item.name,
+          model: result?.result[item.model]?.toString(),
+          range: item?.ranges?.join('\n') || '-',
+        };
+        return {
+          ...data,
+          headers: ['Test', 'Result', 'Ranges'],
+          align: ['left', 'right', 'left'],
+          rows: [data.name, data.model, data.range],
+        };
+      }
+      case 'OGTTForm': {
+        if (item?.model) {
+          const data = {
+            name: item.name,
+            model: result.result[item.model]?.toString(),
+            range: item?.range || '-',
+          };
+          return {
+            ...data,
+            headers: ['Time', 'Glucose Value', 'Range'],
+            align: ['left', 'right', 'left'],
+            rows: [data.name, data.model, data.range],
+          };
+        }
+        const data = {
+          name: item.name,
+          glucoseModel: result.result[item.glucoseModel]?.toString(),
+          proteinModel: result.result[item.proteinModel]?.toString(),
+        };
+        return {
+          ...data,
+          headers: ['Time', 'Presence of Glucose', 'Presence of Protein'],
+          align: ['left', 'right', 'left', 'left'],
+          rows: [data.name, data.glucoseModel, data.proteinModel],
+        };
+      }
+      default: {
+        const data = {
+          name: test.result_form === 'DefaultResultForm' ? test.name : item.name,
+          model: result.result[item.model]?.toString(),
+          range: item?.range || '-',
+        };
+        return {
+          ...data,
+          headers: ['Test', 'Result', 'Range'],
+          align: ['left', 'right', 'left'],
+          rows: [data.name, data.model, data.range],
+        };
+      }
+    }
   }
 
   /**
@@ -300,13 +465,13 @@ class LaboratoryService {
   static async appendTestResults(laboratoryResultDto: LaboratoryResultDto) {
     const { results, staff_id } = laboratoryResultDto;
     const data = results
-      .filter(({ result }) => !isEmpty(result))
+      .filter(({ result }) => Object.values(result)?.length)
       .map(result => ({
         ...result,
         staff_id,
         testStatus: this.getTestStatus(result),
         date_created: Date.now(),
-        is_abnormal: !this.getTestAbnormalState(result.result, result.valid_range),
+        is_abnormal: this.getTestAbnormalState(result.result, result.valid_range),
       }));
     return appendTestResults(data);
   }
@@ -385,7 +550,7 @@ class LaboratoryService {
   static getTestAbnormalState(result: string, range: string) {
     if (!range) return false;
     // Split the range string into minimum and maximum values
-    const [minValue, maxValue] = range.split('-').map(parseFloat);
+    const [minValue, maxValue] = range?.split('-')?.map(parseFloat);
 
     // Check if the number is within the range
     return +result >= minValue && +result <= maxValue;

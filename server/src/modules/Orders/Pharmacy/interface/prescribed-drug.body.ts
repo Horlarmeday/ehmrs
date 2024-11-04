@@ -1,5 +1,7 @@
 import { DrugType } from '../../../../database/models/pharmacyStore';
 import { DrugForm } from '../../../../database/models/drug';
+import { Patient, PatientInsurance, PrescribedInvestigation } from '../../../../database/models';
+import { Transaction } from 'sequelize';
 
 export class PrescribedAdditionalItemBody {
   drug_id: number;
@@ -25,6 +27,7 @@ export class PrescribedAdditionalItemBody {
 
 export class PrescribedDrugBody {
   drug_id: number;
+  drug_name: string;
   staff_id: number;
   drug_type: DrugType;
   quantity_prescribed: number;
@@ -65,3 +68,20 @@ export class PatientTreatmentBody {
   admission_id?: number;
   source?: 'Admission' | 'Consultation';
 }
+
+export type OrderBulkInvestigationType = {
+  data: any;
+  includesHSG: boolean;
+  patient: Patient;
+  insurance: PatientInsurance;
+  visit_id: number;
+};
+
+export type InsertHSGAdditionalItemsType = {
+  investigations: PrescribedInvestigation[];
+  patient: Patient;
+  insurance: PatientInsurance;
+  visit_id: number;
+  items: any;
+  t: Transaction;
+};

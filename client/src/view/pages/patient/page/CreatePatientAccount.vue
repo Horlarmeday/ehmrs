@@ -483,7 +483,7 @@ export default {
           return 'The ' + field + ' field should match the Nigerian phone pattern e.g 07098765321';
         },
         validate(value) {
-          return /((^090)([23589]))|((^070)([1-9]))|((^080)([2-9]))|((^081)([0-9]))(\d{7})/.test(
+          return /((^090)([1-9]))|((^091)([0-9]))|((^070)([1-9]))|((^080)([2-9]))|((^081)([0-9]))(\d{7})/.test(
             value
           );
         },

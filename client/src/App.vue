@@ -17,6 +17,11 @@
 
 // Main demo style scss
 @import 'assets/sass/style.vue';
+#app {
+  font-family: 'Poppins', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
 // Check documentation for RTL css
 // Update HTML with RTL attribute at public/index.html
@@ -33,7 +38,6 @@ input[type='number'] {
   -moz-appearance: textfield;
 }
 </style>
-
 <script>
 import { OVERRIDE_LAYOUT_CONFIG } from '@/core/services/store/config.module';
 import axios from 'axios';

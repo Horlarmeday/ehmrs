@@ -19,7 +19,7 @@
                 <label>Department <span class="text-danger">*</span></label>
                 <select
                   class="form-control form-control-sm"
-                  v-model="employee.department"
+                  v-model="department"
                   name="department"
                   v-validate="'required'"
                   data-vv-validate-on="blur"
@@ -38,7 +38,7 @@
                 <label>Roles <span class="text-danger">*</span></label>
                 <select
                   class="form-control form-control-sm"
-                  v-model="employee.role"
+                  v-model="role"
                   name="role"
                   v-validate="'required'"
                   data-vv-validate-on="blur"
@@ -57,7 +57,7 @@
             <div class="form-group row">
               <div class="col-lg-4">
                 <label>Sub Roles </label>
-                <select class="form-control form-control-sm" v-model="employee.sub_role">
+                <select class="form-control form-control-sm" v-model="sub_role">
                   <option
                     v-for="sub in sub_roles"
                     :key="sub.id"
@@ -67,17 +67,17 @@
                 </select>
               </div>
             </div>
+            <div>
+              <button
+                ref="kt-updateEmployee-submit"
+                class="btn btn-primary font-weight-bold float-right mb-6"
+                @click="updateEmployee"
+              >
+                Save
+              </button>
+            </div>
           </div>
         </b-collapse>
-      </div>
-      <div>
-        <button
-          ref="kt-submit"
-          class="btn btn-primary font-weight-bold float-right"
-          @click="addEmployee"
-        >
-          Save
-        </button>
       </div>
     </div>
     <!--end::Accordion-->
@@ -86,11 +86,12 @@
 
 <script>
 import { departments, getRolesById, getSubRoleById } from '../employees/create/employeeRoles';
-import Swal from 'sweetalert2';
 export default {
   data() {
     return {
-      employee: '',
+      department: '',
+      role: '',
+      sub_role: '',
       departments: [],
       roles: [],
       sub_roles: [],
@@ -101,6 +102,21 @@ export default {
     this.fetchEmployee();
     this.countToHundred();
     this.departments = departments;
+  },
+  computed: {
+    employee() {
+      return this.$store.state.employee.employee;
+    },
+  },
+  watch: {
+    employee(val) {
+      if (!val) return;
+      const { id, department, role, sub_role } = JSON.parse(JSON.stringify(this.employee));
+      this.id = id;
+      this.role = role;
+      this.sub_role = sub_role;
+      this.department = department;
+    },
   },
   methods: {
     getRoles() {
@@ -125,38 +141,32 @@ export default {
       submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
     },
 
-    handleSuccess(response) {
-      Swal.fire({
-        title: 'Success!',
-        html: `${response.data.message}`,
-        icon: 'success',
-        confirmButtonClass: 'btn btn-primary',
-        heightAuto: false,
-      });
-    },
-
-    initializeRequest(button, response) {
+    initializeRequest(button) {
       this.removeSpinner(button);
-      this.handleSuccess(response);
+      this.$router.go(-1);
     },
 
     updateEmployee() {
       this.$validator.validateAll().then(result => {
         if (result) {
           // set spinner to submit button
-          const submitButton = this.$refs['kt-submit'];
+          const submitButton = this.$refs['kt-updateEmployee-submit'];
           this.addSpinner(submitButton);
 
           const data = {
-            employee: this.employee,
+            department: this.department?.text,
+            role: this.role?.text,
+            sub_role: this.sub_role?.text,
+            id: this.id,
           };
           this.$store
             .dispatch('employee/updateEmployee', data)
-            .then(response => this.initializeRequest(submitButton, response))
+            .then(() => this.initializeRequest(submitButton))
             .catch(() => this.removeSpinner(submitButton));
         }
       });
     },
+
     countToHundred() {
       for (let i = 1; i <= 10000; i++) {
         this.count = i;

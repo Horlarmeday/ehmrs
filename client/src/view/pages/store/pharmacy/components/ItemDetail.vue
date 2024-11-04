@@ -5,7 +5,12 @@
         <div class="col-3">
           <div class="col d-flex flex-column flex-root">
             <span class="font-weight-bolder mb-2">ITEM NAME</span>
-            <span class="opacity-70">{{ item?.drug?.name }}</span>
+            <span class="opacity-70">
+              {{ item?.drug?.name }}
+              <span :class="getItemType(item?.drug_type)" class="label label-inline ml-2">{{
+                item?.drug_type
+              }}</span>
+            </span>
           </div>
         </div>
         <div class="col-3">
@@ -89,6 +94,12 @@
             <span class="opacity-70">{{ item.expiration | dayjs('ddd, MMM Do YYYY') }}</span>
           </div>
         </div>
+        <div class="col-3 mb-lg-5">
+          <div class="col d-flex flex-column flex-root">
+            <span class="font-weight-bolder mb-2">BRAND</span>
+            <span class="opacity-70">{{ item?.brand || '-' }}</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -98,7 +109,7 @@
 </template>
 
 <script>
-import { monthDiff } from '@/common/common';
+import { getItemType, monthDiff } from '@/common/common';
 import DefaultSkeleton from '@/utils/DefaultSkeleton.vue';
 
 export default {
@@ -114,6 +125,7 @@ export default {
   },
 
   methods: {
+    getItemType,
     getExpiryStatus(expiryDate) {
       const month = monthDiff(new Date(), new Date(expiryDate));
       if (month > 0 && month <= 6) return `Expiring in ${month} month(s)`;

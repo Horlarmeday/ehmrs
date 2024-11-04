@@ -34,9 +34,10 @@ export default {
     state.pages = pages;
   },
 
+  // eslint-disable-next-line no-unused-vars
   UPDATE_ITEM(state, item) {
-    const itemIndex = state.items.findIndex(p => p.id === item.id);
-    Object.assign(state.items[itemIndex], item);
+    // const itemIndex = state.items.findIndex(p => p.id === item.id);
+    // Object.assign(state.items[itemIndex], item);
   },
 
   SET_ITEM(state, item) {
@@ -56,5 +57,42 @@ export default {
 
   SET_ITEM_HISTORY_PAGES(state, pages) {
     state.itemHistoryPages = pages;
+  },
+
+  /***
+   * SELECTED ITEMS
+   */
+
+  ADD_SELECTED_ITEM(state, item) {
+    state.selectedItems.push(item);
+  },
+
+  ADD_ALL_SELECTED_ITEMS(state, items) {
+    state.selectedItems.push(...items);
+  },
+
+  REMOVE_SELECTED_ITEM(state, item) {
+    const itemIndex = state.selectedItems.findIndex(({ id }) => id === item.id);
+    state.selectedItems.splice(itemIndex, 1);
+  },
+
+  REMOVE_ALL_SELECTED_ITEMS(state, items) {
+    state.selectedItems = items;
+  },
+
+  /**
+   * INVENTORY ITEMS RETURNS REQUESTS
+   */
+
+  SET_RETURN_REQUESTS(state, items) {
+    state.returnRequests = items;
+  },
+
+  SET_RETURN_REQUESTS_TOTAL(state, total) {
+    state.totalReturnRequests = total;
+  },
+
+  SET_RETURN_REQUESTS_PAGES(state, pages) {
+    state.returnRequestsPages = pages;
   },
 };

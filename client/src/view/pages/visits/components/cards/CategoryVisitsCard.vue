@@ -7,17 +7,24 @@
         class="bg-gray-200 rounded-lg pointer text-center mr-2 inline-display mb-2"
         v-for="visit in visits"
         :key="visit.id"
-        @click="visitDetailsPage(visit)"
         v-b-tooltip.hover
         :title="visit.patient.fullname"
-        style="min-width: 150px"
+        style="min-width: 150px; position: relative;"
       >
+        <router-link
+          :to="`/visit/update/${visit.id}`"
+          class="btn btn-xs btn-icon btn-circle btn-white btn-hover-text-primary btn-shadow"
+          style="position: absolute; top: -3px; right: -1px;"
+        >
+          <i class="fa fa-pen icon-sm text-muted"></i>
+        </router-link>
         <div v-if="visit.category !== OUTPATIENT" class="displayIcon">
           <i :class="displayIcon(visit.category)" class="text-white"></i>
         </div>
-        <div class="pr-4 pl-4 pb-4">
+        <div @click="visitDetailsPage(visit)" class="pr-4 pl-4 pb-4">
           <div>
             <img
+              width="70"
               v-if="!imageError"
               alt="Pic"
               :src="imageUrl(visit.patient.photo)"
@@ -46,6 +53,7 @@
         :per-page="perPage"
         :current-page="currentPage"
         @pagechanged="onPageChange"
+        @changepagecount="handlePageCount"
       />
     </div>
   </div>
@@ -98,6 +106,14 @@ export default {
       });
     },
 
+    handlePageCount(count) {
+      this.$store.dispatch('visit/fetchCategoryVisits', {
+        currentPage: this.$route.query.currentPage || this.currentPage,
+        itemsPerPage: count,
+        category: this.category,
+      });
+    },
+
     onPageChange(page) {
       this.currentPage = page;
       this.handlePageChange();
@@ -114,7 +130,7 @@ export default {
           currentPage: 1,
           itemsPerPage: vm.itemsPerPage,
           search,
-          category: this.category,
+          category: vm.category,
         })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));

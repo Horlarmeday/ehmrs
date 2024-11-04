@@ -10,7 +10,6 @@
           <th scope="col">Notes</th>
           <th scope="col">Added By</th>
           <th scope="col">Date Added</th>
-          <th scope="col"></th>
         </tr>
       </thead>
       <tbody>
@@ -27,10 +26,6 @@
           <td>{{ diagnosis.notes || '-' }}</td>
           <td>{{ diagnosis.staff.fullname }}</td>
           <td>{{ diagnosis.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
-          <td>
-            <a href="#"><i class="flaticon-delete mr-2"></i></a>
-            <a href="#"><i class="flaticon-edit-1"></i></a>
-          </td>
         </tr>
       </tbody>
     </table>

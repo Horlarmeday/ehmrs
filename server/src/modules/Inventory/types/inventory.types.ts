@@ -1,4 +1,3 @@
-import { Inventory } from '../../../database/models';
 import { AcceptedDrugType } from '../../../database/models/inventory';
 
 export class InventoryTypes {
@@ -9,3 +8,17 @@ export class InventoryTypes {
   accepted_drug_type: AcceptedDrugType;
   staff_id?: number;
 }
+
+export type RequestReturnToStore = {
+  quantity: number;
+  inventory_item_id: number;
+  staff_id: number;
+  reason_for_return: string;
+};
+
+export type UpdateReturnRequest = {
+  id: number;
+  inventory_item_id: number;
+  quantity: number;
+  status: string;
+};

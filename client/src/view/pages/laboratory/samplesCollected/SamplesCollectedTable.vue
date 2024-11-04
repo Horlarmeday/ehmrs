@@ -12,7 +12,7 @@
         <table class="table table-head-custom table-head-bg table-vertical-center">
           <thead>
             <tr class="text-uppercase">
-              <th style="min-width: 100px" class="pl-4">
+              <th style="min-width: 80px" class="pl-2">
                 <span class="text-dark-75">Lab number</span>
               </th>
               <th style="min-width: 100px">Patient ID</th>
@@ -33,9 +33,17 @@
           </tbody>
           <tbody v-for="sample in samples" :key="sample.id">
             <tr :class="{ disabled: sample.total === sample.total_pending_payments }">
-              <td class="pl-4 py-8">
+              <td class="pl-2 py-8">
                 <div class="d-flex align-items-center">
                   <div>
+                    <span
+                      v-b-tooltip.hover
+                      :title="sample?.patient?.insurances?.[0]?.insurance?.name"
+                      class="label label-dot label-lg mr-2"
+                      :class="
+                        getPatientDotStatus(sample?.patient?.insurances?.[0]?.insurance?.name)
+                      "
+                    ></span>
                     <a
                       href="#"
                       class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-md"
@@ -50,9 +58,11 @@
                 </span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
-                  {{ sample.patient.fullname }}
-                </span>
+                <router-link :to="`/patient/profile/${sample.patient_id}`">
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                    {{ sample.patient.fullname }}
+                  </span>
+                </router-link>
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-md">
@@ -83,7 +93,7 @@
                 >
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">{{
                   sample.date_sample_received | dayjs('DD/MM/YYYY, h:mma')
                 }}</span>
               </td>
@@ -126,6 +136,7 @@
         :per-page="perPage"
         :current-page="currentPage"
         @pagechanged="onPageChange"
+        @changepagecount="handlePageCount"
       />
     </div>
     <table-skeleton v-else :columns="9" />
@@ -134,7 +145,7 @@
 
 <script>
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
-import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
+import { debounce, getPatientDotStatus, removeSpinner, setUrlQueryParams } from '@/common/common';
 import Search from '@/utils/Search.vue';
 import ValidateIcon from '@/assets/icons/ValidateIcon.vue';
 import Pagination from '@/utils/Pagination.vue';
@@ -172,10 +183,16 @@ export default {
     TODAY: 'Today',
   }),
   methods: {
+    getPatientDotStatus,
     handlePageChange() {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
+        period: this.period,
+        tabIndex: this.$route.query.tabIndex,
+        search: this.$route.query.search || null,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
       });
       this.fetchSamplesCollected({
         currentPage: this.$route.query.currentPage || this.currentPage,
@@ -191,11 +208,32 @@ export default {
       this.handlePageChange();
     },
 
+    handlePageCount(count) {
+      setUrlQueryParams({
+        currentPage: this.currentPage,
+        itemsPerPage: count,
+        period: this.period,
+        tabIndex: this.$route.query.tabIndex,
+        search: this.$route.query.search || null,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
+      });
+      this.fetchSamplesCollected({
+        currentPage: this.$route.query.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
+        search: this.$route.query.search || null,
+      });
+    },
+
     onHandleSearch(prop) {
       const { search, spinDiv } = prop;
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
+        period: this.period,
+        tabIndex: this.$route.query.tabIndex,
         search,
       });
       this.debounceSearch(search, this, spinDiv);
@@ -217,8 +255,10 @@ export default {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
+        tabIndex: this.$route.query.tabIndex,
         startDate: dayjs(start).format('YYYY-MM-DD'),
         endDate: dayjs(end).format('YYYY-MM-DD'),
+        period: this.period,
       });
       this.fetchSamplesCollected({
         currentPage: this.currentPage,
@@ -260,6 +300,7 @@ export default {
           itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
           start: this.$route.query.startDate || null,
           end: this.$route.query.endDate || null,
+          search: this.$route.query.search || null,
         });
       },
       immediate: true,

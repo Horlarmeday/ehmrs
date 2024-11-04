@@ -29,22 +29,32 @@
             </tr>
           </tbody>
           <tbody v-for="sample in samples" :key="sample.id">
-            <tr :class="{ disabled: sample.test_count === sample.total_pending_payments }">
+            <tr>
               <td class="pl-4">
                 <div class="d-flex align-items-center">
                   <div>
-                    <a
-                      href="#"
+                    <span
+                      v-b-tooltip.hover
+                      :title="sample?.patient?.insurances?.[0]?.insurance?.name"
+                      class="label label-dot label-lg mr-2"
+                      :class="
+                        getPatientDotStatus(sample?.patient?.insurances?.[0]?.insurance?.name)
+                      "
+                    ></span>
+                    <router-link
+                      :to="`/patient/profile/${sample.patient_id}`"
                       class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg"
-                      >{{ sample.patient.hospital_id }}</a
+                      >{{ sample.patient.hospital_id }}</router-link
                     >
                   </div>
                 </div>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ sample.patient.fullname }}
-                </span>
+                <router-link :to="`/patient/profile/${sample.patient_id}`">
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                    {{ sample.patient.fullname }}
+                  </span>
+                </router-link>
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg pl-7">
@@ -86,6 +96,7 @@
         :per-page="perPage"
         :current-page="currentPage"
         @pagechanged="onPageChange"
+        @changepagecount="handlePageCount"
       />
     </div>
     <table-skeleton v-else :columns="7" />
@@ -94,7 +105,7 @@
 
 <script>
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
-import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
+import { debounce, getPatientDotStatus, removeSpinner, setUrlQueryParams } from '@/common/common';
 import Search from '../../../../utils/Search.vue';
 import Pagination from '@/utils/Pagination.vue';
 import dayjs from 'dayjs';
@@ -131,6 +142,7 @@ export default {
     },
   },
   methods: {
+    getPatientDotStatus,
     getSampleStatus(status) {
       if (status === 'Pending') return 'label-light-warning ';
       if (status === 'Completed') return 'label-light-success ';
@@ -141,6 +153,11 @@ export default {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
+        period: this.period,
+        tabIndex: this.$route.query.tabIndex,
+        search: this.$route.query.search || null,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
       });
       this.fetchSamplesToCollect({
         currentPage: this.$route.query.currentPage || this.currentPage,
@@ -148,6 +165,25 @@ export default {
         search: this.$route.query.search || null,
         start: this.$route.query.startDate || null,
         end: this.$route.query.endDate || null,
+      });
+    },
+
+    handlePageCount(count) {
+      setUrlQueryParams({
+        currentPage: this.currentPage,
+        itemsPerPage: count,
+        period: this.period,
+        tabIndex: this.$route.query.tabIndex,
+        search: this.$route.query.search || null,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
+      });
+      this.fetchSamplesToCollect({
+        currentPage: this.$route.query.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
+        search: this.$route.query.search || null,
       });
     },
 
@@ -162,6 +198,8 @@ export default {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
         search,
+        period: this.period,
+        tabIndex: this.$route.query.tabIndex,
       });
       this.debounceSearch(search, this, spinDiv);
     },
@@ -182,6 +220,8 @@ export default {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
+        period: this.period,
+        tabIndex: this.$route.query.tabIndex,
         startDate: dayjs(start).format('YYYY-MM-DD'),
         endDate: dayjs(end).format('YYYY-MM-DD'),
       });
@@ -213,6 +253,7 @@ export default {
           itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
           start: this.$route.query.startDate || null,
           end: this.$route.query.endDate || null,
+          search: this.$route.query.search || null,
         });
       },
       immediate: true,

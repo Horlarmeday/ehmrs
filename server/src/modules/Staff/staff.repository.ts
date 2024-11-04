@@ -105,6 +105,18 @@ export async function updateStaff(data) {
 }
 
 /**
+ * update staff details
+ *
+ * @function
+ * @returns {json} json object with staff data
+ * @param data
+ * @param staffId
+ */
+export async function updateStaffAccount(data: Partial<Staff>, staffId: any) {
+  return Staff.update({ ...data }, { where: { id: staffId } });
+}
+
+/**
  * get staffs
  *
  * @function
@@ -137,12 +149,7 @@ export async function getStaffs({ currentPage = 1, pageLimit = 10, filter }) {
  * @param search
  * @param filter
  */
-export async function searchStaffs({
-  currentPage = 1,
-  pageLimit = 10,
-  search,
-  filter = null,
-}) {
+export async function searchStaffs({ currentPage = 1, pageLimit = 10, search, filter = null }) {
   return Staff.paginate({
     page: +currentPage,
     paginate: +pageLimit,

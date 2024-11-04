@@ -12,7 +12,14 @@
         <td scope="row">{{ index + 1 }}</td>
         <th scope="row">{{ order.sample }}</th>
         <td>
-          <span v-for="(t, i) in order.data" class="mr-2" :key="i">{{ t.test.name }},</span>
+          <div v-for="(t, i) in order.data" class="mr-2" :key="i">
+            {{ t?.test?.name }}
+            <span
+              :class="getPaymentStatus(t?.payment_status)"
+              class="label label-sm label-inline ml-2 pl-1 pr-1"
+              >{{ t?.payment_status }}
+            </span>
+          </div>
         </td>
       </tr>
     </tbody>
@@ -26,7 +33,15 @@ export default {
     tests: {
       type: Array,
       required: true,
-      default: () => []
+      default: () => [],
+    },
+  },
+  methods: {
+    getPaymentStatus(status) {
+      if (status === 'Pending') return 'label-warning ';
+      if (status === 'Paid') return 'label-success ';
+      if (status === 'Cleared') return 'label-info ';
+      return 'label-primary ';
     },
   },
 };

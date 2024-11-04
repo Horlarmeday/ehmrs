@@ -19,35 +19,33 @@
         <tr v-for="(triage, i) in triages" :key="i">
           <td>{{ triage.height }}</td>
           <td>{{ triage.weight }}</td>
-          <td>{{ triage.pallor }}</td>
-          <td>{{ triage.blood_pressure }}</td>
-          <td>{{ triage.maturity }}</td>
+          <td>{{ triage.pallor || '-' }}</td>
+          <td>{{ triage.blood_pressure || '-' }}</td>
+          <td>{{ triage.maturity || '-' }}</td>
           <td>{{ triage.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
           <td>
-            <a :id="popOverId" @click="viewPopover(triage)" href="#"
+            <a @click="viewModal(triage)" href="#"
               ><i class="icon-xl text-primary la la-eye"></i
             ></a>
           </td>
         </tr>
       </tbody>
     </table>
-    <triage-popover
+    <antenatal-triage-details-modal
+      @closeModal="hideModal"
       :triage="triage"
-      :target="popOverId"
-      :show="showPopover"
-      @closePopover="hidePopover"
+      :display-prompt="displayPrompt"
     />
   </div>
 </template>
 <script>
-import TriagePopover from '@/view/components/popover/AntenatalTriagePopover.vue';
+import AntenatalTriageDetailsModal from '@/view/components/modal/AntenatalTriageDetailsModal.vue';
 
 export default {
   name: 'AntenatalTriageTable',
-  components: { TriagePopover },
+  components: { AntenatalTriageDetailsModal },
   data: () => ({
-    showPopover: false,
-    popOverId: 'popover-reactive-3',
+    displayPrompt: false,
     triage: {},
   }),
   props: {
@@ -58,12 +56,12 @@ export default {
     },
   },
   methods: {
-    viewPopover(triage) {
+    viewModal(triage) {
       this.triage = triage;
-      this.showPopover = true;
+      this.displayPrompt = true;
     },
-    hidePopover() {
-      this.showPopover = false;
+    hideModal() {
+      this.displayPrompt = false;
     },
   },
 };

@@ -29,6 +29,8 @@ import ANCRoutineTestsForm from './components/forms/ANCRoutineTestsForm.vue';
 import InjectionItemsForm from './components/forms/InjectionItemsForm.vue';
 import OperationItemsForm from './components/forms/OperationItemsForm.vue';
 import InjectionsWaterForm from './components/forms/InjectionsWaterForm.vue';
+import CircumcisionRoutineDrugsForm from './components/forms/CircumcisionRoutineDrugsForm.vue';
+import HSGAdditionalItemsForm from './components/forms/HSGAdditionalItemsForm.vue';
 
 export default {
   components: { ANCRoutineDrugsForm },
@@ -47,6 +49,14 @@ export default {
       {
         name: 'Antenatal Routine Drugs',
         code: 'ANC_ROUTINE_DRUGS',
+      },
+      {
+        name: 'Circumcision Routine Drugs',
+        code: 'CIRCUMCISION_ROUTINE_DRUGS',
+      },
+      {
+        name: 'HSG Additional Items',
+        code: 'HSG_ADDITIONAL_ITEMS',
       },
       {
         name: 'Injection Items',
@@ -82,6 +92,12 @@ export default {
           break;
         case 'WATER_INJECTIONS':
           this.currentComponent = InjectionsWaterForm;
+          break;
+        case 'CIRCUMCISION_ROUTINE_DRUGS':
+          this.currentComponent = CircumcisionRoutineDrugsForm;
+          break;
+        case 'HSG_ADDITIONAL_ITEMS':
+          this.currentComponent = HSGAdditionalItemsForm;
           break;
       }
     },

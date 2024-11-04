@@ -165,4 +165,23 @@ export default {
   SET_TEST_PRESCRIPTION(state, test) {
     state.testPrescription = test;
   },
+
+  /**
+   * SELECTED TESTS
+   */
+  ADD_SELECTED_TEST(state, test) {
+    state.selectedTests.push(test);
+  },
+
+  REMOVE_SELECTED_TEST(state, test) {
+    const testIndex = state.selectedTests.findIndex(({ id }) => id === test.id);
+    state.selectedTests.splice(testIndex, 1);
+  },
+
+  EMPTY_SELECTED_TESTS(state, tests) {
+    state.selectedTests = tests;
+  },
+
+  // eslint-disable-next-line no-unused-vars
+  SET_UPDATED_TESTS_RESULTS(state, tests) {},
 };

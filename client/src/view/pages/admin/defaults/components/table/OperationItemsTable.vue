@@ -18,9 +18,12 @@
           </tr>
           <tr v-for="item in operationItems" :key="item.id">
             <td class="pl-5">
-              <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+              <span class="text-dark-75 font-weight-bolder font-size-lg">
                 {{ item?.drug?.name }}
               </span>
+              <span :class="getItemType(item?.drug?.drug_type)" class="label label-inline ml-2">{{
+                item?.drug?.drug_type
+              }}</span>
             </td>
             <td>
               <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
@@ -38,9 +41,12 @@
               }}</span>
             </td>
             <td class="pr-0">
-              <router-link to="#" class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3">
+              <button
+                @click="deleteDefaultData(item.id)"
+                class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
+              >
                 <delete-icon />
-              </router-link>
+              </button>
             </td>
           </tr>
         </tbody>
@@ -50,8 +56,22 @@
 </template>
 <script>
 import DeleteIcon from '@/assets/icons/DeleteIcon.vue';
+import { getItemType } from '@/common/common';
 
 export default {
+  methods: {
+    getItemType,
+    deleteDefaultData(dataId) {
+      this.$store
+        .dispatch('model/deleteDefaultData', { id: this.$route.params.id, dataId })
+        .then(() => this.fetchDefaults());
+    },
+    fetchDefaults() {
+      this.$store
+        .dispatch('model/fetchDefaults')
+        .then(res => localStorage.setItem('defaults', JSON.stringify(res.data.data)));
+    },
+  },
   components: { DeleteIcon },
   computed: {
     defaults() {

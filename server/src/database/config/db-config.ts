@@ -6,6 +6,7 @@ export default {
     host: process.env.DB_HOST,
     dialect: 'mysql',
     logging: false,
+    port: process.env.DB_PORT,
   },
   test: {
     username: process.env.TEST_DB_USER,
@@ -14,6 +15,7 @@ export default {
     host: process.env.TEST_DB_HOST,
     dialect: 'mysql',
     logging: false,
+    port: process.env.DB_PORT,
   },
   production: {
     username: process.env.DB_USER,
@@ -22,5 +24,6 @@ export default {
     host: process.env.DB_HOST,
     dialect: 'mysql',
     logging: false,
+    port: process.env.DB_PORT,
   },
 };

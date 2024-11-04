@@ -27,6 +27,7 @@
               <th class="pr-0" style="width: 250px">Name</th>
               <th class="pr-0" style="width: 250px">Code</th>
               <th class="pr-0" style="width: 250px">Price</th>
+              <th class="pr-0" style="width: 250px">Result Form</th>
               <th style="min-width: 150px">Date Created</th>
               <th class="pr-0 text-right" style="min-width: 150px">action</th>
             </tr>
@@ -51,6 +52,11 @@
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                   {{ test.price }}
+                </span>
+              </td>
+              <td>
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ resultForm(test) }}
                 </span>
               </td>
               <td>
@@ -93,6 +99,7 @@ import EditIcon from '../../../assets/icons/EditIcon.vue';
 import AddIcon from '../../../assets/icons/AddIcon.vue';
 import Search from '../../../utils/Search.vue';
 import { debounce, removeSpinner } from '@/common/common';
+import { resultFormList } from '@/view/pages/laboratory/forms/resultFormList';
 export default {
   data() {
     return {
@@ -171,6 +178,9 @@ export default {
         currentPage: this.currentPage,
         itemsPerPage: pagecount,
       });
+    },
+    resultForm(test) {
+      return resultFormList.find(form => form.code === test.result_form)?.name;
     },
   },
   created() {

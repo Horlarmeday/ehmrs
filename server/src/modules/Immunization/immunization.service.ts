@@ -10,6 +10,9 @@ import { Immunization } from '../../database/models';
 import { BadException } from '../../common/util/api-error';
 import { ERROR_UPDATE_IMMUNIZATION } from './messages/immunization.messages';
 import { JobSchedule } from '../../core/command/worker/schedule';
+import { createVisit, endVisit, getLastActiveVisit } from '../Visit/visit.repository';
+import { VisitCategory } from '../../database/models/visit';
+import { insertSingleOrMultipleServices } from '../../core/helpers/helper';
 
 export class ImmunizationService {
   /**
@@ -20,6 +23,25 @@ export class ImmunizationService {
   static async createImmunizationAccount(body: CreateImmunizationBody) {
     const immunization = await createImmunizationAccount(body);
     await JobSchedule.assignImmunizationNumber(immunization.id);
+
+    const existingVisit = await getLastActiveVisit(immunization.patient_id);
+    if (existingVisit) await endVisit(existingVisit);
+
+    const visit = await createVisit({
+      patient_id: immunization.patient_id,
+      category: VisitCategory.IMMUNIZATION,
+      immunization_id: immunization.id,
+      type: 'New visit',
+      date_of_visit: new Date(),
+      department: 'Nursing',
+      professional: 'Nurse',
+    });
+    await insertSingleOrMultipleServices({
+      service_id: body.service_id,
+      patient_id: immunization.patient_id,
+      staff_id: body.staff_id,
+      visit,
+    });
     return immunization;
   }
 

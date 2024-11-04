@@ -17,6 +17,7 @@ export default {
         });
     });
   },
+
   fetchEmployees({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
@@ -41,6 +42,7 @@ export default {
         });
     });
   },
+
   fetchEmployee({ commit }, employeeId) {
     return new Promise((resolve, reject) => {
       axios
@@ -59,6 +61,20 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/staffs`, employee)
+        .then(response => {
+          commit('UPDATE_EMPLOYEE', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  resetEmployeePassword({ commit }, employeeId) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/staffs/reset-password/${employeeId}`)
         .then(response => {
           commit('UPDATE_EMPLOYEE', response.data.data);
           resolve(response);

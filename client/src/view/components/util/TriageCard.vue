@@ -71,6 +71,15 @@
         <div class="d-flex flex-column flex-root">
           <span class="font-weight-bolder mb-1">
             <span class="navi-icon mr-2">
+              <i class="fa fa-genderless text-info font-size-h2"></i>
+            </span>
+            DONE BY
+          </span>
+          <span class="opacity-70 ml-lg-7">{{ triage?.staff?.fullname }}</span>
+        </div>
+        <div class="d-flex flex-column flex-root">
+          <span class="font-weight-bolder mb-1">
+            <span class="navi-icon mr-2">
               <i class="fa fa-genderless text-success font-size-h2"></i>
             </span>
             CREATED

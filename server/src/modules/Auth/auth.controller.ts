@@ -54,7 +54,7 @@ class AuthController {
     try {
       const staff = await AuthService.changePasswordService({ ...req.body, user_id: req.user.sub });
 
-      return successResponse({ res, httpCode: 200, message: PASSWORD_CHANGE_MESSAGE, data: staff });
+      return successResponse({ res, httpCode: 201, message: PASSWORD_CHANGE_MESSAGE, data: staff });
     } catch (e) {
       return next(e);
     }

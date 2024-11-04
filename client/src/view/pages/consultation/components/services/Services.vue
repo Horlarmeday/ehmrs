@@ -111,7 +111,8 @@ export default {
       return {
         service_id: service.id,
         is_urgent: false,
-        service_type: this.switchPosition && this.switchSpot ? this.getServiceType(this.insuranceName) : 'CASH',
+        service_type:
+          this.switchPosition && this.switchSpot ? this.getServiceType(this.insuranceName) : 'CASH',
         price: service.price,
         name: service.name,
         source: this.source,

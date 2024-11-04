@@ -10,7 +10,7 @@
         <search
           @search="onHandleSearch"
           @filterByDateRange="searchByDate"
-          :show-date-filter="true"
+          :show-date-filter="currentUser.department !== MEDICAL_PRACTITIONER"
         />
       </div>
       <queue-table
@@ -22,6 +22,7 @@
         }"
         :queues="queues"
         @changePage="onPageChange"
+        @changePageCount="onChangePageCount"
         :url="url"
       />
     </div>
@@ -75,6 +76,9 @@ export default {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
+        search: this.$route.query.search || null,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
       });
       this.fetchQueue({
         currentPage: this.$route.query.currentPage || this.currentPage,
@@ -106,6 +110,8 @@ export default {
           currentPage: 1,
           itemsPerPage: vm.$route.query.itemsPerPage || vm.itemsPerPage,
           search,
+          start: vm.todayDate().startDate,
+          end: vm.todayDate().endDate,
           ...(vm.filter && { filter: vm.filter }),
         })
         .then(() => removeSpinner(spinDiv))
@@ -135,12 +141,16 @@ export default {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: pagecount,
+        search: this.$route.query.search,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
       });
       this.fetchQueue({
         currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: pagecount,
         start: this.$route.query.startDate,
         end: this.$route.query.endDate,
+        search: this.$route.query.search || null,
       });
     },
 
@@ -173,8 +183,8 @@ export default {
       currentPage: this.$route.query.currentPage || this.currentPage,
       itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
       search: this.$route.query.search || null,
-      start: this.todayDate().startDate || this.$route.query.startDate,
-      end: this.todayDate().endDate || this.$route.query.endDate,
+      start: this.todayDate()?.startDate || this.$route.query.startDate,
+      end: this.todayDate()?.endDate || this.$route.query.endDate,
     });
   },
 };

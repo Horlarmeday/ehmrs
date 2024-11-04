@@ -41,9 +41,7 @@ export default {
 
   data() {
     return {
-      search: '',
-      start: '',
-      end: '',
+      search: this.$route.query.search || '',
     };
   },
   methods: {

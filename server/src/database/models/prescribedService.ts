@@ -10,7 +10,7 @@ import {
 import { Staff } from './staff';
 import { Visit } from './visit';
 import { Patient } from './patient';
-import { BillingStatus, DispenseStatus, PaymentStatus } from './prescribedDrug';
+import { BillingStatus, PaymentStatus } from './prescribedDrug';
 import {
   FindAttributeOptions,
   GroupOption,
@@ -36,6 +36,11 @@ export enum Source {
   ANC = 'Antenatal',
   CONSULTATION = 'Consultation',
   THEATER = 'Theater',
+}
+
+export enum ServiceGroup {
+  PRIMARY = 'Primary',
+  SECONDARY = 'Secondary',
 }
 
 @Table({ timestamps: true, tableName: 'Prescribed_Services' })
@@ -159,10 +164,11 @@ export class PrescribedService extends Model {
   })
   source: Source;
 
-  @BelongsTo(() => Staff, {
-    foreignKey: 'requester',
+  @Column({
+    type: DataType.ENUM(ServiceGroup.PRIMARY, ServiceGroup.SECONDARY),
+    defaultValue: ServiceGroup.SECONDARY,
   })
-  examiner: Staff;
+  service_group: ServiceGroup;
 
   @ForeignKey(() => Antenatal)
   @Column({
@@ -191,6 +197,38 @@ export class PrescribedService extends Model {
     type: DataType.INTEGER,
   })
   old_id: number;
+
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  service_changed_by: number;
+
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  nhis_service_processed_by: number;
+
+  @Column({
+    type: DataType.DATE,
+  })
+  date_nhis_service_processed: Date;
+
+  @BelongsTo(() => Staff, {
+    foreignKey: 'service_changed_by',
+  })
+  service_changer: Staff;
+
+  @BelongsTo(() => Staff, {
+    foreignKey: 'nhis_service_processed_by',
+  })
+  nhis_service_processor: Staff;
+
+  @BelongsTo(() => Staff, {
+    foreignKey: 'requester',
+  })
+  examiner: Staff;
 
   @BelongsTo(() => Service)
   service: Service;

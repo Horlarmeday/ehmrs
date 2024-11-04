@@ -1,11 +1,18 @@
 import multer from 'multer';
 import path from 'path';
 import { Request } from 'express';
+import { DEVELOPMENT } from '../constants';
+import { PathOrFileDescriptor } from 'fs';
 
 // Set up multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'src/public/images/');
+    let filepath: PathOrFileDescriptor;
+    if (process.env.NODE_ENV === DEVELOPMENT) {
+      filepath = `src/public/images/`;
+    } else filepath = `ehmrs-api/public/images/`;
+
+    cb(null, filepath);
   },
   filename: (req, file, cb) => {
     if (!file) return cb(null, '');

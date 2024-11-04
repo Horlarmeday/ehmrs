@@ -70,8 +70,9 @@ export const getPrescribedTests = ({ currentPage = 1, pageLimit = 10, filter = n
         attributes: staffAttributes,
       },
       {
-        model: TestResult,
-        attributes: ['result', 'status'],
+        model: Staff,
+        as: 'nhis_test_processor',
+        attributes: staffAttributes,
       },
     ],
   });
@@ -84,6 +85,7 @@ export const getPrescriptionTests = async (query: sequelize.WhereOptions<Prescri
     include: [
       { model: Test, attributes: ['name'] },
       { model: Staff, as: 'examiner', attributes: staffAttributes },
+      { model: TestResult, as: 'result', attributes: ['result', 'status'] },
     ],
   });
 };
@@ -94,6 +96,7 @@ export const getOnePrescribedTest = async (query: WhereOptions<PrescribedTest>) 
     include: [
       { model: Test, attributes: ['name', 'type'] },
       { model: Staff, as: 'examiner', attributes: staffAttributes },
+      { model: Staff, as: 'nhis_test_processor', attributes: staffAttributes },
     ],
   });
 };

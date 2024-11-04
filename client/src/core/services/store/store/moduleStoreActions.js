@@ -1,5 +1,5 @@
 import axios from '../../../../axios';
-import { getExtensions } from "@/common/common";
+import { getExtensions } from '@/common/common';
 
 export default {
   /**
@@ -121,6 +121,52 @@ export default {
     });
   },
 
+  fetchSelectedPharmacyItems({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/store/pharmacy/selected-items', {
+          params: {
+            itemIds: payload.itemIds,
+          },
+        })
+        .then(response => {
+          commit('SET_PHARM_ITEMS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  updatePharmacyItems({ commit }, items) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put('/store/pharmacy/items/update', items)
+        .then(response => {
+          commit('UPDATE_PHARM_ITEMS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  deactivatePharmacyItems({ commit }, items) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put('/store/pharmacy/items/deactivate', { items })
+        .then(response => {
+          commit('UPDATE_PHARM_ITEMS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
   /***
    * PHARMACY ITEM HISTORY
    */
@@ -162,6 +208,20 @@ export default {
           commit('SET_PHARM_ITEM_LOGS', response.data.data.docs);
           commit('SET_PHARM_ITEM_LOGS_TOTAL', response.data.data.total);
           commit('SET_PHARM_ITEM_LOGS_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  resetPharmacyItemsQuantity({ commit }) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put('/store/pharmacy/items/reset')
+        .then(response => {
+          commit('REMOVE_ALL_SELECTED_ITEMS', []);
           resolve(response);
         })
         .catch(error => {

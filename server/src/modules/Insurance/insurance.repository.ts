@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { GroupedCountResultItem, Op, WhereOptions } from 'sequelize';
+import { Op, WhereOptions } from 'sequelize';
 
 import { Insurance, HMO, PatientInsurance } from '../../database/models';
 
@@ -178,12 +178,25 @@ export async function updateHMO(data) {
  * @returns {Promise<PatientInsurance | null>} return patient insurance data
  * @param query
  */
+export const getInsuranceWithoutJoinQuery = async (
+  query: WhereOptions<PatientInsurance>
+): Promise<PatientInsurance | null> => {
+  return PatientInsurance.findOne({
+    where: { ...query },
+  });
+};
+
+/**
+ * get patient insurance by id
+ * @returns {Promise<PatientInsurance | null>} return patient insurance data
+ * @param query
+ */
 export const getPatientInsuranceQuery = async (
   query: WhereOptions<PatientInsurance>
 ): Promise<PatientInsurance | null> => {
   return PatientInsurance.findOne({
     where: { ...query },
-    attributes: ['hmo_id', 'insurance_id', 'id', 'organization', 'enrollee_code'],
+    attributes: ['hmo_id', 'insurance_id', 'id', 'organization', 'enrollee_code', 'plan'],
     include: [
       {
         model: Insurance,
@@ -213,7 +226,7 @@ export const getPatientInsuranceCount = async (query: Record<string, any>): Prom
  * @param fieldsToUpdate
  */
 export const updatePatientInsurance = async (
-  query: Record<string, any>,
+  query: WhereOptions<PatientInsurance>,
   fieldsToUpdate: Record<string, any>
 ) => {
   return PatientInsurance.update({ ...fieldsToUpdate }, { where: { ...query } });

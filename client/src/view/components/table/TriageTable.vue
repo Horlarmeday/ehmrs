@@ -8,6 +8,7 @@
           <th scope="col">BMI</th>
           <th scope="col">Blood Pressure</th>
           <th scope="col">Temperature</th>
+          <th scope="col">Done By</th>
           <th scope="col">Date Added</th>
           <th scope="col">Action</th>
         </tr>
@@ -22,32 +23,31 @@
           <td>{{ triage.bmi }}</td>
           <td>{{ triage.systolic }}/{{ triage.diastolic }}</td>
           <td>{{ triage.temperature }}</td>
+          <td>{{ triage.staff.fullname }}</td>
           <td>{{ triage.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
           <td>
-            <a :id="popOverId" @click="viewPopover(triage)" href="#"
+            <a @click="viewModal(triage)" href="#"
               ><i class="icon-xl text-primary la la-eye"></i
             ></a>
           </td>
         </tr>
       </tbody>
     </table>
-    <triage-popover
+    <triage-details-modal
+      @closeModal="hideModal"
       :triage="triage"
-      :target="popOverId"
-      :show="showPopover"
-      @closePopover="hidePopover"
+      :display-prompt="displayPrompt"
     />
   </div>
 </template>
 <script>
-import TriagePopover from '@/view/components/popover/TriagePopover.vue';
+import TriageDetailsModal from '@/view/components/modal/TriageDetailsModal.vue';
 
 export default {
   name: 'TriageTable',
-  components: { TriagePopover },
+  components: { TriageDetailsModal },
   data: () => ({
-    showPopover: false,
-    popOverId: 'popover-reactive-9',
+    displayPrompt: false,
     triage: {},
   }),
   props: {
@@ -58,12 +58,12 @@ export default {
     },
   },
   methods: {
-    viewPopover(triage) {
+    viewModal(triage) {
       this.triage = triage;
-      this.showPopover = true;
+      this.displayPrompt = true;
     },
-    hidePopover() {
-      this.showPopover = false;
+    hideModal() {
+      this.displayPrompt = false;
     },
   },
 };

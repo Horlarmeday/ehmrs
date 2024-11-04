@@ -36,18 +36,29 @@
               <td class="pl-7 py-8">
                 <div class="d-flex align-items-center">
                   <div>
-                    <a
-                      href="#"
+                    <span
+                      v-b-tooltip.hover
+                      :title="admission?.patient?.insurances?.[0]?.insurance?.name"
+                      class="label label-dot label-lg mr-2"
+                      :class="
+                        getPatientDotStatus(admission?.patient?.insurances?.[0]?.insurance?.name)
+                      "
+                    ></span>
+                    <router-link
+                      :to="`/patient/profile/${admission.patient_id}`"
                       class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg"
-                      >{{ admission.patient.hospital_id }}</a
+                      >{{ admission.patient.hospital_id }}</router-link
                     >
                   </div>
                 </div>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                <router-link
+                  :to="`/patient/profile/${admission.patient_id}`"
+                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
+                >
                   {{ admission.patient.fullname }}
-                </span>
+                </router-link>
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
@@ -66,7 +77,7 @@
               </td>
               <td class="text-right pr-0">
                 <router-link
-                  :to="`/admission/operations/${admission.id}`"
+                  :to="getRouteLink(admission)"
                   class="btn btn-icon btn-light btn-hover-primary btn-sm"
                 >
                   <ArrowRightIcon />
@@ -89,10 +100,11 @@
 </template>
 <script>
 import Search from '@/utils/Search.vue';
-import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
+import { debounce, getPatientDotStatus, removeSpinner, setUrlQueryParams } from '@/common/common';
 import dayjs from 'dayjs';
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
 import Pagination from '@/utils/Pagination.vue';
+import { parseJwt } from '@/core/plugins/parseJwt';
 
 export default {
   components: { Pagination, ArrowRightIcon, Search },
@@ -102,6 +114,9 @@ export default {
     loading: false,
     start: null,
     end: null,
+    currentUser: parseJwt(localStorage.getItem('user_token')),
+    NURSE: 'Nurse',
+    CUSTOMER_CARE: 'Customer Care',
   }),
   computed: {
     admissions() {
@@ -121,10 +136,21 @@ export default {
     },
   },
   methods: {
+    getPatientDotStatus,
+    getRouteLink(admission) {
+      if (this.currentUser.role === this.NURSE) return `/admission/operations/${admission.id}`;
+      if (this.currentUser.role === this.CUSTOMER_CARE) return `#`;
+      return `/consultation/${admission.visit_id}`;
+    },
+
     handlePageChange() {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
+        search: this.$route.query.search || null,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
+        occupantType: this.$route.query.occupantType || this.filter,
       });
       this.fetchAdmissions({
         currentPage: this.$route.query.currentPage || this.currentPage,
@@ -146,6 +172,7 @@ export default {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
         search,
+        occupantType: this.$route.query.occupantType || this.filter,
       });
       this.debounceSearch(search, this, spinDiv);
     },
@@ -156,7 +183,9 @@ export default {
           currentPage: 1,
           itemsPerPage: vm.$route.query.itemsPerPage || vm.itemsPerPage,
           search,
-          ...(vm.filter && { filter: { occupant_type: vm.filter } }),
+          ...((vm.$route.query.occupantType || vm.filter) && {
+            filter: { occupant_type: vm.filter },
+          }),
         })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));
@@ -170,6 +199,7 @@ export default {
         itemsPerPage: this.itemsPerPage,
         startDate: dayjs(start).format('YYYY-MM-DD'),
         endDate: dayjs(end).format('YYYY-MM-DD'),
+        occupantType: this.$route.query.occupantType || this.filter,
       });
       this.fetchAdmissions({
         currentPage: this.currentPage,
@@ -185,6 +215,10 @@ export default {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: count,
+        search: this.$route.query.search || null,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
+        occupantType: this.$route.query.occupantType || this.filter,
       });
       this.fetchAdmissions({
         currentPage: this.$route.query.currentPage || this.currentPage,
@@ -201,7 +235,9 @@ export default {
         itemsPerPage,
         ...(search && { search }),
         ...(start && end && { start, end }),
-        ...(this.filter && { filter: { occupant_type: this.filter } }),
+        ...((this.$route.query.occupantType || this.filter) && {
+          filter: { occupant_type: this.filter },
+        }),
       });
     },
   },

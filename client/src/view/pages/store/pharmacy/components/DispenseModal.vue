@@ -1,10 +1,13 @@
 <template>
   <b-modal size="xl" v-model="activePrompt" hide-footer title="Dispense">
+    <div v-if="error" class="alert alert-danger mb-5" role="alert">
+      <div class="alert-text">{{ error }}</div>
+    </div>
     <div class="p-2">
       <div v-for="(item, i) in itemsToDispense" :key="i">
         <label class="font-weight-bolder"
           >{{ item.drug_name }}
-          <span v-if="item.drug_type === 'NHIS'" class="label label-primary label-inline">{{
+          <span :class="getItemType(item.drug_type)" class="label label-inline mr-2">{{
             item.drug_type
           }}</span>
           <span :class="item.quantity_left > 50 ? 'text-success' : 'text-danger'"
@@ -59,7 +62,6 @@
             <a href="#" class="col-lg-1 col-form-label">
               <i
                 class="far fa-trash-alt icon-md text-danger icon-lg mt-lg-3"
-                v-if="i !== 0"
                 @click="removeItem(i)"
               />
             </a>
@@ -80,6 +82,7 @@
 
 <script>
 import vSelect from 'vue-select';
+import { getItemType } from '@/common/common';
 //import { debounce } from "@/common/common";
 export default {
   name: 'DispenseModal',
@@ -98,6 +101,7 @@ export default {
     return {
       isDisabled: false,
       itemIsInvalid: false,
+      error: null,
     };
   },
   computed: {
@@ -119,6 +123,7 @@ export default {
     },
   },
   methods: {
+    getItemType,
     addSpinner(submitButton) {
       this.isDisabled = true;
       submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');
@@ -133,6 +138,7 @@ export default {
       this.removeSpinner(button);
       this.$emit('closeModal');
       // this.initValues();
+      this.$store.commit('store/REMOVE_ALL_SELECTED_ITEMS', []);
       this.$store.dispatch('store/fetchPharmacyItems', {
         currentPage: this.$route.query.currentPage || 1,
         itemsPerPage: this.$route.query.itemsPerPage || 10,
@@ -172,7 +178,10 @@ export default {
       this.$store
         .dispatch('store/dispensePharmacyItems', itemsToDispense)
         .then(() => this.endRequest(submitButton))
-        .catch(() => this.removeSpinner(submitButton));
+        .catch(err => {
+          this.removeSpinner(submitButton);
+          this.error = err?.message;
+        });
     },
 
     checkQuantity(index, event) {

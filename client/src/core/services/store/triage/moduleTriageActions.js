@@ -46,4 +46,26 @@ export default {
         });
     });
   },
+
+  fetchTriages({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/triage/get`, {
+          params: {
+            currentPage: payload.currentPage,
+            pageLimit: payload.itemsPerPage,
+            filter: payload.filter,
+          },
+        })
+        .then(response => {
+          commit('SET_TRIAGES', response.data.data.docs);
+          commit('SET_TRIAGES_TOTAL', response.data.data.total);
+          commit('SET_TRIAGES_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
 };

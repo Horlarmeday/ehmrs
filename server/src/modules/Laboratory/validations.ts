@@ -11,6 +11,7 @@ export function validateTest(test) {
   const schema = Joi.object({
     name: Joi.string().required(),
     price: Joi.number().required(),
+    result_form: Joi.string().required(),
     nhis_price: Joi.number()
       .optional()
       .allow(''),
@@ -23,9 +24,6 @@ export function validateTest(test) {
     sample_id: Joi.number().required(),
     result_unit: Joi.string().required(),
     valid_range: Joi.string().required(),
-    type: Joi.string()
-      .valid('Primary', 'Secondary')
-      .required(),
   });
   return schema.validate(test);
 }
@@ -80,9 +78,7 @@ export function validateAddTestResult(result) {
           status: Joi.string()
             .optional()
             .allow(''),
-          result: Joi.string()
-            .optional()
-            .allow(''),
+          result: Joi.object().required(),
           valid_range: Joi.string()
             .optional()
             .allow(''),
@@ -115,8 +111,10 @@ export function validateTestResults(result) {
           status: Joi.string()
             .valid('Accepted', 'Rejected', 'Pending')
             .required(),
-          result: Joi.string().required(),
-          is_abnormal: Joi.boolean().required(),
+          result: Joi.object().required(),
+          is_abnormal: Joi.boolean()
+            .optional()
+            .allow(''),
           comments: Joi.string()
             .optional()
             .allow(''),
@@ -144,8 +142,10 @@ export function validateApproveTestResults(result) {
           status: Joi.string()
             .valid('Accepted', 'Rejected', 'Pending')
             .required(),
-          result: Joi.string().required(),
-          is_abnormal: Joi.boolean().required(),
+          result: Joi.object().required(),
+          is_abnormal: Joi.boolean()
+            .optional()
+            .allow(''),
           comments: Joi.string()
             .optional()
             .allow(''),
@@ -155,4 +155,13 @@ export function validateApproveTestResults(result) {
   });
 
   return schema.validate(result);
+}
+
+export function validateChangeTestResultStatus(req) {
+  const schema = Joi.object({
+    selectedTests: Joi.array()
+      .items(Joi.number())
+      .required(),
+  });
+  return schema.validate(req);
 }

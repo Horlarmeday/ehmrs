@@ -71,7 +71,7 @@ export const getPrescriptionServices = async (
     where: { ...query },
     include: [
       { model: Service, attributes: ['name', 'type'] },
-      { model: Staff, attributes: staffAttributes },
+      { model: Staff, as: 'examiner', attributes: staffAttributes },
     ],
   });
 };
@@ -100,6 +100,11 @@ export const getPrescribedServices = ({ currentPage = 1, pageLimit = 10, filter 
         as: 'examiner',
         attributes: staffAttributes,
       },
+      {
+        model: Staff,
+        as: 'nhis_service_processor',
+        attributes: staffAttributes,
+      },
     ],
   });
 };
@@ -116,7 +121,8 @@ export const getOnePrescribedService = async (
     where: { ...query },
     include: [
       { model: Service, attributes: ['name', 'type'] },
-      { model: Staff, attributes: staffAttributes },
+      { model: Staff, as: 'examiner', attributes: staffAttributes },
+      { model: Staff, as: 'nhis_service_processor', attributes: staffAttributes },
     ],
   });
 };

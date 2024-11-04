@@ -4,8 +4,8 @@
       <thead class="thead-light">
         <tr class="text-uppercase">
           <th scope="col">Complaint Note</th>
-          <th scope="col">History Note</th>
-          <th scope="col">Examination</th>
+          <th scope="col">Treatment Plan</th>
+          <th scope="col">Physical Examination</th>
           <th scope="col">Added By</th>
           <th scope="col">Date Added</th>
           <th scope="col"></th>
@@ -22,26 +22,21 @@
           <td>{{ history?.staff?.fullname || '-' }}</td>
           <td>{{ history.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
           <td>
-            <a :id="popOverId" @click="viewPopover(history)" href="#"
+            <a @click="viewModal(history)" href="#"
               ><i class="icon-xl text-primary la la-eye"></i
             ></a>
           </td>
         </tr>
       </tbody>
     </table>
-    <history-popover
-      :target="popOverId"
-      :show="showPopover"
-      @closePopover="hidePopover"
-      :history="history"
-    />
+    <history-modal :display-prompt="displayPrompt" @closeModal="hideModal" :history="history" />
   </div>
 </template>
 <script>
-import HistoryPopover from '@/view/components/popover/HistoryPopover.vue';
+import HistoryModal from '@/view/components/modal/HistoryModal.vue';
 
 export default {
-  components: { HistoryPopover },
+  components: { HistoryModal },
   props: {
     histories: {
       type: Array,
@@ -50,17 +45,16 @@ export default {
     },
   },
   data: () => ({
-    showPopover: false,
-    popOverId: 'popover-reactive-73',
+    displayPrompt: false,
     history: {},
   }),
   methods: {
-    viewPopover(history) {
+    viewModal(history) {
       this.history = history;
-      this.showPopover = true;
+      this.displayPrompt = true;
     },
-    hidePopover() {
-      this.showPopover = false;
+    hideModal() {
+      this.displayPrompt = false;
     },
   },
 };

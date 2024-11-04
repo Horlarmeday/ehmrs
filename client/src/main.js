@@ -26,6 +26,7 @@ import '@/core/plugins/metronic';
 import 'nprogress/nprogress.css';
 import '@mdi/font/css/materialdesignicons.css';
 import 'vue-select/dist/vue-select.css';
+import './assets/font/stylesheet.css';
 
 // VeeValidate
 import VeeValidate from 'vee-validate';

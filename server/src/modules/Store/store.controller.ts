@@ -14,8 +14,8 @@ import { DATA_SAVED } from '../AdminSettings/messages/response-messages';
 import { SUCCESS } from '../../core/constants';
 import { NextFunction, Request, Response } from 'express';
 import { DISPENSE_SUCCESSFUL, REORDER_SUCCESSFUL } from './messages/response-messages';
-import { ExportDataType } from './types/pharmacy-item.types';
-import { exportDataToCSV, exportDataToExcel, exportDataToPDF } from '../../core/helpers/fileExport';
+import { isEmpty } from 'lodash';
+import { EMPTY_BODY } from '../Alert/messages/response.messages';
 
 /**
  *
@@ -59,6 +59,70 @@ class StoreController {
   }
 
   /**
+   * update pharmacy store items
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, item data
+   */
+  static async updatePharmacyItems(req, res, next) {
+    const empty = isEmpty(req.body);
+    if (empty)
+      return errorResponse({
+        res,
+        httpCode: StatusCodes.BAD_REQUEST,
+        message: EMPTY_BODY,
+      });
+
+    try {
+      const items = await StoreService.updatePharmacyStoreItems(req.body.items);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_SAVED,
+        data: items,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * deactivate pharmacy store items
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, item data
+   */
+  static async deactivatePharmacyItems(req, res, next) {
+    const empty = isEmpty(req.body);
+    if (empty)
+      return errorResponse({
+        res,
+        httpCode: StatusCodes.BAD_REQUEST,
+        message: EMPTY_BODY,
+      });
+
+    try {
+      const items = await StoreService.deactivatePharmacyStoreItems(req.body.items);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_SAVED,
+        data: items,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
    * get pharmacy items
    *
    * @static
@@ -70,6 +134,36 @@ class StoreController {
   static async getPharmacyStoreItems(req: Request, res: Response, next: NextFunction) {
     try {
       const items = await StoreService.getPharmacyItems(req.query);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data: items,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get selected pharmacy items
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with items data
+   */
+  static async getSelectedPharmacyStoreItems(req: Request, res: Response, next: NextFunction) {
+    const { itemIds } = req.query;
+    let selectedItems;
+    if (typeof itemIds === 'string') {
+      selectedItems = itemIds.split(',').map(Number);
+    }
+
+    try {
+      const items = await StoreService.getPharmacyStoreItems(selectedItems);
 
       return successResponse({
         res,
@@ -196,6 +290,30 @@ class StoreController {
   }
 
   /**
+   * deactivate pharmacy store items
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, item data
+   */
+  static async resetPharmacyStoreItemsQuantity(req: Request, res: Response, next: NextFunction) {
+    try {
+      const items = await StoreService.resetPharmacyStoreItemsQuantities();
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_SAVED,
+        data: items,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
    * add item to laboratory store
    *
    * @static
@@ -204,7 +322,11 @@ class StoreController {
    * @param {object} next next middleware
    * @returns {json} json object with status, item data
    */
-  static async createLaboratoryItem(req, res, next) {
+  static async createLaboratoryItem(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
     const { error } = validateLaboratoryItem(req.body);
     if (error)
       return errorResponse({
@@ -279,9 +401,9 @@ class StoreController {
         httpCode: StatusCodes.BAD_REQUEST,
         message: error.details[0].message,
       });
-    const { selectedItemsId, dataType } = req.body;
+    const { selectedItemsId, dataType, selectAll } = req.body;
     try {
-      const { headers, mappedData } = await StoreService.exportData(selectedItemsId);
+      const { headers, mappedData } = await StoreService.exportData(selectedItemsId, selectAll);
       return exportSelectedData({ res, dataType, data: mappedData, headers });
     } catch (e) {
       return next(e);

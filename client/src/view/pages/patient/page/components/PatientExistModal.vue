@@ -10,7 +10,7 @@
             >
               <div
                 class="symbol-label"
-                style="background-image:url('/media/users/300_13.jpg')"
+                style="background-image:url('/media/users/blank.png')"
               ></div>
               <i class="symbol-badge bg-success"></i>
             </div>

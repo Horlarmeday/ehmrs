@@ -12,10 +12,18 @@ export function validateOrderAdditionalItems(item: any) {
         price: Joi.number().required(),
         unit_id: Joi.number().required(),
         name: Joi.string(),
+        quantity_remaining: Joi.number()
+          .allow('')
+          .optional(),
         drug_form: Joi.string()
           .valid(DrugForm.DRUG, DrugForm.CONSUMABLE)
           .required(),
-        drug_type: Joi.string().valid(DrugType.CASH, DrugType.NHIS, DrugType.PRIVATE),
+        drug_type: Joi.string().valid(
+          DrugType.CASH,
+          DrugType.NHIS,
+          DrugType.PRIVATE,
+          DrugType.RETAINERSHIP
+        ),
         source: Joi.string().valid('Antenatal', 'Consultation', 'Theater'),
         ante_natal_id: Joi.number()
           .allow('')
@@ -57,7 +65,12 @@ export function validateDrugPrescription(drug: any) {
       .allow(''),
     total_price: Joi.number().required(),
     drug_id: Joi.number().required(),
-    drug_type: Joi.string().valid(DrugType.CASH, DrugType.NHIS, DrugType.PRIVATE),
+    drug_type: Joi.string().valid(
+      DrugType.CASH,
+      DrugType.NHIS,
+      DrugType.PRIVATE,
+      DrugType.RETAINERSHIP
+    ),
     source: Joi.string().valid('Antenatal', 'Consultation', 'Immunization', 'Theater'),
     ante_natal_id: Joi.number()
       .optional()
@@ -78,7 +91,13 @@ export function validateBulkDrugsPrescription(drug: any) {
     .items(
       Joi.object({
         start_date: Joi.string().required(),
-        quantity_prescribed: Joi.number().required(),
+        drug_name: Joi.string()
+          .optional()
+          .allow(''),
+        quantity_prescribed: Joi.number()
+          .min(1)
+          .positive()
+          .required(),
         quantity_to_dispense: Joi.number()
           .min(1)
           .positive()
@@ -100,9 +119,16 @@ export function validateBulkDrugsPrescription(drug: any) {
         drug_group: Joi.string()
           .optional()
           .allow(''),
-        total_price: Joi.number().required(),
+        total_price: Joi.number()
+          .allow('')
+          .optional(),
         drug_id: Joi.number().required(),
-        drug_type: Joi.string().valid(DrugType.CASH, DrugType.NHIS, DrugType.PRIVATE),
+        drug_type: Joi.string().valid(
+          DrugType.CASH,
+          DrugType.NHIS,
+          DrugType.PRIVATE,
+          DrugType.RETAINERSHIP
+        ),
         source: Joi.string().valid('Antenatal', 'Consultation', 'Immunization', 'Theater'),
         ante_natal_id: Joi.number()
           .optional()

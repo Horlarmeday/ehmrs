@@ -14,23 +14,31 @@ export function validateCreateImmunization(req: any) {
       createdAt: Joi.date().required(),
       staff: Joi.any().required(),
     }),
-    other_children: Joi.array()
-      .items(
-        Joi.object({
-          sex: Joi.string().required(),
-          year: Joi.number().required(),
-          state_of_health: Joi.string().required(),
-        })
-      )
-      .optional()
-      .allow(''),
+    other_children: Joi.array().items(
+      Joi.object({
+        sex: Joi.string()
+          .allow('')
+          .optional(),
+        year: Joi.number()
+          .allow('')
+          .optional(),
+        state_of_health: Joi.string()
+          .allow('')
+          .optional(),
+      })
+    ),
     is_wt_less_than_2_5kg: Joi.boolean(),
     is_baby_twin: Joi.boolean(),
     is_baby_bottle_fed: Joi.boolean(),
     does_family_need_support: Joi.boolean(),
     are_siblings_under_weight: Joi.boolean(),
     need_extra_care: Joi.boolean(),
-    reason_for_extra_care: Joi.string(),
+    reason_for_extra_care: Joi.string()
+      .allow('')
+      .optional(),
+    service_id: Joi.alternatives()
+      .try(Joi.number(), Joi.array().items(Joi.number()))
+      .required(),
   });
   return schema.validate(req);
 }

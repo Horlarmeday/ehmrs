@@ -6,6 +6,13 @@
       :display-prompt="displayPrompt"
       :data="service"
     />
+
+    <change-service-group
+      :service="serviceGroupData"
+      :display-prompt="displayServiceGroupPrompt"
+      @closeModal="hideServiceGroupModal"
+    />
+
     <div class="card-body pr-5 pl-5 pt-2">
       <div class="table-responsive">
         <table class="table table-head-custom table-vertical-center">
@@ -14,6 +21,7 @@
               <th class="pr-0" style="width: 300px">Service</th>
               <th style="min-width: 100px">Type</th>
               <th style="min-width: 100px">Status</th>
+              <th style="min-width: 50px">Price(₦)</th>
               <th style="min-width: 50px">Code</th>
               <th style="min-width: 100px">Requester</th>
               <th style="min-width: 150px">Date Requested</th>
@@ -32,10 +40,15 @@
                   to="#"
                   >{{ service.service.name }}</router-link
                 >
+                <span
+                  :class="getItemType(service?.service_type)"
+                  class="label label-sm label-inline ml-2"
+                  >{{ service.service_type }}</span
+                >
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ service.service.type }}
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
+                  {{ service.service_group || '-' }}
                 </span>
               </td>
               <td>
@@ -46,48 +59,71 @@
                 >
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
+                  {{ service.price }}
+                </span>
+              </td>
+              <td>
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
                   {{ service.auth_code || '-' }}
                 </span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">{{
                   service?.examiner?.fullname
                 }}</span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ service.date_requested | dayjs('ddd, MMM Do YYYY, h:mma') }}
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
+                  {{ service.date_requested | dayjs('MMM Do YYYY, h:mma') }}
                 </span>
               </td>
               <td class="pr-0 text-right">
-                <a
-                  title="Add Authorization Code"
-                  v-b-tooltip.hover
-                  href="#"
-                  class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
-                  @click="addAuthCode(service)"
-                >
-                  <edit-icon />
-                </a>
-                <a
-                  title="Approve"
-                  v-b-tooltip.hover
-                  href="#"
-                  class="btn btn-icon btn-light btn-hover-success btn-sm mr-2"
-                  @click="showDischargeAlert('Approved', service.id)"
-                >
-                  <approve-icon />
-                </a>
-                <a
-                  title="Decline"
-                  v-b-tooltip.hover
-                  href="#"
-                  class="btn btn-icon btn-light btn-hover-danger btn-sm"
-                  @click="showDischargeAlert('Declined', service.id)"
-                >
-                  <cancel-icon />
-                </a>
+                <div v-if="!isServiceProcessed(service)">
+                  <button
+                    :disabled="service.nhis_status === APPROVED || service.nhis_status === DECLINED"
+                    title="Change service Type"
+                    v-b-tooltip.hover
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
+                    @click="openServiceGroupModal(service)"
+                  >
+                    <open-icon />
+                  </button>
+                  <button
+                    :disabled="disableAddAuthCode(service)"
+                    title="Add Authorization Code"
+                    v-b-tooltip.hover
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
+                    @click="addAuthCode(service)"
+                  >
+                    <edit-icon />
+                  </button>
+                  <button
+                    :disabled="disableStatusChange(service)"
+                    title="Approve"
+                    v-b-tooltip.hover
+                    href="#"
+                    class="btn btn-icon btn-light btn-hover-success btn-sm mr-2"
+                    @click="showStatusChangeAlert('Approved', service)"
+                  >
+                    <approve-icon />
+                  </button>
+                  <button
+                    :disabled="disableStatusChange(service)"
+                    title="Decline"
+                    v-b-tooltip.hover
+                    class="btn btn-icon btn-light btn-hover-danger btn-sm"
+                    @click="showStatusChangeAlert('Declined', service)"
+                  >
+                    <cancel-icon />
+                  </button>
+                </div>
+                <div v-else>
+                  <span class="text-dark-50 mr-2">Processed By: </span>
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-md">{{
+                    service?.nhis_service_processor?.fullname || '-'
+                  }}</span>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -110,9 +146,20 @@ import CancelIcon from '@/assets/icons/CancelIcon.vue';
 import Pagination from '@/utils/Pagination.vue';
 import AuthCodeModal from '@/view/pages/nhis/components/AuthCodeModal.vue';
 import Swal from 'sweetalert2';
+import { getItemType, parseJwt } from '@/common/common';
+import OpenIcon from '@/assets/icons/OpenIcon.vue';
+import ChangeServiceGroup from '@/view/pages/nhis/components/ChangeServiceGroup.vue';
 
 export default {
-  components: { AuthCodeModal, Pagination, CancelIcon, ApproveIcon, EditIcon },
+  components: {
+    ChangeServiceGroup,
+    OpenIcon,
+    AuthCodeModal,
+    Pagination,
+    CancelIcon,
+    ApproveIcon,
+    EditIcon,
+  },
   data: () => ({
     PENDING: 'Pending',
     PRIMARY: 'Primary',
@@ -122,9 +169,14 @@ export default {
     CLEARED: 'Cleared',
     APPROVED: 'Approved',
     SECONDARY: 'Secondary',
+    DECLINED: 'Declined',
+    NHIS: 'NHIS',
     service: {},
     displayPrompt: false,
     dispatchType: 'order/updatePrescribedService',
+    serviceGroupData: {},
+    displayServiceGroupPrompt: false,
+    currentUser: parseJwt(localStorage.getItem('user_token')),
   }),
   computed: {
     services() {
@@ -139,8 +191,12 @@ export default {
     perPage() {
       return this.services.length;
     },
+    visit() {
+      return this.$store.state.visit.visit;
+    },
   },
   methods: {
+    getItemType,
     addAuthCode(service) {
       this.service = {
         id: service.id,
@@ -151,6 +207,18 @@ export default {
 
     hideModal() {
       this.displayPrompt = false;
+    },
+
+    openServiceGroupModal(service) {
+      this.serviceGroupData = {
+        id: service.id,
+        name: service?.service?.name,
+      };
+      this.displayServiceGroupPrompt = true;
+    },
+
+    hideServiceGroupModal() {
+      this.displayServiceGroupPrompt = false;
     },
 
     fetchPrescribedServices() {
@@ -166,6 +234,13 @@ export default {
       this.fetchPrescribedServices();
     },
 
+    handlePageCount(count) {
+      this.fetchPrescribedServices({
+        currentPage: this.currentPage,
+        itemsPerPage: count,
+      });
+    },
+
     getPaymentStatus(status) {
       if (status === 'Paid') return 'label-light-success ';
       if (status === 'Pending') return 'label-light-warning ';
@@ -174,7 +249,7 @@ export default {
       return 'label-light-dark ';
     },
 
-    showDischargeAlert(nhis_status, serviceId) {
+    showStatusChangeAlert(nhis_status, service) {
       const self = this;
       Swal.fire({
         title: 'Are you sure?',
@@ -188,7 +263,7 @@ export default {
         reverseButtons: true,
       }).then(function(result) {
         if (result.value) {
-          self.changeServiceNhisStatus({ nhis_status, serviceId });
+          self.changeServiceNhisStatus({ nhis_status, service });
         }
       });
     },
@@ -203,13 +278,32 @@ export default {
       });
     },
 
-    changeServiceNhisStatus({ nhis_status, serviceId }) {
+    processServiceValidations(nhis_status, service) {
+      return (
+        nhis_status === this.APPROVED &&
+        service?.service_group === this.SECONDARY &&
+        service.service_type === this.NHIS &&
+        !service.auth_code
+      );
+    },
+
+    changeServiceNhisStatus({ nhis_status, service }) {
+      if (this.processServiceValidations(nhis_status, service)) {
+        return this.$notify({
+          group: 'foo',
+          title: 'Error message',
+          text: 'Secondary services cannot be processed without authorization code!',
+          type: 'error',
+        });
+      }
       this.$store
         .dispatch('order/updatePrescribedService', {
           data: {
             nhis_status,
-            id: serviceId,
+            id: service.id,
             payment_status: nhis_status === this.APPROVED ? this.CLEARED : this.PENDING,
+            nhis_service_processed_by: this.currentUser.sub,
+            date_nhis_service_processed: new Date(),
           },
         })
         .then(() => this.handleSuccess(nhis_status));
@@ -219,6 +313,28 @@ export default {
       if (status === 'Approved') return 'text-success';
       if (status === 'Declined') return 'text-danger';
       return 'text-dark-75';
+    },
+
+    disableStatusChange(service) {
+      if (
+        service.service_group === this.SECONDARY &&
+        !service.auth_code &&
+        service.service_type === this.NHIS
+      ) {
+        return true;
+      }
+      if (service.nhis_status === this.APPROVED || service.nhis_status === this.DECLINED)
+        return true;
+    },
+
+    disableAddAuthCode(service) {
+      if (service.service_group === this.PRIMARY) return true;
+      if (service.nhis_status === this.APPROVED || service.nhis_status === this.DECLINED)
+        return true;
+    },
+
+    isServiceProcessed(service) {
+      return service.nhis_status === this.APPROVED || service.nhis_status === this.DECLINED;
     },
   },
   created() {

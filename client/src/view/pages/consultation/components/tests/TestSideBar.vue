@@ -5,7 +5,8 @@
 </template>
 
 <script>
-import SelectedTests from './SelectedTests.vue';
+import SelectedTests from './SelectedTests';
+import { getTestTypeToFetch } from '@/common/common';
 export default {
   name: 'TestSideBar',
   components: { SelectedTests },
@@ -14,6 +15,12 @@ export default {
       tabIndex: 0,
       sBackgroundColor: '#3699ff29',
     };
+  },
+  props: {
+    insuranceName: {
+      type: String,
+      required: false,
+    },
   },
   created() {
     this.fetchTests('laboratory/fetchTests');
@@ -25,9 +32,11 @@ export default {
   },
   methods: {
     fetchTests(type) {
+      const testType = getTestTypeToFetch(this.insuranceName);
       this.$store.dispatch(type, {
         currentPage: 1,
         itemsPerPage: 100,
+        ...(testType && { filter: testType }),
       });
     },
   },

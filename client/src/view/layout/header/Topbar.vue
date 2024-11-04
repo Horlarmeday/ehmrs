@@ -14,7 +14,7 @@
       <template v-slot:button-content>
         <div class="btn btn-icon btn-hover-transparent-white btn-lg btn-dropdown mr-1">
           <span class="svg-icon svg-icon-xl">
-            <inline-svg src="/media/svg/icons/General/Search.svg" />
+            <search-icon />
           </span>
         </div>
       </template>
@@ -94,6 +94,7 @@ import KTDropdownNotification from '@/view/layout/extras/dropdown/DropdownNotifi
 import KTQuickUser from '@/view/layout/extras/offcanvas/QuickUser.vue';
 // import KTQuickPanel from '@/view/layout/extras/offcanvas/QuickPanel.vue';
 import i18nService from '@/core/services/i18n.service.js';
+import SearchIcon from '@/assets/icons/SearchIcon.vue';
 
 export default {
   name: 'KTTopbar',
@@ -104,6 +105,7 @@ export default {
     };
   },
   components: {
+    SearchIcon,
     KTSearchDefault,
     KTDropdownNotification,
     KTQuickUser,

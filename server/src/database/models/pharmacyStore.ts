@@ -2,6 +2,7 @@ import {
   BelongsTo,
   Column,
   DataType,
+  DefaultScope,
   ForeignKey,
   Model,
   PrimaryKey,
@@ -28,7 +29,11 @@ export enum DrugType {
   PRIVATE = 'Private',
   RETAINERSHIP = 'Retainership',
 }
-
+@DefaultScope(() => ({
+  where: {
+    status: Status.ACTIVE,
+  },
+}))
 @Table({ timestamps: true, tableName: 'Pharmacy_Store_Items' })
 export class PharmacyStore extends Model {
   @PrimaryKey
@@ -82,7 +87,7 @@ export class PharmacyStore extends Model {
     type: DataType.INTEGER,
     defaultValue: 0,
     validate: {
-      min: 0,
+      min: { args: [0], msg: 'The minimum quantity_remaining cannot be less than zero' },
     },
   })
   quantity_remaining: number;
@@ -200,6 +205,11 @@ export class PharmacyStore extends Model {
     type: DataType.INTEGER,
   })
   old_id: number;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  brand: string;
 
   @BelongsTo(() => Unit)
   unit: Unit;

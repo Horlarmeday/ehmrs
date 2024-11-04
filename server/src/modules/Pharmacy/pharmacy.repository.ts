@@ -4,8 +4,10 @@ import {
   canUsePriceTariff,
   dateIntervalQuery,
   generateRandomNumbers,
+  getPrescriptionsByVisit,
   paginate,
   patientAttributes,
+  staffAttributes,
   StatusCodes,
 } from '../../core/helpers/helper';
 import { getModelById, getPeriodQuery } from '../../core/helpers/general';
@@ -15,6 +17,8 @@ import {
   Drug,
   DrugPrescription,
   DrugTariff,
+  HMO,
+  Insurance,
   InventoryItem,
   InventoryItemHistory,
   Measurement,
@@ -23,6 +27,7 @@ import {
   PrescribedAdditionalItem,
   PrescribedDrug,
   RoutesOfAdministration,
+  Staff,
   Unit,
 } from '../../database/models';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
@@ -363,12 +368,12 @@ export const getDrugPrice = async (
   drug_id: number,
   inventoryItem: InventoryItem
 ) => {
-  if (!canUsePriceTariff(patient)) return inventoryItem.selling_price;
+  if (!canUsePriceTariff(patient)) return inventoryItem?.selling_price;
 
   const insurance = await getPatientInsuranceQuery({ patient_id: patient.id, is_default: true });
-  if (!insurance) return inventoryItem.selling_price;
+  if (!insurance) return inventoryItem?.selling_price;
 
-  return (await drugPriceTariff(insurance, drug_id)) || inventoryItem.selling_price;
+  return (await drugPriceTariff(insurance, drug_id)) || inventoryItem?.selling_price;
 };
 
 /** ***********************
@@ -433,9 +438,15 @@ export const getDrugPrescriptions = async ({
         ],
         [
           sequelize.literal(
-            `(SELECT COUNT(*) FROM Additional_item_prescriptions AS items WHERE items.drug_prescription_id = DrugPrescription.id)`
+            `(SELECT COUNT(items.id) FROM Additional_item_prescriptions AS items WHERE items.drug_prescription_id = DrugPrescription.id)`
           ),
           'items_count',
+        ],
+        [
+          sequelize.literal(
+            `(SELECT COUNT(items.id) FROM Additional_item_prescriptions AS items WHERE items.drug_prescription_id = DrugPrescription.id AND items.dispense_status = '${DispenseStatus.DISPENSED}')`
+          ),
+          'dispensed_items_count',
         ],
       ],
     },
@@ -478,6 +489,16 @@ export const getDrugPrescriptions = async ({
             ],
           }),
         },
+        include: [
+          {
+            model: PatientInsurance,
+            where: { is_default: true },
+            limit: 1,
+            order: [['createdAt', 'DESC']],
+            attributes: ['id', 'insurance_id'],
+            include: [{ model: Insurance, attributes: ['name'] }],
+          },
+        ],
       },
     ],
     group: ['DrugPrescription.id'], // Group the results by DrugPrescription.id to get the count per sample
@@ -506,12 +527,22 @@ export const getOneDrugPrescription = async (drugPrescriptionId: number | string
         attributes: patientAttributes,
       },
       {
+        model: Staff,
+        attributes: staffAttributes,
+        as: 'examiner',
+      },
+      {
         model: PrescribedDrug,
         include: [
           { model: Drug, attributes: ['name'] },
           { model: RoutesOfAdministration, attributes: ['name'] },
           { model: DosageForm, attributes: ['name'] },
           { model: Measurement, attributes: ['name'] },
+          {
+            model: Staff,
+            attributes: staffAttributes,
+            as: 'dispenser',
+          },
         ],
       },
       {
@@ -519,6 +550,11 @@ export const getOneDrugPrescription = async (drugPrescriptionId: number | string
         include: [
           { model: Drug, attributes: ['name'] },
           { model: Unit, attributes: ['name'] },
+          {
+            model: Staff,
+            attributes: staffAttributes,
+            as: 'dispenser',
+          },
         ],
       },
     ],
@@ -553,6 +589,14 @@ const getReturnStatus = (
   return DispenseStatus.RETURNED;
 };
 
+/**
+ * dispense drug from inventory
+ *
+ * @function
+ * @param inventoryItem
+ * @param prescribedDrug
+ * @param data
+ */
 export const dispenseDrug = async (
   inventoryItem: InventoryItem,
   prescribedDrug: PrescribedDrug | PrescribedAdditionalItem,
@@ -585,6 +629,7 @@ export const dispenseDrug = async (
     prescribedDrug.dispense_status = getDispenseStatus(+quantity_to_dispense, prescribedDrug);
     prescribedDrug.quantity_dispensed += +quantity_to_dispense;
     prescribedDrug.dispensed_by = data.staff_id;
+    prescribedDrug.date_dispensed = new Date();
     const drug = await prescribedDrug.save({ transaction: t });
 
     const [prescriptions, additionalItems] = await Promise.all([
@@ -611,6 +656,14 @@ export const dispenseDrug = async (
   });
 };
 
+/**
+ * return drug back to inventory
+ *
+ * @function
+ * @param inventoryItem
+ * @param prescribedDrug
+ * @param data
+ */
 export const returnDrugToInventory = async (
   inventoryItem: InventoryItem,
   prescribedDrug: PrescribedDrug | PrescribedAdditionalItem,
@@ -645,6 +698,7 @@ export const returnDrugToInventory = async (
     prescribedDrug.quantity_returned += +quantity_to_return;
     prescribedDrug.returned_by = data.staff_id;
     prescribedDrug.reason_for_return = data.reason_for_return;
+    prescribedDrug.date_returned = new Date();
     await prescribedDrug.save({ transaction: t });
 
     await DrugPrescription.update(
@@ -658,18 +712,78 @@ export const returnDrugToInventory = async (
   });
 };
 
-export const getPrescriptionsAndHistory = async (visit_id: number, category: VisitCategory) => {
-  const [tests, drugs, observations, triages, diagnoses, items] = await Promise.all([
-    getPrescriptionTests({ visit_id }),
-    getDrugsPrescribed({ visit_id }),
-    (category === VisitCategory.ANC ? getAntenatalObservations : getConsultationSummary)({
-      visit_id,
-    }),
-    (category === VisitCategory.ANC ? getAncTriages : getTriages)({ visit_id }),
-    getPatientDiagnoses({ visit_id }),
-    getAdditionalItems({ visit_id }),
+/**
+ * get visit observations
+ *
+ * @function
+ * @param visitIds
+ * @param categories
+ */
+export const getVisitObservations = async (visitIds: number[], categories: VisitCategory[]) => {
+  const ancVisitIds = visitIds.filter((_, index) => categories[index] === VisitCategory.ANC);
+  const nonAncVisitIds = visitIds.filter((_, index) => categories[index] !== VisitCategory.ANC);
+
+  const [ancObservations, consultationSummaries] = await Promise.all([
+    ancVisitIds.length > 0 ? getAntenatalObservations({ visit_id: ancVisitIds }) : [],
+    nonAncVisitIds.length > 0 ? getConsultationSummary({ visit_id: nonAncVisitIds }) : [],
   ]);
-  return { tests, drugs, observations, triages, diagnoses, items };
+
+  return [...ancObservations, ...consultationSummaries];
+};
+
+/**
+ * get visit triages
+ *
+ * @function
+ * @param visitIds
+ * @param categories
+ */
+export const getVisitTriages = async (visitIds: number[], categories: VisitCategory[]) => {
+  const ancVisitIds = visitIds.filter((_, index) => categories[index] === VisitCategory.ANC);
+  const nonAncVisitIds = visitIds.filter((_, index) => categories[index] !== VisitCategory.ANC);
+
+  const [ancTriages, regularTriages] = await Promise.all([
+    ancVisitIds.length > 0 ? getAncTriages({ visit_id: ancVisitIds }) : [],
+    nonAncVisitIds.length > 0 ? getTriages({ visit_id: nonAncVisitIds }) : [],
+  ]);
+
+  return [...ancTriages, ...regularTriages];
+};
+
+/**
+ * get prescription triages
+ *
+ * @function
+ * @param visitIds
+ * @param categories
+ */
+export const getVisitsPrescriptions = async (visitIds: number[], categories: VisitCategory[]) => {
+  const [tests, drugs, observations, triages, diagnoses, items] = await Promise.all([
+    getPrescriptionTests({ visit_id: visitIds }),
+    getDrugsPrescribed({ visit_id: visitIds }),
+    getVisitObservations(visitIds, categories),
+    getVisitTriages(visitIds, categories),
+    getPatientDiagnoses({ visit_id: visitIds }),
+    getAdditionalItems({ visit_id: visitIds }),
+  ]);
+
+  const data = {
+    tests: getPrescriptionsByVisit(tests.map(prescription => prescription.toJSON())),
+    drugs: getPrescriptionsByVisit(drugs.map(prescription => prescription.toJSON())),
+    observations: getPrescriptionsByVisit(observations.map(prescription => prescription.toJSON())),
+    triages: getPrescriptionsByVisit(triages.map(prescription => prescription.toJSON())),
+    diagnoses: getPrescriptionsByVisit(diagnoses.map(prescription => prescription.toJSON())),
+    items: getPrescriptionsByVisit(items.map(prescription => prescription.toJSON())),
+  };
+
+  return visitIds.map(id => ({
+    tests: data.tests[id] || [],
+    drugs: data.drugs[id] || [],
+    observations: data.observations[id] || [],
+    triages: data.triages[id] || [],
+    diagnoses: data.diagnoses[id] || [],
+    items: data.items[id] || [],
+  }));
 };
 
 /**
@@ -697,18 +811,16 @@ export const getDrugPrescriptionsHistory = async (
     },
     ['id', 'date_visit_start', 'date_visit_ended', 'patient_id', 'category', 'status']
   );
-  const summary = await Promise.all(
-    visits.map(
-      async ({ id, date_visit_start, date_visit_ended, patient_id, category, status }) => ({
-        id,
-        date_visit_start,
-        date_visit_ended,
-        patient_id,
-        category,
-        status,
-        ...(await getPrescriptionsAndHistory(id, category)),
-      })
-    )
-  );
+
+  const visitJSON = visits.map(visit => visit.toJSON());
+  const visitIds = visitJSON.map(visit => visit.id);
+  const categories = visitJSON.map(visit => visit.category);
+  const prescriptions = await getVisitsPrescriptions(visitIds, categories);
+
+  const summary = visitJSON.map((visit, index) => ({
+    ...visit,
+    ...prescriptions[index],
+  }));
+
   return paginate({ rows: summary, count }, currentPage, limit);
 };

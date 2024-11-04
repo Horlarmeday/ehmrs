@@ -24,12 +24,19 @@
 import SectionTitle from '../../../utils/SectionTitle.vue';
 import PatientSection from '../../../utils/PatientSection.vue';
 import Banner from './results/Banner';
-import ResultSection from './results/ResultSection';
+import ResultSection from './temp/ResultSection';
 import PageTitle from '../../../utils/PageTitle.vue';
 import TestSkeleton from '@/view/pages/laboratory/components/skeleton/TestSkeleton.vue';
 export default {
   name: 'AddTestResult',
-  components: { TestSkeleton, PageTitle, ResultSection, Banner, PatientSection, SectionTitle },
+  components: {
+    TestSkeleton,
+    PageTitle,
+    ResultSection,
+    Banner,
+    PatientSection,
+    SectionTitle,
+  },
 
   created() {
     this.$store.dispatch('laboratory/fetchOneCollectedSample', { id: this.$route.params.id });

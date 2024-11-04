@@ -1,12 +1,6 @@
 <template>
   <!--begin::Advance Table Widget 1-->
   <div class="card card-custom gutter-b">
-    <update-pharmacy-item
-      :displayPrompt="displayPrompt"
-      @closeModal="hideModal"
-      :data="itemToEdit"
-    />
-
     <dispense-modal
       :displayPrompt="displayDispenseModal"
       @closeModal="hideDispenseModal"
@@ -24,23 +18,35 @@
       action="store/exportData"
       :display-prompt="displayExportModal"
       @closeModal="hideExportModal"
+      :select-all="selectAll"
     />
     <!--begin::Header-->
-    <div class="card-header border-0 py-5">
+    <div class="card-header py-5">
       <h3 class="card-title align-items-start flex-column">
         <span class="card-label font-weight-bolder text-dark">Store Items</span>
       </h3>
-      <div class="card-toolbar">
+      <div
+        class="card-toolbar"
+        v-if="
+          allowedSubRoles.includes(currentUser.sub_role) || allowedRoles.includes(currentUser.role)
+        "
+      >
         <b-dropdown
           href="/store/pharmacy/add-item"
           split
           split-to="/store/pharmacy/add-item"
-          class="float-right"
+          class="float-right btn-shadow font-weight-bold"
           variant="primary"
         >
           <template #button-content> <add-icon /> Add Item </template>
           <b-dropdown-item to="/store/pharmacy/add-bulk-item">Add Bulk Items</b-dropdown-item>
         </b-dropdown>
+        <button
+          @click="showResetStoreQuantityAlert"
+          class="btn btn-danger ml-2 btn-shadow font-weight-bold"
+        >
+          Reset Store Quantity
+        </button>
       </div>
     </div>
     <!--end::Header-->
@@ -48,15 +54,20 @@
       place-holder="Search Items"
       @search="onHandleSearch"
       @sort="onHandleSort"
-      @filter="onFilter"
+      @filterByDrugForm="onFilterByDrugForm"
+      @filterByDrugType="onFilterByDrugType"
+      @filterByDosageForm="onFilterByDrugDosageForm"
     />
 
     <!--begin::Body-->
-    <div class="card-body py-0">
+    <div class="card-body ">
       <button-group
         @openDispenseModal="openDispenseModal"
         @openReorderModal="openReorderModal"
         @openExportModal="openExportModal"
+        @gotoUpdateItem="gotoUpdateItem"
+        @selectAllItems="selectAllItems"
+        @deactivateItems="showDeactivateAlert"
         v-if="selectedItems.length"
         :count="selectedItems.length"
       />
@@ -71,11 +82,13 @@
                   <span></span>
                 </label>
               </th>
-              <th class="pr-0" style="width: 300px">Name</th>
+              <th class="pr-0" style="width: 350px">Name</th>
               <th style="min-width: 150px">Quantity Remaining</th>
               <th style="min-width: 100px">Dosage Form</th>
-              <th style="min-width: 100px">Unit Price (₦)</th>
-              <th style="min-width: 50px">Strength/Volume</th>
+              <th style="min-width: 50px">Strength</th>
+              <th style="min-width: 70px">Cost Price (₦)</th>
+              <th style="min-width: 100px">Selling Price (₦)</th>
+              <th style="min-width: 100px">Expiration</th>
               <th style="min-width: 150px">Date Created</th>
             </tr>
           </thead>
@@ -96,9 +109,9 @@
                   :to="`/store/pharmacy/items/${item.id}`"
                   >{{ item.drug.name }}</router-link
                 >
-                <span v-if="item.drug_type === 'NHIS'" class="label label-inline label-success ml-2"
-                  >NHIS</span
-                >
+                <span :class="getItemType(item.drug_type)" class="label label-inline ml-2">{{
+                  item.drug_type
+                }}</span>
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
@@ -115,11 +128,6 @@
                 <span v-else class="text-dark-75 font-weight-bolder d-block font-size-lg">Nil</span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ item.unit_price || 'None' }}
-                </span>
-              </td>
-              <td>
                 <span
                   v-if="item.measurement_id"
                   class="text-dark-75 font-weight-bolder d-block font-size-lg"
@@ -130,7 +138,22 @@
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ item.createdAt | dayjs('ddd, MMM Do YYYY, h:mma') }}
+                  {{ item.unit_price || 'None' }}
+                </span>
+              </td>
+              <td>
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ item.selling_price || 'None' }}
+                </span>
+              </td>
+              <td>
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ item.expiration | dayjs('DD/MM/YYYY') }}
+                </span>
+              </td>
+              <td>
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ item.createdAt | dayjs('DD/MM/YYYY, h:mma') }}
                 </span>
               </td>
             </tr>
@@ -153,21 +176,29 @@
 </template>
 
 <script>
-import UpdatePharmacyItem from './update/UpdateStoreItem.vue';
 import Pagination from '@/utils/Pagination.vue';
 import AddIcon from '@/assets/icons/AddIcon.vue';
 import SearchAndFilter from '@/utils/SearchAndFilter';
-import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
+import {
+  debounce,
+  removeSpinner,
+  setUrlQueryParams,
+  getItemType,
+  isEmpty,
+  parseJwt,
+} from '@/common/common';
 import ButtonGroup from '@/utils/ButtonGroup';
 import DispenseModal from '@/view/pages/store/pharmacy/components/DispenseModal.vue';
 import ReorderItemModal from '@/view/pages/store/pharmacy/components/ReorderItemModal.vue';
 import ExportModal from '@/utils/ExportModal.vue';
+import Swal from 'sweetalert2';
 export default {
   data() {
     return {
       displayPrompt: false,
       displayDispenseModal: false,
       itemToEdit: {},
+      filter: { drug_type: '', drug_form: '' },
       currentPage: 1,
       itemsPerPage: 10,
       selected: [],
@@ -177,6 +208,10 @@ export default {
       itemsToExport: {},
       displayReorderModal: false,
       displayExportModal: false,
+      selectAll: false,
+      currentUser: parseJwt(localStorage.getItem('user_token')),
+      allowedSubRoles: ['HOD'],
+      allowedRoles: ['Super Admin'],
     };
   },
   components: {
@@ -185,7 +220,6 @@ export default {
     DispenseModal,
     ButtonGroup,
     SearchAndFilter,
-    UpdatePharmacyItem,
     Pagination,
     AddIcon,
   },
@@ -223,6 +257,7 @@ export default {
     },
   },
   methods: {
+    getItemType,
     hideModal() {
       this.displayPrompt = false;
     },
@@ -263,6 +298,33 @@ export default {
       this.displayExportModal = value;
     },
 
+    showDeactivateAlert() {
+      const self = this;
+      Swal.fire({
+        title: 'Are you sure?',
+        text: `You want deactivate these ${this.selectedItems?.length} items, this action cannot reverted!`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: `Yes Deactivate`,
+        cancelButtonText: 'No, cancel!',
+        reverseButtons: true,
+        preConfirm: () => {
+          self.deactivateItems();
+        },
+      });
+    },
+
+    deactivateItems() {
+      const selectedItemsId = this.selectedItems.map(({ id }) => id);
+      this.$store.dispatch('store/deactivatePharmacyItems', selectedItemsId).then(() => {
+        this.$store.commit('store/REMOVE_ALL_SELECTED_ITEMS', []);
+        this.fetchPharmacyItems({
+          currentPage: this.$route.query.currentPage || this.currentPage,
+          itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        });
+      });
+    },
+
     hideReorderModal() {
       this.displayReorderModal = false;
     },
@@ -276,11 +338,11 @@ export default {
       this.displayPrompt = true;
     },
 
-    queryParams({ search = null, sort = null, filter = null, pagecount = null }) {
+    queryParams({ search = null, sort = null, filter = null, itemsPerPage = null }) {
       setUrlQueryParams({
-        pathName: 'pharmacy-items',
+        // pathName: 'pharmacy-items',
         currentPage: this.currentPage,
-        itemsPerPage: pagecount || this.itemsPerPage,
+        itemsPerPage: itemsPerPage || this.itemsPerPage,
         ...(search && { search }),
         ...(sort && { sort }),
         ...(filter && { filter }),
@@ -298,8 +360,19 @@ export default {
     },
 
     handlePageChange() {
-      this.queryParams({});
-      this.fetchPharmacyItems({ currentPage: this.currentPage });
+      this.queryParams({
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || null,
+        filter: this.$route.query.filter || null,
+        sort: this.$route.query.sort || null,
+      });
+      this.fetchPharmacyItems({
+        currentPage: this.$route.query.currentPage || this.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || null,
+        filter: this.$route.query.filter || null,
+        sort: this.$route.query.sort || null,
+      });
     },
 
     onPageChange(page) {
@@ -309,7 +382,12 @@ export default {
 
     onHandleSearch(prop) {
       const { search, spinDiv } = prop;
-      this.queryParams({ search });
+      this.queryParams({
+        search,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        filter: this.$route.query.filter || null,
+        sort: this.$route.query.sort || null,
+      });
       this.debounceSearch(search, this, spinDiv);
     },
 
@@ -320,26 +398,83 @@ export default {
     }, 500),
 
     onChangePageCount(pagecount) {
-      this.queryParams({ pagecount });
+      this.queryParams({
+        currentPage: this.currentPage,
+        itemsPerPage: pagecount,
+        search: this.$route.query.search || null,
+        filter: this.$route.query.filter || null,
+        sort: this.$route.query.sort || null,
+      });
       this.$store.dispatch('store/fetchPharmacyItems', {
         currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: pagecount,
+        search: this.$route.query.search || null,
+        filter: this.$route.query.filter || null,
+        sort: this.$route.query.sort || null,
       });
     },
 
     onHandleSort(sort) {
-      this.queryParams({ sort });
-      this.fetchPharmacyItems({
+      this.queryParams({
         sort,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || null,
+        filter: this.$route.query.filter || null,
+      });
+      this.fetchPharmacyItems({
         currentPage: this.$route.query.currentPage || this.currentPage,
+        search: this.$route.query.search || null,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        filter: this.$route.query.filter || null,
+        sort: this.$route.query.sort || null,
       });
     },
 
-    onFilter(filter) {
-      this.queryParams({ filter });
+    onFilterByDrugForm(filter) {
+      this.queryParams({
+        filter,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || null,
+        sort: this.$route.query.sort || null,
+      });
       this.fetchPharmacyItems({
         filter,
         currentPage: this.$route.query.currentPage || this.currentPage,
+        search: this.$route.query.search || null,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        sort: this.$route.query.sort || null,
+      });
+    },
+
+    onFilterByDrugType(filter) {
+      this.queryParams({
+        filter,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || null,
+        sort: this.$route.query.sort || null,
+      });
+      this.fetchPharmacyItems({
+        filter,
+        currentPage: this.$route.query.currentPage || this.currentPage,
+        search: this.$route.query.search || null,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        sort: this.$route.query.sort || null,
+      });
+    },
+
+    onFilterByDrugDosageForm(filter) {
+      this.queryParams({
+        filter,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || null,
+        sort: this.$route.query.sort || null,
+      });
+      this.fetchPharmacyItems({
+        filter,
+        currentPage: this.$route.query.currentPage || this.currentPage,
+        search: this.$route.query.search || null,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        sort: this.$route.query.sort || null,
       });
     },
 
@@ -374,6 +509,15 @@ export default {
       );
     },
 
+    gotoUpdateItem() {
+      const itemsIds = this.selectedItems.map(item => item.id);
+      this.$router.push(`/store/pharmacy/update-items?itemIds=${itemsIds}`);
+    },
+
+    selectAllItems(value) {
+      this.selectAll = value;
+    },
+
     mapReorderItems() {
       this.itemsToReorder = this.selectedItems.map(
         ({
@@ -403,11 +547,43 @@ export default {
         })
       );
     },
+
+    showResetStoreQuantityAlert() {
+      const self = this;
+      Swal.fire({
+        title: 'Are you sure?',
+        html:
+          'You want to <b>reset</b> the quantities of all items in this store, this action cannot reversed!',
+        icon: 'danger',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Reset!',
+        cancelButtonText: 'No, cancel',
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+          self.resetStoreQuantity();
+        },
+      });
+    },
+
+    resetStoreQuantity() {
+      this.$store.dispatch('store/resetPharmacyItemsQuantity').then(() => {
+        this.fetchPharmacyItems({
+          currentPage: this.$route.query.currentPage || this.currentPage,
+          itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+          filter: !isEmpty(this.filter) ? this.filter : null,
+          search: this.$route.query.search || null,
+        });
+      });
+    },
   },
 
   created() {
     this.fetchPharmacyItems({
       currentPage: this.$route.query.currentPage || this.currentPage,
+      itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+      filter: !isEmpty(this.filter) ? this.filter : null,
+      search: this.$route.query.search || null,
+      sort: this.$route.query.sort || null,
     });
   },
 };

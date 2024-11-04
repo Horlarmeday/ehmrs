@@ -40,6 +40,10 @@
                         >{{ summary.category }}</span
                       >
                     </div>
+                    <div class="">
+                      <span class="font-size-h6-md font-italic mr-4">Created By:</span>
+                      <span class="font-size-h6-md">{{ summary?.staff?.fullname }}</span>
+                    </div>
                   </div>
                 </div>
                 <b-collapse :id="`accordion-${i}`" accordion="my-accordion" role="tabpanel">
@@ -52,7 +56,7 @@
                         />
                         <triage-table v-else :triages="summary.triages" />
                       </b-tab>
-                      <b-tab title="Observations">
+                      <b-tab title="Consultation">
                         <antenatal-observations-table
                           v-if="summary.category === ANTENATAL"
                           :observations="summary.observations"
@@ -79,6 +83,9 @@
                       </b-tab>
                       <b-tab v-if="summary.category === ANTENATAL" title="Clinical Notes">
                         <clinical-notes-table :notes="summary.notes" />
+                      </b-tab>
+                      <b-tab v-if="summary.category === INPATIENT" title="Ward Rounds">
+                        <ward-rounds-table :ward-rounds="summary.wardRounds" />
                       </b-tab>
                     </b-tabs>
                   </div>
@@ -131,6 +138,7 @@ import AntenatalObservationsTable from '@/view/components/table/AntenatalObserva
 import AntenatalTriageTable from '@/view/components/table/AntenatalTriageTable.vue';
 import AdditionalItemsTable from '@/view/components/table/AdditionalItemsTable.vue';
 import ClinicalNotesTable from '@/view/components/table/ClinicalNotesTable.vue';
+import WardRoundsTable from '@/view/components/table/WardRoundsTable.vue';
 
 export default {
   props: {
@@ -163,8 +171,10 @@ export default {
   data: () => ({
     disabled: 'disabled',
     ANTENATAL: 'Antenatal',
+    INPATIENT: 'Inpatient',
   }),
   components: {
+    WardRoundsTable,
     ClinicalNotesTable,
     AdditionalItemsTable,
     AntenatalTriageTable,

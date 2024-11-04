@@ -9,7 +9,12 @@
     <div class="brand-tools" v-if="allowMinimize">
       <button class="brand-toggle btn btn-sm px-0" id="kt_aside_toggle" ref="kt_aside_toggle">
         <span class="svg-icon svg-icon svg-icon-xl">
-          <inline-svg class="svg-icon" src="media/svg/icons/Navigation/Angle-double-left.svg" />
+          <angle-double-left-icon />
+          <!--
+            <inline-svg
+            class="svg-icon"
+            src="media/svg/icons/Navigation/Angle-double-left.svg"
+          />-->
         </span>
       </button>
     </div>
@@ -26,9 +31,11 @@
 <script>
 import { mapGetters } from 'vuex';
 import objectPath from 'object-path';
+import AngleDoubleLeftIcon from '@/assets/icons/AngleDoubleLeftIcon.vue';
 
 export default {
   name: 'KTBrand',
+  components: { AngleDoubleLeftIcon },
   mounted() {},
   methods: {
     siteLogo() {

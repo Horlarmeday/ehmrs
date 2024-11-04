@@ -7,6 +7,12 @@
       :data="investigation"
     />
 
+    <change-investigation-group
+      :investigation="investigationGroupData"
+      :display-prompt="displayInvestigationGroupPrompt"
+      @closeModal="hideInvestigationGroupModal"
+    />
+
     <div class="card-body pr-5 pl-5 pt-2">
       <div class="table-responsive">
         <table class="table table-head-custom table-vertical-center">
@@ -15,12 +21,13 @@
               <th class="pr-0" style="width: 250px">Investigation</th>
               <th style="min-width: 100px">Type</th>
               <th style="min-width: 50px">Imaging</th>
-              <th style="min-width: 100px">Status</th>
+              <th style="min-width: 50px">Price(₦)</th>
+              <th style="min-width: 50px">Status</th>
               <th style="min-width: 50px">Source</th>
               <th style="min-width: 50px">Code</th>
               <th style="min-width: 100px">Requester</th>
-              <th style="min-width: 150px">Date</th>
-              <th class="pr-0 text-right" style="min-width: 150px">action</th>
+              <th style="min-width: 100px">Date</th>
+              <th class="pr-0 text-right" style="min-width: 170px">action</th>
             </tr>
           </thead>
           <tbody>
@@ -33,20 +40,30 @@
                   ><i class="fas fa-check-circle text-success mr-1"></i
                 ></span>
                 <a
-                  class="font-weight-bolder text-hover-primary mb-1 font-size-lg"
+                  class="font-weight-bolder text-hover-primary mb-1 font-size-md"
                   :class="getTextStatus(investigation.nhis_status)"
                   href="#"
-                  >{{ investigation.investigation.name }}</a
+                  >{{ investigation?.investigation?.name }}</a
+                >
+                <span
+                  :class="getItemType(investigation?.investigation_type)"
+                  class="label label-sm label-inline ml-2"
+                  >{{ investigation.investigation_type }}</span
                 >
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ investigation.investigation.type }}
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
+                  {{ investigation?.investigation_group || '-' }}
                 </span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ investigation.imaging.name }}
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
+                  {{ investigation?.imaging?.name }}
+                </span>
+              </td>
+              <td>
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
+                  {{ investigation.price }}
                 </span>
               </td>
               <td>
@@ -57,53 +74,77 @@
                 >
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
                   {{ investigation.source }}
                 </span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
                   {{ investigation.auth_code || '-' }}
                 </span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">{{
                   investigation?.examiner?.fullname
                 }}</span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ investigation.date_requested | dayjs('ddd, MMM Do YYYY, h:mma') }}
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
+                  {{ investigation.date_requested | dayjs('MMM Do YYYY, h:mma') }}
                 </span>
               </td>
               <td class="pr-0 text-right">
-                <a
-                  title="Add Authorization Code"
-                  v-b-tooltip.hover
-                  href="#"
-                  class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
-                  @click="addAuthCode(investigation)"
-                >
-                  <edit-icon />
-                </a>
-                <a
-                  title="Approve"
-                  v-b-tooltip.hover
-                  href="#"
-                  class="btn btn-icon btn-light btn-hover-success btn-sm mr-2"
-                  @click="showDischargeAlert('Approved', investigation.id)"
-                >
-                  <approve-icon />
-                </a>
-                <a
-                  title="Decline"
-                  v-b-tooltip.hover
-                  href="#"
-                  class="btn btn-icon btn-light btn-hover-danger btn-sm"
-                  @click="showDischargeAlert('Declined', investigation.id)"
-                >
-                  <cancel-icon />
-                </a>
+                <div v-if="!isInvestigationProcessed(investigation)">
+                  <button
+                    :disabled="
+                      investigation.nhis_status === APPROVED ||
+                        investigation.nhis_status === DECLINED
+                    "
+                    title="Change Investigation Type"
+                    v-b-tooltip.hover
+                    href="#"
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
+                    @click="openInvestigationGroupModal(investigation)"
+                  >
+                    <open-icon />
+                  </button>
+                  <button
+                    :disabled="disableAddAuthCode(investigation)"
+                    title="Add Authorization Code"
+                    v-b-tooltip.hover
+                    href="#"
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
+                    @click="addAuthCode(investigation)"
+                  >
+                    <edit-icon />
+                  </button>
+                  <button
+                    :disabled="disableStatusChange(investigation)"
+                    title="Approve"
+                    v-b-tooltip.hover
+                    href="#"
+                    class="btn btn-icon btn-light btn-hover-success btn-sm mr-2"
+                    @click="showStatusChangeAlert('Approved', investigation)"
+                  >
+                    <approve-icon />
+                  </button>
+                  <button
+                    :disabled="disableStatusChange(investigation)"
+                    title="Decline"
+                    v-b-tooltip.hover
+                    href="#"
+                    class="btn btn-icon btn-light btn-hover-danger btn-sm"
+                    @click="showStatusChangeAlert('Declined', investigation)"
+                  >
+                    <cancel-icon />
+                  </button>
+                </div>
+                <div v-else>
+                  <span class="text-dark-50 mr-2">Processed By: </span>
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-md">{{
+                    investigation?.nhis_investigation_processor?.fullname || '-'
+                  }}</span>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -126,9 +167,20 @@ import CancelIcon from '@/assets/icons/CancelIcon.vue';
 import Pagination from '@/utils/Pagination.vue';
 import Swal from 'sweetalert2';
 import AuthCodeModal from '@/view/pages/nhis/components/AuthCodeModal.vue';
+import ChangeInvestigationGroup from '@/view/pages/nhis/components/ChangeInvestigationGroup.vue';
+import { getItemType, parseJwt } from '@/common/common';
+import OpenIcon from '@/assets/icons/OpenIcon.vue';
 
 export default {
-  components: { AuthCodeModal, Pagination, CancelIcon, ApproveIcon, EditIcon },
+  components: {
+    OpenIcon,
+    ChangeInvestigationGroup,
+    AuthCodeModal,
+    Pagination,
+    CancelIcon,
+    ApproveIcon,
+    EditIcon,
+  },
   data: () => ({
     PENDING: 'Pending',
     PRIMARY: 'Primary',
@@ -136,11 +188,16 @@ export default {
     CLEARED: 'Cleared',
     APPROVED: 'Approved',
     SECONDARY: 'Secondary',
+    DECLINED: 'Declined',
+    NHIS: 'NHIS',
     currentPage: 1,
     itemsPerPage: 15,
     investigation: {},
+    investigationGroupData: {},
+    displayInvestigationGroupPrompt: false,
     displayPrompt: false,
     dispatchType: 'order/updatePrescribedInvestigation',
+    currentUser: parseJwt(localStorage.getItem('user_token')),
   }),
   computed: {
     investigations() {
@@ -155,8 +212,12 @@ export default {
     perPage() {
       return this.investigations.length;
     },
+    visit() {
+      return this.$store.state.visit.visit;
+    },
   },
   methods: {
+    getItemType,
     addAuthCode(investigation) {
       this.investigation = {
         id: investigation.id,
@@ -167,6 +228,18 @@ export default {
 
     hideModal() {
       this.displayPrompt = false;
+    },
+
+    openInvestigationGroupModal(investigation) {
+      this.investigationGroupData = {
+        id: investigation.id,
+        name: investigation?.investigation?.name,
+      };
+      this.displayInvestigationGroupPrompt = true;
+    },
+
+    hideInvestigationGroupModal() {
+      this.displayInvestigationGroupPrompt = false;
     },
 
     fetchPrescribedInvestigations() {
@@ -190,7 +263,7 @@ export default {
       return 'label-light-dark ';
     },
 
-    showDischargeAlert(nhis_status, investigationId) {
+    showStatusChangeAlert(nhis_status, investigation) {
       const self = this;
       Swal.fire({
         title: 'Are you sure?',
@@ -204,7 +277,7 @@ export default {
         reverseButtons: true,
       }).then(function(result) {
         if (result.value) {
-          self.changeInvestigationNhisStatus({ nhis_status, investigationId });
+          self.changeInvestigationNhisStatus({ nhis_status, investigation });
         }
       });
     },
@@ -219,13 +292,32 @@ export default {
       });
     },
 
-    changeInvestigationNhisStatus({ nhis_status, investigationId }) {
+    processInvestigationValidations(nhis_status, investigation) {
+      return (
+        nhis_status === this.APPROVED &&
+        investigation?.investigation_group === this.SECONDARY &&
+        investigation.investigation_type === this.NHIS &&
+        !investigation.auth_code
+      );
+    },
+
+    changeInvestigationNhisStatus({ nhis_status, investigation }) {
+      if (this.processInvestigationValidations(nhis_status, investigation)) {
+        return this.$notify({
+          group: 'foo',
+          title: 'Error message',
+          text: 'Secondary Investigation cannot be processed without authorization code!',
+          type: 'error',
+        });
+      }
       this.$store
         .dispatch('order/updatePrescribedInvestigation', {
           data: {
             nhis_status,
-            id: investigationId,
+            id: investigation.id,
             payment_status: nhis_status === this.APPROVED ? this.CLEARED : this.PENDING,
+            nhis_investigation_processed_by: this.currentUser.sub,
+            date_nhis_investigation_processed: new Date(),
           },
         })
         .then(() => this.handleSuccess(nhis_status));
@@ -235,6 +327,36 @@ export default {
       if (status === 'Approved') return 'text-success';
       if (status === 'Declined') return 'text-danger';
       return 'text-dark-75';
+    },
+
+    disableStatusChange(investigation) {
+      if (
+        investigation.investigation_group === this.SECONDARY &&
+        !investigation.auth_code &&
+        investigation.investigation_type === this.NHIS
+      ) {
+        return true;
+      }
+      if (
+        investigation.nhis_status === this.APPROVED ||
+        investigation.nhis_status === this.DECLINED
+      )
+        return true;
+    },
+
+    disableAddAuthCode(investigation) {
+      if (investigation.investigation_group === this.PRIMARY) return true;
+      if (
+        investigation.nhis_status === this.APPROVED ||
+        investigation.nhis_status === this.DECLINED
+      )
+        return true;
+    },
+
+    isInvestigationProcessed(investigation) {
+      return (
+        investigation.nhis_status === this.APPROVED || investigation.nhis_status === this.DECLINED
+      );
     },
   },
   created() {

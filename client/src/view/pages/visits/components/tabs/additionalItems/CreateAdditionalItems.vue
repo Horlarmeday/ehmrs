@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="card-header p-0">
-      <div class="card-title mb-2">
+      <div class="card-title mb-4">
         <span class="card-label font-weight-bolder text-dark"></span>
         <span v-if="showSwitch">
           <switch-box
@@ -55,7 +55,6 @@
               />
               <i
                 class="far fa-trash-alt icon-md text-danger icon-lg mt-lg-3"
-                v-if="i !== 0"
                 @click="removeItem(i)"
               />
             </a>
@@ -188,19 +187,27 @@ export default {
         .dispatch('inventory/fetchInventoryItems', {
           search,
           inventory,
+          filter: { drug_form: 'Consumable' },
         })
         .then(() => loading(false));
     }, 500),
 
     getItemType(insuranceName) {
-      const types = ['FHSS', 'NHIS'];
-      if (types.includes(insuranceName)) return 'NHIS';
-      if (insuranceName === 'PHIS') return 'Private';
-      return 'NHIS';
+      const isSwitchOn = this.switchSpot && this.switchPosition;
+      if (isSwitchOn) return 'NHIS';
+      const insuranceMapping = {
+        FHSS: 'NHIS',
+        NHIS: 'NHIS',
+        PHIS: 'Private',
+        Retainership: 'Cash',
+      };
+      const selectedInsurance = insuranceMapping[insuranceName];
+      if (selectedInsurance === 'NHIS' && !isSwitchOn) return 'Cash';
+      return insuranceMapping[insuranceName] || 'Cash';
     },
 
     getInventoryId() {
-      const type = this.switchPosition && this.switchSpot ? this.getItemType(this.insuranceName) : 'Cash';
+      const type = this.getItemType(this.insuranceName);
       return this.inventories.find(inventory =>
         inventory.name.toLowerCase().includes(type.toLowerCase())
       )?.id;

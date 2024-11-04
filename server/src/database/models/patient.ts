@@ -1,4 +1,7 @@
 import {
+  AfterUpdate,
+  BeforeCreate,
+  BeforeUpdate,
   BelongsTo,
   Column,
   DataType,
@@ -22,6 +25,7 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { PatientInsurance } from './patientInsurance';
+import { Visit } from './visit';
 
 export enum PatientStatus {
   INPATIENT = 'Inpatient',
@@ -241,6 +245,12 @@ export class Patient extends Model {
   })
   complete_name?: string;
 
+  @Column({
+    type: DataType.INTEGER,
+    defaultValue: 0,
+  })
+  admitted_days_in_year?: number;
+
   @Column(DataType.VIRTUAL)
   get fullname(): unknown {
     return `${this.getDataValue('firstname')} ${this.getDataValue('middlename') ||
@@ -255,6 +265,30 @@ export class Patient extends Model {
 
   @HasMany(() => Patient)
   dependants: Patient[];
+
+  @HasMany(() => Visit)
+  visits: Visit[];
+
+  @BelongsTo(() => Patient, { foreignKey: 'principal_id' })
+  principal: Patient;
+
+  @BeforeCreate
+  static async addCompleteName(instance: Patient) {
+    // this will be called when an instance is created
+    const firstname = instance.firstname;
+    const middlename = instance.middlename;
+    const lastname = instance.lastname;
+    instance.complete_name = `${firstname} ${middlename ? middlename + ' ' : ''}${lastname}`;
+  }
+
+  @BeforeUpdate
+  static async updateCompleteName(instance: Patient) {
+    // this will be called when an instance is updated
+    const firstname = instance.firstname;
+    const middlename = instance.middlename;
+    const lastname = instance.lastname;
+    instance.complete_name = `${firstname} ${middlename ? middlename + ' ' : ''}${lastname}`;
+  }
 
   static async paginate(param: {
     paginate: number;

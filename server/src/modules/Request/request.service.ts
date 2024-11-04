@@ -1,12 +1,18 @@
-import { CreateBulkRequestBody, UpdateRequestStatus } from './types/request.types';
+import { CreateBulkRequestBody, ProcessRequestBody } from './types/request.types';
 import {
   createBulkRequest,
   getCurrentUserRequests,
+  getRequestQuery,
   getRequests,
   updateRequestStatus,
 } from './request.repository';
-import { Request } from '../../database/models';
+import { PharmacyStore, Request } from '../../database/models';
 import { ParsedQs } from 'qs';
+import { getInventoryItemQuery } from '../Inventory/inventory.repository';
+import { getOnePharmacyStoreItem } from '../Store/store.repository';
+import { ItemsToDispensedBody } from '../Inventory/types/inventory-item.types';
+import StoreService from '../Store/store.service';
+import { RequestStatus } from '../../database/models/request';
 
 export class RequestService {
   /**
@@ -75,9 +81,40 @@ export class RequestService {
    * @returns {json} json object with requests data
    * @memberOf RequestService
    * @param body
+   * @param staffId
    */
-  static async updateRequestStatus(body: UpdateRequestStatus[]) {
-    return updateRequestStatus(body);
+  static async processRequests(body: ProcessRequestBody[], staffId: number) {
+    const dispenseItems = await Promise.all(
+      body
+        .filter(data => data.status === RequestStatus.GRANTED)
+        .map(async data => {
+          const request = await getRequestQuery({ id: data.id });
+          const inventoryItem = await getInventoryItemQuery({ id: request.item_id });
+          const storeItem = await getOnePharmacyStoreItem({
+            drug_id: inventoryItem.drug_id,
+            drug_type: inventoryItem.drug_type,
+          });
+
+          const dispenseData: ItemsToDispensedBody = {
+            id: storeItem.id,
+            drug_type: inventoryItem.drug_type,
+            quantity_to_dispense: request.quantity,
+            dispensary: request.inventory_id,
+            unit_id: inventoryItem.unit_id,
+            receiver: request.requested_by,
+            drug_name: inventoryItem?.drug?.name,
+          };
+          return dispenseData;
+        })
+    );
+    await StoreService.dispenseItemsFromStore(dispenseItems, staffId);
+
+    // const results = await StoreService.dispenseItemsFromStore(dispenseItems, staffId);
+    // const response = (results.filter(
+    //   res => res.status === 'fulfilled'
+    // ) as unknown) as PromiseFulfilledResult<PharmacyStore>[];
+
+    return updateRequestStatus(body, staffId);
   }
 
   /**

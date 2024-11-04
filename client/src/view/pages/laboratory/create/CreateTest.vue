@@ -104,13 +104,13 @@
         </div>
       </div>
       <div class="form-group row">
-        <div class="col-lg-6">
-          <label>Type:</label>
+        <div class="col-lg-12">
+          <label>Result Form:</label>
           <div class="radio-inline mt-3">
-            <label class="radio" v-for="(type, i) in testTypes" :key="i">
-              <input type="radio" v-model="testType" :value="type" />
+            <label class="radio radio-lg" v-for="(form, i) in forms" :key="i">
+              <input type="radio" v-model="result_form" :value="form.code" />
               <span></span>
-              {{ type }}
+              {{ form.name }}
             </label>
           </div>
           <span class="text-danger text-sm">{{ errors.first('type') }}</span>
@@ -129,6 +129,8 @@
 </template>
 
 <script>
+import { resultFormList } from '@/view/pages/laboratory/forms/resultFormList';
+
 export default {
   props: {
     displayPrompt: {
@@ -151,9 +153,9 @@ export default {
       sample_id: '',
       valid_range: '',
       result_unit: '',
-      testType: '',
+      result_form: 'DefaultResultForm',
       isDisabled: false,
-      testTypes: ['Primary', 'Secondary'],
+      forms: resultFormList,
     };
   },
   computed: {
@@ -190,6 +192,7 @@ export default {
           nhis_price,
           phis_price,
           retainership_price,
+          result_form,
         } = JSON.parse(JSON.stringify(this.data));
         this.test_id = id;
         this.name = name;
@@ -201,6 +204,7 @@ export default {
         this.nhis_price = nhis_price;
         this.phis_price = phis_price;
         this.retainership_price = retainership_price;
+        this.result_form = result_form;
       }
     },
   },
@@ -232,7 +236,7 @@ export default {
             test_id: this.test_id,
             result_unit: this.result_unit,
             valid_range: this.valid_range,
-            type: this.testType,
+            result_form: this.result_form,
           };
           // set spinner to submit button
           const submitButton = this.$refs['kt_test_submit'];
@@ -263,7 +267,7 @@ export default {
       this.sample_id = '';
       this.valid_range = '';
       this.result_unit = '';
-      this.testType = '';
+      this.result_form = '';
     },
   },
   created() {

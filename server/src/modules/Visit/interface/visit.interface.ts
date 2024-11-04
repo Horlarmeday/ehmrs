@@ -9,6 +9,6 @@ export class CreateVisit {
   professional: string;
   department: string;
   date_of_visit: Date;
-  service_id: number;
+  service_id: number | number[];
   staff_id: number;
 }

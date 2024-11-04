@@ -320,6 +320,22 @@ export default {
     });
   },
 
+  changeBulkTestResultsStatus({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/laboratory/test-results/bulk-update/${payload.id}`, {
+          selectedTests: payload.selectedTests,
+        })
+        .then(response => {
+          commit('SET_UPDATED_TESTS_RESULTS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
   /***
    * SAMPLES COLLECTED
    */
@@ -468,5 +484,20 @@ export default {
           reject(error);
         });
     });
+  },
+
+  /***
+   * SELECTED TESTS
+   */
+  addSelectedTest({ commit }, item) {
+    commit('ADD_SELECTED_TEST', item);
+  },
+
+  removeSelectedTest({ commit }, item) {
+    commit('REMOVE_SELECTED_TEST', item);
+  },
+
+  removeAllSelectedTests({ commit }) {
+    commit('EMPTY_SELECTED_TESTS', []);
   },
 };

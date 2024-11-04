@@ -58,6 +58,7 @@ export { PrescribedInvestigation } from './prescribedInvestigation';
 export { PrescribedService } from './prescribedService';
 export { PreviousPregnancy } from './previousPregnancy';
 export { RoutesOfAdministration } from './routesOfAdministration';
+export { ReturnItem } from './returnItem';
 export { Request } from './request';
 export { Sample } from './sample';
 export { Service } from './service';

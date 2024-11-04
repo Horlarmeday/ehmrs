@@ -11,7 +11,7 @@
                 :src="layoutConfig('self.logo.default')"
                 class="max-h-35px"
               /> -->
-              <img alt="Logo" :src="logo" class="max-h-35px" />
+              <img alt="Logo" :src="logo" class="max-h-50px" />
             </router-link>
           </div>
           <!--end::Logo-->
@@ -190,7 +190,7 @@ export default {
   },
   computed: {
     logo() {
-      return process.env.BASE_URL + 'media/logos/logo-letter-9.png';
+      return process.env.BASE_URL + 'media/logos/ms.png';
     },
 
     ...mapGetters(['layoutConfig', 'getClasses']),
@@ -258,6 +258,9 @@ export default {
         'surgery-request',
         'delivery',
         'postnatal',
+        'maternity-admit-patient',
+        'update-visit',
+        'active-visit',
       ];
       return pagesToDisplay.includes(this.$route.name);
     },

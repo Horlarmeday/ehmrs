@@ -63,9 +63,7 @@ export class RadiologyOrderService {
     const bulkInvestigations = await Promise.all(
       investigations.map(async investigation => ({
         ...investigation,
-        price:
-          (await getInvestigationPrice(patient, investigation.investigation_id)) ||
-          investigation.price,
+        price: (await getInvestigationPrice(patient, investigation)) || investigation.price,
         requester: staff_id,
         visit_id,
         patient_id: visit.patient_id,
@@ -77,7 +75,15 @@ export class RadiologyOrderService {
         patient_insurance_id: insurance?.id,
       }))
     );
-    return orderBulkInvestigation(bulkInvestigations);
+
+    const includesHSG = investigations.some(investigation => /\bHSG\b/i.test(investigation.name));
+    return orderBulkInvestigation({
+      data: bulkInvestigations,
+      includesHSG,
+      patient,
+      insurance,
+      visit_id,
+    });
   }
 
   /**

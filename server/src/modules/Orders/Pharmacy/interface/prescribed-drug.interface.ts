@@ -28,3 +28,8 @@ export class PrescribedDrug {
   payment_status: PAYMENT_STATUS;
   is_nhis_drug_approved: boolean;
 }
+
+export enum Period {
+  TODAY = 'Today',
+  BACKLOG = 'Backlog',
+}

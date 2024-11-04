@@ -17,9 +17,12 @@
           </tr>
           <tr v-for="item in items" :key="item.id">
             <td class="pl-5">
-              <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+              <span class="text-dark-75 font-weight-bolder font-size-lg">
                 {{ item?.drug?.name }}
               </span>
+              <span :class="getItemType(item?.drug?.drug_type)" class="label label-inline ml-2">{{
+                item?.drug?.drug_type
+              }}</span>
             </td>
             <td>
               <span class="text-dark-75 font-weight-bolder d-block font-size-lg"
@@ -47,6 +50,7 @@
 </template>
 <script>
 import DeleteIcon from '@/assets/icons/DeleteIcon.vue';
+import { getItemType } from '@/common/common';
 
 export default {
   components: { DeleteIcon },
@@ -62,6 +66,7 @@ export default {
     },
   },
   methods: {
+    getItemType,
     fetchDefaults() {
       this.$store
         .dispatch('model/fetchDefaults')

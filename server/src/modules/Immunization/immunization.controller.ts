@@ -10,8 +10,7 @@ import {
 import { validateCreateImmunization } from './validations';
 import { ImmunizationService } from './immunization.service';
 import { isEmpty } from 'lodash';
-import { EMPTY_BODY } from './messages/immunization.messages';
-import { AntenatalService } from '../Antenatal/antenatal.service';
+import { EMPTY_BODY, IMMUNIZATION_VISIT_CREATED } from './messages/immunization.messages';
 
 export class ImmunizationController {
   static async createImmunizationAccount(
@@ -35,7 +34,7 @@ export class ImmunizationController {
       return successResponse({
         res,
         httpCode: StatusCodes.CREATED,
-        message: DATA_SAVED,
+        message: IMMUNIZATION_VISIT_CREATED,
         data: immunization,
       });
     } catch (e) {

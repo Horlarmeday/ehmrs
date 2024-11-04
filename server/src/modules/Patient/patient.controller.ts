@@ -5,6 +5,9 @@ import {
   validatePatientHealthInsurance,
   validateCreateEmergencyPatient,
   validateFindPatient,
+  validateUpdatePatientInsurance,
+  validateTogglePatientInsurance,
+  validatePatientAccountsMerge,
 } from './validations';
 import PatientService from './patient.service';
 import { errorResponse } from '../../common/responses/error-responses';
@@ -13,7 +16,7 @@ import { SuccessResponse, successResponse } from '../../common/responses/success
 import { DATA_SAVED, DATA_UPDATED } from '../AdminSettings/messages/response-messages';
 import { NextFunction, Request, Response } from 'express';
 import { SUCCESS } from '../../core/constants';
-import { PATIENT_ID_REQUIRED } from './messages/response-messages';
+import { PATIENT_ACCOUNTS_MERGED, PATIENT_ID_REQUIRED } from './messages/response-messages';
 
 class PatientController {
   /**
@@ -60,7 +63,11 @@ class PatientController {
    * @param {object} next next middleware
    * @returns {json} json object with status, patient data
    */
-  static async addPatientHealthInsurance(req, res, next): Promise<SuccessResponse> {
+  static async addPatientHealthInsurance(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse> {
     const { error } = validatePatientHealthInsurance(req.body);
     if (error)
       return errorResponse({
@@ -83,7 +90,7 @@ class PatientController {
         data: patient,
       });
     } catch (e) {
-      return next(e);
+      next(e);
     }
   }
 
@@ -97,7 +104,7 @@ class PatientController {
    * @returns {json} json object with status, patient data
    */
   static async createEmergencyPatientAccount(
-    req,
+    req: Request & { user: { sub: number } },
     res: Response,
     next: NextFunction
   ): Promise<SuccessResponse> {
@@ -135,7 +142,11 @@ class PatientController {
    * @param {object} next next middleware
    * @returns {json} json object with status, dependant data
    */
-  static async createDependant(req, res, next) {
+  static async createDependant(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
     const { error } = validateDependant(req.body);
     if (error)
       return errorResponse({
@@ -206,6 +217,82 @@ class PatientController {
   ): Promise<SuccessResponse> {
     try {
       const patient = await PatientService.updatePatientService({
+        ...req.body,
+        patient_id: req.params.id,
+      });
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_UPDATED,
+        data: patient,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  /**
+   * update a patient insurance
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, patient data
+   */
+  static async updatePatientInsurance(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse> {
+    const { error } = validateUpdatePatientInsurance(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+    try {
+      const patient = await PatientService.updatePatientInsurance({
+        ...req.body,
+        patient_id: req.params.id,
+      });
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_UPDATED,
+        data: patient,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  /**
+   * toggle on/off a patient insurance
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, patient data
+   */
+  static async togglePatientInsurance(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse> {
+    const { error } = validateTogglePatientInsurance(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+    try {
+      const patient = await PatientService.togglePatientInsurance({
         ...req.body,
         patient_id: req.params.id,
       });
@@ -308,6 +395,71 @@ class PatientController {
         res,
         httpCode: StatusCodes.OK,
         message: SUCCESS,
+        data: patient,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  /**
+   * convert dependant account to a patient account
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, patient data
+   */
+  static async convertDependantToPatient(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse> {
+    const { id } = req.params;
+    try {
+      const patient = await PatientService.convertDependantToPatient(+id);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_UPDATED,
+        data: patient,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  /**
+   * merge patients accounts
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, patient data
+   */
+  static async mergePatientAccounts(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse> {
+    const { error } = validatePatientAccountsMerge(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+
+    try {
+      const patient = await PatientService.mergePatientAccounts(req.body);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: PATIENT_ACCOUNTS_MERGED,
         data: patient,
       });
     } catch (e) {

@@ -27,13 +27,13 @@ export default {
   }),
   computed: {
     summaries() {
-      return this.$store.state.antenatal.summaries;
+      return this.$store.state.consultation.histories;
     },
     queriedItems() {
-      return this.$store.state.antenatal.totalSummaries;
+      return this.$store.state.consultation.totalHistories;
     },
     pages() {
-      return this.$store.state.antenatal.totalSummaryPages;
+      return this.$store.state.consultation.totalHistoryPages;
     },
     perPage() {
       return this.summaries.length;
@@ -64,10 +64,10 @@ export default {
     },
 
     fetchVisitsSummary() {
-      this.$store.dispatch('antenatal/fetchVisitsSummary', {
+      this.$store.dispatch('consultation/fetchVisitsHistory', {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
-        id: this.$route.query.antenatal,
+        visitId: this.$route.params.id,
       });
     },
 

@@ -83,7 +83,7 @@ export class RequestController {
    * @returns {json} json object with status, requests data
    */
   static async updateRequestStatus(
-    req: Request,
+    req: Request & { user: { sub: number } },
     res: Response,
     next: NextFunction
   ): Promise<SuccessResponse | void> {
@@ -95,7 +95,7 @@ export class RequestController {
         message: error.details[0].message,
       });
     try {
-      const requests = await RequestService.updateRequestStatus(req.body.requests);
+      const requests = await RequestService.processRequests(req.body.requests, req.user.sub);
       return successResponse({
         res,
         httpCode: StatusCodes.CREATED,

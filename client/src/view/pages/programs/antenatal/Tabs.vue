@@ -1,6 +1,11 @@
 <template>
   <div>
     <div class="header-top mb-6">
+      <a-n-c-triage-card
+        :estimated_delivery_date="antenatal?.estimated_delivery_date"
+        v-if="antenatal?.triage"
+        :triage="antenatal?.triage"
+      />
       <div class="container white">
         <div class="d-none d-lg-flex align-items-center mr-1">
           <ul class="header-tabs nav align-self-end font-size-lg" role="tablist">
@@ -17,7 +22,7 @@
                 >Past Visits</a
               >
             </li>
-            <li v-if="doctorAllowedTabs.includes(currentUser.role)" class="nav-item mr-1">
+            <li v-if="doctorAllowedTabs.includes(currentUser.department)" class="nav-item mr-1">
               <a
                 class="nav-link text-dark py-4 px-6"
                 :class="{ active: tabIndex === 6, disabled: tabIndex === 6 }"
@@ -95,6 +100,19 @@
                 >Radiology</a
               >
             </li>
+            <li class="nav-item mr-1">
+              <a
+                class="nav-link text-dark py-4 px-6"
+                :class="{ active: tabIndex === 10, disabled: tabIndex === 10 }"
+                @click="setActiveTab($event, 'services')"
+                data-tab="10"
+                data-toggle="tab"
+                href="#"
+                role="tab"
+                aria-selected="true"
+                >Services</a
+              >
+            </li>
             <li v-if="nurseAllowedTabs.includes(currentUser.role)" class="nav-item">
               <a
                 class="nav-link text-dark py-4 px-6"
@@ -108,7 +126,13 @@
                 >Clinical Notes</a
               >
             </li>
-            <li v-if="doctorAllowedTabs.includes(currentUser.role)" class="nav-item">
+            <li
+              v-if="
+                doctorAllowedTabs.includes(currentUser.department) ||
+                  subRolesAllowedTabs.includes(currentUser.sub_role)
+              "
+              class="nav-item"
+            >
               <a
                 class="nav-link text-dark py-4 px-6"
                 :class="{ active: tabIndex === 7, disabled: tabIndex === 7 }"
@@ -121,7 +145,7 @@
                 >Admission</a
               >
             </li>
-            <li v-if="doctorAllowedTabs.includes(currentUser.role)" class="nav-item">
+            <li v-if="doctorAllowedTabs.includes(currentUser.department)" class="nav-item">
               <a
                 class="nav-link text-dark py-4 px-6"
                 :class="{ active: tabIndex === 8, disabled: tabIndex === 8 }"
@@ -163,7 +187,6 @@
 import PulseIcons from '@/view/pages/consultation/components/PulseIcons.vue';
 import AccountUpdate from '@/view/pages/programs/antenatal/tabs/AccountUpdate.vue';
 import Tests from '@/view/pages/programs/antenatal/tabs/Tests.vue';
-import Medication from '@/view/pages/programs/antenatal/tabs/Medication.vue';
 import Triage from '@/view/pages/programs/antenatal/tabs/Triage.vue';
 import PageSkeleton from '@/utils/PageSkeleton.vue';
 import Radiology from '@/view/pages/programs/antenatal/tabs/Radiology.vue';
@@ -174,6 +197,10 @@ import Observation from '@/view/pages/programs/antenatal/tabs/Observation.vue';
 import Disposition from '@/view/pages/consultation/tabs/Disposition.vue';
 import Surgery from '@/view/pages/consultation/tabs/Surgery.vue';
 import Alerts from '@/view/pages/programs/antenatal/tabs/Alerts.vue';
+import Medication from '@/view/pages/programs/antenatal/tabs/Medication.vue';
+import MedicationDoctor from '@/view/pages/programs/antenatal/tabs/MedicationDoctor.vue';
+import Services from '@/view/pages/programs/antenatal/tabs/Services.vue';
+import ANCTriageCard from '@/view/components/util/ANCTriageCard.vue';
 
 const ComponentMapping = {
   accountUpdate: AccountUpdate,
@@ -187,9 +214,11 @@ const ComponentMapping = {
   disposition: Disposition,
   surgery: Surgery,
   alert: Alerts,
+  services: Services,
 };
 export default {
   components: {
+    ANCTriageCard,
     PageSkeleton,
     PulseIcons,
   },
@@ -198,7 +227,8 @@ export default {
     activeComponent: '',
     loading: false,
     currentUser: parseJwt(localStorage.getItem('user_token')),
-    doctorAllowedTabs: ['Super Admin', 'General Practitioner'],
+    doctorAllowedTabs: ['Administrator', 'Medical Practitioners'],
+    subRolesAllowedTabs: ['Maternity'],
     nurseAllowedTabs: ['Super Admin', 'Nurse'],
     Active: 'ACTIVE',
     Inactive: 'INACTIVE',
@@ -242,11 +272,18 @@ export default {
     },
 
     setActiveComponent(component) {
+      if (
+        component === 'medication' &&
+        this.doctorAllowedTabs.includes(this.currentUser.department)
+      ) {
+        this.activeComponent = MedicationDoctor;
+        return;
+      }
       this.activeComponent = ComponentMapping[component];
     },
 
     defaultTab() {
-      if (this.doctorAllowedTabs.includes(this.currentUser.role)) {
+      if (this.doctorAllowedTabs.includes(this.currentUser.department)) {
         return 'summary';
       } else {
         if (this.antenatal && this.antenatal.account_status === this.Inactive) {
@@ -265,13 +302,13 @@ export default {
       const storedTabIndex = this.$route.query.tabIndex;
       if (storedTab && ComponentMapping[storedTab] && storedTabIndex) {
         if (storedTab === 'accountUpdate') storedTab = this.defaultTab();
-        this.activeComponent = ComponentMapping[storedTab];
+        this.setActiveComponent(storedTab);
         this.tabIndex = parseInt(storedTabIndex);
         this.loading = false;
       } else {
         const activeTab = this.defaultTab();
-        this.activeComponent = ComponentMapping[activeTab];
-        this.tabIndex = this.doctorAllowedTabs.includes(this.currentUser.role) ? 5 : 0;
+        this.setActiveComponent(activeTab);
+        this.tabIndex = this.doctorAllowedTabs.includes(this.currentUser.department) ? 5 : 0;
         this.loading = false;
       }
     },
@@ -291,7 +328,7 @@ export default {
         .then(response => {
           const res = response.data.data;
           this.$store.dispatch('insurance/fetchPatientDefaultInsurance', res.patient_id);
-          this.$store.dispatch('patient/setCurrentPatient', { ...res.patient, ...res.insurance });
+          this.$store.dispatch('patient/setCurrentPatient', { ...res.insurance, ...res.patient });
         });
     },
   },

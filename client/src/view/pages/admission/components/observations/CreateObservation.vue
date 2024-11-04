@@ -89,7 +89,7 @@
         <div class="col-6">
           <input
             class="form-control form-control-sm"
-            type="text"
+            type="number"
             v-model="temperature"
             v-validate="'required'"
             data-vv-validate-on="blur"

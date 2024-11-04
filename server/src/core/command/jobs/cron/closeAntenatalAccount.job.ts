@@ -1,7 +1,6 @@
 import { logger, taggedMessaged } from '../../../helpers/logger';
 import { Antenatal } from '../../../../database/models';
 import dayjs from 'dayjs';
-import { dateQuery } from '../../../helpers/helper';
 import { AccountStatus } from '../../../../database/models/antenatal';
 import { processTasksExecution } from '../../../helpers/tasksProcessor';
 import { Op } from 'sequelize';
@@ -14,7 +13,11 @@ const closeAccountHandler = async (antenatal: Antenatal) => {
     },
     { where: { id: antenatal.id } }
   );
-  logger.notice(message(`Closed antenatal account for patient ${antenatal.patient_id}`));
+  logger.notice(
+    message(
+      `Closed antenatal account for patient ${antenatal.patient_id}: date ended: ${antenatal?.end_date}`
+    )
+  );
 };
 
 export const closeAntenatalAccount = async () => {
@@ -22,8 +25,9 @@ export const closeAntenatalAccount = async () => {
   const antenatalAccounts = await Antenatal.findAll({
     where: {
       end_date: {
-        [Op.lte]: dayjs().toDate(),
+        [Op.lt]: dayjs().toDate(),
       },
+      account_status: AccountStatus.ACTIVE,
     },
   });
   try {
@@ -36,7 +40,7 @@ export const closeAntenatalAccount = async () => {
       });
       return;
     }
-    logger.warning(message(`No antenatal accounts to close, skipping...`));
+    logger.warn(message(`No antenatal accounts to close, skipping...`));
   } catch (e) {
     logger.error(message('Error occurred'), e);
   }

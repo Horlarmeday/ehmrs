@@ -7,6 +7,11 @@
         </h3>
       </div>
       <div class="card-body">
+        <error-banner
+          v-if="!isEmpty(pendingPrescriptions)"
+          :message="errorMessage"
+          :lists="Object.values(pendingPrescriptions)"
+        />
         <div class="form-group row">
           <label class="col-lg-2 col-form-label">Height (m)</label>
           <div class="col-lg-2">
@@ -96,7 +101,7 @@
           <div class="col-6">
             <input
               class="form-control form-control-sm"
-              type="text"
+              type="number"
               v-model="temperature"
               v-validate="'required'"
               data-vv-validate-on="blur"
@@ -141,7 +146,7 @@
         <div>
           <button
             @click="createVitals"
-            :disabled="isDisabled"
+            :disabled="isDisabled || !isEmpty(pendingPrescriptions)"
             ref="kt_triage_submit"
             class="btn btn-primary float-right"
           >
@@ -155,9 +160,12 @@
 
 <script>
 import dayjs from 'dayjs';
+import ErrorBanner from '@/view/components/util/ErrorBanner.vue';
+import { isEmpty } from '@/common/common';
 
 export default {
   name: 'Vitals',
+  components: { ErrorBanner },
   data() {
     return {
       temperature: '',
@@ -176,9 +184,12 @@ export default {
       rvsOptions: ['-ve', '+ve', 'Not Done', 'Declined'],
       muacOptions: ['Green', 'Blue', 'Red'],
       date_of_birth: '',
+      errorMessage:
+        'This patient has the following pending payment(s), Hence you cannot create vitals signs',
     };
   },
   methods: {
+    isEmpty,
     addSpinner(submitButton) {
       this.isDisabled = true;
       submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');
@@ -270,10 +281,19 @@ export default {
         }
       );
     },
+
+    fetchPendingPrescriptions() {
+      this.$store.dispatch('visit/fetchPendingPrescriptions', this.$route.params.id);
+    },
   },
   watch: {
     bmi(value) {
       this.categorizeBMI(+value);
+    },
+  },
+  computed: {
+    pendingPrescriptions() {
+      return this.$store.state.visit.pendingPrescriptions;
     },
   },
   created() {
@@ -281,9 +301,10 @@ export default {
       const res = response.data.data;
       this.height = res?.triage?.height;
       this.date_of_birth = dayjs().diff(res.patient.date_of_birth, 'weeks');
-      this.$store.dispatch('patient/setCurrentPatient', { ...res.patient, ...res.insurance });
+      this.$store.dispatch('patient/setCurrentPatient', { ...res.insurance, ...res.patient });
     });
     this.BPValidation();
+    this.fetchPendingPrescriptions();
   },
 };
 </script>

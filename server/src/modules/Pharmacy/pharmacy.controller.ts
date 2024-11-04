@@ -404,9 +404,14 @@ class PharmacyController {
    */
   static async getDrugPrescriptions(req: Request, res: Response, next: NextFunction) {
     try {
-      const routes = await PharmacyService.getDrugPrescriptions(req.query);
+      const drugPrescriptions = await PharmacyService.getDrugPrescriptions(req.query);
 
-      return successResponse({ res, data: routes, message: SUCCESS, httpCode: StatusCodes.OK });
+      return successResponse({
+        res,
+        data: drugPrescriptions,
+        message: SUCCESS,
+        httpCode: StatusCodes.OK,
+      });
     } catch (e) {
       return next(e);
     }

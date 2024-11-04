@@ -6,6 +6,7 @@
       :show-switch="showSwitch"
       :source="source"
       :switch-position="switchPosition"
+      :insurance-name="insuranceName"
     />
     <div class="card card-custom gutter-b">
       <div class="card-header py-2">
@@ -242,8 +243,12 @@
               </div>
             </div>
             <div class="mt-3">
-              <div v-if="nhisPriceQuotaExceeded" class="alert alert-warning" role="alert">
-                <span class="font-size-sm font-weight-bold">NHIS drugs limit is reached</span>
+              <div
+                v-if="quantity_remaining !== null && quantity_remaining <= 0"
+                class="alert alert-warning"
+                role="alert"
+              >
+                <span class="font-size-sm font-weight-bold">Quantity is low in the dispensary</span>
               </div>
               <button
                 @click="submitDrugOrder"
@@ -308,16 +313,16 @@ export default {
     },
   },
 
-  watch: {
-    // check NHIS drugs quota is reached
-    // TODO: only get drugs prescribed today and not all drug orders
-    drugOrders(value) {
-      if (this.switchPosition && this.switchSpot) {
-        const total = this.getTotalDrugsPrescribedToday(value);
-        if (total > this.quotaPrice) this.nhisPriceQuotaExceeded = true;
-      }
-    },
-  },
+  // watch: {
+  //   // check NHIS drugs quota is reached
+  //   // TODO: only get drugs prescribed today and not all drug orders
+  //   drugOrders(value) {
+  //     if (this.switchPosition && this.switchSpot) {
+  //       const total = this.getTotalDrugsPrescribedToday(value);
+  //       if (total > this.quotaPrice) this.nhisPriceQuotaExceeded = true;
+  //     }
+  //   },
+  // },
 
   props: {
     switchPosition: {
@@ -397,6 +402,8 @@ export default {
     flipSwitch(value) {
       this.switchSpot = value;
       this.initValues();
+      this.$store.commit('inventory/SET_ITEMS', []);
+      this.drug = '';
     },
 
     removeValues() {
@@ -431,11 +438,11 @@ export default {
       this.quantity_to_dispense = Math.floor(Math.abs(this.quantity_to_dispense));
       this.total_price = this.price * this.quantity_to_dispense;
       // check NHIS drugs quota is reached
-      if (this.switchPosition && this.switchSpot) {
-        const totalDrugsPrescribedToday = this.getTotalDrugsPrescribedToday(this.drugOrders);
-        const total = +this.total_price + +totalDrugsPrescribedToday;
-        this.nhisPriceQuotaExceeded = total > this.quotaPrice;
-      }
+      // if (this.switchPosition && this.switchSpot) {
+      //   const totalDrugsPrescribedToday = this.getTotalDrugsPrescribedToday(this.drugOrders);
+      //   const total = +this.total_price + +totalDrugsPrescribedToday;
+      //   this.nhisPriceQuotaExceeded = total > this.quotaPrice;
+      // }
     },
 
     calculateDosageQuantity() {
@@ -476,10 +483,17 @@ export default {
     },
 
     getDrugType(insuranceName) {
-      const types = ['FHSS', 'NHIS'];
-      if (types.includes(insuranceName)) return 'NHIS';
-      if (insuranceName === 'PHIS') return 'Private';
-      return 'NHIS';
+      const isSwitchOn = this.switchSpot && this.switchPosition;
+      if (isSwitchOn) return 'NHIS';
+      const insuranceMapping = {
+        FHSS: 'NHIS',
+        NHIS: 'NHIS',
+        PHIS: 'Private',
+        Retainership: 'Cash',
+      };
+      const selectedInsurance = insuranceMapping[insuranceName];
+      if (selectedInsurance === 'NHIS' && !isSwitchOn) return 'Cash';
+      return insuranceMapping[insuranceName] || 'Cash';
     },
 
     drugData() {
@@ -499,8 +513,7 @@ export default {
         strength_id: this.strength.id,
         drug_id: this.drug_id,
         total_price: this.total_price,
-        drug_type:
-          this.switchPosition && this.switchSpot ? this.getDrugType(this.insuranceName) : 'Cash',
+        drug_type: this.getDrugType(this.insuranceName),
         inventory_id: this.getInventoryId(),
         source: this.source,
         ...(this.drug_group && { drug_group: this.drug_group }),
@@ -571,13 +584,13 @@ export default {
         .dispatch('inventory/fetchInventoryItems', {
           inventory,
           search,
+          filter: { drug_form: 'Drug' },
         })
         .then(() => loading(false));
     }, 500),
 
     getInventoryId() {
-      const type =
-        this.switchPosition && this.switchSpot ? this.getDrugType(this.insuranceName) : 'Cash';
+      const type = this.getDrugType(this.insuranceName);
       return this.inventories.find(inventory =>
         inventory.name.toLowerCase().includes(type.toLowerCase())
       )?.id;

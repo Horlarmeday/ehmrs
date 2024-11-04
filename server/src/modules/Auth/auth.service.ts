@@ -58,14 +58,14 @@ class AuthService {
 
     const staff = await getStaffById(user_id);
     if (!staff) throw new BadException('NOT_FOUND', 400, INVALID_USER);
-
+    console.log({ newPassword, confirmPassword, user_id });
     if (newPassword !== confirmPassword)
       throw new BadException('INVALID', 400, INVALID_CONFIRM_PASSWORD);
 
     const isSamePassword = await bcrypt.compare(oldPassword, staff.password);
     if (!isSamePassword) throw new BadException('INVALID', 400, INCORRECT_PASSWORD);
 
-    const salt = await bcrypt.genSalt(16);
+    const salt = await bcrypt.genSalt(12);
     staff.password = await bcrypt.hash(newPassword, salt);
     await staff.save();
 

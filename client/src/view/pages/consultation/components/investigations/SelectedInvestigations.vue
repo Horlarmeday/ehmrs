@@ -14,7 +14,15 @@
             :key="i"
           >
             <div class="p-2">
-              <span class="mr-3">{{ truncateText(investigation.name) }}</span>
+              <span
+                :title="`${investigation.investigation_type}`"
+                v-b-tooltip.hover
+                :class="getLabelDotStatus(investigation.investigation_type)"
+                class="label label-dot label-lg mr-2"
+              ></span>
+              <span v-b-tooltip.hover :title="investigation.name" class="mr-3">{{
+                truncateText(investigation.name)
+              }}</span>
               <span class="float-right ml-4" v-b-tooltip.hover title="Delete">
                 <a href="#" @click="removeSelectedInvestigation(investigation)"
                   ><i class="flaticon2-rubbish-bin text-danger icon-md"
@@ -34,6 +42,8 @@
 </template>
 
 <script>
+import { getLabelDotStatus } from '@/common/common';
+
 export default {
   name: 'SelectedInvestigations',
   props: {
@@ -42,6 +52,7 @@ export default {
     },
   },
   methods: {
+    getLabelDotStatus,
     truncateText(investigation) {
       if (!investigation.length || investigation.length <= 17) return investigation;
       const truncatedText = investigation.substring(0, 17);

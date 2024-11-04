@@ -5,7 +5,7 @@
         <thead class="thead-light">
           <tr class="text-uppercase">
             <th scope="col">Notes</th>
-            <th scope="col">Requested By</th>
+            <th scope="col">Added By</th>
             <th scope="col">Date Requested</th>
             <th scope="col"></th>
           </tr>
@@ -20,10 +20,10 @@
             <td>{{ round.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
             <td>
               <span v-if="allowedRoles.includes(currentUser.role)">
-                <a href="#">
-                  <i class="flaticon-edit-1 text-success mr-2"></i>
-                </a>
-                <a href="#"><i class="flaticon-delete text-danger"></i></a>
+                <!--                <a href="#">-->
+                <!--                  <i class="flaticon-edit-1 text-success mr-2"></i>-->
+                <!--                </a>-->
+                <!--                <a href="#"><i class="flaticon-delete text-danger"></i></a>-->
               </span>
             </td>
           </tr>

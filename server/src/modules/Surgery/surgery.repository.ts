@@ -1,7 +1,17 @@
-import { OperationNote, Patient, Service, Staff, SurgeryRequest } from '../../database/models';
+import {
+  OperationNote,
+  Patient,
+  PrescribedService,
+  Service,
+  Staff,
+  SurgeryRequest,
+} from '../../database/models';
 import { Op, WhereOptions } from 'sequelize';
 import { dateIntervalQuery, patientAttributes, staffAttributes } from '../../core/helpers/helper';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
+import sequelizeConnection from '../../database/config/config';
+import { ServiceType } from '../../database/models/prescribedService';
+import { BadException } from '../../common/util/api-error';
 
 /**
  * request surgery
@@ -9,7 +19,27 @@ import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
  * @returns {Promise<SurgeryRequest>} item data
  */
 export const requestSurgery = async (data): Promise<SurgeryRequest> => {
-  return SurgeryRequest.create({ ...data });
+  return await sequelizeConnection.transaction(async t => {
+    const service = await Service.findOne({ where: { id: data.service_id }, transaction: t });
+    if (!service) throw new BadException('Error', 400, 'Cannot find service');
+
+    const surgeryRequest = await SurgeryRequest.create({ ...data }, { transaction: t });
+
+    await PrescribedService.create(
+      {
+        service_id: service.id,
+        surgery_id: surgeryRequest.id,
+        price: service.price,
+        service_type: ServiceType.CASH,
+        requester: data.staff_id,
+        visit_id: data.visit_id,
+        patient_id: data.patient_id,
+        date_requested: Date.now(),
+      },
+      { transaction: t }
+    );
+    return surgeryRequest;
+  });
 };
 
 /**

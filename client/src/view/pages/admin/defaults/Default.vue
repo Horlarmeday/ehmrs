@@ -17,6 +17,8 @@ import ANCRoutineTestsTable from './components/table/ANCRoutineTestsTable.vue';
 import InjectionItemsTable from './components/table/InjectionItemsTable.vue';
 import OperationItemsTable from './components/table/OperationItemsTable.vue';
 import InjectionsWaterTable from './components/table/InjectionsWaterTable.vue';
+import CircumcisionDrugsTable from './components/table/CircumcisionDrugsTable.vue';
+import HSGAdditionalItemsTable from './components/table/HSGAdditionalItemsTable.vue';
 
 const TableDefault = {
   ADMISSION_ITEMS: AdmissionItemsTable,
@@ -25,6 +27,8 @@ const TableDefault = {
   INJECTION_ITEMS: InjectionItemsTable,
   OPERATION_ITEMS: OperationItemsTable,
   WATER_INJECTIONS: InjectionsWaterTable,
+  CIRCUMCISION_ROUTINE_DRUGS: CircumcisionDrugsTable,
+  HSG_ADDITIONAL_ITEMS: HSGAdditionalItemsTable,
 };
 export default {
   data: () => ({
@@ -36,6 +40,8 @@ export default {
       INJECTION_ITEMS: 'Injection Items',
       OPERATION_ITEMS: 'Theater Operation Items',
       WATER_INJECTIONS: 'Injections Needing Water',
+      CIRCUMCISION_ROUTINE_DRUGS: 'Circumcision Routine Drugs',
+      HSG_ADDITIONAL_ITEMS: 'HSG Additional Items',
     },
   }),
   created() {

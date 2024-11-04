@@ -92,6 +92,26 @@ export class History extends Model {
   })
   patient_insurance_id: number;
 
+  @Column({
+    type: DataType.TEXT,
+  })
+  ent: string;
+
+  @Column({
+    type: DataType.TEXT,
+  })
+  cns: string;
+
+  @Column({
+    type: DataType.TEXT,
+  })
+  respiratory: string;
+
+  @Column({
+    type: DataType.TEXT,
+  })
+  additional_complaint: string;
+
   @BelongsTo(() => Staff)
   staff: Staff;
 

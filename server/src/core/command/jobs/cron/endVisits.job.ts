@@ -4,6 +4,7 @@ import { dateQuery, todayQuery } from '../../../helpers/helper';
 import { VisitCategory, VisitStatus } from '../../../../database/models/visit';
 import dayjs from 'dayjs';
 import { processTasksExecution } from '../../../helpers/tasksProcessor';
+import { Op } from 'sequelize';
 
 const visitHandler = async (visit: Visit) => {
   const message = taggedMessaged('visitHandler');
@@ -17,22 +18,41 @@ const visitHandler = async (visit: Visit) => {
 export const endVisits = async () => {
   const message = taggedMessaged('EndVisits');
   const sevenDaysAgo = dayjs()
-    .subtract(7, 'days')
+    .subtract(5, 'days')
     .toDate();
 
-  const [todayUntakenVisits, antenatalVisits, sevenDaysAgoVisits] = await Promise.all([
+  const [
+    todayUntakenVisits,
+    antenatalVisits,
+    fiveDaysAgoVisits,
+    immunizationVisits,
+  ] = await Promise.all([
     Visit.findAll({
-      where: { ...todayQuery('createdAt'), is_taken: false },
+      where: { ...todayQuery('createdAt'), status: VisitStatus.ONGOING, is_taken: false },
     }),
     Visit.findAll({
-      where: { category: VisitCategory.ANC },
+      where: { category: VisitCategory.ANC, status: VisitStatus.ONGOING },
     }),
     Visit.findAll({
-      where: { ...dateQuery('createdAt', sevenDaysAgo), status: VisitStatus.ONGOING },
+      where: {
+        ...dateQuery('createdAt', sevenDaysAgo),
+        status: VisitStatus.ONGOING,
+        category: {
+          [Op.notIn]: [VisitCategory.IPD, VisitCategory.EMERGENCY],
+        },
+      },
+    }),
+    Visit.findAll({
+      where: { category: VisitCategory.IMMUNIZATION, status: VisitStatus.ONGOING },
     }),
   ]);
 
-  const visits = [...antenatalVisits, ...todayUntakenVisits, ...sevenDaysAgoVisits];
+  const visits = [
+    ...antenatalVisits,
+    ...todayUntakenVisits,
+    ...fiveDaysAgoVisits,
+    ...immunizationVisits,
+  ];
 
   try {
     if (visits?.length) {
