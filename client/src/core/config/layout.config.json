@@ -9,7 +9,7 @@
   },
   "loader": {
     "type": "spinner-logo",
-    "logo": "media/logos/ms.png",
+    "logo": "media/logos/pssh.png",
     "message": "Please wait..."
   },
   "breakpoints": {

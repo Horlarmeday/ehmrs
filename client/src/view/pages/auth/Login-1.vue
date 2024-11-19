@@ -9,22 +9,22 @@
       id="kt_login"
     >
       <!--begin::Aside-->
-      <div class="login-aside d-flex flex-column flex-row-auto" style="background-color: #D3E4FE;">
+      <div class="login-aside d-flex flex-column flex-row-auto" style="background-color: #008751;">
         <div class="d-flex flex-column-auto flex-column pt-lg-40 pt-15">
           <a href="#" class="text-center mb-10">
-            <img src="/media/logos/ms.png" width="90" alt="" />
+            <img src="/media/logos/ms.png" width="170" height="165" alt="" />
           </a>
           <h3
             class="font-weight-bolder text-center font-size-h4 font-size-h1-lg"
-            style="color: #000;"
+            style="color: #FFFFFF;"
           >
             {{ settings?.name_of_organization }}
           </h3>
         </div>
-        <div
-          class="aside-img d-flex flex-row-fluid bgi-no-repeat bgi-position-y-bottom bgi-position-x-center"
-          :style="{ backgroundImage: `url(${backgroundImage})` }"
-        ></div>
+        <!--        <div-->
+        <!--          class="aside-img d-flex flex-row-fluid bgi-no-repeat bgi-position-y-bottom bgi-position-x-center"-->
+        <!--          :style="{ backgroundImage: `url(${backgroundImage})` }"-->
+        <!--        ></div>-->
       </div>
       <!--begin::Aside-->
       <!--begin::Content-->
