@@ -9,7 +9,7 @@
       <!--begin::Copyright-->
       <div class="text-dark order-2 order-md-1">
         <span class="text-muted font-weight-bold mr-2">{{ new Date().getFullYear() }} ©</span>
-        <a href="#" class="text-dark-75 text-hover-primary">QuantumGeek Innovations</a>
+        <a href="#" class="text-dark-75 text-hover-primary">Prismaspark Dynamics</a>
       </div>
       <!--end::Copyright-->
       <!--begin::Nav-->
