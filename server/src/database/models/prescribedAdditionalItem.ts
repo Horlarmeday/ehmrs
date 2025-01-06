@@ -340,6 +340,13 @@ export class PrescribedAdditionalItem extends Model {
   })
   date_nhis_item_processed: Date;
 
+  @Column({
+    type: DataType.DECIMAL(12, 2),
+    allowNull: true,
+    defaultValue: 0,
+  })
+  original_total_price: number;
+
   @BelongsTo(() => Staff)
   requester: Staff;
 
