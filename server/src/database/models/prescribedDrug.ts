@@ -439,6 +439,13 @@ export class PrescribedDrug extends Model {
   })
   date_returned: Date;
 
+  @Column({
+    type: DataType.DECIMAL(12, 2),
+    allowNull: true,
+    defaultValue: 0,
+  })
+  original_total_price: number;
+
   @BelongsTo(() => Staff, {
     foreignKey: 'nhis_drug_processed_by',
   })

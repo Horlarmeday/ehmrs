@@ -127,6 +127,7 @@ class PharmacyOrderService {
           visit_id,
           date_prescribed: Date.now(),
           drug_group: drug_group || null,
+          original_total_price: inventoryItem.selling_price * +quantity_to_dispense,
           drugPrice: inventoryItem.selling_price * +quantity_to_dispense,
           quantity_remaining: inventoryItem.quantity_remaining,
           drugName: inventoryItem?.drug?.name,
@@ -312,6 +313,7 @@ class PharmacyOrderService {
           date_prescribed: Date.now(),
           drug_prescription_id: drugPrescription.id,
           patient_insurance_id: insurance?.id,
+          original_total_price: inventoryItem.selling_price * +quantity_to_dispense,
         };
       })
     );
@@ -659,7 +661,7 @@ class PharmacyOrderService {
   private static async checkNHISDailyQuotaLimit(drugs, patient_id: number) {
     const hasPrimaryDrugs = drugs.some(drug => drug?.drug_group === DrugGroup.PRIMARY);
     if (hasPrimaryDrugs) {
-      const sumOfDrugsToday = await PrescribedDrug.sum('total_price', {
+      const sumOfDrugsToday = await PrescribedDrug.sum('original_total_price', {
         where: {
           patient_id,
           ...getPeriodQuery(Period.TODAY, 'date_prescribed'),
@@ -667,7 +669,7 @@ class PharmacyOrderService {
         },
       });
 
-      const sumOfItemsPrescribedToday = await PrescribedAdditionalItem.sum('total_price', {
+      const sumOfItemsPrescribedToday = await PrescribedAdditionalItem.sum('original_total_price', {
         where: {
           patient_id,
           ...getPeriodQuery(Period.TODAY, 'date_prescribed'),
