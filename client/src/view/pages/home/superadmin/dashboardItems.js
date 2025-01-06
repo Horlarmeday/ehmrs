@@ -55,7 +55,7 @@ export default [
     name: 'Inventory',
   },
   {
-    url: '/account',
+    url: '/account/transactions',
     icon: 'far fa-money-bill-alt',
     name: 'Payments',
   },
