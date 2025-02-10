@@ -10,10 +10,7 @@
               class="d-flex align-items-center justify-content-between p-4 flex-lg-wrap flex-xl-nowrap"
             >
               <div class="d-flex flex-column mr-5">
-                <router-link
-                  :to="datum.link"
-                  class="h4 text-dark text-hover-primary mb-5"
-                >
+                <router-link :to="datum.link" class="h4 text-dark text-hover-primary mb-5">
                   {{ datum.name }}
                 </router-link>
                 <p class="text-dark-50">
@@ -57,7 +54,12 @@ export default {
         name: 'Trends',
         link: '/store/pharmacy/trends',
         desc: 'Click here to view the store behaviour trends',
-      }
+      },
+      {
+        name: 'Vendors',
+        link: '/store/pharmacy/vendors',
+        desc: 'Click here to view vendors',
+      },
     ],
   }),
   //   methods: {

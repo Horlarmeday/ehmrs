@@ -160,6 +160,21 @@
                 name="brand"
               />
             </div>
+            <div class="col-lg-3">
+              <label>Vendor <span class="text-danger">*</span></label>
+              <select
+                v-validate="'required'"
+                data-vv-validate-on="blur"
+                class="form-control form-control-sm"
+                v-model="item.vendor_id"
+                name="vendor"
+              >
+                <option :value="vendor.id" v-for="vendor in vendors" :key="vendor.id">{{
+                  vendor.name
+                }}</option>
+              </select>
+              <span class="text-danger text-sm">{{ errors.first('vendor') }}</span>
+            </div>
           </div>
           <div>
             <button
@@ -204,6 +219,10 @@ export default {
     routes() {
       return this.$store.state.pharmacy.routes;
     },
+
+    vendors() {
+      return this.$store.state.store.vendors;
+    },
   },
   created() {
     this.fetchStoreItems();
@@ -211,6 +230,7 @@ export default {
     this.getDosageForms();
     this.getMeasurements();
     this.getUnits();
+    this.fetchVendors();
   },
   methods: {
     addSpinner(submitButton) {
@@ -229,6 +249,13 @@ export default {
           itemIds: this.$route.query.itemIds,
         })
         .then(response => (this.pharmItems = JSON.parse(JSON.stringify(response.data.data))));
+    },
+
+    fetchVendors() {
+      this.$store.dispatch('store/fetchVendors', {
+        currentPage: 1,
+        itemsPerPage: 50,
+      });
     },
 
     getRoutes() {

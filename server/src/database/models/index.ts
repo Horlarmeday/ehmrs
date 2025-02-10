@@ -74,6 +74,7 @@ export { TestPrescription } from './testPrescription';
 export { TestSample } from './testSample';
 export { TestResult } from './testResult';
 export { Unit } from './unit';
+export { Vendor } from './vendor';
 export { Visit } from './visit';
 export { Ward } from './ward';
 export { WardRound } from './wardRound';

@@ -16,6 +16,10 @@ export default {
   totalItemLog: 0,
   itemLogPages: 0,
 
+  vendors: [],
+  totalVendors: 0,
+  vendorPages: 0,
+
   /**
    * LAB ITEMS
    */

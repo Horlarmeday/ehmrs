@@ -624,3 +624,27 @@ export const getOneEncounter = async (query: WhereOptions<Encounter>): Promise<E
     ],
   });
 };
+
+export const getStaffEncounters = async (
+  query: WhereOptions<Encounter>,
+  currentPage = 1,
+  pageLimit = 20
+): Promise<{
+  total: number;
+  docs: any[];
+  pages: number;
+  perPage: number;
+  currentPage: number;
+}> => {
+  return Encounter.paginate({
+    page: currentPage,
+    paginate: pageLimit,
+    where: {
+      ...query,
+    },
+    include: [
+      { model: Staff, attributes: staffAttributes },
+      { model: Patient, attributes: patientAttributes },
+    ],
+  });
+};

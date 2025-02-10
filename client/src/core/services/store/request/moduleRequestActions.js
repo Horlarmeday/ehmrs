@@ -23,6 +23,7 @@ export default {
             currentPage: payload.currentPage,
             pageLimit: payload.itemsPerPage,
             search: payload.search,
+            filter: payload.filter,
           },
         })
         .then(response => {
@@ -79,6 +80,10 @@ export default {
 
   removeSelectedRequest({ commit }, request) {
     commit('REMOVE_SELECTED_REQUEST', request);
+  },
+
+  removeSelectedRequests({ commit }, requestIds) {
+    commit('REMOVE_SELECTED_REQUESTS', requestIds);
   },
 
   emptySelectedRequests({ commit }) {

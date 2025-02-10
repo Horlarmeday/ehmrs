@@ -61,7 +61,11 @@
                           v-if="summary.category === ANTENATAL"
                           :observations="summary.observations"
                         />
-                        <observations-table v-else :observations="summary.observations" />
+                        <observations-table
+                          v-else
+                          :observations="summary.observations"
+                          :ward-rounds="summary.wardRounds"
+                        />
                       </b-tab>
                       <b-tab title="Diagnoses">
                         <diagnoses-table :diagnoses="summary.diagnoses" />

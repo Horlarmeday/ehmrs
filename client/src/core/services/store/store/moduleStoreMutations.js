@@ -82,6 +82,31 @@ export default {
   },
 
   /**
+   * VENDORS
+   */
+
+  ADD_VENDOR(state, vendor) {
+    state.vendors.unshift(vendor);
+  },
+
+  SET_VENDORS(state, vendors) {
+    state.vendors = vendors;
+  },
+
+  SET_VENDORS_TOTAL(state, total) {
+    state.totalVendors = total;
+  },
+
+  SET_VENDORS_PAGES(state, pages) {
+    state.vendorPages = pages;
+  },
+
+  UPDATE_VENDOR(state, vendor) {
+    const vendorIndex = state.vendors.findIndex(p => p.id === vendor.id);
+    Object.assign(state.vendors[vendorIndex], vendor);
+  },
+
+  /**
    * LABORATORY ITEMS
    */
   ADD_LAB_ITEM(state, item) {

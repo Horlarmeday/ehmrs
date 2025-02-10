@@ -29,6 +29,7 @@ export const getRequestQuery = async (query: WhereOptions<Request>) => {
  * @param search
  * @param start
  * @param end
+ * @param filter
  */
 export const getRequests = ({
   currentPage = 1,
@@ -36,6 +37,7 @@ export const getRequests = ({
   search = null,
   start = null,
   end = null,
+  filter = null,
 }): Promise<{ currentPage: number; docs: Request[]; perPage: number; total: number }> => {
   return Request.paginate({
     page: currentPage,
@@ -43,6 +45,7 @@ export const getRequests = ({
     order: [['createdAt', 'DESC']],
     where: {
       ...(start && end && dateIntervalQuery('createdAt', start, end)),
+      ...(filter && filter !== 'All' && { status: filter }),
     },
     include: [
       {
@@ -137,12 +140,13 @@ export const getCurrentUserRequests = ({
  * @param staffId
  */
 export const updateRequestStatus = async (requestsBody: ProcessRequestBody[], staffId: number) => {
-  return await Promise.all(
-    requestsBody.map(({ status, id }) =>
-      Request.update(
-        { status, processed_by: staffId, date_processed: Date.now() },
-        { where: { id } }
-      )
-    )
+  return Promise.all(
+    requestsBody.map(async ({ status, id }) => {
+      const request = await getRequestQuery({ id });
+      request.status = status;
+      request.processed_by = staffId;
+      request.date_processed = new Date();
+      return request.save();
+    })
   );
 };

@@ -13,6 +13,7 @@ import { getOnePharmacyStoreItem } from '../Store/store.repository';
 import { ItemsToDispensedBody } from '../Inventory/types/inventory-item.types';
 import StoreService from '../Store/store.service';
 import { RequestStatus } from '../../database/models/request';
+import { BadException } from '../../common/util/api-error';
 
 export class RequestService {
   /**
@@ -46,13 +47,14 @@ export class RequestService {
   static async getRequests(body: {
     [s: string]: string | ParsedQs | string[] | ParsedQs[];
   }): Promise<{ currentPage: number; docs: Request[]; perPage: number; total: number }> {
-    const { currentPage, pageLimit, search, start, end } = body;
+    const { currentPage, pageLimit, search, start, end, filter } = body;
     if (start && end) {
       return getRequests({
         currentPage: +currentPage,
         pageLimit: +pageLimit,
         start,
         end,
+        filter,
       });
     }
 
@@ -61,6 +63,7 @@ export class RequestService {
         currentPage: +currentPage,
         pageLimit: +pageLimit,
         search,
+        filter,
       });
     }
 
@@ -68,10 +71,11 @@ export class RequestService {
       return getRequests({
         currentPage: +currentPage,
         pageLimit: +pageLimit,
+        filter,
       });
     }
 
-    return getRequests({});
+    return getRequests({ filter });
   }
 
   /**
@@ -84,37 +88,75 @@ export class RequestService {
    * @param staffId
    */
   static async processRequests(body: ProcessRequestBody[], staffId: number) {
-    const dispenseItems = await Promise.all(
-      body
-        .filter(data => data.status === RequestStatus.GRANTED)
-        .map(async data => {
-          const request = await getRequestQuery({ id: data.id });
-          const inventoryItem = await getInventoryItemQuery({ id: request.item_id });
-          const storeItem = await getOnePharmacyStoreItem({
-            drug_id: inventoryItem.drug_id,
-            drug_type: inventoryItem.drug_type,
-          });
+    const rejectedRequests = body.filter(data => data.status === RequestStatus.DECLINED);
+    const grantedRequests = body.filter(data => data.status === RequestStatus.GRANTED);
 
-          const dispenseData: ItemsToDispensedBody = {
-            id: storeItem.id,
-            drug_type: inventoryItem.drug_type,
-            quantity_to_dispense: request.quantity,
-            dispensary: request.inventory_id,
-            unit_id: inventoryItem.unit_id,
-            receiver: request.requested_by,
-            drug_name: inventoryItem?.drug?.name,
-          };
-          return dispenseData;
-        })
+    let updatedRejectedRequests = [];
+    // update rejected requests status
+    if (rejectedRequests?.length) {
+      updatedRejectedRequests = await updateRequestStatus(rejectedRequests, staffId);
+    }
+
+    if (!grantedRequests?.length) {
+      return {
+        errors: [],
+        requests: updatedRejectedRequests,
+      };
+    }
+
+    const itemsToDispense = await Promise.all(
+      grantedRequests.map(async data => {
+        const request = await getRequestQuery({ id: data.id });
+        const inventoryItem = await getInventoryItemQuery({
+          id: request.item_id,
+          inventory_id: request.inventory_id,
+        });
+        if (!inventoryItem) {
+          throw new BadException('Error', 404, `drug not found in the inventory`);
+        }
+        const storeItem = await getOnePharmacyStoreItem({
+          drug_id: inventoryItem.drug_id,
+          drug_type: inventoryItem.drug_type,
+        });
+
+        const dispenseData: ItemsToDispensedBody & { request_id: number } = {
+          id: storeItem.id,
+          drug_type: inventoryItem.drug_type,
+          quantity_to_dispense: request.quantity,
+          dispensary: request.inventory_id,
+          unit_id: inventoryItem.unit_id,
+          receiver: request.requested_by,
+          drug_name: inventoryItem?.drug?.name,
+          request_id: request.id,
+        };
+        return dispenseData;
+      })
     );
-    await StoreService.dispenseItemsFromStore(dispenseItems, staffId);
 
-    // const results = await StoreService.dispenseItemsFromStore(dispenseItems, staffId);
-    // const response = (results.filter(
-    //   res => res.status === 'fulfilled'
-    // ) as unknown) as PromiseFulfilledResult<PharmacyStore>[];
+    const results = await StoreService.dispenseItemsFromStore(itemsToDispense, staffId);
+    const errors = results.filter(res => res.status === 'rejected' && res.reason);
 
-    return updateRequestStatus(body, staffId);
+    const itemsDispensed = (results
+      .filter(item => item.status === 'fulfilled' && item.value)
+      .map(res => 'value' in res && res.value) as unknown) as PharmacyStore[];
+
+    const itemsToUpdate = itemsToDispense
+      .filter(item => itemsDispensed.some(dispensed => dispensed.id === item.id))
+      .map(item => ({
+        id: item.request_id,
+        status: RequestStatus.GRANTED,
+      }));
+
+    const updatedRequests = await updateRequestStatus(itemsToUpdate, staffId);
+
+    console.log(itemsDispensed, 'itemsDispensed');
+    console.log(updatedRequests, 'updatedRequests');
+    console.log(errors, 'errors');
+
+    return {
+      errors: errors.map(error => 'reason' in error && error.reason?.message),
+      requests: [...updatedRejectedRequests, ...updatedRequests],
+    };
   }
 
   /**

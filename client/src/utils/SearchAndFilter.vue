@@ -45,6 +45,15 @@
           }}</option>
         </select>
       </div>
+      <div class="col-lg-4">
+        <label>Vendors</label>
+        <select @change="onFilterByVendor" v-model="vendor" class="form-control w-400px">
+          <option value="">Select</option>
+          <option :value="option.id" v-for="(option, i) in vendors" :key="i">{{
+            option.name
+          }}</option>
+        </select>
+      </div>
     </div>
 
     <!--    <div class="input-group">-->
@@ -92,11 +101,16 @@ export default {
       drug_form: '',
       drug_type: '',
       dosage_form: '',
+      vendor: '',
     };
   },
   computed: {
     dosageForms() {
       return this.$store.state.pharmacy.dosageForms;
+    },
+
+    vendors() {
+      return this.$store.state.store.vendors;
     },
   },
   props: {
@@ -122,6 +136,9 @@ export default {
     },
     onFilterByDrugDosageForm() {
       this.$emit('filterByDosageForm', { dosage_form_id: this.dosage_form });
+    },
+    onFilterByVendor() {
+      this.$emit('filterByVendor', { vendor_id: this.vendor });
     },
     getDosageForms() {
       this.$store.dispatch('pharmacy/fetchDosageForms');

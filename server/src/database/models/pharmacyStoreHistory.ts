@@ -20,6 +20,7 @@ import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { DrugType, PharmacyStore } from './pharmacyStore';
 import { Inventory } from './inventory';
 import { HistoryType } from './inventoryItemHistory';
+import { Vendor } from './vendor';
 
 @Table({ timestamps: true, tableName: 'Pharmacy_Store_Histories' })
 export class PharmacyStoreHistory extends Model {
@@ -44,6 +45,18 @@ export class PharmacyStoreHistory extends Model {
     defaultValue: 0,
   })
   quantity_dispensed: number;
+
+  @Column({
+    type: DataType.DECIMAL(10, 2),
+    defaultValue: 0,
+  })
+  selling_price: number;
+
+  @Column({
+    type: DataType.DECIMAL(10, 2),
+    defaultValue: 0,
+  })
+  unit_price: number;
 
   @Column({
     type: DataType.INTEGER,
@@ -121,6 +134,13 @@ export class PharmacyStoreHistory extends Model {
   })
   history_type: HistoryType;
 
+  @ForeignKey(() => Vendor)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+  })
+  vendor_id: number;
+
   @BelongsTo(() => Unit)
   unit: Unit;
 
@@ -135,6 +155,9 @@ export class PharmacyStoreHistory extends Model {
 
   @BelongsTo(() => PharmacyStore)
   store: PharmacyStore;
+
+  @BelongsTo(() => Vendor)
+  vendor: Vendor;
 
   static async paginate(param: {
     paginate: number;

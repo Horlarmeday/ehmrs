@@ -640,6 +640,14 @@ const router = new Router({
                     requiresAuth: true,
                   },
                 },
+                {
+                  path: 'vendors',
+                  name: 'vendors',
+                  component: () => import('@/view/pages/store/pharmacy/Vendors.vue'),
+                  meta: {
+                    requiresAuth: true,
+                  },
+                },
               ],
             },
             {

@@ -53,6 +53,20 @@
           <label>Date Received:</label>
           <datepicker v-model="item.date_received" input-class="form-control form-control-sm" />
         </div>
+        <div class="d-flex flex-column flex-root">
+          <label>Vendor</label>
+          <select
+            v-validate="'required'"
+            data-vv-validate-on="blur"
+            class="form-control form-control-sm"
+            v-model="item.vendor_id"
+            name="vendor"
+          >
+            <option :value="vendor.id" v-for="vendor in vendors" :key="vendor.id">{{
+              vendor.name
+            }}</option>
+          </select>
+        </div>
         <div class="pt-lg-5">
           <a href="#" class="col-lg-1 col-form-label">
             <i
@@ -103,6 +117,13 @@ export default {
     },
   },
 
+  created() {
+    this.$store.dispatch('store/fetchVendors', {
+      currentPage: 1,
+      itemsPerPage: 50,
+    });
+  },
+
   computed: {
     activePrompt: {
       get() {
@@ -111,6 +132,9 @@ export default {
       set(value) {
         this.$emit('closeModal', value);
       },
+    },
+    vendors() {
+      return this.$store.state.store.vendors;
     },
   },
 
