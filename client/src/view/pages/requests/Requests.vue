@@ -4,6 +4,7 @@
       :display-prompt="displayPrompt"
       @closeModal="hideModal"
       :items-to-request="itemsToRequest"
+      @updateItemsToRequest="value => (itemsToRequest = value)"
     />
     <!--begin::Header-->
     <div class="card-header border-0 py-5">
@@ -11,8 +12,17 @@
         <span class="card-label font-weight-bolder text-dark">Requests</span>
       </h3>
     </div>
+
     <div class="card-header border-0">
       <search @search="onHandleSearch" :show-date-filter="true" />
+    </div>
+    <div class="card-header border-0">
+      <div class="col-3">
+        <label class="text-dark">Status</label>
+        <select @change="onFilterByStatus" v-model="status" class="form-control">
+          <option :value="status" v-for="(status, i) in statuses" :key="i">{{ status }}</option>
+        </select>
+      </div>
     </div>
 
     <div class="card-body py-0">
@@ -48,11 +58,13 @@ export default {
   data() {
     return {
       currentPage: 1,
-      itemsPerPage: 10,
+      itemsPerPage: 20,
       start: null,
       end: null,
       displayPrompt: false,
       itemsToRequest: [],
+      statuses: ['All', 'Pending', 'Granted', 'Declined'],
+      status: this.$route.query.filter || 'Pending',
     };
   },
   computed: {
@@ -90,6 +102,7 @@ export default {
         pathName: 'request-list',
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
+        filter: this.$route.query.filter || this.status,
         startDate: dayjs(start).format('YYYY-MM-DD'),
         endDate: dayjs(end).format('YYYY-MM-DD'),
       });
@@ -99,6 +112,7 @@ export default {
           itemsPerPage: this.$route.query.itemsPerPage,
           start: this.$route.query.startDate,
           end: this.$route.query.endDate,
+          filter: this.$route.query.filter,
         })
         .then(() => removeSpinner(dateSpin))
         .catch(() => removeSpinner(dateSpin));
@@ -111,6 +125,7 @@ export default {
         search: this.$route.query.search || null,
         startDate: this.$route.query.startDate,
         endDate: this.$route.query.endDate,
+        filter: this.$route.query.filter || this.status,
       });
       this.$store.dispatch('request/fetchRequests', {
         currentPage: this.$route.query.currentPage || this.currentPage,
@@ -118,6 +133,26 @@ export default {
         start: this.$route.query.startDate,
         end: this.$route.query.endDate,
         search: this.$route.query.search,
+        filter: this.$route.query.filter,
+      });
+    },
+
+    onFilterByStatus() {
+      setUrlQueryParams({
+        currentPage: this.currentPage,
+        itemsPerPage: this.itemsPerPage,
+        search: this.$route.query.search || null,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
+        filter: this.status,
+      });
+      this.$store.dispatch('request/fetchRequests', {
+        currentPage: this.$route.query.currentPage || this.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
+        search: this.$route.query.search,
+        filter: this.$route.query.filter,
       });
     },
 
@@ -128,6 +163,7 @@ export default {
         search: this.$route.query.search || null,
         startDate: this.$route.query.startDate,
         endDate: this.$route.query.endDate,
+        filter: this.$route.query.filter || this.status,
       });
       this.$store.dispatch('request/fetchRequests', {
         currentPage: this.$route.query.currentPage || this.currentPage,
@@ -135,6 +171,7 @@ export default {
         start: this.$route.query.startDate,
         end: this.$route.query.endDate,
         search: this.$route.query.search,
+        filter: this.$route.query.filter,
       });
     },
 
@@ -149,6 +186,7 @@ export default {
         currentPage: 1,
         itemsPerPage: this.itemsPerPage,
         search,
+        filter: this.$route.query.filter || this.status,
       });
       this.debounceSearch(search, this, spinDiv);
     },
@@ -159,6 +197,7 @@ export default {
           currentPage: 1,
           itemsPerPage: vm.itemsPerPage,
           search,
+          filter: this.$route.query.filter,
         })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));
@@ -189,6 +228,7 @@ export default {
       search: this.$route.query.search || null,
       start: this.$route.query.startDate || null,
       end: this.$route.query.endDate || null,
+      filter: this.$route.query.filter || this.status,
     });
   },
 };

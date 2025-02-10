@@ -250,6 +250,64 @@ export default {
   },
 
   /**
+   * VENDORS
+   */
+  addVendor({ commit }, item) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post('/store/pharmacy/vendors/create', item)
+        .then(response => {
+          commit(
+            'ADD_VENDOR',
+            Object.assign(item, {
+              id: response.data.data.id,
+              createdAt: response.data.data.createdAt,
+            })
+          );
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchVendors({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/store/pharmacy/vendors/get', {
+          params: {
+            currentPage: payload?.currentPage,
+            pageLimit: payload?.itemsPerPage,
+          },
+        })
+        .then(response => {
+          commit('SET_VENDORS', response.data.data.docs);
+          commit('SET_VENDORS_TOTAL', response.data.data.total);
+          commit('SET_VENDORS_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  updateVendor({ commit }, vendor) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put('/store/pharmacy/vendors/update/:id', vendor)
+        .then(response => {
+          commit('UPDATE_VENDOR', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
    * LABORATORY ITEMS
    */
   addLaboratoryItem({ commit }, item) {

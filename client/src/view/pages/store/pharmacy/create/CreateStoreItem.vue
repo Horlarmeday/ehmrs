@@ -197,6 +197,24 @@
               />
             </div>
             <div class="col-lg-4 mt-3">
+              <label
+                >Vendor <span class="text-danger">*</span> (Can't find your vendor? create one
+                <a href="/store/pharmacy/vendors">here</a>)</label
+              >
+              <select
+                v-validate="'required'"
+                data-vv-validate-on="blur"
+                class="form-control form-control-sm"
+                v-model="vendor_id"
+                name="vendor"
+              >
+                <option :value="vendor.id" v-for="vendor in vendors" :key="vendor.id">{{
+                  vendor.name
+                }}</option>
+              </select>
+              <span class="text-danger text-sm">{{ errors.first('vendor') }}</span>
+            </div>
+            <div class="col-lg-4 mt-3">
               <div class="form-group">
                 <label>Item Type</label>
                 <div class="checkbox-inline">
@@ -292,6 +310,7 @@ export default {
       date_received: new Date(),
       drug_form: '',
       brand: '',
+      vendor_id: '',
 
       isDisabled: false,
       create_cash_item: true,
@@ -323,6 +342,10 @@ export default {
     routes() {
       return this.$store.state.pharmacy.routes;
     },
+
+    vendors() {
+      return this.$store.state.store.vendors;
+    },
   },
 
   created() {
@@ -330,10 +353,15 @@ export default {
       currentPage: 1,
       itemsPerPage: 20,
     });
+    this.$store.dispatch('store/fetchVendors', {
+      currentPage: 1,
+      itemsPerPage: 50,
+    });
   },
   methods: {
     initValues() {
       this.drug_id = '';
+      this.vendor_id = '';
       this.product_code = '';
       this.batch = '';
       this.voucher = '';
@@ -422,6 +450,7 @@ export default {
             date_received: this.date_received,
             drug_form: this.drug_form,
             brand: this.brand,
+            vendor_id: this.vendor_id,
             create_cash_item: this.create_cash_item,
             create_nhis_item: this.create_nhis_item,
             create_private_item: this.create_private_item,

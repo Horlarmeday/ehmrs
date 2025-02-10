@@ -6,7 +6,7 @@ import { Antenatal, Immunization, Patient } from '../../database/models';
 import { getOneImmunization } from '../../modules/Immunization/immunization.repository';
 import { getSystemSettings } from '../../modules/AdminSettings/admin.repository';
 
-const generateUniqueNumber = async (dataId: number, count: number, prefix: string) => {
+const generateUniqueNumber = (dataId: number, count: number, prefix: string) => {
   if (count === 1) return `${prefix}/${padNumberWithZero(dataId, 6)}`;
 
   const randomNumbers = generateRandomNumbers(6);
@@ -20,7 +20,7 @@ export const getHospitalNumber = async (patientId: number) => {
   const settings = await getSystemSettings();
   do {
     count++;
-    generatedHospitalNumber = await generateUniqueNumber(
+    generatedHospitalNumber = generateUniqueNumber(
       patientId,
       count,
       settings?.patient_id_prefix || 'SVH'
@@ -37,7 +37,7 @@ export const getAntenatalNumber = async (antenatalId: number) => {
   let count = 0;
   do {
     count++;
-    generatedAntenatalNumber = await generateUniqueNumber(antenatalId, count, 'ANC');
+    generatedAntenatalNumber = generateUniqueNumber(antenatalId, count, 'ANC');
     antenatalNumber = await getOneAntenatalAccount({ antenatal_number: generatedAntenatalNumber });
   } while (antenatalNumber);
 
@@ -50,7 +50,7 @@ export const getImmunizationNumber = async (immunizationId: number) => {
   let count = 0;
   do {
     count++;
-    generatedImmunizationNumber = await generateUniqueNumber(immunizationId, count, 'IMM');
+    generatedImmunizationNumber = generateUniqueNumber(immunizationId, count, 'IMM');
     immunization = await getOneImmunization({
       immunization_number: generatedImmunizationNumber,
     });

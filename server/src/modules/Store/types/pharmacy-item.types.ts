@@ -39,6 +39,7 @@ export type ItemsToReorder = {
   unit_price: number;
   voucher: string;
   batch: string;
+  vendor_id: number;
   expiration: Date;
   date_received: Date;
 };

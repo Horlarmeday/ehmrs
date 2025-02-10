@@ -15,10 +15,11 @@
         <table class="table table-head-custom table-vertical-center" id="kt_advance_table_widget_1">
           <thead>
             <tr class="text-left">
-              <th class="pr-0" style="width: 150px">Quantity {{ table_type }}</th>
-              <th style="min-width: 150px">Quantity Remaining</th>
-              <th style="min-width: 150px">Inventory</th>
+              <th class="pr-0" style="width: 150px">Qty {{ table_type }}</th>
+              <th style="min-width: 150px">Qty Remaining</th>
+              <th v-if="table_name !== 'Supply'" style="min-width: 150px">Inventory</th>
               <th style="min-width: 150px">Receiver</th>
+              <th style="min-width: 150px">Price(₦)</th>
               <th style="min-width: 150px">{{ table_type }} By</th>
               <th style="min-width: 150px">Date {{ table_type }}</th>
             </tr>
@@ -40,13 +41,16 @@
                   {{ history.quantity_remaining }} {{ history?.unit?.name }}
                 </span>
               </td>
-              <td>
+              <td v-if="table_name !== 'Supply'">
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                   {{ history?.inventory?.name || '-' }}
                 </span>
               </td>
               <td>
-                <span v-if="history.receiver" class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                <span
+                  v-if="history.receiver"
+                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
+                >
                   {{ history?.receiver?.firstname }} {{ history?.receiver?.lastname }}
                 </span>
                 <span v-else class="text-dark-75 font-weight-bolder d-block font-size-lg">
@@ -55,6 +59,20 @@
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ history.selling_price || '0.00' }}
+                </span>
+              </td>
+              <td>
+                <span
+                  v-if="table_type === 'Supplied'"
+                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
+                >
+                  {{ history?.vendor?.name || '-' }}
+                </span>
+                <span
+                  v-if="table_type === 'Dispensed'"
+                  class="text-dark-75 font-weight-bolder d-block font-size-lg"
+                >
                   {{ history?.dispenser?.firstname }} {{ history?.dispenser?.lastname }}
                 </span>
               </td>

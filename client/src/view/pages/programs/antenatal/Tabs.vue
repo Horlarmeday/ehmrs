@@ -171,6 +171,19 @@
                 >Alerts</a
               >
             </li>
+            <li v-if="nurseAllowedTabs.includes(currentUser.role)" class="nav-item">
+              <a
+                class="nav-link text-dark py-4 px-6"
+                :class="{ active: tabIndex === 11, disabled: tabIndex === 11 }"
+                @click="setActiveTab($event, 'additionalItems')"
+                data-tab="11"
+                data-toggle="tab"
+                href="#"
+                role="tab"
+                aria-selected="true"
+                >Items</a
+              >
+            </li>
           </ul>
           <div class="ml-auto">
             <pulse-icons />
@@ -201,6 +214,7 @@ import Medication from '@/view/pages/programs/antenatal/tabs/Medication.vue';
 import MedicationDoctor from '@/view/pages/programs/antenatal/tabs/MedicationDoctor.vue';
 import Services from '@/view/pages/programs/antenatal/tabs/Services.vue';
 import ANCTriageCard from '@/view/components/util/ANCTriageCard.vue';
+import AdditionalItems from '@/view/pages/programs/antenatal/tabs/AdditionalItems.vue';
 
 const ComponentMapping = {
   accountUpdate: AccountUpdate,
@@ -215,6 +229,7 @@ const ComponentMapping = {
   surgery: Surgery,
   alert: Alerts,
   services: Services,
+  additionalItems: AdditionalItems,
 };
 export default {
   components: {

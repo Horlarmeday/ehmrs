@@ -7,7 +7,7 @@
           <label class="col-2 col-form-label">Presenting Complaint</label>
           <div class="col-9">
             <textarea
-              v-model="complaint_note"
+              v-model="formData.complaint_note"
               class="form-control form-control-sm"
               cols="10"
               rows="3"
@@ -22,7 +22,7 @@
           <label class="col-2 col-form-label">History</label>
           <div class="col-9">
             <textarea
-              v-model="additional_complaint"
+              v-model="formData.additional_complaint"
               class="form-control form-control-sm"
               cols="10"
               rows="3"
@@ -34,7 +34,7 @@
           <label class="col-2 col-form-label">General Examination</label>
           <div class="col-9">
             <textarea
-              v-model="examination_note"
+              v-model="formData.examination_note"
               class="form-control form-control-sm"
               cols="30"
               rows="2"
@@ -50,7 +50,7 @@
           <label class="col-lg-2 col-form-label">Respiratory:</label>
           <div class="col-4">
             <textarea
-              v-model="respiratory"
+              v-model="formData.respiratory"
               class="form-control form-control-sm"
               cols="30"
               rows="2"
@@ -58,34 +58,59 @@
           </div>
           <label class="col-lg-1 col-form-label">CVS:</label>
           <div class="col-4">
-            <textarea v-model="cvs" class="form-control form-control-sm" cols="30" rows="2" />
+            <textarea
+              v-model="formData.cvs"
+              class="form-control form-control-sm"
+              cols="30"
+              rows="2"
+            />
           </div>
         </div>
         <div class="form-group row">
           <label class="col-lg-2 col-form-label">Abdomen:</label>
           <div class="col-4">
-            <textarea v-model="abdomen" class="form-control form-control-sm" cols="30" rows="2" />
+            <textarea
+              v-model="formData.abdomen"
+              class="form-control form-control-sm"
+              cols="30"
+              rows="2"
+            />
           </div>
           <label class="col-lg-1 col-form-label">CNS:</label>
           <div class="col-4">
-            <textarea v-model="cns" class="form-control form-control-sm" cols="30" rows="2" />
+            <textarea
+              v-model="formData.cns"
+              class="form-control form-control-sm"
+              cols="30"
+              rows="2"
+            />
           </div>
         </div>
         <div class="form-group row">
           <label class="col-lg-2 col-form-label">MSS:</label>
           <div class="col-4">
-            <textarea v-model="mss" class="form-control form-control-sm" cols="30" rows="2" />
+            <textarea
+              v-model="formData.mss"
+              class="form-control form-control-sm"
+              cols="30"
+              rows="2"
+            />
           </div>
           <label class="col-lg-1 col-form-label">ENT:</label>
           <div class="col-4">
-            <textarea v-model="ent" class="form-control form-control-sm" cols="30" rows="2" />
+            <textarea
+              v-model="formData.ent"
+              class="form-control form-control-sm"
+              cols="30"
+              rows="2"
+            />
           </div>
         </div>
         <div class="form-group row">
           <label class="col-lg-2 col-form-label">Other:</label>
           <div class="col-9">
             <textarea
-              v-model="other_examination"
+              v-model="formData.other_examination"
               class="form-control form-control-sm"
               cols="30"
               rows="2"
@@ -96,7 +121,7 @@
           <label class="col-2 col-form-label">Treatment Plan</label>
           <div class="col-9">
             <textarea
-              v-model="history_note"
+              v-model="formData.history_note"
               class="form-control form-control-sm"
               cols="30"
               rows="2"
@@ -122,7 +147,7 @@
               </label>
             </div>
           </div>
-          <div class="form-group row" v-for="(diag, index) in diagnosis" :key="index">
+          <div class="form-group row" v-for="(diag, index) in formData.diagnosis" :key="index">
             <div class="col-lg-5">
               <label class="font-weight-bold text-center">Diagnosis</label>
               <v-select
@@ -210,27 +235,29 @@ export default {
   components: { DiagnosisAccordion, vSelect },
   data() {
     return {
-      diagnosis: [
-        {
-          certainty: '',
-          diagnosis: '',
-          notes: '',
-        },
-      ],
-      complaint_note: '',
-      additional_complaint: '',
-      history_note: '',
-      chest: '',
-      other_examination: '',
-      cvs: '',
-      mss: '',
-      ent: '',
-      cns: '',
-      respiratory: '',
-      abdomen: '',
-      examination_note: '',
-      isDisabled: false,
+      formData: {
+        diagnosis: [
+          {
+            certainty: '',
+            diagnosis: '',
+            notes: '',
+          },
+        ],
+        complaint_note: '',
+        additional_complaint: '',
+        history_note: '',
+        chest: '',
+        other_examination: '',
+        cvs: '',
+        mss: '',
+        ent: '',
+        cns: '',
+        respiratory: '',
+        abdomen: '',
+        examination_note: '',
+      },
       diagnosisType: 'ICD10',
+      isDisabled: false,
       certainties: ['Confirmed', 'Presumed'],
       diseaseTypes: ['ICD10', 'ICPC2'],
     };
@@ -248,7 +275,29 @@ export default {
       },
     },
   },
+  watch: {
+    formData: {
+      handler() {
+        this.saveToLocalStorage();
+      },
+      deep: true, // Watch for nested changes
+    },
+  },
+  created() {
+    this.loadFromLocalStorage();
+  },
   methods: {
+    saveToLocalStorage() {
+      localStorage.setItem('examination', JSON.stringify(this.formData));
+    },
+
+    loadFromLocalStorage() {
+      const formData = JSON.parse(localStorage.getItem('examination'));
+      if (formData) {
+        this.formData = formData;
+      }
+    },
+
     addSpinner(submitButton) {
       this.isDisabled = true;
       submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');
@@ -260,6 +309,7 @@ export default {
     },
 
     endRequest(button) {
+      localStorage.removeItem('examination');
       this.removeSpinner(button);
       this.initValues();
       setTimeout(() => {
@@ -274,25 +324,25 @@ export default {
       this.$validator.validateAll().then(result => {
         if (result) {
           const obj = {
-            has_smoking_history: this.has_smoking_history,
-            examination_note: this.examination_note,
-            history_note: this.history_note,
-            complaint_note: this.complaint_note,
-            chest: this.chest,
-            cvs: this.cvs,
-            mss: this.mss,
-            abdomen: this.abdomen,
-            other_examination: this.other_examination,
-            diagnosis: this.diagnosis.map(({ diagnosis, certainty, notes }) => ({
+            has_smoking_history: this.formData.has_smoking_history,
+            examination_note: this.formData.examination_note,
+            history_note: this.formData.history_note,
+            complaint_note: this.formData.complaint_note,
+            chest: this.formData.chest,
+            cvs: this.formData.cvs,
+            mss: this.formData.mss,
+            abdomen: this.formData.abdomen,
+            other_examination: this.formData.other_examination,
+            diagnosis: this.formData.diagnosis.map(({ diagnosis, certainty, notes }) => ({
               diagnosis_id: diagnosis.id,
               type: diagnosis.type,
               certainty,
               notes,
             })),
-            ent: this.ent,
-            cns: this.cns,
-            respiratory: this.respiratory,
-            additional_complaint: this.additional_complaint,
+            ent: this.formData.ent,
+            cns: this.formData.cns,
+            respiratory: this.formData.respiratory,
+            additional_complaint: this.formData.additional_complaint,
           };
           const submitButton = this.$refs['kt_observation_submit'];
           this.addSpinner(submitButton);
@@ -309,7 +359,7 @@ export default {
     },
 
     checkDiagnosisNotSelected() {
-      return this.diagnosis.some(({ diagnosis, certainty }) => !diagnosis || !certainty);
+      return this.formData.diagnosis.some(({ diagnosis, certainty }) => !diagnosis || !certainty);
     },
 
     errorMessage() {
@@ -322,7 +372,7 @@ export default {
     },
 
     addNewDiagnosis() {
-      this.diagnosis.push({
+      this.formData.diagnosis.push({
         certainty: '',
         diagnosis: '',
         notes: '',
@@ -330,35 +380,35 @@ export default {
     },
 
     removeDiagnosis(i) {
-      this.diagnosis.splice(i, 1);
+      this.formData.diagnosis.splice(i, 1);
     },
 
     removeEmptyDiagnosis() {
-      const index = this.diagnosis.findIndex(({ diagnosis }) => !diagnosis);
-      if (this.diagnosis.length > 1 && index !== -1) this.removeDiagnosis(index);
+      const index = this.formData.diagnosis.findIndex(({ diagnosis }) => !diagnosis);
+      if (this.formData.diagnosis.length > 1 && index !== -1) this.removeDiagnosis(index);
     },
 
     initValues() {
-      this.diagnosis = [
+      this.formData.diagnosis = [
         {
           certainty: '',
           diagnosis: '',
           notes: '',
         },
       ];
-      this.has_smoking_history = '';
-      this.examination_note = '';
-      this.history_note = '';
-      this.complaint_note = '';
-      this.chest = '';
-      this.other_examination = '';
-      this.cvs = '';
-      this.mss = '';
-      this.abdomen = '';
-      this.ent = '';
-      this.cns = '';
-      this.respiratory = '';
-      this.additional_complaint = '';
+      this.formData.has_smoking_history = '';
+      this.formData.examination_note = '';
+      this.formData.history_note = '';
+      this.formData.complaint_note = '';
+      this.formData.chest = '';
+      this.formData.other_examination = '';
+      this.formData.cvs = '';
+      this.formData.mss = '';
+      this.formData.abdomen = '';
+      this.formData.ent = '';
+      this.formData.cns = '';
+      this.formData.respiratory = '';
+      this.formData.additional_complaint = '';
     },
 
     searchDiagnosis(search, loading) {

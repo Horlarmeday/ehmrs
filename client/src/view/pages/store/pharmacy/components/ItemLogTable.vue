@@ -39,6 +39,9 @@
                 <span style="width: 108px;">Voucher</span>
               </th>
               <th class="datatable-cell datatable-cell-sort">
+                <span style="width: 108px;">Date</span>
+              </th>
+              <th class="datatable-cell datatable-cell-sort">
                 <span style="width: 108px;">Initiated By</span>
               </th>
             </tr>
@@ -67,17 +70,26 @@
                 <span style="width: 108px;">{{ log.selling_price }}</span>
               </td>
               <td class="datatable-cell">
-                <span style="width: 108px;">{{ log.quantity_remaining }} {{ log?.unit?.name }}</span>
+                <span style="width: 108px;"
+                  >{{ log.quantity_remaining }} {{ log?.unit?.name }}</span
+                >
               </td>
               <td class="datatable-cell">
                 <span style="width: 108px;"
                   ><span :class="getLogTypeStatus(log.log_type)" class="label label-dot mr-2"></span
-                  ><span :class="getLogTypeTextColor(log.log_type)" class="font-weight-bold">{{ log.log_type }}</span></span
+                  ><span :class="getLogTypeTextColor(log.log_type)" class="font-weight-bold">{{
+                    log.log_type
+                  }}</span></span
                 >
               </td>
               <td class="datatable-cell">
                 <span style="width: 108px;">
                   {{ log.voucher }}
+                </span>
+              </td>
+              <td class="datatable-cell">
+                <span style="width: 108px;">
+                  {{ log.createdAt | dayjs('MMM Do YYYY, h:mma') }}
                 </span>
               </td>
               <td class="datatable-cell">

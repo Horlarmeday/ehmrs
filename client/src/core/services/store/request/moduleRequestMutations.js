@@ -28,6 +28,10 @@ export default {
     state.selectedRequests.splice(requestIndex, 1);
   },
 
+  REMOVE_SELECTED_REQUESTS(state, requests) {
+    state.selectedRequests = state.selectedRequests.filter(({ id }) => !requests.includes(id));
+  },
+
   EMPTY_SELECTED_REQUESTS(state, requests) {
     state.selectedRequests = requests;
   },

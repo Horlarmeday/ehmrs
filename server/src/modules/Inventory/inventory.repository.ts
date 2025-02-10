@@ -123,13 +123,14 @@ export async function getInventoryItems({ inventory, currentPage = 1, pageLimit 
 export async function searchInventoryItems({
   inventory,
   currentPage = 1,
-  pageLimit = 10,
+  pageLimit = 50,
   search,
   filter = null,
 }) {
   return InventoryItem.paginate({
     page: currentPage,
     paginate: pageLimit,
+    order: [['quantity_remaining', 'DESC']],
     where: {
       inventory_id: inventory,
       ...(filter && { ...JSON.parse(filter) }),

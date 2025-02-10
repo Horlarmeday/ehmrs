@@ -22,6 +22,7 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { PharmacyStore } from './pharmacyStore';
+import { Vendor } from './vendor';
 
 export enum DrugType {
   CASH = 'Cash',
@@ -211,6 +212,13 @@ export class PharmacyStoreLog extends Model {
   })
   log_type: LogType;
 
+  @ForeignKey(() => Vendor)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+  })
+  vendor_id: number;
+
   @BelongsTo(() => Unit)
   unit: Unit;
 
@@ -228,6 +236,9 @@ export class PharmacyStoreLog extends Model {
 
   @BelongsTo(() => RoutesOfAdministration)
   route: RoutesOfAdministration;
+
+  @BelongsTo(() => Vendor)
+  vendor: Vendor;
 
   static async paginate(param: {
     paginate: number;

@@ -2,7 +2,7 @@
   <div class="alert alert-custom alert-light-danger fade show mb-5" role="alert">
     <div class="alert-icon"><i class="flaticon-warning"></i></div>
     <div class="alert-text">
-      <span class="mb-3">{{ message }}</span>
+      <span class="mb-5">{{ message }}</span>
       <div v-if="lists?.length">
         <ul v-for="(list, i) in lists" :key="i">
           <li>{{ list }}</li>

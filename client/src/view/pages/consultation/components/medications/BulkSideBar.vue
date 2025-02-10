@@ -42,7 +42,7 @@
                   name="diagnosis"
                   @search="onSearch"
                   @input="setDrugInfo"
-                  v-model="drug"
+                  v-model="formData.drug"
                   label="name"
                   :options="drugOptions"
                   :reduce="
@@ -59,22 +59,24 @@
                   "
                 />
                 <span class="form-text text-sm text-danger">{{ errors.first('drug') }}</span>
-                <span v-if="strength_input" class="form-text text-success"
+                <span v-if="formData.strength_input" class="form-text text-success"
                   >Available Strength:
                   <span class="font-weight-boldest"
-                    >{{ strength_input }} {{ strength?.name }}</span
+                    >{{ formData.strength_input }} {{ formData.strength?.name }}</span
                   ></span
                 >
                 <span
-                  v-if="quantity_remaining"
+                  v-if="formData.quantity_remaining"
                   class="form-text"
-                  :class="quantity_remaining < 50 ? 'text-danger' : 'text-success'"
+                  :class="formData.quantity_remaining < 50 ? 'text-danger' : 'text-success'"
                 >
                   Quantity Remaining:
-                  <span class="font-weight-boldest">{{ quantity_remaining }} {{ unit_name }}</span>
+                  <span class="font-weight-boldest"
+                    >{{ formData.quantity_remaining }} {{ formData.unit_name }}</span
+                  >
                 </span>
-                <span v-if="price" class="form-text text-success"
-                  >Price: <span class="font-weight-boldest">₦{{ price }}</span></span
+                <span v-if="formData.price" class="form-text text-success"
+                  >Price: <span class="font-weight-boldest">₦{{ formData.price }}</span></span
                 >
               </div>
             </div>
@@ -85,7 +87,7 @@
                   readonly
                   type="text"
                   class="form-control-sm form-control"
-                  v-model="dosage_form.name"
+                  v-model="formData.dosage_form.name"
                 />
                 <span class="form-text text-danger">{{ errors.first('dosage_form') }}</span>
               </div>
@@ -96,7 +98,7 @@
                 <select
                   class="form-control form-control-sm"
                   name="route"
-                  v-model="route"
+                  v-model="formData.route"
                   v-validate="'required'"
                   data-vv-validate-on="blur"
                 >
@@ -114,7 +116,7 @@
                   name="start_date"
                   v-validate="'required'"
                   data-vv-validate-on="blur"
-                  v-model="start_date"
+                  v-model="formData.start_date"
                   input-class="form-control form-control-sm"
                   placeholder="Starting Date"
                 />
@@ -127,7 +129,7 @@
                 <input
                   type="number"
                   class="form-control form-control-sm"
-                  v-model="prescribed_strength"
+                  v-model="formData.prescribed_strength"
                   @input="calculateDosageQuantity"
                 />
                 <span class="form-text text-danger">{{ errors.first('prescribed_strength') }}</span>
@@ -140,7 +142,7 @@
                   v-validate="'required'"
                   data-vv-validate-on="blur"
                   @change="calculateDosageQuantity"
-                  v-model="frequency"
+                  v-model="formData.frequency"
                   class="form-control form-control-sm"
                   name="frequency"
                 >
@@ -155,7 +157,7 @@
               <label class="col-lg-3 col-form-label">Duration:</label>
               <div class="col-lg-9">
                 <input
-                  v-model="duration"
+                  v-model="formData.duration"
                   class="form-control-sm form-control"
                   type="number"
                   name="duration"
@@ -171,7 +173,7 @@
               <div class="col-lg-9">
                 <select
                   @change="calculateDosageQuantity"
-                  v-model="duration_unit"
+                  v-model="formData.duration_unit"
                   class="form-control form-control-sm"
                   name="unit"
                   v-validate="'required'"
@@ -182,10 +184,10 @@
                   }}</option>
                 </select>
                 <span class="form-text text-danger">{{ errors.first('duration_unit') }}</span>
-                <span v-if="quantity_prescribed" class="form-text text-success"
+                <span v-if="formData.quantity_prescribed" class="form-text text-success"
                   >Dosage Quantity:
                   <span class="font-weight-boldest"
-                    >{{ quantity_prescribed }} {{ unit_name }}</span
+                    >{{ formData.quantity_prescribed }} {{ formData.unit_name }}</span
                   ></span
                 >
               </div>
@@ -194,22 +196,22 @@
               <label class="col-lg-3 col-form-label">Qty to dispense:</label>
               <div class="col-lg-9">
                 <input
-                  v-model="quantity_to_dispense"
+                  v-model="formData.quantity_to_dispense"
                   class="form-control-sm form-control"
                   type="number"
                   name="quantity_to_dispense"
                   v-validate="'required|min_value:1'"
                   data-vv-validate-on="blur"
                   @input="getTotalPrice"
-                  :disabled="!quantity_prescribed"
+                  :disabled="!formData.quantity_prescribed"
                 />
                 <span class="form-text text-danger">{{
                   errors.first('quantity_to_dispense')
                 }}</span>
-                <span v-if="total_price" class="form-text text-success">
+                <span v-if="formData.total_price" class="form-text text-success">
                   Total price
                   <span class="text-success"
-                    ><span class="font-weight-boldest">₦{{ total_price }}</span></span
+                    ><span class="font-weight-boldest">₦{{ formData.total_price }}</span></span
                   >
                 </span>
               </div>
@@ -223,7 +225,7 @@
                     class="radio radio-md radio-rounded"
                     :key="i"
                   >
-                    <input type="radio" v-model="drug_group" :value="type" />
+                    <input type="radio" v-model="formData.drug_group" :value="type" />
                     <span></span>
                     {{ type }}
                   </label>
@@ -234,7 +236,7 @@
               <label class="col-lg-3 col-form-label">Notes:</label>
               <div class="col-lg-9">
                 <textarea
-                  v-model="notes"
+                  v-model="formData.notes"
                   name="notes"
                   cols="5"
                   class="form-control form-control-sm"
@@ -244,7 +246,7 @@
             </div>
             <div class="mt-3">
               <div
-                v-if="quantity_remaining !== null && quantity_remaining <= 0"
+                v-if="formData.quantity_remaining !== null && formData.quantity_remaining <= 0"
                 class="alert alert-warning"
                 role="alert"
               >
@@ -252,7 +254,7 @@
               </div>
               <button
                 @click="submitDrugOrder"
-                :disabled="quantity_remaining <= 0"
+                :disabled="formData.quantity_remaining <= 0"
                 ref="kt-drugOrder-submit"
                 class="btn btn-primary btn-md float-right mb-3"
               >
@@ -307,16 +309,22 @@ export default {
         this.drug = '';
       },
     },
-    drugOrders() {
-      return this.$store.state.order.drug_orders;
-    },
-
-    tempDrugOrders() {
-      return this.$store.state.order.drug_prescriptions;
-    },
+    // drugOrders() {
+    //   return this.$store.state.order.drug_orders;
+    // },
+    //
+    // tempDrugOrders() {
+    //   return this.$store.state.order.drug_prescriptions;
+    // },
   },
 
   watch: {
+    formData: {
+      handler() {
+        this.saveToLocalStorage();
+      },
+      deep: true, // Watch for nested changes
+    },
     // check NHIS drugs quota is reached
     // TODO: only get drugs prescribed today and not all drug orders
     // drugOrders(value) {
@@ -347,34 +355,37 @@ export default {
   },
 
   data: () => ({
-    nhisPriceQuotaExceeded: false,
-    quotaPrice: 13500, // todo: select this from settings
-    switchSpot: true,
-    dosage_form: '',
-    route: '',
-    start_date: new Date(),
-    duration_unit: '',
-    notes: '',
-    quantity_to_dispense: '',
-    duration: '',
-    frequency: '',
-    drug: '',
-    prescribed_strength: '',
-    drug_id: '',
-    drug_group: null,
-    inventory_id: '',
-    currentUser: parseJwt(localStorage.getItem('user_token')),
-    ANTENATAL: 'ANC',
+    formData: {
+      nhisPriceQuotaExceeded: false,
+      quotaPrice: 13500, // todo: select this from settings
 
-    price: null,
-    total_price: null,
-    quantity_remaining: null,
-    strength_input: null,
-    strength: null,
-    quantity_prescribed: null,
-    unit_name: null,
-    drug_name: null,
-    strength_name: null,
+      dosage_form: '',
+      route: '',
+      start_date: new Date(),
+      duration_unit: '',
+      notes: '',
+      quantity_to_dispense: '',
+      duration: '',
+      frequency: '',
+      drug: '',
+      prescribed_strength: '',
+      drug_id: '',
+      drug_group: null,
+      inventory_id: '',
+
+      price: null,
+      total_price: null,
+      quantity_remaining: null,
+      strength_input: null,
+      strength: null,
+      quantity_prescribed: null,
+      unit_name: null,
+      drug_name: null,
+      strength_name: null,
+    },
+    switchSpot: true,
+    ANTENATAL: 'ANC',
+    currentUser: parseJwt(localStorage.getItem('user_token')),
     frequencies: [
       { val: 1, label: 'Stat' },
       { val: 1, label: 'OD' },
@@ -394,13 +405,24 @@ export default {
     displayPrompt: false,
   }),
   methods: {
+    saveToLocalStorage() {
+      localStorage.setItem('medication', JSON.stringify(this.formData));
+    },
+
+    loadFromLocalStorage() {
+      const formData = JSON.parse(localStorage.getItem('medication'));
+      if (formData) {
+        this.formData = formData;
+      }
+    },
+
     getInventories() {
       this.$store.dispatch('inventory/fetchInventories');
     },
 
     getRoutes() {
       this.$store.dispatch('pharmacy/fetchRoutesAndMeasurements', {
-        dosage_form_id: this.dosage_form.id,
+        dosage_form_id: this.formData.dosage_form.id,
       });
     },
 
@@ -408,42 +430,42 @@ export default {
       this.switchSpot = value;
       this.initValues();
       this.$store.commit('inventory/SET_ITEMS', []);
-      this.drug = '';
+      this.formData.drug = '';
     },
 
     removeValues() {
-      this.route = '';
-      this.start_date = new Date();
-      this.duration_unit = '';
-      this.notes = '';
-      this.quantity_to_dispense = '';
-      this.duration = '';
-      this.frequency = '';
-      this.prescribed_strength = '';
-      this.total_price = null;
-      this.quantity_prescribed = null;
-      this.drug_group = null;
-      this.inventory_id = null;
-      this.nhisPriceQuotaExceeded = false;
+      this.formData.route = '';
+      this.formData.start_date = new Date();
+      this.formData.duration_unit = '';
+      this.formData.notes = '';
+      this.formData.quantity_to_dispense = '';
+      this.formData.duration = '';
+      this.formData.frequency = '';
+      this.formData.prescribed_strength = '';
+      this.formData.total_price = null;
+      this.formData.quantity_prescribed = null;
+      this.formData.drug_group = null;
+      this.formData.inventory_id = null;
+      this.formData.nhisPriceQuotaExceeded = false;
     },
 
     setDrugInfo() {
-      this.strength = this.drug.strength;
-      this.drug_id = this.drug.drug_id;
-      this.price = this.drug.price;
-      this.unit_name = this.drug.unit_name;
-      this.drug_name = this.drug.name;
-      this.strength_name = this.strength.name;
-      this.strength_input = this.drug.strength_input;
-      this.quantity_remaining = this.drug.quantity_remaining;
-      this.dosage_form = this.drug.dosage_form;
+      this.formData.strength = this.formData.drug.strength;
+      this.formData.drug_id = this.formData.drug.drug_id;
+      this.formData.price = this.formData.drug.price;
+      this.formData.unit_name = this.formData.drug.unit_name;
+      this.formData.drug_name = this.formData.drug.name;
+      this.formData.strength_name = this.formData.strength.name;
+      this.formData.strength_input = this.formData.drug.strength_input;
+      this.formData.quantity_remaining = this.formData.drug.quantity_remaining;
+      this.formData.dosage_form = this.formData.drug.dosage_form;
       this.getRoutes();
       this.removeValues();
     },
 
     getTotalPrice() {
-      this.quantity_to_dispense = Math.floor(Math.abs(this.quantity_to_dispense));
-      this.total_price = this.price * this.quantity_to_dispense;
+      this.formData.quantity_to_dispense = Math.floor(Math.abs(this.formData.quantity_to_dispense));
+      this.formData.total_price = this.formData.price * this.formData.quantity_to_dispense;
       // check NHIS drugs quota is reached
       // if (this.switchPosition && this.switchSpot) {
       //   const totalDrugsPrescribedToday = this.getTotalDrugsPrescribedToday([
@@ -456,14 +478,14 @@ export default {
     },
 
     calculateDosageQuantity() {
-      if (this.frequency.label === 'Stat' || this.dosage_form.name === 'Cream') {
-        this.quantity_prescribed = 1;
+      if (this.formData.frequency.label === 'Stat' || this.formData.dosage_form.name === 'Cream') {
+        this.formData.quantity_prescribed = 1;
       } else {
-        this.quantity_prescribed = Math.ceil(
-          (this.prescribed_strength / Number(this.strength_input)) *
-            this.frequency.val *
-            this.duration *
-            this.duration_unit.val
+        this.formData.quantity_prescribed = Math.ceil(
+          (this.formData.prescribed_strength / Number(this.formData.strength_input)) *
+            this.formData.frequency.val *
+            this.formData.duration *
+            this.formData.duration_unit.val
         );
       }
     },
@@ -471,7 +493,7 @@ export default {
     submitDrugOrder() {
       this.$validator.validateAll().then(result => {
         if (result) {
-          if (this.switchPosition && this.switchSpot && !this.drug_group) {
+          if (this.switchPosition && this.switchSpot && !this.formData.drug_group) {
             return this.$notify({
               group: 'foo',
               title: 'Error message',
@@ -506,27 +528,27 @@ export default {
 
     drugData() {
       return {
-        dosage_form_id: this.dosage_form.id,
-        dosage_form_name: this.dosage_form.name,
-        strength_name: this.strength.name,
-        drug_name: this.drug_name,
-        route_id: this.route,
-        start_date: this.start_date,
-        duration_unit: this.duration_unit.label,
-        notes: this.notes,
-        quantity_to_dispense: this.quantity_to_dispense,
-        quantity_prescribed: this.quantity_prescribed,
-        duration: this.duration,
+        dosage_form_id: this.formData.dosage_form.id,
+        dosage_form_name: this.formData.dosage_form.name,
+        strength_name: this.formData.strength.name,
+        drug_name: this.formData.drug_name,
+        route_id: this.formData.route,
+        start_date: this.formData.start_date,
+        duration_unit: this.formData.duration_unit.label,
+        notes: this.formData.notes,
+        quantity_to_dispense: this.formData.quantity_to_dispense,
+        quantity_prescribed: this.formData.quantity_prescribed,
+        duration: this.formData.duration,
 
-        frequency: this.frequency.label,
-        prescribed_strength: this.prescribed_strength,
-        strength_id: this.strength.id,
-        drug_id: this.drug_id,
-        total_price: this.total_price,
+        frequency: this.formData.frequency.label,
+        prescribed_strength: this.formData.prescribed_strength,
+        strength_id: this.formData.strength.id,
+        drug_id: this.formData.drug_id,
+        total_price: this.formData.total_price,
         drug_type: this.getDrugType(this.insuranceName),
         inventory_id: this.getInventoryId(),
         source: this.source,
-        ...(this.drug_group && { drug_group: this.drug_group }),
+        ...(this.formData.drug_group && { drug_group: this.formData.drug_group }),
         ...(this.source === 'Antenatal' && { ante_natal_id: this.$route.query.antenatal }),
         ...(this.source === 'Immunization' && { immunization_id: this.$route.query.immunization }),
         ...(this.source === 'Theater' && { surgery_id: this.$route.query.surgery }),
@@ -544,6 +566,7 @@ export default {
     },
 
     endRequest(button) {
+      localStorage.removeItem('medication');
       this.removeSpinner(button);
       this.initValues();
       // this.$store.dispatch('order/fetchPrescribedDrugs', {
@@ -556,31 +579,31 @@ export default {
     },
 
     initValues() {
-      this.dosage_form = '';
-      this.route = '';
-      this.start_date = new Date();
-      this.duration_unit = '';
-      this.notes = '';
-      this.quantity_to_dispense = '';
-      this.duration = '';
-      this.frequency = '';
-      this.drug = '';
-      this.prescribed_strength = '';
-      this.drug_id = '';
+      this.formData.dosage_form = '';
+      this.formData.route = '';
+      this.formData.start_date = new Date();
+      this.formData.duration_unit = '';
+      this.formData.notes = '';
+      this.formData.quantity_to_dispense = '';
+      this.formData.duration = '';
+      this.formData.frequency = '';
+      this.formData.drug = '';
+      this.formData.prescribed_strength = '';
+      this.formData.drug_id = '';
 
-      this.price = null;
-      this.total_price = null;
-      this.quantity_remaining = null;
-      this.strength_input = null;
-      this.strength = null;
-      this.quantity_prescribed = null;
-      this.unit_name = null;
-      this.strength_name = null;
+      this.formData.price = null;
+      this.formData.total_price = null;
+      this.formData.quantity_remaining = null;
+      this.formData.strength_input = null;
+      this.formData.strength = null;
+      this.formData.quantity_prescribed = null;
+      this.formData.unit_name = null;
+      this.formData.strength_name = null;
       this.dosage_form_name = null;
-      this.drug_name = null;
-      this.drug_group = null;
-      this.inventory_id = null;
-      this.nhisPriceQuotaExceeded = false;
+      this.formData.drug_name = null;
+      this.formData.drug_group = null;
+      this.formData.inventory_id = null;
+      this.formData.nhisPriceQuotaExceeded = false;
     },
 
     onSearch(search, loading) {
@@ -630,6 +653,7 @@ export default {
   },
 
   created() {
+    this.loadFromLocalStorage();
     this.getInventories();
   },
 };

@@ -98,7 +98,7 @@ export class RequestController {
       const requests = await RequestService.processRequests(req.body.requests, req.user.sub);
       return successResponse({
         res,
-        httpCode: StatusCodes.CREATED,
+        httpCode: StatusCodes.OK,
         message: DATA_UPDATED,
         data: requests,
       });

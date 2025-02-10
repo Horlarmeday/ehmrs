@@ -49,6 +49,7 @@ export function validatePharmacyItem(item) {
     unit_price: Joi.number().required(),
     selling_price: Joi.number().required(),
     drug_form: Joi.string().required(),
+    vendor_id: Joi.number().required(),
     nhis_selling_price: Joi.number()
       .optional()
       .allow(''),
@@ -119,6 +120,7 @@ export const validateReorderItems = items => {
         batch: Joi.string().required(),
         expiration: Joi.date().required(),
         date_received: Joi.date().required(),
+        vendor_id: Joi.number().required(),
       })
     ),
   });
@@ -136,4 +138,21 @@ export const validateExportedData = items => {
     selectAll: Joi.boolean(),
   });
   return schema.validate(items);
+};
+
+export const validateCreateVendor = vendor => {
+  const schema = Joi.object({
+    name: Joi.string().required(),
+    email: Joi.string()
+      .email()
+      .allow('')
+      .optional(),
+    phone: Joi.string()
+      .allow('')
+      .optional(),
+    address: Joi.string()
+      .allow('')
+      .optional(),
+  });
+  return schema.validate(vendor);
 };

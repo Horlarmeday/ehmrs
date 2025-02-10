@@ -35,16 +35,13 @@
           href="/store/pharmacy/add-item"
           split
           split-to="/store/pharmacy/add-item"
-          class="float-right btn-shadow font-weight-bold"
+          class="float-right font-weight-bold"
           variant="primary"
         >
           <template #button-content> <add-icon /> Add Item </template>
           <b-dropdown-item to="/store/pharmacy/add-bulk-item">Add Bulk Items</b-dropdown-item>
         </b-dropdown>
-        <button
-          @click="showResetStoreQuantityAlert"
-          class="btn btn-danger ml-2 btn-shadow font-weight-bold"
-        >
+        <button @click="showResetStoreQuantityAlert" class="btn btn-danger ml-2 font-weight-bold">
           Reset Store Quantity
         </button>
       </div>
@@ -57,6 +54,7 @@
       @filterByDrugForm="onFilterByDrugForm"
       @filterByDrugType="onFilterByDrugType"
       @filterByDosageForm="onFilterByDrugDosageForm"
+      @filterByVendor="onFilterByVendor"
     />
 
     <!--begin::Body-->
@@ -83,13 +81,13 @@
                 </label>
               </th>
               <th class="pr-0" style="width: 350px">Name</th>
-              <th style="min-width: 150px">Quantity Remaining</th>
+              <th style="min-width: 150px">Qty Remaining</th>
               <th style="min-width: 100px">Dosage Form</th>
               <th style="min-width: 50px">Strength</th>
               <th style="min-width: 70px">Cost Price (₦)</th>
               <th style="min-width: 100px">Selling Price (₦)</th>
-              <th style="min-width: 100px">Expiration</th>
-              <th style="min-width: 150px">Date Created</th>
+              <th style="min-width: 100px">Expiry Date</th>
+              <th style="min-width: 150px">Date Added</th>
             </tr>
           </thead>
           <tbody>
@@ -463,6 +461,22 @@ export default {
     },
 
     onFilterByDrugDosageForm(filter) {
+      this.queryParams({
+        filter,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || null,
+        sort: this.$route.query.sort || null,
+      });
+      this.fetchPharmacyItems({
+        filter,
+        currentPage: this.$route.query.currentPage || this.currentPage,
+        search: this.$route.query.search || null,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        sort: this.$route.query.sort || null,
+      });
+    },
+
+    onFilterByVendor(filter) {
       this.queryParams({
         filter,
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,

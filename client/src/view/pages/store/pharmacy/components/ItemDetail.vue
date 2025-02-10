@@ -2,7 +2,7 @@
   <div v-if="item">
     <div class="container bv-example-row">
       <div class="row">
-        <div class="col-3">
+        <div class="col-3 mb-lg-5">
           <div class="col d-flex flex-column flex-root">
             <span class="font-weight-bolder mb-2">ITEM NAME</span>
             <span class="opacity-70">
@@ -98,6 +98,12 @@
           <div class="col d-flex flex-column flex-root">
             <span class="font-weight-bolder mb-2">BRAND</span>
             <span class="opacity-70">{{ item?.brand || '-' }}</span>
+          </div>
+        </div>
+        <div class="col-3 mb-lg-5">
+          <div class="col d-flex flex-column flex-root">
+            <span class="font-weight-bolder mb-2">VENDOR</span>
+            <span class="opacity-70">{{ item?.vendor?.name || '-' }}</span>
           </div>
         </div>
       </div>
