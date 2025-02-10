@@ -4,6 +4,7 @@ import {
   createLaboratoryItem,
   createNHISItem,
   createPrivateItem,
+  createVendor,
   dispensePharmacyItems,
   findPharmacyStoreItems,
   getAllPharmacyStoreItems,
@@ -14,12 +15,14 @@ import {
   getPharmacyStoreItemHistory,
   getPharmacyStoreItemLogs,
   getPharmacyStoreItems,
+  getVendors,
   reorderPharmacyItems,
   resetPharmacyStoreItemsQuantities,
   searchLaboratoryItems,
   searchPharmacyStoreItems,
   updatePharmacyStoreItem,
   updatePharmacyStoreItems,
+  updateVendor,
 } from './store.repository';
 import { splitSort } from '../../core/helpers/helper';
 import { LaboratoryStore, PharmacyStore } from '../../database/models';
@@ -160,8 +163,8 @@ class StoreService {
    * @memberOf StoreService
    * @param items
    */
-  static async updatePharmacyStoreItems(items: Partial<PharmacyStore>[]) {
-    return updatePharmacyStoreItems(items);
+  static async updatePharmacyStoreItems(items: Partial<PharmacyStore>[], staffId: number) {
+    return updatePharmacyStoreItems(items, staffId);
   }
 
   /**
@@ -252,6 +255,44 @@ class StoreService {
    */
   static async resetPharmacyStoreItemsQuantities() {
     return resetPharmacyStoreItemsQuantities();
+  }
+
+  /**
+   * Create a pharmacy vendor
+   * @param body
+   * @param staff_id
+   */
+  static async createVendor(body, staff_id: number) {
+    return createVendor(body, staff_id);
+  }
+
+  /**
+   * Update a pharmacy vendor
+   * @param body
+   * @param vendorId
+   */
+  static async updateVendor(body, vendorId: number) {
+    return updateVendor(vendorId, body);
+  }
+
+  /**
+   * get pharmacy vendors
+   *
+   * @static
+   * @returns json object with pharmacy item logs data
+   * @param body
+   * @memberOf StoreService
+   */
+  static async getVendors(
+    body
+  ): Promise<{ total: any; pages: number; perPage: number; docs: any; currentPage: number }> {
+    const { currentPage, pageLimit } = body;
+
+    if (Object.values(body).length) {
+      return getVendors(currentPage, pageLimit);
+    }
+
+    return getVendors();
   }
 
   private static mapExportedData(items: PharmacyStore[]) {

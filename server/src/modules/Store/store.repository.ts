@@ -14,6 +14,7 @@ import {
   PharmacyStoreLog,
   InventoryItem,
   InventoryItemHistory,
+  Vendor,
 } from '../../database/models';
 import { DrugType } from '../../database/models/pharmacyStore';
 import sequelizeConnection from '../../database/config/config';
@@ -25,6 +26,8 @@ import { getAnInventory } from '../Inventory/inventory.repository';
 import { lt } from 'lodash';
 import { INVALID_INVENTORY, INVALID_QUANTITY } from '../Inventory/messages/response-messages';
 import { StatusCodes } from '../../core/helpers/helper';
+import { it } from 'node:test';
+import { LogType } from '../../database/models/pharmacyStoreLog';
 
 /** ***********************
  * PHARMACY STORE
@@ -55,6 +58,7 @@ export async function createCashItem(data) {
     route_id,
     drug_form,
     brand,
+    vendor_id,
   } = data;
 
   return PharmacyStore.create({
@@ -79,6 +83,7 @@ export async function createCashItem(data) {
     drug_form,
     brand,
     drug_type: DrugType.CASH,
+    vendor_id,
   });
 }
 
@@ -107,6 +112,7 @@ export async function createNHISItem(data) {
     route_id,
     drug_form,
     brand,
+    vendor_id,
   } = data;
 
   return PharmacyStore.create({
@@ -131,6 +137,7 @@ export async function createNHISItem(data) {
     drug_form,
     brand,
     drug_type: DrugType.NHIS,
+    vendor_id,
   });
 }
 
@@ -159,6 +166,7 @@ export async function createPrivateItem(data) {
     route_id,
     brand,
     drug_form,
+    vendor_id,
   } = data;
 
   return PharmacyStore.create({
@@ -183,6 +191,7 @@ export async function createPrivateItem(data) {
     drug_form,
     brand,
     drug_type: DrugType.PRIVATE,
+    vendor_id,
   });
 }
 
@@ -367,6 +376,10 @@ export const getPharmacyStoreItemById = async (storeId: number) => {
         model: DosageForm,
         attributes: ['name'],
       },
+      {
+        model: Vendor,
+        attributes: ['name'],
+      },
     ],
   });
 };
@@ -437,14 +450,27 @@ export const resetPharmacyStoreItemsQuantities = async () => {
  * update a pharmacy store item
  *
  * @function
- * @returns {Promise<[affectedCount: number]>} json object with item data
+ * @returns json object with item data
  * @param fieldsToUpdate
+ * @param staff_id
  */
-export const updatePharmacyStoreItems = async (fieldsToUpdate: Partial<PharmacyStore>[]) => {
+export const updatePharmacyStoreItems = async (
+  fieldsToUpdate: Partial<PharmacyStore>[],
+  staff_id: number
+) => {
   return await Promise.all(
     fieldsToUpdate.map(async field => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id, createdAt, updatedAt, ...rest } = field;
       return await sequelizeConnection.transaction(async t => {
+        const item = await PharmacyStore.findByPk(field.id, { transaction: t });
+
         await PharmacyStore.update({ ...field }, { where: { id: field.id }, transaction: t });
+
+        await PharmacyStoreLog.create(
+          { ...rest, pharmacy_store_id: item.id, staff_id, log_type: LogType.UPDATE },
+          { transaction: t }
+        );
 
         const inventoryItemToUpdate = {
           selling_price: field.selling_price,
@@ -517,6 +543,10 @@ export const getPharmacyStoreItemHistory = async ({
         as: 'dispenser',
         attributes: ['firstname', 'lastname'],
       },
+      {
+        model: Vendor,
+        attributes: ['name'],
+      },
     ],
   });
 };
@@ -543,7 +573,7 @@ export const getPharmacyStoreItemLogs = async ({ currentPage = 1, pageLimit = 10
     page: +currentPage,
     paginate: +pageLimit,
     where: { pharmacy_store_id: storeId },
-    order: [['date_received', 'DESC']],
+    order: [['createdAt', 'DESC']],
     include: [
       {
         model: Unit,
@@ -591,9 +621,12 @@ export const reorderPharmacyItems = async (items: ItemsToReorder[], staff_id: nu
             pharmacy_store_id: storeItem.id,
             quantity_remaining: +storeItem.quantity_remaining + +item.quantity_received,
             unit_id: storeItem.unit_id,
-            dispensed_by: staff_id,
+            item_receiver: staff_id,
             history_date: Date.now(),
             history_type: HistoryType.SUPPLIED,
+            vendor_id: item.vendor_id,
+            selling_price: item.selling_price,
+            unit_price: item.unit_price,
           },
           { transaction: t }
         );
@@ -682,6 +715,8 @@ const mapDispenseStoreItemHistory = (
   dispensed_by: staff_id,
   history_date: Date.now(),
   history_type: HistoryType.DISPENSED,
+  selling_price: storeItem.selling_price,
+  unit_price: storeItem.unit_price,
 });
 
 /**
@@ -690,12 +725,12 @@ const mapDispenseStoreItemHistory = (
  * @param staff_id
  */
 export const dispensePharmacyItems = async (items: ItemsToDispensedBody[], staff_id: number) => {
-  return await Promise.allSettled(
+  return Promise.allSettled(
     items.map(async item => {
       const storeItem = await dispenseValidations(item);
       const mappedItem = mapInventoryItem(storeItem, item, staff_id);
 
-      return await sequelizeConnection.transaction(async t => {
+      return sequelizeConnection.transaction(async t => {
         const [inventoryItem, created] = await InventoryItem.findOrCreate({
           where: { drug_id: mappedItem.drug_id, inventory_id: mappedItem.inventory_id },
           defaults: { ...mappedItem },
@@ -732,47 +767,36 @@ export const dispensePharmacyItems = async (items: ItemsToDispensedBody[], staff
       });
     })
   );
+};
 
-  // for await (const item of items) {
-  //   const storeItem = await dispenseValidations(item);
-  //   const mappedItem = mapInventoryItem(storeItem, item, staff_id);
-  //
-  //   await sequelizeConnection.transaction(async t => {
-  //     const [inventoryItem, created] = await InventoryItem.findOrCreate({
-  //       where: { drug_id: mappedItem.drug_id, inventory_id: mappedItem.inventory_id },
-  //       defaults: { ...mappedItem },
-  //       transaction: t,
-  //     });
-  //
-  //     if (!created) {
-  //       await InventoryItem.update(
-  //         {
-  //           ...mappedItem,
-  //           quantity_remaining: literal(`quantity_remaining + ${mappedItem.quantity_remaining}`),
-  //           quantity_received: literal(`quantity_received + ${mappedItem.quantity_remaining}`),
-  //         },
-  //         {
-  //           where: { drug_id: mappedItem.drug_id, inventory_id: mappedItem.inventory_id },
-  //           transaction: t,
-  //         }
-  //       );
-  //     }
-  //
-  //     await InventoryItemHistory.create(mapInventoryItemHistory(item, inventoryItem, staff_id), {
-  //       transaction: t,
-  //     });
-  //
-  //     await PharmacyStore.update(
-  //       { quantity_remaining: storeItem.quantity_remaining - item.quantity_to_dispense },
-  //       { where: { id: storeItem.id }, transaction: t }
-  //     );
-  //
-  //     await PharmacyStoreHistory.create(mapDispenseStoreItemHistory(item, storeItem, staff_id), {
-  //       transaction: t,
-  //     });
-  //     return inventoryItem;
-  //   });
-  // }
+/**
+ * Create a new vendor
+ * @param body
+ * @param staff_id
+ */
+export const createVendor = (body, staff_id: number) => {
+  return Vendor.create({ ...body, staff_id });
+};
+
+/**
+ * Get all vendors
+ * @param currentPage
+ * @param pageLimit
+ */
+export const getVendors = (currentPage = 1, pageLimit = 50) => {
+  return Vendor.paginate({
+    page: +currentPage,
+    paginate: +pageLimit,
+  });
+};
+
+/**
+ * Update a vendor
+ * @param id
+ * @param body
+ */
+export const updateVendor = (id: number, body: Partial<Vendor>) => {
+  return Vendor.update(body, { where: { id } });
 };
 
 /** ***********************

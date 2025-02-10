@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import {
+  validateCreateVendor,
   validateDispenseItems,
   validateExportedData,
   validateLaboratoryItem,
@@ -77,7 +78,7 @@ class StoreController {
       });
 
     try {
-      const items = await StoreService.updatePharmacyStoreItems(req.body.items);
+      const items = await StoreService.updatePharmacyStoreItems(req.body.items, req.user.sub);
 
       return successResponse({
         res,
@@ -312,6 +313,100 @@ class StoreController {
       return next(e);
     }
   }
+
+  /**
+   * Create a vendor
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with item history data
+   */
+  static async createVendor(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
+    const { error } = validateCreateVendor(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+    try {
+      const vendor = await StoreService.createVendor(req.body, req.user.sub);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data: vendor,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get vendors
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with item history data
+   */
+  static async getVendors(req: Request, res: Response, next: NextFunction) {
+    try {
+      const vendors = await StoreService.getVendors(req.query);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data: vendors,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * Update a vendor
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with item history data
+   */
+  static async updateVendor(req: Request, res: Response, next: NextFunction) {
+    const emptyBody = isEmpty(req.body);
+    if (emptyBody)
+      return errorResponse({
+        res,
+        message: EMPTY_BODY,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+    try {
+      const vendor = await StoreService.updateVendor(req.body, +req.params.id);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data: vendor,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /*********************************
+   * Laboratory Store
+   *********************************/
 
   /**
    * add item to laboratory store
