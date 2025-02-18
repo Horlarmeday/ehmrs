@@ -21,13 +21,12 @@
         <div class="col-lg-8">
           <input
             type="text"
-            v-validate="'required|min:11|max:11|phone_pattern'"
             class="form-control form-control-sm"
             placeholder="Optional"
             v-model="phone"
             :maxlength="11"
-            :minlength="11"
           />
+          <span class="text-danger text-sm">{{ errors.first('phone') }}</span>
         </div>
       </div>
       <div class="form-group row">

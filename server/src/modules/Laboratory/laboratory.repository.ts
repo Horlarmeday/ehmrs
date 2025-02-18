@@ -546,7 +546,16 @@ export const getOneCollectedSample = async (testPrescriptionId: number | string)
       },
       {
         model: PrescribedTest,
-        attributes: ['test_id', 'id', 'status', 'test_type', 'payment_status', 'is_urgent'],
+        attributes: [
+          'test_id',
+          'id',
+          'status',
+          'test_type',
+          'payment_status',
+          'is_urgent',
+          'result_status',
+          'tester_id',
+        ],
         include: [
           { model: Test, attributes: ['name', 'result_unit', 'valid_range', 'result_form'] },
           { model: Sample, attributes: ['name'] },
@@ -618,16 +627,14 @@ export const approveTestResults = async (data: Partial<Result & { staff_id: numb
   return sequelizeConnection.transaction(async t => {
     const result = await Promise.all(
       data.map(async test => {
-        if (test.test_status) {
-          return PrescribedTest.update(
-            {
-              status: TestStatus.APPROVED,
-              test_approved_date: Date.now(),
-              test_approved_by: test.staff_id,
-            },
-            { where: { id: test.prescribed_test_id }, transaction: t }
-          );
-        }
+        return PrescribedTest.update(
+          {
+            status: TestStatus.APPROVED,
+            test_approved_date: Date.now(),
+            test_approved_by: test.staff_id,
+          },
+          { where: { id: test.prescribed_test_id }, transaction: t }
+        );
       })
     );
     const testsCount = await PrescribedTest.count({
@@ -672,6 +679,7 @@ export const appendTestResults = async (data: any[]) => {
         PrescribedTest.update(
           {
             status: test.testStatus,
+            tester_id: test.tester_id,
             result_id: results?.find(
               ({ prescribed_test_id }) => prescribed_test_id === test.prescribed_test_id
             )?.id,

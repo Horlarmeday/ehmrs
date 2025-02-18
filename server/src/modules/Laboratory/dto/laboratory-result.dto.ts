@@ -16,6 +16,7 @@ export class Result {
 export class LaboratoryResultDto {
   results: Array<Result>;
   staff_id: number;
+  tester_id?: number;
 }
 
 export class LaboratoryResultValidationDto {

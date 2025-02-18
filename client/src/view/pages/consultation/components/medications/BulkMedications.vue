@@ -5,10 +5,10 @@
         <h3 class="card-title align-items-start flex-column">
           <span class="card-label font-weight-bolder text-dark">Medications</span>
         </h3>
-        <p v-if="tempDrugsTotalPrice" class="text-dark-75 font-weight-bold">
-          <span class="mr-2">Total Price:</span>
-          ₦{{ tempDrugsTotalPrice.toFixed(2) }}
-        </p>
+        <!--        <p v-if="tempDrugsTotalPrice" class="text-dark-75 font-weight-bold">-->
+        <!--          <span class="mr-2">Total Price:</span>-->
+        <!--          ₦{{ tempDrugsTotalPrice.toFixed(2) }}-->
+        <!--        </p>-->
         <div>
           <button
             :disabled="!tempDrugs?.length || isDisabled"

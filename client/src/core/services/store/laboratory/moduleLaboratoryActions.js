@@ -209,7 +209,7 @@ export default {
   addTestResult({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
-        .post(`/laboratory/add-test-result`, { results: payload })
+        .post(`/laboratory/add-test-result`, payload)
         .then(response => {
           commit('SET_TEST_RESULT', response.data.data);
           resolve(response);

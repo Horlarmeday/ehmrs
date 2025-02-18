@@ -71,6 +71,17 @@
                     <span></span>
                   </label>
                 </div>
+                <div class="col-lg-2">
+                  <label>Reject Result</label>
+                  <label
+                    v-b-tooltip.hover
+                    title="Enable to reject result"
+                    class="checkbox checkbox-lg"
+                  >
+                    <input type="checkbox" v-model="test.rejected_status" />
+                    <span></span>
+                  </label>
+                </div>
               </div>
             </b-card>
           </b-collapse>
@@ -150,10 +161,12 @@ export default {
           result_form: test?.test?.result_form,
           shouldDisable: test.status === 'Approved',
           test_status: test.status === 'Approved',
+          rejected_status: test.result_status === 'Rejected',
         })),
       accession_numb: this.accession_number,
       isDisabled: false,
       ACCEPTED: 'Accepted',
+      APPROVED: 'Approved',
       REJECTED: 'Rejected',
       PENDING: 'Pending',
       DISABLED: 'disabledCard',
@@ -176,15 +189,22 @@ export default {
       this.removeSpinner(button);
     },
 
+    notifyToast(text) {
+      this.$notify({
+        group: 'foo',
+        title: 'Error message',
+        text,
+        type: 'error',
+      });
+    },
+
     approveTests() {
       let results = this.results.filter(({ status }) => status === 'Accepted');
-      if (results.every(({ test_status }) => !test_status)) {
-        return this.$notify({
-          group: 'foo',
-          title: 'Error message',
-          text: 'Approve at least one result',
-          type: 'error',
-        });
+      if (results.every(({ test_status, rejected_status }) => !test_status && !rejected_status)) {
+        return this.notifyToast('Approve or reject at least one result');
+      }
+      if (results.some(({ rejected_status, test_status }) => rejected_status && test_status)) {
+        return this.notifyToast('You cannot approve and reject a result at the same time');
       }
       const submitButton = this.$refs['kt-approveResult-submit'];
       this.addSpinner(submitButton);
@@ -200,10 +220,13 @@ export default {
           sample_name,
           payment_status,
           testStatus,
+          rejected_status,
           ...rest
-        }) => rest
+        }) => ({
+          ...rest,
+          status: rejected_status ? this.REJECTED : this.ACCEPTED,
+        })
       );
-
       this.$store
         .dispatch('laboratory/approveTestResults', results)
         .then(() => this.endRequest(submitButton))

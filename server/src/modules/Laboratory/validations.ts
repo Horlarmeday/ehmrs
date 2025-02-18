@@ -94,6 +94,7 @@ export function validateAddTestResult(result) {
         })
       )
       .required(),
+    tester_id: Joi.number().required(),
   });
 
   return schema.validate(result);

@@ -25,8 +25,7 @@ import { ItemsToDispensedBody } from '../Inventory/types/inventory-item.types';
 import { getAnInventory } from '../Inventory/inventory.repository';
 import { lt } from 'lodash';
 import { INVALID_INVENTORY, INVALID_QUANTITY } from '../Inventory/messages/response-messages';
-import { StatusCodes } from '../../core/helpers/helper';
-import { it } from 'node:test';
+import { staffAttributes, StatusCodes } from '../../core/helpers/helper';
 import { LogType } from '../../database/models/pharmacyStoreLog';
 
 /** ***********************
@@ -536,12 +535,12 @@ export const getPharmacyStoreItemHistory = async ({
       {
         model: Staff,
         as: 'receiver',
-        attributes: ['firstname', 'lastname'],
+        attributes: staffAttributes,
       },
       {
         model: Staff,
         as: 'dispenser',
-        attributes: ['firstname', 'lastname'],
+        attributes: staffAttributes,
       },
       {
         model: Vendor,

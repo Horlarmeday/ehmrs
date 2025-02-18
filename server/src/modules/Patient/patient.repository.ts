@@ -47,6 +47,8 @@ import {
   PaymentHistory,
   Alert,
   Allergy,
+  Encounter,
+  InventoryItemHistory,
 } from '../../database/models';
 import sequelizeConnection from '../../database/config/config';
 import { BadException } from '../../common/util/api-error';
@@ -57,9 +59,7 @@ import {
   PATIENT_NOT_FOUND,
 } from './messages/response-messages';
 import {
-  getInsuranceWithoutJoinQuery,
   getPatientInsuranceQuery,
-  setInsuranceAsDefault,
   updatePatientInsurance,
 } from '../Insurance/insurance.repository';
 import {
@@ -68,7 +68,6 @@ import {
   staffAttributes,
   StatusCodes,
 } from '../../core/helpers/helper';
-import { VisitStatus } from '../../database/models/visit';
 
 /**
  * query staff account in the DB by phone
@@ -613,6 +612,7 @@ export const mergePatientAccounts = async (
       { model: Antenatal, foreignKey: 'patient_id' },
       { model: Alert, foreignKey: 'patient_id' },
       { model: Allergy, foreignKey: 'patient_id' },
+      { model: Encounter, foreignKey: 'patient_id' },
       { model: AntenatalObservation, foreignKey: 'patient_id' },
       { model: AntenatalTriage, foreignKey: 'patient_id' },
       { model: CarePlan, foreignKey: 'patient_id' },
@@ -643,6 +643,7 @@ export const mergePatientAccounts = async (
       { model: Triage, foreignKey: 'patient_id' },
       { model: Visit, foreignKey: 'patient_id' },
       { model: WardRound, foreignKey: 'patient_id' },
+      { model: InventoryItemHistory, foreignKey: 'patient_id' },
     ];
 
     // Update all tables in parallel

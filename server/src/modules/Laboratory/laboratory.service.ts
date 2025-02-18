@@ -24,7 +24,7 @@ import {
   validateTestResults,
 } from './laboratory.repository';
 import { TestTariffDto } from './dto/test-tariff.dto';
-import { TestStatus } from '../../database/models/prescribedTest';
+import { ResultStatus, TestStatus } from '../../database/models/prescribedTest';
 import { generateLabAccessionNumber, StatusCodes } from '../../core/helpers/helper';
 import { isEmpty } from 'lodash';
 import {
@@ -463,12 +463,13 @@ class LaboratoryService {
    * @param laboratoryResultDto
    */
   static async appendTestResults(laboratoryResultDto: LaboratoryResultDto) {
-    const { results, staff_id } = laboratoryResultDto;
+    const { results, staff_id, tester_id } = laboratoryResultDto;
     const data = results
       .filter(({ result }) => Object.values(result)?.length)
       .map(result => ({
         ...result,
         staff_id,
+        tester_id,
         testStatus: this.getTestStatus(result),
         date_created: Date.now(),
         is_abnormal: this.getTestAbnormalState(result.result, result.valid_range),
@@ -502,7 +503,14 @@ class LaboratoryService {
       ...result,
       staff_id,
     }));
-    return approveTestResults(data);
+    const rejectedResults = data.filter(({ status }) => status === ResultStatus.REJECTED);
+    const acceptedResults = data.filter(
+      ({ status, test_status }) => status === ResultStatus.ACCEPTED && test_status
+    );
+    if (rejectedResults?.length) await validateTestResults(rejectedResults, '');
+    if (acceptedResults?.length) await approveTestResults(acceptedResults);
+
+    return data;
   }
 
   /**

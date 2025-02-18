@@ -75,9 +75,9 @@
                     >{{ formData.quantity_remaining }} {{ formData.unit_name }}</span
                   >
                 </span>
-                <span v-if="formData.price" class="form-text text-success"
-                  >Price: <span class="font-weight-boldest">₦{{ formData.price }}</span></span
-                >
+                <!--                <span v-if="formData.price" class="form-text text-success"-->
+                <!--                  >Price: <span class="font-weight-boldest">₦{{ formData.price }}</span></span-->
+                <!--                >-->
               </div>
             </div>
             <div class="form-group row">
