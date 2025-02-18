@@ -279,6 +279,11 @@ export class PrescribedTest extends Model {
   })
   auth_code: string;
 
+  @Column({
+    type: DataType.INTEGER,
+  })
+  tester_id: number;
+
   @ForeignKey(() => PatientInsurance)
   @Column({
     type: DataType.INTEGER,
@@ -324,6 +329,11 @@ export class PrescribedTest extends Model {
     foreignKey: 'nhis_test_processed_by',
   })
   nhis_test_processor: Staff;
+
+  @BelongsTo(() => Staff, {
+    foreignKey: 'tester_id',
+  })
+  tester: Staff;
 
   @BelongsTo(() => Test)
   test: Test;

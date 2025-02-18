@@ -89,6 +89,7 @@ export class TestResult extends Model {
   @Column({
     type: DataType.DATE,
     allowNull: false,
+    defaultValue: new Date(),
     validate: {
       notEmpty: {
         msg: 'date requested is required',

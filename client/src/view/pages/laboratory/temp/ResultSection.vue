@@ -109,15 +109,34 @@
       </div>
     </div>
     <div class="separator separator-solid mb-6"></div>
-    <div class="text-center">
-      <button
-        :disabled="isDisabled"
-        @click="addResult"
-        ref="kt-addResult-submit"
-        class="btn btn-lg btn-primary"
-      >
-        Save
-      </button>
+    <div>
+      <div class="text-center col-4 offset-4 mb-6">
+        <label class="font-weight-bold">Tester Name</label>
+        <div>
+          <select
+            v-validate="'required'"
+            data-vv-validate-on="blur"
+            name="tester_id"
+            v-model="tester_id"
+            class="form-control-sm form-control"
+          >
+            <option v-for="(staff, i) in staffs" :value="staff.id" :key="i">{{
+              staff.fullname
+            }}</option>
+          </select>
+          <span class="text-danger text-sm">{{ errors.first('tester_id') }}</span>
+        </div>
+      </div>
+      <div class="text-center">
+        <button
+          :disabled="isDisabled"
+          @click="addResult"
+          ref="kt-addResult-submit"
+          class="btn btn-lg btn-primary"
+        >
+          Save
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -145,6 +164,14 @@ export default {
       required: true,
     },
   },
+  created() {
+    this.fetchEmployees({ search: 'Laboratory' });
+  },
+  computed: {
+    staffs() {
+      return this.$store.state.employee.employees;
+    },
+  },
   data() {
     return {
       tests: this.prescriptions.map(test => ({
@@ -166,6 +193,7 @@ export default {
         result_form: test?.test?.result_form,
         test_status: test?.status,
       })),
+      tester_id: this.prescriptions[0]?.tester_id || '',
       accession_numb: this.accession_number,
       isDisabled: false,
       ACCEPTED: 'Accepted',
@@ -212,8 +240,6 @@ export default {
           }) => rest
         );
 
-      console.log('results', results);
-
       if (results.every(({ result }) => Object.values(result)?.length === 0)) {
         return this.$notify({
           group: 'foo',
@@ -223,21 +249,22 @@ export default {
         });
       }
 
-      const submitButton = this.$refs['kt-addResult-submit'];
-      this.addSpinner(submitButton);
+      this.$validator.validateAll().then(result => {
+        if (result) {
+          const submitButton = this.$refs['kt-addResult-submit'];
+          this.addSpinner(submitButton);
 
-      this.$store
-        .dispatch('laboratory/addTestResult', results)
-        .then(() => this.endRequest(submitButton))
-        .catch(() => this.removeSpinner(submitButton));
+          this.$store
+            .dispatch('laboratory/addTestResult', { results, tester_id: this.tester_id })
+            .then(() => this.endRequest(submitButton))
+            .catch(() => this.removeSpinner(submitButton));
+        }
+      });
     },
 
     testResultData(data, testId) {
       const test = this.tests.find(test => test.prescribed_test_id === testId);
       this.$set(test, 'result', data);
-      console.log(this.tests);
-      // test.result = test;
-      console.log(data, testId);
     },
 
     getPaymentStatus(status) {
@@ -245,6 +272,14 @@ export default {
       if (status === 'Paid') return 'label-success ';
       if (status === 'Cleared') return 'label-info ';
       return 'label-primary ';
+    },
+
+    fetchEmployees({ currentPage = 1, itemsPerPage = 100, search }) {
+      return this.$store.dispatch('employee/fetchEmployees', {
+        currentPage,
+        itemsPerPage,
+        ...(search && { search }),
+      });
     },
   },
 };

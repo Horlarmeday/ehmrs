@@ -3,7 +3,7 @@
     <!--begin::Header-->
     <div class="card-header border-0 py-5">
       <h3 class="card-title align-items-start flex-column">
-        <span class="card-label font-weight-bolder text-dark"> {{ table_name }} History</span>
+        <span class="card-label font-weight-bolder text-dark">History</span>
       </h3>
     </div>
     <!--end::Header-->
@@ -15,13 +15,15 @@
         <table class="table table-head-custom table-vertical-center" id="kt_advance_table_widget_1">
           <thead>
             <tr class="text-left">
-              <th class="pr-0" style="width: 150px">Qty {{ table_type }}</th>
-              <th style="min-width: 150px">Qty Remaining</th>
-              <th v-if="table_name !== 'Supply'" style="min-width: 150px">Inventory</th>
+              <th style="width: 170px">Quantity</th>
+              <th style="min-width: 170px">Qty Remaining</th>
+              <th style="min-width: 170px">Current Qty</th>
+              <th style="min-width: 120px">Inventory</th>
+              <th style="min-width: 100px">Price(₦)</th>
+              <th style="min-width: 100px">Status</th>
               <th style="min-width: 150px">Receiver</th>
-              <th style="min-width: 150px">Price(₦)</th>
-              <th style="min-width: 150px">{{ table_type }} By</th>
-              <th style="min-width: 150px">Date {{ table_type }}</th>
+              <th style="min-width: 150px">Action By</th>
+              <th style="min-width: 150px">Date</th>
             </tr>
           </thead>
           <tbody>
@@ -29,7 +31,7 @@
               <td colspan="9" align="center" class="text-muted">No Data</td>
             </tr>
             <tr v-for="history in histories" :key="history.id">
-              <td class="pr-0">
+              <td>
                 <a
                   href="#"
                   class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg"
@@ -41,10 +43,26 @@
                   {{ history.quantity_remaining }} {{ history?.unit?.name }}
                 </span>
               </td>
-              <td v-if="table_name !== 'Supply'">
+              <td>
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ getCurrentQuantity(history) }} {{ history?.unit?.name }}
+                </span>
+              </td>
+              <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                   {{ history?.inventory?.name || '-' }}
                 </span>
+              </td>
+              <td>
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ history.selling_price || '0.00' }}
+                </span>
+              </td>
+              <td>
+                <span :class="getHistoryStatus(history)" class="label label-dot mr-1"> </span>
+                <span :class="getHistoryTextColor(history)" class="font-size-sm font-weight-bold">{{
+                  history.history_type
+                }}</span>
               </td>
               <td>
                 <span
@@ -58,27 +76,22 @@
                 </span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ history.selling_price || '0.00' }}
-                </span>
-              </td>
-              <td>
                 <span
-                  v-if="table_type === 'Supplied'"
+                  v-if="history.history_type === 'Supplied'"
                   class="text-dark-75 font-weight-bolder d-block font-size-lg"
                 >
-                  {{ history?.vendor?.name || '-' }}
+                  {{ history?.vendor?.name || history?.dispenser?.fullname }}
                 </span>
                 <span
-                  v-if="table_type === 'Dispensed'"
+                  v-if="history.history_type === 'Dispensed'"
                   class="text-dark-75 font-weight-bolder d-block font-size-lg"
                 >
-                  {{ history?.dispenser?.firstname }} {{ history?.dispenser?.lastname }}
+                  {{ history?.dispenser?.fullname }}
                 </span>
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ history.history_date | dayjs('ddd, MMM Do YYYY, h:mma') }}
+                  {{ history.history_date | dayjs('MMM Do YYYY, h:mma') }}
                 </span>
               </td>
             </tr>
@@ -92,6 +105,7 @@
         :per-page="perPage"
         :current-page="currentPage"
         @pagechanged="onPageChange"
+        @changepagecount="onChangePageCount"
       />
     </div>
     <!--end::Body-->
@@ -100,23 +114,14 @@
 
 <script>
 import Pagination from '@/utils/Pagination.vue';
+import { setUrlQueryParams } from '@/common/common';
 export default {
   data: () => ({
-    itemsPerPage: 10,
+    itemsPerPage: 20,
     currentPage: 1,
   }),
 
   props: {
-    table_name: {
-      type: String,
-      required: true,
-    },
-
-    table_type: {
-      type: String,
-      required: true,
-    },
-
     history_type: {
       type: String,
       required: false,
@@ -143,12 +148,33 @@ export default {
   },
 
   methods: {
+    queryParams({ itemsPerPage = null }) {
+      setUrlQueryParams({
+        currentPage: this.currentPage,
+        itemsPerPage: itemsPerPage || this.itemsPerPage,
+      });
+    },
+
     handlePageChange() {
+      this.queryParams({
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+      });
       this.$store.dispatch('store/fetchPharmacyItemHistory', {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
         id: this.$route.params.item,
-        ...(this.history_type && { filter: { history_type: this.history_type } }),
+      });
+    },
+
+    onChangePageCount(pagecount) {
+      this.queryParams({
+        currentPage: this.currentPage,
+        itemsPerPage: pagecount,
+      });
+      this.$store.dispatch('store/fetchPharmacyItemHistory', {
+        currentPage: this.$route.query.currentPage || this.currentPage,
+        itemsPerPage: pagecount,
+        id: this.$route.params.item,
       });
     },
 
@@ -158,10 +184,40 @@ export default {
     },
 
     getQuantityToDisplay(history) {
-      if (this.table_type === 'Dispensed') return history.quantity_dispensed;
-      if (this.table_type === 'Returned') return history.quantity_returned;
-      if (this.table_type === 'Supplied') return history.quantity_supplied;
+      if (history.history_type === 'Dispensed') return history.quantity_dispensed;
+      if (history.history_type === 'Returned') return history.quantity_returned;
+      if (history.history_type === 'Supplied') return history.quantity_supplied;
       return history.quantity_dispensed;
+    },
+
+    getHistoryStatus(history) {
+      if (history.history_type === 'Dispensed') return 'label-success';
+      if (history.history_type === 'Returned') return 'label-primary';
+      if (history.history_type === 'Supplied') return 'label-warning';
+      return 'label-success';
+    },
+
+    getHistoryTextColor(history) {
+      if (history.history_type === 'Dispensed') return 'text-success';
+      if (history.history_type === 'Returned') return 'text-primary';
+      if (history.history_type === 'Supplied') return 'text-warning';
+      return 'text-danger';
+    },
+
+    getCurrentQuantity(history) {
+      if (history.history_type === 'Supplied') {
+        return history.quantity_remaining + history.quantity_supplied;
+      }
+
+      if (history.history_type === 'Dispensed') {
+        return Math.max(history.quantity_remaining - history.quantity_dispensed, 0);
+      }
+
+      if (history.history_type === 'Returned') {
+        return history.quantity_remaining + history.quantity_returned;
+      }
+
+      return history.quantity_remaining;
     },
   },
   created() {
@@ -169,7 +225,6 @@ export default {
       currentPage: this.currentPage,
       itemsPerPage: this.itemsPerPage,
       id: this.$route.params.item,
-      ...(this.history_type && { filter: { history_type: this.history_type } }),
     });
   },
 };

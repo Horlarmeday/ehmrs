@@ -198,7 +198,7 @@ export default {
       itemToEdit: {},
       filter: { drug_type: '', drug_form: '' },
       currentPage: 1,
-      itemsPerPage: 10,
+      itemsPerPage: 20,
       selected: [],
       loading: false,
       itemsToDispense: [],
