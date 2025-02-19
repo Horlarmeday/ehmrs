@@ -167,6 +167,7 @@ export default {
         'Endocrinologist',
         'Gastroenterologist',
         'Optician',
+        'Physiotherapist',
       ],
     };
   },

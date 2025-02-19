@@ -208,12 +208,12 @@
                 <span class="form-text text-danger">{{
                   errors.first('quantity_to_dispense')
                 }}</span>
-                <span v-if="formData.total_price" class="form-text text-success">
-                  Total price
-                  <span class="text-success"
-                    ><span class="font-weight-boldest">₦{{ formData.total_price }}</span></span
-                  >
-                </span>
+                <!--                <span v-if="formData.total_price" class="form-text text-success">-->
+                <!--                  Total price-->
+                <!--                  <span class="text-success"-->
+                <!--                    ><span class="font-weight-boldest">₦{{ formData.total_price }}</span></span-->
+                <!--                  >-->
+                <!--                </span>-->
               </div>
             </div>
             <div v-if="switchPosition && switchSpot" class="form-group row">
