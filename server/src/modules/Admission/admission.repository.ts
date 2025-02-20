@@ -796,10 +796,11 @@ export const dischargePatient = async (data: DischargePatientType) => {
     );
 
     const numberOfDaysAdmitted = dayjs().diff(dayjs(admission.date_admitted), 'days');
-    await Patient.increment(
-      { admitted_days_in_year: numberOfDaysAdmitted },
-      { where: { id: patient_id }, transaction: t }
-    );
+    await Patient.increment('admitted_days_in_year', {
+      by: numberOfDaysAdmitted,
+      where: { id: patient_id },
+      transaction: t,
+    });
     return getOneDischargeRecord({ id: discharge.id });
   });
 };
