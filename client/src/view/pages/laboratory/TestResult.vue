@@ -11,6 +11,8 @@
           :tests="tests"
           :accession_number="result.accession_number"
           :result_notes="result.result_notes"
+          :date_sample_collected="result.date_sample_received"
+          :sample_collector="result.sample_receiver"
           :key="accessionNumberKey"
         />
       </div>

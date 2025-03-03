@@ -680,6 +680,7 @@ export const appendTestResults = async (data: any[]) => {
           {
             status: test.testStatus,
             tester_id: test.tester_id,
+            test_conducted_date: Date.now(),
             result_id: results?.find(
               ({ prescribed_test_id }) => prescribed_test_id === test.prescribed_test_id
             )?.id,
@@ -767,15 +768,27 @@ export const getTestResults = async ({
 export const getOneTestResult = async (testPrescriptionId: number) => {
   const testPrescription = await TestPrescription.findOne({
     where: { id: testPrescriptionId },
-    attributes: ['result_notes', 'accession_number', 'date_requested'],
+    attributes: ['result_notes', 'accession_number', 'date_requested', 'date_sample_received'],
     include: [
       {
         model: Patient,
         attributes: patientAttributes,
       },
       {
+        model: Staff,
+        as: 'sample_receiver',
+        attributes: staffAttributes,
+      },
+      {
         model: PrescribedTest,
-        attributes: ['test_id', 'id', 'status', 'test_approved_date', 'test_verified_date'],
+        attributes: [
+          'test_id',
+          'id',
+          'status',
+          'test_approved_date',
+          'test_verified_date',
+          'test_conducted_date',
+        ],
         include: [
           { model: Test, attributes: ['name', 'result_unit', 'valid_range', 'result_form'] },
           { model: Sample, attributes: ['name'] },
@@ -791,6 +804,11 @@ export const getOneTestResult = async (testPrescriptionId: number) => {
           {
             model: Staff,
             as: 'test_approver',
+            attributes: staffAttributes,
+          },
+          {
+            model: Staff,
+            as: 'tester',
             attributes: staffAttributes,
           },
         ],

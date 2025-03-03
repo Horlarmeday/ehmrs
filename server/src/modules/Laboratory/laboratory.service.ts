@@ -288,7 +288,7 @@ class LaboratoryService {
     prescriptionId: number
   ): Promise<{ patientInfo: PatientInfo; testResults: TestResult[] }> {
     const testResult = await getOneTestResult(prescriptionId);
-    const { patient, date_requested, accession_number, tests } = testResult;
+    const { patient, date_requested, accession_number, tests, sample_receiver } = testResult;
 
     const patientInfo = {
       patientName: patient.fullname.toString(),
@@ -300,6 +300,8 @@ class LaboratoryService {
       accession_number,
       test_verifier: tests?.[0]?.test_verifier?.fullname,
       test_approver: tests?.[0]?.test_approver?.fullname,
+      tester: tests?.[0]?.tester?.fullname,
+      sample_receiver: sample_receiver.fullname,
     };
 
     const testResults = tests.reduce((acc, { test, result }) => {
