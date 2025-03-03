@@ -25,6 +25,8 @@ export type PatientInfo = {
   reportDate: string;
   test_verifier: string;
   test_approver: string;
+  sample_receiver: string;
+  tester: string;
 };
 
 export const downloadTestResult = (
@@ -214,6 +216,32 @@ function addStampSignatureAndFooter(doc: PDFDocument, verifier: string, approver
   generateApproverLineAndName(doc, pageWidth, lineWidth, signatureY, 'Approved By', approver);
 
   generateFooter(doc);
+}
+
+function generateStampAndSignature(doc: PDFDocument, patientInfo: PatientInfo) {
+  const headers = ['', 'Name', 'Signature'];
+  const align = ['left', 'right', 'left'];
+  const rows = [
+    ['Sample Collector', patientInfo.sample_receiver, ''],
+    ['Tester', patientInfo.tester, ''],
+    ['Verified By', patientInfo.test_verifier, ''],
+    ['Approved By', patientInfo.test_approver, ''],
+  ];
+
+  doc.table(
+    {
+      headers,
+      rows,
+    },
+    {
+      prepareHeader: () => doc.font('Helvetica-Bold'),
+      prepareRow: () => doc.font('Helvetica'),
+      align,
+      padding: 5,
+      borderWidth: 1,
+      borderColor: '#ddd',
+    }
+  );
 }
 
 function generateVerifierLineAndName(

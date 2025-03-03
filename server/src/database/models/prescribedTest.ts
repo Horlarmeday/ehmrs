@@ -223,6 +223,11 @@ export class PrescribedTest extends Model {
   })
   test_approved_date: Date;
 
+  @Column({
+    type: DataType.DATE,
+  })
+  test_conducted_date: Date;
+
   @ForeignKey(() => Staff)
   @Column({
     type: DataType.INTEGER,

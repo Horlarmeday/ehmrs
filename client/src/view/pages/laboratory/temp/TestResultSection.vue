@@ -53,37 +53,48 @@
       class="kt-invoice__body kt-invoice__body--centered table-responsive border"
       v-if="test_verifier && test_approver"
     >
-      <table class="table">
-        <thead>
-          <tr>
-            <th>APPROVED BY</th>
-            <th>DATE APPROVED</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              {{ test_approver }}
-            </td>
-            <td>
-              {{ test_approved_date | dayjs('MMMM D, YYYY, h:mm A') }}
-            </td>
-          </tr>
-          <tr>
-            <th>VERIFIED BY</th>
-            <th>DATE APPROVED</th>
-            <th></th>
-          </tr>
-          <tr>
-            <td>
-              {{ test_verifier }}
-            </td>
-            <td>
-              {{ test_verified_date | dayjs('MMMM D, YYYY, h:mm A') }}
-            </td>
-          </tr>
-        </tbody>
+      <table class="table table-head-custom table-vertical-center">
+        <tr>
+          <th></th>
+          <th>NAME</th>
+          <th>DATE</th>
+        </tr>
+        <tr v-if="sample_collector">
+          <th>Sample Collector</th>
+          <td>
+            {{ sample_collector?.fullname }}
+          </td>
+          <td>
+            {{ date_sample_collected | dayjs('MMMM D, YYYY, h:mm A') }}
+          </td>
+        </tr>
+        <tr v-if="tester">
+          <th>Tester</th>
+          <td>
+            {{ tester }}
+          </td>
+          <td>
+            {{ test_conducted_date | dayjs('MMMM D, YYYY, h:mm A') }}
+          </td>
+        </tr>
+        <tr>
+          <th>Test Verifier</th>
+          <td>
+            {{ test_verifier }}
+          </td>
+          <td>
+            {{ test_verified_date | dayjs('MMMM D, YYYY, h:mm A') }}
+          </td>
+        </tr>
+        <tr>
+          <th>Test Approver</th>
+          <td>
+            {{ test_approver }}
+          </td>
+          <td>
+            {{ test_approved_date | dayjs('MMMM D, YYYY, h:mm A') }}
+          </td>
+        </tr>
       </table>
     </div>
     <div class="text-center mt-3" v-if="allowedRoles.includes(currentUser.role)">
@@ -116,6 +127,15 @@ export default {
       type: String,
       required: false,
     },
+    date_sample_collected: {
+      type: String,
+      required: false,
+    },
+    sample_collector: {
+      type: Object,
+      required: false,
+      default: () => {},
+    },
   },
   data() {
     return {
@@ -137,8 +157,10 @@ export default {
       APPROVAL_SECTION: 'ApprovalSection',
       test_verifier: this.tests?.[0]?.test_verifier?.fullname,
       test_approver: this.tests?.[0]?.test_approver?.fullname,
+      tester: this.tests?.[0]?.tester?.fullname,
       test_approved_date: this.tests?.[0]?.test_approved_date,
       test_verified_date: this.tests?.[0]?.test_verified_date,
+      test_conducted_date: this.tests?.[0]?.test_conducted_date,
       allowedRoles: ['Super Admin', 'Laboratory'],
       currentUser: parseJwt(localStorage.getItem('user_token')),
     };
