@@ -44,7 +44,13 @@ export const downloadTestResult = (
 
   generateHeader(doc);
   generatePatientInformation(doc, patientInfo);
-  let currentY = 255; // Starting Y position after patient information
+  generateSampleCollectorAndTester(
+    doc,
+    patientInfo?.sample_receiver || 'N/A',
+    patientInfo?.tester || 'N/A'
+  );
+
+  let currentY = doc.y; // Starting Y position after patient information
   const tableWidth = 465;
 
   testResults.forEach(testResult => {
@@ -115,6 +121,7 @@ function generatePatientInformation(doc: PDFDocument, patientInfo: PatientInfo) 
     .moveDown();
 
   generateHr(doc, 252);
+  doc.moveDown();
 }
 
 function generateTestName(doc: PDFDocument, testResult: TestResult, y: number, tableWidth: number) {
@@ -218,30 +225,34 @@ function addStampSignatureAndFooter(doc: PDFDocument, verifier: string, approver
   generateFooter(doc);
 }
 
-function generateStampAndSignature(doc: PDFDocument, patientInfo: PatientInfo) {
-  const headers = ['', 'Name', 'Signature'];
-  const align = ['left', 'right', 'left'];
-  const rows = [
-    ['Sample Collector', patientInfo.sample_receiver, ''],
-    ['Tester', patientInfo.tester, ''],
-    ['Verified By', patientInfo.test_verifier, ''],
-    ['Approved By', patientInfo.test_approver, ''],
-  ];
+function generateSampleCollectorAndTester(
+  doc: PDFDocument,
+  sampleReceiver: string,
+  tester: string
+) {
+  const margin = 71;
+  const availableWidth = doc.page.width - margin * 2;
+  const halfWidth = availableWidth / 2;
+  const currentY = doc.y + 10;
+  doc.fontSize(10);
 
-  doc.table(
-    {
-      headers,
-      rows,
-    },
-    {
-      prepareHeader: () => doc.font('Helvetica-Bold'),
-      prepareRow: () => doc.font('Helvetica'),
-      align,
-      padding: 5,
-      borderWidth: 1,
-      borderColor: '#ddd',
-    }
-  );
+  // Left column: Sample Collector with name in bold
+  doc.font('Helvetica').text('Sample Collector:', margin, currentY, {
+    width: halfWidth,
+    align: 'left',
+    continued: true,
+  });
+  doc.font('Helvetica-Bold').text(` ${sampleReceiver}`, { continued: false });
+
+  // Right column: Tester with name in bold
+  doc.font('Helvetica').text('Tester:', margin + halfWidth, currentY, {
+    width: halfWidth,
+    align: 'left',
+    continued: true,
+  });
+  doc.font('Helvetica-Bold').text(` ${tester}`, { continued: false });
+
+  doc.moveDown();
 }
 
 function generateVerifierLineAndName(
