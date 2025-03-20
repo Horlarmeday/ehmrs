@@ -23,6 +23,8 @@ export default {
             currentPage: payload.currentPage,
             pageLimit: payload.itemsPerPage,
             search: payload.search,
+            start: payload.start,
+            end: payload.end,
             filter: payload.filter,
           },
         })

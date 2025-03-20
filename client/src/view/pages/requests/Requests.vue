@@ -14,7 +14,7 @@
     </div>
 
     <div class="card-header border-0">
-      <search @search="onHandleSearch" :show-date-filter="true" />
+      <search @search="onHandleSearch" :show-date-filter="true" @filterByDateRange="searchByDate" />
     </div>
     <div class="card-header border-0">
       <div class="col-3">
@@ -99,7 +99,6 @@ export default {
       const { start, end, dateSpin } = range;
       this.currentPage = 1;
       setUrlQueryParams({
-        pathName: 'request-list',
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
         filter: this.$route.query.filter || this.status,

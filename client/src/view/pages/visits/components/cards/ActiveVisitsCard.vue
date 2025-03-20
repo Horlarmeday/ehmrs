@@ -1,56 +1,59 @@
 <template>
   <div class="row">
-    <search @search="onHandleSearch" />
+    <search @search="onHandleSearch" @filterByDateRange="searchByDate" :show-date-filter="true" />
 
-    <div class="col-lg-12">
-      <div
-        class="bg-gray-200 rounded-lg pointer text-center mr-2 inline-display mb-2"
-        v-for="visit in visits"
-        :key="visit.id"
-        v-b-tooltip.hover
-        :title="visit.patient.fullname"
-        style="min-width: 150px; position: relative;"
-      >
-        <router-link
-          :to="`/visit/update/${visit.id}`"
-          class="btn btn-xs btn-icon btn-circle btn-white btn-hover-text-primary btn-shadow"
-          style="position: absolute; top: -3px; right: -1px;"
+    <div class="card-body pr-0 pl-0">
+      <div class="col-lg-12">
+        <div
+          class="bg-gray-200 rounded-lg pointer text-center mr-2 inline-display mb-2"
+          v-for="visit in visits"
+          :key="visit.id"
+          v-b-tooltip.hover
+          :title="visit.patient.fullname"
+          style="min-width: 150px; position: relative;"
         >
-          <i class="fa fa-pen icon-sm text-muted"></i>
-        </router-link>
-        <div v-if="visit.category !== OUTPATIENT" class="displayIcon">
-          <i :class="displayIcon(visit.category)" class="text-white"></i>
-        </div>
-        <div @click="visitDetailsPage(visit)" class="pr-4 pl-4 pb-4">
-          <div>
-            <img
-              width="70"
-              v-if="!imageError"
-              alt="Pic"
-              :src="imageUrl(visit.patient.photo)"
-              @load="handleImageLoad"
-              @error="handleImageError"
-            />
-            <img v-else alt="Pic" src="/media/users/blank.png" width="50" class="mb-2" />
+          <router-link
+            :to="`/visit/update/${visit.id}`"
+            class="btn btn-xs btn-icon btn-circle btn-white btn-hover-text-primary btn-shadow"
+            style="position: absolute; top: -3px; right: -1px;"
+          >
+            <i class="fa fa-pen icon-sm text-muted"></i>
+          </router-link>
+          <div v-if="visit.category !== OUTPATIENT" class="displayIcon">
+            <i :class="displayIcon(visit.category)" class="text-white"></i>
           </div>
-          <p class="mb-0 font-size-lg">
-            <strong
-              >{{ shortenName(visit.patient.fullname, 11) }}
-              <span>{{ displayEllipsis(visit.patient.fullname) }}</span></strong
-            >
-          </p>
-          <p class="mb-0">
-            <span
-              v-b-tooltip.hover
-              :title="visit?.patient?.insurances?.[0]?.insurance?.name"
-              class="label label-dot label-lg mr-2"
-              :class="getPatientDotStatus(visit?.patient?.insurances?.[0]?.insurance?.name)"
-            ></span>
-            <small class="font-size-lg font-weight-bolder">{{ visit.patient.hospital_id }}</small>
-          </p>
+          <div @click="visitDetailsPage(visit)" class="pr-4 pl-4 pb-4">
+            <div>
+              <img
+                width="70"
+                v-if="!imageError"
+                alt="Pic"
+                :src="imageUrl(visit.patient.photo)"
+                @load="handleImageLoad"
+                @error="handleImageError"
+              />
+              <img v-else alt="Pic" src="/media/users/blank.png" width="50" class="mb-2" />
+            </div>
+            <p class="mb-0 font-size-lg">
+              <strong
+                >{{ shortenName(visit.patient.fullname, 11) }}
+                <span>{{ displayEllipsis(visit.patient.fullname) }}</span></strong
+              >
+            </p>
+            <p class="mb-0">
+              <span
+                v-b-tooltip.hover
+                :title="visit?.patient?.insurances?.[0]?.insurance?.name"
+                class="label label-dot label-lg mr-2"
+                :class="getPatientDotStatus(visit?.patient?.insurances?.[0]?.insurance?.name)"
+              ></span>
+              <small class="font-size-lg font-weight-bolder">{{ visit.patient.hospital_id }}</small>
+            </p>
+          </div>
         </div>
       </div>
     </div>
+
     <div class="card-body pb-0">
       <pagination
         v-if="visits?.length"
@@ -66,9 +69,11 @@
 </template>
 
 <script>
-import Search from '../../../../../utils/Search.vue';
-import { debounce, getPatientDotStatus, removeSpinner } from '@/common/common';
+import Search from '@/utils/Search.vue';
+import { debounce, getPatientDotStatus, removeSpinner, setUrlQueryParams } from '@/common/common';
 import Pagination from '@/utils/Pagination.vue';
+import dayjs from 'dayjs';
+
 export default {
   components: { Pagination, Search },
   data() {
@@ -105,16 +110,44 @@ export default {
       });
     },
 
+    fetchActiveVisits({ currentPage, itemsPerPage, start, end, search }) {
+      return this.$store.dispatch('visit/fetchActiveVisits', {
+        currentPage,
+        itemsPerPage,
+        ...(search && { search }),
+        ...(start && end && { start, end }),
+      });
+    },
+
     onPageChange(page) {
       this.currentPage = page;
       this.handlePageChange();
     },
 
     handlePageCount(count) {
-      this.$store.dispatch('visit/fetchActiveVisits', {
-        currentPage: this.$route.query.currentPage || this.currentPage,
+      this.fetchActiveVisits({
+        currentPage: this.currentPage,
         itemsPerPage: count,
       });
+    },
+
+    searchByDate(range) {
+      const { start, end, dateSpin } = range;
+      this.currentPage = 1;
+      setUrlQueryParams({
+        currentPage: this.currentPage,
+        itemsPerPage: this.itemsPerPage,
+        startDate: dayjs(start).format('YYYY-MM-DD'),
+        endDate: dayjs(end).format('YYYY-MM-DD'),
+      });
+      this.fetchActiveVisits({
+        currentPage: this.$route.query.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
+      })
+        .then(() => removeSpinner(dateSpin))
+        .catch(() => removeSpinner(dateSpin));
     },
 
     onHandleSearch(prop) {
