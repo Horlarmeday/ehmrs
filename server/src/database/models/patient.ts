@@ -251,6 +251,12 @@ export class Patient extends Model {
   })
   admitted_days_in_year?: number;
 
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+  })
+  is_difficult_patient?: string;
+
   @Column(DataType.VIRTUAL)
   get fullname(): unknown {
     return `${this.getDataValue('firstname')} ${this.getDataValue('middlename') ||
