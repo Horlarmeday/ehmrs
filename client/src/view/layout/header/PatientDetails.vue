@@ -45,6 +45,16 @@
           <span class="menu-text text-dark font-weight-bolder">{{ patient?.hmo?.name }}</span>
         </div>
       </li>
+      <li class="menu-item" v-if="patient.is_difficult_patient">
+        <div class="menu-link">
+          <span class="menu-text text-dark font-weight-bolder">
+            <span class="label label-danger label-pill label-inline mr-2 font-weight-boldest pulse">
+              <i class="flaticon2-bell-alarm-symbol mr-2 text-white icon-nm"></i>
+              <span class="font-weight-bold">Difficult Patient</span>
+            </span>
+          </span>
+        </div>
+      </li>
     </ul>
     <!--    <div class="ml-auto">-->
     <!--      <div class="">-->

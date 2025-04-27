@@ -118,6 +118,7 @@ export default {
       axios
         .put(`/patients/update/${payload.id}`, payload.data)
         .then(response => {
+          console.log(response.data.data);
           commit('UPDATE_PATIENT', response.data.data);
           resolve(response);
         })
