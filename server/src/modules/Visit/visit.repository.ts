@@ -374,7 +374,10 @@ export const getVisitsQuery = async (
     offset,
     limit,
     attributes,
-    include: [{ model: Staff, attributes: staffAttributes }],
+    include: [
+      { model: Staff, attributes: staffAttributes },
+      { model: Patient, attributes: patientAttributes },
+    ],
   });
   const count = await Visit.count({ where: { ...query } });
   return { visits, limit, offset, count };
@@ -624,7 +627,9 @@ export const getProfessionalAssignedVisits = async ({
  * @param visitId
  */
 export const getVisitPrescriptions = async (visitId: number) => {
-  const [prescriptions] = await getPrescriptions([visitId], [VisitCategory.OPD]);
+  const visit = await getVisitById(visitId);
+  const ancIds = [visit?.ante_natal_id]?.filter(Boolean);
+  const [prescriptions] = await getPrescriptions([visitId], [VisitCategory.OPD], ancIds);
   return prescriptions;
 };
 

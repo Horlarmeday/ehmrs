@@ -105,6 +105,7 @@
                 </td>
                 <td class="pr-0">
                   <router-link
+                    :class="{ disabled: !allowedRoles.includes(currentUser.role) }"
                     title="Start a Visit"
                     :to="`/visit/new/${patient.id}`"
                     class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
@@ -141,7 +142,7 @@
 import Pagination from '@/utils/Pagination.vue';
 import DateFilter from '@/utils/DateFilter.vue';
 import CreateVisit from '../../visits/create/CreateVisit-Deprecated.vue';
-import { getPatientDotStatus, setUrlQueryParams } from '@/common/common';
+import { getPatientDotStatus, parseJwt, setUrlQueryParams } from '@/common/common';
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
 import dayjs from 'dayjs';
 export default {
@@ -155,6 +156,8 @@ export default {
       currentPage: 1,
       itemsPerPage: 10,
       isDisabled: false,
+      allowedRoles: ['Super Admin', 'Medical Records', 'Admin'],
+      currentUser: parseJwt(localStorage.getItem('user_token')),
     };
   },
   components: {
@@ -300,5 +303,10 @@ export default {
 .disabled {
   opacity: 0.5;
   pointer-events: none;
+}
+
+tr.disabled {
+  pointer-events: none; /* Disable pointer events to prevent interaction */
+  opacity: 0.5; /* Optionally, reduce the opacity to visually indicate the disabled state */
 }
 </style>

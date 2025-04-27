@@ -28,6 +28,7 @@ export enum VisitCategory {
   ANC = 'Antenatal',
   IMMUNIZATION = 'Immunization',
   MATERNITY = 'Maternity',
+  DIALYSIS = 'Dialysis',
 }
 
 export enum VisitStatus {
@@ -59,7 +60,8 @@ export class Visit extends Model {
       VisitCategory.OPD,
       VisitCategory.EMERGENCY,
       VisitCategory.ANC,
-      VisitCategory.IMMUNIZATION
+      VisitCategory.IMMUNIZATION,
+      VisitCategory.DIALYSIS
     ),
     allowNull: false,
     validate: {

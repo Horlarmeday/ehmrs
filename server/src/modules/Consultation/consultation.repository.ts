@@ -159,13 +159,19 @@ export async function getConsultationSummary(query: WhereOptions<History>) {
  * @function
  * @param visitIds
  * @param categories
+ * @param antenatalIds
  */
-export const getObservations = async (visitIds: number[], categories: VisitCategory[]) => {
+export const getObservations = async (
+  visitIds: number[],
+  categories: VisitCategory[],
+  antenatalIds: number[]
+) => {
   const ancVisitIds = visitIds.filter((_, index) => categories[index] === VisitCategory.ANC);
   const nonAncVisitIds = visitIds.filter((_, index) => categories[index] !== VisitCategory.ANC);
+  const ancIds = [...new Set(antenatalIds)];
 
   const [ancObservations, consultationSummaries] = await Promise.all([
-    ancVisitIds.length > 0 ? getAntenatalObservations({ visit_id: ancVisitIds }) : [],
+    ancIds.length > 0 ? getAntenatalObservations({ ante_natal_id: ancIds }) : [],
     nonAncVisitIds.length > 0 ? getConsultationSummary({ visit_id: nonAncVisitIds }) : [],
   ]);
 
@@ -221,8 +227,13 @@ export const getVisitsWardRounds = async (visitIds: number[], categories: VisitC
  * @function
  * @param visitIds
  * @param categories
+ * @param antenatalIds
  */
-export const getVisitPrescriptions = async (visitIds: number[], categories: VisitCategory[]) => {
+export const getVisitPrescriptions = async (
+  visitIds: number[],
+  categories: VisitCategory[],
+  antenatalIds: number[] = []
+) => {
   const [
     tests,
     drugs,
@@ -238,7 +249,7 @@ export const getVisitPrescriptions = async (visitIds: number[], categories: Visi
     getPrescriptionTests({ visit_id: visitIds }),
     getDrugsPrescribed({ visit_id: visitIds }),
     getPrescriptionInvestigations({ visit_id: visitIds }),
-    getObservations(visitIds, categories),
+    getObservations(visitIds, categories, antenatalIds),
     getVisitTriages(visitIds, categories),
     getPatientDiagnoses({ visit_id: visitIds }),
     getAdditionalItems({ visit_id: visitIds }),
@@ -301,13 +312,23 @@ export const getVisitsHistory = async (
     {
       patient_id: patientId,
     },
-    ['id', 'date_visit_start', 'date_visit_ended', 'patient_id', 'category', 'status', 'staff_id']
+    [
+      'id',
+      'date_visit_start',
+      'date_visit_ended',
+      'patient_id',
+      'category',
+      'status',
+      'staff_id',
+      'ante_natal_id',
+    ]
   );
   const visitJSON = visits.map(visit => visit.toJSON());
   const visitIds = visitJSON.map(visit => visit.id);
   const categories = visitJSON.map(visit => visit.category);
+  const antenatalIds = visitJSON.map(visit => visit?.ante_natal_id)?.filter(Boolean);
 
-  const prescriptions = await getVisitPrescriptions(visitIds, categories);
+  const prescriptions = await getVisitPrescriptions(visitIds, categories, antenatalIds);
 
   const summary = visitJSON.map((visit, index) => ({
     ...visit,

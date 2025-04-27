@@ -412,8 +412,13 @@ export class AdmissionService {
    */
   static async getDoctorPrescriptions(admissionId: number) {
     const admission = await getOneAdmission({ id: admissionId });
-    const [prescriptions] = await getVisitPrescriptions([admission.visit_id], [VisitCategory.IPD]);
-    return prescriptions;
+    const ancId = [admission?.ante_natal_id]?.filter(Boolean);
+    const [prescriptions] = await getVisitPrescriptions(
+      [admission.visit_id],
+      [VisitCategory.IPD],
+      ancId
+    );
+    return { ...prescriptions, admission };
   }
 
   /**

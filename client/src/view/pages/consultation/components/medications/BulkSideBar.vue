@@ -632,9 +632,9 @@ export default {
       )?.id;
     },
 
-    sumTotalPrice(arr) {
-      return arr.reduce((a, b) => a + +b.total_price, 0);
-    },
+    // sumTotalPrice(arr) {
+    //   return arr.reduce((a, b) => a + +b.total_price, 0);
+    // },
 
     // getTotalDrugsPrescribedToday(arr) {
     //   const drugsToday = arr.filter(
