@@ -57,15 +57,13 @@
                         <triage-table v-else :triages="summary.triages" />
                       </b-tab>
                       <b-tab title="Consultation">
-                        <antenatal-observations-table
-                          v-if="summary.category === ANTENATAL"
-                          :observations="summary.observations"
-                        />
                         <observations-table
-                          v-else
                           :observations="summary.observations"
                           :ward-rounds="summary.wardRounds"
                         />
+                      </b-tab>
+                      <b-tab title="ANC History" v-if="summary.patient.gender === FEMALE">
+                        <antenatal-observations-table :observations="summary.observations" />
                       </b-tab>
                       <b-tab title="Diagnoses">
                         <diagnoses-table :diagnoses="summary.diagnoses" />
@@ -176,6 +174,7 @@ export default {
     disabled: 'disabled',
     ANTENATAL: 'Antenatal',
     INPATIENT: 'Inpatient',
+    FEMALE: 'Female',
   }),
   components: {
     WardRoundsTable,

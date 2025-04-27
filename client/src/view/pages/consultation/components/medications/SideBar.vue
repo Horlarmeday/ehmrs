@@ -73,9 +73,9 @@
                   Quantity Remaining:
                   <span class="font-weight-boldest">{{ quantity_remaining }} {{ unit_name }}</span>
                 </span>
-                <span v-if="price" class="form-text text-success"
-                  >Price: <span class="font-weight-boldest">₦{{ price }}</span></span
-                >
+                <!--                <span v-if="price" class="form-text text-success"-->
+                <!--                  >Price: <span class="font-weight-boldest">₦{{ price }}</span></span-->
+                <!--                >-->
               </div>
             </div>
             <div class="form-group row">
@@ -206,12 +206,12 @@
                 <span class="form-text text-danger">{{
                   errors.first('quantity_to_dispense')
                 }}</span>
-                <span v-if="total_price" class="form-text text-success">
-                  Total price
-                  <span class="text-success"
-                    ><span class="font-weight-boldest">₦{{ total_price }}</span></span
-                  >
-                </span>
+                <!--                <span v-if="total_price" class="form-text text-success">-->
+                <!--                  Total price-->
+                <!--                  <span class="text-success"-->
+                <!--                    ><span class="font-weight-boldest">₦{{ total_price }}</span></span-->
+                <!--                  >-->
+                <!--                </span>-->
               </div>
             </div>
             <div v-if="switchPosition && switchSpot" class="form-group row">
@@ -252,7 +252,7 @@
               </div>
               <button
                 @click="submitDrugOrder"
-                :disabled="quantity_remaining <= 0 || nhisPriceQuotaExceeded"
+                :disabled="quantity_remaining <= 0"
                 ref="kt-drugOrder-submit"
                 class="btn btn-primary btn-md float-right mb-3"
               >
@@ -269,7 +269,7 @@
 <script>
 import Datepicker from 'vuejs-datepicker';
 import vSelect from 'vue-select';
-import { debounce, isToday, parseJwt } from '@/common/common';
+import { debounce, parseJwt } from '@/common/common';
 import KTUtil from '@/assets/js/components/util';
 import SwitchBox from '@/utils/SwitchBox.vue';
 import RoutineDrugs from '@/view/pages/programs/antenatal/components/RoutineDrugs.vue';
@@ -308,9 +308,9 @@ export default {
         this.drug = '';
       },
     },
-    drugOrders() {
-      return this.$store.state.order.drug_orders;
-    },
+    // drugOrders() {
+    //   return this.$store.state.order.drug_orders;
+    // },
   },
 
   // watch: {
@@ -595,15 +595,15 @@ export default {
         inventory.name.toLowerCase().includes(type.toLowerCase())
       )?.id;
     },
+    //
+    // sumTotalPrice(arr) {
+    //   return arr.reduce((a, b) => a + +b.total_price, 0);
+    // },
 
-    sumTotalPrice(arr) {
-      return arr.reduce((a, b) => a + +b.total_price, 0);
-    },
-
-    getTotalDrugsPrescribedToday(arr) {
-      const drugsToday = arr.filter(({ date_prescribed }) => isToday(date_prescribed));
-      return this.sumTotalPrice(drugsToday);
-    },
+    // getTotalDrugsPrescribedToday(arr) {
+    //   const drugsToday = arr.filter(({ date_prescribed }) => isToday(date_prescribed));
+    //   return this.sumTotalPrice(drugsToday);
+    // },
 
     openModal() {
       this.displayPrompt = true;

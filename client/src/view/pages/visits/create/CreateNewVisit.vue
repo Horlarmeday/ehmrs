@@ -178,7 +178,7 @@ export default {
     },
 
     categories() {
-      const data = ['Outpatient', 'Emergency', 'Immunization'];
+      const data = ['Outpatient', 'Emergency', 'Immunization', 'Dialysis'];
       if (this?.gender === 'Female') {
         data.push('Antenatal');
         data.push('Maternity');

@@ -10,6 +10,9 @@
       <b-tab title="Observations">
         <observations-table :observations="summary?.observations" />
       </b-tab>
+      <b-tab title="ANC History" v-if="summary?.admission?.patient.gender === FEMALE">
+        <antenatal-observations-table :observations="summary?.observations" />
+      </b-tab>
       <b-tab title="Tests">
         <tests-table :tests="summary?.tests" />
       </b-tab>
@@ -37,9 +40,11 @@ import ServicesTable from '@/view/components/table/ServicesTable.vue';
 import MedicationsTable from '@/view/components/table/MedicationsTable.vue';
 import ObservationsTable from '@/view/components/table/ObservationsTable.vue';
 import AdditionalItemsTable from '@/view/components/table/AdditionalItemsTable.vue';
+import AntenatalObservationsTable from '@/view/components/table/AntenatalObservationsTable.vue';
 
 export default {
   components: {
+    AntenatalObservationsTable,
     AdditionalItemsTable,
     ObservationsTable,
     MedicationsTable,
@@ -62,6 +67,11 @@ export default {
   },
   created() {
     this.fetchDoctorPrescriptions();
+  },
+  data() {
+    return {
+      FEMALE: 'Female',
+    };
   },
 };
 </script>

@@ -1,5 +1,10 @@
 <template>
   <div class="flex-row-auto offcanvas-mobile w-xl-250px">
+    <service-quantity-modal
+      @closeModal="hideModal"
+      :service="serviceToEdit"
+      :display-prompt="displayPrompt"
+    />
     <div class="card-custom card-stretch">
       <div class="card-header">
         <h6 class="card-title">
@@ -15,14 +20,19 @@
           >
             <div class="p-2">
               <span class="mr-3">{{ truncateText(service.name) }}</span>
-              <span class="float-right ml-4" v-b-tooltip.hover title="Delete">
+              <span class="float-right ml-2" v-b-tooltip.hover title="Delete">
                 <a href="#" @click="removeSelectedService(service)"
                   ><i class="flaticon2-rubbish-bin text-danger icon-md"
                 /></a>
               </span>
-              <span class="float-right" v-b-tooltip.hover title="Urgent!">
+              <span class="float-right ml-2" v-b-tooltip.hover title="Urgent!">
                 <a href="#" @click="toggleServiceUrgent(service.service_id, i)">
                   <i ref="selectedService" class="flaticon2-warning icon-md" />
+                </a>
+              </span>
+              <span class="float-right" v-b-tooltip.hover title="Add Quantity">
+                <a href="#" @click="insertQuantity(service)">
+                  <i class="flaticon2-add icon-md" :class="service?.quantity && 'text-dark'"></i>
                 </a>
               </span>
             </div>
@@ -34,12 +44,21 @@
 </template>
 
 <script>
+import ServiceQuantityModal from '@/view/pages/consultation/components/services/ServiceQuantityModal.vue';
+
 export default {
   name: 'SelectedServices',
+  components: { ServiceQuantityModal },
   props: {
     selectedServices: {
       type: Array,
     },
+  },
+  data() {
+    return {
+      displayPrompt: false,
+      serviceToEdit: {},
+    };
   },
   methods: {
     truncateText(service) {
@@ -62,13 +81,20 @@ export default {
         this.$store.dispatch('order/toggleServiceUrgent', serviceId);
       }
     },
+    insertQuantity(service) {
+      this.serviceToEdit = service;
+      this.displayPrompt = true;
+    },
+    hideModal() {
+      this.displayPrompt = false;
+    },
   },
 };
 </script>
 
 <style scoped>
 .select-order {
-  background: linear-gradient(to bottom,#FFF,#DDD);
+  background: linear-gradient(to bottom, #fff, #ddd);
   border: 1px solid #ddd;
   border-radius: 3px;
 }

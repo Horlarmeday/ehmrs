@@ -7,6 +7,7 @@
             <th scope="col">Service</th>
             <th scope="col">Billing Status</th>
             <th scope="col">Type</th>
+            <th scope="col">Quantity</th>
             <th scope="col">Price(₦)</th>
             <th scope="col">Payment Status</th>
             <th scope="col">Requested By</th>
@@ -26,6 +27,7 @@
                 service.service_type
               }}</span>
             </td>
+            <td>{{ service.quantity }}</td>
             <td>
               {{ service.price }}
             </td>

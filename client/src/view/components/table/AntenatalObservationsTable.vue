@@ -12,10 +12,12 @@
           <th scope="col"></th>
         </tr>
       </thead>
-      <tbody>
-        <tr v-if="!observations?.length">
+      <tbody v-if="!observations?.length || !observations?.[0]?.mother_condition">
+        <tr>
           <td colspan="9" align="center" class="text-muted">No Data</td>
         </tr>
+      </tbody>
+      <tbody v-else>
         <tr v-for="(observation, i) in observations" :key="i">
           <td>{{ observation.mother_condition }}</td>
           <td>{{ observation.foetal_condition }}</td>
@@ -23,10 +25,6 @@
           <td>{{ observation.continuation_sheet }}</td>
           <td>{{ observation?.staff?.fullname }}</td>
           <td>{{ observation.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
-          <td>
-            <a href="#"><i class="flaticon-delete mr-2"></i></a>
-            <a href="#"><i class="flaticon-edit-1"></i></a>
-          </td>
         </tr>
       </tbody>
     </table>

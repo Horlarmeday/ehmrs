@@ -34,7 +34,7 @@
         <tr>
           <th scope="row">Qty Prescribed</th>
           <td>
-            <span>{{ drug.quantity_prescribed }} {{ drug?.dosage_form?.name }}</span>
+            <span>{{ drug.quantity_to_dispense }} {{ drug?.dosage_form?.name }}</span>
           </td>
         </tr>
         <tr>
