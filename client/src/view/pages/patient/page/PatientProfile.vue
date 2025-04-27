@@ -17,7 +17,6 @@
             <span></span>
           </label>
         </span>
-
         <!-- CONVERT DEPENDANT TO PATIENT ACCOUNT -->
         <span
           v-if="patient.patient_type === this.DEPENDANT && allowedRoles.includes(currentUser.role)"
@@ -47,6 +46,17 @@
             <span class="pulse-ring"></span>
           </router-link>
         </div>
+        <span class="switch mr-4">
+          <a
+            v-b-tooltip:hover
+            :title="patient.is_difficult_patient ? REMOVE_DIFFICULT : MARK_AS_DIFFICULT"
+            class="btn btn-icon btn-light-danger pulse-danger pulse mr-5"
+            @click="showConfirmAlert"
+          >
+            <i class="far fa-thumbs-down"></i>
+            <span class="pulse-ring"></span>
+          </a>
+        </span>
       </div>
     </div>
     <div class="card-body">
@@ -150,6 +160,8 @@ export default {
     switchMessage: 'Switch patient account to',
     currentUser: parseJwt(localStorage.getItem('user_token')),
     allowedRoles: ['Super Admin'],
+    MARK_AS_DIFFICULT: 'Mark as Difficult Patient',
+    REMOVE_DIFFICULT: 'Remove as Difficult Patient',
   }),
 
   computed: {
@@ -261,6 +273,32 @@ export default {
           return self.convertDependantAccount();
         },
       });
+    },
+
+    showConfirmAlert() {
+      const self = this;
+      Swal.fire({
+        title: 'Are you sure?',
+        html: `You want to ${
+          this.patient.is_difficult_patient ? 'remove' : 'mark'
+        } this patient as a difficult patient?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, go ahead!',
+        cancelButtonText: 'No, cancel',
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+          return self.markAsDifficultPatient();
+        },
+      });
+    },
+
+    markAsDifficultPatient() {
+      const is_difficult_patient = !this.patient.is_difficult_patient;
+      const data = {
+        patient: { is_difficult_patient },
+      };
+      this.$store.dispatch('patient/updatePatient', { data, id: this.$route.params.id });
     },
   },
 

@@ -48,6 +48,7 @@ export const patientAttributes = [
   'complete_name',
   'createdAt',
   'patient_type',
+  'is_difficult_patient',
 ];
 
 /**
