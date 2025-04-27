@@ -14,4 +14,9 @@ export default [
     icon: 'flaticon2-list-1',
     name: 'Reports',
   },
+  {
+    url: '/patient/find-patient',
+    icon: 'flaticon-search',
+    name: 'Find Patient Record',
+  },
 ];

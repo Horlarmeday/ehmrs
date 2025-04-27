@@ -11,10 +11,12 @@
           <th scope="col"></th>
         </tr>
       </thead>
-      <tbody>
-        <tr v-if="!histories?.length">
+      <tbody v-if="!histories?.length || !histories?.[0]?.complaint_note">
+        <tr>
           <td colspan="9" align="center" class="text-muted">No Data</td>
         </tr>
+      </tbody>
+      <tbody v-else>
         <tr v-for="(history, i) in histories" :key="i">
           <td>{{ history.complaint_note || '-' }}</td>
           <td>{{ history.history_note || '-' }}</td>

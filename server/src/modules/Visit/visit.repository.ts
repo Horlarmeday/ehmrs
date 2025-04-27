@@ -2,26 +2,26 @@
 
 import { Op, WhereOptions } from 'sequelize';
 
-import { Patient, Visit } from '../../database/models';
+import { Insurance, Patient, PatientInsurance, Staff, Visit } from '../../database/models';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { VisitCategory, VisitStatus } from '../../database/models/visit';
-import { calcLimitAndOffset, dateIntervalQuery } from '../../core/helpers/helper';
+import {
+  calcLimitAndOffset,
+  dateIntervalQuery,
+  patientAttributes,
+  staffAttributes,
+} from '../../core/helpers/helper';
 import { FindAttributeOptions } from 'sequelize/types/model';
-import { getPrescriptions } from '../Consultation/consultation.repository';
+import { getVisitPrescriptions as getPrescriptions } from '../Consultation/consultation.repository';
 import { getOneTriage } from '../Triage/triage.repository';
-
-export const patientAttributes = [
-  'fullname',
-  'photo',
-  'hospital_id',
-  'photo_url',
-  'firstname',
-  'lastname',
-  'gender',
-  'id',
-  'has_insurance',
-  'date_of_birth',
-];
+import { getOnePrescribedTest } from '../Orders/Laboratory/lab-order.repository';
+import {
+  getOneAdditionalItemWithJoins,
+  getOnePrescribedDrug,
+} from '../Orders/Pharmacy/pharmacy-order.repository';
+import { getOnePrescribedService } from '../Orders/Service/service-order.repository';
+import { getOnePrescribedInvestigation } from '../Orders/Radiology/radiology-order.repository';
+import { PaymentStatus } from '../../database/models/prescribedDrug';
 
 /**
  * create a patient visit
@@ -87,6 +87,15 @@ export async function getVisitById(id: number): Promise<Visit> {
 }
 
 /**
+ * get patient visit
+ * @returns {Promise<Visit>} visit data
+ * @param query
+ */
+export const getOneVisitQuery = (query: WhereOptions<Visit>): Promise<Visit> => {
+  return Visit.findOne({ where: { ...query } });
+};
+
+/**
  * get a visit by Id and including patient details
  * @param id
  */
@@ -96,17 +105,7 @@ export async function getVisit(id: number) {
     include: [
       {
         model: Patient,
-        attributes: [
-          'fullname',
-          'firstname',
-          'lastname',
-          'date_of_birth',
-          'photo',
-          'photo_url',
-          'gender',
-          'hospital_id',
-          'has_insurance',
-        ],
+        attributes: patientAttributes,
       },
     ],
   });
@@ -189,8 +188,27 @@ export async function searchActiveVisits({
                 [Op.like]: `%${search}%`,
               },
             },
+            {
+              complete_name: {
+                [Op.like]: `%${search}%`,
+              },
+            },
           ],
         },
+        include: [
+          {
+            model: PatientInsurance,
+            where: { is_default: true },
+            limit: 1,
+            order: [['createdAt', 'DESC']],
+            attributes: ['id', 'insurance_id'],
+            include: [{ model: Insurance, attributes: ['name'] }],
+          },
+        ],
+      },
+      {
+        model: Staff,
+        attributes: staffAttributes,
       },
     ],
   });
@@ -229,6 +247,20 @@ export async function getActiveVisits({
         where: {
           ...(filter && JSON.parse(filter)),
         },
+        include: [
+          {
+            model: PatientInsurance,
+            where: { is_default: true },
+            limit: 1,
+            order: [['createdAt', 'DESC']],
+            attributes: ['id', 'insurance_id'],
+            include: [{ model: Insurance, attributes: ['name'] }],
+          },
+        ],
+      },
+      {
+        model: Staff,
+        attributes: staffAttributes,
       },
     ],
   });
@@ -273,12 +305,21 @@ export async function searchVisits({
               },
             },
             {
+              complete_name: {
+                [Op.like]: `%${search}%`,
+              },
+            },
+            {
               hospital_id: {
                 [Op.like]: `%${search}%`,
               },
             },
           ],
         },
+      },
+      {
+        model: Staff,
+        attributes: staffAttributes,
       },
     ],
   });
@@ -312,6 +353,10 @@ export async function getVisits({
         model: Patient,
         attributes: patientAttributes,
       },
+      {
+        model: Staff,
+        attributes: staffAttributes,
+      },
     ],
   });
 }
@@ -329,6 +374,10 @@ export const getVisitsQuery = async (
     offset,
     limit,
     attributes,
+    include: [
+      { model: Staff, attributes: staffAttributes },
+      { model: Patient, attributes: patientAttributes },
+    ],
   });
   const count = await Visit.count({ where: { ...query } });
   return { visits, limit, offset, count };
@@ -398,8 +447,27 @@ export async function searchCategoryVisits({
                 [Op.like]: `%${search}%`,
               },
             },
+            {
+              complete_name: {
+                [Op.like]: `%${search}%`,
+              },
+            },
           ],
         },
+        include: [
+          {
+            model: PatientInsurance,
+            where: { is_default: true },
+            limit: 1,
+            order: [['createdAt', 'DESC']],
+            attributes: ['id', 'insurance_id'],
+            include: [{ model: Insurance, attributes: ['name'] }],
+          },
+        ],
+      },
+      {
+        model: Staff,
+        attributes: staffAttributes,
       },
     ],
   });
@@ -434,14 +502,28 @@ export async function getCategoryVisits({
       {
         model: Patient,
         attributes: patientAttributes,
+        include: [
+          {
+            model: PatientInsurance,
+            where: { is_default: true },
+            limit: 1,
+            order: [['createdAt', 'DESC']],
+            attributes: ['id', 'insurance_id'],
+            include: [{ model: Insurance, attributes: ['name'] }],
+          },
+        ],
+      },
+      {
+        model: Staff,
+        attributes: staffAttributes,
       },
     ],
   });
 }
 
-/** ***********************
+/** ****************************
  * PROFESSIONAL ASSIGNED VISITS
- ********************** */
+ ***************************** */
 /**
  * search professional assigned visits
  *
@@ -473,7 +555,7 @@ export const getProfessionalAssignedVisits = async ({
   return Visit.paginate({
     page: +currentPage,
     paginate: +pageLimit,
-    order: [['date_visit_start', 'DESC']],
+    order: [['updatedAt', 'DESC']],
     where: {
       status: VisitStatus.ONGOING,
       professional: role,
@@ -486,7 +568,7 @@ export const getProfessionalAssignedVisits = async ({
           category: VisitCategory.EMERGENCY,
         },
       ],
-      ...(start && end && dateIntervalQuery('date_visit_start', start, end)),
+      ...(start && end && dateIntervalQuery('updatedAt', start, end)),
     },
     include: [
       {
@@ -510,9 +592,28 @@ export const getProfessionalAssignedVisits = async ({
                   [Op.like]: `%${search}%`,
                 },
               },
+              {
+                complete_name: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
             ],
           }),
         },
+        include: [
+          {
+            model: PatientInsurance,
+            where: { is_default: true },
+            limit: 1,
+            order: [['createdAt', 'DESC']],
+            attributes: ['id', 'insurance_id'],
+            include: [{ model: Insurance, attributes: ['name'] }],
+          },
+        ],
+      },
+      {
+        model: Staff,
+        attributes: staffAttributes,
       },
     ],
   });
@@ -526,6 +627,32 @@ export const getProfessionalAssignedVisits = async ({
  * @param visitId
  */
 export const getVisitPrescriptions = async (visitId: number) => {
-  const prescriptions = await getPrescriptions(visitId, VisitCategory.OPD);
+  const visit = await getVisitById(visitId);
+  const ancIds = [visit?.ante_natal_id]?.filter(Boolean);
+  const [prescriptions] = await getPrescriptions([visitId], [VisitCategory.OPD], ancIds);
   return prescriptions;
+};
+
+/**
+ * Get all prescriptions in a visit
+ * @param visit_id
+ */
+export const getPatientPendingPrescriptions = async (visit_id: number) => {
+  const visit = await getVisit(visit_id);
+  if (visit?.patient?.has_insurance && visit?.insurance) return {};
+
+  const [test, drug, item, service, investigation] = await Promise.all([
+    getOnePrescribedTest({ visit_id, payment_status: PaymentStatus.PENDING }),
+    getOnePrescribedDrug({ visit_id, payment_status: PaymentStatus.PENDING }),
+    getOneAdditionalItemWithJoins({ visit_id, payment_status: PaymentStatus.PENDING }),
+    getOnePrescribedService({ visit_id, payment_status: PaymentStatus.PENDING }),
+    getOnePrescribedInvestigation({ visit_id, payment_status: PaymentStatus.PENDING }),
+  ]);
+  return {
+    testName: test?.test?.name,
+    drugName: drug?.drug?.name,
+    item: item?.drug?.name,
+    serviceName: service?.service?.name,
+    investigationName: investigation?.investigation?.name,
+  };
 };

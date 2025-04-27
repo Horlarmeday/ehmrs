@@ -317,6 +317,14 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            {
+              path: 'dialysis',
+              name: 'dialysis',
+              component: () => import('@/view/pages/visits/page/DialysisVisits.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
             // NURSE (OPD)
             {
               path: 'treatments',

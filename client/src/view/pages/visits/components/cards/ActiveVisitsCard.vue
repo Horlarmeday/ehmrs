@@ -115,6 +115,7 @@ export default {
       if (category === 'Inpatient') return 'fas fa-bed';
       if (category === 'Antenatal') return 'fas fa-female';
       if (category === 'Immunization') return 'fas fa-baby';
+      if (category === 'Dialysis') return 'fas fa-diagnoses';
     },
 
     displayEllipsis(name) {

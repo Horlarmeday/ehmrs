@@ -2,11 +2,13 @@
   <div class="card card-custom gutter-b">
     <div class="card-header py-5">
       <h3 class="card-title align-items-start flex-column">
-        <span class="card-label font-weight-bolder text-dark">Queue</span>
+        <span class="card-label font-weight-bolder text-dark"
+          >Queue <span v-if="label">({{ label }})</span></span
+        >
       </h3>
     </div>
     <div class="card-body">
-      <div class="mt-3">
+      <div class="mt-2">
         <search
           @search="onHandleSearch"
           @filterByDateRange="searchByDate"
@@ -53,6 +55,10 @@ export default {
     },
     filter: {
       type: Object,
+      required: false,
+    },
+    label: {
+      type: String,
       required: false,
     },
   },

@@ -242,9 +242,9 @@
               </div>
             </div>
             <div class="mt-3">
-<!--              <div v-if="nhisPriceQuotaExceeded" class="alert alert-warning" role="alert">-->
-<!--                <span class="font-size-sm font-weight-bold">NHIS drugs limit is reached</span>-->
-<!--              </div>-->
+              <!--              <div v-if="nhisPriceQuotaExceeded" class="alert alert-warning" role="alert">-->
+              <!--                <span class="font-size-sm font-weight-bold">NHIS drugs limit is reached</span>-->
+              <!--              </div>-->
               <button
                 @click="submitDrugOrder"
                 :disabled="quantity_remaining <= 0 || nhisPriceQuotaExceeded"
@@ -598,9 +598,9 @@ export default {
       )?.id;
     },
 
-    sumTotalPrice(arr) {
-      return arr.reduce((a, b) => a + +b.total_price, 0);
-    },
+    // sumTotalPrice(arr) {
+    //   return arr.reduce((a, b) => a + +b.total_price, 0);
+    // },
 
     // getTotalDrugsPrescribedToday(arr) {
     //   const drugsToday = arr.filter(

@@ -372,7 +372,6 @@ export default {
     });
   },
 
-
   fetchAdditionalItemsPerVisit({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
@@ -488,6 +487,9 @@ export default {
   },
   toggleServiceUrgent({ commit }, serviceId) {
     commit('TOGGLE_SERVICE_URGENT', serviceId);
+  },
+  updateServiceQuantity({ commit }, service) {
+    commit('UPDATE_SERVICE_QUANTITY', service);
   },
 
   /**************

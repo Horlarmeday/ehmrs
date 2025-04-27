@@ -1,6 +1,21 @@
 <template>
   <div>
-    <AssignedVisits :url="url" :filter="filter" />
+    <div class="card-body">
+      <b-tabs content-class="mt-3">
+        <b-tab>
+          <template v-slot:title>
+            <strong>New</strong>
+          </template>
+          <AssignedVisits :url="url" :filter="newFilter" label="New" />
+        </b-tab>
+        <b-tab>
+          <template v-slot:title>
+            <strong>Ongoing</strong>
+          </template>
+          <AssignedVisits :url="url" :filter="ongoingFilter" label="Ongoing" />
+        </b-tab>
+      </b-tabs>
+    </div>
   </div>
 </template>
 <script>
@@ -15,10 +30,16 @@ export default {
     MEDICAL_PRACTITIONER: 'Medical Practitioners',
   }),
   computed: {
-    filter() {
+    newFilter() {
       return {
         has_done_vitals: this.currentUser.department === this.MEDICAL_PRACTITIONER,
         ...(this.currentUser.role === this.MEDICAL_PRACTITIONER && { is_taken: false }),
+      };
+    },
+    ongoingFilter() {
+      return {
+        has_done_vitals: this.currentUser.department === this.MEDICAL_PRACTITIONER,
+        ...(this.currentUser.role === this.MEDICAL_PRACTITIONER && { is_taken: true }),
       };
     },
   },

@@ -172,6 +172,7 @@ export const getOneAdmission = async (query: WhereOptions<Admission>) => {
       { model: Ward, as: 'ward', attributes: ['name'] },
       { model: Bed, attributes: ['code'] },
       { model: Staff, as: 'examiner', attributes: staffAttributes },
+      { model: Patient, as: 'patient', attributes: patientAttributes },
     ],
   });
 };

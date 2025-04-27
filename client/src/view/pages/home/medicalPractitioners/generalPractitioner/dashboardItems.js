@@ -10,6 +10,11 @@ export default [
     name: 'In-Patients',
   },
   {
+    url: '/visit/dialysis',
+    icon: 'fas fa-diagnoses',
+    name: 'Dialysis Visits',
+  },
+  {
     url: '/visit/ante-natal',
     icon: 'fas fa-ankh',
     name: 'Antenatal Visits',

@@ -262,6 +262,13 @@ export default {
     service.is_urgent = !service.is_urgent;
   },
 
+  UPDATE_SERVICE_QUANTITY(state, serviceObject) {
+    const service = state.selectedServices.find(
+      ({ service_id }) => service_id === serviceObject.serviceId
+    );
+    service.quantity = +serviceObject.quantity;
+  },
+
   ADD_SELECTED_SERVICE_BUTTON(state, button) {
     button.button.classList.add('btn-danger');
     state.selectedServicesButtons.push(button);
