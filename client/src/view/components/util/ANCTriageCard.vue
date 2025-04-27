@@ -21,8 +21,7 @@
             BLOOD PRESSURE
           </span>
           <span class="opacity-70 ml-lg-7">
-            <span v-if="triage?.systolic">{{ triage?.blood_pressure }}</span>
-            <span v-else>-</span>
+            <span>{{ triage?.blood_pressure || '-' }}</span>
           </span>
         </div>
         <div class="d-flex flex-column flex-root">
