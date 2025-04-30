@@ -200,6 +200,29 @@ class VisitController {
   }
 
   /**
+   * get past visits
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with visits data
+   */
+  static async getPastVisits(
+    req: Request & { user: { sub: number; role: string } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse> {
+    try {
+      const visits = await VisitService.getPastVisits(req.query);
+
+      return successResponse({ res, httpCode: StatusCodes.OK, message: SUCCESS, data: visits });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  /**
    * get all prescriptions in a visit
    *
    * @static

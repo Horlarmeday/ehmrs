@@ -619,6 +619,99 @@ export const getProfessionalAssignedVisits = async ({
   });
 };
 
+/**
+ * get past visits
+ *
+ * @function
+ * @returns {Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }>} json object with all visits data
+ * @param currentPage
+ * @param pageLimit
+ * @param search
+ * @param category
+ * @param filter
+ */
+export async function getPastVisits({
+  currentPage = 1,
+  pageLimit = 10,
+  search = null,
+  filter = null,
+  start = null,
+  end = null,
+}: {
+  currentPage?: number;
+  pageLimit?: number;
+  search?: string;
+  filter?: string;
+  start?: Date;
+  end?: Date;
+}): Promise<{
+  total: number;
+  docs: Visit[];
+  pages: number;
+  perPage: number;
+  currentPage: number;
+}> {
+  const query = {
+    status: VisitStatus.ENDED,
+    ...(start && end && dateIntervalQuery('date_visit_ended', start, end)),
+  };
+  return Visit.paginate({
+    page: +currentPage,
+    paginate: +pageLimit,
+    order: [['date_visit_start', 'DESC']],
+    where: {
+      ...query,
+    },
+    include: [
+      {
+        model: Patient,
+        attributes: patientAttributes,
+        where: {
+          ...(filter && JSON.parse(filter)),
+          ...(search && {
+            [Op.or]: [
+              {
+                firstname: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+              {
+                lastname: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+              {
+                hospital_id: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+              {
+                complete_name: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+            ],
+          }),
+        },
+        include: [
+          {
+            model: PatientInsurance,
+            where: { is_default: true },
+            limit: 1,
+            order: [['createdAt', 'DESC']],
+            attributes: ['id', 'insurance_id'],
+            include: [{ model: Insurance, attributes: ['name'] }],
+          },
+        ],
+      },
+      {
+        model: Staff,
+        attributes: staffAttributes,
+      },
+    ],
+  });
+}
+
 /** ***********************
  * VISITS SUMMARY
  ********************** */
