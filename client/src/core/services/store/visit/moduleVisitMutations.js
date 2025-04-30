@@ -72,6 +72,22 @@ export default {
   },
 
   /**
+   * PAST VISITS
+   */
+
+  SET_PAST_VISITS(state, visits) {
+    state.pastVisits = visits;
+  },
+
+  SET_PAST_VISITS_TOTAL(state, total) {
+    state.totalPastVisits = total;
+  },
+
+  SET_PAST_NUMB_PAGES(state, pages) {
+    state.pastVisitPages = pages;
+  },
+
+  /**
    * VISIT PRESCRIPTIONS
    */
   SET_VISIT_PRESCRIPTIONS(state, prescriptions) {
