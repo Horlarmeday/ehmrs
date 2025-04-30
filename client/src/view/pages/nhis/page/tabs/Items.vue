@@ -142,7 +142,7 @@ export default {
     DECLINED: 'Declined',
     NHIS: 'NHIS',
     currentPage: 1,
-    itemsPerPage: 15,
+    itemsPerPage: 30,
     displayPrompt: false,
     item: {},
     dispatchType: 'order/updatePrescribedDrug',
