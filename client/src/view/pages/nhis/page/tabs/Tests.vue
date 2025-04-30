@@ -176,7 +176,7 @@ export default {
     PRIMARY: 'Primary',
     DISABLED: 'disabled',
     currentPage: 1,
-    itemsPerPage: 15,
+    itemsPerPage: 20,
     CLEARED: 'Cleared',
     APPROVED: 'Approved',
     SECONDARY: 'Secondary',
