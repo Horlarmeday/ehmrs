@@ -8,7 +8,7 @@
           </template>
           <AssignedVisits :url="url" :filter="newFilter" label="New" />
         </b-tab>
-        <b-tab>
+        <b-tab lazy>
           <template v-slot:title>
             <strong>Ongoing</strong>
           </template>

@@ -2,7 +2,7 @@
   <div class="card card-custom gutter-b">
     <div class="card-header py-5">
       <h3 class="card-title align-items-start flex-column">
-        <span class="card-label font-weight-bolder text-dark">Active Visits</span>
+        <span class="card-label font-weight-bolder text-dark">Past Visits</span>
       </h3>
     </div>
     <div class="card-body pt-0">
@@ -45,13 +45,13 @@ export default {
   }),
   computed: {
     visits() {
-      return this.$store.state.visit.activeVisits;
+      return this.$store.state.visit.pastVisits;
     },
     queriedItems() {
-      return this.$store.state.visit.totalActiveVisits;
+      return this.$store.state.visit.totalPastVisits;
     },
     pages() {
-      return this.$store.state.visit.activeVisitPages;
+      return this.$store.state.visit.pastVisitPages;
     },
     perPage() {
       return this.visits.length;
@@ -102,7 +102,7 @@ export default {
 
     debounceSearch: debounce((search, vm, spinDiv) => {
       vm.$store
-        .dispatch('visit/fetchActiveVisits', {
+        .dispatch('visit/fetchPastVisits', {
           currentPage: 1,
           itemsPerPage: vm.$route.query.itemsPerPage || vm.itemsPerPage,
           search,
@@ -148,7 +148,7 @@ export default {
     },
 
     fetchQueue({ currentPage = 1, itemsPerPage = 10, search = null, start = null, end = null }) {
-      return this.$store.dispatch('visit/fetchActiveVisits', {
+      return this.$store.dispatch('visit/fetchPastVisits', {
         currentPage,
         itemsPerPage,
         ...(search && { search }),
