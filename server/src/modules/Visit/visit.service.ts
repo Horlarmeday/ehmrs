@@ -15,6 +15,7 @@ import {
   updateVisit,
   getOneVisitQuery,
   getPatientPendingPrescriptions,
+  getPastVisits,
 } from './visit.repository';
 import { Visit } from '../../database/models';
 import { CreateVisit } from './interface/visit.interface';
@@ -214,6 +215,39 @@ class VisitService {
     }
 
     return getProfessionalAssignedVisits({ search, role, filter });
+  }
+
+  /**
+   * get professional assigned visits
+   *
+   * @static
+   * @returns {Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }>} json object with visits data
+   * @param body
+   * @memberOf VisitService
+   */
+  static async getPastVisits(
+    body
+  ): Promise<{
+    total: number;
+    docs: Visit[];
+    pages: number;
+    perPage: number;
+    currentPage: number;
+  }> {
+    const { currentPage, pageLimit, search, start, end, filter } = body || {};
+
+    if (Object.values(body).length) {
+      return getPastVisits({
+        currentPage,
+        pageLimit,
+        search,
+        filter,
+        start,
+        end,
+      });
+    }
+
+    return getPastVisits({});
   }
 
   /**
