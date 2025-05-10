@@ -1034,6 +1034,22 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            {
+              path: 'results-update',
+              name: 'results-update',
+              component: () => import('@/view/pages/radiology/approvedResults/ApprovedResults.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'results-update/:id',
+              name: 'investigation-results-update-one',
+              component: () => import('@/view/pages/radiology/approvedResults/ResultUpdate.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
           ],
         },
         // INVENTORY REQUESTS

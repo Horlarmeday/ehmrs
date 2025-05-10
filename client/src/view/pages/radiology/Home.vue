@@ -45,14 +45,35 @@ export default {
           name: 'Imaging',
           link: '/radiology/imaging',
           desc: 'Click here to view imaging type',
+          showComponent: true,
         },
         {
           name: 'Investigations',
           link: '/radiology/investigations',
           desc: 'Click here to view investigations',
+          showComponent: true,
+        },
+        {
+          name: 'Results Update',
+          link: '/radiology/results-update',
+          desc: 'Click here to update investigations result',
+          showComponent: true,
         },
       ],
     };
+  },
+  watch: {
+    currentUser: {
+      handler(val) {
+        this.items.filter(tab => {
+          if (val.role !== 'Super Admin' && tab.name === 'Results Update') {
+            tab.showComponent = false;
+          }
+          return tab;
+        });
+      },
+      immediate: true,
+    },
   },
 };
 </script>

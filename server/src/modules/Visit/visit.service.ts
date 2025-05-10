@@ -27,6 +27,7 @@ import { insertSingleOrMultipleServices, StatusCodes } from '../../core/helpers/
 import { Op } from 'sequelize';
 import {
   ANTENATAL_ACCOUNT_REQUIRED,
+  BANNED_PATIENT,
   CANNOT_UPDATE_INPATIENT_VISIT,
   IMMUNIZATION_ACCOUNT_REQUIRED,
   PATIENT_ON_ADMISSION,
@@ -35,6 +36,7 @@ import { getPatientById } from '../Patient/patient.repository';
 import { Gender } from '../../database/models/staff';
 import { FEMALE_REQUIRED } from '../Antenatal/messages/antenatal.messages';
 import { getOneImmunization } from '../Immunization/immunization.repository';
+import { Status } from '../../database/models/patient';
 
 class VisitService {
   /**
@@ -51,6 +53,11 @@ class VisitService {
       getPatientById(patient_id),
       getLastActiveVisit(patient_id),
     ]);
+
+    if (patient.status === Status.BANNED) {
+      throw new BadException('INVALID', StatusCodes.BAD_REQUEST, BANNED_PATIENT);
+    }
+
     if (category === VisitCategory.ANC && patient.gender !== Gender.FEMALE) {
       throw new BadException('INVALID', StatusCodes.BAD_REQUEST, FEMALE_REQUIRED);
     }

@@ -33,6 +33,12 @@ export enum PatientStatus {
   DECEASED = 'Deceased',
 }
 
+export enum Status {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  BANNED = 'banned',
+}
+
 @Table({ timestamps: true })
 export class Patient extends Model {
   @PrimaryKey
@@ -256,6 +262,12 @@ export class Patient extends Model {
     defaultValue: false,
   })
   is_difficult_patient?: string;
+
+  @Column({
+    type: DataType.ENUM(Status.ACTIVE, Status.INACTIVE),
+    defaultValue: Status.ACTIVE,
+  })
+  status?: Status;
 
   @Column(DataType.VIRTUAL)
   get fullname(): unknown {

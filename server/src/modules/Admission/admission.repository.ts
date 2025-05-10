@@ -24,7 +24,7 @@ import {
 } from '../../database/models';
 import { BedStatus } from '../../database/models/bed';
 import { ServiceType } from '../../database/models/prescribedService';
-import { PatientStatus } from '../../database/models/patient';
+import { PatientStatus, Status } from '../../database/models/patient';
 import { getOneDefault, getWardWithService } from '../AdminSettings/admin.repository';
 import { getPatientById } from '../Patient/patient.repository';
 import { AdmissionBodyType, ChangeWardBodyType, DischargeBodyType } from './types/admission.types';
@@ -758,6 +758,37 @@ type DischargePatientType = DischargeBodyType & {
   discharged_by: number;
 };
 
+type PatientStatusUpdate = {
+  patient_status: PatientStatus;
+  status?: Status;
+};
+
+const getPatientStatusUpdate = (discharge_type: DischargeType): PatientStatusUpdate => {
+  const statusMap: Record<DischargeType, PatientStatusUpdate> = {
+    [DischargeType.DEATH]: {
+      patient_status: PatientStatus.DECEASED,
+      status: Status.INACTIVE,
+    },
+    [DischargeType.LAMA]: {
+      patient_status: PatientStatus.OUTPATIENT,
+      status: Status.BANNED,
+    },
+    [DischargeType.ABSCONDED]: {
+      patient_status: PatientStatus.OUTPATIENT,
+    },
+    [DischargeType.DISCHARGE]: {
+      patient_status: PatientStatus.OUTPATIENT,
+    },
+    [DischargeType.REFER]: {
+      patient_status: PatientStatus.OUTPATIENT,
+    },
+    [DischargeType.TRANSFER]: {
+      patient_status: PatientStatus.OUTPATIENT,
+    },
+  };
+  return statusMap[discharge_type];
+};
+
 /**
  * Discharge a patient
  * @param data
@@ -780,15 +811,10 @@ export const dischargePatient = async (data: DischargePatientType) => {
       { where: { id: admission.bed_id }, transaction: t }
     );
     // update the patient status
-    await Patient.update(
-      {
-        patient_status:
-          discharge_type === DischargeType.DEATH
-            ? PatientStatus.DECEASED
-            : PatientStatus.OUTPATIENT,
-      },
-      { where: { id: patient_id }, transaction: t }
-    );
+    await Patient.update(getPatientStatusUpdate(discharge_type), {
+      where: { id: patient_id },
+      transaction: t,
+    });
 
     // end visit
     await Visit.update(

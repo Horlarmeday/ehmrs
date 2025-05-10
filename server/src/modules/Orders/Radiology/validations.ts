@@ -32,3 +32,12 @@ export function validateDeleteInvestigation(req) {
 
   return schema.validate(req);
 }
+
+export function validateUpdateInvestigationsResultStatus(req) {
+  const schema = Joi.object({
+    selectedInvestigations: Joi.array()
+      .items(Joi.number())
+      .required(),
+  });
+  return schema.validate(req);
+}
