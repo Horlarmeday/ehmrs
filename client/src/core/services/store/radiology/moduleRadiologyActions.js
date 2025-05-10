@@ -272,4 +272,35 @@ export default {
         });
     });
   },
+
+  changeBulkInvestigationResultsStatus({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .patch(`/radiology/investigation-results/bulk-update/${payload.id}`, {
+          selectedInvestigations: payload.selectedInvestigations,
+        })
+        .then(response => {
+          commit('SET_UPDATED_INVESTIGATIONS_RESULTS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /***
+   * SELECTED INVESTIGATIONS
+   */
+  addSelectedInvestigations({ commit }, investigation) {
+    commit('ADD_SELECTED_INVESTIGATION', investigation);
+  },
+
+  removeSelectedInvestigation({ commit }, investigation) {
+    commit('REMOVE_SELECTED_INVESTIGATION', investigation);
+  },
+
+  removeAllSelectedInvestigations({ commit }) {
+    commit('EMPTY_SELECTED_INVESTIGATIONS', []);
+  },
 };

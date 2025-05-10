@@ -43,4 +43,6 @@ export default {
    * INVESTIGATION PRESCRIPTION
    */
   investigationPrescription: null,
+
+  selectedInvestigations: [],
 };
