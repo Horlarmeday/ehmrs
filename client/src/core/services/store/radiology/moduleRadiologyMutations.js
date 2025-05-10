@@ -118,4 +118,25 @@ export default {
   SET_INVESTIGATION_PRESCRIPTION(state, investigation) {
     state.investigationPrescription = investigation;
   },
+
+  /**
+   * SELECTED INVESTIGATIONS
+   */
+  ADD_SELECTED_INVESTIGATION(state, test) {
+    state.selectedInvestigations.push(test);
+  },
+
+  REMOVE_SELECTED_INVESTIGATION(state, investigation) {
+    const investigationIndex = state.selectedInvestigations.findIndex(
+      ({ id }) => id === investigation.id
+    );
+    state.selectedInvestigations.splice(investigationIndex, 1);
+  },
+
+  EMPTY_SELECTED_INVESTIGATIONS(state, investigations) {
+    state.selectedInvestigations = investigations;
+  },
+
+  // eslint-disable-next-line no-unused-vars
+  SET_UPDATED_INVESTIGATIONS_RESULTS(state, investigations) {},
 };
