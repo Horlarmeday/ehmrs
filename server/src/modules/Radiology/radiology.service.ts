@@ -1,6 +1,7 @@
 import {
   appendInvestigationResults,
   approveInvestigationResults,
+  changeInvestigationResultsStatus,
   createImaging,
   createInvestigation,
   createInvestigationTariff,
@@ -26,6 +27,7 @@ import {
 } from './dto/radiology.dto';
 import { TestStatus } from '../../database/models/prescribedTest';
 import { isEmpty } from 'lodash';
+import { changeTestResultsStatus } from '../Laboratory/laboratory.repository';
 
 export class RadiologyService {
   /**
@@ -258,6 +260,19 @@ export class RadiologyService {
    */
   static async getOneInvestigationPrescription(visitId: number) {
     return getOneInvestigationPrescription({ visit_id: visitId });
+  }
+
+  /**
+   * Change investigation results status
+   * @memberOf LaboratoryService
+   * @param selectedInvestigations
+   * @param investigationPrescriptionId
+   */
+  static async updateInvestigationResultStatus(
+    selectedInvestigations: number[],
+    investigationPrescriptionId: number
+  ) {
+    return changeInvestigationResultsStatus(selectedInvestigations, investigationPrescriptionId);
   }
 
   static getTestStatus(result) {
