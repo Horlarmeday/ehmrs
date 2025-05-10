@@ -50,6 +50,7 @@
                 <th style="min-width: 100px">Age</th>
                 <th style="min-width: 100px">account type</th>
                 <th style="min-width: 160px">Registration Date</th>
+                <th style="min-width: 100px">Status</th>
                 <th style="min-width: 160px">Registered By</th>
                 <th class="pr-0 " style="min-width: 70px">Action</th>
               </tr>
@@ -99,13 +100,22 @@
                   }}</span>
                 </td>
                 <td>
+                  <span :class="getStatusColor(patient.status)" class="label label-dot mr-2"></span>
+                  <span :class="getTextColor(patient.status)" class="font-weight-bold">{{
+                    patient.status
+                  }}</span>
+                </td>
+                <td>
                   <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
                     patient?.staff?.fullname
                   }}</span>
                 </td>
                 <td class="pr-0">
                   <router-link
-                    :class="{ disabled: !allowedRoles.includes(currentUser.role) }"
+                    :class="{
+                      disabled:
+                        !allowedRoles.includes(currentUser.role) || patient.status !== ACTIVE,
+                    }"
                     title="Start a Visit"
                     :to="`/visit/new/${patient.id}`"
                     class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
@@ -113,6 +123,13 @@
                   >
                     <arrow-right-icon />
                   </router-link>
+                  <a
+                    v-if="deactivateUserAllowedRoles.includes(currentUser.role)"
+                    @click.stop="showConfirmAlert(patient)"
+                    href="#"
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
+                    ><dish-icon
+                  /></a>
                 </td>
               </tr>
             </tbody>
@@ -145,6 +162,8 @@ import CreateVisit from '../../visits/create/CreateVisit-Deprecated.vue';
 import { getPatientDotStatus, parseJwt, setUrlQueryParams } from '@/common/common';
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
 import dayjs from 'dayjs';
+import DishIcon from '@/assets/icons/DishIcon.vue';
+import Swal from 'sweetalert2';
 export default {
   data() {
     return {
@@ -155,12 +174,15 @@ export default {
       end: null,
       currentPage: 1,
       itemsPerPage: 10,
+      ACTIVE: 'active',
       isDisabled: false,
       allowedRoles: ['Super Admin', 'Medical Records', 'Admin'],
+      deactivateUserAllowedRoles: ['Super Admin', 'Admin'],
       currentUser: parseJwt(localStorage.getItem('user_token')),
     };
   },
   components: {
+    DishIcon,
     ArrowRightIcon,
     CreateVisit,
     Pagination,
@@ -285,6 +307,46 @@ export default {
         ...(search && { search }),
         ...(start && end && { start, end }),
       });
+    },
+
+    getStatusColor(status) {
+      if (status === 'active') return 'label-success';
+      if (status === 'inactive') return 'label-warning';
+      if (status === 'banned') return 'label-danger';
+      return 'label-info';
+    },
+
+    getTextColor(status) {
+      if (status === 'active') return 'text-success';
+      if (status === 'inactive') return 'text-warning';
+      if (status === 'banned') return 'text-danger';
+      return 'text-info';
+    },
+
+    showConfirmAlert(patient) {
+      const self = this;
+      Swal.fire({
+        title: 'Are you sure?',
+        html: `You want to ${patient.status === 'active' ? 'ban' : 'unban'} ${
+          patient.fullname
+        } patient account?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, go ahead!',
+        cancelButtonText: 'No, cancel',
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+          return self.updatePatientStatus(patient);
+        },
+      });
+    },
+
+    updatePatientStatus(patient) {
+      const status = patient.status === 'active' ? 'banned' : 'active';
+      const data = {
+        patient: { status },
+      };
+      this.$store.dispatch('patient/updatePatient', { data, id: patient.id });
     },
   },
   created() {
