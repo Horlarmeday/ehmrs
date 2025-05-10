@@ -7,7 +7,7 @@ import {
 import { RadiologyService } from './radiology.service';
 import { errorResponse } from '../../common/responses/error-responses';
 import { StatusCodes } from '../../core/helpers/helper';
-import { validateTestTariff } from '../Laboratory/validations';
+import { validateChangeTestResultStatus, validateTestTariff } from '../Laboratory/validations';
 import { successResponse } from '../../common/responses/success-responses';
 import {
   DATA_SAVED,
@@ -15,6 +15,8 @@ import {
   DATA_RETRIEVED,
 } from '../AdminSettings/messages/response-messages';
 import { NextFunction, Response, Request } from 'express';
+import LaboratoryService from '../Laboratory/laboratory.service';
+import { validateUpdateInvestigationsResultStatus } from '../Orders/Radiology/validations';
 
 export class RadiologyController {
   /**
@@ -477,6 +479,44 @@ export class RadiologyController {
         res,
         httpCode: StatusCodes.OK,
         message: DATA_RETRIEVED,
+        data: investigationPrescription,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * Change investigation results status
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, prescribed test data
+   */
+  static async updateInvestigationResultStatus(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
+    const { error } = validateUpdateInvestigationsResultStatus(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+    try {
+      const investigationPrescription = await RadiologyService.updateInvestigationResultStatus(
+        req.body.selectedInvestigations,
+        +req.params.id
+      );
+
+      return successResponse({
+        res,
+        message: DATA_UPDATED,
+        httpCode: StatusCodes.CREATED,
         data: investigationPrescription,
       });
     } catch (e) {

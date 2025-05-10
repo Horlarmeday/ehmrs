@@ -2,6 +2,7 @@ import { Router } from 'express';
 import verify from '../../core/middleware/verify';
 import { RadiologyController } from './radiology.controller';
 import { upload } from '../../core/helpers/multer';
+import LaboratoryController from '../Laboratory/laboratory.controller';
 
 const router = Router();
 router.post('/imaging/create', verify, RadiologyController.createImaging);
@@ -25,6 +26,11 @@ router.post(
 );
 router.patch('/imaging/update', verify, RadiologyController.updateImaging);
 router.patch('/investigations/update', verify, RadiologyController.updateInvestigation);
+router.patch(
+  '/investigation-results/bulk-update/:id',
+  verify,
+  RadiologyController.updateInvestigationResultStatus
+);
 router.get('/imaging/get', verify, RadiologyController.getImaging);
 router.get('/investigations/get', verify, RadiologyController.getInvestigations);
 router.get('/requested-investigations/get', verify, RadiologyController.getRequestedInvestigations);

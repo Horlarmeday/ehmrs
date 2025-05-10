@@ -32,7 +32,8 @@ import {
 } from './messages/response-messages';
 import { PaymentStatus } from '../../database/models/prescribedDrug';
 import { Investigation as InvestigationType } from '../Orders/Radiology/types/radiology-order.types';
-import { PrescriptionType } from '../../database/models/prescribedTest';
+import { PrescriptionType, TestStatus } from '../../database/models/prescribedTest';
+import { ERROR_UPDATING_INVESTIGATION } from '../Orders/Radiology/messages/response-messages';
 
 /**
  * create new imaging
@@ -704,4 +705,31 @@ export const getInvestigationResult = async (investigationPrescriptionId: number
     ...result.toJSON(),
     insurance: { ...insurance?.toJSON() },
   };
+};
+
+export const changeInvestigationResultsStatus = async (
+  investigationIds: number[],
+  investigationPrescriptionId: number
+) => {
+  try {
+    return await sequelizeConnection.transaction(async t => {
+      const tests = await PrescribedInvestigation.update(
+        {
+          status: InvestigationStatus.PENDING,
+        },
+        { where: { id: investigationIds }, transaction: t }
+      );
+      await InvestigationResult.update(
+        { status: ResultStatus.PENDING },
+        { where: { prescribed_investigation_id: investigationIds }, transaction: t }
+      );
+      await InvestigationPrescription.update(
+        { status: InvestigationStatus.PENDING },
+        { where: { id: investigationPrescriptionId }, transaction: t }
+      );
+      return tests;
+    });
+  } catch (e) {
+    throw new BadException('Error', StatusCodes.SERVER_ERROR, ERROR_UPDATING_INVESTIGATION);
+  }
 };
