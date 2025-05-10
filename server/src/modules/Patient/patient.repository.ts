@@ -460,7 +460,6 @@ export async function getPatients({
  */
 export async function updatePatient(data): Promise<Patient> {
   const patient = await getPatientById(data.patient_id);
-  console.log(data, 'data');
   return patient.update(data);
 }
 
