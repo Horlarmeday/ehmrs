@@ -82,6 +82,7 @@
               <router-link
                 :to="getRoute(queue)"
                 class="btn btn-icon btn-light btn-hover-primary btn-sm"
+                :class="queue.patient.status === 'banned' ? 'disabled' : ''"
               >
                 <ArrowRightIcon />
               </router-link>
@@ -164,4 +165,9 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.disabled {
+  pointer-events: none;
+  opacity: 0.4;
+}
+</style>

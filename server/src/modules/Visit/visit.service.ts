@@ -327,9 +327,15 @@ class VisitService {
   static async updateVisit(visitId: number, body: Partial<Visit>) {
     const { category } = body;
     const visit = await getVisitById(visitId);
+    const patient = await getPatientById(visit.patient_id);
 
-    if (visit.category === VisitCategory.IPD)
+    if (patient.status === Status.BANNED) {
+      throw new BadException('INVALID', StatusCodes.BAD_REQUEST, BANNED_PATIENT);
+    }
+
+    if (visit.category === VisitCategory.IPD) {
       throw new BadException('INVALID', StatusCodes.BAD_REQUEST, CANNOT_UPDATE_INPATIENT_VISIT);
+    }
 
     if (category === VisitCategory.ANC) {
       const antenatal = await getOneAntenatalAccount({
