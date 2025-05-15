@@ -21,7 +21,7 @@
               <tr v-for="(investigation, i) in prescription?.investigations" :key="i">
                 <td>
                   <span class="text-dark-75 font-weight-bolder d-block font-size-md">{{
-                    investigation.investigation.name
+                    investigation.investigation.name || '-'
                   }}</span>
                 </td>
                 <td>

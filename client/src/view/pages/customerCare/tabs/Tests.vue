@@ -22,7 +22,7 @@
               <tr v-for="(test, i) in prescription?.tests" :key="i">
                 <td>
                   <span class="text-dark-75 font-weight-bolder d-block font-size-md">
-                    {{ prescription.accession_number }}
+                    {{ prescription.accession_number || '-' }}
                   </span>
                 </td>
                 <td>

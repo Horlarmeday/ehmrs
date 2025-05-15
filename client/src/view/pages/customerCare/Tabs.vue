@@ -25,7 +25,7 @@
             <div class="ml-auto">
               <button
                 @click="sendForReviewAlert"
-                :disabled="isDisabled"
+                :disabled="isDisabled || currentPatient.status === 'banned'"
                 ref="kt-sendForReview-submit"
                 class="text-center btn btn-md btn-primary"
               >
@@ -73,6 +73,11 @@ export default {
         },
       ],
     };
+  },
+  computed: {
+    currentPatient() {
+      return this.$store.state.patient.currentPatient;
+    },
   },
   methods: {
     setActiveTab(event, component) {
