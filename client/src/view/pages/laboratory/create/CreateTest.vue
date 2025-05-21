@@ -60,6 +60,17 @@
           />
         </div>
         <div class="col-lg-6">
+          <label>PSSH Price:</label>
+          <input
+            type="number"
+            class="form-control form-control-sm"
+            placeholder="NHIS Price"
+            v-model="pssh_price"
+          />
+        </div>
+      </div>
+      <div class="form-group row">
+        <div class="col-lg-6">
           <label>Sample Type:</label>
           <select
             class="form-control form-control-sm"
@@ -74,8 +85,6 @@
           </select>
           <span class="text-danger text-sm">{{ errors.first('sample') }}</span>
         </div>
-      </div>
-      <div class="form-group row">
         <div class="col-lg-6">
           <label>Result Unit:</label>
           <input
@@ -89,6 +98,8 @@
           />
           <span class="text-danger text-sm">{{ errors.first('result_unit') }}</span>
         </div>
+      </div>
+      <div class="form-group row">
         <div class="col-lg-6">
           <label>Result Valid Range:</label>
           <input
@@ -149,6 +160,7 @@ export default {
       nhis_price: '',
       phis_price: '',
       retainership_price: '',
+      pssh_price: '',
       test_id: '',
       sample_id: '',
       valid_range: '',
@@ -191,6 +203,7 @@ export default {
           type,
           nhis_price,
           phis_price,
+          pssh_price,
           retainership_price,
           result_form,
         } = JSON.parse(JSON.stringify(this.data));
@@ -203,6 +216,7 @@ export default {
         this.testType = type;
         this.nhis_price = nhis_price;
         this.phis_price = phis_price;
+        this.pssh_price = pssh_price;
         this.retainership_price = retainership_price;
         this.result_form = result_form;
       }
@@ -232,6 +246,7 @@ export default {
             price: this.price,
             phis_price: this.phis_price,
             nhis_price: this.nhis_price,
+            pssh_price: this.pssh_price,
             retainership_price: this.retainership_price,
             test_id: this.test_id,
             result_unit: this.result_unit,
@@ -262,6 +277,7 @@ export default {
       this.price = '';
       this.nhis_price = '';
       this.phis_price = '';
+      this.pssh_price = '';
       this.retainership_price = '';
       this.test_id = '';
       this.sample_id = '';

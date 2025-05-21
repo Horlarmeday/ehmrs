@@ -136,6 +136,7 @@ export async function createTest(data) {
     valid_range,
     nhis_price,
     phis_price,
+    pssh_price,
     retainership_price,
     result_form,
   } = data;
@@ -152,9 +153,11 @@ export async function createTest(data) {
     result_form,
     nhis_price: nhis_price || null,
     phis_price: phis_price || null,
+    pssh_price: pssh_price || null,
     retainership_price: retainership_price || null,
     is_available_for_nhis: !!nhis_price,
     is_available_for_phis: !!phis_price,
+    is_available_for_pssh: !!pssh_price,
   });
 }
 
@@ -235,6 +238,7 @@ export const getTestPrice = async (patient: Patient, test: TestType) => {
     PHIS: foundTest?.phis_price,
     Retainership: foundTest?.retainership_price,
     FHSS: foundTest?.nhis_price,
+    PSSH: foundTest?.pssh_price,
   };
   return insurancePrices[insurance.insurance.name] || null;
 };

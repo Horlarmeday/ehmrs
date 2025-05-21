@@ -14,6 +14,7 @@ export class CreateInvestigationDto {
   price: number;
   nhis_price?: number;
   phis_price?: number;
+  pssh_price?: number;
   retainership_price?: number;
   staff_id?: number;
   type?: InvestigationType;

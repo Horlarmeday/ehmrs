@@ -264,7 +264,7 @@ export class Patient extends Model {
   is_difficult_patient?: string;
 
   @Column({
-    type: DataType.ENUM(Status.ACTIVE, Status.INACTIVE),
+    type: DataType.ENUM(Status.ACTIVE, Status.INACTIVE, Status.BANNED),
     defaultValue: Status.ACTIVE,
   })
   status?: Status;

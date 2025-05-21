@@ -135,6 +135,7 @@ export const createInvestigation = async (data: CreateInvestigationDto) => {
     retainership_price,
     nhis_price,
     phis_price,
+    pssh_price,
   } = data;
   const investigation = await Investigation.create({
     name,
@@ -142,11 +143,13 @@ export const createInvestigation = async (data: CreateInvestigationDto) => {
     staff_id,
     price,
     type,
-    retainership_price,
-    phis_price,
-    nhis_price,
+    retainership_price: retainership_price || null,
+    phis_price: phis_price || null,
+    nhis_price: nhis_price || null,
+    pssh_price: pssh_price || null,
     is_available_for_nhis: !!nhis_price,
     is_available_for_phis: !!phis_price,
+    is_available_for_pssh: !!pssh_price,
   });
   return Investigation.findOne({
     where: { id: investigation.id },
@@ -236,6 +239,7 @@ export const getInvestigationPrice = async (patient: Patient, investigation: Inv
     PHIS: foundInvestigation?.phis_price,
     Retainership: foundInvestigation?.retainership_price,
     FHSS: foundInvestigation?.nhis_price,
+    PSSH: foundInvestigation?.pssh_price,
   };
   return investigationPrices[insurance.insurance.name] || null;
 };

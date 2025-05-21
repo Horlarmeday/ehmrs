@@ -63,6 +63,18 @@
           />
         </div>
         <div class="col-lg-6">
+          <label>PSSH Price:</label>
+          <input
+            type="number"
+            name="price"
+            class="form-control form-control-sm"
+            placeholder="PSSH Price"
+            v-model="pssh_price"
+          />
+        </div>
+      </div>
+      <div class="form-group row">
+        <div class="col-lg-6">
           <label>Imaging Type</label>
           <v-select
             v-validate="'required'"
@@ -80,9 +92,6 @@
           </v-select>
           <span class="text-danger text-sm">{{ errors.first('imaging_id') }}</span>
         </div>
-      </div>
-
-      <div class="form-group row">
         <div class="col-lg-6">
           <label>Type:</label>
           <div class="radio-inline mt-3">
@@ -132,6 +141,7 @@ export default {
       imaging_id: '',
       nhis_price: '',
       phis_price: '',
+      pssh_price: '',
       retainership_price: '',
       investigationType: '',
       investigationTypes: ['Primary', 'Secondary'],
@@ -175,6 +185,7 @@ export default {
           type,
           retainership_price,
           phis_price,
+          pssh_price,
           nhis_price,
         } = JSON.parse(JSON.stringify(this.data));
         this.price = price;
@@ -184,6 +195,7 @@ export default {
         this.investigation_id = id;
         this.phis_price = phis_price;
         this.nhis_price = nhis_price;
+        this.pssh_price = pssh_price;
         this.retainership_price = retainership_price;
       }
     },
@@ -219,6 +231,7 @@ export default {
             price: this.price,
             phis_price: this.phis_price,
             nhis_price: this.nhis_price,
+            pssh_price: this.pssh_price,
             retainership_price: this.retainership_price,
             type: this.investigationType,
             investigation_id: this.investigation_id,
@@ -249,6 +262,7 @@ export default {
       this.nhis_price = '';
       this.retainership_price = '';
       this.imaging_id = '';
+      this.pssh_price = '';
       this.investigation_id = '';
       this.investigationType = '';
     },

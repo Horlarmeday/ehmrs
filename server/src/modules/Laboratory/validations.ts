@@ -18,6 +18,9 @@ export function validateTest(test) {
     phis_price: Joi.number()
       .optional()
       .allow(''),
+    pssh_price: Joi.number()
+      .optional()
+      .allow(''),
     retainership_price: Joi.number()
       .optional()
       .allow(''),

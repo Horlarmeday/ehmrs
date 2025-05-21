@@ -86,6 +86,11 @@ export class Test extends Model {
   retainership_price: number;
 
   @Column({
+    type: DataType.DECIMAL(12, 2),
+  })
+  pssh_price: number;
+
+  @Column({
     type: DataType.BOOLEAN,
   })
   is_available_for_nhis: boolean;
@@ -94,6 +99,11 @@ export class Test extends Model {
     type: DataType.BOOLEAN,
   })
   is_available_for_phis: boolean;
+
+  @Column({
+    type: DataType.BOOLEAN,
+  })
+  is_available_for_pssh: boolean;
 
   @Column({
     type: DataType.STRING,

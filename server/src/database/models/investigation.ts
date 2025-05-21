@@ -64,6 +64,11 @@ export class Investigation extends Model {
   @Column({
     type: DataType.DECIMAL(12, 2),
   })
+  pssh_price: number;
+
+  @Column({
+    type: DataType.DECIMAL(12, 2),
+  })
   retainership_price: number;
 
   @Column({
@@ -75,6 +80,11 @@ export class Investigation extends Model {
     type: DataType.BOOLEAN,
   })
   is_available_for_phis: boolean;
+
+  @Column({
+    type: DataType.BOOLEAN,
+  })
+  is_available_for_pssh: boolean;
 
   @Column({
     type: DataType.ENUM(InvestigationType.PRIMARY, InvestigationType.SECONDARY),
