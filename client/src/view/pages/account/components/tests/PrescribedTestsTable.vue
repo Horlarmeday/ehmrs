@@ -1,15 +1,22 @@
 <template>
   <div>
+    <button-payment-options
+      v-if="selectedTests?.length"
+      :type="TESTS"
+      :count="selectedTests?.length"
+      :selected-items="selectedTests"
+      @endBillRequest="endBillingRequest"
+      :disable-billing="disableBilling"
+    />
     <div class="table-responsive">
       <table class="table">
         <thead class="thead-light">
           <tr class="text-uppercase">
             <th scope="col"></th>
             <th scope="col">Test</th>
-            <th scope="col">Result</th>
             <th scope="col">Billing Status</th>
-            <th scope="col">Payment Status</th>
             <th scope="col">Requested By</th>
+            <th scope="col">Payment Status</th>
             <th scope="col">Date Requested</th>
             <th scope="col"></th>
           </tr>
@@ -19,9 +26,14 @@
             <td colspan="9" align="center" class="text-muted">No Data</td>
           </tr>
           <tr v-for="(test, i) in tests" :key="i">
-            <td class="pl-0">
+            <td>
               <label class="checkbox checkbox-md checkbox-inline">
-                <input type="checkbox" />
+                <input
+                  :disabled="test.payment_status !== PENDING"
+                  type="checkbox"
+                  :checked="isSelected(test)"
+                  @change="toggleItem(test)"
+                />
                 <span></span>
               </label>
             </td>
@@ -35,28 +47,21 @@
               {{ test.test.name }}
             </td>
             <td>
-              <span class="font-weight-boldest" v-if="test.result_status === ACCEPTED">
-                {{ test?.result?.result || '-' }}
+              <span>
+                <span
+                  :class="getBillingColor(test.billing_status)"
+                  class="label label-dot mr-2"
+                ></span
+                ><span :class="getBillingTextColor(test.billing_status)" class="font-weight-bold">{{
+                  test.billing_status
+                }}</span>
               </span>
-              <span v-else>-</span>
             </td>
+            <td>{{ test.examiner.fullname }}</td>
             <td>
               <span :class="getPaymentColor(test.payment_status)">{{ test.payment_status }}</span>
             </td>
-            <td>{{ test.examiner.fullname }}</td>
             <td>{{ test.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
-            <td>
-              <span>
-                <a
-                  v-if="test.billing_status === UNBILLED && test.payment_status === PENDING"
-                  @click="showDeleteAlert(test)"
-                  href="#"
-                  :class="loading && 'disabled'"
-                >
-                  <i class="flaticon-delete text-danger"></i>
-                </a>
-              </span>
-            </td>
           </tr>
         </tbody>
       </table>
@@ -64,36 +69,41 @@
   </div>
 </template>
 <script>
-import Swal from 'sweetalert2';
 import { getLabelDotStatus } from '@/common/common';
+import ButtonPaymentOptions from '@/view/pages/account/components/ButtonPaymentOptions.vue';
 
 export default {
-  name: 'TestsTable',
+  name: 'PrescribedTestsTable',
+  components: { ButtonPaymentOptions },
   data: () => ({
     ACCEPTED: 'Accepted',
-    UNBILLED: 'Unbilled',
-    PENDING: 'Pending',
     loading: false,
+    PENDING: 'Pending',
+    UNBILLED: 'Unbilled',
+    TESTS: 'Tests',
+    selectedTests: [],
   }),
+  computed: {
+    tests() {
+      return this.$store.state.order.testOrders;
+    },
+
+    disableBilling() {
+      return this.tests.every(test => test.billing_status === 'Billed');
+    },
+  },
+  created() {
+    this.fetchPrescribedTests();
+  },
   methods: {
     getLabelDotStatus,
-    showDeleteAlert(test) {
-      const self = this;
-      Swal.fire({
-        title: 'Are you sure?',
-        text: 'You want to delete this test',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, Delete!',
-        customClass: {
-          confirmButton: 'btn btn-danger',
-          cancelButton: 'btn btn-default',
-        },
-      }).then(function(result) {
-        if (result.value) {
-          self.deletePrescribedTest(test);
-        }
-      });
+    viewPopover(item) {
+      this.item = item;
+      this.showPopover = true;
+    },
+
+    hidePopover() {
+      this.showPopover = false;
     },
 
     getResultColor(status) {
@@ -107,7 +117,47 @@ export default {
       if (status === 'Paid') return 'label label-inline label-light-success font-weight-bold';
       if (status === 'Cleared') return 'label label-inline label-light-info font-weight-bold';
       return 'label label-inline label-light-danger font-weight-bold';
-    }
+    },
+
+    endBillingRequest() {
+      this.selectedTests = [];
+    },
+
+    getBillingColor(status) {
+      if (status === 'Unbilled') return 'label-warning';
+      return 'label-success';
+    },
+
+    getBillingTextColor(status) {
+      if (status === 'Unbilled') return 'text-warning';
+      return 'text-success';
+    },
+
+    fetchPrescribedTests() {
+      this.loading = false;
+      this.$store.dispatch('order/fetchPrescribedTestsPerVisit', { id: this.$route.params.id });
+    },
+
+    isSelected(test) {
+      return this.selectedTests.some(d => d.id === test.id);
+    },
+
+    toggleItem(test) {
+      if (this.isSelected(test)) {
+        // If the item is already selected, remove it from selectedItems
+        const itemIndex = this.selectedTests.findIndex(d => d.id === test.id);
+        this.selectedTests.splice(itemIndex, 1);
+      } else {
+        // If the item is not selected, add it to selectedItems
+        this.selectedTests.push({
+          id: test.id,
+          name: test.test.name,
+          quantity: 1,
+          price: test.price,
+          date: test.createdAt,
+        });
+      }
+    },
   },
 };
 </script>

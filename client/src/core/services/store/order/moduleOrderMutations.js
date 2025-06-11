@@ -65,6 +65,13 @@ export default {
     state.lab_orders.splice(testIndex, 1);
   },
 
+  SET_PRESCRIBED_TESTS(state, tests) {
+    state.testOrders = tests;
+  },
+
+  // eslint-disable-next-line no-unused-vars
+  UPDATE_PRESCRIBED_TESTS(state, tests) {},
+
   /**************
    RADIOLOGY ORDERS
    *************/
@@ -140,6 +147,13 @@ export default {
     );
     state.radiology_orders.splice(investigationIndex, 1);
   },
+
+  SET_PRESCRIBED_INVESTIGATIONS(state, investigations) {
+    state.investigationOrders = investigations;
+  },
+
+  // eslint-disable-next-line no-unused-vars
+  UPDATE_PRESCRIBED_INVESTIGATIONS(state, investigations) {},
 
   /**************
    DRUG ORDERS
@@ -302,6 +316,13 @@ export default {
   DELETE_SERVICE_ORDER(state, service) {
     const serviceIndex = state.service_orders.findIndex(({ id }) => id === service.serviceId);
     state.service_orders.splice(serviceIndex, 1);
+  },
+
+  // eslint-disable-next-line no-unused-vars
+  UPDATE_BULK_SERVICES(state, services) {},
+
+  SET_PRESCRIBED_SERVICES(state, services) {
+    state.serviceOrders = services;
   },
 
   /**************

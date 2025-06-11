@@ -392,7 +392,7 @@
 <script>
 import AccordionIcon from '@/assets/icons/AccordionIcon';
 import Datepicker from 'vuejs-datepicker';
-import { getCountryStates } from '@/assets/json';
+import { getCountries, getCountryStates } from '@/assets/json';
 import Swal from 'sweetalert2';
 export default {
   components: {
@@ -420,7 +420,7 @@ export default {
       next_of_kin_phone: '',
       next_of_kin_address: '',
       relationship: '',
-      countries: [{ id: 1, name: 'Nigeria' }],
+      countries: getCountries(),
       states: getCountryStates(),
       cities: [],
 

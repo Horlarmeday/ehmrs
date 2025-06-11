@@ -7,13 +7,19 @@
       </div>
       <div class="card-title">
         <span
+          disabled
           :title="`${switchMessage} ${patient?.has_insurance ? CASH : NHIS}`"
           v-b-tooltip.hover
           class="switch mr-4"
           v-if="patient.patient_type !== DEPENDANT && patient?.insurance"
         >
           <label>
-            <input @change="showAlert($event)" :checked="patient?.has_insurance" type="checkbox" />
+            <input
+              disabled
+              @change="showAlert($event)"
+              :checked="patient?.has_insurance"
+              type="checkbox"
+            />
             <span></span>
           </label>
         </span>
@@ -50,10 +56,21 @@
           <a
             v-b-tooltip:hover
             :title="patient.is_difficult_patient ? REMOVE_DIFFICULT : MARK_AS_DIFFICULT"
-            class="btn btn-icon btn-light-danger pulse-danger pulse mr-5"
+            class="btn btn-icon btn-light-danger pulse-danger pulse mr-2"
             @click="showConfirmAlert"
           >
             <i class="far fa-thumbs-down"></i>
+            <span class="pulse-ring"></span>
+          </a>
+        </span>
+        <span class="switch mr-4">
+          <a
+            v-b-tooltip:hover
+            title="Print Hospital Card"
+            class="btn btn-icon btn-light-secondary pulse-dark pulse"
+            @click="showConfirmPrint"
+          >
+            <i class="fas fa-print text-dark"></i>
             <span class="pulse-ring"></span>
           </a>
         </span>
@@ -293,12 +310,32 @@ export default {
       });
     },
 
+    showConfirmPrint() {
+      const self = this;
+      Swal.fire({
+        title: 'Are you sure?',
+        html: `You want to print card for ${this.patient.fullname}?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, go ahead!',
+        cancelButtonText: 'No, cancel',
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+          return self.printHospitalCard();
+        },
+      });
+    },
+
     markAsDifficultPatient() {
       const is_difficult_patient = !this.patient.is_difficult_patient;
       const data = {
         patient: { is_difficult_patient },
       };
       this.$store.dispatch('patient/updatePatient', { data, id: this.$route.params.id });
+    },
+
+    printHospitalCard() {
+      this.$store.dispatch('patient/printHospitalCard', { id: this.$route.params.id });
     },
   },
 

@@ -163,6 +163,26 @@ export default {
           id: 9,
           department: 'Medical Practitioner',
         },
+        {
+          id: 13,
+          department: 'Surgery Unit',
+        },
+        {
+          id: 14,
+          department: 'Medicine Unit',
+        },
+        {
+          id: 15,
+          department: 'Pediatrics Unit',
+        },
+        {
+          id: 16,
+          department: 'Obstetrics & Gynaecology Unit',
+        },
+        {
+          id: 17,
+          department: 'Family Medicine Unit',
+        },
       ];
       if (
         this.category === 'Antenatal' ||
@@ -178,7 +198,7 @@ export default {
     },
 
     categories() {
-      const data = ['Outpatient', 'Emergency', 'Immunization', 'Dialysis'];
+      const data = ['Outpatient', 'Emergency', 'Immunization', 'Dialysis', 'Dental'];
       if (this?.gender === 'Female') {
         data.push('Antenatal');
         data.push('Maternity');

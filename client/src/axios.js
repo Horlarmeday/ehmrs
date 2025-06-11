@@ -2,7 +2,7 @@
 import axios from 'axios';
 import NProgress from 'nprogress';
 import store from './core/services/store/index';
-import { notifyError, notifySuccess } from './common/common';
+import { notifyError, notifyGeneralError, notifySuccess } from './common/common';
 
 const token = localStorage.getItem('user_token');
 
@@ -59,10 +59,15 @@ axios.interceptors.response.use(
     return response;
   },
   error => {
+    console.log(error.response, 'error');
     NProgress.done(true);
     let res = error.response;
     if (res && res.data) {
       if (res.status === 401) store.dispatch('auth/logout');
+      if (res.status === 404) {
+        notifyGeneralError(error.message);
+        return Promise.reject(error.message);
+      }
       notifyError(error);
       return Promise.reject(error.response.data);
     }

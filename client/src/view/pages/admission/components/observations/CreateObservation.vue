@@ -50,12 +50,12 @@
           />
           <span class="text-danger text-sm">{{ errors.first('pulse') }}</span>
         </div>
-        <label class="col-lg-2 col-form-label">(72 - 72)</label>
+        <label class="col-lg-2 col-form-label">(60 - 100)</label>
       </div>
       <hr />
       <h5 class="text-primary">Blood Pressure</h5>
       <div class="form-group row">
-        <label class="col-2 col-form-label">Systolic (b/min*)</label>
+        <label class="col-2 col-form-label">Systolic (mmHg*)</label>
         <div class="col-6">
           <input
             ref="systolic"
@@ -81,7 +81,7 @@
           />
           <span class="text-danger text-sm">{{ errors.first('diastolic') }}</span>
         </div>
-        <label class="col-lg-2 col-form-label">(70 - 85)</label>
+        <label class="col-lg-2 col-form-label">(70 - 90)</label>
       </div>
       <hr />
       <div class="form-group row">
@@ -97,7 +97,7 @@
           />
           <span class="text-danger text-sm">{{ errors.first('temperature') }}</span>
         </div>
-        <label class="col-lg-2 col-form-label">(32 - 37)</label>
+        <label class="col-lg-2 col-form-label">(35.5 - 37.5)</label>
       </div>
       <div class="form-group row">
         <label class="col-2 col-form-label">Respiration (C/min*)</label>
@@ -111,10 +111,10 @@
         <div class="col-6">
           <input class="form-control form-control-sm" type="text" v-model="spo2" />
         </div>
-        <label class="col-lg-2 col-form-label">(>70)</label>
+        <label class="col-lg-2 col-form-label">(>90)</label>
       </div>
       <div class="form-group row">
-        <label class="col-2 col-form-label">RVS</label>
+        <label class="col-2 col-form-label">FBG/RBG</label>
         <div class="col-6">
           <select v-model="rvs" class="form-control form-control-sm">
             <option :value="r" v-for="(r, i) in rvsOptions" :key="i">{{ r }}</option>
@@ -180,7 +180,7 @@ export default {
       comment: '',
       date_of_birth: '',
       rvsOptions: ['-ve', '+ve', 'Not Done', 'Declined'],
-      muacOptions: ['Green', 'Blue', 'Red'],
+      muacOptions: ['Yellow', 'Blue', 'Red'],
     };
   },
   computed: {

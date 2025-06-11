@@ -1,9 +1,7 @@
 /* eslint-disable camelcase */
 import {
-  createCashItem,
   createLaboratoryItem,
-  createNHISItem,
-  createPrivateItem,
+  createStoreItem,
   createVendor,
   dispensePharmacyItems,
   findPharmacyStoreItems,
@@ -31,7 +29,9 @@ import { ItemsToDispensedBody } from '../Inventory/types/inventory-item.types';
 import {
   ITEM_EXISTS_CASH,
   ITEM_EXISTS_NHIS,
+  ITEM_EXISTS_PLASCHEMA,
   ITEM_EXISTS_PRIVATE,
+  ITEM_EXISTS_RETAINERSHIP,
 } from '../Inventory/messages/response-messages';
 import { ItemsToReorder } from './types/pharmacy-item.types';
 import { DrugType } from '../../database/models/pharmacyStore';
@@ -47,19 +47,54 @@ class StoreService {
    * @memberOf StoreService
    */
   static async createPharmacyItemService(body): Promise<PharmacyStore> {
-    const { create_cash_item, create_nhis_item, drug_id, create_private_item } = body;
-    let item: PharmacyStore;
-    await this.pharmacyStoreValidations(
-      drug_id,
+    const {
       create_cash_item,
       create_nhis_item,
-      create_private_item
-    );
+      drug_id,
+      create_private_item,
+      create_retainership_item,
+      create_plaschema_item,
+    } = body;
+    await this.pharmacyStoreValidations({
+      drugId: drug_id,
+      create_cash_item,
+      create_nhis_item,
+      create_private_item,
+      create_retainership_item,
+      create_plaschema_item,
+    });
 
-    if (create_cash_item) item = await createCashItem(body);
-    if (create_nhis_item) item = await createNHISItem(body);
-    if (create_private_item) item = await createPrivateItem(body);
-    return item;
+    const itemTypes = [
+      { flag: create_cash_item, priceKey: 'selling_price' },
+      { flag: create_nhis_item, priceKey: 'nhis_selling_price' },
+      { flag: create_private_item, priceKey: 'private_selling_price' },
+      { flag: create_retainership_item, priceKey: 'retainership_selling_price' },
+      { flag: create_plaschema_item, priceKey: 'plaschema_selling_price' },
+    ];
+
+    const priceKeys = [
+      'selling_price',
+      'nhis_selling_price',
+      'private_selling_price',
+      'retainership_selling_price',
+      'plaschema_selling_price',
+    ];
+
+    const createdItems = [];
+
+    for (const type of itemTypes) {
+      if (type.flag) {
+        // Only keep the relevant price key, set others to undefined
+        const itemBody = { ...body };
+        for (const key of priceKeys) {
+          if (key !== type.priceKey) {
+            itemBody[key] = undefined;
+          }
+        }
+        createdItems.push(await createStoreItem(itemBody));
+      }
+    }
+    return createdItems[0];
   }
 
   /**
@@ -128,7 +163,20 @@ class StoreService {
   }
 
   static async dispenseItemsFromStore(items: ItemsToDispensedBody[], staff_id: number) {
-    return dispensePharmacyItems(items, staff_id);
+    const result = await dispensePharmacyItems(items, staff_id);
+    const errors = result.filter(res => res.status === 'rejected' && res.reason);
+
+    if (errors?.length) {
+      throw new BadException(
+        'DISPENSING_ERROR',
+        400,
+        errors.map(err => ('reason' in err ? err.reason : '')).join(', ')
+      );
+    }
+
+    return (result
+      .filter(item => item.status === 'fulfilled' && item.value)
+      .map(res => 'value' in res && res.value) as unknown) as PharmacyStore[];
   }
 
   /**
@@ -311,22 +359,37 @@ class StoreService {
     }));
   }
 
-  private static async pharmacyStoreValidations(
-    drugId: number,
-    create_cash_item: boolean,
-    create_nhis_item: boolean,
-    create_private_item: boolean
-  ) {
-    const [cashItem, nhisItem, privateItem] = await Promise.all([
+  private static async pharmacyStoreValidations({
+    drugId,
+    create_cash_item,
+    create_nhis_item,
+    create_private_item,
+    create_retainership_item,
+    create_plaschema_item,
+  }: {
+    drugId: number;
+    create_cash_item: boolean;
+    create_nhis_item: boolean;
+    create_private_item: boolean;
+    create_plaschema_item: boolean;
+    create_retainership_item: boolean;
+  }) {
+    const [cashItem, nhisItem, privateItem, plaschemaItem, retainershipItem] = await Promise.all([
       getOnePharmacyStoreItem({ drug_id: drugId, drug_type: DrugType.CASH }),
       getOnePharmacyStoreItem({ drug_id: drugId, drug_type: DrugType.NHIS }),
       getOnePharmacyStoreItem({ drug_id: drugId, drug_type: DrugType.PRIVATE }),
+      getOnePharmacyStoreItem({ drug_id: drugId, drug_type: DrugType.PLASCHEMA }),
+      getOnePharmacyStoreItem({ drug_id: drugId, drug_type: DrugType.RETAINERSHIP }),
     ]);
 
     if (cashItem && create_cash_item) throw new BadException('Invalid', 400, ITEM_EXISTS_CASH);
     if (nhisItem && create_nhis_item) throw new BadException('Invalid', 400, ITEM_EXISTS_NHIS);
     if (privateItem && create_private_item)
       throw new BadException('Invalid', 400, ITEM_EXISTS_PRIVATE);
+    if (plaschemaItem && create_plaschema_item)
+      throw new BadException('Invalid', 400, ITEM_EXISTS_PLASCHEMA);
+    if (retainershipItem && create_retainership_item)
+      throw new BadException('Invalid', 400, ITEM_EXISTS_RETAINERSHIP);
   }
 
   /**************************

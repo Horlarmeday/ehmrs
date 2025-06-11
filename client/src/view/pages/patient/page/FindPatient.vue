@@ -118,7 +118,7 @@
                     }"
                     title="Start a Visit"
                     :to="`/visit/new/${patient.id}`"
-                    class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm mx-2"
                     v-b-tooltip.hover
                   >
                     <arrow-right-icon />
@@ -127,7 +127,7 @@
                     v-if="deactivateUserAllowedRoles.includes(currentUser.role)"
                     @click.stop="showConfirmAlert(patient)"
                     href="#"
-                    class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm"
                     ><dish-icon
                   /></a>
                 </td>

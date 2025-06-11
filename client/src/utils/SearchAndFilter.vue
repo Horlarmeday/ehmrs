@@ -97,7 +97,7 @@ export default {
         { value: 'drug_name_desc', text: 'Drug Name (Z-A)' },
       ],
       drugForms: ['Drug', 'Consumable'],
-      drugTypes: ['Cash', 'NHIS', 'Private', 'Retainership'],
+      drugTypes: ['Cash', 'NHIS', 'Private', 'Retainership', 'Plaschema'],
       drug_form: '',
       drug_type: '',
       dosage_form: '',

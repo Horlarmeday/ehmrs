@@ -26,6 +26,7 @@ export enum AcceptedDrugType {
   RETAINERSHIP = 'Retainership Drug',
   BOTH = 'Both',
   ALL = 'All',
+  PLASCHEMA = 'Plaschema Drug',
 }
 
 @Table({ timestamps: true })
@@ -57,7 +58,8 @@ export class Inventory extends Model {
       AcceptedDrugType.NHIS,
       AcceptedDrugType.ALL,
       AcceptedDrugType.PRIVATE,
-      AcceptedDrugType.RETAINERSHIP
+      AcceptedDrugType.RETAINERSHIP,
+      AcceptedDrugType.PLASCHEMA
     ),
     allowNull: false,
     validate: {

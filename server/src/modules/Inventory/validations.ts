@@ -14,7 +14,8 @@ export const validateCreateInventory = inventory => {
       AcceptedDrugType.NHIS,
       AcceptedDrugType.BOTH,
       AcceptedDrugType.CASH,
-      AcceptedDrugType.PRIVATE
+      AcceptedDrugType.PRIVATE,
+      AcceptedDrugType.PLASCHEMA
     ),
   });
   return schema.validate(inventory);

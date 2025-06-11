@@ -68,6 +68,34 @@ export default {
     });
   },
 
+  fetchPrescribedTestsPerVisit({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/orders/laboratory/prescribed-tests/${payload.id}`)
+        .then(response => {
+          commit('SET_PRESCRIBED_TESTS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  updateBulkUpdatePrescribedDrugs({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/orders/laboratory/bulk-update`, payload)
+        .then(response => {
+          commit('UPDATE_PRESCRIBED_TESTS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
   addSelectedTest({ commit }, test) {
     commit('ADD_SELECTED_TEST', test);
   },
@@ -149,6 +177,34 @@ export default {
         .delete(`/orders/radiology/delete`, { data: payload })
         .then(response => {
           commit('DELETE_INVESTIGATION_ORDER', payload);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchPrescribedInvestigationsPerVisit({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/orders/radiology/prescribed-investigations/${payload.id}`)
+        .then(response => {
+          commit('SET_PRESCRIBED_INVESTIGATIONS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  updateBulkUpdatePrescribedInvestigations({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/orders/radiology/bulk-update`, payload)
+        .then(response => {
+          commit('UPDATE_PRESCRIBED_INVESTIGATIONS', response.data.data);
           resolve(response);
         })
         .catch(error => {
@@ -431,7 +487,7 @@ export default {
     });
   },
 
-  fetchPrescribedServices({ commit }, payload) {
+  fetchPrescribedServicesPerVisit({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
         .get('/orders/service/get', {
@@ -473,6 +529,34 @@ export default {
         .delete(`/orders/service/delete`, { data: payload })
         .then(response => {
           commit('DELETE_SERVICE_ORDER', payload);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  updateBulkServices({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/orders/service/bulk-update`, payload)
+        .then(response => {
+          commit('UPDATE_BULK_SERVICES', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchServicesPerVisit({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/orders/service/prescribed-services/${payload.id}`)
+        .then(response => {
+          commit('SET_PRESCRIBED_SERVICES', response.data.data);
           resolve(response);
         })
         .catch(error => {

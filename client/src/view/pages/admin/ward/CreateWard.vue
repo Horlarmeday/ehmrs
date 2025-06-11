@@ -22,15 +22,15 @@
           <v-select
             v-validate="'required'"
             data-vv-validate-on="blur"
-            v-model="service_id"
+            v-model="selectedService"
             name="service"
             label="name"
             @search="searchServices"
-            :reduce="services => services.id"
+            :reduce="service => service.id"
             :options="services"
           >
-            <template slot="no-options">
-              type to search for services..
+            <template #no-options>
+              Type to search for services...
             </template>
           </v-select>
           <span class="text-danger text-sm">{{ errors.first('service') }}</span>
@@ -81,17 +81,25 @@ export default {
   },
   data() {
     return {
+      currentPage: 1,
+      pageLimit: 200,
       name: '',
       ward_id: '',
       isDisabled: false,
-      service_id: '',
+      selectedService: null,
       occupant_type: '',
       occupantTypes: ['Male', 'Female', 'Children', 'All', 'Maternity', 'Emergency'],
     };
   },
+  created() {
+    this.$store.dispatch('model/fetchServices', {
+      currentPage: this.currentPage,
+      itemsPerPage: this.pageLimit,
+    });
+  },
   computed: {
     validateForm() {
-      return !this.errors.any() && this.name !== '';
+      return !this.errors.any() && this.name !== '' && this.selectedService !== null;
     },
     activePrompt: {
       get() {
@@ -115,7 +123,7 @@ export default {
         const { id, name, service_id, occupant_type } = JSON.parse(JSON.stringify(this.data));
         this.ward_id = id;
         this.name = name;
-        this.service_id = service_id;
+        this.selectedService = this.services.find(service => service.id === service_id);
         this.occupant_type = occupant_type;
       }
     },
@@ -159,7 +167,7 @@ export default {
           const obj = {
             ward_id: this.ward_id,
             name: this.name,
-            service_id: this.service_id,
+            service_id: this.selectedService.id,
             occupant_type: this.occupant_type,
           };
           // set spinner to submit button
@@ -184,11 +192,13 @@ export default {
     initValues() {
       this.name = '';
       this.ward_id = '';
-      this.service_id = '';
+      this.selectedService = null;
       this.occupant_type = '';
     },
   },
 };
 </script>
 
-<style></style>
+<style>
+/* Add your styles here */
+</style>

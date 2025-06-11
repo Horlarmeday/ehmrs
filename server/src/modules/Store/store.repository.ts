@@ -32,12 +32,58 @@ import { LogType } from '../../database/models/pharmacyStoreLog';
  * PHARMACY STORE
  ********************** */
 
+const getSellingPriceAndDrugType = ({
+  selling_price,
+  nhis_selling_price,
+  private_selling_price,
+  plaschema_selling_price,
+  retainership_selling_price,
+}: {
+  selling_price: number;
+  nhis_selling_price: number;
+  private_selling_price: number;
+  plaschema_selling_price: number;
+  retainership_selling_price: number;
+}) => {
+  if (selling_price) {
+    return {
+      selling_price,
+      drug_type: DrugType.CASH,
+    };
+  } else if (nhis_selling_price) {
+    return {
+      selling_price: nhis_selling_price,
+      drug_type: DrugType.NHIS,
+    };
+  } else if (private_selling_price) {
+    return {
+      selling_price: private_selling_price,
+      drug_type: DrugType.PRIVATE,
+    };
+  } else if (plaschema_selling_price) {
+    return {
+      selling_price: plaschema_selling_price,
+      drug_type: DrugType.PLASCHEMA,
+    };
+  } else if (retainership_selling_price) {
+    return {
+      selling_price: retainership_selling_price,
+      drug_type: DrugType.RETAINERSHIP,
+    };
+  } else {
+    return {
+      selling_price,
+      drug_type: DrugType.CASH,
+    };
+  }
+};
+
 /**
- * create a cash pharmacy item
+ * create a store pharmacy item
  * @param data
  * @returns {object} item data
  */
-export async function createCashItem(data) {
+export async function createStoreItem(data) {
   const {
     drug_id,
     shelf,
@@ -48,114 +94,10 @@ export async function createCashItem(data) {
     unit_id,
     unit_price,
     selling_price,
-    expiration,
-    dosage_form_id,
-    staff_id,
-    date_received,
-    measurement_id,
-    strength_input,
-    route_id,
-    drug_form,
-    brand,
-    vendor_id,
-  } = data;
-
-  return PharmacyStore.create({
-    drug_id,
-    shelf,
-    product_code,
-    batch,
-    voucher,
-    quantity_received,
-    quantity_remaining: quantity_received,
-    unit_id,
-    unit_price,
-    total_price: quantity_received * unit_price,
-    selling_price,
-    expiration,
-    dosage_form_id,
-    staff_id,
-    date_received,
-    measurement_id,
-    strength_input,
-    route_id,
-    drug_form,
-    brand,
-    drug_type: DrugType.CASH,
-    vendor_id,
-  });
-}
-
-/**
- * create a NHIS pharmacy item
- * @param data
- * @returns {object} item data
- */
-export async function createNHISItem(data) {
-  const {
-    drug_id,
-    shelf,
-    product_code,
-    batch,
-    voucher,
-    quantity_received,
-    unit_id,
-    unit_price,
     nhis_selling_price,
-    expiration,
-    dosage_form_id,
-    staff_id,
-    date_received,
-    measurement_id,
-    strength_input,
-    route_id,
-    drug_form,
-    brand,
-    vendor_id,
-  } = data;
-
-  return PharmacyStore.create({
-    drug_id,
-    shelf,
-    product_code,
-    batch,
-    voucher,
-    quantity_received,
-    quantity_remaining: quantity_received,
-    unit_id,
-    unit_price,
-    total_price: quantity_received * unit_price,
-    selling_price: nhis_selling_price,
-    expiration,
-    dosage_form_id,
-    staff_id,
-    date_received,
-    measurement_id,
-    strength_input,
-    route_id,
-    drug_form,
-    brand,
-    drug_type: DrugType.NHIS,
-    vendor_id,
-  });
-}
-
-/**
- * create a Private pharmacy item
- * @param data
- * @returns {object} item data
- */
-export async function createPrivateItem(data) {
-  const {
-    drug_id,
-    shelf,
-    product_code,
-    batch,
-    voucher,
-    quantity_received,
-    unit_id,
-    unit_price,
     private_selling_price,
+    plaschema_selling_price,
+    retainership_selling_price,
     expiration,
     dosage_form_id,
     staff_id,
@@ -163,10 +105,10 @@ export async function createPrivateItem(data) {
     measurement_id,
     strength_input,
     route_id,
-    brand,
     drug_form,
+    brand,
     vendor_id,
-  } = data;
+  } = data || {};
 
   return PharmacyStore.create({
     drug_id,
@@ -179,7 +121,13 @@ export async function createPrivateItem(data) {
     unit_id,
     unit_price,
     total_price: quantity_received * unit_price,
-    selling_price: private_selling_price,
+    ...getSellingPriceAndDrugType({
+      selling_price,
+      nhis_selling_price,
+      private_selling_price,
+      plaschema_selling_price,
+      retainership_selling_price,
+    }),
     expiration,
     dosage_form_id,
     staff_id,
@@ -189,7 +137,6 @@ export async function createPrivateItem(data) {
     route_id,
     drug_form,
     brand,
-    drug_type: DrugType.PRIVATE,
     vendor_id,
   });
 }
@@ -641,6 +588,7 @@ const dispenseValidations = async (item: ItemsToDispensedBody) => {
     getPharmacyStoreItemById(item.id),
     getAnInventory(item.dispensary),
   ]);
+
   if (lt(storeItem.quantity_remaining, item.quantity_to_dispense)) {
     throw new BadException('Invalid', 400, INVALID_QUANTITY.replace('drug', item.drug_name));
   }
@@ -735,6 +683,8 @@ export const dispensePharmacyItems = async (items: ItemsToDispensedBody[], staff
           defaults: { ...mappedItem },
           transaction: t,
         });
+
+        console.log(inventoryItem, created, 'inventoryItem');
 
         if (!created) {
           await InventoryItem.update(

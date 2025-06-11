@@ -13,7 +13,13 @@ router.post(
   RadiologyOrderController.orderInvestigationTest
 );
 router.get('/get', verify, RadiologyOrderController.getPrescribedInvestigations);
+router.get(
+  '/prescribed-investigations/:id',
+  verify,
+  RadiologyOrderController.getPrescribedInvestigationsPerVisit
+);
 router.put('/update', verify, RadiologyOrderController.updatePrescribedInvestigation);
+router.put('/bulk-update', verify, RadiologyOrderController.updateBulkInvestigations);
 router.delete('/delete', verify, RadiologyOrderController.deletePrescribedInvestigation);
 
 export default router;

@@ -1,7 +1,7 @@
 import {
   deletePrescribedInvestigation,
   getOnePrescribedInvestigation,
-  getPrescribedInvestigations,
+  getPrescribedInvestigations, getPrescriptionInvestigations,
   orderBulkInvestigation,
   prescribeInvestigation,
   updatePrescribedInvestigation,
@@ -14,7 +14,7 @@ import {
   getLastInvestigationPrescription,
 } from '../../Radiology/radiology.repository';
 import { PrescribedInvestigationBody } from './types/radiology-order.types';
-import { InvestigationPrescription, PrescribedInvestigation } from '../../../database/models';
+import { InvestigationPrescription, PrescribedInvestigation, PrescribedTest } from '../../../database/models';
 import { isToday, StatusCodes } from '../../../core/helpers/helper';
 import { InvestigationStatus } from '../../../database/models/investigationPrescription';
 import { NHISApprovalStatus } from '../../../core/helpers/general';
@@ -23,6 +23,7 @@ import { PaymentStatus } from '../../../database/models/prescribedDrug';
 import { BadException } from '../../../common/util/api-error';
 import { CANNOT_DELETE_INVESTIGATION } from './messages/response-messages';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
+import { getPrescriptionTests } from '../Laboratory/lab-order.repository';
 
 export class RadiologyOrderService {
   /**
@@ -159,6 +160,30 @@ export class RadiologyOrderService {
     }
 
     return getPrescribedInvestigations({ filter });
+  }
+
+  /**
+   * update bulk prescribed investigations
+   *
+   * @static
+   * @returns {Promise<PrescribedInvestigation>} json object with prescribed investigations data
+   * @param body
+   * @memberOf LabOrderService
+   */
+  static async updateBulkPrescribedInvestigations(body: Partial<PrescribedInvestigation>[]) {
+    return await Promise.all(body.map(async data => await updatePrescribedInvestigation(data)));
+  }
+
+  /**
+   * get prescribed investigations
+   *
+   * @static
+   * @returns {json} json object with prescribed drugs data
+   * @memberOf RadiologyOrderService
+   * @param visitId
+   */
+  static async getInvestigationsPrescribed(visitId: number) {
+    return getPrescriptionInvestigations({ visit_id: visitId });
   }
 
   private static investigationData(body: PrescribedInvestigationBody, patient_id: number) {

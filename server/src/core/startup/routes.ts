@@ -51,7 +51,7 @@ export default (server: express.Application) => {
   server.use('/api/surgeries', surgeryRoutes);
   server.use('/api/immunizations', immunizationRoutes);
   server.use('/api/alerts', alertRoutes);
-  server.use('/api/account', accountRoutes);
+  server.use('/api/accounts', accountRoutes);
   server.use('/api/orders/laboratory', labOrderRoutes);
   server.use('/api/orders/pharmacy', pharmacyOrderRoutes);
   server.use('/api/orders/radiology', radiologyOrderRoutes);

@@ -12,6 +12,7 @@ import { NextFunction, Request, Response } from 'express';
 import { SUCCESS } from '../../../core/constants';
 import { isEmpty } from 'lodash';
 import { EMPTY_REQUEST_BODY } from './messages/response-messages';
+import { ServiceOrderService } from '../Service/service-order.service';
 
 class LabOrderController {
   /**
@@ -136,6 +137,66 @@ class LabOrderController {
         res,
         data: test,
         message: DATA_DELETED,
+        httpCode: StatusCodes.CREATED,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get tests prescribed per visit
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with prescribed tests data
+   */
+  static async getPrescribedTestsPerVisit(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    try {
+      const tests = await LabOrderService.getTestsPrescribed(+id);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data: tests,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * update bulk tests
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {SuccessResponse} json object with status, services data
+   */
+  static async updateBulkTests(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    const empty = isEmpty(req.body);
+    if (empty)
+      return errorResponse({
+        res,
+        message: EMPTY_REQUEST_BODY,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+    try {
+      const tests = await LabOrderService.updateBulkPrescribedTest(req.body);
+
+      return successResponse({
+        res,
+        data: tests,
+        message: DATA_UPDATED,
         httpCode: StatusCodes.CREATED,
       });
     } catch (e) {

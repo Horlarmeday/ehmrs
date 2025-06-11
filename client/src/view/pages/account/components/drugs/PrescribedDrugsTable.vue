@@ -30,7 +30,12 @@
           <tr v-for="drug in drugs" :key="drug.id">
             <td>
               <label class="checkbox checkbox-md checkbox-inline">
-                <input type="checkbox" :checked="isSelected(drug)" @change="toggleItem(drug)" />
+                <input
+                  :disabled="drug.payment_status !== PENDING"
+                  type="checkbox"
+                  :checked="isSelected(drug)"
+                  @change="toggleItem(drug)"
+                />
                 <span></span>
               </label>
             </td>
@@ -143,17 +148,23 @@ export default {
     },
 
     isSelected(drug) {
-      return this.selectedDrugs.includes(drug.id);
+      return this.selectedDrugs.some(d => d.id === drug.id);
     },
 
     toggleItem(drug) {
       if (this.isSelected(drug)) {
         // If the item is already selected, remove it from selectedItems
-        const drugIndex = this.selectedDrugs.findIndex(id => id === drug.id);
+        const drugIndex = this.selectedDrugs.findIndex(d => d.id === drug.id);
         this.selectedDrugs.splice(drugIndex, 1);
       } else {
         // If the item is not selected, add it to selectedItems
-        this.selectedDrugs.push(drug.id);
+        this.selectedDrugs.push({
+          id: drug.id,
+          name: drug.drug.name,
+          quantity: drug.quantity_to_dispense,
+          price: drug.total_price,
+          date: drug.date_prescribed,
+        });
       }
     },
   },

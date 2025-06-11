@@ -44,4 +44,7 @@ export default {
   ADD_DEPENDANT(state, dependant) {
     state.dependants.push(dependant);
   },
+
+  // eslint-disable-next-line no-unused-vars
+  DOWNLOAD_HOSPITAL_CARD(state, patient) {},
 };

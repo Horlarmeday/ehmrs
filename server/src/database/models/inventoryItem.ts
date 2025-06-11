@@ -164,7 +164,13 @@ export class InventoryItem extends Model {
   drug_form: DrugForm;
 
   @Column({
-    type: DataType.ENUM(DrugType.CASH, DrugType.NHIS, DrugType.PRIVATE, DrugType.RETAINERSHIP),
+    type: DataType.ENUM(
+      DrugType.CASH,
+      DrugType.NHIS,
+      DrugType.PRIVATE,
+      DrugType.RETAINERSHIP,
+      DrugType.PLASCHEMA
+    ),
     allowNull: false,
     validate: {
       notEmpty: {

@@ -78,3 +78,7 @@ export { Vendor } from './vendor';
 export { Visit } from './visit';
 export { Ward } from './ward';
 export { WardRound } from './wardRound';
+export { ChartOfAccount } from './chartOfAccount';
+export { CostCenter } from './costCenter';
+export { JournalEntry } from './journalEntry';
+export { JournalEntryLine } from './journalEntryLine';

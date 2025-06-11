@@ -96,7 +96,13 @@ export class PrescribedDrug extends Model {
   dosage_form_id: number;
 
   @Column({
-    type: DataType.ENUM(DrugType.CASH, DrugType.NHIS, DrugType.PRIVATE),
+    type: DataType.ENUM(
+      DrugType.CASH,
+      DrugType.NHIS,
+      DrugType.PRIVATE,
+      DrugType.RETAINERSHIP,
+      DrugType.PLASCHEMA
+    ),
     allowNull: false,
     validate: {
       notEmpty: {

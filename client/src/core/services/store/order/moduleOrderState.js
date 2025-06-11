@@ -12,6 +12,7 @@ export default {
   selectedButtons: [],
   total: null,
   pages: 0,
+  testOrders: [],
 
   /**************
    RADIOLOGY ORDERS
@@ -22,6 +23,7 @@ export default {
   selectedInvestigationsButtons: [],
   totalInvestigations: null,
   investigationPages: 0,
+  investigationOrders: [],
 
   /**************
    MEDICATION ORDERS
@@ -48,6 +50,7 @@ export default {
   selectedServicesButtons: [],
   totalServices: null,
   servicePages: 0,
+  serviceOrders: [],
 
   /**********************
    * TREATMENTS

@@ -1,4 +1,5 @@
 import axios from '@/axios';
+import { getExtensions } from '@/common/common';
 
 export default {
   /**
@@ -241,4 +242,70 @@ export default {
         });
     });
   },
+
+  downloadHospitalCard({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(
+          `/patients/download-hospital-card/${payload.id}`,
+          {},
+          {
+            responseType: 'arraybuffer', // Important to receive binary data
+          }
+        )
+        .then(response => {
+          const contentType = response.headers['content-type'].split(';')[0];
+          const blob = new Blob([response.data], {
+            type: contentType,
+          });
+          const url = window.URL.createObjectURL(blob);
+          // Create an anchor element with download attribute and trigger click event
+          const a = document.createElement('a');
+          const extension = getExtensions();
+          a.href = url;
+          a.download = `lab_result.${extension[contentType]}`;
+          a.click();
+
+          // Clean up resources
+          window.URL.revokeObjectURL(url);
+          commit('DOWNLOAD_HOSPITAL_CARD', []);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  printHospitalCard({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/patients/download-hospital-card/${payload.id}`, {
+          responseType: 'arraybuffer', // 👈 Keep this
+        })
+        .then(response => {
+          const contentType = response.headers['content-type'].split(';')[0];
+          const blob = new Blob([response.data], { type: contentType });
+          const blobUrl = window.URL.createObjectURL(blob);
+
+          // Open in a new tab or iframe for printing
+          const printWindow = window.open(blobUrl, '_blank');
+          if (!printWindow) {
+            reject(new Error('Popup blocked. Please allow popups for this site.'));
+            return;
+          }
+
+          // Give the browser a moment to load the PDF, then trigger print
+          printWindow.onload = () => {
+            printWindow.focus();
+            printWindow.print();
+          };
+          commit('DOWNLOAD_HOSPITAL_CARD', []);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  }
 };

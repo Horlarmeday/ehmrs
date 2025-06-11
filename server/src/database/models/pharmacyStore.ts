@@ -29,6 +29,7 @@ export enum DrugType {
   NHIS = 'NHIS',
   PRIVATE = 'Private',
   RETAINERSHIP = 'Retainership',
+  PLASCHEMA = 'Plaschema',
 }
 @DefaultScope(() => ({
   where: {
@@ -166,7 +167,13 @@ export class PharmacyStore extends Model {
   drug_form: DrugForm;
 
   @Column({
-    type: DataType.ENUM(DrugType.CASH, DrugType.NHIS, DrugType.PRIVATE, DrugType.RETAINERSHIP),
+    type: DataType.ENUM(
+      DrugType.CASH,
+      DrugType.NHIS,
+      DrugType.PRIVATE,
+      DrugType.RETAINERSHIP,
+      DrugType.PLASCHEMA
+    ),
     allowNull: false,
     validate: {
       notEmpty: {

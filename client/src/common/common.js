@@ -20,6 +20,15 @@ export const notifySuccess = response => {
   });
 };
 
+export const notifyGeneralError = error => {
+  Vue.notify({
+    group: 'foo',
+    title: 'Error message',
+    text: error,
+    type: 'error',
+  });
+};
+
 export const deleteArrayElement = (arr, value) => {
   return arr.filter(function(element) {
     return element !== value;

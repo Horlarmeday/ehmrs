@@ -10,6 +10,11 @@ import {
 import { Staff } from './staff';
 import { Visit } from './visit';
 import { Patient } from './patient';
+import { PrescribedDrug } from './prescribedDrug';
+import { PrescribedTest } from './prescribedTest';
+import { PrescribedInvestigation } from './prescribedInvestigation';
+import { PrescribedService } from './prescribedService';
+import { PrescribedAdditionalItem } from './prescribedAdditionalItem';
 import {
   FindAttributeOptions,
   GroupOption,
@@ -37,6 +42,12 @@ export class PaymentHistory extends Model {
     type: DataType.TEXT,
   })
   narration: string;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
+  notes: string;
 
   @Column({
     type: DataType.STRING,
@@ -125,6 +136,21 @@ export class PaymentHistory extends Model {
 
   @BelongsTo(() => Patient)
   patient: Patient;
+
+  @BelongsTo(() => PrescribedDrug, { foreignKey: 'service_id', constraints: false })
+  drug: PrescribedDrug;
+
+  @BelongsTo(() => PrescribedTest, { foreignKey: 'service_id', constraints: false })
+  test: PrescribedTest;
+
+  @BelongsTo(() => PrescribedInvestigation, { foreignKey: 'service_id', constraints: false })
+  investigation: PrescribedInvestigation;
+
+  @BelongsTo(() => PrescribedService, { foreignKey: 'service_id', constraints: false })
+  service: PrescribedService;
+
+  @BelongsTo(() => PrescribedAdditionalItem, { foreignKey: 'service_id', constraints: false })
+  item: PrescribedAdditionalItem;
 
   static async paginate(param: {
     paginate: number;

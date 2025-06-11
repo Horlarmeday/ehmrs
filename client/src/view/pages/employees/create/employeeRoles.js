@@ -25,7 +25,7 @@ const departments = [
   },
   {
     id: 8,
-    department: 'Radiography',
+    department: 'Radiology',
   },
   {
     id: 9,
@@ -37,11 +37,35 @@ const departments = [
   },
   {
     id: 11,
-    department: 'Accounting',
+    department: 'Accounts',
   },
   {
     id: 12,
-    department: 'Administrator',
+    department: 'Administration',
+  },
+  {
+    id: 13,
+    department: 'Surgery Unit',
+  },
+  {
+    id: 14,
+    department: 'Medicine Unit',
+  },
+  {
+    id: 15,
+    department: 'Pediatrics Unit',
+  },
+  {
+    id: 16,
+    department: 'Obstetrics & Gynaecology Unit',
+  },
+  {
+    id: 17,
+    department: 'Family Medicine Unit',
+  },
+  {
+    id: 18,
+    department: 'Physiotherapy Unit',
   },
 ];
 
@@ -63,12 +87,12 @@ const roles = [
   },
   {
     id: 4,
-    role: 'Laboratory',
+    role: 'Laboratory Technician',
     dept_id: 5,
   },
   {
     id: 5,
-    role: 'NHIS',
+    role: 'Health Insurance',
     dept_id: 6,
   },
   {
@@ -91,11 +115,11 @@ const roles = [
     role: 'General Practitioner',
     dept_id: 9,
   },
-  {
-    id: 10,
-    role: 'Theater',
-    dept_id: 9,
-  },
+  // {
+  //   id: 10,
+  //   role: 'Theater',
+  //   dept_id: 9,
+  // },
   {
     id: 11,
     role: 'Customer Care',
@@ -118,73 +142,228 @@ const roles = [
   },
   {
     id: 15,
-    role: 'Obstetrics and gynaecologist',
-    dept_id: 9,
+    role: 'Gynecology Oncologist',
+    dept_id: 16,
   },
-  {
-    id: 16,
-    role: 'Pediatrician',
-    dept_id: 9,
-  },
+  // {
+  //   id: 16,
+  //   role: 'Pediatrician',
+  //   dept_id: 9,
+  // },
   {
     id: 17,
     role: 'Oncologist',
-    dept_id: 9,
+    dept_id: 14,
   },
   {
     id: 18,
     role: 'Cardiologist',
-    dept_id: 9,
+    dept_id: 14,
   },
   {
     id: 19,
     role: 'Ophthalmologist',
-    dept_id: 9,
+    dept_id: 13,
   },
   {
     id: 20,
     role: 'Neurologist',
-    dept_id: 9,
+    dept_id: 13,
   },
   {
     id: 21,
     role: 'Dermatologist',
-    dept_id: 9,
+    dept_id: 14,
   },
   {
     id: 22,
     role: 'Psychiatrist',
-    dept_id: 9,
+    dept_id: 14,
   },
   {
     id: 23,
     role: 'Orthopaedist',
-    dept_id: 9,
+    dept_id: 13,
   },
   {
     id: 24,
     role: 'Urologist',
-    dept_id: 9,
+    dept_id: 13,
   },
   {
     id: 25,
     role: 'Endocrinologist',
-    dept_id: 9,
+    dept_id: 14,
   },
   {
     id: 26,
     role: 'Gastroenterologist',
-    dept_id: 9,
+    dept_id: 14,
+  },
+  // {
+  //   id: 27,
+  //   role: 'Optician',
+  //   dept_id: 9,
+  // },
+  // {
+  //   id: 28,
+  //   role: 'Physiotherapist',
+  //   dept_id: 9,
+  // },
+  {
+    id: 29,
+    role: 'Plastic Surgeon',
+    dept_id: 13,
   },
   {
-    id: 27,
-    role: 'Optician',
-    dept_id: 9,
+    id: 30,
+    role: 'Ear, Nose and Throat (ENT) Specialist',
+    dept_id: 13,
   },
   {
-    id: 28,
+    id: 31,
+    role: 'Dental Surgeon',
+    dept_id: 13,
+  },
+  {
+    id: 32,
+    role: 'Radiologist',
+    dept_id: 13,
+  },
+  {
+    id: 33,
+    role: 'Paediatrics Surgeon',
+    dept_id: 13,
+  },
+  {
+    id: 34,
+    role: 'Anesthesiologist',
+    dept_id: 13,
+  },
+  {
+    id: 35,
+    role: 'Infectious Disease Specialist',
+    dept_id: 14,
+  },
+  {
+    id: 36,
+    role: 'General Medicine',
+    dept_id: 14,
+  },
+  {
+    id: 37,
+    role: 'Rheumatologist',
+    dept_id: 14,
+  },
+  {
+    id: 38,
+    role: 'Pediatric Cardiologist',
+    dept_id: 15,
+  },
+  {
+    id: 39,
+    role: 'Endocrinologist',
+    dept_id: 15,
+  },
+  {
+    id: 40,
+    role: 'Infectious Disease',
+    dept_id: 15,
+  },
+  {
+    id: 41,
+    role: 'Dermatologist',
+    dept_id: 15,
+  },
+  {
+    id: 42,
+    role: 'Adolescents medicine',
+    dept_id: 15,
+  },
+  {
+    id: 43,
+    role: 'Gastroenterologist',
+    dept_id: 15,
+  },
+  {
+    id: 44,
+    role: 'Emergency',
+    dept_id: 15,
+  },
+  {
+    id: 45,
+    role: 'Nephrologist',
+    dept_id: 15,
+  },
+  {
+    id: 46,
+    role: 'Infertility',
+    dept_id: 16,
+  },
+  {
+    id: 47,
+    role: 'Obstetrics Endocrinologist',
+    dept_id: 16,
+  },
+  {
+    id: 48,
+    role: 'Maternal-Fetal Medicine',
+    dept_id: 16,
+  },
+  {
+    id: 49,
+    role: 'Geriatrics',
+    dept_id: 17,
+  },
+  {
+    id: 50,
+    role: 'Lifestyle Medicine',
+    dept_id: 17,
+  },
+  {
+    id: 51,
+    role: 'Adolescent Health',
+    dept_id: 17,
+  },
+  {
+    id: 52,
+    role: 'Hospices and Palliative Care',
+    dept_id: 17,
+  },
+  {
+    id: 53,
+    role: 'Sports Medicine',
+    dept_id: 17,
+  },
+  {
+    id: 54,
+    role: 'Laboratory Receptionist',
+    dept_id: 5,
+  },
+  {
+    id: 55,
+    role: 'Laboratory Manager',
+    dept_id: 5,
+  },
+  {
+    id: 56,
+    role: 'HOD Laboratory',
+    dept_id: 5,
+  },
+  {
+    id: 57,
+    role: 'HOD Radiology',
+    dept_id: 8,
+  },
+  {
+    id: 58,
+    role: 'HOD Pharmacy',
+    dept_id: 4,
+  },
+  {
+    id: 59,
     role: 'Physiotherapist',
-    dept_id: 9,
+    dept_id: 18,
   },
 ];
 
@@ -268,6 +447,46 @@ const sub_roles = [
     id: 16,
     sub: 'VIP/Private',
     role_id: 2,
+  },
+  {
+    id: 17,
+    sub: 'HOD',
+    role_id: 6,
+  },
+  {
+    id: 18,
+    sub: 'Assistant',
+    role_id: 6,
+  },
+  {
+    id: 19,
+    sub: 'Senior Physiotherapist,',
+    role_id: 59,
+  },
+  {
+    id: 20,
+    sub: 'Principal Physiotherapist,',
+    role_id: 59,
+  },
+  {
+    id: 21,
+    sub: 'Chief Physiotherapist,',
+    role_id: 59,
+  },
+  {
+    id: 22,
+    sub: 'Ass. Director',
+    role_id: 59,
+  },
+  {
+    id: 23,
+    sub: 'Deputy Director',
+    role_id: 59,
+  },
+  {
+    id: 24,
+    sub: 'Director',
+    role_id: 59,
   },
 ];
 

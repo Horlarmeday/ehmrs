@@ -16,5 +16,6 @@ router.put('/convert-dependant/:id', verify, PatientController.convertDependantT
 router.get('/get', verify, PatientController.getPatients);
 router.get('/profile/get/:id', verify, PatientController.getPatientProfile);
 router.get('/get/:id', verify, PatientController.getOnePatient);
+router.get('/download-hospital-card/:id', verify, PatientController.getHospitalCard);
 
 export default router;

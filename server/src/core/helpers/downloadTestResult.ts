@@ -72,19 +72,17 @@ export const downloadTestResult = (
 
 function generateHeader(doc: PDFDocument) {
   const filePath =
-    process.env.NODE_ENV === 'production'
-      ? `ehmrs-api/public/images/logo-letter-1.png`
-      : 'src/public/images/logo-letter-2.png';
+    process.env.NODE_ENV === 'production' ? `ehmrs-api/public/pssh.png` : 'src/public/pssh.png';
   doc
     .image(filePath, 50, 45, { width: 50 })
     .fillColor('#444444')
     .fontSize(15)
-    .text('St. Vincent De Paul Hospital', 110, 62)
+    .text('Plateau State Specialist Hospital', 110, 62)
     .fontSize(11)
-    .text('Plot 505, Cadastral Zone,', 200, 55, { align: 'right' })
-    .text('F01, Kubwa Extension,', 200, 70, { align: 'right' })
-    .text('FCT – Abuja, Nigeria.', 200, 85, { align: 'right' })
-    .text('dcstvinhosp@gmail.com', 200, 100, { align: 'right' })
+    .text('No. 1 Hospital Road,', 200, 55, { align: 'right' })
+    .text('Jos,', 200, 70, { align: 'right' })
+    .text('Plateau State, Nigeria.', 200, 85, { align: 'right' })
+    .text('pssh@gmail.com', 200, 100, { align: 'right' })
     .text('08134848878', 200, 115, { align: 'right' })
     .moveDown(1.5);
 }

@@ -214,7 +214,7 @@
               </select>
               <span class="text-danger text-sm">{{ errors.first('vendor') }}</span>
             </div>
-            <div class="col-lg-4 mt-3">
+            <div class="col-lg-6 mt-3">
               <div class="form-group">
                 <label>Item Type</label>
                 <div class="checkbox-inline">
@@ -232,6 +232,16 @@
                     <input type="checkbox" :value="true" v-model="create_private_item" />
                     <span></span>
                     Private
+                  </label>
+                  <label class="checkbox checkbox-rounded">
+                    <input type="checkbox" :value="true" v-model="create_retainership_item" />
+                    <span></span>
+                    Retainership
+                  </label>
+                  <label class="checkbox checkbox-rounded">
+                    <input type="checkbox" :value="true" v-model="create_plaschema_item" />
+                    <span></span>
+                    Plaschema
                   </label>
                 </div>
                 <span class="form-text text-muted">Tick as appropriate</span>
@@ -260,6 +270,28 @@
                 name="nhis_selling_price"
               />
               <span class="text-danger text-sm">{{ errors.first('private_selling_price') }}</span>
+            </div>
+            <div class="col-lg-4 mt-3" v-if="create_retainership_item">
+              <label>Retainership Selling Price <span class="text-danger">*</span></label>
+              <input
+                type="number"
+                class="form-control form-control-sm"
+                v-model="retainership_selling_price"
+                placeholder="Private Selling Price"
+                name="nhis_selling_price"
+              />
+              <span class="text-danger text-sm">{{ errors.first('retainership_selling_price') }}</span>
+            </div>
+            <div class="col-lg-4 mt-3" v-if="create_plaschema_item">
+              <label>Plaschema Selling Price <span class="text-danger">*</span></label>
+              <input
+                type="number"
+                class="form-control form-control-sm"
+                v-model="plaschema_selling_price"
+                placeholder="Private Selling Price"
+                name="nhis_selling_price"
+              />
+              <span class="text-danger text-sm">{{ errors.first('plaschema_selling_price') }}</span>
             </div>
           </div>
         </div>
@@ -307,6 +339,8 @@ export default {
       selling_price: '',
       nhis_selling_price: '',
       private_selling_price: '',
+      retainership_selling_price: '',
+      plaschema_selling_price: '',
       date_received: new Date(),
       drug_form: '',
       brand: '',
@@ -316,6 +350,8 @@ export default {
       create_cash_item: true,
       create_nhis_item: false,
       create_private_item: false,
+      create_retainership_item: false,
+      create_plaschema_item: false,
     };
   },
   computed: {
@@ -378,12 +414,16 @@ export default {
       this.selling_price = '';
       this.nhis_selling_price = '';
       this.private_selling_price = '';
+      this.retainership_selling_price = '';
+      this.plaschema_selling_price = '';
       this.date_received = new Date();
       this.drug_form = '';
       this.brand = '';
       this.create_cash_item = true;
       this.create_nhis_item = false;
       this.create_private_item = false;
+      this.create_retainership_item = false;
+      this.create_plaschema_item = false;
     },
 
     addSpinner(submitButton) {
@@ -447,6 +487,8 @@ export default {
             selling_price: this.selling_price,
             nhis_selling_price: this.nhis_selling_price,
             private_selling_price: this.private_selling_price,
+            retainership_selling_price: this.retainership_selling_price,
+            plaschema_selling_price: this.plaschema_selling_price,
             date_received: this.date_received,
             drug_form: this.drug_form,
             brand: this.brand,
@@ -454,6 +496,8 @@ export default {
             create_cash_item: this.create_cash_item,
             create_nhis_item: this.create_nhis_item,
             create_private_item: this.create_private_item,
+            create_retainership_item: this.create_retainership_item,
+            create_plaschema_item: this.create_plaschema_item,
           };
           this.$store
             .dispatch('store/addPharmacyItem', data)

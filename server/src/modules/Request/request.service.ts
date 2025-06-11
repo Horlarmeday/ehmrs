@@ -9,7 +9,7 @@ import {
 import { PharmacyStore, Request } from '../../database/models';
 import { ParsedQs } from 'qs';
 import { getInventoryItemQuery } from '../Inventory/inventory.repository';
-import { getOnePharmacyStoreItem } from '../Store/store.repository';
+import { dispensePharmacyItems, getOnePharmacyStoreItem } from '../Store/store.repository';
 import { ItemsToDispensedBody } from '../Inventory/types/inventory-item.types';
 import StoreService from '../Store/store.service';
 import { RequestStatus } from '../../database/models/request';
@@ -133,7 +133,7 @@ export class RequestService {
       })
     );
 
-    const results = await StoreService.dispenseItemsFromStore(itemsToDispense, staffId);
+    const results = await dispensePharmacyItems(itemsToDispense, staffId);
     const errors = results.filter(res => res.status === 'rejected' && res.reason);
 
     const itemsDispensed = (results
@@ -148,10 +148,6 @@ export class RequestService {
       }));
 
     const updatedRequests = await updateRequestStatus(itemsToUpdate, staffId);
-
-    console.log(itemsDispensed, 'itemsDispensed');
-    console.log(updatedRequests, 'updatedRequests');
-    console.log(errors, 'errors');
 
     return {
       errors: errors.map(error => 'reason' in error && error.reason?.message),

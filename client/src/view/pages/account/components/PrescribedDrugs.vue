@@ -12,7 +12,7 @@
 </template>
 <script>
 import PrescribedDrugsTable from '@/view/pages/account/components/drugs/PrescribedDrugsTable.vue';
-import AdditionalItemsTable from '@/view/pages/account/components/drugs/AdditionalItemsTable.vue';
+import AdditionalItemsTable from '@/view/pages/account/components/items/AdditionalItemsTable.vue';
 
 export default {
   components: { PrescribedDrugsTable, AdditionalItemsTable },

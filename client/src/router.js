@@ -1311,6 +1311,70 @@ const router = new Router({
           component: () => import('@/view/pages/account/Account.vue'),
           children: [
             {
+              path: '',
+              name: 'account-home',
+              component: () => import('@/view/pages/account/Home.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'chart-of-accounts',
+              name: 'chart-of-accounts',
+              component: () => import('@/view/pages/account/page/ChartOfAccounts.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'journal-entries',
+              name: 'journal-entries',
+              component: () => import('@/view/pages/account/page/JournalEntries.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'trial-balance',
+              name: 'trial-balance',
+              component: () => import('@/view/pages/account/page/TrialBalance.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'cost-centers',
+              name: 'cost-centers',
+              component: () => import('@/view/pages/account/page/CostCenters.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'financial-statements',
+              name: 'financial-statements',
+              component: () => import('@/view/pages/account/page/FinancialStatements.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'trend-analysis',
+              name: 'trend-analysis',
+              component: () => import('@/view/pages/account/page/TrendAnalysis.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'custom-reports',
+              name: 'custom-reports',
+              component: () => import('@/view/pages/account/page/CustomReports.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
               path: 'transactions',
               name: 'transactions',
               component: () => import('@/view/pages/account/page/Transactions.vue'),

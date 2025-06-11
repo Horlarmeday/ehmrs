@@ -31,7 +31,7 @@ import MaleWard from './nurse/maleWard/Dashboard.vue';
 import ChildrenWard from './nurse/childrenWard/Dashboard.vue';
 import Maternity from './nurse/maternity/Dashboard.vue';
 import Antenatal from './nurse/antenatal/Dashboard.vue';
-import NHIS from './nhis/Dashboard.vue';
+import HealthInsurance from './nhis/Dashboard.vue';
 import CustomerCare from './reception/Dashboard.vue';
 import Theater from './nurse/theater/Dashboard.vue';
 import FinancialOfficer from './financeOfficer/Dashboard.vue';
@@ -41,33 +41,106 @@ import Emergency from './nurse/emergency/Dashboard.vue';
 import VIPWard from './nurse/vip/Dashboard.vue';
 import HODPharmacy from './pharmacy/hod/Dashboard.vue';
 import { parseJwt } from '@/common/common';
+import { departments } from '@/view/pages/employees/create/employeeRoles';
+import Admin from '@/view/pages/admin/Admin.vue';
+import Geriatrics from '@/view/pages/home/medicalPractitioners/geriatrics/Dashboard.vue';
+import LifestyleMedicine from '@/view/pages/home/medicalPractitioners/livestyleMedicine/Dashboard.vue';
+import AdolescentHealth from '@/view/pages/home/medicalPractitioners/adolescentHealth/Dashboard.vue';
+import HospicesAndPalliative from '@/view/pages/home/medicalPractitioners/hospicesAndPalliative/Dashboard.vue';
+import SportsMedicine from '@/view/pages/home/medicalPractitioners/sportsMedicine/Dashboard.vue';
+import PlasticSurgeon from '@/view/pages/home/medicalPractitioners/plasticSurgeon/Dashboard.vue';
+import ENT from '@/view/pages/home/medicalPractitioners/ENT/Dashboard.vue';
+import DentalSurgeon from '@/view/pages/home/medicalPractitioners/dentalSurgeon/Dashboard.vue';
+import PediatricsSurgeon from '@/view/pages/home/medicalPractitioners/pediatricsSurgeon/Dashboard.vue';
+import Anesthesiologist from '@/view/pages/home/medicalPractitioners/anesthesiologist/Dashboard.vue';
+import Radiologist from '@/view/pages/home/medicalPractitioners/radiologist/Dashboard.vue';
+import InfectiousDiseaseSpecialist from '@/view/pages/home/medicalPractitioners/infectiousDiseaseSpecialist/Dashboard.vue';
+import GeneralMedicine from '@/view/pages/home/medicalPractitioners/generalMedicine/Dashboard.vue';
+import Rheumatologist from '@/view/pages/home/medicalPractitioners/rheumatologist/Dashboard.vue';
+import PediatricCardiologist from '@/view/pages/home/medicalPractitioners/pediatricCardiologist/Dashboard.vue';
+import PediatricEndocrinologist from '@/view/pages/home/medicalPractitioners/pediatricEndocrinologist/Dashboard.vue';
+import PediatricDermatologist from '@/view/pages/home/medicalPractitioners/pediatricDermatologist/Dashboard.vue';
+import Nephrologist from '@/view/pages/home/medicalPractitioners/nephrologist/Dashboard.vue';
+import PediatricGastroenterologist from '@/view/pages/home/medicalPractitioners/pediatricGastroenterologist/Dashboard.vue';
+import PediatricInfectiousDisease from '@/view/pages/home/medicalPractitioners/pediatricInfectiousDisease/Dashboard.vue';
+import AdolescentMedicine from '@/view/pages/home/medicalPractitioners/adolescentMedicine/Dashboard.vue';
+import Infertility from '@/view/pages/home/medicalPractitioners/infertility/Dashboard.vue';
+import ObstetricEndocrinologist from '@/view/pages/home/medicalPractitioners/obstetricEndocrinologist/Dashboard.vue';
+import MaternalFetalMedicine from '@/view/pages/home/medicalPractitioners/maternalFetalMedicine/Dashboard.vue';
+import PediatricEmergency from '@/view/pages/home/medicalPractitioners/pediatricEmergency/Dashboard.vue';
 
-const Roles = {
-  SUPER_ADMIN: 'Super Admin',
+const DEPARTMENTS = {
+  MEDICAL_PRACTITIONERS: 'Medical Practitioners',
+  SURGERY_UNIT: 'Surgery Unit',
+  MEDICINE_UNIT: 'Medicine Unit',
+  PEDIATRICS_UNIT: 'Pediatrics Unit',
+  OBSTETRICS_AND_GYNAECOLOGY_UNIT: 'Obstetrics & Gynaecology Unit',
+  FAMILY_MEDICINE_UNIT: 'Family Medicine Unit',
+  RECORDS: 'Records',
+  NURSING: 'Nursing',
+  PHARMACY: 'Pharmacy',
   LABORATORY: 'Laboratory',
   RADIOLOGY: 'Radiology',
-  PHARMACY: 'Pharmacy',
-  GENERAL_PRACTITIONER: 'General Practitioner',
+  RECEPTION: 'Reception',
+  ACCOUNTS: 'Accounts',
+  ADMINISTRATION: 'Administration',
+  HEALTH_INSURANCE: 'Health Insurance',
+  STORE: 'Store',
+};
+
+const ROLES = {
+  ADMIN: 'Admin',
+  ADOLESCENT_HEALTH: 'Adolescent Health',
+  ADOLESCENTS_MEDICINE: 'Adolescents medicine',
+  ANESTHESIOLOGIST: 'Anesthesiologist',
   CARDIOLOGIST: 'Cardiologist',
-  GYNAECOLOGIST: 'Obstetrics and gynaecologist',
-  PEDIATRICIAN: 'Pediatrician',
+  CUSTOMER_CARE: 'Customer Care',
+  DENTAL_SURGEON: 'Dental Surgeon',
+  DERMATOLOGIST: 'Dermatologist',
+  EMERGENCY: 'Emergency',
+  ENDOCRINOLOGIST: 'Endocrinologist',
+  FINANCE_OFFICER: 'Finance Officer',
+  GENERAL_MEDICINE: 'General Medicine',
+  GENERAL_PRACTITIONER: 'General Practitioner',
+  GERIATRICS: 'Geriatrics',
+  GYNECOLOGY_ONCOLOGIST: 'Gynecology Oncologist',
+  HOD_LABORATORY: 'HOD Laboratory',
+  HOD_PHARMACY: 'HOD Pharmacy',
+  HOD_RADIOLOGY: 'HOD Radiology',
+  HEALTH_INSURANCE: 'Health Insurance',
+  INFECTIOUS_DISEASE: 'Infectious Disease',
+  INFECTIOUS_DISEASE_SPECIALIST: 'Infectious Disease Specialist',
+  INFERTILITY: 'Infertility',
+  LAB_STORE: 'Lab Store',
+  LABORATORY_MANAGER: 'Laboratory Manager',
+  LABORATORY_RECEPTIONIST: 'Laboratory Receptionist',
+  LABORATORY_TECHNICIAN: 'Laboratory Technician',
+  LIFESTYLE_MEDICINE: 'Lifestyle Medicine',
+  MATERNAL_FETAL_MEDICINE: 'Maternal-Fetal Medicine',
+  MEDICAL_RECORDS: 'Medical Records',
+  NEPHROLOGIST: 'Nephrologist',
+  NEUROLOGIST: 'Neurologist',
+  NURSE: 'Nurse',
+  OBSTETRICS_ENDOCRINOLOGIST: 'Obstetrics Endocrinologist',
   ONCOLOGIST: 'Oncologist',
   OPHTHALMOLOGIST: 'Ophthalmologist',
-  NEUROLOGIST: 'Neurologist',
-  DERMATOLOGIST: 'Dermatologist',
-  PSYCHIATRIST: 'Psychiatrist',
   ORTHOPAEDIST: 'Orthopaedist',
-  UROLOGIST: 'Urologist',
-  ENDOCRINOLOGIST: 'Endocrinologist',
-  GASTROENTEROLOGIST: 'Gastroenterologist',
-  PHYSIOTHERAPIST: 'Physiotherapist',
-  MEDICAL_RECORDS: 'Medical Records',
-  NURSE: 'Nurse',
-  NHIS: 'NHIS',
-  CUSTOMER_CARE: 'Customer Care',
+  PAEDIATRICS_SURGEON: 'Paediatrics Surgeon',
+  PEDIATRIC_CARDIOLOGIST: 'Pediatric Cardiologist',
+  PHARMACY: 'Pharmacy',
   PHARMACY_STORE: 'Pharmacy Store',
-  FINANCE_OFFICER: 'Finance Officer',
+  PLASTIC_SURGEON: 'Plastic Surgeon',
+  PSYCHIATRIST: 'Psychiatrist',
+  RADIOLOGY: 'Radiology',
+  RHEUMATOLOGIST: 'Rheumatologist',
+  SPORTS_MEDICINE: 'Sports Medicine',
+  SUPER_ADMIN: 'Super Admin',
+  UROLOGIST: 'Urologist',
+  HOSPICES_AND_PALLIATIVE_CARE: 'Hospices and Palliative Care',
+  EAR_NOSE_AND_THROAT_ENT_SPECIALIST: 'Ear, Nose and Throat (ENT) Specialist',
+  GASTROENTEROLOGIST: 'Gastroenterologist'
 };
+
 const SubRoles = {
   G_OPD: 'G-OPD',
   FEMALE_WARD: 'Female Ward',
@@ -86,58 +159,50 @@ export default {
   }),
   methods: {
     renderDashboard(token) {
-      const role = parseJwt(token);
-      switch (role.role) {
-        case Roles.SUPER_ADMIN:
-          return (this.dashboardComponent = SuperAdmin);
-        case Roles.LABORATORY:
-          return this.getLaboratoryDashboard(role.sub_role);
-        case Roles.RADIOLOGY:
-          return (this.dashboardComponent = Radiology);
-        case Roles.PHARMACY:
-          return this.getPharmacyDashboard(role.sub_role);
-        case Roles.GENERAL_PRACTITIONER:
-          return (this.dashboardComponent = Doctor);
-        case Roles.MEDICAL_RECORDS:
-          return (this.dashboardComponent = MedicalRecords);
-        case Roles.NHIS:
-          return (this.dashboardComponent = NHIS);
-        case Roles.CUSTOMER_CARE:
-          return (this.dashboardComponent = CustomerCare);
-        case Roles.NURSE:
-          return this.getNurseDashboard(role.sub_role);
-        case Roles.PEDIATRICIAN:
-          return (this.dashboardComponent = Pediatrician);
-        case Roles.OPHTHALMOLOGIST:
-          return (this.dashboardComponent = Ophthalmologist);
-        case Roles.ONCOLOGIST:
-          return (this.dashboardComponent = Oncologist);
-        case Roles.NEUROLOGIST:
-          return (this.dashboardComponent = Neurologist);
-        case Roles.PSYCHIATRIST:
-          return (this.dashboardComponent = Psychiatrist);
-        case Roles.ORTHOPAEDIST:
-          return (this.dashboardComponent = Orthopaedist);
-        case Roles.CARDIOLOGIST:
-          return (this.dashboardComponent = Cardiologist);
-        case Roles.GYNAECOLOGIST:
-          return (this.dashboardComponent = Gynaecologist);
-        case Roles.DERMATOLOGIST:
-          return (this.dashboardComponent = Dermatologist);
-        case Roles.UROLOGIST:
-          return (this.dashboardComponent = Urologist);
-        case Roles.ENDOCRINOLOGIST:
-          return (this.dashboardComponent = Endocrinologist);
-        case Roles.GASTROENTEROLOGIST:
-          return (this.dashboardComponent = Gastroenterologist);
-        case Roles.PHYSIOTHERAPIST:
-          return (this.dashboardComponent = Physiotherapist);
-        case Roles.PHARMACY_STORE:
-          return (this.dashboardComponent = PharmacyStore);
-        case Roles.FINANCE_OFFICER:
-          return (this.dashboardComponent = FinancialOfficer);
-        default:
-          return (this.dashboardComponent = MedicalRecords);
+      const parsedToken = parseJwt(token);
+      console.log(parsedToken);
+      const department = departments.find(
+        department => department.department === parsedToken.department
+      );
+      if (department) {
+        switch (department.department) {
+          case DEPARTMENTS.ADMINISTRATION:
+            return this.getAdminDashboard(parsedToken.role);
+          case DEPARTMENTS.RECORDS:
+            return this.getMedicalRecordsDashboard(parsedToken.role);
+          case DEPARTMENTS.RADIOLOGY: {
+            console.log(parsedToken);
+            return this.getRadiologyDashboard(parsedToken.role);
+          }
+          case DEPARTMENTS.PHARMACY:
+            return this.getPharmacyDashboard(parsedToken.role);
+          case DEPARTMENTS.LABORATORY:
+            return this.getLaboratoryDashboard(parsedToken.role);
+          case DEPARTMENTS.NURSING:
+            return this.getNurseDashboard(parsedToken.sub_role);
+          case DEPARTMENTS.ACCOUNTS:
+            return this.getAccountsDashboard(parsedToken.role);
+          case DEPARTMENTS.RECEPTION:
+            return this.getReceptionDashboard(parsedToken.role);
+          case DEPARTMENTS.HEALTH_INSURANCE:
+            return this.getHealthInsuranceDashboard(parsedToken.role);
+          case DEPARTMENTS.FAMILY_MEDICINE_UNIT:
+            return this.getFamilyMedicineDashboard(parsedToken.role);
+          case DEPARTMENTS.SURGERY_UNIT:
+            return this.getSurgeryDashboard(parsedToken.role);
+          case DEPARTMENTS.MEDICINE_UNIT:
+            return this.getMedicineUnitDashboard(parsedToken.role);
+          case DEPARTMENTS.OBSTETRICS_AND_GYNAECOLOGY_UNIT:
+            return this.getObstetricsAndGynaecologyDashboard(parsedToken.role);
+          case DEPARTMENTS.PEDIATRICS_UNIT:
+            return this.getPediatricsDashboard(parsedToken.role);
+          case DEPARTMENTS.STORE:
+            return this.getStoreDashboard(parsedToken.role);
+          case DEPARTMENTS.MEDICAL_PRACTITIONERS:
+            return this.getMedicalPractitionerDashboard(parsedToken.role);
+          default:
+            return this.getMedicalRecordsDashboard(parsedToken.role);
+        }
       }
     },
 
@@ -166,21 +231,208 @@ export default {
       }
     },
 
-    getLaboratoryDashboard(subRole) {
-      switch (subRole) {
-        case SubRoles.HOD:
+    getLaboratoryDashboard(role) {
+      switch (role) {
+        case ROLES.LABORATORY_TECHNICIAN:
+          return (this.dashboardComponent = Laboratory);
+        case ROLES.HOD_LABORATORY:
           return (this.dashboardComponent = HODLaboratory);
+        case ROLES.LABORATORY_MANAGER:
+          return (this.dashboardComponent = Laboratory);
         default:
           return (this.dashboardComponent = Laboratory);
       }
     },
 
-    getPharmacyDashboard(subRole) {
-      switch (subRole) {
-        case SubRoles.HOD:
+    getPharmacyDashboard(role) {
+      switch (role) {
+        case ROLES.PHARMACY:
+          return (this.dashboardComponent = Pharmacy);
+        case ROLES.HOD_PHARMACY:
           return (this.dashboardComponent = HODPharmacy);
         default:
           return (this.dashboardComponent = Pharmacy);
+      }
+    },
+
+    getAdminDashboard(role) {
+      switch (role) {
+        case ROLES.SUPER_ADMIN:
+          return (this.dashboardComponent = SuperAdmin);
+        default:
+          return (this.dashboardComponent = Admin);
+      }
+    },
+
+    getMedicalRecordsDashboard(role) {
+      switch (role) {
+        case ROLES.MEDICAL_RECORDS:
+          return (this.dashboardComponent = MedicalRecords);
+        default:
+          return (this.dashboardComponent = MedicalRecords);
+      }
+    },
+
+    getRadiologyDashboard(role) {
+      switch (role) {
+        case ROLES.RADIOLOGY:
+          return (this.dashboardComponent = Radiology);
+        default:
+          return (this.dashboardComponent = Radiology);
+      }
+    },
+
+    getAccountsDashboard(role) {
+      switch (role) {
+        case ROLES.FINANCE_OFFICER:
+          return (this.dashboardComponent = FinancialOfficer);
+        default:
+          return (this.dashboardComponent = FinancialOfficer);
+      }
+    },
+
+    getReceptionDashboard(role) {
+      switch (role) {
+        case ROLES.CUSTOMER_CARE:
+          return (this.dashboardComponent = CustomerCare);
+        default:
+          return (this.dashboardComponent = CustomerCare);
+      }
+    },
+
+    getHealthInsuranceDashboard(role) {
+      switch (role) {
+        case ROLES.HEALTH_INSURANCE:
+          return (this.dashboardComponent = HealthInsurance);
+        default:
+          return (this.dashboardComponent = HealthInsurance);
+      }
+    },
+
+    getFamilyMedicineDashboard(role) {
+      switch (role) {
+        case ROLES.GERIATRICS:
+          return (this.dashboardComponent = Geriatrics);
+        case ROLES.LIFESTYLE_MEDICINE:
+          return (this.dashboardComponent = LifestyleMedicine);
+        case ROLES.ADOLESCENT_HEALTH:
+          return (this.dashboardComponent = AdolescentHealth);
+        case ROLES.HOSPICES_AND_PALLIATIVE_CARE:
+          return (this.dashboardComponent = HospicesAndPalliative);
+        case ROLES.SPORTS_MEDICINE:
+          return (this.dashboardComponent = SportsMedicine);
+        default:
+          return (this.dashboardComponent = Physiotherapist);
+      }
+    },
+
+    getSurgeryDashboard(role) {
+      switch (role) {
+        case ROLES.OPHTHALMOLOGIST:
+          return (this.dashboardComponent = Ophthalmologist);
+        case ROLES.NEUROLOGIST:
+          return (this.dashboardComponent = Neurologist);
+        case ROLES.ORTHOPAEDIST:
+          return (this.dashboardComponent = Orthopaedist);
+        case ROLES.UROLOGIST:
+          return (this.dashboardComponent = Urologist);
+        case ROLES.PLASTIC_SURGEON:
+          return (this.dashboardComponent = PlasticSurgeon);
+        case ROLES.EAR_NOSE_AND_THROAT_ENT_SPECIALIST:
+          return (this.dashboardComponent = ENT);
+        case ROLES.DENTAL_SURGEON:
+          return (this.dashboardComponent = DentalSurgeon);
+        case ROLES.PAEDIATRICS_SURGEON:
+          return (this.dashboardComponent = PediatricsSurgeon);
+        case ROLES.ANESTHESIOLOGIST:
+          return (this.dashboardComponent = Anesthesiologist);
+        case ROLES.RADIOLOGY:
+          return (this.dashboardComponent = Radiologist);
+        default:
+          return (this.dashboardComponent = Geriatrics);
+      }
+    },
+
+    getMedicineUnitDashboard(role) {
+      switch (role) {
+        case ROLES.ONCOLOGIST:
+          return (this.dashboardComponent = Oncologist);
+        case ROLES.CARDIOLOGIST:
+          return (this.dashboardComponent = Cardiologist);
+        case ROLES.DERMATOLOGIST:
+          return (this.dashboardComponent = Dermatologist);
+        case ROLES.PSYCHIATRIST:
+          return (this.dashboardComponent = Psychiatrist);
+        case ROLES.ENDOCRINOLOGIST:
+          return (this.dashboardComponent = Endocrinologist);
+        case ROLES.GASTROENTEROLOGIST:
+          return (this.dashboardComponent = Gastroenterologist);
+        case ROLES.INFECTIOUS_DISEASE_SPECIALIST:
+          return (this.dashboardComponent = InfectiousDiseaseSpecialist);
+        case ROLES.GENERAL_MEDICINE:
+          return (this.dashboardComponent = GeneralMedicine);
+        case ROLES.RHEUMATOLOGIST:
+          return (this.dashboardComponent = Rheumatologist);
+        default:
+          return (this.dashboardComponent = Oncologist);
+      }
+    },
+
+    getObstetricsAndGynaecologyDashboard(role) {
+      switch (role) {
+        case ROLES.GYNECOLOGY_ONCOLOGIST:
+          return (this.dashboardComponent = Gynaecologist);
+        case ROLES.INFERTILITY:
+          return (this.dashboardComponent = Infertility);
+        case ROLES.OBSTETRICS_ENDOCRINOLOGIST:
+          return (this.dashboardComponent = ObstetricEndocrinologist);
+        case ROLES.MATERNAL_FETAL_MEDICINE:
+          return (this.dashboardComponent = MaternalFetalMedicine);
+        default:
+          return (this.dashboardComponent = Gynaecologist);
+      }
+    },
+
+    getPediatricsDashboard(role) {
+      switch (role) {
+        case ROLES.PEDIATRIC_CARDIOLOGIST:
+          return (this.dashboardComponent = PediatricCardiologist);
+        case ROLES.ENDOCRINOLOGIST:
+          return (this.dashboardComponent = PediatricEndocrinologist);
+        case ROLES.INFECTIOUS_DISEASE:
+          return (this.dashboardComponent = PediatricInfectiousDisease);
+        case ROLES.DERMATOLOGIST:
+          return (this.dashboardComponent = PediatricDermatologist);
+        case ROLES.ADOLESCENTS_MEDICINE:
+          return (this.dashboardComponent = AdolescentMedicine);
+        case ROLES.GASTROENTEROLOGIST:
+          return (this.dashboardComponent = PediatricGastroenterologist);
+        case ROLES.NEUROLOGIST:
+          return (this.dashboardComponent = Nephrologist);
+        case ROLES.EMERGENCY:
+          return (this.dashboardComponent = PediatricEmergency);
+        default:
+          return (this.dashboardComponent = Pediatrician);
+      }
+    },
+
+    getStoreDashboard(role) {
+      switch (role) {
+        case ROLES.PHARMACY_STORE:
+          return (this.dashboardComponent = PharmacyStore);
+        case ROLES.LAB_STORE:
+          return (this.dashboardComponent = PharmacyStore);
+        default:
+          return (this.dashboardComponent = PharmacyStore);
+      }
+    },
+
+    getMedicalPractitionerDashboard(role) {
+      switch (role) {
+        case ROLES.GENERAL_PRACTITIONER:
+          return (this.dashboardComponent = Doctor);
+        default:
+          return (this.dashboardComponent = Doctor);
       }
     },
   },

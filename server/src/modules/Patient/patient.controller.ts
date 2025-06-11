@@ -17,6 +17,7 @@ import { DATA_SAVED, DATA_UPDATED } from '../AdminSettings/messages/response-mes
 import { NextFunction, Request, Response } from 'express';
 import { SUCCESS } from '../../core/constants';
 import { PATIENT_ACCOUNTS_MERGED, PATIENT_ID_REQUIRED } from './messages/response-messages';
+import { generateHospitalCard } from '../../core/helpers/generateHospitalCard';
 
 class PatientController {
   /**
@@ -462,6 +463,31 @@ class PatientController {
         message: PATIENT_ACCOUNTS_MERGED,
         data: patient,
       });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  /**
+   * Get hospital card
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, patient data
+   */
+  static async getHospitalCard(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    try {
+      const patient = await PatientService.getPatientById(+id);
+      const pdfBytes = await generateHospitalCard(patient);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader(
+        'Content-Disposition',
+        `inline; filename=${patient.firstname}-hospital-card.pdf`
+      );
+      res.send(Buffer.from(pdfBytes));
     } catch (e) {
       next(e);
     }

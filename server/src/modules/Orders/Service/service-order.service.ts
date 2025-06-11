@@ -2,13 +2,14 @@ import {
   deleteService,
   getOnePrescribedService,
   getPrescribedServices,
+  getPrescriptionServices,
   orderBulkService,
   prescribeService,
   updatePrescribedService,
 } from './service-order.repository';
 import VisitService from '../../Visit/visit.service';
 import PatientService from '../../Patient/patient.service';
-import { PrescribedService } from '../../../database/models';
+import { PrescribedDrug, PrescribedService } from '../../../database/models';
 import { PrescribedBulkServiceBody } from './types/service-order.types';
 import { getServicePrice } from '../../AdminSettings/admin.repository';
 import { PrescriptionType } from '../../../database/models/prescribedTest';
@@ -105,6 +106,30 @@ export class ServiceOrderService {
    */
   static async updatePrescribedService(body: Partial<PrescribedService>, staffId: number) {
     return updatePrescribedService({ ...body, service_changed_by: staffId });
+  }
+
+  /**
+   * update bulk prescribed service
+   *
+   * @static
+   * @returns {Promise<PrescribedService>} json object with prescribed drug data
+   * @param body
+   * @memberOf ServiceOrderService
+   */
+  static async updateBulkPrescribedService(body: Partial<PrescribedService>[]) {
+    return await Promise.all(body.map(async data => await updatePrescribedService(data)));
+  }
+
+  /**
+   * get prescribed services
+   *
+   * @static
+   * @returns {json} json object with prescribed drugs data
+   * @memberOf ServiceOrderService
+   * @param visitId
+   */
+  static async getServicesPrescribed(visitId: number) {
+    return getPrescriptionServices({ visit_id: visitId });
   }
 
   /**

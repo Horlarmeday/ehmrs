@@ -2,13 +2,13 @@
 import {
   deletePrescribedTest,
   getOnePrescribedTest,
-  getPrescribedTests,
+  getPrescribedTests, getPrescriptionTests,
   orderBulkTest,
   prescribeTest,
   updatePrescribedTest,
 } from './lab-order.repository';
 import { PrescribedTestBody } from './interface/prescribed-test.body';
-import { PrescribedTest } from '../../../database/models';
+import { PrescribedService, PrescribedTest } from '../../../database/models';
 import PatientService from '../../Patient/patient.service';
 import {
   createTestPrescription,
@@ -25,6 +25,7 @@ import { BadException } from '../../../common/util/api-error';
 import { CANNOT_DELETE_TEST } from './messages/response-messages';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
 import { TestType } from '../../../database/models/test';
+import { getPrescriptionServices } from '../Service/service-order.repository';
 
 export class LabOrderService {
   /**
@@ -155,6 +156,31 @@ export class LabOrderService {
       return createTestPrescription(this.testPrescriptionData(data, patient_id));
 
     return createTestPrescription(this.testPrescriptionData(data, patient_id));
+  }
+
+
+  /**
+   * update bulk prescribed tests
+   *
+   * @static
+   * @returns {Promise<PrescribedService>} json object with prescribed test data
+   * @param body
+   * @memberOf LabOrderService
+   */
+  static async updateBulkPrescribedTest(body: Partial<PrescribedTest>[]) {
+    return await Promise.all(body.map(async data => await updatePrescribedTest(data)));
+  }
+
+  /**
+   * get prescribed tests
+   *
+   * @static
+   * @returns {json} json object with prescribed drugs data
+   * @memberOf LabOrderService
+   * @param visitId
+   */
+  static async getTestsPrescribed(visitId: number) {
+    return getPrescriptionTests({ visit_id: visitId });
   }
 
   private static testPrescriptionData(body: PrescribedTestBody, patient_id: number) {
