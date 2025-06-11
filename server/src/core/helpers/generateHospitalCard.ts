@@ -1,19 +1,21 @@
 import fs from 'fs';
-import {
-  PDFDocument,
-  PDFFont,
-  PDFImage,
-  PDFPage,
-  rgb,
-  StandardFonts,
-} from 'pdf-lib';
+import { PDFDocument, PDFFont, PDFImage, PDFPage, rgb, StandardFonts } from 'pdf-lib';
 import QRCode from 'qrcode';
 import { logger } from './logger';
 import { Patient } from '../../database/models';
 import dayjs from 'dayjs';
 
 async function generateQRCodeImage(patientInfo: Record<string, any>, pdfDoc: PDFDocument) {
-  const qrData = JSON.stringify(patientInfo);
+  const data = {
+    name: patientInfo.fullname,
+    phone: patientInfo.phone,
+    gender: patientInfo.gender,
+    dob: dayjs(patientInfo.dob).format('YYYY-MM-DD'),
+    address: patientInfo.address,
+    next_of_kin: patientInfo.next_of_kin,
+    next_of_kin_phone: patientInfo.next_of_kin_phone,
+  };
+  const qrData = JSON.stringify(data);
   const qrBuffer = await QRCode.toBuffer(qrData);
   return await pdfDoc.embedPng(qrBuffer);
 }
