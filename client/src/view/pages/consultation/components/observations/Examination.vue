@@ -324,7 +324,6 @@ export default {
       this.$validator.validateAll().then(result => {
         if (result) {
           const obj = {
-            has_smoking_history: this.formData.has_smoking_history,
             examination_note: this.formData.examination_note,
             history_note: this.formData.history_note,
             complaint_note: this.formData.complaint_note,
@@ -396,7 +395,6 @@ export default {
           notes: '',
         },
       ];
-      this.formData.has_smoking_history = '';
       this.formData.examination_note = '';
       this.formData.history_note = '';
       this.formData.complaint_note = '';
