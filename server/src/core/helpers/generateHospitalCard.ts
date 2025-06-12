@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { PDFDocument, PDFFont, PDFImage, PDFPage, rgb, StandardFonts } from 'pdf-lib';
+import { degrees, PDFDocument, PDFFont, PDFImage, PDFPage, rgb, StandardFonts } from 'pdf-lib';
 import QRCode from 'qrcode';
 import { logger } from './logger';
 import { Patient } from '../../database/models';
@@ -28,21 +28,21 @@ async function embedPage(pdfDoc: PDFDocument, templatePath: string) {
 
 function drawFrontContent(page: PDFPage, font: PDFFont, boldFont: PDFFont, patient: Patient) {
   const black = rgb(0, 0, 0);
-  let y = 95;
+  let y = 90;
 
-  page.drawText('Name:', { x: 20, y, size: 9, font, color: black, opacity: 0.7 });
+  page.drawText('Hospital No:', { x: 20, y, size: 9, font, color: black, opacity: 0.8 });
+  page.drawText(patient.hospital_id, { x: 80, y, size: 8, font: boldFont, color: black });
+
+  y -= 15;
+  page.drawText('Name:', { x: 20, y, size: 9, font, color: black, opacity: 0.8 });
   page.drawText(<string>patient.fullname, { x: 80, y, size: 8, font: boldFont, color: black });
 
   y -= 15;
-  page.drawText('Phone:', { x: 20, y, size: 9, font, color: black, opacity: 0.7 });
-  page.drawText(patient.phone, { x: 80, y, size: 8, font: boldFont, color: black });
+  page.drawText('Sex', { x: 20, y, size: 9, font, color: black, opacity: 0.8 });
+  page.drawText(patient.gender, { x: 80, y, size: 8, font: boldFont, color: black });
 
   y -= 15;
-  page.drawText('N of K:', { x: 20, y, size: 9, font, color: black, opacity: 0.7 });
-  page.drawText(patient.next_of_kin_phone, { x: 80, y, size: 8, font: boldFont, color: black });
-
-  y -= 15;
-  page.drawText('Date of Birth:', { x: 20, y, size: 9, font, color: black, opacity: 0.7 });
+  page.drawText('Date of Birth:', { x: 20, y, size: 9, font, color: black, opacity: 0.8 });
   page.drawText(dayjs(patient.date_of_birth).format('DD/MM/YYYY'), {
     x: 80,
     y,
@@ -51,8 +51,8 @@ function drawFrontContent(page: PDFPage, font: PDFFont, boldFont: PDFFont, patie
     color: black,
   });
   y -= 15;
-  page.drawText('Hospital No:', { x: 20, y, size: 9, font, color: black, opacity: 0.7 });
-  page.drawText(patient.hospital_id, {
+  page.drawText('N of K:', { x: 20, y, size: 9, font, color: black, opacity: 0.8 });
+  page.drawText(patient.next_of_kin_phone, {
     x: 80,
     y,
     size: 8,
@@ -60,7 +60,7 @@ function drawFrontContent(page: PDFPage, font: PDFFont, boldFont: PDFFont, patie
     color: black,
   });
   y -= 15;
-  page.drawText('Issued Date:', { x: 20, y, size: 9, font, color: black, opacity: 0.7 });
+  page.drawText('Issued Date:', { x: 20, y, size: 9, font, color: black, opacity: 0.8 });
   page.drawText(dayjs(patient.createdAt).format('DD/MM/YYYY'), {
     x: 80,
     y,
@@ -89,15 +89,15 @@ function drawBackContent(
 
   text.forEach(line => {
     const textWidth = font.widthOfTextAtSize(line, fontSize);
-    const x = (cardSize[0] - textWidth) / 2; // 👈 Center align
+    const x = (cardSize[0] - 5 - textWidth) / 2; // 👈 Center align
     page.drawText(line, { x, y, size: fontSize, font, color: black });
     y -= lineHeight;
   });
 
-  const qrDims = qrImage.scale(0.1);
+  const qrDims = qrImage.scale(0.19);
   page.drawImage(qrImage, {
     x: cardSize[0] - qrDims.width - 15,
-    y: 25,
+    y: 26,
     width: qrDims.width,
     height: qrDims.height,
   });
@@ -111,13 +111,9 @@ export async function generateHospitalCard(patientInfo: Patient) {
   const qrImage = await generateQRCodeImage(patientInfo, pdfDoc);
 
   const frontTemplate =
-    process.env.NODE_ENV === 'production'
-      ? `ehmrs-api/public/PMCfrontside.pdf`
-      : 'src/public/PMCfrontside.pdf';
+    process.env.NODE_ENV === 'production' ? `ehmrs-api/public/PC1.pdf` : 'src/public/PC1.pdf';
   const backTemplate =
-    process.env.NODE_ENV === 'production'
-      ? `ehmrs-api/public/PMCbackside.pdf`
-      : 'src/public/PMCbackside.pdf';
+    process.env.NODE_ENV === 'production' ? `ehmrs-api/public/PC2.pdf` : 'src/public/PC2.pdf';
   const frontBg = await embedPage(pdfDoc, frontTemplate);
   const backBg = await embedPage(pdfDoc, backTemplate);
 
@@ -128,6 +124,7 @@ export async function generateHospitalCard(patientInfo: Patient) {
 
   // BACK
   const back = pdfDoc.addPage(cardSize);
+  back.setRotation(degrees(180));
   back.drawPage(backBg, { x: 0, y: 0, width: cardSize[0], height: cardSize[1] });
   drawBackContent(back, cardSize, font, qrImage);
 
