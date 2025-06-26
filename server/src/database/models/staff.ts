@@ -189,6 +189,91 @@ export class Staff extends Model {
   })
   password!: string;
 
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'date of first appointment is required',
+      },
+    },
+  })
+  date_of_first_appointment: Date;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'date of commencement is required',
+      },
+    },
+  })
+  date_of_commencement: Date;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'DOLP is required',
+      },
+    },
+  })
+  dolp: Date;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'qualification is required',
+      },
+    },
+  })
+  qualification: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'present rank is required',
+      },
+    },
+  })
+  present_rank: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  chs_cms: string;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+  })
+  step: number;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  dd_for_retirement: Date;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'NIN is required',
+      },
+      len: [11, 11],
+    },
+  })
+  nin: string;
+
   generateAuthToken() {
     return sign(
       {

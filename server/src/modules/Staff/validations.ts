@@ -37,6 +37,24 @@ export function validateStaff(user) {
     username: Joi.string()
       .min(3)
       .required(),
+    date_of_first_appointment: Joi.date().required(),
+    date_of_commencement: Joi.date().required(),
+    dolp: Joi.date().required(),
+    qualification: Joi.string().required(),
+    present_rank: Joi.string().required(),
+    chs_cms: Joi.string().required(),
+    step: Joi.number()
+      .integer()
+      .required(),
+    dd_for_retirement: Joi.date().required(),
+    nin: Joi.string()
+      .length(11)
+      .pattern(/^\d+$/)
+      .required()
+      .messages({
+        'string.length': 'NIN must be exactly 11 digits',
+        'string.pattern.base': 'NIN must contain only numbers',
+      }),
   });
   return schema.validate(user);
 }

@@ -27,6 +27,15 @@ export async function createStaff(data) {
     fileName,
     date_of_birth,
     gender,
+    date_of_first_appointment,
+    date_of_commencement,
+    dolp,
+    qualification,
+    present_rank,
+    chs_cms,
+    step,
+    dd_for_retirement,
+    nin,
   } = data;
   return Staff.create({
     firstname,
@@ -43,6 +52,15 @@ export async function createStaff(data) {
     photo: fileName,
     date_of_birth,
     gender,
+    date_of_first_appointment,
+    date_of_commencement,
+    dolp,
+    qualification,
+    present_rank,
+    chs_cms,
+    step,
+    dd_for_retirement,
+    nin,
   });
 }
 
