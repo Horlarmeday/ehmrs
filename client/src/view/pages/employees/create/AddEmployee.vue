@@ -246,6 +246,151 @@
                   </option>
                 </select>
               </div>
+              <div class="col-lg-4">
+                <label>Date of First Appointment <span class="text-danger">*</span></label>
+                <datepicker
+                  name="date_of_first_appointment"
+                  v-validate="'required'"
+                  data-vv-validate-on="blur"
+                  v-model="date_of_first_appointment"
+                  input-class="form-control form-control-sm"
+                  placeholder="Date of First Appointment"
+                ></datepicker>
+                <span class="text-danger text-sm">{{
+                  errors.first('date_of_first_appointment')
+                }}</span>
+              </div>
+              <div class="col-lg-4">
+                <label>Date of Commencement <span class="text-danger">*</span></label>
+                <datepicker
+                  name="date_of_commencement"
+                  v-validate="'required'"
+                  data-vv-validate-on="blur"
+                  v-model="date_of_commencement"
+                  input-class="form-control form-control-sm"
+                  placeholder="Date of Commencement"
+                ></datepicker>
+                <span class="text-danger text-sm">{{ errors.first('date_of_commencement') }}</span>
+              </div>
+            </div>
+            <div class="form-group row">
+              <div class="col-lg-4">
+                <label>DOLP <span class="text-danger">*</span></label>
+                <datepicker
+                  name="dolp"
+                  v-validate="'required'"
+                  data-vv-validate-on="blur"
+                  v-model="dolp"
+                  input-class="form-control form-control-sm"
+                  placeholder="DOLP"
+                ></datepicker>
+                <span class="text-danger text-sm">{{ errors.first('dolp') }}</span>
+              </div>
+              <div class="col-lg-4">
+                <label>Qualification <span class="text-danger">*</span></label>
+                <select
+                  class="form-control form-control-sm"
+                  v-model="qualification"
+                  name="qualification"
+                  v-validate="'required'"
+                  data-vv-validate-on="blur"
+                >
+                  <option value="">Select Qualification</option>
+                  <option value="MBBS">MBBS (Bachelor of Medicine, Bachelor of Surgery)</option>
+                  <option value="MD">MD (Doctor of Medicine)</option>
+                  <option value="BDS">BDS (Bachelor of Dental Surgery)</option>
+                  <option value="B.Pharm">B.Pharm (Bachelor of Pharmacy)</option>
+                  <option value="PharmD">PharmD (Doctor of Pharmacy)</option>
+                  <option value="B.Sc Nursing">B.Sc Nursing</option>
+                  <option value="RN">RN (Registered Nurse)</option>
+                  <option value="B.MLT">B.MLT (Bachelor of Medical Laboratory Technology)</option>
+                  <option value="B.Sc Radiography">B.Sc Radiography</option>
+                  <option value="B.Sc Physiotherapy">B.Sc Physiotherapy</option>
+                  <option value="HND">HND (Higher National Diploma)</option>
+                  <option value="OND">OND (Ordinary National Diploma)</option>
+                  <option value="NCE">NCE (Nigeria Certificate in Education)</option>
+                  <option value="B.Sc">B.Sc (Bachelor of Science)</option>
+                  <option value="B.A">B.A (Bachelor of Arts)</option>
+                  <option value="M.Sc">M.Sc (Master of Science)</option>
+                  <option value="M.A">M.A (Master of Arts)</option>
+                  <option value="MBA">MBA (Master of Business Administration)</option>
+                  <option value="SSCE">SSCE (Senior Secondary Certificate Examination)</option>
+                  <option value="WAEC">WAEC (West African Examinations Council)</option>
+                  <option value="NECO">NECO (National Examinations Council)</option>
+                </select>
+                <span class="text-danger text-sm">{{ errors.first('qualification') }}</span>
+              </div>
+              <div class="col-lg-4">
+                <label>Present Rank <span class="text-danger">*</span></label>
+                <input
+                  v-validate="'required'"
+                  data-vv-validate-on="blur"
+                  type="text"
+                  class="form-control form-control-sm"
+                  v-model="present_rank"
+                  placeholder="Present Rank"
+                  name="present_rank"
+                />
+                <span class="text-danger text-sm">{{ errors.first('present_rank') }}</span>
+              </div>
+            </div>
+            <div class="form-group row">
+              <div class="col-lg-4">
+                <label>CHS/CMS <span class="text-danger">*</span></label>
+                <input
+                  v-validate="'required'"
+                  data-vv-validate-on="blur"
+                  type="text"
+                  class="form-control form-control-sm"
+                  v-model="chs_cms"
+                  placeholder="CHS/CMS"
+                  name="step"
+                />
+                <span class="text-danger text-sm">{{ errors.first('chs_cms') }}</span>
+              </div>
+              <div class="col-lg-4">
+                <label>Step <span class="text-danger">*</span></label>
+                <input
+                  v-validate="'required'"
+                  data-vv-validate-on="blur"
+                  type="text"
+                  class="form-control form-control-sm"
+                  v-model="step"
+                  placeholder="Step"
+                  name="step"
+                />
+                <span class="text-danger text-sm">{{ errors.first('step') }}</span>
+              </div>
+              <div class="col-lg-4">
+                <label>DD for Retirement <span class="text-danger">*</span></label>
+                <datepicker
+                  name="dd_for_retirement"
+                  v-validate="'required'"
+                  data-vv-validate-on="blur"
+                  v-model="dd_for_retirement"
+                  input-class="form-control form-control-sm"
+                  placeholder="DD for Retirement"
+                ></datepicker>
+                <span class="text-danger text-sm">{{ errors.first('dd_for_retirement') }}</span>
+              </div>
+            </div>
+            <div class="form-group row">
+              <div class="col-lg-4">
+                <label
+                  >NIN (National Identification Number) <span class="text-danger">*</span></label
+                >
+                <input
+                  v-validate="'required|min:11|max:11'"
+                  data-vv-validate-on="blur"
+                  type="text"
+                  class="form-control form-control-sm"
+                  v-model="nin"
+                  placeholder="NIN"
+                  name="nin"
+                  maxlength="11"
+                />
+                <span class="text-danger text-sm">{{ errors.first('nin') }}</span>
+              </div>
             </div>
           </div>
         </b-collapse>
@@ -290,6 +435,15 @@ export default {
       role: '',
       sub_role: '',
       relationship: '',
+      date_of_first_appointment: '',
+      date_of_commencement: '',
+      dolp: '',
+      qualification: '',
+      present_rank: '',
+      chs_cms: '',
+      step: '',
+      dd_for_retirement: '',
+      nin: '',
       departments: [],
       roles: [],
       sub_roles: [],
@@ -320,7 +474,16 @@ export default {
         this.department &&
         this.role &&
         this.image &&
-        this.sub_role
+        this.sub_role &&
+        this.date_of_first_appointment &&
+        this.date_of_commencement &&
+        this.dolp &&
+        this.qualification &&
+        this.present_rank &&
+        this.chs_cms &&
+        this.step &&
+        this.dd_for_retirement &&
+        this.nin
       );
     },
   },
@@ -392,6 +555,15 @@ export default {
       this.department = '';
       this.role = '';
       this.sub_role = '';
+      this.date_of_first_appointment = '';
+      this.date_of_commencement = '';
+      this.dolp = '';
+      this.qualification = '';
+      this.present_rank = '';
+      this.chs_cms = '';
+      this.step = '';
+      this.dd_for_retirement = '';
+      this.nin = '';
       this.showFinish = false;
       this.videoShowing = false;
       this.photoSaved = false;
@@ -460,6 +632,15 @@ export default {
             sub_role: this.sub_role.text,
             address: this.address,
             photo: this.image,
+            date_of_first_appointment: this.date_of_first_appointment,
+            date_of_commencement: this.date_of_commencement,
+            dolp: this.dolp,
+            qualification: this.qualification,
+            present_rank: this.present_rank,
+            chs_cms: this.chs_cms,
+            step: this.step,
+            dd_for_retirement: this.dd_for_retirement,
+            nin: this.nin,
           };
           this.$store
             .dispatch('employee/addEmployee', data)
