@@ -23,7 +23,7 @@
               <th style="min-width: 70px">Total</th>
               <th style="min-width: 80px">Status</th>
               <th style="min-width: 100px">Date Collected</th>
-              <th class="text-right" style="min-width: 120px">Action</th>
+              <th class="text-right" style="min-width: 100px">Action</th>
             </tr>
           </thead>
           <tbody v-if="samples.length === 0">
@@ -98,33 +98,54 @@
                 }}</span>
               </td>
               <td class="text-right pr-0">
+                <!-- Primary Action: Add Result (most common action) -->
                 <router-link
                   :class="{ disabled: sample.pending_tests_count === 0 }"
                   v-b-tooltip.hover
-                  title="Result"
+                  title="Add Test Result"
                   :to="`/laboratory/add-test-result/${sample.id}`"
-                  class="btn btn-icon btn-light btn-hover-primary btn-sm mr-1"
+                  class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
                 >
                   <ArrowRightIcon />
                 </router-link>
-                <router-link
-                  :class="{ disabled: sample.pending_validations_count === 0 }"
-                  v-b-tooltip.hover
-                  title="Validate"
-                  :to="`/laboratory/result-validation/${sample.id}`"
-                  class="btn btn-icon btn-light btn-hover-primary btn-sm mr-1"
+
+                <!-- Secondary Actions Dropdown -->
+                <b-dropdown
+                  size="sm"
+                  variant="link"
+                  toggle-class="btn btn-icon btn-light btn-hover-primary btn-sm"
+                  no-caret
+                  right
+                  no-flip
                 >
-                  <ValidateIcon />
-                </router-link>
-                <router-link
-                  :class="{ disabled: sample.verified_tests_count === 0 }"
-                  v-b-tooltip.hover
-                  title="Approve"
-                  :to="`/laboratory/result-approval/${sample.id}`"
-                  class="btn btn-icon btn-light btn-hover-primary btn-sm"
-                >
-                  <ApproveIcon />
-                </router-link>
+                  <template v-slot:button-content>
+                    <i class="ki ki-bold-more-hor"></i>
+                  </template>
+
+                  <!-- Validate Results -->
+                  <b-dropdown-item
+                    :disabled="sample.pending_validations_count === 0"
+                    @click="$router.push(`/laboratory/result-validation/${sample.id}`)"
+                  >
+                    <ValidateIcon class="mr-2" />
+                    Validate Results
+                    <span v-if="sample.pending_validations_count === 0" class="text-muted ml-1"
+                      >(No pending)</span
+                    >
+                  </b-dropdown-item>
+
+                  <!-- Approve Results -->
+                  <b-dropdown-item
+                    :disabled="sample.verified_tests_count === 0"
+                    @click="$router.push(`/laboratory/result-approval/${sample.id}`)"
+                  >
+                    <ApproveIcon class="mr-2" />
+                    Approve Results
+                    <span v-if="sample.verified_tests_count === 0" class="text-muted ml-1"
+                      >(No verified)</span
+                    >
+                  </b-dropdown-item>
+                </b-dropdown>
               </td>
             </tr>
           </tbody>

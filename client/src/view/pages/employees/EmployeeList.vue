@@ -47,13 +47,13 @@
                 <th style="min-width: 100px">Sub Role</th>
                 <th style="min-width: 100px">status</th>
                 <th style="min-width: 160px">Date</th>
-                <th class="pr-0" style="min-width: 160px">Actions</th>
+                <th class="pr-0" style="min-width: 100px">Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="staff in employees" :key="staff.id">
                 <td class="pl-5">
-                  <router-link to="/patient/profile/1234"
+                  <router-link :to="`/employee/profile/${staff.id}`"
                     ><span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                       {{ staff.fullname }}
                     </span></router-link
@@ -95,36 +95,59 @@
                   }}</span>
                 </td>
                 <td class="pr-0">
-                  <a
+                  <!-- Primary Action: View Details -->
+                  <router-link
                     v-b-tooltip.hover
-                    title="Edit Employee"
-                    href="#"
-                    class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
-                    @click.stop="editData(staff)"
+                    title="View Employee Details"
+                    :to="`/employee/profile/${staff.id}`"
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm mr-2"
                   >
-                    <edit-icon />
-                  </a>
-                  <a
-                    v-b-tooltip.hover
-                    title="Reset Employee Password"
-                    @click.stop="showResetAlert(staff.id)"
-                    href="#"
-                    class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
+                    <i class="flaticon-eye text-primary"></i>
+                  </router-link>
+
+                  <!-- Secondary Actions Dropdown -->
+                  <b-dropdown
+                    size="sm"
+                    variant="link"
+                    toggle-class="btn btn-icon btn-light btn-hover-primary btn-sm"
+                    no-caret
+                    right
+                    no-flip
                   >
-                    <refresh-icon />
-                  </a>
-                  <a
-                    v-b-tooltip.hover
-                    :title="
-                      `${staff.status === ACTIVE ? DEACTIVATE_EMPLOYEE : REACTIVATE_EMPLOYEE}`
-                    "
-                    @click.stop="showActivateAlert(staff)"
-                    href="#"
-                    class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
-                  >
-                    <deactivate-icon v-if="staff.status === ACTIVE" />
-                    <reactivate-icon v-else />
-                  </a>
+                    <template v-slot:button-content>
+                      <i class="ki ki-bold-more-hor"></i>
+                    </template>
+
+                    <!-- Edit Employee -->
+                    <b-dropdown-item @click="editData(staff)">
+                      <i class="flaticon2-contract text-primary mr-2"></i>
+                      Edit Employee
+                    </b-dropdown-item>
+
+                    <!-- Reset Password -->
+                    <b-dropdown-item @click="showResetAlert(staff.id)">
+                      <i class="flaticon-refresh text-warning mr-2"></i>
+                      Reset Password
+                    </b-dropdown-item>
+
+                    <b-dropdown-divider></b-dropdown-divider>
+
+                    <!-- Activate/Deactivate -->
+                    <b-dropdown-item
+                      @click="showActivateAlert(staff)"
+                      :class="staff.status === ACTIVE ? 'text-danger' : 'text-success'"
+                    >
+                      <i
+                        :class="
+                          staff.status === ACTIVE
+                            ? 'flaticon-delete text-danger'
+                            : 'flaticon2-checkmark text-success'
+                        "
+                        class="mr-2"
+                      ></i>
+                      {{ staff.status === ACTIVE ? DEACTIVATE_EMPLOYEE : REACTIVATE_EMPLOYEE }}
+                    </b-dropdown-item>
+                  </b-dropdown>
                 </td>
               </tr>
             </tbody>
@@ -148,13 +171,9 @@
 
 <script>
 import Pagination from '@/utils/Pagination.vue';
-import EditIcon from '../../../assets/icons/EditIcon.vue';
 import EditEmployee from './create/EditEmployee';
 import { setUrlQueryParams } from '@/common/common';
-import RefreshIcon from '@/assets/icons/RefreshIcon.vue';
 import Swal from 'sweetalert2';
-import DeactivateIcon from '@/assets/icons/DeactivateIcon.vue';
-import ReactivateIcon from '@/assets/icons/ReactivateIcon.vue';
 export default {
   data() {
     return {
@@ -169,11 +188,7 @@ export default {
     };
   },
   components: {
-    ReactivateIcon,
-    DeactivateIcon,
-    RefreshIcon,
     Pagination,
-    EditIcon,
     EditEmployee,
   },
 
