@@ -1,5 +1,11 @@
 import { AcceptedDrugType } from '../../../database/models/inventory';
 
+export enum ExportDataType {
+  CSV = 'CSV',
+  EXCEL = 'Excel',
+  PDF = 'PDF',
+}
+
 export class InventoryTypes {
   id?: number;
   name: string;
@@ -21,4 +27,11 @@ export type UpdateReturnRequest = {
   inventory_item_id: number;
   quantity: number;
   status: string;
+};
+
+export type ExportInventoryItemsRequest = {
+  selectedItemsId: number[];
+  dataType: ExportDataType;
+  selectAll: boolean;
+  inventoryId: number;
 };

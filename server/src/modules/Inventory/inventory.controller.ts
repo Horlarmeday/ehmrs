@@ -1,11 +1,12 @@
 import InventoryService from './inventory.service';
 import { successResponse } from '../../common/responses/success-responses';
-import { StatusCodes } from '../../core/helpers/helper';
+import { StatusCodes, exportSelectedData } from '../../core/helpers/helper';
 import { SUCCESS } from '../../core/constants';
 import {
   validateCreateInventory,
   validateRequestDrugsToStore,
   validateUpdateReturnRequest,
+  validateExportInventoryItems,
 } from './validations';
 import { errorResponse } from '../../common/responses/error-responses';
 import { isEmpty } from 'lodash';
@@ -264,6 +265,43 @@ class InventoryController {
         data: returnRequests,
         httpCode: StatusCodes.OK,
         message: SUCCESS,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * export inventory items
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with exported file
+   */
+  static async exportInventoryItems(req: Request, res: Response, next: NextFunction) {
+    const { error } = validateExportInventoryItems(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+
+    try {
+      const { selectedItemsId, selectAll, inventoryId, dataType } = req.body;
+      const { headers, mappedData } = await InventoryService.exportInventoryItems(
+        selectedItemsId,
+        selectAll,
+        inventoryId
+      );
+
+      return exportSelectedData({
+        res,
+        headers,
+        data: mappedData,
+        dataType,
       });
     } catch (e) {
       return next(e);

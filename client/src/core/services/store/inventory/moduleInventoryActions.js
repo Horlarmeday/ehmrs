@@ -1,4 +1,5 @@
 import axios from '../../../../axios';
+import { getExtensions } from '../../../../common/common';
 
 export default {
   addInventory({ commit }, inventory) {
@@ -183,5 +184,35 @@ export default {
 
   removeAllSelectedItems({ commit }) {
     commit('REMOVE_ALL_SELECTED_ITEMS', []);
+  },
+
+  exportData({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post('/inventory/items/export', payload, {
+          responseType: 'arraybuffer', // Important to receive binary data
+        })
+        .then(response => {
+          const contentType = response.headers['content-type'].split(';')[0];
+          const blob = new Blob([response.data], {
+            type: contentType,
+          });
+          const url = window.URL.createObjectURL(blob);
+          // Create an anchor element with download attribute and trigger click event
+          const a = document.createElement('a');
+          const extension = getExtensions();
+          a.href = url;
+          a.download = `inventory_items.${extension[contentType]}`;
+          a.click();
+
+          // Clean up resources
+          window.URL.revokeObjectURL(url);
+          commit('REMOVE_ALL_SELECTED_ITEMS', []);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
   },
 };

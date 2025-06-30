@@ -462,3 +462,65 @@ export const updateReturnRequests = async (
     });
   }
 };
+
+/**
+ * get all inventory items for export
+ * @param inventoryId
+ * @returns {Promise<InventoryItem[]>} inventory items data
+ */
+export const getAllInventoryItems = async (inventoryId: number): Promise<InventoryItem[]> => {
+  return InventoryItem.findAll({
+    where: { inventory_id: inventoryId },
+    order: [['createdAt', 'DESC']],
+    include: [
+      {
+        model: Drug,
+        attributes: ['name', 'id'],
+      },
+      {
+        model: Unit,
+        attributes: ['name', 'id'],
+      },
+      {
+        model: DosageForm,
+        attributes: ['name', 'id'],
+      },
+      {
+        model: Measurement,
+        attributes: ['name', 'id'],
+      },
+    ],
+  });
+};
+
+/**
+ * get selected inventory items for export
+ * @param selectedItemIds
+ * @returns {Promise<InventoryItem[]>} inventory items data
+ */
+export const getSelectedInventoryItems = async (
+  selectedItemIds: number[]
+): Promise<InventoryItem[]> => {
+  return InventoryItem.findAll({
+    where: { id: selectedItemIds },
+    order: [['createdAt', 'DESC']],
+    include: [
+      {
+        model: Drug,
+        attributes: ['name', 'id'],
+      },
+      {
+        model: Unit,
+        attributes: ['name', 'id'],
+      },
+      {
+        model: DosageForm,
+        attributes: ['name', 'id'],
+      },
+      {
+        model: Measurement,
+        attributes: ['name', 'id'],
+      },
+    ],
+  });
+};

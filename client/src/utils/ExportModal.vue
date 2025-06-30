@@ -42,6 +42,10 @@ export default {
       type: Boolean,
       required: true,
     },
+    module: {
+      type: String,
+      default: 'store',
+    },
   },
   data: () => ({
     dataTypes: ['CSV', 'Excel', 'PDF'],
@@ -68,7 +72,7 @@ export default {
     endRequest(button) {
       this.removeSpinner(button);
       this.$emit('closeModal');
-      this.$store.commit('store/REMOVE_ALL_SELECTED_ITEMS', []);
+      this.$store.commit(`${this.module}/REMOVE_ALL_SELECTED_ITEMS`, []);
       this.initValues();
     },
 

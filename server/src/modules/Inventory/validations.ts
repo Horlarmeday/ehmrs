@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import { AcceptedDrugType } from '../../database/models/inventory';
+import { ExportDataType } from './types/inventory.types';
 
 export const validateCreateInventory = inventory => {
   const schema = Joi.object({
@@ -41,4 +42,18 @@ export const validateUpdateReturnRequest = inventory => {
     })
   );
   return schema.validate(inventory);
+};
+
+export const validateExportInventoryItems = data => {
+  const schema = Joi.object({
+    selectedItemsId: Joi.array()
+      .items(Joi.number())
+      .required(),
+    dataType: Joi.string()
+      .valid(ExportDataType.CSV, ExportDataType.PDF, ExportDataType.EXCEL)
+      .required(),
+    selectAll: Joi.boolean().required(),
+    inventoryId: Joi.number().required(),
+  });
+  return schema.validate(data);
 };

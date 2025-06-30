@@ -10,6 +10,7 @@
         </div>
       </b-button>
       <b-button @click="openReturnModal" variant="outline-secondary">Return Items</b-button>
+      <b-button @click="openExportModal" variant="outline-primary">Export Items</b-button>
     </b-button-group>
     <!--begin::Table-->
     <div class="table-responsive">
@@ -18,7 +19,7 @@
           <tr class="text-left">
             <th class="pl-0" style="width: 20px">
               <label class="checkbox checkbox-md checkbox-inline">
-                <input type="checkbox" />
+                <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" />
                 <span></span>
               </label>
             </th>
@@ -141,6 +142,9 @@ export default {
     selectedItems() {
       return this.$store.state.inventory.selectedItems;
     },
+    isAllSelected() {
+      return this.items.length > 0 && this.items.every(item => this.isSelected(item));
+    },
   },
   data: () => ({
     allowedRoles: ['Super Admin'],
@@ -174,8 +178,22 @@ export default {
       }
     },
 
+    toggleSelectAll() {
+      if (this.isAllSelected) {
+        // If all items are selected, deselect all
+        this.$store.dispatch('inventory/removeAllSelectedItems');
+      } else {
+        // If not all items are selected, select all current page items
+        this.$store.dispatch('inventory/addAllAsSelectedItems', this.items);
+      }
+    },
+
     openReturnModal() {
       this.$emit('openReturnModal', true);
+    },
+
+    openExportModal() {
+      this.$emit('openExportModal', true);
     },
   },
 };

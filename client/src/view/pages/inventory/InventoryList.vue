@@ -6,11 +6,34 @@
       @closeModal="hideModal"
       :items-to-return="itemsToReturn"
     />
+
+    <export-modal
+      :display-prompt="displayExportPrompt"
+      @closeModal="hideExportModal"
+      :action="'inventory/exportData'"
+      :module="'inventory'"
+      :data="{
+        selectedItemsId: selectedItemIds,
+        selectAll: selectAllItems,
+        inventoryId: +$route.params.id,
+      }"
+      :select-all="selectAllItems"
+    />
+
     <!--begin::Header-->
     <div class="card-header border-0 py-5">
       <h3 class="card-title align-items-start flex-column">
         <span class="card-label font-weight-bolder text-dark">{{ inventoryName }}</span>
       </h3>
+      <div class="card-toolbar">
+        <button
+          v-if="selectedItems?.length || selectAllItems"
+          @click="showExportModal"
+          class="btn btn-outline-primary btn-sm"
+        >
+          <i class="fas fa-download"></i> Export Items
+        </button>
+      </div>
     </div>
     <!--end::Header-->
 
@@ -29,6 +52,7 @@
       @changePageCount="onChangePageCount"
       @deactivateItem="displayDeactivatePrompt"
       @openReturnModal="openReturnModal"
+      @openExportModal="showExportModal"
     />
     <!--end::Body-->
   </div>
@@ -40,6 +64,7 @@ import Search from '@/utils/Search.vue';
 import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
 import Swal from 'sweetalert2';
 import ReturnItemsModal from '@/view/pages/inventory/components/ReturnItemsModal.vue';
+import ExportModal from '@/utils/ExportModal.vue';
 export default {
   name: 'InventoryList',
   data() {
@@ -47,7 +72,9 @@ export default {
       currentPage: 1,
       itemsPerPage: 10,
       displayPrompt: false,
+      displayExportPrompt: false,
       itemsToReturn: [],
+      selectAllItems: false,
     };
   },
   computed: {
@@ -69,11 +96,22 @@ export default {
     selectedItems() {
       return this.$store.state.inventory.selectedItems;
     },
+    selectedItemIds() {
+      return this.selectedItems.map(item => item.id);
+    },
   },
-  components: { ReturnItemsModal, InventoryTable, Search },
+  components: { ExportModal, ReturnItemsModal, InventoryTable, Search },
   methods: {
     hideModal() {
       this.displayPrompt = false;
+    },
+
+    hideExportModal() {
+      this.displayExportPrompt = false;
+    },
+
+    showExportModal() {
+      this.displayExportPrompt = true;
     },
 
     handlePageChange() {

@@ -12,11 +12,19 @@ import {
   searchInventoryItems,
   updateInventoryItem,
   updateReturnRequests,
+  getAllInventoryItems,
+  getSelectedInventoryItems,
 } from './inventory.repository';
 import { Inventory, InventoryItem, ReturnItem } from '../../database/models';
-import { InventoryTypes, RequestReturnToStore, UpdateReturnRequest } from './types/inventory.types';
+import {
+  InventoryTypes,
+  RequestReturnToStore,
+  UpdateReturnRequest,
+  ExportInventoryItemsRequest,
+} from './types/inventory.types';
 import { GetInventoryItemsBody } from './types/inventory-item.types';
 import { BadException } from '../../common/util/api-error';
+import dayjs from 'dayjs';
 
 class InventoryService {
   /**
@@ -203,6 +211,63 @@ class InventoryService {
     }
 
     return getInventoryReturnRequests({});
+  }
+
+  /**
+   * Export inventory items data
+   * @param selectedItemsId
+   * @param selectAll
+   * @param inventoryId
+   */
+  static async exportInventoryItems(
+    selectedItemsId: number[],
+    selectAll: boolean,
+    inventoryId: number
+  ) {
+    let items: InventoryItem[];
+
+    if (selectAll) {
+      items = await getAllInventoryItems(inventoryId);
+    } else {
+      items = await getSelectedInventoryItems(selectedItemsId);
+    }
+
+    const headers = [
+      [
+        'Drug Name',
+        'Quantity Remaining',
+        'Unit',
+        'Selling Price (₦)',
+        'Dosage Form',
+        'Strength',
+        'Expiration Date',
+        'Date Received',
+        'Status',
+      ],
+    ];
+
+    return { headers, mappedData: this.mapExportedInventoryData(items) };
+  }
+
+  /**
+   * Map inventory items data for export
+   * @param items
+   * @private
+   */
+  private static mapExportedInventoryData(items: InventoryItem[]) {
+    return items.map(item => ({
+      'Drug Name': item.drug?.name || 'N/A',
+      'Quantity Remaining': `${item.quantity_remaining} ${item.unit?.name || ''}`,
+      Unit: item.unit?.name || 'N/A',
+      'Selling Price (₦)': item.selling_price || 'N/A',
+      'Dosage Form': item.dosage_form?.name || 'N/A',
+      Strength: item.measurement_id ? `${item.strength_input} ${item.strength?.name || ''}` : 'N/A',
+      'Expiration Date': item.expiration ? dayjs(item.expiration).format('MMM DD, YYYY') : 'N/A',
+      'Date Received': item.date_received
+        ? dayjs(item.date_received).format('MMM DD, YYYY')
+        : 'N/A',
+      Status: item.quantity_remaining > 0 ? 'Available' : 'Out of Stock',
+    }));
   }
 }
 
