@@ -19,6 +19,7 @@ import OperationItemsTable from './components/table/OperationItemsTable.vue';
 import InjectionsWaterTable from './components/table/InjectionsWaterTable.vue';
 import CircumcisionDrugsTable from './components/table/CircumcisionDrugsTable.vue';
 import HSGAdditionalItemsTable from './components/table/HSGAdditionalItemsTable.vue';
+import DialysisItemsTable from './components/table/DialysisItemsTable.vue';
 
 const TableDefault = {
   ADMISSION_ITEMS: AdmissionItemsTable,
@@ -29,6 +30,7 @@ const TableDefault = {
   WATER_INJECTIONS: InjectionsWaterTable,
   CIRCUMCISION_ROUTINE_DRUGS: CircumcisionDrugsTable,
   HSG_ADDITIONAL_ITEMS: HSGAdditionalItemsTable,
+  DIALYSIS_ITEMS: DialysisItemsTable,
 };
 export default {
   data: () => ({
@@ -42,6 +44,7 @@ export default {
       WATER_INJECTIONS: 'Injections Needing Water',
       CIRCUMCISION_ROUTINE_DRUGS: 'Circumcision Routine Drugs',
       HSG_ADDITIONAL_ITEMS: 'HSG Additional Items',
+      DIALYSIS_ITEMS: 'Dialysis Items',
     },
   }),
   created() {

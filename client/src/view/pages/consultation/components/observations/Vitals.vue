@@ -10,11 +10,21 @@
         <div class="form-group row">
           <label class="col-lg-2 col-form-label">Height</label>
           <div class="col-lg-2">
-            <input @keyup="calculateBMI" v-model="height" type="number" class="form-control form-control-sm" />
+            <input
+              @keyup="calculateBMI"
+              v-model="height"
+              type="number"
+              class="form-control form-control-sm"
+            />
           </div>
           <label class="col-lg-1 col-form-label">Weight</label>
           <div class="col-lg-2">
-            <input @keyup="calculateBMI" v-model="weight" type="number" class="form-control form-control-sm" />
+            <input
+              @keyup="calculateBMI"
+              v-model="weight"
+              type="number"
+              class="form-control form-control-sm"
+            />
           </div>
           <label class="col-lg-1 col-form-label">BMI</label>
           <div class="col-lg-2">
@@ -32,7 +42,7 @@
               v-model="pulse"
               name="pulse"
             />
-            <span class="text-danger text-sm">{{ errors.first("pulse") }}</span>
+            <span class="text-danger text-sm">{{ errors.first('pulse') }}</span>
           </div>
           <label class="col-lg-2 col-form-label">(72 - 72)</label>
         </div>
@@ -53,11 +63,7 @@
         <div class="form-group row">
           <label class="col-2 col-form-label">Diastolic (mmHg*)</label>
           <div class="col-6">
-            <input
-              class="form-control form-control-sm"
-              type="text"
-              v-model="diastolic"
-            />
+            <input class="form-control form-control-sm" type="text" v-model="diastolic" />
           </div>
           <label class="col-lg-2 col-form-label">(70 - 85)</label>
         </div>
@@ -73,31 +79,21 @@
               data-vv-validate-on="blur"
               name="temperature"
             />
-            <span class="text-danger text-sm">{{
-              errors.first("temperature")
-            }}</span>
+            <span class="text-danger text-sm">{{ errors.first('temperature') }}</span>
           </div>
           <label class="col-lg-2 col-form-label">(32 - 37)</label>
         </div>
         <div class="form-group row">
           <label class="col-2 col-form-label">Respiration (C/min*)</label>
           <div class="col-6">
-            <input
-              class="form-control form-control-sm"
-              type="text"
-              v-model="respiration"
-            />
+            <input class="form-control form-control-sm" type="text" v-model="respiration" />
           </div>
           <label class="col-lg-2 col-form-label">(16 - 20)</label>
         </div>
         <div class="form-group row">
           <label class="col-2 col-form-label">SPO2 (%)</label>
           <div class="col-6">
-            <input
-              class="form-control form-control-sm"
-              type="text"
-              v-model="spo2"
-            />
+            <input class="form-control form-control-sm" type="text" v-model="spo2" />
           </div>
           <label class="col-lg-2 col-form-label">(>70)</label>
         </div>
@@ -118,34 +114,30 @@
 
 <script>
 export default {
-  name: "Vitals",
+  name: 'Vitals',
   data() {
     return {
-      temperature: "",
-      systolic: "",
-      diastolic: "",
-      spo2: "",
-      respiration: "",
-      pulse: "",
-      height: "",
-      weight: "",
-      bmi: "",
-      isDisabled: false
+      temperature: '',
+      systolic: '',
+      diastolic: '',
+      spo2: '',
+      respiration: '',
+      pulse: '',
+      height: '',
+      weight: '',
+      bmi: '',
+      isDisabled: false,
     };
   },
   methods: {
     addSpinner(submitButton) {
       this.isDisabled = true;
-      submitButton.classList.add("spinner", "spinner-light", "spinner-right");
+      submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');
     },
 
     removeSpinner(submitButton) {
       this.isDisabled = false;
-      submitButton.classList.remove(
-        "spinner",
-        "spinner-light",
-        "spinner-right"
-      );
+      submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
     },
 
     initializeRequest(button) {
@@ -165,16 +157,16 @@ export default {
             pulse: this.pulse,
             height: this.height,
             weight: this.weight,
-            bmi: this.bmi
+            bmi: this.bmi,
           };
           // set spinner to submit button
-          const submitButton = this.$refs["kt_triage_submit"];
+          const submitButton = this.$refs['kt_triage_submit'];
           this.addSpinner(submitButton);
 
           this.$store
-            .dispatch("triage/addTriage", {
+            .dispatch('triage/addTriage', {
               visit_id: this.$route.params.id,
-              triage: obj
+              triage: obj,
             })
             .then(() => this.initializeRequest(submitButton))
             .catch(() => this.removeSpinner(submitButton));
@@ -187,18 +179,18 @@ export default {
     },
 
     initValues() {
-      this.temperature = "";
-      this.systolic = "";
-      this.diastolic = "";
-      this.spo2 = "";
-      this.respiration = "";
-      this.pulse = "";
-      this.height = "";
-      this.weight = "";
-      this.bmi = "";
+      this.temperature = '';
+      this.systolic = '';
+      this.diastolic = '';
+      this.spo2 = '';
+      this.respiration = '';
+      this.pulse = '';
+      this.height = '';
+      this.weight = '';
+      this.bmi = '';
       this.isDisabled = false;
-    }
-  }
+    },
+  },
 };
 </script>
 

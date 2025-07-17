@@ -21,6 +21,7 @@ export enum DefaultType {
   WATER_INJECTIONS = 'WATER_INJECTIONS',
   CIRCUMCISION_ROUTINE_DRUGS = 'CIRCUMCISION_ROUTINE_DRUGS',
   HSG_ADDITIONAL_ITEMS = 'HSG_ADDITIONAL_ITEMS',
+  DIALYSIS_ITEMS = 'DIALYSIS_ITEMS',
 }
 
 @Table({ timestamps: true })
@@ -38,7 +39,8 @@ export class Default extends Model {
       DefaultType.OPERATION_ITEMS,
       DefaultType.WATER_INJECTIONS,
       DefaultType.CIRCUMCISION_ROUTINE_DRUGS,
-      DefaultType.HSG_ADDITIONAL_ITEMS
+      DefaultType.HSG_ADDITIONAL_ITEMS,
+      DefaultType.DIALYSIS_ITEMS
     ),
     allowNull: false,
     validate: {

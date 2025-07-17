@@ -11,11 +11,7 @@
         <!--begin: Wizard Nav-->
         <div class="wizard-nav">
           <div class="wizard-steps">
-            <div
-              class="wizard-step"
-              data-wizard-type="step"
-              data-wizard-state="current"
-            >
+            <div class="wizard-step" data-wizard-type="step" data-wizard-state="current">
               <div class="wizard-wrapper">
                 <div class="wizard-number">
                   1
@@ -87,11 +83,7 @@
                 <!--begin: Wizard Form-->
                 <form class="form mt-0 mt-lg-10" id="kt_form">
                   <!--begin: Wizard Step 1-->
-                  <div
-                    class="pb-5"
-                    data-wizard-type="step-content"
-                    data-wizard-state="current"
-                  >
+                  <div class="pb-5" data-wizard-type="step-content" data-wizard-state="current">
                     <div class="mb-10 font-weight-bold text-dark">
                       Enter your Account Details
                     </div>
@@ -104,9 +96,7 @@
                         placeholder="First Name"
                         value="John"
                       />
-                      <span class="form-text text-muted"
-                        >Please enter your first name.</span
-                      >
+                      <span class="form-text text-muted">Please enter your first name.</span>
                     </div>
                     <div class="form-group">
                       <label>Last Name</label>
@@ -117,9 +107,7 @@
                         placeholder="Last Name"
                         value="Wick"
                       />
-                      <span class="form-text text-muted"
-                        >Please enter your last name.</span
-                      >
+                      <span class="form-text text-muted">Please enter your last name.</span>
                     </div>
                     <div class="row">
                       <div class="col-xl-6">
@@ -132,9 +120,7 @@
                             placeholder="phone"
                             value="+61412345678"
                           />
-                          <span class="form-text text-muted"
-                            >Please enter your phone number.</span
-                          >
+                          <span class="form-text text-muted">Please enter your phone number.</span>
                         </div>
                       </div>
                       <div class="col-xl-6">
@@ -147,9 +133,7 @@
                             placeholder="Email"
                             value="john.wick@reeves.com"
                           />
-                          <span class="form-text text-muted"
-                            >Please enter your email address.</span
-                          >
+                          <span class="form-text text-muted">Please enter your email address.</span>
                         </div>
                       </div>
                     </div>
@@ -170,9 +154,7 @@
                         placeholder="Address Line 1"
                         value="Address Line 1"
                       />
-                      <span class="form-text text-muted"
-                        >Please enter your Address.</span
-                      >
+                      <span class="form-text text-muted">Please enter your Address.</span>
                     </div>
                     <div class="form-group">
                       <label>Address Line 2</label>
@@ -183,9 +165,7 @@
                         placeholder="Address Line 2"
                         value="Address Line 2"
                       />
-                      <span class="form-text text-muted"
-                        >Please enter your Address.</span
-                      >
+                      <span class="form-text text-muted">Please enter your Address.</span>
                     </div>
                     <div class="row">
                       <div class="col-xl-6">
@@ -198,9 +178,7 @@
                             placeholder="Postcode"
                             value="3000"
                           />
-                          <span class="form-text text-muted"
-                            >Please enter your Postcode.</span
-                          >
+                          <span class="form-text text-muted">Please enter your Postcode.</span>
                         </div>
                       </div>
                       <div class="col-xl-6">
@@ -213,9 +191,7 @@
                             placeholder="City"
                             value="Melbourne"
                           />
-                          <span class="form-text text-muted"
-                            >Please enter your City.</span
-                          >
+                          <span class="form-text text-muted">Please enter your City.</span>
                         </div>
                       </div>
                     </div>
@@ -230,9 +206,7 @@
                             placeholder="State"
                             value="VIC"
                           />
-                          <span class="form-text text-muted"
-                            >Please enter your State.</span
-                          >
+                          <span class="form-text text-muted">Please enter your State.</span>
                         </div>
                       </div>
                       <div class="col-xl-6">
@@ -269,19 +243,13 @@
                             <option value="BJ">Benin</option>
                             <option value="BM">Bermuda</option>
                             <option value="BT">Bhutan</option>
-                            <option value="BO"
-                              >Bolivia, Plurinational State of</option
-                            >
-                            <option value="BQ"
-                              >Bonaire, Sint Eustatius and Saba</option
-                            >
+                            <option value="BO">Bolivia, Plurinational State of</option>
+                            <option value="BQ">Bonaire, Sint Eustatius and Saba</option>
                             <option value="BA">Bosnia and Herzegovina</option>
                             <option value="BW">Botswana</option>
                             <option value="BV">Bouvet Island</option>
                             <option value="BR">Brazil</option>
-                            <option value="IO"
-                              >British Indian Ocean Territory</option
-                            >
+                            <option value="IO">British Indian Ocean Territory</option>
                             <option value="BN">Brunei Darussalam</option>
                             <option value="BG">Bulgaria</option>
                             <option value="BF">Burkina Faso</option>
@@ -300,9 +268,7 @@
                             <option value="CO">Colombia</option>
                             <option value="KM">Comoros</option>
                             <option value="CG">Congo</option>
-                            <option value="CD"
-                              >Congo, the Democratic Republic of the</option
-                            >
+                            <option value="CD">Congo, the Democratic Republic of the</option>
                             <option value="CK">Cook Islands</option>
                             <option value="CR">Costa Rica</option>
                             <option value="CI">Côte d'Ivoire</option>
@@ -322,18 +288,14 @@
                             <option value="ER">Eritrea</option>
                             <option value="EE">Estonia</option>
                             <option value="ET">Ethiopia</option>
-                            <option value="FK"
-                              >Falkland Islands (Malvinas)</option
-                            >
+                            <option value="FK">Falkland Islands (Malvinas)</option>
                             <option value="FO">Faroe Islands</option>
                             <option value="FJ">Fiji</option>
                             <option value="FI">Finland</option>
                             <option value="FR">France</option>
                             <option value="GF">French Guiana</option>
                             <option value="PF">French Polynesia</option>
-                            <option value="TF"
-                              >French Southern Territories</option
-                            >
+                            <option value="TF">French Southern Territories</option>
                             <option value="GA">Gabon</option>
                             <option value="GM">Gambia</option>
                             <option value="GE">Georgia</option>
@@ -351,21 +313,15 @@
                             <option value="GW">Guinea-Bissau</option>
                             <option value="GY">Guyana</option>
                             <option value="HT">Haiti</option>
-                            <option value="HM"
-                              >Heard Island and McDonald Islands</option
-                            >
-                            <option value="VA"
-                              >Holy See (Vatican City State)</option
-                            >
+                            <option value="HM">Heard Island and McDonald Islands</option>
+                            <option value="VA">Holy See (Vatican City State)</option>
                             <option value="HN">Honduras</option>
                             <option value="HK">Hong Kong</option>
                             <option value="HU">Hungary</option>
                             <option value="IS">Iceland</option>
                             <option value="IN">India</option>
                             <option value="ID">Indonesia</option>
-                            <option value="IR"
-                              >Iran, Islamic Republic of</option
-                            >
+                            <option value="IR">Iran, Islamic Republic of</option>
                             <option value="IQ">Iraq</option>
                             <option value="IE">Ireland</option>
                             <option value="IM">Isle of Man</option>
@@ -378,15 +334,11 @@
                             <option value="KZ">Kazakhstan</option>
                             <option value="KE">Kenya</option>
                             <option value="KI">Kiribati</option>
-                            <option value="KP"
-                              >Korea, Democratic People's Republic of</option
-                            >
+                            <option value="KP">Korea, Democratic People's Republic of</option>
                             <option value="KR">Korea, Republic of</option>
                             <option value="KW">Kuwait</option>
                             <option value="KG">Kyrgyzstan</option>
-                            <option value="LA"
-                              >Lao People's Democratic Republic</option
-                            >
+                            <option value="LA">Lao People's Democratic Republic</option>
                             <option value="LV">Latvia</option>
                             <option value="LB">Lebanon</option>
                             <option value="LS">Lesotho</option>
@@ -396,10 +348,7 @@
                             <option value="LT">Lithuania</option>
                             <option value="LU">Luxembourg</option>
                             <option value="MO">Macao</option>
-                            <option value="MK"
-                              >Macedonia, the former Yugoslav Republic
-                              of</option
-                            >
+                            <option value="MK">Macedonia, the former Yugoslav Republic of</option>
                             <option value="MG">Madagascar</option>
                             <option value="MW">Malawi</option>
                             <option value="MY">Malaysia</option>
@@ -412,9 +361,7 @@
                             <option value="MU">Mauritius</option>
                             <option value="YT">Mayotte</option>
                             <option value="MX">Mexico</option>
-                            <option value="FM"
-                              >Micronesia, Federated States of</option
-                            >
+                            <option value="FM">Micronesia, Federated States of</option>
                             <option value="MD">Moldova, Republic of</option>
                             <option value="MC">Monaco</option>
                             <option value="MN">Mongolia</option>
@@ -439,9 +386,7 @@
                             <option value="OM">Oman</option>
                             <option value="PK">Pakistan</option>
                             <option value="PW">Palau</option>
-                            <option value="PS"
-                              >Palestinian Territory, Occupied</option
-                            >
+                            <option value="PS">Palestinian Territory, Occupied</option>
                             <option value="PA">Panama</option>
                             <option value="PG">Papua New Guinea</option>
                             <option value="PY">Paraguay</option>
@@ -457,21 +402,12 @@
                             <option value="RU">Russian Federation</option>
                             <option value="RW">Rwanda</option>
                             <option value="BL">Saint Barthélemy</option>
-                            <option value="SH"
-                              >Saint Helena, Ascension and Tristan da
-                              Cunha</option
-                            >
+                            <option value="SH">Saint Helena, Ascension and Tristan da Cunha</option>
                             <option value="KN">Saint Kitts and Nevis</option>
                             <option value="LC">Saint Lucia</option>
-                            <option value="MF"
-                              >Saint Martin (French part)</option
-                            >
-                            <option value="PM"
-                              >Saint Pierre and Miquelon</option
-                            >
-                            <option value="VC"
-                              >Saint Vincent and the Grenadines</option
-                            >
+                            <option value="MF">Saint Martin (French part)</option>
+                            <option value="PM">Saint Pierre and Miquelon</option>
+                            <option value="VC">Saint Vincent and the Grenadines</option>
                             <option value="WS">Samoa</option>
                             <option value="SM">San Marino</option>
                             <option value="ST">Sao Tome and Principe</option>
@@ -481,18 +417,13 @@
                             <option value="SC">Seychelles</option>
                             <option value="SL">Sierra Leone</option>
                             <option value="SG">Singapore</option>
-                            <option value="SX"
-                              >Sint Maarten (Dutch part)</option
-                            >
+                            <option value="SX">Sint Maarten (Dutch part)</option>
                             <option value="SK">Slovakia</option>
                             <option value="SI">Slovenia</option>
                             <option value="SB">Solomon Islands</option>
                             <option value="SO">Somalia</option>
                             <option value="ZA">South Africa</option>
-                            <option value="GS"
-                              >South Georgia and the South Sandwich
-                              Islands</option
-                            >
+                            <option value="GS">South Georgia and the South Sandwich Islands</option>
                             <option value="SS">South Sudan</option>
                             <option value="ES">Spain</option>
                             <option value="LK">Sri Lanka</option>
@@ -503,13 +434,9 @@
                             <option value="SE">Sweden</option>
                             <option value="CH">Switzerland</option>
                             <option value="SY">Syrian Arab Republic</option>
-                            <option value="TW"
-                              >Taiwan, Province of China</option
-                            >
+                            <option value="TW">Taiwan, Province of China</option>
                             <option value="TJ">Tajikistan</option>
-                            <option value="TZ"
-                              >Tanzania, United Republic of</option
-                            >
+                            <option value="TZ">Tanzania, United Republic of</option>
                             <option value="TH">Thailand</option>
                             <option value="TL">Timor-Leste</option>
                             <option value="TG">Togo</option>
@@ -526,15 +453,11 @@
                             <option value="AE">United Arab Emirates</option>
                             <option value="GB">United Kingdom</option>
                             <option value="US">United States</option>
-                            <option value="UM"
-                              >United States Minor Outlying Islands</option
-                            >
+                            <option value="UM">United States Minor Outlying Islands</option>
                             <option value="UY">Uruguay</option>
                             <option value="UZ">Uzbekistan</option>
                             <option value="VU">Vanuatu</option>
-                            <option value="VE"
-                              >Venezuela, Bolivarian Republic of</option
-                            >
+                            <option value="VE">Venezuela, Bolivarian Republic of</option>
                             <option value="VN">Viet Nam</option>
                             <option value="VG">Virgin Islands, British</option>
                             <option value="VI">Virgin Islands, U.S.</option>
@@ -566,9 +489,7 @@
                             placeholder="Card Name"
                             value="John Wick"
                           />
-                          <span class="form-text text-muted"
-                            >Please enter your Card Name.</span
-                          >
+                          <span class="form-text text-muted">Please enter your Card Name.</span>
                         </div>
                       </div>
                       <div class="col-xl-6">
@@ -581,9 +502,7 @@
                             placeholder="Card Number"
                             value="4444 3333 2222 1111"
                           />
-                          <span class="form-text text-muted"
-                            >Please enter your Address.</span
-                          >
+                          <span class="form-text text-muted">Please enter your Address.</span>
                         </div>
                       </div>
                     </div>
@@ -719,37 +638,37 @@
 </template>
 
 <style lang="scss">
-@import "@/assets/sass/pages/wizard/wizard-4.scss";
+@import '@/assets/sass/pages/wizard/wizard-4.scss';
 </style>
 
 <script>
-import { SET_BREADCRUMB } from "@/core/services/store/breadcrumbs.module";
-import KTUtil from "@/assets/js/components/util";
-import KTWizard from "@/assets/js/components/wizard";
-import Swal from "sweetalert2";
+import { SET_BREADCRUMB } from '@/core/services/store/breadcrumbs.module';
+import KTUtil from '@/assets/js/components/util';
+import KTWizard from '@/assets/js/components/wizard';
+import Swal from 'sweetalert2';
 
 export default {
-  name: "Wizard-4",
+  name: 'Wizard-4',
   mounted() {
     this.$store.dispatch(SET_BREADCRUMB, [
-      { title: "Wizard", route: "wizard-1" },
-      { title: "Wizard-4" }
+      { title: 'Wizard', route: 'wizard-1' },
+      { title: 'Wizard-4' },
     ]);
 
     // Initialize form wizard
-    const wizard = new KTWizard("kt_wizard_v4", {
+    const wizard = new KTWizard('kt_wizard_v4', {
       startStep: 1, // initial active step number
-      clickableSteps: true // allow step clicking
+      clickableSteps: true, // allow step clicking
     });
 
     // Validation before going to next page
-    wizard.on("beforeNext", function(/*wizardObj*/) {
+    wizard.on('beforeNext', function(/*wizardObj*/) {
       // validate the form and use below function to stop the wizard's step
       // wizardObj.stop();
     });
 
     // Change event
-    wizard.on("change", function(/*wizardObj*/) {
+    wizard.on('change', function(/*wizardObj*/) {
       setTimeout(() => {
         KTUtil.scrollTop();
       }, 500);
@@ -759,12 +678,12 @@ export default {
     submit: function(e) {
       e.preventDefault();
       Swal.fire({
-        title: "",
-        text: "The application has been successfully submitted!",
-        icon: "success",
-        confirmButtonClass: "btn btn-secondary"
+        title: '',
+        text: 'The application has been successfully submitted!',
+        icon: 'success',
+        confirmButtonClass: 'btn btn-secondary',
       });
-    }
-  }
+    },
+  },
 };
 </script>

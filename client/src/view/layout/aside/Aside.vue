@@ -6,10 +6,7 @@
     ref="kt_aside"
   >
     <!-- begin:: Aside Menu -->
-    <div
-      class="aside-menu-wrapper flex-column-fluid"
-      id="kt_aside_menu_wrapper"
-    >
+    <div class="aside-menu-wrapper flex-column-fluid" id="kt_aside_menu_wrapper">
       <div
         ref="kt_aside_menu"
         id="kt_aside_menu"
@@ -19,10 +16,7 @@
         v-bind:class="asideMenuClass"
       >
         <!-- example static menu here -->
-        <perfect-scrollbar
-          class="aside-menu scroll"
-          style="max-height: 90vh; position: relative;"
-        >
+        <perfect-scrollbar class="aside-menu scroll" style="max-height: 90vh; position: relative;">
           <KTMenu></KTMenu>
         </perfect-scrollbar>
       </div>
@@ -32,44 +26,44 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
-import KTLayoutAside from "@/assets/js/layout/base/aside.js";
-import KTLayoutAsideMenu from "@/assets/js/layout/base/aside-menu.js";
-import KTMenu from "@/view/layout/aside/Menu.vue";
+import { mapGetters } from 'vuex';
+import KTLayoutAside from '@/assets/js/layout/base/aside.js';
+import KTLayoutAsideMenu from '@/assets/js/layout/base/aside-menu.js';
+import KTMenu from '@/view/layout/aside/Menu.vue';
 
 export default {
-  name: "KTAside",
+  name: 'KTAside',
   data() {
     return {
       insideTm: 0,
-      outsideTm: 0
+      outsideTm: 0,
     };
   },
   components: {
-    KTMenu
+    KTMenu,
   },
   mounted() {
     this.$nextTick(() => {
       // Init Aside
-      KTLayoutAside.init(this.$refs["kt_aside"]);
+      KTLayoutAside.init(this.$refs['kt_aside']);
 
       // Init Aside Menu
-      KTLayoutAsideMenu.init(this.$refs["kt_aside_menu"]);
+      KTLayoutAsideMenu.init(this.$refs['kt_aside_menu']);
     });
   },
   computed: {
-    ...mapGetters(["layoutConfig", "getClasses"]),
+    ...mapGetters(['layoutConfig', 'getClasses']),
 
     /**
      * Get extra classes for menu based on the options
      */
     asideMenuClass() {
-      const classes = this.getClasses("aside_menu");
-      if (typeof classes !== "undefined") {
-        return classes.join(" ");
+      const classes = this.getClasses('aside_menu');
+      if (typeof classes !== 'undefined') {
+        return classes.join(' ');
       }
       return null;
-    }
-  }
+    },
+  },
 };
 </script>

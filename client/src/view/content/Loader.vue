@@ -9,10 +9,10 @@
 
 <script>
 export default {
-  name: "Loader",
+  name: 'Loader',
   props: {
     logo: String,
-    spinnerClass: String
-  }
+    spinnerClass: String,
+  },
 };
 </script>

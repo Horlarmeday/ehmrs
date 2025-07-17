@@ -107,7 +107,7 @@ export default {
       if (status === 'Paid') return 'label label-inline label-light-success font-weight-bold';
       if (status === 'Cleared') return 'label label-inline label-light-info font-weight-bold';
       return 'label label-inline label-light-danger font-weight-bold';
-    }
+    },
   },
 };
 </script>

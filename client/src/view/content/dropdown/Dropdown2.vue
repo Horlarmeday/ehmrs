@@ -21,10 +21,7 @@
           v-b-tooltip="'Click to learn more...'"
         ></i>
       </b-dropdown-text>
-      <b-dropdown-text
-        tag="div"
-        class="navi-separator mb-3 opacity-70"
-      ></b-dropdown-text>
+      <b-dropdown-text tag="div" class="navi-separator mb-3 opacity-70"></b-dropdown-text>
       <b-dropdown-text tag="div" class="navi-item">
         <a href="#" class="navi-link">
           <span class="navi-text">
@@ -70,10 +67,7 @@
           </span>
         </a>
       </b-dropdown-text>
-      <b-dropdown-text
-        tag="div"
-        class="navi-separator mt-3 opacity-70"
-      ></b-dropdown-text>
+      <b-dropdown-text tag="div" class="navi-separator mt-3 opacity-70"></b-dropdown-text>
       <b-dropdown-text tag="div" class="navi-footer pt-5 pb-4">
         <a class="btn btn-clean font-weight-bold btn-sm" href="#">
           <i class="ki ki-plus icon-sm"></i>Add new</a
@@ -112,8 +106,8 @@
 
 <script>
 export default {
-  name: "dropdown-2",
+  name: 'dropdown-2',
   components: {},
-  mounted() {}
+  mounted() {},
 };
 </script>

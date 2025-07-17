@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import ConsultationController from './consultation.controller';
 import verify from '../../core/middleware/verify';
-import { createEncounter } from '../../core/middleware/createEncounter';
+import { createObservationEncounter } from '../../core/middleware/createEncounter';
 
 const router = Router();
 router.post(
   '/observation/create/:id',
   verify,
-  createEncounter,
+  createObservationEncounter,
   ConsultationController.createObservation
 );
 router.post('/diagnosis/create/:id', verify, ConsultationController.createDiagnosis);

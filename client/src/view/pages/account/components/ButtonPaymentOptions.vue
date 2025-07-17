@@ -42,7 +42,7 @@ export default {
     disableBilling: {
       type: Boolean,
       required: true,
-    }
+    },
   },
   methods: {
     billItems() {

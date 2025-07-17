@@ -400,6 +400,49 @@ export default {
   },
 
   /**
+   * ENCOUNTER DETAILS
+   */
+  fetchEncounterDetails({ commit }, payload) {
+    commit('SET_ENCOUNTER_DETAILS_LOADING', true);
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/settings/encounters/details', {
+          params: {
+            staff_id: payload.staffId,
+            start: payload.start,
+            end: payload.end,
+          },
+        })
+        .then(response => {
+          commit('SET_ENCOUNTER_DETAILS', response.data.data);
+          commit('SET_ENCOUNTER_DETAILS_LOADING', false);
+          resolve(response);
+        })
+        .catch(error => {
+          commit('SET_ENCOUNTER_DETAILS_LOADING', false);
+          reject(error);
+        });
+    });
+  },
+
+  fetchEncounterActions({ commit }, encounterId) {
+    commit('SET_ENCOUNTER_DETAILS_LOADING', true);
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/settings/encounters/${encounterId}/actions`)
+        .then(response => {
+          commit('SET_ENCOUNTER_ACTIONS', response.data.data);
+          commit('SET_ENCOUNTER_DETAILS_LOADING', false);
+          resolve(response);
+        })
+        .catch(error => {
+          commit('SET_ENCOUNTER_DETAILS_LOADING', false);
+          reject(error);
+        });
+    });
+  },
+
+  /**
    * MERGE ACCOUNTS
    */
 

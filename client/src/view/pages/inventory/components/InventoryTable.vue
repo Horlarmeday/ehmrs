@@ -10,7 +10,9 @@
         </div>
       </b-button>
       <b-button @click="openReturnModal" variant="outline-secondary">Return Items</b-button>
-      <b-button @click="openExportModal" variant="outline-primary">Export Items</b-button>
+      <b-button @click="openExportSelectedModal" variant="outline-primary"
+        >Export Selected</b-button
+      >
     </b-button-group>
     <!--begin::Table-->
     <div class="table-responsive">
@@ -192,8 +194,8 @@ export default {
       this.$emit('openReturnModal', true);
     },
 
-    openExportModal() {
-      this.$emit('openExportModal', true);
+    openExportSelectedModal() {
+      this.$emit('openExportSelectedModal', true);
     },
   },
 };

@@ -13,7 +13,7 @@
             v-model="code"
             name="code"
           />
-          <span class="text-danger text-sm">{{ errors.first("code") }}</span>
+          <span class="text-danger text-sm">{{ errors.first('code') }}</span>
         </div>
       </div>
       <div class="form-group row">
@@ -30,9 +30,7 @@
             <option value="Normal">Normal</option>
             <option value="Luxury">Luxury</option>
           </select>
-          <span class="text-danger text-sm">{{
-            errors.first("bed_type")
-          }}</span>
+          <span class="text-danger text-sm">{{ errors.first('bed_type') }}</span>
         </div>
       </div>
     </div>
@@ -52,35 +50,35 @@ export default {
   props: {
     displayPrompt: {
       type: Boolean,
-      required: true
+      required: true,
     },
     data: {
       type: Object,
-      default: () => {}
-    }
+      default: () => {},
+    },
   },
   data() {
     return {
-      name: "",
-      code: "",
-      bed_type: "",
-      bed_id: "",
-      ward_id: "",
-      isDisabled: false
+      name: '',
+      code: '',
+      bed_type: '',
+      bed_id: '',
+      ward_id: '',
+      isDisabled: false,
     };
   },
   computed: {
     validateForm() {
-      return !this.errors.any() && this.code !== "";
+      return !this.errors.any() && this.code !== '';
     },
     activePrompt: {
       get() {
         return this.displayPrompt;
       },
       set(value) {
-        this.$emit("closeModal", value);
-      }
-    }
+        this.$emit('closeModal', value);
+      },
+    },
   },
   watch: {
     displayPrompt(val) {
@@ -93,26 +91,22 @@ export default {
         this.ward_id = id;
         this.name = name;
       }
-    }
+    },
   },
   methods: {
     addSpinner(submitButton) {
       this.isDisabled = true;
-      submitButton.classList.add("spinner", "spinner-light", "spinner-right");
+      submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');
     },
 
     removeSpinner(submitButton) {
       this.isDisabled = false;
-      submitButton.classList.remove(
-        "spinner",
-        "spinner-light",
-        "spinner-right"
-      );
+      submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
     },
 
     initializeRequest(button) {
       this.removeSpinner(button);
-      this.$emit("closeModal");
+      this.$emit('closeModal');
       this.initValues();
     },
 
@@ -122,10 +116,10 @@ export default {
           const obj = {
             ward_id: this.ward_id,
             code: this.code,
-            bed_type: this.bed_type
+            bed_type: this.bed_type,
           };
           // set spinner to submit button
-          const submitButton = this.$refs["kt_bed_submit"];
+          const submitButton = this.$refs['kt_bed_submit'];
           this.addSpinner(submitButton);
 
           //   if (this.ward_id && this.ward_id >= 0) {
@@ -140,18 +134,18 @@ export default {
           //   } else {
           //     delete obj.ward_id;
           this.$store
-            .dispatch("model/addBed", obj)
+            .dispatch('model/addBed', obj)
             .then(() => this.initializeRequest(submitButton))
             .catch(() => this.removeSpinner(submitButton));
         }
       });
     },
     initValues() {
-      this.code = "";
-      this.bed_type = "";
-      this.ward_id = "";
-    }
-  }
+      this.code = '';
+      this.bed_type = '';
+      this.ward_id = '';
+    },
+  },
 };
 </script>
 

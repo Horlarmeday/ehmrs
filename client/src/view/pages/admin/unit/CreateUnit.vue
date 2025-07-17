@@ -13,7 +13,7 @@
             v-model="name"
             name="name"
           />
-          <span class="text-danger text-sm">{{ errors.first("name") }}</span>
+          <span class="text-danger text-sm">{{ errors.first('name') }}</span>
         </div>
       </div>
     </div>
@@ -33,32 +33,32 @@ export default {
   props: {
     displayPrompt: {
       type: Boolean,
-      required: true
+      required: true,
     },
     data: {
       type: Object,
-      default: () => {}
-    }
+      default: () => {},
+    },
   },
   data() {
     return {
-      name: "",
-      unit_id: "",
-      isDisabled: false
+      name: '',
+      unit_id: '',
+      isDisabled: false,
     };
   },
   computed: {
     validateForm() {
-      return !this.errors.any() && this.name !== "";
+      return !this.errors.any() && this.name !== '';
     },
     activePrompt: {
       get() {
         return this.displayPrompt;
       },
       set(value) {
-        this.$emit("closeModal", value);
-      }
-    }
+        this.$emit('closeModal', value);
+      },
+    },
   },
   watch: {
     displayPrompt(val) {
@@ -71,26 +71,22 @@ export default {
         this.unit_id = id;
         this.name = name;
       }
-    }
+    },
   },
   methods: {
     addSpinner(submitButton) {
       this.isDisabled = true;
-      submitButton.classList.add("spinner", "spinner-light", "spinner-right");
+      submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');
     },
 
     removeSpinner(submitButton) {
       this.isDisabled = false;
-      submitButton.classList.remove(
-        "spinner",
-        "spinner-light",
-        "spinner-right"
-      );
+      submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
     },
 
     initializeRequest(button) {
       this.removeSpinner(button);
-      this.$emit("closeModal");
+      this.$emit('closeModal');
       this.initValues();
     },
     createUnit() {
@@ -98,21 +94,21 @@ export default {
         if (result) {
           const obj = {
             unit_id: this.unit_id,
-            name: this.name
+            name: this.name,
           };
           // set spinner to submit button
-          const submitButton = this.$refs["kt_unit_submit"];
+          const submitButton = this.$refs['kt_unit_submit'];
           this.addSpinner(submitButton);
 
           if (this.unit_id && this.unit_id >= 0) {
             this.$store
-              .dispatch("model/updateUnit", obj)
+              .dispatch('model/updateUnit', obj)
               .then(() => this.initializeRequest(submitButton))
               .catch(() => this.removeSpinner(submitButton));
           } else {
             delete obj.unit_id;
             this.$store
-              .dispatch("model/addUnit", obj)
+              .dispatch('model/addUnit', obj)
               .then(() => this.initializeRequest(submitButton))
               .catch(() => this.removeSpinner(submitButton));
           }
@@ -120,10 +116,10 @@ export default {
       });
     },
     initValues() {
-      this.name = "";
-      this.unit_id = "";
-    }
-  }
+      this.name = '';
+      this.unit_id = '';
+    },
+  },
 };
 </script>
 

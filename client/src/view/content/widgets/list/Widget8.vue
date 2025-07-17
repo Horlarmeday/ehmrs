@@ -24,18 +24,12 @@
     <div class="card-body py-0">
       <!--begin::Table-->
       <div class="table-responsive">
-        <table
-          class="table table-head-custom table-vertical-center"
-          id="kt_advance_table_widget_1"
-        >
+        <table class="table table-head-custom table-vertical-center" id="kt_advance_table_widget_1">
           <thead>
             <tr class="text-left">
               <th class="pl-0" style="width: 20px">
                 <label class="checkbox checkbox-lg checkbox-single">
-                  <input
-                    type="checkbox"
-                    @input="setCheck($event.target.checked)"
-                  />
+                  <input type="checkbox" @input="setCheck($event.target.checked)" />
                   <span></span>
                 </label>
               </th>
@@ -58,11 +52,7 @@
                 <td class="pr-0">
                   <div class="symbol symbol-50 symbol-light mt-1">
                     <span class="symbol-label">
-                      <img
-                        :src="item.text0"
-                        class="h-75 align-self-end"
-                        alt=""
-                      />
+                      <img :src="item.text0" class="h-75 align-self-end" alt="" />
                     </span>
                   </div>
                 </td>
@@ -72,32 +62,23 @@
                     class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg"
                     >{{ item.text1 }}</a
                   >
-                  <span
-                    class="text-muted font-weight-bold text-muted d-block"
-                    >{{ item.text2 }}</span
-                  >
-                </td>
-                <td>
-                  <span
-                    class="text-dark-75 font-weight-bolder d-block font-size-lg"
-                    >{{ item.text3 }}</span
-                  >
-                  <span class="text-muted font-weight-bold">{{
-                    item.text4
+                  <span class="text-muted font-weight-bold text-muted d-block">{{
+                    item.text2
                   }}</span>
                 </td>
                 <td>
+                  <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
+                    item.text3
+                  }}</span>
+                  <span class="text-muted font-weight-bold">{{ item.text4 }}</span>
+                </td>
+                <td>
                   <div class="d-flex flex-column w-100 mr-2">
-                    <div
-                      class="d-flex align-items-center justify-content-between mb-2"
-                    >
-                      <span
-                        class="text-muted mr-2 font-size-sm font-weight-bold"
-                        >{{ item.text5 }}</span
-                      >
-                      <span class="text-muted font-size-sm font-weight-bold"
-                        >Progress</span
-                      >
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                      <span class="text-muted mr-2 font-size-sm font-weight-bold">{{
+                        item.text5
+                      }}</span>
+                      <span class="text-muted font-size-sm font-weight-bold">Progress</span>
                     </div>
                     <div class="progress progress-xs w-100">
                       <div
@@ -113,30 +94,17 @@
                   </div>
                 </td>
                 <td class="pr-0 text-right">
-                  <a
-                    href="#"
-                    class="btn btn-icon btn-light btn-hover-primary btn-sm"
-                  >
+                  <a href="#" class="btn btn-icon btn-light btn-hover-primary btn-sm">
                     <span class="svg-icon svg-icon-md svg-icon-primary">
-                      <inline-svg
-                        src="media/svg/icons/General/Settings-1.svg"
-                      />
+                      <inline-svg src="media/svg/icons/General/Settings-1.svg" />
                     </span>
                   </a>
-                  <a
-                    href="#"
-                    class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
-                  >
+                  <a href="#" class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3">
                     <span class="svg-icon svg-icon-md svg-icon-primary">
-                      <inline-svg
-                        src="media/svg/icons/Communication/Write.svg"
-                      />
+                      <inline-svg src="media/svg/icons/Communication/Write.svg" />
                     </span>
                   </a>
-                  <a
-                    href="#"
-                    class="btn btn-icon btn-light btn-hover-primary btn-sm"
-                  >
+                  <a href="#" class="btn btn-icon btn-light btn-hover-primary btn-sm">
                     <span class="svg-icon svg-icon-md svg-icon-primary">
                       <inline-svg src="media/svg/icons/General/Trash.svg" />
                     </span>
@@ -155,55 +123,55 @@
 
 <script>
 export default {
-  name: "widget-8",
+  name: 'widget-8',
   data() {
     return {
       list: [
         {
-          text0: "media/svg/avatars/001-boy.svg",
-          text1: "Brad Simmons",
-          text2: "HTML, JS, ReactJS",
-          text3: "Intertico",
-          text4: "Web, UI/UX Design",
-          text5: "65%",
-          text6: "danger"
+          text0: 'media/svg/avatars/001-boy.svg',
+          text1: 'Brad Simmons',
+          text2: 'HTML, JS, ReactJS',
+          text3: 'Intertico',
+          text4: 'Web, UI/UX Design',
+          text5: '65%',
+          text6: 'danger',
         },
         {
-          text0: "media/svg/avatars/018-girl-9.svg",
-          text1: "Jessie Clarcson",
-          text2: "C#, ASP.NET, MS SQL",
-          text3: "Agoda",
-          text4: "Houses & Hotels",
-          text5: "83%",
-          text6: "success"
+          text0: 'media/svg/avatars/018-girl-9.svg',
+          text1: 'Jessie Clarcson',
+          text2: 'C#, ASP.NET, MS SQL',
+          text3: 'Agoda',
+          text4: 'Houses & Hotels',
+          text5: '83%',
+          text6: 'success',
         },
         {
-          text0: "media/svg/avatars/047-girl-25.svg",
-          text1: "Lebron Wayde",
-          text2: "PHP, Laravel, VueJS",
-          text3: "RoadGee",
-          text4: "Transportation",
-          text5: "47%",
-          text6: "primary"
+          text0: 'media/svg/avatars/047-girl-25.svg',
+          text1: 'Lebron Wayde',
+          text2: 'PHP, Laravel, VueJS',
+          text3: 'RoadGee',
+          text4: 'Transportation',
+          text5: '47%',
+          text6: 'primary',
         },
         {
-          text0: "media/svg/avatars/014-girl-7.svg",
-          text1: "Natali Trump",
-          text2: "Python, PostgreSQL, ReactJS",
-          text3: "The Hill",
-          text4: "Insurance",
-          text5: "71%",
-          text6: "danger"
-        }
+          text0: 'media/svg/avatars/014-girl-7.svg',
+          text1: 'Natali Trump',
+          text2: 'Python, PostgreSQL, ReactJS',
+          text3: 'The Hill',
+          text4: 'Insurance',
+          text5: '71%',
+          text6: 'danger',
+        },
       ],
-      checked: false
+      checked: false,
     };
   },
   components: {},
   methods: {
     setCheck(checked) {
       this.checked = checked;
-    }
-  }
+    },
+  },
 };
 </script>

@@ -1364,6 +1364,14 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            {
+              path: 'encounters/:staffId',
+              name: 'encounter-details',
+              component: () => import('@/view/pages/statistics/page/EncounterDetails.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
           ],
         },
       ],

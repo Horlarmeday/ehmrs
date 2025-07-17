@@ -17,11 +17,7 @@
     <div class="card-body">
       <!--begin::Chart-->
       <div style="height: 250px">
-        <apexchart
-          :options="chartOptions"
-          :series="series"
-          type="radialBar"
-        ></apexchart>
+        <apexchart :options="chartOptions" :series="series" type="radialBar"></apexchart>
       </div>
       <!--end::Chart-->
       <!--begin::Items-->
@@ -33,9 +29,7 @@
             v-bind:class="{ 'mb-8': lastElement(i) }"
           >
             <!--begin::Symbol-->
-            <div
-              class="symbol symbol-circle symbol-40 symbol-light mr-3 flex-shrink-0"
-            >
+            <div class="symbol symbol-circle symbol-40 symbol-light mr-3 flex-shrink-0">
               <div class="symbol-label">
                 <span class="svg-icon svg-icon-lg svg-icon-gray-500">
                   <inline-svg :src="item.svg" />
@@ -45,11 +39,9 @@
             <!--end::Symbol-->
             <!--begin::Title-->
             <div>
-              <a
-                href="#"
-                class="font-size-h6 text-dark-75 text-hover-primary font-weight-bolder"
-                >{{ item.title }}</a
-              >
+              <a href="#" class="font-size-h6 text-dark-75 text-hover-primary font-weight-bolder">{{
+                item.title
+              }}</a>
               <div class="font-size-sm text-muted font-weight-bold mt-1">
                 {{ item.desc }}
               </div>
@@ -65,35 +57,35 @@
 </template>
 
 <script>
-import Dropdown3 from "@/view/content/dropdown/Dropdown3.vue";
-import { mapGetters } from "vuex";
+import Dropdown3 from '@/view/content/dropdown/Dropdown3.vue';
+import { mapGetters } from 'vuex';
 
 export default {
-  name: "widget-4",
+  name: 'widget-4',
   components: {
-    Dropdown3
+    Dropdown3,
   },
   data() {
     return {
       list: [
         {
-          title: "Most Sales",
-          desc: "Authors with the best sales",
-          svg: "media/svg/icons/Media/Equalizer.svg"
+          title: 'Most Sales',
+          desc: 'Authors with the best sales',
+          svg: 'media/svg/icons/Media/Equalizer.svg',
         },
         {
-          title: "Total Sales Lead",
-          desc: "40% increased on week-to-week reports",
-          svg: "media/svg/icons/Shopping/Chart-pie.svg"
+          title: 'Total Sales Lead',
+          desc: '40% increased on week-to-week reports',
+          svg: 'media/svg/icons/Shopping/Chart-pie.svg',
         },
         {
-          title: "Average Bestseller",
-          desc: "Pitstop Email Marketing",
-          svg: "media/svg/icons/Design/Layers.svg"
-        }
+          title: 'Average Bestseller',
+          desc: 'Pitstop Email Marketing',
+          svg: 'media/svg/icons/Design/Layers.svg',
+        },
       ],
       chartOptions: {},
-      series: [74]
+      series: [74],
     };
   },
   methods: {
@@ -103,17 +95,17 @@ export default {
       } else {
         return true;
       }
-    }
+    },
   },
   computed: {
-    ...mapGetters(["layoutConfig"])
+    ...mapGetters(['layoutConfig']),
   },
   mounted() {
     this.chartOptions = {
       chart: {
         height: 250,
-        type: "radialBar",
-        offsetY: 0
+        type: 'radialBar',
+        offsetY: 0,
       },
       plotOptions: {
         radialBar: {
@@ -122,37 +114,37 @@ export default {
 
           hollow: {
             margin: 0,
-            size: "70%"
+            size: '70%',
           },
           dataLabels: {
-            showOn: "always",
+            showOn: 'always',
             name: {
               show: true,
-              fontSize: "13px",
-              fontWeight: "700",
+              fontSize: '13px',
+              fontWeight: '700',
               offsetY: -5,
-              color: this.layoutConfig("colors.gray.gray-500")
+              color: this.layoutConfig('colors.gray.gray-500'),
             },
             value: {
-              color: this.layoutConfig("colors.gray.gray-700"),
-              fontSize: "30px",
-              fontWeight: "700",
+              color: this.layoutConfig('colors.gray.gray-700'),
+              fontSize: '30px',
+              fontWeight: '700',
               offsetY: -40,
-              show: true
-            }
+              show: true,
+            },
           },
           track: {
-            background: this.layoutConfig("colors.theme.light.primary"),
-            strokeWidth: "100%"
-          }
-        }
+            background: this.layoutConfig('colors.theme.light.primary'),
+            strokeWidth: '100%',
+          },
+        },
       },
-      colors: [this.layoutConfig("colors.theme.base.primary")],
+      colors: [this.layoutConfig('colors.theme.base.primary')],
       stroke: {
-        lineCap: "round"
+        lineCap: 'round',
       },
-      labels: ["Progress"]
+      labels: ['Progress'],
     };
-  }
+  },
 };
 </script>

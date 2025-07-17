@@ -3,15 +3,12 @@
     <div
       class="error error-6 d-flex flex-row-fluid bgi-size-cover bgi-position-center"
       :style="{
-        backgroundImage: `url(${backgroundImage})`
+        backgroundImage: `url(${backgroundImage})`,
       }"
     >
       <!-- begin:: Content -->
       <div class="d-flex flex-column flex-row-fluid text-center">
-        <h1
-          class="error-title font-weight-boldest text-white mb-12"
-          style="margin-top: 12rem;"
-        >
+        <h1 class="error-title font-weight-boldest text-white mb-12" style="margin-top: 12rem;">
           Oops...
         </h1>
         <p class="display-4 font-weight-bold text-white">
@@ -26,17 +23,17 @@
 </template>
 
 <style lang="scss">
-@import "@/assets/sass/pages/error/error-6.scss";
+@import '@/assets/sass/pages/error/error-6.scss';
 </style>
 
 <script>
 export default {
-  name: "Error-6",
+  name: 'Error-6',
   mounted() {},
   computed: {
     backgroundImage() {
-      return process.env.BASE_URL + "media/error/bg6.jpg";
-    }
-  }
+      return process.env.BASE_URL + 'media/error/bg6.jpg';
+    },
+  },
 };
 </script>

@@ -20,6 +20,8 @@ import { SUCCESS } from '../../../core/constants';
 import { NextFunction, Request, Response } from 'express';
 import { isEmpty } from 'lodash';
 import { EMPTY_REQUEST_BODY } from './messages/response-messages';
+import { updateEncounterWithEntityId } from '../../../core/middleware/createEncounter';
+import { EncounterType } from '../../../database/models/encounter';
 
 export class PharmacyOrderController {
   /**
@@ -89,6 +91,19 @@ export class PharmacyOrderController {
         +req.params.id
       );
 
+      // Update encounter with the created drug IDs
+      if (drugs && drugs.length > 0) {
+        for (const drug of drugs) {
+          await updateEncounterWithEntityId(
+            EncounterType.PRESCRIPTION,
+            'PrescribedDrug',
+            drug.id,
+            +req.params.id,
+            req.user.sub
+          );
+        }
+      }
+
       return successResponse({
         res,
         data: drugs,
@@ -127,6 +142,19 @@ export class PharmacyOrderController {
         req.user.sub,
         +req.params.id
       );
+
+      // Update encounter with the created additional item IDs
+      if (tests && tests.length > 0) {
+        for (const test of tests) {
+          await updateEncounterWithEntityId(
+            EncounterType.PRESCRIPTION,
+            'PrescribedAdditionalItem',
+            test.id,
+            +req.params.id,
+            req.user.sub
+          );
+        }
+      }
 
       return successResponse({
         res,

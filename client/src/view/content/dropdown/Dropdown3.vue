@@ -35,10 +35,7 @@
           </span>
           <span class="navi-text">Groups</span>
           <span class="navi-link-badge">
-            <span
-              class="label label-light-primary label-inline font-weight-bold"
-              >new</span
-            >
+            <span class="label label-light-primary label-inline font-weight-bold">new</span>
           </span>
         </a>
       </b-dropdown-text>
@@ -74,9 +71,7 @@
           </span>
           <span class="navi-text">Privacy</span>
           <span class="navi-link-badge">
-            <span
-              class="label label-light-danger label-rounded font-weight-bold"
-            >
+            <span class="label label-light-danger label-rounded font-weight-bold">
               5
             </span>
           </span>
@@ -115,8 +110,8 @@
 
 <script>
 export default {
-  name: "dropdown-3",
+  name: 'dropdown-3',
   components: {},
-  mounted() {}
+  mounted() {},
 };
 </script>

@@ -6,9 +6,7 @@
     >
       <h4 class="d-flex flex-center rounded-top">
         <span class="text-white">User Notifications</span>
-        <span
-          class="btn btn-text btn-success btn-sm font-weight-bold btn-font-md ml-2"
-        >
+        <span class="btn btn-text btn-success btn-sm font-weight-bold btn-font-md ml-2">
           23 new
         </span>
       </h4>
@@ -58,23 +56,14 @@
 
     <b-tabs class="hide-tabs" v-model="tabIndex">
       <b-tab active class="p-8">
-        <perfect-scrollbar
-          class="scroll pr-7 mr-n7"
-          style="max-height: 40vh; position: relative;"
-        >
+        <perfect-scrollbar class="scroll pr-7 mr-n7" style="max-height: 40vh; position: relative;">
           <template v-for="(item, i) in list1">
             <!--begin::Item-->
             <div class="d-flex align-items-center mb-6" v-bind:key="i">
               <!--begin::Symbol-->
-              <div
-                class="symbol symbol-40 mr-5"
-                v-bind:class="`symbol-light-${item.color}`"
-              >
+              <div class="symbol symbol-40 mr-5" v-bind:class="`symbol-light-${item.color}`">
                 <span class="symbol-label">
-                  <span
-                    class="svg-icon svg-icon-lg"
-                    v-bind:class="`svg-icon-${item.color}`"
-                  >
+                  <span class="svg-icon svg-icon-lg" v-bind:class="`svg-icon-${item.color}`">
                     <!--begin::Svg Icon-->
                     <inline-svg :src="item.svg" />
                     <!--end::Svg Icon-->
@@ -84,10 +73,7 @@
               <!--end::Symbol-->
               <!--begin::Text-->
               <div class="d-flex flex-column font-weight-bold">
-                <a
-                  href="#"
-                  class="text-dark text-hover-primary mb-1 font-size-lg"
-                >
+                <a href="#" class="text-dark text-hover-primary mb-1 font-size-lg">
                   {{ item.title }}
                 </a>
                 <span class="text-muted">
@@ -144,144 +130,138 @@
 
 <script>
 export default {
-  name: "KTDropdownNotification",
+  name: 'KTDropdownNotification',
   data() {
     return {
       tabIndex: 0,
       list1: [
         {
-          title: "Briviba SaaS",
-          desc: "PHP, SQLite, Artisan CLIмм",
-          color: "primary",
-          svg: process.env.BASE_URL + "media/svg/icons/Home/Library.svg"
+          title: 'Briviba SaaS',
+          desc: 'PHP, SQLite, Artisan CLIмм',
+          color: 'primary',
+          svg: process.env.BASE_URL + 'media/svg/icons/Home/Library.svg',
         },
         {
-          title: "Briviba SaaS",
-          desc: "PHP, SQLite, Artisan CLIмм",
-          color: "warning",
-          svg: process.env.BASE_URL + "media/svg/icons/Communication/Write.svg"
+          title: 'Briviba SaaS',
+          desc: 'PHP, SQLite, Artisan CLIмм',
+          color: 'warning',
+          svg: process.env.BASE_URL + 'media/svg/icons/Communication/Write.svg',
         },
         {
-          title: "Briviba SaaS",
-          desc: "PHP, SQLite, Artisan CLIмм",
-          color: "success",
-          svg:
-            process.env.BASE_URL +
-            "media/svg/icons/Communication/Group-chat.svg"
+          title: 'Briviba SaaS',
+          desc: 'PHP, SQLite, Artisan CLIмм',
+          color: 'success',
+          svg: process.env.BASE_URL + 'media/svg/icons/Communication/Group-chat.svg',
         },
         {
-          title: "Briviba SaaS",
-          desc: "PHP, SQLite, Artisan CLIмм",
-          color: "danger",
-          svg: process.env.BASE_URL + "media/svg/icons/General/Attachment2.svg"
+          title: 'Briviba SaaS',
+          desc: 'PHP, SQLite, Artisan CLIмм',
+          color: 'danger',
+          svg: process.env.BASE_URL + 'media/svg/icons/General/Attachment2.svg',
         },
         {
-          title: "Briviba SaaS",
-          desc: "PHP, SQLite, Artisan CLIмм",
-          color: "info",
-          svg:
-            process.env.BASE_URL +
-            "media/svg/icons/Communication/Shield-user.svg"
+          title: 'Briviba SaaS',
+          desc: 'PHP, SQLite, Artisan CLIмм',
+          color: 'info',
+          svg: process.env.BASE_URL + 'media/svg/icons/Communication/Shield-user.svg',
         },
         {
-          title: "Briviba SaaS",
-          desc: "PHP, SQLite, Artisan CLIмм",
-          color: "info",
-          svg:
-            process.env.BASE_URL +
-            "media/svg/icons/Communication/Mail-notification.svg"
+          title: 'Briviba SaaS',
+          desc: 'PHP, SQLite, Artisan CLIмм',
+          color: 'info',
+          svg: process.env.BASE_URL + 'media/svg/icons/Communication/Mail-notification.svg',
         },
         {
-          title: "Briviba SaaS",
-          desc: "PHP, SQLite, Artisan CLIмм",
-          color: "info",
-          svg: process.env.BASE_URL + "media/svg/icons/Design/Bucket.svg"
-        }
+          title: 'Briviba SaaS',
+          desc: 'PHP, SQLite, Artisan CLIмм',
+          color: 'info',
+          svg: process.env.BASE_URL + 'media/svg/icons/Design/Bucket.svg',
+        },
       ],
       list2: [
         {
-          title: "New report has been received",
-          desc: "23 hrs ago",
-          icon: "flaticon2-line-chart text-success"
+          title: 'New report has been received',
+          desc: '23 hrs ago',
+          icon: 'flaticon2-line-chart text-success',
         },
         {
-          title: "Finance report has been generated",
-          desc: "25 hrs ago",
-          icon: "flaticon2-paper-plane text-danger"
+          title: 'Finance report has been generated',
+          desc: '25 hrs ago',
+          icon: 'flaticon2-paper-plane text-danger',
         },
         {
-          title: "New order has been received",
-          desc: "2 hrs ago",
-          icon: "flaticon2-user flaticon2-line- text-success"
+          title: 'New order has been received',
+          desc: '2 hrs ago',
+          icon: 'flaticon2-user flaticon2-line- text-success',
         },
         {
-          title: "New customer is registered",
-          desc: "3 hrs ago",
-          icon: "flaticon2-pin text-primary"
+          title: 'New customer is registered',
+          desc: '3 hrs ago',
+          icon: 'flaticon2-pin text-primary',
         },
         {
-          title: "Application has been approved",
-          desc: "3 hrs ago",
-          icon: "flaticon2-sms text-danger"
+          title: 'Application has been approved',
+          desc: '3 hrs ago',
+          icon: 'flaticon2-sms text-danger',
         },
         {
-          title: "New file has been uploaded",
-          desc: "5 hrs ago",
-          icon: "flaticon2-pie-chart-3 text-warning"
+          title: 'New file has been uploaded',
+          desc: '5 hrs ago',
+          icon: 'flaticon2-pie-chart-3 text-warning',
         },
         {
-          title: "New user feedback received",
-          desc: "8 hrs ago",
-          icon: "flaticon-pie-chart-1 text-info"
+          title: 'New user feedback received',
+          desc: '8 hrs ago',
+          icon: 'flaticon-pie-chart-1 text-info',
         },
         {
-          title: "System reboot has been successfully completed",
-          desc: "12 hrs ago",
-          icon: "flaticon2-settings text-success"
+          title: 'System reboot has been successfully completed',
+          desc: '12 hrs ago',
+          icon: 'flaticon2-settings text-success',
         },
         {
-          title: "New order has been placed",
-          desc: "15 hrs ago",
-          icon: "flaticon-safe-shield-protection text-primary"
+          title: 'New order has been placed',
+          desc: '15 hrs ago',
+          icon: 'flaticon-safe-shield-protection text-primary',
         },
         {
-          title: "Company meeting canceled",
-          desc: "19 hrs ago",
-          icon: "flaticon2-notification text-primary"
+          title: 'Company meeting canceled',
+          desc: '19 hrs ago',
+          icon: 'flaticon2-notification text-primary',
         },
         {
-          title: "New report has been received",
-          desc: "23 hrs ago",
-          icon: "flaticon2-fax text-success"
+          title: 'New report has been received',
+          desc: '23 hrs ago',
+          icon: 'flaticon2-fax text-success',
         },
         {
-          title: "Finance report has been generated",
-          desc: "25 hrs ago",
-          icon: "flaticon-download-1 text-danger"
-        }
-      ]
+          title: 'Finance report has been generated',
+          desc: '25 hrs ago',
+          icon: 'flaticon-download-1 text-danger',
+        },
+      ],
     };
   },
   methods: {
     setActiveTab(event) {
       const tab = event.target.closest('[role="tablist"]');
-      const links = tab.querySelectorAll(".nav-link");
+      const links = tab.querySelectorAll('.nav-link');
       // remove active tab links
       for (let i = 0; i < links.length; i++) {
-        links[i].classList.remove("active");
+        links[i].classList.remove('active');
       }
 
       // set clicked tab index to bootstrap tab
-      this.tabIndex = parseInt(event.target.getAttribute("data-tab"));
+      this.tabIndex = parseInt(event.target.getAttribute('data-tab'));
 
       // set current active tab
-      event.target.classList.add("active");
-    }
+      event.target.classList.add('active');
+    },
   },
   computed: {
     backgroundImage() {
-      return process.env.BASE_URL + "media/misc/bg-1.jpg";
-    }
-  }
+      return process.env.BASE_URL + 'media/misc/bg-1.jpg';
+    },
+  },
 };
 </script>

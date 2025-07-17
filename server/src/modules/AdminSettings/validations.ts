@@ -58,7 +58,8 @@ export function validateCreateDefault(req) {
         DefaultType.ADMISSION_ITEMS,
         DefaultType.WATER_INJECTIONS,
         DefaultType.CIRCUMCISION_ROUTINE_DRUGS,
-        DefaultType.HSG_ADDITIONAL_ITEMS
+        DefaultType.HSG_ADDITIONAL_ITEMS,
+        DefaultType.DIALYSIS_ITEMS
       )
       .required(),
     data: Joi.any().required(),

@@ -12,6 +12,8 @@ import { NextFunction, Request, Response } from 'express';
 import { SUCCESS } from '../../../core/constants';
 import { isEmpty } from 'lodash';
 import { EMPTY_REQUEST_BODY } from './messages/response-messages';
+import { updateEncounterWithEntityId } from '../../../core/middleware/createEncounter';
+import { EncounterType } from '../../../database/models/encounter';
 
 export class RadiologyOrderController {
   /**
@@ -41,6 +43,19 @@ export class RadiologyOrderController {
         staff_id: req.user.sub,
         visit_id: req.params.id,
       });
+
+      // Update encounter with the created investigation IDs
+      if (investigations && investigations.length > 0) {
+        for (const investigation of investigations) {
+          await updateEncounterWithEntityId(
+            EncounterType.RADIOLOGY_ORDER,
+            'PrescribedInvestigation',
+            investigation.id,
+            +req.params.id,
+            req.user.sub
+          );
+        }
+      }
 
       return successResponse({
         res,

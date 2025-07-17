@@ -3,13 +3,11 @@
     <div
       class="error error-3 d-flex flex-row-fluid bgi-size-cover bgi-position-center"
       :style="{
-        backgroundImage: `url(${backgroundImage})`
+        backgroundImage: `url(${backgroundImage})`,
       }"
     >
       <!-- begin:: Content -->
-      <div
-        class="px-10 px-md-30 py-10 py-md-0 d-flex flex-column justify-content-md-center"
-      >
+      <div class="px-10 px-md-30 py-10 py-md-0 d-flex flex-column justify-content-md-center">
         <h1 class="error-title text-stroke text-transparent">
           404
         </h1>
@@ -30,17 +28,17 @@
 </template>
 
 <style lang="scss">
-@import "@/assets/sass/pages/error/error-3.scss";
+@import '@/assets/sass/pages/error/error-3.scss';
 </style>
 
 <script>
 export default {
-  name: "Error-3",
+  name: 'Error-3',
   mounted() {},
   computed: {
     backgroundImage() {
-      return process.env.BASE_URL + "media/error/bg3.jpg";
-    }
-  }
+      return process.env.BASE_URL + 'media/error/bg3.jpg';
+    },
+  },
 };
 </script>

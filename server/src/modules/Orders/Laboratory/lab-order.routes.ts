@@ -2,14 +2,14 @@ import { Router } from 'express';
 import verify from '../../../core/middleware/verify';
 import LabOrderController from './lab-order.controller';
 import patientMustBeDiagnosed from '../../../core/middleware/patientMustBeDiagnosed';
-import { createEncounter } from '../../../core/middleware/createEncounter';
+import { createLabOrderEncounter } from '../../../core/middleware/createEncounter';
 
 const router = Router();
 router.post(
   '/create/:id',
   verify,
   patientMustBeDiagnosed,
-  createEncounter,
+  createLabOrderEncounter,
   LabOrderController.orderLabTest
 );
 router.get('/get', verify, LabOrderController.getPrescribedTests);

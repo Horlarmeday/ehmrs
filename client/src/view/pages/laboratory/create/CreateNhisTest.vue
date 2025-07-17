@@ -13,7 +13,7 @@
             v-model="name"
             name="name"
           />
-          <span class="text-danger text-sm">{{ errors.first("name") }}</span>
+          <span class="text-danger text-sm">{{ errors.first('name') }}</span>
         </div>
       </div>
       <div class="form-group row">
@@ -28,7 +28,7 @@
             v-model="price"
             name="price"
           />
-          <span class="text-danger text-sm">{{ errors.first("price") }}</span>
+          <span class="text-danger text-sm">{{ errors.first('price') }}</span>
         </div>
       </div>
       <div class="form-group row">
@@ -41,14 +41,11 @@
             data-vv-validate-on="blur"
             name="sample"
           >
-            <option
-              :value="sample.id"
-              v-for="sample in samples"
-              :key="sample.id"
-              >{{ sample.name }}</option
-            >
+            <option :value="sample.id" v-for="sample in samples" :key="sample.id">{{
+              sample.name
+            }}</option>
           </select>
-          <span class="text-danger text-sm">{{ errors.first("sample") }}</span>
+          <span class="text-danger text-sm">{{ errors.first('sample') }}</span>
         </div>
       </div>
       <div class="form-group row">
@@ -63,7 +60,7 @@
             v-model="code"
             name="code"
           />
-          <span class="text-danger text-sm">{{ errors.first("code") }}</span>
+          <span class="text-danger text-sm">{{ errors.first('code') }}</span>
         </div>
       </div>
       <div class="form-group row">
@@ -79,9 +76,7 @@
             <option value="primary">Primary</option>
             <option value="secondary">Secondary</option>
           </select>
-          <span class="text-danger text-sm">{{
-            errors.first("test_type")
-          }}</span>
+          <span class="text-danger text-sm">{{ errors.first('test_type') }}</span>
         </div>
       </div>
     </div>
@@ -101,40 +96,40 @@ export default {
   props: {
     displayPrompt: {
       type: Boolean,
-      required: true
+      required: true,
     },
     data: {
       type: Object,
-      default: () => {}
-    }
+      default: () => {},
+    },
   },
   data() {
     return {
-      name: "",
-      price: "",
-      test_id: "",
-      code: "",
-      sample_id: "",
-      type: "",
-      isDisabled: false
+      name: '',
+      price: '',
+      test_id: '',
+      code: '',
+      sample_id: '',
+      type: '',
+      isDisabled: false,
     };
   },
   computed: {
     validateForm() {
-      return !this.errors.any() && this.type !== "";
+      return !this.errors.any() && this.type !== '';
     },
     activePrompt: {
       get() {
         return this.displayPrompt;
       },
       set(value) {
-        this.$emit("closeModal", value);
-      }
+        this.$emit('closeModal', value);
+      },
     },
 
     samples() {
       return this.$store.state.laboratory.samples;
-    }
+    },
   },
   watch: {
     displayPrompt(val) {
@@ -143,9 +138,7 @@ export default {
         this.initValues();
         this.$validator.reset();
       } else {
-        const { id, name, price, sample_id, code, type } = JSON.parse(
-          JSON.stringify(this.data)
-        );
+        const { id, name, price, sample_id, code, type } = JSON.parse(JSON.stringify(this.data));
         this.test_id = id;
         this.name = name;
         this.price = price;
@@ -153,25 +146,21 @@ export default {
         this.type = type;
         this.sample_id = sample_id;
       }
-    }
+    },
   },
   methods: {
     addSpinner(submitButton) {
       this.isDisabled = true;
-      submitButton.classList.add("spinner", "spinner-light", "spinner-right");
+      submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');
     },
 
     removeSpinner(submitButton) {
       this.isDisabled = false;
-      submitButton.classList.remove(
-        "spinner",
-        "spinner-light",
-        "spinner-right"
-      );
+      submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
     },
     initializeRequest(button) {
       this.removeSpinner(button);
-      this.$emit("closeModal");
+      this.$emit('closeModal');
       this.initValues();
     },
     createTest() {
@@ -183,21 +172,21 @@ export default {
             price: this.price,
             code: this.code,
             type: this.type,
-            test_id: this.test_id
+            test_id: this.test_id,
           };
           // set spinner to submit button
-          const submitButton = this.$refs["kt_test_submit"];
+          const submitButton = this.$refs['kt_test_submit'];
           this.addSpinner(submitButton);
 
           if (this.test_id && this.test_id >= 0) {
             this.$store
-              .dispatch("laboratory/updateNhisTest", obj)
+              .dispatch('laboratory/updateNhisTest', obj)
               .then(() => this.initializeRequest(submitButton))
               .catch(() => this.removeSpinner(submitButton));
           } else {
             delete obj.test_id;
             this.$store
-              .dispatch("laboratory/addNhisTest", obj)
+              .dispatch('laboratory/addNhisTest', obj)
               .then(() => this.initializeRequest(submitButton))
               .catch(() => this.removeSpinner(submitButton));
           }
@@ -205,20 +194,20 @@ export default {
       });
     },
     initValues() {
-      this.name = "";
-      this.price = "";
-      this.test_id = "";
-      this.sample_id = "";
-      this.type = "";
-      this.code = "";
-    }
+      this.name = '';
+      this.price = '';
+      this.test_id = '';
+      this.sample_id = '';
+      this.type = '';
+      this.code = '';
+    },
   },
   created() {
-    this.$store.dispatch("laboratory/fetchTestSamples", {
+    this.$store.dispatch('laboratory/fetchTestSamples', {
       currentPage: 1,
-      itemsPerPage: 20
+      itemsPerPage: 20,
     });
-  }
+  },
 };
 </script>
 

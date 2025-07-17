@@ -7,10 +7,7 @@
       <span class="font-weight-bold font-size-3 text-dark-60">
         Already have an account?
       </span>
-      <router-link
-        class="font-weight-bold font-size-3 ml-2"
-        :to="{ name: 'login' }"
-      >
+      <router-link class="font-weight-bold font-size-3 ml-2" :to="{ name: 'login' }">
         Sign In!
       </router-link>
     </div>
@@ -27,11 +24,7 @@
 
       <!--begin::Form-->
       <b-form class="form" @submit.stop.prevent="onSubmit">
-        <b-form-group
-          id="example-input-group-0"
-          label=""
-          label-for="example-input-0"
-        >
+        <b-form-group id="example-input-group-0" label="" label-for="example-input-0">
           <b-form-input
             class="form-control form-control-solid h-auto py-5 px-6"
             id="example-input-0"
@@ -47,11 +40,7 @@
           </b-form-invalid-feedback>
         </b-form-group>
 
-        <b-form-group
-          id="example-input-group-1"
-          label=""
-          label-for="example-input-1"
-        >
+        <b-form-group id="example-input-group-1" label="" label-for="example-input-1">
           <b-form-input
             class="form-control form-control-solid h-auto py-5 px-6"
             id="example-input-1"
@@ -67,11 +56,7 @@
           </b-form-invalid-feedback>
         </b-form-group>
 
-        <b-form-group
-          id="example-input-group-2"
-          label=""
-          label-for="example-input-2"
-        >
+        <b-form-group id="example-input-group-2" label="" label-for="example-input-2">
           <b-form-input
             class="form-control form-control-solid h-auto py-5 px-6"
             type="password"
@@ -119,40 +104,40 @@
 </style>
 
 <script>
-import { mapState } from "vuex";
+import { mapState } from 'vuex';
 // import { REGISTER } from "@/core/services/store/auth.module";
 // import { LOGOUT } from "@/core/services/store/auth.module";
 
-import { validationMixin } from "vuelidate";
-import { email, required, minLength } from "vuelidate/lib/validators";
+import { validationMixin } from 'vuelidate';
+import { email, required, minLength } from 'vuelidate/lib/validators';
 
 export default {
   mixins: [validationMixin],
-  name: "register",
+  name: 'register',
   data() {
     return {
       // Remove this dummy login info
       form: {
-        email: "admin@demo.com",
-        password: "demo"
-      }
+        email: 'admin@demo.com',
+        password: 'demo',
+      },
     };
   },
   validations: {
     form: {
       username: {
         required,
-        minLength: minLength(3)
+        minLength: minLength(3),
       },
       email: {
         required,
-        email
+        email,
       },
       password: {
         required,
-        minLength: minLength(3)
-      }
-    }
+        minLength: minLength(3),
+      },
+    },
   },
   methods: {
     validateState(name) {
@@ -163,7 +148,7 @@ export default {
       this.form = {
         username: null,
         email: null,
-        password: null
+        password: null,
       };
 
       this.$nextTick(() => {
@@ -184,8 +169,8 @@ export default {
       // this.$store.dispatch(LOGOUT);
 
       // set spinner to submit button
-      const submitButton = this.$refs["kt_login_signup_submit"];
-      submitButton.classList.add("spinner", "spinner-light", "spinner-right");
+      const submitButton = this.$refs['kt_login_signup_submit'];
+      submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');
 
       // dummy delay
       // setTimeout(() => {
@@ -204,12 +189,12 @@ export default {
       //     "spinner-right"
       //   );
       // }, 2000);
-    }
+    },
   },
   computed: {
     ...mapState({
-      errors: state => state.auth.errors
-    })
-  }
+      errors: state => state.auth.errors,
+    }),
+  },
 };
 </script>

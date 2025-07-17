@@ -108,7 +108,9 @@ export default {
         this.initValues();
         this.$validator.reset();
       } else {
-        const { id, name, desc, accepted_drug_type, refill_level } = JSON.parse(JSON.stringify(this.data));
+        const { id, name, desc, accepted_drug_type, refill_level } = JSON.parse(
+          JSON.stringify(this.data)
+        );
         this.inventory_id = id;
         this.name = name;
         this.desc = desc;

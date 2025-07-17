@@ -19,4 +19,4 @@ export default [
     icon: 'flaticon2-list-1',
     name: 'Reports',
   },
-]
+];

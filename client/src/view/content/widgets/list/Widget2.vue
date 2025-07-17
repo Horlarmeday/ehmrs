@@ -41,48 +41,48 @@
 </template>
 
 <script>
-import Dropdown5 from "@/view/content/dropdown/Dropdown5.vue";
+import Dropdown5 from '@/view/content/dropdown/Dropdown5.vue';
 
 export default {
-  name: "widget-2",
+  name: 'widget-2',
   components: {
-    Dropdown5
+    Dropdown5,
   },
   data() {
     return {
       list: [
         {
-          title: "Top Authors",
-          desc: "Mark, Rowling, Esther",
-          profit: "+82$",
-          img: "media/svg/misc/006-plurk.svg"
+          title: 'Top Authors',
+          desc: 'Mark, Rowling, Esther',
+          profit: '+82$',
+          img: 'media/svg/misc/006-plurk.svg',
         },
         {
-          title: "Popular Authors",
-          desc: "Randy, Steve, Mike",
-          profit: "+280$",
-          img: "media/svg/misc/015-telegram.svg"
+          title: 'Popular Authors',
+          desc: 'Randy, Steve, Mike',
+          profit: '+280$',
+          img: 'media/svg/misc/015-telegram.svg',
         },
         {
-          title: "New Users",
-          desc: "John, Pat, Jimmy",
-          profit: "+4500$",
-          img: "media/svg/misc/003-puzzle.svg"
+          title: 'New Users',
+          desc: 'John, Pat, Jimmy',
+          profit: '+4500$',
+          img: 'media/svg/misc/003-puzzle.svg',
         },
         {
-          title: "Active Customers",
-          desc: "Sandra, Tim, Louis",
-          profit: "+4500$",
-          img: "media/svg/misc/005-bebo.svg"
+          title: 'Active Customers',
+          desc: 'Sandra, Tim, Louis',
+          profit: '+4500$',
+          img: 'media/svg/misc/005-bebo.svg',
         },
         {
-          title: "Bestseller Theme",
-          desc: "Sandra, Tim, Louis",
-          profit: "+4500$",
-          img: "media/svg/misc/014-kickstarter.svg"
-        }
-      ]
+          title: 'Bestseller Theme',
+          desc: 'Sandra, Tim, Louis',
+          profit: '+4500$',
+          img: 'media/svg/misc/014-kickstarter.svg',
+        },
+      ],
     };
-  }
+  },
 };
 </script>

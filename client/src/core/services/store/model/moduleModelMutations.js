@@ -154,6 +154,21 @@ export default {
     state.encountersPages = pages;
   },
 
+  /**
+   * ENCOUNTER DETAILS
+   */
+  SET_ENCOUNTER_DETAILS(state, details) {
+    state.encounterDetails = details;
+  },
+
+  SET_ENCOUNTER_ACTIONS(state, actions) {
+    state.encounterActions = actions;
+  },
+
+  SET_ENCOUNTER_DETAILS_LOADING(state, loading) {
+    state.encounterDetailsLoading = loading;
+  },
+
   // eslint-disable-next-line no-unused-vars
   SET_MERGE_ACCOUNTS(state, accounts) {},
 };

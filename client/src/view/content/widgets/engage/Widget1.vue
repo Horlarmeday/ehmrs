@@ -14,9 +14,7 @@
           <a href="#" class="btn btn-link btn-link-warning font-weight-bold"
             >Create Report
             <span class="svg-icon svg-icon-lg svg-icon-warning">
-              <inline-svg
-                src="media/svg/icons/Navigation/Arrow-right.svg"
-              /> </span
+              <inline-svg src="media/svg/icons/Navigation/Arrow-right.svg" /> </span
           ></a>
         </div>
         <div class="position-absolute right-0 bottom-0 mr-5 overflow-hidden">
@@ -33,6 +31,6 @@
 
 <script>
 export default {
-  name: "widget-1"
+  name: 'widget-1',
 };
 </script>

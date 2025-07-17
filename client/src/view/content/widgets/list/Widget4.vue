@@ -3,9 +3,7 @@
     <!--begin::Header-->
     <div class="card-header border-0 pt-5">
       <h3 class="card-title align-items-start flex-column">
-        <span class="card-label font-weight-bolder text-dark"
-          >New Arrivals</span
-        >
+        <span class="card-label font-weight-bolder text-dark">New Arrivals</span>
         <span class="text-muted mt-3 font-weight-bold font-size-sm"
           >More than 400+ new members</span
         >
@@ -66,11 +64,7 @@
                 <td class="py-5 pl-0">
                   <div class="symbol symbol-50 symbol-light mr-2">
                     <span class="symbol-label">
-                      <img
-                        :src="item.svg"
-                        class="h-50 align-self-center"
-                        alt=""
-                      />
+                      <img :src="item.svg" class="h-50 align-self-center" alt="" />
                     </span>
                   </div>
                 </td>
@@ -80,14 +74,10 @@
                     class="text-dark font-weight-bolder text-hover-primary mb-1 font-size-lg"
                     >{{ item.name }}</a
                   >
-                  <span class="text-muted font-weight-bold d-block">{{
-                    item.desc
-                  }}</span>
+                  <span class="text-muted font-weight-bold d-block">{{ item.desc }}</span>
                 </td>
                 <td class="text-right">
-                  <span class="text-muted font-weight-500">{{
-                    item.desc2
-                  }}</span>
+                  <span class="text-muted font-weight-500">{{ item.desc2 }}</span>
                 </td>
                 <td class="text-right">
                   <span
@@ -99,9 +89,7 @@
                 <td class="text-right pr-0">
                   <a href="#" class="btn btn-icon btn-light btn-sm">
                     <span class="svg-icon svg-icon-md svg-icon-success">
-                      <inline-svg
-                        src="media/svg/icons/Navigation/Arrow-right.svg"
-                      />
+                      <inline-svg src="media/svg/icons/Navigation/Arrow-right.svg" />
                     </span>
                   </a>
                 </td>
@@ -117,150 +105,150 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters } from 'vuex';
 
 export default {
-  name: "widget-4",
+  name: 'widget-4',
   data() {
     return {
-      show: "day",
+      show: 'day',
       day: [
         {
-          title: "New Users",
-          desc: "Awesome Users",
-          desc2: "Laravel,Metronic",
-          status: "Success",
-          svg: "media/svg/misc/003-puzzle.svg",
-          class: "success"
+          title: 'New Users',
+          desc: 'Awesome Users',
+          desc2: 'Laravel,Metronic',
+          status: 'Success',
+          svg: 'media/svg/misc/003-puzzle.svg',
+          class: 'success',
         },
         {
-          title: "Active Customers",
-          desc: "Best Customers",
-          desc2: "AngularJS, C#",
-          status: "Rejected",
-          svg: "media/svg/misc/005-bebo.svg",
-          class: "danger"
+          title: 'Active Customers',
+          desc: 'Best Customers',
+          desc2: 'AngularJS, C#',
+          status: 'Rejected',
+          svg: 'media/svg/misc/005-bebo.svg',
+          class: 'danger',
         },
         {
-          title: "Top Authors",
-          desc: "Successful Fellas",
-          desc2: "ReactJs, HTML",
-          status: "Approved",
-          svg: "media/svg/misc/006-plurk.svg",
-          class: "primary"
+          title: 'Top Authors',
+          desc: 'Successful Fellas',
+          desc2: 'ReactJs, HTML',
+          status: 'Approved',
+          svg: 'media/svg/misc/006-plurk.svg',
+          class: 'primary',
         },
         {
-          title: "Popular Authors",
-          desc: "Most Successful",
-          desc2: "Python, MySQL",
-          status: "In Progress",
-          svg: "media/svg/misc/015-telegram.svg",
-          class: "warning"
+          title: 'Popular Authors',
+          desc: 'Most Successful',
+          desc2: 'Python, MySQL',
+          status: 'In Progress',
+          svg: 'media/svg/misc/015-telegram.svg',
+          class: 'warning',
         },
         {
-          title: "Bestseller Theme",
-          desc: "Amazing Templates",
-          desc2: "ReactJS, Ruby",
-          status: "In Progress",
-          svg: "media/svg/misc/014-kickstarter.svg",
-          class: "warning"
-        }
+          title: 'Bestseller Theme',
+          desc: 'Amazing Templates',
+          desc2: 'ReactJS, Ruby',
+          status: 'In Progress',
+          svg: 'media/svg/misc/014-kickstarter.svg',
+          class: 'warning',
+        },
       ],
       month: [
         {
-          title: "Bestseller Theme",
-          desc: "Amazing Templates",
-          desc2: "ReactJS, Ruby",
-          status: "In Progress",
-          svg: "media/svg/misc/014-kickstarter.svg",
-          class: "warning"
+          title: 'Bestseller Theme',
+          desc: 'Amazing Templates',
+          desc2: 'ReactJS, Ruby',
+          status: 'In Progress',
+          svg: 'media/svg/misc/014-kickstarter.svg',
+          class: 'warning',
         },
         {
-          title: "Popular Authors",
-          desc: "Most Successful",
-          desc2: "Python, MySQL",
-          status: "In Progress",
-          svg: "media/svg/misc/015-telegram.svg",
-          class: "warning"
+          title: 'Popular Authors',
+          desc: 'Most Successful',
+          desc2: 'Python, MySQL',
+          status: 'In Progress',
+          svg: 'media/svg/misc/015-telegram.svg',
+          class: 'warning',
         },
         {
-          title: "New Users",
-          desc: "Awesome Users",
-          desc2: "Laravel,Metronic",
-          status: "Success",
-          svg: "media/svg/misc/003-puzzle.svg",
-          class: "success"
+          title: 'New Users',
+          desc: 'Awesome Users',
+          desc2: 'Laravel,Metronic',
+          status: 'Success',
+          svg: 'media/svg/misc/003-puzzle.svg',
+          class: 'success',
         },
         {
-          title: "Active Customers",
-          desc: "Best Customers",
-          desc2: "AngularJS, C#",
-          status: "Rejected",
-          svg: "media/svg/misc/005-bebo.svg",
-          class: "danger"
+          title: 'Active Customers',
+          desc: 'Best Customers',
+          desc2: 'AngularJS, C#',
+          status: 'Rejected',
+          svg: 'media/svg/misc/005-bebo.svg',
+          class: 'danger',
         },
         {
-          title: "Top Authors",
-          desc: "Successful Fellas",
-          desc2: "ReactJs, HTML",
-          status: "Approved",
-          svg: "media/svg/misc/006-plurk.svg",
-          class: "primary"
-        }
+          title: 'Top Authors',
+          desc: 'Successful Fellas',
+          desc2: 'ReactJs, HTML',
+          status: 'Approved',
+          svg: 'media/svg/misc/006-plurk.svg',
+          class: 'primary',
+        },
       ],
       week: [
         {
-          title: "Popular Authors",
-          desc: "Most Successful",
-          desc2: "Python, MySQL",
-          status: "In Progress",
-          svg: "media/svg/misc/015-telegram.svg",
-          class: "warning"
+          title: 'Popular Authors',
+          desc: 'Most Successful',
+          desc2: 'Python, MySQL',
+          status: 'In Progress',
+          svg: 'media/svg/misc/015-telegram.svg',
+          class: 'warning',
         },
         {
-          title: "New Users",
-          desc: "Awesome Users",
-          desc2: "Laravel,Metronic",
-          status: "Success",
-          svg: "media/svg/misc/003-puzzle.svg",
-          class: "success"
+          title: 'New Users',
+          desc: 'Awesome Users',
+          desc2: 'Laravel,Metronic',
+          status: 'Success',
+          svg: 'media/svg/misc/003-puzzle.svg',
+          class: 'success',
         },
         {
-          title: "Active Customers",
-          desc: "Best Customers",
-          desc2: "AngularJS, C#",
-          status: "Rejected",
-          svg: "media/svg/misc/005-bebo.svg",
-          class: "danger"
+          title: 'Active Customers',
+          desc: 'Best Customers',
+          desc2: 'AngularJS, C#',
+          status: 'Rejected',
+          svg: 'media/svg/misc/005-bebo.svg',
+          class: 'danger',
         },
         {
-          title: "Top Authors",
-          desc: "Successful Fellas",
-          desc2: "ReactJs, HTML",
-          status: "Approved",
-          svg: "media/svg/misc/006-plurk.svg",
-          class: "primary"
+          title: 'Top Authors',
+          desc: 'Successful Fellas',
+          desc2: 'ReactJs, HTML',
+          status: 'Approved',
+          svg: 'media/svg/misc/006-plurk.svg',
+          class: 'primary',
         },
         {
-          title: "Bestseller Theme",
-          desc: "Amazing Templates",
-          desc2: "ReactJS, Ruby",
-          status: "In Progress",
-          svg: "media/svg/misc/014-kickstarter.svg",
-          class: "warning"
-        }
-      ]
+          title: 'Bestseller Theme',
+          desc: 'Amazing Templates',
+          desc2: 'ReactJS, Ruby',
+          status: 'In Progress',
+          svg: 'media/svg/misc/014-kickstarter.svg',
+          class: 'warning',
+        },
+      ],
     };
   },
   computed: {
-    ...mapGetters(["layoutConfig"]),
+    ...mapGetters(['layoutConfig']),
 
     dataToShow() {
-      if (this.show === "month") return this.month;
-      if (this.show === "week") return this.week;
-      if (this.show === "day") return this.day;
+      if (this.show === 'month') return this.month;
+      if (this.show === 'week') return this.week;
+      if (this.show === 'day') return this.day;
       return this.day;
-    }
-  }
+    },
+  },
 };
 </script>

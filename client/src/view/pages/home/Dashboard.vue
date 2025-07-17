@@ -25,6 +25,7 @@ import Urologist from './medicalPractitioners/urologist/Dashboard.vue';
 import Endocrinologist from './medicalPractitioners/endocrinologist/Dashboard.vue';
 import Gastroenterologist from './medicalPractitioners/gastroenterologist/Dashboard.vue';
 import Physiotherapist from './medicalPractitioners/physiotherapist/Dashboard.vue';
+import Hematologist from './medicalPractitioners/hematologist/Dashboard.vue';
 import GOPD from './nurse/opd/Dashboard.vue';
 import FemaleWard from './nurse/femaleWard/Dashboard.vue';
 import MaleWard from './nurse/maleWard/Dashboard.vue';
@@ -57,6 +58,7 @@ const Roles = {
   DERMATOLOGIST: 'Dermatologist',
   PSYCHIATRIST: 'Psychiatrist',
   ORTHOPAEDIST: 'Orthopaedist',
+  HEMATOLOGIST: 'Hematologist',
   UROLOGIST: 'Urologist',
   ENDOCRINOLOGIST: 'Endocrinologist',
   GASTROENTEROLOGIST: 'Gastroenterologist',
@@ -136,6 +138,8 @@ export default {
           return (this.dashboardComponent = PharmacyStore);
         case Roles.FINANCE_OFFICER:
           return (this.dashboardComponent = FinancialOfficer);
+        case Roles.HEMATOLOGIST:
+          return (this.dashboardComponent = Hematologist);
         default:
           return (this.dashboardComponent = MedicalRecords);
       }

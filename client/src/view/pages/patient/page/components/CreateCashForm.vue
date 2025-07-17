@@ -1,11 +1,7 @@
 <template>
   <div class="card-body">
     <div class="pt-6">
-      <img
-        src="/media/users/blank.png"
-        v-if="!videoShowing && !image"
-        width="160"
-      />
+      <img src="/media/users/blank.png" v-if="!videoShowing && !image" width="160" />
       <video
         ref="video"
         id="video"
@@ -13,8 +9,7 @@
         style="height:1px;width:120px;margin-bottom:20px;"
         autoplay
       ></video>
-      <canvas ref="canvas" id="canvas" width="250" height="187" v-show="image">
-      </canvas>
+      <canvas ref="canvas" id="canvas" width="250" height="187" v-show="image"> </canvas>
       <button
         id="snap"
         v-if="!image && !photoSaved && !videoShowing"
@@ -61,7 +56,7 @@
           placeholder="First Name"
           name="firstname"
         />
-        <span class="text-danger text-sm">{{ errors.first("firstname") }}</span>
+        <span class="text-danger text-sm">{{ errors.first('firstname') }}</span>
       </div>
       <div class="col-lg-4">
         <label>Middle Name</label>
@@ -72,9 +67,7 @@
           placeholder="Middle Name"
           name="middlename"
         />
-        <span class="text-danger text-sm">{{
-          errors.first("middlename")
-        }}</span>
+        <span class="text-danger text-sm">{{ errors.first('middlename') }}</span>
       </div>
       <div class="col-lg-4">
         <label>Last Name <span class="text-danger">*</span></label>
@@ -87,7 +80,7 @@
           placeholder="Last Name"
           name="lastname"
         />
-        <span class="text-danger text-sm">{{ errors.first("lastname") }}</span>
+        <span class="text-danger text-sm">{{ errors.first('lastname') }}</span>
       </div>
     </div>
     <!-- Contact -->
@@ -101,7 +94,7 @@
           placeholder="Enter email"
           v-model="email"
         />
-        <span class="text-danger text-sm">{{ errors.first("email") }}</span>
+        <span class="text-danger text-sm">{{ errors.first('email') }}</span>
       </div>
       <div class="col-lg-4">
         <label>Phone Number <span class="text-danger">*</span></label>
@@ -115,7 +108,7 @@
           placeholder="Phone Number"
           name="phone"
         />
-        <span class="text-danger text-sm">{{ errors.first("phone") }}</span>
+        <span class="text-danger text-sm">{{ errors.first('phone') }}</span>
       </div>
       <div class="col-lg-4">
         <label>Religion <span class="text-danger">*</span></label>
@@ -131,7 +124,7 @@
           <option value="Traditional">Traditional</option>
           <option value="Other">Other</option>
         </select>
-        <span class="text-danger text-sm">{{ errors.first("religion") }}</span>
+        <span class="text-danger text-sm">{{ errors.first('religion') }}</span>
       </div>
     </div>
     <div class="form-group row">
@@ -145,9 +138,7 @@
           input-class="form-control form-control-sm"
           placeholder="Date of Birth"
         ></datepicker>
-        <span class="text-danger text-sm">{{
-          errors.first("date_of_birth")
-        }}</span>
+        <span class="text-danger text-sm">{{ errors.first('date_of_birth') }}</span>
       </div>
       <div class="col-lg-4">
         <label>Gender <span class="text-danger">*</span></label>
@@ -162,7 +153,7 @@
           <option value="Female">Female</option>
           <option value="Other">Other</option>
         </select>
-        <span class="text-danger text-sm">{{ errors.first("gender") }}</span>
+        <span class="text-danger text-sm">{{ errors.first('gender') }}</span>
       </div>
       <div class="col-lg-4">
         <label>Marital Status <span class="text-danger">*</span></label>
@@ -179,9 +170,7 @@
           <option value="Widower">Widower</option>
           <option value="Divorced">Divorced</option>
         </select>
-        <span class="text-danger text-sm">{{
-          errors.first("marital_status")
-        }}</span>
+        <span class="text-danger text-sm">{{ errors.first('marital_status') }}</span>
       </div>
     </div>
     <div class="form-group row">
@@ -202,7 +191,7 @@
             >{{ country.name }}
           </option>
         </select>
-        <span class="text-danger text-sm">{{ errors.first("country") }}</span>
+        <span class="text-danger text-sm">{{ errors.first('country') }}</span>
       </div>
       <div class="col-lg-4">
         <label>States <span class="text-danger">*</span></label>
@@ -221,7 +210,7 @@
             >{{ state.name }}
           </option>
         </select>
-        <span class="text-danger text-sm">{{ errors.first("state") }}</span>
+        <span class="text-danger text-sm">{{ errors.first('state') }}</span>
       </div>
       <div class="col-lg-4">
         <label>Local Government <span class="text-danger">*</span></label>
@@ -232,14 +221,11 @@
           v-validate="'required'"
           data-vv-validate-on="blur"
         >
-          <option
-            v-for="city in cities"
-            :key="city.id"
-            :value="{ id: city.id, text: city.name }"
+          <option v-for="city in cities" :key="city.id" :value="{ id: city.id, text: city.name }"
             >{{ city.name }}
           </option>
         </select>
-        <span class="text-danger text-sm">{{ errors.first("lga") }}</span>
+        <span class="text-danger text-sm">{{ errors.first('lga') }}</span>
       </div>
     </div>
     <div class="form-group row">
@@ -254,7 +240,7 @@
           placeholder="Home Address"
           name="address"
         />
-        <span class="text-danger text-sm">{{ errors.first("address") }}</span>
+        <span class="text-danger text-sm">{{ errors.first('address') }}</span>
       </div>
       <div class="col-lg-4">
         <label>Occupation <span class="text-danger">*</span></label>
@@ -267,9 +253,7 @@
           placeholder="Occupation"
           name="occupation"
         />
-        <span class="text-danger text-sm">{{
-          errors.first("occupation")
-        }}</span>
+        <span class="text-danger text-sm">{{ errors.first('occupation') }}</span>
       </div>
       <div class="col-lg-4">
         <label>Alternate Phone Number</label>
@@ -294,9 +278,7 @@
           placeholder="Name"
           name="next_of_kin_name"
         />
-        <span class="text-danger text-sm">{{
-          errors.first("next_of_kin_name")
-        }}</span>
+        <span class="text-danger text-sm">{{ errors.first('next_of_kin_name') }}</span>
       </div>
       <div class="col-lg-4">
         <label>Next of Kin Address <span class="text-danger">*</span></label>
@@ -309,9 +291,7 @@
           placeholder="Address"
           name="next_of_kin_address"
         />
-        <span class="text-danger text-sm">{{
-          errors.first("next_of_kin_address")
-        }}</span>
+        <span class="text-danger text-sm">{{ errors.first('next_of_kin_address') }}</span>
       </div>
       <div class="col-lg-4">
         <label>Next of Kin Phone <span class="text-danger">*</span></label>
@@ -324,9 +304,7 @@
           placeholder="Phone"
           name="next_of_kin_phone"
         />
-        <span class="text-danger text-sm">{{
-          errors.first("next_of_kin_phone")
-        }}</span>
+        <span class="text-danger text-sm">{{ errors.first('next_of_kin_phone') }}</span>
       </div>
       <div class="col-lg-4">
         <label>Relationship <span class="text-danger">*</span></label>
@@ -349,47 +327,41 @@
           <option value="Uncle">Uncle</option>
           <option value="Aunt">Aunt</option>
         </select>
-        <span class="text-danger text-sm">{{
-          errors.first("relationship")
-        }}</span>
+        <span class="text-danger text-sm">{{ errors.first('relationship') }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import Datepicker from "vuejs-datepicker";
-import {
-  getCityById,
-  getCountries,
-  getStateById
-} from "../../../../../assets/json";
+import Datepicker from 'vuejs-datepicker';
+import { getCityById, getCountries, getStateById } from '../../../../../assets/json';
 export default {
-  name: "CreateCashForm",
+  name: 'CreateCashForm',
   components: {
-    Datepicker
+    Datepicker,
   },
   data() {
     return {
-      gender: "",
-      firstname: "",
-      lastname: "",
-      middlename: "",
-      religion: "",
-      email: "",
-      phone: "",
-      date_of_birth: "",
-      marital_status: "",
-      country: "",
-      state: "",
-      lga: "",
-      address: "",
-      occupation: "",
-      alt_phone: "",
-      next_of_kin_name: "",
-      next_of_kin_phone: "",
-      next_of_kin_address: "",
-      relationship: "",
+      gender: '',
+      firstname: '',
+      lastname: '',
+      middlename: '',
+      religion: '',
+      email: '',
+      phone: '',
+      date_of_birth: '',
+      marital_status: '',
+      country: '',
+      state: '',
+      lga: '',
+      address: '',
+      occupation: '',
+      alt_phone: '',
+      next_of_kin_name: '',
+      next_of_kin_phone: '',
+      next_of_kin_address: '',
+      relationship: '',
       countries: [],
       states: [],
       cities: [],
@@ -401,7 +373,7 @@ export default {
       isDisabled: false,
       video: {},
       canvas: {},
-      image: ""
+      image: '',
     };
   },
   computed: {
@@ -426,7 +398,7 @@ export default {
         this.image &&
         this.lga
       );
-    }
+    },
   },
   methods: {
     getStates() {
@@ -439,7 +411,7 @@ export default {
     startCamera() {
       this.toggleVideoShowing();
       this.video = this.$refs.video;
-      this.video.style = "display:block;width:250px;margin-bottom:20px;";
+      this.video.style = 'display:block;width:250px;margin-bottom:20px;';
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
           this.video.srcObject = stream;
@@ -461,13 +433,13 @@ export default {
 
     capture() {
       this.canvas = this.$refs.canvas;
-      this.canvas.getContext("2d").drawImage(this.video, 0, 0, 250, 187);
+      this.canvas.getContext('2d').drawImage(this.video, 0, 0, 250, 187);
       this.image = this.canvas.toDataURL();
     },
 
     snapAgain() {
       this.video = this.$refs.video;
-      this.video.style = "display:block;width:250px;margin-bottom:20px;";
+      this.video.style = 'display:block;width:250px;margin-bottom:20px;';
       this.image = null;
     },
 
@@ -476,37 +448,37 @@ export default {
     },
 
     initValues() {
-      this.gender = "";
-      this.firstname = "";
-      this.lastname = "";
-      this.middlename = "";
-      this.religion = "";
-      this.email = "";
-      this.phone = "";
-      this.date_of_birth = "";
-      this.marital_status = "";
-      this.country = "";
-      this.state = "";
-      this.lga = "";
-      this.address = "";
-      this.occupation = "";
-      this.alt_phone = "";
-      this.next_of_kin_name = "";
-      this.next_of_kin_phone = "";
-      this.next_of_kin_address = "";
-      this.relationship = "";
+      this.gender = '';
+      this.firstname = '';
+      this.lastname = '';
+      this.middlename = '';
+      this.religion = '';
+      this.email = '';
+      this.phone = '';
+      this.date_of_birth = '';
+      this.marital_status = '';
+      this.country = '';
+      this.state = '';
+      this.lga = '';
+      this.address = '';
+      this.occupation = '';
+      this.alt_phone = '';
+      this.next_of_kin_name = '';
+      this.next_of_kin_phone = '';
+      this.next_of_kin_address = '';
+      this.relationship = '';
       this.showFinish = false;
       this.videoShowing = false;
       this.photoSaved = false;
       this.photoLoading = false;
       this.video = {};
       this.canvas = {};
-      this.image = "";
-    }
+      this.image = '';
+    },
   },
   created() {
     this.countries = getCountries();
-  }
+  },
 };
 </script>
 

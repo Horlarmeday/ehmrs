@@ -6,6 +6,8 @@ import { SUCCESS } from '../../core/constants';
 import { errorResponse } from '../../common/responses/error-responses';
 import { StatusCodes } from '../../core/helpers/helper';
 import { NextFunction, Request, Response } from 'express';
+import { updateEncounterWithEntityId } from '../../core/middleware/createEncounter';
+import { EncounterType } from '../../database/models/encounter';
 
 class ConsultationController {
   /**
@@ -32,6 +34,17 @@ class ConsultationController {
         staff_id: req.user.sub,
         visit_id: req.params.id,
       });
+
+      // Update encounter with the created observation ID
+      if (observation && observation.history.id) {
+        await updateEncounterWithEntityId(
+          EncounterType.OBSERVATION,
+          'History',
+          observation.history.id,
+          +req.params.id,
+          req.user.sub
+        );
+      }
 
       return successResponse({ res, message: DATA_SAVED, data: observation, httpCode: 201 });
     } catch (e) {

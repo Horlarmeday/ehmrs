@@ -22,6 +22,20 @@ import {
 import { getOnePrescribedService } from '../Orders/Service/service-order.repository';
 import { getOnePrescribedInvestigation } from '../Orders/Radiology/radiology-order.repository';
 import { PaymentStatus } from '../../database/models/prescribedDrug';
+import { getDefaults, getOneDefault } from '../AdminSettings/admin.repository';
+import { getInventories } from '../Inventory/inventory.repository';
+import { getDrugPrice } from '../Pharmacy/pharmacy.repository';
+import { getInventoryItemQuery } from '../Inventory/inventory.repository';
+import { PrescribedDrug, PrescribedAdditionalItem, DrugPrescription } from '../../database/models';
+import { DrugForm } from '../../database/models/drug';
+import { DrugType } from '../../database/models/pharmacyStore';
+import { DrugGroup } from '../../database/models/prescribedDrug';
+import { DrugStatus } from '../../database/models/drugPrescription';
+import { NHISApprovalStatus } from '../../core/helpers/general';
+import { getDrugType, EXCLUDED_INSURANCE } from '../../core/helpers/helper';
+import PharmacyOrderService from '../Orders/Pharmacy/pharmacy-order.service';
+import { isEmpty } from 'lodash';
+import { isToday } from '../../core/helpers/helper';
 
 /**
  * create a patient visit
@@ -748,4 +762,188 @@ export const getPatientPendingPrescriptions = async (visit_id: number) => {
     serviceName: service?.service?.name,
     investigationName: investigation?.investigation?.name,
   };
+};
+
+/**
+ * Get the last drug prescription for a patient
+ * @param patient_id
+ */
+const getLastDrugPrescription = async (patient_id: number) => {
+  return DrugPrescription.findOne({
+    where: { patient_id },
+    order: [['createdAt', 'DESC']],
+  });
+};
+
+/**
+ * Create a new drug prescription
+ * @param data
+ */
+const createDrugPrescription = async (data: any) => {
+  return DrugPrescription.create(data);
+};
+
+/**
+ * Get or create drug prescription for a patient
+ * @param patient_id
+ * @param data
+ */
+const getDrugPrescription = async (patient_id: number, data: any) => {
+  const drugPrescriptionData = {
+    source: data.source,
+    requester: 'staff_id' in data ? data.staff_id : data.examiner,
+    visit_id: data.visit_id,
+    patient_id,
+    date_prescribed: Date.now(),
+    ...(data?.ante_natal_id && { ante_natal_id: data?.ante_natal_id }),
+  };
+
+  const lastPrescription = await getLastDrugPrescription(patient_id);
+
+  if (lastPrescription && !isToday(lastPrescription?.date_prescribed))
+    return createDrugPrescription(drugPrescriptionData);
+
+  // if drug has not been dispensed - pick the id and use it in prescribed drug
+  if (lastPrescription?.status === DrugStatus.PENDING) return lastPrescription;
+
+  // if drug was prescribed today and has been dispensed - create new one
+  if (lastPrescription?.status === DrugStatus.COMPLETE_DISPENSE)
+    return createDrugPrescription(drugPrescriptionData);
+
+  return createDrugPrescription(drugPrescriptionData);
+};
+
+/**
+ * Insert default dialysis items when a dialysis visit is created
+ * @param patient
+ * @param visit
+ * @param insurance
+ */
+export const insertDefaultDialysisItems = async ({
+  patient,
+  visit,
+  insurance,
+}: {
+  patient: Patient;
+  visit: Visit;
+  insurance?: PatientInsurance | null;
+}): Promise<boolean> => {
+  try {
+    // Get dialysis defaults
+    const dialysisDefault = await getOneDefault({ type: 'DIALYSIS_ITEMS' });
+    if (!dialysisDefault || !dialysisDefault.data || isEmpty(dialysisDefault.data)) {
+      return false;
+    }
+
+    const drugType = getDrugType(patient.has_insurance, insurance);
+    const inventories = await getInventories();
+    const isNHIS = insurance ? EXCLUDED_INSURANCE.includes(insurance?.insurance?.name) : false;
+
+    // Get drug prescription for this visit
+    const drugPrescription = await getDrugPrescription(patient.id, {
+      visit_id: visit.id,
+      source: 'Consultation',
+      examiner: visit.staff_id,
+    });
+
+    // Separate drugs and consumables
+    const drugs = dialysisDefault.data.filter(item => item.type === 'drug');
+    const consumables = dialysisDefault.data.filter(item => item.type === 'consumable');
+
+    // Create prescribed drugs
+    if (!isEmpty(drugs)) {
+      const mapDrugs = await Promise.all(
+        drugs.map(async drug => {
+          const inventory_id =
+            inventories.find(inventory => inventory.name.toLowerCase().includes(drugType.toLowerCase()))
+              ?.id || 1;
+
+          const inventoryItem = await getInventoryItemQuery({
+            inventory_id,
+            drug_id: drug?.drug?.drug_id,
+          });
+          const drugPrice =
+            (await getDrugPrice(patient, drug?.drug?.drug_id, inventoryItem)) * +drug?.quantity;
+
+          return {
+            drug_id: drug?.drug?.drug_id,
+            drug_type: drug?.drug?.drug_type,
+            quantity_prescribed: drug?.quantity,
+            quantity_to_dispense: drug?.quantity,
+            route_id: drug?.drug?.route?.id,
+            dosage_form_id: drug?.drug?.dosage_form?.id,
+            prescribed_strength: drug?.prescribed_strength,
+            strength_id: drug?.drug?.strength?.id,
+            frequency: drug?.frequency || 'OD',
+            duration: 1,
+            duration_unit: 'Days',
+            total_price: drug?.drug?.drug_type === DrugType.NHIS ? drugPrice * 0.1 : drugPrice,
+            examiner: visit.staff_id,
+            patient_id: patient.id,
+            visit_id: visit.id,
+            start_date: Date.now(),
+            date_prescribed: Date.now(),
+            drug_prescription_id: drugPrescription?.id,
+            drug_group: drug?.drug?.drug_type === DrugType.NHIS ? DrugGroup.PRIMARY : null,
+            inventory_id,
+            source: 'Consultation',
+            unit_id: drug?.drug?.unit_id,
+            ...(drug?.drug?.drug_type === DrugType.NHIS && {
+              nhis_status: NHISApprovalStatus.PENDING,
+            }),
+            patient_insurance_id: insurance?.id || null,
+          };
+        })
+      );
+
+      await PrescribedDrug.bulkCreate(mapDrugs);
+    }
+
+    // Create prescribed additional items (consumables)
+    if (!isEmpty(consumables)) {
+      const mapConsumables = await Promise.all(
+        consumables.map(async consumable => {
+          const inventory_id =
+            inventories.find(inventory => inventory.name.toLowerCase().includes(drugType.toLowerCase()))
+              ?.id || 1;
+
+          const inventoryItem = await getInventoryItemQuery({
+            inventory_id,
+            drug_id: consumable?.drug?.drug_id,
+          });
+          const drugPrice =
+            (await getDrugPrice(patient, consumable?.drug?.drug_id, inventoryItem)) * +consumable?.quantity;
+
+          return {
+            drug_form: DrugForm.CONSUMABLE,
+            visit_id: visit.id,
+            date_prescribed: Date.now(),
+            drug_id: consumable?.drug?.drug_id,
+            drug_type: consumable?.drug?.drug_type,
+            quantity_prescribed: consumable?.quantity,
+            quantity_to_dispense: consumable?.quantity,
+            total_price: consumable?.drug?.drug_type === DrugType.NHIS ? drugPrice * 0.1 : drugPrice,
+            examiner: visit.staff_id,
+            patient_id: patient.id,
+            start_date: Date.now(),
+            drug_prescription_id: drugPrescription?.id,
+            inventory_id,
+            source: 'Consultation',
+            unit_id: consumable?.drug?.unit_id,
+            ...(consumable?.drug?.drug_type === DrugType.NHIS && {
+              nhis_status: NHISApprovalStatus.PENDING,
+            }),
+            patient_insurance_id: insurance?.id || null,
+          };
+        })
+      );
+
+      await PrescribedAdditionalItem.bulkCreate(mapConsumables);
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error inserting default dialysis items:', error);
+    return false;
+  }
 };

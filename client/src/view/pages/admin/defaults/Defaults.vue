@@ -97,6 +97,7 @@ export default {
         WATER_INJECTIONS: 'Injections Needing Water',
         CIRCUMCISION_ROUTINE_DRUGS: 'Circumcision Routine Drugs',
         HSG_ADDITIONAL_ITEMS: 'HSG Additional Items',
+        DIALYSIS_ITEMS: 'Dialysis Items',
       },
     };
   },

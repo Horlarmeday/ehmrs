@@ -13,6 +13,8 @@ import { SUCCESS } from '../../../core/constants';
 import { isEmpty } from 'lodash';
 import { EMPTY_REQUEST_BODY } from './messages/response-messages';
 import { PrescribedBulkServiceBody } from './types/service-order.types';
+import { updateEncounterWithEntityId } from '../../../core/middleware/createEncounter';
+import { EncounterType } from '../../../database/models/encounter';
 
 export class ServiceOrderController {
   /**
@@ -42,6 +44,19 @@ export class ServiceOrderController {
         staff_id: req.user.sub,
         visit_id: req.params.id,
       });
+
+      // Update encounter with the created service IDs
+      if (services && services.length > 0) {
+        for (const service of services) {
+          await updateEncounterWithEntityId(
+            EncounterType.SERVICE_ORDER,
+            'PrescribedService',
+            service.id,
+            +req.params.id,
+            req.user.sub
+          );
+        }
+      }
 
       return successResponse({
         res,

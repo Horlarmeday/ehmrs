@@ -4,9 +4,7 @@
     <!--begin::Header-->
     <div class="card-header border-0 pt-5">
       <h3 class="card-title align-items-start flex-column">
-        <span class="card-label font-weight-bolder text-dark"
-          >New Arrivals</span
-        >
+        <span class="card-label font-weight-bolder text-dark">New Arrivals</span>
         <span class="text-muted mt-3 font-weight-bold font-size-sm"
           >More than 400+ new members</span
         >
@@ -67,11 +65,7 @@
                 <td class="pl-0 py-5">
                   <div class="symbol symbol-50 symbol-light mr-2">
                     <span class="symbol-label">
-                      <img
-                        :src="`${item.img}`"
-                        class="h-50 align-self-center"
-                        alt=""
-                      />
+                      <img :src="`${item.img}`" class="h-50 align-self-center" alt="" />
                     </span>
                   </div>
                 </td>
@@ -81,26 +75,18 @@
                     class="text-dark font-weight-bolder text-hover-primary mb-1 font-size-lg"
                     >{{ item.title }}</a
                   >
-                  <span class="text-muted font-weight-bold d-block">{{
-                    item.desc
-                  }}</span>
+                  <span class="text-muted font-weight-bold d-block">{{ item.desc }}</span>
                 </td>
                 <td class="text-right">
-                  <span class="text-muted font-weight-bold">{{
-                    item.desc2
-                  }}</span>
+                  <span class="text-muted font-weight-bold">{{ item.desc2 }}</span>
                 </td>
                 <td class="text-right">
-                  <span class="text-muted font-weight-bold">{{
-                    item.users
-                  }}</span>
+                  <span class="text-muted font-weight-bold">{{ item.users }}</span>
                 </td>
                 <td class="text-right pr-0">
                   <a href="#" class="btn btn-icon btn-light btn-sm">
                     <span class="svg-icon svg-icon-md svg-icon-success">
-                      <inline-svg
-                        src="media/svg/icons/Navigation/Arrow-right.svg"
-                      />
+                      <inline-svg src="media/svg/icons/Navigation/Arrow-right.svg" />
                     </span>
                   </a>
                 </td>
@@ -117,135 +103,135 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters } from 'vuex';
 
 export default {
-  name: "Widget2",
+  name: 'Widget2',
   data() {
     return {
-      show: "day",
+      show: 'day',
       day: [
         {
-          title: "Bestseller Theme",
-          desc: "Amazing Templates",
-          desc2: "ReactJS, Ruby",
-          users: "354 Users",
-          img: "media/svg/misc/014-kickstarter.svg"
+          title: 'Bestseller Theme',
+          desc: 'Amazing Templates',
+          desc2: 'ReactJS, Ruby',
+          users: '354 Users',
+          img: 'media/svg/misc/014-kickstarter.svg',
         },
         {
-          title: "Top Authors",
-          desc: "Successful Fellas",
-          desc2: "ReactJs, HTML",
-          users: "4600 Users",
-          img: "media/svg/misc/006-plurk.svg"
+          title: 'Top Authors',
+          desc: 'Successful Fellas',
+          desc2: 'ReactJs, HTML',
+          users: '4600 Users',
+          img: 'media/svg/misc/006-plurk.svg',
         },
         {
-          title: "Popular Authors",
-          desc: "Most Successful",
-          desc2: "Python, MySQL",
-          users: "7200 Users",
-          img: "media/svg/misc/015-telegram.svg"
+          title: 'Popular Authors',
+          desc: 'Most Successful',
+          desc2: 'Python, MySQL',
+          users: '7200 Users',
+          img: 'media/svg/misc/015-telegram.svg',
         },
         {
-          title: "New Users",
-          desc: "Awesome Users",
-          desc2: "Laravel, Metronic",
-          users: "890 Users",
-          img: "media/svg/misc/003-puzzle.svg"
+          title: 'New Users',
+          desc: 'Awesome Users',
+          desc2: 'Laravel, Metronic',
+          users: '890 Users',
+          img: 'media/svg/misc/003-puzzle.svg',
         },
         {
-          title: "Active Customers",
-          desc: "Best Customers",
-          desc2: "AngularJS, C#",
-          users: "6370 Users",
-          img: "media/svg/misc/005-bebo.svg"
-        }
+          title: 'Active Customers',
+          desc: 'Best Customers',
+          desc2: 'AngularJS, C#',
+          users: '6370 Users',
+          img: 'media/svg/misc/005-bebo.svg',
+        },
       ],
       week: [
         {
-          title: "Top Authors",
-          desc: "Successful Fellas",
-          desc2: "ReactJs, HTML",
-          users: "4600 Users",
-          img: "media/svg/misc/006-plurk.svg"
+          title: 'Top Authors',
+          desc: 'Successful Fellas',
+          desc2: 'ReactJs, HTML',
+          users: '4600 Users',
+          img: 'media/svg/misc/006-plurk.svg',
         },
         {
-          title: "Bestseller Theme",
-          desc: "Amazing Templates",
-          desc2: "ReactJS, Ruby",
-          users: "354 Users",
-          img: "media/svg/misc/014-kickstarter.svg"
+          title: 'Bestseller Theme',
+          desc: 'Amazing Templates',
+          desc2: 'ReactJS, Ruby',
+          users: '354 Users',
+          img: 'media/svg/misc/014-kickstarter.svg',
         },
         {
-          title: "Popular Authors",
-          desc: "Most Successful",
-          desc2: "Python, MySQL",
-          users: "7200 Users",
-          img: "media/svg/misc/015-telegram.svg"
+          title: 'Popular Authors',
+          desc: 'Most Successful',
+          desc2: 'Python, MySQL',
+          users: '7200 Users',
+          img: 'media/svg/misc/015-telegram.svg',
         },
         {
-          title: "New Users",
-          desc: "Awesome Users",
-          desc2: "Laravel, Metronic",
-          users: "890 Users",
-          img: "media/svg/misc/003-puzzle.svg"
+          title: 'New Users',
+          desc: 'Awesome Users',
+          desc2: 'Laravel, Metronic',
+          users: '890 Users',
+          img: 'media/svg/misc/003-puzzle.svg',
         },
         {
-          title: "Active Customers",
-          desc: "Best Customers",
-          desc2: "AngularJS, C#",
-          users: "6370 Users",
-          img: "media/svg/misc/005-bebo.svg"
-        }
+          title: 'Active Customers',
+          desc: 'Best Customers',
+          desc2: 'AngularJS, C#',
+          users: '6370 Users',
+          img: 'media/svg/misc/005-bebo.svg',
+        },
       ],
       month: [
         {
-          title: "Popular Authors",
-          desc: "Most Successful",
-          desc2: "Python, MySQL",
-          users: "7200 Users",
-          img: "media/svg/misc/015-telegram.svg"
+          title: 'Popular Authors',
+          desc: 'Most Successful',
+          desc2: 'Python, MySQL',
+          users: '7200 Users',
+          img: 'media/svg/misc/015-telegram.svg',
         },
         {
-          title: "New Users",
-          desc: "Awesome Users",
-          desc2: "Laravel, Metronic",
-          users: "890 Users",
-          img: "media/svg/misc/003-puzzle.svg"
+          title: 'New Users',
+          desc: 'Awesome Users',
+          desc2: 'Laravel, Metronic',
+          users: '890 Users',
+          img: 'media/svg/misc/003-puzzle.svg',
         },
         {
-          title: "Active Customers",
-          desc: "Best Customers",
-          desc2: "AngularJS, C#",
-          users: "6370 Users",
-          img: "media/svg/misc/005-bebo.svg"
+          title: 'Active Customers',
+          desc: 'Best Customers',
+          desc2: 'AngularJS, C#',
+          users: '6370 Users',
+          img: 'media/svg/misc/005-bebo.svg',
         },
         {
-          title: "Bestseller Theme",
-          desc: "Amazing Templates",
-          desc2: "ReactJS, Ruby",
-          users: "354 Users",
-          img: "media/svg/misc/014-kickstarter.svg"
+          title: 'Bestseller Theme',
+          desc: 'Amazing Templates',
+          desc2: 'ReactJS, Ruby',
+          users: '354 Users',
+          img: 'media/svg/misc/014-kickstarter.svg',
         },
         {
-          title: "Top Authors",
-          desc: "Successful Fellas",
-          desc2: "ReactJs, HTML",
-          users: "4600 Users",
-          img: "media/svg/misc/006-plurk.svg"
-        }
-      ]
+          title: 'Top Authors',
+          desc: 'Successful Fellas',
+          desc2: 'ReactJs, HTML',
+          users: '4600 Users',
+          img: 'media/svg/misc/006-plurk.svg',
+        },
+      ],
     };
   },
   computed: {
-    ...mapGetters(["layoutConfig"]),
+    ...mapGetters(['layoutConfig']),
     dataToShow() {
-      if (this.show === "month") return this.month;
-      if (this.show === "week") return this.week;
-      if (this.show === "day") return this.day;
+      if (this.show === 'month') return this.month;
+      if (this.show === 'week') return this.week;
+      if (this.show === 'day') return this.day;
       return this.day;
-    }
-  }
+    },
+  },
 };
 </script>
 

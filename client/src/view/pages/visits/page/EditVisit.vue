@@ -168,6 +168,7 @@ export default {
         'Gastroenterologist',
         'Optician',
         'Physiotherapist',
+        'Hematologist',
       ],
     };
   },

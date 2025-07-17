@@ -1,13 +1,13 @@
 // action types
-export const APPEND_BREADCRUM = "appendBreadcrumb";
+export const APPEND_BREADCRUM = 'appendBreadcrumb';
 
 // mutation types
-export const SET_BREADCRUMB = "setBreadcrumb";
-export const ADD_BREADCRUMB = "addBreadcrumb";
+export const SET_BREADCRUMB = 'setBreadcrumb';
+export const ADD_BREADCRUMB = 'addBreadcrumb';
 
 export default {
   state: {
-    breadcrumbs: []
+    breadcrumbs: [],
   },
   getters: {
     /**
@@ -29,7 +29,7 @@ export default {
       if (last && last.title) {
         return last.title;
       }
-    }
+    },
   },
   actions: {
     /**
@@ -47,12 +47,12 @@ export default {
      * @param payload
      */
     [ADD_BREADCRUMB](state, payload) {
-      if (typeof payload === "object") {
+      if (typeof payload === 'object') {
         payload.forEach(item => state.commit(APPEND_BREADCRUM, item));
       } else {
         state.commit(APPEND_BREADCRUM, payload);
       }
-    }
+    },
   },
   mutations: {
     [APPEND_BREADCRUM](state, payload) {
@@ -60,6 +60,6 @@ export default {
     },
     [SET_BREADCRUMB](state, payload) {
       state.breadcrumbs = payload;
-    }
-  }
+    },
+  },
 };

@@ -1,3 +1,4 @@
+<!-- eslint-disable prettier/prettier -->
 <template>
   <!--begin::Advance Table Widget 1-->
   <div class="card card-custom gutter-b">
@@ -14,10 +15,23 @@
       :module="'inventory'"
       :data="{
         selectedItemsId: selectedItemIds,
-        selectAll: selectAllItems,
+        selectAll: true,
         inventoryId: +$route.params.id,
       }"
-      :select-all="selectAllItems"
+      :select-all="true"
+    />
+
+    <export-modal
+      :display-prompt="displayExportSelectedPrompt"
+      @closeModal="hideExportSelectedModal"
+      :action="'inventory/exportData'"
+      :module="'inventory'"
+      :data="{
+        selectedItemsId: selectedItemIds,
+        selectAll: false,
+        inventoryId: +$route.params.id,
+      }"
+      :select-all="false"
     />
 
     <!--begin::Header-->
@@ -27,7 +41,6 @@
       </h3>
       <div class="card-toolbar">
         <button
-          v-if="selectedItems?.length || selectAllItems"
           @click="showExportModal"
           class="btn btn-outline-primary btn-sm"
         >
@@ -52,7 +65,7 @@
       @changePageCount="onChangePageCount"
       @deactivateItem="displayDeactivatePrompt"
       @openReturnModal="openReturnModal"
-      @openExportModal="showExportModal"
+      @openExportSelectedModal="showExportSelectedModal"
     />
     <!--end::Body-->
   </div>
@@ -73,6 +86,7 @@ export default {
       itemsPerPage: 10,
       displayPrompt: false,
       displayExportPrompt: false,
+      displayExportSelectedPrompt: false,
       itemsToReturn: [],
       selectAllItems: false,
     };
@@ -110,8 +124,16 @@ export default {
       this.displayExportPrompt = false;
     },
 
+    hideExportSelectedModal() {
+      this.displayExportSelectedPrompt = false;
+    },
+
     showExportModal() {
       this.displayExportPrompt = true;
+    },
+
+    showExportSelectedModal() {
+      this.displayExportSelectedPrompt = true;
     },
 
     handlePageChange() {

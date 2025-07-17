@@ -31,6 +31,7 @@ import OperationItemsForm from './components/forms/OperationItemsForm.vue';
 import InjectionsWaterForm from './components/forms/InjectionsWaterForm.vue';
 import CircumcisionRoutineDrugsForm from './components/forms/CircumcisionRoutineDrugsForm.vue';
 import HSGAdditionalItemsForm from './components/forms/HSGAdditionalItemsForm.vue';
+import DialysisItemsForm from './components/forms/DialysisItemsForm.vue';
 
 export default {
   components: { ANCRoutineDrugsForm },
@@ -70,6 +71,10 @@ export default {
         name: 'Theater Operation Items',
         code: 'OPERATION_ITEMS',
       },
+      {
+        name: 'Dialysis Items',
+        code: 'DIALYSIS_ITEMS',
+      },
     ],
   }),
   watch: {
@@ -98,6 +103,9 @@ export default {
           break;
         case 'HSG_ADDITIONAL_ITEMS':
           this.currentComponent = HSGAdditionalItemsForm;
+          break;
+        case 'DIALYSIS_ITEMS':
+          this.currentComponent = DialysisItemsForm;
           break;
       }
     },

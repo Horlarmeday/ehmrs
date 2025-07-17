@@ -186,6 +186,11 @@ const roles = [
     role: 'Physiotherapist',
     dept_id: 9,
   },
+  {
+    id: 29,
+    role: 'Hematologist',
+    dept_id: 9,
+  },
 ];
 
 const sub_roles = [

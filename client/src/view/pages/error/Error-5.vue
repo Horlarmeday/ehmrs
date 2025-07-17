@@ -3,16 +3,12 @@
     <div
       class="error error-5 d-flex flex-row-fluid bgi-size-cover bgi-position-center"
       :style="{
-        backgroundImage: `url(${backgroundImage})`
+        backgroundImage: `url(${backgroundImage})`,
       }"
     >
       <!-- begin:: Content -->
-      <div
-        class="container d-flex flex-row-fluid flex-column justify-content-md-center p-12"
-      >
-        <h1
-          class="error-title font-weight-boldest text-info mt-10 mt-md-0 mb-12"
-        >
+      <div class="container d-flex flex-row-fluid flex-column justify-content-md-center p-12">
+        <h1 class="error-title font-weight-boldest text-info mt-10 mt-md-0 mb-12">
           Oops!
         </h1>
         <p class="font-weight-boldest display-4">
@@ -29,17 +25,17 @@
 </template>
 
 <style lang="scss">
-@import "@/assets/sass/pages/error/error-5.scss";
+@import '@/assets/sass/pages/error/error-5.scss';
 </style>
 
 <script>
 export default {
-  name: "Error-5",
+  name: 'Error-5',
   mounted() {},
   computed: {
     backgroundImage() {
-      return process.env.BASE_URL + "media/error/bg5.jpg";
-    }
-  }
+      return process.env.BASE_URL + 'media/error/bg5.jpg';
+    },
+  },
 };
 </script>

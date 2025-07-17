@@ -20,6 +20,8 @@ import { isEmpty } from 'lodash';
 import { upload } from '../../core/helpers/multer';
 import fileUpload from 'express-fileupload';
 import { string } from 'joi';
+import dayjs from 'dayjs';
+import EncounterService from './encounter.service';
 
 /**
  *
@@ -653,5 +655,81 @@ class AdminController {
       return next(e);
     }
   }
+
+  /**
+   * get encounter details for a specific doctor
+   * @static
+   * @param req
+   * @param res
+   * @param next
+   * @returns {json} json object with encounter details
+   */
+  static async getEncounterDetails(req, res, next) {
+    try {
+      const { staff_id, start, end } = req.query;
+      if (!staff_id) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Staff ID is required',
+        });
+      }
+
+      const encounterDetails = await EncounterService.getEncounterDetailsByStaffService({
+        staff_id: parseInt(staff_id),
+        start: start
+          ? new Date(start)
+          : dayjs()
+              .startOf('month')
+              .toDate(),
+        end: end
+          ? new Date(end)
+          : dayjs()
+              .endOf('month')
+              .toDate(),
+      });
+      return res.status(200).json({
+        status: 'success',
+        data: encounterDetails,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: 'error',
+        message: error.message,
+      });
+    }
+  }
+
+  /**
+   * get encounter actions for a specific encounter
+   * @static
+   * @param req
+   * @param res
+   * @param next
+   * @returns {json} json object with encounter actions
+   */
+  static async getEncounterActions(req, res, next) {
+    try {
+      const { encounter_id } = req.params;
+      if (!encounter_id) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Encounter ID is required',
+        });
+      }
+      const encounterActions = await EncounterService.getEncounterActionsByIdService(
+        parseInt(encounter_id)
+      );
+      return res.status(200).json({
+        status: 'success',
+        data: encounterActions,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: 'error',
+        message: error.message,
+      });
+    }
+  }
 }
+
 export default AdminController;

@@ -14,15 +14,8 @@
           <div class="form-group row">
             <div class="col-lg-4">
               <label>Name <span class="text-danger">*</span></label>
-              <input
-                type="text"
-                class="form-control form-control-sm"
-                v-model="name"
-                name="name"
-              />
-              <span class="text-danger text-sm">{{
-                errors.first("name")
-              }}</span>
+              <input type="text" class="form-control form-control-sm" v-model="name" name="name" />
+              <span class="text-danger text-sm">{{ errors.first('name') }}</span>
             </div>
             <div class="col-lg-4">
               <label>Product Code</label>
@@ -33,9 +26,7 @@
                 placeholder="Product Code"
                 name="product_code"
               />
-              <span class="text-danger text-sm">{{
-                errors.first("product_code")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('product_code') }}</span>
             </div>
             <div class="col-lg-4">
               <label>Voucher/Ref Number</label>
@@ -46,9 +37,7 @@
                 placeholder="Voucher/Ref Number"
                 name="voucher"
               />
-              <span class="text-danger text-sm">{{
-                errors.first("voucher")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('voucher') }}</span>
             </div>
           </div>
           <!-- Contact -->
@@ -62,9 +51,7 @@
                 placeholder="Batch Number"
                 v-model="batch"
               />
-              <span class="text-danger text-sm">{{
-                errors.first("batch")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('batch') }}</span>
             </div>
             <div class="col-lg-4">
               <label>Shelf <span class="text-danger">*</span></label>
@@ -102,9 +89,7 @@
                 <option>Y</option>
                 <option>Z</option>
               </select>
-              <span class="text-danger text-sm">{{
-                errors.first("shelf")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('shelf') }}</span>
             </div>
             <div class="col-lg-4">
               <label>Shelf Number <span class="text-danger">*</span></label>
@@ -126,9 +111,7 @@
                 <option>9</option>
                 <option>10</option>
               </select>
-              <span class="text-danger text-sm">{{
-                errors.first("shelf_num")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('shelf_num') }}</span>
             </div>
           </div>
           <div class="form-group row">
@@ -142,9 +125,7 @@
                 input-class="form-control form-control-sm"
                 placeholder="Expiry Date"
               ></datepicker>
-              <span class="text-danger text-sm">{{
-                errors.first("expiration")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('expiration') }}</span>
             </div>
             <div class="col-lg-4">
               <label>Quantity <span class="text-danger">*</span></label>
@@ -157,9 +138,7 @@
                 placeholder="Quantity"
                 name="quantity"
               />
-              <span class="text-danger text-sm">{{
-                errors.first("quantity")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('quantity') }}</span>
             </div>
             <div class="col-lg-4">
               <label>Unit <span class="text-danger">*</span></label>
@@ -172,9 +151,7 @@
                 :reduce="units => units.id"
                 :options="units"
               ></v-select>
-              <span class="text-danger text-sm">{{
-                errors.first("unit")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('unit') }}</span>
             </div>
           </div>
           <div class="form-group row">
@@ -189,9 +166,7 @@
                 placeholder="Unit Price"
                 name="unit_price"
               />
-              <span class="text-danger text-sm">{{
-                errors.first("unit_price")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('unit_price') }}</span>
             </div>
             <div class="col-lg-4">
               <label>Date Received <span class="text-danger">*</span></label>
@@ -203,9 +178,7 @@
                 input-class="form-control form-control-sm"
                 placeholder="Date Received"
               ></datepicker>
-              <span class="text-danger text-sm">{{
-                errors.first("date_received")
-              }}</span>
+              <span class="text-danger text-sm">{{ errors.first('date_received') }}</span>
             </div>
           </div>
         </div>
@@ -225,71 +198,67 @@
 </template>
 
 <script>
-import Datepicker from "vuejs-datepicker";
-import AccordionIcon from "../../../../../assets/icons/AccordionIcon";
-import vSelect from "vue-select";
+import Datepicker from 'vuejs-datepicker';
+import AccordionIcon from '../../../../../assets/icons/AccordionIcon';
+import vSelect from 'vue-select';
 export default {
   components: {
     Datepicker,
     AccordionIcon,
-    vSelect
+    vSelect,
   },
   data() {
     return {
-      name: "",
-      product_code: "",
-      batch: "",
-      voucher: "",
-      shelf: "",
-      shelf_num: "",
-      expiration: "",
-      quantity: "",
-      unit: "",
-      unit_price: "",
-      date_received: "",
+      name: '',
+      product_code: '',
+      batch: '',
+      voucher: '',
+      shelf: '',
+      shelf_num: '',
+      expiration: '',
+      quantity: '',
+      unit: '',
+      unit_price: '',
+      date_received: '',
 
-      isDisabled: false
+      isDisabled: false,
     };
   },
   computed: {
     units() {
       return this.$store.state.model.units;
-    }
+    },
   },
 
   created() {
-    this.$store.dispatch("model/fetchUnits", {
+    this.$store.dispatch('model/fetchUnits', {
       currentPage: 1,
-      itemsPerPage: 20
+      itemsPerPage: 20,
     });
   },
   methods: {
     initValues() {
-      this.name = "";
-      this.product_code = "";
-      this.batch = "";
-      this.voucher = "";
-      this.shelf = "";
-      this.shelf_num = "";
-      this.expiration = "";
-      this.quantity = "";
-      this.unit = "";
-      this.unit_price = "";
-      this.date_received = "";
+      this.name = '';
+      this.product_code = '';
+      this.batch = '';
+      this.voucher = '';
+      this.shelf = '';
+      this.shelf_num = '';
+      this.expiration = '';
+      this.quantity = '';
+      this.unit = '';
+      this.unit_price = '';
+      this.date_received = '';
     },
 
     addSpinner(submitButton) {
       this.isDisabled = true;
-      submitButton.classList.add("spinner", "spinner-light", "spinner-right");
+      submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');
     },
 
     removeSpinner(submitButton) {
       this.isDisabled = false;
-      submitButton.classList.remove(
-        "spinner",
-        "spinner-light",
-        "spinner-right"
-      );
+      submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
     },
 
     initRequest(button) {
@@ -301,7 +270,7 @@ export default {
       this.$validator.validateAll().then(result => {
         if (result) {
           // set spinner to submit button
-          const submitButton = this.$refs["kt_lab_item_submit"];
+          const submitButton = this.$refs['kt_lab_item_submit'];
           this.addSpinner(submitButton);
 
           const data = {
@@ -314,16 +283,16 @@ export default {
             unit_id: this.unit,
             quantity: this.quantity,
             unit_price: this.unit_price,
-            date_received: this.date_received
+            date_received: this.date_received,
           };
           this.$store
-            .dispatch("store/addLaboratoryItem", data)
+            .dispatch('store/addLaboratoryItem', data)
             .then(() => this.initRequest(submitButton))
             .catch(() => this.removeSpinner(submitButton));
         }
       });
-    }
-  }
+    },
+  },
 };
 </script>
 

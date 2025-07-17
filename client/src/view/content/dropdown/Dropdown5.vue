@@ -15,10 +15,7 @@
       <b-dropdown-text tag="div" class="navi-header font-weight-bold py-5">
         <span class="font-size-lg">Add New:</span>
       </b-dropdown-text>
-      <b-dropdown-text
-        tag="div"
-        class="navi-separator mb-3 opacity-70"
-      ></b-dropdown-text>
+      <b-dropdown-text tag="div" class="navi-separator mb-3 opacity-70"></b-dropdown-text>
       <b-dropdown-text tag="div" class="navi-item">
         <a href="#" class="navi-link">
           <span class="navi-icon">
@@ -34,10 +31,7 @@
           </span>
           <span class="navi-text">Members</span>
           <span class="navi-label">
-            <span
-              class="label label-light-danger label-rounded font-weight-bold"
-              >3</span
-            >
+            <span class="label label-light-danger label-rounded font-weight-bold">3</span>
           </span>
         </a>
       </b-dropdown-text>
@@ -56,21 +50,13 @@
           </span>
           <span class="navi-text">Record</span>
           <span class="navi-label">
-            <span
-              class="label label-light-success label-rounded font-weight-bold"
-              >5</span
-            >
+            <span class="label label-light-success label-rounded font-weight-bold">5</span>
           </span>
         </a>
       </b-dropdown-text>
-      <b-dropdown-text
-        tag="div"
-        class="navi-separator mt-3 opacity-70"
-      ></b-dropdown-text>
+      <b-dropdown-text tag="div" class="navi-separator mt-3 opacity-70"></b-dropdown-text>
       <b-dropdown-text tag="div" class="navi-footer pt-5 pb-4">
-        <a class="btn btn-light-primary font-weight-bolder btn-sm" href="#"
-          >More options</a
-        >
+        <a class="btn btn-light-primary font-weight-bolder btn-sm" href="#">More options</a>
         <a
           class="btn btn-clean font-weight-bold btn-sm d-none"
           href="#"
@@ -113,8 +99,8 @@
 
 <script>
 export default {
-  name: "dropdown-5",
+  name: 'dropdown-5',
   components: {},
-  mounted() {}
+  mounted() {},
 };
 </script>

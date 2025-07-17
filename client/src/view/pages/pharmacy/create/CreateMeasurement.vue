@@ -13,7 +13,7 @@
             v-model="name"
             name="name"
           />
-          <span class="text-danger text-sm">{{ errors.first("name") }}</span>
+          <span class="text-danger text-sm">{{ errors.first('name') }}</span>
         </div>
       </div>
       <div class="form-group row">
@@ -26,16 +26,11 @@
             data-vv-validate-on="blur"
             name="dosage_form"
           >
-            <option
-              :value="dosage.id"
-              v-for="dosage in dosageForms"
-              :key="dosage.id"
-              >{{ dosage.name }}</option
-            >
+            <option :value="dosage.id" v-for="dosage in dosageForms" :key="dosage.id">{{
+              dosage.name
+            }}</option>
           </select>
-          <span class="text-danger text-sm">{{
-            errors.first("dosage_form")
-          }}</span>
+          <span class="text-danger text-sm">{{ errors.first('dosage_form') }}</span>
         </div>
       </div>
     </div>
@@ -55,39 +50,39 @@ export default {
   props: {
     displayPrompt: {
       type: Boolean,
-      required: true
+      required: true,
     },
     data: {
       type: Object,
-      default: () => {}
-    }
+      default: () => {},
+    },
   },
   data() {
     return {
-      name: "",
-      dosage_form_id: "",
-      measurement_id: "",
-      isDisabled: false
+      name: '',
+      dosage_form_id: '',
+      measurement_id: '',
+      isDisabled: false,
     };
   },
   created() {
-    this.$store.dispatch("pharmacy/fetchDosageForms");
+    this.$store.dispatch('pharmacy/fetchDosageForms');
   },
   computed: {
     validateForm() {
-      return !this.errors.any() && this.name !== "";
+      return !this.errors.any() && this.name !== '';
     },
     activePrompt: {
       get() {
         return this.displayPrompt;
       },
       set(value) {
-        this.$emit("closeModal", value);
-      }
+        this.$emit('closeModal', value);
+      },
     },
     dosageForms() {
       return this.$store.state.pharmacy.dosageForms;
-    }
+    },
   },
   watch: {
     displayPrompt(val) {
@@ -96,32 +91,26 @@ export default {
         this.initValues();
         this.$validator.reset();
       } else {
-        const { id, name, dosage_form_id } = JSON.parse(
-          JSON.stringify(this.data)
-        );
+        const { id, name, dosage_form_id } = JSON.parse(JSON.stringify(this.data));
         this.measurement_id = id;
         this.name = name;
         this.dosage_form_id = dosage_form_id;
       }
-    }
+    },
   },
   methods: {
     addSpinner(submitButton) {
       this.isDisabled = true;
-      submitButton.classList.add("spinner", "spinner-light", "spinner-right");
+      submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');
     },
 
     removeSpinner(submitButton) {
       this.isDisabled = false;
-      submitButton.classList.remove(
-        "spinner",
-        "spinner-light",
-        "spinner-right"
-      );
+      submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
     },
     initializeRequest(button) {
       this.removeSpinner(button);
-      this.$emit("closeModal");
+      this.$emit('closeModal');
       this.initValues();
     },
     createMeasurement() {
@@ -130,21 +119,21 @@ export default {
           const obj = {
             measurement_id: this.measurement_id,
             name: this.name,
-            dosage_form_id: this.dosage_form_id
+            dosage_form_id: this.dosage_form_id,
           };
           // set spinner to submit button
-          const submitButton = this.$refs["kt_measurement_submit"];
+          const submitButton = this.$refs['kt_measurement_submit'];
           this.addSpinner(submitButton);
 
           if (this.measurement_id && this.measurement_id >= 0) {
             this.$store
-              .dispatch("pharmacy/updateMeasurement", obj)
+              .dispatch('pharmacy/updateMeasurement', obj)
               .then(() => this.initializeRequest(submitButton))
               .catch(() => this.removeSpinner(submitButton));
           } else {
             delete obj.measurement_id;
             this.$store
-              .dispatch("pharmacy/addMeasurement", obj)
+              .dispatch('pharmacy/addMeasurement', obj)
               .then(() => this.initializeRequest(submitButton))
               .catch(() => this.removeSpinner(submitButton));
           }
@@ -152,11 +141,11 @@ export default {
       });
     },
     initValues() {
-      this.name = "";
-      this.dosage_form_id = "";
-      this.measurement_id = "";
-    }
-  }
+      this.name = '';
+      this.dosage_form_id = '';
+      this.measurement_id = '';
+    },
+  },
 };
 </script>
 

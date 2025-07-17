@@ -8,7 +8,7 @@ import {
 } from './service-order.repository';
 import VisitService from '../../Visit/visit.service';
 import PatientService from '../../Patient/patient.service';
-import { PrescribedService } from '../../../database/models';
+import { PrescribedService, Service } from '../../../database/models';
 import { PrescribedBulkServiceBody } from './types/service-order.types';
 import { getServicePrice } from '../../AdminSettings/admin.repository';
 import { PrescriptionType } from '../../../database/models/prescribedTest';
@@ -19,6 +19,8 @@ import { BadException } from '../../../common/util/api-error';
 import { StatusCodes } from '../../../core/helpers/helper';
 import { CANNOT_DELETE_INVESTIGATION } from '../Radiology/messages/response-messages';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
+import { insertDefaultDialysisItems } from '../../Visit/visit.repository';
+import { logger } from '../../../core/helpers/logger';
 
 export class ServiceOrderService {
   /**
@@ -30,7 +32,51 @@ export class ServiceOrderService {
    * @memberOf ServiceOrderService
    */
   static async prescribeService(body) {
-    return prescribeService(body);
+    const result = await prescribeService(body);
+    
+    // Check if service contains "dialysis" and insert default items
+    if (body.patient_id && body.visit_id) {
+      try {
+        // Get service details to check name
+        const service = await Service.findByPk(body.service_id);
+        // Multiple ways to check for dialysis
+        const isDialysis = service && (
+          /dialysis/i.test(service.name) ||
+          service.name.toLowerCase().includes('dialysis') ||
+          service.name.toUpperCase().includes('DIALYSIS')
+        );
+
+        if (isDialysis) {
+          // Get patient and visit details
+          const [patient, visit, insurance] = await Promise.all([
+            PatientService.getPatientById(body.patient_id),
+            VisitService.getVisitById(body.visit_id),
+            getPatientInsuranceQuery({
+              patient_id: body.patient_id,
+              is_default: true,
+            }),
+          ]);
+          
+          if (patient && visit) {
+            logger.info('Inserting default dialysis items for single service');
+            // Insert default dialysis items in background
+            insertDefaultDialysisItems({
+              patient,
+              visit,
+              insurance, // Insurance doesn't matter
+            }).catch(error => {
+              logger.error('Error inserting default dialysis items for service:', error);
+            });
+          }
+        } else {
+          logger.warn('No dialysis service found or service is null');
+        }
+      } catch (error) {
+        logger.error('Error checking dialysis service:', error);
+      }
+    }
+    
+    return result;
   }
 
   /**
@@ -69,7 +115,48 @@ export class ServiceOrderService {
         patient_insurance_id: insurance?.id,
       }))
     );
-    return orderBulkService(bulkServices);
+    
+    const result = await orderBulkService(bulkServices);
+    
+    // Check if any service contains "dialysis" and insert default items
+    try {
+      // Get all service details to check for dialysis
+      const serviceDetails = await Promise.all(
+        services.map(service => Service.findByPk(service.service_id))
+      );
+
+      // Check if any service contains "dialysis" with multiple methods
+      const hasDialysisService = serviceDetails.some(service => {
+        const isDialysis = service && (
+          /dialysis/i.test(service.name) ||
+          service.name.toLowerCase().includes('dialysis') ||
+          service.name.toUpperCase().includes('DIALYSIS')
+        );
+        
+        if (isDialysis) {
+          logger.info('Dialysis service detected in bulk order:', service.name);
+        }
+        return isDialysis;
+      });
+      
+      if (hasDialysisService && patient && visit) {
+        logger.info('Inserting default dialysis items for bulk service');
+        // Insert default dialysis items in background
+        insertDefaultDialysisItems({
+          patient,
+          visit,
+          insurance,
+        }).catch(error => {
+          logger.error('Error inserting default dialysis items for bulk service:', error);
+        });
+      } else {
+        logger.warn('Not inserting dialysis items - conditions not met');
+      }
+    } catch (error) {
+      logger.error('Error checking dialysis services for bulk order:', error);
+    }
+    
+    return result;
   }
 
   /**

@@ -12,6 +12,8 @@ import { NextFunction, Request, Response } from 'express';
 import { SUCCESS } from '../../../core/constants';
 import { isEmpty } from 'lodash';
 import { EMPTY_REQUEST_BODY } from './messages/response-messages';
+import { updateEncounterWithEntityId } from '../../../core/middleware/createEncounter';
+import { EncounterType } from '../../../database/models/encounter';
 
 class LabOrderController {
   /**
@@ -37,6 +39,19 @@ class LabOrderController {
         staff_id: req.user.sub,
         visit_id: req.params.id,
       });
+
+      // Update encounter with the created test IDs
+      if (tests && tests.length > 0) {
+        for (const test of tests) {
+          await updateEncounterWithEntityId(
+            EncounterType.LAB_ORDER,
+            'PrescribedTest',
+            test.id,
+            +req.params.id,
+            req.user.sub
+          );
+        }
+      }
 
       return successResponse({
         res,

@@ -8,20 +8,12 @@
       </a>
     </div>
 
-    <div
-      id="kt_quick_actions"
-      ref="kt_quick_actions"
-      class="offcanvas offcanvas-right p-10"
-    >
+    <div id="kt_quick_actions" ref="kt_quick_actions" class="offcanvas offcanvas-right p-10">
       <!--begin::Header-->
-      <div
-        class="offcanvas-header d-flex align-items-center justify-content-between pb-10"
-      >
+      <div class="offcanvas-header d-flex align-items-center justify-content-between pb-10">
         <h3 class="font-weight-bold m-0">
           Quick Actions
-          <small class="text-muted font-size-sm ml-2"
-            >finance &amp; reports</small
-          >
+          <small class="text-muted font-size-sm ml-2">finance &amp; reports</small>
         </h3>
         <a
           href="#"
@@ -44,9 +36,7 @@
               <span class="svg-icon svg-icon-3x svg-icon-primary m-0">
                 <inline-svg src="media/svg/icons/Shopping/Euro.svg" />
               </span>
-              <span class="d-block font-weight-bold font-size-h6 mt-2"
-                >Accounting</span
-              >
+              <span class="d-block font-weight-bold font-size-h6 mt-2">Accounting</span>
             </a>
           </div>
           <!--end::Item-->
@@ -57,13 +47,9 @@
               class="btn btn-block btn-light btn-hover-primary text-dark-50 text-center py-10 px-5"
             >
               <span class="svg-icon svg-icon-3x svg-icon-primary m-0">
-                <inline-svg
-                  src="media/svg/icons/Communication/Mail-attachment.svg"
-                />
+                <inline-svg src="media/svg/icons/Communication/Mail-attachment.svg" />
               </span>
-              <span class="d-block font-weight-bold font-size-h6 mt-2"
-                >Members</span
-              >
+              <span class="d-block font-weight-bold font-size-h6 mt-2">Members</span>
             </a>
           </div>
           <!--end::Item-->
@@ -78,9 +64,7 @@
               <span class="svg-icon svg-icon-3x svg-icon-primary m-0">
                 <inline-svg src="media/svg/icons/Shopping/Box2.svg" />
               </span>
-              <span class="d-block font-weight-bold font-size-h6 mt-2"
-                >Projects</span
-              >
+              <span class="d-block font-weight-bold font-size-h6 mt-2">Projects</span>
             </a>
           </div>
           <!--end::Item-->
@@ -93,9 +77,7 @@
               <span class="svg-icon svg-icon-3x svg-icon-primary m-0">
                 <inline-svg src="media/svg/icons/Communication/Group.svg" />
               </span>
-              <span class="d-block font-weight-bold font-size-h6 mt-2"
-                >Customers</span
-              >
+              <span class="d-block font-weight-bold font-size-h6 mt-2">Customers</span>
             </a>
           </div>
           <!--end::Item-->
@@ -110,9 +92,7 @@
               <span class="svg-icon svg-icon-3x svg-icon-primary m-0">
                 <inline-svg src="media/svg/icons/Shopping/Chart-bar1.svg" />
               </span>
-              <span class="d-block font-weight-bold font-size-h6 mt-2"
-                >Email</span
-              >
+              <span class="d-block font-weight-bold font-size-h6 mt-2">Email</span>
             </a>
           </div>
           <!--end::Item-->
@@ -125,9 +105,7 @@
               <span class="svg-icon svg-icon-3x svg-icon-primary m-0">
                 <inline-svg src="media/svg/icons/Design/Color-profile.svg" />
               </span>
-              <span class="d-block font-weight-bold font-size-h6 mt-2"
-                >Settings</span
-              >
+              <span class="d-block font-weight-bold font-size-h6 mt-2">Settings</span>
             </a>
           </div>
           <!--end::Item-->
@@ -142,9 +120,7 @@
               <span class="svg-icon svg-icon-3x svg-icon-primary m-0">
                 <inline-svg src="media/svg/icons/Shopping/Euro.svg" />
               </span>
-              <span class="d-block font-weight-bold font-size-h6 mt-2"
-                >Orders</span
-              >
+              <span class="d-block font-weight-bold font-size-h6 mt-2">Orders</span>
             </a>
           </div>
           <!--end::Item-->
@@ -156,15 +132,15 @@
 </template>
 
 <script>
-import KTLayoutQuickUser from "@/assets/js/layout/extended/quick-actions.js";
+import KTLayoutQuickUser from '@/assets/js/layout/extended/quick-actions.js';
 
 export default {
-  name: "KTQuickActions",
+  name: 'KTQuickActions',
   mounted() {
     // Init Quick User Panel
-    KTLayoutQuickUser.init(this.$refs["kt_quick_actions"]);
+    KTLayoutQuickUser.init(this.$refs['kt_quick_actions']);
   },
   methods: {},
-  computed: {}
+  computed: {},
 };
 </script>

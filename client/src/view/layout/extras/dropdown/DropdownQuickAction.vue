@@ -28,9 +28,7 @@
               <inline-svg :src="item.svg" />
               <!--end::Svg Icon-->
             </span>
-            <span
-              class="d-block text-dark-75 font-weight-bold font-size-h6 mt-2 mb-1"
-            >
+            <span class="d-block text-dark-75 font-weight-bold font-size-h6 mt-2 mb-1">
               {{ item.title }}
             </span>
             <span class="d-block text-dark-50 font-size-lg">
@@ -47,39 +45,37 @@
 
 <script>
 export default {
-  name: "KTDropdownQuickAction",
+  name: 'KTDropdownQuickAction',
   data() {
     return {
       list: [
         {
-          title: "Accounting",
-          desc: "eCommerce",
-          svg: process.env.BASE_URL + "media/svg/icons/Shopping/Euro.svg"
+          title: 'Accounting',
+          desc: 'eCommerce',
+          svg: process.env.BASE_URL + 'media/svg/icons/Shopping/Euro.svg',
         },
         {
-          title: "Administration",
-          desc: "Console",
-          svg:
-            process.env.BASE_URL +
-            "media/svg/icons/Communication/Mail-attachment.svg"
+          title: 'Administration',
+          desc: 'Console',
+          svg: process.env.BASE_URL + 'media/svg/icons/Communication/Mail-attachment.svg',
         },
         {
-          title: "Projects",
-          desc: "Pending Tasks",
-          svg: process.env.BASE_URL + "media/svg/icons/Shopping/Box2.svg"
+          title: 'Projects',
+          desc: 'Pending Tasks',
+          svg: process.env.BASE_URL + 'media/svg/icons/Shopping/Box2.svg',
         },
         {
-          title: "Customers",
-          desc: "Latest Cases",
-          svg: process.env.BASE_URL + "media/svg/icons/Communication/Group.svg"
-        }
-      ]
+          title: 'Customers',
+          desc: 'Latest Cases',
+          svg: process.env.BASE_URL + 'media/svg/icons/Communication/Group.svg',
+        },
+      ],
     };
   },
   computed: {
     backgroundImage() {
-      return process.env.BASE_URL + "media/misc/bg-1.jpg";
-    }
-  }
+      return process.env.BASE_URL + 'media/misc/bg-1.jpg';
+    },
+  },
 };
 </script>

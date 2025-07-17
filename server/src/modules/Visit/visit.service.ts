@@ -16,6 +16,7 @@ import {
   getOneVisitQuery,
   getPatientPendingPrescriptions,
   getPastVisits,
+  insertDefaultDialysisItems,
 } from './visit.repository';
 import { Visit } from '../../database/models';
 import { CreateVisit } from './interface/visit.interface';
@@ -37,6 +38,7 @@ import { Gender } from '../../database/models/staff';
 import { FEMALE_REQUIRED } from '../Antenatal/messages/antenatal.messages';
 import { getOneImmunization } from '../Immunization/immunization.repository';
 import { Status } from '../../database/models/patient';
+import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 
 class VisitService {
   /**
@@ -112,6 +114,21 @@ class VisitService {
       visit: createdVisit,
       ante_natal_id: body?.ante_natal_id,
     });
+
+    // Insert default dialysis items if this is a dialysis visit
+    if (category === VisitCategory.DIALYSIS) {
+      const insurance = await getPatientInsuranceQuery({
+        patient_id,
+        is_default: true,
+      });
+      // Always call insertDefaultDialysisItems, regardless of insurance
+      insertDefaultDialysisItems({
+        patient,
+        visit: createdVisit,
+        insurance,
+      });
+    }
+
     return createdVisit;
   }
 
