@@ -27,24 +27,22 @@
 
 <script>
 export default {
-  name: "CalloutCard",
+  name: 'CalloutCard',
   props: {
     link: {
       type: String,
-      required: true
+      required: true,
     },
     desc: {
       type: String,
-      required: true
+      required: true,
     },
     name: {
       type: String,
-      required: true
+      required: true,
     },
-  }
+  },
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

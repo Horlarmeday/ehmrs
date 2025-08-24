@@ -78,8 +78,8 @@
 
 <script>
 export default {
-  name: "dropdown-1",
+  name: 'dropdown-1',
   components: {},
-  mounted() {}
+  mounted() {},
 };
 </script>

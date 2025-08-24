@@ -3,7 +3,7 @@
     <div
       class="d-flex flex-row-fluid bgi-size-cover bgi-position-center"
       :style="{
-        backgroundImage: `url(${backgroundImage})`
+        backgroundImage: `url(${backgroundImage})`,
       }"
     >
       <!-- begin:: Content -->
@@ -24,12 +24,12 @@
 
 <script>
 export default {
-  name: "Error-2",
+  name: 'Error-2',
   mounted() {},
   computed: {
     backgroundImage() {
-      return process.env.BASE_URL + "media/error/bg2.jpg";
-    }
-  }
+      return process.env.BASE_URL + 'media/error/bg2.jpg';
+    },
+  },
 };
 </script>

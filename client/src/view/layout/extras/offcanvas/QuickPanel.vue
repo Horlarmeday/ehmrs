@@ -1,9 +1,6 @@
 <template>
   <div class="topbar-item">
-    <div
-      class="btn btn-icon btn-hover-transparent-white btn-lg mr-1"
-      id="kt_quick_panel_toggle"
-    >
+    <div class="btn btn-icon btn-hover-transparent-white btn-lg mr-1" id="kt_quick_panel_toggle">
       <span class="svg-icon svg-icon-xl">
         <inline-svg src="media/svg/icons/Layout/Layout-4-blocks.svg" />
       </span>
@@ -85,16 +82,10 @@
                   <h5 class="font-weight-bold mb-5">System Messages</h5>
                   <template v-for="(item, i) in list1">
                     <!--begin: Item -->
-                    <div
-                      class="d-flex align-items-center flex-wrap mb-5"
-                      v-bind:key="i"
-                    >
+                    <div class="d-flex align-items-center flex-wrap mb-5" v-bind:key="i">
                       <div class="symbol symbol-50 symbol-light mr-5">
                         <span class="symbol-label">
-                          <inline-svg
-                            :src="item.svg"
-                            class="h-50 align-self-center"
-                          />
+                          <inline-svg :src="item.svg" class="h-50 align-self-center" />
                         </span>
                       </div>
                       <div class="d-flex flex-column flex-grow-1 mr-2">
@@ -127,14 +118,8 @@
                       v-bind:key="i"
                       v-bind:class="`bg-light-${item.type}`"
                     >
-                      <span
-                        class="svg-icon mr-5"
-                        v-bind:class="`svg-icon-${item.type}`"
-                      >
-                        <inline-svg
-                          :src="item.svg"
-                          class="h-50 align-self-center"
-                        />
+                      <span class="svg-icon mr-5" v-bind:class="`svg-icon-${item.type}`">
+                        <inline-svg :src="item.svg" class="h-50 align-self-center" />
                       </span>
 
                       <div class="d-flex flex-column flex-grow-1 mr-2">
@@ -198,9 +183,7 @@
                   <div>
                     <h5 class="font-weight-bold mb-3">Customer Care</h5>
                     <div class="form-group mb-0 row">
-                      <label class="col-8 col-form-label"
-                        >Enable Notifications:</label
-                      >
+                      <label class="col-8 col-form-label">Enable Notifications:</label>
                       <div class="col-4 text-right">
                         <span class="switch switch-success switch-sm">
                           <label>
@@ -211,25 +194,18 @@
                       </div>
                     </div>
                     <div class="form-group mb-0 row">
-                      <label class="col-8 col-form-label"
-                        >Enable Case Tracking:</label
-                      >
+                      <label class="col-8 col-form-label">Enable Case Tracking:</label>
                       <div class="col-4 text-right">
                         <span class="switch switch-success switch-sm">
                           <label>
-                            <input
-                              type="checkbox"
-                              name="quick_panel_notifications_2"
-                            />
+                            <input type="checkbox" name="quick_panel_notifications_2" />
                             <span></span>
                           </label>
                         </span>
                       </div>
                     </div>
                     <div class="form-group mb-0 row">
-                      <label class="col-8 col-form-label"
-                        >Support Portal:</label
-                      >
+                      <label class="col-8 col-form-label">Support Portal:</label>
                       <div class="col-4 text-right">
                         <span class="switch switch-success switch-sm">
                           <label>
@@ -248,9 +224,7 @@
                   <div class="pt-2">
                     <h5 class="font-weight-bold mb-3">Reports</h5>
                     <div class="form-group mb-0 row">
-                      <label class="col-8 col-form-label"
-                        >Generate Reports:</label
-                      >
+                      <label class="col-8 col-form-label">Generate Reports:</label>
                       <div class="col-4 text-right">
                         <span class="switch switch-sm switch-danger">
                           <label>
@@ -261,9 +235,7 @@
                       </div>
                     </div>
                     <div class="form-group mb-0 row">
-                      <label class="col-8 col-form-label"
-                        >Enable Report Export:</label
-                      >
+                      <label class="col-8 col-form-label">Enable Report Export:</label>
                       <div class="col-4 text-right">
                         <span class="switch switch-sm switch-danger">
                           <label>
@@ -274,9 +246,7 @@
                       </div>
                     </div>
                     <div class="form-group mb-0 row">
-                      <label class="col-8 col-form-label"
-                        >Allow Data Collection:</label
-                      >
+                      <label class="col-8 col-form-label">Allow Data Collection:</label>
                       <div class="col-4 text-right">
                         <span class="switch switch-sm switch-danger">
                           <label>
@@ -295,9 +265,7 @@
                   <div class="pt-2">
                     <h5 class="font-weight-bold mb-3">Memebers</h5>
                     <div class="form-group mb-0 row">
-                      <label class="col-8 col-form-label"
-                        >Enable Member singup:</label
-                      >
+                      <label class="col-8 col-form-label">Enable Member singup:</label>
                       <div class="col-4 text-right">
                         <span class="switch switch-sm switch-primary">
                           <label>
@@ -308,9 +276,7 @@
                       </div>
                     </div>
                     <div class="form-group mb-0 row">
-                      <label class="col-8 col-form-label"
-                        >Allow User Feedbacks:</label
-                      >
+                      <label class="col-8 col-form-label">Allow User Feedbacks:</label>
                       <div class="col-4 text-right">
                         <span class="switch switch-sm switch-primary">
                           <label>
@@ -321,9 +287,7 @@
                       </div>
                     </div>
                     <div class="form-group mb-0 row">
-                      <label class="col-8 col-form-label"
-                        >Enable Customer Portal:</label
-                      >
+                      <label class="col-8 col-form-label">Enable Customer Portal:</label>
                       <div class="col-4 text-right">
                         <span class="switch switch-sm switch-primary">
                           <label>
@@ -347,141 +311,141 @@
 </template>
 
 <script>
-import KTLayoutQuickPanel from "@/assets/js/layout/extended/quick-panel.js";
+import KTLayoutQuickPanel from '@/assets/js/layout/extended/quick-panel.js';
 
 export default {
-  name: "KTQuickPanel",
+  name: 'KTQuickPanel',
   data() {
     return {
       tabIndex: 0,
       list1: [
         {
-          title: "Top Authors",
-          desc: "Most Successful Fellas",
-          alt: "+82$",
-          svg: "media/svg/misc/006-plurk.svg"
+          title: 'Top Authors',
+          desc: 'Most Successful Fellas',
+          alt: '+82$',
+          svg: 'media/svg/misc/006-plurk.svg',
         },
         {
-          title: "Popular Authors",
-          desc: "Most Successful Fellas",
-          alt: "+280$",
-          svg: "media/svg/misc/006-plurk.svg"
+          title: 'Popular Authors',
+          desc: 'Most Successful Fellas',
+          alt: '+280$',
+          svg: 'media/svg/misc/006-plurk.svg',
         },
         {
-          title: "New Users",
-          desc: "Most Successful Fellas",
-          alt: "+4500$",
-          svg: "media/svg/misc/015-telegram.svg"
+          title: 'New Users',
+          desc: 'Most Successful Fellas',
+          alt: '+4500$',
+          svg: 'media/svg/misc/015-telegram.svg',
         },
         {
-          title: "Active Customers",
-          desc: "Most Successful Fellas",
-          alt: "+4500$",
-          svg: "media/svg/misc/003-puzzle.svg"
-        }
+          title: 'Active Customers',
+          desc: 'Most Successful Fellas',
+          alt: '+4500$',
+          svg: 'media/svg/misc/003-puzzle.svg',
+        },
       ],
       list2: [
         {
-          title: "Another purpose persuade",
-          desc: "Due in 2 Days",
-          alt: "+28%",
-          svg: "media/svg/icons/Home/Library.svg",
-          type: "warning"
+          title: 'Another purpose persuade',
+          desc: 'Due in 2 Days',
+          alt: '+28%',
+          svg: 'media/svg/icons/Home/Library.svg',
+          type: 'warning',
         },
         {
-          title: "Would be to people",
-          desc: "Due in 2 Days",
-          alt: "+50%",
-          svg: "media/svg/icons/Communication/Write.svg",
-          type: "success"
+          title: 'Would be to people',
+          desc: 'Due in 2 Days',
+          alt: '+50%',
+          svg: 'media/svg/icons/Communication/Write.svg',
+          type: 'success',
         },
         {
-          title: "Purpose would be to persuade",
-          desc: "Due in 2 Days",
-          alt: "-27%",
-          svg: "media/svg/icons/Communication/Group-chat.svg",
-          type: "danger"
+          title: 'Purpose would be to persuade',
+          desc: 'Due in 2 Days',
+          alt: '-27%',
+          svg: 'media/svg/icons/Communication/Group-chat.svg',
+          type: 'danger',
         },
         {
-          title: "The best product",
-          desc: "Due in 2 Days",
-          alt: "+8%",
-          svg: "media/svg/icons/General/Attachment2.svg",
-          type: "info"
-        }
+          title: 'The best product',
+          desc: 'Due in 2 Days',
+          alt: '+8%',
+          svg: 'media/svg/icons/General/Attachment2.svg',
+          type: 'info',
+        },
       ],
       list3: [
         {
-          title: "5 new user generated report",
-          desc: "Reports based on sales",
-          icon: "flaticon-bell text-success"
+          title: '5 new user generated report',
+          desc: 'Reports based on sales',
+          icon: 'flaticon-bell text-success',
         },
         {
-          title: "2 new items submited",
-          desc: "by Grog John",
-          icon: "flaticon2-box text-danger"
+          title: '2 new items submited',
+          desc: 'by Grog John',
+          icon: 'flaticon2-box text-danger',
         },
         {
-          title: "79 PSD files generated",
-          desc: "Reports based on sales",
-          icon: "flaticon-psd text-primary"
+          title: '79 PSD files generated',
+          desc: 'Reports based on sales',
+          icon: 'flaticon-psd text-primary',
         },
         {
-          title: "$2900 worth producucts sold",
-          desc: "Total 234 items",
-          icon: "flaticon2-supermarket text-warning"
+          title: '$2900 worth producucts sold',
+          desc: 'Total 234 items',
+          icon: 'flaticon2-supermarket text-warning',
         },
         {
-          title: "4.5h-avarage response time",
-          desc: "Fostest is Barry",
-          icon: "flaticon-paper-plane-1 text-success"
+          title: '4.5h-avarage response time',
+          desc: 'Fostest is Barry',
+          icon: 'flaticon-paper-plane-1 text-success',
         },
         {
-          title: "3 Defence alerts",
-          desc: "40% less alerts thar last week",
-          icon: "flaticon-safe-shield-protection text-danger"
+          title: '3 Defence alerts',
+          desc: '40% less alerts thar last week',
+          icon: 'flaticon-safe-shield-protection text-danger',
         },
         {
-          title: "Avarage 4 blog posts per author",
-          desc: "Most posted 12 time",
-          icon: "flaticon-notepad text-primary"
+          title: 'Avarage 4 blog posts per author',
+          desc: 'Most posted 12 time',
+          icon: 'flaticon-notepad text-primary',
         },
         {
-          title: "16 authors joined last week",
-          desc: "9 photodrapehrs, 7 designer",
-          icon: "flaticon-users-1 text-warning"
+          title: '16 authors joined last week',
+          desc: '9 photodrapehrs, 7 designer',
+          icon: 'flaticon-users-1 text-warning',
         },
         {
-          title: "2 new items have been submited",
-          desc: "by Grog John",
-          icon: "flaticon2-box text-info"
+          title: '2 new items have been submited',
+          desc: 'by Grog John',
+          icon: 'flaticon2-box text-info',
         },
         {
-          title: "2.8 GB-total downloads size",
-          desc: "Mostly PSD end  AL concepts",
-          icon: "flaticon2-download text-success"
+          title: '2.8 GB-total downloads size',
+          desc: 'Mostly PSD end  AL concepts',
+          icon: 'flaticon2-download text-success',
         },
         {
-          title: "$2900 worth producucts sold",
-          desc: "Total 234 items",
-          icon: "flaticon2-supermarket text-danger"
+          title: '$2900 worth producucts sold',
+          desc: 'Total 234 items',
+          icon: 'flaticon2-supermarket text-danger',
         },
         {
-          title: "7 new user generated report",
-          desc: "Reports based on sales",
-          icon: "flaticon-bell text-primary"
+          title: '7 new user generated report',
+          desc: 'Reports based on sales',
+          icon: 'flaticon-bell text-primary',
         },
         {
-          title: "4.5h-avarage response time",
-          desc: "Fostest is Barry",
-          icon: "flaticon-paper-plane-1 text-success"
-        }
-      ]
+          title: '4.5h-avarage response time',
+          desc: 'Fostest is Barry',
+          icon: 'flaticon-paper-plane-1 text-success',
+        },
+      ],
     };
   },
   mounted() {
     // Init Quick Offcanvas Panel
-    KTLayoutQuickPanel.init(this.$refs["kt_quick_panel"]);
+    KTLayoutQuickPanel.init(this.$refs['kt_quick_panel']);
   },
   methods: {
     /**
@@ -490,18 +454,18 @@ export default {
      */
     setActiveTab(event) {
       const tab = event.target.closest('[role="tablist"]');
-      const links = tab.querySelectorAll(".nav-link");
+      const links = tab.querySelectorAll('.nav-link');
       // remove active tab links
       for (let i = 0; i < links.length; i++) {
-        links[i].classList.remove("active");
+        links[i].classList.remove('active');
       }
 
       // set clicked tab index to bootstrap tab
-      this.tabIndex = parseInt(event.target.getAttribute("data-tab"));
+      this.tabIndex = parseInt(event.target.getAttribute('data-tab'));
 
       // set current active tab
-      event.target.classList.add("active");
-    }
-  }
+      event.target.classList.add('active');
+    },
+  },
 };
 </script>

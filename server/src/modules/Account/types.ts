@@ -27,8 +27,9 @@ export interface JournalEntryLine {
   id?: number;
   journal_entry_id?: number;
   account_id: number;
-  type: EntryType;
-  amount: number;
+  debit?: number;
+  credit?: number;
+  cost_center_id?: number;
   description?: string;
   account?: ChartOfAccount;
 }
@@ -58,7 +59,7 @@ export interface TrendAnalysis {
   end_date: string;
   interval: TrendInterval;
   metrics?: string[];
-  department_id?: string;
+  department_id?: number;
   format?: ExportFormat;
 }
 

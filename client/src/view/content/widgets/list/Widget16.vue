@@ -5,9 +5,7 @@
   >
     <!--begin::body-->
     <div class="card-body">
-      <a
-        href="#"
-        class="card-title font-weight-bold text-muted text-hover-primary font-size-h5"
+      <a href="#" class="card-title font-weight-bold text-muted text-hover-primary font-size-h5"
         >New Release</a
       >
       <div class="font-weight-bold text-success mt-9 mb-5">ReactJS</div>
@@ -21,6 +19,6 @@
 
 <script>
 export default {
-  name: "Widget16"
+  name: 'Widget16',
 };
 </script>

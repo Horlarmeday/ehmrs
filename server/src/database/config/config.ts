@@ -9,7 +9,7 @@ const sequelizeConnection = new Sequelize(database, username, password, {
   port,
   host,
   dialect,
-  models: Object.values(models),
+  models: Object.values(models).filter(model => typeof model === 'function') as any[],
   pool: { max: 50, min: 0, acquire: 30000, idle: 300000 },
   modelMatch: (filename, member) => {
     return /^(?!.*(?:index)).*\.ts$/.test(filename);

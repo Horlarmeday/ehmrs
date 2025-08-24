@@ -11,7 +11,7 @@
                 :src="layoutConfig('self.logo.default')"
                 class="max-h-35px"
               /> -->
-              <img alt="Logo" :src="logo" class="max-h-50px" />
+              <img alt="Logo" :src="logo" class="header-logo" />
             </router-link>
           </div>
           <!--end::Logo-->
@@ -190,7 +190,7 @@ export default {
   },
   computed: {
     logo() {
-      return process.env.BASE_URL + 'media/logos/ms.png';
+      return process.env.BASE_URL + 'media/logos/Caroline.png';
     },
 
     ...mapGetters(['layoutConfig', 'getClasses']),
@@ -292,3 +292,33 @@ export default {
   },
 };
 </script>
+
+<style lang="scss" scoped>
+// Header Logo Styling - Circular Design
+.header-logo {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(139, 0, 0, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  background: white;
+  padding: 4px;
+
+  &:hover {
+    transform: scale(1.05);
+    border-color: rgba(139, 0, 0, 0.4);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .header-logo {
+    width: 40px;
+    height: 40px;
+    padding: 3px;
+  }
+}
+</style>

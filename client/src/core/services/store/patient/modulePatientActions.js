@@ -307,5 +307,5 @@ export default {
           reject(error);
         });
     });
-  }
+  },
 };

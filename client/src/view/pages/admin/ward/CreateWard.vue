@@ -167,7 +167,7 @@ export default {
           const obj = {
             ward_id: this.ward_id,
             name: this.name,
-            service_id: this.selectedService.id,
+            service_id: this.selectedService,
             occupant_type: this.occupant_type,
           };
           // set spinner to submit button

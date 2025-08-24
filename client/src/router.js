@@ -342,9 +342,25 @@ const router = new Router({
               },
             },
             {
+              path: 'dialysis-management',
+              name: 'dialysis-management',
+              component: () => import('@/view/pages/visits/page/DialysisVisits.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
               path: 'dialysis',
               name: 'dialysis',
-              component: () => import('@/view/pages/visits/page/DialysisVisits.vue'),
+              component: () => import('@/view/pages/visits/page/DialysisCategoryVisit.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'dialysis-consultation/:id',
+              name: 'dialysis-consultation',
+              component: () => import('@/view/pages/visits/page/DialysisConsultation.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -588,7 +604,42 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            {
+              path: 'hmo-pricing',
+              name: 'hmo-pricing',
+              component: () => import('@/view/pages/insurance/HMO/HMOPricingManager.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
           ],
+        },
+        // PROCUREMENT
+        {
+          path: '/procurement',
+          name: 'procurement',
+          component: () => import('@/view/pages/procurement/ProcurementManager.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        // STOCK AUDIT
+        {
+          path: '/stock-audit',
+          name: 'stock-audit',
+          component: () => import('@/view/pages/stockAudit/StockAuditManager.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        // EMERGENCY
+        {
+          path: '/emergency',
+          name: 'emergency',
+          component: () => import('@/view/pages/emergency/EmergencyManager.vue'),
+          meta: {
+            requiresAuth: true,
+          },
         },
         // STORE (LABORATORY AND PHARMACY)
         {
@@ -950,6 +1001,236 @@ const router = new Router({
               path: 'items/:id',
               name: 'inventory-item',
               component: () => import('@/view/pages/inventory/InventoryItem.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+          ],
+        },
+        // GENERAL STORE
+        {
+          path: '/general-store',
+          name: 'general-store',
+          component: () => import('@/view/pages/generalStore/GeneralStore.vue'),
+          children: [
+            {
+              path: '',
+              name: 'general-store-home',
+              component: () => import('@/view/pages/generalStore/Home.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'items',
+              name: 'general-store-items',
+              component: () => import('@/view/pages/generalStore/items/ItemsList.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'items/create',
+              name: 'general-store-create-item',
+              component: () => import('@/view/pages/generalStore/items/CreateItem.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'items/:id',
+              name: 'general-store-item-details',
+              component: () => import('@/view/pages/generalStore/items/ItemDetails.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'items/:id/edit',
+              name: 'general-store-edit-item',
+              component: () => import('@/view/pages/generalStore/items/EditItem.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'categories',
+              name: 'general-store-categories',
+              component: () => import('@/view/pages/generalStore/categories/CategoriesList.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'categories/create',
+              name: 'general-store-create-category',
+              component: () => import('@/view/pages/generalStore/categories/CreateCategory.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'categories/:id',
+              name: 'general-store-category-details',
+              component: () => import('@/view/pages/generalStore/categories/CategoryDetails.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'categories/:id/edit',
+              name: 'general-store-edit-category',
+              component: () => import('@/view/pages/generalStore/categories/EditCategory.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'subcategories',
+              name: 'general-store-subcategories',
+              component: () =>
+                import('@/view/pages/generalStore/subcategories/SubcategoriesList.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'subcategories/create',
+              name: 'general-store-create-subcategory',
+              component: () =>
+                import('@/view/pages/generalStore/subcategories/CreateSubcategory.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'subcategories/:id',
+              name: 'general-store-subcategory-details',
+              component: () =>
+                import('@/view/pages/generalStore/subcategories/SubcategoryDetails.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'subcategories/:id/edit',
+              name: 'general-store-edit-subcategory',
+              component: () =>
+                import('@/view/pages/generalStore/subcategories/EditSubcategory.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'requests',
+              name: 'general-store-requests',
+              component: () => import('@/view/pages/generalStore/requests/RequestsList.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'requests/create',
+              name: 'general-store-create-request',
+              component: () => import('@/view/pages/generalStore/requests/CreateRequest.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'requests/:id',
+              name: 'general-store-request-details',
+              component: () => import('@/view/pages/generalStore/requests/RequestDetails.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'requests/:id/edit',
+              name: 'general-store-edit-request',
+              component: () => import('@/view/pages/generalStore/requests/EditRequest.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'movements',
+              name: 'general-store-movements',
+              component: () => import('@/view/pages/generalStore/movements/MovementsList.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'movements/create',
+              name: 'general-store-create-movement',
+              component: () => import('@/view/pages/generalStore/movements/CreateMovement.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'movements/:id',
+              name: 'general-store-movement-details',
+              component: () => import('@/view/pages/generalStore/movements/MovementDetails.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'reports',
+              name: 'general-store-reports',
+              component: () => import('@/view/pages/generalStore/reports/Reports.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+              children: [
+                {
+                  path: '',
+                  name: 'general-store-reports-dashboard',
+                  component: () => import('@/view/pages/generalStore/reports/ReportsDashboard.vue'),
+                  meta: {
+                    requiresAuth: true,
+                  },
+                },
+                {
+                  path: 'stock',
+                  name: 'general-store-stock-report',
+                  component: () => import('@/view/pages/generalStore/reports/StockReport.vue'),
+                  meta: {
+                    requiresAuth: true,
+                  },
+                },
+                {
+                  path: 'movement',
+                  name: 'general-store-movement-report',
+                  component: () => import('@/view/pages/generalStore/reports/MovementReport.vue'),
+                  meta: {
+                    requiresAuth: true,
+                  },
+                },
+                {
+                  path: 'usage',
+                  name: 'general-store-usage-report',
+                  component: () => import('@/view/pages/generalStore/reports/UsageReport.vue'),
+                  meta: {
+                    requiresAuth: true,
+                  },
+                },
+                {
+                  path: 'cost',
+                  name: 'general-store-cost-report',
+                  component: () => import('@/view/pages/generalStore/reports/CostReport.vue'),
+                  meta: {
+                    requiresAuth: true,
+                  },
+                },
+              ],
+            },
+            {
+              path: 'settings',
+              name: 'general-store-settings',
+              component: () => import('@/view/pages/generalStore/settings/Settings.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1391,6 +1672,247 @@ const router = new Router({
               },
             },
           ],
+        },
+        // =============================================================================
+        // ACCOUNTING & FINANCE MODULE ROUTES
+        // =============================================================================
+        {
+          path: '/accounting',
+          name: 'accounting-module',
+          component: () => import('@/view/pages/accounting/AccountingDashboard.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/dashboard',
+          name: 'accounting-dashboard',
+          component: () => import('@/view/pages/accounting/AccountingDashboard.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/bills',
+          name: 'bills-list',
+          component: () => import('@/view/pages/accounting/BillManagement.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/bills/create',
+          name: 'create-bill',
+          component: () => import('@/view/pages/accounting/BillManagement.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/bills/:id',
+          name: 'bill-details',
+          component: () => import('@/view/pages/accounting/BillManagement.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/bills/:billId/items',
+          name: 'bill-items',
+          component: () => import('@/view/pages/accounting/BillItemsPage.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/payment-processing',
+          name: 'payment-processing',
+          component: () => import('@/view/pages/accounting/PaymentProcessingPage.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/payments',
+          name: 'payments-list',
+          component: () => import('@/view/pages/accounting/PaymentProcessing.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/process-payment',
+          name: 'process-payment',
+          component: () => import('@/view/pages/accounting/PaymentProcessing.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/payments/:id',
+          name: 'payment-details',
+          component: () => import('@/view/pages/accounting/PaymentProcessing.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/deposits',
+          name: 'deposits-list',
+          component: () => import('@/view/pages/accounting/PatientDeposits.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/deposits/:id',
+          name: 'deposit-details',
+          component: () => import('@/view/pages/accounting/PatientDeposits.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/record-deposit',
+          name: 'record-deposit',
+          component: () => import('@/view/pages/accounting/PatientDeposits.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/reports',
+          name: 'financial-reports',
+          component: () => import('@/view/pages/accounting/FinancialReports.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/payment-history',
+          name: 'payment-history',
+          component: () => import('@/view/pages/accounting/PaymentProcessing.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        // =============================================================================
+        // PHASE 1: CORE FINANCIAL FOUNDATION ROUTES
+        // =============================================================================
+        {
+          path: '/accounting/chart-of-accounts',
+          name: 'chart-of-accounts',
+          component: () => import('@/view/pages/accounting/ChartOfAccounts.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/journal-entries',
+          name: 'journal-entries',
+          component: () => import('@/view/pages/accounting/JournalEntries.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/trial-balance',
+          name: 'trial-balance',
+          component: () => import('@/view/pages/accounting/TrialBalance.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/cost-centers',
+          name: 'cost-centers',
+          component: () => import('@/view/pages/accounting/CostCenters.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/financial-periods',
+          name: 'financial-periods',
+          component: () => import('@/view/pages/accounting/FinancialPeriods.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/hmo-claims',
+          name: 'hmo-claims',
+          component: () => import('@/view/pages/accounting/HMOClaims.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        // Bank Account Management Routes
+        {
+          path: '/accounting/bank-accounts',
+          name: 'bank-accounts',
+          component: () => import('@/view/pages/accounting/BankAccountsPage.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/bank-accounts/new',
+          name: 'create-bank-account',
+          component: () => import('@/view/pages/accounting/BankAccountsPage.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/bank-accounts/:id',
+          name: 'bank-account-details',
+          component: () => import('@/view/pages/accounting/BankAccountDetailsPage.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/bank-accounts/:id/edit',
+          name: 'edit-bank-account',
+          component: () => import('@/view/pages/accounting/BankAccountsPage.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+
+        // POS Terminal Management Routes
+        {
+          path: '/accounting/pos-terminals',
+          name: 'pos-terminals',
+          component: () => import('@/view/pages/accounting/POSTerminalsPage.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/pos-terminals/new',
+          name: 'create-pos-terminal',
+          component: () => import('@/view/pages/accounting/POSTerminalsPage.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/pos-terminals/:id',
+          name: 'pos-terminal-details',
+          component: () => import('@/view/pages/accounting/POSTerminalDetailsPage.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/pos-terminals/:id/edit',
+          name: 'edit-pos-terminal',
+          component: () => import('@/view/pages/accounting/POSTerminalsPage.vue'),
+          meta: {
+            requiresAuth: true,
+          },
         },
         {
           path: '/settings',

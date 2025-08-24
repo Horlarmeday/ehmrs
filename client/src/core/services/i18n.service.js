@@ -1,37 +1,37 @@
 const i18nService = {
-  defaultLanguage: "en",
+  defaultLanguage: 'en',
 
   languages: [
     {
-      lang: "en",
-      name: "English",
-      flag: process.env.BASE_URL + "media/svg/flags/226-united-states.svg"
+      lang: 'en',
+      name: 'English',
+      flag: process.env.BASE_URL + 'media/svg/flags/226-united-states.svg',
     },
     {
-      lang: "ch",
-      name: "Mandarin",
-      flag: process.env.BASE_URL + "media/svg/flags/034-china.svg"
+      lang: 'ch',
+      name: 'Mandarin',
+      flag: process.env.BASE_URL + 'media/svg/flags/034-china.svg',
     },
     {
-      lang: "es",
-      name: "Spanish",
-      flag: process.env.BASE_URL + "media/svg/flags/128-spain.svg"
+      lang: 'es',
+      name: 'Spanish',
+      flag: process.env.BASE_URL + 'media/svg/flags/128-spain.svg',
     },
     {
-      lang: "jp",
-      name: "Japanese",
-      flag: process.env.BASE_URL + "media/svg/flags/063-japan.svg"
+      lang: 'jp',
+      name: 'Japanese',
+      flag: process.env.BASE_URL + 'media/svg/flags/063-japan.svg',
     },
     {
-      lang: "de",
-      name: "German",
-      flag: process.env.BASE_URL + "media/svg/flags/162-germany.svg"
+      lang: 'de',
+      name: 'German',
+      flag: process.env.BASE_URL + 'media/svg/flags/162-germany.svg',
     },
     {
-      lang: "fr",
-      name: "French",
-      flag: process.env.BASE_URL + "media/svg/flags/195-france.svg"
-    }
+      lang: 'fr',
+      name: 'French',
+      flag: process.env.BASE_URL + 'media/svg/flags/195-france.svg',
+    },
   ],
 
   /**
@@ -39,7 +39,7 @@ const i18nService = {
    * @param lang
    */
   setActiveLanguage(lang) {
-    localStorage.setItem("language", lang);
+    localStorage.setItem('language', lang);
   },
 
   /**
@@ -47,8 +47,8 @@ const i18nService = {
    * @returns {string | string}
    */
   getActiveLanguage() {
-    return localStorage.getItem("language") || this.defaultLanguage;
-  }
+    return localStorage.getItem('language') || this.defaultLanguage;
+  },
 };
 
 export default i18nService;

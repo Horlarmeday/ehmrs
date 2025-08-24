@@ -78,7 +78,47 @@ export { Vendor } from './vendor';
 export { Visit } from './visit';
 export { Ward } from './ward';
 export { WardRound } from './wardRound';
+export { BankAccount } from './bankAccount';
+export { POSTerminal } from './posTerminal';
 export { ChartOfAccount } from './chartOfAccount';
 export { CostCenter } from './costCenter';
 export { JournalEntry } from './journalEntry';
 export { JournalEntryLine } from './journalEntryLine';
+export { StockAudit } from './stockAudit';
+export { HMODrugPricing } from './hmoDrugPricing';
+export { HMOTestPricing } from './hmoTestPricing';
+export { HMOServicePricing } from './hmoServicePricing';
+export { HMOInvestigationPricing } from './hmoInvestigationPricing';
+export { ProcurementOrder } from './procurementOrder';
+export { ProcurementOrderItem } from './procurementOrderItem';
+export { ProcurementOrderHistory } from './procurementOrderHistory';
+export { StockAuditItem } from './stockAuditItem';
+export { EmergencyVisit } from './emergencyVisit';
+export { EmergencyTriage } from './emergencyTriage';
+export { EmergencyBed } from './emergencyBed';
+export { EmergencyProcedure } from './emergencyProcedure';
+export {
+  GeneralStoreCategory,
+  GeneralStoreSubcategory,
+  GeneralStoreItem,
+  GeneralStoreMovement,
+  GeneralStoreRequest,
+  GeneralStoreRequestItem,
+} from './generalStore';
+export { GeneralStoreAuditLog } from './generalStoreAudit';
+
+// Accounting & Finance Models
+export { PatientDeposit } from './patientDeposit';
+export { ClinicalBill } from './clinicalBill';
+export { ClinicalBillItem } from './clinicalBillItem';
+export { ClinicalPayment } from './clinicalPayment';
+export { FinancialPeriod } from './financialPeriod';
+export { HMOClaim } from './hmoClaim';
+
+// Dialysis Models
+export { DialysisVisit } from './dialysisVisit';
+export { DialysisTreatment } from './dialysisTreatment';
+export { DialysisAssessment } from './dialysisAssessment';
+export { DialysisVitals } from './dialysisVitals';
+export { DialysisNotes } from './dialysisNotes';
+

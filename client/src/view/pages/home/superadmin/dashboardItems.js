@@ -14,21 +14,31 @@ export default [
     icon: 'flaticon2-user',
     name: 'Patients Operations',
   },
-  {
-    url: '/appointment/active',
-    icon: 'flaticon-event-calendar-symbol',
-    name: 'Appointment Scheduling',
-  },
+  // {
+  //   url: '/appointment/active',
+  //   icon: 'flaticon-event-calendar-symbol',
+  //   name: 'Appointment Scheduling',
+  // },
   {
     url: '/settings/choose-type',
     icon: 'fas fa-user-cog',
     name: 'Admin',
   },
+  // {
+  //   url: '/emergency',
+  //   icon: 'fas fa-bed',
+  //   name: 'Emergency',
+  // },
   {
-    url: '/program/program-type',
-    icon: 'flaticon-security',
-    name: 'Programs',
+    url: '/accounting',
+    icon: 'far fa-money-bill-alt',
+    name: 'Accounting',
   },
+  // {
+  //   url: '/program/program-type',
+  //   icon: 'flaticon-security',
+  //   name: 'Programs',
+  // },
   {
     url: '/employee/choose-type',
     icon: 'fas fa-users',
@@ -52,7 +62,7 @@ export default [
   {
     url: '/inventory/inventory-type',
     icon: 'fas fa-laptop-house',
-    name: 'Inventory',
+    name: 'Dispensary',
   },
   {
     url: '/account/transactions',
@@ -92,7 +102,7 @@ export default [
   {
     url: '/request/request-type',
     icon: 'flaticon2-laptop',
-    name: 'Inventory Requests',
+    name: 'Dispensary Requests',
   },
   {
     url: '/system/settings',

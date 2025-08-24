@@ -24,6 +24,13 @@ import immunization from './immunization/moduleImmunization';
 import alert from './alert/moduleAlert';
 import settings from './settings/moduleSettings';
 import account from './account/moduleAccount';
+import accounting from './accounting/index';
+import dialysis from './dialysis/index';
+import hmoPricing from './hmoPricing/index';
+import procurement from './procurement/index';
+import stockAudit from './stockAudit/index';
+import emergency from './emergency/index';
+import generalStore from './generalStore/index';
 import htmlClass from './htmlclass.module';
 import config from './config.module';
 import breadcrumbs from './breadcrumbs.module';
@@ -55,6 +62,13 @@ export default new Vuex.Store({
     alert,
     settings,
     account,
+    accounting,
+    dialysis,
+    hmoPricing,
+    procurement,
+    stockAudit,
+    emergency,
+    generalStore,
     htmlClass,
     config,
     breadcrumbs,

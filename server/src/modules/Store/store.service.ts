@@ -26,15 +26,7 @@ import { splitSort } from '../../core/helpers/helper';
 import { LaboratoryStore, PharmacyStore } from '../../database/models';
 import { BadException } from '../../common/util/api-error';
 import { ItemsToDispensedBody } from '../Inventory/types/inventory-item.types';
-import {
-  ITEM_EXISTS_CASH,
-  ITEM_EXISTS_NHIS,
-  ITEM_EXISTS_PLASCHEMA,
-  ITEM_EXISTS_PRIVATE,
-  ITEM_EXISTS_RETAINERSHIP,
-} from '../Inventory/messages/response-messages';
 import { ItemsToReorder } from './types/pharmacy-item.types';
-import { DrugType } from '../../database/models/pharmacyStore';
 import { Status } from '../../database/models/staff';
 
 class StoreService {
@@ -48,53 +40,55 @@ class StoreService {
    */
   static async createPharmacyItemService(body): Promise<PharmacyStore> {
     const {
-      create_cash_item,
-      create_nhis_item,
       drug_id,
-      create_private_item,
-      create_retainership_item,
-      create_plaschema_item,
+      shelf,
+      product_code,
+      batch,
+      voucher,
+      quantity_received,
+      unit_id,
+      unit_price,
+      expiration,
+      dosage_form_id,
+      staff_id,
+      date_received,
+      measurement_id,
+      strength_input,
+      route_id,
+      drug_form,
+      brand,
+      vendor_id,
+      selling_price,
     } = body;
-    await this.pharmacyStoreValidations({
-      drugId: drug_id,
-      create_cash_item,
-      create_nhis_item,
-      create_private_item,
-      create_retainership_item,
-      create_plaschema_item,
-    });
 
-    const itemTypes = [
-      { flag: create_cash_item, priceKey: 'selling_price' },
-      { flag: create_nhis_item, priceKey: 'nhis_selling_price' },
-      { flag: create_private_item, priceKey: 'private_selling_price' },
-      { flag: create_retainership_item, priceKey: 'retainership_selling_price' },
-      { flag: create_plaschema_item, priceKey: 'plaschema_selling_price' },
-    ];
-
-    const priceKeys = [
-      'selling_price',
-      'nhis_selling_price',
-      'private_selling_price',
-      'retainership_selling_price',
-      'plaschema_selling_price',
-    ];
-
-    const createdItems = [];
-
-    for (const type of itemTypes) {
-      if (type.flag) {
-        // Only keep the relevant price key, set others to undefined
-        const itemBody = { ...body };
-        for (const key of priceKeys) {
-          if (key !== type.priceKey) {
-            itemBody[key] = undefined;
-          }
-        }
-        createdItems.push(await createStoreItem(itemBody));
-      }
+    // Check if item already exists for this drug
+    const existingItem = await getOnePharmacyStoreItem({ drug_id });
+    if (existingItem) {
+      throw new BadException('Invalid', 400, 'Item already exists for this drug');
     }
-    return createdItems[0];
+
+    // Create single store item (no more drug_type separation)
+    return createStoreItem({
+      drug_id,
+      shelf,
+      product_code,
+      batch,
+      voucher,
+      quantity_received,
+      unit_id,
+      unit_price,
+      expiration,
+      dosage_form_id,
+      staff_id,
+      date_received,
+      measurement_id,
+      strength_input,
+      route_id,
+      drug_form,
+      brand,
+      vendor_id,
+      selling_price,
+    });
   }
 
   /**
@@ -285,10 +279,9 @@ class StoreService {
         'Quantity Last Received',
         'Quantity Remaining',
         'Unit Price',
-        'Selling Price',
         'Expiry Date',
         'Strength',
-        'Drug Type',
+        'Drug Form',
       ],
     ];
     return { headers, mappedData: this.mapExportedData(items) };
@@ -352,44 +345,10 @@ class StoreService {
       quantityReceived: `${item.quantity_received} ${item?.unit?.name}` || '-',
       quantityRemaining: `${item.quantity_remaining} ${item.unit.name}` || '-',
       unitPrice: item.unit_price || '-',
-      sellingPrice: item.selling_price || '-',
       expiryDate: item.expiration?.toLocaleDateString() || '-',
       strength: item.strength_input ? `${item?.strength_input} ${item?.strength?.name}` : '-',
-      drugType: item.drug_type || '-',
+      drugForm: item.drug_form || '-',
     }));
-  }
-
-  private static async pharmacyStoreValidations({
-    drugId,
-    create_cash_item,
-    create_nhis_item,
-    create_private_item,
-    create_retainership_item,
-    create_plaschema_item,
-  }: {
-    drugId: number;
-    create_cash_item: boolean;
-    create_nhis_item: boolean;
-    create_private_item: boolean;
-    create_plaschema_item: boolean;
-    create_retainership_item: boolean;
-  }) {
-    const [cashItem, nhisItem, privateItem, plaschemaItem, retainershipItem] = await Promise.all([
-      getOnePharmacyStoreItem({ drug_id: drugId, drug_type: DrugType.CASH }),
-      getOnePharmacyStoreItem({ drug_id: drugId, drug_type: DrugType.NHIS }),
-      getOnePharmacyStoreItem({ drug_id: drugId, drug_type: DrugType.PRIVATE }),
-      getOnePharmacyStoreItem({ drug_id: drugId, drug_type: DrugType.PLASCHEMA }),
-      getOnePharmacyStoreItem({ drug_id: drugId, drug_type: DrugType.RETAINERSHIP }),
-    ]);
-
-    if (cashItem && create_cash_item) throw new BadException('Invalid', 400, ITEM_EXISTS_CASH);
-    if (nhisItem && create_nhis_item) throw new BadException('Invalid', 400, ITEM_EXISTS_NHIS);
-    if (privateItem && create_private_item)
-      throw new BadException('Invalid', 400, ITEM_EXISTS_PRIVATE);
-    if (plaschemaItem && create_plaschema_item)
-      throw new BadException('Invalid', 400, ITEM_EXISTS_PLASCHEMA);
-    if (retainershipItem && create_retainership_item)
-      throw new BadException('Invalid', 400, ITEM_EXISTS_RETAINERSHIP);
   }
 
   /**************************

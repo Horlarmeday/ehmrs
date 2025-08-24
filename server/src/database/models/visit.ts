@@ -148,6 +148,11 @@ export class Visit extends Model {
   })
   is_taken: boolean;
 
+  @Column({
+    type: DataType.STRING,
+  })
+  priority: string;
+
   @ForeignKey(() => Immunization)
   @Column({
     type: DataType.INTEGER,

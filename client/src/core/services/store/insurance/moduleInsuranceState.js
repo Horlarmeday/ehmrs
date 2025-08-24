@@ -9,5 +9,5 @@ export default {
   hmo: null,
   hmos: [],
   totalHmo: 0,
-  hmopages: 0
+  hmopages: 0,
 };

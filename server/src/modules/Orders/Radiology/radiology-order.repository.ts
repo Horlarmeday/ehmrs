@@ -5,6 +5,8 @@ import {
   PrescribedDrug,
   PrescribedInvestigation,
   Staff,
+  Patient,
+  Drug,
 } from '../../../database/models';
 import { Transaction, WhereOptions } from 'sequelize';
 import { staffAttributes } from '../../Antenatal/antenatal.repository';
@@ -27,13 +29,15 @@ import {
   PrescribedDrugBody,
 } from '../Pharmacy/interface/prescribed-drug.body';
 import { isEmpty } from 'lodash';
+import { VisitBillingHelper } from '../../Accounting/visitBilling.helper';
+import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
 
 /**
  * prescribe an investigation for patient
  * @param data
  * @returns {object} prescribed investigation data
  */
-export const prescribeInvestigation = data => {
+export const prescribeInvestigation = async data => {
   const {
     investigation_id,
     requester,
@@ -44,7 +48,7 @@ export const prescribeInvestigation = data => {
     ante_natal_id,
   } = data;
 
-  return PrescribedInvestigation.create({
+  const prescribedInvestigation = await PrescribedInvestigation.create({
     investigation_id,
     requester,
     price,
@@ -54,6 +58,38 @@ export const prescribeInvestigation = data => {
     imaging_id,
     ante_natal_id,
   });
+
+  // 🆕 NEW: Auto-create bill for this prescription
+  try {
+    // Get patient and insurance for billing calculation
+    const [patient, patientInsurance] = await Promise.all([
+      Patient.findByPk(patient_id),
+      getPatientInsuranceQuery({
+        patient_id,
+        is_default: true,
+      }),
+    ]);
+
+    const investigation = await Investigation.findByPk(investigation_id);
+
+    if (patient) {
+      // Add this prescription to the visit bill
+      await VisitBillingHelper.addPrescribedInvestigationToBill(
+        visit_id,
+        prescribedInvestigation,
+        requester,
+        patient,
+        investigation,
+        patientInsurance
+      );
+    }
+  } catch (billingError) {
+    // Log billing error but don't fail the prescription
+    console.error('Billing creation failed for investigation:', billingError);
+    // You might want to add proper logging here
+  }
+
+  return prescribedInvestigation;
 };
 
 /**
@@ -91,6 +127,33 @@ export const orderBulkInvestigation = async ({
     }
     return investigations;
   });
+
+  // 🆕 NEW: Auto-create bills for each prescribed investigation
+  try {
+    for (const investigation of result) {
+      // Get patient insurance for billing calculation
+      const patientInsurance = await getPatientInsuranceQuery({
+        patient_id: investigation.patient_id,
+        is_default: true,
+      });
+
+      const originalInvestigation = await Investigation.findByPk(investigation.investigation_id);
+
+      // Add this prescription to the visit bill
+      await VisitBillingHelper.addPrescribedInvestigationToBill(
+        investigation.visit_id,
+        investigation,
+        investigation.requester,
+        patient,
+        originalInvestigation,
+        patientInsurance
+      );
+    }
+  } catch (billingError) {
+    // Log billing error but don't fail the prescription
+    console.error('Billing creation failed for investigations:', billingError);
+    // You might want to add proper logging here
+  }
 
   const testIds = result.map(({ id }) => id);
   return getPrescriptionInvestigations({ id: testIds });
@@ -206,8 +269,56 @@ const insertHSGAdditionalItems = async ({
       };
     })
   );
-  await PrescribedDrug.bulkCreate(mapDrugs, { transaction: t });
-  await PrescribedAdditionalItem.bulkCreate(mapConsumables, { transaction: t });
+
+  const createdDrugs = await PrescribedDrug.bulkCreate(mapDrugs, { transaction: t });
+  const createdConsumables = await PrescribedAdditionalItem.bulkCreate(mapConsumables, {
+    transaction: t,
+  });
+
+  try {
+    const [patient, patientInsurance] = await Promise.all([
+      Patient.findByPk(drugs[0].patient_id),
+      getPatientInsuranceQuery({
+        patient_id: drugs[0].patient_id,
+        is_default: true,
+      }),
+    ]);
+
+    if (patient) {
+      for (const drug of createdDrugs) {
+        const originalDrug = await Drug.findByPk(drug.drug_id);
+
+        await VisitBillingHelper.addPrescribedDrugToBill(
+          drug.visit_id,
+          drug,
+          drug.examiner,
+          patient,
+          originalDrug,
+          patientInsurance
+        );
+      }
+
+      for (const consumable of createdConsumables) {
+        const originalDrug = await Drug.findByPk(consumable?.drug_id);
+        await VisitBillingHelper.addPrescribedAdditionalItemToBill(
+          consumable.visit_id,
+          consumable,
+          consumable.examiner,
+          patient,
+          originalDrug,
+          patientInsurance
+        );
+      }
+    }
+  } catch (error) {
+    console.error('Billing creation failed for drugs:', error);
+    // You might want to add proper logging here
+  }
+
+  return {
+    drugs: createdDrugs,
+    consumables: createdConsumables,
+  };
 };
 
 /**

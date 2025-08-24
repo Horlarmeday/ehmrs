@@ -8,9 +8,7 @@
     <!--begin::Navigation-->
     <div class="navi navi-hover min-w-md-250px">
       <b-dropdown-text tag="div" class="navi-header pb-1">
-        <span class="text-primary text-uppercase font-weight-bold"
-          >Add new:</span
-        >
+        <span class="text-primary text-uppercase font-weight-bold">Add new:</span>
       </b-dropdown-text>
       <b-dropdown-text tag="div" class="navi-item">
         <a href="#" class="navi-link">
@@ -85,8 +83,8 @@
 
 <script>
 export default {
-  name: "dropdown-4",
+  name: 'dropdown-4',
   components: {},
-  mounted() {}
+  mounted() {},
 };
 </script>

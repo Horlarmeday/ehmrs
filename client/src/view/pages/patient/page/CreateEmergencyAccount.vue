@@ -56,17 +56,35 @@
             </div>
             <!-- Contact -->
             <div class="form-group row">
+              <!--              <div class="col-lg-4">-->
+              <!--                <label>Email</label>-->
+              <!--                <input-->
+              <!--                  type="email"-->
+              <!--                  class="form-control form-control-sm"-->
+              <!--                  name="email"-->
+              <!--                  placeholder="Enter email (Optional)"-->
+              <!--                  v-model="email"-->
+              <!--                />-->
+              <!--                <span class="text-danger text-sm">{{ errors.first('email') }}</span>-->
+              <!--              </div>-->
               <div class="col-lg-4">
-                <label>Email</label>
-                <input
-                  type="email"
-                  class="form-control form-control-sm"
-                  name="email"
-                  placeholder="Enter email (Optional)"
-                  v-model="email"
-                />
-                <span class="text-danger text-sm">{{ errors.first('email') }}</span>
+                <!--                <label>Religion <span class="text-danger">*</span></label>-->
+                <!--                <select-->
+                <!--                  v-model="religion"-->
+                <!--                  class="form-control form-control-sm"-->
+                <!--                  name="religion"-->
+                <!--                  v-validate="'required'"-->
+                <!--                  data-vv-validate-on="blur"-->
+                <!--                >-->
+                <!--                  <option value="Islam">Islam</option>-->
+                <!--                  <option value="Christianity">Christianity</option>-->
+                <!--                  <option value="Traditional">Traditional</option>-->
+                <!--                  <option value="Other">Other</option>-->
+                <!--                </select>-->
+                <!--                <span class="text-danger text-sm">{{ errors.first('religion') }}</span>-->
               </div>
+            </div>
+            <div class="form-group row">
               <div class="col-lg-4">
                 <label>Phone Number <span class="text-danger">*</span></label>
                 <input
@@ -81,24 +99,6 @@
                 />
                 <span class="text-danger text-sm">{{ errors.first('phone') }}</span>
               </div>
-              <div class="col-lg-4">
-                <label>Religion <span class="text-danger">*</span></label>
-                <select
-                  v-model="religion"
-                  class="form-control form-control-sm"
-                  name="religion"
-                  v-validate="'required'"
-                  data-vv-validate-on="blur"
-                >
-                  <option value="Islam">Islam</option>
-                  <option value="Christianity">Christianity</option>
-                  <option value="Traditional">Traditional</option>
-                  <option value="Other">Other</option>
-                </select>
-                <span class="text-danger text-sm">{{ errors.first('religion') }}</span>
-              </div>
-            </div>
-            <div class="form-group row">
               <div class="col-lg-4">
                 <label>Date of Birth <span class="text-danger">*</span></label>
                 <datepicker
@@ -126,6 +126,8 @@
                 </select>
                 <span class="text-danger text-sm">{{ errors.first('gender') }}</span>
               </div>
+            </div>
+            <div class="form-group row">
               <div class="col-lg-4">
                 <label>Marital Status <span class="text-danger">*</span></label>
                 <select
@@ -143,59 +145,6 @@
                 </select>
                 <span class="text-danger text-sm">{{ errors.first('marital_status') }}</span>
               </div>
-            </div>
-            <div class="form-group row">
-              <div class="col-lg-4">
-                <label>Country (Residential)<span class="text-danger">*</span></label>
-                <select
-                  class="form-control form-control-sm"
-                  v-model="country"
-                  name="country"
-                  v-validate="'required'"
-                  data-vv-validate-on="blur"
-                >
-                  <option v-for="country in countries" :key="country.id" :value="country.name"
-                    >{{ country.name }}
-                  </option>
-                </select>
-                <span class="text-danger text-sm">{{ errors.first('country') }}</span>
-              </div>
-              <div class="col-lg-4">
-                <label>States (Residential) <span class="text-danger">*</span></label>
-                <select
-                  class="form-control form-control-sm"
-                  v-model="state"
-                  name="state"
-                  v-validate="'required'"
-                  data-vv-validate-on="blur"
-                  @change="getLga"
-                >
-                  <option
-                    v-for="state in states"
-                    :key="state.id"
-                    :value="{ name: state.name, lga: state.lga }"
-                    >{{ state.name }}
-                  </option>
-                </select>
-                <span class="text-danger text-sm">{{ errors.first('state') }}</span>
-              </div>
-              <div class="col-lg-4">
-                <label>Local Government (Residential) <span class="text-danger">*</span></label>
-                <select
-                  class="form-control form-control-sm"
-                  v-model="lga"
-                  name="lga"
-                  v-validate="'required'"
-                  data-vv-validate-on="blur"
-                >
-                  <option v-for="city in cities" :key="city.name" :value="city.name"
-                    >{{ city.name }}
-                  </option>
-                </select>
-                <span class="text-danger text-sm">{{ errors.first('lga') }}</span>
-              </div>
-            </div>
-            <div class="form-group row">
               <div class="col-lg-4">
                 <label>Home Address <span class="text-danger">*</span></label>
                 <input
@@ -209,6 +158,57 @@
                 />
                 <span class="text-danger text-sm">{{ errors.first('address') }}</span>
               </div>
+              <!--              <div class="col-lg-4">-->
+              <!--                <label>Country (Residential)<span class="text-danger">*</span></label>-->
+              <!--                <select-->
+              <!--                  class="form-control form-control-sm"-->
+              <!--                  v-model="country"-->
+              <!--                  name="country"-->
+              <!--                  v-validate="'required'"-->
+              <!--                  data-vv-validate-on="blur"-->
+              <!--                >-->
+              <!--                  <option v-for="country in countries" :key="country.id" :value="country.name"-->
+              <!--                    >{{ country.name }}-->
+              <!--                  </option>-->
+              <!--                </select>-->
+              <!--                <span class="text-danger text-sm">{{ errors.first('country') }}</span>-->
+              <!--              </div>-->
+              <!--              <div class="col-lg-4">-->
+              <!--                <label>States (Residential) <span class="text-danger">*</span></label>-->
+              <!--                <select-->
+              <!--                  class="form-control form-control-sm"-->
+              <!--                  v-model="state"-->
+              <!--                  name="state"-->
+              <!--                  v-validate="'required'"-->
+              <!--                  data-vv-validate-on="blur"-->
+              <!--                  @change="getLga"-->
+              <!--                >-->
+              <!--                  <option-->
+              <!--                    v-for="state in states"-->
+              <!--                    :key="state.id"-->
+              <!--                    :value="{ name: state.name, lga: state.lga }"-->
+              <!--                    >{{ state.name }}-->
+              <!--                  </option>-->
+              <!--                </select>-->
+              <!--                <span class="text-danger text-sm">{{ errors.first('state') }}</span>-->
+              <!--              </div>-->
+            </div>
+            <div class="form-group row">
+              <!--              <div class="col-lg-4">-->
+              <!--                <label>Local Government (Residential) <span class="text-danger">*</span></label>-->
+              <!--                <select-->
+              <!--                  class="form-control form-control-sm"-->
+              <!--                  v-model="lga"-->
+              <!--                  name="lga"-->
+              <!--                  v-validate="'required'"-->
+              <!--                  data-vv-validate-on="blur"-->
+              <!--                >-->
+              <!--                  <option v-for="city in cities" :key="city.name" :value="city.name"-->
+              <!--                  >{{ city.name }}-->
+              <!--                  </option>-->
+              <!--                </select>-->
+              <!--                <span class="text-danger text-sm">{{ errors.first('lga') }}</span>-->
+              <!--              </div>-->
             </div>
           </div>
         </b-collapse>

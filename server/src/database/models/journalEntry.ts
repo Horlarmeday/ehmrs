@@ -19,6 +19,7 @@ import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { JournalEntryLine } from './journalEntryLine';
 import { Visit } from './visit';
 import { Patient } from './patient';
+import { JournalEntryStatus } from '../../modules/Accounting/enums';
 
 @Table({ timestamps: true, tableName: 'Journal_Entries' })
 export class JournalEntry extends Model {
@@ -66,10 +67,10 @@ export class JournalEntry extends Model {
   patient_id: number;
 
   @Column({
-    type: DataType.STRING,
-    defaultValue: 'DRAFT',
+    type: DataType.ENUM(...Object.values(JournalEntryStatus)),
+    defaultValue: JournalEntryStatus.DRAFT,
   })
-  status: string;
+  status: JournalEntryStatus;
 
   @BelongsTo(() => Visit)
   visit: Visit;

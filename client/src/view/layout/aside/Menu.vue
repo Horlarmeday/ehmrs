@@ -1,17 +1,11 @@
 <template>
   <ul class="menu-nav">
-    <router-link
-      to="/dashboard"
-      v-slot="{ href, navigate, isActive, isExactActive }"
-    >
+    <router-link to="/dashboard" v-slot="{ href, navigate, isActive, isExactActive }">
       <li
         aria-haspopup="true"
         data-menu-toggle="hover"
         class="menu-item"
-        :class="[
-          isActive && 'menu-item-active',
-          isExactActive && 'menu-item-active'
-        ]"
+        :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
       >
         <a :href="href" class="menu-link" @click="navigate">
           <i class="menu-icon flaticon2-architecture-and-city"></i>
@@ -20,18 +14,12 @@
       </li>
     </router-link>
 
-    <router-link
-      to="#"
-      v-slot="{ href, navigate, isActive, isExactActive }"
-    >
+    <router-link to="#" v-slot="{ href, navigate, isActive, isExactActive }">
       <li
         aria-haspopup="true"
         data-menu-toggle="hover"
         class="menu-item"
-        :class="[
-          isActive && 'menu-item-active',
-          isExactActive && 'menu-item-active'
-        ]"
+        :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
       >
         <a :href="href" class="menu-link" @click="navigate">
           <i class="menu-icon flaticon2-expand"></i>
@@ -73,10 +61,7 @@
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -95,10 +80,7 @@
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -114,7 +96,7 @@
             data-menu-toggle="hover"
             class="menu-item menu-item-submenu"
             v-bind:class="{
-              'menu-item-open': hasActiveChildren('/vue-bootstrap/button')
+              'menu-item-open': hasActiveChildren('/vue-bootstrap/button'),
             }"
           >
             <a href="#" class="menu-link menu-toggle">
@@ -141,10 +123,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -163,10 +142,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -185,10 +161,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -210,10 +183,7 @@
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -232,10 +202,7 @@
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -254,10 +221,7 @@
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -276,10 +240,7 @@
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -298,10 +259,7 @@
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -317,7 +275,7 @@
             data-menu-toggle="hover"
             class="menu-item menu-item-submenu"
             v-bind:class="{
-              'menu-item-open': hasActiveChildren('/vue-bootstrap/form')
+              'menu-item-open': hasActiveChildren('/vue-bootstrap/form'),
             }"
           >
             <a href="#" class="menu-link menu-toggle">
@@ -344,10 +302,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -366,10 +321,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -388,10 +340,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -410,10 +359,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -432,10 +378,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -454,10 +397,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -476,10 +416,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -498,10 +435,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -523,10 +457,7 @@
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -545,10 +476,7 @@
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -567,10 +495,7 @@
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -589,10 +514,7 @@
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -611,10 +533,7 @@
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -633,10 +552,7 @@
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -655,10 +571,7 @@
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -677,10 +590,7 @@
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -696,7 +606,7 @@
             data-menu-toggle="hover"
             class="menu-item menu-item-submenu"
             v-bind:class="{
-              'menu-item-open': hasActiveChildren('/vue-bootstrap/nav')
+              'menu-item-open': hasActiveChildren('/vue-bootstrap/nav'),
             }"
           >
             <a href="#" class="menu-link menu-toggle">
@@ -723,10 +633,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -745,10 +652,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -767,7 +671,7 @@
             data-menu-toggle="hover"
             class="menu-item menu-item-submenu"
             v-bind:class="{
-              'menu-item-open': hasActiveChildren('/vue-bootstrap/pagination')
+              'menu-item-open': hasActiveChildren('/vue-bootstrap/pagination'),
             }"
           >
             <a href="#" class="menu-link menu-toggle">
@@ -794,10 +698,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -816,10 +717,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -833,11 +731,7 @@
             </div>
           </li>
 
-          <li
-            aria-haspopup="true"
-            data-menu-toggle="hover"
-            class="menu-item menu-item-submenu"
-          >
+          <li aria-haspopup="true" data-menu-toggle="hover" class="menu-item menu-item-submenu">
             <a href="#" class="menu-link menu-toggle">
               <i class="menu-bullet menu-bullet-dot">
                 <span></span>
@@ -862,10 +756,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -884,10 +775,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -906,10 +794,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -923,11 +808,7 @@
             </div>
           </li>
 
-          <li
-            aria-haspopup="true"
-            data-menu-toggle="hover"
-            class="menu-item menu-item-submenu"
-          >
+          <li aria-haspopup="true" data-menu-toggle="hover" class="menu-item menu-item-submenu">
             <a href="#" class="menu-link menu-toggle">
               <i class="menu-bullet menu-bullet-dot">
                 <span></span>
@@ -952,10 +833,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -974,10 +852,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -999,10 +874,7 @@
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -1021,10 +893,7 @@
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -1058,18 +927,12 @@
             </span>
           </li>
 
-          <router-link
-            to="/vuetify/alerts"
-            v-slot="{ href, navigate, isActive, isExactActive }"
-          >
+          <router-link to="/vuetify/alerts" v-slot="{ href, navigate, isActive, isExactActive }">
             <li
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -1080,18 +943,12 @@
             </li>
           </router-link>
 
-          <router-link
-            to="/vuetify/avatars"
-            v-slot="{ href, navigate, isActive, isExactActive }"
-          >
+          <router-link to="/vuetify/avatars" v-slot="{ href, navigate, isActive, isExactActive }">
             <li
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -1102,18 +959,12 @@
             </li>
           </router-link>
 
-          <router-link
-            to="/vuetify/badges"
-            v-slot="{ href, navigate, isActive, isExactActive }"
-          >
+          <router-link to="/vuetify/badges" v-slot="{ href, navigate, isActive, isExactActive }">
             <li
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -1124,18 +975,12 @@
             </li>
           </router-link>
 
-          <router-link
-            to="/vuetify/buttons"
-            v-slot="{ href, navigate, isActive, isExactActive }"
-          >
+          <router-link to="/vuetify/buttons" v-slot="{ href, navigate, isActive, isExactActive }">
             <li
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -1146,18 +991,12 @@
             </li>
           </router-link>
 
-          <router-link
-            to="/vuetify/calendars"
-            v-slot="{ href, navigate, isActive, isExactActive }"
-          >
+          <router-link to="/vuetify/calendars" v-slot="{ href, navigate, isActive, isExactActive }">
             <li
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -1168,18 +1007,12 @@
             </li>
           </router-link>
 
-          <router-link
-            to="/vuetify/cards"
-            v-slot="{ href, navigate, isActive, isExactActive }"
-          >
+          <router-link to="/vuetify/cards" v-slot="{ href, navigate, isActive, isExactActive }">
             <li
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -1190,18 +1023,12 @@
             </li>
           </router-link>
 
-          <router-link
-            to="/vuetify/chips"
-            v-slot="{ href, navigate, isActive, isExactActive }"
-          >
+          <router-link to="/vuetify/chips" v-slot="{ href, navigate, isActive, isExactActive }">
             <li
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -1212,18 +1039,12 @@
             </li>
           </router-link>
 
-          <router-link
-            to="/vuetify/dialog"
-            v-slot="{ href, navigate, isActive, isExactActive }"
-          >
+          <router-link to="/vuetify/dialog" v-slot="{ href, navigate, isActive, isExactActive }">
             <li
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -1234,11 +1055,7 @@
             </li>
           </router-link>
 
-          <li
-            aria-haspopup="true"
-            data-menu-toggle="hover"
-            class="menu-item menu-item-submenu"
-          >
+          <li aria-haspopup="true" data-menu-toggle="hover" class="menu-item menu-item-submenu">
             <a href="#" class="menu-link menu-toggle">
               <i class="menu-bullet menu-bullet-dot">
                 <span></span>
@@ -1263,10 +1080,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -1285,10 +1099,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -1307,10 +1118,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -1329,10 +1137,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -1351,10 +1156,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -1373,10 +1175,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -1395,10 +1194,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -1412,11 +1208,7 @@
             </div>
           </li>
 
-          <li
-            aria-haspopup="true"
-            data-menu-toggle="hover"
-            class="menu-item menu-item-submenu"
-          >
+          <li aria-haspopup="true" data-menu-toggle="hover" class="menu-item menu-item-submenu">
             <a href="#" class="menu-link menu-toggle">
               <i class="menu-bullet menu-bullet-dot">
                 <span></span>
@@ -1441,10 +1233,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -1463,10 +1252,7 @@
                     aria-haspopup="true"
                     data-menu-toggle="hover"
                     class="menu-item"
-                    :class="[
-                      isActive && 'menu-item-active',
-                      isExactActive && 'menu-item-active'
-                    ]"
+                    :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
                   >
                     <a :href="href" class="menu-link" @click="navigate">
                       <i class="menu-bullet menu-bullet-dot">
@@ -1480,18 +1266,12 @@
             </div>
           </li>
 
-          <router-link
-            to="/vuetify/tabs"
-            v-slot="{ href, navigate, isActive, isExactActive }"
-          >
+          <router-link to="/vuetify/tabs" v-slot="{ href, navigate, isActive, isExactActive }">
             <li
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -1502,18 +1282,12 @@
             </li>
           </router-link>
 
-          <router-link
-            to="/vuetify/timelines"
-            v-slot="{ href, navigate, isActive, isExactActive }"
-          >
+          <router-link to="/vuetify/timelines" v-slot="{ href, navigate, isActive, isExactActive }">
             <li
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -1524,18 +1298,12 @@
             </li>
           </router-link>
 
-          <router-link
-            to="/vuetify/tooltips"
-            v-slot="{ href, navigate, isActive, isExactActive }"
-          >
+          <router-link to="/vuetify/tooltips" v-slot="{ href, navigate, isActive, isExactActive }">
             <li
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -1546,18 +1314,12 @@
             </li>
           </router-link>
 
-          <router-link
-            to="/vuetify/treeview"
-            v-slot="{ href, navigate, isActive, isExactActive }"
-          >
+          <router-link to="/vuetify/treeview" v-slot="{ href, navigate, isActive, isExactActive }">
             <li
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -1596,18 +1358,12 @@
             </span>
           </li>
 
-          <router-link
-            to="/error/error-1"
-            v-slot="{ href, navigate, isActive, isExactActive }"
-          >
+          <router-link to="/error/error-1" v-slot="{ href, navigate, isActive, isExactActive }">
             <li
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -1618,18 +1374,12 @@
             </li>
           </router-link>
 
-          <router-link
-            to="/error/error-2"
-            v-slot="{ href, navigate, isActive, isExactActive }"
-          >
+          <router-link to="/error/error-2" v-slot="{ href, navigate, isActive, isExactActive }">
             <li
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -1640,18 +1390,12 @@
             </li>
           </router-link>
 
-          <router-link
-            to="/error/error-3"
-            v-slot="{ href, navigate, isActive, isExactActive }"
-          >
+          <router-link to="/error/error-3" v-slot="{ href, navigate, isActive, isExactActive }">
             <li
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -1662,18 +1406,12 @@
             </li>
           </router-link>
 
-          <router-link
-            to="/error/error-4"
-            v-slot="{ href, navigate, isActive, isExactActive }"
-          >
+          <router-link to="/error/error-4" v-slot="{ href, navigate, isActive, isExactActive }">
             <li
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -1684,18 +1422,12 @@
             </li>
           </router-link>
 
-          <router-link
-            to="/error/error-5"
-            v-slot="{ href, navigate, isActive, isExactActive }"
-          >
+          <router-link to="/error/error-5" v-slot="{ href, navigate, isActive, isExactActive }">
             <li
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -1706,18 +1438,12 @@
             </li>
           </router-link>
 
-          <router-link
-            to="/error/error-6"
-            v-slot="{ href, navigate, isActive, isExactActive }"
-          >
+          <router-link to="/error/error-6" v-slot="{ href, navigate, isActive, isExactActive }">
             <li
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -1751,18 +1477,12 @@
             </span>
           </li>
 
-          <router-link
-            to="/wizard/wizard-1"
-            v-slot="{ href, navigate, isActive, isExactActive }"
-          >
+          <router-link to="/wizard/wizard-1" v-slot="{ href, navigate, isActive, isExactActive }">
             <li
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -1773,18 +1493,12 @@
             </li>
           </router-link>
 
-          <router-link
-            to="/wizard/wizard-2"
-            v-slot="{ href, navigate, isActive, isExactActive }"
-          >
+          <router-link to="/wizard/wizard-2" v-slot="{ href, navigate, isActive, isExactActive }">
             <li
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -1795,18 +1509,12 @@
             </li>
           </router-link>
 
-          <router-link
-            to="/wizard/wizard-3"
-            v-slot="{ href, navigate, isActive, isExactActive }"
-          >
+          <router-link to="/wizard/wizard-3" v-slot="{ href, navigate, isActive, isExactActive }">
             <li
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -1817,18 +1525,12 @@
             </li>
           </router-link>
 
-          <router-link
-            to="/wizard/wizard-4"
-            v-slot="{ href, navigate, isActive, isExactActive }"
-          >
+          <router-link to="/wizard/wizard-4" v-slot="{ href, navigate, isActive, isExactActive }">
             <li
               aria-haspopup="true"
               data-menu-toggle="hover"
               class="menu-item"
-              :class="[
-                isActive && 'menu-item-active',
-                isExactActive && 'menu-item-active'
-              ]"
+              :class="[isActive && 'menu-item-active', isExactActive && 'menu-item-active']"
             >
               <a :href="href" class="menu-link" @click="navigate">
                 <i class="menu-bullet menu-bullet-dot">
@@ -1846,11 +1548,11 @@
 
 <script>
 export default {
-  name: "KTMenu",
+  name: 'KTMenu',
   methods: {
     hasActiveChildren(match) {
-      return this.$route["path"].indexOf(match) !== -1;
-    }
-  }
+      return this.$route['path'].indexOf(match) !== -1;
+    },
+  },
 };
 </script>

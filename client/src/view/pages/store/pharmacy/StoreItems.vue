@@ -107,9 +107,9 @@
                   :to="`/store/pharmacy/items/${item.id}`"
                   >{{ item.drug.name }}</router-link
                 >
-                <span :class="getItemType(item.drug_type)" class="label label-inline ml-2">{{
+                <!-- <span :class="getItemType(item.drug_type)" class="label label-inline ml-2">{{
                   item.drug_type
-                }}</span>
+                }}</span> -->
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">

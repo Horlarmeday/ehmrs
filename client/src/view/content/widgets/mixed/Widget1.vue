@@ -72,43 +72,43 @@
 </template>
 
 <script>
-import Dropdown1 from "@/view/content/dropdown/Dropdown1.vue";
-import { mapGetters } from "vuex";
+import Dropdown1 from '@/view/content/dropdown/Dropdown1.vue';
+import { mapGetters } from 'vuex';
 
 export default {
-  name: "widget-1",
+  name: 'widget-1',
   components: {
-    Dropdown1
+    Dropdown1,
   },
   data() {
     return {
-      strokeColor: "#2E82DF",
+      strokeColor: '#2E82DF',
       chartOptions: {},
       series: [
         {
-          name: "Net Profit",
-          data: [30, 45, 32, 70, 40, 40, 40]
-        }
-      ]
+          name: 'Net Profit',
+          data: [30, 45, 32, 70, 40, 40, 40],
+        },
+      ],
     };
   },
   computed: {
-    ...mapGetters(["layoutConfig"])
+    ...mapGetters(['layoutConfig']),
   },
   mounted() {
     // reference; kt_mixed_widget_1_chart
     this.chartOptions = {
       chart: {
-        type: "area",
+        type: 'area',
         height: 200,
         toolbar: {
-          show: false
+          show: false,
         },
         zoom: {
-          enabled: false
+          enabled: false,
         },
         sparkline: {
-          enabled: true
+          enabled: true,
         },
         dropShadow: {
           enabled: true,
@@ -117,51 +117,51 @@ export default {
           left: 0,
           blur: 3,
           color: this.strokeColor,
-          opacity: 0.5
-        }
+          opacity: 0.5,
+        },
       },
       plotOptions: {},
       legend: {
-        show: false
+        show: false,
       },
       dataLabels: {
-        enabled: false
+        enabled: false,
       },
       fill: {
-        type: "solid",
-        opacity: 0
+        type: 'solid',
+        opacity: 0,
       },
       stroke: {
-        curve: "smooth",
+        curve: 'smooth',
         show: true,
         width: 3,
-        colors: [this.strokeColor]
+        colors: [this.strokeColor],
       },
       xaxis: {
-        categories: ["Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug"],
+        categories: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
         axisBorder: {
-          show: false
+          show: false,
         },
         axisTicks: {
-          show: false
+          show: false,
         },
         labels: {
           show: false,
           style: {
-            colors: this.layoutConfig("colors.gray.gray-500"),
-            fontSize: "12px",
-            fontFamily: this.layoutConfig("font-family")
-          }
+            colors: this.layoutConfig('colors.gray.gray-500'),
+            fontSize: '12px',
+            fontFamily: this.layoutConfig('font-family'),
+          },
         },
         crosshairs: {
           show: false,
-          position: "front",
+          position: 'front',
           stroke: {
-            color: this.layoutConfig("colors.gray.gray-300"),
+            color: this.layoutConfig('colors.gray.gray-300'),
             width: 1,
-            dashArray: 3
-          }
-        }
+            dashArray: 3,
+          },
+        },
       },
       yaxis: {
         show: false,
@@ -170,61 +170,61 @@ export default {
         labels: {
           show: false,
           style: {
-            colors: this.layoutConfig("colors.gray.gray-500"),
-            fontSize: "12px",
-            fontFamily: this.layoutConfig("font-family")
-          }
-        }
+            colors: this.layoutConfig('colors.gray.gray-500'),
+            fontSize: '12px',
+            fontFamily: this.layoutConfig('font-family'),
+          },
+        },
       },
       states: {
         normal: {
           filter: {
-            type: "none",
-            value: 0
-          }
+            type: 'none',
+            value: 0,
+          },
         },
         hover: {
           filter: {
-            type: "none",
-            value: 0
-          }
+            type: 'none',
+            value: 0,
+          },
         },
         active: {
           allowMultipleDataPointsSelection: false,
           filter: {
-            type: "none",
-            value: 0
-          }
-        }
+            type: 'none',
+            value: 0,
+          },
+        },
       },
       tooltip: {
         style: {
-          fontSize: "12px",
-          fontFamily: this.layoutConfig("font-family")
+          fontSize: '12px',
+          fontFamily: this.layoutConfig('font-family'),
         },
         y: {
           formatter: function(val) {
-            return "$" + val + " thousands";
-          }
+            return '$' + val + ' thousands';
+          },
         },
         marker: {
-          show: false
-        }
+          show: false,
+        },
       },
-      colors: ["transparent"],
+      colors: ['transparent'],
       markers: {
-        colors: [this.layoutConfig("colors.theme.light.primary")],
+        colors: [this.layoutConfig('colors.theme.light.primary')],
         strokeColor: [this.strokeColor],
-        strokeWidth: 3
+        strokeWidth: 3,
       },
       grid: {
         show: false,
         padding: {
           left: 0,
-          right: 0
-        }
-      }
+          right: 0,
+        },
+      },
     };
-  }
+  },
 };
 </script>

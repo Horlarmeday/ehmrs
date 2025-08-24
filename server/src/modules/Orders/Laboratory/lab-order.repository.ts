@@ -1,10 +1,12 @@
 /* eslint-disable camelcase */
-import { PrescribedTest, Staff, Test, TestResult } from '../../../database/models';
+import { PrescribedTest, Staff, Test, TestResult, Patient } from '../../../database/models';
 import sequelize, { WhereOptions } from 'sequelize';
 import { staffAttributes } from '../../Antenatal/antenatal.repository';
 import { BadException } from '../../../common/util/api-error';
 import { StatusCodes } from '../../../core/helpers/helper';
 import { ERROR_UPDATING_TEST } from './messages/response-messages';
+import { VisitBillingHelper } from '../../Accounting/visitBilling.helper';
+import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
 
 /**
  * prescribe a test for patient
@@ -14,7 +16,7 @@ import { ERROR_UPDATING_TEST } from './messages/response-messages';
 export async function prescribeTest(data) {
   const { test_id, requester, price, patient_id, visit_id, ante_natal_id } = data;
 
-  return PrescribedTest.create({
+  const prescribedTest = await PrescribedTest.create({
     test_id,
     requester,
     price,
@@ -23,6 +25,38 @@ export async function prescribeTest(data) {
     visit_id,
     ante_natal_id,
   });
+
+  const test = await Test.findByPk(test_id);
+
+  // 🆕 NEW: Auto-create bill for this prescription
+  try {
+    // Get patient and insurance for billing calculation
+    const [patient, patientInsurance] = await Promise.all([
+      Patient.findByPk(patient_id),
+      getPatientInsuranceQuery({
+        patient_id,
+        is_default: true,
+      }),
+    ]);
+
+    if (patient) {
+      // Add this prescription to the visit bill
+      await VisitBillingHelper.addPrescribedTestToBill(
+        visit_id,
+        prescribedTest,
+        requester,
+        patient,
+        test,
+        patientInsurance
+      );
+    }
+  } catch (billingError) {
+    // Log billing error but don't fail the prescription
+    console.error('Billing creation failed for test:', billingError);
+    // You might want to add proper logging here
+  }
+
+  return prescribedTest;
 }
 
 /**
@@ -32,6 +66,37 @@ export async function prescribeTest(data) {
  */
 export async function orderBulkTest(data) {
   const tests = await PrescribedTest.bulkCreate(data);
+
+  // 🆕 NEW: Auto-create bills for each prescribed test
+  try {
+    for (const test of tests) {
+      // Get patient and insurance for billing calculation
+      const [patient, patientInsurance] = await Promise.all([
+        Patient.findByPk(test.patient_id),
+        getPatientInsuranceQuery({
+          patient_id: test.patient_id,
+          is_default: true,
+        }),
+      ]);
+      const originalTest = await Test.findByPk(test.test_id);
+      if (patient) {
+        // Add this prescription to the visit bill
+        await VisitBillingHelper.addPrescribedTestToBill(
+          test.visit_id,
+          test,
+          test.requester,
+          patient,
+          originalTest,
+          patientInsurance
+        );
+      }
+    }
+  } catch (billingError) {
+    // Log billing error but don't fail the prescription
+    console.error('Billing creation failed for tests:', billingError);
+    // You might want to add proper logging here
+  }
+
   const testIds = tests.map(({ id }) => id);
   return getPrescriptionTests({ id: testIds });
 }

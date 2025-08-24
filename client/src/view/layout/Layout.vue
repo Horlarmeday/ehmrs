@@ -15,11 +15,11 @@
         <!-- begin:: Content -->
         <div id="kt_content" class="content  d-flex flex-column flex-column-fluid">
           <!-- begin:: Content Head -->
-<!--          <KTSubheader-->
-<!--            v-if="subheaderDisplay && displaySubheaderOnDashboard"-->
-<!--            v-bind:breadcrumbs="breadcrumbs"-->
-<!--            v-bind:title="pageTitle"-->
-<!--          />-->
+          <!--          <KTSubheader-->
+          <!--            v-if="subheaderDisplay && displaySubheaderOnDashboard"-->
+          <!--            v-bind:breadcrumbs="breadcrumbs"-->
+          <!--            v-bind:title="pageTitle"-->
+          <!--          />-->
           <!-- end:: Content Head -->
 
           <!-- begin:: Content Body -->

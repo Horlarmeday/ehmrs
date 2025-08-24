@@ -452,6 +452,28 @@ export class PrescribedDrug extends Model {
   })
   original_total_price: number;
 
+  // Billing fields for accounting integration
+  @Column({
+    type: DataType.ENUM('CASH', 'INSURANCE', 'WAIVER', 'OTHER', 'FREE', 'WALLET'),
+    allowNull: true,
+    defaultValue: 'CASH',
+  })
+  billing_mode: 'CASH' | 'INSURANCE' | 'WAIVER' | 'OTHER' | 'FREE' | 'WALLET';
+
+  @Column({
+    type: DataType.DECIMAL(10, 2),
+    allowNull: true,
+    defaultValue: 0,
+  })
+  patient_co_pay_amount: number;
+
+  @Column({
+    type: DataType.DECIMAL(10, 2),
+    allowNull: true,
+    defaultValue: 0,
+  })
+  hmo_billed_amount: number;
+
   @BelongsTo(() => Staff, {
     foreignKey: 'nhis_drug_processed_by',
   })

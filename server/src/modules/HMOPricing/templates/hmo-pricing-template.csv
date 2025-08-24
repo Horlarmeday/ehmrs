@@ -1,0 +1,7 @@
+Item Type,Item Code,Item Name,Insurance Name,HMO Price,Patient Percentage,HMO Percentage,Effective From,Effective To,Notes
+DRUG,DRUG001,Paracetamol 500mg,NHIS,150.00,10.0,90.0,2024-01-01,2024-12-31,Standard NHIS pricing
+TEST,TEST001,Full Blood Count,NHIS,2500.00,10.0,90.0,2024-01-01,2024-12-31,Standard NHIS pricing
+SERVICE,SVC001,Consultation Fee,NHIS,500.00,10.0,90.0,2024-01-01,2024-12-31,Standard NHIS pricing
+INVESTIGATION,INV001,Chest X-Ray,NHIS,3000.00,10.0,90.0,2024-01-01,2024-12-31,Standard NHIS pricing
+DRUG,DRUG002,Amoxicillin 500mg,Private Insurance,200.00,20.0,80.0,2024-01-01,2024-12-31,Private insurance pricing
+TEST,TEST002,Blood Sugar Test,Private Insurance,1500.00,20.0,80.0,2024-01-01,2024-12-31,Private insurance pricing

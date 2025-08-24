@@ -14,9 +14,8 @@
           <h4 class="text-white pb-3">About</h4>
           <p class="m-0 text-white opacity-45">
             Lorem Ipsum is simply dummy text of the printing
-            <br />and typesetting and typesetting industry has been the
-            <br />industry's standard dummy text ever since the 1500s,
-            <br />when an unknown printer took a galley of type.
+            <br />and typesetting and typesetting industry has been the <br />industry's standard
+            dummy text ever since the 1500s, <br />when an unknown printer took a galley of type.
           </p>
         </div>
         <!--end::Col-->
@@ -60,10 +59,7 @@
                 placeholder="Enter Your Email"
               />
               <div class="input-group-append p-0 mr-1">
-                <button
-                  class="btn btn-fh btn-sm btn-primary px-6 rounded-left"
-                  type="button"
-                >
+                <button class="btn btn-fh btn-sm btn-primary px-6 rounded-left" type="button">
                   Join
                 </button>
               </div>
@@ -80,16 +76,10 @@
     <!--end::Container-->
     <!--begin::Container-->
     <div class="container py-8">
-      <div
-        class="d-flex align-items-center justify-content-between flex-lg-row flex-column"
-      >
+      <div class="d-flex align-items-center justify-content-between flex-lg-row flex-column">
         <!--begin::Copyright-->
         <div class="d-flex align-items-center order-lg-1 order-2">
-          <img
-            alt="Logo"
-            src="media/logos/logo-letter-1.png"
-            class="logo-sticky max-h-35px"
-          />
+          <img alt="Logo" src="media/logos/logo-letter-1.png" class="logo-sticky max-h-35px" />
           <span class="text-muted font-weight-bold mx-2">2020©</span>
           <a
             href="http://keenthemes.com/metronic"
@@ -133,19 +123,19 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters } from 'vuex';
 
 export default {
-  name: "KTFooter",
+  name: 'KTFooter',
   computed: {
-    ...mapGetters(["layoutConfig"]),
+    ...mapGetters(['layoutConfig']),
 
     /**
      * Check if footer container is fluid
      */
     widthFluid() {
-      return this.layoutConfig("footer.width") === "fluid";
-    }
-  }
+      return this.layoutConfig('footer.width') === 'fluid';
+    },
+  },
 };
 </script>

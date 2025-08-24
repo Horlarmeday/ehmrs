@@ -47,7 +47,7 @@ export default {
       {
         name: 'General Store',
         desc: 'General store contains all items used in the hospital',
-        link: '/store/general',
+        link: '/general-store',
       },
       {
         name: 'Laboratory Store',

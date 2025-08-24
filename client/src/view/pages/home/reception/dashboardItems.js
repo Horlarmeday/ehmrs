@@ -14,11 +14,11 @@ export default [
     icon: 'fab fa-rev',
     name: 'Discharged Patients',
   },
-  {
-    url: '/radiology/investigations-approval',
-    icon: 'flaticon-statistics',
-    name: 'Statistics',
-  },
+  // {
+  //   url: '/radiology/investigations-approval',
+  //   icon: 'flaticon-statistics',
+  //   name: 'Statistics',
+  // },
   {
     url: '/radiology/reports',
     icon: 'flaticon2-list-1',

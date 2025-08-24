@@ -114,6 +114,92 @@
             :reduce="services => services.id"
           />
         </div>
+        <!-- Emergency-specific fields -->
+        <div v-if="category === 'Emergency'" class="col-lg-4">
+          <label>Emergency Priority:</label>
+          <select
+            class="form-control"
+            v-model="emergencyPriority"
+            name="emergencyPriority"
+            v-validate="'required'"
+            data-vv-validate-on="blur"
+          >
+            <option value="">Select Priority</option>
+            <option value="Red">Red - Immediate</option>
+            <option value="Orange">Orange - Very Urgent</option>
+            <option value="Yellow">Yellow - Urgent</option>
+            <option value="Green">Green - Less Urgent</option>
+            <option value="Blue">Blue - Non-Urgent</option>
+          </select>
+          <span class="text-danger text-sm">{{ errors.first('emergencyPriority') }}</span>
+        </div>
+        <!-- Dialysis-specific fields -->
+        <div v-if="category === 'Dialysis'" class="col-lg-4">
+          <label>Dialysis Type:</label>
+          <select
+            class="form-control"
+            v-model="dialysisType"
+            name="dialysisType"
+            v-validate="'required'"
+            data-vv-validate-on="blur"
+          >
+            <option value="">Select Type</option>
+            <option value="Hemodialysis">Hemodialysis</option>
+            <option value="Peritoneal">Peritoneal Dialysis</option>
+            <option value="CRRT">Continuous Renal Replacement Therapy</option>
+          </select>
+          <span class="text-danger text-sm">{{ errors.first('dialysisType') }}</span>
+        </div>
+      </div>
+
+      <!-- Emergency-specific additional fields -->
+      <div v-if="category === 'Emergency'" class="form-group row">
+        <div class="col-lg-6">
+          <label>Chief Complaint:</label>
+          <textarea
+            v-model="chiefComplaint"
+            class="form-control"
+            rows="3"
+            placeholder="Describe the main complaint or reason for emergency visit..."
+            name="chiefComplaint"
+            v-validate="'required'"
+            data-vv-validate-on="blur"
+          ></textarea>
+          <span class="text-danger text-sm">{{ errors.first('chiefComplaint') }}</span>
+        </div>
+        <div class="col-lg-6">
+          <label>Initial Assessment:</label>
+          <textarea
+            v-model="initialAssessment"
+            class="form-control"
+            rows="3"
+            placeholder="Initial medical assessment and vital signs..."
+            name="initialAssessment"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Dialysis-specific additional fields -->
+      <div v-if="category === 'Dialysis'" class="form-group row">
+        <div class="col-lg-6">
+          <label>Clinical Notes (Optional):</label>
+          <textarea
+            v-model="dialysisNotes"
+            class="form-control"
+            rows="3"
+            placeholder="Any general notes from reception (e.g., patient request, special instructions)..."
+            name="dialysisNotes"
+          ></textarea>
+        </div>
+        <div class="col-lg-6">
+          <label>Priority Level:</label>
+          <select v-model="dialysisPriority" class="form-control" name="dialysisPriority">
+            <option value="Routine">Routine</option>
+            <option value="Urgent">Urgent</option>
+            <option value="Emergency">Emergency</option>
+          </select>
+          <small class="form-text text-muted">Reception can set basic priority level</small>
+        </div>
       </div>
       <div>
         <button ref="kt_visit_submit" @click="getLastActiveVisit" class="btn btn-primary">
@@ -150,6 +236,12 @@ export default {
       currentPage: 1,
       itemsPerPage: 20,
       IMMUNIZATION: 'Immunization',
+      emergencyPriority: '',
+      chiefComplaint: '',
+      initialAssessment: '',
+      dialysisNotes: '',
+      dialysisPriority: 'Routine',
+      dialysisType: '',
     };
   },
   computed: {
@@ -194,6 +286,19 @@ export default {
           department: 'Nursing',
         });
       }
+      // Add Emergency and Dialysis specific departments
+      if (this.category === 'Emergency') {
+        data.push({
+          id: 18,
+          department: 'Emergency Medicine',
+        });
+      }
+      if (this.category === 'Dialysis') {
+        data.push({
+          id: 19,
+          department: 'Nephrology',
+        });
+      }
       return data;
     },
 
@@ -204,6 +309,17 @@ export default {
         data.push('Maternity');
       }
       return data;
+    },
+    // Validate emergency fields
+    emergencyFieldsValid() {
+      if (this.category !== 'Emergency') return true;
+      return this.emergencyPriority && this.chiefComplaint;
+    },
+
+    // Validate dialysis fields
+    dialysisFieldsValid() {
+      if (this.category !== 'Dialysis') return true;
+      return this.dialysisType && this.dialysisPriority;
     },
   },
   methods: {
@@ -246,6 +362,17 @@ export default {
     getLastActiveVisit() {
       this.$validator.validateAll().then(result => {
         if (result) {
+          // Additional validation for specialized fields
+          if (!this.emergencyFieldsValid || !this.dialysisFieldsValid) {
+            this.$notify({
+              group: 'foo',
+              title: 'Validation Error',
+              text: 'Please fill in all required fields for the selected visit category',
+              type: 'error',
+            });
+            return;
+          }
+
           const date = `${dayjs(this.date_of_visit).format('YYYY-MM-DD')} ${this.time_of_visit}`;
           const obj = {
             category: this.category,
@@ -256,6 +383,13 @@ export default {
             department: this.department.text,
             professional: this.professional.text,
             patient_id: this.$route.params.id,
+            emergency_priority: this.emergencyPriority,
+            chief_complaint: this.chiefComplaint,
+            initial_assessment: this.initialAssessment,
+            dialysis_notes: this.dialysisNotes,
+            dialysis_priority: this.dialysisPriority,
+            scheduled_time: this.time_of_visit,
+            dialysis_type: this.dialysisType,
           };
           const submitButton = this.$refs['kt_visit_submit'];
           this.addSpinner(submitButton);
@@ -305,7 +439,17 @@ export default {
 
       this.$store
         .dispatch('visit/addVisit', obj)
-        .then(() => this.initializeRequest(submitButton))
+        .then(() => {
+          // Specialized records are now created on the server side
+          this.initializeRequest(submitButton);
+          this.$notify({
+            group: 'foo',
+            title: 'Success',
+            text:
+              'Visit created successfully with specialized records. Patient should proceed to the respective department for consultation.',
+            type: 'success',
+          });
+        })
         .catch(() => this.removeSpinner(submitButton));
     },
 
@@ -318,6 +462,11 @@ export default {
       this.type = '';
       this.department = '';
       this.priority = '';
+      this.emergencyPriority = '';
+      this.chiefComplaint = '';
+      this.initialAssessment = '';
+      this.dialysisNotes = '';
+      this.dialysisPriority = 'Routine';
     },
   },
   created() {

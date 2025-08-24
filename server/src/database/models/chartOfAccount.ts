@@ -78,6 +78,38 @@ export class ChartOfAccount extends Model {
   })
   balance: number;
 
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+    validate: {
+      len: {
+        args: [0, 20],
+        msg: 'Tax code cannot exceed 20 characters',
+      },
+    },
+  })
+  tax_code: string;
+
+  @Column({
+    type: DataType.DECIMAL(15, 2),
+    defaultValue: 0,
+    allowNull: true,
+    validate: {
+      min: {
+        args: [0],
+        msg: 'Budget allocation cannot be negative',
+      },
+    },
+  })
+  budget_allocation: number;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: true,
+    allowNull: true,
+  })
+  allow_manual_entries: boolean;
+
   @BelongsTo(() => ChartOfAccount, { foreignKey: 'parent_id' })
   parent: ChartOfAccount;
 

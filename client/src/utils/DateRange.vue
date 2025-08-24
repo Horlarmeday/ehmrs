@@ -14,7 +14,7 @@
 </template>
 <script>
 import Datepicker from 'vuejs-datepicker';
-import { addSpinner } from "@/common/common";
+import { addSpinner } from '@/common/common';
 export default {
   components: {
     Datepicker,

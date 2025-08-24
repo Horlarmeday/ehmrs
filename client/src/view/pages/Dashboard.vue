@@ -60,23 +60,23 @@
 </template>
 
 <script>
-import { SET_BREADCRUMB } from "@/core/services/store/breadcrumbs.module";
-import AdvancedTableWidget2 from "@/view/content/widgets/advance-table/Widget2.vue";
-import MixedWidget1 from "@/view/content/widgets/mixed/Widget1.vue";
-import ListWidget2 from "@/view/content/widgets/list/Widget2.vue";
-import ListWidget3 from "@/view/content/widgets/list/Widget3.vue";
-import ListWidget4 from "@/view/content/widgets/list/Widget4.vue";
-import ListWidget5 from "@/view/content/widgets/list/Widget5.vue";
-import ListWidget10 from "@/view/content/widgets/list/Widget10.vue";
-import ListWidget11 from "@/view/content/widgets/list/Widget11.vue";
-import ListWidget12 from "@/view/content/widgets/list/Widget12.vue";
-import ListWidget13 from "@/view/content/widgets/list/Widget12.vue";
-import ListWidget14 from "@/view/content/widgets/list/Widget14.vue";
-import ListWidget15 from "@/view/content/widgets/list/Widget15.vue";
-import ListWidget16 from "@/view/content/widgets/list/Widget16.vue";
+import { SET_BREADCRUMB } from '@/core/services/store/breadcrumbs.module';
+import AdvancedTableWidget2 from '@/view/content/widgets/advance-table/Widget2.vue';
+import MixedWidget1 from '@/view/content/widgets/mixed/Widget1.vue';
+import ListWidget2 from '@/view/content/widgets/list/Widget2.vue';
+import ListWidget3 from '@/view/content/widgets/list/Widget3.vue';
+import ListWidget4 from '@/view/content/widgets/list/Widget4.vue';
+import ListWidget5 from '@/view/content/widgets/list/Widget5.vue';
+import ListWidget10 from '@/view/content/widgets/list/Widget10.vue';
+import ListWidget11 from '@/view/content/widgets/list/Widget11.vue';
+import ListWidget12 from '@/view/content/widgets/list/Widget12.vue';
+import ListWidget13 from '@/view/content/widgets/list/Widget12.vue';
+import ListWidget14 from '@/view/content/widgets/list/Widget14.vue';
+import ListWidget15 from '@/view/content/widgets/list/Widget15.vue';
+import ListWidget16 from '@/view/content/widgets/list/Widget16.vue';
 
 export default {
-  name: "dashboard",
+  name: 'dashboard',
   components: {
     AdvancedTableWidget2,
     MixedWidget1,
@@ -90,10 +90,10 @@ export default {
     ListWidget13,
     ListWidget14,
     ListWidget15,
-    ListWidget16
+    ListWidget16,
   },
   mounted() {
-    this.$store.dispatch(SET_BREADCRUMB, [{ title: "Dashboard" }]);
+    this.$store.dispatch(SET_BREADCRUMB, [{ title: 'Dashboard' }]);
   },
   methods: {
     setActiveTab1(event) {
@@ -109,18 +109,18 @@ export default {
     setActiveTab(event) {
       // get all tab links
       const tab = event.target.closest('[role="tablist"]');
-      const links = tab.querySelectorAll(".nav-link");
+      const links = tab.querySelectorAll('.nav-link');
       // remove active tab links
       for (let i = 0; i < links.length; i++) {
-        links[i].classList.remove("active");
+        links[i].classList.remove('active');
       }
 
       // set current active tab
-      event.target.classList.add("active");
+      event.target.classList.add('active');
 
       // set clicked tab index to bootstrap tab
-      return parseInt(event.target.getAttribute("data-tab"));
-    }
-  }
+      return parseInt(event.target.getAttribute('data-tab'));
+    },
+  },
 };
 </script>

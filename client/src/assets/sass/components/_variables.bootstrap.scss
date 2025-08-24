@@ -55,40 +55,40 @@ $dark-light:          							    $gray-400 !default; // Custom variable
 $dark-inverse:         								$white !default; // Custom variable
 
 // Primary colors
-$primary:       									#3699FF !default; // Bootstrap variable
-$primary-hover:    									#187DE4 !default; // Custom variable
-$primary-light:    									#E1F0FF !default; // Custom variable
-$primary-inverse:  									$white !default;  // Custom variable
+$primary:       									#8B0000 !default; // Heritage Dark Maroon (overridden by demo)
+$primary-hover:    									#A0522D !default; // Heritage Saddle Brown
+$primary-light:    									#F5F5DC !default; // Heritage Beige
+$primary-inverse:  									$white !default;  // White
 
 // Secondary colors
-$secondary:     									$gray-300 !default; // Bootstrap variable
-$secondary-hover:  									darken($gray-300, 4%) !default; // Custom variable
-$secondary-light:  									$gray-200 !default; // Custom variable
-$secondary-inverse:									$dark-75 !default; // Custom variable
+$secondary:     									#000080 !default; // Heritage Dark Blue
+$secondary-hover:  									#191970 !default; // Midnight Blue
+$secondary-light:  									#E6E6FA !default; // Lavender
+$secondary-inverse:									$white !default; // White
 
 // Success colors
-$success:       									#1BC5BD !default; // Bootstrap variable
-$success-hover:    									#0BB7AF !default; // Custom variable
-$success-light:    									#C9F7F5 !default; // Custom variable
-$success-inverse:  									$white !default; // Custom variable
+$success:       									#006400 !default; // Heritage Dark Green
+$success-hover:    									#228B22 !default; // Forest Green
+$success-light:    									#F0FFF0 !default; // Honeydew
+$success-inverse:  									$white !default; // White
 
-// Inco colors
-$info:         		 								#8950FC !default; // Bootstrap variable
-$info-hover:   		 								#7337EE !default; // Custom variable
-$info-light:   		 								#EEE5FF !default; // Custom variable
-$info-inverse: 		 								$white !default; // Custom variable
+// Info colors
+$info:         		 								#000080 !default; // Heritage Dark Blue
+$info-hover:   		 								#191970 !default; // Midnight Blue
+$info-light:   		 								#E6E6FA !default; // Lavender
+$info-inverse: 		 								$white !default; // White
 
 // Warning colors
-$warning:       									#FFA800 !default; // Bootstrap variable
-$warning-hover:    									#EE9D01 !default; // Custom variable
-$warning-light:    									#FFF4DE !default; // Custom variable
-$warning-inverse:  									$white !default; // Custom variable
+$warning:       									#CD5C5C !default; // Heritage Indian Red
+$warning-hover:    									#B22222 !default; // Fire Brick
+$warning-light:    									#FFF5EE !default; // Seashell
+$warning-inverse:  									$white !default; // White
 
 // Danger colors
-$danger:        									#F64E60 !default; // Bootstrap variable
-$danger-hover:     									#EE2D41 !default; // Custom variable
-$danger-light:     									#FFE2E5 !default; // Custom variable
-$danger-inverse:   									$white !default; // Custom variable
+$danger:        									#8B0000 !default; // Heritage Dark Maroon
+$danger-hover:     									#A0522D !default; // Heritage Saddle Brown
+$danger-light:     									#FFF5EE !default; // Seashell
+$danger-inverse:   									$white !default; // White
 
 // Light colors
 $light:         									$gray-100 !default; // Bootstrap variable

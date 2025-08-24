@@ -22,7 +22,7 @@ import {
 } from '../../database/models';
 import { PaymentStatus } from '../../database/models/prescribedDrug';
 import { ServiceName } from '../../database/models/paymentHistory';
-import { generateRandomNumbers, StatusCodes } from '../../core/helpers/helper';
+import { generateRandomNumbers, StatusCodes, paginate, calcLimitAndOffset } from '../../core/helpers/helper';
 import { Transaction, Op, literal, QueryTypes } from 'sequelize';
 import dayjs from 'dayjs';
 import {
@@ -281,8 +281,9 @@ export const createJournalEntry = async (data: JournalEntry) => {
       const account = await ChartOfAccountModel.findByPk(line.account_id);
       if (account) {
         const currentBalance = account.balance || 0;
-        const newBalance =
-          line.type === 'DEBIT' ? currentBalance + line.amount : currentBalance - line.amount;
+        const lineDebit = (line as any).debit || 0;
+        const lineCredit = (line as any).credit || 0;
+        const newBalance = currentBalance + lineDebit - lineCredit;
 
         await account.update({ balance: newBalance }, { transaction: t });
       }
@@ -349,12 +350,12 @@ export const getTrialBalance = async () => {
 };
 
 export const createCostCenter = async (data: Partial<CostCenter>) => {
-  return await (ChartOfAccountModel as any).create(data);
+  return await CostCenterModel.create(data);
 };
 
 export const updateCostCenter = async (data: Partial<CostCenter> & { id: number }) => {
   const { id, ...updateData } = data;
-  return await (ChartOfAccountModel as any).update(updateData, { where: { id } });
+  return await CostCenterModel.update(updateData, { where: { id } });
 };
 
 export const getCostCenters = async (query: any) => {
@@ -373,7 +374,19 @@ export const getCostCenters = async (query: any) => {
     ],
   };
 
-  return await CostCenterModel.paginate(options);
+  // Check if CostCenterModel has paginate method, otherwise use manual pagination
+  if (typeof CostCenterModel.paginate === 'function') {
+    return await CostCenterModel.paginate(options);
+  } else {
+    // Manual pagination fallback
+    const { limit, offset } = calcLimitAndOffset(options.page, options.paginate);
+    const data = await CostCenterModel.findAndCountAll({
+      ...options,
+      limit,
+      offset,
+    });
+    return paginate(data, options.page, options.paginate);
+  }
 };
 
 export const generateFinancialStatement = async (data: FinancialStatement) => {
@@ -487,15 +500,15 @@ const generateCashFlowStatement = async (where: any) => {
   });
 
   const operatingActivities = journalEntries.filter(je =>
-    je.lines.some(line => line.account.type === 'ASSET' && line.account.code.startsWith('1000'))
+    je.lines.some(line => (line as any).account?.type === 'ASSET' && (line as any).account?.code?.startsWith('1000'))
   );
 
   const investingActivities = journalEntries.filter(je =>
-    je.lines.some(line => line.account.type === 'ASSET' && line.account.code.startsWith('2000'))
+    je.lines.some(line => (line as any).account?.type === 'ASSET' && (line as any).account?.code?.startsWith('2000'))
   );
 
   const financingActivities = journalEntries.filter(je =>
-    je.lines.some(line => line.account.type === 'ASSET' && line.account.code.startsWith('3000'))
+    je.lines.some(line => (line as any).account?.type === 'ASSET' && (line as any).account?.code?.startsWith('3000'))
   );
 
   return {
@@ -504,15 +517,15 @@ const generateCashFlowStatement = async (where: any) => {
     financing_activities: financingActivities,
     net_cash_flow:
       operatingActivities.reduce(
-        (sum, je) => sum + je.lines.reduce((s, l) => s + (l.debit || 0), 0),
+        (sum, je) => sum + je.lines.reduce((s, l) => s + (((l as any).debit || 0) - ((l as any).credit || 0)), 0),
         0
       ) +
       investingActivities.reduce(
-        (sum, je) => sum + je.lines.reduce((s, l) => s + (l.debit || 0), 0),
+        (sum, je) => sum + je.lines.reduce((s, l) => s + (((l as any).debit || 0) - ((l as any).credit || 0)), 0),
         0
       ) +
       financingActivities.reduce(
-        (sum, je) => sum + je.lines.reduce((s, l) => s + (l.debit || 0), 0),
+        (sum, je) => sum + je.lines.reduce((s, l) => s + (((l as any).debit || 0) - ((l as any).credit || 0)), 0),
         0
       ),
   };
@@ -556,18 +569,22 @@ const generateCostCenterReport = async (data: CostCenterReport) => {
 
   return costCenters.map(cc => {
     const entries = journalEntries.filter(je =>
-      je.lines.some(line => line.cost_center_id === cc.id)
+      je.lines.some(line => (line as any).cost_center_id === cc.id)
     );
     const revenue = entries.reduce(
       (sum, je) =>
         sum +
-        je.lines.filter(l => l.account.type === 'INCOME').reduce((s, l) => s + (l.debit || 0), 0),
+        je.lines
+          .filter(l => (l as any).account?.type === 'INCOME')
+          .reduce((s, l) => s + (((l as any).debit || 0) - ((l as any).credit || 0)), 0),
       0
     );
     const expenses = entries.reduce(
       (sum, je) =>
         sum +
-        je.lines.filter(l => l.account.type === 'EXPENSE').reduce((s, l) => s + (l.debit || 0), 0),
+        je.lines
+          .filter(l => (l as any).account?.type === 'EXPENSE')
+          .reduce((s, l) => s + (((l as any).debit || 0) - ((l as any).credit || 0)), 0),
       0
     );
 
@@ -618,21 +635,21 @@ export const generateTrendAnalysis = async (data: TrendAnalysis) => {
   const groupedData = journalEntries.reduce((acc, entry) => {
     const date = dayjs(entry.transaction_date).format(intervalFormat);
     if (!acc[date]) {
-      acc[date] = {
-        revenue: 0,
-        expenses: 0,
-        net_income: 0,
-        transactions: 0,
-      };
-    }
+          acc[date] = {
+      revenue: 0,
+      expenses: 0,
+      net_income: 0,
+      transactions: 0,
+    };
+  }
 
-    const revenue = entry.lines
-      .filter(line => line.account.type === 'INCOME')
-      .reduce((sum, line) => sum + (line.debit || 0), 0);
+  const revenue = entry.lines
+    .filter(line => (line as any).account?.type === 'INCOME')
+    .reduce((sum, line) => sum + (((line as any).debit || 0) - ((line as any).credit || 0)), 0);
 
-    const expenses = entry.lines
-      .filter(line => line.account.type === 'EXPENSE')
-      .reduce((sum, line) => sum + (line.debit || 0), 0);
+  const expenses = entry.lines
+    .filter(line => (line as any).account?.type === 'EXPENSE')
+    .reduce((sum, line) => sum + (((line as any).debit || 0) - ((line as any).credit || 0)), 0);
 
     acc[date].revenue += revenue;
     acc[date].expenses += expenses;
@@ -697,12 +714,12 @@ export const generateCustomReport = async (data: CustomReport) => {
     }
 
     const revenue = entry.lines
-      .filter(line => line.account.type === 'INCOME')
-      .reduce((sum, line) => sum + (line.debit || 0), 0);
+      .filter(line => (line as any).account?.type === 'INCOME')
+      .reduce((sum, line) => sum + (((line as any).debit || 0) - ((line as any).credit || 0)), 0);
 
     const expenses = entry.lines
-      .filter(line => line.account.type === 'EXPENSE')
-      .reduce((sum, line) => sum + (line.debit || 0), 0);
+      .filter(line => (line as any).account?.type === 'EXPENSE')
+      .reduce((sum, line) => sum + (((line as any).debit || 0) - ((line as any).credit || 0)), 0);
 
     acc[groupKey].revenue += revenue;
     acc[groupKey].expenses += expenses;

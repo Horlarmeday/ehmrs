@@ -29,6 +29,10 @@ import surgeryRoutes from '../../modules/Surgery/surgery.routes';
 import immunizationRoutes from '../../modules/Immunization/immunization.routes';
 import alertRoutes from '../../modules/Alert/alert.routes';
 import accountRoutes from '../../modules/Account/account.routes';
+import generalStoreRoutes from '../../modules/GeneralStore/generalStore.routes';
+import accountingRoutes from '../../modules/Accounting/accounting.routes';
+import hmoPricingRoutes from '../../modules/HMOPricing/hmoPricing.routes';
+import dialysisRoutes from '../../modules/Dialysis/dialysis.routes';
 
 export default (server: express.Application) => {
   server.use('/api/staffs', staffRoutes);
@@ -52,6 +56,10 @@ export default (server: express.Application) => {
   server.use('/api/immunizations', immunizationRoutes);
   server.use('/api/alerts', alertRoutes);
   server.use('/api/accounts', accountRoutes);
+  server.use('/api/general-store', generalStoreRoutes);
+  server.use('/api/accounting', accountingRoutes);
+  server.use('/api/hmo-pricing', hmoPricingRoutes);
+  server.use('/api/dialysis', dialysisRoutes);
   server.use('/api/orders/laboratory', labOrderRoutes);
   server.use('/api/orders/pharmacy', pharmacyOrderRoutes);
   server.use('/api/orders/radiology', radiologyOrderRoutes);

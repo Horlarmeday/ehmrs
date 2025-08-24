@@ -1,11 +1,6 @@
 <template>
   <div>
-    <b-dropdown
-      split
-      text="Start OPD Visit"
-      class="float-right"
-      variant="primary"
-    >
+    <b-dropdown split text="Start OPD Visit" class="float-right" variant="primary">
       <b-dropdown-item href="#">Start IPD Visit</b-dropdown-item>
       <b-dropdown-item href="#">Start Emergency Visit</b-dropdown-item>
     </b-dropdown>
@@ -21,7 +16,7 @@
 
 <script>
 export default {
-  name: "CashCreateButton",
+  name: 'CashCreateButton',
   // props: {
   //   createPatient: {
   //     type: Function,
@@ -30,9 +25,9 @@ export default {
   // },
   methods: {
     createPatient() {
-      this.$emit("createPatient");
-    }
-  }
+      this.$emit('createPatient');
+    },
+  },
 };
 </script>
 

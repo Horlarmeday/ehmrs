@@ -35,8 +35,8 @@ import { accountDashboardItems } from './dashboardItems';
 export default {
   name: 'AccountHome',
   data: () => ({
-    accountDashboardItems
-  })
+    accountDashboardItems,
+  }),
 };
 </script>
 

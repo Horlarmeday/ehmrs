@@ -16,7 +16,6 @@ import {
   InventoryItemHistory,
   Vendor,
 } from '../../database/models';
-import { DrugType } from '../../database/models/pharmacyStore';
 import sequelizeConnection from '../../database/config/config';
 import { HistoryType } from '../../database/models/inventoryItemHistory';
 import { ItemsToReorder } from './types/pharmacy-item.types';
@@ -31,52 +30,6 @@ import { LogType } from '../../database/models/pharmacyStoreLog';
 /** ***********************
  * PHARMACY STORE
  ********************** */
-
-const getSellingPriceAndDrugType = ({
-  selling_price,
-  nhis_selling_price,
-  private_selling_price,
-  plaschema_selling_price,
-  retainership_selling_price,
-}: {
-  selling_price: number;
-  nhis_selling_price: number;
-  private_selling_price: number;
-  plaschema_selling_price: number;
-  retainership_selling_price: number;
-}) => {
-  if (selling_price) {
-    return {
-      selling_price,
-      drug_type: DrugType.CASH,
-    };
-  } else if (nhis_selling_price) {
-    return {
-      selling_price: nhis_selling_price,
-      drug_type: DrugType.NHIS,
-    };
-  } else if (private_selling_price) {
-    return {
-      selling_price: private_selling_price,
-      drug_type: DrugType.PRIVATE,
-    };
-  } else if (plaschema_selling_price) {
-    return {
-      selling_price: plaschema_selling_price,
-      drug_type: DrugType.PLASCHEMA,
-    };
-  } else if (retainership_selling_price) {
-    return {
-      selling_price: retainership_selling_price,
-      drug_type: DrugType.RETAINERSHIP,
-    };
-  } else {
-    return {
-      selling_price,
-      drug_type: DrugType.CASH,
-    };
-  }
-};
 
 /**
  * create a store pharmacy item
@@ -93,11 +46,6 @@ export async function createStoreItem(data) {
     quantity_received,
     unit_id,
     unit_price,
-    selling_price,
-    nhis_selling_price,
-    private_selling_price,
-    plaschema_selling_price,
-    retainership_selling_price,
     expiration,
     dosage_form_id,
     staff_id,
@@ -108,6 +56,7 @@ export async function createStoreItem(data) {
     drug_form,
     brand,
     vendor_id,
+    selling_price,
   } = data || {};
 
   return PharmacyStore.create({
@@ -121,14 +70,8 @@ export async function createStoreItem(data) {
     unit_id,
     unit_price,
     total_price: quantity_received * unit_price,
-    ...getSellingPriceAndDrugType({
-      selling_price,
-      nhis_selling_price,
-      private_selling_price,
-      plaschema_selling_price,
-      retainership_selling_price,
-    }),
     expiration,
+    selling_price,
     dosage_form_id,
     staff_id,
     date_received,
@@ -419,7 +362,6 @@ export const updatePharmacyStoreItems = async (
         );
 
         const inventoryItemToUpdate = {
-          selling_price: field.selling_price,
           acquired_price: field.total_price,
           product_code: field.product_code,
           measurement_id: field.measurement_id,
@@ -428,7 +370,6 @@ export const updatePharmacyStoreItems = async (
           unit_id: field.unit_id,
           strength_input: field.strength_input,
           drug_form: field.drug_form,
-          drug_type: field.drug_type,
           brand: field.brand,
         };
 
@@ -437,7 +378,6 @@ export const updatePharmacyStoreItems = async (
           {
             where: {
               drug_id: field.drug_id,
-              drug_type: field.drug_type,
               drug_form: field.drug_form,
             },
             transaction: t,
@@ -593,7 +533,8 @@ const dispenseValidations = async (item: ItemsToDispensedBody) => {
     throw new BadException('Invalid', 400, INVALID_QUANTITY.replace('drug', item.drug_name));
   }
 
-  if (!inventory.accepted_drug_type.includes(storeItem.drug_type)) {
+  // Check if inventory accepts this drug form
+  if (!inventory.accepted_drug_type.includes(storeItem.drug_form)) {
     const matchObj = {
       drug: item.drug_name,
       inventory: inventory.name,
@@ -618,17 +559,17 @@ const mapInventoryItem = (
   drug_id: storeItem.drug_id,
   quantity_received: item.quantity_to_dispense,
   unit_id: item.unit_id,
-  selling_price: storeItem.selling_price,
   acquired_price: storeItem.unit_price,
   expiration: storeItem.expiration,
   dosage_form_id: storeItem.dosage_form_id,
   measurement_id: storeItem.measurement_id,
   strength_input: storeItem.strength_input,
   quantity_remaining: item.quantity_to_dispense,
+  selling_price: storeItem.selling_price,
   drug_form: storeItem.drug_form,
-  drug_type: storeItem.drug_type,
   brand: storeItem.brand,
   date_received: Date.now(),
+  drug_type: item.drug_type,
   staff_id,
 });
 
@@ -675,8 +616,11 @@ export const dispensePharmacyItems = async (items: ItemsToDispensedBody[], staff
   return Promise.allSettled(
     items.map(async item => {
       const storeItem = await dispenseValidations(item);
-      const mappedItem = mapInventoryItem(storeItem, item, staff_id);
+      const dispensary = await Inventory.findByPk(item.dispensary);
+      const drugType = dispensary?.accepted_drug_type.split(' ')?.[0];
 
+      const mappedItem = mapInventoryItem(storeItem, { ...item, drug_type: drugType }, staff_id);
+      console.log(mappedItem, 'mappedItem');
       return sequelizeConnection.transaction(async t => {
         const [inventoryItem, created] = await InventoryItem.findOrCreate({
           where: { drug_id: mappedItem.drug_id, inventory_id: mappedItem.inventory_id },

@@ -1,0 +1,1578 @@
+<template>
+  <div class="patient-deposits">
+    <!-- Header Section -->
+    <div class="page-header">
+      <h1 class="page-title">
+        <i class="fas fa-piggy-bank text-warning mr-3"></i>
+        Patient Deposits Management
+      </h1>
+      <div class="header-actions">
+        <b-button variant="warning" @click="showCreateDepositModal">
+          <i class="fas fa-plus mr-2"></i>New Deposit
+        </b-button>
+        <b-button variant="outline-primary" @click="exportDeposits">
+          <i class="fas fa-download mr-2"></i>Export
+        </b-button>
+      </div>
+    </div>
+
+    <!-- Enhanced Summary Cards -->
+    <div class="summary-section">
+      <div class="row">
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="summary-card bg-primary text-white">
+            <div class="summary-icon">
+              <i class="fas fa-piggy-bank"></i>
+            </div>
+            <div class="summary-content">
+              <h3 class="summary-value">{{ enhancedMetrics.totalDeposits }}</h3>
+              <p class="summary-label">Total Deposits</p>
+              <small class="summary-count">{{ formatCurrency(enhancedMetrics.totalAmount) }}</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="summary-card bg-success text-white">
+            <div class="summary-icon">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="summary-content">
+              <h3 class="summary-value">{{ enhancedMetrics.activeDeposits }}</h3>
+              <p class="summary-label">Active Deposits</p>
+              <small class="summary-count">{{
+                formatCurrency(enhancedMetrics.activeAmount)
+              }}</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="summary-card bg-warning text-white">
+            <div class="summary-icon">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="summary-content">
+              <h3 class="summary-value">{{ enhancedMetrics.expiringDeposits }}</h3>
+              <p class="summary-label">Expiring Soon</p>
+              <small class="summary-count">{{
+                formatCurrency(enhancedMetrics.expiringAmount)
+              }}</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="summary-card bg-info text-white">
+            <div class="summary-icon">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="summary-content">
+              <h3 class="summary-value">{{ enhancedMetrics.utilizationRate }}%</h3>
+              <p class="summary-label">Utilization Rate</p>
+              <small class="summary-count">This Period</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Deposit Actions -->
+    <div class="quick-actions-section mb-4">
+      <div class="card">
+        <div class="card-body">
+          <h6 class="card-title"><i class="fas fa-bolt mr-2"></i>Quick Deposit Actions</h6>
+          <div class="d-flex gap-2 flex-wrap">
+            <b-button variant="outline-primary" @click="viewAllDeposits">
+              <i class="fas fa-list mr-2"></i>View All Deposits
+            </b-button>
+            <b-button variant="outline-success" @click="showCreateDepositModal">
+              <i class="fas fa-plus mr-2"></i>Create Deposit
+            </b-button>
+            <b-button variant="outline-warning" @click="viewDepositReports">
+              <i class="fas fa-chart-bar mr-2"></i>Deposit Reports
+            </b-button>
+            <b-button variant="outline-info" @click="viewReconciliation">
+              <i class="fas fa-balance-scale mr-2"></i>Reconciliation
+            </b-button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="filters-section">
+      <div class="card">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-3">
+              <b-form-group label="Patient Search" label-for="patient-search">
+                <div class="input-group">
+                  <b-form-input
+                    id="patient-search"
+                    v-model="filters.patientSearch"
+                    placeholder="Search by name, ID, or phone..."
+                    @input="debounceSearch"
+                    :disabled="loading"
+                  ></b-form-input>
+                  <div class="input-group-append">
+                    <b-button variant="outline-secondary" @click="loadDeposits" :disabled="loading">
+                      <i class="fas fa-search"></i>
+                    </b-button>
+                    <span class="input-group-text" v-if="loading">
+                      <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                  </div>
+                </div>
+                <small class="form-text text-muted">
+                  Search by patient name, hospital ID, or phone number
+                </small>
+              </b-form-group>
+            </div>
+            <div class="col-md-2">
+              <b-form-group label="Status" label-for="status-filter">
+                <b-form-select
+                  id="status-filter"
+                  v-model="filters.status"
+                  :options="statusOptions"
+                  @change="loadDeposits"
+                ></b-form-select>
+              </b-form-group>
+            </div>
+            <div class="col-md-2">
+              <b-form-group label="Type" label-for="type-filter">
+                <b-form-select
+                  id="type-filter"
+                  v-model="filters.type"
+                  :options="typeOptions"
+                  @change="loadDeposits"
+                ></b-form-select>
+              </b-form-group>
+            </div>
+            <div class="col-md-2">
+              <b-form-group label="Date Range" label-for="date-filter">
+                <b-form-input
+                  id="date-filter"
+                  v-model="filters.dateRange"
+                  type="date"
+                  @change="loadDeposits"
+                ></b-form-input>
+              </b-form-group>
+            </div>
+            <div class="col-md-3">
+              <label>&nbsp;</label>
+              <div class="d-flex gap-2">
+                <b-button variant="outline-secondary" @click="clearFilters">
+                  Clear All
+                </b-button>
+                <b-button
+                  variant="outline-warning"
+                  @click="clearPatientSearch"
+                  v-if="filters.patientSearch"
+                >
+                  Clear Search
+                </b-button>
+                <b-button variant="primary" @click="loadDeposits">
+                  Search
+                </b-button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deposits Table -->
+    <div class="deposits-table-section">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h6 class="mb-0">Deposits List</h6>
+          <div class="d-flex align-items-center">
+            <span v-if="filters.patientSearch" class="text-muted mr-2">
+              <i class="fas fa-search mr-1"></i>
+              Search results: {{ totalRows }} deposits found
+            </span>
+            <span v-else class="text-muted">
+              <i class="fas fa-list mr-1"></i>
+              Total: {{ totalRows }} deposits
+            </span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="thead-light">
+                <tr>
+                  <th>Reference #</th>
+                  <th>Patient</th>
+                  <th>Amount</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Created Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-if="deposits.length === 0 && !loading">
+                  <td colspan="7" class="text-center text-muted py-4">
+                    <i class="fas fa-search fa-2x mb-3"></i>
+                    <p class="mb-2">
+                      <strong>No deposits found</strong>
+                    </p>
+                    <p v-if="filters.patientSearch" class="mb-0">
+                      No deposits found for patient search: "{{ filters.patientSearch }}"
+                    </p>
+                    <p v-else class="mb-0">
+                      Try adjusting your filters or create a new deposit
+                    </p>
+                  </td>
+                </tr>
+                <tr v-else-if="loading">
+                  <td colspan="7" class="text-center py-4">
+                    <b-spinner variant="primary" label="Loading..."></b-spinner>
+                    <p class="mt-2">Loading deposits...</p>
+                  </td>
+                </tr>
+                <tr v-else v-for="deposit in deposits" :key="deposit.id">
+                  <td>
+                    <strong>{{ deposit.reference_number }}</strong>
+                  </td>
+                  <td>
+                    <div class="patient-info">
+                      <div class="patient-name">
+                        {{ deposit.patient?.firstname }} {{ deposit.patient?.lastname }}
+                      </div>
+                      <small class="patient-number">{{ deposit.patient?.hospital_id }}</small>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="amount">{{ formatCurrency(deposit.amount) }}</span>
+                  </td>
+                  <td>
+                    <b-badge :variant="getDepositTypeVariant(deposit.deposit_type)">
+                      {{ deposit.deposit_type }}
+                    </b-badge>
+                  </td>
+                  <td>
+                    <b-badge :variant="getDepositStatusVariant(deposit.status)">
+                      {{ deposit.status }}
+                    </b-badge>
+                  </td>
+                  <td>{{ formatDate(deposit.created_at) }}</td>
+                  <td>
+                    <div class="action-buttons">
+                      <b-button
+                        variant="outline-primary"
+                        size="sm"
+                        @click="viewDeposit(deposit.id)"
+                      >
+                        <i class="fas fa-eye"></i>
+                      </b-button>
+                      <b-button
+                        variant="outline-warning"
+                        size="sm"
+                        @click="editDeposit(deposit.id)"
+                      >
+                        <i class="fas fa-edit"></i>
+                      </b-button>
+                      <b-button variant="outline-info" size="sm" @click="viewUsage(deposit.id)">
+                        <i class="fas fa-history"></i>
+                      </b-button>
+                      <b-button
+                        v-if="deposit.status === 'ACTIVE'"
+                        variant="outline-success"
+                        size="sm"
+                        @click="useDeposit(deposit.id)"
+                      >
+                        <i class="fas fa-credit-card"></i>
+                      </b-button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="pagination-section">
+            <b-pagination
+              v-model="currentPage"
+              :total-rows="totalRows"
+              :per-page="perPage"
+              @change="onPageChange"
+              align="center"
+            ></b-pagination>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create/Edit Deposit Modal -->
+    <b-modal
+      v-model="showDepositModal"
+      :title="isEditing ? 'Edit Deposit' : 'Create New Deposit'"
+      size="lg"
+      @ok="saveDeposit"
+      @hidden="resetDepositForm"
+    >
+      <b-form @submit.prevent="saveDeposit">
+        <div class="row">
+          <div class="col-md-6">
+            <b-form-group label="Patient" label-for="deposit-patient">
+              <div class="patient-search-container">
+                <div class="input-group">
+                  <b-form-input
+                    id="deposit-patient-search"
+                    v-model="patientSearchQuery"
+                    placeholder="Search patient by name, ID, or phone..."
+                    @input="searchPatients"
+                    @focus="showPatientResults = true"
+                    required
+                  ></b-form-input>
+                  <div class="input-group-append" v-if="loadingPatients">
+                    <span class="input-group-text">
+                      <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Patient Search Results Dropdown -->
+                <div
+                  v-if="showPatientResults && (filteredPatients.length > 0 || loadingPatients)"
+                  class="patient-results-dropdown"
+                >
+                  <div v-if="loadingPatients" class="patient-result-item text-center">
+                    <i class="fas fa-spinner fa-spin mr-2"></i>Searching...
+                  </div>
+                  <div
+                    v-else-if="filteredPatients.length > 0"
+                    v-for="patient in filteredPatients.slice(0, 10)"
+                    :key="patient.id"
+                    class="patient-result-item"
+                    @click="selectPatient(patient)"
+                  >
+                    <div class="patient-info">
+                      <div class="patient-name">{{ patient.firstname }} {{ patient.lastname }}</div>
+                      <div class="patient-details">
+                        <small>ID: {{ patient.hospital_id }}</small>
+                        <small v-if="patient.phone">• {{ patient.phone }}</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    v-else-if="patientSearchQuery.length >= 2"
+                    class="patient-result-item text-center text-muted"
+                  >
+                    No patients found
+                  </div>
+                </div>
+
+                <!-- Selected Patient Display -->
+                <div v-if="selectedPatient" class="selected-patient-display">
+                  <div class="selected-patient-info">
+                    <strong>{{ selectedPatient.firstname }} {{ selectedPatient.lastname }}</strong>
+                    <small class="ml-2">ID: {{ selectedPatient.hospital_id }}</small>
+                    <b-button
+                      variant="link"
+                      size="sm"
+                      class="ml-2 text-danger"
+                      @click="clearSelectedPatient"
+                    >
+                      <i class="fas fa-times"></i>
+                    </b-button>
+                  </div>
+                </div>
+              </div>
+            </b-form-group>
+          </div>
+          <div class="col-md-6">
+            <b-form-group label="Payment Method" label-for="deposit-payment-method">
+              <b-form-select
+                id="deposit-payment-method"
+                v-model="depositForm.payment_method"
+                :options="paymentMethodOptions"
+                required
+                @change="onPaymentMethodChange"
+              ></b-form-select>
+            </b-form-group>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <b-form-group label="Amount" label-for="deposit-amount">
+              <b-form-input
+                id="deposit-amount"
+                v-model.number="depositForm.amount"
+                type="number"
+                step="0.01"
+                min="0"
+                required
+              ></b-form-input>
+            </b-form-group>
+          </div>
+          <div class="col-md-6">
+            <b-form-group label="Payment Reference" label-for="deposit-payment-reference">
+              <b-form-input
+                id="deposit-payment-reference"
+                v-model="depositForm.payment_reference"
+                placeholder="Payment reference number (optional)"
+                maxlength="100"
+              ></b-form-input>
+              <small class="form-text text-muted">
+                Optional: Bank reference, transaction ID, or receipt number
+              </small>
+            </b-form-group>
+          </div>
+        </div>
+
+        <!-- Dynamic Fields Based on Payment Method -->
+        <div class="row" v-if="depositForm.payment_method === 'BANK_TRANSFER'">
+          <div class="col-md-6">
+            <b-form-group label="Bank Account" label-for="deposit-bank-account">
+              <b-form-select
+                id="deposit-bank-account"
+                v-model="depositForm.bank_account_id"
+                :options="bankAccountOptions"
+                placeholder="Select bank account"
+                required
+              ></b-form-select>
+              <small class="form-text text-muted">
+                Required: Select bank account for bank transfer deposits
+              </small>
+            </b-form-group>
+          </div>
+        </div>
+
+        <div class="row" v-if="depositForm.payment_method === 'CARD'">
+          <div class="col-md-6">
+            <b-form-group label="POS Terminal" label-for="deposit-pos-terminal">
+              <b-form-select
+                id="deposit-pos-terminal"
+                v-model="depositForm.pos_terminal_id"
+                :options="posTerminalOptions"
+                placeholder="Select POS terminal"
+                required
+              ></b-form-select>
+              <small class="form-text text-muted">
+                Required: Select POS terminal used for card payment
+              </small>
+            </b-form-group>
+          </div>
+        </div>
+
+        <!-- Description Field - Always Last -->
+        <div class="row">
+          <div class="col-12">
+            <b-form-group label="Description" label-for="deposit-description">
+              <b-form-textarea
+                id="deposit-description"
+                v-model="depositForm.description"
+                rows="3"
+                placeholder="Deposit description or notes..."
+              ></b-form-textarea>
+            </b-form-group>
+          </div>
+        </div>
+      </b-form>
+
+      <template #modal-footer>
+        <b-button variant="secondary" @click="showDepositModal = false">
+          Cancel
+        </b-button>
+        <b-button variant="warning" @click="saveDeposit" :disabled="saving">
+          <span v-if="saving"> <i class="fas fa-spinner fa-spin mr-2"></i>Saving... </span>
+          <span v-else>
+            {{ isEditing ? 'Update Deposit' : 'Create Deposit' }}
+          </span>
+        </b-button>
+      </template>
+    </b-modal>
+
+    <!-- Use Deposit Modal -->
+    <b-modal
+      v-model="showUseDepositModal"
+      title="Use Deposit for Payment"
+      size="md"
+      @ok="processDepositUsage"
+      @hidden="resetUsageForm"
+    >
+      <div v-if="selectedDeposit">
+        <div class="deposit-summary mb-4">
+          <h6>Deposit Summary</h6>
+          <p><strong>Reference:</strong> {{ selectedDeposit.reference_number }}</p>
+          <p>
+            <strong>Patient:</strong> {{ selectedDeposit.patient?.firstname }}
+            {{ selectedDeposit.patient?.lastname }}
+          </p>
+          <p><strong>Available Amount:</strong> {{ formatCurrency(selectedDeposit.amount) }}</p>
+        </div>
+
+        <b-form @submit.prevent="processDepositUsage">
+          <div class="row">
+            <div class="col-md-6">
+              <b-form-group label="Usage Amount" label-for="usage-amount">
+                <b-form-input
+                  id="usage-amount"
+                  v-model.number="usageForm.amount"
+                  type="number"
+                  step="0.01"
+                  :max="selectedDeposit.amount"
+                  min="0"
+                  required
+                ></b-form-input>
+                <small class="form-text text-muted">
+                  Maximum: {{ formatCurrency(selectedDeposit.amount) }}
+                </small>
+              </b-form-group>
+            </div>
+            <div class="col-md-6">
+              <b-form-group label="Purpose" label-for="usage-purpose">
+                <b-form-input
+                  id="usage-purpose"
+                  v-model="usageForm.purpose"
+                  placeholder="What is this payment for?"
+                  required
+                ></b-form-input>
+              </b-form-group>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-12">
+              <b-form-group label="Notes" label-for="usage-notes">
+                <b-form-textarea
+                  id="usage-notes"
+                  v-model="usageForm.notes"
+                  rows="3"
+                  placeholder="Additional notes..."
+                ></b-form-textarea>
+              </b-form-group>
+            </div>
+          </div>
+        </b-form>
+      </div>
+
+      <template #modal-footer>
+        <b-button variant="secondary" @click="showUseDepositModal = false">
+          Cancel
+        </b-button>
+        <b-button variant="success" @click="processDepositUsage" :disabled="processingUsage">
+          <span v-if="processingUsage">
+            <i class="fas fa-spinner fa-spin mr-2"></i>Processing...
+          </span>
+          <span v-else>
+            Use Deposit
+          </span>
+        </b-button>
+      </template>
+    </b-modal>
+
+    <!-- Deposit Usage History Modal -->
+    <b-modal
+      v-model="showUsageHistoryModal"
+      title="Deposit Usage History"
+      size="lg"
+      @hidden="resetUsageHistory"
+    >
+      <div v-if="usageHistory.length > 0">
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead class="thead-light">
+              <tr>
+                <th>Date</th>
+                <th>Amount Used</th>
+                <th>Purpose</th>
+                <th>Bill #</th>
+                <th>Processed By</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="usage in usageHistory" :key="usage.id">
+                <td>{{ formatDate(usage.created_at) }}</td>
+                <td>{{ formatCurrency(usage.amount) }}</td>
+                <td>{{ usage.purpose }}</td>
+                <td>{{ usage.bill?.bill_number || 'N/A' }}</td>
+                <td>{{ usage.processedBy?.firstname }} {{ usage.processedBy?.lastname }}</td>
+                <td>{{ usage.notes || '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div v-else class="text-center">
+        <p>No usage history found for this deposit.</p>
+      </div>
+    </b-modal>
+  </div>
+</template>
+
+<script>
+import { debounce } from 'lodash';
+
+export default {
+  name: 'PatientDeposits',
+  data() {
+    return {
+      // Loading states
+      loading: false,
+      loadingPatients: false,
+
+      // Filters
+      filters: {
+        patientSearch: '',
+        status: '',
+        type: '',
+        dateRange: '',
+      },
+
+      // Pagination
+      currentPage: 1,
+      perPage: 10,
+
+      // Modal and forms
+      showDepositModal: false,
+      isEditing: false,
+      saving: false,
+      depositForm: {
+        patient_id: null,
+        payment_method: 'CASH', // This replaces deposit_type
+        amount: 0,
+        description: '',
+        bank_account_id: null,
+        pos_terminal_id: null,
+        payment_reference: '',
+      },
+
+      // Usage modal
+      showUseDepositModal: false,
+      selectedDeposit: null,
+      processingUsage: false,
+      usageForm: {
+        amount: 0,
+        purpose: '',
+        notes: '',
+      },
+
+      // Usage history modal
+      showUsageHistoryModal: false,
+      usageHistory: [],
+
+      // Patient search
+      patientSearchQuery: '',
+      showPatientResults: false,
+      filteredPatients: [],
+      selectedPatient: null,
+
+      // Options
+      statusOptions: [
+        { value: '', text: 'All Statuses' },
+        { value: 'ACTIVE', text: 'Active' },
+        { value: 'USED', text: 'Used' },
+        { value: 'REFUNDED', text: 'Refunded' },
+      ],
+      typeOptions: [
+        { value: '', text: 'All Types' },
+        { value: 'CASH', text: 'Cash' },
+        { value: 'CARD', text: 'Card' },
+        { value: 'BANK_TRANSFER', text: 'Bank Transfer' },
+        { value: 'MOBILE_MONEY', text: 'Mobile Money' },
+        { value: 'INSURANCE', text: 'Insurance' },
+        { value: 'OTHER', text: 'Other' },
+      ],
+      paymentMethodOptions: [
+        { value: 'CASH', text: 'Cash' },
+        { value: 'CARD', text: 'Card' },
+        { value: 'BANK_TRANSFER', text: 'Bank Transfer' },
+        { value: 'MOBILE_MONEY', text: 'Mobile Money' },
+        { value: 'INSURANCE', text: 'Insurance' },
+        { value: 'OTHER', text: 'Other' },
+      ],
+      bankAccountOptions: [
+        { value: null, text: 'Select Bank Account' },
+        // Will be populated from API
+      ],
+      posTerminalOptions: [
+        { value: null, text: 'Select POS Terminal' },
+        // Will be populated from API
+      ],
+    };
+  },
+  computed: {
+    deposits() {
+      return this.$store.getters['accounting/getDeposits'] || [];
+    },
+    totalRows() {
+      return this.$store.getters['accounting/getDepositsTotal'] || 0;
+    },
+    summaryData() {
+      return this.$store.getters['accounting/getDepositsSummary'] || {};
+    },
+    enhancedMetrics() {
+      const summary = this.$store.getters['accounting/getDepositsSummary'];
+      return (
+        summary || {
+          totalDeposits: 0,
+          totalAmount: 0,
+          activeDeposits: 0,
+          activeAmount: 0,
+          expiringDeposits: 0,
+          expiringAmount: 0,
+          utilizationRate: 0,
+        }
+      );
+    },
+    isLoading() {
+      return this.$store.getters['accounting/loading'];
+    },
+    error() {
+      return this.$store.getters['accounting/error'];
+    },
+  },
+  async mounted() {
+    await this.loadDeposits();
+    await this.loadSummary();
+    await this.loadEnhancedMetrics();
+    await this.loadOptions();
+
+    // Add click outside listener to close patient results
+    document.addEventListener('click', this.handleClickOutside);
+  },
+
+  beforeDestroy() {
+    // Clean up event listener
+    document.removeEventListener('click', this.handleClickOutside);
+  },
+  methods: {
+    async loadDeposits() {
+      try {
+        // Map client filters to server-expected parameters
+        const serverParams = {
+          page: this.currentPage,
+          limit: this.perPage,
+        };
+
+        // Only include valid server parameters
+        if (this.filters.status) serverParams.status = this.filters.status;
+        if (this.filters.type) serverParams.deposit_type = this.filters.type;
+        if (this.filters.dateRange) serverParams.start_date = this.filters.dateRange;
+
+        // Handle patient search - send to server for processing
+        if (this.filters.patientSearch && this.filters.patientSearch.trim()) {
+          serverParams.patient_search = this.filters.patientSearch.trim();
+        }
+
+        await this.$store.dispatch('accounting/fetchDeposits', serverParams);
+      } catch (error) {
+        console.error('Failed to load deposits:', error);
+        this.$bvToast.toast('Failed to load deposits', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+      }
+    },
+
+    async loadSummary() {
+      try {
+        // Use Vuex store action for summary
+        await this.$store.dispatch('accounting/fetchAccountingSummary');
+        // The action will automatically update the store state
+      } catch (error) {
+        console.error('Failed to load summary:', error);
+      }
+    },
+
+    async loadEnhancedMetrics() {
+      try {
+        // Load enhanced deposit metrics for detailed overview
+        await this.$store.dispatch('accounting/fetchDepositsSummary');
+      } catch (error) {
+        console.error('Failed to load enhanced metrics:', error);
+        // Don't show error toast for metrics - it's not critical
+      }
+    },
+
+    async loadOptions() {
+      try {
+        // Initialize with empty options - patients will be searched dynamically
+        this.filteredPatients = [];
+
+        // Load bank account and POS terminal options
+        await Promise.all([this.loadBankAccountOptions(), this.loadPOSTerminalOptions()]);
+      } catch (error) {
+        console.error('Failed to load options:', error);
+      }
+    },
+
+    async loadBankAccountOptions() {
+      try {
+        const response = await this.$store.dispatch('accounting/getBankAccounts', { limit: 100 });
+        if (response && response.data) {
+          this.bankAccountOptions = [
+            { value: null, text: 'Select Bank Account' },
+            ...response.data.map(account => ({
+              value: account.id,
+              text: `${account.account_name} (${account.account_number})`,
+            })),
+          ];
+        }
+      } catch (error) {
+        console.error('Failed to load bank account options:', error);
+      }
+    },
+
+    async loadPOSTerminalOptions() {
+      try {
+        const response = await this.$store.dispatch('accounting/getPOSTerminals', { limit: 100 });
+        if (response && response.data) {
+          this.posTerminalOptions = [
+            { value: null, text: 'Select POS Terminal' },
+            ...response.data.map(terminal => ({
+              value: terminal.id,
+              text: `${terminal.terminal_id} (${terminal.terminal_type})`,
+            })),
+          ];
+        }
+      } catch (error) {
+        console.error('Failed to load POS terminal options:', error);
+      }
+    },
+
+    onPaymentMethodChange() {
+      // Clear dependent fields when payment method changes
+      if (this.depositForm.payment_method !== 'BANK_TRANSFER') {
+        this.depositForm.bank_account_id = null;
+      }
+      if (this.depositForm.payment_method !== 'CARD') {
+        this.depositForm.pos_terminal_id = null;
+      }
+    },
+
+    // Patient search methods
+    async searchPatients() {
+      if (!this.patientSearchQuery || this.patientSearchQuery.length < 2) {
+        this.filteredPatients = [];
+        this.showPatientResults = false;
+        return;
+      }
+
+      try {
+        this.loadingPatients = true;
+        // Search patients using Vuex store
+        const response = await this.$store.dispatch('patient/fetchPatients', {
+          currentPage: 1,
+          itemsPerPage: 20,
+          search: this.patientSearchQuery,
+          start: 0,
+          end: 20,
+          filter: {},
+        });
+
+        if (response && response.data && response.data.data) {
+          this.filteredPatients = response.data.data.docs || [];
+          this.showPatientResults = true;
+        } else {
+          this.filteredPatients = [];
+        }
+      } catch (error) {
+        console.error('Failed to search patients:', error);
+        this.filteredPatients = [];
+        this.$bvToast.toast('Failed to search patients', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+      } finally {
+        this.loadingPatients = false;
+      }
+    },
+
+    selectPatient(patient) {
+      this.selectedPatient = patient;
+      this.depositForm.patient_id = patient.id;
+      this.patientSearchQuery = `${patient.firstname} ${patient.lastname}`;
+      this.showPatientResults = false;
+      this.filteredPatients = [];
+    },
+
+    clearSelectedPatient() {
+      this.selectedPatient = null;
+      this.depositForm.patient_id = null;
+      this.patientSearchQuery = '';
+      this.showPatientResults = false;
+      this.filteredPatients = [];
+    },
+
+    handleClickOutside(event) {
+      const container = document.querySelector('.patient-search-container');
+      if (container && !container.contains(event.target)) {
+        this.showPatientResults = false;
+      }
+    },
+
+    // Modal actions
+    showCreateDepositModal() {
+      this.isEditing = false;
+      this.showDepositModal = true;
+    },
+
+    editDeposit(depositId) {
+      this.isEditing = true;
+      this.loadDepositForEdit(depositId);
+      this.showDepositModal = true;
+    },
+
+    async loadDepositForEdit(depositId) {
+      try {
+        const result = await this.$store.dispatch('accounting/getPatientDepositById', depositId);
+        const deposit = result.success ? result.data : null;
+
+        if (deposit) {
+          this.depositForm = {
+            id: deposit.id, // Add missing ID for edit mode
+            patient_id: deposit.patient_id,
+            payment_method: deposit.payment_method || deposit.deposit_type || 'CASH',
+            amount: deposit.amount,
+            description: deposit.description,
+            bank_account_id: deposit.bank_account_id,
+            pos_terminal_id: deposit.pos_terminal_id,
+            payment_reference: deposit.payment_reference || '',
+          };
+
+          // Load patient info for display
+          if (deposit.patient) {
+            this.selectedPatient = deposit.patient;
+            this.patientSearchQuery = `${deposit.patient.firstname} ${deposit.patient.lastname}`;
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load deposit for edit:', error);
+      }
+    },
+
+    async saveDeposit() {
+      try {
+        // Validate required fields
+        if (!this.depositForm.patient_id) {
+          this.$bvToast.toast('Please select a patient', {
+            title: 'Validation Error',
+            variant: 'warning',
+            solid: true,
+          });
+          return;
+        }
+
+        if (!this.depositForm.amount || this.depositForm.amount <= 0) {
+          this.$bvToast.toast('Please enter a valid amount', {
+            title: 'Validation Error',
+            variant: 'warning',
+            solid: true,
+          });
+          return;
+        }
+
+        // Validate payment method specific fields
+        if (
+          this.depositForm.payment_method === 'BANK_TRANSFER' &&
+          !this.depositForm.bank_account_id
+        ) {
+          this.$bvToast.toast('Please select a bank account for bank transfer', {
+            title: 'Validation Error',
+            variant: 'warning',
+            solid: true,
+          });
+          return;
+        }
+
+        if (this.depositForm.payment_method === 'CARD' && !this.depositForm.pos_terminal_id) {
+          this.$bvToast.toast('Please select a POS terminal for card payment', {
+            title: 'Validation Error',
+            variant: 'warning',
+            solid: true,
+          });
+          return;
+        }
+
+        this.saving = true;
+
+        // Prepare deposit data with required fields
+        const depositData = {
+          ...this.depositForm,
+          deposit_type: this.depositForm.payment_method, // Map payment_method to deposit_type for server
+          created_by: this.$store.state.user?.id || 1, // Add required created_by field
+        };
+
+        let result;
+        if (this.isEditing) {
+          result = await this.$store.dispatch('accounting/updateDeposit', {
+            id: this.depositForm.id,
+            depositData: depositData,
+          });
+          if (result.success) {
+            this.$bvToast.toast('Deposit updated successfully', {
+              title: 'Success',
+              variant: 'success',
+              solid: true,
+            });
+          }
+        } else {
+          result = await this.$store.dispatch('accounting/createDeposit', depositData);
+          if (result.success) {
+            this.$bvToast.toast('Deposit created successfully', {
+              title: 'Success',
+              variant: 'success',
+              solid: true,
+            });
+          }
+        }
+
+        if (result.success) {
+          this.showDepositModal = false;
+          this.resetForm();
+          await this.loadDeposits(); // Refresh the deposits list
+          await this.loadSummary();
+        } else {
+          this.$bvToast.toast(result.error || 'Failed to save deposit', {
+            title: 'Error',
+            variant: 'danger',
+            solid: true,
+          });
+        }
+      } catch (error) {
+        console.error('Failed to save deposit:', error);
+        this.$bvToast.toast(error.message || 'Failed to save deposit', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+      } finally {
+        this.saving = false;
+      }
+    },
+
+    // Usage functionality
+    useDeposit(depositId) {
+      this.selectedDeposit = this.deposits.find(d => d.id === depositId);
+      this.usageForm.amount = this.selectedDeposit.amount;
+      this.showUseDepositModal = true;
+    },
+
+    async processDepositUsage() {
+      try {
+        this.processingUsage = true;
+
+        const usageData = {
+          deposit_id: this.selectedDeposit.id,
+          amount: this.usageForm.amount,
+          bill_id: 0, // TODO: Implement bill selection
+          description: this.usageForm.purpose,
+          used_by: this.$store.state.user?.id || 1,
+        };
+
+        // Use Vuex store action
+        await this.$store.dispatch('accounting/useDeposit', usageData);
+
+        this.$bvToast.toast('Deposit used successfully', {
+          title: 'Success',
+          variant: 'success',
+          solid: true,
+        });
+
+        this.showUseDepositModal = false;
+        await this.loadDeposits();
+        await this.loadSummary();
+      } catch (error) {
+        console.error('Failed to use deposit:', error);
+        this.$bvToast.toast('Failed to use deposit', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+      } finally {
+        this.processingUsage = false;
+      }
+    },
+
+    // Usage history
+    async viewUsage(depositId) {
+      try {
+        // Use Vuex store action
+        this.usageHistory = await this.$store.dispatch(
+          'accounting/getDepositUsageHistory',
+          depositId
+        );
+        this.showUsageHistoryModal = true;
+      } catch (error) {
+        console.error('Failed to load usage history:', error);
+      }
+    },
+
+    // Navigation methods
+    viewDeposit(depositId) {
+      this.$router.push({ name: 'deposit-details', params: { id: depositId } });
+    },
+
+    viewAllDeposits() {
+      // Already on deposits page, just refresh
+      this.loadDeposits();
+    },
+
+    viewDepositReports() {
+      this.$router.push('/accounting/reports/deposits/summary');
+    },
+
+    viewReconciliation() {
+      this.$router.push('/accounting/deposits/reconciliation-report');
+    },
+
+    // Form resets
+    resetDepositForm() {
+      this.depositForm = {
+        patient_id: null,
+        payment_method: 'CASH',
+        amount: 0,
+        description: '',
+        bank_account_id: null,
+        pos_terminal_id: null,
+        payment_reference: '',
+      };
+      this.isEditing = false;
+      this.clearSelectedPatient();
+    },
+
+    resetUsageForm() {
+      this.usageForm = {
+        amount: 0,
+        purpose: '',
+        notes: '',
+      };
+      this.selectedDeposit = null;
+    },
+
+    resetUsageHistory() {
+      this.usageHistory = [];
+    },
+
+    resetForm() {
+      this.resetDepositForm();
+    },
+
+    // Filter methods
+    clearFilters() {
+      this.filters = {
+        patientSearch: '',
+        status: '',
+        type: '',
+        dateRange: '',
+      };
+      this.loadDeposits();
+    },
+
+    clearPatientSearch() {
+      this.filters.patientSearch = '';
+      this.loadDeposits();
+    },
+
+    debounceSearch: debounce(function() {
+      this.loadDeposits();
+    }, 500),
+
+    onPageChange(page) {
+      this.currentPage = page;
+      this.loadDeposits();
+    },
+
+    onPatientChange() {
+      // Could load patient-specific information here
+    },
+
+    // Utility methods
+    formatCurrency(amount) {
+      return new Intl.NumberFormat('en-NG', {
+        style: 'currency',
+        currency: 'NGN',
+      }).format(amount || 0);
+    },
+
+    formatDate(dateString) {
+      if (!dateString) return '';
+      return new Date(dateString).toLocaleDateString('en-NG');
+    },
+
+    getDepositTypeVariant(type) {
+      const variants = {
+        CASH: 'success',
+        BANK_TRANSFER: 'info',
+        CARD: 'primary',
+        MOBILE_MONEY: 'warning',
+        OTHER: 'secondary',
+      };
+      return variants[type] || 'secondary';
+    },
+
+    getDepositStatusVariant(status) {
+      const variants = {
+        ACTIVE: 'success',
+        USED: 'info',
+        REFUNDED: 'warning',
+        EXPIRED: 'danger',
+      };
+      return variants[status] || 'secondary';
+    },
+
+    getExpiryDateClass(expiryDate) {
+      if (!expiryDate) return '';
+
+      const today = new Date();
+      const expiry = new Date(expiryDate);
+      const daysUntilExpiry = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+
+      if (daysUntilExpiry < 0) return 'text-danger'; // Expired
+      if (daysUntilExpiry <= 7) return 'text-warning'; // Expiring soon
+      return 'text-success'; // Valid
+    },
+
+    exportDeposits() {
+      // Implement export functionality using Vuex store
+      this.$bvToast.toast('Export functionality coming soon', {
+        title: 'Info',
+        variant: 'info',
+        solid: true,
+      });
+    },
+  },
+};
+</script>
+
+<style scoped>
+.patient-deposits {
+  padding: 2rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.summary-section {
+  margin-bottom: 2rem;
+}
+
+.summary-card {
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+}
+
+.summary-icon {
+  font-size: 2.5rem;
+  margin-right: 1rem;
+  opacity: 0.8;
+}
+
+.summary-content {
+  flex: 1;
+}
+
+.summary-value {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+}
+
+.summary-label {
+  font-size: 1rem;
+  margin: 0 0 0.5rem 0;
+  opacity: 0.9;
+}
+
+.summary-count {
+  font-size: 0.875rem;
+  opacity: 0.8;
+}
+
+.filters-section {
+  margin-bottom: 2rem;
+}
+
+.deposits-table-section {
+  margin-bottom: 2rem;
+}
+
+.patient-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.patient-name {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.patient-number {
+  color: #6c757d;
+}
+
+.amount {
+  font-weight: 600;
+  color: #28a745;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pagination-section {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+/* Quick Actions Section */
+.quick-actions-section {
+  margin-bottom: 2rem;
+}
+
+.quick-actions-section .card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.quick-actions-section .card-title {
+  color: #2c3e50;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.quick-actions-section .btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.quick-actions-section .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.deposit-summary {
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.deposit-summary h6 {
+  margin-bottom: 1rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.deposit-summary p {
+  margin-bottom: 0.5rem;
+}
+
+/* Patient Search Styles */
+.patient-search-container {
+  position: relative;
+}
+
+/* Enhanced Filter Styles */
+.filters-section .input-group-append .input-group-text {
+  background-color: #f8f9fa;
+  border-left: none;
+}
+
+.filters-section .form-text {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+/* Card Header Styling */
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  padding: 1rem 1.25rem;
+}
+
+.card-header h6 {
+  color: #495057;
+  font-weight: 600;
+}
+
+/* Form Field Styling */
+.form-text {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-top: 0.25rem;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: #495057;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Dynamic Form Fields */
+.row[v-if] {
+  transition: all 0.3s ease;
+}
+
+.row[v-if] .form-group {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Required Field Indicators */
+.form-group label.required::after {
+  content: ' *';
+  color: #dc3545;
+  font-weight: bold;
+}
+
+/* No Results Styling */
+.text-muted .fas {
+  color: #6c757d;
+  opacity: 0.6;
+}
+
+.text-muted p {
+  margin-bottom: 0.5rem;
+}
+
+.text-muted p:last-child {
+  margin-bottom: 0;
+}
+
+.patient-search-container .input-group {
+  position: relative;
+}
+
+.patient-search-container .input-group-append .input-group-text {
+  background-color: #f8f9fa;
+  border-left: none;
+}
+
+.patient-results-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.patient-result-item {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.patient-result-item:hover {
+  background-color: #f8f9fa;
+}
+
+.patient-result-item:last-child {
+  border-bottom: none;
+}
+
+.patient-info .patient-name {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.25rem;
+}
+
+.patient-info .patient-details {
+  color: #6c757d;
+  font-size: 0.875rem;
+}
+
+.patient-info .patient-details small {
+  margin-right: 0.5rem;
+}
+
+.selected-patient-display {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background-color: #e8f5e8;
+  border: 1px solid #c3e6c3;
+  border-radius: 6px;
+}
+
+.selected-patient-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.selected-patient-info strong {
+  color: #155724;
+}
+
+.selected-patient-info small {
+  color: #6c757d;
+}
+
+@media (max-width: 768px) {
+  .patient-deposits {
+    padding: 1rem;
+  }
+
+  .page-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .header-actions {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+</style>

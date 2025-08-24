@@ -12,11 +12,11 @@ export default [
   {
     url: '/inventory/inventory-type',
     icon: 'fas fa-laptop-house',
-    name: 'Inventory',
+    name: 'Dispensary',
   },
   {
     url: '/pharmacy/reports',
     icon: 'flaticon2-list-1',
     name: 'Reports',
   },
-]
+];

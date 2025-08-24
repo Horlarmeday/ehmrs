@@ -101,7 +101,7 @@ import SearchWithFilter from '../../../../utils/SearchWithFilter.vue';
 import AddIcon from '../../../../assets/icons/AddIcon.vue';
 import EditIcon from '@/assets/icons/EditIcon.vue';
 import investigation from '@/view/pages/radiology/components/Investigation.vue';
-import { debounce, removeSpinner } from "@/common/common";
+import { debounce, removeSpinner } from '@/common/common';
 export default {
   name: 'Investigation',
   data() {

@@ -82,7 +82,9 @@ export const printReceiptPDF = async ({
 
   // Logo
   const logoPath =
-    process.env.NODE_ENV === 'production' ? `ehmrs-api/public/pssh.png` : 'src/public/pssh.png';
+    process.env.NODE_ENV === 'production'
+      ? `ehmrs-api/public/Caroline.png`
+      : 'src/public/Caroline.png';
 
   if (fs.existsSync(logoPath)) {
     doc.image(logoPath, (RECEIPT_WIDTH - 60) / 2, 10, { width: 60 });
@@ -92,11 +94,11 @@ export const printReceiptPDF = async ({
   doc
     .fontSize(12)
     .font('Helvetica-Bold')
-    .text('Plateau State Specialist Hospital', { align: 'center' })
+    .text('Heritage Kidney and Medical Care', { align: 'center' })
     .moveDown(0.2)
     .fontSize(8)
     .font('Helvetica')
-    .text('No. 1 Hospital Road, Jos, Plateau State', { align: 'center' })
+    .text('kaura District, Opp. Suncity', { align: 'center' })
     .moveDown(0.5);
 
   // Receipt Title
@@ -131,9 +133,7 @@ export const printReceiptPDF = async ({
     doc.text(`${title}:`, { underline: true });
 
     items.forEach((item, index) => {
-      doc
-        .font('Helvetica')
-        .text(`${index + 1}. ${item.name} (${formatCurrency(item.amount)})`);
+      doc.font('Helvetica').text(`${index + 1}. ${item.name} (${formatCurrency(item.amount)})`);
     });
   };
 
@@ -221,8 +221,9 @@ export const printReceiptPDF = async ({
           doc
             .font('Helvetica')
             .text(
-              `${itemCounter}. Service: ${p.service.service?.name ||
-                'N/A'} (${formatCurrency(p?.amount || 0)})`
+              `${itemCounter}. Service: ${p.service.service?.name || 'N/A'} (${formatCurrency(
+                p?.amount || 0
+              )})`
             );
           itemCounter++;
         }

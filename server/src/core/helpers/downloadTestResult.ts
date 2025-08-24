@@ -72,16 +72,18 @@ export const downloadTestResult = (
 
 function generateHeader(doc: PDFDocument) {
   const filePath =
-    process.env.NODE_ENV === 'production' ? `ehmrs-api/public/pssh.png` : 'src/public/pssh.png';
+    process.env.NODE_ENV === 'production'
+      ? `ehmrs-api/public/Caroline.png`
+      : 'src/public/Caroline.png';
   doc
     .image(filePath, 50, 45, { width: 50 })
     .fillColor('#444444')
     .fontSize(15)
-    .text('Plateau State Specialist Hospital', 110, 62)
+    .text('Heritage Kidney and Medical Care', 110, 62)
     .fontSize(11)
-    .text('No. 1 Hospital Road,', 200, 55, { align: 'right' })
-    .text('Jos,', 200, 70, { align: 'right' })
-    .text('Plateau State, Nigeria.', 200, 85, { align: 'right' })
+    .text('kaura District, Opp. Suncity', 200, 55, { align: 'right' })
+    .text('Abuja,', 200, 70, { align: 'right' })
+    .text('Federal Capital Territory, Nigeria.', 200, 85, { align: 'right' })
     .text('pssh@gmail.com', 200, 100, { align: 'right' })
     .text('08134848878', 200, 115, { align: 'right' })
     .moveDown(1.5);

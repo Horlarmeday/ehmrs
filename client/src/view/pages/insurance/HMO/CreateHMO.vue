@@ -13,7 +13,7 @@
             v-model="name"
             name="name"
           />
-          <span class="text-danger text-sm">{{ errors.first("name") }}</span>
+          <span class="text-danger text-sm">{{ errors.first('name') }}</span>
         </div>
       </div>
       <div class="form-group row">
@@ -33,9 +33,7 @@
               <span>Type to search</span>
             </template>
           </v-select>
-          <span class="text-danger text-sm">{{
-            errors.first("insurance_id")
-          }}</span>
+          <span class="text-danger text-sm">{{ errors.first('insurance_id') }}</span>
         </div>
       </div>
       <div class="form-group row">
@@ -50,7 +48,7 @@
             placeholder="E.g HMO 21"
             v-model="hmo_num"
           />
-          <span class="text-danger text-sm">{{ errors.first("hmo_num") }}</span>
+          <span class="text-danger text-sm">{{ errors.first('hmo_num') }}</span>
         </div>
       </div>
     </div>
@@ -66,28 +64,28 @@
 </template>
 
 <script>
-import vSelect from "vue-select";
+import vSelect from 'vue-select';
 export default {
   props: {
     displayPrompt: {
       type: Boolean,
-      required: true
+      required: true,
     },
     data: {
       type: Object,
-      default: () => {}
-    }
+      default: () => {},
+    },
   },
   components: {
-    vSelect
+    vSelect,
   },
   data() {
     return {
-      name: "",
-      hmo_num: "",
-      hmo_id: "",
-      insurance_id: "",
-      isDisabled: false
+      name: '',
+      hmo_num: '',
+      hmo_id: '',
+      insurance_id: '',
+      isDisabled: false,
     };
   },
   computed: {
@@ -96,10 +94,7 @@ export default {
     },
     validateForm() {
       return (
-        !this.errors.any() &&
-        this.name !== "" &&
-        this.hmo_num !== "" &&
-        this.insurance_id !== ""
+        !this.errors.any() && this.name !== '' && this.hmo_num !== '' && this.insurance_id !== ''
       );
     },
     activePrompt: {
@@ -107,9 +102,9 @@ export default {
         return this.displayPrompt;
       },
       set(value) {
-        this.$emit("closeModal", value);
-      }
-    }
+        this.$emit('closeModal', value);
+      },
+    },
   },
   watch: {
     displayPrompt(val) {
@@ -118,40 +113,34 @@ export default {
         this.initValues();
         this.$validator.reset();
       } else {
-        const { insurance_id, name, hmo_num, id } = JSON.parse(
-          JSON.stringify(this.data)
-        );
+        const { insurance_id, name, hmo_num, id } = JSON.parse(JSON.stringify(this.data));
         this.insurance_id = insurance_id;
         this.name = name;
         this.hmo_num = hmo_num;
         this.hmo_id = id;
       }
-    }
+    },
   },
   methods: {
     addSpinner(submitButton) {
       this.isDisabled = true;
-      submitButton.classList.add("spinner", "spinner-light", "spinner-right");
+      submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');
     },
 
     removeSpinner(submitButton) {
       this.isDisabled = false;
-      submitButton.classList.remove(
-        "spinner",
-        "spinner-light",
-        "spinner-right"
-      );
+      submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
     },
     searchInsurance(search) {
-      this.$store.dispatch("insurance/fetchInsurances", {
+      this.$store.dispatch('insurance/fetchInsurances', {
         currentPage: 1,
         itemsPerPage: 20,
-        search
+        search,
       });
     },
     initializeRequest(button) {
       this.removeSpinner(button);
-      this.$emit("closeModal");
+      this.$emit('closeModal');
       this.initValues();
     },
     createHMO() {
@@ -161,21 +150,21 @@ export default {
             insurance_id: this.insurance_id,
             name: this.name,
             hmo_num: this.hmo_num,
-            hmo_id: this.hmo_id
+            hmo_id: this.hmo_id,
           };
           // set spinner to submit button
-          const submitButton = this.$refs["kt_hmo_submit"];
+          const submitButton = this.$refs['kt_hmo_submit'];
           this.addSpinner(submitButton);
 
           if (this.hmo_id && this.hmo_id >= 0) {
             this.$store
-              .dispatch("insurance/updateHMO", obj)
+              .dispatch('insurance/updateHMO', obj)
               .then(() => this.initializeRequest(submitButton))
               .catch(() => this.removeSpinner(submitButton));
           } else {
             delete obj.hmo_id;
             this.$store
-              .dispatch("insurance/addHMO", obj)
+              .dispatch('insurance/addHMO', obj)
               .then(() => this.initializeRequest(submitButton))
               .catch(() => this.removeSpinner(submitButton));
           }
@@ -183,12 +172,12 @@ export default {
       });
     },
     initValues() {
-      this.name = "";
-      this.hmo_num = "";
-      this.hmo_id = "";
-      this.insurance_id = "";
-    }
-  }
+      this.name = '';
+      this.hmo_num = '';
+      this.hmo_id = '';
+      this.insurance_id = '';
+    },
+  },
 };
 </script>
 

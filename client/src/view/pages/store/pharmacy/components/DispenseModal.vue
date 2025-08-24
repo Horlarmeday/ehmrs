@@ -195,8 +195,8 @@ export default {
       return this.itemsToDispense[index]?.isInvalid || false;
     },
 
-    getRightInventory(item) {
-      return this.inventories.filter(inventory => inventory.name.includes(item.drug_type));
+    getRightInventory() {
+      return this.inventories;
     },
   },
   created() {

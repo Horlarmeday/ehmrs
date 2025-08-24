@@ -32,15 +32,9 @@
             <template v-for="(item, i) in list">
               <tr v-bind:key="i">
                 <td class="pl-0 py-5">
-                  <div
-                    class="symbol symbol-45 mr-2"
-                    v-bind:class="`symbol-light-${item.class}`"
-                  >
+                  <div class="symbol symbol-45 mr-2" v-bind:class="`symbol-light-${item.class}`">
                     <span class="symbol-label">
-                      <span
-                        class="svg-icon svg-icon-2x"
-                        v-bind:class="`svg-icon-${item.class}`"
-                      >
+                      <span class="svg-icon svg-icon-2x" v-bind:class="`svg-icon-${item.class}`">
                         <inline-svg :src="item.svg" />
                       </span>
                     </span>
@@ -54,19 +48,13 @@
                   >
                 </td>
                 <td class="text-right">
-                  <span class="text-muted font-weight-bold">{{
-                    item.desc
-                  }}</span>
+                  <span class="text-muted font-weight-bold">{{ item.desc }}</span>
                 </td>
                 <td class="text-right">
-                  <span class="text-muted font-weight-bold">{{
-                    item.users
-                  }}</span>
+                  <span class="text-muted font-weight-bold">{{ item.users }}</span>
                 </td>
                 <td class="text-right pr-0">
-                  <span class="text-dark-75 font-weight-bolder font-size-lg">{{
-                    item.size
-                  }}</span>
+                  <span class="text-dark-75 font-weight-bolder font-size-lg">{{ item.size }}</span>
                 </td>
               </tr>
             </template>
@@ -81,62 +69,62 @@
 </template>
 
 <script>
-import Dropdown3 from "@/view/content/dropdown/Dropdown3.vue";
-import { mapGetters } from "vuex";
+import Dropdown3 from '@/view/content/dropdown/Dropdown3.vue';
+import { mapGetters } from 'vuex';
 
 export default {
-  name: "widget-4",
+  name: 'widget-4',
   data() {
     return {
       list: [
         {
-          title: "Top Authors",
-          desc: "ReactJs, HTML",
-          users: "4600 Users",
-          size: "5.4MB",
-          svg: "media/svg/icons/Shopping/Cart3.svg",
-          class: "success"
+          title: 'Top Authors',
+          desc: 'ReactJs, HTML',
+          users: '4600 Users',
+          size: '5.4MB',
+          svg: 'media/svg/icons/Shopping/Cart3.svg',
+          class: 'success',
         },
         {
-          title: "Popular Authors",
-          desc: "Python, MySQL",
-          users: "7200 Users",
-          size: "2.8MB",
-          svg: "media/svg/icons/Layout/Layout-4-blocks.svg",
-          class: "danger"
+          title: 'Popular Authors',
+          desc: 'Python, MySQL',
+          users: '7200 Users',
+          size: '2.8MB',
+          svg: 'media/svg/icons/Layout/Layout-4-blocks.svg',
+          class: 'danger',
         },
         {
-          title: "New Users",
-          desc: "Laravel, Metronic",
-          users: "890 Users",
-          size: "1.5MB",
-          svg: "media/svg/icons/Communication/Group.svg",
-          class: "info"
+          title: 'New Users',
+          desc: 'Laravel, Metronic',
+          users: '890 Users',
+          size: '1.5MB',
+          svg: 'media/svg/icons/Communication/Group.svg',
+          class: 'info',
         },
         {
-          title: "Active Customers",
-          desc: "AngularJS, C#",
-          users: "6370 Users",
-          size: "890KB",
-          svg: "media/svg/icons/Home/Library.svg",
-          class: "warning"
+          title: 'Active Customers',
+          desc: 'AngularJS, C#',
+          users: '6370 Users',
+          size: '890KB',
+          svg: 'media/svg/icons/Home/Library.svg',
+          class: 'warning',
         },
         {
-          title: "Bestseller Theme",
-          desc: "ReactJS, Ruby",
-          users: "354 Users",
-          size: "500KB",
-          svg: "media/svg/icons/Shopping/Box2.svg",
-          class: "primary"
-        }
-      ]
+          title: 'Bestseller Theme',
+          desc: 'ReactJS, Ruby',
+          users: '354 Users',
+          size: '500KB',
+          svg: 'media/svg/icons/Shopping/Box2.svg',
+          class: 'primary',
+        },
+      ],
     };
   },
   components: {
-    Dropdown3
+    Dropdown3,
   },
   computed: {
-    ...mapGetters(["layoutConfig"])
-  }
+    ...mapGetters(['layoutConfig']),
+  },
 };
 </script>

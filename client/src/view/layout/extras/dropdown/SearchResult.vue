@@ -22,11 +22,7 @@
         </div>
         <!--end::Section-->
 
-        <div
-          v-if="item.type === 1"
-          :key="i"
-          class="d-flex align-items-center flex-grow-1 mb-2"
-        >
+        <div v-if="item.type === 1" :key="i" class="d-flex align-items-center flex-grow-1 mb-2">
           <div v-if="item.icon" class="symbol symbol-30 flex-shrink-0">
             <div class="symbol-label">
               <i v-bind:class="item.icon"></i>
@@ -45,10 +41,7 @@
             <a href="#" class="font-weight-bold text-dark text-hover-primary">
               {{ item.text }}
             </a>
-            <div
-              v-if="item.desc"
-              class="font-size-sm font-weight-bold text-muted"
-            >
+            <div v-if="item.desc" class="font-size-sm font-weight-bold text-muted">
               {{ item.desc }}
             </div>
           </div>
@@ -60,9 +53,9 @@
 
 <script>
 export default {
-  name: "KTSearchResult",
+  name: 'KTSearchResult',
   props: {
-    data: Array
-  }
+    data: Array,
+  },
 };
 </script>

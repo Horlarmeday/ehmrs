@@ -114,14 +114,27 @@ export class RequestService {
         if (!inventoryItem) {
           throw new BadException('Error', 404, `drug not found in the inventory`);
         }
+
+        // Get store item for transfer (no more drug_type filtering)
         const storeItem = await getOnePharmacyStoreItem({
           drug_id: inventoryItem.drug_id,
-          drug_type: inventoryItem.drug_type,
         });
+
+        if (!storeItem) {
+          throw new BadException('Error', 404, `drug not found in the store`);
+        }
+
+        // Check if store has enough quantity
+        if (storeItem.quantity_remaining < request.quantity) {
+          throw new BadException(
+            'Error',
+            400,
+            `Insufficient quantity in store. Available: ${storeItem.quantity_remaining}, Requested: ${request.quantity}`
+          );
+        }
 
         const dispenseData: ItemsToDispensedBody & { request_id: number } = {
           id: storeItem.id,
-          drug_type: inventoryItem.drug_type,
           quantity_to_dispense: request.quantity,
           dispensary: request.inventory_id,
           unit_id: inventoryItem.unit_id,

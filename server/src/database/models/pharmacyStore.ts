@@ -23,6 +23,7 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Vendor } from './vendor';
+import { ProcurementOrder } from './procurementOrder';
 
 export enum DrugType {
   CASH = 'Cash',
@@ -36,7 +37,44 @@ export enum DrugType {
     status: Status.ACTIVE,
   },
 }))
-@Table({ timestamps: true, tableName: 'Pharmacy_Store_Items' })
+@Table({ 
+  timestamps: true, 
+  tableName: 'Pharmacy_Store_Items',
+  indexes: [
+    {
+      name: 'idx_pharmacy_store_drug',
+      fields: ['drug_id']
+    },
+    {
+      name: 'idx_pharmacy_store_unit',
+      fields: ['unit_id']
+    },
+    {
+      name: 'idx_pharmacy_store_status',
+      fields: ['status']
+    },
+    {
+      name: 'idx_pharmacy_store_expiration',
+      fields: ['expiration']
+    },
+    {
+      name: 'idx_pharmacy_store_vendor',
+      fields: ['vendor_id']
+    },
+    {
+      name: 'idx_pharmacy_store_procurement_order',
+      fields: ['procurement_order_id']
+    },
+    {
+      name: 'idx_pharmacy_store_batch',
+      fields: ['batch']
+    },
+    {
+      name: 'idx_pharmacy_store_composite_drug_unit',
+      fields: ['drug_id', 'unit_id']
+    }
+  ]
+})
 export class PharmacyStore extends Model {
   @PrimaryKey
   @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
@@ -166,22 +204,11 @@ export class PharmacyStore extends Model {
   })
   drug_form: DrugForm;
 
+  @ForeignKey(() => ProcurementOrder)
   @Column({
-    type: DataType.ENUM(
-      DrugType.CASH,
-      DrugType.NHIS,
-      DrugType.PRIVATE,
-      DrugType.RETAINERSHIP,
-      DrugType.PLASCHEMA
-    ),
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'drug type is required',
-      },
-    },
+    type: DataType.INTEGER,
   })
-  drug_type: DrugType;
+  procurement_order_id: number; // Links to which PO this came from
 
   @Column({ type: DataType.ENUM(Status.ACTIVE, Status.INACTIVE), defaultValue: Status.ACTIVE })
   status: Status;
@@ -246,6 +273,9 @@ export class PharmacyStore extends Model {
 
   @BelongsTo(() => Vendor)
   vendor: Vendor;
+
+  @BelongsTo(() => ProcurementOrder)
+  procurement_order: ProcurementOrder;
 
   static async paginate(param: {
     paginate: number;

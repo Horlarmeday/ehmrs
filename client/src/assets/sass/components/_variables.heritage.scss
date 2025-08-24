@@ -1,0 +1,62 @@
+//
+// Heritage Hospital Brand Colors
+// This file contains the official color palette for Heritage Kidney & Medical Care
+//
+
+// Primary Brand Colors (from logo)
+$heritage-maroon:                                   #8B0000;  // Dark Maroon (main brand color)
+$heritage-maroon-hover:                             #A0522D;  // Saddle Brown (hover state)
+$heritage-maroon-light:                             #F5F5DC;  // Beige (light variant)
+$heritage-maroon-inverse:                           #FFFFFF;  // White (text on primary)
+
+// Secondary Brand Colors (from logo elements)
+$heritage-blue:                                     #000080;  // Dark Blue (from logo arcs)
+$heritage-blue-hover:                               #191970;  // Midnight Blue
+$heritage-blue-light:                               #E6E6FA;  // Lavender
+$heritage-blue-inverse:                             #FFFFFF;  // White
+
+$heritage-green:                                    #006400;  // Dark Green (from logo arcs)
+$heritage-green-hover:                              #228B22;  // Forest Green
+$heritage-green-light:                              #F0FFF0;  // Honeydew
+$heritage-green-inverse:                            #FFFFFF;  // White
+
+// Accent Colors (from logo details)
+$heritage-light-green:                              #90EE90;  // Light Green (medical cross)
+$heritage-accent-red:                               #CD5C5C;  // Indian Red (kidney accent)
+
+// Semantic Color Mapping
+$primary:                                           $heritage-maroon;
+$primary-hover:                                     $heritage-maroon-hover;
+$primary-light:                                     $heritage-maroon-light;
+$primary-inverse:                                   $heritage-maroon-inverse;
+
+$secondary:                                         $heritage-blue;
+$secondary-hover:                                   $heritage-blue-hover;
+$secondary-light:                                   $heritage-blue-light;
+$secondary-inverse:                                 $heritage-blue-inverse;
+
+$success:                                           $heritage-green;
+$success-hover:                                     $heritage-green-hover;
+$success-light:                                     $heritage-green-light;
+$success-inverse:                                   $heritage-green-inverse;
+
+$info:                                              $heritage-blue;
+$info-hover:                                        $heritage-blue-hover;
+$info-light:                                        $heritage-blue-light;
+$info-inverse:                                      $heritage-blue-inverse;
+
+$warning:                                           $heritage-accent-red;
+$warning-hover:                                     #B22222;  // Fire Brick
+$warning-light:                                     #FFF5EE;  // Seashell
+$warning-inverse:                                   #FFFFFF;  // White
+
+$danger:                                            $heritage-maroon;
+$danger-hover:                                      $heritage-maroon-hover;
+$danger-light:                                      #FFF5EE;  // Seashell
+$danger-inverse:                                    #FFFFFF;  // White
+
+// Additional Heritage-specific colors
+$heritage-medical:                                  $heritage-light-green;  // Medical indicators
+$heritage-trust:                                    $heritage-blue;         // Trust elements
+$heritage-nature:                                   $heritage-green;        // Health/nature elements
+$heritage-tradition:                                $heritage-maroon;       // Traditional elements

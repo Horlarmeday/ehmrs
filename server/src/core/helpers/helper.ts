@@ -52,6 +52,8 @@ export const patientAttributes = [
   'status',
 ];
 
+export const visitAttributes = ['id', 'date_visit_start', 'type', 'category', 'date_visit_ended', 'is_taken', 'has_done_vitals', 'status', 'professional'];
+
 /**
  * process base64 image string into an actual image a writes to disk
  * @param param - base64 image string

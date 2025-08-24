@@ -1,11 +1,5 @@
 <template>
-  <b-modal
-    v-model="show"
-    title="Make Payment"
-    size="lg"
-    @hide="handleClose"
-    :busy="loading"
-  >
+  <b-modal v-model="show" title="Make Payment" size="lg" @hide="handleClose" :busy="loading">
     <div v-if="loading" class="text-center py-5">
       <div class="spinner-border text-primary" role="status">
         <span class="sr-only">Loading...</span>
@@ -172,19 +166,10 @@
     <template #modal-footer>
       <div class="w-100">
         <div class="float-right">
-          <button
-            type="button"
-            class="btn btn-light-primary mr-2"
-            @click="handleClose"
-          >
+          <button type="button" class="btn btn-light-primary mr-2" @click="handleClose">
             Cancel
           </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            @click="handleSubmit"
-            :disabled="loading"
-          >
+          <button type="button" class="btn btn-primary" @click="handleSubmit" :disabled="loading">
             <span v-if="loading" class="spinner-border spinner-border-sm mr-2"></span>
             Process Payment
           </button>
@@ -202,16 +187,16 @@ export default {
   props: {
     show: {
       type: Boolean,
-      default: false
+      default: false,
     },
     visitId: {
       type: [String, Number],
-      required: true
+      required: true,
     },
     availableItems: {
       type: Array,
-      default: () => []
-    }
+      default: () => [],
+    },
   },
   data() {
     return {
@@ -223,9 +208,9 @@ export default {
         type: '',
         totalAmount: 0,
         selectedItems: [],
-        notes: ''
+        notes: '',
       },
-      errors: {}
+      errors: {},
     };
   },
   watch: {
@@ -234,15 +219,15 @@ export default {
         this.form.selectedItems = items.map(item => item.id);
         this.form.totalAmount = items.reduce((sum, item) => sum + item.amount, 0);
       },
-      deep: true
-    }
+      deep: true,
+    },
   },
   methods: {
     ...mapActions('account', ['createPaymentHistory']),
     formatCurrency(value) {
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency: 'NGN'
+        currency: 'NGN',
       }).format(value || 0);
     },
     addItem(item) {
@@ -287,14 +272,14 @@ export default {
       try {
         await this.createPaymentHistory({
           visitId: this.visitId,
-          payment: this.form
+          payment: this.form,
         });
 
         this.$notify({
           group: 'foo',
           title: 'Success',
           text: 'Payment processed successfully',
-          type: 'success'
+          type: 'success',
         });
 
         this.handleClose();
@@ -303,7 +288,7 @@ export default {
           group: 'foo',
           title: 'Error',
           text: error.message || 'Failed to process payment',
-          type: 'error'
+          type: 'error',
         });
       } finally {
         this.loading = false;
@@ -315,13 +300,13 @@ export default {
         type: '',
         totalAmount: 0,
         selectedItems: [],
-        notes: ''
+        notes: '',
       };
       this.selectedItems = [];
       this.errors = {};
       this.$emit('close');
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -337,4 +322,4 @@ export default {
 .table {
   margin-bottom: 0;
 }
-</style> 
+</style>

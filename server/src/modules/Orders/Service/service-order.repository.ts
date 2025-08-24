@@ -1,4 +1,4 @@
-import { PrescribedService } from '../../../database/models';
+import { PrescribedService, Patient } from '../../../database/models';
 import { PrescribeServiceBody } from './types/service-order.types';
 import { WhereOptions } from 'sequelize';
 import { Service, Staff } from '../../../database/models';
@@ -6,6 +6,8 @@ import { staffAttributes } from '../../Antenatal/antenatal.repository';
 import { StatusCodes } from '../../../core/helpers/helper';
 import { BadException } from '../../../common/util/api-error';
 import { ERROR_UPDATING_SERVICE } from './messages/response-messages';
+import { VisitBillingHelper } from '../../Accounting/visitBilling.helper';
+import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
 
 /**
  * prescribe multiple services for patient
@@ -13,7 +15,41 @@ import { ERROR_UPDATING_SERVICE } from './messages/response-messages';
  * @returns {object} prescribed service data
  */
 export const orderBulkService = async data => {
-  return PrescribedService.bulkCreate(data);
+  const services = await PrescribedService.bulkCreate(data);
+
+  // 🆕 NEW: Auto-create bills for each prescribed service
+  try {
+    for (const service of services) {
+      // Get patient and insurance for billing calculation
+      const [patient, patientInsurance] = await Promise.all([
+        Patient.findByPk(service.patient_id),
+        getPatientInsuranceQuery({
+          patient_id: service.patient_id,
+          is_default: true,
+        }),
+      ]);
+
+      const originalService = await Service.findByPk(service.service_id);
+
+      if (patient) {
+        // Add this prescription to the visit bill
+        await VisitBillingHelper.addPrescribedServiceToBill(
+          service.visit_id,
+          service,
+          service.requester,
+          patient,
+          originalService,
+          patientInsurance
+        );
+      }
+    }
+  } catch (billingError) {
+    // Log billing error but don't fail the prescription
+    console.error('Billing creation failed for services:', billingError);
+    // You might want to add proper logging here
+  }
+
+  return services;
 };
 
 /**
@@ -33,7 +69,7 @@ export const prescribeService = async (data: PrescribeServiceBody): Promise<Pres
     surgery_id,
   } = data || {};
 
-  return PrescribedService.create({
+  const prescribedService = await PrescribedService.create({
     service_id,
     service_type,
     requester,
@@ -44,6 +80,36 @@ export const prescribeService = async (data: PrescribeServiceBody): Promise<Pres
     surgery_id,
     ante_natal_id,
   });
+
+  // 🆕 NEW: Auto-create bill for this prescription
+  try {
+    // Get patient and insurance for billing calculation
+    const [patient, patientInsurance] = await Promise.all([
+      Patient.findByPk(patient_id),
+      getPatientInsuranceQuery({
+        patient_id,
+        is_default: true,
+      }),
+    ]);
+    const originalService = await Service.findByPk(service_id);
+    if (patient) {
+      // Add this prescription to the visit bill
+      await VisitBillingHelper.addPrescribedServiceToBill(
+        visit_id,
+        prescribedService,
+        requester,
+        patient,
+        originalService,
+        patientInsurance
+      );
+    }
+  } catch (billingError) {
+    // Log billing error but don't fail the prescription
+    console.error('Billing creation failed for service:', billingError);
+    // You might want to add proper logging here
+  }
+
+  return prescribedService;
 };
 
 /**

@@ -7,13 +7,13 @@ export default {
     state.payments = payments;
   },
 
-  SET_PAYMENTS_TOTAL(state, total) {
-    state.total = total;
-  },
+  // SET_PAYMENTS_TOTAL(state, total) {
+  //   state.total = total;
+  // },
 
-  SET_PAYMENTS_PAGES(state, pages) {
-    state.pages = pages;
-  },
+  // SET_PAYMENTS_PAGES(state, pages) {
+  //   state.pages = pages;
+  // },
 
   SET_ACCOUNTS(state, accounts) {
     state.accounts = accounts.docs;
@@ -60,4 +60,56 @@ export default {
   },
   // eslint-disable-next-line no-unused-vars
   DOWNLOAD_RECEIPT(state, error) {},
+
+  // ===== NEW ACCOUNTING MODULE MUTATIONS =====
+
+  // Dashboard mutations
+  SET_DASHBOARD_DATA(state, data) {
+    state.dashboardData = data;
+  },
+
+  // Bills mutations
+  SET_BILLS(state, bills) {
+    state.bills = bills;
+  },
+  SET_BILLS_TOTAL(state, total) {
+    state.billsTotal = total;
+  },
+  SET_BILLS_PAGES(state, pages) {
+    state.billsPages = pages;
+  },
+
+  // Payments mutations
+  SET_PAYMENTS_TOTAL(state, total) {
+    state.paymentsTotal = total;
+  },
+  SET_PAYMENTS_PAGES(state, pages) {
+    state.paymentsPages = pages;
+  },
+
+  // Deposits mutations
+  SET_DEPOSITS(state, deposits) {
+    state.deposits = deposits;
+  },
+  SET_DEPOSITS_TOTAL(state, total) {
+    state.depositsTotal = total;
+  },
+  SET_DEPOSITS_PAGES(state, pages) {
+    state.depositsPages = pages;
+  },
+
+  // Deposits summary mutation
+  SET_DEPOSITS_SUMMARY(state, summary) {
+    state.depositsSummary = summary;
+  },
+
+  // Financial reports mutations
+  SET_FINANCIAL_REPORTS(state, data) {
+    state.financialReports = { ...state.financialReports, ...data };
+  },
+
+  // Error handling
+  CLEAR_ERROR(state) {
+    state.error = null;
+  },
 };

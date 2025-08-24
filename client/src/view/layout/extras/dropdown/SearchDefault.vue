@@ -47,9 +47,7 @@ export default {
       data: [],
       loading: false,
       // dummy search result data
-      result: [
-
-      ],
+      result: [],
     };
   },
   methods: {

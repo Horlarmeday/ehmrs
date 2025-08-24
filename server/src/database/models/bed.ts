@@ -14,6 +14,8 @@ export enum BedStatus {
   TAKEN = 'Taken',
   UNTAKEN = 'Untaken',
 }
+
+
 @Table({ tableName: 'beds' })
 export class Bed extends Model {
   @PrimaryKey
@@ -56,6 +58,13 @@ export class Bed extends Model {
   @ForeignKey(() => Ward)
   @Column({ type: DataType.INTEGER })
   ward_id: string;
+
+
+
+  // Helper method to check if bed is available
+  isAvailable(): boolean {
+    return this.status === BedStatus.UNTAKEN;
+  }
 
   static async paginate(param: {
     paginate: number;

@@ -28,7 +28,7 @@ export default {
     },
 
     insuranceName() {
-      return this.insurance?.insurance?.name
+      return this.insurance?.insurance?.name;
     },
 
     showSwitch() {

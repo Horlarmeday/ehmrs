@@ -14,16 +14,16 @@ export default [
     icon: 'fas fa-diagnoses',
     name: 'Dialysis Visits',
   },
-  {
-    url: '/visit/ante-natal',
-    icon: 'fas fa-ankh',
-    name: 'Antenatal Visits',
-  },
-  {
-    url: '/radiology/appointments',
-    icon: 'flaticon-event-calendar-symbol',
-    name: 'Appointments',
-  },
+  // {
+  //   url: '/visit/ante-natal',
+  //   icon: 'fas fa-ankh',
+  //   name: 'Antenatal Visits',
+  // },
+  // {
+  //   url: '/radiology/appointments',
+  //   icon: 'flaticon-event-calendar-symbol',
+  //   name: 'Apointments',
+  // },
   {
     url: '/radiology/reports',
     icon: 'flaticon2-list-1',

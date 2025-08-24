@@ -37,7 +37,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-if="hmos.length == 0">
+            <tr v-if="hmos.length === 0">
               <td colspan="9" align="center" class="text-muted">No Data</td>
             </tr>
             <tr v-for="hmo in hmos" :key="hmo.id">
@@ -134,12 +134,9 @@ export default {
     },
 
     getLabelStatus(type) {
-      if (type == 'NHIS') return 'label label-lg label-light-primary label-inline';
-
-      if (type == 'PHIS') return 'label label-lg label-light-warning label-inline';
-
-      if (type == 'FHSS') return 'label label-lg label-light-info label-inline';
-
+      if (type === 'NHIS') return 'label label-lg label-light-primary label-inline';
+      if (type === 'PHIS') return 'label label-lg label-light-warning label-inline';
+      if (type === 'FHSS') return 'label label-lg label-light-info label-inline';
       return 'label label-lg label-light-success label-inline';
     },
 

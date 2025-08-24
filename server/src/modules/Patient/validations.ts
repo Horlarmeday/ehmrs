@@ -101,12 +101,22 @@ export function validateCreateEmergencyPatient(patient) {
       .allow(''),
     address: Joi.string().required(),
     gender: Joi.string().required(),
-    country: Joi.string().required(),
-    state: Joi.string().required(),
-    lga: Joi.string().required(),
+    country: Joi.string()
+      .optional()
+      .allow(''),
+    state: Joi.string()
+      .optional()
+      .allow(''),
+    lga: Joi.string()
+      .optional()
+      .allow(''),
     date_of_birth: Joi.date().required(),
-    marital_status: Joi.string().required(),
-    religion: Joi.string().required(),
+    marital_status: Joi.string()
+      .optional()
+      .allow(''),
+    religion: Joi.string()
+      .optional()
+      .allow(''),
     phone: Joi.string()
       .min(11)
       .max(11)

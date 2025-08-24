@@ -1,10 +1,6 @@
 <template>
   <div class="card card-custom gutter-b" v-bind:class="classes">
-    <div
-      class="card-header"
-      v-bind:class="headClass"
-      v-if="hasTitleSlot || title"
-    >
+    <div class="card-header" v-bind:class="headClass" v-if="hasTitleSlot || title">
       <div class="card-title">
         <slot name="title" v-if="hasTitleSlot"></slot>
         <h3 class="card-label" v-if="!hasTitleSlot">
@@ -20,7 +16,7 @@
       v-bind:class="{
         bodyClass,
         'body-fit': bodyFit,
-        'body-fluid': bodyFluid
+        'body-fluid': bodyFluid,
       }"
     >
       <slot name="body"></slot>
@@ -33,7 +29,7 @@
 
 <script>
 export default {
-  name: "KTCard",
+  name: 'KTCard',
   props: {
     /**
      * String title
@@ -78,17 +74,17 @@ export default {
     /**
      * Code examples
      */
-    example: Boolean
+    example: Boolean,
   },
   components: {},
   methods: {},
   computed: {
     classes() {
       const cls = {
-        "example example-compact": this.example,
-        "height-fluid": this.fluidHeight,
-        "height-fluid-half": this.fluidHalfHeight,
-        "head-overlay": this.headOverlay
+        'example example-compact': this.example,
+        'height-fluid': this.fluidHeight,
+        'height-fluid-half': this.fluidHalfHeight,
+        'head-overlay': this.headOverlay,
       };
 
       cls[this.headSizeClass] = this.headSizeClass;
@@ -101,17 +97,17 @@ export default {
       return cls;
     },
     hasTitleSlot() {
-      return !!this.$slots["title"];
+      return !!this.$slots['title'];
     },
     hasFootSlot() {
-      return !!this.$slots["foot"];
+      return !!this.$slots['foot'];
     },
     headSizeClass() {
       if (this.headSize) {
         return `head-${this.headSize}`;
       }
       return false;
-    }
-  }
+    },
+  },
 };
 </script>

@@ -10,9 +10,9 @@ export default [
     name: 'In-Patients',
   },
   {
-    url: '/radiology/appointments',
-    icon: 'flaticon-event-calendar-symbol',
-    name: 'Appointments',
+    url: '/visit/dialysis',
+    icon: 'fas fa-diagnoses',
+    name: 'Dialysis Visits',
   },
   {
     url: '/radiology/reports',

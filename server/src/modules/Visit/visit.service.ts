@@ -37,6 +37,8 @@ import { Gender } from '../../database/models/staff';
 import { FEMALE_REQUIRED } from '../Antenatal/messages/antenatal.messages';
 import { getOneImmunization } from '../Immunization/immunization.repository';
 import { Status } from '../../database/models/patient';
+import { DialysisVisit, DialysisStatus, DialysisType } from '../../database/models/dialysisVisit';
+import { EmergencyVisit } from '../../database/models/emergencyVisit';
 
 class VisitService {
   /**
@@ -112,7 +114,93 @@ class VisitService {
       visit: createdVisit,
       ante_natal_id: body?.ante_natal_id,
     });
+
+    // Create specialized records based on visit category
+    await VisitService.createSpecializedRecords(createdVisit, body);
+
     return createdVisit;
+  }
+
+  /**
+   * Create specialized records based on visit category
+   * @param visit The created visit
+   * @param visitData The original visit data
+   */
+  private static async createSpecializedRecords(
+    visit: Visit,
+    visitData: CreateVisit
+  ): Promise<void> {
+    try {
+      if (visitData.category === 'Emergency') {
+        // Create Emergency Visit record with defaults
+        await EmergencyVisit.create({
+          visit_id: visit.id,
+          patient_id: visitData.patient_id,
+          attending_physician_id: visitData.staff_id, // Use the staff_id from visit
+          emergency_type: 'MEDICAL', // Default emergency type
+          status: 'TRIAGE', // Start with triage status
+          triage_category: this.mapPriorityToTriageCategory(
+            visitData.emergency_priority || 'Yellow'
+          ),
+          priority_score: this.mapPriorityToScore(visitData.emergency_priority || 'Yellow'),
+          arrival_time: new Date(),
+          chief_complaint:
+            visitData.chief_complaint || 'Emergency visit - details to be added by medical staff',
+          presenting_symptoms: visitData.initial_assessment || '',
+          mode_of_arrival: 'Walk-in', // Default mode
+        });
+      } else if (visitData.category === 'Dialysis') {
+        // Create Dialysis Visit record with sensible defaults
+        // These will be updated by medical staff during consultation
+        await DialysisVisit.create({
+          visit_id: visit.id,
+          patient_id: visitData.patient_id,
+          doctor_id: visitData.doctor_id || visitData.staff_id || 1, // Use doctor_id or staff_id or default
+          dialysis_type: visitData?.dialysis_type || DialysisType.HEMODIALYSIS, // Default type
+          status: DialysisStatus.SCHEDULED,
+          scheduled_date: visit.date_visit_start,
+          scheduled_time: visitData.scheduled_time || '09:00:00', // Default time
+          planned_duration_minutes: 240, // Default 4 hours
+          price: 0, // Default price (to be set by billing)
+          is_emergency: visitData.dialysis_priority === 'Emergency',
+          clinical_notes:
+            visitData.dialysis_notes ||
+            'Dialysis visit scheduled - clinical details to be added by medical staff',
+        });
+      }
+    } catch (error) {
+      console.error('Failed to create specialized records:', error);
+      // Don't throw error here - visit was created successfully
+      // Specialized record creation failure shouldn't fail the entire visit creation
+    }
+  }
+
+  /**
+   * Map priority string to triage category
+   */
+  private static mapPriorityToTriageCategory(priority: string): string {
+    const mapping = {
+      Red: 'IMMEDIATE',
+      Orange: 'EMERGENT',
+      Yellow: 'URGENT',
+      Green: 'LESS_URGENT',
+      Blue: 'NON_URGENT',
+    };
+    return mapping[priority] || 'URGENT';
+  }
+
+  /**
+   * Map priority string to priority score (1-5, where 1 is highest)
+   */
+  private static mapPriorityToScore(priority: string): number {
+    const mapping = {
+      Red: 1,
+      Orange: 2,
+      Yellow: 3,
+      Green: 4,
+      Blue: 5,
+    };
+    return mapping[priority] || 3;
   }
 
   /**

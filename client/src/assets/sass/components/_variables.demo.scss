@@ -2,8 +2,14 @@
 // Override global variables
 //
 
-// Theme colors
-$primary:       									#008751;
-$primary-hover:                                     #10a869;
-$primary-light:    									#E1F0FF;
-$primary-inverse:  									#FFFFFF;
+// Heritage Hospital Brand Colors
+$primary:       									#8B0000;  // Dark Maroon (main brand color from logo)
+$primary-hover:                                     #A0522D;  // Saddle Brown (hover state)
+$primary-light:    									#F5F5DC;  // Beige (light variant)
+$primary-inverse:  									#FFFFFF;  // White (text on primary)
+
+// Additional Heritage brand colors for extended use
+$heritage-blue:                                     #000080;  // Dark Blue (from logo arcs)
+$heritage-green:                                    #006400;  // Dark Green (from logo arcs)
+$heritage-light-green:                              #90EE90;  // Light Green (medical cross)
+$heritage-accent:                                   #CD5C5C;  // Indian Red (kidney accent)

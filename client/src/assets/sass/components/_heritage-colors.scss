@@ -1,0 +1,64 @@
+//
+// Heritage Hospital CSS Custom Properties
+// These CSS variables can be used throughout the application
+//
+
+:root {
+  // Primary Brand Colors
+  --heritage-maroon: #8B0000;
+  --heritage-maroon-hover: #A0522D;
+  --heritage-maroon-light: #F5F5DC;
+  --heritage-maroon-inverse: #FFFFFF;
+  
+  // Secondary Brand Colors
+  --heritage-blue: #000080;
+  --heritage-blue-hover: #191970;
+  --heritage-blue-light: #E6E6FA;
+  --heritage-blue-inverse: #FFFFFF;
+  
+  --heritage-green: #006400;
+  --heritage-green-hover: #228B22;
+  --heritage-green-light: #F0FFF0;
+  --heritage-green-inverse: #FFFFFF;
+  
+  // Accent Colors
+  --heritage-light-green: #90EE90;
+  --heritage-accent-red: #CD5C5C;
+  
+  // Semantic Colors (mapped to Heritage palette)
+  --primary: var(--heritage-maroon);
+  --primary-hover: var(--heritage-maroon-hover);
+  --primary-light: var(--heritage-maroon-light);
+  --primary-inverse: var(--heritage-maroon-inverse);
+  
+  --secondary: var(--heritage-blue);
+  --secondary-hover: var(--heritage-blue-hover);
+  --secondary-light: var(--heritage-blue-light);
+  --secondary-inverse: var(--heritage-blue-inverse);
+  
+  --success: var(--heritage-green);
+  --success-hover: var(--heritage-green-hover);
+  --success-light: var(--heritage-green-light);
+  --success-inverse: var(--heritage-green-inverse);
+  
+  --info: var(--heritage-blue);
+  --info-hover: var(--heritage-blue-hover);
+  --info-light: var(--heritage-blue-light);
+  --info-inverse: var(--heritage-blue-inverse);
+  
+  --warning: var(--heritage-accent-red);
+  --warning-hover: #B22222;
+  --warning-light: #FFF5EE;
+  --warning-inverse: #FFFFFF;
+  
+  --danger: var(--heritage-maroon);
+  --danger-hover: var(--heritage-maroon-hover);
+  --danger-light: #FFF5EE;
+  --danger-inverse: #FFFFFF;
+  
+  // Additional Heritage-specific semantic colors
+  --heritage-medical: var(--heritage-light-green);
+  --heritage-trust: var(--heritage-blue);
+  --heritage-nature: var(--heritage-green);
+  --heritage-tradition: var(--heritage-maroon);
+}

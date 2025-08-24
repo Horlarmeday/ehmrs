@@ -456,4 +456,403 @@ export default {
         });
     });
   },
+
+  // ===== NEW ACCOUNTING MODULE ACTIONS =====
+
+  // Dashboard actions
+  async fetchDashboardData({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/api/accounting/summary', { params });
+      commit('SET_DASHBOARD_DATA', response.data.data);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch dashboard data:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  // Bills actions
+  async fetchBills({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/api/accounting/bills', { params });
+      commit('SET_BILLS', response.data.data);
+      commit('SET_BILLS_TOTAL', response.data.total);
+      commit('SET_BILLS_PAGES', response.data.pages || 0);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch bills:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async createBill({ commit, dispatch }, billData) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      await axios.post('/api/accounting/bills', billData);
+      // Refresh bills list
+      dispatch('fetchBills');
+      return { success: true };
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to create bill:', error);
+      return { success: false, error: error.message };
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async updateBill({ commit, dispatch }, { id, billData }) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      await axios.put(`/api/accounting/bills/${id}`, billData);
+      // Refresh bills list
+      dispatch('fetchBills');
+      return { success: true };
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to update bill:', error);
+      return { success: false, error: error.message };
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async getBillById({ commit }, billId) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get(`/api/accounting/bills/${billId}`);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch bill:', error);
+      return null;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  // Payments actions
+  async fetchPayments({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/api/accounting/payments', { params });
+      commit('SET_PAYMENTS', response.data.data);
+      commit('SET_PAYMENTS_TOTAL', response.data.total);
+      commit('SET_PAYMENTS_PAGES', response.data.pages || 0);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch payments:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async createPayment({ commit, dispatch }, paymentData) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.post('/api/accounting/payments', paymentData);
+      // Refresh payments list
+      dispatch('fetchPayments');
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to create payment:', error);
+      return { success: false, error: error.message };
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  // Deposits actions
+  async fetchDeposits({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/api/accounting/deposits', { params });
+      commit('SET_DEPOSITS', response.data.data);
+      commit('SET_DEPOSITS_TOTAL', response.data.total);
+      commit('SET_DEPOSITS_PAGES', response.data.pages || 0);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch deposits:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async fetchDepositsSummary({ commit }) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/api/accounting/deposits/summary');
+      commit('SET_DEPOSITS_SUMMARY', response.data.data);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch deposits summary:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async createDeposit({ commit, dispatch }, depositData) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      await axios.post('/api/accounting/deposits', depositData);
+      // Refresh deposits list
+      dispatch('fetchDeposits');
+      return { success: true };
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to create deposit:', error);
+      return { success: false, error: error.message };
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async updateDeposit({ commit, dispatch }, { id, depositData }) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      await axios.put(`/api/accounting/deposits/${id}`, depositData);
+      // Refresh deposits list
+      dispatch('fetchDeposits');
+      return { success: true };
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to update deposit:', error);
+      return { success: false, error: error.message };
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async getDepositById({ commit }, depositId) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get(`/api/accounting/deposits/${depositId}`);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch deposit:', error);
+      return null;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async useDeposit({ commit, dispatch }, usageData) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      await axios.post('/api/accounting/deposits/use', usageData);
+      // Refresh deposits list
+      dispatch('fetchDeposits');
+      return { success: true };
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to use deposit:', error);
+      return { success: false, error: error.message };
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async getDepositUsageHistory({ commit }, depositId) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get(`/api/accounting/deposits/${depositId}/usage`);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch deposit usage history:', error);
+      return [];
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  // Financial reports actions
+  async fetchFinancialReports({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/api/accounting/reports/financial', { params });
+      commit('SET_FINANCIAL_REPORTS', response.data.data);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch financial reports:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  // Export report action
+  async exportReporting({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/api/accounting/reports/export', {
+        params,
+        responseType: 'blob',
+      });
+
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute(
+        'download',
+        `financial-report-${new Date().toISOString().split('T')[0]}.${params.format.toLowerCase()}`
+      );
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      return { success: true };
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to export report:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  // Patient search actions
+  async searchPatients(_, searchTerm) {
+    try {
+      const response = await axios.get('/api/patients', {
+        params: { search: searchTerm },
+      });
+      return response.data.data;
+    } catch (error) {
+      console.error('Failed to search patients:', error);
+      return [];
+    }
+  },
+
+  async getPatientBills(_, patientId) {
+    try {
+      const response = await axios.get('/api/accounting/bills', {
+        params: {
+          patient_id: patientId,
+          payment_status: 'PENDING,PARTIAL',
+        },
+      });
+      return response.data.data.map(bill => ({
+        ...bill,
+        balance: bill.final_amount - (bill.paid_amount || 0),
+      }));
+    } catch (error) {
+      console.error('Failed to fetch patient bills:', error);
+      return [];
+    }
+  },
+
+  // Get bill by number action
+  async getBillByNumber(_, billNumber) {
+    try {
+      const response = await axios.get(`/api/accounting/bills/number/${billNumber}`);
+      return response.data.data;
+    } catch (error) {
+      console.error('Failed to fetch bill by number:', error);
+      return null;
+    }
+  },
+
+  // Billing points actions
+  async fetchBillingPoints() {
+    try {
+      const response = await axios.get('/api/accounting/billing-points');
+      return response.data.data;
+    } catch (error) {
+      console.error('Failed to fetch billing points:', error);
+      return [];
+    }
+  },
+
+  // Patient visits actions
+  async fetchPatientVisits(_, patientId) {
+    try {
+      const response = await axios.get(`/api/patients/${patientId}/visits`);
+      return response.data.data;
+    } catch (error) {
+      console.error('Failed to fetch patient visits:', error);
+      return [];
+    }
+  },
+
+  // Cross-module actions for loading items
+  async fetchPharmacyDrugs() {
+    try {
+      const response = await axios.get('/api/pharmacy/drugs');
+      return response.data.data;
+    } catch (error) {
+      console.error('Failed to fetch pharmacy drugs:', error);
+      return [];
+    }
+  },
+
+  async fetchLaboratoryTests() {
+    try {
+      const response = await axios.get('/api/laboratory/tests');
+      return response.data.data;
+    } catch (error) {
+      console.error('Failed to fetch laboratory tests:', error);
+      return [];
+    }
+  },
+
+  async fetchServices() {
+    try {
+      const response = await axios.get('/api/services');
+      return response.data.data;
+    } catch (error) {
+      console.error('Failed to fetch services:', error);
+      return [];
+    }
+  },
 };

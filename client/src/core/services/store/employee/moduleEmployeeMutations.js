@@ -22,5 +22,5 @@ export default {
   UPDATE_EMPLOYEE(state, employee) {
     const employeeIndex = state.employees.findIndex(s => s.id === employee.id);
     Object.assign(state.employees[employeeIndex], employee);
-  }
+  },
 };

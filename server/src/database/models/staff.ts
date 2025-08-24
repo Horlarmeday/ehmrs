@@ -191,56 +191,31 @@ export class Staff extends Model {
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'date of first appointment is required',
-      },
-    },
+    allowNull: true,
   })
   date_of_first_appointment: Date;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'date of commencement is required',
-      },
-    },
+    allowNull: true,
   })
   date_of_commencement: Date;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'DOLP is required',
-      },
-    },
+    allowNull: true,
   })
   dolp: Date;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'qualification is required',
-      },
-    },
+    allowNull: true,
   })
   qualification: string;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'present rank is required',
-      },
-    },
+    allowNull: true,
   })
   present_rank: string;
 
@@ -264,13 +239,7 @@ export class Staff extends Model {
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'NIN is required',
-      },
-      len: [11, 11],
-    },
+    allowNull: true,
   })
   nin: string;
 

@@ -397,7 +397,6 @@ export const updateReturnRequests = async (
     const [storeItem, returnItem] = await Promise.all([
       getOnePharmacyStoreItem({
         drug_id: inventoryItem.drug_id,
-        drug_type: inventoryItem.drug_type,
         drug_form: inventoryItem.drug_form,
       }),
       ReturnItem.findOne({ where: { id: item.id } }),

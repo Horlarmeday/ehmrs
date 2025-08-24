@@ -110,34 +110,19 @@ export class Patient extends Model {
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'country is required',
-      },
-    },
+    allowNull: true,
   })
   country: string;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'state is required',
-      },
-    },
+    allowNull: true,
   })
   state: string;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'local govt is required',
-      },
-    },
+    allowNull: true,
   })
   lga: string;
 

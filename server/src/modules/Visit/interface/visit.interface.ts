@@ -11,4 +11,16 @@ export class CreateVisit {
   date_of_visit: Date;
   service_id: number | number[];
   staff_id: number;
+
+  // Emergency-specific fields
+  emergency_priority?: string;
+  chief_complaint?: string;
+  initial_assessment?: string;
+
+  // Dialysis-specific fields
+  dialysis_notes?: string;
+  dialysis_priority?: string;
+  scheduled_time?: string;
+  doctor_id?: number;
+  dialysis_type?: string;
 }

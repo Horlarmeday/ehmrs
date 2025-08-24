@@ -7,16 +7,8 @@
     </template>
     <template v-slot:toolbar>
       <div class="example-tools justify-content-center">
-        <span
-          class="example-toggle"
-          data-toggle="tooltip"
-          v-b-tooltip.hover.top="'View code'"
-        />
-        <span
-          class="example-copy"
-          data-toggle="tooltip"
-          v-b-tooltip.hover.top="'Copy code'"
-        />
+        <span class="example-toggle" data-toggle="tooltip" v-b-tooltip.hover.top="'View code'" />
+        <span class="example-copy" data-toggle="tooltip" v-b-tooltip.hover.top="'Copy code'" />
       </div>
     </template>
     <template v-slot:body>
@@ -111,31 +103,31 @@
 </template>
 
 <script>
-import KTCard from "@/view/content/Card.vue";
-import KTLayoutExamples from "@/assets/js/layout/extended/examples.js";
+import KTCard from '@/view/content/Card.vue';
+import KTLayoutExamples from '@/assets/js/layout/extended/examples.js';
 
 export default {
-  name: "KTCodePreview",
+  name: 'KTCodePreview',
   props: {
-    title: String
+    title: String,
   },
   data() {
     return {
       tabIndex: 0,
-      isOpen: false
+      isOpen: false,
     };
   },
   components: {
-    KTCard
+    KTCard,
   },
   mounted() {
     // init example codes
     this.$nextTick(() => {
       KTLayoutExamples.init([this.$el]);
-      const hljs = this.$el.querySelectorAll(".hljs");
+      const hljs = this.$el.querySelectorAll('.hljs');
       hljs.forEach(hl => {
         hl.classList.add(`language-${hl.classList[1]}`);
-        hl.classList.remove("hljs");
+        hl.classList.remove('hljs');
       });
     });
   },
@@ -150,15 +142,15 @@ export default {
       const links = tab.querySelectorAll('[data-toggle="tab"]');
       // remove active tab links
       for (let i = 0; i < links.length; i++) {
-        links[i].classList.remove("active");
+        links[i].classList.remove('active');
       }
 
       // set current active tab
-      event.target.classList.add("active");
+      event.target.classList.add('active');
 
       // set clicked tab index to bootstrap tab
-      this.tabIndex = parseInt(event.target.getAttribute("data-tab"));
-    }
+      this.tabIndex = parseInt(event.target.getAttribute('data-tab'));
+    },
   },
   computed: {
     /**
@@ -166,7 +158,7 @@ export default {
      * @returns {boolean}
      */
     hasTitleSlot() {
-      return !!this.$slots["title"];
+      return !!this.$slots['title'];
     },
 
     /**
@@ -175,7 +167,7 @@ export default {
      */
     hasSingleCodeType() {
       let exist = 0;
-      ["html", "js", "scss"].forEach(type => {
+      ['html', 'js', 'scss'].forEach(type => {
         if (this.$slots.hasOwnProperty(type)) {
           exist++;
         }
@@ -188,7 +180,7 @@ export default {
      * @returns {boolean}
      */
     hasGeneralCode() {
-      return !!this.$slots["code"];
+      return !!this.$slots['code'];
     },
 
     /**
@@ -196,7 +188,7 @@ export default {
      * @returns {boolean}
      */
     hasJsCode() {
-      return !!this.$slots["js"];
+      return !!this.$slots['js'];
     },
 
     /**
@@ -204,7 +196,7 @@ export default {
      * @returns {boolean}
      */
     hasScssCode() {
-      return !!this.$slots["scss"];
+      return !!this.$slots['scss'];
     },
 
     /**
@@ -212,8 +204,8 @@ export default {
      * @returns {boolean}
      */
     hasHtmlCode() {
-      return !!this.$slots["html"];
-    }
-  }
+      return !!this.$slots['html'];
+    },
+  },
 };
 </script>

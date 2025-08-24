@@ -24,6 +24,30 @@ export function validateVisit(visit: any) {
     priority: Joi.string()
       .allow('')
       .optional(),
+    emergency_priority: Joi.string()
+      .allow('')
+      .optional(),
+    chief_complaint: Joi.string()
+      .allow('')
+      .optional(),
+    initial_assessment: Joi.string()
+      .allow('')
+      .optional(),
+    treatment_duration: Joi.string()
+      .allow('')
+      .optional(),
+    dialysis_notes: Joi.string()
+      .allow('')
+      .optional(),
+    dialysis_type: Joi.string()
+      .allow('')
+      .optional(),
+    dialysis_priority: Joi.string()
+      .allow('')
+      .optional(),
+    scheduled_time: Joi.string()
+      .allow('')
+      .optional(),
   });
   return schema.validate(visit);
 }

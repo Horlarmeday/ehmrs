@@ -7,10 +7,7 @@
       <span class="font-weight-bold font-size-3 text-dark-60">
         Don't have an account yet?
       </span>
-      <router-link
-        class="font-weight-bold font-size-3 ml-2"
-        :to="{ name: 'register' }"
-      >
+      <router-link class="font-weight-bold font-size-3 ml-2" :to="{ name: 'register' }">
         Sign Up!
       </router-link>
     </div>
@@ -29,26 +26,18 @@
       <b-form class="form" @submit.stop.prevent="onSubmit">
         <div role="alert" class="alert alert-info">
           <div class="alert-text">
-            Use account <strong>admin@demo.com</strong> and password
-            <strong>demo</strong> to continue.
+            Use account <strong>admin@demo.com</strong> and password <strong>demo</strong> to
+            continue.
           </div>
         </div>
 
-        <div
-          role="alert"
-          v-bind:class="{ show: errors.length }"
-          class="alert fade alert-danger"
-        >
+        <div role="alert" v-bind:class="{ show: errors.length }" class="alert fade alert-danger">
           <div class="alert-text" v-for="(error, i) in errors" :key="i">
             {{ error }}
           </div>
         </div>
 
-        <b-form-group
-          id="example-input-group-1"
-          label=""
-          label-for="example-input-1"
-        >
+        <b-form-group id="example-input-group-1" label="" label-for="example-input-1">
           <b-form-input
             class="form-control form-control-solid h-auto py-5 px-6"
             id="example-input-1"
@@ -63,11 +52,7 @@
           </b-form-invalid-feedback>
         </b-form-group>
 
-        <b-form-group
-          id="example-input-group-2"
-          label=""
-          label-for="example-input-2"
-        >
+        <b-form-group id="example-input-group-2" label="" label-for="example-input-2">
           <b-form-input
             class="form-control form-control-solid h-auto py-5 px-6"
             type="password"
@@ -84,14 +69,8 @@
         </b-form-group>
 
         <!--begin::Action-->
-        <div
-          class="form-group d-flex flex-wrap justify-content-between align-items-center"
-        >
-          <a
-            href="#"
-            class="text-dark-60 text-hover-primary my-3 mr-2"
-            id="kt_login_forgot"
-          >
+        <div class="form-group d-flex flex-wrap justify-content-between align-items-center">
+          <a href="#" class="text-dark-60 text-hover-primary my-3 mr-2" id="kt_login_forgot">
             Forgot Password ?
           </a>
           <button
@@ -116,35 +95,35 @@
 </style>
 
 <script>
-import { mapState } from "vuex";
-import { LOGIN, LOGOUT } from "@/core/services/store/auth.module";
+import { mapState } from 'vuex';
+import { LOGIN, LOGOUT } from '@/core/services/store/auth.module';
 
-import { validationMixin } from "vuelidate";
-import { email, minLength, required } from "vuelidate/lib/validators";
+import { validationMixin } from 'vuelidate';
+import { email, minLength, required } from 'vuelidate/lib/validators';
 
 export default {
   mixins: [validationMixin],
-  name: "login",
+  name: 'login',
   data() {
     return {
       // Remove this dummy login info
       form: {
-        email: "admin@demo.com",
-        password: "demo"
-      }
+        email: 'admin@demo.com',
+        password: 'demo',
+      },
     };
   },
   validations: {
     form: {
       email: {
         required,
-        email
+        email,
       },
       password: {
         required,
-        minLength: minLength(3)
-      }
-    }
+        minLength: minLength(3),
+      },
+    },
   },
   methods: {
     validateState(name) {
@@ -154,7 +133,7 @@ export default {
     resetForm() {
       this.form = {
         email: null,
-        password: null
+        password: null,
       };
 
       this.$nextTick(() => {
@@ -174,8 +153,8 @@ export default {
       this.$store.dispatch(LOGOUT);
 
       // set spinner to submit button
-      const submitButton = this.$refs["kt_login_signin_submit"];
-      submitButton.classList.add("spinner", "spinner-light", "spinner-right");
+      const submitButton = this.$refs['kt_login_signin_submit'];
+      submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');
 
       // dummy delay
       setTimeout(() => {
@@ -183,20 +162,16 @@ export default {
         this.$store
           .dispatch(LOGIN, { email, password })
           // go to which page after successfully login
-          .then(() => this.$router.push({ name: "dashboard" }));
+          .then(() => this.$router.push({ name: 'dashboard' }));
 
-        submitButton.classList.remove(
-          "spinner",
-          "spinner-light",
-          "spinner-right"
-        );
+        submitButton.classList.remove('spinner', 'spinner-light', 'spinner-right');
       }, 2000);
-    }
+    },
   },
   computed: {
     ...mapState({
-      errors: state => state.auth.errors
-    })
-  }
+      errors: state => state.auth.errors,
+    }),
+  },
 };
 </script>

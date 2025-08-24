@@ -138,7 +138,7 @@ const ROLES = {
   UROLOGIST: 'Urologist',
   HOSPICES_AND_PALLIATIVE_CARE: 'Hospices and Palliative Care',
   EAR_NOSE_AND_THROAT_ENT_SPECIALIST: 'Ear, Nose and Throat (ENT) Specialist',
-  GASTROENTEROLOGIST: 'Gastroenterologist'
+  GASTROENTEROLOGIST: 'Gastroenterologist',
 };
 
 const SubRoles = {

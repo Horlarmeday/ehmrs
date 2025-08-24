@@ -51,9 +51,9 @@ export default {
           desc: 'Click here to view all health insurance HMOs',
         },
         {
-          name: 'Tariffs',
-          link: '/insurance/tariffs',
-          desc: 'Click here to view the various health insurance tariffs',
+          name: 'HMO Pricing',
+          link: '/insurance/hmo-pricing',
+          desc: 'Click here to view the various health insurance pricing',
         },
       ],
     };

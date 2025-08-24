@@ -4,48 +4,48 @@ export const accountDashboardItems = [
     icon: 'fas fa-book',
     color: 'primary',
     route: '/account/chart-of-accounts',
-    description: 'Manage your chart of accounts'
+    description: 'Manage your chart of accounts',
   },
   {
     title: 'Journal Entries',
     icon: 'fas fa-journal-whills',
     color: 'success',
     route: '/account/journal-entries',
-    description: 'Create and manage journal entries'
+    description: 'Create and manage journal entries',
   },
   {
     title: 'Trial Balance',
     icon: 'fas fa-balance-scale',
     color: 'info',
     route: '/account/trial-balance',
-    description: 'View trial balance report'
+    description: 'View trial balance report',
   },
   {
     title: 'Cost Centers',
     icon: 'fas fa-building',
     color: 'warning',
     route: '/account/cost-centers',
-    description: 'Manage cost centers'
+    description: 'Manage cost centers',
   },
   {
     title: 'Financial Statements',
     icon: 'fas fa-file-invoice-dollar',
     color: 'danger',
     route: '/account/financial-statements',
-    description: 'Generate financial statements'
+    description: 'Generate financial statements',
   },
   {
     title: 'Trend Analysis',
     icon: 'fas fa-chart-line',
     color: 'purple',
     route: '/account/trend-analysis',
-    description: 'Analyze financial trends'
+    description: 'Analyze financial trends',
   },
   {
     title: 'Custom Reports',
     icon: 'fas fa-chart-bar',
     color: 'teal',
     route: '/account/custom-reports',
-    description: 'Create custom financial reports'
-  }
-]; 
+    description: 'Create custom financial reports',
+  },
+];

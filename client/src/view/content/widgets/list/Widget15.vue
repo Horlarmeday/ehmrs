@@ -5,9 +5,7 @@
   >
     <!--begin::Body-->
     <div class="card-body">
-      <a
-        href="#"
-        class="card-title font-weight-bold text-muted text-hover-primary font-size-h5"
+      <a href="#" class="card-title font-weight-bold text-muted text-hover-primary font-size-h5"
         >Announcement</a
       >
       <div class="font-weight-bold text-success mt-9 mb-5">03 May 2020</div>
@@ -21,6 +19,6 @@
 
 <script>
 export default {
-  name: "Widget15"
+  name: 'Widget15',
 };
 </script>

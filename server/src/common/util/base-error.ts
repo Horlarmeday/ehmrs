@@ -9,6 +9,15 @@ class BaseError extends Error {
 
     Error.captureStackTrace(this);
   }
+
+  public get statusCode(): number {
+    return this.httpCode;
+  }
+
+  public get error(): string {
+    // Expose a generic error payload used by some controllers
+    return this.message;
+  }
 }
 
 export default BaseError;

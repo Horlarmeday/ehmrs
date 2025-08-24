@@ -29,6 +29,7 @@ import {
   getDrugType,
   StatusCodes,
 } from '../../../core/helpers/helper';
+import { VisitBillingHelper } from '../../Accounting/visitBilling.helper';
 import {
   ERROR_UPDATING_DRUG,
   ERROR_UPDATING_ITEM,
@@ -94,7 +95,8 @@ export async function prescribeDrug(data: PrescribeDrugType): Promise<Prescribed
     nhis_status,
     patient_insurance_id,
   } = data || {};
-  return PrescribedDrug.create({
+
+  const prescribedDrug = await PrescribedDrug.create({
     drug_id,
     drug_type,
     quantity_prescribed,
@@ -124,6 +126,38 @@ export async function prescribeDrug(data: PrescribeDrugType): Promise<Prescribed
     nhis_status,
     patient_insurance_id,
   });
+
+  // 🆕 NEW: Auto-create bill for this prescription
+  try {
+    // Get patient and insurance for billing calculation
+    const [patient, patientInsurance] = await Promise.all([
+      Patient.findByPk(patient_id),
+      getPatientInsuranceQuery({
+        patient_id,
+        is_default: true,
+      }),
+    ]);
+
+    const originalDrug = await Drug.findByPk(drug_id);
+
+    if (patient) {
+      // Add this prescription to the visit bill
+      await VisitBillingHelper.addPrescribedDrugToBill(
+        visit_id,
+        prescribedDrug,
+        examiner,
+        patient,
+        originalDrug,
+        patientInsurance
+      );
+    }
+  } catch (billingError) {
+    // Log billing error but don't fail the prescription
+    console.error('Billing creation failed for prescription:', billingError);
+    // You might want to add proper logging here
+  }
+
+  return prescribedDrug;
 }
 
 /**
@@ -141,33 +175,82 @@ export const prescribeBulkDrugs = async (
   return sequelizeConnection.transaction(async (t: Transaction) => {
     const drugs = await PrescribedDrug.bulkCreate(data, { transaction: t });
 
-    if (injections?.length) {
-      const injectionDefaults = await getOneDefault({ type: DefaultType.INJECTION_ITEMS });
-      if (!injectionDefaults) throw new BadException('Error', 400, INJECTION_SYRINGES_NOT_FOUND);
+    // 🆕 NEW: Auto-create bills for each prescribed drug
+    try {
+      for (const drug of drugs) {
+        // Get patient insurance for billing calculation
+        const patientInsurance = await getPatientInsuranceQuery({
+          patient_id: patient.id,
+          is_default: true,
+        });
 
-      const prescribedInjections = drugs.filter(drug =>
-        injections.some(injection => drug.dosage_form_id === injection.dosage_form_id)
-      );
+        const originalDrug = await Drug.findByPk(drug.drug_id, { transaction: t });
 
-      const patientInsurance = await getPatientInsuranceQuery({ patient_id: patient.id });
+        // Add this prescription to the visit bill
+        VisitBillingHelper.addPrescribedDrugToBill(
+          drug.visit_id,
+          drug,
+          drug.examiner,
+          patient,
+          originalDrug,
+          patientInsurance
+        );
+      }
+    } catch (billingError) {
+      // Log billing error but don't fail the prescription
+      console.error('Billing creation failed for prescriptions:', billingError);
+      // You might want to add proper logging here
+    }
 
-      const additionalItems = await Promise.all(
-        prescribedInjections.map(async injection => {
-          return bulkSyringeNeedlePrescriptions({
-            prescription: injection,
-            patient,
-            injectionItems: injectionDefaults?.data,
-            patient_insurance_id: injection?.patient_insurance_id,
-            insurance: patientInsurance,
-          });
-        })
-      );
+    try {
+      if (injections?.length) {
+        const injectionDefaults = await getOneDefault({ type: DefaultType.INJECTION_ITEMS });
+        if (!injectionDefaults) throw new BadException('Error', 400, INJECTION_SYRINGES_NOT_FOUND);
 
-      const itemBodies = flattenArray(additionalItems);
-      await PrescribedAdditionalItem.bulkCreate(
-        (itemBodies as unknown) as readonly Optional<any, string>[],
-        { transaction: t }
-      );
+        const prescribedInjections = drugs.filter(drug =>
+          injections.some(injection => drug.dosage_form_id === injection.dosage_form_id)
+        );
+
+        const patientInsurance = await getPatientInsuranceQuery({ patient_id: patient.id });
+
+        const additionalItems = await Promise.all(
+          prescribedInjections.map(async injection => {
+            return bulkSyringeNeedlePrescriptions({
+              prescription: injection,
+              patient,
+              injectionItems: injectionDefaults?.data,
+              patient_insurance_id: injection?.patient_insurance_id,
+              insurance: patientInsurance,
+            });
+          })
+        );
+
+        const itemBodies = flattenArray(additionalItems);
+        const items = await PrescribedAdditionalItem.bulkCreate(
+          (itemBodies as unknown) as readonly Optional<any, string>[],
+          { transaction: t }
+        );
+
+        try {
+          for (const item of items) {
+            const originalDrug = await Drug.findByPk(item.drug_id);
+            VisitBillingHelper.addPrescribedAdditionalItemToBill(
+              item.visit_id,
+              item,
+              item.examiner,
+              patient,
+              originalDrug,
+              patientInsurance
+            );
+          }
+        } catch (error) {
+          console.error('Billing creation failed for additional items:', error);
+          // You might want to add proper logging here
+        }
+      }
+    } catch (error) {
+      console.error('Billing creation failed for additional items:', error);
+      // You might want to add proper logging here
     }
 
     return drugs;
@@ -300,7 +383,7 @@ export const prescribeAdditionalItem = async (
     unit_id,
     inventory_id,
   } = data;
-  return PrescribedAdditionalItem.create({
+  const item = await PrescribedAdditionalItem.create({
     drug_id,
     drug_type,
     quantity_prescribed,
@@ -317,6 +400,33 @@ export const prescribeAdditionalItem = async (
     inventory_id,
     prescribed_drug_id,
   });
+
+  try {
+    const [patient, patientInsurance] = await Promise.all([
+      Patient.findByPk(patient_id),
+      getPatientInsuranceQuery({
+        patient_id,
+        is_default: true,
+      }),
+    ]);
+
+    const originalDrug = await Drug.findByPk(drug_id);
+
+    if (patient) {
+      await VisitBillingHelper.addPrescribedAdditionalItemToBill(
+        visit_id,
+        item,
+        examiner,
+        patient,
+        originalDrug,
+        patientInsurance
+      );
+    }
+  } catch (error) {
+    console.error('Billing creation failed for additional item:', error);
+  }
+
+  return item;
 };
 
 /**
@@ -325,7 +435,32 @@ export const prescribeAdditionalItem = async (
  * @returns {Promise<PrescribedAdditionalItem[]>} prescribed additional item data
  */
 export const bulkCreateAdditionalItems = async (data): Promise<PrescribedAdditionalItem[]> => {
-  return await PrescribedAdditionalItem.bulkCreate(data);
+  const items = await PrescribedAdditionalItem.bulkCreate(data);
+
+  try {
+    const [patient, patientInsurance] = await Promise.all([
+      Patient.findByPk(items[0].patient_id),
+      getPatientInsuranceQuery({
+        patient_id: items[0].patient_id,
+        is_default: true,
+      }),
+    ]);
+    for (const item of items) {
+      const originalDrug = await Drug.findByPk(item.drug_id);
+      await VisitBillingHelper.addPrescribedAdditionalItemToBill(
+        item.visit_id,
+        item,
+        item.examiner,
+        patient,
+        originalDrug,
+        patientInsurance
+      );
+    }
+  } catch (error) {
+    console.error('Billing creation failed for additional items:', error);
+  }
+
+  return items;
 };
 
 /**

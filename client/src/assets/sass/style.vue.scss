@@ -14,7 +14,10 @@
 @import "~bootstrap/scss/bootstrap";
 @import "vendors/vue/include";
 
-// 3: Components
+// 3: Heritage Hospital Brand Colors (CSS Custom Properties)
+@import "components/heritage-colors";
+
+// 4: Components
 @import
     "components/utilities",
     "components/burger-icon",

@@ -3,13 +3,13 @@
   "self": {
     "layout": "default",
     "logo": {
-      "default": "media/logos/ms.png",
-      "sticky": "media/logos/ms.png"
+      "default": "media/logos/Caroline.png",
+      "sticky": "media/logos/Caroline.png"
     }
   },
   "loader": {
     "type": "spinner-logo",
-    "logo": "media/logos/pssh.png",
+    "logo": "media/logos/Caroline.png",
     "message": "Please wait..."
   },
   "breakpoints": {

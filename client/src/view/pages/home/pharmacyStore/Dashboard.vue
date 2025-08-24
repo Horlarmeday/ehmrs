@@ -13,7 +13,7 @@
             </span>
             <span
               class="card-title font-weight-bolder text-dark-75 text-center font-size-h3 mb-0 mt-6 d-block"
-            >{{ route.name }}</span
+              >{{ route.name }}</span
             >
           </div>
         </div>
