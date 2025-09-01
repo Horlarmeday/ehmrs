@@ -3,6 +3,7 @@ import {
   Column,
   DataType,
   ForeignKey,
+  HasMany,
   Model,
   PrimaryKey,
   Table,
@@ -20,6 +21,7 @@ import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Antenatal } from './antenatal';
 import { Admission } from './admission';
 import { Immunization } from './immunization';
+import { Appointment } from './appointment';
 
 export enum VisitCategory {
   IPD = 'Inpatient',
@@ -164,6 +166,12 @@ export class Visit extends Model {
   })
   consultation_id: number;
 
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+  })
+  is_from_appointment: boolean;
+
   @BelongsTo(() => Staff)
   staff: Staff;
 
@@ -178,6 +186,9 @@ export class Visit extends Model {
 
   @BelongsTo(() => Immunization)
   immunization: Immunization;
+
+  @HasMany(() => Appointment)
+  appointments: Appointment[];
 
   static async paginate(param: {
     paginate: number;

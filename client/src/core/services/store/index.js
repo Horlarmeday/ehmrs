@@ -31,6 +31,7 @@ import procurement from './procurement/index';
 import stockAudit from './stockAudit/index';
 import emergency from './emergency/index';
 import generalStore from './generalStore/index';
+import appointments from './appointments/moduleAppointments';
 import htmlClass from './htmlclass.module';
 import config from './config.module';
 import breadcrumbs from './breadcrumbs.module';
@@ -69,6 +70,7 @@ export default new Vuex.Store({
     stockAudit,
     emergency,
     generalStore,
+    appointments,
     htmlClass,
     config,
     breadcrumbs,

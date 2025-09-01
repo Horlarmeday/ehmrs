@@ -5,11 +5,11 @@ export class CreateVisit {
   category: VisitCategory;
   ante_natal_id?: number;
   immunization_id?: number;
-  type: string;
+  type?: string;
   professional: string;
-  department: string;
-  date_of_visit: Date;
-  service_id: number | number[];
+  department?: string;
+  date_of_visit?: Date;
+  service_id?: number | number[];
   staff_id: number;
 
   // Emergency-specific fields

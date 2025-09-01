@@ -33,6 +33,10 @@ import generalStoreRoutes from '../../modules/GeneralStore/generalStore.routes';
 import accountingRoutes from '../../modules/Accounting/accounting.routes';
 import hmoPricingRoutes from '../../modules/HMOPricing/hmoPricing.routes';
 import dialysisRoutes from '../../modules/Dialysis/dialysis.routes';
+import procurementRoutes from '../../modules/Procurement/procurement.routes';
+import stockAuditRoutes from '../../modules/StockAudit/stockAudit.routes';
+import emergencyRoutes from '../../modules/Emergency/emergency.routes';
+import appointmentRoutes from '../../modules/Appointment/appointment.routes';
 
 export default (server: express.Application) => {
   server.use('/api/staffs', staffRoutes);
@@ -64,7 +68,11 @@ export default (server: express.Application) => {
   server.use('/api/orders/pharmacy', pharmacyOrderRoutes);
   server.use('/api/orders/radiology', radiologyOrderRoutes);
   server.use('/api/orders/service', serviceOrderRoutes);
-
+  server.use('/api/procurement', procurementRoutes);
+  server.use('/api/stock-audit', stockAuditRoutes);
+  server.use('/api/emergency', emergencyRoutes);
+  server.use('/api/appointments', appointmentRoutes);
+  
   if (process.env.SENTRY_DSN) {
     Sentry.setupExpressErrorHandler(server);
   }

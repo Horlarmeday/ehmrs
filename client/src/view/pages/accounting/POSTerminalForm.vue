@@ -589,14 +589,24 @@ export default {
           break;
 
         case 'daily_transaction_limit':
-          if (value !== null && value !== '' && value !== undefined && (isNaN(value) || parseInt(value) < 0)) {
+          if (
+            value !== null &&
+            value !== '' &&
+            value !== undefined &&
+            (isNaN(value) || parseInt(value) < 0)
+          ) {
             valid = false;
             error = 'Daily transaction limit must be a positive number';
           }
           break;
 
         case 'daily_amount_limit':
-          if (value !== null && value !== '' && value !== undefined && (isNaN(value) || parseFloat(value) < 0)) {
+          if (
+            value !== null &&
+            value !== '' &&
+            value !== undefined &&
+            (isNaN(value) || parseFloat(value) < 0)
+          ) {
             valid = false;
             error = 'Daily amount limit must be a positive number';
           }

@@ -248,10 +248,10 @@ export default {
     commit('CLEAR_ERROR');
 
     try {
-      const url = existingAccountId 
+      const url = existingAccountId
         ? `/accounting/chart-of-accounts/${existingAccountId}/conflict-suggestions`
         : '/accounting/chart-of-accounts/conflict-suggestions';
-      
+
       const response = await axios.post(url, accountData);
       return { success: true, data: response.data.data };
     } catch (error) {
@@ -316,7 +316,9 @@ export default {
     commit('CLEAR_ERROR');
 
     try {
-      const response = await axios.get(`/accounting/chart-of-accounts/validation/type/${accountType}`);
+      const response = await axios.get(
+        `/accounting/chart-of-accounts/validation/type/${accountType}`
+      );
       return { success: true, data: response.data.data };
     } catch (error) {
       commit('SET_ERROR', error.message);
@@ -417,6 +419,89 @@ export default {
     } catch (error) {
       commit('SET_ERROR', error.message);
       console.error('Failed to fetch trial balance:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async exportTrialBalance({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/accounting/trial-balance/export', {
+        params,
+        responseType: 'blob',
+      });
+
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `trial-balance-${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      return { success: true };
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to export trial balance:', error);
+      return { success: false, error: error.message };
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async fetchTrialBalanceChartData({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/accounting/trial-balance/chart-data', { params });
+      commit('SET_TRIAL_BALANCE_CHART_DATA', response.data.data);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch trial balance chart data:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async fetchTrialBalanceVarianceAnalysis({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/accounting/trial-balance/variance-analysis', { params });
+      commit('SET_TRIAL_BALANCE_VARIANCE_ANALYSIS', response.data.data);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch trial balance variance analysis:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async fetchBalanceSheetPreview({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/accounting/trial-balance/balance-sheet-preview', {
+        params,
+      });
+      commit('SET_BALANCE_SHEET_PREVIEW', response.data.data);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch balance sheet preview:', error);
       throw error;
     } finally {
       commit('SET_LOADING', false);
@@ -875,7 +960,7 @@ export default {
 
     try {
       const response = await axios.get('/accounting/deposits', { params });
-      commit('SET_DEPOSITS', response.data.data);
+      commit('SET_DEPOSITS', response.data.data.docs);
       commit('SET_DEPOSITS_TOTAL', response.data.total);
       commit('SET_DEPOSITS_PAGES', response.data.pages || 0);
       return response.data.data;
@@ -977,6 +1062,242 @@ export default {
     }
   },
 
+  // ===== PHASE 6: REPORTING & ANALYTICS ACTIONS =====
+
+  // Financial Reporting Actions
+  async fetchComprehensiveFinancialReport({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/accounting/reports/financial/comprehensive', { params });
+      commit('SET_COMPREHENSIVE_FINANCIAL_REPORT', response.data.data);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch comprehensive financial report:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async fetchProfitLossStatement({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/accounting/reports/financial/pl', { params });
+      commit('SET_PROFIT_LOSS_STATEMENT', response.data.data);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch profit & loss statement:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async fetchBalanceSheet({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/accounting/reports/financial/balance-sheet', { params });
+      commit('SET_BALANCE_SHEET', response.data.data);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch balance sheet:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async fetchCashFlowStatement({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/accounting/reports/financial/cash-flow', { params });
+      commit('SET_CASH_FLOW_STATEMENT', response.data.data);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch cash flow statement:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  // Operational Reporting Actions
+  async fetchOperationalPerformanceReport({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/accounting/reports/operational/performance', { params });
+      commit('SET_OPERATIONAL_PERFORMANCE_REPORT', response.data.data);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch operational performance report:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async fetchPaymentMethodUtilization({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/accounting/reports/operational/utilization', { params });
+      commit('SET_PAYMENT_METHOD_UTILIZATION', response.data.data);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch payment method utilization:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async fetchReconciliationStatus({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/accounting/reports/operational/reconciliation', {
+        params,
+      });
+      commit('SET_RECONCILIATION_STATUS', response.data.data);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch reconciliation status:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async fetchSettlementTracking({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/accounting/reports/operational/settlement', { params });
+      commit('SET_SETTLEMENT_TRACKING', response.data.data);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch settlement tracking:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  // Business Intelligence Actions
+  async fetchComprehensiveBIReport({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/accounting/reports/business-intelligence/comprehensive', {
+        params,
+      });
+      commit('SET_COMPREHENSIVE_BI_REPORT', response.data.data);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch comprehensive BI report:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async fetchPaymentTrendAnalysis({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/accounting/reports/business-intelligence/trends', {
+        params,
+      });
+      commit('SET_PAYMENT_TREND_ANALYSIS', response.data.data);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch payment trend analysis:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async fetchPredictiveAnalytics({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/accounting/reports/business-intelligence/predictive', {
+        params,
+      });
+      commit('SET_PREDICTIVE_ANALYTICS', response.data.data);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch predictive analytics:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async fetchKPIMonitoring({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/accounting/reports/business-intelligence/kpi', { params });
+      commit('SET_KPI_MONITORING', response.data.data);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch KPI monitoring:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async fetchRealTimeMonitoring({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/accounting/reports/business-intelligence/real-time', {
+        params,
+      });
+      commit('SET_REAL_TIME_MONITORING', response.data.data);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch real-time monitoring:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
   // Dashboard actions
   async fetchAccountingSummary({ commit }) {
     commit('SET_LOADING', true);
@@ -1022,7 +1343,7 @@ export default {
 
     try {
       const response = await axios.get('/accounting/payments', { params });
-      commit('SET_CLINICAL_PAYMENTS', response.data.data);
+      commit('SET_CLINICAL_PAYMENTS', response.data.data.docs);
       commit('SET_CLINICAL_PAYMENTS_TOTAL', response.data.total);
       commit('SET_CLINICAL_PAYMENTS_PAGES', response.data.pages || 0);
       return response.data.data;
@@ -1032,6 +1353,17 @@ export default {
       throw error;
     } finally {
       commit('SET_LOADING', false);
+    }
+  },
+
+  // Get single clinical payment by ID
+  async getClinicalPaymentById(_, paymentId) {
+    try {
+      const response = await axios.get(`/accounting/payments/${paymentId}`);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error('Failed to get clinical payment by ID:', error);
+      return { success: false, error: error.message };
     }
   },
 
@@ -1060,7 +1392,7 @@ export default {
   // Create clinical payment
   async createClinicalPayment(_, paymentData) {
     try {
-      const response = await axios.post('/accounting/payments', paymentData);
+      const response = await axios.post('/accounting/payments/process', paymentData);
       return { success: true, data: response.data.data };
     } catch (error) {
       console.error('Failed to create clinical payment:', error);
@@ -1091,7 +1423,10 @@ export default {
 
   async useDeposit(_, usageData) {
     try {
-      const response = await axios.post(`/accounting/deposits/${usageData.deposit_id}/use`, usageData);
+      const response = await axios.post(
+        `/accounting/deposits/${usageData.deposit_id}/use`,
+        usageData
+      );
       return { success: true, data: response.data.data };
     } catch (error) {
       console.error('Failed to use deposit:', error);
@@ -1268,6 +1603,260 @@ export default {
     } catch (error) {
       console.error('Failed to get payment options:', error);
       return { success: false, error: error.message };
+    }
+  },
+
+  async getPaymentStatus(_, paymentId) {
+    try {
+      const response = await axios.get(`/accounting/payments/${paymentId}/status`);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error('Failed to get payment status:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  async getPaymentReceipt(_, paymentId) {
+    try {
+      const response = await axios.get(`/accounting/payments/${paymentId}/receipt`);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error('Failed to get payment receipt:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  async downloadPaymentReceipt(_, paymentId) {
+    try {
+      const response = await axios.get(`/accounting/payments/${paymentId}/receipt/download`, {
+        responseType: 'arraybuffer',
+      });
+
+      // Create blob and download
+      const contentType = response.headers['content-type'];
+      const blob = new Blob([response.data], { type: contentType });
+      const url = window.URL.createObjectURL(blob);
+
+      // Create download link
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `receipt-${paymentId}-${Date.now()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+
+      // Cleanup
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to download payment receipt:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  async validatePaymentData(_, paymentData) {
+    try {
+      const response = await axios.post('/accounting/payments/validate', paymentData);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error('Failed to validate payment data:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Export deposits
+  async exportDeposits(_, params = {}) {
+    try {
+      const response = await axios.get('/accounting/deposits/export', { params });
+
+      if (response.data.success) {
+        // Handle different export formats
+        if (params.format === 'CSV') {
+          this.downloadCSV(response.data.data, 'deposits-export.csv');
+        } else if (params.format === 'Excel') {
+          this.downloadExcel(response.data.data, 'deposits-export.xlsx');
+        } else if (params.format === 'PDF') {
+          this.downloadPDF(response.data.data, 'deposits-export.pdf');
+        }
+
+        return { success: true, data: response.data.data };
+      } else {
+        return { success: false, error: response.data.error || 'Export failed' };
+      }
+    } catch (error) {
+      console.error('Export deposits error:', error);
+      return {
+        success: false,
+        error: error.response?.data?.error || error.message || 'Export failed',
+      };
+    }
+  },
+
+  // Helper methods for downloads
+  downloadCSV(data, filename) {
+    const csvContent = this.convertToCSV(data);
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+  },
+
+  downloadExcel(data, filename) {
+    // For Excel, we'll use a simple CSV download for now
+    // In production, you might want to use a library like xlsx
+    this.downloadCSV(data, filename.replace('.xlsx', '.csv'));
+  },
+
+  downloadPDF(data, filename) {
+    // For PDF, we'll use a simple CSV download for now
+    // In production, you might want to use a library like jsPDF
+    this.downloadCSV(data, filename.replace('.pdf', '.csv'));
+  },
+
+  convertToCSV(data) {
+    if (!data || data.length === 0) return '';
+
+    const headers = Object.keys(data[0]);
+    const csvRows = [headers.join(',')];
+
+    for (const row of data) {
+      const values = headers.map(header => {
+        const value = row[header];
+        return typeof value === 'string' ? `"${value.replace(/"/g, '""')}"` : value;
+      });
+      csvRows.push(values.join(','));
+    }
+
+    return csvRows.join('\n');
+  },
+
+  // =============================================================================
+  // CASH REGISTER MANAGEMENT ACTIONS
+  // =============================================================================
+
+  async getCashRegisters({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/accounting/cash-registers', { params });
+      return response.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch cash registers:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async getCashRegisterById({ commit }, id) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get(`/accounting/cash-registers/${id}`);
+      return response.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch cash register:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async createCashRegister({ commit, dispatch }, registerData) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.post('/accounting/cash-registers', registerData);
+      // Refresh registers list
+      dispatch('getCashRegisters');
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to create cash register:', error);
+      return { success: false, error: error.message };
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async updateCashRegister({ commit, dispatch }, { id, data }) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.put(`/accounting/cash-registers/${id}`, data);
+      // Refresh registers list
+      dispatch('getCashRegisters');
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to update cash register:', error);
+      return { success: false, error: error.message };
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async openCashRegister({ commit, dispatch }, { id, opening_amount }) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.post(`/accounting/cash-registers/${id}/open`, {
+        opening_amount,
+      });
+      // Refresh registers list
+      dispatch('getCashRegisters');
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to open cash register:', error);
+      return { success: false, error: error.message };
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async closeCashRegister({ commit, dispatch }, { id, closing_amount }) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.post(`/accounting/cash-registers/${id}/close`, {
+        closing_amount,
+      });
+      // Refresh registers list
+      dispatch('getCashRegisters');
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to close cash register:', error);
+      return { success: false, error: error.message };
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async getCashRegisterSummary({ commit }, id) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get(`/accounting/cash-registers/${id}/summary`);
+      return response.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch cash register summary:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
     }
   },
 };

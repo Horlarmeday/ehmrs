@@ -3,6 +3,7 @@ import {
   Column,
   DataType,
   ForeignKey,
+  HasMany,
   Model,
   PrimaryKey,
   Table,
@@ -12,6 +13,12 @@ import { FindAttributeOptions, GroupOption, Includeable, Order, WhereOptions } f
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 
 import { FinancialPeriodStatus } from '../../modules/Accounting/enums';
+import { PatientDeposit } from './patientDeposit';
+import { ClinicalBill } from './clinicalBill';
+import { ClinicalPayment } from './clinicalPayment';
+import { JournalEntry } from './journalEntry';
+import { DepositTransaction } from './depositTransaction';
+import { DepositJournalEntry } from './depositJournalEntry';
 
 @Table({ timestamps: true, tableName: 'financial_periods' })
 export class FinancialPeriod extends Model {
@@ -65,7 +72,6 @@ export class FinancialPeriod extends Model {
     defaultValue: 0,
     validate: {
       min: 0,
-      msg: 'opening balance must be greater than or equal to 0',
     },
   })
   balance: number;
@@ -75,6 +81,32 @@ export class FinancialPeriod extends Model {
     allowNull: true,
   })
   notes: string;
+
+  @Column({
+    type: DataType.STRING(50),
+    allowNull: true,
+  })
+  period_type: string;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  })
+  is_current: boolean;
+
+  @Column({
+    type: DataType.DECIMAL(10, 2),
+    allowNull: true,
+  })
+  closing_balance: number;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  })
+  auto_close: boolean;
 
   @ForeignKey(() => Staff)
   @Column({
@@ -96,11 +128,29 @@ export class FinancialPeriod extends Model {
   updated_by: number;
 
   // Relationships
-  @BelongsTo(() => Staff, { foreignKey: 'created_by' })
+  @BelongsTo(() => Staff, { foreignKey: 'created_by', as: 'createdByStaff' })
   createdByStaff: Staff;
 
-  @BelongsTo(() => Staff, { foreignKey: 'updated_by' })
+  @BelongsTo(() => Staff, { foreignKey: 'updated_by', as: 'updatedByStaff' })
   updatedByStaff: Staff;
+
+  @HasMany(() => PatientDeposit, { foreignKey: 'period_id' })
+  patientDeposits: PatientDeposit[];
+
+  @HasMany(() => ClinicalBill, { foreignKey: 'period_id' })
+  clinicalBills: ClinicalBill[];
+
+  @HasMany(() => ClinicalPayment, { foreignKey: 'period_id' })
+  clinicalPayments: ClinicalPayment[];
+
+  @HasMany(() => JournalEntry, { foreignKey: 'period_id' })
+  journalEntries: JournalEntry[];
+
+  @HasMany(() => DepositTransaction, { foreignKey: 'period_id' })
+  depositTransactions: DepositTransaction[];
+
+  @HasMany(() => DepositJournalEntry, { foreignKey: 'period_id' })
+  depositJournalEntries: DepositJournalEntry[];
 
   static async paginate(param: {
     paginate: number;

@@ -9,8 +9,9 @@ import { RequestHandler } from 'express-serve-static-core';
 import { ParsedQs } from 'qs';
 import agenda from '../command/agenda';
 // import serveStatic from 'serve-static';
+import { AccountingStartupService } from '../../modules/Accounting/services/startup.service';
 
-export default (
+export default async (
   server: express.Application,
   express: {
     static: (
@@ -26,6 +27,18 @@ export default (
   server.use(express.static('download'));
   // server.use(serveStatic(path.join(__dirname, '../../../../client/dist')));
   server.use('/static', express.static(path.join(__dirname, '../../public')));
+  
+  // Initialize accounting system after middleware setup
+  try {
+    console.log('🚀 Initializing Accounting System...');
+    await AccountingStartupService.initialize();
+    console.log('✅ Accounting system initialized successfully');
+  } catch (error) {
+    console.error('❌ Failed to initialize accounting system:', error);
+    // Continue server startup but log the error
+    console.warn('⚠️  Server will continue without accounting system initialization');
+  }
+  
   server.use('/dash', () => {
     agenda.on('ready', () => {
       Agendash(agenda);

@@ -327,8 +327,8 @@ export default {
   methods: {
     async loadInitialData() {
       try {
-        const response = await this.$axios.get('/api/general-store/categories');
-        this.categories = response.data.data || [];
+        await this.$store.dispatch('generalStore/fetchCategories');
+        this.categories = this.$store.getters['generalStore/categories'] || [];
       } catch (error) {
         console.error('Error loading initial data:', error);
         this.$toast.error('Failed to load filter data');
@@ -346,7 +346,7 @@ export default {
           }
         });
 
-        const response = await this.$axios.get('/api/general-store/reports/costs', { params });
+        const response = await this.$store.dispatch('generalStore/generateCostReport', params);
         this.reportData = response.data.data;
 
         this.$toast.success('Cost report generated successfully');
@@ -363,10 +363,7 @@ export default {
 
       try {
         const params = { ...this.filters, export: true };
-        const response = await this.$axios.get('/api/general-store/reports/costs/export', {
-          params,
-          responseType: 'blob',
-        });
+        const response = await this.$store.dispatch('generalStore/exportCostReport', params);
 
         const url = window.URL.createObjectURL(new Blob([response.data]));
         const link = document.createElement('a');

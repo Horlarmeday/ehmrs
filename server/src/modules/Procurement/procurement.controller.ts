@@ -2,14 +2,21 @@ import { Request, Response } from 'express';
 import { ProcurementService } from './procurement.service';
 import { BadException } from '../../common/util/api-error';
 
+interface AuthenticatedRequest extends Request {
+  user: {
+    sub: number;
+    [key: string]: any;
+  };
+}
+
 export class ProcurementController {
   /**
    * Create procurement order
    * POST /api/procurement/orders
    */
-  static async createProcurementOrder(req: Request, res: Response) {
+  static async createProcurementOrder(req: AuthenticatedRequest, res: Response) {
     try {
-      const order = await ProcurementService.createProcurementOrder(req.body);
+      const order = await ProcurementService.createProcurementOrder(req.body, req.user.sub);
       res.status(201).json({
         success: true,
         message: 'Procurement order created successfully',
@@ -135,15 +142,13 @@ export class ProcurementController {
    * Approve procurement order
    * POST /api/procurement/orders/:id/approve
    */
-  static async approveProcurementOrder(req: Request, res: Response) {
+  static async approveProcurementOrder(req: Request & { user: { sub: number } }, res: Response) {
     try {
       const { id } = req.params;
-      const { approved_by, approval_notes } = req.body;
       
       const order = await ProcurementService.approveProcurementOrder(
         parseInt(id),
-        parseInt(approved_by),
-        approval_notes
+        req.user.sub
       );
       
       res.status(200).json({
@@ -178,10 +183,7 @@ export class ProcurementController {
       const { sent_by, sent_date, expected_delivery_date } = req.body;
       
       const order = await ProcurementService.sendProcurementOrder(
-        parseInt(id),
-        parseInt(sent_by),
-        sent_date ? new Date(sent_date) : undefined,
-        expected_delivery_date ? new Date(expected_delivery_date) : undefined
+        parseInt(id)
       );
       
       res.status(200).json({
@@ -217,9 +219,7 @@ export class ProcurementController {
       
       const result = await ProcurementService.receiveProcurementOrderItems(
         parseInt(id),
-        received_items,
-        parseInt(received_by),
-        received_date ? new Date(received_date) : undefined
+        received_items
       );
       
       res.status(200).json({
@@ -248,14 +248,13 @@ export class ProcurementController {
    * Cancel procurement order
    * POST /api/procurement/orders/:id/cancel
    */
-  static async cancelProcurementOrder(req: Request, res: Response) {
+  static async cancelProcurementOrder(req: Request & { user: { sub: number } }, res: Response) {
     try {
       const { id } = req.params;
-      const { cancelled_by, cancellation_reason } = req.body;
+      const { cancellation_reason } = req.body;
       
       const order = await ProcurementService.cancelProcurementOrder(
-        parseInt(id),
-        parseInt(cancelled_by),
+        req.user.sub,
         cancellation_reason
       );
       
@@ -289,10 +288,7 @@ export class ProcurementController {
     try {
       const { date_from, date_to } = req.query;
       
-      const statistics = await ProcurementService.getProcurementStatistics({
-        date_from: date_from ? new Date(date_from as string) : undefined,
-        date_to: date_to ? new Date(date_to as string) : undefined
-      });
+      const statistics = await ProcurementService.getProcurementStatistics();
       
       res.status(200).json({
         success: true,
@@ -317,17 +313,72 @@ export class ProcurementController {
       const { date_from, date_to } = req.query;
       
       const performance = await ProcurementService.getVendorPerformance(
-        parseInt(vendorId),
-        {
-          date_from: date_from ? new Date(date_from as string) : undefined,
-          date_to: date_to ? new Date(date_to as string) : undefined
-        }
+        parseInt(vendorId)
       );
       
       res.status(200).json({
         success: true,
         data: performance
       });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * Get procurement reports
+   * GET /api/procurement/reports
+   */
+  static async getProcurementReports(req: Request, res: Response) {
+    try {
+      const { date_from, date_to, vendor_id, status } = req.query;
+      
+      const reports = await ProcurementService.getProcurementReports({
+        date_from: date_from ? new Date(date_from as string) : undefined,
+        date_to: date_to ? new Date(date_to as string) : undefined,
+        vendor_id: vendor_id ? parseInt(vendor_id as string) : undefined,
+        status: status as string
+      });
+      
+      res.status(200).json({
+        success: true,
+        data: reports
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * Export procurement report
+   * GET /api/procurement/export
+   */
+  static async exportProcurementReport(req: Request, res: Response) {
+    try {
+      const { date_from, date_to, vendor_id, status, format = 'xlsx' } = req.query;
+      
+      const exportData = await ProcurementService.exportProcurementReport({
+        date_from: date_from ? new Date(date_from as string) : undefined,
+        date_to: date_to ? new Date(date_to as string) : undefined,
+        vendor_id: vendor_id ? parseInt(vendor_id as string) : undefined,
+        status: status as string,
+        format: format as string
+      });
+      
+      // Set appropriate headers for file download
+      const filename = `procurement-report-${new Date().toISOString().split('T')[0]}.${format}`;
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      
+      res.status(200).send(exportData);
     } catch (error) {
       res.status(500).json({
         success: false,

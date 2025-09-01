@@ -244,7 +244,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from '@/axios';
 
 export default {
   name: 'EditRequest',
@@ -282,7 +282,7 @@ export default {
   methods: {
     async loadItems() {
       try {
-        const response = await axios.get('/api/general-store/items', { params: { limit: 200 } });
+        const response = await axios.get('/general-store/items', { params: { limit: 200 } });
         this.items = response.data.data || [];
       } catch (error) {
         console.error('Error loading items:', error);
@@ -291,7 +291,7 @@ export default {
     },
     async loadDepartments() {
       try {
-        const response = await axios.get('/api/departments');
+        const response = await axios.get('/departments');
         this.departments = response.data.data || [];
       } catch (error) {
         console.error('Error loading departments:', error);
@@ -300,7 +300,7 @@ export default {
     },
     async loadRequest() {
       try {
-        const response = await axios.get(`/api/general-store/requests/${this.$route.params.id}`);
+        const response = await axios.get(`/general-store/requests/${this.$route.params.id}`);
         this.request = response.data.data || {};
 
         // Populate form with existing data
@@ -349,7 +349,7 @@ export default {
       this.errors = {};
 
       try {
-        await axios.put(`/api/general-store/requests/${this.$route.params.id}`, this.form);
+        await axios.put(`/general-store/requests/${this.$route.params.id}`, this.form);
 
         this.$toast.success('Request updated successfully!');
 

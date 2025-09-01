@@ -14,6 +14,9 @@ import { Staff } from './staff';
 import { BankAccount } from './bankAccount';
 import { POSTerminal } from './posTerminal';
 import { DepositType, DepositStatus } from '../../modules/Accounting/enums';
+import { FinancialPeriod } from './financialPeriod';
+import { FindAttributeOptions, GroupOption, Includeable, Order, WhereOptions } from 'sequelize';
+import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 
 @Table({ timestamps: true, tableName: 'patient_deposits' })
 export class PatientDeposit extends Model<PatientDeposit> {
@@ -37,8 +40,9 @@ export class PatientDeposit extends Model<PatientDeposit> {
     type: DataType.DECIMAL(10, 2),
     allowNull: false,
     validate: {
-      min: 0,
-      msg: 'amount must be greater than or equal to 0',
+      notEmpty: {
+        msg: 'amount is required',
+      },
     },
   })
   amount: number;
@@ -47,11 +51,6 @@ export class PatientDeposit extends Model<PatientDeposit> {
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
-    validate: {
-      notEmpty: {
-        msg: 'bank account id is required for non-cash deposits',
-      },
-    },
   })
   bank_account_id: number;
 
@@ -62,23 +61,22 @@ export class PatientDeposit extends Model<PatientDeposit> {
   })
   pos_terminal_id: number;
 
+  @ForeignKey(() => FinancialPeriod)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+  })
+  period_id: number;
+
   @Column({
     type: DataType.DECIMAL(10, 2),
     allowNull: false,
-    validate: {
-      min: 0,
-      msg: 'initial amount must be greater than or equal to 0',
-    },
   })
   initial_amount: number;
 
   @Column({
     type: DataType.DECIMAL(10, 2),
     allowNull: false,
-    validate: {
-      min: 0,
-      msg: 'current balance must be greater than or equal to 0',
-    },
   })
   current_balance: number;
 
@@ -86,10 +84,6 @@ export class PatientDeposit extends Model<PatientDeposit> {
     type: DataType.DECIMAL(10, 2),
     allowNull: false,
     defaultValue: 0,
-    validate: {
-      min: 0,
-      msg: 'refundable amount must be greater than or equal to 0',
-    },
   })
   refundable_amount: number;
 
@@ -178,6 +172,24 @@ export class PatientDeposit extends Model<PatientDeposit> {
 
   @BelongsTo(() => Staff, { foreignKey: 'updated_by' })
   updatedByStaff: Staff;
+
+  @BelongsTo(() => FinancialPeriod, { foreignKey: 'period_id' })
+  financialPeriod: FinancialPeriod;
+
+  static async paginate(param: {
+    paginate: number;
+    attributes?: FindAttributeOptions;
+    where?: WhereOptions<any>;
+    page?: number;
+    order?: Order;
+    group?: GroupOption;
+    include?: Includeable | Includeable[];
+  }) {
+    const { limit, offset } = calcLimitAndOffset(param.page, param.paginate);
+    const options = Object.assign({ limit, offset }, param);
+    const data = await this.findAndCountAll(options);
+    return paginate(data, param.page, limit);
+  }
 
   // Model hooks for validation and auto-population
   @BeforeCreate

@@ -60,7 +60,7 @@
               <i class="fas fa-percentage"></i>
             </div>
             <div class="summary-content">
-              <h3 class="summary-value">{{ budgetUtilizationPercentage }}%</h3>
+              <h3 class="summary-value">{{ summaryData.budgetUtilization || 0 }}%</h3>
               <p class="summary-label">Budget Utilization</p>
             </div>
           </div>
@@ -85,7 +85,9 @@
                   <th>Code</th>
                   <th>Name</th>
                   <th>Department</th>
-                  <th>Manager</th>
+                  <th>Type</th>
+                  <th>Service Line</th>
+                  <th>Location</th>
                   <th class="text-right">Budget</th>
                   <th class="text-right">Expenses</th>
                   <th class="text-right">Variance</th>
@@ -99,8 +101,14 @@
                     <strong>{{ center.code }}</strong>
                   </td>
                   <td>{{ center.name }}</td>
-                  <td>{{ center.department }}</td>
-                  <td>{{ center.manager }}</td>
+                  <td>{{ center.department?.name || 'N/A' }}</td>
+                  <td>
+                    <b-badge :variant="getTypeVariant(center.cost_center_type)">
+                      {{ center.cost_center_type }}
+                    </b-badge>
+                  </td>
+                  <td>{{ center.service_line || 'N/A' }}</td>
+                  <td>{{ center.location || 'N/A' }}</td>
                   <td class="text-right">{{ formatCurrency(center.budget) }}</td>
                   <td class="text-right">{{ formatCurrency(center.expenses) }}</td>
                   <td class="text-right">
@@ -109,8 +117,8 @@
                     </span>
                   </td>
                   <td>
-                    <b-badge :variant="getStatusVariant(center.status)">
-                      {{ center.status }}
+                    <b-badge :variant="getStatusVariant(center.is_active)">
+                      {{ center.is_active ? 'ACTIVE' : 'INACTIVE' }}
                     </b-badge>
                   </td>
                   <td>
@@ -138,9 +146,10 @@
     <b-modal
       v-model="showModal"
       :title="isEditing ? 'Edit Cost Center' : 'Create Cost Center'"
-      size="lg"
-      @ok="saveCostCenter"
+      size="xl"
       @hidden="resetForm"
+      :no-close-on-backdrop="saving"
+      :no-close-on-esc="saving"
     >
       <b-form @submit.prevent="saveCostCenter">
         <div class="row">
@@ -149,7 +158,7 @@
               <b-form-input
                 id="center-code"
                 v-model="centerForm.code"
-                placeholder="Enter cost center code"
+                placeholder="Enter cost center code (e.g., EMERG, SURG, LAB)"
                 required
               ></b-form-input>
             </b-form-group>
@@ -170,19 +179,39 @@
             <b-form-group label="Department" label-for="center-department" required>
               <b-form-select
                 id="center-department"
-                v-model="centerForm.department"
+                v-model="centerForm.department_id"
                 :options="departmentOptions"
                 required
               ></b-form-select>
             </b-form-group>
           </div>
           <div class="col-md-6">
-            <b-form-group label="Manager" label-for="center-manager" required>
-              <b-form-input
-                id="center-manager"
-                v-model="centerForm.manager"
-                placeholder="Enter manager name"
+            <b-form-group label="Cost Center Type" label-for="center-type" required>
+              <b-form-select
+                id="center-type"
+                v-model="centerForm.cost_center_type"
+                :options="typeOptions"
                 required
+              ></b-form-select>
+            </b-form-group>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+            <b-form-group label="Service Line" label-for="center-service-line">
+              <b-form-input
+                id="center-service-line"
+                v-model="centerForm.service_line"
+                placeholder="e.g., Cardiology, Orthopedics, Emergency"
+              ></b-form-input>
+            </b-form-group>
+          </div>
+          <div class="col-md-6">
+            <b-form-group label="Location" label-for="center-location">
+              <b-form-input
+                id="center-location"
+                v-model="centerForm.location"
+                placeholder="e.g., Main Building, North Wing, Ground Floor"
               ></b-form-input>
             </b-form-group>
           </div>
@@ -195,28 +224,28 @@
                 v-model="centerForm.budget"
                 type="number"
                 step="0.01"
-                placeholder="Enter budget amount"
+                placeholder="Enter annual budget amount"
                 required
               ></b-form-input>
             </b-form-group>
           </div>
           <div class="col-md-6">
-            <b-form-group label="Description" label-for="center-description">
-              <b-form-textarea
-                id="center-description"
-                v-model="centerForm.description"
-                placeholder="Enter description"
-                rows="3"
-              ></b-form-textarea>
-            </b-form-group>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-md-6">
             <b-form-group label="Status" label-for="center-status">
               <b-form-checkbox id="center-status" v-model="centerForm.is_active" switch>
                 Active Cost Center
               </b-form-checkbox>
+            </b-form-group>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-12">
+            <b-form-group label="Description" label-for="center-description">
+              <b-form-textarea
+                id="center-description"
+                v-model="centerForm.description"
+                placeholder="Enter additional description or notes"
+                rows="3"
+              ></b-form-textarea>
             </b-form-group>
           </div>
         </div>
@@ -250,26 +279,21 @@ export default {
       centerForm: {
         code: '',
         name: '',
-        department: '',
-        manager: '',
+        department_id: '',
+        service_line: '',
+        location: '',
+        cost_center_type: 'CLINICAL',
         budget: '',
         description: '',
         is_active: true,
       },
 
       // Options
-      departmentOptions: [
-        { value: '', text: 'Select Department' },
-        { value: 'ADMINISTRATION', text: 'Administration' },
-        { value: 'CLINICAL', text: 'Clinical Services' },
-        { value: 'LABORATORY', text: 'Laboratory' },
-        { value: 'PHARMACY', text: 'Pharmacy' },
-        { value: 'RADIOLOGY', text: 'Radiology' },
-        { value: 'NURSING', text: 'Nursing' },
-        { value: 'EMERGENCY', text: 'Emergency' },
-        { value: 'SURGERY', text: 'Surgery' },
-        { value: 'FINANCE', text: 'Finance' },
-        { value: 'IT', text: 'Information Technology' },
+      departmentOptions: [{ value: '', text: 'Select Department' }],
+      typeOptions: [
+        { value: 'CLINICAL', text: 'Clinical' },
+        { value: 'ADMINISTRATIVE', text: 'Administrative' },
+        { value: 'SUPPORT', text: 'Support' },
       ],
     };
   },
@@ -280,15 +304,53 @@ export default {
     summaryData() {
       return this.$store.getters['accounting/getCostCentersSummary'] || {};
     },
-    budgetUtilizationPercentage() {
-      if (this.summaryData.totalBudget === 0) return 0;
-      return ((this.summaryData.totalExpenses / this.summaryData.totalBudget) * 100).toFixed(2);
-    },
   },
   async mounted() {
+    await this.loadDepartments();
     await this.loadCostCenters();
   },
   methods: {
+    async loadDepartments() {
+      try {
+        console.log('🔄 Loading departments from Vuex store...');
+
+        // Use the Vuex store action as intended
+        const response = await this.$store.dispatch('model/fetchDepartments', {
+          currentPage: 1,
+          itemsPerPage: 100,
+          search: '',
+        });
+
+        // Get departments from the store
+        const departments = response.data.data?.docs || [];
+        console.log('🏢 Departments from store:', departments);
+        this.departmentOptions = [
+          { value: '', text: 'Select Department' },
+          ...departments.map(dept => ({
+            value: dept.id,
+            text: dept.name,
+          })),
+        ];
+
+        console.log('✅ Department options set from store:', this.departmentOptions);
+      } catch (error) {
+        console.error('❌ Failed to load departments from store:', error);
+
+        // Show user-friendly error message
+        this.$bvToast.toast(
+          'Failed to load departments. Please refresh the page or contact support.',
+          {
+            title: 'Warning',
+            variant: 'warning',
+            solid: true,
+          }
+        );
+
+        // Set empty options to prevent form errors
+        this.departmentOptions = [{ value: '', text: 'Select Department' }];
+      }
+    },
+
     async loadCostCenters() {
       try {
         await this.$store.dispatch('accounting/fetchCostCenters');
@@ -306,7 +368,18 @@ export default {
     editCenter(id) {
       const center = this.costCenters.find(c => c.id === id);
       if (center) {
-        this.centerForm = { ...center };
+        this.centerForm = {
+          id: center.id,
+          code: center.code,
+          name: center.name,
+          department_id: center.department_id,
+          service_line: center.service_line || '',
+          location: center.location || '',
+          cost_center_type: center.cost_center_type || 'CLINICAL',
+          budget: center.budget || '',
+          description: center.description || '',
+          is_active: center.is_active,
+        };
         this.isEditing = true;
         this.showModal = true;
       }
@@ -315,23 +388,42 @@ export default {
     async saveCostCenter() {
       try {
         this.saving = true;
+
+        const centerData = {
+          code: this.centerForm.code,
+          name: this.centerForm.name,
+          department_id: parseInt(this.centerForm.department_id),
+          service_line: this.centerForm.service_line || null,
+          location: this.centerForm.location || null,
+          cost_center_type: this.centerForm.cost_center_type,
+          budget: parseFloat(this.centerForm.budget) || 0,
+          description: this.centerForm.description || null,
+          is_active: this.centerForm.is_active,
+        };
+
+        let response;
         if (this.isEditing) {
-          await this.$store.dispatch('accounting/updateCostCenter', {
+          response = await this.$store.dispatch('accounting/updateCostCenter', {
             id: this.centerForm.id,
-            data: this.centerForm,
+            data: centerData,
           });
         } else {
-          await this.$store.dispatch('accounting/createCostCenter', this.centerForm);
+          response = await this.$store.dispatch('accounting/createCostCenter', centerData);
+          console.log('🔄 Cost center created:', response);
         }
-
-        this.showModal = false;
-        this.resetForm();
-        await this.loadCostCenters();
-        this.$bvToast.toast(`Cost center ${this.isEditing ? 'updated' : 'created'} successfully`, {
-          title: 'Success',
-          variant: 'success',
-          solid: true,
-        });
+        if (response.data.status === 201) {
+          this.showModal = false;
+          this.resetForm();
+          await this.loadCostCenters();
+          this.$bvToast.toast(
+            `Cost center ${this.isEditing ? 'updated' : 'created'} successfully`,
+            {
+              title: 'Success',
+              variant: 'success',
+              solid: true,
+            }
+          );
+        }
       } catch (error) {
         console.error('Failed to save cost center:', error);
         this.$bvToast.toast('Failed to save cost center', {
@@ -348,8 +440,10 @@ export default {
       this.centerForm = {
         code: '',
         name: '',
-        department: '',
-        manager: '',
+        department_id: '',
+        service_line: '',
+        location: '',
+        cost_center_type: 'CLINICAL',
         budget: '',
         description: '',
         is_active: true,
@@ -365,13 +459,17 @@ export default {
       }).format(amount || 0);
     },
 
-    getStatusVariant(status) {
+    getStatusVariant(isActive) {
+      return isActive ? 'success' : 'danger';
+    },
+
+    getTypeVariant(type) {
       const variants = {
-        ACTIVE: 'success',
-        INACTIVE: 'danger',
-        SUSPENDED: 'warning',
+        CLINICAL: 'primary',
+        ADMINISTRATIVE: 'warning',
+        SUPPORT: 'info',
       };
-      return variants[status] || 'secondary';
+      return variants[type] || 'secondary';
     },
 
     getVarianceClass(variance) {

@@ -345,12 +345,12 @@ export class DepositReportingService {
       });
 
       if (deposits.length === 0) {
-        throw new BadException('No deposits found for this patient', 404);
+        throw new BadException('No Deposits Found', 404, 'No deposits found for this patient');
       }
 
       const patient = deposits[0].patient;
       if (!patient) {
-        throw new BadException('Patient information not found', 404);
+        throw new BadException('Patient Information Missing', 404, 'Patient information not found');
       }
 
       // Format deposits
@@ -623,7 +623,7 @@ export class DepositReportingService {
           break;
 
         default:
-          throw new BadException('Unsupported report type for CSV export', 400);
+          throw new BadException('Unsupported Report Type', 400, 'Unsupported report type for CSV export');
       }
 
       // Generate CSV content

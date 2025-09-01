@@ -866,4 +866,21 @@ export class GeneralStoreService {
       throw new BadException('Error', 500, `Failed to generate cost report: ${error.message}`);
     }
   }
+
+  // Settings Management
+  static async getSettings() {
+    try {
+      return await GeneralStoreRepository.getSettings();
+    } catch (error) {
+      throw new BadException('Error', 500, `Failed to get settings: ${error.message}`);
+    }
+  }
+
+  static async updateSettings(settingsData: any) {
+    try {
+      return await GeneralStoreRepository.updateSettings(settingsData);
+    } catch (error) {
+      throw new BadException('Error', 500, `Failed to update settings: ${error.message}`);
+    }
+  }
 }

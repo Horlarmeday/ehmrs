@@ -79,11 +79,20 @@ export default {
   },
 
   // Trial Balance mutations
-  SET_TRIAL_BALANCE(state, trialBalance) {
-    state.trialBalance = trialBalance;
+  SET_TRIAL_BALANCE: (state, data) => {
+    state.trialBalance = data;
   },
-  SET_TRIAL_BALANCE_SUMMARY(state, summary) {
-    state.trialBalanceSummary = { ...state.trialBalanceSummary, ...summary };
+  SET_TRIAL_BALANCE_SUMMARY: (state, data) => {
+    state.trialBalanceSummary = data;
+  },
+  SET_TRIAL_BALANCE_CHART_DATA: (state, data) => {
+    state.trialBalanceChartData = data;
+  },
+  SET_TRIAL_BALANCE_VARIANCE_ANALYSIS: (state, data) => {
+    state.trialBalanceVarianceAnalysis = data;
+  },
+  SET_BALANCE_SHEET_PREVIEW: (state, data) => {
+    state.balanceSheetPreview = data;
   },
 
   // Cost Centers mutations
@@ -188,8 +197,6 @@ export default {
     state.depositsPages = pages;
   },
 
-
-
   // Financial reports mutations
   SET_FINANCIAL_REPORTS(state, data) {
     state.financialReports = { ...state.financialReports, ...data };
@@ -220,4 +227,63 @@ export default {
   SET_BILLING_POINTS(state, points) {
     state.billingPoints = points;
   },
+
+  // ===== PHASE 6: REPORTING & ANALYTICS MUTATIONS =====
+
+  // Financial Reporting Mutations
+  SET_COMPREHENSIVE_FINANCIAL_REPORT(state, report) {
+    state.comprehensiveFinancialReport = report;
+  },
+
+  SET_PROFIT_LOSS_STATEMENT(state, statement) {
+    state.profitLossStatement = statement;
+  },
+
+  SET_BALANCE_SHEET(state, sheet) {
+    state.balanceSheet = sheet;
+  },
+
+  SET_CASH_FLOW_STATEMENT(state, statement) {
+    state.cashFlowStatement = statement;
+  },
+
+  // Operational Reporting Mutations
+  SET_OPERATIONAL_PERFORMANCE_REPORT(state, report) {
+    state.operationalPerformanceReport = report;
+  },
+
+  SET_PAYMENT_METHOD_UTILIZATION(state, utilization) {
+    state.paymentMethodUtilization = utilization;
+  },
+
+  SET_RECONCILIATION_STATUS(state, status) {
+    state.reconciliationStatus = status;
+  },
+
+  SET_SETTLEMENT_TRACKING(state, tracking) {
+    state.settlementTracking = tracking;
+  },
+
+  // Business Intelligence Mutations
+  SET_COMPREHENSIVE_BI_REPORT(state, report) {
+    state.comprehensiveBIReport = report;
+  },
+
+  SET_PAYMENT_TREND_ANALYSIS(state, analysis) {
+    state.paymentTrendAnalysis = analysis;
+  },
+
+  SET_PREDICTIVE_ANALYTICS(state, analytics) {
+    state.predictiveAnalytics = analytics;
+  },
+
+  SET_KPI_MONITORING(state, monitoring) {
+    state.kpiMonitoring = monitoring;
+  },
+
+  SET_REAL_TIME_MONITORING(state, monitoring) {
+    state.realTimeMonitoring = monitoring;
+  },
+
+  // ===== END PHASE 6 MUTATIONS =====
 };

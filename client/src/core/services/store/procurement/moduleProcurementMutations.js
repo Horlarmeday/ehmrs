@@ -26,7 +26,22 @@ export const SET_ERROR = (state, error) => {
   state.error = error;
 };
 
+export const SET_PROCUREMENT_STATISTICS = (state, statistics) => {
+  state.statistics = statistics;
+};
+
+export const SET_CURRENT_ORDER = (state, order) => {
+  state.currentOrder = order;
+};
+
+export const SET_PROCUREMENT_REPORTS = (state, reports) => {
+  state.reports = reports;
+};
+
 export const CLEAR_PROCUREMENT_DATA = state => {
   state.orders = [];
+  state.currentOrder = null;
+  state.statistics = {};
+  state.reports = [];
   state.error = null;
 };

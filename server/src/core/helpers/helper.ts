@@ -113,6 +113,7 @@ export enum StatusCodes {
   TIMED_OUT = 408,
   SERVER_ERROR = 500,
   SERVICE_UNAVAILABLE = 501,
+  CONFLICT = 409,
 }
 
 const removeSpecialCharacter = (param: string, character: string) => {

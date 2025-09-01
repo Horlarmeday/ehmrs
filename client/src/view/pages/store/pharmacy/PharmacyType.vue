@@ -60,6 +60,16 @@ export default {
         link: '/store/pharmacy/vendors',
         desc: 'Click here to view vendors',
       },
+      {
+        name: 'Procurement',
+        link: '/store/pharmacy/procurement',
+        desc: 'Click here to view vendors',
+      },
+      {
+        name: 'Stock Audit',
+        link: '/store/pharmacy/stock-audit',
+        desc: 'Click here to view vendors',
+      },
     ],
   }),
   //   methods: {

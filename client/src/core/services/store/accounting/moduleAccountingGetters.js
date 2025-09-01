@@ -38,6 +38,9 @@ export default {
   // Trial Balance getters
   getTrialBalance: state => state.trialBalance,
   getTrialBalanceSummary: state => state.trialBalanceSummary,
+  getTrialBalanceChartData: state => state.trialBalanceChartData,
+  getTrialBalanceVarianceAnalysis: state => state.trialBalanceVarianceAnalysis,
+  getBalanceSheetPreview: state => state.balanceSheetPreview,
 
   // Cost Centers getters
   getCostCenters: state => state.costCenters,
@@ -109,4 +112,27 @@ export default {
   getBillingPoints: state => {
     return state.billingPoints || [];
   },
+
+  // ===== PHASE 6: REPORTING & ANALYTICS GETTERS =====
+
+  // Financial Reporting Getters
+  getComprehensiveFinancialReport: state => state.comprehensiveFinancialReport,
+  getProfitLossStatement: state => state.profitLossStatement,
+  getBalanceSheet: state => state.balanceSheet,
+  getCashFlowStatement: state => state.cashFlowStatement,
+
+  // Operational Reporting Getters
+  getOperationalPerformanceReport: state => state.operationalPerformanceReport,
+  getPaymentMethodUtilization: state => state.paymentMethodUtilization,
+  getReconciliationStatus: state => state.reconciliationStatus,
+  getSettlementTracking: state => state.settlementTracking,
+
+  // Business Intelligence Getters
+  getComprehensiveBIReport: state => state.comprehensiveBIReport,
+  getPaymentTrendAnalysis: state => state.paymentTrendAnalysis,
+  getPredictiveAnalytics: state => state.predictiveAnalytics,
+  getKPIMonitoring: state => state.kpiMonitoring,
+  getRealTimeMonitoring: state => state.realTimeMonitoring,
+
+  // ===== END PHASE 6 GETTERS =====
 };

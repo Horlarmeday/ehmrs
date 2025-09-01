@@ -98,10 +98,24 @@
               </b-form-group>
             </div>
             <div class="col-md-2">
+              <date-filter
+                v-model="filters.startDate"
+                @change="loadEntries"
+              />
               <b-form-group label="Date Range" label-for="date-filter">
                 <b-form-input
                   id="date-filter"
-                  v-model="filters.dateRange"
+                  v-model="filters.startDate"
+                  type="date"
+                  @change="loadEntries"
+                ></b-form-input>
+              </b-form-group>
+            </div>
+            <div class="col-md-2">
+              <b-form-group label="End Date" label-for="end-date">
+                <b-form-input
+                  id="end-date"
+                  v-model="filters.endDate"
                   type="date"
                   @change="loadEntries"
                 ></b-form-input>
@@ -475,7 +489,8 @@ export default {
       filters: {
         search: '',
         status: '',
-        dateRange: '',
+        startDate: '',
+        endDate: '',
         type: '',
       },
 

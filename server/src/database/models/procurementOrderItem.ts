@@ -59,9 +59,8 @@ export class ProcurementOrderItem extends Model {
     type: DataType.INTEGER,
     allowNull: false,
     validate: {
-      min: {
-        args: [1],
-        msg: 'Quantity ordered must be at least 1',
+      notEmpty: {
+        msg: 'quantity ordered is required',
       },
     },
   })
@@ -70,12 +69,6 @@ export class ProcurementOrderItem extends Model {
   @Column({
     type: DataType.INTEGER,
     defaultValue: 0,
-    validate: {
-      min: {
-        args: [0],
-        msg: 'Quantity received cannot be negative',
-      },
-    },
   })
   quantity_received: number;
 

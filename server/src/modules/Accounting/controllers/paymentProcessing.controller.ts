@@ -5,7 +5,7 @@ import {
   processPaymentSchema,
   paymentOptionsQuerySchema,
   paymentStatusParamsSchema,
-  paymentReceiptParamsSchema
+  paymentReceiptParamsSchema,
 } from '../validations';
 import { BadException } from '../../../common/util/api-error';
 import { log } from 'console';
@@ -20,7 +20,7 @@ interface AuthenticatedRequest extends Request {
 
 /**
  * Payment Processing Controller
- * 
+ *
  * Handles HTTP requests for payment processing operations
  * Follows thin controller pattern - delegates all business logic to service layer
  */
@@ -44,13 +44,20 @@ export class PaymentProcessingController {
   ): Promise<void> {
     try {
       // Validate request body
-      const validatedBody = PaymentProcessingController.validateRequest(req.body, processPaymentSchema);
+      const validatedBody = PaymentProcessingController.validateRequest(
+        req.body,
+        processPaymentSchema
+      );
       const staffId = req.user.sub;
+
+      // Get staff role from user context
+      const staffRole = req.user.role;
 
       // Delegate to service layer
       const result = await PaymentProcessingService.processPayment(
         validatedBody,
-        staffId
+        staffId,
+        staffRole
       );
 
       res.status(200).json({
@@ -66,15 +73,14 @@ export class PaymentProcessingController {
   /**
    * Get payment processing options (available payment methods, etc.)
    */
-  static async getPaymentOptions(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
+  static async getPaymentOptions(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       console.log(req.query);
       // Validate query parameters
-      const validatedQuery = PaymentProcessingController.validateRequest(req.query, paymentOptionsQuerySchema);
+      const validatedQuery = PaymentProcessingController.validateRequest(
+        req.query,
+        paymentOptionsQuerySchema
+      );
 
       // Delegate to service layer
       const paymentOptions = await PaymentProcessingService.getPaymentOptions(
@@ -95,14 +101,13 @@ export class PaymentProcessingController {
   /**
    * Get payment processing status
    */
-  static async getPaymentStatus(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
+  static async getPaymentStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       // Validate path parameters
-      const validatedParams = PaymentProcessingController.validateRequest(req.params, paymentStatusParamsSchema);
+      const validatedParams = PaymentProcessingController.validateRequest(
+        req.params,
+        paymentStatusParamsSchema
+      );
 
       // Delegate to service layer
       const paymentStatus = await PaymentProcessingService.getPaymentStatus(
@@ -122,14 +127,13 @@ export class PaymentProcessingController {
   /**
    * Get payment receipt
    */
-  static async getPaymentReceipt(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
+  static async getPaymentReceipt(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       // Validate path parameters
-      const validatedParams = PaymentProcessingController.validateRequest(req.params, paymentReceiptParamsSchema);
+      const validatedParams = PaymentProcessingController.validateRequest(
+        req.params,
+        paymentReceiptParamsSchema
+      );
 
       // Delegate to service layer
       const receiptData = await PaymentProcessingService.getPaymentReceipt(
@@ -149,14 +153,13 @@ export class PaymentProcessingController {
   /**
    * Validate payment data before processing
    */
-  static async validatePaymentData(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
+  static async validatePaymentData(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       // Validate request body using the same schema as processPayment
-      const validatedBody = PaymentProcessingController.validateRequest(req.body, processPaymentSchema);
+      const validatedBody = PaymentProcessingController.validateRequest(
+        req.body,
+        processPaymentSchema
+      );
 
       res.status(200).json({
         success: true,

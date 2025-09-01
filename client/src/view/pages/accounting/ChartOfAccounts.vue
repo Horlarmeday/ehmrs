@@ -208,7 +208,16 @@
           </div>
 
           <!-- Conflict Resolution Suggestions -->
-          <div v-if="accountConflictSuggestions && (accountConflictSuggestions.conflicts?.length > 0 || accountConflictSuggestions.suggestions?.length > 0 || accountConflictSuggestions.warnings?.length > 0 || accountConflictSuggestions.alternativeCodes?.length > 0)" class="conflict-suggestions mb-3">
+          <div
+            v-if="
+              accountConflictSuggestions &&
+                (accountConflictSuggestions.conflicts?.length > 0 ||
+                  accountConflictSuggestions.suggestions?.length > 0 ||
+                  accountConflictSuggestions.warnings?.length > 0 ||
+                  accountConflictSuggestions.alternativeCodes?.length > 0)
+            "
+            class="conflict-suggestions mb-3"
+          >
             <div class="alert alert-warning">
               <h6 class="alert-heading d-flex justify-content-between align-items-center">
                 <span>
@@ -313,7 +322,16 @@
           </div>
 
           <!-- Conflict Suggestions Display -->
-          <div v-if="accountConflictSuggestions && (accountConflictSuggestions.conflicts?.length > 0 || accountConflictSuggestions.suggestions?.length > 0 || accountConflictSuggestions.warnings?.length > 0 || accountConflictSuggestions.alternativeCodes?.length > 0)" class="mt-3 p-3 border rounded bg-light">
+          <div
+            v-if="
+              accountConflictSuggestions &&
+                (accountConflictSuggestions.conflicts?.length > 0 ||
+                  accountConflictSuggestions.suggestions?.length > 0 ||
+                  accountConflictSuggestions.warnings?.length > 0 ||
+                  accountConflictSuggestions.alternativeCodes?.length > 0)
+            "
+            class="mt-3 p-3 border rounded bg-light"
+          >
             <h6 class="text-warning mb-2">
               <i class="fas fa-exclamation-triangle mr-2"></i>
               Account Validation Results
@@ -615,10 +633,11 @@
         <!-- Smart Validation Info -->
         <div class="alert alert-info mb-3">
           <i class="fas fa-info-circle mr-2"></i>
-          <strong>Smart Validation:</strong> This form automatically validates your account data after you fill in both the Account Code and Account Name fields. 
-          You can also manually validate using the button below.
+          <strong>Smart Validation:</strong> This form automatically validates your account data
+          after you fill in both the Account Code and Account Name fields. You can also manually
+          validate using the button below.
         </div>
-        
+
         <b-form @submit.prevent="saveAccount">
           <div class="row">
             <div class="col-md-6">
@@ -646,7 +665,14 @@
                 <small class="form-text text-muted">
                   💡 Enter a 4-digit code (e.g., 1001 for Assets, 2001 for Liabilities)
                 </small>
-                <div v-if="accountConflictSuggestions && (accountConflictSuggestions.suggestions?.length > 0 || accountConflictSuggestions.warnings?.length > 0)" class="mt-2">
+                <div
+                  v-if="
+                    accountConflictSuggestions &&
+                      (accountConflictSuggestions.suggestions?.length > 0 ||
+                        accountConflictSuggestions.warnings?.length > 0)
+                  "
+                  class="mt-2"
+                >
                   <small class="text-warning">
                     <i class="fas fa-exclamation-triangle mr-1"></i>
                     Potential conflicts detected. Check suggestions below.
@@ -672,7 +698,8 @@
                   {{ formErrors.name }}
                 </div>
                 <small class="form-text text-muted">
-                  💡 Validation will occur automatically after you fill both the code and name fields
+                  💡 Validation will occur automatically after you fill both the code and name
+                  fields
                 </small>
               </b-form-group>
             </div>
@@ -797,6 +824,150 @@
             </div>
           </div>
 
+          <!-- Conflict Resolution Section Inside Modal -->
+          <div
+            v-if="
+              accountConflictSuggestions &&
+                (accountConflictSuggestions.conflicts?.length > 0 ||
+                  accountConflictSuggestions.suggestions?.length > 0 ||
+                  accountConflictSuggestions.warnings?.length > 0 ||
+                  accountConflictSuggestions.alternativeCodes?.length > 0)
+            "
+            class="conflict-section mt-4 p-3 border rounded bg-light"
+          >
+            <h6 class="text-warning mb-3">
+              <i class="fas fa-exclamation-triangle mr-2"></i>
+              Account Validation Results
+            </h6>
+
+            <!-- Suggestions -->
+            <div
+              v-if="
+                accountConflictSuggestions.suggestions &&
+                  accountConflictSuggestions.suggestions.length > 0
+              "
+              class="mb-3"
+            >
+              <strong class="text-info">Suggestions:</strong>
+              <ul class="mb-0 mt-1">
+                <li
+                  v-for="suggestion in accountConflictSuggestions.suggestions"
+                  :key="suggestion"
+                  class="text-info"
+                >
+                  {{ suggestion }}
+                </li>
+              </ul>
+            </div>
+
+            <!-- Alternative Codes -->
+            <div
+              v-if="
+                accountConflictSuggestions.alternativeCodes &&
+                  accountConflictSuggestions.alternativeCodes.length > 0
+              "
+              class="mb-3"
+            >
+              <strong class="text-info">Alternative Codes:</strong>
+              <div class="alternative-codes mt-2">
+                <b-badge
+                  v-for="code in accountConflictSuggestions.alternativeCodes"
+                  :key="code"
+                  variant="info"
+                  class="mr-2 mb-1"
+                  style="cursor: pointer;"
+                  @click="useAlternativeCode(code)"
+                >
+                  {{ code }}
+                </b-badge>
+              </div>
+              <small class="text-muted">Click on a code to apply it to the form</small>
+            </div>
+
+            <!-- Warnings -->
+            <div
+              v-if="
+                accountConflictSuggestions.warnings &&
+                  accountConflictSuggestions.warnings.length > 0
+              "
+              class="mb-3"
+            >
+              <strong class="text-warning">Warnings:</strong>
+              <ul class="mb-0 mt-1">
+                <li
+                  v-for="warning in accountConflictSuggestions.warnings"
+                  :key="warning"
+                  class="text-warning"
+                >
+                  {{ warning }}
+                </li>
+              </ul>
+            </div>
+
+            <!-- Quick Action Buttons -->
+            <div class="d-flex gap-2 mt-3">
+              <b-button
+                variant="outline-success"
+                size="sm"
+                @click="applyAllSuggestions"
+                v-if="
+                  accountConflictSuggestions.alternativeCodes &&
+                    accountConflictSuggestions.alternativeCodes.length > 0
+                "
+              >
+                <i class="fas fa-magic mr-1"></i>Apply All
+              </b-button>
+              <b-button variant="outline-warning" size="sm" @click="ignoreConflictsAndProceed">
+                <i class="fas fa-exclamation-triangle mr-1"></i>Ignore & Proceed
+              </b-button>
+              <b-button variant="outline-info" size="sm" @click="clearConflictSuggestions">
+                <i class="fas fa-times mr-1"></i>Clear
+              </b-button>
+            </div>
+          </div>
+
+          <!-- Server Error Display Section -->
+          <div
+            v-if="serverError"
+            class="server-error-section mt-4 p-3 border rounded"
+            :class="getErrorAlertClass(serverError.type)"
+          >
+            <div class="d-flex justify-content-between align-items-start">
+              <h6 class="mb-2">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                {{ serverError.type }}
+              </h6>
+              <b-button
+                variant="outline-secondary"
+                size="sm"
+                @click="clearServerError"
+                title="Clear error"
+              >
+                <i class="fas fa-times"></i>
+              </b-button>
+            </div>
+
+            <div class="error-message mb-2"><strong>Error:</strong> {{ serverError.message }}</div>
+
+            <div v-if="serverError.details" class="error-details mb-2">
+              <strong>Details:</strong>
+              <pre class="error-details-text">{{ serverError.details }}</pre>
+            </div>
+
+            <div class="error-timestamp text-muted">
+              <small>Occurred at: {{ formatErrorTimestamp(serverError.timestamp) }}</small>
+            </div>
+
+            <div class="error-actions mt-3">
+              <b-button variant="outline-info" size="sm" @click="showErrorHelp">
+                <i class="fas fa-question-circle mr-1"></i>Get Help
+              </b-button>
+              <b-button variant="outline-warning" size="sm" @click="retrySaveAccount">
+                <i class="fas fa-redo mr-1"></i>Retry
+              </b-button>
+            </div>
+          </div>
+
           <div class="row">
             <div class="col-12 text-center">
               <b-button variant="outline-info" size="sm" @click="getFormSummary">
@@ -810,9 +981,9 @@
       <template #modal-footer>
         <div class="d-flex justify-content-between w-100">
           <div>
-            <b-button 
-              variant="outline-info" 
-              size="sm" 
+            <b-button
+              variant="outline-info"
+              size="sm"
               @click="manualValidateForm"
               :disabled="isValidationInProgress || !accountForm.code || !accountForm.name"
             >
@@ -878,7 +1049,7 @@ export default {
         { value: 'LIABILITY', text: 'Liability' },
         { value: 'EQUITY', text: 'Equity' },
         { value: 'REVENUE', text: 'Revenue' },
-        { value: 'EXPENSE', text: 'Expense' }
+        { value: 'EXPENSE', text: 'Expense' },
       ],
       statusOptions: [
         { value: undefined, text: 'All Statuses' },
@@ -897,7 +1068,7 @@ export default {
         { value: 'VAT', text: 'VAT (5%)' },
         { value: 'WITHHOLDING', text: 'Withholding Tax (10%)' },
         { value: 'EXEMPT', text: 'Tax Exempt' },
-        { value: 'ZERO_RATE', text: 'Zero Rate' }
+        { value: 'ZERO_RATE', text: 'Zero Rate' },
       ],
       parentAccountOptions: [],
 
@@ -908,6 +1079,9 @@ export default {
       nameConflictCheckTimeout: null,
       isValidationInProgress: false, // New: track validation state
       accountConflictSuggestions: null, // Moved from computed to data
+
+      // Server error handling
+      serverError: null,
     };
   },
   computed: {
@@ -934,19 +1108,19 @@ export default {
     },
     isFormValid() {
       // Check if required fields are filled
-      const hasRequiredFields = this.accountForm.code && 
-                               this.accountForm.code.trim() !== '' &&
-                               this.accountForm.name && 
-                               this.accountForm.name.trim() !== '' &&
-                               this.accountForm.type && 
-                               this.accountForm.type.trim() !== '';
-      
+      const hasRequiredFields =
+        this.accountForm.code &&
+        this.accountForm.code.trim() !== '' &&
+        this.accountForm.name &&
+        this.accountForm.name.trim() !== '' &&
+        this.accountForm.type &&
+        this.accountForm.type.trim() !== '';
+
       // Check if validation is not in progress
       const notValidating = !this.isValidationInProgress;
-      
+
       return hasRequiredFields && notValidating;
     },
-
   },
   async mounted() {
     await this.loadAccounts();
@@ -1097,6 +1271,7 @@ export default {
         } else {
           delete this.accountForm.id;
           result = await this.$store.dispatch('accounting/createChartOfAccount', this.accountForm);
+          console.log(result, 'result');
         }
 
         if (result.success) {
@@ -1111,7 +1286,34 @@ export default {
         }
       } catch (error) {
         console.error('Failed to save account:', error);
-        this.$bvToast.toast('Failed to save account: ' + (error.message || 'Unknown error'), {
+
+        // Extract detailed error information
+        let errorMessage = 'Unknown error occurred';
+        let errorDetails = '';
+        let errorType = 'Error';
+
+        if (error.response && error.response.data) {
+          // Server error response
+          const serverError = error.response.data;
+          errorMessage = serverError.message || serverError.error || 'Server error occurred';
+          errorDetails = serverError.details || serverError.stack || '';
+          errorType = serverError.name || 'Server Error';
+        } else if (error.message) {
+          // JavaScript error
+          errorMessage = error.message;
+          errorType = 'Validation Error';
+        }
+
+        // Set error state for display in modal
+        this.serverError = {
+          type: errorType,
+          message: errorMessage,
+          details: errorDetails,
+          timestamp: new Date(),
+        };
+
+        // Also show toast for immediate feedback
+        this.$bvToast.toast(`Failed to save account: ${errorMessage}`, {
           title: 'Error',
           variant: 'danger',
           solid: true,
@@ -1261,6 +1463,9 @@ export default {
 
       // Clear validation and conflict data
       this.clearConflictSuggestions();
+
+      // Clear server errors
+      this.clearServerError();
 
       // Clear timeouts
       if (this.conflictCheckTimeout) {
@@ -1971,7 +2176,7 @@ Account Validation Help:
             },
             existingAccountId: this.editingAccountId,
           });
-          
+
           // Set the local conflict suggestions data
           if (result && result.success && result.data) {
             console.log('API Response:', result);
@@ -2022,7 +2227,7 @@ Account Validation Help:
             },
             existingAccountId: this.editingAccountId,
           });
-          
+
           // Set the local conflict suggestions data
           if (result && result.success && result.data) {
             this.accountConflictSuggestions = result.data;
@@ -2134,7 +2339,7 @@ Chart of Accounts Management Help:
       if (this.accountConflictSuggestions) {
         this.accountConflictSuggestions = null;
       }
-      
+
       // Clear form errors for the field being typed in
       this.clearFormErrors();
     },
@@ -2175,7 +2380,7 @@ Chart of Accounts Management Help:
           },
           existingAccountId: this.editingAccountId,
         });
-        
+
         // Set the local conflict suggestions data
         if (result && result.success && result.data) {
           this.accountConflictSuggestions = result.data;
@@ -2210,7 +2415,7 @@ Chart of Accounts Management Help:
       if (!this.isEditing) {
         this.resetForm();
       }
-      
+
       // Clear any existing validation state
       this.clearFormErrors();
       this.clearConflictSuggestions();
@@ -2226,17 +2431,18 @@ Chart of Accounts Management Help:
         isEditing: this.isEditing,
         isValidationInProgress: this.isValidationInProgress,
         isFormValid: this.isFormValid,
-        hasRequiredFields: this.accountForm.code && 
-                          this.accountForm.code.trim() !== '' &&
-                          this.accountForm.name && 
-                          this.accountForm.name.trim() !== '' &&
-                          this.accountForm.type && 
-                          this.accountForm.type.trim() !== '',
-        notValidating: !this.isValidationInProgress
+        hasRequiredFields:
+          this.accountForm.code &&
+          this.accountForm.code.trim() !== '' &&
+          this.accountForm.name &&
+          this.accountForm.name.trim() !== '' &&
+          this.accountForm.type &&
+          this.accountForm.type.trim() !== '',
+        notValidating: !this.isValidationInProgress,
       };
-      
+
       console.log('Form Debug Info:', debugInfo);
-      
+
       // Show in alert for easy viewing
       alert(`Form Debug Info:
       
@@ -2252,7 +2458,9 @@ Form State:
 - Not Validating: ${debugInfo.notValidating}
 - Is Form Valid: ${this.isFormValid}
 
-Form Errors: ${Object.keys(this.formErrors).length > 0 ? JSON.stringify(this.formErrors) : 'None'}`);
+Form Errors: ${
+        Object.keys(this.formErrors).length > 0 ? JSON.stringify(this.formErrors) : 'None'
+      }`);
     },
 
     /**
@@ -2260,17 +2468,97 @@ Form Errors: ${Object.keys(this.formErrors).length > 0 ? JSON.stringify(this.for
      */
     clearEmptyConflictSuggestions() {
       if (this.accountConflictSuggestions) {
-        const hasConflicts = Array.isArray(this.accountConflictSuggestions.conflicts) && this.accountConflictSuggestions.conflicts.length > 0;
-        const hasSuggestions = Array.isArray(this.accountConflictSuggestions.suggestions) && this.accountConflictSuggestions.suggestions.length > 0;
-        const hasWarnings = Array.isArray(this.accountConflictSuggestions.warnings) && this.accountConflictSuggestions.warnings.length > 0;
-        const hasAlternativeCodes = Array.isArray(this.accountConflictSuggestions.alternativeCodes) && this.accountConflictSuggestions.alternativeCodes.length > 0;
-        
+        const hasConflicts =
+          Array.isArray(this.accountConflictSuggestions.conflicts) &&
+          this.accountConflictSuggestions.conflicts.length > 0;
+        const hasSuggestions =
+          Array.isArray(this.accountConflictSuggestions.conflicts) &&
+          this.accountConflictSuggestions.suggestions.length > 0;
+        const hasWarnings =
+          Array.isArray(this.accountConflictSuggestions.warnings) &&
+          this.accountConflictSuggestions.warnings.length > 0;
+        const hasAlternativeCodes =
+          Array.isArray(this.accountConflictSuggestions.alternativeCodes) &&
+          this.accountConflictSuggestions.alternativeCodes.length > 0;
+
         // If there are no actual conflicts, suggestions, warnings, or alternative codes, clear it
         if (!hasConflicts && !hasSuggestions && !hasWarnings && !hasAlternativeCodes) {
           console.log('Clearing empty conflict suggestions:', this.accountConflictSuggestions);
           this.accountConflictSuggestions = null;
         }
       }
+    },
+
+    /**
+     * Get CSS class for error alert styling
+     */
+    getErrorAlertClass(errorType) {
+      switch (errorType.toLowerCase()) {
+        case 'validation error':
+          return 'border-warning bg-warning-light';
+        case 'server error':
+          return 'border-danger bg-danger-light';
+        case 'conflict error':
+          return 'border-info bg-info-light';
+        default:
+          return 'border-danger bg-danger-light';
+      }
+    },
+
+    /**
+     * Format error timestamp for display
+     */
+    formatErrorTimestamp(timestamp) {
+      return new Date(timestamp).toLocaleString();
+    },
+
+    /**
+     * Clear server error
+     */
+    clearServerError() {
+      this.serverError = null;
+    },
+
+    /**
+     * Show error help information
+     */
+    showErrorHelp() {
+      const helpText = `
+Error Resolution Help:
+
+1. **Validation Errors**: 
+   - Check that all required fields are filled
+   - Ensure account code follows the 4-digit format
+   - Verify account type matches the code range
+
+2. **Server Errors**:
+   - Check your internet connection
+   - Try refreshing the page
+   - Contact system administrator if problem persists
+
+3. **Conflict Errors**:
+   - Use the conflict resolution suggestions above
+   - Apply alternative codes if available
+   - Check for duplicate account codes or names
+
+4. **General Tips**:
+   - Review the error details below
+   - Use the "Retry" button to attempt the operation again
+   - Clear the error and start fresh if needed
+      `;
+
+      alert(helpText);
+    },
+
+    /**
+     * Retry saving the account
+     */
+    async retrySaveAccount() {
+      // Clear the error first
+      this.clearServerError();
+
+      // Attempt to save again
+      await this.saveAccount();
     },
   },
 };
@@ -2549,6 +2837,100 @@ function debounce(func, wait) {
 
 .text-muted {
   color: #6c757d !important;
+}
+
+/* Conflict section styling inside modal */
+.conflict-section {
+  border-left: 4px solid #ffc107 !important;
+  background-color: #fff3cd !important;
+}
+
+.conflict-section h6 {
+  color: #856404;
+  font-weight: 600;
+}
+
+.conflict-section .text-info {
+  color: #0c5460 !important;
+}
+
+.conflict-section .text-warning {
+  color: #856404 !important;
+}
+
+.conflict-section .alternative-codes .badge {
+  transition: all 0.2s;
+}
+
+.conflict-section .alternative-codes .badge:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Server error section styling */
+.server-error-section {
+  border-left: 4px solid !important;
+}
+
+.server-error-section.border-warning {
+  border-left-color: #ffc107 !important;
+  background-color: #fff3cd !important;
+}
+
+.server-error-section.border-danger {
+  border-left-color: #dc3545 !important;
+  background-color: #f8d7da !important;
+}
+
+.server-error-section.border-info {
+  border-left-color: #17a2b8 !important;
+  background-color: #d1ecf1 !important;
+}
+
+.server-error-section h6 {
+  font-weight: 600;
+}
+
+.server-error-section.border-warning h6 {
+  color: #856404;
+}
+
+.server-error-section.border-danger h6 {
+  color: #721c24;
+}
+
+.server-error-section.border-info h6 {
+  color: #0c5460;
+}
+
+.error-message {
+  font-size: 1rem;
+}
+
+.error-details {
+  margin-top: 1rem;
+}
+
+.error-details-text {
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.error-timestamp {
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+.error-actions {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding-top: 1rem;
 }
 
 @media (max-width: 768px) {

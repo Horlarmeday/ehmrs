@@ -122,7 +122,7 @@ export class AccountValidationService {
 
       return report;
     } catch (error) {
-      throw new BadException('Failed to validate Chart of Accounts', 500, error.message);
+      throw new BadException('Chart of Accounts Validation Failed', 500, `Failed to validate Chart of Accounts: ${error.message}`);
     }
   }
 
@@ -586,7 +586,7 @@ export class AccountValidationService {
 
       return results;
     } catch (error) {
-      throw new BadException(`Failed to validate ${accountType} accounts`, 500, error.message);
+      throw new BadException('Account Type Validation Failed', 500, `Failed to validate ${accountType} accounts: ${error.message}`);
     }
   }
 
@@ -615,7 +615,7 @@ export class AccountValidationService {
         lastValidation: report.timestamp,
       };
     } catch (error) {
-      throw new BadException('Failed to get validation statistics', 500, error.message);
+      throw new BadException('Validation Statistics Failed', 500, `Failed to get validation statistics: ${error.message}`);
     }
   }
 }

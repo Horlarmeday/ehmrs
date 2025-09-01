@@ -215,7 +215,7 @@ export class ComprehensiveChartOfAccountsService {
     try {
       const account = await this.getRequiredAccount(accountCode);
       if (!account) {
-        throw new BadException(`Required account ${accountCode} not found`, 404);
+        throw new BadException('Required Account Not Found', 404, `Required account ${accountCode} not found`);
       }
       return account.balance || 0;
     } catch (error) {

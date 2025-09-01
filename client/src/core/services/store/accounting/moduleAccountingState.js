@@ -50,9 +50,15 @@ export default {
   trialBalanceSummary: {
     totalDebits: 0,
     totalCredits: 0,
+    totalOpeningBalance: 0,
+    totalClosingBalance: 0,
     balancedAccounts: 0,
     difference: 0,
+    periodInfo: null,
   },
+  trialBalanceChartData: null,
+  trialBalanceVarianceAnalysis: null,
+  balanceSheetPreview: null,
 
   // Cost Centers data
   costCenters: [],
@@ -183,4 +189,27 @@ export default {
 
   // Billing points
   billingPoints: [],
+
+  // ===== PHASE 6: REPORTING & ANALYTICS STATE =====
+
+  // Financial Reporting State
+  comprehensiveFinancialReport: null,
+  profitLossStatement: null,
+  balanceSheet: null,
+  cashFlowStatement: null,
+
+  // Operational Reporting State
+  operationalPerformanceReport: null,
+  paymentMethodUtilization: null,
+  reconciliationStatus: null,
+  settlementTracking: null,
+
+  // Business Intelligence State
+  comprehensiveBIReport: null,
+  paymentTrendAnalysis: null,
+  predictiveAnalytics: null,
+  kpiMonitoring: null,
+  realTimeMonitoring: null,
+
+  // ===== END PHASE 6 STATE =====
 };

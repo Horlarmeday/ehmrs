@@ -71,6 +71,24 @@ export class ComprehensiveChartOfAccountsService {
       type: AccountType.ASSET,
       description: 'Amounts receivable from bank transfers before clearing to bank accounts',
     },
+    {
+      code: '1100',
+      name: 'Accounts Receivable',
+      type: AccountType.ASSET,
+      description: 'General accounts receivable for outstanding payments and claims',
+    },
+    {
+      code: '4000',
+      name: 'General Revenue',
+      type: AccountType.REVENUE,
+      description: 'General revenue account for medical services and other income',
+    },
+    {
+      code: '5000',
+      name: 'Operating Expenses',
+      type: AccountType.EXPENSE,
+      description: 'All banking-related fees and charges',
+    },
   ];
 
   /**
@@ -83,9 +101,9 @@ export class ComprehensiveChartOfAccountsService {
       }
     } catch (error) {
       throw new BadException(
-        'Failed to ensure required Chart of Accounts exist',
+        'Required Accounts Creation Failed',
         500,
-        error.message
+        `Failed to ensure required Chart of Accounts exist: ${error.message}`
       );
     }
   }
@@ -173,9 +191,9 @@ export class ComprehensiveChartOfAccountsService {
       }
     } catch (error) {
       throw new BadException(
-        `Failed to ensure account ${requiredAccount.code} exists`,
+        'Account Creation Failed',
         500,
-        error.message
+        `Failed to ensure account ${requiredAccount.code} exists: ${error.message}`
       );
     }
   }
@@ -189,7 +207,11 @@ export class ComprehensiveChartOfAccountsService {
         where: { code, is_active: true },
       });
     } catch (error) {
-      throw new BadException(`Failed to get required account ${code}`, 500, error.message);
+      throw new BadException(
+        'Account Retrieval Failed',
+        500,
+        `Failed to get required account ${code}: ${error.message}`
+      );
     }
   }
 
@@ -207,7 +229,11 @@ export class ComprehensiveChartOfAccountsService {
         order: [['code', 'ASC']],
       });
     } catch (error) {
-      throw new BadException('Failed to get all required accounts', 500, error.message);
+      throw new BadException(
+        'Accounts Retrieval Failed',
+        500,
+        `Failed to get all required accounts: ${error.message}`
+      );
     }
   }
 
@@ -233,7 +259,11 @@ export class ComprehensiveChartOfAccountsService {
         missing: missingCodes,
       };
     } catch (error) {
-      throw new BadException('Failed to validate required accounts', 500, error.message);
+      throw new BadException(
+        'Account Validation Failed',
+        500,
+        `Failed to validate required accounts: ${error.message}`
+      );
     }
   }
 
@@ -246,9 +276,9 @@ export class ComprehensiveChartOfAccountsService {
       return account ? account.balance || 0 : 0;
     } catch (error) {
       throw new BadException(
-        `Failed to get account balance for ${accountCode}`,
+        'Account Balance Retrieval Failed',
         500,
-        error.message
+        `Failed to get account balance for ${accountCode}: ${error.message}`
       );
     }
   }
@@ -266,7 +296,11 @@ export class ComprehensiveChartOfAccountsService {
         order: [['code', 'ASC']],
       });
     } catch (error) {
-      throw new BadException(`Failed to get accounts by type ${accountType}`, 500, error.message);
+      throw new BadException(
+        'Accounts by Type Retrieval Failed',
+        500,
+        `Failed to get accounts by type ${accountType}: ${error.message}`
+      );
     }
   }
 
@@ -281,6 +315,8 @@ export class ComprehensiveChartOfAccountsService {
         BANK_TRANSFER: ['1102'], // Bank Transfer Receivables
         INSURANCE: ['1101'], // Insurance Receivables
         DEPOSIT: ['2001'], // Patient Deposits Payable
+        MOBILE_MONEY: ['1100'], // Accounts Receivable
+        WAIVER: ['4000'], // General Revenue
       };
 
       const accountCodes = methodAccountMap[paymentMethod] || [];
@@ -297,9 +333,9 @@ export class ComprehensiveChartOfAccountsService {
       });
     } catch (error) {
       throw new BadException(
-        `Failed to get payment method accounts for ${paymentMethod}`,
+        'Payment Method Accounts Retrieval Failed',
         500,
-        error.message
+        `Failed to get payment method accounts for ${paymentMethod}: ${error.message}`
       );
     }
   }

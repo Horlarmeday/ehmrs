@@ -24,8 +24,6 @@ router.get('/processing/options', verify, PaymentProcessingController.getPayment
  */
 router.get('/:paymentId/status', verify, PaymentProcessingController.getPaymentStatus);
 
-
-
 /**
  * Get payment receipt
  * GET /api/accounting/payments/:paymentId/receipt

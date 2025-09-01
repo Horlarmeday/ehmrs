@@ -34,40 +34,40 @@ export enum StoreType {
   RADIOLOGY = 'RADIOLOGY',
 }
 
-@Table({ 
-  timestamps: true, 
+@Table({
+  timestamps: true,
   tableName: 'Stock_Audits',
   indexes: [
     {
       name: 'idx_stock_audit_store_type',
-      fields: ['store_type']
+      fields: ['store_type'],
     },
     {
       name: 'idx_stock_audit_status',
-      fields: ['status']
+      fields: ['status'],
     },
     {
       name: 'idx_stock_audit_date',
-      fields: ['audit_date']
+      fields: ['audit_date'],
     },
     {
       name: 'idx_stock_audit_inventory',
-      fields: ['inventory_id']
+      fields: ['inventory_id'],
     },
     {
       name: 'idx_stock_audit_created_by',
-      fields: ['created_by']
+      fields: ['created_by'],
     },
     {
       name: 'idx_stock_audit_approved_by',
-      fields: ['approved_by']
+      fields: ['approved_by'],
     },
     {
       name: 'idx_stock_audit_number_unique',
       fields: ['audit_number'],
-      unique: true
-    }
-  ]
+      unique: true,
+    },
+  ],
 })
 export class StockAudit extends Model {
   @PrimaryKey
@@ -87,11 +87,7 @@ export class StockAudit extends Model {
   audit_number: string; // SA-2024-001
 
   @Column({
-    type: DataType.ENUM(
-      StoreType.PHARMACY,
-      StoreType.LABORATORY,
-      StoreType.RADIOLOGY
-    ),
+    type: DataType.ENUM(StoreType.PHARMACY, StoreType.LABORATORY, StoreType.RADIOLOGY),
     allowNull: false,
     validate: {
       notEmpty: {

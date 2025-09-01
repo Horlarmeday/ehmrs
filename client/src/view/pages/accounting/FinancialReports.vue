@@ -13,6 +13,9 @@
         <b-button variant="info" @click="refreshData">
           <i class="fas fa-sync-alt mr-2"></i>Refresh
         </b-button>
+        <b-button variant="success" @click="navigateToAdvancedDashboard">
+          <i class="fas fa-chart-line mr-2"></i>Advanced Analytics
+        </b-button>
       </div>
     </div>
 
@@ -754,6 +757,10 @@ export default {
 
     refreshData() {
       this.loadReportData();
+    },
+
+    navigateToAdvancedDashboard() {
+      this.$router.push('/accounting/advanced-reports');
     },
 
     // Utility methods

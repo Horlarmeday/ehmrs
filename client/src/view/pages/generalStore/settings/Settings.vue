@@ -442,7 +442,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from '@/axios';
 
 export default {
   name: 'Settings',
@@ -479,7 +479,7 @@ export default {
   methods: {
     async loadSettings() {
       try {
-        const response = await axios.get('/api/general-store/settings');
+        const response = await axios.get('/general-store/settings');
         if (response.data.data) {
           this.form = { ...this.form, ...response.data.data };
         }
@@ -493,7 +493,7 @@ export default {
       this.errors = {};
 
       try {
-        await axios.put('/api/general-store/settings', this.form);
+        await axios.put('/general-store/settings', this.form);
         this.$toast.success('Settings saved successfully!');
       } catch (error) {
         console.error('Error saving settings:', error);

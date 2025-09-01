@@ -95,7 +95,7 @@ export class DepositAuditService {
 
       return auditEntry;
     } catch (error) {
-      throw new BadException('Failed to create audit log', 500, error.message);
+      throw new BadException('Audit Log Creation Failed', 500, `Failed to create audit log: ${error.message}`);
     }
   }
 

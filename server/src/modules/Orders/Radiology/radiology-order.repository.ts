@@ -7,6 +7,7 @@ import {
   Staff,
   Patient,
   Drug,
+  ClinicalBill,
 } from '../../../database/models';
 import { Transaction, WhereOptions } from 'sequelize';
 import { staffAttributes } from '../../Antenatal/antenatal.repository';
@@ -288,7 +289,7 @@ const insertHSGAdditionalItems = async ({
       for (const drug of createdDrugs) {
         const originalDrug = await Drug.findByPk(drug.drug_id);
 
-        await VisitBillingHelper.addPrescribedDrugToBill(
+        VisitBillingHelper.addPrescribedDrugToBill(
           drug.visit_id,
           drug,
           drug.examiner,
@@ -300,7 +301,7 @@ const insertHSGAdditionalItems = async ({
 
       for (const consumable of createdConsumables) {
         const originalDrug = await Drug.findByPk(consumable?.drug_id);
-        await VisitBillingHelper.addPrescribedAdditionalItemToBill(
+        VisitBillingHelper.addPrescribedAdditionalItemToBill(
           consumable.visit_id,
           consumable,
           consumable.examiner,
@@ -399,5 +400,26 @@ export const getOnePrescribedInvestigation = async (
  * @param investigationId
  */
 export const deletePrescribedInvestigation = async (investigationId: number) => {
-  return PrescribedInvestigation.destroy({ where: { id: investigationId } });
+  // Get the investigation before deletion to get visit_id
+  const investigation = await PrescribedInvestigation.findByPk(investigationId);
+  if (!investigation) return 0;
+
+  // Find the bill for this visit
+  const bill = await ClinicalBill.findOne({
+    where: { visit_id: investigation.visit_id },
+  });
+
+  // Delete the prescription
+  const deletedCount = await PrescribedInvestigation.destroy({ where: { id: investigationId } });
+
+  if (deletedCount > 0 && bill) {
+    // Clean up billing
+    try {
+      await VisitBillingHelper.removePrescribedInvestigationFromBill(investigationId, bill.id);
+    } catch (billingError) {
+      console.error('Failed to remove prescribed investigation from billing:', billingError);
+    }
+  }
+
+  return deletedCount;
 };

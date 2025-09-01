@@ -329,20 +329,33 @@ export default {
     },
     isFormValid() {
       // Check if all required fields have values and are valid
-      const requiredFields = ['bank_name', 'account_number', 'account_name', 'account_type', 'current_balance', 'is_active'];
-      
+      const requiredFields = [
+        'bank_name',
+        'account_number',
+        'account_name',
+        'account_type',
+        'current_balance',
+        'is_active',
+      ];
+
       return requiredFields.every(field => {
         const value = this.form[field];
         const validation = this.validation[field];
-        
+
         // If field has been validated and is invalid, return false
         if (validation?.valid === false) {
           return false;
         }
-        
+
         // Check if required field has a value
         if (field === 'current_balance') {
-          return value !== null && value !== undefined && value !== '' && !isNaN(value) && parseFloat(value) >= 0;
+          return (
+            value !== null &&
+            value !== undefined &&
+            value !== '' &&
+            !isNaN(value) &&
+            parseFloat(value) >= 0
+          );
         } else if (field === 'is_active') {
           return value !== null && value !== undefined;
         } else {
@@ -403,14 +416,21 @@ export default {
       Object.keys(this.validation).forEach(field => {
         this.validation[field] = { valid: null, error: '' };
       });
-      
+
       // Ensure all validation fields exist and set initial states
-      const requiredFields = ['bank_name', 'account_number', 'account_name', 'account_type', 'current_balance', 'is_active'];
+      const requiredFields = [
+        'bank_name',
+        'account_number',
+        'account_name',
+        'account_type',
+        'current_balance',
+        'is_active',
+      ];
       requiredFields.forEach(field => {
         if (!this.validation[field]) {
           this.validation[field] = { valid: null, error: '' };
         }
-        
+
         // Set initial validation state based on field value
         if (field === 'is_active') {
           // is_active has a default value of true, so it's valid initially
@@ -506,8 +526,15 @@ export default {
 
     validateAllFields() {
       let allValid = true;
-      const requiredFields = ['bank_name', 'account_number', 'account_name', 'account_type', 'current_balance', 'is_active'];
-      
+      const requiredFields = [
+        'bank_name',
+        'account_number',
+        'account_name',
+        'account_type',
+        'current_balance',
+        'is_active',
+      ];
+
       requiredFields.forEach(field => {
         if (!this.validateField(field)) {
           allValid = false;

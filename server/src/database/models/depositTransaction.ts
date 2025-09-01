@@ -12,6 +12,7 @@ import { PatientDeposit } from './patientDeposit';
 import { ClinicalBill } from './clinicalBill';
 import { JournalEntry } from './journalEntry';
 import { Staff } from './staff';
+import { FinancialPeriod } from './financialPeriod';
 import { DepositTransactionType } from '../../modules/Accounting/enums';
 
 
@@ -49,8 +50,9 @@ export class DepositTransaction extends Model {
     type: DataType.DECIMAL(10, 2),
     allowNull: false,
     validate: {
-      min: 0,
-      msg: 'amount must be greater than or equal to 0',
+      notEmpty: {
+        msg: 'amount is required',
+      },
     },
   })
   amount: number;
@@ -59,8 +61,9 @@ export class DepositTransaction extends Model {
     type: DataType.DECIMAL(10, 2),
     allowNull: false,
     validate: {
-      min: 0,
-      msg: 'previous balance must be greater than or equal to 0',
+      notEmpty: {
+        msg: 'previous balance is required',
+      },
     },
   })
   previous_balance: number;
@@ -69,8 +72,9 @@ export class DepositTransaction extends Model {
     type: DataType.DECIMAL(10, 2),
     allowNull: false,
     validate: {
-      min: 0,
-      msg: 'new balance must be greater than or equal to 0',
+      notEmpty: {
+        msg: 'new balance is required',
+      },
     },
   })
   new_balance: number;
@@ -99,6 +103,17 @@ export class DepositTransaction extends Model {
   })
   bill_id: number;
 
+  @ForeignKey(() => FinancialPeriod)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'financial_periods',
+      key: 'id'
+    }
+  })
+  period_id: number;
+
   @ForeignKey(() => JournalEntry)
   @Column({
     type: DataType.INTEGER,
@@ -118,8 +133,6 @@ export class DepositTransaction extends Model {
   })
   created_by: number;
 
-
-
   // Relationships
   @BelongsTo(() => PatientDeposit)
   deposit: PatientDeposit;
@@ -132,6 +145,9 @@ export class DepositTransaction extends Model {
 
   @BelongsTo(() => Staff, { foreignKey: 'created_by' })
   createdByStaff: Staff;
+
+  @BelongsTo(() => FinancialPeriod, { foreignKey: 'period_id' })
+  financialPeriod: FinancialPeriod;
 
   // Model hooks for validation and auto-population
   @BeforeCreate

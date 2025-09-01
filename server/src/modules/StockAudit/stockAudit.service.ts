@@ -58,14 +58,14 @@ export class StockAuditService {
 
     // Calculate variances and total variance value
     let totalVarianceValue = 0;
-    let totalItemsAudited = data.items.length;
+    const totalItemsAudited = data.items.length;
     let totalItemsWithVariance = 0;
 
     const auditItems = [];
     for (const item of data.items) {
       const variance = item.physical_quantity - item.system_quantity;
       const varianceValue = Math.abs(variance) * item.unit_cost;
-      
+
       if (variance !== 0) {
         totalItemsWithVariance++;
         totalVarianceValue += varianceValue;
@@ -78,7 +78,7 @@ export class StockAuditService {
         variance: variance,
         variance_value: varianceValue,
         unit_cost: item.unit_cost,
-        notes: item.notes
+        notes: item.notes,
       });
     }
 
@@ -93,15 +93,15 @@ export class StockAuditService {
       total_items_audited: totalItemsAudited,
       total_items_with_variance: totalItemsWithVariance,
       created_by: staffId,
-      status: 'DRAFT'
+      status: 'DRAFT',
     });
 
     // Create stock audit items
     await Promise.all(
-      auditItems.map(item => 
+      auditItems.map(item =>
         StockAuditItem.create({
           stock_audit_id: stockAudit.id,
-          ...item
+          ...item,
         })
       )
     );
@@ -117,32 +117,32 @@ export class StockAuditService {
       include: [
         {
           model: Inventory,
-          attributes: ['name', 'location']
+          attributes: ['name', 'location'],
         },
         {
           model: Staff,
           as: 'creator',
-          attributes: ['first_name', 'last_name', 'email']
+          attributes: ['first_name', 'last_name', 'email'],
         },
         {
           model: Staff,
           as: 'approver',
-          attributes: ['first_name', 'last_name', 'email']
+          attributes: ['first_name', 'last_name', 'email'],
         },
         {
           model: StockAuditItem,
           include: [
             {
               model: Drug,
-              attributes: ['name', 'generic_name', 'strength']
+              attributes: ['name', 'generic_name', 'strength'],
             },
             {
               model: Unit,
-              attributes: ['name', 'abbreviation']
-            }
-          ]
-        }
-      ]
+              attributes: ['name', 'abbreviation'],
+            },
+          ],
+        },
+      ],
     });
   }
 
@@ -172,7 +172,7 @@ export class StockAuditService {
       inventory_id,
       date_from,
       date_to,
-      search
+      search,
     } = params;
 
     const offset = (page - 1) * limit;
@@ -199,7 +199,7 @@ export class StockAuditService {
     if (search) {
       where[Op.or] = [
         { audit_number: { [Op.like]: `%${search}%` } },
-        { notes: { [Op.like]: `%${search}%` } }
+        { notes: { [Op.like]: `%${search}%` } },
       ];
     }
 
@@ -208,24 +208,24 @@ export class StockAuditService {
       include: [
         {
           model: Inventory,
-          attributes: ['name', 'location']
+          attributes: ['name', 'location'],
         },
         {
           model: Staff,
           as: 'creator',
-          attributes: ['first_name', 'last_name']
-        }
+          attributes: ['first_name', 'last_name'],
+        },
       ],
       order: [['createdAt', 'DESC']],
       limit,
-      offset
+      offset,
     });
 
     return {
       audits: rows,
       total: count,
       page,
-      totalPages: Math.ceil(count / limit)
+      totalPages: Math.ceil(count / limit),
     };
   }
 
@@ -240,7 +240,11 @@ export class StockAuditService {
 
     // Only allow updates if audit is in DRAFT status
     if (audit.status !== 'DRAFT') {
-      throw new BadException('INVALID_STATUS', 400, 'Cannot update audit that is not in DRAFT status');
+      throw new BadException(
+        'INVALID_STATUS',
+        400,
+        'Cannot update audit that is not in DRAFT status'
+      );
     }
 
     return await audit.update(data);
@@ -261,7 +265,7 @@ export class StockAuditService {
 
     return await audit.update({
       status: 'IN_PROGRESS',
-      started_date: new Date()
+      started_date: new Date(),
     });
   }
 
@@ -270,7 +274,7 @@ export class StockAuditService {
    */
   static async completeStockAudit(auditId: number): Promise<StockAudit> {
     const audit = await StockAudit.findByPk(auditId, {
-      include: [StockAuditItem]
+      include: [StockAuditItem],
     });
 
     if (!audit) {
@@ -296,7 +300,7 @@ export class StockAuditService {
       status: 'COMPLETED',
       completed_date: new Date(),
       total_variance_value: totalVarianceValue,
-      total_items_with_variance: totalItemsWithVariance
+      total_items_with_variance: totalItemsWithVariance,
     });
   }
 
@@ -316,7 +320,7 @@ export class StockAuditService {
     return await audit.update({
       status: 'APPROVED',
       approved_by: staffId,
-      approved_date: new Date()
+      approved_date: new Date(),
     });
   }
 
@@ -325,7 +329,7 @@ export class StockAuditService {
    */
   static async getVarianceAnalysis(auditId: number): Promise<VarianceAnalysis> {
     const audit = await StockAudit.findByPk(auditId, {
-      include: [StockAuditItem]
+      include: [StockAuditItem],
     });
 
     if (!audit) {
@@ -343,8 +347,8 @@ export class StockAuditService {
 
     for (const item of audit.items) {
       if (item.variance !== 0) {
-        const variancePercentage = Math.abs(item.variance) / item.system_quantity * 100;
-        
+        const variancePercentage = (Math.abs(item.variance) / item.system_quantity) * 100;
+
         if (variancePercentage > 20) {
           criticalVariances++;
         } else if (variancePercentage > 10) {
@@ -364,7 +368,7 @@ export class StockAuditService {
       variance_percentage: variancePercentage,
       critical_variances: criticalVariances,
       moderate_variances: moderateVariances,
-      minor_variances: minorVariances
+      minor_variances: minorVariances,
     };
   }
 
@@ -387,7 +391,7 @@ export class StockAuditService {
       completedAudits,
       approvedAudits,
       totalVarianceValue,
-      averageVariancePercentage
+      averageVariancePercentage,
     ] = await Promise.all([
       StockAudit.count(),
       StockAudit.count({ where: { status: 'DRAFT' } }),
@@ -397,10 +401,13 @@ export class StockAuditService {
       StockAudit.sum('total_variance_value'),
       StockAudit.findAll({
         attributes: [
-          [StockAudit.sequelize.fn('AVG', StockAudit.sequelize.col('total_variance_value')), 'avg_variance']
+          [
+            StockAudit.sequelize.fn('AVG', StockAudit.sequelize.col('total_variance_value')),
+            'avg_variance',
+          ],
         ],
-        where: { status: 'APPROVED' }
-      })
+        where: { status: 'APPROVED' },
+      }),
     ]);
 
     const avgVariance = averageVariancePercentage[0]?.getDataValue('avg_variance') || 0;
@@ -412,37 +419,39 @@ export class StockAuditService {
       completed_audits: completedAudits,
       approved_audits: approvedAudits,
       total_variance_value: totalVarianceValue || 0,
-      average_variance_percentage: avgVariance
+      average_variance_percentage: avgVariance,
     };
   }
 
   /**
    * Get store type performance comparison
    */
-  static async getStoreTypePerformance(): Promise<Array<{
-    store_type: string;
-    total_audits: number;
-    average_variance_value: number;
-    total_variance_value: number;
-    items_audited: number;
-  }>> {
+  static async getStoreTypePerformance(): Promise<
+    Array<{
+      store_type: string;
+      total_audits: number;
+      average_variance_value: number;
+      total_variance_value: number;
+      items_audited: number;
+    }>
+  > {
     const storeTypes = ['PHARMACY', 'LABORATORY', 'RADIOLOGY'];
     const results = [];
 
     for (const storeType of storeTypes) {
       const audits = await StockAudit.findAll({
-        where: { 
+        where: {
           store_type: storeType,
-          status: 'APPROVED'
+          status: 'APPROVED',
         },
-        attributes: [
-          'total_variance_value',
-          'total_items_audited'
-        ]
+        attributes: ['total_variance_value', 'total_items_audited'],
       });
 
       const totalAudits = audits.length;
-      const totalVarianceValue = audits.reduce((sum, audit) => sum + (audit.total_variance_value || 0), 0);
+      const totalVarianceValue = audits.reduce(
+        (sum, audit) => sum + (audit.total_variance_value || 0),
+        0
+      );
       const itemsAudited = audits.reduce((sum, audit) => sum + (audit.total_items_audited || 0), 0);
       const averageVarianceValue = totalAudits > 0 ? totalVarianceValue / totalAudits : 0;
 
@@ -451,7 +460,7 @@ export class StockAuditService {
         total_audits: totalAudits,
         average_variance_value: averageVarianceValue,
         total_variance_value: totalVarianceValue,
-        items_audited: itemsAudited
+        items_audited: itemsAudited,
       });
     }
 
@@ -465,9 +474,9 @@ export class StockAuditService {
     const currentYear = new Date().getFullYear();
     const lastAudit = await StockAudit.findOne({
       where: {
-        audit_number: { [Op.like]: `SA-${currentYear}-%` }
+        audit_number: { [Op.like]: `SA-${currentYear}-%` },
       },
-      order: [['audit_number', 'DESC']]
+      order: [['audit_number', 'DESC']],
     });
 
     let sequence = 1;
@@ -482,7 +491,9 @@ export class StockAuditService {
   /**
    * Export audit report
    */
-  static async exportAuditReport(auditId: number): Promise<{
+  static async exportAuditReport(
+    auditId: number
+  ): Promise<{
     audit: StockAudit;
     items: StockAuditItem[];
     variance_analysis: VarianceAnalysis;
@@ -508,8 +519,8 @@ export class StockAuditService {
         total_items: varianceAnalysis.total_items,
         items_with_variance: varianceAnalysis.items_with_variance,
         total_variance_value: varianceAnalysis.total_variance_value,
-        variance_percentage: varianceAnalysis.variance_percentage
-      }
+        variance_percentage: varianceAnalysis.variance_percentage,
+      },
     };
   }
 }

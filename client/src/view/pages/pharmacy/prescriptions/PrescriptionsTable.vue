@@ -114,6 +114,7 @@
         :per-page="perPage"
         :current-page="currentPage"
         @pagechanged="onPageChange"
+        @changepagecount="handlePageCount"
       />
     </div>
     <table-skeleton v-else :columns="7" />
@@ -138,7 +139,7 @@ export default {
   },
   data: () => ({
     currentPage: 1,
-    itemsPerPage: 10,
+    itemsPerPage: 30,
     start: null,
     end: null,
     TODAY: 'Today',
@@ -175,10 +176,30 @@ export default {
       });
     },
 
+    handlePageCount(count) {
+      setUrlQueryParams({
+        currentPage: this.currentPage,
+        itemsPerPage: count,
+        search: this.$route.query.search || this.patient_name,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
+      });
+      this.fetchPrescriptions({
+        currentPage: this.$route.query.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
+        search: this.$route.query.search || null,
+      });
+    },
+
     handlePageChange() {
       setUrlQueryParams({
         currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || this.patient_name,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
       });
       this.fetchPrescriptions({
         currentPage: this.$route.query.currentPage || this.currentPage,
@@ -198,7 +219,7 @@ export default {
       const { search, spinDiv } = prop;
       setUrlQueryParams({
         currentPage: this.currentPage,
-        itemsPerPage: this.itemsPerPage,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         search,
       });
       this.debounceSearch(search, this, spinDiv);
@@ -242,6 +263,7 @@ export default {
           itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
           start: this.$route.query.startDate || null,
           end: this.$route.query.endDate || null,
+          search: this.$route.query.search,
         });
       },
       immediate: true,

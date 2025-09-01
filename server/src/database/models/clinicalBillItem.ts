@@ -125,6 +125,12 @@ export class ClinicalBillItem extends Model {
   final_price: number;
 
   @Column({
+    type: DataType.DATE,
+    defaultValue: new Date(),
+  })
+  paid_at: Date;
+
+  @Column({
     type: DataType.TEXT,
     allowNull: true,
   })

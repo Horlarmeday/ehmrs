@@ -1,6 +1,7 @@
 export { Admission } from './admission';
 export { AdditionalTreatment } from './additionalTreatment';
 export { Antenatal } from './antenatal';
+export { Appointment } from './appointment';
 export { AntenatalObservation } from './antenatalObservation';
 export { AntenatalTriage } from './antenatalTriage';
 export { Alert } from './alert';
@@ -112,8 +113,22 @@ export { PatientDeposit } from './patientDeposit';
 export { ClinicalBill } from './clinicalBill';
 export { ClinicalBillItem } from './clinicalBillItem';
 export { ClinicalPayment } from './clinicalPayment';
+export { ClinicalPaymentItem } from './clinicalPaymentItem';
 export { FinancialPeriod } from './financialPeriod';
 export { HMOClaim } from './hmoClaim';
+export { DepositAuditLog } from './depositAuditLog';
+export { DepositTransaction } from './depositTransaction';
+export { DepositJournalEntry } from './depositJournalEntry';
+
+// Payment Method Specific Models
+export { BankTransfer } from './bankTransfer';
+export { InsuranceClaim } from './insuranceClaim';
+export { POSTerminalTransaction } from './posTerminalTransaction';
+export { CashTransaction } from './cashTransaction';
+
+// Cash Register System Models
+export { CashRegister } from './cashRegister';
+export { CashMovement } from './cashMovement';
 
 // Dialysis Models
 export { DialysisVisit } from './dialysisVisit';
@@ -121,4 +136,3 @@ export { DialysisTreatment } from './dialysisTreatment';
 export { DialysisAssessment } from './dialysisAssessment';
 export { DialysisVitals } from './dialysisVitals';
 export { DialysisNotes } from './dialysisNotes';
-

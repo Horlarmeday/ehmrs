@@ -55,6 +55,17 @@
           </div>
         </div>
         <div class="col-lg-3 col-md-6 mb-4">
+          <div class="summary-card bg-secondary text-white">
+            <div class="summary-icon">
+              <i class="fas fa-edit"></i>
+            </div>
+            <div class="summary-content">
+              <h3 class="summary-value">{{ summaryData.draftPeriods || 0 }}</h3>
+              <p class="summary-label">Draft Periods</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
           <div class="summary-card bg-warning text-white">
             <div class="summary-icon">
               <i class="fas fa-clock"></i>
@@ -83,6 +94,7 @@
               <thead class="thead-light">
                 <tr>
                   <th>Period Name</th>
+                  <th>Type</th>
                   <th>Start Date</th>
                   <th>End Date</th>
                   <th>Status</th>
@@ -104,6 +116,12 @@
                       <b-badge variant="success">Current</b-badge>
                     </div>
                   </td>
+                  <td>
+                    <b-badge v-if="period.period_type" variant="info">{{
+                      period.period_type
+                    }}</b-badge>
+                    <span v-else class="text-muted">-</span>
+                  </td>
                   <td>{{ formatDate(period.start_date) }}</td>
                   <td>{{ formatDate(period.end_date) }}</td>
                   <td>
@@ -111,7 +129,7 @@
                       {{ period.status }}
                     </b-badge>
                   </td>
-                  <td>{{ formatCurrency(period.opening_balance) }}</td>
+                  <td>{{ formatCurrency(period.balance) }}</td>
                   <td>{{ formatCurrency(period.closing_balance) }}</td>
                   <td>{{ period.created_by_staff?.name || 'System' }}</td>
                   <td>
@@ -165,9 +183,10 @@
     <b-modal
       v-model="showModal"
       :title="isEditing ? 'Edit Financial Period' : 'Create Financial Period'"
-      size="lg"
-      @ok="savePeriod"
+      size="xl"
       @hidden="resetForm"
+      :no-close-on-backdrop="saving"
+      :no-close-on-esc="saving"
     >
       <b-form @submit.prevent="savePeriod">
         <div class="row">
@@ -274,7 +293,7 @@
     <b-modal
       v-model="showActionModal"
       :title="actionModalTitle"
-      size="md"
+      size="xl"
       @ok="executePeriodAction"
       @hidden="resetActionModal"
     >
@@ -439,7 +458,20 @@ export default {
     editPeriod(id) {
       const period = this.financialPeriods.find(p => p.id === id);
       if (period) {
-        this.periodForm = { ...period };
+        // Map server fields to form fields
+        this.periodForm = {
+          id: period.id,
+          name: period.name,
+          period_type: period.period_type || '',
+          start_date: period.start_date
+            ? new Date(period.start_date).toISOString().split('T')[0]
+            : '',
+          end_date: period.end_date ? new Date(period.end_date).toISOString().split('T')[0] : '',
+          opening_balance: period.balance || '',
+          description: period.notes || '',
+          status: period.status,
+          auto_close: period.auto_close || false,
+        };
         this.isEditing = true;
         this.showModal = true;
       }
@@ -448,15 +480,28 @@ export default {
     async savePeriod() {
       try {
         this.saving = true;
+        // Map form fields to server expectations
+        const periodData = {
+          name: this.periodForm.name,
+          period_type: this.periodForm.period_type,
+          start_date: this.periodForm.start_date,
+          end_date: this.periodForm.end_date,
+          opening_balance: parseFloat(this.periodForm.opening_balance) || 0,
+          description: this.periodForm.description,
+          status: this.periodForm.status,
+          auto_close: this.periodForm.auto_close,
+        };
+
         if (this.isEditing) {
           await this.$store.dispatch('accounting/updateFinancialPeriod', {
             id: this.periodForm.id,
-            data: this.periodForm,
+            data: periodData,
           });
         } else {
-          await this.$store.dispatch('accounting/createFinancialPeriod', this.periodForm);
+          await this.$store.dispatch('accounting/createFinancialPeriod', periodData);
         }
 
+        // Only close modal on success
         this.showModal = false;
         this.resetForm();
         await this.loadFinancialPeriods();
@@ -475,6 +520,7 @@ export default {
           variant: 'danger',
           solid: true,
         });
+        // Modal stays open on error - user can fix and retry
       } finally {
         this.saving = false;
       }

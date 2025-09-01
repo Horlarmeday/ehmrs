@@ -17,19 +17,21 @@ export class AccountingStartupService {
       // Run comprehensive validation
       logger.info('🔍 Running comprehensive Chart of Accounts validation...');
       const validationReport = await AccountValidationService.quickValidationCheck();
-      
+
       if (validationReport.isValid) {
         logger.info(`✅ ${validationReport.message}`);
       } else {
         logger.warn(`⚠️  ${validationReport.message}`);
-        
+
         // Get detailed validation report for warnings
         const detailedReport = await AccountValidationService.validateAllAccounts();
         if (detailedReport.summary.warningAccounts > 0) {
           logger.warn(`⚠️  ${detailedReport.summary.warningAccounts} account(s) have warnings`);
         }
         if (detailedReport.summary.missingAccounts > 0) {
-          logger.warn(`⚠️  ${detailedReport.summary.missingAccounts} required account(s) are missing`);
+          logger.warn(
+            `⚠️  ${detailedReport.summary.missingAccounts} required account(s) are missing`
+          );
         }
       }
 
@@ -55,12 +57,12 @@ export class AccountingStartupService {
 
       return {
         valid: issues.length === 0,
-        issues
+        issues,
       };
     } catch (error) {
       return {
         valid: false,
-        issues: [`Configuration validation failed: ${error.message}`]
+        issues: [`Configuration validation failed: ${error.message}`],
       };
     }
   }

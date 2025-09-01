@@ -9,6 +9,8 @@
     "start": "node dist/app.js",
     "build": "rimraf ./dist && tsc && yarn sentry:sourcemaps",
     "migration": "sequelize db:migrate",
+    "accounting:init": "node src/scripts/initialize-accounting.js",
+    "accounting:health": "curl -s http://localhost:3000/accounting/health | jq",
     "__eslint_fix": "./node_modules/eslint/bin/eslint.js . --ext .js,.ts --quiet --fix",
     "postbuild": "cp {package.json,yarn.lock} dist",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org prismaspark-dynamics --project node-express ./dist && sentry-cli sourcemaps upload --org prismaspark-dynamics --project node-express ./dist"

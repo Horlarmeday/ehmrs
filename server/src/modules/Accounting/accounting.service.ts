@@ -3,6 +3,8 @@ import AccountingRepository from './accounting.repository';
 import { ComprehensiveChartOfAccountsService } from './services/comprehensiveChartOfAccounts.service';
 import { PatientDepositService } from './services/patientDeposit.service';
 import { DepositAuditService } from './services/depositAudit.service';
+import { FinancialPeriodManagementService } from './services/financialPeriodManagement.service';
+import { FinancialPeriodValidationService } from './services/financialPeriodValidation.service';
 import {
   PatientDepositData,
   ClinicalBillData,
@@ -27,6 +29,7 @@ import {
   PaymentCollectionMethod,
   PaymentProcessingStatus,
 } from './enums';
+import { PatientDeposit } from '../../database/models/patientDeposit';
 
 export class AccountingService {
   // Patient Deposits
@@ -39,7 +42,7 @@ export class AccountingService {
       await ComprehensiveChartOfAccountsService.ensureRequiredAccountsExist();
 
       // Use the comprehensive PatientDepositService for full accounting integration
-      const deposit = await PatientDepositService.createDeposit(depositData, transaction);
+      const deposit = await PatientDepositService.createDeposit(depositData);
 
       return deposit;
     } catch (error) {
@@ -60,7 +63,13 @@ export class AccountingService {
 
   static async getPatientDeposits(
     filters: DepositSearchFilters
-  ): Promise<{ deposits: any[]; total: number }> {
+  ): Promise<{
+    docs: PatientDeposit[];
+    total: number;
+    pages: number;
+    perPage: number;
+    currentPage: number;
+  }> {
     try {
       return await AccountingRepository.getPatientDeposits(filters);
     } catch (error) {
@@ -490,6 +499,16 @@ export class AccountingService {
       const collectionPoint = billingRequest.payment_collection_point || 'main-cashier';
       const collectionMethod = billingRequest.payment_collection_method || 'POINT_OF_SERVICE';
 
+      // Get current financial period
+      const currentPeriod = await FinancialPeriodValidationService.getCurrentActivePeriod();
+      if (!currentPeriod) {
+        throw new BadException(
+          'Financial Period Not Available',
+          503,
+          'No active financial period found. Please configure financial periods before processing transactions.'
+        );
+      }
+
       // Create bill
       const billData: ClinicalBillData = {
         bill_number: billNumber,
@@ -509,6 +528,7 @@ export class AccountingService {
         due_date: billingRequest.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
         notes: billingRequest.notes,
         created_by: billingRequest.created_by,
+        period_id: currentPeriod.id, // Link to current financial period
       };
 
       const bill = await AccountingRepository.createClinicalBill(billData);
@@ -616,6 +636,16 @@ export class AccountingService {
         paymentType = PaymentType.POINT_OF_SERVICE;
       }
 
+      // Get current financial period
+      const currentPeriod = await FinancialPeriodValidationService.getCurrentActivePeriod();
+      if (!currentPeriod) {
+        throw new BadException(
+          'Financial Period Not Available',
+          503,
+          'No active financial period found. Please configure financial periods before processing transactions.'
+        );
+      }
+
       // Create payment
       const paymentData: ClinicalPaymentData = {
         payment_reference: paymentReference,
@@ -633,9 +663,10 @@ export class AccountingService {
         insurance_provider: paymentRequest.insurance_provider,
         insurance_claim_number: paymentRequest.insurance_claim_number,
         notes: paymentRequest.notes,
-        status: PaymentProcessingStatus.PENDING,
+        status: PaymentStatus.PENDING,
         processed_by: paymentRequest.processed_by,
         processed_at: new Date(),
+        period_id: currentPeriod.id, // Link to current financial period
       };
 
       const payment = await AccountingRepository.createClinicalPayment(paymentData);
@@ -669,6 +700,50 @@ export class AccountingService {
     }
   }
 
+  /**
+   * Get payment receipt data for PDF generation
+   */
+  static async getPaymentReceiptData(paymentId: number): Promise<any> {
+    try {
+      // Get payment with related data
+      const payment = await AccountingRepository.getClinicalPaymentById(paymentId);
+      if (!payment) {
+        throw new BadException('Payment not found', 404);
+      }
+
+      // Get bill with items
+      const billWithItems = await AccountingRepository.getClinicalBillWithItems(payment.bill_id);
+      if (!billWithItems?.bill) {
+        throw new BadException('Bill not found', 404);
+      }
+
+      // Get payment items to see what was actually paid for
+      const { ClinicalPaymentItem } = await import('../../database/models');
+      const paymentItems = await ClinicalPaymentItem.findAll({
+        where: { payment_id: paymentId },
+        order: [['created_at', 'ASC']],
+      });
+
+      // Get patient information
+      const { Patient } = await import('../../database/models');
+      const patient = await Patient.findByPk(payment.patient_id);
+      if (!patient) {
+        throw new BadException('Patient not found', 404);
+      }
+
+      return {
+        payment,
+        bill: billWithItems.bill,
+        billItems: billWithItems.items || [],
+        paymentItems: paymentItems || [],
+        patient,
+      };
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Failed to get payment receipt data', 500, error.message);
+    }
+  }
+
   static async getClinicalPaymentById(id: number): Promise<any> {
     try {
       const payment = await AccountingRepository.getClinicalPaymentById(id);
@@ -682,11 +757,9 @@ export class AccountingService {
     }
   }
 
-  static async getClinicalPayments(
-    filters: PaymentSearchFilters
-  ): Promise<{ payments: any[]; total: number }> {
+  static async getClinicalPayments(filters: PaymentSearchFilters) {
     try {
-      return await AccountingRepository.getClinicalPayments(filters);
+      return AccountingRepository.getClinicalPayments(filters);
     } catch (error) {
       throw new BadException('Failed to retrieve clinical payments', 500, error.message);
     }
@@ -734,7 +807,7 @@ export class AccountingService {
 
       let remainingAmount = amount;
 
-      for (const deposit of deposits.deposits) {
+      for (const deposit of deposits.docs) {
         if (remainingAmount <= 0) break;
 
         const deductAmount = Math.min(deposit.amount, remainingAmount);
@@ -846,7 +919,7 @@ export class AccountingService {
 
       // Get total payments for this bill
       const payments = await AccountingRepository.getClinicalPayments({ bill_id: billId });
-      const totalPaid = payments.payments.reduce((sum, payment) => sum + payment.amount, 0);
+      const totalPaid = payments.docs.reduce((sum, payment) => sum + +payment.amount, 0);
 
       let paymentStatus: PaymentStatus;
       if (totalPaid >= bill.final_amount) {
@@ -904,7 +977,7 @@ export class AccountingService {
       if (!bill) return;
 
       const payments = await AccountingRepository.getClinicalPayments({ bill_id: billId });
-      const totalPaid = payments.payments.reduce((sum, payment) => sum + payment.amount, 0);
+      const totalPaid = payments.docs.reduce((sum, payment) => sum + +payment.amount, 0);
 
       // Get bill items
       const billItems = await AccountingRepository.getClinicalBillItems({ bill_id: billId });
@@ -1100,15 +1173,15 @@ export class AccountingService {
         bills.bills?.filter(bill => new Date(bill.createdAt) >= thirtyDaysAgo) || [];
 
       const currentPeriodPayments =
-        payments.payments?.filter(payment => new Date(payment.processed_at) >= thirtyDaysAgo) || [];
+        payments.docs?.filter(payment => new Date(payment.processed_at) >= thirtyDaysAgo) || [];
 
       // Current period calculations
       const currentPeriodRevenue = currentPeriodBills.reduce(
-        (sum, bill) => sum + (bill.final_amount || 0),
+        (sum, bill) => sum + (+bill.final_amount || 0),
         0
       );
       const currentPeriodPaymentsAmount = currentPeriodPayments.reduce(
-        (sum, payment) => sum + (payment.amount || 0),
+        (sum, payment) => sum + (+payment.amount || 0),
         0
       );
 
@@ -1143,13 +1216,13 @@ export class AccountingService {
       // Overall metrics
       const totalBills = bills.bills?.length || 0;
       const totalRevenue =
-        bills.bills?.reduce((sum, bill) => sum + (bill.final_amount || 0), 0) || 0;
+        bills.bills?.reduce((sum, bill) => sum + (+bill.final_amount || 0), 0) || 0;
       const pendingPayments =
         bills.bills?.filter(bill => bill.payment_status === PaymentStatus.PENDING).length || 0;
       const totalDeposits =
-        deposits.deposits?.reduce((sum, deposit) => sum + (deposit.amount || 0), 0) || 0;
+        deposits.docs?.reduce((sum, deposit) => sum + (+deposit.amount || 0), 0) || 0;
       const activeDeposits =
-        deposits.deposits?.filter(deposit => deposit.status === DepositStatus.ACTIVE).length || 0;
+        deposits.docs?.filter(deposit => deposit.status === DepositStatus.ACTIVE).length || 0;
 
       // Payment status breakdown
       const paymentStatusBreakdown = {
@@ -1175,7 +1248,7 @@ export class AccountingService {
 
       // Recent activity (last 5 items)
       const recentBills = bills.bills?.slice(0, 5) || [];
-      const recentPayments = payments.payments?.slice(0, 5) || [];
+      const recentPayments = payments.docs?.slice(0, 5) || [];
 
       return {
         // Current metrics
@@ -1385,10 +1458,16 @@ export class AccountingService {
   static async updateBankAccountBalance(
     id: number,
     amount: number,
-    operation: 'add' | 'subtract'
+    operation: 'add' | 'subtract',
+    transaction?: Transaction
   ): Promise<any> {
     try {
-      return await AccountingRepository.updateBankAccountBalance(id, amount, operation);
+      return await AccountingRepository.updateBankAccountBalance(
+        id,
+        amount,
+        operation,
+        transaction
+      );
     } catch (error) {
       if (error instanceof BadException) throw error;
       throw new BadException('Failed to update bank account balance', 500, error.message);
@@ -1523,6 +1602,324 @@ export class AccountingService {
     } catch (error) {
       if (error instanceof BadException) throw error;
       throw new BadException('Failed to toggle POS terminal status', 500, error.message);
+    }
+  }
+
+  // ===== FINANCIAL PERIOD MANAGEMENT =====
+
+  /**
+   * Create a new financial period
+   */
+  static async createFinancialPeriod(periodData: any, staffId: number): Promise<any> {
+    try {
+      return await FinancialPeriodManagementService.createPeriod({
+        ...periodData,
+        created_by: staffId,
+      });
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Failed to create financial period', 500, error.message);
+    }
+  }
+
+  /**
+   * Update an existing financial period
+   */
+  static async updateFinancialPeriod(id: number, periodData: any, staffId: number): Promise<any> {
+    try {
+      return await FinancialPeriodManagementService.updatePeriod(id, {
+        ...periodData,
+        updated_by: staffId,
+      });
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Failed to update financial period', 500, error.message);
+    }
+  }
+
+  /**
+   * Open a financial period
+   */
+  static async openFinancialPeriod(id: number, actionData: any, staffId: number): Promise<any> {
+    try {
+      return await FinancialPeriodManagementService.openPeriod(id, {
+        ...actionData,
+        action_by: staffId,
+      });
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Failed to open financial period', 500, error.message);
+    }
+  }
+
+  /**
+   * Close a financial period
+   */
+  static async closeFinancialPeriod(id: number, actionData: any, staffId: number): Promise<any> {
+    try {
+      return await FinancialPeriodManagementService.closePeriod(id, {
+        ...actionData,
+        action_by: staffId,
+      });
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Failed to close financial period', 500, error.message);
+    }
+  }
+
+  /**
+   * Lock a financial period
+   */
+  static async lockFinancialPeriod(id: number, actionData: any, staffId: number): Promise<any> {
+    try {
+      return await FinancialPeriodManagementService.lockPeriod(id, {
+        ...actionData,
+        action_by: staffId,
+      });
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Failed to lock financial period', 500, error.message);
+    }
+  }
+
+  /**
+   * Reconcile a financial period
+   */
+  static async reconcileFinancialPeriod(id: number): Promise<any> {
+    try {
+      return await FinancialPeriodManagementService.reconcilePeriod(id);
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Failed to reconcile financial period', 500, error.message);
+    }
+  }
+
+  /**
+   * Get financial period summary
+   */
+  static async getFinancialPeriodSummary(id: number): Promise<any> {
+    try {
+      return await FinancialPeriodManagementService.getPeriodSummary(id);
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Failed to get financial period summary', 500, error.message);
+    }
+  }
+
+  /**
+   * Get all financial periods with filtering
+   */
+  static async getFinancialPeriods(filters: any = {}): Promise<any> {
+    try {
+      return await FinancialPeriodManagementService.getPeriods(filters);
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Failed to get financial periods', 500, error.message);
+    }
+  }
+
+  /**
+   * Delete a financial period
+   */
+  static async deleteFinancialPeriod(id: number, staffId: number): Promise<boolean> {
+    try {
+      return await FinancialPeriodManagementService.deletePeriod(id);
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Failed to delete financial period', 500, error.message);
+    }
+  }
+
+  /**
+   * Validate transaction period for any financial operation
+   */
+  static async validateTransactionPeriod(transactionDate: Date, periodId?: number): Promise<any> {
+    try {
+      return await FinancialPeriodValidationService.validateTransactionPeriod(
+        transactionDate,
+        periodId
+      );
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Failed to validate transaction period', 500, error.message);
+    }
+  }
+
+  /**
+   * Get current active financial period
+   */
+  static async getCurrentActivePeriod(): Promise<any> {
+    try {
+      return await FinancialPeriodValidationService.getCurrentActivePeriod();
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Failed to get current active period', 500, error.message);
+    }
+  }
+
+  // =============================================================================
+  // CASH REGISTER MANAGEMENT SERVICE METHODS
+  // =============================================================================
+
+  /**
+   * Get all cash registers with filtering
+   */
+  static async getCashRegisters(options: {
+    page: number;
+    limit: number;
+    filters?: any;
+  }): Promise<any> {
+    try {
+      // Import CashPaymentService dynamically to avoid circular dependencies
+      const { CashPaymentService } = await import('./services/cashPayment.service');
+
+      const { page, limit, filters } = options;
+      const result = await CashPaymentService.getCashRegisters({
+        page,
+        limit,
+        filters: filters || {},
+      });
+
+      return result;
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Failed to get cash registers', 500, error.message);
+    }
+  }
+
+  /**
+   * Get cash register by ID
+   */
+  static async getCashRegisterById(id: number): Promise<any> {
+    try {
+      // Import CashPaymentService dynamically to avoid circular dependencies
+      const { CashPaymentService } = await import('./services/cashPayment.service');
+
+      return await CashPaymentService.getCashRegisterById(id);
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Failed to get cash register', 500, error.message);
+    }
+  }
+
+  /**
+   * Create new cash register
+   */
+  static async createCashRegister(registerData: any, staffId: number): Promise<any> {
+    try {
+      // Import CashPaymentService dynamically to avoid circular dependencies
+      const { CashPaymentService } = await import('./services/cashPayment.service');
+
+      return await CashPaymentService.createCashRegister(registerData, staffId);
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Failed to create cash register', 500, error.message);
+    }
+  }
+
+  /**
+   * Update cash register
+   */
+  static async updateCashRegister(id: number, updateData: any, staffId: number): Promise<any> {
+    try {
+      // Import CashPaymentService dynamically to avoid circular dependencies
+      const { CashPaymentService } = await import('./services/cashPayment.service');
+
+      return await CashPaymentService.updateCashRegister(id, updateData, staffId);
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Failed to update cash register', 500, error.message);
+    }
+  }
+
+  /**
+   * Delete cash register
+   */
+  static async deleteCashRegister(id: number, staffId: number): Promise<boolean> {
+    try {
+      // Import CashPaymentService dynamically to avoid circular dependencies
+      const { CashPaymentService } = await import('./services/cashPayment.service');
+
+      // Note: deleteCashRegister method doesn't exist in CashPaymentService
+      // For now, we'll mark it as not implemented
+      throw new BadException(
+        'Not Implemented',
+        501,
+        'Cash register deletion is not yet implemented'
+      );
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Failed to delete cash register', 500, error.message);
+    }
+  }
+
+  /**
+   * Open cash register
+   */
+  static async openCashRegister(id: number, openingAmount: number, staffId: number): Promise<any> {
+    try {
+      // Import CashPaymentService dynamically to avoid circular dependencies
+      const { CashPaymentService } = await import('./services/cashPayment.service');
+
+      return await CashPaymentService.openCashRegister(id, openingAmount, staffId);
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Failed to open cash register', 500, error.message);
+    }
+  }
+
+  /**
+   * Close cash register
+   */
+  static async closeCashRegister(id: number, closingAmount: number, staffId: number): Promise<any> {
+    try {
+      // Import CashPaymentService dynamically to avoid circular dependencies
+      const { CashPaymentService } = await import('./services/cashPayment.service');
+
+      return await CashPaymentService.closeCashRegister(id, closingAmount, staffId);
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Failed to close cash register', 500, error.message);
+    }
+  }
+
+  /**
+   * Reconcile cash register
+   */
+  static async reconcileCashRegister(
+    id: number,
+    reconciliationData: any,
+    staffId: number
+  ): Promise<any> {
+    try {
+      // Import CashPaymentService dynamically to avoid circular dependencies
+      const { CashPaymentService } = await import('./services/cashPayment.service');
+
+      // The reconcileCashRegister method expects CashReconciliationData with register_id
+      const reconciliationDataWithId = {
+        ...reconciliationData,
+        register_id: id,
+      };
+
+      return await CashPaymentService.reconcileCashRegister(reconciliationDataWithId, staffId);
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Failed to reconcile cash register', 500, error.message);
+    }
+  }
+
+  /**
+   * Get cash register summary
+   */
+  static async getCashRegisterSummary(id: number): Promise<any> {
+    try {
+      // Import CashPaymentService dynamically to avoid circular dependencies
+      const { CashPaymentService } = await import('./services/cashPayment.service');
+
+      return await CashPaymentService.getCashRegisterSummary(id);
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Failed to get cash register summary', 500, error.message);
     }
   }
 }

@@ -23,9 +23,9 @@ export const getOrdersByDateRange = state => (startDate, endDate) => {
   });
 };
 
-// Filter orders by supplier
-export const getOrdersBySupplier = state => supplierId => {
-  return state.orders.filter(order => order.supplier_id === supplierId);
+// Filter orders by vendor
+export const getOrdersByVendor = state => vendorId => {
+  return state.orders.filter(order => order.vendor_id === vendorId);
 };
 
 // Get pending approval orders
@@ -52,3 +52,12 @@ export const getReceivedOrders = state => {
 export const getCancelledOrders = state => {
   return state.orders.filter(order => order.status === 'Cancelled');
 };
+
+// Get procurement statistics
+export const getProcurementStatistics = state => state.statistics;
+
+// Get current order
+export const getCurrentOrder = state => state.currentOrder;
+
+// Get reports
+export const getProcurementReports = state => state.reports;

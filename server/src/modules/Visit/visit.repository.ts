@@ -558,7 +558,7 @@ export const getProfessionalAssignedVisits = async ({
     order: [['updatedAt', 'DESC']],
     where: {
       status: VisitStatus.ONGOING,
-      professional: role,
+      // professional: role,
       ...(filter && JSON.parse(filter)),
       [Op.or]: [
         {
@@ -566,6 +566,9 @@ export const getProfessionalAssignedVisits = async ({
         },
         {
           category: VisitCategory.EMERGENCY,
+        },
+        {
+          category: VisitCategory.DIALYSIS,
         },
       ],
       ...(start && end && dateIntervalQuery('updatedAt', start, end)),

@@ -258,7 +258,7 @@
                       {{ deposit.status }}
                     </b-badge>
                   </td>
-                  <td>{{ formatDate(deposit.created_at) }}</td>
+                  <td>{{ formatDate(deposit.createdAt) }}</td>
                   <td>
                     <div class="action-buttons">
                       <b-button
@@ -323,6 +323,7 @@
                 <div class="input-group">
                   <b-form-input
                     id="deposit-patient-search"
+                    autocomplete="off"
                     v-model="patientSearchQuery"
                     placeholder="Search patient by name, ID, or phone..."
                     @input="searchPatients"
@@ -493,7 +494,7 @@
     <b-modal
       v-model="showUseDepositModal"
       title="Use Deposit for Payment"
-      size="md"
+      size="lg"
       @ok="processDepositUsage"
       @hidden="resetUsageForm"
     >
@@ -538,6 +539,79 @@
             </div>
           </div>
 
+          <!-- Bill Selection Section -->
+          <div class="row">
+            <div class="col-12">
+              <b-form-group label="Select Bill to Pay" label-for="bill-selection">
+                <div class="bill-selection-container">
+                  <div class="input-group">
+                    <b-form-input
+                      id="bill-search"
+                      v-model="billSearchQuery"
+                      placeholder="Search bills by bill number, service type, or amount..."
+                      @input="searchBills"
+                      @focus="showBillResults = true"
+                      required
+                    ></b-form-input>
+                    <div class="input-group-append" v-if="loadingBills">
+                      <span class="input-group-text">
+                        <i class="fas fa-spinner fa-spin"></i>
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Bill Search Results Dropdown -->
+                  <div
+                    v-if="showBillResults && (filteredBills.length > 0 || loadingBills)"
+                    class="bill-results-dropdown"
+                  >
+                    <div v-if="loadingBills" class="bill-result-item text-center">
+                      <i class="fas fa-spinner fa-spin mr-2"></i>Searching bills...
+                    </div>
+                    <div
+                      v-else-if="filteredBills.length > 0"
+                      v-for="bill in filteredBills.slice(0, 8)"
+                      :key="bill.id"
+                      class="bill-result-item"
+                      @click="selectBill(bill)"
+                    >
+                      <div class="bill-info">
+                        <div class="bill-number">{{ bill.bill_number }}</div>
+                        <div class="bill-details">
+                          <small>{{ bill.service_type || 'General Service' }}</small>
+                          <small class="bill-amount">{{ formatCurrency(bill.total_amount) }}</small>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      v-else-if="billSearchQuery.length >= 2"
+                      class="bill-result-item text-center text-muted"
+                    >
+                      No bills found
+                    </div>
+                  </div>
+
+                  <!-- Selected Bill Display -->
+                  <div v-if="selectedBill" class="selected-bill-display">
+                    <div class="selected-bill-info">
+                      <strong>Bill #{{ selectedBill.bill_number }}</strong>
+                      <small class="ml-2">{{ selectedBill.service_type || 'General Service' }}</small>
+                      <small class="ml-2 text-success">{{ formatCurrency(selectedBill.total_amount) }}</small>
+                      <b-button
+                        variant="link"
+                        size="sm"
+                        class="ml-2 text-danger"
+                        @click="clearSelectedBill"
+                      >
+                        <i class="fas fa-times"></i>
+                      </b-button>
+                    </div>
+                  </div>
+                </div>
+              </b-form-group>
+            </div>
+          </div>
+
           <div class="row">
             <div class="col-12">
               <b-form-group label="Notes" label-for="usage-notes">
@@ -557,7 +631,7 @@
         <b-button variant="secondary" @click="showUseDepositModal = false">
           Cancel
         </b-button>
-        <b-button variant="success" @click="processDepositUsage" :disabled="processingUsage">
+        <b-button variant="success" @click="processDepositUsage" :disabled="processingUsage || !selectedBill">
           <span v-if="processingUsage">
             <i class="fas fa-spinner fa-spin mr-2"></i>Processing...
           </span>
@@ -605,6 +679,90 @@
         <p>No usage history found for this deposit.</p>
       </div>
     </b-modal>
+
+    <!-- Export Modal -->
+    <b-modal
+      v-model="showExportModal"
+      title="Export Deposits"
+      size="md"
+      @ok="executeExport"
+      @hidden="resetExportForm"
+    >
+      <b-form @submit.prevent="executeExport">
+        <div class="row">
+          <div class="col-md-6">
+            <b-form-group label="Export Format" label-for="export-format">
+              <b-form-select
+                id="export-format"
+                v-model="exportForm.format"
+                :options="exportFormatOptions"
+                required
+              ></b-form-select>
+            </b-form-group>
+          </div>
+          <div class="col-md-6">
+            <b-form-group label="Date Range" label-for="export-date-range">
+              <b-form-select
+                id="export-date-range"
+                v-model="exportForm.dateRange"
+                :options="exportDateRangeOptions"
+                required
+              ></b-form-select>
+            </b-form-group>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <b-form-group label="Status Filter" label-for="export-status">
+              <b-form-select
+                id="export-status"
+                v-model="exportForm.status"
+                :options="exportStatusOptions"
+              ></b-form-select>
+            </b-form-group>
+          </div>
+          <div class="col-md-6">
+            <b-form-group label="Type Filter" label-for="export-type">
+              <b-form-select
+                id="export-type"
+                v-model="exportForm.type"
+                :options="exportTypeOptions"
+              ></b-form-select>
+            </b-form-group>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-12">
+            <b-form-group label="Include Details" label-for="export-include-details">
+              <b-form-checkbox
+                id="export-include-details"
+                v-model="exportForm.includeDetails"
+                value="true"
+                unchecked-value="false"
+              >
+                Include detailed information (patient details, payment history, etc.)
+              </b-form-checkbox>
+            </b-form-group>
+          </div>
+        </div>
+      </b-form>
+
+      <template #modal-footer>
+        <b-button variant="secondary" @click="showExportModal = false">
+          Cancel
+        </b-button>
+        <b-button variant="primary" @click="executeExport" :disabled="exporting">
+          <span v-if="exporting">
+            <i class="fas fa-spinner fa-spin mr-2"></i>Exporting...
+          </span>
+          <span v-else>
+            Export Deposits
+          </span>
+        </b-button>
+      </template>
+    </b-modal>
   </div>
 </template>
 
@@ -618,6 +776,7 @@ export default {
       // Loading states
       loading: false,
       loadingPatients: false,
+      loadingBills: false, // Added for bill search
 
       // Filters
       filters: {
@@ -653,6 +812,7 @@ export default {
         amount: 0,
         purpose: '',
         notes: '',
+        bill_id: null, // Added bill_id property
       },
 
       // Usage history modal
@@ -664,6 +824,12 @@ export default {
       showPatientResults: false,
       filteredPatients: [],
       selectedPatient: null,
+
+      // Bill search
+      billSearchQuery: '',
+      showBillResults: false,
+      filteredBills: [],
+      selectedBill: null,
 
       // Options
       statusOptions: [
@@ -696,6 +862,44 @@ export default {
       posTerminalOptions: [
         { value: null, text: 'Select POS Terminal' },
         // Will be populated from API
+      ],
+
+      // Export Modal
+      showExportModal: false,
+      exporting: false,
+      exportForm: {
+        format: 'CSV',
+        dateRange: 'ALL',
+        status: '',
+        type: '',
+        includeDetails: 'false',
+      },
+      exportFormatOptions: [
+        { value: 'CSV', text: 'CSV' },
+        { value: 'Excel', text: 'Excel' },
+        { value: 'PDF', text: 'PDF' },
+      ],
+      exportDateRangeOptions: [
+        { value: 'ALL', text: 'All Time' },
+        { value: 'LAST_7_DAYS', text: 'Last 7 Days' },
+        { value: 'LAST_30_DAYS', text: 'Last 30 Days' },
+        { value: 'LAST_90_DAYS', text: 'Last 90 Days' },
+        { value: 'LAST_YEAR', text: 'Last Year' },
+      ],
+      exportStatusOptions: [
+        { value: '', text: 'All Statuses' },
+        { value: 'ACTIVE', text: 'Active' },
+        { value: 'USED', text: 'Used' },
+        { value: 'REFUNDED', text: 'Refunded' },
+      ],
+      exportTypeOptions: [
+        { value: '', text: 'All Types' },
+        { value: 'CASH', text: 'Cash' },
+        { value: 'CARD', text: 'Card' },
+        { value: 'BANK_TRANSFER', text: 'Bank Transfer' },
+        { value: 'MOBILE_MONEY', text: 'Mobile Money' },
+        { value: 'INSURANCE', text: 'Insurance' },
+        { value: 'OTHER', text: 'Other' },
       ],
     };
   },
@@ -787,7 +991,14 @@ export default {
     async loadEnhancedMetrics() {
       try {
         // Load enhanced deposit metrics for detailed overview
-        await this.$store.dispatch('accounting/fetchDepositsSummary');
+        const response = await this.$store.dispatch('accounting/fetchDepositsSummary');
+        
+        if (response && response.success) {
+          // The action will automatically update the store state
+          console.log('Enhanced metrics loaded successfully');
+        } else {
+          console.warn('Failed to load enhanced metrics:', response?.error);
+        }
       } catch (error) {
         console.error('Failed to load enhanced metrics:', error);
         // Don't show error toast for metrics - it's not critical
@@ -850,6 +1061,38 @@ export default {
       }
     },
 
+    debounceSearchPatients: debounce(async (search, vm) => {
+      vm.patientSearchQuery = search;
+
+      try {
+        vm.loadingPatients = true;
+        // Search patients using Vuex store
+        const response = await vm.$store.dispatch('patient/fetchPatients', {
+          currentPage: 1,
+          itemsPerPage: 20,
+          search: vm.patientSearchQuery,
+          filter: {},
+        });
+
+        if (response && response.data && response.data.data) {
+          vm.filteredPatients = response.data.data.docs || [];
+          vm.showPatientResults = true;
+        } else {
+          vm.filteredPatients = [];
+        }
+      } catch (error) {
+        console.error('Failed to search patients:', error);
+        vm.filteredPatients = [];
+        this.$bvToast.toast('Failed to search patients', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+      } finally {
+        vm.loadingPatients = false;
+      }
+    }, 500),
+
     // Patient search methods
     async searchPatients() {
       if (!this.patientSearchQuery || this.patientSearchQuery.length < 2) {
@@ -858,35 +1101,9 @@ export default {
         return;
       }
 
-      try {
-        this.loadingPatients = true;
-        // Search patients using Vuex store
-        const response = await this.$store.dispatch('patient/fetchPatients', {
-          currentPage: 1,
-          itemsPerPage: 20,
-          search: this.patientSearchQuery,
-          start: 0,
-          end: 20,
-          filter: {},
-        });
+      console.log('searchPatients', this.patientSearchQuery);
 
-        if (response && response.data && response.data.data) {
-          this.filteredPatients = response.data.data.docs || [];
-          this.showPatientResults = true;
-        } else {
-          this.filteredPatients = [];
-        }
-      } catch (error) {
-        console.error('Failed to search patients:', error);
-        this.filteredPatients = [];
-        this.$bvToast.toast('Failed to search patients', {
-          title: 'Error',
-          variant: 'danger',
-          solid: true,
-        });
-      } finally {
-        this.loadingPatients = false;
-      }
+      this.debounceSearchPatients(this.patientSearchQuery, this);
     },
 
     selectPatient(patient) {
@@ -1001,7 +1218,6 @@ export default {
         const depositData = {
           ...this.depositForm,
           deposit_type: this.depositForm.payment_method, // Map payment_method to deposit_type for server
-          created_by: this.$store.state.user?.id || 1, // Add required created_by field
         };
 
         let result;
@@ -1066,7 +1282,7 @@ export default {
         const usageData = {
           deposit_id: this.selectedDeposit.id,
           amount: this.usageForm.amount,
-          bill_id: 0, // TODO: Implement bill selection
+          bill_id: this.selectedBill?.id || 0, // Use selectedBill.id if available, otherwise 0
           description: this.usageForm.purpose,
           used_by: this.$store.state.user?.id || 1,
         };
@@ -1120,11 +1336,11 @@ export default {
     },
 
     viewDepositReports() {
-      this.$router.push('/accounting/reports/deposits/summary');
+      this.$router.push({ name: 'deposit-reports' });
     },
 
     viewReconciliation() {
-      this.$router.push('/accounting/deposits/reconciliation-report');
+      this.$router.push({ name: 'deposit-reconciliation' });
     },
 
     // Form resets
@@ -1147,8 +1363,12 @@ export default {
         amount: 0,
         purpose: '',
         notes: '',
+        bill_id: null, // Reset bill_id
       };
       this.selectedDeposit = null;
+      this.selectedBill = null; // Clear selected bill
+      this.billSearchQuery = ''; // Clear bill search query
+      this.showBillResults = false; // Hide bill results
     },
 
     resetUsageHistory() {
@@ -1235,12 +1455,119 @@ export default {
     },
 
     exportDeposits() {
-      // Implement export functionality using Vuex store
-      this.$bvToast.toast('Export functionality coming soon', {
-        title: 'Info',
-        variant: 'info',
-        solid: true,
-      });
+      this.showExportModal = true;
+    },
+
+    // Bill search methods
+    async searchBills() {
+      if (!this.billSearchQuery || this.billSearchQuery.length < 2) {
+        this.filteredBills = [];
+        this.showBillResults = false;
+        return;
+      }
+
+      console.log('searchBills', this.billSearchQuery);
+
+      this.debounceSearchBills(this.billSearchQuery, this);
+    },
+
+    debounceSearchBills: debounce(async (search, vm) => {
+      vm.billSearchQuery = search;
+
+      try {
+        vm.loadingBills = true;
+        // Search bills using Vuex store
+        const response = await vm.$store.dispatch('billing/fetchBills', {
+          currentPage: 1,
+          itemsPerPage: 20,
+          search: vm.billSearchQuery,
+          filter: {},
+        });
+
+        if (response && response.data && response.data.data) {
+          vm.filteredBills = response.data.data.docs || [];
+          vm.showBillResults = true;
+        } else {
+          vm.filteredBills = [];
+        }
+      } catch (error) {
+        console.error('Failed to search bills:', error);
+        vm.filteredBills = [];
+        this.$bvToast.toast('Failed to search bills', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+      } finally {
+        vm.loadingBills = false;
+      }
+    }, 500),
+
+    selectBill(bill) {
+      this.selectedBill = bill;
+      this.usageForm.bill_id = bill.id; // Store the selected bill ID
+      this.billSearchQuery = `${bill.bill_number}`;
+      this.showBillResults = false;
+      this.filteredBills = [];
+    },
+
+    clearSelectedBill() {
+      this.selectedBill = null;
+      this.usageForm.bill_id = 0; // Reset to 0 or null if no bill is selected
+      this.billSearchQuery = '';
+      this.showBillResults = false;
+      this.filteredBills = [];
+    },
+
+    // Export functionality
+    async executeExport() {
+      try {
+        this.exporting = true;
+        const params = {
+          format: this.exportForm.format,
+          date_range: this.exportForm.dateRange,
+          status: this.exportForm.status,
+          type: this.exportForm.type,
+          include_details: this.exportForm.includeDetails,
+        };
+
+        const result = await this.$store.dispatch('accounting/exportDeposits', params);
+
+        if (result.success) {
+          this.$bvToast.toast('Deposits exported successfully!', {
+            title: 'Success',
+            variant: 'success',
+            solid: true,
+          });
+          this.showExportModal = false;
+          this.resetExportForm();
+        } else {
+          this.$bvToast.toast(result.error || 'Failed to export deposits', {
+            title: 'Error',
+            variant: 'danger',
+            solid: true,
+          });
+        }
+      } catch (error) {
+        console.error('Failed to execute export:', error);
+        this.$bvToast.toast(error.message || 'Failed to export deposits', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+      } finally {
+        this.exporting = false;
+      }
+    },
+
+    resetExportForm() {
+      this.exportForm = {
+        format: 'CSV',
+        dateRange: 'ALL',
+        status: '',
+        type: '',
+        includeDetails: 'false',
+      };
     },
   },
 };
@@ -1556,6 +1883,78 @@ export default {
 }
 
 .selected-patient-info small {
+  color: #6c757d;
+}
+
+/* Bill Search Styles */
+.bill-selection-container {
+  position: relative;
+}
+
+.bill-results-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.bill-result-item {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.bill-result-item:hover {
+  background-color: #f8f9fa;
+}
+
+.bill-result-item:last-child {
+  border-bottom: none;
+}
+
+.bill-info .bill-number {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.25rem;
+}
+
+.bill-info .bill-details {
+  color: #6c757d;
+  font-size: 0.875rem;
+}
+
+.bill-info .bill-amount {
+  font-weight: 600;
+  color: #28a745;
+}
+
+.selected-bill-display {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background-color: #e8f5e8;
+  border: 1px solid #c3e6c3;
+  border-radius: 6px;
+}
+
+.selected-bill-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.selected-bill-info strong {
+  color: #155724;
+}
+
+.selected-bill-info small {
   color: #6c757d;
 }
 

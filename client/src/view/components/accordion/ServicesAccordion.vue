@@ -68,7 +68,7 @@ export default {
 
     fetchServices() {
       setTimeout(() => {
-        this.$store.dispatch('order/fetchPrescribedServices', {
+        this.$store.dispatch('order/fetchPrescribedServicesPerVisit', {
           currentPage: this.currentPage,
           itemsPerPage: this.itemsPerPage,
           filter: this.filter,

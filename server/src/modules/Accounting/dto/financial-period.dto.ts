@@ -44,6 +44,9 @@ export const createFinancialPeriodSchema = Joi.object({
     'string.max': 'Period name cannot exceed 100 characters',
     'any.required': 'Period name is required',
   }),
+  period_type: Joi.string().valid('MONTHLY', 'QUARTERLY', 'YEARLY', 'CUSTOM').optional().messages({
+    'any.only': 'Period type must be one of: MONTHLY, QUARTERLY, YEARLY, CUSTOM',
+  }),
   start_date: Joi.string().isoDate().required().messages({
     'string.empty': 'Start date is required',
     'string.isoDate': 'Start date must be a valid date',
@@ -54,21 +57,18 @@ export const createFinancialPeriodSchema = Joi.object({
     'string.isoDate': 'End date must be a valid date',
     'any.required': 'End date is required',
   }),
-  balance: Joi.number().precision(2).min(0).optional().default(0).messages({
-    'number.base': 'Balance must be a number',
-    'number.min': 'Balance cannot be negative',
+  opening_balance: Joi.number().precision(2).min(0).optional().default(0).messages({
+    'number.base': 'Opening balance must be a number',
+    'number.min': 'Opening balance cannot be negative',
   }),
-  notes: Joi.string().max(500).optional().messages({
-    'string.max': 'Notes cannot exceed 500 characters',
+  description: Joi.string().max(500).optional().allow('').messages({
+    'string.max': 'Description cannot exceed 500 characters',
   }),
-  status: Joi.string().valid('OPEN', 'CLOSED', 'LOCKED').optional().default('OPEN').messages({
-    'any.only': 'Status must be one of: OPEN, CLOSED, LOCKED',
+  status: Joi.string().valid('DRAFT', 'OPEN', 'CLOSED', 'SUSPENDED').optional().default('DRAFT').messages({
+    'any.only': 'Status must be one of: DRAFT, OPEN, CLOSED, SUSPENDED',
   }),
-  created_by: Joi.number().integer().min(1).required().messages({
-    'number.base': 'Created by staff ID must be a number',
-    'number.integer': 'Created by staff ID must be an integer',
-    'number.min': 'Created by staff ID must be greater than 0',
-    'any.required': 'Created by staff ID is required',
+  auto_close: Joi.boolean().optional().default(false).messages({
+    'boolean.base': 'Auto close must be a boolean value',
   }),
 }).custom((value, helpers) => {
   // Custom validation to ensure end_date is after start_date
@@ -86,21 +86,27 @@ export const updateFinancialPeriodSchema = Joi.object({
   name: Joi.string().max(100).optional().messages({
     'string.max': 'Period name cannot exceed 100 characters',
   }),
+  period_type: Joi.string().valid('MONTHLY', 'QUARTERLY', 'YEARLY', 'CUSTOM').optional().messages({
+    'any.only': 'Period type must be one of: MONTHLY, QUARTERLY, YEARLY, CUSTOM',
+  }),
   start_date: Joi.string().isoDate().optional().messages({
     'string.isoDate': 'Start date must be a valid date',
   }),
   end_date: Joi.string().isoDate().optional().messages({
     'string.isoDate': 'End date must be a valid date',
   }),
-  balance: Joi.number().precision(2).min(0).optional().messages({
-    'number.base': 'Balance must be a number',
-    'number.min': 'Balance cannot be negative',
+  opening_balance: Joi.number().precision(2).min(0).optional().messages({
+    'number.base': 'Opening balance must be a number',
+    'number.min': 'Opening balance cannot be negative',
   }),
-  notes: Joi.string().max(500).optional().messages({
-    'string.max': 'Notes cannot exceed 500 characters',
+  description: Joi.string().max(500).optional().messages({
+    'string.max': 'Description cannot exceed 500 characters',
   }),
-  status: Joi.string().valid('OPEN', 'CLOSED', 'LOCKED').optional().messages({
-    'any.only': 'Status must be one of: OPEN, CLOSED, LOCKED',
+  status: Joi.string().valid('DRAFT', 'OPEN', 'CLOSED', 'SUSPENDED').optional().messages({
+    'any.only': 'Status must be one of: DRAFT, OPEN, CLOSED, SUSPENDED',
+  }),
+  auto_close: Joi.boolean().optional().messages({
+    'boolean.base': 'Auto close must be a boolean value',
   }),
   updated_by: Joi.number().integer().min(1).optional().messages({
     'number.base': 'Updated by staff ID must be a number',
@@ -125,8 +131,11 @@ export const financialPeriodFiltersSchema = Joi.object({
   search: Joi.string().max(100).optional().messages({
     'string.max': 'Search term cannot exceed 100 characters',
   }),
-  status: Joi.string().valid('OPEN', 'CLOSED', 'LOCKED').optional().messages({
-    'any.only': 'Status must be one of: OPEN, CLOSED, LOCKED',
+  period_type: Joi.string().valid('MONTHLY', 'QUARTERLY', 'YEARLY', 'CUSTOM').optional().messages({
+    'any.only': 'Period type must be one of: MONTHLY, QUARTERLY, YEARLY, CUSTOM',
+  }),
+  status: Joi.string().valid('DRAFT', 'OPEN', 'CLOSED', 'SUSPENDED').optional().messages({
+    'any.only': 'Status must be one of: DRAFT, OPEN, CLOSED, SUSPENDED',
   }),
   page: Joi.number().integer().min(1).optional().default(1).messages({
     'number.base': 'Page must be a number',

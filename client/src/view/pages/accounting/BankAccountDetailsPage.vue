@@ -504,7 +504,8 @@ export default {
         });
       } catch (error) {
         console.error('Failed to update balance:', error);
-        const errorMessage = error.response?.data?.message || error.message || 'Failed to update account balance';
+        const errorMessage =
+          error.response?.data?.message || error.message || 'Failed to update account balance';
         this.$bvToast.toast(errorMessage, {
           title: 'Error',
           variant: 'danger',

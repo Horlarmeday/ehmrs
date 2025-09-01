@@ -66,6 +66,13 @@ export class JournalEntryLine extends Model {
   description: string;
 
   @Column({
+    type: DataType.STRING,
+    allowNull: true,
+    defaultValue: 'STANDARD',
+  })
+  line_type: string;
+
+  @Column({
     type: DataType.INTEGER,
   })
   cost_center_id: number;

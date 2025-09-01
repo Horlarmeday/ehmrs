@@ -65,7 +65,7 @@
               <i class="fas fa-file-invoice-dollar"></i>
             </div>
             <div class="metric-content">
-              <h3 class="metric-value">{{ formatCurrency(dashboardData?.totalBills || 0) }}</h3>
+              <h3 class="metric-value">{{ dashboardData?.totalBills || 0 }}</h3>
               <p class="metric-label">Total Bills</p>
               <small class="metric-change text-white">
                 <i
@@ -87,9 +87,7 @@
             <div class="metric-content">
               <h3 class="metric-value">{{ formatCurrency(+dashboardData?.totalRevenue || 0) }}</h3>
               <p class="metric-label">Total Revenue</p>
-              <small
-                class="metric-change"
-              >
+              <small class="metric-change">
                 <i
                   :class="
                     (dashboardData?.revenueChange || 0) >= 0
@@ -137,34 +135,18 @@
       </div>
     </div>
 
-    <!-- Financial Reports Link -->
-    <div class="reports-link-section mb-4">
-      <div class="alert alert-info">
-        <div class="d-flex align-items-center">
-          <i class="fas fa-chart-line fa-2x mr-3"></i>
-          <div>
-            <h6 class="mb-1">📊 Detailed Financial Analytics Available</h6>
-            <p class="mb-2">
-              For comprehensive revenue trends, payment methods analysis, and detailed financial
-              reports, visit the Financial Reports page.
-            </p>
-            <b-button variant="outline-info" size="sm" @click="navigateToPage('financial-reports')">
-              <i class="fas fa-chart-bar mr-1"></i>View Financial Reports
-            </b-button>
-          </div>
-        </div>
+    <!-- Recent Activity Section - Prominently Displayed -->
+    <div class="activity-section mb-4">
+      <div class="section-header">
+        <h4><i class="fas fa-history text-primary mr-2"></i>Recent Activity</h4>
+        <p class="text-muted">Latest bills, payments, and financial activities</p>
       </div>
-    </div>
-
-
-
-    <!-- Recent Activity Section -->
-    <div class="activity-section">
+      
       <div class="row">
         <div class="col-lg-6 mb-4">
           <div class="activity-card">
             <div class="card-header">
-              <h5>Recent Bills</h5>
+              <h5><i class="fas fa-file-invoice-dollar text-primary mr-2"></i>Recent Bills</h5>
               <b-button variant="outline-primary" size="sm" @click="viewAllBills"
                 >View All</b-button
               >
@@ -179,7 +161,7 @@
                     Bill #{{ bill.bill_number }} - {{ bill.patient_name }}
                   </div>
                   <div class="activity-details">
-                    {{ formatCurrency(bill.final_amount) }} • {{ formatDate(bill.created_at) }}
+                    {{ formatCurrency(bill.final_amount) }} • {{ formatDate(bill.createdAt) }}
                   </div>
                   <div class="activity-status">
                     <b-badge :variant="getPaymentStatusVariant(bill.payment_status)">
@@ -200,7 +182,7 @@
         <div class="col-lg-6 mb-4">
           <div class="activity-card">
             <div class="card-header">
-              <h5>Recent Payments</h5>
+              <h5><i class="fas fa-credit-card text-success mr-2"></i>Recent Payments</h5>
               <b-button variant="outline-primary" size="sm" @click="viewAllPayments"
                 >View All</b-button
               >
@@ -212,7 +194,7 @@
                 </div>
                 <div class="activity-content">
                   <div class="activity-title">
-                    {{ payment.payment_method }} - {{ payment.patient_name }}
+                    {{ payment.payment_method }} - {{ payment.patient.fullname }}
                   </div>
                   <div class="activity-details">
                     {{ formatCurrency(payment.amount) }} • {{ formatDate(payment.processed_at) }}
@@ -233,110 +215,10 @@
       </div>
     </div>
 
-    <!-- Financial Infrastructure Summary Widgets -->
-    <div class="infrastructure-summary-section mb-4">
-      <div class="section-header">
-        <h4><i class="fas fa-cogs text-primary mr-2"></i>Financial Infrastructure</h4>
-        <p class="text-muted">Overview of bank accounts and POS terminals</p>
-      </div>
-
-      <div class="row">
-        <!-- Bank Accounts Summary Widget -->
-        <div class="col-lg-6 mb-4">
-          <div class="summary-widget bg-gradient-primary text-white">
-            <div class="widget-header">
-              <div class="widget-icon">
-                <i class="fas fa-university fa-2x"></i>
-              </div>
-              <div class="widget-title">
-                <h5>Bank Accounts</h5>
-                <p class="mb-0">Financial accounts overview</p>
-              </div>
-            </div>
-            <div class="widget-content">
-              <div class="row text-center">
-                <div class="col-4">
-                  <div class="stat-item">
-                    <h3>{{ bankAccountsSummary.total || 0 }}</h3>
-                    <small>Total Accounts</small>
-                  </div>
-                </div>
-                <div class="col-4">
-                  <div class="stat-item">
-                    <h3>{{ formatCurrency(bankAccountsSummary.totalBalance || 0) }}</h3>
-                    <small>Total Balance</small>
-                  </div>
-                </div>
-                <div class="col-4">
-                  <div class="stat-item">
-                    <h3>{{ bankAccountsSummary.active || 0 }}</h3>
-                    <small>Active</small>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="widget-actions">
-              <b-button variant="outline-light" size="sm" @click="navigateToPage('bank-accounts')">
-                <i class="fas fa-eye mr-1"></i>View All
-              </b-button>
-              <b-button variant="light" size="sm" @click="navigateToPage('create-bank-account')">
-                <i class="fas fa-plus mr-1"></i>Add Account
-              </b-button>
-            </div>
-          </div>
-        </div>
-
-        <!-- POS Terminals Summary Widget -->
-        <div class="col-lg-6 mb-4">
-          <div class="summary-widget bg-gradient-success text-white">
-            <div class="widget-header">
-              <div class="widget-icon">
-                <i class="fas fa-credit-card fa-2x"></i>
-              </div>
-              <div class="widget-title">
-                <h5>POS Terminals</h5>
-                <p class="mb-0">Payment terminals overview</p>
-              </div>
-            </div>
-            <div class="widget-content">
-              <div class="row text-center">
-                <div class="col-4">
-                  <div class="stat-item">
-                    <h3>{{ posTerminalsSummary.total || 0 }}</h3>
-                    <small>Total Terminals</small>
-                  </div>
-                </div>
-                <div class="col-4">
-                  <div class="stat-item">
-                    <h3>{{ posTerminalsSummary.active || 0 }}</h3>
-                    <small>Active</small>
-                  </div>
-                </div>
-                <div class="col-4">
-                  <div class="stat-item">
-                    <h3>{{ posTerminalsSummary.types || 0 }}</h3>
-                    <small>Types</small>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="widget-actions">
-              <b-button variant="outline-light" size="sm" @click="navigateToPage('pos-terminals')">
-                <i class="fas fa-eye mr-1"></i>View All
-              </b-button>
-              <b-button variant="light" size="sm" @click="navigateToPage('create-pos-terminal')">
-                <i class="fas fa-plus mr-1"></i>Add Terminal
-              </b-button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Main Navigation Grid - All Routes Visible -->
+    <!-- Main Navigation Grid - Moved to Bottom -->
     <div class="main-navigation-grid">
       <div class="section-header">
-        <h4><i class="fas fa-compass text-primary mr-2"></i>Accounting Navigation</h4>
+        <h4><i class="fas fa-compass text-primary mr-2"></i>Quick Navigation</h4>
         <p class="text-muted">Access all accounting modules and functions</p>
       </div>
 
@@ -361,8 +243,8 @@
               <i class="fas fa-credit-card"></i>
             </div>
             <div class="nav-content">
-              <h5>Payment Processing</h5>
-              <p>Handle patient payments and deposits</p>
+              <h5>Payments Management</h5>
+              <p>Process and track all payment transactions</p>
             </div>
             <div class="nav-arrow">
               <i class="fas fa-arrow-right"></i>
@@ -453,6 +335,22 @@
             </div>
           </div>
 
+          <div class="nav-item-large" @click="navigateToPage('cash-registers')">
+            <div class="nav-icon-large bg-warning">
+              <i class="fas fa-cash-register"></i>
+            </div>
+            <div class="nav-content">
+              <h5>Cash Registers</h5>
+              <p>Manage cash registers and daily cash operations</p>
+            </div>
+            <div class="nav-arrow">
+              <i class="fas fa-arrow-right"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Financial Analysis Row -->
+        <div class="nav-row">
           <div class="nav-item-large" @click="navigateToPage('financial-periods')">
             <div class="nav-icon-large bg-info">
               <i class="fas fa-calendar-alt"></i>
@@ -465,10 +363,7 @@
               <i class="fas fa-arrow-right"></i>
             </div>
           </div>
-        </div>
 
-        <!-- Financial Analysis Row -->
-        <div class="nav-row">
           <div class="nav-item-large" @click="navigateToPage('trial-balance')">
             <div class="nav-icon-large bg-secondary">
               <i class="fas fa-balance-scale"></i>
@@ -494,6 +389,22 @@
               <i class="fas fa-arrow-right"></i>
             </div>
           </div>
+        </div>
+
+        <!-- Insurance & HMO Row -->
+        <div class="nav-row">
+          <div class="nav-item-large" @click="navigateToPage('insurance')">
+            <div class="nav-icon-large bg-purple">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="nav-content">
+              <h5>Insurance Management</h5>
+              <p>Manage insurance providers and policies</p>
+            </div>
+            <div class="nav-arrow">
+              <i class="fas fa-arrow-right"></i>
+            </div>
+          </div>
 
           <div class="nav-item-large" @click="navigateToPage('hmo-claims')">
             <div class="nav-icon-large bg-purple">
@@ -507,43 +418,14 @@
               <i class="fas fa-arrow-right"></i>
             </div>
           </div>
-        </div>
 
-        <!-- Additional Services Row -->
-        <div class="nav-row">
-          <div class="nav-item-large" @click="navigateToPage('dashboard')">
-            <div class="nav-icon-large bg-dark">
-              <i class="fas fa-arrow-left"></i>
+          <div class="nav-item-large" @click="navigateToPage('advanced-reporting-dashboard')">
+            <div class="nav-icon-large bg-info">
+              <i class="fas fa-brain"></i>
             </div>
             <div class="nav-content">
-              <h5>Back to Main</h5>
-              <p>Return to main application dashboard</p>
-            </div>
-            <div class="nav-arrow">
-              <i class="fas fa-arrow-right"></i>
-            </div>
-          </div>
-
-          <div class="nav-item-large" @click="refreshData">
-            <div class="nav-icon-large bg-teal">
-              <i class="fas fa-sync-alt"></i>
-            </div>
-            <div class="nav-content">
-              <h5>Refresh Data</h5>
-              <p>Update dashboard with latest information</p>
-            </div>
-            <div class="nav-arrow">
-              <i class="fas fa-arrow-right"></i>
-            </div>
-          </div>
-
-          <div class="nav-item-large" @click="navigateToPage('insurance')">
-            <div class="nav-icon-large bg-purple">
-              <i class="fas fa-shield-alt"></i>
-            </div>
-            <div class="nav-content">
-              <h5>Insurance Management</h5>
-              <p>Manage insurance providers and policies</p>
+              <h5>Advanced Analytics</h5>
+              <p>AI-powered financial insights and predictions</p>
             </div>
             <div class="nav-arrow">
               <i class="fas fa-arrow-right"></i>
@@ -581,40 +463,18 @@ export default {
       );
     },
     recentBills() {
-      const bills = this.$store.getters['accounting/getClinicalBills'];
-      return Array.isArray(bills) ? bills.slice(0, 5) : [];
+      const summary = this.$store.getters['accounting/getAccountingSummary'];
+      const bills = summary.recentBills;
+      return Array.isArray(bills) ? bills.slice(0, 10) : [];
     },
     recentPayments() {
-      const payments = this.$store.getters['accounting/getClinicalPayments'];
-      return Array.isArray(payments) ? payments.slice(0, 5) : [];
+      const summary = this.$store.getters['accounting/getAccountingSummary'];
+      const payments = summary.recentPayments;
+      return Array.isArray(payments) ? payments.slice(0, 10) : [];
     },
     isLoading() {
       return this.$store.getters['accounting/loading'] || false;
     },
-    bankAccountsSummary() {
-      const accounts = this.$store.getters['accounting/getBankAccounts'];
-      if (!Array.isArray(accounts)) return { total: 0, totalBalance: 0, active: 0 };
-
-      const total = accounts.length;
-      const totalBalance = accounts.reduce(
-        (sum, account) => sum + (+account.current_balance || 0),
-        0
-      );
-      const active = accounts.filter(account => account.is_active).length;
-
-      return { total, totalBalance, active };
-    },
-    posTerminalsSummary() {
-      const terminals = this.$store.getters['accounting/getPOSTerminals'];
-      if (!Array.isArray(terminals)) return { total: 0, active: 0, types: 0 };
-
-      const total = terminals.length;
-      const active = terminals.filter(terminal => terminal.is_active).length;
-      const types = new Set(terminals.map(terminal => terminal.terminal_type)).size;
-
-      return { total, active, types };
-    },
-
   },
   async mounted() {
     await this.loadDashboardData();
@@ -628,17 +488,11 @@ export default {
         // Load dashboard summary using the new accounting store
         await this.$store.dispatch('accounting/fetchAccountingSummary');
 
-        // Load recent bills
-        await this.$store.dispatch('accounting/fetchClinicalBills', { limit: 5 });
+        // // Load recent bills
+        // await this.$store.dispatch('accounting/fetchClinicalBills', { limit: 10 });
 
-        // Load recent payments
-        await this.$store.dispatch('accounting/fetchClinicalPayments', { limit: 5 });
-
-        // Load bank accounts and POS terminals for summary widgets
-        await this.$store.dispatch('accounting/getBankAccounts', { limit: 100 });
-        await this.$store.dispatch('accounting/getPOSTerminals', { limit: 100 });
-
-
+        // // Load recent payments
+        // await this.$store.dispatch('accounting/fetchClinicalPayments', { limit: 10 });
       } catch (error) {
         console.error('Failed to load dashboard data:', error);
         this.error = error.message || 'Failed to load dashboard data';
@@ -655,8 +509,6 @@ export default {
     async refreshData() {
       await this.loadDashboardData();
     },
-
-
 
     // Navigation methods
     createNewBill() {
@@ -680,7 +532,7 @@ export default {
     },
 
     viewBill(billId) {
-      this.$router.push({ name: 'bill-details', params: { id: billId } });
+      this.$router.push({ name: 'bill-items', params: { billId } });
     },
 
     viewPayment(paymentId) {
@@ -696,6 +548,7 @@ export default {
         'pos-terminals': 'pos-terminals',
         'create-bank-account': 'create-bank-account',
         'create-pos-terminal': 'create-pos-terminal',
+        'advanced-reporting-dashboard': 'advanced-reporting-dashboard',
       };
 
       // Direct navigation using paths as fallback
@@ -710,9 +563,11 @@ export default {
         'trial-balance': '/accounting/trial-balance',
         'financial-reports': '/accounting/reports',
         'hmo-claims': '/accounting/hmo-claims',
+        'advanced-reporting-dashboard': '/accounting/advanced-reports',
 
         'bank-accounts': '/accounting/bank-accounts',
         'pos-terminals': '/accounting/pos-terminals',
+        'cash-registers': '/accounting/cash-registers',
         'create-bank-account': '/accounting/bank-accounts/new',
         'create-pos-terminal': '/accounting/pos-terminals/new',
       };
@@ -899,28 +754,47 @@ export default {
   opacity: 0.8;
 }
 
+/* Recent Activity Section - Enhanced */
 .activity-section {
   margin-bottom: 2rem;
 }
 
-.activity-card {
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.activity-section .section-header {
+  background: linear-gradient(135deg, #f8f9fa, #e3f2fd);
+  border-left: 4px solid #2196f3;
+  margin-bottom: 1.5rem;
 }
 
-.card-header {
+.activity-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.activity-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: #007bff;
+}
+
+.activity-card .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f8f9fa;
 }
 
-.card-header h5 {
+.activity-card .card-header h5 {
   margin: 0;
-  font-weight: 600;
+  font-weight: 700;
   color: #2c3e50;
+  font-size: 1.25rem;
 }
 
 .activity-list {
@@ -931,39 +805,53 @@ export default {
 .activity-item {
   display: flex;
   align-items: center;
-  padding: 1rem 0;
-  border-bottom: 1px solid #e9ecef;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  transition: all 0.2s ease;
+}
+
+.activity-item:hover {
+  background: #e3f2fd;
+  border-color: #2196f3;
+  transform: translateX(4px);
 }
 
 .activity-item:last-child {
-  border-bottom: none;
+  margin-bottom: 0;
 }
 
 .activity-icon {
-  width: 40px;
-  height: 40px;
+  width: 45px;
+  height: 45px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 1rem;
   color: white;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .activity-content {
   flex: 1;
+  min-width: 0;
 }
 
 .activity-title {
   font-weight: 600;
   color: #2c3e50;
   margin-bottom: 0.25rem;
+  font-size: 1rem;
 }
 
 .activity-details {
   font-size: 0.875rem;
   color: #6c757d;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
 }
 
 .activity-status {
@@ -972,6 +860,17 @@ export default {
 
 .activity-actions {
   margin-left: 1rem;
+}
+
+.activity-actions .btn {
+  border-radius: 20px;
+  padding: 0.375rem 1rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.activity-actions .btn:hover {
+  transform: scale(1.05);
 }
 
 /* Reports Link Section */
@@ -988,125 +887,6 @@ export default {
 
 .reports-link-section .fas {
   color: #1976d2;
-}
-
-/* Financial Infrastructure Summary Widgets */
-.infrastructure-summary-section {
-  margin-bottom: 2rem;
-}
-
-.summary-widget {
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s ease;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.summary-widget:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-}
-
-.widget-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.widget-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.widget-title h5 {
-  margin: 0 0 0.25rem 0;
-  font-weight: 600;
-  font-size: 1.25rem;
-}
-
-.widget-title p {
-  margin: 0;
-  opacity: 0.9;
-  font-size: 0.9rem;
-}
-
-.widget-content {
-  flex: 1;
-  margin-bottom: 1.5rem;
-}
-
-.stat-item h3 {
-  margin: 0 0 0.25rem 0;
-  font-weight: 700;
-  font-size: 1.75rem;
-}
-
-.stat-item small {
-  opacity: 0.9;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.widget-actions {
-  display: flex;
-  gap: 0.75rem;
-  justify-content: center;
-}
-
-.bg-gradient-primary {
-  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-}
-
-.bg-gradient-success {
-  background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
-}
-
-/* Responsive Design for Summary Widgets */
-@media (max-width: 768px) {
-  .widget-header {
-    flex-direction: column;
-    text-align: center;
-    gap: 0.75rem;
-  }
-
-  .widget-actions {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .widget-actions .btn {
-    width: 100%;
-  }
-
-  .stat-item h3 {
-    font-size: 1.5rem;
-  }
-}
-
-@media (max-width: 576px) {
-  .summary-widget {
-    padding: 1rem;
-  }
-
-  .widget-icon {
-    width: 50px;
-    height: 50px;
-  }
-
-  .widget-title h5 {
-    font-size: 1.1rem;
-  }
 }
 
 /* Main Navigation Grid */
@@ -1251,16 +1031,8 @@ export default {
   background-color: #6f42c1 !important;
 }
 
-.bg-teal {
-  background-color: #20c997 !important;
-}
-
 .bg-secondary {
   background-color: #6c757d !important;
-}
-
-.bg-dark {
-  background-color: #343a40 !important;
 }
 
 @media (max-width: 768px) {

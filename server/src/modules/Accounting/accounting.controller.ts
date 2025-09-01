@@ -1,6 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import AccountingService from './accounting.service';
 import AccountingRepository from './accounting.repository';
+import { FinancialPeriodManagementService } from './services/financialPeriodManagement.service';
+import { FinancialPeriodValidationService } from './services/financialPeriodValidation.service';
+import { BankReconciliationService } from './services/bankReconciliation.service';
+import { FinancialReportingService } from './services/financialReporting.service';
+import { OperationalReportingService } from './services/operationalReporting.service';
+import { BusinessIntelligenceService } from './services/businessIntelligence.service';
+import { PatientDepositService } from './services/patientDeposit.service';
 import Joi from 'joi';
 import {
   PatientDepositData,
@@ -26,6 +33,10 @@ import {
   useDepositSchema,
   refundDepositSchema,
   adjustDepositSchema,
+  bankStatementImportSchema,
+  bankReconciliationApprovalSchema,
+  operationalReportSchema,
+  businessIntelligenceSchema,
 } from './validations';
 import {
   createChartOfAccountSchema,
@@ -58,6 +69,7 @@ import {
 } from './dto';
 import { PaymentCollectionMethod, AccountType } from './enums';
 import { AccountValidationService } from './services/accountValidation.service';
+import { DepositReportingService } from './services/depositReporting.service';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -75,6 +87,47 @@ export class AccountingController {
       throw new BadException('Validation Error', 400, error.details[0].message);
     }
     return value;
+  }
+
+  // System Health & Initialization
+  static async getSystemHealth(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { AccountingStartupService } = await import('./services/startup.service');
+      const config = await AccountingStartupService.validateConfiguration();
+
+      res.json({
+        success: true,
+        accounting: config.valid,
+        issues: config.issues,
+        timestamp: new Date().toISOString(),
+        status: config.valid ? 'HEALTHY' : 'UNHEALTHY',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async initializeSystem(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { AccountingStartupService } = await import('./services/startup.service');
+      await AccountingStartupService.initialize();
+
+      res.json({
+        success: true,
+        message: 'Accounting system initialized successfully',
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      next(error);
+    }
   }
 
   // Patient Deposits
@@ -726,6 +779,49 @@ export class AccountingController {
     }
   }
 
+  /**
+   * Download payment receipt as PDF
+   */
+  static async downloadPaymentReceipt(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { paymentId } = req.params;
+      
+      if (!paymentId || isNaN(parseInt(paymentId))) {
+        res.status(400).json({
+          success: false,
+          message: 'Valid payment ID is required',
+        });
+        return;
+      }
+
+      // Get receipt data from service
+      const receiptData = await AccountingService.getPaymentReceiptData(parseInt(paymentId));
+      
+      if (!receiptData) {
+        res.status(404).json({
+          success: false,
+          message: 'Payment receipt not found',
+        });
+        return;
+      }
+
+      // Import receipt helper to avoid circular dependencies
+      const { printClinicalReceiptPDF } = await import('./helper/receipt.helper');
+      
+      // Generate and stream PDF receipt
+      await printClinicalReceiptPDF({
+        receiptData,
+        res,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async getClinicalPaymentById(
     req: Request,
     res: Response,
@@ -767,6 +863,7 @@ export class AccountingController {
           : undefined,
         page: validatedQuery.page ? parseInt(validatedQuery.page as string) : 1,
         limit: validatedQuery.limit ? parseInt(validatedQuery.limit as string) : 20,
+        search: validatedQuery.search ? (validatedQuery.search as string) : undefined,
       };
 
       const result = await AccountingService.getClinicalPayments(filters);
@@ -1491,9 +1588,20 @@ export class AccountingController {
         createJournalEntrySchema
       );
 
+      // Get current financial period
+      const currentPeriod = await FinancialPeriodValidationService.getCurrentActivePeriod();
+      if (!currentPeriod) {
+        throw new BadException(
+          'Financial Period Not Available',
+          503,
+          'No active financial period found. Please configure financial periods before processing transactions.'
+        );
+      }
+
       const entryData = {
         ...validatedBody,
         created_by: req.user.sub,
+        period_id: currentPeriod.id, // Link to current financial period
       };
 
       const entry = await AccountingRepository.createJournalEntry(entryData);
@@ -1665,10 +1773,10 @@ export class AccountingController {
       res.status(200).json({
         success: true,
         message: 'Financial periods retrieved successfully',
-        data: result.docs,
-        total: result.total,
-        pages: result.pages,
-        summary: result.summary,
+        data: result.docs || result, // Ensure consistent structure
+        total: result.total || 0,
+        pages: result.pages || 0,
+        summary: result.summary || {},
       });
     } catch (error) {
       next(error);
@@ -1718,7 +1826,7 @@ export class AccountingController {
         created_by: req.user.sub,
       };
 
-      const period = await AccountingRepository.createFinancialPeriod(periodData);
+      const period = await AccountingService.createFinancialPeriod(periodData, req.user.sub);
 
       res.status(201).json({
         success: true,
@@ -1742,7 +1850,11 @@ export class AccountingController {
         updateFinancialPeriodSchema
       );
 
-      const period = await AccountingRepository.updateFinancialPeriod(parseInt(id), validatedBody);
+      const period = await AccountingService.updateFinancialPeriod(
+        parseInt(id),
+        validatedBody,
+        req.user.sub
+      );
 
       res.status(200).json({
         success: true,
@@ -1761,7 +1873,7 @@ export class AccountingController {
   ): Promise<void> {
     try {
       const { id } = req.params;
-      await AccountingRepository.deleteFinancialPeriod(parseInt(id));
+      await AccountingService.deleteFinancialPeriod(parseInt(id), req.user.sub);
 
       res.status(200).json({
         success: true,
@@ -1781,7 +1893,11 @@ export class AccountingController {
       const { id } = req.params;
       const { notes } = AccountingController.validateRequest(req.body, openPeriodSchema);
 
-      const period = await AccountingRepository.openFinancialPeriod(parseInt(id), notes);
+      const period = await AccountingService.openFinancialPeriod(
+        parseInt(id),
+        { notes },
+        req.user.sub
+      );
 
       res.status(200).json({
         success: true,
@@ -1805,10 +1921,10 @@ export class AccountingController {
         closePeriodSchema
       );
 
-      const period = await AccountingRepository.closeFinancialPeriod(
+      const period = await AccountingService.closeFinancialPeriod(
         parseInt(id),
-        closing_date,
-        notes
+        { notes, closing_date },
+        req.user.sub
       );
 
       res.status(200).json({
@@ -2001,11 +2117,85 @@ export class AccountingController {
 
       res.status(200).json({
         success: true,
-        message: 'Trial balance retrieved successfully',
         data: result.data,
+        summary: result.summary,
         total: result.total,
         pages: result.pages,
-        summary: result.summary,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async exportTrialBalance(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const filters = AccountingController.validateRequest(req.query, trialBalanceFiltersSchema);
+      const result = await AccountingRepository.getTrialBalance(filters);
+
+      // Generate CSV content
+      const csvContent = AccountingController.convertTrialBalanceToCSV(result.data);
+
+      // Set response headers for CSV download
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="trial-balance-${new Date().toISOString().split('T')[0]}.csv"`
+      );
+
+      res.status(200).send(csvContent);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getTrialBalanceChartData(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const filters = AccountingController.validateRequest(req.query, trialBalanceFiltersSchema);
+      const chartData = await AccountingRepository.getTrialBalanceChartData(filters);
+
+      res.status(200).json({
+        success: true,
+        data: chartData,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getTrialBalanceVarianceAnalysis(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const filters = AccountingController.validateRequest(req.query, trialBalanceFiltersSchema);
+      const varianceData = await AccountingRepository.getTrialBalanceVarianceAnalysis(filters);
+
+      res.status(200).json({
+        success: true,
+        data: varianceData,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getBalanceSheetPreview(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const filters = AccountingController.validateRequest(req.query, trialBalanceFiltersSchema);
+      const balanceSheetData = await AccountingRepository.getBalanceSheetPreview(filters);
+
+      res.status(200).json({
+        success: true,
+        data: balanceSheetData,
       });
     } catch (error) {
       next(error);
@@ -2425,8 +2615,6 @@ export class AccountingController {
         includeInactive: includeInactive === 'true',
       };
 
-      const DepositReportingService = require('./services/depositReporting.service')
-        .DepositReportingService;
       const report = await DepositReportingService.generateDepositSummaryReport(filters);
 
       // Handle CSV export
@@ -2465,8 +2653,6 @@ export class AccountingController {
         patientId: patientId ? parseInt(patientId as string) : undefined,
       };
 
-      const DepositReportingService = require('./services/depositReporting.service')
-        .DepositReportingService;
       const report = await DepositReportingService.generateDepositActivityReport(filters);
 
       // Handle CSV export
@@ -2507,8 +2693,6 @@ export class AccountingController {
         status: status as string,
       };
 
-      const DepositReportingService = require('./services/depositReporting.service')
-        .DepositReportingService;
       const report = await DepositReportingService.generatePatientDepositReport(
         parseInt(patientId),
         filters
@@ -2549,8 +2733,6 @@ export class AccountingController {
         endDate: endDate ? new Date(endDate as string) : undefined,
       };
 
-      const DepositReportingService = require('./services/depositReporting.service')
-        .DepositReportingService;
       const report = await DepositReportingService.generateReconciliationReport(filters);
 
       // Handle CSV export
@@ -2591,8 +2773,6 @@ export class AccountingController {
         throw new BadException('POS terminal ID and settlement reference are required', 400);
       }
 
-      const PatientDepositService = require('./services/patientDeposit.service')
-        .PatientDepositService;
       const journalEntry = await PatientDepositService.settlePOSTerminalDeposits(
         pos_terminal_id,
         settlement_reference,
@@ -2630,8 +2810,6 @@ export class AccountingController {
         endDate: endDate ? new Date(endDate as string) : undefined,
       };
 
-      const DepositReportingService = require('./services/depositReporting.service')
-        .DepositReportingService;
       const report = await DepositReportingService.generateExpiryReport(filters);
 
       // Handle CSV export
@@ -2647,6 +2825,794 @@ export class AccountingController {
         success: true,
         message: 'Expiry report generated successfully',
         data: report,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // ===== PHASE 4: RECONCILIATION & SETTLEMENT METHODS =====
+
+  /**
+   * Import bank statement for reconciliation
+   */
+  static async importBankStatement(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      // Validate request body
+      const validatedBody = AccountingController.validateRequest(
+        req.body,
+        bankStatementImportSchema
+      );
+
+      const statementData = {
+        ...validatedBody,
+        imported_by: req.user.sub,
+      };
+
+      const reconciliationResult = await BankReconciliationService.importBankStatement(
+        statementData
+      );
+
+      res.status(200).json({
+        success: true,
+        message: 'Bank statement imported and reconciled successfully',
+        data: reconciliationResult,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get bank reconciliation summary
+   */
+  static async getBankReconciliationSummary(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { bank_account_id } = req.query;
+      const summary = await BankReconciliationService.getReconciliationSummary(
+        bank_account_id ? Number(bank_account_id) : undefined
+      );
+
+      res.status(200).json({
+        success: true,
+        message: 'Bank reconciliation summary retrieved successfully',
+        data: summary,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get bank reconciliation exceptions
+   */
+  static async getBankReconciliationExceptions(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { bank_account_id, severity } = req.query;
+      const exceptions = await BankReconciliationService.getReconciliationExceptions(
+        bank_account_id ? Number(bank_account_id) : undefined,
+        severity as string
+      );
+
+      res.status(200).json({
+        success: true,
+        message: 'Bank reconciliation exceptions retrieved successfully',
+        data: exceptions,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Approve bank reconciliation
+   */
+  static async approveBankReconciliation(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      // Validate request body
+      const validatedBody = AccountingController.validateRequest(
+        req.body,
+        bankReconciliationApprovalSchema
+      );
+
+      const { id } = req.params;
+      const { approval_notes } = validatedBody;
+
+      await BankReconciliationService.approveReconciliation(id, req.user.sub, approval_notes);
+
+      res.status(200).json({
+        success: true,
+        message: 'Bank reconciliation approved successfully',
+        data: { reconciliation_id: id, approved_by: req.user.sub },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // ===== END PHASE 4 METHODS =====
+
+  /**
+   * Generate comprehensive financial report
+   */
+  static async generateFinancialReportingReport(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const validatedQuery = AccountingController.validateRequest(req.query, financialReportSchema);
+      const report = await FinancialReportingService.generateComprehensiveReport(validatedQuery);
+      res.status(200).json({
+        success: true,
+        message: 'Financial reporting report generated successfully',
+        data: report,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Generate operational reporting report
+   */
+  static async generateOperationalReportingReport(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const validatedQuery = AccountingController.validateRequest(
+        req.query,
+        operationalReportSchema
+      );
+      const report = await OperationalReportingService.generatePaymentProcessingPerformance(
+        validatedQuery
+      );
+      res.status(200).json({
+        success: true,
+        message: 'Operational reporting report generated successfully',
+        data: report,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Generate business intelligence report
+   */
+  static async generateBusinessIntelligenceReport(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const validatedQuery = AccountingController.validateRequest(
+        req.query,
+        businessIntelligenceSchema
+      );
+      const report = await BusinessIntelligenceService.generateComprehensiveBIReport(
+        validatedQuery
+      );
+      res.status(200).json({
+        success: true,
+        message: 'Business intelligence report generated successfully',
+        data: report,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // ===== ADDITIONAL PHASE 6 REPORTING METHODS =====
+
+  /**
+   * Get Profit & Loss Statement
+   */
+  static async getProfitLossStatement(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const validatedQuery = AccountingController.validateRequest(req.query, financialReportSchema);
+      const report = await FinancialReportingService.generateProfitLossStatement(validatedQuery);
+      res.status(200).json({
+        success: true,
+        message: 'Profit & Loss statement generated successfully',
+        data: report,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get Balance Sheet
+   */
+  static async getBalanceSheet(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const validatedQuery = AccountingController.validateRequest(req.query, financialReportSchema);
+      const report = await FinancialReportingService.generateBalanceSheet(validatedQuery);
+      res.status(200).json({
+        success: true,
+        message: 'Balance sheet generated successfully',
+        data: report,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get Cash Flow Statement
+   */
+  static async getCashFlowStatement(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const validatedQuery = AccountingController.validateRequest(req.query, financialReportSchema);
+      const report = await FinancialReportingService.generateCashFlowStatement(validatedQuery);
+      res.status(200).json({
+        success: true,
+        message: 'Cash flow statement generated successfully',
+        data: report,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get Payment Method Utilization Report
+   */
+  static async getPaymentMethodUtilization(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const validatedQuery = AccountingController.validateRequest(
+        req.query,
+        operationalReportSchema
+      );
+      const report = await OperationalReportingService.generatePaymentMethodUtilization(
+        validatedQuery
+      );
+      res.status(200).json({
+        success: true,
+        message: 'Payment method utilization report generated successfully',
+        data: report,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get Reconciliation Status Report
+   */
+  static async getReconciliationStatus(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const validatedQuery = AccountingController.validateRequest(
+        req.query,
+        operationalReportSchema
+      );
+      const report = await OperationalReportingService.generateReconciliationStatusReport(
+        validatedQuery
+      );
+      res.status(200).json({
+        success: true,
+        message: 'Reconciliation status report generated successfully',
+        data: report,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get Settlement Tracking Report
+   */
+  static async getSettlementTracking(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const validatedQuery = AccountingController.validateRequest(
+        req.query,
+        operationalReportSchema
+      );
+      const report = await OperationalReportingService.generateSettlementTrackingReport(
+        validatedQuery
+      );
+      res.status(200).json({
+        success: true,
+        message: 'Settlement tracking report generated successfully',
+        data: report,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get Payment Trend Analysis
+   */
+  static async getPaymentTrendAnalysis(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const validatedQuery = AccountingController.validateRequest(
+        req.query,
+        businessIntelligenceSchema
+      );
+      const report = await BusinessIntelligenceService.generatePaymentTrendAnalysis(validatedQuery);
+      res.status(200).json({
+        success: true,
+        message: 'Payment trend analysis generated successfully',
+        data: report,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get Predictive Analytics
+   */
+  static async getPredictiveAnalytics(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const validatedQuery = AccountingController.validateRequest(
+        req.query,
+        businessIntelligenceSchema
+      );
+      const report = await BusinessIntelligenceService.generatePredictiveAnalytics(validatedQuery);
+      res.status(200).json({
+        success: true,
+        message: 'Predictive analytics generated successfully',
+        data: report,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get KPI Monitoring
+   */
+  static async getKPIMonitoring(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const validatedQuery = AccountingController.validateRequest(
+        req.query,
+        businessIntelligenceSchema
+      );
+      const report = await BusinessIntelligenceService.generateDashboardKPIMonitoring(
+        validatedQuery
+      );
+      res.status(200).json({
+        success: true,
+        message: 'KPI monitoring report generated successfully',
+        data: report,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get Real-Time Monitoring
+   */
+  static async getRealTimeMonitoring(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const validatedQuery = AccountingController.validateRequest(
+        req.query,
+        businessIntelligenceSchema
+      );
+      const report = await BusinessIntelligenceService.generateRealTimePaymentMonitoring(
+        validatedQuery
+      );
+      res.status(200).json({
+        success: true,
+        message: 'Real-time monitoring report generated successfully',
+        data: report,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // ===== DEPOSIT EXPORT =====
+
+  /**
+   * Export deposits data
+   */
+  static async exportDeposits(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { format = 'CSV', date_range, status, type, include_details } = req.query;
+
+      // Get deposits data based on filters
+      const filters: any = {};
+      if (date_range) filters.date_range = date_range;
+      if (status) filters.status = status;
+      if (type) filters.type = date_range;
+
+      // For now, we'll use a simple approach - in production, implement proper filtering
+      const depositsResponse = await AccountingRepository.getPatientDeposits({ limit: 1000 });
+      const deposits = depositsResponse.docs || [];
+
+      // Format data for export
+      let exportData = deposits.map(deposit => ({
+        reference_number: deposit.reference_number,
+        patient_name: `${deposit.patient?.firstname || ''} ${deposit.patient?.lastname ||
+          ''}`.trim(),
+        patient_id: deposit.patient?.hospital_id || '',
+        amount: deposit.amount,
+        deposit_type: deposit.deposit_type,
+        status: deposit.status,
+        created_date: deposit.createdAt,
+        description: deposit.description || '',
+      }));
+
+      // Add additional details if requested
+      if (include_details === 'true' && deposits.length > 0) {
+        exportData = exportData.map((item, index) => ({
+          ...item,
+          bank_account: deposits[index].bankAccount?.account_name || '',
+          pos_terminal: deposits[index].posTerminal?.terminal_id || '',
+          payment_reference: deposits[index].payment_reference || '',
+          used_amount:
+            (deposits[index].initial_amount || 0) - (deposits[index].current_balance || 0),
+          remaining_balance: deposits[index].current_balance || 0,
+        }));
+      }
+
+      // For now, return CSV format (in production, implement proper Excel/PDF generation)
+      const csvContent = AccountingController.convertToCSV(exportData);
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="deposits-export-${new Date().toISOString().split('T')[0]}.csv"`
+      );
+      res.send(csvContent);
+    } catch (error) {
+      console.error('Export deposits error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to export deposits',
+        message: error.message,
+      });
+    }
+  }
+
+  /**
+   * Convert data to CSV format
+   */
+  private static convertToCSV(data: any[]): string {
+    if (!data || data.length === 0) return '';
+
+    const headers = Object.keys(data[0]);
+    const csvRows = [headers.join(',')];
+
+    for (const row of data) {
+      const values = headers.map(header => {
+        const value = row[header];
+        if (value === null || value === undefined) return '';
+        return typeof value === 'string' ? `"${value.replace(/"/g, '""')}"` : value;
+      });
+      csvRows.push(values.join(','));
+    }
+
+    return csvRows.join('\n');
+  }
+
+  /**
+   * Convert trial balance data to CSV format
+   */
+  private static convertTrialBalanceToCSV(data: any[]): string {
+    if (!data || data.length === 0) return '';
+
+    const headers = Object.keys(data[0]);
+    const csvRows = [headers.join(',')];
+
+    for (const row of data) {
+      const values = headers.map(header => {
+        const value = row[header];
+        if (value === null || value === undefined) return '';
+        return typeof value === 'string' ? `"${value.replace(/"/g, '""')}"` : value;
+      });
+      csvRows.push(values.join(','));
+    }
+
+    return csvRows.join('\n');
+  }
+
+  // =============================================================================
+  // CASH REGISTER MANAGEMENT CONTROLLER METHODS
+  // =============================================================================
+
+  /**
+   * Get all cash registers
+   */
+  static async getCashRegisters(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { page = 1, limit = 10, status, location } = req.query;
+
+      const filters: any = {};
+      if (status) filters.status = status;
+      if (location) filters.location = location;
+
+      const result = await AccountingService.getCashRegisters({
+        page: Number(page),
+        limit: Number(limit),
+        filters,
+      });
+
+      res.json({
+        success: true,
+        data: result.registers,
+        pagination: {
+          page: Number(page),
+          limit: Number(limit),
+          total: result.count,
+          pages: Math.ceil(result.count / Number(limit)),
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get cash register by ID
+   */
+  static async getCashRegisterById(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { id } = req.params;
+      const register = await AccountingService.getCashRegisterById(Number(id));
+
+      if (!register) {
+        res.status(404).json({
+          success: false,
+          error: 'Cash register not found',
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        data: register,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Create new cash register
+   */
+  static async createCashRegister(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const staffId = req.user.sub;
+      const registerData = req.body;
+
+      const register = await AccountingService.createCashRegister(registerData, staffId);
+
+      res.status(201).json({
+        success: true,
+        data: register,
+        message: 'Cash register created successfully',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Update cash register
+   */
+  static async updateCashRegister(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { id } = req.params;
+      const staffId = req.user.sub;
+      const updateData = req.body;
+
+      const register = await AccountingService.updateCashRegister(Number(id), updateData, staffId);
+
+      res.json({
+        success: true,
+        data: register,
+        message: 'Cash register updated successfully',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Delete cash register
+   */
+  static async deleteCashRegister(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { id } = req.params;
+      const staffId = req.user.sub;
+
+      await AccountingService.deleteCashRegister(Number(id), staffId);
+
+      res.json({
+        success: true,
+        message: 'Cash register deleted successfully',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Open cash register
+   */
+  static async openCashRegister(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { id } = req.params;
+      const staffId = req.user.sub;
+      const { opening_amount } = req.body;
+
+      const register = await AccountingService.openCashRegister(
+        Number(id),
+        opening_amount,
+        staffId
+      );
+
+      res.json({
+        success: true,
+        data: register,
+        message: 'Cash register opened successfully',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Close cash register
+   */
+  static async closeCashRegister(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { id } = req.params;
+      const staffId = req.user.sub;
+      const { closing_amount } = req.body;
+
+      const register = await AccountingService.closeCashRegister(
+        Number(id),
+        closing_amount,
+        staffId
+      );
+
+      res.json({
+        success: true,
+        data: register,
+        message: 'Cash register closed successfully',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Reconcile cash register
+   */
+  static async reconcileCashRegister(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { id } = req.params;
+      const staffId = req.user.sub;
+      const reconciliationData = req.body;
+
+      const register = await AccountingService.reconcileCashRegister(
+        Number(id),
+        reconciliationData,
+        staffId
+      );
+
+      res.json({
+        success: true,
+        data: register,
+        message: 'Cash register reconciled successfully',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get cash register summary
+   */
+  static async getCashRegisterSummary(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { id } = req.params;
+      const summary = await AccountingService.getCashRegisterSummary(Number(id));
+
+      res.json({
+        success: true,
+        data: summary,
       });
     } catch (error) {
       next(error);

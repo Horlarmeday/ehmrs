@@ -278,6 +278,75 @@ const router = new Router({
             },
           ],
         },
+        // APPOINTMENTS
+        {
+          path: '/appointments',
+          name: 'appointments',
+          component: () => import('@/view/pages/appointments/Appointments.vue'),
+          children: [
+            {
+              path: '',
+              redirect: 'list'
+            },
+            {
+              path: 'home',
+              name: 'appointments-home',
+              component: () => import('@/view/pages/appointments/Home.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'list',
+              name: 'appointments-list',
+              component: () => import('@/view/pages/appointments/AppointmentList.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'check-in-queue',
+              name: 'check-in-queue',
+              component: () => import('@/view/pages/appointments/CheckInQueue.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'book',
+              name: 'book-appointment',
+              component: () => import('@/view/pages/appointments/pages/BookAppointment.vue'),
+              meta: {
+                requiresAuth: true,
+                roles: ['Reception', 'Medical Records'] // Only these roles can book appointments
+              },
+            },
+            {
+              path: 'calendar',
+              name: 'appointment-calendar',
+              component: () => import('@/view/pages/appointments/pages/AppointmentCalendar.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'doctor-schedule',
+              name: 'doctor-schedule',
+              component: () => import('@/view/pages/appointments/pages/DoctorSchedule.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: ':id',
+              name: 'appointment-details',
+              component: () => import('@/view/pages/appointments/components/AppointmentDetailsModal.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+          ],
+        },
         // VISITS
         {
           path: '/visit',
@@ -614,24 +683,6 @@ const router = new Router({
             },
           ],
         },
-        // PROCUREMENT
-        {
-          path: '/procurement',
-          name: 'procurement',
-          component: () => import('@/view/pages/procurement/ProcurementManager.vue'),
-          meta: {
-            requiresAuth: true,
-          },
-        },
-        // STOCK AUDIT
-        {
-          path: '/stock-audit',
-          name: 'stock-audit',
-          component: () => import('@/view/pages/stockAudit/StockAuditManager.vue'),
-          meta: {
-            requiresAuth: true,
-          },
-        },
         // EMERGENCY
         {
           path: '/emergency',
@@ -703,6 +754,32 @@ const router = new Router({
                   path: 'vendors',
                   name: 'vendors',
                   component: () => import('@/view/pages/store/pharmacy/Vendors.vue'),
+                  meta: {
+                    requiresAuth: true,
+                  },
+                },
+                // PROCUREMENT
+                {
+                  path: 'procurement',
+                  name: 'procurement',
+                  component: () => import('@/view/pages/procurement/ProcurementManager.vue'),
+                  meta: {
+                    requiresAuth: true,
+                  },
+                },
+                {
+                  path: 'procurement/order/:id',
+                  name: 'procurement-order-details',
+                  component: () => import('@/view/pages/procurement/ProcurementOrderDetails.vue'),
+                  meta: {
+                    requiresAuth: true,
+                  },
+                },
+                // STOCK AUDIT
+                {
+                  path: 'stock-audit',
+                  name: 'stock-audit',
+                  component: () => import('@/view/pages/stockAudit/StockAuditManager.vue'),
                   meta: {
                     requiresAuth: true,
                   },
@@ -1725,7 +1802,7 @@ const router = new Router({
           },
         },
         {
-          path: '/accounting/payment-processing',
+          path: '/accounting/payment-processing/:billId',
           name: 'payment-processing',
           component: () => import('@/view/pages/accounting/PaymentProcessingPage.vue'),
           meta: {
@@ -1735,7 +1812,7 @@ const router = new Router({
         {
           path: '/accounting/payments',
           name: 'payments-list',
-          component: () => import('@/view/pages/accounting/PaymentProcessing.vue'),
+          component: () => import('@/view/pages/accounting/PaymentManagement.vue'),
           meta: {
             requiresAuth: true,
           },
@@ -1751,7 +1828,7 @@ const router = new Router({
         {
           path: '/accounting/payments/:id',
           name: 'payment-details',
-          component: () => import('@/view/pages/accounting/PaymentProcessing.vue'),
+          component: () => import('@/view/pages/accounting/PaymentDetails.vue'),
           meta: {
             requiresAuth: true,
           },
@@ -1767,7 +1844,23 @@ const router = new Router({
         {
           path: '/accounting/deposits/:id',
           name: 'deposit-details',
-          component: () => import('@/view/pages/accounting/PatientDeposits.vue'),
+          component: () => import('@/view/pages/accounting/DepositDetails.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/reports/deposits/summary',
+          name: 'deposit-reports',
+          component: () => import('@/view/pages/accounting/DepositReports.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/deposits/reconciliation-report',
+          name: 'deposit-reconciliation',
+          component: () => import('@/view/pages/accounting/DepositReports.vue'),
           meta: {
             requiresAuth: true,
           },
@@ -1789,9 +1882,17 @@ const router = new Router({
           },
         },
         {
+          path: '/accounting/advanced-reports',
+          name: 'advanced-reporting-dashboard',
+          component: () => import('@/view/pages/accounting/AdvancedReportingDashboard.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
           path: '/accounting/payment-history',
           name: 'payment-history',
-          component: () => import('@/view/pages/accounting/PaymentProcessing.vue'),
+          component: () => import('@/view/pages/accounting/PaymentManagement.vue'),
           meta: {
             requiresAuth: true,
           },
@@ -1910,6 +2011,31 @@ const router = new Router({
           path: '/accounting/pos-terminals/:id/edit',
           name: 'edit-pos-terminal',
           component: () => import('@/view/pages/accounting/POSTerminalsPage.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        // Cash Register Management
+        {
+          path: '/accounting/cash-registers',
+          name: 'cash-registers',
+          component: () => import('@/view/pages/accounting/CashRegisterManagement.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/cash-registers/new',
+          name: 'new-cash-register',
+          component: () => import('@/view/pages/accounting/CashRegisterManagement.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/cash-registers/:id',
+          name: 'cash-register-details',
+          component: () => import('@/view/pages/accounting/CashRegisterManagement.vue'),
           meta: {
             requiresAuth: true,
           },

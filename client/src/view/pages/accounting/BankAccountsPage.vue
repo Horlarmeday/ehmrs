@@ -302,7 +302,12 @@
                   <i class="fas fa-sync-alt mr-2"></i>Refresh
                 </b-button>
                 <b-button
-                  v-if="!error && !filters.search && filters.account_type === '' && filters.is_active === ''"
+                  v-if="
+                    !error &&
+                      !filters.search &&
+                      filters.account_type === '' &&
+                      filters.is_active === ''
+                  "
                   variant="primary"
                   @click="showCreateModal"
                 >

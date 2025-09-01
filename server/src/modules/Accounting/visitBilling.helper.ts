@@ -23,6 +23,7 @@ import { BadException } from '../../common/util/api-error';
 import dayjs from 'dayjs';
 import { BillingStatus } from '../../database/models/prescribedDrug';
 import { BillingMode, BillItemTypeEnum, PaymentCollectionMethod } from './enums';
+import { FinancialPeriodValidationService } from './services/financialPeriodValidation.service';
 
 /**
  * Visit-Based Billing Helper
@@ -105,7 +106,7 @@ export class VisitBillingHelper {
       const billItem = await ClinicalBillItem.create({
         bill_id: bill.id,
         item_type: BillItemTypeEnum.DRUG,
-        item_id: prescribedDrug.drug_id,
+        item_id: prescribedDrug.id,
         quantity: prescribedDrug.quantity_to_dispense,
         unit_price: pricing.unitPrice,
         total_price: pricing.totalPrice,
@@ -166,7 +167,7 @@ export class VisitBillingHelper {
       const billItem = await ClinicalBillItem.create({
         bill_id: bill.id,
         item_type: BillItemTypeEnum.TEST,
-        item_id: prescribedTest.test_id,
+        item_id: prescribedTest.id,
         quantity: 1,
         unit_price: pricing.unitPrice,
         total_price: pricing.totalPrice,
@@ -227,7 +228,7 @@ export class VisitBillingHelper {
       const billItem = await ClinicalBillItem.create({
         bill_id: bill.id,
         item_type: BillItemTypeEnum.INVESTIGATION,
-        item_id: prescribedInvestigation.investigation_id,
+        item_id: prescribedInvestigation.id,
         quantity: 1,
         unit_price: pricing.unitPrice,
         total_price: pricing.totalPrice,
@@ -291,7 +292,7 @@ export class VisitBillingHelper {
       const billItem = await ClinicalBillItem.create({
         bill_id: bill.id,
         item_type: BillItemTypeEnum.SERVICE,
-        item_id: prescribedService.service_id,
+        item_id: prescribedService.id,
         quantity: 1,
         unit_price: pricing.unitPrice,
         total_price: pricing.totalPrice,
@@ -351,7 +352,7 @@ export class VisitBillingHelper {
       const billItem = await ClinicalBillItem.create({
         bill_id: bill.id,
         item_type: BillItemTypeEnum.ADDITIONAL_ITEM,
-        item_id: prescribedAdditionalItem.inventory_id,
+        item_id: prescribedAdditionalItem.id,
         quantity: prescribedAdditionalItem.quantity_to_dispense,
         unit_price: pricing.unitPrice,
         total_price: pricing.totalPrice,
@@ -732,6 +733,126 @@ export class VisitBillingHelper {
         patientCoPay: totalPrice,
         hmoBilled: 0,
       };
+    }
+  }
+
+  /**
+   * Remove prescribed drug from visit bill
+   */
+  static async removePrescribedDrugFromBill(
+    prescribedDrugId: number,
+    billId: number
+  ): Promise<void> {
+    try {
+      const deletedCount = await ClinicalBillItem.destroy({
+        where: {
+          bill_id: billId,
+          item_type: BillItemTypeEnum.DRUG,
+          item_id: prescribedDrugId,
+        },
+      });
+
+      if (deletedCount > 0) {
+        await VisitBillingHelper.updateBillTotals(billId);
+      }
+    } catch (error) {
+      throw new BadException(`Failed to remove prescribed drug from bill: ${error.message}`, 500);
+    }
+  }
+
+  /**
+   * Remove prescribed additional item from visit bill
+   */
+  static async removePrescribedAdditionalItemFromBill(
+    prescribedItemId: number,
+    billId: number
+  ): Promise<void> {
+    try {
+      const deletedCount = await ClinicalBillItem.destroy({
+        where: {
+          bill_id: billId,
+          item_type: BillItemTypeEnum.ADDITIONAL_ITEM,
+          item_id: prescribedItemId,
+        },
+      });
+
+      if (deletedCount > 0) {
+        await VisitBillingHelper.updateBillTotals(billId);
+      }
+    } catch (error) {
+      throw new BadException(`Failed to remove additional item from bill: ${error.message}`, 500);
+    }
+  }
+
+  /**
+   * Remove prescribed test from visit bill
+   */
+  static async removePrescribedTestFromBill(
+    prescribedTestId: number,
+    billId: number
+  ): Promise<void> {
+    try {
+      const deletedCount = await ClinicalBillItem.destroy({
+        where: {
+          bill_id: billId,
+          item_type: BillItemTypeEnum.TEST,
+          item_id: prescribedTestId,
+        },
+      });
+
+      if (deletedCount > 0) {
+        await VisitBillingHelper.updateBillTotals(billId);
+      }
+    } catch (error) {
+      throw new BadException(`Failed to remove prescribed test from bill: ${error.message}`, 500);
+    }
+  }
+
+  /**
+   * Remove prescribed investigation from visit bill
+   */
+  static async removePrescribedInvestigationFromBill(
+    prescribedInvestigationId: number,
+    billId: number
+  ): Promise<void> {
+    try {
+      const deletedCount = await ClinicalBillItem.destroy({
+        where: {
+          bill_id: billId,
+          item_type: BillItemTypeEnum.INVESTIGATION,
+          item_id: prescribedInvestigationId,
+        },
+      });
+
+      if (deletedCount > 0) {
+        await VisitBillingHelper.updateBillTotals(billId);
+      }
+    } catch (error) {
+      throw new BadException(`Failed to remove prescribed investigation from bill: ${error.message}`, 500);
+    }
+  }
+
+  /**
+   * Remove prescribed service from visit bill
+   */
+  static async removePrescribedServiceFromBill(
+    prescribedServiceId: number,
+    billId: number
+  ): Promise<void> {
+    try {
+      const deletedCount = await ClinicalBillItem.destroy({
+        where: {
+          bill_id: billId,
+          item_type: BillItemTypeEnum.SERVICE,
+          item_id: prescribedServiceId,
+        },
+      });
+
+      if (deletedCount > 0) {
+        await VisitBillingHelper.updateBillTotals(billId);
+      }
+    } catch (error) {
+      throw new BadException(`Failed to remove prescribed service from bill: ${error.message}`, 500);
     }
   }
 }

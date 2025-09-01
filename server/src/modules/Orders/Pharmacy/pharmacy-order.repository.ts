@@ -37,6 +37,8 @@ import {
 } from './messages/response-messages';
 import sequelizeConnection from '../../../database/config/config';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
+import { logger } from '../../../core/helpers/logger';
+import { ClinicalBill } from '../../../database/models/clinicalBill';
 
 type PrescribeDrugType = PrescribedDrugBody & {
   drug_prescription_id: number;
@@ -153,7 +155,7 @@ export async function prescribeDrug(data: PrescribeDrugType): Promise<Prescribed
     }
   } catch (billingError) {
     // Log billing error but don't fail the prescription
-    console.error('Billing creation failed for prescription:', billingError);
+    logger.error('Billing creation failed for prescription:', billingError);
     // You might want to add proper logging here
   }
 
@@ -198,7 +200,7 @@ export const prescribeBulkDrugs = async (
       }
     } catch (billingError) {
       // Log billing error but don't fail the prescription
-      console.error('Billing creation failed for prescriptions:', billingError);
+      logger.error('Billing creation failed for prescriptions:', billingError);
       // You might want to add proper logging here
     }
 
@@ -244,12 +246,12 @@ export const prescribeBulkDrugs = async (
             );
           }
         } catch (error) {
-          console.error('Billing creation failed for additional items:', error);
+          logger.error('Billing creation failed for additional items:', error);
           // You might want to add proper logging here
         }
       }
     } catch (error) {
-      console.error('Billing creation failed for additional items:', error);
+      logger.error('Billing creation failed for additional items:', error);
       // You might want to add proper logging here
     }
 
@@ -311,7 +313,7 @@ export const updatePrescribedDrug = async (data: Partial<PrescribedDrug>) => {
   try {
     await PrescribedDrug.update({ ...data }, { where: { id: data.id } });
   } catch (e) {
-    console.error(e);
+    logger.error(e);
     throw new BadException('Error', StatusCodes.SERVER_ERROR, ERROR_UPDATING_DRUG);
   }
   return getOnePrescribedDrug({ id: data.id });
@@ -423,7 +425,7 @@ export const prescribeAdditionalItem = async (
       );
     }
   } catch (error) {
-    console.error('Billing creation failed for additional item:', error);
+    logger.error('Billing creation failed for additional item:', error);
   }
 
   return item;
@@ -457,7 +459,7 @@ export const bulkCreateAdditionalItems = async (data): Promise<PrescribedAdditio
       );
     }
   } catch (error) {
-    console.error('Billing creation failed for additional items:', error);
+    logger.error('Billing creation failed for additional items:', error);
   }
 
   return items;
@@ -825,7 +827,28 @@ export const getPatientTreatments = ({ currentPage = 1, pageLimit = 10, filter =
  * @param drugId
  */
 export const deletePrescribedDrug = async (drugId: number) => {
-  return PrescribedDrug.destroy({ where: { id: drugId } });
+  // Get the drug before deletion to get visit_id
+  const drug = await PrescribedDrug.findByPk(drugId);
+  if (!drug) return 0;
+
+  // Find the bill for this visit
+  const bill = await ClinicalBill.findOne({
+    where: { visit_id: drug.visit_id },
+  });
+
+  // Delete the prescription
+  const deletedCount = await PrescribedDrug.destroy({ where: { id: drugId } });
+
+  if (deletedCount > 0 && bill) {
+    // Clean up billing
+    try {
+      await VisitBillingHelper.removePrescribedDrugFromBill(drugId, bill.id);
+    } catch (billingError) {
+      logger.error('Failed to remove prescribed drug from billing:', billingError);
+    }
+  }
+
+  return deletedCount;
 };
 
 /**
@@ -833,7 +856,28 @@ export const deletePrescribedDrug = async (drugId: number) => {
  * @param itemId
  */
 export const deleteAdditionalItem = async (itemId: number) => {
-  return PrescribedAdditionalItem.destroy({ where: { id: itemId } });
+  // Get the item before deletion to get visit_id
+  const item = await PrescribedAdditionalItem.findByPk(itemId);
+  if (!item) return 0;
+
+  // Find the bill for this visit
+  const bill = await ClinicalBill.findOne({
+    where: { visit_id: item.visit_id },
+  });
+
+  // Delete the additional item
+  const deletedCount = await PrescribedAdditionalItem.destroy({ where: { id: itemId } });
+
+  if (deletedCount > 0 && bill) {
+    // Clean up billing
+    try {
+      await VisitBillingHelper.removePrescribedAdditionalItemFromBill(itemId, bill.id);
+    } catch (billingError) {
+      logger.error('Failed to remove additional item from billing:', billingError);
+    }
+  }
+
+  return deletedCount;
 };
 
 /**

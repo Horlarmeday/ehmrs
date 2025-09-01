@@ -15,11 +15,12 @@ import { ClinicalBillItem } from './clinicalBillItem';
 import { ClinicalPayment } from './clinicalPayment';
 import { HMO } from './hmo';
 import { PatientInsurance } from './patientInsurance';
+import { FinancialPeriod } from './financialPeriod';
 import {
   PaymentStatus,
   BillingStatus,
   PaymentCollectionMethod,
-  BillingMode
+  BillingMode,
 } from '../../modules/Accounting/enums';
 
 @Table({ timestamps: true, tableName: 'clinical_bills' })
@@ -58,6 +59,13 @@ export class ClinicalBill extends Model {
     },
   })
   visit_id: number;
+
+  @ForeignKey(() => FinancialPeriod)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+  })
+  period_id: number;
 
   @Column({
     type: DataType.DECIMAL(10, 2),
@@ -218,4 +226,7 @@ export class ClinicalBill extends Model {
 
   @BelongsTo(() => PatientInsurance, { foreignKey: 'patient_insurance_id' })
   patientInsurance: PatientInsurance;
+
+  @BelongsTo(() => FinancialPeriod, { foreignKey: 'period_id' })
+  financialPeriod: FinancialPeriod;
 }

@@ -1,8 +1,19 @@
-import { ProcurementOrder, ProcurementOrderItem, ProcurementOrderHistory, Vendor, Staff, Drug, Unit, PharmacyStore, LaboratoryStore } from '../../database/models';
+import {
+  ProcurementOrder,
+  ProcurementOrderItem,
+  ProcurementOrderHistory,
+  Vendor,
+  Staff,
+  Drug,
+  Unit,
+  PharmacyStore,
+  LaboratoryStore,
+} from '../../database/models';
 import { BadException } from '../../common/util/api-error';
-import { Op } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 import { Status } from '../../database/models/staff';
 import { DrugForm } from '../../database/models/drug';
+import { staffAttributes } from '../../core/helpers/helper';
 
 export interface ProcurementOrderData {
   po_number: string;
@@ -32,70 +43,85 @@ export class ProcurementService {
   /**
    * Create a new procurement order
    */
-  static async createProcurementOrder(data: ProcurementOrderData, staffId: number): Promise<ProcurementOrder> {
-    // Validate vendor exists
-    const vendor = await Vendor.findByPk(data.vendor_id);
-    if (!vendor) {
-      throw new BadException('NOT_FOUND', 404, 'Vendor not found');
-    }
+  static async createProcurementOrder(
+    data: ProcurementOrderData,
+    staffId: number
+  ): Promise<ProcurementOrder> {
+    // Get sequelize instance from models
+    const { sequelize } = require('../../database/models');
+    const transaction = await sequelize.transaction();
 
-    // Validate all drugs exist
-    for (const item of data.items) {
-      const drug = await Drug.findByPk(item.drug_id);
-      if (!drug) {
-        throw new BadException('NOT_FOUND', 404, `Drug with ID ${item.drug_id} not found`);
+    try {
+      // Validate vendor exists
+      const vendor = await Vendor.findByPk(data.vendor_id, { transaction });
+      if (!vendor) {
+        throw new BadException('NOT_FOUND', 404, 'Vendor not found');
       }
 
-      const unit = await Unit.findByPk(item.unit_id);
-      if (!unit) {
-        throw new BadException('NOT_FOUND', 404, `Unit with ID ${item.unit_id} not found`);
+      // Validate all drugs exist
+      for (const item of data.items) {
+        const drug = await Drug.findByPk(item.drug_id, { transaction });
+        if (!drug) {
+          throw new BadException('NOT_FOUND', 404, `Drug with ID ${item.drug_id} not found`);
+        }
+
+        const unit = await Unit.findByPk(item.unit_id, { transaction });
+        if (!unit) {
+          throw new BadException('NOT_FOUND', 404, `Unit with ID ${item.unit_id} not found`);
+        }
       }
+
+      // Calculate total amount
+      const totalAmount = data.items.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
+      let poNumber = await this.generatePONumber();
+
+      // Create procurement order
+      const procurementOrder = await ProcurementOrder.create({
+        po_number: poNumber,
+        vendor_id: data.vendor_id,
+        order_date: data?.order_date || new Date(),
+        expected_delivery_date: data.expected_delivery_date,
+        notes: data.notes,
+        total_amount: totalAmount,
+        created_by: staffId,
+        status: 'DRAFT',
+      }, { transaction });
+
+      // Create procurement order items
+      const orderItems = await Promise.all(
+        data.items.map(item =>
+          ProcurementOrderItem.create({
+            procurement_order_id: procurementOrder.id,
+            drug_id: item.drug_id,
+            unit_id: item.unit_id,
+            quantity_ordered: item.quantity,
+            unit_price: item.unit_price,
+            total_price: item.quantity * item.unit_price,
+            notes: data?.notes,
+          }, { transaction })
+        )
+      );
+
+      // Update total amount with actual calculated amount
+      const actualTotal = orderItems.reduce((sum, item) => sum + item.total_price, 0);
+      await procurementOrder.update({ total_amount: actualTotal }, { transaction });
+
+      // Log the creation
+      await ProcurementOrderHistory.logCreation(procurementOrder.id, staffId, {
+        po_number: poNumber,
+        vendor_id: data.vendor_id,
+        total_amount: actualTotal,
+        items_count: data.items.length,
+      });
+
+      // Commit transaction
+      await transaction.commit();
+      return procurementOrder;
+    } catch (error) {
+      // Rollback transaction on error
+      await transaction.rollback();
+      throw error;
     }
-
-    // Calculate total amount
-    const totalAmount = data.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
-
-    // Create procurement order
-    const procurementOrder = await ProcurementOrder.create({
-      po_number: data.po_number,
-      vendor_id: data.vendor_id,
-      order_date: data.order_date,
-      expected_delivery_date: data.expected_delivery_date,
-      notes: data.notes,
-      total_amount: totalAmount,
-      created_by: staffId,
-      status: 'DRAFT'
-    });
-
-    // Log the creation
-    await ProcurementOrderHistory.logCreation(procurementOrder.id, staffId, {
-      po_number: data.po_number,
-      vendor_id: data.vendor_id,
-      total_amount: totalAmount,
-      items_count: data.items.length
-    });
-
-    // Create procurement order items
-    const orderItems = await Promise.all(
-      data.items.map(item => 
-        ProcurementOrderItem.create({
-          procurement_order_id: procurementOrder.id,
-          drug_id: item.drug_id,
-          unit_id: item.unit_id,
-          quantity: item.quantity,
-          unit_price: item.unit_price,
-          total_price: item.quantity * item.unit_price,
-          notes: item.notes,
-          status: 'PENDING'
-        })
-      )
-    );
-
-    // Update total amount with actual calculated amount
-    const actualTotal = orderItems.reduce((sum, item) => sum + item.total_price, 0);
-    await procurementOrder.update({ total_amount: actualTotal });
-
-    return procurementOrder;
   }
 
   /**
@@ -106,32 +132,32 @@ export class ProcurementService {
       include: [
         {
           model: Vendor,
-          attributes: ['name', 'email', 'phone', 'address']
+          attributes: ['name', 'email', 'phone', 'address'],
         },
         {
           model: Staff,
           as: 'creator',
-          attributes: ['first_name', 'last_name', 'email']
+          attributes: staffAttributes,
         },
         {
           model: Staff,
           as: 'approver',
-          attributes: ['first_name', 'last_name', 'email']
+          attributes: staffAttributes,
         },
         {
           model: ProcurementOrderItem,
           include: [
             {
               model: Drug,
-              attributes: ['name', 'generic_name', 'strength']
+              attributes: ['name', 'code', 'type'],
             },
             {
               model: Unit,
-              attributes: ['name', 'abbreviation']
-            }
-          ]
-        }
-      ]
+              attributes: ['name'],
+            },
+          ],
+        },
+      ],
     });
   }
 
@@ -152,15 +178,7 @@ export class ProcurementService {
     page: number;
     totalPages: number;
   }> {
-    const {
-      page = 1,
-      limit = 10,
-      status,
-      vendor_id,
-      date_from,
-      date_to,
-      search
-    } = params;
+    const { page = 1, limit = 10, status, vendor_id, date_from, date_to, search } = params;
 
     const offset = (page - 1) * limit;
     const where: any = {};
@@ -182,7 +200,7 @@ export class ProcurementService {
     if (search) {
       where[Op.or] = [
         { po_number: { [Op.like]: `%${search}%` } },
-        { notes: { [Op.like]: `%${search}%` } }
+        { notes: { [Op.like]: `%${search}%` } },
       ];
     }
 
@@ -191,31 +209,34 @@ export class ProcurementService {
       include: [
         {
           model: Vendor,
-          attributes: ['name', 'email']
+          attributes: ['name', 'email', 'phone', 'address'],
         },
         {
           model: Staff,
           as: 'creator',
-          attributes: ['first_name', 'last_name']
-        }
+          attributes: staffAttributes,
+        },
       ],
       order: [['createdAt', 'DESC']],
       limit,
-      offset
+      offset,
     });
 
     return {
       orders: rows,
       total: count,
       page,
-      totalPages: Math.ceil(count / limit)
+      totalPages: Math.ceil(count / limit),
     };
   }
 
   /**
    * Update procurement order
    */
-  static async updateProcurementOrder(orderId: number, data: ProcurementOrderUpdateData): Promise<ProcurementOrder> {
+  static async updateProcurementOrder(
+    orderId: number,
+    data: ProcurementOrderUpdateData
+  ): Promise<ProcurementOrder> {
     const order = await ProcurementOrder.findByPk(orderId);
     if (!order) {
       throw new BadException('NOT_FOUND', 404, 'Procurement order not found');
@@ -223,7 +244,11 @@ export class ProcurementService {
 
     // Only allow updates if order is in DRAFT status
     if (order.status !== 'DRAFT') {
-      throw new BadException('INVALID_STATUS', 400, 'Cannot update order that is not in DRAFT status');
+      throw new BadException(
+        'INVALID_STATUS',
+        400,
+        'Cannot update order that is not in DRAFT status'
+      );
     }
 
     return await order.update(data);
@@ -232,7 +257,10 @@ export class ProcurementService {
   /**
    * Approve procurement order
    */
-  static async approveProcurementOrder(orderId: number, staffId: number): Promise<ProcurementOrder> {
+  static async approveProcurementOrder(
+    orderId: number,
+    staffId: number
+  ): Promise<ProcurementOrder> {
     const order = await ProcurementOrder.findByPk(orderId);
     if (!order) {
       throw new BadException('NOT_FOUND', 404, 'Procurement order not found');
@@ -246,14 +274,14 @@ export class ProcurementService {
     const result = await order.update({
       status: 'APPROVED',
       approved_by: staffId,
-      approved_date: new Date()
+      approved_date: new Date(),
     });
 
     // Log the approval
     await ProcurementOrderHistory.logApproval(orderId, staffId, {
       approved_by: staffId,
       approved_date: new Date(),
-      previous_status: oldStatus
+      previous_status: oldStatus,
     });
 
     return result;
@@ -269,17 +297,27 @@ export class ProcurementService {
     }
 
     if (order.status !== 'APPROVED') {
-      throw new BadException('INVALID_STATUS', 400, 'Order must be approved before sending to vendor');
+      throw new BadException(
+        'INVALID_STATUS',
+        400,
+        'Order must be approved before sending to vendor'
+      );
     }
 
     const oldStatus = order.status;
     const result = await order.update({
       status: 'SENT',
-      sent_date: new Date()
+      sent_date: new Date(),
     });
 
     // Log the status change
-    await ProcurementOrderHistory.logStatusChange(orderId, order.created_by, oldStatus, 'SENT', 'Order sent to vendor');
+    await ProcurementOrderHistory.logStatusChange(
+      orderId,
+      order.created_by,
+      oldStatus,
+      'SENT',
+      'Order sent to vendor'
+    );
 
     return result;
   }
@@ -287,15 +325,18 @@ export class ProcurementService {
   /**
    * Receive procurement order items and increase store stock
    */
-  static async receiveProcurementOrderItems(orderId: number, receivedItems: Array<{
-    item_id: number;
-    quantity_received: number;
-    batch_number?: string;
-    expiration_date?: Date;
-    notes?: string;
-  }>): Promise<ProcurementOrder> {
+  static async receiveProcurementOrderItems(
+    orderId: number,
+    receivedItems: Array<{
+      item_id: number;
+      quantity_received: number;
+      batch_number?: string;
+      expiration_date?: Date;
+      notes?: string;
+    }>
+  ): Promise<ProcurementOrder> {
     const order = await ProcurementOrder.findByPk(orderId, {
-      include: [ProcurementOrderItem]
+      include: [ProcurementOrderItem],
     });
 
     if (!order) {
@@ -310,18 +351,27 @@ export class ProcurementService {
     for (const receivedItem of receivedItems) {
       const orderItem = order.items.find(item => item.id === receivedItem.item_id);
       if (!orderItem) {
-        throw new BadException('NOT_FOUND', 404, `Order item with ID ${receivedItem.item_id} not found`);
+        throw new BadException(
+          'NOT_FOUND',
+          404,
+          `Order item with ID ${receivedItem.item_id} not found`
+        );
       }
 
       if (receivedItem.quantity_received > orderItem.quantity_ordered) {
-        throw new BadException('INVALID_QUANTITY', 400, `Received quantity cannot exceed ordered quantity`);
+        throw new BadException(
+          'INVALID_QUANTITY',
+          400,
+          `Received quantity cannot exceed ordered quantity`
+        );
       }
 
       // Update the procurement order item
-      const receiptStatus = receivedItem.quantity_received === orderItem.quantity_ordered 
-        ? 'COMPLETE' 
-        : receivedItem.quantity_received > 0 
-          ? 'PARTIAL' 
+      const receiptStatus =
+        receivedItem.quantity_received === orderItem.quantity_ordered
+          ? 'COMPLETE'
+          : receivedItem.quantity_received > 0
+          ? 'PARTIAL'
           : 'PENDING';
 
       await orderItem.update({
@@ -330,7 +380,7 @@ export class ProcurementService {
         notes: receivedItem.notes,
         receipt_status: receiptStatus,
         batch_number: receivedItem.batch_number,
-        expiration_date: receivedItem.expiration_date
+        expiration_date: receivedItem.expiration_date,
       });
 
       // Increase store stock for received items
@@ -340,18 +390,24 @@ export class ProcurementService {
     }
 
     // Check if all items are fully received
-    const allItemsReceived = order.items.every(item => 
-      item.receipt_status === 'COMPLETE' || item.receipt_status === 'PARTIAL'
+    const allItemsReceived = order.items.every(
+      item => item.receipt_status === 'COMPLETE' || item.receipt_status === 'PARTIAL'
     );
 
     if (allItemsReceived) {
       await order.update({
         status: 'RECEIVED',
-        received_date: new Date()
+        received_date: new Date(),
       });
 
       // Log the completion
-      await ProcurementOrderHistory.logStatusChange(orderId, order.created_by, 'SENT', 'RECEIVED', 'All items received');
+      await ProcurementOrderHistory.logStatusChange(
+        orderId,
+        order.created_by,
+        'SENT',
+        'RECEIVED',
+        'All items received'
+      );
     }
 
     return order;
@@ -360,18 +416,21 @@ export class ProcurementService {
   /**
    * Increase store stock when items are received
    */
-  private static async increaseStoreStock(orderItem: ProcurementOrderItem, receivedItem: any): Promise<void> {
+  private static async increaseStoreStock(
+    orderItem: ProcurementOrderItem,
+    receivedItem: any
+  ): Promise<void> {
     try {
       // Determine store type based on drug type (this could be enhanced)
       // For now, we'll add to PharmacyStore as default
-      
+
       // Check if item already exists in store
       const existingStoreItem = await PharmacyStore.findOne({
         where: {
           drug_id: orderItem.drug_id,
           unit_id: orderItem.unit_id,
-          status: Status.ACTIVE
-        }
+          status: Status.ACTIVE,
+        },
       });
 
       if (existingStoreItem) {
@@ -379,7 +438,8 @@ export class ProcurementService {
         await existingStoreItem.update({
           quantity_received: existingStoreItem.quantity_received + receivedItem.quantity_received,
           quantity_remaining: existingStoreItem.quantity_remaining + receivedItem.quantity_received,
-          total_price: existingStoreItem.total_price + (receivedItem.quantity_received * orderItem.unit_price)
+          total_price:
+            existingStoreItem.total_price + receivedItem.quantity_received * orderItem.unit_price,
         });
       } else {
         // Create new store item
@@ -396,7 +456,7 @@ export class ProcurementService {
           drug_form: DrugForm.DRUG, // Default, could be enhanced
           batch: receivedItem.batch_number,
           expiration: receivedItem.expiration_date,
-          date_received: new Date()
+          date_received: new Date(),
         });
       }
 
@@ -409,7 +469,6 @@ export class ProcurementService {
         receivedItem.quantity_received.toString(),
         `Stock increased by ${receivedItem.quantity_received} units for drug ID ${orderItem.drug_id}`
       );
-
     } catch (error) {
       console.error('Error increasing store stock:', error);
       throw new BadException('STOCK_UPDATE_ERROR', 500, 'Failed to update store stock');
@@ -433,7 +492,7 @@ export class ProcurementService {
     const result = await order.update({
       status: 'CANCELLED',
       cancellation_reason: reason,
-      cancelled_date: new Date()
+      cancelled_date: new Date(),
     });
 
     // Log the cancellation
@@ -463,7 +522,7 @@ export class ProcurementService {
       receivedOrders,
       cancelledOrders,
       totalValue,
-      pendingValue
+      pendingValue,
     ] = await Promise.all([
       ProcurementOrder.count(),
       ProcurementOrder.count({ where: { status: 'DRAFT' } }),
@@ -472,11 +531,11 @@ export class ProcurementService {
       ProcurementOrder.count({ where: { status: 'RECEIVED' } }),
       ProcurementOrder.count({ where: { status: 'CANCELLED' } }),
       ProcurementOrder.sum('total_amount'),
-      ProcurementOrder.sum('total_amount', { 
-        where: { 
-          status: { [Op.in]: ['DRAFT', 'APPROVED', 'SENT'] } 
-        } 
-      })
+      ProcurementOrder.sum('total_amount', {
+        where: {
+          status: { [Op.in]: ['DRAFT', 'APPROVED', 'SENT'] },
+        },
+      }),
     ]);
 
     return {
@@ -487,14 +546,16 @@ export class ProcurementService {
       received_orders: receivedOrders,
       cancelled_orders: cancelledOrders,
       total_value: totalValue || 0,
-      pending_value: pendingValue || 0
+      pending_value: pendingValue || 0,
     };
   }
 
   /**
    * Get vendor performance statistics
    */
-  static async getVendorPerformance(vendorId: number): Promise<{
+  static async getVendorPerformance(
+    vendorId: number
+  ): Promise<{
     total_orders: number;
     completed_orders: number;
     total_value: number;
@@ -502,11 +563,11 @@ export class ProcurementService {
     on_time_delivery_rate: number;
   }> {
     const orders = await ProcurementOrder.findAll({
-      where: { 
+      where: {
         vendor_id: vendorId,
-        status: { [Op.in]: ['RECEIVED', 'CANCELLED'] }
+        status: { [Op.in]: ['RECEIVED', 'CANCELLED'] },
       },
-      attributes: ['order_date', 'expected_delivery_date', 'received_date', 'total_amount']
+      attributes: ['order_date', 'expected_delivery_date', 'received_date', 'total_amount'],
     });
 
     const totalOrders = orders.length;
@@ -522,22 +583,125 @@ export class ProcurementService {
         return Math.ceil((actual.getTime() - expected.getTime()) / (1000 * 60 * 60 * 24));
       });
 
-    const averageDeliveryTime = deliveryTimes.length > 0 
-      ? deliveryTimes.reduce((sum, time) => sum + time, 0) / deliveryTimes.length 
-      : 0;
+    const averageDeliveryTime =
+      deliveryTimes.length > 0
+        ? deliveryTimes.reduce((sum, time) => sum + time, 0) / deliveryTimes.length
+        : 0;
 
     const onTimeDeliveries = deliveryTimes.filter(time => time <= 0).length;
-    const onTimeDeliveryRate = deliveryTimes.length > 0 
-      ? (onTimeDeliveries / deliveryTimes.length) * 100 
-      : 0;
+    const onTimeDeliveryRate =
+      deliveryTimes.length > 0 ? (onTimeDeliveries / deliveryTimes.length) * 100 : 0;
 
     return {
       total_orders: totalOrders,
       completed_orders: completedOrders,
       total_value: totalValue,
       average_delivery_time: averageDeliveryTime,
-      on_time_delivery_rate: onTimeDeliveryRate
+      on_time_delivery_rate: onTimeDeliveryRate,
     };
+  }
+
+  /**
+   * Get procurement reports data
+   */
+  static async getProcurementReports(filters: {
+    date_from?: Date;
+    date_to?: Date;
+    vendor_id?: number;
+    status?: string;
+  }): Promise<any> {
+    const where: any = {};
+
+    if (filters.date_from && filters.date_to) {
+      where.order_date = {
+        [Op.between]: [filters.date_from, filters.date_to]
+      };
+    }
+
+    if (filters.vendor_id) {
+      where.vendor_id = filters.vendor_id;
+    }
+
+    if (filters.status) {
+      where.status = filters.status;
+    }
+
+    const orders = await ProcurementOrder.findAll({
+      where,
+      include: [
+        {
+          model: Vendor,
+          as: 'vendor',
+          attributes: ['name', 'email', 'phone'],
+        },
+        {
+          model: ProcurementOrderItem,
+          as: 'items',
+          include: [
+            {
+              model: Drug,
+              as: 'drug',
+              attributes: ['name'],
+            },
+            {
+              model: Unit,
+              as: 'unit',
+              attributes: ['name'],
+            },
+          ],
+        },
+      ],
+      order: [['order_date', 'DESC']],
+    });
+
+    // Calculate summary statistics
+    const summary = {
+      total_orders: orders.length,
+      total_value: orders.reduce((sum, order) => sum + (order.total_amount || 0), 0),
+      by_status: orders.reduce((acc, order) => {
+        acc[order.status] = (acc[order.status] || 0) + 1;
+        return acc;
+      }, {}),
+      by_vendor: orders.reduce((acc, order) => {
+        const vendorName = order.vendor?.name || 'Unknown';
+        acc[vendorName] = (acc[vendorName] || 0) + 1;
+        return acc;
+      }, {}),
+    };
+
+    return {
+      orders,
+      summary,
+    };
+  }
+
+  /**
+   * Export procurement report
+   */
+  static async exportProcurementReport(filters: {
+    date_from?: Date;
+    date_to?: Date;
+    vendor_id?: number;
+    status?: string;
+    format?: string;
+  }): Promise<Buffer> {
+    const reportData = await this.getProcurementReports(filters);
+    
+    // For now, return a simple CSV-like format as Buffer
+    // In a real implementation, you would use a library like xlsx or csv-writer
+    const headers = ['PO Number', 'Vendor', 'Order Date', 'Status', 'Total Amount', 'Items'];
+    const rows = reportData.orders.map(order => [
+      order.po_number,
+      order.vendor?.name || 'Unknown',
+      order.order_date?.toISOString().split('T')[0] || '',
+      order.status,
+      order.total_amount || 0,
+      order.items?.length || 0
+    ]);
+    
+    const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+    
+    return Buffer.from(csvContent, 'utf8');
   }
 
   /**
@@ -547,9 +711,9 @@ export class ProcurementService {
     const currentYear = new Date().getFullYear();
     const lastOrder = await ProcurementOrder.findOne({
       where: {
-        po_number: { [Op.like]: `PO-${currentYear}-%` }
+        po_number: { [Op.like]: `PO-${currentYear}-%` },
       },
-      order: [['po_number', 'DESC']]
+      order: [['po_number', 'DESC']],
     });
 
     let sequence = 1;

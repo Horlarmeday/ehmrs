@@ -821,4 +821,40 @@ export class GeneralStoreRepository {
       throw new BadException('Error', 500, `Failed to calculate request cost: ${error.message}`);
     }
   }
+
+  // Settings Management
+  static async getSettings(): Promise<any> {
+    try {
+      // For now, return default settings since we don't have a settings table
+      // In a real implementation, you would query a settings table
+      return {
+        low_stock_threshold: 10,
+        expiry_warning_days: 30,
+        auto_approve_requests: false,
+        require_approval_above_amount: 1000,
+        default_currency: 'USD',
+        enable_barcode_scanning: true,
+        enable_notifications: true,
+        backup_frequency: 'daily',
+      };
+    } catch (error) {
+      throw new BadException('Error', 500, `Failed to get settings: ${error.message}`);
+    }
+  }
+
+  static async updateSettings(settingsData: any): Promise<any> {
+    try {
+      // For now, just return the updated settings
+      // In a real implementation, you would update a settings table
+      const currentSettings = await this.getSettings();
+      const updatedSettings = { ...currentSettings, ...settingsData };
+      
+      // Here you would typically save to database
+      // await SettingsModel.update(updatedSettings, { where: { id: 1 } });
+      
+      return updatedSettings;
+    } catch (error) {
+      throw new BadException('Error', 500, `Failed to update settings: ${error.message}`);
+    }
+  }
 }

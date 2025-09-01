@@ -6,13 +6,23 @@
           <template v-slot:title>
             <strong>New</strong>
           </template>
-          <AssignedVisits :url="url" :filter="newFilter" label="New" />
+          <AssignedVisits
+            :url="url"
+            :filter="newFilter"
+            label="New"
+            dispatchType="visit/fetchProfessionalVisits"
+          />
         </b-tab>
         <b-tab lazy>
           <template v-slot:title>
             <strong>Ongoing</strong>
           </template>
-          <AssignedVisits :url="url" :filter="ongoingFilter" label="Ongoing" />
+          <AssignedVisits
+            :url="url"
+            :filter="ongoingFilter"
+            label="Ongoing"
+            dispatchType="visit/fetchProfessionalVisits"
+          />
         </b-tab>
       </b-tabs>
     </div>
@@ -32,13 +42,13 @@ export default {
   computed: {
     newFilter() {
       return {
-        has_done_vitals: this.currentUser.department === this.MEDICAL_PRACTITIONER,
+        //has_done_vitals: this.currentUser.department === this.MEDICAL_PRACTITIONER,
         ...(this.currentUser.role === this.MEDICAL_PRACTITIONER && { is_taken: false }),
       };
     },
     ongoingFilter() {
       return {
-        has_done_vitals: this.currentUser.department === this.MEDICAL_PRACTITIONER,
+        // has_done_vitals: this.currentUser.department === this.MEDICAL_PRACTITIONER,
         ...(this.currentUser.role === this.MEDICAL_PRACTITIONER && { is_taken: true }),
       };
     },

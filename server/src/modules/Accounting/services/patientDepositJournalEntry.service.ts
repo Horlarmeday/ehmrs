@@ -5,6 +5,8 @@ import { PatientDeposit } from '../../../database/models/patientDeposit';
 import { ComprehensiveChartOfAccountsService } from './comprehensiveChartOfAccounts.service';
 import { JournalEntryStatus, DepositTransactionType } from '../enums';
 import { BadException } from '../../../common/util/api-error';
+import dayjs from 'dayjs';
+import { ClinicalBill } from '../../../database/models';
 
 export interface JournalEntryData {
   reference: string;
@@ -35,7 +37,7 @@ export class PatientDepositJournalEntryService {
       // Get required accounts based on payment method
       let debitAccount;
       let debitDescription;
-      
+
       if (deposit.deposit_type === 'CARD' && deposit.pos_terminal_id) {
         // For card deposits via POS terminal
         debitAccount = await ComprehensiveChartOfAccountsService.getRequiredAccount('1003'); // POS Terminal Receivables
@@ -50,20 +52,29 @@ export class PatientDepositJournalEntryService {
         debitDescription = 'Deposit received as cash';
       }
 
-      const patientDepositsPayable = await ComprehensiveChartOfAccountsService.getRequiredAccount('2001'); // Patient Deposits Payable
+      const patientDepositsPayable = await ComprehensiveChartOfAccountsService.getRequiredAccount(
+        '2001'
+      ); // Patient Deposits Payable
 
       if (!debitAccount || !patientDepositsPayable) {
-        throw new BadException('Required Chart of Accounts not found', 500);
+        throw new BadException(
+          'Required Chart of Accounts Missing',
+          500,
+          'Required Chart of Accounts not found for deposit creation'
+        );
       }
 
       // Create journal entry
-      const journalEntry = await JournalEntry.create({
-        reference: `DEP-${deposit.reference_number}`,
-        description: `Patient deposit received via ${deposit.deposit_type} - ${deposit.patient?.firstname} ${deposit.patient?.lastname}`,
-        transaction_date: deposit.deposit_date,
-        patient_id: deposit.patient_id,
-        status: JournalEntryStatus.POSTED
-      }, { transaction });
+      const journalEntry = await JournalEntry.create(
+        {
+          reference: `DEP-${deposit.reference_number}`,
+          description: `Patient deposit received via ${deposit.deposit_type} - ${deposit.patient?.firstname} ${deposit.patient?.lastname}`,
+          transaction_date: deposit.deposit_date,
+          patient_id: deposit.patient_id,
+          status: JournalEntryStatus.POSTED,
+        },
+        { transaction }
+      );
 
       // Create journal entry lines
       const lines = [
@@ -73,7 +84,7 @@ export class PatientDepositJournalEntryService {
           account_id: debitAccount.id,
           debit: deposit.amount,
           credit: 0,
-          description: debitDescription
+          description: debitDescription,
         },
         // Credit: Patient Deposits Payable
         {
@@ -81,8 +92,8 @@ export class PatientDepositJournalEntryService {
           account_id: patientDepositsPayable.id,
           debit: 0,
           credit: deposit.amount,
-          description: 'Patient deposit liability created'
-        }
+          description: 'Patient deposit liability created',
+        },
       ];
 
       await JournalEntryLine.bulkCreate(lines, { transaction });
@@ -104,22 +115,41 @@ export class PatientDepositJournalEntryService {
   ): Promise<JournalEntry> {
     try {
       // Get required accounts
-      const patientDepositsPayable = await ComprehensiveChartOfAccountsService.getRequiredAccount('2001'); // Patient Deposits Payable
+      const patientDepositsPayable = await ComprehensiveChartOfAccountsService.getRequiredAccount(
+        '2001'
+      ); // Patient Deposits Payable
       const bankAccount = await ComprehensiveChartOfAccountsService.getRequiredAccount('1002'); // Bank Accounts
       const serviceRevenue = await ComprehensiveChartOfAccountsService.getRequiredAccount('4001'); // Service Revenue
 
       if (!patientDepositsPayable || !bankAccount || !serviceRevenue) {
-        throw new BadException('Required Chart of Accounts not found', 500);
+        throw new BadException(
+          'Required Chart of Accounts Missing',
+          500,
+          'Required Chart of Accounts not found for deposit usage'
+        );
+      }
+
+      const bill = await ClinicalBill.findOne({ where: { id: billId } });
+      if (!bill) {
+        throw new BadException('Bill not found', 404, 'Bill not found');
       }
 
       // Create journal entry
-      const journalEntry = await JournalEntry.create({
-        reference: `DEP-USE-${deposit.reference_number}`,
-        description: `Deposit used for bill ${billId}`,
-        transaction_date: new Date(),
-        patient_id: deposit.patient_id,
-        status: JournalEntryStatus.POSTED
-      }, { transaction });
+      const journalEntry = await JournalEntry.create(
+        {
+          reference: `DEP-USE-${deposit.reference_number}`,
+          description: `Deposit used for bill ${billId}`,
+          transaction_date: new Date(),
+          patient_id: deposit.patient_id,
+          status: JournalEntryStatus.POSTED,
+          entry_date: dayjs().toDate(),
+          entry_type: 'DEPOSIT_USED',
+          created_by: deposit.created_by,
+          period_id: bill.period_id,
+          visit_id: bill.visit_id,
+        },
+        { transaction }
+      );
 
       // Create journal entry lines
       const lines = [
@@ -129,7 +159,7 @@ export class PatientDepositJournalEntryService {
           account_id: patientDepositsPayable.id,
           debit: amount,
           credit: 0,
-          description: 'Deposit liability reduced'
+          description: 'Deposit liability reduced',
         },
         // Credit: Bank Account
         {
@@ -137,7 +167,7 @@ export class PatientDepositJournalEntryService {
           account_id: bankAccount.id,
           debit: 0,
           credit: amount,
-          description: 'Deposit withdrawn from bank account'
+          description: 'Deposit withdrawn from bank account',
         },
         // Credit: Service Revenue
         {
@@ -145,8 +175,8 @@ export class PatientDepositJournalEntryService {
           account_id: serviceRevenue.id,
           debit: 0,
           credit: amount,
-          description: 'Revenue from services'
-        }
+          description: 'Revenue from services',
+        },
       ];
 
       await JournalEntryLine.bulkCreate(lines, { transaction });
@@ -168,21 +198,30 @@ export class PatientDepositJournalEntryService {
   ): Promise<JournalEntry> {
     try {
       // Get required accounts
-      const patientDepositsPayable = await ComprehensiveChartOfAccountsService.getRequiredAccount('2001'); // Patient Deposits Payable
+      const patientDepositsPayable = await ComprehensiveChartOfAccountsService.getRequiredAccount(
+        '2001'
+      ); // Patient Deposits Payable
       const bankAccount = await ComprehensiveChartOfAccountsService.getRequiredAccount('1002'); // Bank Accounts
 
       if (!patientDepositsPayable || !bankAccount) {
-        throw new BadException('Required Chart of Accounts not found', 500);
+        throw new BadException(
+          'Required Chart of Accounts Missing',
+          500,
+          'Required Chart of Accounts not found for deposit refund'
+        );
       }
 
       // Create journal entry
-      const journalEntry = await JournalEntry.create({
-        reference: `DEP-REF-${deposit.reference_number}`,
-        description: `Deposit refund - ${refundReason}`,
-        transaction_date: new Date(),
-        patient_id: deposit.patient_id,
-        status: JournalEntryStatus.POSTED
-      }, { transaction });
+      const journalEntry = await JournalEntry.create(
+        {
+          reference: `DEP-REF-${deposit.reference_number}`,
+          description: `Deposit refund - ${refundReason}`,
+          transaction_date: new Date(),
+          patient_id: deposit.patient_id,
+          status: JournalEntryStatus.POSTED,
+        },
+        { transaction }
+      );
 
       // Create journal entry lines
       const lines = [
@@ -192,7 +231,7 @@ export class PatientDepositJournalEntryService {
           account_id: patientDepositsPayable.id,
           debit: amount,
           credit: 0,
-          description: 'Deposit liability reduced for refund'
+          description: 'Deposit liability reduced for refund',
         },
         // Credit: Bank Account
         {
@@ -200,8 +239,8 @@ export class PatientDepositJournalEntryService {
           account_id: bankAccount.id,
           debit: 0,
           credit: amount,
-          description: 'Refund paid from bank account'
-        }
+          description: 'Refund paid from bank account',
+        },
       ];
 
       await JournalEntryLine.bulkCreate(lines, { transaction });
@@ -223,21 +262,30 @@ export class PatientDepositJournalEntryService {
   ): Promise<JournalEntry> {
     try {
       // Get required accounts
-      const patientDepositsPayable = await ComprehensiveChartOfAccountsService.getRequiredAccount('2001'); // Patient Deposits Payable
+      const patientDepositsPayable = await ComprehensiveChartOfAccountsService.getRequiredAccount(
+        '2001'
+      ); // Patient Deposits Payable
       const bankAccount = await ComprehensiveChartOfAccountsService.getRequiredAccount('1002'); // Bank Accounts
 
       if (!patientDepositsPayable || !bankAccount) {
-        throw new BadException('Required Chart of Accounts not found', 500);
+        throw new BadException(
+          'Required Chart of Accounts Missing',
+          500,
+          'Required Chart of Accounts not found for deposit adjustment'
+        );
       }
 
       // Create journal entry
-      const journalEntry = await JournalEntry.create({
-        reference: `DEP-ADJ-${deposit.reference_number}`,
-        description: `Deposit adjustment - ${adjustmentReason}`,
-        transaction_date: new Date(),
-        patient_id: deposit.patient_id,
-        status: JournalEntryStatus.POSTED
-      }, { transaction });
+      const journalEntry = await JournalEntry.create(
+        {
+          reference: `DEP-ADJ-${deposit.reference_number}`,
+          description: `Deposit adjustment - ${adjustmentReason}`,
+          transaction_date: new Date(),
+          patient_id: deposit.patient_id,
+          status: JournalEntryStatus.POSTED,
+        },
+        { transaction }
+      );
 
       // Create journal entry lines based on adjustment type
       let lines: any[] = [];
@@ -251,7 +299,7 @@ export class PatientDepositJournalEntryService {
             account_id: bankAccount.id,
             debit: adjustmentAmount,
             credit: 0,
-            description: 'Deposit adjustment - increase'
+            description: 'Deposit adjustment - increase',
           },
           // Credit: Patient Deposits Payable
           {
@@ -259,8 +307,8 @@ export class PatientDepositJournalEntryService {
             account_id: patientDepositsPayable.id,
             debit: 0,
             credit: adjustmentAmount,
-            description: 'Deposit liability increased'
-          }
+            description: 'Deposit liability increased',
+          },
         ];
       } else {
         // Negative adjustment (decrease deposit)
@@ -272,7 +320,7 @@ export class PatientDepositJournalEntryService {
             account_id: patientDepositsPayable.id,
             debit: absAmount,
             credit: 0,
-            description: 'Deposit adjustment - decrease'
+            description: 'Deposit adjustment - decrease',
           },
           // Credit: Bank Account
           {
@@ -280,8 +328,8 @@ export class PatientDepositJournalEntryService {
             account_id: bankAccount.id,
             debit: 0,
             credit: absAmount,
-            description: 'Deposit adjustment processed'
-          }
+            description: 'Deposit adjustment processed',
+          },
         ];
       }
 
@@ -289,7 +337,11 @@ export class PatientDepositJournalEntryService {
 
       return journalEntry;
     } catch (error) {
-      throw new BadException('Failed to create deposit adjustment journal entry', 500, error.message);
+      throw new BadException(
+        'Failed to create deposit adjustment journal entry',
+        500,
+        error.message
+      );
     }
   }
 
@@ -304,20 +356,29 @@ export class PatientDepositJournalEntryService {
   ): Promise<JournalEntry> {
     try {
       // Get required accounts
-      const posTerminalReceivables = await ComprehensiveChartOfAccountsService.getRequiredAccount('1003'); // POS Terminal Receivables
+      const posTerminalReceivables = await ComprehensiveChartOfAccountsService.getRequiredAccount(
+        '1003'
+      ); // POS Terminal Receivables
       const bankAccount = await ComprehensiveChartOfAccountsService.getRequiredAccount('1002'); // Bank Accounts
 
       if (!posTerminalReceivables || !bankAccount) {
-        throw new BadException('Required Chart of Accounts not found', 500);
+        throw new BadException(
+          'Required Chart of Accounts Missing',
+          500,
+          'Required Chart of Accounts not found for POS terminal settlement'
+        );
       }
 
       // Create settlement journal entry
-      const journalEntry = await JournalEntry.create({
-        reference: `SETTLE-${settlement_reference}`,
-        description: `POS Terminal ${posTerminal.terminal_id} settlement to ${posTerminal.bankAccount.account_name}`,
-        transaction_date: new Date(),
-        status: JournalEntryStatus.POSTED
-      }, { transaction });
+      const journalEntry = await JournalEntry.create(
+        {
+          reference: `SETTLE-${settlement_reference}`,
+          description: `POS Terminal ${posTerminal.terminal_id} settlement to ${posTerminal.bankAccount.account_name}`,
+          transaction_date: new Date(),
+          status: JournalEntryStatus.POSTED,
+        },
+        { transaction }
+      );
 
       // Create journal entry lines
       const lines = [
@@ -327,7 +388,7 @@ export class PatientDepositJournalEntryService {
           account_id: bankAccount.id,
           debit: totalAmount,
           credit: 0,
-          description: `POS terminal settlement - ${posTerminal.terminal_id}`
+          description: `POS terminal settlement - ${posTerminal.terminal_id}`,
         },
         // Credit: POS Terminal Receivables (reduce the receivable)
         {
@@ -335,15 +396,19 @@ export class PatientDepositJournalEntryService {
           account_id: posTerminalReceivables.id,
           debit: 0,
           credit: totalAmount,
-          description: `Settlement of POS terminal ${posTerminal.terminal_id} receivables`
-        }
+          description: `Settlement of POS terminal ${posTerminal.terminal_id} receivables`,
+        },
       ];
 
       await JournalEntryLine.bulkCreate(lines, { transaction });
 
       return journalEntry;
     } catch (error) {
-      throw new BadException('Failed to create POS terminal settlement journal entry', 500, error.message);
+      throw new BadException(
+        'Failed to create POS terminal settlement journal entry',
+        500,
+        error.message
+      );
     }
   }
 
@@ -353,7 +418,7 @@ export class PatientDepositJournalEntryService {
   static async validateJournalEntryBalance(journalEntryId: number): Promise<boolean> {
     try {
       const lines = await JournalEntryLine.findAll({
-        where: { journal_entry_id: journalEntryId }
+        where: { journal_entry_id: journalEntryId },
       });
 
       const totalDebits = lines.reduce((sum, line) => sum + (line.debit || 0), 0);
@@ -376,10 +441,10 @@ export class PatientDepositJournalEntryService {
           {
             model: JournalEntryLine,
             as: 'lines',
-            include: ['account']
-          }
+            include: ['account'],
+          },
         ],
-        order: [['transaction_date', 'DESC']]
+        order: [['transaction_date', 'DESC']],
       });
     } catch (error) {
       throw new BadException('Failed to get journal entries for deposit', 500, error.message);

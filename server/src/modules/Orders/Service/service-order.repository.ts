@@ -1,4 +1,4 @@
-import { PrescribedService, Patient } from '../../../database/models';
+import { PrescribedService, Patient, ClinicalBill } from '../../../database/models';
 import { PrescribeServiceBody } from './types/service-order.types';
 import { WhereOptions } from 'sequelize';
 import { Service, Staff } from '../../../database/models';
@@ -198,6 +198,27 @@ export const getOnePrescribedService = async (
  * @returns {number} prescribed service data
  * @param serviceId
  */
-export const deleteService = async serviceId => {
-  return PrescribedService.destroy({ where: { id: serviceId } });
+export const deleteService = async (serviceId: number) => {
+  // Get the service before deletion to get visit_id
+  const service = await PrescribedService.findByPk(serviceId);
+  if (!service) return 0;
+
+  // Find the bill for this visit
+  const bill = await ClinicalBill.findOne({
+    where: { visit_id: service.visit_id },
+  });
+
+  // Delete the prescription
+  const deletedCount = await PrescribedService.destroy({ where: { id: serviceId } });
+
+  if (deletedCount > 0 && bill) {
+    // Clean up billing
+    try {
+      await VisitBillingHelper.removePrescribedServiceFromBill(serviceId, bill.id);
+    } catch (billingError) {
+      console.error('Failed to remove prescribed service from billing:', billingError);
+    }
+  }
+
+  return deletedCount;
 };

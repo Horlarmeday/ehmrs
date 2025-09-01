@@ -8,6 +8,17 @@ export enum PaymentStatus {
   CANCELLED = 'CANCELLED',
   FAILED = 'FAILED',
   REFUNDED = 'REFUNDED',
+  CONFIRMED = 'CONFIRMED',
+  SETTLED = 'SETTLED',
+}
+
+// Bank Transfer Status Enums
+export enum BankTransferStatus {
+  PENDING = 'PENDING',
+  CONFIRMED = 'CONFIRMED',
+  SETTLED = 'SETTLED',
+  FAILED = 'FAILED',
+  CANCELLED = 'CANCELLED',
 }
 
 // Billing Status Enums
@@ -111,7 +122,11 @@ export enum AccountStatus {
 // Journal Entry Status Enums
 export enum JournalEntryStatus {
   DRAFT = 'DRAFT',
+  PENDING_APPROVAL = 'PENDING_APPROVAL',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
   POSTED = 'POSTED',
+  REVERSED = 'REVERSED',
   VOIDED = 'VOIDED',
   RECONCILED = 'RECONCILED',
 }
@@ -133,9 +148,10 @@ export enum CostCenterStatus {
 
 // Financial Period Status Enums
 export enum FinancialPeriodStatus {
+  DRAFT = 'DRAFT',
   OPEN = 'OPEN',
   CLOSED = 'CLOSED',
-  LOCKED = 'LOCKED',
+  SUSPENDED = 'SUSPENDED',
 }
 
 // HMO Claim Status Enums
@@ -197,3 +213,20 @@ export enum PaymentProcessingStatus {
   CANCELLED = 'CANCELLED',
   REFUNDED = 'REFUNDED',
 }
+
+export enum CashMovementType {
+  CASH_IN = 'CASH_IN',
+  CASH_OUT = 'CASH_OUT',
+  PAYMENT_RECEIVED = 'PAYMENT_RECEIVED',
+  CHANGE_GIVEN = 'CHANGE_GIVEN',
+  OPENING_BALANCE = 'OPENING_BALANCE',
+  CLOSING_BALANCE = 'CLOSING_BALANCE',
+  RECONCILIATION = 'RECONCILIATION',
+  ADJUSTMENT = 'ADJUSTMENT',
+  REFUND = 'REFUND',
+  DEPOSIT = 'DEPOSIT',
+  WITHDRAWAL = 'WITHDRAWAL',
+  TRANSFER_IN = 'TRANSFER_IN',
+  TRANSFER_OUT = 'TRANSFER_OUT',
+}
+

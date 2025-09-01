@@ -10,6 +10,7 @@ import {
 } from 'sequelize-typescript';
 import { PatientDeposit } from './patientDeposit';
 import { JournalEntry } from './journalEntry';
+import { FinancialPeriod } from './financialPeriod';
 import { DepositJournalEntryType } from '../../modules/Accounting/enums';
 
 @Table({ timestamps: true, tableName: 'deposit_journal_entries' })
@@ -57,11 +58,19 @@ export class DepositJournalEntry extends Model {
     type: DataType.DECIMAL(10, 2),
     allowNull: false,
     validate: {
-      min: 0,
-      msg: 'amount must be greater than or equal to 0',
+      notEmpty: {
+        msg: 'amount is required',
+      },
     },
   })
   amount: number;
+
+  @ForeignKey(() => FinancialPeriod)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+  })
+  period_id: number;
 
   // Relationships
   @BelongsTo(() => PatientDeposit)
@@ -69,6 +78,9 @@ export class DepositJournalEntry extends Model {
 
   @BelongsTo(() => JournalEntry)
   journalEntry: JournalEntry;
+
+  @BelongsTo(() => FinancialPeriod, { foreignKey: 'period_id' })
+  financialPeriod: FinancialPeriod;
 
   // Model hooks for validation
   @BeforeCreate

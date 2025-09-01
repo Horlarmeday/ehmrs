@@ -1,16 +1,29 @@
 import { Transaction, Op } from 'sequelize';
-import { PatientDeposit } from '../../../database/models/patientDeposit';
-import { DepositTransaction } from '../../../database/models/depositTransaction';
-import { DepositJournalEntry } from '../../../database/models/depositJournalEntry';
+import { BadException } from '../../../common/util/api-error';
+import {
+  PatientDeposit,
+  DepositTransaction,
+  DepositJournalEntry,
+  DepositAuditLog,
+  Staff,
+  Patient,
+  BankAccount,
+} from '../../../database/models';
 import { PatientDepositJournalEntryService } from './patientDepositJournalEntry.service';
 import { ComprehensiveChartOfAccountsService } from './comprehensiveChartOfAccounts.service';
-import { DepositTransactionType, DepositStatus, DepositType } from '../enums';
-import { BadException } from '../../../common/util/api-error';
+import {
+  DepositTransactionType,
+  DepositStatus,
+  DepositType,
+  DepositJournalEntryType,
+} from '../enums';
 import { AccountingService } from '../accounting.service';
 import { DepositAuditService } from './depositAudit.service';
 import { JournalEntry } from '../../../database/models/journalEntry';
 import { POSTerminal } from '../../../database/models/posTerminal';
-import { BankAccount } from '../../../database/models/bankAccount';
+import { FinancialPeriodValidationService } from './financialPeriodValidation.service';
+import sequelizeConnection from '../../../database/config/config';
+import { logger } from '../../../core/helpers/logger';
 
 export interface CreateDepositData {
   patient_id: number;
@@ -43,28 +56,42 @@ export class PatientDepositService {
   /**
    * Create a new patient deposit with full accounting workflow
    */
-  static async createDeposit(
-    data: CreateDepositData,
-    transaction?: Transaction
-  ): Promise<PatientDeposit> {
+  static async createDeposit(data: CreateDepositData): Promise<PatientDeposit> {
     let deposit: PatientDeposit | null = null;
-    
+    let transaction: Transaction | undefined;
+
     try {
+      // Always create a transaction for this operation
+      transaction = await sequelizeConnection.transaction();
+
+      // Validate financial period for transaction
+      const currentPeriod = await FinancialPeriodValidationService.getCurrentActivePeriod();
+      if (!currentPeriod) {
+        throw new BadException(
+          'Financial Period Not Available',
+          503,
+          'No active financial period found. Please configure financial periods before processing transactions.'
+        );
+      }
+
       // Generate reference number
-      
       const referenceNumber = await this.generateDepositReference();
 
       // Create deposit record
-      deposit = await PatientDeposit.create({
-        ...data,
-        reference_number: referenceNumber,
-        status: DepositStatus.ACTIVE,
-        initial_amount: data.amount,
-        current_balance: data.amount,
-        refundable_amount: data.amount,
-        deposit_date: new Date(),
-        last_activity_date: new Date()
-      }, { transaction });
+      deposit = await PatientDeposit.create(
+        {
+          ...data,
+          reference_number: referenceNumber,
+          status: DepositStatus.ACTIVE,
+          initial_amount: data.amount,
+          current_balance: data.amount,
+          refundable_amount: data.amount,
+          deposit_date: new Date(),
+          last_activity_date: new Date(),
+          period_id: currentPeriod.id, // Link to current financial period
+        },
+        { transaction }
+      );
 
       // Create journal entry for deposit creation
       const journalEntry = await PatientDepositJournalEntryService.createDepositCreationEntry(
@@ -73,25 +100,33 @@ export class PatientDepositService {
       );
 
       // Create deposit transaction record
-      await DepositTransaction.create({
-        deposit_id: deposit.id,
-        transaction_type: DepositTransactionType.CREATED,
-        amount: data.amount,
-        previous_balance: 0,
-        new_balance: data.amount,
-        reference_number: referenceNumber,
-        description: 'Deposit created',
-        journal_entry_id: journalEntry.id,
-        created_by: data.created_by
-      }, { transaction });
+      await DepositTransaction.create(
+        {
+          deposit_id: deposit.id,
+          transaction_type: DepositTransactionType.CREATED,
+          amount: data.amount,
+          previous_balance: 0,
+          new_balance: data.amount,
+          reference_number: referenceNumber,
+          description: 'Deposit created',
+          journal_entry_id: journalEntry.id,
+          created_by: data.created_by,
+          period_id: currentPeriod.id, // Link to current financial period
+        },
+        { transaction }
+      );
 
       // Create deposit journal entry mapping
-      await DepositJournalEntry.create({
-        deposit_id: deposit.id,
-        journal_entry_id: journalEntry.id,
-        entry_type: 'DEPOSIT',
-        amount: data.amount
-      }, { transaction });
+      await DepositJournalEntry.create(
+        {
+          deposit_id: deposit.id,
+          journal_entry_id: journalEntry.id,
+          entry_type: DepositJournalEntryType.DEPOSIT,
+          amount: data.amount,
+          period_id: currentPeriod.id, // Link to current financial period
+        },
+        { transaction }
+      );
 
       // Update bank account balance if specified
       if (data.bank_account_id) {
@@ -111,24 +146,49 @@ export class PatientDepositService {
       }
 
       // Log the deposit creation
-      await DepositAuditService.logDepositCreation(deposit, data.created_by, {
-        bank_account_id: data.bank_account_id,
-        pos_terminal_id: data.pos_terminal_id,
-        payment_method: data.payment_method,
-        payment_reference: data.payment_reference
-      }, transaction);
-
-      return deposit;
-    } catch (error) {
-      // Log the error
-      if (deposit?.id) {
-        await DepositAuditService.logError(deposit.id, error, 'createDeposit', data.created_by, {
+      await DepositAuditService.logDepositCreation(
+        deposit,
+        data.created_by,
+        {
           bank_account_id: data.bank_account_id,
           pos_terminal_id: data.pos_terminal_id,
           payment_method: data.payment_method,
-          payment_reference: data.payment_reference
-        }, transaction);
+          payment_reference: data.payment_reference,
+        },
+        transaction
+      );
+
+      // Commit the transaction
+      await transaction.commit();
+
+      return deposit;
+    } catch (error) {
+      // Rollback the transaction on error
+      if (transaction) {
+        try {
+          await transaction.rollback();
+        } catch (rollbackError) {
+          logger.error(
+            'Failed to rollback transaction during deposit creation error:',
+            rollbackError
+          );
+        }
       }
+
+      // Log the error
+      if (deposit?.id) {
+        try {
+          await DepositAuditService.logError(deposit.id, error, 'createDeposit', data.created_by, {
+            bank_account_id: data.bank_account_id,
+            pos_terminal_id: data.pos_terminal_id,
+            payment_method: data.payment_method,
+            payment_reference: data.payment_reference,
+          });
+        } catch (logError) {
+          logger.error('Failed to log deposit creation error:', logError);
+        }
+      }
+
       throw new BadException('Failed to create patient deposit', 500, error.message);
     }
   }
@@ -141,19 +201,37 @@ export class PatientDepositService {
     transaction?: Transaction
   ): Promise<PatientDeposit> {
     let deposit: PatientDeposit | null = null;
-    
+
     try {
+      // Validate financial period for transaction
+      const currentPeriod = await FinancialPeriodValidationService.getCurrentActivePeriod();
+      if (!currentPeriod) {
+        throw new BadException(
+          'Financial Period Not Available',
+          503,
+          'No active financial period found. Please configure financial periods before processing transactions.'
+        );
+      }
+
       // Get deposit with patient information
       deposit = await PatientDeposit.findByPk(data.deposit_id, {
-        include: ['patient']
+        include: ['patient'],
       });
       if (!deposit) {
-        throw new BadException('Deposit not found', 404);
+        throw new BadException(
+          'Deposit Not Found',
+          404,
+          'The requested patient deposit could not be found'
+        );
       }
 
       // Enhanced validation: Check deposit status and balance
       if (deposit.status !== DepositStatus.ACTIVE) {
-        throw new BadException(`Deposit is not active. Current status: ${deposit.status}`, 400);
+        throw new BadException(
+          'Deposit Status Invalid',
+          400,
+          `Deposit is not active. Current status: ${deposit.status}`
+        );
       }
 
       if (deposit.current_balance < data.amount) {
@@ -165,7 +243,11 @@ export class PatientDepositService {
 
       // Enhanced validation: Check if amount is reasonable
       if (data.amount <= 0) {
-        throw new BadException('Usage amount must be greater than zero', 400);
+        throw new BadException(
+          'Invalid Usage Amount',
+          400,
+          'Usage amount must be greater than zero'
+        );
       }
 
       // Enhanced validation: Check if amount exceeds refundable amount
@@ -185,17 +267,21 @@ export class PatientDepositService {
       let newStatus = DepositStatus.ACTIVE;
       if (newBalance === 0) {
         newStatus = DepositStatus.USED;
-      } else if (newBalance < deposit.initial_amount * 0.1) { // Less than 10% of initial amount
+      } else if (newBalance < deposit.initial_amount * 0.1) {
+        // Less than 10% of initial amount
         newStatus = DepositStatus.ACTIVE; // Keep active for small remaining amounts
       }
 
       // Update deposit with enhanced tracking
-      await deposit.update({
-        current_balance: newBalance,
-        refundable_amount: newRefundableAmount,
-        last_activity_date: new Date(),
-        status: newStatus
-      }, { transaction });
+      await deposit.update(
+        {
+          current_balance: newBalance,
+          refundable_amount: newRefundableAmount,
+          last_activity_date: new Date(),
+          status: newStatus,
+        },
+        { transaction }
+      );
 
       // Create journal entry for deposit usage
       const journalEntry = await PatientDepositJournalEntryService.createDepositUsageEntry(
@@ -206,26 +292,34 @@ export class PatientDepositService {
       );
 
       // Create comprehensive deposit transaction record
-      await DepositTransaction.create({
-        deposit_id: deposit.id,
-        transaction_type: DepositTransactionType.USED,
-        amount: data.amount,
-        previous_balance: previousBalance,
-        new_balance: newBalance,
-        reference_number: `USE-${deposit.reference_number}-${Date.now()}`,
-        description: data.description || `Deposit used for bill ${data.bill_id}`,
-        bill_id: data.bill_id,
-        journal_entry_id: journalEntry.id,
-        created_by: data.used_by
-      }, { transaction });
+      await DepositTransaction.create(
+        {
+          deposit_id: deposit.id,
+          transaction_type: DepositTransactionType.USED,
+          amount: data.amount,
+          previous_balance: previousBalance,
+          new_balance: newBalance,
+          reference_number: `USE-${deposit.reference_number}-${Date.now()}`,
+          description: data.description || `Deposit used for bill ${data.bill_id}`,
+          bill_id: data.bill_id,
+          journal_entry_id: journalEntry.id,
+          created_by: data.used_by,
+          period_id: currentPeriod.id, // Link to current financial period
+        },
+        { transaction }
+      );
 
       // Create deposit journal entry mapping
-      await DepositJournalEntry.create({
-        deposit_id: deposit.id,
-        journal_entry_id: journalEntry.id,
-        entry_type: 'USAGE',
-        amount: data.amount
-      }, { transaction });
+      await DepositJournalEntry.create(
+        {
+          deposit_id: deposit.id,
+          journal_entry_id: journalEntry.id,
+          entry_type: DepositJournalEntryType.USAGE,
+          amount: data.amount,
+          period_id: currentPeriod.id, // Link to current financial period
+        },
+        { transaction }
+      );
 
       // Update bank account balance if specified
       if (deposit.bank_account_id) {
@@ -249,15 +343,22 @@ export class PatientDepositService {
 
       // Return enhanced deposit information
       return await PatientDeposit.findByPk(deposit.id, {
-        include: ['patient', 'bankAccount', 'createdByStaff']
+        include: ['patient', 'bankAccount', 'createdByStaff'],
       });
     } catch (error) {
       // Log the error
       if (deposit?.id) {
-        await DepositAuditService.logError(deposit.id, error, 'useDeposit', data.used_by, {
-          bill_id: data.bill_id,
-          amount: data.amount
-        }, transaction);
+        await DepositAuditService.logError(
+          deposit.id,
+          error,
+          'useDeposit',
+          data.used_by,
+          {
+            bill_id: data.bill_id,
+            amount: data.amount,
+          },
+          transaction
+        );
       }
       throw new BadException('Failed to use patient deposit', 500, error.message);
     }
@@ -276,23 +377,32 @@ export class PatientDepositService {
     } = {}
   ): Promise<any> {
     try {
-      const { includeTransactions = true, includeJournalEntries = true, startDate, endDate } = options;
+      const {
+        includeTransactions = true,
+        includeJournalEntries = true,
+        startDate,
+        endDate,
+      } = options;
 
       // Get deposit with basic information
       const deposit = await PatientDeposit.findByPk(depositId, {
-        include: ['patient', 'bankAccount', 'createdByStaff']
+        include: ['patient', 'bankAccount', 'createdByStaff'],
       });
 
       if (!deposit) {
-        throw new BadException('Deposit not found', 404);
+        throw new BadException(
+          'Deposit Not Found',
+          404,
+          'The requested patient deposit could not be found'
+        );
       }
 
-      let result: any = { deposit };
+      const result: any = { deposit };
 
       // Get usage transactions if requested
       if (includeTransactions) {
         const whereClause: any = { deposit_id: depositId };
-        
+
         if (startDate || endDate) {
           whereClause.createdAt = {};
           if (startDate) whereClause.createdAt[Op.gte] = startDate;
@@ -302,7 +412,7 @@ export class PatientDepositService {
         const transactions = await DepositTransaction.findAll({
           where: whereClause,
           include: ['createdByStaff'],
-          order: [['created_at', 'DESC']]
+          order: [['createdAt', 'DESC']],
         });
 
         result.transactions = transactions;
@@ -314,7 +424,9 @@ export class PatientDepositService {
 
       // Get journal entries if requested
       if (includeJournalEntries) {
-        const journalEntries = await PatientDepositJournalEntryService.getJournalEntriesForDeposit(depositId);
+        const journalEntries = await PatientDepositJournalEntryService.getJournalEntriesForDeposit(
+          depositId
+        );
         result.journalEntries = journalEntries;
         result.totalJournalEntries = journalEntries.length;
       }
@@ -324,9 +436,10 @@ export class PatientDepositService {
         initialAmount: deposit.initial_amount,
         currentBalance: deposit.current_balance,
         totalUsed: deposit.initial_amount - deposit.current_balance,
-        usagePercentage: ((deposit.initial_amount - deposit.current_balance) / deposit.initial_amount) * 100,
+        usagePercentage:
+          ((deposit.initial_amount - deposit.current_balance) / deposit.initial_amount) * 100,
         remainingRefundable: deposit.refundable_amount,
-        lastActivity: deposit.last_activity_date
+        lastActivity: deposit.last_activity_date,
       };
 
       return result;
@@ -343,7 +456,7 @@ export class PatientDepositService {
       // Get all deposits for the patient
       const deposits = await PatientDeposit.findAll({
         where: { patient_id: patientId },
-        include: ['bankAccount']
+        include: ['bankAccount'],
       });
 
       if (deposits.length === 0) {
@@ -354,7 +467,7 @@ export class PatientDepositService {
           totalAmount: 0,
           totalUsed: 0,
           totalRefunded: 0,
-          currentBalance: 0
+          currentBalance: 0,
         };
       }
 
@@ -362,8 +475,14 @@ export class PatientDepositService {
       const totalDeposits = deposits.length;
       const activeDeposits = deposits.filter(d => d.status === DepositStatus.ACTIVE).length;
       const totalAmount = deposits.reduce((sum, d) => sum + (d.initial_amount || 0), 0);
-      const totalUsed = deposits.reduce((sum, d) => sum + (d.initial_amount - (d.current_balance || 0)), 0);
-      const totalRefunded = deposits.reduce((sum, d) => sum + (d.initial_amount - (d.refundable_amount || 0)), 0);
+      const totalUsed = deposits.reduce(
+        (sum, d) => sum + (d.initial_amount - (d.current_balance || 0)),
+        0
+      );
+      const totalRefunded = deposits.reduce(
+        (sum, d) => sum + (d.initial_amount - (d.refundable_amount || 0)),
+        0
+      );
       const currentBalance = deposits.reduce((sum, d) => sum + (d.current_balance || 0), 0);
 
       return {
@@ -381,8 +500,8 @@ export class PatientDepositService {
           initial_amount: d.initial_amount,
           current_balance: d.current_balance,
           refundable_amount: d.refundable_amount,
-          last_activity_date: d.last_activity_date
-        }))
+          last_activity_date: d.last_activity_date,
+        })),
       };
     } catch (error) {
       throw new BadException('Failed to get patient deposit usage summary', 500, error.message);
@@ -397,28 +516,54 @@ export class PatientDepositService {
     transaction?: Transaction
   ): Promise<PatientDeposit> {
     let deposit: PatientDeposit | null = null;
-    
+
     try {
+      // Validate financial period for transaction
+      const currentPeriod = await FinancialPeriodValidationService.getCurrentActivePeriod();
+      if (!currentPeriod) {
+        throw new BadException(
+          'Financial Period Not Available',
+          503,
+          'No active financial period found. Please configure financial periods before processing transactions.'
+        );
+      }
+
       // Get deposit with patient information
       deposit = await PatientDeposit.findByPk(data.deposit_id, {
-        include: ['patient']
+        include: ['patient'],
       });
       if (!deposit) {
-        throw new BadException('Deposit not found', 404);
+        throw new BadException(
+          'Deposit Not Found',
+          404,
+          'The requested patient deposit could not be found'
+        );
       }
 
       // Enhanced validation: Check deposit status
       if (deposit.status === DepositStatus.REFUNDED) {
-        throw new BadException('Deposit has already been fully refunded', 400);
+        throw new BadException(
+          'Deposit Already Refunded',
+          400,
+          'Deposit has already been fully refunded'
+        );
       }
 
       if (deposit.status === DepositStatus.USED) {
-        throw new BadException('Cannot refund from a fully used deposit', 400);
+        throw new BadException(
+          'Deposit Fully Used',
+          400,
+          'Cannot refund from a fully used deposit'
+        );
       }
 
       // Enhanced validation: Check refund amount
       if (data.amount <= 0) {
-        throw new BadException('Refund amount must be greater than zero', 400);
+        throw new BadException(
+          'Invalid Refund Amount',
+          400,
+          'Refund amount must be greater than zero'
+        );
       }
 
       if (data.amount > deposit.refundable_amount) {
@@ -438,7 +583,7 @@ export class PatientDepositService {
 
       // Enhanced validation: Check refund reason
       if (!data.refund_reason || data.refund_reason.trim().length === 0) {
-        throw new BadException('Refund reason is required', 400);
+        throw new BadException('Refund Reason Required', 400, 'Refund reason is required');
       }
 
       // Calculate new balances
@@ -450,17 +595,21 @@ export class PatientDepositService {
       let newStatus = DepositStatus.ACTIVE;
       if (newBalance === 0) {
         newStatus = DepositStatus.REFUNDED;
-      } else if (newBalance < deposit.initial_amount * 0.1) { // Less than 10% of initial amount
+      } else if (newBalance < deposit.initial_amount * 0.1) {
+        // Less than 10% of initial amount
         newStatus = DepositStatus.ACTIVE; // Keep active for small remaining amounts
       }
 
       // Update deposit with enhanced tracking
-      await deposit.update({
-        current_balance: newBalance,
-        refundable_amount: newRefundableAmount,
-        last_activity_date: new Date(),
-        status: newStatus
-      }, { transaction });
+      await deposit.update(
+        {
+          current_balance: newBalance,
+          refundable_amount: newRefundableAmount,
+          last_activity_date: new Date(),
+          status: newStatus,
+        },
+        { transaction }
+      );
 
       // Create journal entry for deposit refund
       const journalEntry = await PatientDepositJournalEntryService.createDepositRefundEntry(
@@ -471,25 +620,33 @@ export class PatientDepositService {
       );
 
       // Create comprehensive deposit transaction record
-      await DepositTransaction.create({
-        deposit_id: deposit.id,
-        transaction_type: DepositTransactionType.REFUNDED,
-        amount: data.amount,
-        previous_balance: previousBalance,
-        new_balance: newBalance,
-        reference_number: `REF-${deposit.reference_number}-${Date.now()}`,
-        description: `Deposit refund: ${data.refund_reason}`,
-        journal_entry_id: journalEntry.id,
-        created_by: data.refunded_by
-      }, { transaction });
+      await DepositTransaction.create(
+        {
+          deposit_id: deposit.id,
+          transaction_type: DepositTransactionType.REFUNDED,
+          amount: data.amount,
+          previous_balance: previousBalance,
+          new_balance: newBalance,
+          reference_number: `REF-${deposit.reference_number}-${Date.now()}`,
+          description: `Deposit refund: ${data.refund_reason}`,
+          journal_entry_id: journalEntry.id,
+          created_by: data.refunded_by,
+          period_id: currentPeriod.id, // Link to current financial period
+        },
+        { transaction }
+      );
 
       // Create deposit journal entry mapping
-      await DepositJournalEntry.create({
-        deposit_id: deposit.id,
-        journal_entry_id: journalEntry.id,
-        entry_type: 'REFUND',
-        amount: data.amount
-      }, { transaction });
+      await DepositJournalEntry.create(
+        {
+          deposit_id: deposit.id,
+          journal_entry_id: journalEntry.id,
+          entry_type: DepositJournalEntryType.REFUND,
+          amount: data.amount,
+          period_id: currentPeriod.id, // Link to current financial period
+        },
+        { transaction }
+      );
 
       // Update bank account balance if specified
       if (deposit.bank_account_id) {
@@ -502,29 +659,36 @@ export class PatientDepositService {
       }
 
       // Return enhanced deposit information
-              // Log the deposit refund
-        await DepositAuditService.logRefundProcessed(
+      // Log the deposit refund
+      await DepositAuditService.logRefundProcessed(
+        deposit.id,
+        data.amount,
+        data.refunded_by,
+        data.refund_reason,
+        { previous_balance: previousBalance, new_balance: newBalance },
+        transaction
+      );
+
+      return await PatientDeposit.findByPk(deposit.id, {
+        include: ['patient', 'bankAccount', 'createdByStaff'],
+      });
+    } catch (error) {
+      // Log the error
+      if (deposit?.id) {
+        await DepositAuditService.logError(
           deposit.id,
-          data.amount,
+          error,
+          'refundDeposit',
           data.refunded_by,
-          data.refund_reason,
-          { previous_balance: previousBalance, new_balance: newBalance },
+          {
+            amount: data.amount,
+            reason: data.refund_reason,
+          },
           transaction
         );
-
-        return await PatientDeposit.findByPk(deposit.id, {
-          include: ['patient', 'bankAccount', 'createdByStaff']
-        });
-      } catch (error) {
-        // Log the error
-        if (deposit?.id) {
-          await DepositAuditService.logError(deposit.id, error, 'refundDeposit', data.refunded_by, {
-            amount: data.amount,
-            reason: data.refund_reason
-          }, transaction);
-        }
-        throw new BadException('Failed to refund patient deposit', 500, error.message);
       }
+      throw new BadException('Failed to refund patient deposit', 500, error.message);
+    }
   }
 
   /**
@@ -540,26 +704,35 @@ export class PatientDepositService {
     } = {}
   ): Promise<any> {
     try {
-      const { includeTransactions = true, includeJournalEntries = true, startDate, endDate } = options;
+      const {
+        includeTransactions = true,
+        includeJournalEntries = true,
+        startDate,
+        endDate,
+      } = options;
 
       // Get deposit with basic information
       const deposit = await PatientDeposit.findByPk(depositId, {
-        include: ['patient', 'bankAccount', 'createdByStaff']
+        include: ['patient', 'bankAccount', 'createdByStaff'],
       });
 
       if (!deposit) {
-        throw new BadException('Deposit not found', 404);
+        throw new BadException(
+          'Deposit Not Found',
+          404,
+          'The requested patient deposit could not be found'
+        );
       }
 
-      let result: any = { deposit };
+      const result: any = { deposit };
 
       // Get refund transactions if requested
       if (includeTransactions) {
-        const whereClause: any = { 
+        const whereClause: any = {
           deposit_id: depositId,
-          transaction_type: DepositTransactionType.REFUNDED
+          transaction_type: DepositTransactionType.REFUNDED,
         };
-        
+
         if (startDate || endDate) {
           whereClause.createdAt = {};
           if (startDate) whereClause.createdAt[Op.gte] = startDate;
@@ -569,21 +742,26 @@ export class PatientDepositService {
         const refundTransactions = await DepositTransaction.findAll({
           where: whereClause,
           include: ['createdByStaff'],
-          order: [['created_at', 'DESC']]
+          order: [['createdAt', 'DESC']],
         });
 
         result.refundTransactions = refundTransactions;
         result.totalRefunds = refundTransactions.length;
-        result.totalAmountRefunded = refundTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+        result.totalAmountRefunded = refundTransactions.reduce(
+          (sum, t) => sum + (t.amount || 0),
+          0
+        );
       }
 
       // Get journal entries if requested
       if (includeJournalEntries) {
-        const journalEntries = await PatientDepositJournalEntryService.getJournalEntriesForDeposit(depositId);
-        const refundEntries = journalEntries.filter(entry => 
-          entry.reference && entry.reference.includes('DEP-REF-')
+        const journalEntries = await PatientDepositJournalEntryService.getJournalEntriesForDeposit(
+          depositId
         );
-        
+        const refundEntries = journalEntries.filter(
+          entry => entry.reference && entry.reference.includes('DEP-REF-')
+        );
+
         result.refundJournalEntries = refundEntries;
         result.totalRefundJournalEntries = refundEntries.length;
       }
@@ -593,9 +771,10 @@ export class PatientDepositService {
         initialAmount: deposit.initial_amount,
         currentBalance: deposit.current_balance,
         totalRefunded: deposit.initial_amount - deposit.refundable_amount,
-        refundPercentage: ((deposit.initial_amount - deposit.refundable_amount) / deposit.initial_amount) * 100,
+        refundPercentage:
+          ((deposit.initial_amount - deposit.refundable_amount) / deposit.initial_amount) * 100,
         remainingRefundable: deposit.refundable_amount,
-        lastRefundDate: result.refundTransactions?.[0]?.created_at || null
+        lastRefundDate: result.refundTransactions?.[0]?.createdAt || null,
       };
 
       return result;
@@ -612,7 +791,7 @@ export class PatientDepositService {
       // Get all deposits for the patient
       const deposits = await PatientDeposit.findAll({
         where: { patient_id: patientId },
-        include: ['bankAccount']
+        include: ['bankAccount'],
       });
 
       if (deposits.length === 0) {
@@ -621,16 +800,20 @@ export class PatientDepositService {
           totalDeposits: 0,
           totalRefunded: 0,
           totalRefundable: 0,
-          refundPercentage: 0
+          refundPercentage: 0,
         };
       }
 
       // Calculate refund statistics
       const totalDeposits = deposits.length;
       const totalInitialAmount = deposits.reduce((sum, d) => sum + (d.initial_amount || 0), 0);
-      const totalRefunded = deposits.reduce((sum, d) => sum + (d.initial_amount - (d.refundable_amount || 0)), 0);
+      const totalRefunded = deposits.reduce(
+        (sum, d) => sum + (d.initial_amount - (d.refundable_amount || 0)),
+        0
+      );
       const totalRefundable = deposits.reduce((sum, d) => sum + (d.refundable_amount || 0), 0);
-      const refundPercentage = totalInitialAmount > 0 ? (totalRefunded / totalInitialAmount) * 100 : 0;
+      const refundPercentage =
+        totalInitialAmount > 0 ? (totalRefunded / totalInitialAmount) * 100 : 0;
 
       return {
         patientId,
@@ -647,8 +830,8 @@ export class PatientDepositService {
           current_balance: d.current_balance,
           refundable_amount: d.refundable_amount,
           refunded_amount: d.initial_amount - (d.refundable_amount || 0),
-          last_activity_date: d.last_activity_date
-        }))
+          last_activity_date: d.last_activity_date,
+        })),
       };
     } catch (error) {
       throw new BadException('Failed to get patient refund summary', 500, error.message);
@@ -662,36 +845,42 @@ export class PatientDepositService {
     try {
       // Get deposit with all related information
       const deposit = await PatientDeposit.findByPk(depositId, {
-        include: ['patient', 'bankAccount', 'createdByStaff', 'updatedByStaff']
+        include: ['patient', 'bankAccount', 'createdByStaff', 'updatedByStaff'],
       });
 
       if (!deposit) {
-        throw new BadException('Deposit not found', 404);
+        throw new BadException(
+          'Deposit Not Found',
+          404,
+          'The requested patient deposit could not be found'
+        );
       }
 
       // Get transaction count by type
       const transactionSummary = await DepositTransaction.findAll({
         where: { deposit_id: depositId },
-        attributes: [
-          'transaction_type',
-          ['COUNT(*)', 'count'],
-          ['SUM(amount)', 'total_amount']
-        ],
+        attributes: ['transaction_type', ['COUNT(*)', 'count'], ['SUM(amount)', 'total_amount']],
         group: ['transaction_type'],
-        raw: true
+        raw: true,
       });
 
       // Calculate lifecycle metrics
       const lifecycleMetrics = {
-        daysSinceCreation: Math.floor((new Date().getTime() - deposit.createdAt.getTime()) / (1000 * 60 * 60 * 24)),
-        daysSinceLastActivity: deposit.last_activity_date 
-          ? Math.floor((new Date().getTime() - deposit.last_activity_date.getTime()) / (1000 * 60 * 60 * 24))
+        daysSinceCreation: Math.floor(
+          (new Date().getTime() - deposit.createdAt.getTime()) / (1000 * 60 * 60 * 24)
+        ),
+        daysSinceLastActivity: deposit.last_activity_date
+          ? Math.floor(
+              (new Date().getTime() - deposit.last_activity_date.getTime()) / (1000 * 60 * 60 * 24)
+            )
           : 0,
-        utilizationRate: ((deposit.initial_amount - deposit.current_balance) / deposit.initial_amount) * 100,
+        utilizationRate:
+          ((deposit.initial_amount - deposit.current_balance) / deposit.initial_amount) * 100,
         refundabilityRate: (deposit.refundable_amount / deposit.initial_amount) * 100,
         isFullyUtilized: deposit.current_balance === 0,
-        isPartiallyUsed: deposit.current_balance < deposit.initial_amount && deposit.current_balance > 0,
-        hasBeenRefunded: deposit.refundable_amount < deposit.initial_amount
+        isPartiallyUsed:
+          deposit.current_balance < deposit.initial_amount && deposit.current_balance > 0,
+        hasBeenRefunded: deposit.refundable_amount < deposit.initial_amount,
       };
 
       // Determine deposit health status
@@ -709,7 +898,10 @@ export class PatientDepositService {
         transactionSummary,
         lifecycleMetrics,
         healthStatus,
-        recommendations: PatientDepositService.generateDepositRecommendations(deposit, lifecycleMetrics)
+        recommendations: PatientDepositService.generateDepositRecommendations(
+          deposit,
+          lifecycleMetrics
+        ),
       };
     } catch (error) {
       throw new BadException('Failed to get deposit status', 500, error.message);
@@ -759,11 +951,15 @@ export class PatientDepositService {
       // Get POS terminal with bank account
       const posTerminal = await POSTerminal.findByPk(pos_terminal_id, {
         include: [{ model: BankAccount, as: 'bankAccount' }],
-        transaction
+        transaction,
       });
 
       if (!posTerminal) {
-        throw new BadException('POS terminal not found', 404);
+        throw new BadException(
+          'POS Terminal Not Found',
+          404,
+          'The requested POS terminal could not be found'
+        );
       }
 
       // Get all card deposits for this POS terminal
@@ -771,18 +967,23 @@ export class PatientDepositService {
         where: {
           pos_terminal_id: pos_terminal_id,
           deposit_type: DepositType.CARD,
-          status: DepositStatus.ACTIVE
+          status: DepositStatus.ACTIVE,
         },
-        transaction
+        transaction,
       });
 
       if (cardDeposits.length === 0) {
-        throw new BadException('No card deposits found for this POS terminal', 400);
+        throw new BadException(
+          'No Card Deposits Found',
+          400,
+          'No card deposits found for this POS terminal'
+        );
       }
 
       // Calculate total settlement amount (use initial amounts, not current balances)
-      const totalAmount = cardDeposits.reduce((sum, deposit) => 
-        sum + parseFloat(deposit.amount.toString()), 0
+      const totalAmount = cardDeposits.reduce(
+        (sum, deposit) => sum + parseFloat(deposit.amount.toString()),
+        0
       );
 
       // Create settlement journal entry
@@ -831,7 +1032,7 @@ export class PatientDepositService {
   ): Promise<any> {
     try {
       const whereClause: any = {};
-      
+
       if (filters.patientId) whereClause.patient_id = filters.patientId;
       if (filters.bankAccountId) whereClause.bank_account_id = filters.bankAccountId;
       if (filters.status) whereClause.status = filters.status;
@@ -844,7 +1045,7 @@ export class PatientDepositService {
       // Get deposit statistics
       const deposits = await PatientDeposit.findAll({
         where: whereClause,
-        include: ['patient', 'bankAccount']
+        include: ['patient', 'bankAccount'],
       });
 
       // Calculate comprehensive analytics
@@ -853,14 +1054,20 @@ export class PatientDepositService {
         totalInitialAmount: deposits.reduce((sum, d) => sum + (d.initial_amount || 0), 0),
         totalCurrentBalance: deposits.reduce((sum, d) => sum + (d.current_balance || 0), 0),
         totalRefundableAmount: deposits.reduce((sum, d) => sum + (d.refundable_amount || 0), 0),
-        totalUsed: deposits.reduce((sum, d) => sum + (d.initial_amount - (d.current_balance || 0)), 0),
-        totalRefunded: deposits.reduce((sum, d) => sum + (d.initial_amount - (d.refundable_amount || 0)), 0),
-        
+        totalUsed: deposits.reduce(
+          (sum, d) => sum + (d.initial_amount - (d.current_balance || 0)),
+          0
+        ),
+        totalRefunded: deposits.reduce(
+          (sum, d) => sum + (d.initial_amount - (d.refundable_amount || 0)),
+          0
+        ),
+
         // Status breakdown
         statusBreakdown: {
           active: deposits.filter(d => d.status === DepositStatus.ACTIVE).length,
           used: deposits.filter(d => d.status === DepositStatus.USED).length,
-          refunded: deposits.filter(d => d.status === DepositStatus.REFUNDED).length
+          refunded: deposits.filter(d => d.status === DepositStatus.REFUNDED).length,
         },
 
         // Type breakdown
@@ -870,27 +1077,38 @@ export class PatientDepositService {
         }, {}),
 
         // Average metrics
-        averageDepositAmount: deposits.length > 0 
-          ? deposits.reduce((sum, d) => sum + (d.initial_amount || 0), 0) / deposits.length 
-          : 0,
-        averageUtilizationRate: deposits.length > 0
-          ? deposits.reduce((sum, d) => sum + ((d.initial_amount - (d.current_balance || 0)) / d.initial_amount) * 100, 0) / deposits.length
-          : 0,
+        averageDepositAmount:
+          deposits.length > 0
+            ? deposits.reduce((sum, d) => sum + (d.initial_amount || 0), 0) / deposits.length
+            : 0,
+        averageUtilizationRate:
+          deposits.length > 0
+            ? deposits.reduce(
+                (sum, d) =>
+                  sum + ((d.initial_amount - (d.current_balance || 0)) / d.initial_amount) * 100,
+                0
+              ) / deposits.length
+            : 0,
 
         // Health metrics
         healthMetrics: {
           dormantDeposits: deposits.filter(d => {
-            const daysSinceActivity = d.last_activity_date 
-              ? Math.floor((new Date().getTime() - d.last_activity_date.getTime()) / (1000 * 60 * 60 * 24))
+            const daysSinceActivity = d.last_activity_date
+              ? Math.floor(
+                  (new Date().getTime() - d.last_activity_date.getTime()) / (1000 * 60 * 60 * 24)
+                )
               : 0;
             return daysSinceActivity > 90;
           }).length,
           lowUtilizationDeposits: deposits.filter(d => {
-            const utilizationRate = ((d.initial_amount - (d.current_balance || 0)) / d.initial_amount) * 100;
+            const utilizationRate =
+              ((d.initial_amount - (d.current_balance || 0)) / d.initial_amount) * 100;
             return utilizationRate < 10;
           }).length,
-          smallBalanceDeposits: deposits.filter(d => d.current_balance > 0 && d.current_balance < 50).length
-        }
+          smallBalanceDeposits: deposits.filter(
+            d => d.current_balance > 0 && d.current_balance < 50
+          ).length,
+        },
       };
 
       return analytics;
@@ -905,10 +1123,10 @@ export class PatientDepositService {
   static async reconcileDepositBalances(depositId?: number): Promise<any> {
     try {
       const whereClause = depositId ? { id: depositId } : {};
-      
+
       const deposits = await PatientDeposit.findAll({
         where: whereClause,
-        include: ['patient', 'bankAccount']
+        include: ['patient', 'bankAccount'],
       });
 
       const reconciliationResults = [];
@@ -918,23 +1136,23 @@ export class PatientDepositService {
         const transactions = await DepositTransaction.findAll({
           where: { deposit_id: deposit.id },
           include: ['journalEntry'],
-          order: [['createdAt', 'ASC']]
+          order: [['createdAt', 'ASC']],
         });
 
         // Get all journal entries for this deposit
         const journalEntries = await DepositJournalEntry.findAll({
           where: { deposit_id: deposit.id },
-          include: ['journalEntry']
+          include: ['journalEntry'],
         });
 
         // Calculate expected balance from transactions
         let calculatedBalance = 0;
-        let transactionSummary = {
+        const transactionSummary = {
           created: 0,
           used: 0,
           refunded: 0,
           adjusted: 0,
-          expired: 0
+          expired: 0,
         };
 
         for (const transaction of transactions) {
@@ -989,20 +1207,22 @@ export class PatientDepositService {
             const expectedBankBalance = deposit.initial_amount - deposit.current_balance;
             const actualBankBalance = bankAccount.current_balance;
             const bankDiscrepancy = Math.abs(expectedBankBalance - actualBankBalance);
-            
+
             bankAccountReconciliation = {
               bank_account_id: deposit.bank_account_id,
               bank_name: bankAccount.bank_name,
               expected_balance: expectedBankBalance,
               actual_balance: actualBankBalance,
               discrepancy: bankDiscrepancy,
-              is_reconciled: bankDiscrepancy < 0.01
+              is_reconciled: bankDiscrepancy < 0.01,
             };
           }
         }
 
         // Validate Chart of Accounts balances
-        const chartOfAccountsReconciliation = await this.validateChartOfAccountsBalances(deposit.id);
+        const chartOfAccountsReconciliation = await this.validateChartOfAccountsBalances(
+          deposit.id
+        );
 
         reconciliationResults.push({
           depositId: deposit.id,
@@ -1026,7 +1246,7 @@ export class PatientDepositService {
             journalCalculatedBalance,
             bankAccountReconciliation,
             chartOfAccountsReconciliation
-          )
+          ),
         });
       }
 
@@ -1035,17 +1255,27 @@ export class PatientDepositService {
         totalDepositsChecked: reconciliationResults.length,
         reconciledDeposits: reconciliationResults.filter(r => r.isReconciled).length,
         discrepancyCount: reconciliationResults.filter(r => !r.isReconciled).length,
-        totalBalanceDiscrepancy: reconciliationResults.reduce((sum, r) => sum + r.balanceDiscrepancy, 0),
-        totalJournalDiscrepancy: reconciliationResults.reduce((sum, r) => sum + r.journalDiscrepancy, 0),
-        bankAccountIssues: reconciliationResults.filter(r => r.bankAccountReconciliation && !r.bankAccountReconciliation.is_reconciled).length,
-        chartOfAccountsIssues: reconciliationResults.filter(r => r.chartOfAccountsReconciliation && !r.chartOfAccountsReconciliation.is_reconciled).length
+        totalBalanceDiscrepancy: reconciliationResults.reduce(
+          (sum, r) => sum + r.balanceDiscrepancy,
+          0
+        ),
+        totalJournalDiscrepancy: reconciliationResults.reduce(
+          (sum, r) => sum + r.journalDiscrepancy,
+          0
+        ),
+        bankAccountIssues: reconciliationResults.filter(
+          r => r.bankAccountReconciliation && !r.bankAccountReconciliation.is_reconciled
+        ).length,
+        chartOfAccountsIssues: reconciliationResults.filter(
+          r => r.chartOfAccountsReconciliation && !r.chartOfAccountsReconciliation.is_reconciled
+        ).length,
       };
 
       return {
         summary,
         results: reconciliationResults,
         timestamp: new Date(),
-        reconciliationStatus: this.getOverallReconciliationStatus(summary)
+        reconciliationStatus: this.getOverallReconciliationStatus(summary),
       };
     } catch (error) {
       throw new BadException('Failed to reconcile deposit balances', 500, error.message);
@@ -1062,7 +1292,7 @@ export class PatientDepositService {
 
       // Get the required Chart of Accounts
       const requiredAccounts = await ComprehensiveChartOfAccountsService.getAllRequiredAccounts();
-      
+
       const accountBalances = {};
       let totalDiscrepancy = 0;
       let isReconciled = true;
@@ -1074,7 +1304,7 @@ export class PatientDepositService {
           expected_balance: account.balance || 0,
           actual_balance: balance,
           discrepancy: Math.abs((account.balance || 0) - balance),
-          is_reconciled: Math.abs((account.balance || 0) - balance) < 0.01
+          is_reconciled: Math.abs((account.balance || 0) - balance) < 0.01,
         };
 
         if (!accountBalances[account.code].is_reconciled) {
@@ -1086,12 +1316,12 @@ export class PatientDepositService {
       return {
         accountBalances,
         totalDiscrepancy,
-        isReconciled
+        isReconciled,
       };
     } catch (error) {
       return {
         error: error.message,
-        isReconciled: false
+        isReconciled: false,
       };
     }
   }
@@ -1110,31 +1340,43 @@ export class PatientDepositService {
 
     // Check balance discrepancies
     if (Math.abs(deposit.current_balance - calculatedBalance) > 0.01) {
-      issues.push(`Balance mismatch: Recorded ${deposit.current_balance} vs Calculated ${calculatedBalance}`);
+      issues.push(
+        `Balance mismatch: Recorded ${deposit.current_balance} vs Calculated ${calculatedBalance}`
+      );
     }
 
     if (Math.abs(calculatedBalance - journalCalculatedBalance) > 0.01) {
-      issues.push(`Journal entry mismatch: Transaction balance ${calculatedBalance} vs Journal balance ${journalCalculatedBalance}`);
+      issues.push(
+        `Journal entry mismatch: Transaction balance ${calculatedBalance} vs Journal balance ${journalCalculatedBalance}`
+      );
     }
 
     // Check bank account reconciliation
     if (bankAccountReconciliation && !bankAccountReconciliation.is_reconciled) {
-      issues.push(`Bank account reconciliation issue: ${bankAccountReconciliation.discrepancy} discrepancy`);
+      issues.push(
+        `Bank account reconciliation issue: ${bankAccountReconciliation.discrepancy} discrepancy`
+      );
     }
 
     // Check Chart of Accounts reconciliation
     if (chartOfAccountsReconciliation && !chartOfAccountsReconciliation.is_reconciled) {
-      issues.push(`Chart of Accounts reconciliation issue: ${chartOfAccountsReconciliation.totalDiscrepancy} total discrepancy`);
+      issues.push(
+        `Chart of Accounts reconciliation issue: ${chartOfAccountsReconciliation.totalDiscrepancy} total discrepancy`
+      );
     }
 
     // Check for orphaned transactions
     if (deposit.current_balance === 0 && calculatedBalance > 0) {
-      issues.push('Potential orphaned transactions: Balance is 0 but transactions show positive amount');
+      issues.push(
+        'Potential orphaned transactions: Balance is 0 but transactions show positive amount'
+      );
     }
 
     // Check for missing journal entries
     if (deposit.current_balance !== 0 && journalCalculatedBalance === 0) {
-      issues.push('Missing journal entries: Transactions exist but no corresponding journal entries');
+      issues.push(
+        'Missing journal entries: Transactions exist but no corresponding journal entries'
+      );
     }
 
     return issues;
@@ -1144,7 +1386,11 @@ export class PatientDepositService {
    * Get overall reconciliation status
    */
   private static getOverallReconciliationStatus(summary: any): string {
-    if (summary.discrepancyCount === 0 && summary.bankAccountIssues === 0 && summary.chartOfAccountsIssues === 0) {
+    if (
+      summary.discrepancyCount === 0 &&
+      summary.bankAccountIssues === 0 &&
+      summary.chartOfAccountsIssues === 0
+    ) {
       return 'FULLY_RECONCILED';
     } else if (summary.discrepancyCount < summary.totalDepositsChecked * 0.1) {
       return 'MOSTLY_RECONCILED';
@@ -1192,8 +1438,12 @@ export class PatientDepositService {
         discrepancyCount: filteredResults.filter(r => !r.isReconciled).length,
         totalBalanceDiscrepancy: filteredResults.reduce((sum, r) => sum + r.balanceDiscrepancy, 0),
         totalJournalDiscrepancy: filteredResults.reduce((sum, r) => sum + r.journalDiscrepancy, 0),
-        bankAccountIssues: filteredResults.filter(r => r.bankAccountReconciliation && !r.bankAccountReconciliation.is_reconciled).length,
-        chartOfAccountsIssues: filteredResults.filter(r => r.chartOfAccountsReconciliation && !r.chartOfAccountsReconciliation.is_reconciled).length
+        bankAccountIssues: filteredResults.filter(
+          r => r.bankAccountReconciliation && !r.bankAccountReconciliation.is_reconciled
+        ).length,
+        chartOfAccountsIssues: filteredResults.filter(
+          r => r.chartOfAccountsReconciliation && !r.chartOfAccountsReconciliation.is_reconciled
+        ).length,
       };
 
       // Generate report based on format
@@ -1204,7 +1454,10 @@ export class PatientDepositService {
             summary: filteredSummary,
             reconciliationStatus: this.getOverallReconciliationStatus(filteredSummary),
             timestamp: new Date(),
-            recommendations: this.generateReconciliationRecommendations(filteredSummary, filteredResults)
+            recommendations: this.generateReconciliationRecommendations(
+              filteredSummary,
+              filteredResults
+            ),
           };
           break;
 
@@ -1214,12 +1467,15 @@ export class PatientDepositService {
             reconciliationStatus: this.getOverallReconciliationStatus(filteredSummary),
             timestamp: new Date(),
             results: includeDetails ? filteredResults : [],
-            recommendations: this.generateReconciliationRecommendations(filteredSummary, filteredResults),
+            recommendations: this.generateReconciliationRecommendations(
+              filteredSummary,
+              filteredResults
+            ),
             metadata: {
               filters,
               generatedAt: new Date(),
-              systemVersion: '1.0.0'
-            }
+              systemVersion: '1.0.0',
+            },
           };
           break;
 
@@ -1235,7 +1491,7 @@ export class PatientDepositService {
           report = {
             summary: filteredSummary,
             reconciliationStatus: this.getOverallReconciliationStatus(filteredSummary),
-            timestamp: new Date()
+            timestamp: new Date(),
           };
       }
 
@@ -1252,19 +1508,27 @@ export class PatientDepositService {
     const recommendations: string[] = [];
 
     if (summary.discrepancyCount > 0) {
-      recommendations.push(`Investigate ${summary.discrepancyCount} deposits with balance discrepancies`);
+      recommendations.push(
+        `Investigate ${summary.discrepancyCount} deposits with balance discrepancies`
+      );
     }
 
     if (summary.bankAccountIssues > 0) {
-      recommendations.push(`Review ${summary.bankAccountIssues} bank account reconciliation issues`);
+      recommendations.push(
+        `Review ${summary.bankAccountIssues} bank account reconciliation issues`
+      );
     }
 
     if (summary.chartOfAccountsIssues > 0) {
-      recommendations.push(`Address ${summary.chartOfAccountsIssues} Chart of Accounts balance issues`);
+      recommendations.push(
+        `Address ${summary.chartOfAccountsIssues} Chart of Accounts balance issues`
+      );
     }
 
     if (summary.totalBalanceDiscrepancy > 1000) {
-      recommendations.push('Significant balance discrepancies detected - immediate attention required');
+      recommendations.push(
+        'Significant balance discrepancies detected - immediate attention required'
+      );
     }
 
     if (summary.reconciledDeposits / summary.totalDepositsChecked < 0.8) {
@@ -1272,14 +1536,22 @@ export class PatientDepositService {
     }
 
     // Add specific recommendations based on results
-    const orphanedTransactions = results.filter(r => r.reconciliationIssues.some(issue => issue.includes('orphaned')));
+    const orphanedTransactions = results.filter(r =>
+      r.reconciliationIssues.some(issue => issue.includes('orphaned'))
+    );
     if (orphanedTransactions.length > 0) {
-      recommendations.push(`Review ${orphanedTransactions.length} deposits with potential orphaned transactions`);
+      recommendations.push(
+        `Review ${orphanedTransactions.length} deposits with potential orphaned transactions`
+      );
     }
 
-    const missingJournalEntries = results.filter(r => r.reconciliationIssues.some(issue => issue.includes('Missing journal entries')));
+    const missingJournalEntries = results.filter(r =>
+      r.reconciliationIssues.some(issue => issue.includes('Missing journal entries'))
+    );
     if (missingJournalEntries.length > 0) {
-      recommendations.push(`Investigate ${missingJournalEntries.length} deposits with missing journal entries`);
+      recommendations.push(
+        `Investigate ${missingJournalEntries.length} deposits with missing journal entries`
+      );
     }
 
     if (recommendations.length === 0) {
@@ -1307,7 +1579,7 @@ export class PatientDepositService {
       'Journal Entry Count',
       'Bank Account Issues',
       'Chart of Accounts Issues',
-      'Reconciliation Issues'
+      'Reconciliation Issues',
     ];
 
     const csvRows = results.map(result => [
@@ -1322,9 +1594,17 @@ export class PatientDepositService {
       result.isReconciled ? 'Yes' : 'No',
       result.transactionCount,
       result.journalEntryCount,
-      result.bankAccountReconciliation ? (result.bankAccountReconciliation.is_reconciled ? 'No' : 'Yes') : 'N/A',
-      result.chartOfAccountsReconciliation ? (result.chartOfAccountsReconciliation.is_reconciled ? 'No' : 'Yes') : 'N/A',
-      result.reconciliationIssues.join('; ')
+      result.bankAccountReconciliation
+        ? result.bankAccountReconciliation.is_reconciled
+          ? 'No'
+          : 'Yes'
+        : 'N/A',
+      result.chartOfAccountsReconciliation
+        ? result.chartOfAccountsReconciliation.is_reconciled
+          ? 'No'
+          : 'Yes'
+        : 'N/A',
+      result.reconciliationIssues.join('; '),
     ]);
 
     return {
@@ -1332,7 +1612,7 @@ export class PatientDepositService {
       headers: csvHeaders,
       rows: csvRows,
       summary,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
   }
 
@@ -1345,7 +1625,7 @@ export class PatientDepositService {
       summary,
       results: results.slice(0, 100), // Limit for PDF
       timestamp: new Date(),
-      note: 'PDF generation would require additional PDF library integration'
+      note: 'PDF generation would require additional PDF library integration',
     };
   }
 
@@ -1363,21 +1643,39 @@ export class PatientDepositService {
     transaction?: Transaction
   ): Promise<PatientDeposit> {
     try {
+      // Validate financial period for transaction
+      const currentPeriod = await FinancialPeriodValidationService.getCurrentActivePeriod();
+      if (!currentPeriod) {
+        throw new BadException(
+          'Financial Period Not Available',
+          503,
+          'No active financial period found. Please configure financial periods before processing transactions.'
+        );
+      }
+
       // Get deposit
       const deposit = await PatientDeposit.findByPk(data.deposit_id);
       if (!deposit) {
-        throw new BadException('Deposit not found', 404);
+        throw new BadException(
+          'Deposit Not Found',
+          404,
+          'The requested patient deposit could not be found'
+        );
       }
 
       // Validate adjustment
       if (data.adjustment_type === 'subtract' && data.amount > deposit.current_balance) {
-        throw new BadException('Adjustment amount exceeds current balance', 400);
+        throw new BadException(
+          'Adjustment Amount Exceeds Balance',
+          400,
+          'Adjustment amount exceeds current balance'
+        );
       }
 
       // Calculate new balance
       const previousBalance = deposit.current_balance;
       let newBalance: number;
-      
+
       if (data.adjustment_type === 'add') {
         newBalance = deposit.current_balance + data.amount;
       } else {
@@ -1385,12 +1683,15 @@ export class PatientDepositService {
       }
 
       // Update deposit
-      await deposit.update({
-        current_balance: newBalance,
-        refundable_amount: Math.min(deposit.refundable_amount, newBalance),
-        last_activity_date: new Date(),
-        status: newBalance === 0 ? DepositStatus.USED : DepositStatus.ACTIVE
-      }, { transaction });
+      await deposit.update(
+        {
+          current_balance: newBalance,
+          refundable_amount: Math.min(deposit.refundable_amount, newBalance),
+          last_activity_date: new Date(),
+          status: newBalance === 0 ? DepositStatus.USED : DepositStatus.ACTIVE,
+        },
+        { transaction }
+      );
 
       // Create journal entry for deposit adjustment
       const journalEntry = await PatientDepositJournalEntryService.createDepositAdjustmentEntry(
@@ -1401,25 +1702,33 @@ export class PatientDepositService {
       );
 
       // Create deposit transaction record
-      await DepositTransaction.create({
-        deposit_id: deposit.id,
-        transaction_type: DepositTransactionType.ADJUSTED,
-        amount: data.amount,
-        previous_balance: previousBalance,
-        new_balance: newBalance,
-        reference_number: `ADJ-${deposit.reference_number}`,
-        description: `Deposit adjustment: ${data.reason}`,
-        journal_entry_id: journalEntry.id,
-        created_by: data.adjusted_by
-      }, { transaction });
+      await DepositTransaction.create(
+        {
+          deposit_id: deposit.id,
+          transaction_type: DepositTransactionType.ADJUSTED,
+          amount: data.amount,
+          previous_balance: previousBalance,
+          new_balance: newBalance,
+          reference_number: `ADJ-${deposit.reference_number}`,
+          description: `Deposit adjustment: ${data.reason}`,
+          journal_entry_id: journalEntry.id,
+          created_by: data.adjusted_by,
+          period_id: currentPeriod.id, // Link to current financial period
+        },
+        { transaction }
+      );
 
       // Create deposit journal entry mapping
-      await DepositJournalEntry.create({
-        deposit_id: deposit.id,
-        journal_entry_id: journalEntry.id,
-        entry_type: 'ADJUSTMENT',
-        amount: data.amount
-      }, { transaction });
+      await DepositJournalEntry.create(
+        {
+          deposit_id: deposit.id,
+          journal_entry_id: journalEntry.id,
+          entry_type: DepositJournalEntryType.ADJUSTMENT,
+          amount: data.amount,
+          period_id: currentPeriod.id, // Link to current financial period
+        },
+        { transaction }
+      );
 
       // Update bank account balance if specified
       if (deposit.bank_account_id) {
@@ -1446,31 +1755,48 @@ export class PatientDepositService {
     transaction?: Transaction
   ): Promise<PatientDeposit> {
     try {
+      // Validate financial period for transaction
+      const currentPeriod = await FinancialPeriodValidationService.getCurrentActivePeriod();
+      if (!currentPeriod) {
+        throw new BadException(
+          'Financial Period Not Available',
+          503,
+          'No active financial period found. Please configure financial periods before processing transactions.'
+        );
+      }
+
       // Get deposit
       const deposit = await PatientDeposit.findByPk(depositId);
       if (!deposit) {
-        throw new BadException('Deposit not found', 404);
+        throw new BadException(
+          'Deposit Not Found',
+          404,
+          'The requested patient deposit could not be found'
+        );
       }
 
       // Check if deposit is already used/expired
       if (deposit.status === DepositStatus.USED) {
-        throw new BadException('Deposit is already used or expired', 400);
+        throw new BadException('Deposit Already Used', 400, 'Deposit is already used or expired');
       }
 
       // Check if deposit has remaining balance
       if (deposit.current_balance <= 0) {
-        throw new BadException('Deposit has no balance to expire', 400);
+        throw new BadException('Deposit No Balance', 400, 'Deposit has no balance to expire');
       }
 
       const previousBalance = deposit.current_balance;
 
       // Update deposit status to used (expired)
-      await deposit.update({
-        status: DepositStatus.USED,
-        last_activity_date: new Date(),
-        current_balance: 0,
-        refundable_amount: 0
-      }, { transaction });
+      await deposit.update(
+        {
+          status: DepositStatus.USED,
+          last_activity_date: new Date(),
+          current_balance: 0,
+          refundable_amount: 0,
+        },
+        { transaction }
+      );
 
       // Create journal entry for deposit expiry using usage entry pattern
       const journalEntry = await PatientDepositJournalEntryService.createDepositUsageEntry(
@@ -1481,25 +1807,33 @@ export class PatientDepositService {
       );
 
       // Create deposit transaction record
-      await DepositTransaction.create({
-        deposit_id: deposit.id,
-        transaction_type: DepositTransactionType.EXPIRED,
-        amount: previousBalance,
-        previous_balance: previousBalance,
-        new_balance: 0,
-        reference_number: `EXP-${deposit.reference_number}`,
-        description: 'Deposit expired - balance forfeited',
-        journal_entry_id: journalEntry.id,
-        created_by: processedBy
-      }, { transaction });
+      await DepositTransaction.create(
+        {
+          deposit_id: deposit.id,
+          transaction_type: DepositTransactionType.EXPIRED,
+          amount: previousBalance,
+          previous_balance: previousBalance,
+          new_balance: 0,
+          reference_number: `EXP-${deposit.reference_number}`,
+          description: 'Deposit expired - balance forfeited',
+          journal_entry_id: journalEntry.id,
+          created_by: processedBy,
+          period_id: currentPeriod.id, // Link to current financial period
+        },
+        { transaction }
+      );
 
       // Create deposit journal entry mapping
-      await DepositJournalEntry.create({
-        deposit_id: deposit.id,
-        journal_entry_id: journalEntry.id,
-        entry_type: 'USAGE', // Use USAGE for expiry since we're using the usage entry pattern
-        amount: previousBalance
-      }, { transaction });
+      await DepositJournalEntry.create(
+        {
+          deposit_id: deposit.id,
+          journal_entry_id: journalEntry.id,
+          entry_type: DepositJournalEntryType.USAGE, // Use USAGE for expiry since we're using the usage entry pattern
+          amount: previousBalance,
+          period_id: currentPeriod.id, // Link to current financial period
+        },
+        { transaction }
+      );
 
       // Update bank account balance if specified (remove expired amount)
       if (deposit.bank_account_id) {
@@ -1523,32 +1857,33 @@ export class PatientDepositService {
   static async getDepositWithHistory(depositId: number): Promise<any> {
     try {
       const deposit = await PatientDeposit.findByPk(depositId, {
-        include: [
-          'patient',
-          'bankAccount',
-          'createdByStaff',
-          'updatedByStaff'
-        ]
+        include: ['patient', 'bankAccount', 'createdByStaff', 'updatedByStaff'],
       });
 
       if (!deposit) {
-        throw new BadException('Deposit not found', 404);
+        throw new BadException(
+          'Deposit Not Found',
+          404,
+          'The requested patient deposit could not be found'
+        );
       }
 
       // Get transaction history
       const transactions = await DepositTransaction.findAll({
         where: { deposit_id: depositId },
         include: ['createdByStaff'],
-        order: [['created_at', 'DESC']]
+        order: [['createdAt', 'DESC']],
       });
 
       // Get journal entries
-      const journalEntries = await PatientDepositJournalEntryService.getJournalEntriesForDeposit(depositId);
+      const journalEntries = await PatientDepositJournalEntryService.getJournalEntriesForDeposit(
+        depositId
+      );
 
       return {
         deposit,
         transactions,
-        journalEntries
+        journalEntries,
       };
     } catch (error) {
       throw new BadException('Failed to get deposit with history', 500, error.message);
@@ -1565,7 +1900,12 @@ export class PatientDepositService {
     transaction?: Transaction
   ): Promise<void> {
     try {
-      await AccountingService.updateBankAccountBalance(bankAccountId, amount, operation);
+      await AccountingService.updateBankAccountBalance(
+        bankAccountId,
+        amount,
+        operation,
+        transaction
+      );
     } catch (error) {
       throw new BadException(
         `Failed to update bank account balance: ${error.message}`,
@@ -1586,12 +1926,14 @@ export class PatientDepositService {
 
     while (!isUnique && attempts < maxAttempts) {
       const timestamp = Date.now().toString(36);
-      const random = Math.random().toString(36).substring(2, 5);
+      const random = Math.random()
+        .toString(36)
+        .substring(2, 5);
       referenceNumber = `DEP-${timestamp}-${random}`.toUpperCase();
 
       // Check if reference number already exists
       const existingDeposit = await PatientDeposit.findOne({
-        where: { reference_number: referenceNumber }
+        where: { reference_number: referenceNumber },
       });
 
       if (!existingDeposit) {
@@ -1604,7 +1946,10 @@ export class PatientDepositService {
     }
 
     if (!isUnique) {
-      throw new BadException('Failed to generate unique reference number after multiple attempts', 500);
+      throw new BadException(
+        'Failed to generate unique reference number after multiple attempts',
+        500
+      );
     }
 
     return referenceNumber!;

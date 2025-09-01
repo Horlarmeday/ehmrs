@@ -604,7 +604,7 @@ export default {
     },
 
     addPatient() {
-      if (!this.image) return this.notifyPhoto();
+      // if (!this.image) return this.notifyPhoto();
       this.$validator.validateAll().then(result => {
         if (result) {
           // set spinner to submit button
@@ -632,7 +632,7 @@ export default {
             next_of_kin_phone: this.next_of_kin_phone,
             next_of_kin_address: this.next_of_kin_address,
             next_of_kin_relationship: this.relationship,
-            photo: this.image,
+            photo: this.image || "",
             registration_fee: this.registration.price,
             service_id: this.registration.id,
           };

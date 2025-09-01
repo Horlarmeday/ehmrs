@@ -500,15 +500,14 @@ class PharmacyOrderService {
   ) {
     const lastPrescription = await getLastDrugPrescription(patient_id);
 
-    if (lastPrescription && !isToday(lastPrescription?.date_prescribed))
-      return createDrugPrescription(this.drugPrescriptionData(data, patient_id));
+    if (lastPrescription && isToday(lastPrescription?.date_prescribed)) return lastPrescription;
 
     // if drug has not been dispensed - pick the id and use it in prescribed drug
-    if (lastPrescription?.status === DrugStatus.PENDING) return lastPrescription;
+    // if (lastPrescription?.status === DrugStatus.PENDING) return lastPrescription;
 
     // if drug was prescribed today and has been dispensed - create new one
-    if (lastPrescription?.status === DrugStatus.COMPLETE_DISPENSE)
-      return createDrugPrescription(this.drugPrescriptionData(data, patient_id));
+    // if (lastPrescription?.status === DrugStatus.COMPLETE_DISPENSE)
+    //   return createDrugPrescription(this.drugPrescriptionData(data, patient_id));
 
     return createDrugPrescription(this.drugPrescriptionData(data, patient_id));
   }

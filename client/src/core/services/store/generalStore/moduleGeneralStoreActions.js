@@ -455,6 +455,42 @@ export default {
     });
   },
 
+  updateRequest({ commit }, { id, data }) {
+    commit('SET_LOADING', true);
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/general-store/requests/${id}`, data)
+        .then(response => {
+          commit('UPDATE_REQUEST', response.data.data);
+          commit('SET_LOADING', false);
+          resolve(response);
+        })
+        .catch(error => {
+          commit('SET_ERROR', error.response?.data?.message || 'Failed to update request');
+          commit('SET_LOADING', false);
+          reject(error);
+        });
+    });
+  },
+
+  fetchRequestById({ commit }, requestId) {
+    commit('SET_LOADING', true);
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/general-store/requests/${requestId}`)
+        .then(response => {
+          commit('SET_CURRENT_REQUEST', response.data.data);
+          commit('SET_LOADING', false);
+          resolve(response);
+        })
+        .catch(error => {
+          commit('SET_ERROR', error.response?.data?.message || 'Failed to fetch request details');
+          commit('SET_LOADING', false);
+          reject(error);
+        });
+    });
+  },
+
   approveRequest({ commit }, { id, approvedItems }) {
     commit('SET_LOADING', true);
     return new Promise((resolve, reject) => {
@@ -592,6 +628,123 @@ export default {
             'SET_ERROR',
             error.response?.data?.message || 'Failed to generate movement report'
           );
+          commit('SET_LOADING', false);
+          reject(error);
+        });
+    });
+  },
+
+  generateUsageReport({ commit }, filters = {}) {
+    commit('SET_LOADING', true);
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/general-store/reports/usage', { params: filters })
+        .then(response => {
+          commit('SET_USAGE_REPORT', response.data.data);
+          commit('SET_LOADING', false);
+          resolve(response);
+        })
+        .catch(error => {
+          commit('SET_ERROR', error.response?.data?.message || 'Failed to generate usage report');
+          commit('SET_LOADING', false);
+          reject(error);
+        });
+    });
+  },
+
+  generateCostReport({ commit }, filters = {}) {
+    commit('SET_LOADING', true);
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/general-store/reports/costs', { params: filters })
+        .then(response => {
+          commit('SET_COST_REPORT', response.data.data);
+          commit('SET_LOADING', false);
+          resolve(response);
+        })
+        .catch(error => {
+          commit('SET_ERROR', error.response?.data?.message || 'Failed to generate cost report');
+          commit('SET_LOADING', false);
+          reject(error);
+        });
+    });
+  },
+
+  // Export Reports
+  exportStockReport({ commit }, filters = {}) {
+    commit('SET_LOADING', true);
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/general-store/reports/stock/export', { 
+          params: filters,
+          responseType: 'blob'
+        })
+        .then(response => {
+          commit('SET_LOADING', false);
+          resolve(response);
+        })
+        .catch(error => {
+          commit('SET_ERROR', error.response?.data?.message || 'Failed to export stock report');
+          commit('SET_LOADING', false);
+          reject(error);
+        });
+    });
+  },
+
+  exportMovementReport({ commit }, filters = {}) {
+    commit('SET_LOADING', true);
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/general-store/reports/movements/export', { 
+          params: filters,
+          responseType: 'blob'
+        })
+        .then(response => {
+          commit('SET_LOADING', false);
+          resolve(response);
+        })
+        .catch(error => {
+          commit('SET_ERROR', error.response?.data?.message || 'Failed to export movement report');
+          commit('SET_LOADING', false);
+          reject(error);
+        });
+    });
+  },
+
+  exportUsageReport({ commit }, filters = {}) {
+    commit('SET_LOADING', true);
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/general-store/reports/usage/export', { 
+          params: filters,
+          responseType: 'blob'
+        })
+        .then(response => {
+          commit('SET_LOADING', false);
+          resolve(response);
+        })
+        .catch(error => {
+          commit('SET_ERROR', error.response?.data?.message || 'Failed to export usage report');
+          commit('SET_LOADING', false);
+          reject(error);
+        });
+    });
+  },
+
+  exportCostReport({ commit }, filters = {}) {
+    commit('SET_LOADING', true);
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/general-store/reports/costs/export', { 
+          params: filters,
+          responseType: 'blob'
+        })
+        .then(response => {
+          commit('SET_LOADING', false);
+          resolve(response);
+        })
+        .catch(error => {
+          commit('SET_ERROR', error.response?.data?.message || 'Failed to export cost report');
           commit('SET_LOADING', false);
           reject(error);
         });

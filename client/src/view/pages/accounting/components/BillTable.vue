@@ -60,24 +60,24 @@
                 >
                   <i class="fas fa-list-alt"></i>
                 </b-button>
-                <b-button
-                  variant="outline-warning"
-                  size="sm"
-                  @click="$emit('edit-bill', bill)"
-                  title="Edit Bill"
-                  v-if="bill.billing_status === 'DRAFT'"
-                >
-                  <i class="fas fa-edit"></i>
-                </b-button>
-                <b-button
-                  variant="outline-success"
-                  size="sm"
-                  @click="$emit('process-payment', bill)"
-                  title="Process Payment"
-                  v-if="bill.payment_status !== 'PAID'"
-                >
-                  <i class="fas fa-credit-card"></i>
-                </b-button>
+<!--                <b-button-->
+<!--                  variant="outline-warning"-->
+<!--                  size="sm"-->
+<!--                  @click="$emit('edit-bill', bill)"-->
+<!--                  title="Edit Bill"-->
+<!--                  v-if="bill.billing_status === 'DRAFT'"-->
+<!--                >-->
+<!--                  <i class="fas fa-edit"></i>-->
+<!--                </b-button>-->
+<!--                <b-button-->
+<!--                  variant="outline-success"-->
+<!--                  size="sm"-->
+<!--                  @click="$emit('process-payment', bill)"-->
+<!--                  title="Process Payment"-->
+<!--                  v-if="bill.payment_status !== 'PAID'"-->
+<!--                >-->
+<!--                  <i class="fas fa-credit-card"></i>-->
+<!--                </b-button>-->
                 <b-button
                   variant="outline-info"
                   size="sm"

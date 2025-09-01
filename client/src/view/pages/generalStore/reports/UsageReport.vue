@@ -565,13 +565,13 @@ export default {
     async loadInitialData() {
       try {
         // Load categories and departments for filters
-        const [categoriesResponse, departmentsResponse] = await Promise.all([
-          this.$axios.get('/api/general-store/categories'),
-          this.$axios.get('/api/staff/departments'),
+        await Promise.all([
+          this.$store.dispatch('generalStore/fetchCategories'),
+          this.$store.dispatch('staff/fetchDepartments'),
         ]);
 
-        this.categories = categoriesResponse.data.data || [];
-        this.departments = departmentsResponse.data.data || [];
+        this.categories = this.$store.getters['generalStore/categories'] || [];
+        this.departments = this.$store.getters['staff/departments'] || [];
       } catch (error) {
         console.error('Error loading initial data:', error);
         this.$toast.error('Failed to load filter data');
@@ -599,7 +599,7 @@ export default {
           }
         });
 
-        const response = await this.$axios.get('/api/general-store/reports/usage', { params });
+        const response = await this.$store.dispatch('generalStore/generateUsageReport', params);
         this.reportData = response.data.data;
 
         // Generate charts after data is loaded
@@ -815,10 +815,7 @@ export default {
 
       try {
         const params = { ...this.filters, export: true };
-        const response = await this.$axios.get('/api/general-store/reports/usage/export', {
-          params,
-          responseType: 'blob',
-        });
+        const response = await this.$store.dispatch('generalStore/exportUsageReport', params);
 
         const url = window.URL.createObjectURL(new Blob([response.data]));
         const link = document.createElement('a');

@@ -1,8 +1,6 @@
-import { 
-  getEncounterDetailsByStaff, 
-  getEncounterActions, 
-  getEncounters, 
-  getOneEncounter 
+import {
+  getEncounters,
+  getOneEncounter,
 } from './admin.repository';
 
 class EncounterService {
@@ -18,7 +16,7 @@ class EncounterService {
     start: Date;
     end: Date;
   }) {
-    return await getEncounterDetailsByStaff(params);
+    // return await getEncounterDetailsByStaff(params);
   }
 
   /**
@@ -29,7 +27,7 @@ class EncounterService {
    * @memberOf EncounterService
    */
   static async getEncounterActionsByIdService(encounter_id: number) {
-    return await getEncounterActions(encounter_id);
+    // return await getEncounterActions(encounter_id);
   }
 
   /**
@@ -47,7 +45,7 @@ class EncounterService {
     pageLimit?: number;
   }) {
     const { search, start, end, currentPage, pageLimit } = body;
-    
+
     if (Object.values(body).length) {
       return getEncounters({
         currentPage,
@@ -71,8 +69,6 @@ class EncounterService {
   static async getOneEncounterService(encounterId: number) {
     return getOneEncounter({ id: encounterId });
   }
-  
 }
 
-export default EncounterService; 
-
+export default EncounterService;

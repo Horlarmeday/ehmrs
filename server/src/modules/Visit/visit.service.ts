@@ -51,6 +51,12 @@ class VisitService {
    */
   static async createVisitService(body: CreateVisit): Promise<Visit> {
     const { patient_id, ante_natal_id, category, service_id, staff_id, immunization_id } = body;
+
+    // Set defaults for appointment check-ins
+    if (!body.date_of_visit) {
+      body.date_of_visit = new Date();
+    }
+
     const [patient, visit] = await Promise.all([
       getPatientById(patient_id),
       getLastActiveVisit(patient_id),

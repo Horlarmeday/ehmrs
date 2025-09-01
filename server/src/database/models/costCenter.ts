@@ -63,6 +63,36 @@ export class CostCenter extends Model {
   department_id: number;
 
   @Column({
+    type: DataType.STRING,
+    allowNull: true,
+    comment: 'Service line (e.g., Cardiology, Orthopedics)',
+  })
+  service_line: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+    comment: 'Location (e.g., Main Building, North Wing)',
+  })
+  location: string;
+
+  @Column({
+    type: DataType.ENUM('CLINICAL', 'ADMINISTRATIVE', 'SUPPORT'),
+    allowNull: false,
+    defaultValue: 'CLINICAL',
+    comment: 'Type of cost center',
+  })
+  cost_center_type: string;
+
+  @Column({
+    type: DataType.DECIMAL(15, 2),
+    allowNull: false,
+    defaultValue: 0,
+    comment: 'Annual budget amount',
+  })
+  budget: number;
+
+  @Column({
     type: DataType.BOOLEAN,
     defaultValue: true,
   })

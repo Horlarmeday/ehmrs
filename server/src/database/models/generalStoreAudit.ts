@@ -23,7 +23,7 @@ export enum AuditAction {
   STOCK_TRANSFER = 'STOCK_TRANSFER',
   EXPORT = 'EXPORT',
   LOGIN = 'LOGIN',
-  LOGOUT = 'LOGOUT'
+  LOGOUT = 'LOGOUT',
 }
 
 export enum AuditModule {
@@ -33,12 +33,13 @@ export enum AuditModule {
   MOVEMENT = 'MOVEMENT',
   REQUEST = 'REQUEST',
   REPORT = 'REPORT',
-  SYSTEM = 'SYSTEM'
+  SYSTEM = 'SYSTEM',
+  SETTINGS = 'SETTINGS',
 }
 
-@Table({ 
+@Table({
   timestamps: true,
-  tableName: 'general_store_audit_logs'
+  tableName: 'general_store_audit_logs',
 })
 export class GeneralStoreAuditLog extends Model {
   @PrimaryKey

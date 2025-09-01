@@ -23,6 +23,7 @@ import {
   requestFilterSchema,
   reportFilterSchema,
 } from './validations';
+import { AuditAction, AuditModule } from '../../database/models/generalStoreAudit';
 
 export class GeneralStoreController {
   // Validation helper method
@@ -924,6 +925,36 @@ export class GeneralStoreController {
     }
   }
 
+  // static async updateRequest(req: Request, res: Response) {
+  //   try {
+  //     // Validate request body
+  //     const validatedData = this.validateRequest(req.body, createRequestSchema);
+  //     const { id } = req.params;
+  //     const staffId = (req as any).user.id;
+  //     const request = await GeneralStoreService.updateRequest(Number(id), validatedData, staffId);
+  //
+  //     res.json({
+  //       success: true,
+  //       message: 'Request updated successfully',
+  //       data: request,
+  //     });
+  //   } catch (error) {
+  //     if (error instanceof BadException) {
+  //       res.status(error.statusCode).json({
+  //         success: false,
+  //         message: error.message,
+  //         error: error.error,
+  //       });
+  //     } else {
+  //       res.status(500).json({
+  //         success: false,
+  //         message: 'Internal server error',
+  //         error: error.message,
+  //       });
+  //     }
+  //   }
+  // }
+
   static async approveRequest(req: Request, res: Response) {
     try {
       // Validate request body
@@ -1398,8 +1429,8 @@ export class GeneralStoreController {
       if (staffId) {
         await GeneralStoreAuditService.logAuditEvent({
           staffId,
-          module: require('../../database/models/generalStoreAudit').AuditModule.REPORT,
-          action: require('../../database/models/generalStoreAudit').AuditAction.VIEW,
+          module: AuditModule.REPORT,
+          action: AuditAction.VIEW,
           entityType: 'AuditLog',
           description: 'Audit logs viewed',
           request: req,
@@ -1439,4 +1470,308 @@ export class GeneralStoreController {
       }
     }
   }
+
+  // Settings Management
+  static async getSettings(req: Request, res: Response) {
+    try {
+      const result = await GeneralStoreService.getSettings();
+
+      // Log audit
+      const staffId = (req as any).user?.id;
+      if (staffId) {
+        await GeneralStoreAuditService.logAuditEvent({
+          staffId,
+          module: AuditModule.SETTINGS,
+          action: AuditAction.VIEW,
+          entityType: 'Settings',
+          description: 'General store settings viewed',
+          request: req,
+        });
+      }
+
+      res.json({
+        success: true,
+        message: 'Settings retrieved successfully',
+        data: result,
+      });
+    } catch (error) {
+      // Log error for audit
+      const staffId = (req as any).user?.id;
+      if (staffId) {
+        await GeneralStoreAuditService.logSystemError(staffId, error, 'getSettings', req);
+      }
+
+      if (error instanceof BadException) {
+        res.status(error.statusCode).json({
+          success: false,
+          message: error.message,
+          error: error.error,
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: 'Internal server error',
+          error: error.message,
+        });
+      }
+    }
+  }
+
+  static async updateSettings(req: Request, res: Response) {
+    try {
+      const result = await GeneralStoreService.updateSettings(req.body);
+
+      // Log audit
+      const staffId = (req as any).user?.id;
+      if (staffId) {
+        await GeneralStoreAuditService.logAuditEvent({
+          staffId,
+          module: AuditModule.SETTINGS,
+          action: AuditAction.UPDATE,
+          entityType: 'Settings',
+          description: 'General store settings updated',
+          oldValues: {},
+          newValues: req.body,
+          request: req,
+        });
+      }
+
+      res.json({
+        success: true,
+        message: 'Settings updated successfully',
+        data: result,
+      });
+    } catch (error) {
+      // Log error for audit
+      const staffId = (req as any).user?.id;
+      if (staffId) {
+        await GeneralStoreAuditService.logSystemError(staffId, error, 'updateSettings', req);
+      }
+
+      if (error instanceof BadException) {
+        res.status(error.statusCode).json({
+          success: false,
+          message: error.message,
+          error: error.error,
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: 'Internal server error',
+          error: error.message,
+        });
+      }
+    }
+  }
+
+  // Export Methods
+  // static async exportStockReport(req: Request, res: Response) {
+  //   try {
+  //     const validatedFilters = this.validateRequest(req.query, itemFilterSchema);
+  //     const {
+  //       category_id,
+  //       subcategory_id,
+  //       status,
+  //       include_zero,
+  //       format = 'csv',
+  //     } = validatedFilters;
+  //     const staffId = (req as any).user?.id;
+  //
+  //     const filters: any = {};
+  //     if (category_id) filters.category_id = Number(category_id);
+  //     if (subcategory_id) filters.subcategory_id = Number(subcategory_id);
+  //     if (status) filters.status = status;
+  //     if (include_zero === 'false') {
+  //       filters.current_stock = { [Op.gt]: 0 };
+  //     }
+  //
+  //     const report = await GeneralStoreService.getStockReport(filters);
+  //     const exportResult = await GeneralStoreService.exportReport(report, format, 'stock');
+  //
+  //     // Log audit event
+  //     if (staffId) {
+  //       await GeneralStoreAuditService.logReportGeneration(
+  //         staffId,
+  //         `Stock Report Export (${format.toUpperCase()})`,
+  //         validatedFilters,
+  //         req
+  //       );
+  //     }
+  //
+  //     res.setHeader('Content-Type', exportResult.contentType);
+  //     res.setHeader('Content-Disposition', `attachment; filename="${exportResult.filename}"`);
+  //     res.send(exportResult.data);
+  //   } catch (error) {
+  //     if (error instanceof BadException) {
+  //       res.status(error.statusCode).json({
+  //         success: false,
+  //         message: error.message,
+  //         error: error.error,
+  //       });
+  //     } else {
+  //       res.status(500).json({
+  //         success: false,
+  //         message: 'Internal server error',
+  //         error: error.message,
+  //       });
+  //     }
+  //   }
+  // }
+
+  // static async exportMovementReport(req: Request, res: Response) {
+  //   try {
+  //     const validatedFilters = this.validateRequest(req.query, movementFilterSchema);
+  //     const {
+  //       item_id,
+  //       movement_type,
+  //       start_date,
+  //       end_date,
+  //       staff_id,
+  //       format = 'csv',
+  //     } = validatedFilters;
+  //     const userId = (req as any).user?.id;
+  //
+  //     const filters: any = {};
+  //     if (item_id) filters.item_id = Number(item_id);
+  //     if (movement_type) filters.movement_type = movement_type;
+  //     if (staff_id) filters.staff_id = Number(staff_id);
+  //     if (start_date && end_date) {
+  //       filters.start_date = new Date(start_date as string);
+  //       filters.end_date = new Date(end_date as string);
+  //     }
+  //
+  //     const report = await GeneralStoreService.getMovementReport(filters);
+  //     const exportResult = await GeneralStoreService.exportReport(report, format, 'movements');
+  //
+  //     // Log audit event
+  //     if (userId) {
+  //       await GeneralStoreAuditService.logReportGeneration(
+  //         userId,
+  //         `Movement Report Export (${format.toUpperCase()})`,
+  //         validatedFilters,
+  //         req
+  //       );
+  //     }
+  //
+  //     res.setHeader('Content-Type', exportResult.contentType);
+  //     res.setHeader('Content-Disposition', `attachment; filename="${exportResult.filename}"`);
+  //     res.send(exportResult.data);
+  //   } catch (error) {
+  //     if (error instanceof BadException) {
+  //       res.status(error.statusCode).json({
+  //         success: false,
+  //         message: error.message,
+  //         error: error.error,
+  //       });
+  //     } else {
+  //       res.status(500).json({
+  //         success: false,
+  //         message: 'Internal server error',
+  //         error: error.message,
+  //       });
+  //     }
+  //   }
+  // }
+
+  // static async exportUsageReport(req: Request, res: Response) {
+  //   try {
+  //     const validatedFilters = this.validateRequest(req.query, reportFilterSchema);
+  //     const { department_id, start_date, end_date, format = 'csv' } = validatedFilters;
+  //     const staffId = (req as any).user?.id;
+  //
+  //     const dateRange = {
+  //       start_date: new Date(start_date as string),
+  //       end_date: new Date(end_date as string),
+  //     };
+  //
+  //     const report = await GeneralStoreService.getUsageReport(
+  //       Number(department_id) || 0,
+  //       dateRange
+  //     );
+  //     const exportResult = await GeneralStoreService.exportReport(report, format, 'usage');
+  //
+  //     // Log audit event
+  //     if (staffId) {
+  //       await GeneralStoreAuditService.logReportGeneration(
+  //         staffId,
+  //         `Usage Report Export (${format.toUpperCase()})`,
+  //         validatedFilters,
+  //         req
+  //       );
+  //     }
+  //
+  //     res.setHeader('Content-Type', exportResult.contentType);
+  //     res.setHeader('Content-Disposition', `attachment; filename="${exportResult.filename}"`);
+  //     res.send(exportResult.data);
+  //   } catch (error) {
+  //     if (error instanceof BadException) {
+  //       res.status(error.statusCode).json({
+  //         success: false,
+  //         message: error.message,
+  //         error: error.error,
+  //       });
+  //     } else {
+  //       res.status(500).json({
+  //         success: false,
+  //         message: 'Internal server error',
+  //         error: error.message,
+  //       });
+  //     }
+  //   }
+  // }
+  //
+  // static async exportCostReport(req: Request, res: Response) {
+  //   try {
+  //     const validatedFilters = this.validateRequest(req.query, reportFilterSchema);
+  //     const {
+  //       start_date,
+  //       end_date,
+  //       group_by,
+  //       category_id,
+  //       subcategory_id,
+  //       format = 'csv',
+  //     } = validatedFilters;
+  //     const staffId = (req as any).user?.id;
+  //
+  //     const filters: any = {
+  //       start_date: new Date(start_date as string),
+  //       end_date: new Date(end_date as string),
+  //     };
+  //
+  //     if (group_by) filters.group_by = group_by;
+  //     if (category_id) filters.category_id = Number(category_id);
+  //     if (subcategory_id) filters.subcategory_id = Number(subcategory_id);
+  //
+  //     const report = await GeneralStoreService.getCostReport(filters);
+  //     const exportResult = await GeneralStoreService.exportReport(report, format, 'costs');
+  //
+  //     // Log audit event
+  //     if (staffId) {
+  //       await GeneralStoreAuditService.logReportGeneration(
+  //         staffId,
+  //         `Cost Report Export (${format.toUpperCase()})`,
+  //         validatedFilters,
+  //         req
+  //       );
+  //     }
+  //
+  //     res.setHeader('Content-Type', exportResult.contentType);
+  //     res.setHeader('Content-Disposition', `attachment; filename="${exportResult.filename}"`);
+  //     res.send(exportResult.data);
+  //   } catch (error) {
+  //     if (error instanceof BadException) {
+  //       res.status(error.statusCode).json({
+  //         success: false,
+  //         message: error.message,
+  //         error: error.error,
+  //       });
+  //     } else {
+  //       res.status(500).json({
+  //         success: false,
+  //         message: 'Internal server error',
+  //         error: error.message,
+  //       });
+  //     }
+  //   }
+  // }
 }

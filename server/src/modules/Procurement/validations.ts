@@ -19,14 +19,17 @@ export const validateCreateOrder = validate(
     items: Joi.array()
       .items(
         Joi.object({
-          item_id: Joi.number().required(),
+          drug_id: Joi.number().required(),
           item_type: Joi.string().valid('PHARMACY', 'LABORATORY').required(),
           quantity: Joi.number().min(1).required(),
           unit_price: Joi.number().min(0).required(),
+          total: Joi.number().min(0).required(),
+          unit_id: Joi.number().required(),
         })
       )
       .min(1)
       .required(),
+    total_amount: Joi.number().min(0).required(),
   })
 );
 
@@ -47,7 +50,7 @@ export const validateApproveOrder = validate(
 export const validateSendOrder = validate(
   Joi.object({
     sent_by: Joi.number().required(),
-    sent_date: Joi.date().required(),
+    sent_date: Joi.date().optional(), // Made optional since client will auto-set
     expected_delivery_date: Joi.date().required(),
   })
 );
@@ -55,7 +58,7 @@ export const validateSendOrder = validate(
 export const validateReceiveOrderItems = validate(
   Joi.object({
     received_by: Joi.number().required(),
-    received_date: Joi.date().required(),
+    received_date: Joi.date().optional(), // Made optional since client will auto-set
     received_items: Joi.array()
       .items(
         Joi.object({
@@ -73,7 +76,6 @@ export const validateReceiveOrderItems = validate(
 
 export const validateCancelOrder = validate(
   Joi.object({
-    cancelled_by: Joi.number().required(),
     cancellation_reason: Joi.string().min(3).required(),
   })
 );

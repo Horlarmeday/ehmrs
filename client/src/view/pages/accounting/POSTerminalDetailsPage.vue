@@ -31,9 +31,7 @@
                 <h1 class="page-title mb-1">
                   {{ posTerminal.terminal_id }}
                 </h1>
-                <p class="page-subtitle text-muted mb-0">
-                  Location: {{ posTerminal.location }}
-                </p>
+                <p class="page-subtitle text-muted mb-0">Location: {{ posTerminal.location }}</p>
               </div>
             </div>
           </div>
@@ -157,7 +155,9 @@
                   <div class="info-item mb-3">
                     <label class="info-label">Account Type</label>
                     <div class="info-value">
-                      <b-badge :variant="getAccountTypeVariant(posTerminal.bankAccount.account_type)">
+                      <b-badge
+                        :variant="getAccountTypeVariant(posTerminal.bankAccount.account_type)"
+                      >
                         {{ getAccountTypeDisplay(posTerminal.bankAccount.account_type) }}
                       </b-badge>
                     </div>
@@ -185,7 +185,10 @@
                   <div class="info-item mb-3">
                     <label class="info-label">Daily Transaction Limit</label>
                     <div class="info-value">
-                      <span v-if="posTerminal.daily_transaction_limit" class="font-weight-bold text-info">
+                      <span
+                        v-if="posTerminal.daily_transaction_limit"
+                        class="font-weight-bold text-info"
+                      >
                         {{ posTerminal.daily_transaction_limit }} transactions
                       </span>
                       <span v-else class="text-muted">No limit set</span>
@@ -196,7 +199,10 @@
                   <div class="info-item mb-3">
                     <label class="info-label">Daily Amount Limit</label>
                     <div class="info-value">
-                      <span v-if="posTerminal.daily_amount_limit" class="font-weight-bold text-success">
+                      <span
+                        v-if="posTerminal.daily_amount_limit"
+                        class="font-weight-bold text-success"
+                      >
                         {{ formatCurrency(posTerminal.daily_amount_limit) }}
                       </span>
                       <span v-else class="text-muted">No limit set</span>
@@ -367,11 +373,7 @@
         </div>
         <div class="new-last-used mb-3">
           <label class="form-label">New Last Used</label>
-          <b-form-input
-            v-model="newLastUsed"
-            type="datetime-local"
-            required
-          ></b-form-input>
+          <b-form-input v-model="newLastUsed" type="datetime-local" required></b-form-input>
         </div>
         <div class="reason mb-3">
           <label class="form-label">Reason for Update</label>
@@ -446,7 +448,7 @@ export default {
 
         const terminalId = this.$route.params.id;
         const response = await this.$store.dispatch('accounting/getPOSTerminalById', terminalId);
-        
+
         if (response && response.data) {
           this.posTerminal = response.data;
         } else {
@@ -552,7 +554,7 @@ export default {
           lastUsedAt: this.newLastUsed,
           reason: this.lastUsedUpdateReason,
         });
-        
+
         this.showLastUsedModal = false;
         this.loadPOSTerminal();
         this.$bvToast.toast('Last used updated successfully', {
@@ -632,7 +634,9 @@ export default {
 
     getUsageStatusVariant(lastUsed) {
       if (!lastUsed) return 'secondary';
-      const daysSinceLastUse = Math.floor((new Date() - new Date(lastUsed)) / (1000 * 60 * 60 * 24));
+      const daysSinceLastUse = Math.floor(
+        (new Date() - new Date(lastUsed)) / (1000 * 60 * 60 * 24)
+      );
       if (daysSinceLastUse <= 1) return 'success';
       if (daysSinceLastUse <= 7) return 'warning';
       return 'danger';
@@ -640,7 +644,9 @@ export default {
 
     getUsageStatusDisplay(lastUsed) {
       if (!lastUsed) return 'Never Used';
-      const daysSinceLastUse = Math.floor((new Date() - new Date(lastUsed)) / (1000 * 60 * 60 * 24));
+      const daysSinceLastUse = Math.floor(
+        (new Date() - new Date(lastUsed)) / (1000 * 60 * 60 * 24)
+      );
       if (daysSinceLastUse === 0) return 'Used Today';
       if (daysSinceLastUse === 1) return 'Used Yesterday';
       if (daysSinceLastUse <= 7) return `Used ${daysSinceLastUse} days ago`;

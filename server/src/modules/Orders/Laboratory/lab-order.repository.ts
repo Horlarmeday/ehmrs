@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { PrescribedTest, Staff, Test, TestResult, Patient } from '../../../database/models';
+import { PrescribedTest, Staff, Test, TestResult, Patient, ClinicalBill } from '../../../database/models';
 import sequelize, { WhereOptions } from 'sequelize';
 import { staffAttributes } from '../../Antenatal/antenatal.repository';
 import { BadException } from '../../../common/util/api-error';
@@ -171,5 +171,26 @@ export const getOnePrescribedTest = async (query: WhereOptions<PrescribedTest>) 
  * @param testId
  */
 export const deletePrescribedTest = async (testId: number) => {
-  return PrescribedTest.destroy({ where: { id: testId } });
+  // Get the test before deletion to get visit_id
+  const test = await PrescribedTest.findByPk(testId);
+  if (!test) return 0;
+
+  // Find the bill for this visit
+  const bill = await ClinicalBill.findOne({
+    where: { visit_id: test.visit_id },
+  });
+
+  // Delete the prescription
+  const deletedCount = await PrescribedTest.destroy({ where: { id: testId } });
+
+  if (deletedCount > 0 && bill) {
+    // Clean up billing
+    try {
+      await VisitBillingHelper.removePrescribedTestFromBill(testId, bill.id);
+    } catch (billingError) {
+      console.error('Failed to remove prescribed test from billing:', billingError);
+    }
+  }
+
+  return deletedCount;
 };

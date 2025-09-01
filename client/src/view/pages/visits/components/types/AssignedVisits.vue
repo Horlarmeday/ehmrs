@@ -62,6 +62,10 @@ export default {
       type: String,
       required: false,
     },
+    dispatchType: {
+      type: String,
+      required: false,
+    }
   },
   computed: {
     queues() {
@@ -161,7 +165,7 @@ export default {
     },
 
     fetchQueue({ currentPage = 1, itemsPerPage = 10, search, start = null, end = null }) {
-      return this.$store.dispatch('visit/fetchProfessionalVisits', {
+      return this.$store.dispatch(this.dispatchType || 'visit/fetchProfessionalVisits', {
         currentPage,
         itemsPerPage,
         ...(search && { search }),

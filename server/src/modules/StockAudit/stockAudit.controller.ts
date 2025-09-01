@@ -7,26 +7,26 @@ export class StockAuditController {
    * Create stock audit
    * POST /api/stock-audit
    */
-  static async createStockAudit(req: Request, res: Response) {
+  static async createStockAudit(req: Request & { user: { sub: number } }, res: Response) {
     try {
-      const audit = await StockAuditService.createStockAudit(req.body);
+      const audit = await StockAuditService.createStockAudit(req.body, req.user.sub);
       res.status(201).json({
         success: true,
         message: 'Stock audit created successfully',
-        data: audit
+        data: audit,
       });
     } catch (error) {
       if (error instanceof BadException) {
         res.status(error.statusCode).json({
           success: false,
           message: error.message,
-          error: error.error
+          error: error.error,
         });
       } else {
         res.status(500).json({
           success: false,
           message: 'Internal server error',
-          error: error.message
+          error: error.message,
         });
       }
     }
@@ -40,23 +40,23 @@ export class StockAuditController {
     try {
       const { id } = req.params;
       const audit = await StockAuditService.getStockAudit(parseInt(id));
-      
+
       if (!audit) {
         return res.status(404).json({
           success: false,
-          message: 'Stock audit not found'
+          message: 'Stock audit not found',
         });
       }
 
       res.status(200).json({
         success: true,
-        data: audit
+        data: audit,
       });
     } catch (error) {
       res.status(500).json({
         success: false,
         message: 'Internal server error',
-        error: error.message
+        error: error.message,
       });
     }
   }
@@ -75,7 +75,7 @@ export class StockAuditController {
         inventory_id,
         date_from,
         date_to,
-        search
+        search,
       } = req.query;
 
       const result = await StockAuditService.getStockAudits({
@@ -86,18 +86,18 @@ export class StockAuditController {
         inventory_id: inventory_id ? parseInt(inventory_id as string) : undefined,
         date_from: date_from ? new Date(date_from as string) : undefined,
         date_to: date_to ? new Date(date_to as string) : undefined,
-        search: search as string
+        search: search as string,
       });
 
       res.status(200).json({
         success: true,
-        data: result
+        data: result,
       });
     } catch (error) {
       res.status(500).json({
         success: false,
         message: 'Internal server error',
-        error: error.message
+        error: error.message,
       });
     }
   }
@@ -110,24 +110,24 @@ export class StockAuditController {
     try {
       const { id } = req.params;
       const audit = await StockAuditService.updateStockAudit(parseInt(id), req.body);
-      
+
       res.status(200).json({
         success: true,
         message: 'Stock audit updated successfully',
-        data: audit
+        data: audit,
       });
     } catch (error) {
       if (error instanceof BadException) {
         res.status(error.statusCode).json({
           success: false,
           message: error.message,
-          error: error.error
+          error: error.error,
         });
       } else {
         res.status(500).json({
           success: false,
           message: 'Internal server error',
-          error: error.message
+          error: error.message,
         });
       }
     }
@@ -141,29 +141,26 @@ export class StockAuditController {
     try {
       const { id } = req.params;
       const { started_by } = req.body;
-      
-      const audit = await StockAuditService.startStockAudit(
-        parseInt(id),
-        parseInt(started_by)
-      );
-      
+
+      const audit = await StockAuditService.startStockAudit(parseInt(id));
+
       res.status(200).json({
         success: true,
         message: 'Stock audit started successfully',
-        data: audit
+        data: audit,
       });
     } catch (error) {
       if (error instanceof BadException) {
         res.status(error.statusCode).json({
           success: false,
           message: error.message,
-          error: error.error
+          error: error.error,
         });
       } else {
         res.status(500).json({
           success: false,
           message: 'Internal server error',
-          error: error.message
+          error: error.message,
         });
       }
     }
@@ -177,30 +174,26 @@ export class StockAuditController {
     try {
       const { id } = req.params;
       const { completed_by, completion_notes } = req.body;
-      
-      const audit = await StockAuditService.completeStockAudit(
-        parseInt(id),
-        parseInt(completed_by),
-        completion_notes
-      );
-      
+
+      const audit = await StockAuditService.completeStockAudit(parseInt(id));
+
       res.status(200).json({
         success: true,
         message: 'Stock audit completed successfully',
-        data: audit
+        data: audit,
       });
     } catch (error) {
       if (error instanceof BadException) {
         res.status(error.statusCode).json({
           success: false,
           message: error.message,
-          error: error.error
+          error: error.error,
         });
       } else {
         res.status(500).json({
           success: false,
           message: 'Internal server error',
-          error: error.message
+          error: error.message,
         });
       }
     }
@@ -214,30 +207,26 @@ export class StockAuditController {
     try {
       const { id } = req.params;
       const { approved_by, approval_notes } = req.body;
-      
-      const audit = await StockAuditService.approveStockAudit(
-        parseInt(id),
-        parseInt(approved_by),
-        approval_notes
-      );
-      
+
+      const audit = await StockAuditService.approveStockAudit(parseInt(id), parseInt(approved_by));
+
       res.status(200).json({
         success: true,
         message: 'Stock audit approved successfully',
-        data: audit
+        data: audit,
       });
     } catch (error) {
       if (error instanceof BadException) {
         res.status(error.statusCode).json({
           success: false,
           message: error.message,
-          error: error.error
+          error: error.error,
         });
       } else {
         res.status(500).json({
           success: false,
           message: 'Internal server error',
-          error: error.message
+          error: error.message,
         });
       }
     }
@@ -251,21 +240,18 @@ export class StockAuditController {
     try {
       const { id } = req.params;
       const { threshold } = req.query;
-      
-      const variance = await StockAuditService.getVarianceAnalysis(
-        parseInt(id),
-        threshold ? parseFloat(threshold as string) : undefined
-      );
-      
+
+      const variance = await StockAuditService.getVarianceAnalysis(parseInt(id));
+
       res.status(200).json({
         success: true,
-        data: variance
+        data: variance,
       });
     } catch (error) {
       res.status(500).json({
         success: false,
         message: 'Internal server error',
-        error: error.message
+        error: error.message,
       });
     }
   }
@@ -277,22 +263,18 @@ export class StockAuditController {
   static async getStockAuditStatistics(req: Request, res: Response) {
     try {
       const { date_from, date_to, store_type } = req.query;
-      
-      const statistics = await StockAuditService.getStockAuditStatistics({
-        date_from: date_from ? new Date(date_from as string) : undefined,
-        date_to: date_to ? new Date(date_to as string) : undefined,
-        store_type: store_type as string
-      });
-      
+
+      const statistics = await StockAuditService.getStockAuditStatistics();
+
       res.status(200).json({
         success: true,
-        data: statistics
+        data: statistics,
       });
     } catch (error) {
       res.status(500).json({
         success: false,
         message: 'Internal server error',
-        error: error.message
+        error: error.message,
       });
     }
   }
@@ -304,21 +286,18 @@ export class StockAuditController {
   static async getStoreTypePerformance(req: Request, res: Response) {
     try {
       const { date_from, date_to } = req.query;
-      
-      const performance = await StockAuditService.getStoreTypePerformance({
-        date_from: date_from ? new Date(date_from as string) : undefined,
-        date_to: date_to ? new Date(date_to as string) : undefined
-      });
-      
+
+      const performance = await StockAuditService.getStoreTypePerformance();
+
       res.status(200).json({
         success: true,
-        data: performance
+        data: performance,
       });
     } catch (error) {
       res.status(500).json({
         success: false,
         message: 'Internal server error',
-        error: error.message
+        error: error.message,
       });
     }
   }
@@ -331,12 +310,9 @@ export class StockAuditController {
     try {
       const { id } = req.params;
       const { format = 'pdf' } = req.query;
-      
-      const report = await StockAuditService.exportAuditReport(
-        parseInt(id),
-        format as string
-      );
-      
+
+      const report = await StockAuditService.exportAuditReport(parseInt(id));
+
       if (format === 'csv') {
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', `attachment; filename="stock-audit-${id}.csv"`);
@@ -350,7 +326,7 @@ export class StockAuditController {
       res.status(500).json({
         success: false,
         message: 'Internal server error',
-        error: error.message
+        error: error.message,
       });
     }
   }

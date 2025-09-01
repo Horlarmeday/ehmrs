@@ -39,9 +39,17 @@
             <i class="fas fa-credit-card mr-2"></i>
             Pay Selected ({{ selectedItems.length }})
           </b-button>
-          <b-button variant="outline-primary" @click="selectAllItems">
+          <b-button
+            variant="outline-primary"
+            @click="selectAllItems"
+            :title="
+              `Select all unpaid items (${
+                billItems.filter(item => !isItemPaid(item)).length
+              } available)`
+            "
+          >
             <i class="fas fa-check-square mr-2"></i>
-            Select All
+            Select All Unpaid
           </b-button>
           <b-button variant="outline-secondary" @click="clearSelection">
             <i class="fas fa-times mr-2"></i>
@@ -57,44 +65,44 @@
         <div class="col-lg-3 col-md-6 mb-3">
           <div class="stat-card bg-gradient-primary">
             <div class="stat-icon">
-              <i class="fas fa-list"></i>
+              <i class="fas fa-list text-white"></i>
             </div>
-            <div class="stat-content">
-              <h3>{{ billItems.length }}</h3>
-              <p>Total Items</p>
+            <div class="stat-content text-white">
+              <h3 class="text-white">{{ billItems.length }}</h3>
+              <p class="text-white">Total Items</p>
             </div>
           </div>
         </div>
         <div class="col-lg-3 col-md-6 mb-3">
           <div class="stat-card bg-gradient-success">
             <div class="stat-icon">
-              <i class="fas fa-check-circle"></i>
+              <i class="fas fa-check-circle text-white"></i>
             </div>
             <div class="stat-content">
-              <h3>{{ paidItemsCount }}</h3>
-              <p>Paid Items</p>
+              <h3 class="text-white">{{ paidItemsCount }}</h3>
+              <p class="text-white">Paid Items</p>
             </div>
           </div>
         </div>
         <div class="col-lg-3 col-md-6 mb-3">
           <div class="stat-card bg-gradient-warning">
             <div class="stat-icon">
-              <i class="fas fa-clock"></i>
+              <i class="fas fa-clock text-white"></i>
             </div>
             <div class="stat-content">
-              <h3>{{ pendingItemsCount }}</h3>
-              <p>Pending Items</p>
+              <h3 class="text-white">{{ pendingItemsCount }}</h3>
+              <p class="text-white">Pending Items</p>
             </div>
           </div>
         </div>
         <div class="col-lg-3 col-md-6 mb-3">
           <div class="stat-card bg-gradient-info">
             <div class="stat-icon">
-              <i class="fas fa-percentage"></i>
+              <i class="fas fa-percentage text-white"></i>
             </div>
             <div class="stat-content">
-              <h3>{{ paymentProgress }}%</h3>
-              <p>Payment Progress</p>
+              <h3 class="text-white">{{ paymentProgress }}%</h3>
+              <p class="text-white">Payment Progress</p>
             </div>
           </div>
         </div>
@@ -217,6 +225,7 @@
                 <i class="fas fa-th-large text-primary mr-2"></i>
                 Bill Items ({{ filteredItems.length }} of {{ billItems.length }})
               </h6>
+              
               <div class="view-controls">
                 <b-button-group size="sm">
                   <b-button
@@ -280,10 +289,11 @@
                       class="item-card-compact"
                       :class="{
                         selected: selectedItems.includes(item.id),
-                        paid: item.payment_status === 'PAID',
-                        partial: item.payment_status === 'PARTIAL',
+                        paid: isItemPaid(item),
+                        partial: item.payment_status === 'PARTIAL' && !isItemPaid(item),
+                        disabled: isItemPaid(item),
                       }"
-                      @click="toggleItemSelection(item.id)"
+                      @click="!isItemPaid(item) && toggleItemSelection(item.id)"
                     >
                       <!-- Service Tag -->
                       <div class="service-tag">
@@ -296,6 +306,7 @@
                       <div class="selection-checkbox">
                         <b-form-checkbox
                           :value="selectedItems.includes(item.id)"
+                          :disabled="isItemPaid(item)"
                           @change="toggleItemSelection(item.id)"
                           @click.stop
                         ></b-form-checkbox>
@@ -317,6 +328,9 @@
                         <b-badge :variant="getPaymentStatusVariant(item.payment_status)" size="sm">
                           {{ item.payment_status }}
                         </b-badge>
+                        <div v-if="isItemPaid(item)" class="paid-indicator">
+                          <i class="fas fa-check-circle text-success"></i>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -473,12 +487,14 @@
                     :key="item.id"
                     :class="{
                       'table-success': selectedItems.includes(item.id),
-                      'table-light': item.payment_status === 'PAID',
+                      'table-light': isItemPaid(item),
+                      'table-muted': isItemPaid(item),
                     }"
                   >
                     <td>
                       <b-form-checkbox
                         :value="selectedItems.includes(item.id)"
+                        :disabled="isItemPaid(item)"
                         @change="toggleItemSelection(item.id)"
                       ></b-form-checkbox>
                     </td>
@@ -514,13 +530,22 @@
                           <i class="fas fa-eye"></i>
                         </b-button>
                         <b-button
-                          v-if="item.payment_status !== 'PAID'"
+                          v-if="!isItemPaid(item)"
                           variant="outline-success"
                           size="sm"
                           @click="paySingleItem(item)"
                           title="Pay This Item"
                         >
                           <i class="fas fa-credit-card"></i>
+                        </b-button>
+                        <b-button
+                          v-else
+                          variant="outline-secondary"
+                          size="sm"
+                          disabled
+                          title="Item Already Paid"
+                        >
+                          <i class="fas fa-check"></i>
                         </b-button>
                       </div>
                     </td>
@@ -679,7 +704,8 @@ export default {
       return this.selectedItems.length > 0;
     },
     isAllSelected() {
-      return this.billItems.length > 0 && this.selectedItems.length === this.billItems.length;
+      const unpaidItems = this.billItems.filter(item => !this.isItemPaid(item));
+      return unpaidItems.length > 0 && this.selectedItems.length === unpaidItems.length;
     },
     filteredItems() {
       let items = [...this.billItems];
@@ -794,6 +820,17 @@ export default {
     },
 
     toggleItemSelection(itemId) {
+      // Check if item is already paid
+      const item = this.billItems.find(item => item.id === itemId);
+      if (item && this.isItemPaid(item)) {
+        this.$bvToast.toast('Cannot select already paid items', {
+          title: 'Item Already Paid',
+          variant: 'warning',
+          solid: true,
+        });
+        return;
+      }
+
       const index = this.selectedItems.indexOf(itemId);
       if (index > -1) {
         this.selectedItems.splice(index, 1);
@@ -803,7 +840,24 @@ export default {
     },
 
     selectAllItems() {
-      this.selectedItems = this.billItems.map(item => item.id);
+      // Only select unpaid items
+      this.selectedItems = this.billItems
+        .filter(item => !this.isItemPaid(item))
+        .map(item => item.id);
+
+      if (this.selectedItems.length === 0) {
+        this.$bvToast.toast('No unpaid items available for selection', {
+          title: 'No Items Available',
+          variant: 'info',
+          solid: true,
+        });
+      } else {
+        this.$bvToast.toast(`Selected ${this.selectedItems.length} unpaid items`, {
+          title: 'Items Selected',
+          variant: 'success',
+          solid: true,
+        });
+      }
     },
 
     clearSelection() {
@@ -819,11 +873,13 @@ export default {
     },
 
     processSelectedItems() {
-      // Navigate to payment processing with selected items
+      // Navigate to payment processing with selected items using query params
       this.$router.push({
         name: 'payment-processing',
         params: {
           billId: this.$route.params.billId,
+        },
+        query: {
           selectedItems: this.selectedItems.join(','),
         },
       });
@@ -908,11 +964,13 @@ export default {
         return;
       }
 
-      // Navigate to payment processing with selected items
+      // Navigate to payment processing with selected items using query params
       this.$router.push({
         name: 'payment-processing',
         params: {
           billId: this.$route.params.billId,
+        },
+        query: {
           selectedItems: this.selectedItems.join(','),
         },
       });
@@ -952,6 +1010,13 @@ export default {
       } else {
         return 'col-lg-2 col-md-3 col-sm-4 col-6 mb-2'; // 6 items per row on large screens
       }
+    },
+
+    isItemPaid(item) {
+      // Check if item is already fully paid
+      return (
+        item.payment_status === 'PAID' || (item.paid_amount && item.paid_amount >= item.total_price)
+      );
     },
   },
 };
@@ -1188,6 +1253,31 @@ function debounce(func, wait) {
   opacity: 0.8;
 }
 
+.item-card-compact.disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background: #f8f9fa;
+  border-color: #dee2e6;
+}
+
+.item-card-compact.disabled:hover {
+  transform: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-color: #dee2e6;
+}
+
+.item-card-compact.disabled .item-content-compact {
+  opacity: 0.7;
+}
+
+.item-card-compact.disabled .item-price {
+  color: #6c757d;
+}
+
+.item-card-compact.disabled .payment-status-badge .badge {
+  opacity: 0.8;
+}
+
 .item-card-compact.partial {
   border-color: #ffc107;
   background: #fffdf8;
@@ -1379,6 +1469,15 @@ function debounce(func, wait) {
   padding: 0.2rem 0.4rem;
 }
 
+.paid-indicator {
+  margin-top: 0.25rem;
+  text-align: center;
+}
+
+.paid-indicator i {
+  font-size: 0.8rem;
+}
+
 /* Original item-card styles for list view compatibility */
 .item-card {
   background: white;
@@ -1492,6 +1591,19 @@ function debounce(func, wait) {
 /* List View */
 .items-list .table {
   margin-bottom: 0;
+}
+
+.items-list .table-muted {
+  background-color: #f8f9fa;
+  opacity: 0.7;
+}
+
+.items-list .table-muted td {
+  color: #6c757d;
+}
+
+.items-list .table-muted .badge {
+  opacity: 0.8;
 }
 
 .items-list .table th {
@@ -1880,6 +1992,22 @@ function debounce(func, wait) {
     opacity: 1;
     transform: translateX(0);
   }
+}
+
+/* Selection Help Text */
+.selection-help-text .alert {
+  border-left: 4px solid #17a2b8;
+  background-color: #f8f9fa;
+}
+
+.selection-help-text ul {
+  padding-left: 1.5rem;
+}
+
+.selection-help-text li {
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+  color: #495057;
 }
 
 /* Responsive Design for Sidebar */
