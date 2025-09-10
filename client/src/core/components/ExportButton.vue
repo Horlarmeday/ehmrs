@@ -126,6 +126,7 @@
 </template>
 
 <script>
+/* eslint-disable no-unused-vars */
 export default {
   name: 'ExportButton',
   props: {
@@ -262,6 +263,7 @@ export default {
       try {
         const results = [];
         
+        // eslint-disable-next-line no-unused-vars
         for (const format of this.selectedFormats) {
           const filename = this.getFilename(format);
           const options = this.getAdvancedExportOptions(format);

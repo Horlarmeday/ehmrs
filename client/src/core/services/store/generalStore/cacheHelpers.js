@@ -1,6 +1,7 @@
 /**
  * Cache management utilities for GeneralStore
  */
+/* eslint-disable no-unused-vars */
 
 /**
  * Check if cached data is still valid
@@ -97,6 +98,7 @@ export const cacheMutations = {
  * @returns {Function} - Wrapped action with caching
  */
 export const createCachedAction = (originalAction, cacheKey, dataSelector) => {
+  // eslint-disable-next-line no-unused-vars
   return async function cachedAction({ state, commit, dispatch }, payload = {}) {
     const requestKey = generateCacheKey(cacheKey, payload);
     

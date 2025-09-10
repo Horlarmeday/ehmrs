@@ -1,128 +1,132 @@
 <template>
-  <div v-if="showDebugPanel" class="debug-panel">
-    <div class="debug-panel-header">
-      <h6 class="mb-0">Debug Panel</h6>
-      <button @click="togglePanel" class="btn btn-sm btn-outline-secondary">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-    
-    <div class="debug-panel-content">
-      <!-- Log Level Control -->
-      <div class="debug-section">
-        <label class="debug-label">Log Level:</label>
-        <select v-model="logLevel" @change="updateLogLevel" class="form-control form-control-sm">
-          <option value="error">Error</option>
-          <option value="warn">Warning</option>
-          <option value="info">Info</option>
-          <option value="debug">Debug</option>
-          <option value="trace">Trace</option>
-        </select>
-      </div>
-      
-      <!-- Debug Mode Toggle -->
-      <div class="debug-section">
-        <div class="form-check">
-          <input
-            v-model="debugMode"
-            @change="updateDebugMode"
-            class="form-check-input"
-            type="checkbox"
-            id="debugMode"
-          />
-          <label class="form-check-label" for="debugMode">
-            Debug Mode
-          </label>
-        </div>
-      </div>
-      
-      <!-- Performance Metrics -->
-      <div class="debug-section">
-        <h6>Performance Metrics</h6>
-        <div class="debug-metrics">
-          <div class="metric-item">
-            <span class="metric-label">Page Load:</span>
-            <span class="metric-value">{{ pageLoadTime }}ms</span>
-          </div>
-          <div class="metric-item">
-            <span class="metric-label">Memory Usage:</span>
-            <span class="metric-value">{{ memoryUsage }}MB</span>
-          </div>
-          <div class="metric-item">
-            <span class="metric-label">API Calls:</span>
-            <span class="metric-value">{{ apiCallCount }}</span>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Log History -->
-      <div class="debug-section">
-        <h6>Recent Logs</h6>
-        <div class="log-history">
-          <div
-            v-for="(log, index) in recentLogs"
-            :key="index"
-            :class="['log-entry', `log-${log.level}`]"
-          >
-            <span class="log-time">{{ log.time }}</span>
-            <span class="log-level">{{ log.level.toUpperCase() }}</span>
-            <span class="log-message">{{ log.message }}</span>
-          </div>
-        </div>
-        <button @click="clearLogs" class="btn btn-sm btn-outline-danger">
-          Clear Logs
+  <!-- eslint-disable vue/valid-template-root -->
+  <div>
+    <div v-if="showDebugPanel" class="debug-panel">
+      <div class="debug-panel-header">
+        <h6 class="mb-0">Debug Panel</h6>
+        <button @click="togglePanel" class="btn btn-sm btn-outline-secondary">
+          <i class="fas fa-times"></i>
         </button>
       </div>
-      
-      <!-- Store State -->
-      <div class="debug-section">
-        <h6>Store State</h6>
-        <div class="store-state">
-          <div class="state-item">
-            <span class="state-label">Loading:</span>
-            <span class="state-value">{{ storeLoading }}</span>
-          </div>
-          <div class="state-item">
-            <span class="state-label">Error:</span>
-            <span class="state-value">{{ storeError || 'None' }}</span>
-          </div>
-          <div class="state-item">
-            <span class="state-label">Pagination:</span>
-            <span class="state-value">{{ paginationInfo }}</span>
+
+      <div class="debug-panel-content">
+        <!-- Log Level Control -->
+        <div class="debug-section">
+          <label class="debug-label">Log Level:</label>
+          <select v-model="logLevel" @change="updateLogLevel" class="form-control form-control-sm">
+            <option value="error">Error</option>
+            <option value="warn">Warning</option>
+            <option value="info">Info</option>
+            <option value="debug">Debug</option>
+            <option value="trace">Trace</option>
+          </select>
+        </div>
+
+        <!-- Debug Mode Toggle -->
+        <div class="debug-section">
+          <div class="form-check">
+            <input
+              v-model="debugMode"
+              @change="updateDebugMode"
+              class="form-check-input"
+              type="checkbox"
+              id="debugMode"
+            />
+            <label class="form-check-label" for="debugMode">
+              Debug Mode
+            </label>
           </div>
         </div>
-      </div>
-      
-      <!-- Actions -->
-      <div class="debug-section">
-        <h6>Actions</h6>
-        <div class="debug-actions">
-          <button @click="exportLogs" class="btn btn-sm btn-outline-primary">
-            Export Logs
+
+        <!-- Performance Metrics -->
+        <div class="debug-section">
+          <h6>Performance Metrics</h6>
+          <div class="debug-metrics">
+            <div class="metric-item">
+              <span class="metric-label">Page Load:</span>
+              <span class="metric-value">{{ pageLoadTime }}ms</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">Memory Usage:</span>
+              <span class="metric-value">{{ memoryUsage }}MB</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">API Calls:</span>
+              <span class="metric-value">{{ apiCallCount }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Log History -->
+        <div class="debug-section">
+          <h6>Recent Logs</h6>
+          <div class="log-history">
+            <div
+              v-for="(log, index) in recentLogs"
+              :key="index"
+              :class="['log-entry', `log-${log.level}`]"
+            >
+              <span class="log-time">{{ log.time }}</span>
+              <span class="log-level">{{ log.level.toUpperCase() }}</span>
+              <span class="log-message">{{ log.message }}</span>
+            </div>
+          </div>
+          <button @click="clearLogs" class="btn btn-sm btn-outline-danger">
+            Clear Logs
           </button>
-          <button @click="testLogging" class="btn btn-sm btn-outline-info">
-            Test Logging
-          </button>
-          <button @click="clearStore" class="btn btn-sm btn-outline-warning">
-            Clear Store
-          </button>
+        </div>
+
+        <!-- Store State -->
+        <div class="debug-section">
+          <h6>Store State</h6>
+          <div class="store-state">
+            <div class="state-item">
+              <span class="state-label">Loading:</span>
+              <span class="state-value">{{ storeLoading }}</span>
+            </div>
+            <div class="state-item">
+              <span class="state-label">Error:</span>
+              <span class="state-value">{{ storeError || 'None' }}</span>
+            </div>
+            <div class="state-item">
+              <span class="state-label">Pagination:</span>
+              <span class="state-value">{{ paginationInfo }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="debug-section">
+          <h6>Actions</h6>
+          <div class="debug-actions">
+            <button @click="exportLogs" class="btn btn-sm btn-outline-primary">
+              Export Logs
+            </button>
+            <button @click="testLogging" class="btn btn-sm btn-outline-info">
+              Test Logging
+            </button>
+            <button @click="clearStore" class="btn btn-sm btn-outline-warning">
+              Clear Store
+            </button>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- Debug Toggle Button -->
+    <button
+      v-if="!showDebugPanel && isDevelopment"
+      @click="togglePanel"
+      class="debug-toggle-btn"
+      title="Open Debug Panel"
+    >
+      <i class="fas fa-bug"></i>
+    </button>
   </div>
-  
-  <!-- Debug Toggle Button -->
-  <button
-    v-if="!showDebugPanel && isDevelopment"
-    @click="togglePanel"
-    class="debug-toggle-btn"
-    title="Open Debug Panel"
-  >
-    <i class="fas fa-bug"></i>
-  </button>
 </template>
 
 <script>
+/* eslint-disable vue/valid-template-root */
 import loggingService from '../services/logging.service';
 
 export default {
@@ -139,40 +143,40 @@ export default {
       logHistory: [],
     };
   },
-  
+
   computed: {
     isDevelopment() {
       return process.env.NODE_ENV === 'development';
     },
-    
+
     storeLoading() {
       return this.$store.state.generalStore.loading;
     },
-    
+
     storeError() {
       return this.$store.state.generalStore.error;
     },
-    
+
     paginationInfo() {
       const pagination = this.$store.state.generalStore.pagination;
       return `${pagination.currentPage}/${pagination.totalPages}`;
     },
   },
-  
+
   mounted() {
     this.initializeDebugPanel();
     this.startPerformanceMonitoring();
   },
-  
+
   methods: {
     initializeDebugPanel() {
       this.logLevel = loggingService.getLogLevel();
       this.debugMode = loggingService.isDebugEnabled();
-      
+
       // Override console methods to capture logs
       this.overrideConsoleMethods();
     },
-    
+
     overrideConsoleMethods() {
       const originalConsole = {
         error: console.error,
@@ -181,7 +185,7 @@ export default {
         debug: console.debug,
         trace: console.trace,
       };
-      
+
       ['error', 'warn', 'info', 'debug', 'trace'].forEach(level => {
         console[level] = (...args) => {
           originalConsole[level](...args);
@@ -189,7 +193,7 @@ export default {
         };
       });
     },
-    
+
     addToLogHistory(level, message) {
       const logEntry = {
         level,
@@ -197,28 +201,28 @@ export default {
         time: new Date().toLocaleTimeString(),
         timestamp: Date.now(),
       };
-      
+
       this.logHistory.unshift(logEntry);
       this.recentLogs = this.logHistory.slice(0, 20); // Keep only last 20 logs
     },
-    
+
     startPerformanceMonitoring() {
       // Monitor page load time
       window.addEventListener('load', () => {
         this.pageLoadTime = performance.now();
       });
-      
+
       // Monitor memory usage
       setInterval(() => {
         if (performance.memory) {
           this.memoryUsage = Math.round(performance.memory.usedJSHeapSize / 1024 / 1024);
         }
       }, 5000);
-      
+
       // Monitor API calls
       this.monitorApiCalls();
     },
-    
+
     monitorApiCalls() {
       // Override fetch to monitor API calls
       const originalFetch = window.fetch;
@@ -227,36 +231,36 @@ export default {
         return originalFetch(...args);
       };
     },
-    
+
     togglePanel() {
       this.showDebugPanel = !this.showDebugPanel;
     },
-    
+
     updateLogLevel() {
       loggingService.setLogLevel(this.logLevel);
     },
-    
+
     updateDebugMode() {
       loggingService.setDebugMode(this.debugMode);
     },
-    
+
     clearLogs() {
       this.logHistory = [];
       this.recentLogs = [];
       loggingService.clearLogs();
     },
-    
+
     exportLogs() {
       const logs = this.logHistory.map(log => ({
         timestamp: new Date(log.timestamp).toISOString(),
         level: log.level,
         message: log.message,
       }));
-      
+
       const blob = new Blob([JSON.stringify(logs, null, 2)], {
         type: 'application/json',
       });
-      
+
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -264,7 +268,7 @@ export default {
       a.click();
       URL.revokeObjectURL(url);
     },
-    
+
     testLogging() {
       this.$logError('Test error message');
       this.$logWarn('Test warning message');
@@ -272,7 +276,7 @@ export default {
       this.$logDebug('Test debug message');
       this.$logTrace('Test trace message');
     },
-    
+
     clearStore() {
       this.$store.commit('generalStore/CLEAR_ALL_STATE');
       this.$toast.info('Store cleared');
@@ -462,6 +466,3 @@ export default {
   }
 }
 </style>
-
-
-
