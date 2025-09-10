@@ -598,75 +598,29 @@ export default {
     },
 
     validateForm() {
-      this.errors = {};
-
-      if (!this.form.item_code) {
-        this.errors.item_code = 'Item code is required';
-      }
-
-      if (!this.form.name) {
-        this.errors.name = 'Item name is required';
-      }
-
-      if (!this.form.category_id) {
-        this.errors.category_id = 'Category is required';
-      }
-
-      if (!this.form.subcategory_id) {
-        this.errors.subcategory_id = 'Subcategory is required';
-      }
-
-      if (!this.form.unit_id) {
-        this.errors.unit_id = 'Unit is required';
-      }
-
-      if (!this.form.supplier_id) {
-        this.errors.supplier_id = 'Supplier is required';
-      }
-
-      if (!this.form.unit_cost || this.form.unit_cost <= 0) {
-        this.errors.unit_cost = 'Valid unit cost is required';
-      }
-
-      if (!this.form.minimum_stock || this.form.minimum_stock < 0) {
-        this.errors.minimum_stock = 'Valid minimum stock is required';
-      }
-
-      if (this.form.maximum_stock && this.form.maximum_stock <= this.form.minimum_stock) {
-        this.errors.maximum_stock = 'Maximum stock must be greater than minimum stock';
-      }
-
-      if (this.form.expiry_date && this.form.expiry_date < this.today) {
-        this.errors.expiry_date = 'Expiry date cannot be in the past';
-      }
-
-      return Object.keys(this.errors).length === 0;
-    },
-
-    validateForm() {
       const errors = {};
-      
+
       // Required fields validation
       if (!this.form.item_code?.trim()) {
         errors.item_code = 'Item code is required';
       } else if (this.form.item_code.length > 50) {
         errors.item_code = 'Item code must not exceed 50 characters';
       }
-      
+
       if (!this.form.name?.trim()) {
         errors.name = 'Item name is required';
       } else if (this.form.name.length > 255) {
         errors.name = 'Item name must not exceed 255 characters';
       }
-      
+
       if (!this.form.category_id) {
         errors.category_id = 'Category is required';
       }
-      
+
       if (!this.form.unit_id) {
         errors.unit_id = 'Unit is required';
       }
-      
+
       // Numeric validations
       if (this.form.unit_cost !== null && this.form.unit_cost !== undefined) {
         const cost = parseFloat(this.form.unit_cost);
@@ -674,63 +628,63 @@ export default {
           errors.unit_cost = 'Unit cost must be a valid positive number';
         }
       }
-      
+
       if (this.form.minimum_stock !== null && this.form.minimum_stock !== undefined) {
         const minStock = parseInt(this.form.minimum_stock);
         if (isNaN(minStock) || minStock < 0) {
           errors.minimum_stock = 'Minimum stock must be a valid non-negative number';
         }
       }
-      
+
       if (this.form.maximum_stock !== null && this.form.maximum_stock !== undefined) {
         const maxStock = parseInt(this.form.maximum_stock);
         if (isNaN(maxStock) || maxStock < 0) {
           errors.maximum_stock = 'Maximum stock must be a valid non-negative number';
         }
-        
+
         // Check if maximum stock is greater than minimum stock
         const minStock = parseInt(this.form.minimum_stock);
         if (!isNaN(minStock) && !isNaN(maxStock) && maxStock < minStock) {
           errors.maximum_stock = 'Maximum stock must be greater than or equal to minimum stock';
         }
       }
-      
+
       // Text length validations
       if (this.form.description && this.form.description.length > 1000) {
         errors.description = 'Description must not exceed 1000 characters';
       }
-      
+
       if (this.form.manufacturer && this.form.manufacturer.length > 255) {
         errors.manufacturer = 'Manufacturer name must not exceed 255 characters';
       }
-      
+
       if (this.form.model_number && this.form.model_number.length > 100) {
         errors.model_number = 'Model number must not exceed 100 characters';
       }
-      
+
       if (this.form.location && this.form.location.length > 255) {
         errors.location = 'Location must not exceed 255 characters';
       }
-      
+
       if (this.form.shelf_number && this.form.shelf_number.length > 50) {
         errors.shelf_number = 'Shelf number must not exceed 50 characters';
       }
-      
+
       this.errors = errors;
       return Object.keys(errors).length === 0;
     },
-    
+
     hasError(field) {
       return !!this.errors[field];
     },
-    
+
     getError(field) {
       return this.errors[field];
     },
-    
+
     async handleSubmit() {
       if (this.loading) return;
-      
+
       // Validate form
       if (!this.validateForm()) {
         this.$toast.error('Please fix the validation errors before submitting.');
