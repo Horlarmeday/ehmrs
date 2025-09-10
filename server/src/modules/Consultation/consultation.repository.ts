@@ -21,6 +21,12 @@ import {
 import { VisitCategory } from '../../database/models/visit';
 import { getWardRounds } from '../Admission/admission.repository';
 import { getVisitsPrescriptions } from '../Pharmacy/pharmacy.repository';
+import {
+  getDialysisVitals,
+  getDialysisTreatments,
+  getDialysisAssessments,
+  getDialysisNotes,
+} from '../Dialysis/dialysis.repository';
 
 /**
  * create a patient complaint
@@ -245,6 +251,11 @@ export const getVisitPrescriptions = async (
     services,
     notes,
     wardRounds,
+    // Dialysis data
+    dialysisVitals,
+    dialysisTreatments,
+    dialysisAssessments,
+    dialysisNotes,
   ] = await Promise.all([
     getPrescriptionTests({ visit_id: visitIds }),
     getDrugsPrescribed({ visit_id: visitIds }),
@@ -256,6 +267,11 @@ export const getVisitPrescriptions = async (
     getPrescriptionServices({ visit_id: visitIds }),
     getClinicalNotes(visitIds, categories),
     getVisitsWardRounds(visitIds, categories),
+    // Dialysis data
+    getDialysisVitals(visitIds),
+    getDialysisTreatments(visitIds),
+    getDialysisAssessments(visitIds),
+    getDialysisNotes(visitIds),
   ]);
 
   const data = {
@@ -271,6 +287,12 @@ export const getVisitPrescriptions = async (
     services: getPrescriptionsByVisit(services.map(prescription => prescription.toJSON())),
     notes: getPrescriptionsByVisit(notes.map(prescription => prescription.toJSON())),
     wardRounds: getPrescriptionsByVisit(wardRounds.map(prescription => prescription.toJSON())),
+    dialysisVitals: getPrescriptionsByVisit(dialysisVitals.map(record => record.toJSON())),
+    dialysisTreatments: getPrescriptionsByVisit(dialysisTreatments.map(record => record.toJSON())),
+    dialysisAssessments: getPrescriptionsByVisit(
+      dialysisAssessments.map(record => record.toJSON())
+    ),
+    dialysisNotes: getPrescriptionsByVisit(dialysisNotes.map(record => record.toJSON())),
   };
 
   return visitIds.map(id => ({
@@ -284,6 +306,10 @@ export const getVisitPrescriptions = async (
     services: data.services[id] || [],
     notes: data.notes[id] || [],
     wardRounds: data.wardRounds[id] || [],
+    dialysisVitals: data.dialysisVitals[id] || [],
+    dialysisTreatments: data.dialysisTreatments[id] || [],
+    dialysisAssessments: data.dialysisAssessments[id] || [],
+    dialysisNotes: data.dialysisNotes[id] || [],
   }));
 };
 

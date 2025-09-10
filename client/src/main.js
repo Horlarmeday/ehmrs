@@ -4,6 +4,10 @@ import router from './router';
 import store from '@/core/services/store';
 import Notifications from 'vue-notification';
 import dayjs from '@/core/plugins/dayjs';
+import loggingPlugin from '@/core/plugins/logging.plugin';
+import errorReportingPlugin from '@/core/plugins/errorReporting.plugin';
+import exportPlugin from '@/core/plugins/export.plugin';
+import printPlugin from '@/core/plugins/print.plugin';
 
 Vue.config.productionTip = false;
 
@@ -33,6 +37,15 @@ import VeeValidate from 'vee-validate';
 Vue.use(VeeValidate);
 Vue.use(Notifications);
 Vue.use(dayjs);
+Vue.use(loggingPlugin);
+Vue.use(errorReportingPlugin);
+Vue.use(exportPlugin);
+Vue.use(printPlugin);
+
+// Load logging optimization test in development
+if (process.env.NODE_ENV === 'development') {
+  import('./test-logging-optimization.js');
+}
 
 new Vue({
   router,

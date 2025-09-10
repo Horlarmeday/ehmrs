@@ -37,43 +37,43 @@ export enum DrugType {
     status: Status.ACTIVE,
   },
 }))
-@Table({ 
-  timestamps: true, 
+@Table({
+  timestamps: true,
   tableName: 'Pharmacy_Store_Items',
   indexes: [
     {
       name: 'idx_pharmacy_store_drug',
-      fields: ['drug_id']
+      fields: ['drug_id'],
     },
     {
       name: 'idx_pharmacy_store_unit',
-      fields: ['unit_id']
+      fields: ['unit_id'],
     },
     {
       name: 'idx_pharmacy_store_status',
-      fields: ['status']
+      fields: ['status'],
     },
     {
       name: 'idx_pharmacy_store_expiration',
-      fields: ['expiration']
+      fields: ['expiration'],
     },
     {
       name: 'idx_pharmacy_store_vendor',
-      fields: ['vendor_id']
+      fields: ['vendor_id'],
     },
     {
       name: 'idx_pharmacy_store_procurement_order',
-      fields: ['procurement_order_id']
+      fields: ['procurement_order_id'],
     },
     {
       name: 'idx_pharmacy_store_batch',
-      fields: ['batch']
+      fields: ['batch'],
     },
     {
       name: 'idx_pharmacy_store_composite_drug_unit',
-      fields: ['drug_id', 'unit_id']
-    }
-  ]
+      fields: ['drug_id', 'unit_id'],
+    },
+  ],
 })
 export class PharmacyStore extends Model {
   @PrimaryKey

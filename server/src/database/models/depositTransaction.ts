@@ -15,8 +15,6 @@ import { Staff } from './staff';
 import { FinancialPeriod } from './financialPeriod';
 import { DepositTransactionType } from '../../modules/Accounting/enums';
 
-
-
 @Table({ timestamps: true, tableName: 'deposit_transactions' })
 export class DepositTransaction extends Model {
   @PrimaryKey
@@ -109,8 +107,8 @@ export class DepositTransaction extends Model {
     allowNull: true,
     references: {
       model: 'financial_periods',
-      key: 'id'
-    }
+      key: 'id',
+    },
   })
   period_id: number;
 

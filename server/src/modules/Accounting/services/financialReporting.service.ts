@@ -1,6 +1,6 @@
 import { Transaction, Op, Sequelize } from 'sequelize';
 import { BadException } from '../../../common/util/api-error';
-import { 
+import {
   ChartOfAccount,
   JournalEntry,
   JournalEntryLine,
@@ -9,12 +9,9 @@ import {
   PatientDeposit,
   FinancialPeriod,
   CostCenter,
-  Department
+  Department,
 } from '../../../database/models';
-import { 
-  AccountType,
-  JournalEntryStatus
-} from '../enums';
+import { AccountType, JournalEntryStatus } from '../enums';
 import { logger } from '../../../core/helpers/logger';
 
 // ===== FINANCIAL REPORTING INTERFACES =====
@@ -189,7 +186,7 @@ export interface AdvancedAnalytics {
 
 /**
  * Financial Reporting Service
- * 
+ *
  * This service provides comprehensive financial reporting including:
  * - Profit & Loss Statement
  * - Balance Sheet
@@ -198,7 +195,6 @@ export interface AdvancedAnalytics {
  * - Real-time Financial Monitoring
  */
 export class FinancialReportingService {
-
   // ===== PROFIT & LOSS STATEMENT =====
 
   /**
@@ -209,7 +205,7 @@ export class FinancialReportingService {
   ): Promise<ProfitLossStatement> {
     try {
       const { start_date, end_date, department, cost_center } = filters;
-      
+
       // Build date filters
       const dateFilter: any = {};
       if (start_date && end_date) {
@@ -239,14 +235,16 @@ export class FinancialReportingService {
         where: {
           account_id: { [Op.in]: revenueAccounts.map(acc => acc.id) },
         },
-        include: [{
-          model: JournalEntry,
-          as: 'journal_entry',
-          where: { 
-            status: JournalEntryStatus.POSTED,
-            ...(start_date && end_date ? { transaction_date: dateFilter.transaction_date } : {})
+        include: [
+          {
+            model: JournalEntry,
+            as: 'journal_entry',
+            where: {
+              status: JournalEntryStatus.POSTED,
+              ...(start_date && end_date ? { transaction_date: dateFilter.transaction_date } : {}),
+            },
           },
-        }],
+        ],
       });
 
       // Get journal entry lines for expense accounts
@@ -254,51 +252,57 @@ export class FinancialReportingService {
         where: {
           account_id: { [Op.in]: expenseAccounts.map(acc => acc.id) },
         },
-        include: [{
-          model: JournalEntry,
-          as: 'journal_entry',
-          where: { 
-            status: JournalEntryStatus.POSTED,
-            ...(start_date && end_date ? { transaction_date: dateFilter.transaction_date } : {})
+        include: [
+          {
+            model: JournalEntry,
+            as: 'journal_entry',
+            where: {
+              status: JournalEntryStatus.POSTED,
+              ...(start_date && end_date ? { transaction_date: dateFilter.transaction_date } : {}),
+            },
           },
-        }],
+        ],
       });
 
       // Calculate revenue breakdown
-      const revenueBreakdown = revenueAccounts.map(account => {
-        const accountLines = revenueJournalLines.filter(line => line.account_id === account.id);
-        const totalCredit = accountLines.reduce((sum, line) => {
-          if (line.journal_entry?.status === JournalEntryStatus.POSTED) {
-            return sum + (line.credit || 0);
-          }
-          return sum;
-        }, 0);
+      const revenueBreakdown = revenueAccounts
+        .map(account => {
+          const accountLines = revenueJournalLines.filter(line => line.account_id === account.id);
+          const totalCredit = accountLines.reduce((sum, line) => {
+            if (line.journal_entry?.status === JournalEntryStatus.POSTED) {
+              return sum + (line.credit || 0);
+            }
+            return sum;
+          }, 0);
 
-        return {
-          account_name: account.name,
-          account_code: account.code,
-          amount: totalCredit,
-          percentage: 0, // Will be calculated after total is known
-        };
-      }).filter(item => item.amount > 0);
+          return {
+            account_name: account.name,
+            account_code: account.code,
+            amount: totalCredit,
+            percentage: 0, // Will be calculated after total is known
+          };
+        })
+        .filter(item => item.amount > 0);
 
       // Calculate expense breakdown
-      const expenseBreakdown = expenseAccounts.map(account => {
-        const accountLines = expenseJournalLines.filter(line => line.account_id === account.id);
-        const totalDebit = accountLines.reduce((sum, line) => {
-          if (line.journal_entry?.status === JournalEntryStatus.POSTED) {
-            return sum + (line.debit || 0);
-          }
-          return sum;
-        }, 0);
+      const expenseBreakdown = expenseAccounts
+        .map(account => {
+          const accountLines = expenseJournalLines.filter(line => line.account_id === account.id);
+          const totalDebit = accountLines.reduce((sum, line) => {
+            if (line.journal_entry?.status === JournalEntryStatus.POSTED) {
+              return sum + (line.debit || 0);
+            }
+            return sum;
+          }, 0);
 
-        return {
-          account_name: account.name,
-          account_code: account.code,
-          amount: totalDebit,
-          percentage: 0, // Will be calculated after total is known
-        };
-      }).filter(item => item.amount > 0);
+          return {
+            account_name: account.name,
+            account_code: account.code,
+            amount: totalDebit,
+            percentage: 0, // Will be calculated after total is known
+          };
+        })
+        .filter(item => item.amount > 0);
 
       // Calculate totals
       const totalRevenue = revenueBreakdown.reduce((sum, item) => sum + item.amount, 0);
@@ -342,7 +346,6 @@ export class FinancialReportingService {
           net_margin: profitMargin,
         },
       };
-
     } catch (error) {
       logger.error('Failed to generate P&L statement:', error);
       throw new BadException(
@@ -358,9 +361,7 @@ export class FinancialReportingService {
   /**
    * Generate comprehensive Balance Sheet
    */
-  static async generateBalanceSheet(
-    filters: FinancialReportFilters
-  ): Promise<BalanceSheet> {
+  static async generateBalanceSheet(filters: FinancialReportFilters): Promise<BalanceSheet> {
     try {
       const { end_date, include_zero_balances = false } = filters;
       const asOfDate = end_date ? new Date(end_date) : new Date();
@@ -371,28 +372,24 @@ export class FinancialReportingService {
       });
 
       // Categorize accounts by type
-      const assets = accounts.filter(account => 
-        account.type === AccountType.ASSET
-      );
-      const liabilities = accounts.filter(account => 
-        account.type === AccountType.LIABILITY
-      );
-      const equity = accounts.filter(account => 
-        account.type === AccountType.EQUITY
-      );
+      const assets = accounts.filter(account => account.type === AccountType.ASSET);
+      const liabilities = accounts.filter(account => account.type === AccountType.LIABILITY);
+      const equity = accounts.filter(account => account.type === AccountType.EQUITY);
 
       // Calculate account balances
       const calculateBalance = async (account: any) => {
         const journalLines = await JournalEntryLine.findAll({
           where: { account_id: account.id },
-          include: [{
-            model: JournalEntry,
-            as: 'journal_entry',
-            where: { 
-              status: JournalEntryStatus.POSTED,
-              transaction_date: { [Op.lte]: asOfDate },
+          include: [
+            {
+              model: JournalEntry,
+              as: 'journal_entry',
+              where: {
+                status: JournalEntryStatus.POSTED,
+                transaction_date: { [Op.lte]: asOfDate },
+              },
             },
-          }],
+          ],
         });
 
         const totalDebit = journalLines.reduce((sum: number, line: any) => {
@@ -420,9 +417,12 @@ export class FinancialReportingService {
 
       // Process assets
       const currentAssets = assets
-        .filter(account => account.name.toLowerCase().includes('cash') || 
-                          account.name.toLowerCase().includes('receivable') ||
-                          account.name.toLowerCase().includes('inventory'))
+        .filter(
+          account =>
+            account.name.toLowerCase().includes('cash') ||
+            account.name.toLowerCase().includes('receivable') ||
+            account.name.toLowerCase().includes('inventory')
+        )
         .map(async account => {
           const balance = await calculateBalance(account);
           return {
@@ -434,7 +434,9 @@ export class FinancialReportingService {
         });
 
       const nonCurrentAssets = assets
-        .filter(account => !currentAssets.some(async (ca) => (await ca).account_code === account.code))
+        .filter(
+          account => !currentAssets.some(async ca => (await ca).account_code === account.code)
+        )
         .map(async account => {
           const balance = await calculateBalance(account);
           return {
@@ -447,8 +449,11 @@ export class FinancialReportingService {
 
       // Process liabilities
       const currentLiabilities = liabilities
-        .filter(account => account.name.toLowerCase().includes('payable') ||
-                          account.name.toLowerCase().includes('short'))
+        .filter(
+          account =>
+            account.name.toLowerCase().includes('payable') ||
+            account.name.toLowerCase().includes('short')
+        )
         .map(async account => {
           const balance = await calculateBalance(account);
           return {
@@ -460,7 +465,9 @@ export class FinancialReportingService {
         });
 
       const nonCurrentLiabilities = liabilities
-        .filter(account => !currentLiabilities.some(async (cl) => (await cl).account_code === account.code))
+        .filter(
+          account => !currentLiabilities.some(async cl => (await cl).account_code === account.code)
+        )
         .map(async account => {
           const balance = await calculateBalance(account);
           return {
@@ -483,28 +490,53 @@ export class FinancialReportingService {
       });
 
       // Wait for all async operations to complete
-      const [currentAssetsResolved, nonCurrentAssetsResolved, currentLiabilitiesResolved, nonCurrentLiabilitiesResolved, equityBreakdownResolved] = await Promise.all([
+      const [
+        currentAssetsResolved,
+        nonCurrentAssetsResolved,
+        currentLiabilitiesResolved,
+        nonCurrentLiabilitiesResolved,
+        equityBreakdownResolved,
+      ] = await Promise.all([
         Promise.all(currentAssets),
         Promise.all(nonCurrentAssets),
         Promise.all(currentLiabilities),
         Promise.all(nonCurrentLiabilities),
-        Promise.all(equityBreakdown)
+        Promise.all(equityBreakdown),
       ]);
 
       // Filter out zero balances if needed
-      const filteredCurrentAssets = currentAssetsResolved.filter(item => include_zero_balances || item.balance > 0);
-      const filteredNonCurrentAssets = nonCurrentAssetsResolved.filter(item => include_zero_balances || item.balance > 0);
-      const filteredCurrentLiabilities = currentLiabilitiesResolved.filter(item => include_zero_balances || item.balance > 0);
-      const filteredNonCurrentLiabilities = nonCurrentLiabilitiesResolved.filter(item => include_zero_balances || item.balance > 0);
-      const filteredEquityBreakdown = equityBreakdownResolved.filter(item => include_zero_balances || item.balance > 0);
+      const filteredCurrentAssets = currentAssetsResolved.filter(
+        item => include_zero_balances || item.balance > 0
+      );
+      const filteredNonCurrentAssets = nonCurrentAssetsResolved.filter(
+        item => include_zero_balances || item.balance > 0
+      );
+      const filteredCurrentLiabilities = currentLiabilitiesResolved.filter(
+        item => include_zero_balances || item.balance > 0
+      );
+      const filteredNonCurrentLiabilities = nonCurrentLiabilitiesResolved.filter(
+        item => include_zero_balances || item.balance > 0
+      );
+      const filteredEquityBreakdown = equityBreakdownResolved.filter(
+        item => include_zero_balances || item.balance > 0
+      );
 
       // Calculate totals
       const totalCurrentAssets = filteredCurrentAssets.reduce((sum, item) => sum + item.balance, 0);
-      const totalNonCurrentAssets = filteredNonCurrentAssets.reduce((sum, item) => sum + item.balance, 0);
+      const totalNonCurrentAssets = filteredNonCurrentAssets.reduce(
+        (sum, item) => sum + item.balance,
+        0
+      );
       const totalAssets = totalCurrentAssets + totalNonCurrentAssets;
 
-      const totalCurrentLiabilities = filteredCurrentLiabilities.reduce((sum, item) => sum + item.balance, 0);
-      const totalNonCurrentLiabilities = filteredNonCurrentLiabilities.reduce((sum, item) => sum + item.balance, 0);
+      const totalCurrentLiabilities = filteredCurrentLiabilities.reduce(
+        (sum, item) => sum + item.balance,
+        0
+      );
+      const totalNonCurrentLiabilities = filteredNonCurrentLiabilities.reduce(
+        (sum, item) => sum + item.balance,
+        0
+      );
       const totalLiabilities = totalCurrentLiabilities + totalNonCurrentLiabilities;
 
       const totalEquity = filteredEquityBreakdown.reduce((sum, item) => sum + item.balance, 0);
@@ -550,7 +582,6 @@ export class FinancialReportingService {
           debt_to_equity: debtToEquity,
         },
       };
-
     } catch (error) {
       logger.error('Failed to generate balance sheet:', error);
       throw new BadException(
@@ -571,7 +602,7 @@ export class FinancialReportingService {
   ): Promise<CashFlowStatement> {
     try {
       const { start_date, end_date } = filters;
-      
+
       if (!start_date || !end_date) {
         throw new BadException(
           'Date Range Required',
@@ -610,7 +641,8 @@ export class FinancialReportingService {
       const workingCapitalChanges = await this.calculateWorkingCapitalChanges(startDate, endDate);
 
       // Calculate net cash from operations
-      const netCashFromOperations = netIncome + 
+      const netCashFromOperations =
+        netIncome +
         adjustments.reduce((sum, adj) => sum + (adj.type === 'ADD' ? adj.amount : -adj.amount), 0) +
         workingCapitalChanges.reduce((sum, change) => sum + change.change, 0);
 
@@ -659,7 +691,6 @@ export class FinancialReportingService {
           free_cash_flow: freeCashFlow,
         },
       };
-
     } catch (error) {
       logger.error('Failed to generate cash flow statement:', error);
       throw new BadException(
@@ -680,10 +711,10 @@ export class FinancialReportingService {
   ): Promise<AdvancedAnalytics> {
     try {
       const { start_date, end_date } = filters;
-      
+
       // Get current period data
       const currentPnl = await this.generateProfitLossStatement(filters);
-      
+
       // Get previous period data for comparison
       if (start_date && end_date) {
         const startDate = new Date(start_date);
@@ -701,24 +732,35 @@ export class FinancialReportingService {
         const previousPnl = await this.generateProfitLossStatement(previousFilters);
 
         // Calculate growth trends
-        const revenueGrowth = previousPnl.revenue.total > 0 ? 
-          ((currentPnl.revenue.total - previousPnl.revenue.total) / previousPnl.revenue.total) * 100 : 0;
-        
-        const expenseGrowth = previousPnl.expenses.total > 0 ? 
-          ((currentPnl.expenses.total - previousPnl.expenses.total) / previousPnl.expenses.total) * 100 : 0;
+        const revenueGrowth =
+          previousPnl.revenue.total > 0
+            ? ((currentPnl.revenue.total - previousPnl.revenue.total) / previousPnl.revenue.total) *
+              100
+            : 0;
+
+        const expenseGrowth =
+          previousPnl.expenses.total > 0
+            ? ((currentPnl.expenses.total - previousPnl.expenses.total) /
+                previousPnl.expenses.total) *
+              100
+            : 0;
 
         const profitMarginTrend = currentPnl.profit_margin - previousPnl.profit_margin;
 
         // Get balance sheet for ratios
         const balanceSheet = await this.generateBalanceSheet(filters);
-        
+
         // Calculate financial ratios
-        const currentRatio = balanceSheet.assets.current.reduce((sum, asset) => sum + asset.balance, 0) / 
-                           balanceSheet.liabilities.current.reduce((sum, liability) => sum + liability.balance, 0);
-        
-        const quickRatio = (balanceSheet.assets.current.reduce((sum, asset) => sum + asset.balance, 0) - 
-                           balanceSheet.assets.current.filter(a => a.account_name.toLowerCase().includes('inventory')).reduce((sum, asset) => sum + asset.balance, 0)) / 
-                          balanceSheet.liabilities.current.reduce((sum, liability) => sum + liability.balance, 0);
+        const currentRatio =
+          balanceSheet.assets.current.reduce((sum, asset) => sum + asset.balance, 0) /
+          balanceSheet.liabilities.current.reduce((sum, liability) => sum + liability.balance, 0);
+
+        const quickRatio =
+          (balanceSheet.assets.current.reduce((sum, asset) => sum + asset.balance, 0) -
+            balanceSheet.assets.current
+              .filter(a => a.account_name.toLowerCase().includes('inventory'))
+              .reduce((sum, asset) => sum + asset.balance, 0)) /
+          balanceSheet.liabilities.current.reduce((sum, liability) => sum + liability.balance, 0);
 
         const debtToEquity = balanceSheet.summary.debt_to_equity;
         const returnOnAssets = currentPnl.net_profit / balanceSheet.summary.total_assets;
@@ -726,8 +768,8 @@ export class FinancialReportingService {
         const assetTurnover = currentPnl.revenue.total / balanceSheet.summary.total_assets;
 
         // Generate forecasting (simplified)
-        const nextMonthRevenue = currentPnl.revenue.total * (1 + (revenueGrowth / 100));
-        const nextMonthExpenses = currentPnl.expenses.total * (1 + (expenseGrowth / 100));
+        const nextMonthRevenue = currentPnl.revenue.total * (1 + revenueGrowth / 100);
+        const nextMonthExpenses = currentPnl.expenses.total * (1 + expenseGrowth / 100);
         const cashFlowProjection = nextMonthRevenue - nextMonthExpenses;
         const confidenceLevel = 85; // Simplified confidence calculation
 
@@ -790,12 +832,28 @@ export class FinancialReportingService {
 
       // Return default analytics if no date range
       return {
-        trends: { revenue_growth: 0, expense_growth: 0, profit_margin_trend: 0, cash_flow_trend: 0 },
-        kpis: { current_ratio: 0, quick_ratio: 0, debt_to_equity: 0, return_on_assets: 0, return_on_equity: 0, asset_turnover: 0 },
-        forecasting: { next_month_revenue: 0, next_month_expenses: 0, cash_flow_projection: 0, confidence_level: 0 },
+        trends: {
+          revenue_growth: 0,
+          expense_growth: 0,
+          profit_margin_trend: 0,
+          cash_flow_trend: 0,
+        },
+        kpis: {
+          current_ratio: 0,
+          quick_ratio: 0,
+          debt_to_equity: 0,
+          return_on_assets: 0,
+          return_on_equity: 0,
+          asset_turnover: 0,
+        },
+        forecasting: {
+          next_month_revenue: 0,
+          next_month_expenses: 0,
+          cash_flow_projection: 0,
+          confidence_level: 0,
+        },
         alerts: [],
       };
-
     } catch (error) {
       logger.error('Failed to generate advanced analytics:', error);
       throw new BadException(
@@ -820,19 +878,23 @@ export class FinancialReportingService {
     for (const account of accounts) {
       const journalLines = await JournalEntryLine.findAll({
         where: { account_id: account.id },
-        include: [{
-          model: JournalEntry,
-          as: 'journal_entry',
-          where: { 
-            status: JournalEntryStatus.POSTED,
-            transaction_date: { [Op.lte]: asOfDate },
+        include: [
+          {
+            model: JournalEntry,
+            as: 'journal_entry',
+            where: {
+              status: JournalEntryStatus.POSTED,
+              transaction_date: { [Op.lte]: asOfDate },
+            },
           },
-        }],
+        ],
       });
 
       const balance = journalLines.reduce((sum: number, line: any) => {
-        if (line.journal_entry?.status === JournalEntryStatus.POSTED &&
-            line.journal_entry.transaction_date <= asOfDate) {
+        if (
+          line.journal_entry?.status === JournalEntryStatus.POSTED &&
+          line.journal_entry.transaction_date <= asOfDate
+        ) {
           if (account.type === AccountType.ASSET) {
             return sum + (line.debit || 0) - (line.credit || 0);
           } else {
@@ -854,12 +916,14 @@ export class FinancialReportingService {
   private static async calculateWorkingCapitalChanges(
     startDate: Date,
     endDate: Date
-  ): Promise<Array<{
-    account_name: string;
-    previous_balance: number;
-    current_balance: number;
-    change: number;
-  }>> {
+  ): Promise<
+    Array<{
+      account_name: string;
+      previous_balance: number;
+      current_balance: number;
+      change: number;
+    }>
+  > {
     // Get current assets and current liabilities
     const currentAssets = await ChartOfAccount.findAll({
       where: {
@@ -883,7 +947,7 @@ export class FinancialReportingService {
     for (const account of currentAssets) {
       const previousBalance = await this.calculateAccountBalanceAsOf([account], startDate);
       const currentBalance = await this.calculateAccountBalanceAsOf([account], endDate);
-      
+
       changes.push({
         account_name: account.name,
         previous_balance: previousBalance,
@@ -896,7 +960,7 @@ export class FinancialReportingService {
     for (const account of currentLiabilities) {
       const previousBalance = await this.calculateAccountBalanceAsOf([account], startDate);
       const currentBalance = await this.calculateAccountBalanceAsOf([account], endDate);
-      
+
       changes.push({
         account_name: account.name,
         previous_balance: previousBalance,
@@ -937,7 +1001,6 @@ export class FinancialReportingService {
         analytics,
         generated_at: new Date(),
       };
-
     } catch (error) {
       logger.error('Failed to generate comprehensive report:', error);
       throw new BadException(

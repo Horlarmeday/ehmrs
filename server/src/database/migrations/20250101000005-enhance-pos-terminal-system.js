@@ -5,7 +5,7 @@ module.exports = {
     try {
       // Add new columns to pos_terminals table if they don't exist
       const tableInfo = await queryInterface.describeTable('pos_terminals');
-      
+
       // Add card_type column if it doesn't exist
       if (!tableInfo.card_type) {
         await queryInterface.addColumn('pos_terminals', 'card_type', {
@@ -265,7 +265,7 @@ module.exports = {
         'vendor_contact',
         'support_phone',
         'support_email',
-        'notes'
+        'notes',
       ];
 
       for (const column of columnsToRemove) {
@@ -304,5 +304,5 @@ module.exports = {
       console.error('❌ Error reverting POS terminal system enhancements:', error);
       throw error;
     }
-  }
+  },
 };

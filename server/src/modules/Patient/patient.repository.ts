@@ -397,13 +397,32 @@ export async function getPatients({
   filter = null,
   start = null,
   end = null,
+  patient_status = null,
+  sortBy = 'createdAt',
 }) {
+  // Determine sort order based on sortBy parameter
+  let orderClause;
+  switch (sortBy) {
+    case 'fullname':
+      orderClause = [['complete_name', 'ASC']];
+      break;
+    case 'patient_status':
+      orderClause = [['patient_status', 'ASC']];
+      break;
+    case 'date_of_death':
+      orderClause = [['date_of_death', 'DESC']];
+      break;
+    default:
+      orderClause = [['createdAt', 'DESC']];
+  }
+
   return Patient.paginate({
     page: +currentPage,
     paginate: +pageLimit,
-    order: [['createdAt', 'DESC']],
+    order: orderClause,
     include: [
-      { model: Staff, attributes: staffAttributes },
+      { model: Staff, attributes: staffAttributes, as: 'staff' },
+      { model: Staff, attributes: staffAttributes, as: 'updatedBy' },
       {
         model: PatientInsurance,
         where: { is_default: true },
@@ -420,6 +439,7 @@ export async function getPatients({
     where: {
       ...(filter && JSON.parse(filter)),
       ...(start && end && dateIntervalQuery('createdAt', start, end)),
+      ...(patient_status && { patient_status }),
       ...(search && {
         [Op.or]: [
           {

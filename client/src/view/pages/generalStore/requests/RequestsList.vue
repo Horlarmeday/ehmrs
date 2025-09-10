@@ -45,10 +45,9 @@
                   </span>
                 </div>
                 <input
-                  v-model="filters.search"
+                  v-model="searchTerm"
                   type="text"
                   class="form-control"
-                  placeholder="Request number, department, notes..."
                   @input="handleSearch"
                 />
               </div>
@@ -695,21 +694,142 @@ export default {
     },
 
     async approveRequest(request) {
-      console.log(request);
-      // TODO: Implement approval logic
-      this.$toast.info('Approval functionality coming soon');
+      try {
+        const notes = await this.showApprovalModal(request);
+        if (notes !== null) {
+          await this.$store.dispatch('generalStore/approveRequest', {
+            requestId: request.id,
+            notes,
+          });
+          this.$toast.success('Request approved successfully');
+          await this.loadRequests();
+        }
+      } catch (error) {
+        this.$logError('Failed to approve request', error, { requestId: request.id });
+        this.$toast.error('Failed to approve request');
+      }
     },
 
     async rejectRequest(request) {
-      console.log(request);
-      // TODO: Implement rejection logic
-      this.$toast.info('Rejection functionality coming soon');
+      try {
+        const { notes, reason } = await this.showRejectionModal(request);
+        if (notes !== null) {
+          await this.$store.dispatch('generalStore/rejectRequest', {
+            requestId: request.id,
+            notes,
+            reason,
+          });
+          this.$toast.success('Request rejected successfully');
+          await this.loadRequests();
+        }
+      } catch (error) {
+        this.$logError('Failed to reject request', error, { requestId: request.id });
+        this.$toast.error('Failed to reject request');
+      }
     },
 
     async fulfillRequest(request) {
-      console.log(request);
-      // TODO: Implement fulfillment logic
-      this.$toast.info('Fulfillment functionality coming soon');
+      try {
+        const { notes, fulfillmentItems } = await this.showFulfillmentModal(request);
+        if (notes !== null) {
+          await this.$store.dispatch('generalStore/fulfillRequest', {
+            requestId: request.id,
+            notes,
+            fulfillmentItems,
+          });
+          this.$toast.success('Request fulfilled successfully');
+          await this.loadRequests();
+        }
+      } catch (error) {
+        this.$logError('Failed to fulfill request', error, { requestId: request.id });
+        this.$toast.error('Failed to fulfill request');
+      }
+    },
+
+    async showApprovalModal(request) {
+      return new Promise((resolve) => {
+        this.$bvModal.msgBoxPrompt('Enter approval notes (optional):', {
+          title: `Approve Request #${request.request_number}`,
+          size: 'md',
+          okTitle: 'Approve',
+          cancelTitle: 'Cancel',
+          okVariant: 'success',
+          cancelVariant: 'secondary',
+          hideHeaderClose: false,
+          centered: true,
+        }).then((value) => {
+          resolve(value || '');
+        }).catch(() => {
+          resolve(null);
+        });
+      });
+    },
+
+    async showRejectionModal(request) {
+      return new Promise((resolve) => {
+        this.$bvModal.msgBoxPrompt('Enter rejection reason:', {
+          title: `Reject Request #${request.request_number}`,
+          size: 'md',
+          okTitle: 'Reject',
+          cancelTitle: 'Cancel',
+          okVariant: 'danger',
+          cancelVariant: 'secondary',
+          hideHeaderClose: false,
+          centered: true,
+          placeholder: 'Please provide a reason for rejection...',
+        }).then((reason) => {
+          if (reason) {
+            this.$bvModal.msgBoxPrompt('Enter additional notes (optional):', {
+              title: 'Additional Notes',
+              size: 'md',
+              okTitle: 'Confirm Rejection',
+              cancelTitle: 'Cancel',
+              okVariant: 'danger',
+              cancelVariant: 'secondary',
+              hideHeaderClose: false,
+              centered: true,
+            }).then((notes) => {
+              resolve({ reason, notes: notes || '' });
+            }).catch(() => {
+              resolve(null);
+            });
+          } else {
+            resolve(null);
+          }
+        }).catch(() => {
+          resolve(null);
+        });
+      });
+    },
+
+    async showFulfillmentModal(request) {
+      return new Promise((resolve) => {
+        // Create a simple fulfillment modal
+        const fulfillmentItems = request.items.map(item => ({
+          item_id: item.item_id,
+          quantity: item.quantity,
+          unit_price: item.unit_price || 0,
+        }));
+
+        this.$bvModal.msgBoxPrompt('Enter fulfillment notes (optional):', {
+          title: `Fulfill Request #${request.request_number}`,
+          size: 'md',
+          okTitle: 'Fulfill',
+          cancelTitle: 'Cancel',
+          okVariant: 'success',
+          cancelVariant: 'secondary',
+          hideHeaderClose: false,
+          centered: true,
+          placeholder: 'Enter any notes about the fulfillment...',
+        }).then((notes) => {
+          resolve({ 
+            notes: notes || '', 
+            fulfillmentItems 
+          });
+        }).catch(() => {
+          resolve(null);
+        });
+      });
     },
 
     handleRequestCreated() {

@@ -7,27 +7,27 @@ module.exports = {
       await queryInterface.addColumn('financial_periods', 'period_type', {
         type: Sequelize.STRING(50),
         allowNull: true,
-        after: 'name'
+        after: 'name',
       });
 
       await queryInterface.addColumn('financial_periods', 'is_current', {
         type: Sequelize.BOOLEAN,
         allowNull: false,
         defaultValue: false,
-        after: 'notes'
+        after: 'notes',
       });
 
       await queryInterface.addColumn('financial_periods', 'closing_balance', {
         type: Sequelize.DECIMAL(10, 2),
         allowNull: true,
-        after: 'balance'
+        after: 'balance',
       });
 
       await queryInterface.addColumn('financial_periods', 'auto_close', {
         type: Sequelize.BOOLEAN,
         allowNull: false,
         defaultValue: false,
-        after: 'closing_balance'
+        after: 'closing_balance',
       });
 
       // Update existing records to have default values
@@ -61,5 +61,5 @@ module.exports = {
       console.error('❌ Error removing missing fields from financial_periods table:', error);
       throw error;
     }
-  }
+  },
 };

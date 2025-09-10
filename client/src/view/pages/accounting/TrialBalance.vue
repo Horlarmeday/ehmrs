@@ -104,15 +104,21 @@
                 Report Period Information
               </h6>
               <div v-if="summaryData.periodInfo.period_id" class="d-flex align-items-center">
-                <span class="badge badge-primary mr-2">Period ID: {{ summaryData.periodInfo.period_id }}</span>
+                <span class="badge badge-primary mr-2"
+                  >Period ID: {{ summaryData.periodInfo.period_id }}</span
+                >
                 <span v-if="selectedPeriod" class="text-muted">
                   {{ selectedPeriod.text }}
                 </span>
               </div>
-              <div v-else-if="summaryData.periodInfo.start_date && summaryData.periodInfo.end_date" class="d-flex align-items-center">
+              <div
+                v-else-if="summaryData.periodInfo.start_date && summaryData.periodInfo.end_date"
+                class="d-flex align-items-center"
+              >
                 <span class="badge badge-info mr-2">Custom Date Range</span>
                 <span class="text-muted">
-                  {{ formatDate(summaryData.periodInfo.start_date) }} to {{ formatDate(summaryData.periodInfo.end_date) }}
+                  {{ formatDate(summaryData.periodInfo.start_date) }} to
+                  {{ formatDate(summaryData.periodInfo.end_date) }}
                 </span>
               </div>
             </div>
@@ -367,29 +373,62 @@
                 <div class="row">
                   <div class="col-6">
                     <h6 class="text-primary">Assets</h6>
-                    <p class="mb-1">Opening: {{ formatCurrency(chartData.balanceSheetPreview.assets.opening) }}</p>
-                    <p class="mb-1">Closing: {{ formatCurrency(chartData.balanceSheetPreview.assets.closing) }}</p>
-                    <p class="mb-2">Movement: {{ formatCurrency(chartData.balanceSheetPreview.assets.movement) }}</p>
+                    <p class="mb-1">
+                      Opening: {{ formatCurrency(chartData.balanceSheetPreview.assets.opening) }}
+                    </p>
+                    <p class="mb-1">
+                      Closing: {{ formatCurrency(chartData.balanceSheetPreview.assets.closing) }}
+                    </p>
+                    <p class="mb-2">
+                      Movement: {{ formatCurrency(chartData.balanceSheetPreview.assets.movement) }}
+                    </p>
                   </div>
                   <div class="col-6">
                     <h6 class="text-success">Liabilities</h6>
-                    <p class="mb-1">Opening: {{ formatCurrency(chartData.balanceSheetPreview.liabilities.opening) }}</p>
-                    <p class="mb-1">Closing: {{ formatCurrency(chartData.balanceSheetPreview.liabilities.closing) }}</p>
-                    <p class="mb-2">Movement: {{ formatCurrency(chartData.balanceSheetPreview.liabilities.movement) }}</p>
+                    <p class="mb-1">
+                      Opening:
+                      {{ formatCurrency(chartData.balanceSheetPreview.liabilities.opening) }}
+                    </p>
+                    <p class="mb-1">
+                      Closing:
+                      {{ formatCurrency(chartData.balanceSheetPreview.liabilities.closing) }}
+                    </p>
+                    <p class="mb-2">
+                      Movement:
+                      {{ formatCurrency(chartData.balanceSheetPreview.liabilities.movement) }}
+                    </p>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-6">
                     <h6 class="text-info">Equity</h6>
-                    <p class="mb-1">Opening: {{ formatCurrency(chartData.balanceSheetPreview.equity.opening) }}</p>
-                    <p class="mb-1">Closing: {{ formatCurrency(chartData.balanceSheetPreview.equity.closing) }}</p>
-                    <p class="mb-2">Movement: {{ formatCurrency(chartData.balanceSheetPreview.equity.movement) }}</p>
+                    <p class="mb-1">
+                      Opening: {{ formatCurrency(chartData.balanceSheetPreview.equity.opening) }}
+                    </p>
+                    <p class="mb-1">
+                      Closing: {{ formatCurrency(chartData.balanceSheetPreview.equity.closing) }}
+                    </p>
+                    <p class="mb-2">
+                      Movement: {{ formatCurrency(chartData.balanceSheetPreview.equity.movement) }}
+                    </p>
                   </div>
                   <div class="col-6">
                     <h6 class="text-warning">Income/Expenses</h6>
-                    <p class="mb-1">Income: {{ formatCurrency(chartData.balanceSheetPreview.income.closing) }}</p>
-                    <p class="mb-1">Expenses: {{ formatCurrency(chartData.balanceSheetPreview.expenses.closing) }}</p>
-                    <p class="mb-2">Net: {{ formatCurrency(chartData.balanceSheetPreview.income.closing - chartData.balanceSheetPreview.expenses.closing) }}</p>
+                    <p class="mb-1">
+                      Income: {{ formatCurrency(chartData.balanceSheetPreview.income.closing) }}
+                    </p>
+                    <p class="mb-1">
+                      Expenses: {{ formatCurrency(chartData.balanceSheetPreview.expenses.closing) }}
+                    </p>
+                    <p class="mb-2">
+                      Net:
+                      {{
+                        formatCurrency(
+                          chartData.balanceSheetPreview.income.closing -
+                            chartData.balanceSheetPreview.expenses.closing
+                        )
+                      }}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -408,7 +447,11 @@
             </div>
             <div class="card-body">
               <div v-if="chartData && chartData.topAccounts" class="top-accounts">
-                <div v-for="account in chartData.topAccounts.slice(0, 10)" :key="account.id" class="account-item">
+                <div
+                  v-for="account in chartData.topAccounts.slice(0, 10)"
+                  :key="account.id"
+                  class="account-item"
+                >
                   <div class="d-flex justify-content-between align-items-center">
                     <div>
                       <strong>{{ account.code }}</strong> - {{ account.name }}
@@ -603,7 +646,7 @@ export default {
       return date.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
-        day: 'numeric'
+        day: 'numeric',
       });
     },
 
@@ -617,14 +660,14 @@ export default {
           search: this.filters.search,
         };
         await this.$store.dispatch('accounting/fetchTrialBalance', params);
-        
+
         // Also load chart data
         await this.$store.dispatch('accounting/fetchTrialBalanceChartData', params);
-        
+
         // Load advanced analytics data
         await this.$store.dispatch('accounting/fetchTrialBalanceVarianceAnalysis', params);
         await this.$store.dispatch('accounting/fetchBalanceSheetPreview', params);
-        
+
         this.updateCharts();
       } catch (error) {
         console.error('Failed to load trial balance:', error);
@@ -721,10 +764,12 @@ export default {
       if (!chartData || !this.charts.accountType) return;
 
       const accountTypeData = chartData.accountTypeDistribution || [];
-      
+
       this.charts.accountType.data.labels = accountTypeData.map(item => item.type);
-      this.charts.accountType.data.datasets[0].data = accountTypeData.map(item => item.totalClosingBalance);
-      
+      this.charts.accountType.data.datasets[0].data = accountTypeData.map(
+        item => item.totalClosingBalance
+      );
+
       this.charts.accountType.update();
     },
 
@@ -733,10 +778,12 @@ export default {
       if (!chartData || !this.charts.balanceTrend) return;
 
       const balanceTrendData = chartData.balanceTrend || [];
-      
+
       this.charts.balanceTrend.data.labels = balanceTrendData.map(item => item.type);
-      this.charts.balanceTrend.data.datasets[0].data = balanceTrendData.map(item => item.closingTotal);
-      
+      this.charts.balanceTrend.data.datasets[0].data = balanceTrendData.map(
+        item => item.closingTotal
+      );
+
       this.charts.balanceTrend.update();
     },
 
@@ -826,7 +873,7 @@ export default {
           account_type: this.filters.accountType,
           search: this.filters.search,
         };
-        
+
         this.$store.dispatch('accounting/exportTrialBalance', params).then(result => {
           if (result.success) {
             this.$bvToast.toast('Trial balance exported successfully', {
@@ -1096,7 +1143,7 @@ function debounce(func, wait) {
 
 @media (max-width: 768px) {
   .trial-balance {
-  padding: 1rem;
+    padding: 1rem;
   }
 
   .page-header {

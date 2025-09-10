@@ -81,13 +81,16 @@
                   data-vv-validate-on="blur"
                   v-validate="'required|min:6'"
                   class="form-input"
-                  type="password"
+                  :type="showPassword ? 'text' : 'password'"
                   name="password"
                   ref="password"
                   v-model="form.password"
                   autocomplete="off"
                   placeholder="Enter your password"
                 />
+                <div class="password-toggle" @click="togglePasswordVisibility">
+                  <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                </div>
               </div>
               <span class="error-message" v-if="errors.has('password')">{{
                 errors.first('password')
@@ -126,7 +129,7 @@
               </span>
               <span class="contact-item">
                 <i class="fas fa-envelope"></i>
-                support@heritage.com
+                support@heritagekidney.com
               </span>
             </div>
           </div>
@@ -421,6 +424,29 @@
   z-index: 2;
 }
 
+.password-toggle {
+  position: absolute;
+  right: 1rem;
+  color: #6c757d;
+  cursor: pointer;
+  z-index: 2;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    color: var(--heritage-maroon);
+    background: rgba(139, 0, 0, 0.1);
+  }
+
+  i {
+    font-size: 1rem;
+  }
+}
+
 .form-input {
   width: 100%;
   padding: 1rem 1rem 1rem 3rem;
@@ -429,6 +455,12 @@
   font-size: 1rem;
   transition: all 0.3s ease;
   background: #f8f9fa;
+
+  // Special padding for password field to accommodate toggle button
+  &[type="password"],
+  &[type="text"] {
+    padding-right: 3.5rem;
+  }
 
   &:focus {
     outline: none;
@@ -791,6 +823,7 @@ export default {
       isDisabled: false,
       imageError: false,
       loading: false,
+      showPassword: false,
     };
   },
   created() {
@@ -896,6 +929,10 @@ export default {
 
     handleImageError() {
       this.imageError = true;
+    },
+
+    togglePasswordVisibility() {
+      this.showPassword = !this.showPassword;
     },
   },
 };

@@ -72,33 +72,42 @@ export class ProcurementService {
       }
 
       // Calculate total amount
-      const totalAmount = data.items.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
-      let poNumber = await this.generatePONumber();
+      const totalAmount = data.items.reduce(
+        (sum, item) => sum + item.quantity * item.unit_price,
+        0
+      );
+      const poNumber = await this.generatePONumber();
 
       // Create procurement order
-      const procurementOrder = await ProcurementOrder.create({
-        po_number: poNumber,
-        vendor_id: data.vendor_id,
-        order_date: data?.order_date || new Date(),
-        expected_delivery_date: data.expected_delivery_date,
-        notes: data.notes,
-        total_amount: totalAmount,
-        created_by: staffId,
-        status: 'DRAFT',
-      }, { transaction });
+      const procurementOrder = await ProcurementOrder.create(
+        {
+          po_number: poNumber,
+          vendor_id: data.vendor_id,
+          order_date: data?.order_date || new Date(),
+          expected_delivery_date: data.expected_delivery_date,
+          notes: data.notes,
+          total_amount: totalAmount,
+          created_by: staffId,
+          status: 'DRAFT',
+        },
+        { transaction }
+      );
 
       // Create procurement order items
       const orderItems = await Promise.all(
         data.items.map(item =>
-          ProcurementOrderItem.create({
-            procurement_order_id: procurementOrder.id,
-            drug_id: item.drug_id,
-            unit_id: item.unit_id,
-            quantity_ordered: item.quantity,
-            unit_price: item.unit_price,
-            total_price: item.quantity * item.unit_price,
-            notes: data?.notes,
-          }, { transaction })
+          ProcurementOrderItem.create(
+            {
+              procurement_order_id: procurementOrder.id,
+              drug_id: item.drug_id,
+              unit_id: item.unit_id,
+              quantity_ordered: item.quantity,
+              unit_price: item.unit_price,
+              total_price: item.quantity * item.unit_price,
+              notes: data?.notes,
+            },
+            { transaction }
+          )
         )
       );
 
@@ -614,7 +623,7 @@ export class ProcurementService {
 
     if (filters.date_from && filters.date_to) {
       where.order_date = {
-        [Op.between]: [filters.date_from, filters.date_to]
+        [Op.between]: [filters.date_from, filters.date_to],
       };
     }
 
@@ -686,7 +695,7 @@ export class ProcurementService {
     format?: string;
   }): Promise<Buffer> {
     const reportData = await this.getProcurementReports(filters);
-    
+
     // For now, return a simple CSV-like format as Buffer
     // In a real implementation, you would use a library like xlsx or csv-writer
     const headers = ['PO Number', 'Vendor', 'Order Date', 'Status', 'Total Amount', 'Items'];
@@ -696,11 +705,11 @@ export class ProcurementService {
       order.order_date?.toISOString().split('T')[0] || '',
       order.status,
       order.total_amount || 0,
-      order.items?.length || 0
+      order.items?.length || 0,
     ]);
-    
+
     const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
-    
+
     return Buffer.from(csvContent, 'utf8');
   }
 

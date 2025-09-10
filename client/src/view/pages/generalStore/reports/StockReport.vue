@@ -111,7 +111,6 @@
                 type="number"
                 min="0"
                 class="form-control"
-                placeholder="0"
                 @input="handleFilterChange"
               />
             </div>
@@ -123,7 +122,6 @@
                 type="number"
                 min="0"
                 class="form-control"
-                placeholder="1000"
                 @input="handleFilterChange"
               />
             </div>
@@ -140,7 +138,6 @@
                   step="0.01"
                   min="0"
                   class="form-control"
-                  placeholder="0.00"
                   @input="handleFilterChange"
                 />
               </div>
@@ -158,7 +155,6 @@
                   step="0.01"
                   min="0"
                   class="form-control"
-                  placeholder="1000.00"
                   @input="handleFilterChange"
                 />
               </div>
@@ -419,7 +415,7 @@ export default {
         await this.$store.dispatch('generalStore/fetchCategories');
         this.categories = this.$store.state.generalStore.categories;
       } catch (error) {
-        console.error('Error loading form data:', error);
+        this.$toast.error('Failed to load form data');
       }
     },
 
@@ -444,7 +440,6 @@ export default {
 
         this.$toast.success('Stock report generated successfully');
       } catch (error) {
-        console.error('Error generating report:', error);
         this.$toast.error('Failed to generate report. Please try again.');
       } finally {
         this.loading = false;
@@ -547,25 +542,75 @@ export default {
       this.$router.push(`/general-store/requests/create?item_id=${item.id}`);
     },
 
-    exportReport() {
+    async exportReport() {
       if (!this.reportData) return;
 
-      // TODO: Implement export functionality
-      this.$toast.info('Export functionality coming soon');
+      try {
+        const reportName = `Stock_Report_${new Date().toISOString().split('T')[0]}`;
+        await this.$exportData(this.reportData, reportName, 'xlsx', {
+          formatters: {
+            current_stock: (value) => Number(value || 0),
+            minimum_stock: (value) => Number(value || 0),
+            unit_price: (value) => Number(value || 0).toFixed(2),
+            total_value: (value) => Number(value || 0).toFixed(2),
+          }
+        });
+      } catch (error) {
+        this.$logError('Failed to export stock report', error);
+        this.$toast.error('Failed to export report');
+      }
     },
 
-    printReport() {
+    async printReport() {
       if (!this.reportData) return;
 
-      // TODO: Implement print functionality
-      this.$toast.info('Print functionality coming soon');
+      try {
+        const reportConfig = {
+          title: 'Stock Report',
+          subtitle: `Generated on ${new Date().toLocaleDateString()}`,
+          orientation: 'landscape',
+          format: 'a4',
+        };
+        await this.$printReport(this.reportData, reportConfig);
+      } catch (error) {
+        this.$logError('Failed to print stock report', error);
+        this.$toast.error('Failed to print report');
+      }
     },
 
-    shareReport() {
+    async shareReport() {
       if (!this.reportData) return;
 
-      // TODO: Implement share functionality
-      this.$toast.info('Share functionality coming soon');
+      try {
+        const reportData = {
+          title: 'Stock Report',
+          data: this.reportData,
+          generated_at: new Date().toISOString(),
+          filters: this.filters,
+        };
+
+        if (navigator.share) {
+          const blob = new Blob([JSON.stringify(reportData, null, 2)], {
+            type: 'application/json',
+          });
+          const file = new File([blob], `stock_report_${new Date().toISOString().split('T')[0]}.json`, {
+            type: 'application/json',
+          });
+          
+          await navigator.share({
+            title: 'Stock Report',
+            text: 'Stock report data from EHMRS',
+            files: [file],
+          });
+        } else {
+          // Fallback: copy to clipboard
+          await navigator.clipboard.writeText(JSON.stringify(reportData, null, 2));
+          this.$toast.success('Report data copied to clipboard');
+        }
+      } catch (error) {
+        this.$logError('Failed to share stock report', error);
+        this.$toast.error('Failed to share report');
+      }
     },
   },
 };

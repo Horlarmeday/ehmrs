@@ -57,4 +57,4 @@ module.exports = {
       queryInterface.removeColumn('Encounters', 'encounter_type'),
     ]);
   },
-}; 
+};

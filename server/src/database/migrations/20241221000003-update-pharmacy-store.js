@@ -24,7 +24,7 @@ module.exports = {
   down: async (queryInterface, Sequelize) => {
     // Remove procurement_order_id column
     await queryInterface.removeColumn('Pharmacy_Store_Items', 'procurement_order_id');
-    
+
     // Remove index
     await queryInterface.removeIndex('Pharmacy_Store_Items', ['procurement_order_id']);
   },

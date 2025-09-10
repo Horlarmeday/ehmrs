@@ -1,10 +1,12 @@
 const { sequelize } = require('./src/database/models');
-const FinancialReportingService = require('./src/modules/Accounting/services/financialReporting.service').default;
-const BusinessIntelligenceService = require('./src/modules/Accounting/services/businessIntelligence.service').default;
+const FinancialReportingService = require('./src/modules/Accounting/services/financialReporting.service')
+  .default;
+const BusinessIntelligenceService = require('./src/modules/Accounting/services/businessIntelligence.service')
+  .default;
 
 /**
  * Phase 6 Completion Test Script
- * 
+ *
  * This script tests the completed Phase 6: Reporting & Analytics implementation including:
  * - Financial Reporting (P&L, Balance Sheet, Cash Flow)
  * - Operational Reporting (Performance, Utilization, Tracking)
@@ -32,7 +34,6 @@ async function testPhase6Completion() {
 
     console.log('🎉 All Phase 6 tests completed successfully!');
     console.log('📋 Phase 6: Reporting & Analytics is 100% COMPLETE');
-
   } catch (error) {
     console.error('❌ Phase 6 test failed:', error);
     process.exit(1);
@@ -45,7 +46,7 @@ async function testPhase6Completion() {
 
 async function testFinancialReportingSystem() {
   console.log('  Testing Profit & Loss Statement...');
-  
+
   // Test P&L generation
   const pnlFilters = {
     start_date: '2024-01-01',
@@ -54,17 +55,19 @@ async function testFinancialReportingSystem() {
   };
 
   const pnlStatement = await FinancialReportingService.generateProfitLossStatement(pnlFilters);
-  
+
   // Validate P&L structure
-  if (!pnlStatement.period || 
-      !pnlStatement.revenue || 
-      !pnlStatement.expenses ||
-      typeof pnlStatement.gross_profit !== 'number') {
+  if (
+    !pnlStatement.period ||
+    !pnlStatement.revenue ||
+    !pnlStatement.expenses ||
+    typeof pnlStatement.gross_profit !== 'number'
+  ) {
     throw new Error('P&L statement validation failed');
   }
 
   console.log('  Testing Balance Sheet...');
-  
+
   // Test Balance Sheet generation
   const balanceSheetFilters = {
     end_date: '2024-01-31',
@@ -72,35 +75,41 @@ async function testFinancialReportingSystem() {
   };
 
   const balanceSheet = await FinancialReportingService.generateBalanceSheet(balanceSheetFilters);
-  
+
   // Validate Balance Sheet structure
-  if (!balanceSheet.as_of_date || 
-      !balanceSheet.assets || 
-      !balanceSheet.liabilities ||
-      !balanceSheet.equity) {
+  if (
+    !balanceSheet.as_of_date ||
+    !balanceSheet.assets ||
+    !balanceSheet.liabilities ||
+    !balanceSheet.equity
+  ) {
     throw new Error('Balance sheet validation failed');
   }
 
   console.log('  Testing Cash Flow Statement...');
-  
+
   // Test Cash Flow generation
   const cashFlowFilters = {
     start_date: '2024-01-01',
     end_date: '2024-01-31',
   };
 
-  const cashFlowStatement = await FinancialReportingService.generateCashFlowStatement(cashFlowFilters);
-  
+  const cashFlowStatement = await FinancialReportingService.generateCashFlowStatement(
+    cashFlowFilters
+  );
+
   // Validate Cash Flow structure
-  if (!cashFlowStatement.period || 
-      !cashFlowStatement.operating_activities || 
-      !cashFlowStatement.investing_activities ||
-      !cashFlowStatement.financing_activities) {
+  if (
+    !cashFlowStatement.period ||
+    !cashFlowStatement.operating_activities ||
+    !cashFlowStatement.investing_activities ||
+    !cashFlowStatement.financing_activities
+  ) {
     throw new Error('Cash flow statement validation failed');
   }
 
   console.log('  Testing Advanced Analytics...');
-  
+
   // Test Advanced Analytics generation
   const analyticsFilters = {
     start_date: '2024-01-01',
@@ -108,17 +117,14 @@ async function testFinancialReportingSystem() {
   };
 
   const analytics = await FinancialReportingService.generateAdvancedAnalytics(analyticsFilters);
-  
+
   // Validate Analytics structure
-  if (!analytics.trends || 
-      !analytics.kpis || 
-      !analytics.forecasting ||
-      !analytics.alerts) {
+  if (!analytics.trends || !analytics.kpis || !analytics.forecasting || !analytics.alerts) {
     throw new Error('Advanced analytics validation failed');
   }
 
   console.log('  Testing Comprehensive Report...');
-  
+
   // Test comprehensive report generation
   const comprehensiveFilters = {
     start_date: '2024-01-01',
@@ -126,13 +132,17 @@ async function testFinancialReportingSystem() {
     format: 'JSON',
   };
 
-  const comprehensiveReport = await FinancialReportingService.generateComprehensiveReport(comprehensiveFilters);
-  
+  const comprehensiveReport = await FinancialReportingService.generateComprehensiveReport(
+    comprehensiveFilters
+  );
+
   // Validate comprehensive report structure
-  if (!comprehensiveReport.profit_loss || 
-      !comprehensiveReport.balance_sheet || 
-      !comprehensiveReport.cash_flow ||
-      !comprehensiveReport.analytics) {
+  if (
+    !comprehensiveReport.profit_loss ||
+    !comprehensiveReport.balance_sheet ||
+    !comprehensiveReport.cash_flow ||
+    !comprehensiveReport.analytics
+  ) {
     throw new Error('Comprehensive report validation failed');
   }
 }
@@ -141,7 +151,7 @@ async function testFinancialReportingSystem() {
 
 async function testBusinessIntelligenceSystem() {
   console.log('  Testing Payment Trend Analysis...');
-  
+
   // Test trend analysis
   const trendFilters = {
     start_date: '2024-01-01',
@@ -149,72 +159,88 @@ async function testBusinessIntelligenceSystem() {
     granularity: 'DAILY',
   };
 
-  const trendAnalysis = await BusinessIntelligenceService.generatePaymentTrendAnalysis(trendFilters);
-  
+  const trendAnalysis = await BusinessIntelligenceService.generatePaymentTrendAnalysis(
+    trendFilters
+  );
+
   // Validate trend analysis structure
-  if (!trendAnalysis.period || 
-      !trendAnalysis.overall_trends || 
-      !trendAnalysis.trend_by_method ||
-      !trendAnalysis.time_series_data) {
+  if (
+    !trendAnalysis.period ||
+    !trendAnalysis.overall_trends ||
+    !trendAnalysis.trend_by_method ||
+    !trendAnalysis.time_series_data
+  ) {
     throw new Error('Trend analysis validation failed');
   }
 
   console.log('  Testing Predictive Analytics...');
-  
+
   // Test predictive analytics
   const predictiveFilters = {
     start_date: '2024-01-01',
     end_date: '2024-01-31',
   };
 
-  const predictiveAnalytics = await BusinessIntelligenceService.generatePredictiveAnalytics(predictiveFilters);
-  
+  const predictiveAnalytics = await BusinessIntelligenceService.generatePredictiveAnalytics(
+    predictiveFilters
+  );
+
   // Validate predictive analytics structure
-  if (!predictiveAnalytics.period || 
-      !predictiveAnalytics.revenue_forecasting || 
-      !predictiveAnalytics.cash_flow_prediction ||
-      !predictiveAnalytics.payment_behavior_prediction) {
+  if (
+    !predictiveAnalytics.period ||
+    !predictiveAnalytics.revenue_forecasting ||
+    !predictiveAnalytics.cash_flow_prediction ||
+    !predictiveAnalytics.payment_behavior_prediction
+  ) {
     throw new Error('Predictive analytics validation failed');
   }
 
   console.log('  Testing Dashboard KPI Monitoring...');
-  
+
   // Test KPI monitoring
   const kpiFilters = {
     start_date: '2024-01-01',
     end_date: '2024-01-31',
   };
 
-  const kpiMonitoring = await BusinessIntelligenceService.generateDashboardKPIMonitoring(kpiFilters);
-  
+  const kpiMonitoring = await BusinessIntelligenceService.generateDashboardKPIMonitoring(
+    kpiFilters
+  );
+
   // Validate KPI monitoring structure
-  if (!kpiMonitoring.real_time_metrics || 
-      !kpiMonitoring.kpi_dashboard || 
-      !kpiMonitoring.performance_alerts ||
-      !kpiMonitoring.trend_indicators) {
+  if (
+    !kpiMonitoring.real_time_metrics ||
+    !kpiMonitoring.kpi_dashboard ||
+    !kpiMonitoring.performance_alerts ||
+    !kpiMonitoring.trend_indicators
+  ) {
     throw new Error('KPI monitoring validation failed');
   }
 
   console.log('  Testing Real-time Payment Monitoring...');
-  
+
   // Test real-time monitoring
   const monitoringFilters = {
     start_date: '2024-01-01',
     end_date: '2024-01-31',
   };
 
-  const realTimeMonitoring = await BusinessIntelligenceService.generateRealTimePaymentMonitoring(monitoringFilters);
-  
+  const realTimeMonitoring = await BusinessIntelligenceService.generateRealTimePaymentMonitoring(
+    monitoringFilters
+  );
+
   // Validate real-time monitoring structure
-  if (!realTimeMonitoring.current_status || 
-      !realTimeMonitoring.live_transactions || 
-      !realTimeMonitoring.system_performance ||
-      !realTimeMonitoring.real_time_alerts) {
+  if (
+    !realTimeMonitoring.current_status ||
+    !realTimeMonitoring.live_transactions ||
+    !realTimeMonitoring.system_performance ||
+    !realTimeMonitoring.real_time_alerts
+  ) {
     throw new Error('Real-time monitoring validation failed');
   }
 
   console.log('  Testing Comprehensive BI Report...');
-  
+
   // Test comprehensive BI report
   const biFilters = {
     start_date: '2024-01-01',
@@ -223,12 +249,14 @@ async function testBusinessIntelligenceSystem() {
   };
 
   const biReport = await BusinessIntelligenceService.generateComprehensiveBIReport(biFilters);
-  
+
   // Validate BI report structure
-  if (!biReport.executive_summary || 
-      !biReport.detailed_analysis || 
-      !biReport.risk_assessment ||
-      !biReport.strategic_recommendations) {
+  if (
+    !biReport.executive_summary ||
+    !biReport.detailed_analysis ||
+    !biReport.risk_assessment ||
+    !biReport.strategic_recommendations
+  ) {
     throw new Error('Business intelligence report validation failed');
   }
 }
@@ -237,7 +265,7 @@ async function testBusinessIntelligenceSystem() {
 
 async function testIntegrationScenarios() {
   console.log('  Testing Financial Reporting Integration...');
-  
+
   // Test integration between financial reporting components
   const filters = {
     start_date: '2024-01-01',
@@ -259,7 +287,7 @@ async function testIntegrationScenarios() {
   }
 
   console.log('  Testing Business Intelligence Integration...');
-  
+
   // Test integration between BI components
   const biFilters = {
     start_date: '2024-01-01',
@@ -268,7 +296,12 @@ async function testIntegrationScenarios() {
   };
 
   // Generate all BI components
-  const [trendAnalysis, predictiveAnalytics, kpiMonitoring, realTimeMonitoring] = await Promise.all([
+  const [
+    trendAnalysis,
+    predictiveAnalytics,
+    kpiMonitoring,
+    realTimeMonitoring,
+  ] = await Promise.all([
     BusinessIntelligenceService.generatePaymentTrendAnalysis(biFilters),
     BusinessIntelligenceService.generatePredictiveAnalytics(biFilters),
     BusinessIntelligenceService.generateDashboardKPIMonitoring(biFilters),
@@ -276,12 +309,16 @@ async function testIntegrationScenarios() {
   ]);
 
   // Validate data consistency between BI components
-  if (trendAnalysis.period.start_date.getTime() !== predictiveAnalytics.period.start_date.getTime()) {
-    throw new Error('Date consistency validation failed between trend analysis and predictive analytics');
+  if (
+    trendAnalysis.period.start_date.getTime() !== predictiveAnalytics.period.start_date.getTime()
+  ) {
+    throw new Error(
+      'Date consistency validation failed between trend analysis and predictive analytics'
+    );
   }
 
   console.log('  Testing Cross-System Integration...');
-  
+
   // Test integration between financial reporting and business intelligence
   const comprehensiveFilters = {
     start_date: '2024-01-01',
@@ -300,18 +337,18 @@ async function testIntegrationScenarios() {
   }
 
   console.log('  Testing Report Generation Performance...');
-  
+
   // Test performance of report generation
   const startTime = Date.now();
-  
+
   await Promise.all([
     FinancialReportingService.generateComprehensiveReport(comprehensiveFilters),
     BusinessIntelligenceService.generateComprehensiveBIReport(biFilters),
   ]);
-  
+
   const endTime = Date.now();
   const generationTime = endTime - startTime;
-  
+
   // Ensure reports generate within reasonable time (5 seconds)
   if (generationTime > 5000) {
     throw new Error(`Report generation performance test failed: ${generationTime}ms`);
@@ -328,7 +365,7 @@ if (require.main === module) {
       console.log('\n🎯 Phase 6 testing completed successfully!');
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('\n💥 Phase 6 testing failed:', error);
       process.exit(1);
     });

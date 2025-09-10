@@ -37,6 +37,7 @@ import procurementRoutes from '../../modules/Procurement/procurement.routes';
 import stockAuditRoutes from '../../modules/StockAudit/stockAudit.routes';
 import emergencyRoutes from '../../modules/Emergency/emergency.routes';
 import appointmentRoutes from '../../modules/Appointment/appointment.routes';
+import inventoryAlertRoutes from '../../modules/InventoryAlerts/inventoryAlert.routes';
 
 export default (server: express.Application) => {
   server.use('/api/staffs', staffRoutes);
@@ -72,7 +73,8 @@ export default (server: express.Application) => {
   server.use('/api/stock-audit', stockAuditRoutes);
   server.use('/api/emergency', emergencyRoutes);
   server.use('/api/appointments', appointmentRoutes);
-  
+  server.use('/api/inventory-alerts', inventoryAlertRoutes);
+
   if (process.env.SENTRY_DSN) {
     Sentry.setupExpressErrorHandler(server);
   }

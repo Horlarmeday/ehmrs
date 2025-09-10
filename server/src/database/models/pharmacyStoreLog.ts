@@ -166,6 +166,7 @@ export class PharmacyStoreLog extends Model {
   @Column({
     type: DataType.ENUM(DrugType.CASH, DrugType.NHIS, DrugType.PRIVATE, DrugType.RETAINERSHIP),
     allowNull: false,
+    defaultValue: DrugType.CASH,
     validate: {
       notEmpty: {
         msg: 'drug type is required',

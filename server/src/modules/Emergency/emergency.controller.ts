@@ -13,20 +13,20 @@ export class EmergencyController {
       res.status(201).json({
         success: true,
         message: 'Emergency visit created successfully',
-        data: emergencyVisit
+        data: emergencyVisit,
       });
     } catch (error) {
       if (error instanceof BadException) {
         res.status(error.statusCode).json({
           success: false,
           message: error.message,
-          error: error.error
+          error: error.error,
         });
       } else {
         res.status(500).json({
           success: false,
           message: 'Internal server error',
-          error: error.message
+          error: error.message,
         });
       }
     }
@@ -40,23 +40,23 @@ export class EmergencyController {
     try {
       const { id } = req.params;
       const emergencyVisit = await EmergencyService.getEmergencyVisit(parseInt(id));
-      
+
       if (!emergencyVisit) {
         return res.status(404).json({
           success: false,
-          message: 'Emergency visit not found'
+          message: 'Emergency visit not found',
         });
       }
 
       res.status(200).json({
         success: true,
-        data: emergencyVisit
+        data: emergencyVisit,
       });
     } catch (error) {
       res.status(500).json({
         success: false,
         message: 'Internal server error',
-        error: error.message
+        error: error.message,
       });
     }
   }
@@ -78,7 +78,7 @@ export class EmergencyController {
         patient_id,
         date_from,
         date_to,
-        search
+        search,
       } = req.query;
 
       const result = await EmergencyService.getEmergencyVisits({
@@ -92,18 +92,18 @@ export class EmergencyController {
         patient_id: patient_id ? parseInt(patient_id as string) : undefined,
         date_from: date_from ? new Date(date_from as string) : undefined,
         date_to: date_to ? new Date(date_to as string) : undefined,
-        search: search as string
+        search: search as string,
       });
 
       res.status(200).json({
         success: true,
-        data: result
+        data: result,
       });
     } catch (error) {
       res.status(500).json({
         success: false,
         message: 'Internal server error',
-        error: error.message
+        error: error.message,
       });
     }
   }
@@ -118,20 +118,20 @@ export class EmergencyController {
       res.status(201).json({
         success: true,
         message: 'Triage assessment completed successfully',
-        data: triage
+        data: triage,
       });
     } catch (error) {
       if (error instanceof BadException) {
         res.status(error.statusCode).json({
           success: false,
           message: error.message,
-          error: error.error
+          error: error.error,
         });
       } else {
         res.status(500).json({
           success: false,
           message: 'Internal server error',
-          error: error.message
+          error: error.message,
         });
       }
     }
@@ -147,20 +147,20 @@ export class EmergencyController {
       res.status(200).json({
         success: true,
         message: 'Emergency bed assigned successfully',
-        data: bed
+        data: bed,
       });
     } catch (error) {
       if (error instanceof BadException) {
         res.status(error.statusCode).json({
           success: false,
           message: error.message,
-          error: error.error
+          error: error.error,
         });
       } else {
         res.status(500).json({
           success: false,
           message: 'Internal server error',
-          error: error.message
+          error: error.message,
         });
       }
     }
@@ -173,9 +173,9 @@ export class EmergencyController {
   static async getAvailableEmergencyBeds(req: Request, res: Response) {
     try {
       const { bed_type, required_equipment } = req.query;
-      
-      const requiredEquipment = required_equipment 
-        ? (required_equipment as string).split(',') 
+
+      const requiredEquipment = required_equipment
+        ? (required_equipment as string).split(',')
         : undefined;
 
       const beds = await EmergencyService.getAvailableEmergencyBeds(
@@ -185,13 +185,13 @@ export class EmergencyController {
 
       res.status(200).json({
         success: true,
-        data: beds
+        data: beds,
       });
     } catch (error) {
       res.status(500).json({
         success: false,
         message: 'Internal server error',
-        error: error.message
+        error: error.message,
       });
     }
   }
@@ -205,13 +205,13 @@ export class EmergencyController {
       const statistics = await EmergencyService.getEmergencyStatistics();
       res.status(200).json({
         success: true,
-        data: statistics
+        data: statistics,
       });
     } catch (error) {
       res.status(500).json({
         success: false,
         message: 'Internal server error',
-        error: error.message
+        error: error.message,
       });
     }
   }

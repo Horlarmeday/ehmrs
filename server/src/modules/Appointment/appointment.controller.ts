@@ -72,7 +72,31 @@ class AppointmentController {
     next: NextFunction
   ): Promise<SuccessResponse | void> {
     try {
-      const appointments = await AppointmentService.getAppointmentsService(req.query);
+      // Map frontend parameters to backend parameters
+      const queryParams = {
+        // Handle pagination parameter mapping
+        page: Number(req.query.currentPage || req.query.page) || 1,
+        pageSize: Number(req.query.pageLimit || req.query.pageSize || req.query.itemsPerPage) || 10,
+        // Handle search parameter
+        search: req.query.search as string,
+        // Handle sort parameters
+        sortBy: req.query.sortBy as string,
+        sortOrder: (req.query.sortOrder as 'ASC' | 'DESC') || 'DESC',
+        // Handle filters
+        filters: {
+          // Handle date parameter mapping
+          start_date: req.query.start || req.query.date_from ? new Date(req.query.start as string || req.query.date_from as string) : undefined,
+          end_date: req.query.end || req.query.date_to ? new Date(req.query.end as string || req.query.date_to as string) : undefined,
+          // Handle other filter parameters
+          patient_id: req.query.patient_id ? Number(req.query.patient_id) : undefined,
+          doctor_id: req.query.doctor_id ? Number(req.query.doctor_id) : undefined,
+          status: req.query.status as any,
+          type: (req.query.type || req.query.appointment_type) as any,
+          department: req.query.department as string,
+        },
+      };
+
+      const appointments = await AppointmentService.getAppointmentsService(queryParams);
 
       return successResponse({
         res,
@@ -559,7 +583,9 @@ class AppointmentController {
       return successResponse({
         res,
         httpCode: StatusCodes.OK,
-        message: validation.canCheckIn ? 'Appointment can be checked-in' : 'Check-in validation failed',
+        message: validation.canCheckIn
+          ? 'Appointment can be checked-in'
+          : 'Check-in validation failed',
         data: validation,
       });
     } catch (e) {
@@ -591,7 +617,9 @@ class AppointmentController {
         },
       };
 
-      const appointments = await ScheduleManagementService.createRecurringAppointments(recurringData);
+      const appointments = await ScheduleManagementService.createRecurringAppointments(
+        recurringData
+      );
 
       return successResponse({
         res,
@@ -710,7 +738,7 @@ class AppointmentController {
   ): Promise<SuccessResponse | void> {
     try {
       const { doctor_id, start_date, end_date } = req.body;
-      
+
       if (!doctor_id || !start_date || !end_date) {
         return errorResponse({
           res,

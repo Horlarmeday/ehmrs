@@ -965,7 +965,7 @@ export class InsurancePaymentService {
         .length,
       paid_payments: filteredRows.filter(t => t.insuranceClaim?.claim_status === 'PAID').length,
       partially_approved_payments: filteredRows.filter(
-        t => t.insuranceClaim?.claim_status === 'PARTIALLY_APPROVED'
+        t => t.insuranceClaim?.claim_status === 'APPROVED'
       ).length,
     };
 

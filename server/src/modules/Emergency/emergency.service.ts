@@ -1,12 +1,12 @@
-import { 
-  EmergencyVisit, 
-  EmergencyTriage, 
-  EmergencyBed, 
+import {
+  EmergencyVisit,
+  EmergencyTriage,
+  EmergencyBed,
   EmergencyProcedure,
-  Patient, 
+  Patient,
   Staff,
   Visit,
-  Ward
+  Ward,
 } from '../../database/models';
 import { BadException } from '../../common/util/api-error';
 import { Op } from 'sequelize';
@@ -15,7 +15,16 @@ export interface EmergencyVisitData {
   patient_id: number;
   visit_id: number; // Required - links to general visit
   attending_physician_id: number;
-  emergency_type: 'TRAUMA' | 'MEDICAL' | 'SURGICAL' | 'OBSTETRIC' | 'PEDIATRIC' | 'PSYCHIATRIC' | 'CARDIAC' | 'RESPIRATORY' | 'NEUROLOGICAL';
+  emergency_type:
+    | 'TRAUMA'
+    | 'MEDICAL'
+    | 'SURGICAL'
+    | 'OBSTETRIC'
+    | 'PEDIATRIC'
+    | 'PSYCHIATRIC'
+    | 'CARDIAC'
+    | 'RESPIRATORY'
+    | 'NEUROLOGICAL';
   triage_category: 'IMMEDIATE' | 'EMERGENT' | 'URGENT' | 'LESS_URGENT' | 'NON_URGENT';
   priority_score: number;
   chief_complaint: string;
@@ -104,7 +113,7 @@ export class EmergencyService {
     return await EmergencyVisit.create({
       ...data,
       arrival_time: new Date(),
-      status: 'TRIAGE'
+      status: 'TRIAGE',
     });
   }
 
@@ -116,36 +125,36 @@ export class EmergencyService {
       include: [
         {
           model: Patient,
-          attributes: ['first_name', 'last_name', 'date_of_birth', 'gender', 'phone']
+          attributes: ['first_name', 'last_name', 'date_of_birth', 'gender', 'phone'],
         },
         {
           model: Visit,
-          attributes: ['date_visit_start', 'category', 'status']
+          attributes: ['date_visit_start', 'category', 'status'],
         },
         {
           model: Staff,
           as: 'attending_physician',
-          attributes: ['first_name', 'last_name', 'email', 'phone']
+          attributes: ['first_name', 'last_name', 'email', 'phone'],
         },
         {
           model: Staff,
           as: 'triage_nurse',
-          attributes: ['first_name', 'last_name', 'email', 'phone']
+          attributes: ['first_name', 'last_name', 'email', 'phone'],
         },
         {
           model: Staff,
           as: 'emergency_nurse',
-          attributes: ['first_name', 'last_name', 'email', 'phone']
+          attributes: ['first_name', 'last_name', 'email', 'phone'],
         },
         {
           model: EmergencyTriage,
-          order: [['createdAt', 'DESC']]
+          order: [['createdAt', 'DESC']],
         },
         {
           model: EmergencyProcedure,
-          order: [['planned_time', 'ASC']]
-        }
-      ]
+          order: [['planned_time', 'ASC']],
+        },
+      ],
     });
   }
 
@@ -181,7 +190,7 @@ export class EmergencyService {
       patient_id,
       date_from,
       date_to,
-      search
+      search,
     } = params;
 
     const offset = (page - 1) * limit;
@@ -203,7 +212,7 @@ export class EmergencyService {
       where[Op.or] = [
         { chief_complaint: { [Op.like]: `%${search}%` } },
         { presenting_symptoms: { [Op.like]: `%${search}%` } },
-        { notes: { [Op.like]: `%${search}%` } }
+        { notes: { [Op.like]: `%${search}%` } },
       ];
     }
 
@@ -212,24 +221,27 @@ export class EmergencyService {
       include: [
         {
           model: Patient,
-          attributes: ['first_name', 'last_name']
+          attributes: ['first_name', 'last_name'],
         },
         {
           model: Staff,
           as: 'attending_physician',
-          attributes: ['first_name', 'last_name']
-        }
+          attributes: ['first_name', 'last_name'],
+        },
       ],
-      order: [['priority_score', 'ASC'], ['arrival_time', 'ASC']],
+      order: [
+        ['priority_score', 'ASC'],
+        ['arrival_time', 'ASC'],
+      ],
       limit,
-      offset
+      offset,
     });
 
     return {
       visits: rows,
       total: count,
       page,
-      totalPages: Math.ceil(count / limit)
+      totalPages: Math.ceil(count / limit),
     };
   }
 
@@ -253,14 +265,14 @@ export class EmergencyService {
     const triage = await EmergencyTriage.create({
       ...triageData,
       status: 'COMPLETED',
-      triage_completed_time: new Date()
+      triage_completed_time: new Date(),
     });
 
     // Update emergency visit with triage results
     await emergencyVisit.update({
       status: 'ASSESSMENT',
       triage_completed_time: new Date(),
-      triage_nurse_id: triageData.triage_nurse_id
+      triage_nurse_id: triageData.triage_nurse_id,
     });
 
     return triage;
@@ -298,12 +310,12 @@ export class EmergencyService {
       current_emergency_visit_id: assignmentData.emergency_visit_id,
       assigned_nurse_id: assignmentData.assigned_nurse_id,
       assigned_time: new Date(),
-      expected_discharge_time: assignmentData.expected_discharge_time
+      expected_discharge_time: assignmentData.expected_discharge_time,
     });
 
     // Update emergency visit status
     await emergencyVisit.update({
-      status: 'TREATMENT'
+      status: 'TREATMENT',
     });
 
     return bed;
@@ -312,11 +324,14 @@ export class EmergencyService {
   /**
    * Get available emergency beds
    */
-  static async getAvailableEmergencyBeds(bedType?: string, requiredEquipment?: string[]): Promise<EmergencyBed[]> {
-    const where: any = { 
-      status: 'AVAILABLE'
+  static async getAvailableEmergencyBeds(
+    bedType?: string,
+    requiredEquipment?: string[]
+  ): Promise<EmergencyBed[]> {
+    const where: any = {
+      status: 'AVAILABLE',
     };
-    
+
     if (bedType) {
       where.bed_type = bedType;
     }
@@ -340,26 +355,28 @@ export class EmergencyService {
       triagePending,
       criticalCases,
       emergencyTypeStats,
-      triageCategoryStats
+      triageCategoryStats,
     ] = await Promise.all([
       EmergencyVisit.count(),
-      EmergencyVisit.count({ where: { status: { [Op.in]: ['TRIAGE', 'ASSESSMENT', 'TREATMENT', 'OBSERVATION'] } } }),
+      EmergencyVisit.count({
+        where: { status: { [Op.in]: ['TRIAGE', 'ASSESSMENT', 'TREATMENT', 'OBSERVATION'] } },
+      }),
       EmergencyVisit.count({ where: { status: 'TRIAGE' } }),
       EmergencyVisit.count({ where: { triage_category: { [Op.in]: ['IMMEDIATE', 'EMERGENT'] } } }),
       EmergencyVisit.findAll({
         attributes: [
           'emergency_type',
-          [EmergencyVisit.sequelize.fn('COUNT', EmergencyVisit.sequelize.col('id')), 'count']
+          [EmergencyVisit.sequelize.fn('COUNT', EmergencyVisit.sequelize.col('id')), 'count'],
         ],
-        group: ['emergency_type']
+        group: ['emergency_type'],
       }),
       EmergencyVisit.findAll({
         attributes: [
           'triage_category',
-          [EmergencyVisit.sequelize.fn('COUNT', EmergencyVisit.sequelize.col('id')), 'count']
+          [EmergencyVisit.sequelize.fn('COUNT', EmergencyVisit.sequelize.col('id')), 'count'],
         ],
-        group: ['triage_category']
-      })
+        group: ['triage_category'],
+      }),
     ]);
 
     // Calculate bed occupancy rate
@@ -389,7 +406,7 @@ export class EmergencyService {
       average_wait_time: averageWaitTime,
       critical_cases: criticalCases,
       by_emergency_type: byEmergencyType,
-      by_triage_category: byTriageCategory
+      by_triage_category: byTriageCategory,
     };
   }
 
@@ -400,9 +417,9 @@ export class EmergencyService {
     const currentYear = new Date().getFullYear();
     const lastVisit = await EmergencyVisit.findOne({
       where: {
-        id: { [Op.gte]: 1 }
+        id: { [Op.gte]: 1 },
       },
-      order: [['id', 'DESC']]
+      order: [['id', 'DESC']],
     });
 
     let sequence = 1;

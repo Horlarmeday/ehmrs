@@ -8,4 +8,12 @@ export default {
 
   dependant: null,
   dependants: [],
+
+  // Death statistics and reporting
+  deathStatistics: null,
+  mortalityReports: null,
+  deathCertificateTracking: null,
+  certificateVerification: null,
+  allSignatures: [],
+  missingDeathCertificateNumbers: null,
 };

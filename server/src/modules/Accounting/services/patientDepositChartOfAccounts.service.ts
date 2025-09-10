@@ -18,58 +18,58 @@ export class ComprehensiveChartOfAccountsService {
       code: '2001',
       name: 'Patient Deposits Payable',
       type: AccountType.LIABILITY,
-      description: 'Liability account for patient deposits held by the hospital'
+      description: 'Liability account for patient deposits held by the hospital',
     },
     {
       code: '1001',
       name: 'Cash on Hand',
       type: AccountType.ASSET,
-      description: 'Cash available for immediate use in hospital operations'
+      description: 'Cash available for immediate use in hospital operations',
     },
     {
       code: '1002',
       name: 'Bank Accounts',
       type: AccountType.ASSET,
-      description: 'Hospital bank account balances'
+      description: 'Hospital bank account balances',
     },
     {
       code: '1003',
       name: 'POS Terminal Receivables',
       type: AccountType.ASSET,
-      description: 'Amounts received via POS terminals before settlement to bank accounts'
+      description: 'Amounts received via POS terminals before settlement to bank accounts',
     },
     {
       code: '4001',
       name: 'Service Revenue',
       type: AccountType.REVENUE,
-      description: 'Revenue from medical services provided to patients'
+      description: 'Revenue from medical services provided to patients',
     },
     {
       code: '4002',
       name: 'Deposit Administration Fee',
       type: AccountType.REVENUE,
-      description: 'Fees charged for managing patient deposits'
+      description: 'Fees charged for managing patient deposits',
     },
-    
+
     // === NEW PAYMENT PROCESSING ACCOUNTS ===
     {
       code: '1004',
       name: 'Cash Register',
       type: AccountType.ASSET,
-      description: 'Cash register for daily cash collections and disbursements'
+      description: 'Cash register for daily cash collections and disbursements',
     },
     {
       code: '1101',
       name: 'Insurance Receivables',
       type: AccountType.ASSET,
-      description: 'Amounts receivable from insurance providers for medical services'
+      description: 'Amounts receivable from insurance providers for medical services',
     },
     {
       code: '1102',
       name: 'Bank Transfer Receivables',
       type: AccountType.ASSET,
-      description: 'Amounts receivable from bank transfers before clearing to bank accounts'
-    }
+      description: 'Amounts receivable from bank transfers before clearing to bank accounts',
+    },
   ];
 
   /**
@@ -96,7 +96,7 @@ export class ComprehensiveChartOfAccountsService {
     try {
       // Check if account exists by code
       let account = await ChartOfAccount.findOne({
-        where: { code: requiredAccount.code }
+        where: { code: requiredAccount.code },
       });
 
       if (!account) {
@@ -108,13 +108,13 @@ export class ComprehensiveChartOfAccountsService {
           description: requiredAccount.description,
           is_active: true,
           balance: 0,
-          allow_manual_entries: true
+          allow_manual_entries: true,
         });
 
         console.log(`Created Chart of Account: ${requiredAccount.name} (${requiredAccount.code})`);
       } else {
         // Update existing account if needed
-        const needsUpdate = 
+        const needsUpdate =
           account.name !== requiredAccount.name ||
           account.type !== requiredAccount.type ||
           account.description !== requiredAccount.description ||
@@ -125,10 +125,12 @@ export class ComprehensiveChartOfAccountsService {
             name: requiredAccount.name,
             type: requiredAccount.type,
             description: requiredAccount.description,
-            is_active: true
+            is_active: true,
           });
 
-          console.log(`Updated Chart of Account: ${requiredAccount.name} (${requiredAccount.code})`);
+          console.log(
+            `Updated Chart of Account: ${requiredAccount.name} (${requiredAccount.code})`
+          );
         }
       }
     } catch (error) {
@@ -146,14 +148,10 @@ export class ComprehensiveChartOfAccountsService {
   static async getRequiredAccount(code: string): Promise<ChartOfAccount | null> {
     try {
       return await ChartOfAccount.findOne({
-        where: { code, is_active: true }
+        where: { code, is_active: true },
       });
     } catch (error) {
-      throw new BadException(
-        `Failed to get required account ${code}`,
-        500,
-        error.message
-      );
+      throw new BadException(`Failed to get required account ${code}`, 500, error.message);
     }
   }
 
@@ -164,17 +162,13 @@ export class ComprehensiveChartOfAccountsService {
     try {
       const codes = this.REQUIRED_ACCOUNTS.map(account => account.code);
       return await ChartOfAccount.findAll({
-        where: { 
+        where: {
           code: codes,
-          is_active: true 
-        }
+          is_active: true,
+        },
       });
     } catch (error) {
-      throw new BadException(
-        'Failed to get all required accounts',
-        500,
-        error.message
-      );
+      throw new BadException('Failed to get all required accounts', 500, error.message);
     }
   }
 
@@ -185,11 +179,11 @@ export class ComprehensiveChartOfAccountsService {
     try {
       const codes = this.REQUIRED_ACCOUNTS.map(account => account.code);
       const existingAccounts = await ChartOfAccount.findAll({
-        where: { 
+        where: {
           code: codes,
-          is_active: true 
+          is_active: true,
         },
-        attributes: ['code']
+        attributes: ['code'],
       });
 
       const existingCodes = existingAccounts.map(account => account.code);
@@ -197,14 +191,10 @@ export class ComprehensiveChartOfAccountsService {
 
       return {
         valid: missingCodes.length === 0,
-        missing: missingCodes
+        missing: missingCodes,
       };
     } catch (error) {
-      throw new BadException(
-        'Failed to validate required accounts',
-        500,
-        error.message
-      );
+      throw new BadException('Failed to validate required accounts', 500, error.message);
     }
   }
 
@@ -215,7 +205,11 @@ export class ComprehensiveChartOfAccountsService {
     try {
       const account = await this.getRequiredAccount(accountCode);
       if (!account) {
-        throw new BadException('Required Account Not Found', 404, `Required account ${accountCode} not found`);
+        throw new BadException(
+          'Required Account Not Found',
+          404,
+          `Required account ${accountCode} not found`
+        );
       }
       return account.balance || 0;
     } catch (error) {

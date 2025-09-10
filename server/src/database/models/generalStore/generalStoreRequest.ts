@@ -20,48 +20,48 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../../core/helpers/helper';
 
-@Table({ 
-  timestamps: true, 
+@Table({
+  timestamps: true,
   tableName: 'General_Store_Requests',
   indexes: [
     {
       name: 'idx_general_store_request_number',
       fields: ['request_number'],
-      unique: true
+      unique: true,
     },
     {
       name: 'idx_general_store_request_department',
-      fields: ['requesting_department']
+      fields: ['requesting_department'],
     },
     {
       name: 'idx_general_store_request_status',
-      fields: ['status']
+      fields: ['status'],
     },
     {
       name: 'idx_general_store_request_priority',
-      fields: ['priority']
+      fields: ['priority'],
     },
     {
       name: 'idx_general_store_request_date',
-      fields: ['request_date']
+      fields: ['request_date'],
     },
     {
       name: 'idx_general_store_request_required_date',
-      fields: ['required_date']
+      fields: ['required_date'],
     },
     {
       name: 'idx_general_store_request_requester',
-      fields: ['requested_by']
+      fields: ['requested_by'],
     },
     {
       name: 'idx_general_store_request_approver',
-      fields: ['approved_by']
+      fields: ['approved_by'],
     },
     {
       name: 'idx_general_store_request_composite_status_priority',
-      fields: ['status', 'priority']
-    }
-  ]
+      fields: ['status', 'priority'],
+    },
+  ],
 })
 export class GeneralStoreRequest extends Model {
   @PrimaryKey
@@ -282,7 +282,7 @@ export class GeneralStoreRequest extends Model {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   }
 
@@ -290,7 +290,7 @@ export class GeneralStoreRequest extends Model {
     return this.required_date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     });
   }
 

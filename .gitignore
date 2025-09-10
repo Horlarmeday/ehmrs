@@ -38,6 +38,7 @@ node_modules
 
 # Optional REPL history
 .node_repl_history
+.env.test
 
 # Local environment
 dist/
@@ -47,3 +48,11 @@ config.json
 server/config.json
 .client
 .server
+.env
+*.env
+.trae/*
+.claude/*
+.cursor/*
+server/server.zip
+client/client.zip
+*.zip

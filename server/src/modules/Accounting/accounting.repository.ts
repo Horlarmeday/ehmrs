@@ -2407,17 +2407,17 @@ export class AccountingRepository {
     // Build includes based on payment method filters
     // Note: For association search to work, we need to include these models
     const includes: Includeable[] = [
-      { 
-        model: ClinicalBill, 
-        as: 'bill', 
+      {
+        model: ClinicalBill,
+        as: 'bill',
         attributes: ['id', 'bill_number', 'final_amount'],
-        required: false // Allow LEFT JOIN for search flexibility
+        required: false, // Allow LEFT JOIN for search flexibility
       },
       {
         model: Patient,
         as: 'patient',
         attributes: patientAttributes,
-        required: false // Allow LEFT JOIN for search flexibility
+        required: false, // Allow LEFT JOIN for search flexibility
       },
       { model: Staff, as: 'processedByStaff', attributes: staffAttributes },
     ];
@@ -2425,32 +2425,32 @@ export class AccountingRepository {
     // Handle search across multiple fields
     if (filters.search) {
       const searchTerm = `%${filters.search}%`;
-      
+
       // Use Sequelize v6+ association syntax for searching across related models
       where[Op.or] = [
         // Search in payment_reference (direct field)
         {
-          payment_reference: { [Op.like]: searchTerm }
+          payment_reference: { [Op.like]: searchTerm },
         },
         // Search in ClinicalBill (bill_number) using association syntax
         {
-          '$bill.bill_number$': { [Op.like]: searchTerm }
+          '$bill.bill_number$': { [Op.like]: searchTerm },
         },
         // Search in Patient fields using association syntax
         {
-          '$patient.firstname$': { [Op.like]: searchTerm }
+          '$patient.firstname$': { [Op.like]: searchTerm },
         },
         {
-          '$patient.lastname$': { [Op.like]: searchTerm }
+          '$patient.lastname$': { [Op.like]: searchTerm },
         },
         {
-          '$patient.phone$': { [Op.like]: searchTerm }
+          '$patient.phone$': { [Op.like]: searchTerm },
         },
         {
-          '$patient.hospital_id$': { [Op.like]: searchTerm }
-        }
+          '$patient.hospital_id$': { [Op.like]: searchTerm },
+        },
       ];
-      
+
       console.log('Search term:', searchTerm);
       console.log('Search where clause:', where);
     }
@@ -2498,7 +2498,7 @@ export class AccountingRepository {
       console.log('Search query includes:', JSON.stringify(includes, null, 2));
       console.log('========================');
     }
-    
+
     return ClinicalPayment.paginate({
       where,
       include: includes,

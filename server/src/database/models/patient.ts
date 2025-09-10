@@ -254,6 +254,63 @@ export class Patient extends Model {
   })
   status?: Status;
 
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  date_of_death?: Date;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  cause_of_death?: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  death_certificate_number?: string;
+
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+  })
+  marked_deceased_by?: number;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  marked_deceased_at?: Date;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
+  revival_reason?: string;
+
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+  })
+  revived_by?: number;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  revived_at?: Date;
+
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+  })
+  updated_by?: number;
+
   @Column(DataType.VIRTUAL)
   get fullname(): unknown {
     return `${this.getDataValue('firstname')} ${this.getDataValue('middlename') ||
@@ -274,6 +331,15 @@ export class Patient extends Model {
 
   @BelongsTo(() => Patient, { foreignKey: 'principal_id' })
   principal: Patient;
+
+  @BelongsTo(() => Staff, { foreignKey: 'marked_deceased_by' })
+  markedDeceasedBy: Staff;
+
+  @BelongsTo(() => Staff, { foreignKey: 'revived_by' })
+  revivedBy: Staff;
+
+  @BelongsTo(() => Staff, { foreignKey: 'updated_by' })
+  updatedBy: Staff;
 
   @BeforeCreate
   static async addCompleteName(instance: Patient) {

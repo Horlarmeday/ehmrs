@@ -473,7 +473,6 @@ export default {
           this.$router.push('/general-store/items');
         }
       } catch (error) {
-        console.error('Error loading item details:', error);
         this.$toast.error('Failed to load item details');
       } finally {
         this.loading = false;
@@ -566,14 +565,65 @@ export default {
       await this.loadItemDetails();
     },
 
-    printItem() {
-      // TODO: Implement print functionality
-      this.$toast.info('Print functionality coming soon');
+    async printItem() {
+      try {
+        const itemData = [{
+          id: this.item.id,
+          name: this.item.name,
+          code: this.item.code,
+          description: this.item.description,
+          current_stock: this.item.current_stock,
+          minimum_stock: this.item.minimum_stock,
+          unit_price: this.item.unit_price,
+          total_value: this.item.current_stock * this.item.unit_price,
+          category: this.item.category?.name || 'N/A',
+          subcategory: this.item.subcategory?.name || 'N/A',
+          created_at: this.item.created_at,
+        }];
+
+        const reportConfig = {
+          title: `Item Details - ${this.item.name}`,
+          subtitle: `Item Code: ${this.item.code}`,
+          orientation: 'portrait',
+          format: 'a4',
+        };
+        await this.$printReport(itemData, reportConfig);
+      } catch (error) {
+        this.$logError('Failed to print item details', error, { itemId: this.item.id });
+        this.$toast.error('Failed to print item details');
+      }
     },
 
-    exportItem() {
-      // TODO: Implement export functionality
-      this.$toast.info('Export functionality coming soon');
+    async exportItem() {
+      try {
+        const itemData = [{
+          id: this.item.id,
+          name: this.item.name,
+          code: this.item.code,
+          description: this.item.description,
+          current_stock: this.item.current_stock,
+          minimum_stock: this.item.minimum_stock,
+          unit_price: this.item.unit_price,
+          total_value: this.item.current_stock * this.item.unit_price,
+          category: this.item.category?.name || 'N/A',
+          subcategory: this.item.subcategory?.name || 'N/A',
+          created_at: this.item.created_at,
+        }];
+
+        const reportName = `Item_${this.item.code}_${new Date().toISOString().split('T')[0]}`;
+        await this.$exportData(itemData, reportName, 'xlsx', {
+          formatters: {
+            current_stock: (value) => Number(value || 0),
+            minimum_stock: (value) => Number(value || 0),
+            unit_price: (value) => Number(value || 0).toFixed(2),
+            total_value: (value) => Number(value || 0).toFixed(2),
+            created_at: (value) => new Date(value).toLocaleDateString(),
+          }
+        });
+      } catch (error) {
+        this.$logError('Failed to export item details', error, { itemId: this.item.id });
+        this.$toast.error('Failed to export item details');
+      }
     }
   }
 };

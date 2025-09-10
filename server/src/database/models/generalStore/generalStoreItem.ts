@@ -26,48 +26,48 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../../core/helpers/helper';
 
-@Table({ 
-  timestamps: true, 
+@Table({
+  timestamps: true,
   tableName: 'General_Store_Items',
   indexes: [
     {
       name: 'idx_general_store_item_code',
       fields: ['item_code'],
-      unique: true
+      unique: true,
     },
     {
       name: 'idx_general_store_item_category',
-      fields: ['category_id']
+      fields: ['category_id'],
     },
     {
       name: 'idx_general_store_item_subcategory',
-      fields: ['subcategory_id']
+      fields: ['subcategory_id'],
     },
     {
       name: 'idx_general_store_item_status',
-      fields: ['status']
+      fields: ['status'],
     },
     {
       name: 'idx_general_store_item_supplier',
-      fields: ['supplier_id']
+      fields: ['supplier_id'],
     },
     {
       name: 'idx_general_store_item_stock',
-      fields: ['current_stock']
+      fields: ['current_stock'],
     },
     {
       name: 'idx_general_store_item_expiry',
-      fields: ['expiry_date']
+      fields: ['expiry_date'],
     },
     {
       name: 'idx_general_store_item_unit',
-      fields: ['unit_id']
+      fields: ['unit_id'],
     },
     {
       name: 'idx_general_store_item_composite_category_subcategory',
-      fields: ['category_id', 'subcategory_id']
-    }
-  ]
+      fields: ['category_id', 'subcategory_id'],
+    },
+  ],
 })
 export class GeneralStoreItem extends Model {
   @PrimaryKey
@@ -354,7 +354,7 @@ export class GeneralStoreItem extends Model {
     return this.current_stock === 0;
   }
 
-  isExpiringSoon(days: number = 30): boolean {
+  isExpiringSoon(days = 30): boolean {
     if (!this.is_expirable || !this.expiry_date) {
       return false;
     }

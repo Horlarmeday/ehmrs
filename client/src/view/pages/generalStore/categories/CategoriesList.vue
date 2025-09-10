@@ -22,8 +22,8 @@
               <i class="flaticon2-plus mr-2"></i>
               Add Category
             </button>
-            <button @click="refreshData" class="btn btn-light btn-lg" :disabled="loading">
-              <i class="flaticon2-refresh mr-2" :class="{ 'fa-spin': loading }"></i>
+            <button @click="refreshData" class="btn btn-light btn-lg" :disabled="categoriesLoading">
+              <i class="flaticon2-refresh mr-2" :class="{ 'fa-spin': categoriesLoading }"></i>
               Refresh
             </button>
           </div>
@@ -45,10 +45,9 @@
                   </span>
                 </div>
                 <input
-                  v-model="filters.search"
+                  v-model="searchFilter"
                   type="text"
                   class="form-control"
-                  placeholder="Search by name or description..."
                   @input="handleSearch"
                 />
               </div>
@@ -362,22 +361,21 @@
     </div>
 
     <!-- Pagination -->
-    <div v-if="categoriesTotal > pagination.limit" class="pagination-section">
+    <div v-if="categoriesTotal > pageLimit" class="pagination-section">
       <div class="card card-custom">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center">
             <div class="pagination-info">
               <span class="text-muted">
-                Showing {{ (pagination.page - 1) * pagination.limit + 1 }} to
-                {{ Math.min(pagination.page * pagination.limit, categoriesTotal) }} of
-                {{ categoriesTotal }} categories
+                Showing {{ paginationInfo.start }} to {{ paginationInfo.end }} of
+                {{ paginationInfo.total }} categories
               </span>
             </div>
 
             <nav>
               <ul class="pagination pagination-sm mb-0">
-                <li class="page-item" :class="{ disabled: pagination.page === 1 }">
-                  <a class="page-link" href="#" @click.prevent="changePage(pagination.page - 1)">
+                <li class="page-item" :class="{ disabled: !hasPrevPage }">
+                  <a class="page-link" href="#" @click.prevent="prevPage()">
                     <i class="flaticon2-arrow-left"></i>
                   </a>
                 </li>
@@ -386,15 +384,15 @@
                   v-for="page in visiblePages"
                   :key="page"
                   class="page-item"
-                  :class="{ active: page === pagination.page }"
+                  :class="{ active: page === currentPage }"
                 >
                   <a class="page-link" href="#" @click.prevent="changePage(page)">
                     {{ page }}
                   </a>
                 </li>
 
-                <li class="page-item" :class="{ disabled: pagination.page === totalPages }">
-                  <a class="page-link" href="#" @click.prevent="changePage(pagination.page + 1)">
+                <li class="page-item" :class="{ disabled: !hasNextPage }">
+                  <a class="page-link" href="#" @click.prevent="nextPage()">
                     <i class="flaticon2-arrow-right"></i>
                   </a>
                 </li>
@@ -403,7 +401,7 @@
 
             <div class="page-size-selector">
               <select
-                v-model="pagination.limit"
+                v-model="pageLimit"
                 class="form-control form-control-sm"
                 @change="handlePageSizeChange"
               >
@@ -419,28 +417,62 @@
     </div>
 
     <!-- Create Category Modal -->
-    <div v-if="showCreateModal" class="modal-overlay" @click="showCreateModal = false">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h4 class="modal-title">
-            <i class="flaticon2-plus text-success mr-2"></i>
-            Create New Category
-          </h4>
-          <button @click="showCreateModal = false" class="close">
-            <span>&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <CreateCategoryForm
-            @category-created="handleCategoryCreated"
-            @cancel="showCreateModal = false"
-          />
+    <div
+      class="modal fade"
+      :class="{ show: showCreateModal, 'd-block': showCreateModal }"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="createCategoryModalLabel"
+      aria-hidden="true"
+      @click="showCreateModal = false"
+    >
+      <div class="modal-dialog modal-xl" role="document" @click.stop>
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title" id="createCategoryModalLabel">
+              <i class="flaticon2-plus text-success mr-2"></i>
+              Create New Category
+            </h4>
+            <button type="button" class="close" @click="showCreateModal = false" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <CreateCategoryForm
+              ref="createCategoryForm"
+              @category-created="handleCategoryCreated"
+              @cancel="showCreateModal = false"
+              :show-actions="false"
+            />
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              @click="showCreateModal = false"
+              class="btn btn-light btn-lg mr-3"
+            >
+              <i class="flaticon2-close mr-2"></i>
+              Cancel
+            </button>
+            <button
+              type="button"
+              @click="createCategory"
+              class="btn btn-success btn-lg"
+              :disabled="loading"
+            >
+              <i class="flaticon2-plus mr-2"></i>
+              {{ loading ? 'Creating...' : 'Create Category' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
+    <!-- Modal Backdrop -->
+    <div v-if="showCreateModal" class="modal-backdrop fade show"></div>
+
     <!-- Loading Overlay -->
-    <div v-if="loading" class="loading-overlay">
+    <div v-if="categoriesLoading" class="loading-overlay">
       <div class="spinner-border text-success" role="status">
         <span class="sr-only">Loading...</span>
       </div>
@@ -451,54 +483,29 @@
 <script>
 import { parseJwt } from '@/common/common';
 import CreateCategoryForm from './CreateCategory.vue';
+import generalStoreMixin from '@/core/mixins/generalStoreMixin';
 
 export default {
   name: 'CategoriesList',
+  mixins: [generalStoreMixin],
   components: {
     CreateCategoryForm,
   },
   data() {
     return {
-      loading: false,
       showCreateModal: false,
       viewMode: 'grid',
       user: parseJwt(localStorage.getItem('user_token')),
       ALLOWED_ROLES: ['Super Admin', 'General Store Manager', 'General Store Staff'],
-      filters: {
-        search: '',
-        parent_id: '',
-        is_active: '',
-        type: '',
-      },
       sortField: 'name',
       sortDirection: 'asc',
-      pagination: {
-        page: 1,
-        limit: 20,
-      },
       searchTimeout: null,
     };
   },
   computed: {
-    // Get data from Vuex store
-    categories() {
-      return this.$store.state.generalStore.categories;
-    },
+    // Use standardized computed properties from mixin
     categoriesTotal() {
       return this.$store.state.generalStore.categoriesTotal;
-    },
-    totalPages() {
-      return Math.ceil(this.categoriesTotal / this.pagination.limit);
-    },
-    visiblePages() {
-      const pages = [];
-      const start = Math.max(1, this.pagination.page - 2);
-      const end = Math.min(this.totalPages, this.pagination.page + 2);
-
-      for (let i = start; i <= end; i++) {
-        pages.push(i);
-      }
-      return pages;
     },
     paginatedCategories() {
       return this.categories;
@@ -512,29 +519,19 @@ export default {
   },
   methods: {
     async loadData() {
-      this.loading = true;
-      try {
-        await this.$store.dispatch('generalStore/fetchCategories', this.getRequestParams());
-      } catch (error) {
-        console.error('Error loading categories:', error);
-      } finally {
-        this.loading = false;
-      }
+      await this.loadCategories(this.getRequestParams());
     },
 
     getRequestParams() {
-      const params = {
-        page: this.pagination.page,
-        limit: this.pagination.limit,
-      };
+      const params = this.getFilteredParams();
 
-      if (this.filters.search) params.search = this.filters.search;
-      if (this.filters.parent_id) params.parent_id = this.filters.parent_id;
-      if (this.filters.is_active !== '') params.is_active = this.filters.is_active;
-      if (this.filters.type) {
-        if (this.filters.type === 'parent') {
+      // Add category-specific filters
+      if (this.getFilter('parent_id')) params.parent_id = this.getFilter('parent_id');
+      if (this.getFilter('is_active') !== '') params.is_active = this.getFilter('is_active');
+      if (this.getFilter('type')) {
+        if (this.getFilter('type') === 'parent') {
           params.parent_id = null;
-        } else if (this.filters.type === 'child') {
+        } else if (this.getFilter('type') === 'child') {
           params.has_parent = true;
         }
       }
@@ -545,28 +542,23 @@ export default {
     handleSearch() {
       clearTimeout(this.searchTimeout);
       this.searchTimeout = setTimeout(() => {
-        this.pagination.page = 1;
+        this.resetPagination();
         this.loadData();
       }, 500);
     },
 
     handleFilterChange() {
-      this.pagination.page = 1;
+      this.resetPagination();
       this.loadData();
     },
 
     clearFilter(filterName) {
-      this.filters[filterName] = '';
+      this.clearGlobalFilter(filterName);
       this.handleFilterChange();
     },
 
     clearAllFilters() {
-      this.filters = {
-        search: '',
-        parent_id: '',
-        is_active: '',
-        type: '',
-      };
+      this.clearAllGlobalFilters();
       this.handleFilterChange();
     },
 
@@ -584,15 +576,12 @@ export default {
       return direction === 'asc' ? 'flaticon2-arrow-up' : 'flaticon2-arrow-down';
     },
 
-    changePage(page) {
-      if (page >= 1 && page <= this.totalPages) {
-        this.pagination.page = page;
-        this.loadData();
-      }
+    onPageChange() {
+      this.loadData();
     },
 
     handlePageSizeChange() {
-      this.pagination.page = 1;
+      this.changePageLimit(this.pageLimit);
       this.loadData();
     },
 
@@ -634,6 +623,11 @@ export default {
           this.$toast.error('Failed to delete category');
         }
       }
+    },
+
+    createCategory() {
+      // Trigger form submission in the CreateCategoryForm component
+      this.$refs.createCategoryForm?.submitForm();
     },
 
     handleCategoryCreated() {
@@ -769,34 +763,31 @@ export default {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
+/* Bootstrap modal customizations */
+.modal.show {
+  display: block !important;
+}
+
+.modal-xl {
+  max-width: 1140px;
 }
 
 .modal-content {
-  background: white;
   border-radius: 0.5rem;
-  width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
+  border: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .modal-header {
   padding: 1.5rem;
   border-bottom: 1px solid #e9ecef;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.modal-body {
+  padding: 0;
+  max-height: calc(80vh - 120px);
+  overflow-y: auto;
 }
 
 .modal-title {
@@ -818,6 +809,18 @@ export default {
 
 .modal-body {
   padding: 1.5rem;
+}
+
+.modal-footer {
+  padding: 1.5rem;
+  border-top: 1px solid #e9ecef;
+  background: #f8f9fa;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  position: sticky;
+  bottom: 0;
+  z-index: 1000;
 }
 
 .loading-overlay {
@@ -858,9 +861,13 @@ export default {
     font-size: 0.75rem;
   }
 
-  .modal-content {
-    width: 95%;
+  .modal-xl {
+    max-width: 95%;
     margin: 1rem;
+  }
+
+  .modal-body {
+    max-height: 70vh;
   }
 }
 </style>

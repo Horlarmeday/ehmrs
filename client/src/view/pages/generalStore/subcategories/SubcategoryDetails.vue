@@ -342,7 +342,6 @@ export default {
       try {
         await this.$store.dispatch('generalStore/fetchSubcategoryById', this.$route.params.id);
       } catch (error) {
-        console.error('Error loading subcategory details:', error);
         this.$toast.error('Failed to load subcategory details');
       } finally {
         this.loading = false;
@@ -355,18 +354,21 @@ export default {
           limit: 50,
         });
       } catch (error) {
-        console.error('Error loading items:', error);
         this.$toast.error('Failed to load items');
       }
     },
     async loadRecentActivity() {
       try {
-        // Note: This might need a separate action if audit logs are not in the general store
-        // For now, using placeholder data until audit log action is implemented
-        this.recentActivity = [];
+        // Load recent activity from audit logs
+        await this.$store.dispatch('generalStore/fetchAuditLogs', {
+          entity_type: 'SUBCATEGORY',
+          entity_id: this.subcategory.id,
+          limit: 10,
+        });
+        this.recentActivity = this.$store.state.generalStore.auditLogs || [];
       } catch (error) {
-        console.error('Error loading recent activity:', error);
-        this.$toast.error('Failed to load recent activity');
+        this.$logError('Failed to load recent activity', error, { subcategoryId: this.subcategory.id });
+        this.recentActivity = [];
       }
     },
     getStockLevelClass(currentStock, minStock) {
@@ -385,9 +387,29 @@ export default {
       if (!dateString) return 'N/A';
       return new Date(dateString).toLocaleDateString();
     },
-    exportSubcategoryData() {
-      // Implementation for exporting subcategory data
-      this.$toast.info('Export functionality coming soon');
+    async exportSubcategoryData() {
+      try {
+        const subcategoryData = [{
+          id: this.subcategory.id,
+          name: this.subcategory.name,
+          code: this.subcategory.code,
+          description: this.subcategory.description,
+          category_name: this.subcategory.category?.name || 'N/A',
+          items_count: this.subcategory.items_count || 0,
+          is_active: this.subcategory.is_active,
+          created_at: this.subcategory.created_at,
+        }];
+
+        const reportName = `Subcategory_${this.subcategory.code || this.subcategory.name}_${new Date().toISOString().split('T')[0]}`;
+        await this.$exportData(subcategoryData, reportName, 'xlsx', {
+          formatters: {
+            created_at: (value) => new Date(value).toLocaleDateString(),
+          }
+        });
+      } catch (error) {
+        this.$logError('Failed to export subcategory data', error, { subcategoryId: this.subcategory.id });
+        this.$toast.error('Failed to export subcategory data');
+      }
     },
     printSubcategoryDetails() {
       window.print();

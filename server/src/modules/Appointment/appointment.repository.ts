@@ -28,16 +28,17 @@ export async function createAppointment(data: CreateAppointment): Promise<Appoin
  */
 export async function getAppointments(query: any) {
   const {
-    currentPage,
-    pageLimit,
+    // Handle both frontend and backend parameter names
+    currentPage = query.page,
+    pageLimit = query.pageSize || query.itemsPerPage,
     search,
-    start,
-    end,
+    start = query.date_from,
+    end = query.date_to,
     filter,
     patient_id,
     doctor_id,
     status,
-    type,
+    type = query.appointment_type,
     department,
   } = query;
 

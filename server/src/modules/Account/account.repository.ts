@@ -22,7 +22,12 @@ import {
 } from '../../database/models';
 import { PaymentStatus } from '../../database/models/prescribedDrug';
 import { ServiceName } from '../../database/models/paymentHistory';
-import { generateRandomNumbers, StatusCodes, paginate, calcLimitAndOffset } from '../../core/helpers/helper';
+import {
+  generateRandomNumbers,
+  StatusCodes,
+  paginate,
+  calcLimitAndOffset,
+} from '../../core/helpers/helper';
 import { Transaction, Op, literal, QueryTypes } from 'sequelize';
 import dayjs from 'dayjs';
 import {
@@ -500,15 +505,24 @@ const generateCashFlowStatement = async (where: any) => {
   });
 
   const operatingActivities = journalEntries.filter(je =>
-    je.lines.some(line => (line as any).account?.type === 'ASSET' && (line as any).account?.code?.startsWith('1000'))
+    je.lines.some(
+      line =>
+        (line as any).account?.type === 'ASSET' && (line as any).account?.code?.startsWith('1000')
+    )
   );
 
   const investingActivities = journalEntries.filter(je =>
-    je.lines.some(line => (line as any).account?.type === 'ASSET' && (line as any).account?.code?.startsWith('2000'))
+    je.lines.some(
+      line =>
+        (line as any).account?.type === 'ASSET' && (line as any).account?.code?.startsWith('2000')
+    )
   );
 
   const financingActivities = journalEntries.filter(je =>
-    je.lines.some(line => (line as any).account?.type === 'ASSET' && (line as any).account?.code?.startsWith('3000'))
+    je.lines.some(
+      line =>
+        (line as any).account?.type === 'ASSET' && (line as any).account?.code?.startsWith('3000')
+    )
   );
 
   return {
@@ -517,15 +531,21 @@ const generateCashFlowStatement = async (where: any) => {
     financing_activities: financingActivities,
     net_cash_flow:
       operatingActivities.reduce(
-        (sum, je) => sum + je.lines.reduce((s, l) => s + (((l as any).debit || 0) - ((l as any).credit || 0)), 0),
+        (sum, je) =>
+          sum +
+          je.lines.reduce((s, l) => s + (((l as any).debit || 0) - ((l as any).credit || 0)), 0),
         0
       ) +
       investingActivities.reduce(
-        (sum, je) => sum + je.lines.reduce((s, l) => s + (((l as any).debit || 0) - ((l as any).credit || 0)), 0),
+        (sum, je) =>
+          sum +
+          je.lines.reduce((s, l) => s + (((l as any).debit || 0) - ((l as any).credit || 0)), 0),
         0
       ) +
       financingActivities.reduce(
-        (sum, je) => sum + je.lines.reduce((s, l) => s + (((l as any).debit || 0) - ((l as any).credit || 0)), 0),
+        (sum, je) =>
+          sum +
+          je.lines.reduce((s, l) => s + (((l as any).debit || 0) - ((l as any).credit || 0)), 0),
         0
       ),
   };
@@ -635,21 +655,21 @@ export const generateTrendAnalysis = async (data: TrendAnalysis) => {
   const groupedData = journalEntries.reduce((acc, entry) => {
     const date = dayjs(entry.transaction_date).format(intervalFormat);
     if (!acc[date]) {
-          acc[date] = {
-      revenue: 0,
-      expenses: 0,
-      net_income: 0,
-      transactions: 0,
-    };
-  }
+      acc[date] = {
+        revenue: 0,
+        expenses: 0,
+        net_income: 0,
+        transactions: 0,
+      };
+    }
 
-  const revenue = entry.lines
-    .filter(line => (line as any).account?.type === 'INCOME')
-    .reduce((sum, line) => sum + (((line as any).debit || 0) - ((line as any).credit || 0)), 0);
+    const revenue = entry.lines
+      .filter(line => (line as any).account?.type === 'INCOME')
+      .reduce((sum, line) => sum + (((line as any).debit || 0) - ((line as any).credit || 0)), 0);
 
-  const expenses = entry.lines
-    .filter(line => (line as any).account?.type === 'EXPENSE')
-    .reduce((sum, line) => sum + (((line as any).debit || 0) - ((line as any).credit || 0)), 0);
+    const expenses = entry.lines
+      .filter(line => (line as any).account?.type === 'EXPENSE')
+      .reduce((sum, line) => sum + (((line as any).debit || 0) - ((line as any).credit || 0)), 0);
 
     acc[date].revenue += revenue;
     acc[date].expenses += expenses;

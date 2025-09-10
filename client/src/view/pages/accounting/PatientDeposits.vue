@@ -595,8 +595,12 @@
                   <div v-if="selectedBill" class="selected-bill-display">
                     <div class="selected-bill-info">
                       <strong>Bill #{{ selectedBill.bill_number }}</strong>
-                      <small class="ml-2">{{ selectedBill.service_type || 'General Service' }}</small>
-                      <small class="ml-2 text-success">{{ formatCurrency(selectedBill.total_amount) }}</small>
+                      <small class="ml-2">{{
+                        selectedBill.service_type || 'General Service'
+                      }}</small>
+                      <small class="ml-2 text-success">{{
+                        formatCurrency(selectedBill.total_amount)
+                      }}</small>
                       <b-button
                         variant="link"
                         size="sm"
@@ -631,7 +635,11 @@
         <b-button variant="secondary" @click="showUseDepositModal = false">
           Cancel
         </b-button>
-        <b-button variant="success" @click="processDepositUsage" :disabled="processingUsage || !selectedBill">
+        <b-button
+          variant="success"
+          @click="processDepositUsage"
+          :disabled="processingUsage || !selectedBill"
+        >
           <span v-if="processingUsage">
             <i class="fas fa-spinner fa-spin mr-2"></i>Processing...
           </span>
@@ -754,9 +762,7 @@
           Cancel
         </b-button>
         <b-button variant="primary" @click="executeExport" :disabled="exporting">
-          <span v-if="exporting">
-            <i class="fas fa-spinner fa-spin mr-2"></i>Exporting...
-          </span>
+          <span v-if="exporting"> <i class="fas fa-spinner fa-spin mr-2"></i>Exporting... </span>
           <span v-else>
             Export Deposits
           </span>
@@ -992,7 +998,7 @@ export default {
       try {
         // Load enhanced deposit metrics for detailed overview
         const response = await this.$store.dispatch('accounting/fetchDepositsSummary');
-        
+
         if (response && response.success) {
           // The action will automatically update the store state
           console.log('Enhanced metrics loaded successfully');

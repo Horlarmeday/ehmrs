@@ -8,49 +8,49 @@ module.exports = {
       allowNull: true,
       references: {
         model: 'bank_accounts',
-        key: 'id'
+        key: 'id',
       },
       onUpdate: 'CASCADE',
-      onDelete: 'SET NULL'
+      onDelete: 'SET NULL',
     });
 
     await queryInterface.addColumn('patient_deposits', 'initial_amount', {
       type: Sequelize.DECIMAL(10, 2),
       allowNull: false,
-      defaultValue: 0
+      defaultValue: 0,
     });
 
     await queryInterface.addColumn('patient_deposits', 'current_balance', {
       type: Sequelize.DECIMAL(10, 2),
       allowNull: false,
-      defaultValue: 0
+      defaultValue: 0,
     });
 
     await queryInterface.addColumn('patient_deposits', 'refundable_amount', {
       type: Sequelize.DECIMAL(10, 2),
       allowNull: false,
-      defaultValue: 0
+      defaultValue: 0,
     });
 
     await queryInterface.addColumn('patient_deposits', 'deposit_date', {
       type: Sequelize.DATE,
       allowNull: false,
-      defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+      defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
     });
 
     await queryInterface.addColumn('patient_deposits', 'last_activity_date', {
       type: Sequelize.DATE,
-      allowNull: true
+      allowNull: true,
     });
 
     await queryInterface.addColumn('patient_deposits', 'payment_method', {
       type: Sequelize.STRING(50),
-      allowNull: true
+      allowNull: true,
     });
 
     await queryInterface.addColumn('patient_deposits', 'payment_reference', {
       type: Sequelize.STRING(100),
-      allowNull: true
+      allowNull: true,
     });
 
     // Update existing records to set initial values
@@ -88,5 +88,5 @@ module.exports = {
     await queryInterface.removeColumn('patient_deposits', 'current_balance');
     await queryInterface.removeColumn('patient_deposits', 'initial_amount');
     await queryInterface.removeColumn('patient_deposits', 'bank_account_id');
-  }
+  },
 };

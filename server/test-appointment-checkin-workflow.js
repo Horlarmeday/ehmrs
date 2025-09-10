@@ -7,12 +7,12 @@ function testWorkflowConcepts() {
   // Test appointment type mappings
   console.log('1️⃣ Testing appointment type to visit category mappings...');
   const mappings = {
-    'CONSULTATION': 'OPD',
-    'FOLLOW_UP': 'OPD', 
-    'PROCEDURE': 'OPD',
-    'VACCINATION': 'IMMUNIZATION',
-    'DIALYSIS': 'DIALYSIS',
-    'ANTENATAL': 'ANC'
+    CONSULTATION: 'OPD',
+    FOLLOW_UP: 'OPD',
+    PROCEDURE: 'OPD',
+    VACCINATION: 'IMMUNIZATION',
+    DIALYSIS: 'DIALYSIS',
+    ANTENATAL: 'ANC',
   };
 
   Object.entries(mappings).forEach(([type, category]) => {

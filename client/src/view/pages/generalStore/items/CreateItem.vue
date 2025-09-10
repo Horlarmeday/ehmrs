@@ -36,7 +36,6 @@
                       type="text"
                       class="form-control"
                       :class="{ 'is-invalid': errors.item_code }"
-                      placeholder="001"
                       required
                     />
                   </div>
@@ -55,7 +54,6 @@
                     type="text"
                     class="form-control"
                     :class="{ 'is-invalid': errors.name }"
-                    placeholder="Enter item name"
                     required
                   />
                   <div v-if="errors.name" class="invalid-feedback d-block">
@@ -70,7 +68,6 @@
                     class="form-control"
                     :class="{ 'is-invalid': errors.description }"
                     rows="3"
-                    placeholder="Enter detailed description of the item..."
                   ></textarea>
                   <div v-if="errors.description" class="invalid-feedback d-block">
                     {{ errors.description }}
@@ -175,7 +172,6 @@
                     type="text"
                     class="form-control"
                     :class="{ 'is-invalid': errors.manufacturer }"
-                    placeholder="Enter manufacturer name"
                   />
                   <div v-if="errors.manufacturer" class="invalid-feedback d-block">
                     {{ errors.manufacturer }}
@@ -185,12 +181,11 @@
                 <div class="col-md-6 mb-3">
                   <label class="form-label">Model Number</label>
                   <input
-                    v-model="form.model_number"
-                    type="text"
-                    class="form-control"
-                    :class="{ 'is-invalid': errors.model_number }"
-                    placeholder="Enter model/serial number"
-                  />
+                  v-model="form.model_number"
+                  type="text"
+                  class="form-control"
+                  :class="{ 'is-invalid': errors.model_number }"
+                />
                   <div v-if="errors.model_number" class="invalid-feedback d-block">
                     {{ errors.model_number }}
                   </div>
@@ -203,7 +198,6 @@
                     class="form-control"
                     :class="{ 'is-invalid': errors.specifications }"
                     rows="3"
-                    placeholder="Enter technical specifications (JSON format recommended)"
                   ></textarea>
                   <div v-if="errors.specifications" class="invalid-feedback d-block">
                     {{ errors.specifications }}
@@ -241,7 +235,6 @@
                     min="0"
                     class="form-control"
                     :class="{ 'is-invalid': errors.unit_cost }"
-                    placeholder="0.00"
                     required
                   />
                 </div>
@@ -258,7 +251,6 @@
                   min="0"
                   class="form-control"
                   :class="{ 'is-invalid': errors.minimum_stock }"
-                  placeholder="0"
                   required
                 />
                 <div v-if="errors.minimum_stock" class="invalid-feedback d-block">
@@ -277,7 +269,6 @@
                   min="0"
                   class="form-control"
                   :class="{ 'is-invalid': errors.maximum_stock }"
-                  placeholder="0"
                 />
                 <div v-if="errors.maximum_stock" class="invalid-feedback d-block">
                   {{ errors.maximum_stock }}
@@ -295,7 +286,6 @@
                   min="0"
                   class="form-control"
                   :class="{ 'is-invalid': errors.initial_stock }"
-                  placeholder="0"
                 />
                 <div v-if="errors.initial_stock" class="invalid-feedback d-block">
                   {{ errors.initial_stock }}
@@ -323,7 +313,6 @@
                   type="text"
                   class="form-control"
                   :class="{ 'is-invalid': errors.location }"
-                  placeholder="e.g., Warehouse A, Room 101"
                 />
                 <div v-if="errors.location" class="invalid-feedback d-block">
                   {{ errors.location }}
@@ -337,7 +326,6 @@
                   type="text"
                   class="form-control"
                   :class="{ 'is-invalid': errors.shelf_number }"
-                  placeholder="e.g., A1-B2, Shelf 3"
                 />
                 <div v-if="errors.shelf_number" class="invalid-feedback d-block">
                   {{ errors.shelf_number }}
@@ -506,28 +494,50 @@ export default {
         this.categories = this.$store.state.generalStore.categories;
         this.subcategories = this.$store.state.generalStore.subcategories;
       } catch (error) {
-        console.error('Error loading form data:', error);
+        this.$toast.error('Failed to load form data');
       }
     },
 
     async loadUnits() {
-      // TODO: Implement units loading from store
-      this.units = [
-        { id: 1, name: 'Pieces' },
-        { id: 2, name: 'Boxes' },
-        { id: 3, name: 'Meters' },
-        { id: 4, name: 'Liters' },
-        { id: 5, name: 'Kilograms' },
-      ];
+      try {
+        await this.$store.dispatch('generalStore/fetchUnits');
+        this.units = this.$store.state.generalStore.units || [
+          { id: 1, name: 'Pieces' },
+          { id: 2, name: 'Boxes' },
+          { id: 3, name: 'Meters' },
+          { id: 4, name: 'Liters' },
+          { id: 5, name: 'Kilograms' },
+        ];
+      } catch (error) {
+        this.$logError('Failed to load units', error);
+        // Fallback to default units
+        this.units = [
+          { id: 1, name: 'Pieces' },
+          { id: 2, name: 'Boxes' },
+          { id: 3, name: 'Meters' },
+          { id: 4, name: 'Liters' },
+          { id: 5, name: 'Kilograms' },
+        ];
+      }
     },
 
     async loadSuppliers() {
-      // TODO: Implement suppliers loading from store
-      this.suppliers = [
-        { id: 1, name: 'General Supplies Co.' },
-        { id: 2, name: 'Medical Equipment Ltd.' },
-        { id: 3, name: 'Hospital Supplies Inc.' },
-      ];
+      try {
+        await this.$store.dispatch('generalStore/fetchSuppliers');
+        this.suppliers = this.$store.state.generalStore.suppliers || [
+          { id: 1, name: 'General Supplies Co.' },
+          { id: 2, name: 'Medical Equipment Ltd.' },
+          { id: 3, name: 'Hospital Supplies Inc.' },
+        ];
+      } catch (error) {
+        this.$logError('Failed to load suppliers', error);
+        // Fallback to default suppliers
+        this.suppliers = [
+          { id: 1, name: 'General Supplies Co.' },
+          { id: 2, name: 'Medical Equipment Ltd.' },
+          { id: 3, name: 'Hospital Supplies Inc.' },
+        ];
+      }
     },
 
     handleCategoryChange() {
@@ -537,12 +547,21 @@ export default {
     validateForm() {
       this.errors = {};
 
+      // Required field validations
       if (!this.form.item_code) {
         this.errors.item_code = 'Item code is required';
+      } else if (this.form.item_code.length < 3) {
+        this.errors.item_code = 'Item code must be at least 3 characters';
+      } else if (!/^[A-Z0-9-_]+$/i.test(this.form.item_code)) {
+        this.errors.item_code = 'Item code can only contain letters, numbers, hyphens, and underscores';
       }
 
       if (!this.form.name) {
         this.errors.name = 'Item name is required';
+      } else if (this.form.name.length < 2) {
+        this.errors.name = 'Item name must be at least 2 characters';
+      } else if (this.form.name.length > 100) {
+        this.errors.name = 'Item name cannot exceed 100 characters';
       }
 
       if (!this.form.category_id) {
@@ -561,20 +580,66 @@ export default {
         this.errors.supplier_id = 'Supplier is required';
       }
 
-      if (!this.form.unit_cost || this.form.unit_cost <= 0) {
-        this.errors.unit_cost = 'Valid unit cost is required';
+      // Numeric validations
+      if (!this.form.unit_cost) {
+        this.errors.unit_cost = 'Unit cost is required';
+      } else if (isNaN(this.form.unit_cost) || parseFloat(this.form.unit_cost) <= 0) {
+        this.errors.unit_cost = 'Unit cost must be a positive number';
+      } else if (parseFloat(this.form.unit_cost) > 999999.99) {
+        this.errors.unit_cost = 'Unit cost cannot exceed $999,999.99';
       }
 
-      if (!this.form.minimum_stock || this.form.minimum_stock < 0) {
-        this.errors.minimum_stock = 'Valid minimum stock is required';
+      if (!this.form.minimum_stock && this.form.minimum_stock !== 0) {
+        this.errors.minimum_stock = 'Minimum stock is required';
+      } else if (isNaN(this.form.minimum_stock) || parseInt(this.form.minimum_stock) < 0) {
+        this.errors.minimum_stock = 'Minimum stock must be a non-negative number';
       }
 
-      if (this.form.maximum_stock && this.form.maximum_stock <= this.form.minimum_stock) {
-        this.errors.maximum_stock = 'Maximum stock must be greater than minimum stock';
+      if (this.form.maximum_stock) {
+        if (isNaN(this.form.maximum_stock) || parseInt(this.form.maximum_stock) < 0) {
+          this.errors.maximum_stock = 'Maximum stock must be a non-negative number';
+        } else if (parseInt(this.form.maximum_stock) <= parseInt(this.form.minimum_stock)) {
+          this.errors.maximum_stock = 'Maximum stock must be greater than minimum stock';
+        }
       }
 
+      if (this.form.initial_stock && (isNaN(this.form.initial_stock) || parseInt(this.form.initial_stock) < 0)) {
+        this.errors.initial_stock = 'Initial stock must be a non-negative number';
+      }
+
+      // Optional field validations
+      if (this.form.description && this.form.description.length > 500) {
+        this.errors.description = 'Description cannot exceed 500 characters';
+      }
+
+      if (this.form.manufacturer && this.form.manufacturer.length > 100) {
+        this.errors.manufacturer = 'Manufacturer name cannot exceed 100 characters';
+      }
+
+      if (this.form.model_number && this.form.model_number.length > 50) {
+        this.errors.model_number = 'Model number cannot exceed 50 characters';
+      }
+
+      if (this.form.location && this.form.location.length > 100) {
+        this.errors.location = 'Location cannot exceed 100 characters';
+      }
+
+      if (this.form.shelf_number && this.form.shelf_number.length > 50) {
+        this.errors.shelf_number = 'Shelf number cannot exceed 50 characters';
+      }
+
+      // Date validations
       if (this.form.expiry_date && this.form.expiry_date < this.today) {
         this.errors.expiry_date = 'Expiry date cannot be in the past';
+      }
+
+      // Specifications validation (if provided, should be valid JSON)
+      if (this.form.specifications) {
+        try {
+          JSON.parse(this.form.specifications);
+        } catch (e) {
+          this.errors.specifications = 'Specifications must be valid JSON format';
+        }
       }
 
       return Object.keys(this.errors).length === 0;

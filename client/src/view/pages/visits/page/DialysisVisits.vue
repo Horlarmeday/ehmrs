@@ -246,24 +246,24 @@
                       </button>
 
                       <!-- Edit Button (show for all views except today) -->
-                      <button
+                      <!-- <button
                         v-if="activeView !== 'today'"
                         class="btn btn-icon btn-light btn-hover-success btn-sm mx-1"
                         @click="editVisit(visit)"
                         title="Edit"
                       >
                         <i class="fas fa-edit"></i>
-                      </button>
+                      </button> -->
 
                       <!-- Treatment Button (show for ongoing visits) -->
-                      <button
+                      <!-- <button
                         v-if="visit.status === 'Ongoing'"
                         class="btn btn-icon btn-light btn-hover-info btn-sm mx-1"
                         @click="startTreatment(visit)"
                         title="Manage Treatment"
                       >
                         <i class="fas fa-procedures"></i>
-                      </button>
+                      </button> -->
 
                       <!-- Cancel Button (only for scheduled view) -->
                       <button
@@ -618,7 +618,7 @@ export default {
     loadViewData() {
       // Load dialysis category visits using the proper service
       this.$store.dispatch('visit/fetchCategoryVisits', {
-        category: 'Dialysis',
+        filter: { category: 'Dialysis' },
         currentPage: 1,
         itemsPerPage: 50, // Reasonable page size for listing
       });

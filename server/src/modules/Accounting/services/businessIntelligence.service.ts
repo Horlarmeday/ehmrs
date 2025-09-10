@@ -1,6 +1,6 @@
 import { Transaction, Op, Sequelize } from 'sequelize';
 import { BadException } from '../../../common/util/api-error';
-import { 
+import {
   ClinicalPayment,
   ClinicalBill,
   PatientDeposit,
@@ -8,13 +8,9 @@ import {
   JournalEntryLine,
   ChartOfAccount,
   Department,
-  CostCenter
+  CostCenter,
 } from '../../../database/models';
-import { 
-  PaymentStatus,
-  PaymentMethod,
-  AccountType
-} from '../enums';
+import { PaymentStatus, PaymentMethod, AccountType } from '../enums';
 import { logger } from '../../../core/helpers/logger';
 
 // ===== BUSINESS INTELLIGENCE INTERFACES =====
@@ -290,7 +286,7 @@ export interface BusinessIntelligenceReport {
 
 /**
  * Business Intelligence Service
- * 
+ *
  * This service provides comprehensive business intelligence including:
  * - Payment Trend Analysis
  * - Predictive Analytics
@@ -299,7 +295,6 @@ export interface BusinessIntelligenceReport {
  * - Business Intelligence Reporting
  */
 export class BusinessIntelligenceService {
-
   // ===== PAYMENT TREND ANALYSIS =====
 
   /**
@@ -310,7 +305,7 @@ export class BusinessIntelligenceService {
   ): Promise<PaymentTrendAnalysis> {
     try {
       const { start_date, end_date, granularity = 'DAILY' } = filters;
-      
+
       if (!start_date || !end_date) {
         throw new BadException(
           'Date Range Required',
@@ -329,11 +324,13 @@ export class BusinessIntelligenceService {
             [Op.between]: [startDate, endDate],
           },
         },
-        include: [{
-          model: Department,
-          as: 'department',
-          attributes: ['name'],
-        }],
+        include: [
+          {
+            model: Department,
+            as: 'department',
+            attributes: ['name'],
+          },
+        ],
         order: [['processed_at', 'ASC']],
       });
 
@@ -355,7 +352,12 @@ export class BusinessIntelligenceService {
       const trendByDepartment = await this.calculateDepartmentTrends(payments, startDate, endDate);
 
       // Time series data
-      const timeSeriesData = await this.generateTimeSeriesData(payments, startDate, endDate, granularity);
+      const timeSeriesData = await this.generateTimeSeriesData(
+        payments,
+        startDate,
+        endDate,
+        granularity
+      );
 
       // Seasonal patterns
       const seasonalPatterns = await this.identifySeasonalPatterns(payments, granularity);
@@ -378,7 +380,6 @@ export class BusinessIntelligenceService {
         time_series_data: timeSeriesData,
         seasonal_patterns: seasonalPatterns,
       };
-
     } catch (error) {
       logger.error('Failed to generate payment trend analysis:', error);
       throw new BadException(
@@ -399,7 +400,7 @@ export class BusinessIntelligenceService {
   ): Promise<PredictiveAnalytics> {
     try {
       const { start_date, end_date } = filters;
-      
+
       if (!start_date || !end_date) {
         throw new BadException(
           'Date Range Required',
@@ -418,7 +419,10 @@ export class BusinessIntelligenceService {
       const cashFlowPrediction = await this.generateCashFlowPrediction(startDate, endDate);
 
       // Payment behavior prediction
-      const paymentBehaviorPrediction = await this.generatePaymentBehaviorPrediction(startDate, endDate);
+      const paymentBehaviorPrediction = await this.generatePaymentBehaviorPrediction(
+        startDate,
+        endDate
+      );
 
       // Demand forecasting
       const demandForecasting = await this.generateDemandForecast(startDate, endDate);
@@ -433,7 +437,6 @@ export class BusinessIntelligenceService {
         payment_behavior_prediction: paymentBehaviorPrediction,
         demand_forecasting: demandForecasting,
       };
-
     } catch (error) {
       logger.error('Failed to generate predictive analytics:', error);
       throw new BadException(
@@ -454,7 +457,7 @@ export class BusinessIntelligenceService {
   ): Promise<DashboardKPIMonitoring> {
     try {
       const { start_date, end_date } = filters;
-      
+
       const startDate = start_date ? new Date(start_date) : new Date();
       const endDate = end_date ? new Date(end_date) : new Date();
 
@@ -476,7 +479,6 @@ export class BusinessIntelligenceService {
         performance_alerts: performanceAlerts,
         trend_indicators: trendIndicators,
       };
-
     } catch (error) {
       logger.error('Failed to generate dashboard KPI monitoring:', error);
       throw new BadException(
@@ -518,7 +520,6 @@ export class BusinessIntelligenceService {
         real_time_alerts: realTimeAlerts,
         monitoring_dashboard: monitoringDashboard,
       };
-
     } catch (error) {
       logger.error('Failed to generate real-time payment monitoring:', error);
       throw new BadException(
@@ -539,7 +540,12 @@ export class BusinessIntelligenceService {
   ): Promise<BusinessIntelligenceReport> {
     try {
       // Generate all components
-      const [trendAnalysis, predictiveAnalytics, kpiMonitoring, realTimeMonitoring] = await Promise.all([
+      const [
+        trendAnalysis,
+        predictiveAnalytics,
+        kpiMonitoring,
+        realTimeMonitoring,
+      ] = await Promise.all([
         this.generatePaymentTrendAnalysis(filters),
         this.generatePredictiveAnalytics(filters),
         this.generateDashboardKPIMonitoring(filters),
@@ -553,7 +559,11 @@ export class BusinessIntelligenceService {
       const riskAssessment = await this.generateRiskAssessment(filters);
 
       // Strategic recommendations
-      const strategicRecommendations = this.generateStrategicRecommendations(trendAnalysis, predictiveAnalytics, riskAssessment);
+      const strategicRecommendations = this.generateStrategicRecommendations(
+        trendAnalysis,
+        predictiveAnalytics,
+        riskAssessment
+      );
 
       return {
         executive_summary: executiveSummary,
@@ -566,7 +576,6 @@ export class BusinessIntelligenceService {
         risk_assessment: riskAssessment,
         strategic_recommendations: strategicRecommendations,
       };
-
     } catch (error) {
       logger.error('Failed to generate comprehensive BI report:', error);
       throw new BadException(
@@ -613,14 +622,18 @@ export class BusinessIntelligenceService {
     endDate: Date
   ): Promise<any[]> {
     // Simplified method trend calculation
-    return [{
-      method: 'CASH',
-      transaction_count: payments.filter(p => p.payment_method === PaymentMethod.CASH).length,
-      volume: payments.filter(p => p.payment_method === PaymentMethod.CASH).reduce((sum, p) => sum + (p.amount || 0), 0),
-      growth_rate: 3.2,
-      market_share: 25.5,
-      trend_direction: 'INCREASING' as const,
-    }];
+    return [
+      {
+        method: 'CASH',
+        transaction_count: payments.filter(p => p.payment_method === PaymentMethod.CASH).length,
+        volume: payments
+          .filter(p => p.payment_method === PaymentMethod.CASH)
+          .reduce((sum, p) => sum + (p.amount || 0), 0),
+        growth_rate: 3.2,
+        market_share: 25.5,
+        trend_direction: 'INCREASING' as const,
+      },
+    ];
   }
 
   /**
@@ -632,14 +645,16 @@ export class BusinessIntelligenceService {
     endDate: Date
   ): Promise<any[]> {
     // Simplified department trend calculation
-    return [{
-      department: 'General',
-      transaction_count: payments.length,
-      volume: payments.reduce((sum, p) => sum + (p.amount || 0), 0),
-      growth_rate: 4.1,
-      contribution_percentage: 100,
-      trend_direction: 'INCREASING' as const,
-    }];
+    return [
+      {
+        department: 'General',
+        transaction_count: payments.length,
+        volume: payments.reduce((sum, p) => sum + (p.amount || 0), 0),
+        growth_rate: 4.1,
+        contribution_percentage: 100,
+        trend_direction: 'INCREASING' as const,
+      },
+    ];
   }
 
   /**
@@ -652,13 +667,15 @@ export class BusinessIntelligenceService {
     granularity: string
   ): Promise<any[]> {
     // Simplified time series generation
-    return [{
-      period: '2024-01-01',
-      transaction_count: payments.length,
-      volume: payments.reduce((sum, p) => sum + (p.amount || 0), 0),
-      success_rate: 95.5,
-      average_value: payments.reduce((sum, p) => sum + (p.amount || 0), 0) / payments.length,
-    }];
+    return [
+      {
+        period: '2024-01-01',
+        transaction_count: payments.length,
+        volume: payments.reduce((sum, p) => sum + (p.amount || 0), 0),
+        success_rate: 95.5,
+        average_value: payments.reduce((sum, p) => sum + (p.amount || 0), 0) / payments.length,
+      },
+    ];
   }
 
   /**
@@ -669,32 +686,73 @@ export class BusinessIntelligenceService {
     granularity: string
   ): Promise<any[]> {
     // Simplified seasonal pattern identification
-    return [{
-      pattern_type: 'DAILY' as const,
-      description: 'Peak activity during business hours',
-      strength: 0.8,
-      peak_periods: ['09:00', '14:00'],
-      low_periods: ['00:00', '06:00'],
-    }];
+    return [
+      {
+        pattern_type: 'DAILY' as const,
+        description: 'Peak activity during business hours',
+        strength: 0.8,
+        peak_periods: ['09:00', '14:00'],
+        low_periods: ['00:00', '06:00'],
+      },
+    ];
   }
 
   // Additional helper methods for other components...
-  private static async generateRevenueForecast(startDate: Date, endDate: Date): Promise<any> { return {}; }
-  private static async generateCashFlowPrediction(startDate: Date, endDate: Date): Promise<any> { return {}; }
-  private static async generatePaymentBehaviorPrediction(startDate: Date, endDate: Date): Promise<any> { return {}; }
-  private static async generateDemandForecast(startDate: Date, endDate: Date): Promise<any> { return {}; }
-  private static async getRealTimeMetrics(startDate: Date, endDate: Date): Promise<any> { return {}; }
-  private static async generateKPIDashboard(startDate: Date, endDate: Date): Promise<any> { return {}; }
-  private static async generatePerformanceAlerts(startDate: Date, endDate: Date): Promise<any[]> { return []; }
-  private static async generateTrendIndicators(startDate: Date, endDate: Date): Promise<any[]> { return []; }
-  private static async getCurrentSystemStatus(): Promise<any> { return {}; }
-  private static async getLiveTransactions(): Promise<any[]> { return []; }
-  private static async getSystemPerformance(): Promise<any> { return {}; }
-  private static async getRealTimeAlerts(): Promise<any[]> { return []; }
-  private static async getMonitoringDashboard(): Promise<any> { return {}; }
-  private static generateExecutiveSummary(trendAnalysis: any, predictiveAnalytics: any): any { return {}; }
-  private static async generateRiskAssessment(filters: any): Promise<any> { return {}; }
-  private static generateStrategicRecommendations(trendAnalysis: any, predictiveAnalytics: any, riskAssessment: any): any { return {}; }
+  private static async generateRevenueForecast(startDate: Date, endDate: Date): Promise<any> {
+    return {};
+  }
+  private static async generateCashFlowPrediction(startDate: Date, endDate: Date): Promise<any> {
+    return {};
+  }
+  private static async generatePaymentBehaviorPrediction(
+    startDate: Date,
+    endDate: Date
+  ): Promise<any> {
+    return {};
+  }
+  private static async generateDemandForecast(startDate: Date, endDate: Date): Promise<any> {
+    return {};
+  }
+  private static async getRealTimeMetrics(startDate: Date, endDate: Date): Promise<any> {
+    return {};
+  }
+  private static async generateKPIDashboard(startDate: Date, endDate: Date): Promise<any> {
+    return {};
+  }
+  private static async generatePerformanceAlerts(startDate: Date, endDate: Date): Promise<any[]> {
+    return [];
+  }
+  private static async generateTrendIndicators(startDate: Date, endDate: Date): Promise<any[]> {
+    return [];
+  }
+  private static async getCurrentSystemStatus(): Promise<any> {
+    return {};
+  }
+  private static async getLiveTransactions(): Promise<any[]> {
+    return [];
+  }
+  private static async getSystemPerformance(): Promise<any> {
+    return {};
+  }
+  private static async getRealTimeAlerts(): Promise<any[]> {
+    return [];
+  }
+  private static async getMonitoringDashboard(): Promise<any> {
+    return {};
+  }
+  private static generateExecutiveSummary(trendAnalysis: any, predictiveAnalytics: any): any {
+    return {};
+  }
+  private static async generateRiskAssessment(filters: any): Promise<any> {
+    return {};
+  }
+  private static generateStrategicRecommendations(
+    trendAnalysis: any,
+    predictiveAnalytics: any,
+    riskAssessment: any
+  ): any {
+    return {};
+  }
 }
 
 export default BusinessIntelligenceService;

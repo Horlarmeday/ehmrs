@@ -48,7 +48,6 @@
                   v-model="filters.search"
                   type="text"
                   class="form-control"
-                  placeholder="Search by name, code, or description..."
                   @input="handleSearch"
                 />
               </div>
@@ -472,7 +471,7 @@ export default {
           this.$store.dispatch('generalStore/fetchSubcategories'),
         ]);
       } catch (error) {
-        console.error('Error loading items:', error);
+        this.$toast.error('Failed to load items');
       } finally {
         this.loading = false;
       }
@@ -611,14 +610,37 @@ export default {
       await this.loadData();
     },
 
-    exportData() {
-      // TODO: Implement export functionality
-      this.$toast.info('Export functionality coming soon');
+    async exportData() {
+      try {
+        const reportName = `Items_List_${new Date().toISOString().split('T')[0]}`;
+        await this.$exportData(this.items, reportName, 'xlsx', {
+          formatters: {
+            current_stock: (value) => Number(value || 0),
+            minimum_stock: (value) => Number(value || 0),
+            unit_price: (value) => Number(value || 0).toFixed(2),
+            total_value: (value) => Number(value || 0).toFixed(2),
+            created_at: (value) => new Date(value).toLocaleDateString(),
+          }
+        });
+      } catch (error) {
+        this.$logError('Failed to export items data', error);
+        this.$toast.error('Failed to export data');
+      }
     },
 
-    printData() {
-      // TODO: Implement print functionality
-      this.$toast.info('Print functionality coming soon');
+    async printData() {
+      try {
+        const reportConfig = {
+          title: 'Items List',
+          subtitle: `Generated on ${new Date().toLocaleDateString()}`,
+          orientation: 'landscape',
+          format: 'a4',
+        };
+        await this.$printReport(this.items, reportConfig);
+      } catch (error) {
+        this.$logError('Failed to print items data', error);
+        this.$toast.error('Failed to print data');
+      }
     },
   },
 };

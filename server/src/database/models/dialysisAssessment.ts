@@ -156,12 +156,6 @@ export class DialysisAssessment extends Model {
 
   @Column({
     type: DataType.STRING,
-    validate: {
-      isIn: {
-        args: [['AV Fistula', 'AV Graft', 'Tunneled Catheter', 'Non-tunneled Catheter', '']],
-        msg: 'Invalid access route',
-      },
-    },
   })
   access_route: string;
 
@@ -205,12 +199,6 @@ export class DialysisAssessment extends Model {
 
   @Column({
     type: DataType.STRING,
-    validate: {
-      isIn: {
-        args: [['None', 'Packed RBCs', 'Fresh Frozen Plasma', 'Platelets', '']],
-        msg: 'Invalid blood transfusion type',
-      },
-    },
   })
   blood_transfusion: string;
 

@@ -1,7 +1,8 @@
 import {
   deletePrescribedInvestigation,
   getOnePrescribedInvestigation,
-  getPrescribedInvestigations, getPrescriptionInvestigations,
+  getPrescribedInvestigations,
+  getPrescriptionInvestigations,
   orderBulkInvestigation,
   prescribeInvestigation,
   updatePrescribedInvestigation,
@@ -14,7 +15,11 @@ import {
   getLastInvestigationPrescription,
 } from '../../Radiology/radiology.repository';
 import { PrescribedInvestigationBody } from './types/radiology-order.types';
-import { InvestigationPrescription, PrescribedInvestigation, PrescribedTest } from '../../../database/models';
+import {
+  InvestigationPrescription,
+  PrescribedInvestigation,
+  PrescribedTest,
+} from '../../../database/models';
 import { isToday, StatusCodes } from '../../../core/helpers/helper';
 import { InvestigationStatus } from '../../../database/models/investigationPrescription';
 import { NHISApprovalStatus } from '../../../core/helpers/general';

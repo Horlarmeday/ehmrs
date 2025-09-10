@@ -68,6 +68,8 @@ export default {
             start: payload.start,
             end: payload.end,
             filter: payload.filter,
+            patient_status: payload.patient_status,
+            sortBy: payload.sortBy,
           },
         })
         .then(response => {
@@ -302,6 +304,196 @@ export default {
           };
           commit('DOWNLOAD_HOSPITAL_CARD', []);
           resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * DECEASED PATIENT MANAGEMENT
+   */
+  markPatientAsDeceased({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/patients/mark-deceased/${payload.id}`, payload.data)
+        .then(response => {
+          commit('UPDATE_PATIENT_PROFILE', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  revivePatient({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/patients/revive/${payload.id}`, payload.data)
+        .then(response => {
+          commit('UPDATE_PATIENT_PROFILE', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchDeceasedPatients({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/patients/deceased', { params: payload })
+        .then(response => {
+          commit('SET_PATIENTS', response.data.data.rows);
+          commit('SET_PATIENTS_TOTAL', response.data.data.count);
+          commit('SET_NUMB_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  generateDeathCertificate({ commit }, patientId) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/patients/death-certificate/${patientId}`)
+        .then(response => {
+          commit('SET_PATIENT_PROFILE', null);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * DECEASED PATIENTS
+   */
+  getDeceasedPatients({ commit }, params = {}) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/patients/deceased', { params })
+        .then(response => {
+          commit('SET_PATIENTS', response.data.data.docs);
+          commit('SET_PATIENTS_TOTAL', response.data.data.total);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * DEATH STATISTICS
+   */
+  getDeathStatistics({ commit }, params = {}) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/patients/death-statistics', { params })
+        .then(response => {
+          commit('SET_DEATH_STATISTICS', response.data.data);
+          resolve(response.data.data);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * MORTALITY REPORTS
+   */
+  getMortalityReports({ commit }, params = {}) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/patients/mortality-reports', { params })
+        .then(response => {
+          commit('SET_MORTALITY_REPORTS', response.data.data);
+          resolve(response.data.data);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * DEATH CERTIFICATE TRACKING
+   */
+  getDeathCertificateTracking({ commit }, params = {}) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/patients/death-certificate-tracking', { params })
+        .then(response => {
+          commit('SET_DEATH_CERTIFICATE_TRACKING', response.data.data);
+          resolve(response.data.data);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * CERTIFICATE VERIFICATION
+   */
+  verifyCertificate({ commit }, certificateId) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/patients/verify-certificate/${certificateId}`)
+        .then(response => {
+          commit('SET_CERTIFICATE_VERIFICATION', response.data.data);
+          resolve(response.data.data);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  getCertificateStatus({ commit }, certificateId) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/patients/certificate-status/${certificateId}`)
+        .then(response => {
+          commit('SET_CERTIFICATE_VERIFICATION', response.data.data);
+          resolve(response.data.data);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  getAllSignatures({ commit }) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/patients/all-signatures')
+        .then(response => {
+          commit('SET_ALL_SIGNATURES', response.data.data);
+          resolve(response.data.data);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  // Generate missing death certificate numbers
+  generateMissingDeathCertificateNumbers({ commit }) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post('/patients/generate-missing-certificates')
+        .then(response => {
+          commit('SET_MISSING_DEATH_CERTIFICATE_NUMBERS', response.data.data);
+          resolve(response.data.data);
         })
         .catch(error => {
           reject(error);

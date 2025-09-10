@@ -30,3 +30,8 @@ export { migratePharmacyStoreItems } from './now/migratePharmacyStoreItems.job';
 export { dispenseToInventory } from './now/dispenseToInventory.job';
 export { migratePatientHistories } from './now/migratePatientHistories.job';
 export { migratePatientDiagnoses } from './now/migratePatientDiagnoses.job';
+// Inventory Alert Jobs
+export { inventoryStockLevelCheck } from './schedule/inventoryStockLevelCheck.job';
+export { inventoryExpiryCheck } from './schedule/inventoryExpiryCheck.job';
+export { inventoryAlertEscalation } from './schedule/inventoryAlertEscalation.job';
+export { inventoryAlertAutoResolve } from './schedule/inventoryAlertAutoResolve.job';

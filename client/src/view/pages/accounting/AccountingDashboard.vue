@@ -21,12 +21,12 @@
         Accounting & Finance Dashboard
       </h1>
       <div class="header-actions">
-        <b-button variant="primary" @click="createNewBill">
+        <!-- <b-button variant="primary" @click="createNewBill">
           <i class="fas fa-plus mr-2"></i>New Bill
         </b-button>
         <b-button variant="success" @click="processPayment">
           <i class="fas fa-credit-card mr-2"></i>Process Payment
-        </b-button>
+        </b-button> -->
         <b-button variant="info" @click="recordDeposit">
           <i class="fas fa-piggy-bank mr-2"></i>Record Deposit
         </b-button>
@@ -141,7 +141,7 @@
         <h4><i class="fas fa-history text-primary mr-2"></i>Recent Activity</h4>
         <p class="text-muted">Latest bills, payments, and financial activities</p>
       </div>
-      
+
       <div class="row">
         <div class="col-lg-6 mb-4">
           <div class="activity-card">

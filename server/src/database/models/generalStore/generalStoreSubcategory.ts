@@ -12,23 +12,23 @@ import { Staff } from '../staff';
 import { GeneralStoreCategory } from './generalStoreCategory';
 import { GeneralStoreItem } from './generalStoreItem';
 
-@Table({ 
-  timestamps: true, 
+@Table({
+  timestamps: true,
   tableName: 'General_Store_Subcategories',
   indexes: [
     {
       name: 'idx_general_store_subcategory_category',
-      fields: ['category_id']
+      fields: ['category_id'],
     },
     {
       name: 'idx_general_store_subcategory_active',
-      fields: ['is_active']
+      fields: ['is_active'],
     },
     {
       name: 'idx_general_store_subcategory_name',
-      fields: ['name']
-    }
-  ]
+      fields: ['name'],
+    },
+  ],
 })
 export class GeneralStoreSubcategory extends Model {
   @PrimaryKey

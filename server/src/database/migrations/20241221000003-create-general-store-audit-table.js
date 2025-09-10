@@ -7,80 +7,103 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       staff_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
           model: 'staffs',
-          key: 'id'
+          key: 'id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'CASCADE'
+        onDelete: 'CASCADE',
       },
       module: {
-        type: Sequelize.ENUM('CATEGORY', 'SUBCATEGORY', 'ITEM', 'MOVEMENT', 'REQUEST', 'REPORT', 'SYSTEM'),
-        allowNull: false
+        type: Sequelize.ENUM(
+          'CATEGORY',
+          'SUBCATEGORY',
+          'ITEM',
+          'MOVEMENT',
+          'REQUEST',
+          'REPORT',
+          'SYSTEM'
+        ),
+        allowNull: false,
       },
       action: {
-        type: Sequelize.ENUM('CREATE', 'UPDATE', 'DELETE', 'VIEW', 'APPROVE', 'REJECT', 'FULFILL', 'STOCK_IN', 'STOCK_OUT', 'STOCK_ADJUSTMENT', 'STOCK_TRANSFER', 'EXPORT', 'LOGIN', 'LOGOUT'),
-        allowNull: false
+        type: Sequelize.ENUM(
+          'CREATE',
+          'UPDATE',
+          'DELETE',
+          'VIEW',
+          'APPROVE',
+          'REJECT',
+          'FULFILL',
+          'STOCK_IN',
+          'STOCK_OUT',
+          'STOCK_ADJUSTMENT',
+          'STOCK_TRANSFER',
+          'EXPORT',
+          'LOGIN',
+          'LOGOUT'
+        ),
+        allowNull: false,
       },
       entity_type: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
       },
       entity_id: {
         type: Sequelize.INTEGER,
-        allowNull: true
+        allowNull: true,
       },
       description: {
         type: Sequelize.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       old_values: {
         type: Sequelize.JSON,
-        allowNull: true
+        allowNull: true,
       },
       new_values: {
         type: Sequelize.JSON,
-        allowNull: true
+        allowNull: true,
       },
       ip_address: {
         type: Sequelize.STRING,
-        allowNull: true
+        allowNull: true,
       },
       user_agent: {
         type: Sequelize.STRING,
-        allowNull: true
+        allowNull: true,
       },
       session_id: {
         type: Sequelize.STRING,
-        allowNull: true
+        allowNull: true,
       },
       is_successful: {
         type: Sequelize.BOOLEAN,
-        defaultValue: false
+        defaultValue: false,
       },
       error_message: {
         type: Sequelize.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       metadata: {
         type: Sequelize.JSON,
-        allowNull: true
+        allowNull: true,
       },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
       updated_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')
-      }
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+      },
     });
 
     // Add indexes for better performance
@@ -95,5 +118,5 @@ module.exports = {
 
   down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('general_store_audit_logs');
-  }
+  },
 };

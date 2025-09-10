@@ -65,7 +65,7 @@ export default {
     dispatchType: {
       type: String,
       required: false,
-    }
+    },
   },
   computed: {
     queues() {

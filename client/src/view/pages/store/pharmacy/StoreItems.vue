@@ -25,12 +25,7 @@
       <h3 class="card-title align-items-start flex-column">
         <span class="card-label font-weight-bolder text-dark">Store Items</span>
       </h3>
-      <div
-        class="card-toolbar"
-        v-if="
-          allowedSubRoles.includes(currentUser.sub_role) || allowedRoles.includes(currentUser.role)
-        "
-      >
+      <div class="card-toolbar">
         <b-dropdown
           href="/store/pharmacy/add-item"
           split

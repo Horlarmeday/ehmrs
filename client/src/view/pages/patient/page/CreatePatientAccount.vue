@@ -352,7 +352,7 @@
           </div>
         </b-collapse>
       </div>
-      <div class="card">
+      <!-- <div class="card">
         <div class="card-header" header-tag="header" role="tab">
           <div class="card-title" v-b-toggle.accordion-2>
             <div class="card-label">Payment</div>
@@ -374,7 +374,7 @@
             </div>
           </div>
         </b-collapse>
-      </div>
+      </div> -->
       <div>
         <button
           ref="kt-submit"
@@ -598,7 +598,10 @@ export default {
 
     endRequest(response, submitButton) {
       this.removeSpinner(submitButton);
-      this.stopStreamedVideo(this.video);
+      this.$router.push('/patient/find-patient');
+      if (this.video) {
+        this.stopStreamedVideo(this.video);
+      }
       this.initValues();
       this.handleResponse(response);
     },
@@ -632,7 +635,7 @@ export default {
             next_of_kin_phone: this.next_of_kin_phone,
             next_of_kin_address: this.next_of_kin_address,
             next_of_kin_relationship: this.relationship,
-            photo: this.image || "",
+            photo: this.image || '',
             registration_fee: this.registration.price,
             service_id: this.registration.id,
           };

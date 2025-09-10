@@ -63,7 +63,7 @@ export default {
       {
         name: 'Procurement',
         link: '/store/pharmacy/procurement',
-        desc: 'Click here to view vendors',
+        desc: 'Click here to view procurement',
       },
       {
         name: 'Stock Audit',

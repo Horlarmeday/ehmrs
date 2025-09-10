@@ -8,82 +8,82 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       deposit_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
           model: 'patient_deposits',
-          key: 'id'
+          key: 'id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'CASCADE'
+        onDelete: 'CASCADE',
       },
       transaction_type: {
         type: Sequelize.ENUM('CREATED', 'USED', 'REFUNDED', 'ADJUSTED', 'EXPIRED'),
-        allowNull: false
+        allowNull: false,
       },
       amount: {
         type: Sequelize.DECIMAL(10, 2),
-        allowNull: false
+        allowNull: false,
       },
       previous_balance: {
         type: Sequelize.DECIMAL(10, 2),
-        allowNull: false
+        allowNull: false,
       },
       new_balance: {
         type: Sequelize.DECIMAL(10, 2),
-        allowNull: false
+        allowNull: false,
       },
       reference_number: {
         type: Sequelize.STRING(50),
-        allowNull: false
+        allowNull: false,
       },
       description: {
         type: Sequelize.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       bill_id: {
         type: Sequelize.INTEGER,
         allowNull: true,
         references: {
           model: 'clinical_bills',
-          key: 'id'
+          key: 'id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'SET NULL'
+        onDelete: 'SET NULL',
       },
       journal_entry_id: {
         type: Sequelize.INTEGER,
         allowNull: true,
         references: {
           model: 'journal_entries',
-          key: 'id'
+          key: 'id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'SET NULL'
+        onDelete: 'SET NULL',
       },
       created_by: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
           model: 'staff',
-          key: 'id'
+          key: 'id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'RESTRICT'
+        onDelete: 'RESTRICT',
       },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
       updated_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')
-      }
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+      },
     });
 
     // Add indexes for performance
@@ -94,7 +94,7 @@ module.exports = {
     await queryInterface.addIndex('deposit_transactions', ['journal_entry_id']);
     await queryInterface.addIndex('deposit_transactions', ['created_by']);
     await queryInterface.addIndex('deposit_transactions', ['created_at']);
-    
+
     // Add composite indexes for common queries
     await queryInterface.addIndex('deposit_transactions', ['deposit_id', 'transaction_type']);
     await queryInterface.addIndex('deposit_transactions', ['deposit_id', 'created_at']);
@@ -114,5 +114,5 @@ module.exports = {
 
     // Drop table
     await queryInterface.dropTable('deposit_transactions');
-  }
+  },
 };

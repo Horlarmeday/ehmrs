@@ -35,6 +35,10 @@ import {
   dispenseToInventory,
   migratePatientHistories,
   migratePatientDiagnoses,
+  inventoryStockLevelCheck,
+  inventoryExpiryCheck,
+  inventoryAlertEscalation,
+  inventoryAlertAutoResolve,
 } from '../jobs';
 import { logger } from '../../helpers/logger';
 import dayjs from 'dayjs';
@@ -48,6 +52,11 @@ const Jobs = {
   [JobName.ASSIGN_IMMUNIZATION_NUMBER]: assignImmunizationNumber,
   [JobName.CLOSE_ANTENATAL_ACCOUNT]: closeAntenatalAccount,
   [JobName.END_VISIT]: endVisits,
+  // Inventory Alert Jobs
+  [JobName.INVENTORY_STOCK_LEVEL_CHECK]: inventoryStockLevelCheck,
+  [JobName.INVENTORY_EXPIRY_CHECK]: inventoryExpiryCheck,
+  [JobName.INVENTORY_ALERT_ESCALATION]: inventoryAlertEscalation,
+  [JobName.INVENTORY_ALERT_AUTO_RESOLVE]: inventoryAlertAutoResolve,
   //[JobName.PRINCIPAL_RELATIONSHIP]: updatePrincipalRelationship,
   // [JobName.PATIENT_HEALTH_INSURANCE]: updatePatientHealthInsurance,
   // [JobName.MIGRATE_STAFFS_DATA]: migrateStaffAccount,

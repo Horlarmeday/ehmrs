@@ -33,24 +33,62 @@ export default {
   myRequests: [],
   pendingApprovalRequests: [],
 
+  // Dispensaries
+  dispensaries: [],
+  dispensariesTotal: 0,
+  dispensariesPages: 0,
+  currentDispensary: null,
+  dispensaryStock: [],
+  dispensaryMetrics: null,
+
   // Reports
   stockReport: null,
   movementReport: null,
   usageReport: null,
   costReport: null,
+  recentReports: [],
+
+  // Dashboard
+  dashboardStats: null,
+
+  // Settings
+  settings: null,
 
   // UI State
   loading: false,
   error: null,
+  errorDetails: null,
+
+  // Standardized pagination state for all entities
+  pagination: {
+    currentPage: 1,
+    pageLimit: 20,
+    totalItems: 0,
+    totalPages: 0,
+    hasNextPage: false,
+    hasPrevPage: false,
+  },
+
+  // Standardized filters
   filters: {
+    search: '',
     category_id: null,
     subcategory_id: null,
     status: null,
-    search: '',
     dateRange: null,
+    start_date: null,
+    end_date: null,
   },
-  pagination: {
-    page: 1,
-    limit: 20,
+
+  // Loading states for different operations
+  loadingStates: {
+    categories: false,
+    subcategories: false,
+    items: false,
+    movements: false,
+    requests: false,
+    dispensaries: false,
+    reports: false,
+    dashboard: false,
   },
 };

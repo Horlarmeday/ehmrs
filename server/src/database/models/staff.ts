@@ -117,12 +117,7 @@ export class Staff extends Model {
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'photo is required',
-      },
-    },
+    allowNull: true,
   })
   photo: string;
 

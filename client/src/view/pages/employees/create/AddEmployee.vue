@@ -246,7 +246,7 @@
                   </option>
                 </select>
               </div>
-              <div class="col-lg-4">
+              <!-- <div class="col-lg-4">
                 <label>Date of First Appointment <span class="text-danger">*</span></label>
                 <datepicker
                   name="date_of_first_appointment"
@@ -259,8 +259,8 @@
                 <span class="text-danger text-sm">{{
                   errors.first('date_of_first_appointment')
                 }}</span>
-              </div>
-              <div class="col-lg-4">
+              </div> -->
+              <!-- <div class="col-lg-4">
                 <label>Date of Commencement <span class="text-danger">*</span></label>
                 <datepicker
                   name="date_of_commencement"
@@ -271,9 +271,9 @@
                   placeholder="Date of Commencement"
                 ></datepicker>
                 <span class="text-danger text-sm">{{ errors.first('date_of_commencement') }}</span>
-              </div>
+              </div> -->
             </div>
-            <div class="form-group row">
+            <!-- <div class="form-group row">
               <div class="col-lg-4">
                 <label>DOLP <span class="text-danger">*</span></label>
                 <datepicker
@@ -391,7 +391,7 @@
                 />
                 <span class="text-danger text-sm">{{ errors.first('nin') }}</span>
               </div>
-            </div>
+            </div> -->
           </div>
         </b-collapse>
       </div>
@@ -435,15 +435,15 @@ export default {
       role: '',
       sub_role: '',
       relationship: '',
-      date_of_first_appointment: '',
-      date_of_commencement: '',
-      dolp: '',
-      qualification: '',
-      present_rank: '',
-      chs_cms: '',
-      step: '',
-      dd_for_retirement: '',
-      nin: '',
+      // date_of_first_appointment: '',
+      // date_of_commencement: '',
+      // dolp: '',
+      // qualification: '',
+      // present_rank: '',
+      // chs_cms: '',
+      // step: '',
+      // dd_for_retirement: '',
+      // nin: '',
       departments: [],
       roles: [],
       sub_roles: [],
@@ -474,16 +474,16 @@ export default {
         this.department &&
         this.role &&
         this.image &&
-        this.sub_role &&
-        this.date_of_first_appointment &&
-        this.date_of_commencement &&
-        this.dolp &&
-        this.qualification &&
-        this.present_rank &&
-        this.chs_cms &&
-        this.step &&
-        this.dd_for_retirement &&
-        this.nin
+        this.sub_role
+        // this.date_of_first_appointment &&
+        // this.date_of_commencement &&
+        // this.dolp &&
+        // this.qualification &&
+        // this.present_rank &&
+        // this.chs_cms &&
+        // this.step &&
+        // this.dd_for_retirement &&
+        // this.nin
       );
     },
   },
@@ -555,15 +555,15 @@ export default {
       this.department = '';
       this.role = '';
       this.sub_role = '';
-      this.date_of_first_appointment = '';
-      this.date_of_commencement = '';
-      this.dolp = '';
-      this.qualification = '';
-      this.present_rank = '';
-      this.chs_cms = '';
-      this.step = '';
-      this.dd_for_retirement = '';
-      this.nin = '';
+      // this.date_of_first_appointment = '';
+      // this.date_of_commencement = '';
+      // this.dolp = '';
+      // this.qualification = '';
+      // this.present_rank = '';
+      // this.chs_cms = '';
+      // this.step = '';
+      // this.dd_for_retirement = '';
+      // this.nin = '';
       this.showFinish = false;
       this.videoShowing = false;
       this.photoSaved = false;
@@ -595,7 +595,10 @@ export default {
 
     initializeRequest(button, response) {
       this.removeSpinner(button);
-      this.stopStreamedVideo(this.video);
+      this.$router.push({ name: 'find-employee' });
+      if (this.video) {
+        this.stopStreamedVideo(this.video);
+      }
       this.initValues();
       this.handleSuccess(response);
     },
@@ -610,7 +613,7 @@ export default {
     },
 
     addEmployee() {
-      if (!this.image) return this.notifyPhoto();
+      // if (!this.image) return this.notifyPhoto();
       this.$validator.validateAll().then(result => {
         if (result) {
           // set spinner to submit button
@@ -632,15 +635,15 @@ export default {
             sub_role: this.sub_role.text,
             address: this.address,
             photo: this.image,
-            date_of_first_appointment: this.date_of_first_appointment,
-            date_of_commencement: this.date_of_commencement,
-            dolp: this.dolp,
-            qualification: this.qualification,
-            present_rank: this.present_rank,
-            chs_cms: this.chs_cms,
-            step: this.step,
-            dd_for_retirement: this.dd_for_retirement,
-            nin: this.nin,
+            // date_of_first_appointment: this.date_of_first_appointment,
+            // date_of_commencement: this.date_of_commencement,
+            // dolp: this.dolp,
+            // qualification: this.qualification,
+            // present_rank: this.present_rank,
+            // chs_cms: this.chs_cms,
+            // step: this.step,
+            // dd_for_retirement: this.dd_for_retirement,
+            // nin: this.nin,
           };
           this.$store
             .dispatch('employee/addEmployee', data)

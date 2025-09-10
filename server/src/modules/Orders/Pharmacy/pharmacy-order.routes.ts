@@ -3,13 +3,15 @@ import verify from '../../../core/middleware/verify';
 import { PharmacyOrderController } from './pharmacy-order.controller';
 import patientMustBeDiagnosed from '../../../core/middleware/patientMustBeDiagnosed';
 import { createEncounter } from '../../../core/middleware/createEncounter';
+import checkPatientNotDeceased from '../../../core/middleware/checkPatientNotDeceased';
 
 const router = Router();
-router.post('/create/:id', verify, patientMustBeDiagnosed, PharmacyOrderController.orderDrug);
+router.post('/create/:id', verify, patientMustBeDiagnosed, checkPatientNotDeceased, PharmacyOrderController.orderDrug);
 router.post(
   '/create/bulk/:id',
   verify,
   patientMustBeDiagnosed,
+  checkPatientNotDeceased,
   createEncounter,
   PharmacyOrderController.orderBulkDrugs
 );
@@ -17,13 +19,15 @@ router.post(
   '/additional-items/create/:id',
   verify,
   patientMustBeDiagnosed,
+  checkPatientNotDeceased,
   createEncounter,
   PharmacyOrderController.orderAdditionalItems
 );
-router.post('/treatment/create/:id', verify, PharmacyOrderController.createTreatmentData);
+router.post('/treatment/create/:id', verify,  checkPatientNotDeceased, PharmacyOrderController.createTreatmentData);
 router.post(
   '/additional-treatment/create/:id',
   verify,
+  checkPatientNotDeceased,
   PharmacyOrderController.createAdditionalTreatments
 );
 router.put('/update', verify, PharmacyOrderController.updatePrescribedDrug);
@@ -31,6 +35,7 @@ router.put('/bulk-update', verify, PharmacyOrderController.updateBulkPrescribedD
 router.put(
   '/additional-items/bulk-update',
   verify,
+  checkPatientNotDeceased,
   PharmacyOrderController.updateBulkAdditionalItems
 );
 router.put('/additional-items/update', verify, PharmacyOrderController.updateAdditionalItem);

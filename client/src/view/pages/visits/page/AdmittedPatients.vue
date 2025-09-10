@@ -131,9 +131,9 @@ export default {
     perPage() {
       return this.admissions.length;
     },
-    filter() {
-      return this.$route.query.occupantType || null;
-    },
+    // filter() {
+    //   return this.$route.query.occupantType || null;
+    // },
   },
   methods: {
     getPatientDotStatus,
@@ -150,7 +150,7 @@ export default {
         search: this.$route.query.search || null,
         startDate: this.$route.query.startDate,
         endDate: this.$route.query.endDate,
-        occupantType: this.$route.query.occupantType || this.filter,
+        // occupantType: this.$route.query.occupantType || this.filter,
       });
       this.fetchAdmissions({
         currentPage: this.$route.query.currentPage || this.currentPage,
@@ -218,7 +218,7 @@ export default {
         search: this.$route.query.search || null,
         startDate: this.$route.query.startDate,
         endDate: this.$route.query.endDate,
-        occupantType: this.$route.query.occupantType || this.filter,
+        // occupantType: this.$route.query.occupantType || this.filter,
       });
       this.fetchAdmissions({
         currentPage: this.$route.query.currentPage || this.currentPage,
@@ -235,9 +235,9 @@ export default {
         itemsPerPage,
         ...(search && { search }),
         ...(start && end && { start, end }),
-        ...((this.$route.query.occupantType || this.filter) && {
-          filter: { occupant_type: this.filter },
-        }),
+        // ...((this.$route.query.occupantType || this.filter) && {
+        //   filter: { occupant_type: this.filter },
+        // }),
       });
     },
   },

@@ -28,7 +28,6 @@
                     v-model="searchQuery"
                     type="text"
                     class="form-control"
-                    placeholder="Search movements..."
                     @input="handleSearch"
                   />
                   <div class="input-group-append">
@@ -292,7 +291,6 @@ export default {
       try {
         await this.$store.dispatch('generalStore/fetchItems', { limit: 100 });
       } catch (error) {
-        console.error('Error loading items:', error);
         this.$toast.error('Failed to load items');
       }
     },
@@ -304,7 +302,6 @@ export default {
           limit: this.itemsPerPage,
         });
       } catch (error) {
-        console.error('Error loading movements:', error);
         this.$toast.error('Failed to load movements');
       } finally {
         this.loading = false;
@@ -368,25 +365,76 @@ export default {
     },
     async approveMovement(movement) {
       try {
-        // Note: This might need a separate action for movement approval
-        // For now, using placeholder until approval action is implemented
-        movement.status = 'approved';
-        this.$toast.success('Movement approved successfully');
+        const notes = await this.showApprovalModal(movement);
+        if (notes !== null) {
+          await this.$store.dispatch('generalStore/approveMovement', {
+            movementId: movement.id,
+            notes,
+          });
+          this.$toast.success('Movement approved successfully');
+          await this.loadMovements();
+        }
       } catch (error) {
-        console.error('Error approving movement:', error);
+        this.$logError('Failed to approve movement', error, { movementId: movement.id });
         this.$toast.error('Failed to approve movement');
       }
     },
+
     async rejectMovement(movement) {
       try {
-        // Note: This might need a separate action for movement rejection
-        // For now, using placeholder until rejection action is implemented
-        movement.status = 'rejected';
-        this.$toast.success('Movement rejected successfully');
+        const notes = await this.showRejectionModal(movement);
+        if (notes !== null) {
+          await this.$store.dispatch('generalStore/rejectMovement', {
+            movementId: movement.id,
+            notes,
+          });
+          this.$toast.success('Movement rejected successfully');
+          await this.loadMovements();
+        }
       } catch (error) {
-        console.error('Error rejecting movement:', error);
+        this.$logError('Failed to reject movement', error, { movementId: movement.id });
         this.$toast.error('Failed to reject movement');
       }
+    },
+
+    async showApprovalModal(movement) {
+      return new Promise((resolve) => {
+        this.$bvModal.msgBoxPrompt('Please provide approval notes:', {
+          title: `Approve Movement ${movement.reference_number}`,
+          size: 'md',
+          buttonSize: 'sm',
+          okVariant: 'success',
+          okTitle: 'Approve',
+          cancelTitle: 'Cancel',
+          hideHeaderClose: false,
+          centered: true,
+          placeholder: 'Please provide a reason for approval...',
+        }).then((value) => {
+          resolve(value);
+        }).catch(() => {
+          resolve(null);
+        });
+      });
+    },
+
+    async showRejectionModal(movement) {
+      return new Promise((resolve) => {
+        this.$bvModal.msgBoxPrompt('Please provide rejection reason:', {
+          title: `Reject Movement ${movement.reference_number}`,
+          size: 'md',
+          buttonSize: 'sm',
+          okVariant: 'danger',
+          okTitle: 'Reject',
+          cancelTitle: 'Cancel',
+          hideHeaderClose: false,
+          centered: true,
+          placeholder: 'Please provide a reason for rejection...',
+        }).then((value) => {
+          resolve(value);
+        }).catch(() => {
+          resolve(null);
+        });
+      });
     },
   },
 };

@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { DialysisService } from './dialysis.service';
 import { BadException } from '../../common/util/api-error';
 
@@ -110,7 +110,7 @@ export class DialysisController {
    * Update dialysis visit
    * PUT /api/dialysis/visits/:id
    */
-  static async updateDialysisVisit(req: Request, res: Response) {
+  static async updateDialysisVisit(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
       const visit = await DialysisService.updateDialysisVisit(parseInt(id), req.body);
@@ -121,19 +121,7 @@ export class DialysisController {
         data: visit,
       });
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
@@ -141,16 +129,15 @@ export class DialysisController {
    * Start dialysis treatment
    * POST /api/dialysis/visits/:id/start
    */
-  static async startDialysisTreatment(req: Request & { user: { sub: number } }, res: Response) {
+  static async startDialysisTreatment(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
     try {
       const { id } = req.params;
       const treatmentData = req.body;
       const nurse_id = req.user.sub;
-
-      console.log({
-        ...treatmentData,
-        nurse_id,
-      });
 
       const treatment = await DialysisService.startDialysisTreatment(parseInt(id), {
         ...treatmentData,
@@ -163,19 +150,7 @@ export class DialysisController {
         data: treatment,
       });
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
@@ -183,7 +158,7 @@ export class DialysisController {
    * Complete dialysis treatment
    * POST /api/dialysis/visits/:id/complete
    */
-  static async completeDialysisTreatment(req: Request, res: Response) {
+  static async completeDialysisTreatment(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
 
@@ -201,19 +176,7 @@ export class DialysisController {
         data: treatment,
       });
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
@@ -383,7 +346,7 @@ export class DialysisController {
    * Export dialysis report
    * GET /api/dialysis/reports/export
    */
-  static async exportDialysisReport(req: Request, res: Response) {
+  static async exportDialysisReport(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
       const report = await DialysisService.exportDialysisReport(parseInt(id));
@@ -394,19 +357,7 @@ export class DialysisController {
         data: report,
       });
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
@@ -418,7 +369,7 @@ export class DialysisController {
    * Create dialysis assessment
    * POST /api/dialysis/visits/:id/assessment
    */
-  static async createDialysisAssessment(req: Request, res: Response) {
+  static async createDialysisAssessment(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
       const { ...assessmentData } = req.body;
@@ -434,19 +385,7 @@ export class DialysisController {
         data: assessment,
       });
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
@@ -454,7 +393,7 @@ export class DialysisController {
    * Update dialysis assessment
    * PUT /api/dialysis/visits/:id/assessment
    */
-  static async updateDialysisAssessment(req: Request, res: Response) {
+  static async updateDialysisAssessment(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
       const { assessment_id, ...updateData } = req.body;
@@ -477,19 +416,7 @@ export class DialysisController {
         data: assessment,
       });
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
@@ -497,7 +424,7 @@ export class DialysisController {
    * Get dialysis assessment
    * GET /api/dialysis/visits/:id/assessment
    */
-  static async getDialysisAssessment(req: Request, res: Response) {
+  static async getDialysisAssessment(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
       const assessment = await DialysisService.getDialysisAssessment(parseInt(id));
@@ -514,11 +441,7 @@ export class DialysisController {
         data: assessment,
       });
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: 'Internal server error',
-        error: error.message,
-      });
+      next(error);
     }
   }
 
@@ -530,7 +453,11 @@ export class DialysisController {
    * Create dialysis vitals
    * POST /api/dialysis/visits/:id/vitals
    */
-  static async createDialysisVitals(req: Request & { user: { sub: number } }, res: Response) {
+  static async createDialysisVitals(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
     try {
       const { id } = req.params;
       const { ...vitalsData } = req.body;
@@ -544,19 +471,7 @@ export class DialysisController {
         data: vitals,
       });
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 

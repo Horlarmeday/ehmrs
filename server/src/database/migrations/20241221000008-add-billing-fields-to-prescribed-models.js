@@ -6,95 +6,95 @@ module.exports = {
     await queryInterface.addColumn('Prescribed_Drugs', 'billing_mode', {
       type: Sequelize.ENUM('CASH', 'INSURANCE', 'WAIVER', 'OTHER', 'FREE', 'WALLET'),
       allowNull: true,
-      defaultValue: 'CASH'
+      defaultValue: 'CASH',
     });
 
     await queryInterface.addColumn('Prescribed_Drugs', 'patient_co_pay_amount', {
       type: Sequelize.DECIMAL(10, 2),
       allowNull: true,
-      defaultValue: 0
+      defaultValue: 0,
     });
 
     await queryInterface.addColumn('Prescribed_Drugs', 'hmo_billed_amount', {
       type: Sequelize.DECIMAL(10, 2),
       allowNull: true,
-      defaultValue: 0
+      defaultValue: 0,
     });
 
     // Add billing fields to Prescribed_Tests table
     await queryInterface.addColumn('Prescribed_Tests', 'billing_mode', {
       type: Sequelize.ENUM('CASH', 'INSURANCE', 'WAIVER', 'OTHER', 'FREE', 'WALLET'),
       allowNull: true,
-      defaultValue: 'CASH'
+      defaultValue: 'CASH',
     });
 
     await queryInterface.addColumn('Prescribed_Tests', 'patient_co_pay_amount', {
       type: Sequelize.DECIMAL(10, 2),
       allowNull: true,
-      defaultValue: 0
+      defaultValue: 0,
     });
 
     await queryInterface.addColumn('Prescribed_Tests', 'hmo_billed_amount', {
       type: Sequelize.DECIMAL(10, 2),
       allowNull: true,
-      defaultValue: 0
+      defaultValue: 0,
     });
 
     // Add billing fields to Prescribed_Investigations table
     await queryInterface.addColumn('Prescribed_Investigations', 'billing_mode', {
       type: Sequelize.ENUM('CASH', 'INSURANCE', 'WAIVER', 'OTHER', 'FREE', 'WALLET'),
       allowNull: true,
-      defaultValue: 'CASH'
+      defaultValue: 'CASH',
     });
 
     await queryInterface.addColumn('Prescribed_Investigations', 'patient_co_pay_amount', {
       type: Sequelize.DECIMAL(10, 2),
       allowNull: true,
-      defaultValue: 0
+      defaultValue: 0,
     });
 
     await queryInterface.addColumn('Prescribed_Investigations', 'hmo_billed_amount', {
       type: Sequelize.DECIMAL(10, 2),
       allowNull: true,
-      defaultValue: 0
+      defaultValue: 0,
     });
 
     // Add billing fields to Prescribed_Services table
     await queryInterface.addColumn('Prescribed_Services', 'billing_mode', {
       type: Sequelize.ENUM('CASH', 'INSURANCE', 'WAIVER', 'OTHER', 'FREE', 'WALLET'),
       allowNull: true,
-      defaultValue: 'CASH'
+      defaultValue: 'CASH',
     });
 
     await queryInterface.addColumn('Prescribed_Services', 'patient_co_pay_amount', {
       type: Sequelize.DECIMAL(10, 2),
       allowNull: true,
-      defaultValue: 0
+      defaultValue: 0,
     });
 
     await queryInterface.addColumn('Prescribed_Services', 'hmo_billed_amount', {
       type: Sequelize.DECIMAL(10, 2),
       allowNull: true,
-      defaultValue: 0
+      defaultValue: 0,
     });
 
     // Add billing fields to Prescribed_Additional_Items table
     await queryInterface.addColumn('Prescribed_Additional_Items', 'billing_mode', {
       type: Sequelize.ENUM('CASH', 'INSURANCE', 'WAIVER', 'OTHER', 'FREE', 'WALLET'),
       allowNull: true,
-      defaultValue: 'CASH'
+      defaultValue: 'CASH',
     });
 
     await queryInterface.addColumn('Prescribed_Additional_Items', 'patient_co_pay_amount', {
       type: Sequelize.DECIMAL(10, 2),
       allowNull: true,
-      defaultValue: 0
+      defaultValue: 0,
     });
 
     await queryInterface.addColumn('Prescribed_Additional_Items', 'hmo_billed_amount', {
       type: Sequelize.DECIMAL(10, 2),
       allowNull: true,
-      defaultValue: 0
+      defaultValue: 0,
     });
 
     // Add indexes for better performance
@@ -130,5 +130,5 @@ module.exports = {
     await queryInterface.removeColumn('Prescribed_Additional_Items', 'billing_mode');
     await queryInterface.removeColumn('Prescribed_Additional_Items', 'patient_co_pay_amount');
     await queryInterface.removeColumn('Prescribed_Additional_Items', 'hmo_billed_amount');
-  }
+  },
 };

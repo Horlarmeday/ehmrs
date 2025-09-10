@@ -1,7 +1,4 @@
-import {
-  getEncounters,
-  getOneEncounter,
-} from './admin.repository';
+import { getEncounters, getOneEncounter } from './admin.repository';
 
 class EncounterService {
   /**

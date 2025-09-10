@@ -375,7 +375,9 @@
                           </span>
                         </div>
                         <div>
-                          <span class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg">
+                          <span
+                            class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg"
+                          >
                             {{ vendor.name }}
                           </span>
                           <span v-if="vendor.vendor_type" class="text-muted d-block font-size-sm">
@@ -457,7 +459,11 @@
               </div>
               <div class="col-md-3">
                 <label class="form-label">Status</label>
-                <select v-model="reportFilters.status" class="form-control" @change="loadReportData">
+                <select
+                  v-model="reportFilters.status"
+                  class="form-control"
+                  @change="loadReportData"
+                >
                   <option value="">All Status</option>
                   <option value="DRAFT">Draft</option>
                   <option value="APPROVED">Approved</option>
@@ -578,9 +584,11 @@
                               {{ ((statusData.count / reportData.totalOrders) * 100).toFixed(1) }}%
                             </span>
                             <div class="progress" style="width: 60px; height: 6px;">
-                              <div 
-                                class="progress-bar bg-primary" 
-                                :style="`width: ${(statusData.count / reportData.totalOrders) * 100}%`"
+                              <div
+                                class="progress-bar bg-primary"
+                                :style="
+                                  `width: ${(statusData.count / reportData.totalOrders) * 100}%`
+                                "
                               ></div>
                             </div>
                           </div>
@@ -813,7 +821,7 @@
         <div class="alert alert-info">
           <h6><i class="fas fa-info-circle mr-2"></i>Receiving Items for Order</h6>
           <p class="mb-0">
-            <strong>{{ receivingOrder.po_number }}</strong> from 
+            <strong>{{ receivingOrder.po_number }}</strong> from
             <strong>{{ receivingOrder.vendor_name }}</strong>
           </p>
         </div>
@@ -898,11 +906,7 @@
                         />
                       </td>
                       <td>
-                        <input
-                          type="date"
-                          v-model="item.expiration"
-                          class="form-control"
-                        />
+                        <input type="date" v-model="item.expiration" class="form-control" />
                       </td>
                       <td>
                         <input
@@ -1040,11 +1044,11 @@ export default {
 
     getStatusClass(status) {
       const classes = {
-        'DRAFT': 'label label-lg label-light-warning label-inline',
-        'APPROVED': 'label label-lg label-light-success label-inline',
-        'SENT': 'label label-lg label-light-info label-inline',
-        'RECEIVED': 'label label-lg label-light-primary label-inline',
-        'CANCELLED': 'label label-lg label-light-danger label-inline',
+        DRAFT: 'label label-lg label-light-warning label-inline',
+        APPROVED: 'label label-lg label-light-success label-inline',
+        SENT: 'label label-lg label-light-info label-inline',
+        RECEIVED: 'label label-lg label-light-primary label-inline',
+        CANCELLED: 'label label-lg label-light-danger label-inline',
       };
       return classes[status] || 'label label-lg label-light-dark label-inline';
     },
@@ -1438,7 +1442,8 @@ export default {
       this.$notify({
         group: 'foo',
         title: 'Info',
-        text: 'Vendor creation modal can be added here. For now, vendors are managed through the main store module.',
+        text:
+          'Vendor creation modal can be added here. For now, vendors are managed through the main store module.',
         type: 'info',
       });
     },
@@ -1467,34 +1472,40 @@ export default {
       // Calculate report data from current orders
       const filteredOrders = this.orders.filter(order => {
         let matchesFilter = true;
-        
+
         if (this.reportFilters.dateFrom) {
-          matchesFilter = matchesFilter && new Date(order.order_date) >= new Date(this.reportFilters.dateFrom);
+          matchesFilter =
+            matchesFilter && new Date(order.order_date) >= new Date(this.reportFilters.dateFrom);
         }
-        
+
         if (this.reportFilters.dateTo) {
-          matchesFilter = matchesFilter && new Date(order.order_date) <= new Date(this.reportFilters.dateTo);
+          matchesFilter =
+            matchesFilter && new Date(order.order_date) <= new Date(this.reportFilters.dateTo);
         }
-        
+
         if (this.reportFilters.status) {
           matchesFilter = matchesFilter && order.status === this.reportFilters.status;
         }
-        
+
         return matchesFilter;
       });
 
       // Calculate totals
       this.reportData.totalOrders = filteredOrders.length;
-      this.reportData.totalValue = filteredOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
-      
+      this.reportData.totalValue = filteredOrders.reduce(
+        (sum, order) => sum + (order.total_amount || 0),
+        0
+      );
+
       // Calculate unique vendors
       const uniqueVendors = [...new Set(filteredOrders.map(order => order.vendor_id))];
       this.reportData.totalVendors = uniqueVendors.length;
-      
+
       // Calculate average
-      this.reportData.averageOrderValue = this.reportData.totalOrders > 0 
-        ? Math.round(this.reportData.totalValue / this.reportData.totalOrders) 
-        : 0;
+      this.reportData.averageOrderValue =
+        this.reportData.totalOrders > 0
+          ? Math.round(this.reportData.totalValue / this.reportData.totalOrders)
+          : 0;
 
       // Group by status
       const statusGroups = filteredOrders.reduce((groups, order) => {

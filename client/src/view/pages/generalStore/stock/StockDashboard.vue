@@ -467,7 +467,6 @@ export default {
           this.loadRecentMovements(),
         ]);
       } catch (error) {
-        console.error('Error loading dashboard data:', error);
         this.$toast.error('Failed to load dashboard data');
       } finally {
         this.loading = false;
@@ -480,7 +479,7 @@ export default {
         const response = await this.$store.dispatch('generalStore/getDashboardStats');
         this.dashboardStats = response.data || this.dashboardStats;
       } catch (error) {
-        console.error('Error loading dashboard stats:', error);
+        this.$toast.error('Failed to load dashboard stats');
       }
     },
 
@@ -489,7 +488,7 @@ export default {
         await this.$store.dispatch('generalStore/fetchLowStockItems');
         this.lowStockItems = this.$store.state.generalStore.lowStockItems;
       } catch (error) {
-        console.error('Error loading low stock items:', error);
+        this.$toast.error('Failed to load low stock items');
       }
     },
 
@@ -498,7 +497,7 @@ export default {
         await this.$store.dispatch('generalStore/fetchMovements', { limit: 8 });
         this.recentMovements = this.$store.state.generalStore.movements;
       } catch (error) {
-        console.error('Error loading recent movements:', error);
+        this.$toast.error('Failed to load recent movements');
       }
     },
 
@@ -563,8 +562,13 @@ export default {
     },
 
     createMovement(item, type) {
+      this.selectedItem = item;
+      this.selectedMovementType = type;
       this.showMovementModal = true;
-      // TODO: Pre-populate movement form with item and type
+      // Pre-populate movement form with item and type data
+      if (this.$refs.movementForm) {
+        this.$refs.movementForm.prePopulateItem(item, type);
+      }
     },
 
     viewMovement(movement) {
@@ -583,9 +587,40 @@ export default {
       this.$router.push('/general-store/requests/create');
     },
 
-    exportStockReport() {
-      // TODO: Implement export functionality
-      this.$toast.info('Export functionality coming soon');
+    async exportStockReport() {
+      try {
+        const stockData = this.lowStockItems.map(item => ({
+          id: item.id,
+          name: item.name,
+          item_code: item.item_code,
+          current_stock: item.current_stock,
+          minimum_stock: item.minimum_stock,
+          maximum_stock: item.maximum_stock,
+          unit_cost: item.unit_cost,
+          total_value: item.current_stock * item.unit_cost,
+          category: item.category?.name || 'N/A',
+          subcategory: item.subcategory?.name || 'N/A',
+          status: item.status,
+          location: item.location,
+          shelf_number: item.shelf_number,
+          last_movement: item.last_movement_date,
+        }));
+
+        const reportName = `Stock_Dashboard_${new Date().toISOString().split('T')[0]}`;
+        await this.$exportData(stockData, reportName, 'xlsx', {
+          formatters: {
+            current_stock: (value) => Number(value || 0),
+            minimum_stock: (value) => Number(value || 0),
+            maximum_stock: (value) => Number(value || 0),
+            unit_cost: (value) => Number(value || 0).toFixed(2),
+            total_value: (value) => Number(value || 0).toFixed(2),
+            last_movement: (value) => value ? new Date(value).toLocaleDateString() : 'Never',
+          }
+        });
+      } catch (error) {
+        this.$logError('Failed to export stock report', error);
+        this.$toast.error('Failed to export stock report');
+      }
     },
 
     handleMovementCreated() {

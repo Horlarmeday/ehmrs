@@ -28,7 +28,6 @@
                     v-model="searchQuery"
                     type="text"
                     class="form-control"
-                    placeholder="Search subcategories..."
                     @input="handleSearch"
                   />
                   <div class="input-group-append">
@@ -265,7 +264,6 @@ export default {
       try {
         await this.$store.dispatch('generalStore/fetchCategories');
       } catch (error) {
-        console.error('Error loading categories:', error);
         this.$toast.error('Failed to load categories');
       }
     },
@@ -279,7 +277,6 @@ export default {
           is_active: this.selectedStatus ? this.selectedStatus === 'active' : undefined,
         });
       } catch (error) {
-        console.error('Error loading subcategories:', error);
         this.$toast.error('Failed to load subcategories');
       } finally {
         this.loading = false;

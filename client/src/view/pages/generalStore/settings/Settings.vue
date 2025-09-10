@@ -31,7 +31,6 @@
                           type="text"
                           class="form-control"
                           :class="{ 'is-invalid': errors.store_name }"
-                          placeholder="Enter store name"
                         />
                         <div v-if="errors.store_name" class="invalid-feedback">
                           {{ errors.store_name }}
@@ -47,7 +46,6 @@
                           type="text"
                           class="form-control"
                           :class="{ 'is-invalid': errors.store_code }"
-                          placeholder="Enter store code"
                         />
                         <div v-if="errors.store_code" class="invalid-feedback">
                           {{ errors.store_code }}
@@ -118,7 +116,6 @@
                           type="number"
                           class="form-control"
                           :class="{ 'is-invalid': errors.low_stock_threshold }"
-                          placeholder="20"
                           min="1"
                           max="100"
                         />
@@ -139,7 +136,6 @@
                           type="number"
                           class="form-control"
                           :class="{ 'is-invalid': errors.critical_stock_threshold }"
-                          placeholder="5"
                           min="1"
                           max="100"
                         />
@@ -183,7 +179,6 @@
                           type="number"
                           class="form-control"
                           :class="{ 'is-invalid': errors.reorder_quantity }"
-                          placeholder="100"
                           min="1"
                         />
                         <div v-if="errors.reorder_quantity" class="invalid-feedback">
@@ -272,7 +267,6 @@
                           type="number"
                           class="form-control"
                           :class="{ 'is-invalid': errors.request_expiry_days }"
-                          placeholder="30"
                           min="1"
                         />
                         <div v-if="errors.request_expiry_days" class="invalid-feedback">
@@ -310,7 +304,6 @@
                       type="number"
                       class="form-control"
                       :class="{ 'is-invalid': errors.low_value_threshold }"
-                      placeholder="1000"
                       min="0"
                       step="0.01"
                     />
@@ -442,7 +435,7 @@
 </template>
 
 <script>
-import axios from '@/axios';
+import { mapActions } from 'vuex';
 
 export default {
   name: 'Settings',
@@ -477,31 +470,95 @@ export default {
     await this.loadSettings();
   },
   methods: {
+    ...mapActions('generalStore', ['fetchSettings', 'updateSettings']),
     async loadSettings() {
       try {
-        const response = await axios.get('/general-store/settings');
-        if (response.data.data) {
-          this.form = { ...this.form, ...response.data.data };
+        const data = await this.fetchSettings();
+        if (data) {
+          this.form = { ...this.form, ...data };
         }
       } catch (error) {
         console.error('Error loading settings:', error);
-        this.$toast.error('Failed to load settings');
+        this.$toast && this.$toast.error('Failed to load settings');
       }
     },
+    validateForm() {
+      this.errors = {};
+
+      // Required fields
+      if (!this.form.store_name || this.form.store_name.trim() === '') {
+        this.errors.store_name = 'Store name is required';
+      } else if (this.form.store_name.length > 100) {
+        this.errors.store_name = 'Store name must be 100 characters or less';
+      }
+
+      if (!this.form.store_code || this.form.store_code.trim() === '') {
+        this.errors.store_code = 'Store code is required';
+      } else if (this.form.store_code.length > 20) {
+        this.errors.store_code = 'Store code must be 20 characters or less';
+      }
+
+      // Threshold validations
+      if (this.form.low_stock_threshold < 1 || this.form.low_stock_threshold > 100) {
+        this.errors.low_stock_threshold = 'Low stock threshold must be between 1 and 100';
+      }
+
+      if (this.form.critical_stock_threshold < 1 || this.form.critical_stock_threshold > 100) {
+        this.errors.critical_stock_threshold = 'Critical stock threshold must be between 1 and 100';
+      }
+
+      if (this.form.critical_stock_threshold >= this.form.low_stock_threshold) {
+        this.errors.critical_stock_threshold = 'Critical threshold must be less than low stock threshold';
+      }
+
+      // Reorder quantity validation
+      if (this.form.reorder_quantity < 1) {
+        this.errors.reorder_quantity = 'Reorder quantity must be at least 1';
+      }
+
+      // Request expiry days validation
+      if (this.form.request_expiry_days < 1) {
+        this.errors.request_expiry_days = 'Request expiry days must be at least 1';
+      } else if (this.form.request_expiry_days > 365) {
+        this.errors.request_expiry_days = 'Request expiry days cannot exceed 365';
+      }
+
+      // Low value threshold validation
+      if (this.form.auto_approve_low_value && this.form.low_value_threshold < 0) {
+        this.errors.low_value_threshold = 'Low value threshold must be 0 or greater';
+      }
+
+      return Object.keys(this.errors).length === 0;
+    },
+
+    hasError(field) {
+      return !!this.errors[field];
+    },
+
+    getError(field) {
+      return this.errors[field] || '';
+    },
+
     async handleSubmit() {
       this.submitting = true;
       this.errors = {};
 
+      if (!this.validateForm()) {
+        this.submitting = false;
+        this.$toast && this.$toast.error('Please fix the validation errors before saving.');
+        return;
+      }
+
       try {
-        await axios.put('/general-store/settings', this.form);
-        this.$toast.success('Settings saved successfully!');
+        await this.updateSettings(this.form);
+        this.$toast && this.$toast.success('Settings saved successfully!');
       } catch (error) {
         console.error('Error saving settings:', error);
 
         if (error.response?.data?.errors) {
           this.errors = error.response.data.errors;
         } else {
-          this.$toast.error('Failed to save settings. Please try again.');
+          this.$toast && this.$toast.error('Failed to save settings. Please try again.');
         }
       } finally {
         this.submitting = false;
@@ -534,7 +591,7 @@ export default {
           expiry_alerts: true,
           request_status_updates: true,
         };
-        this.$toast.info('Settings reset to defaults');
+        this.$toast && this.$toast.info('Settings reset to defaults');
       }
     },
   },

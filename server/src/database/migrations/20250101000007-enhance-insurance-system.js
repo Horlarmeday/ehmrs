@@ -5,7 +5,7 @@ module.exports = {
     try {
       // Add new columns to Clinical_Payment table for insurance tracking
       const tableInfo = await queryInterface.describeTable('Clinical_Payment');
-      
+
       // Add claim_reference column if it doesn't exist
       if (!tableInfo.claim_reference) {
         await queryInterface.addColumn('Clinical_Payment', 'claim_reference', {
@@ -27,7 +27,14 @@ module.exports = {
       // Add claim_status column if it doesn't exist
       if (!tableInfo.claim_status) {
         await queryInterface.addColumn('Clinical_Payment', 'claim_status', {
-          type: Sequelize.ENUM('PENDING', 'SUBMITTED', 'APPROVED', 'REJECTED', 'PAID', 'PARTIALLY_PAID'),
+          type: Sequelize.ENUM(
+            'PENDING',
+            'SUBMITTED',
+            'APPROVED',
+            'REJECTED',
+            'PAID',
+            'PARTIALLY_PAID'
+          ),
           allowNull: false,
           defaultValue: 'PENDING',
           comment: 'Current status of the insurance claim',
@@ -388,7 +395,7 @@ module.exports = {
         'claim_appeal_deadline',
         'claim_appeal_status',
         'claim_appeal_date',
-        'claim_appeal_notes'
+        'claim_appeal_notes',
       ];
 
       for (const column of columnsToRemove) {
@@ -424,5 +431,5 @@ module.exports = {
       console.error('❌ Error reverting Clinical_Payment table insurance enhancements:', error);
       throw error;
     }
-  }
+  },
 };

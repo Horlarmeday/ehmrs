@@ -1,5 +1,9 @@
 import { Request } from 'express';
-import { GeneralStoreAuditLog, AuditAction, AuditModule } from '../../database/models/generalStoreAudit';
+import {
+  GeneralStoreAuditLog,
+  AuditAction,
+  AuditModule,
+} from '../../database/models/generalStoreAudit';
 
 export interface AuditLogData {
   staffId: number;
@@ -34,7 +38,7 @@ export class GeneralStoreAuditService {
         request,
         isSuccessful = true,
         errorMessage,
-        metadata
+        metadata,
       } = auditData;
 
       // Extract request information
@@ -56,7 +60,7 @@ export class GeneralStoreAuditService {
         session_id: sessionId,
         is_successful: isSuccessful,
         error_message: errorMessage,
-        metadata
+        metadata,
       });
     } catch (error) {
       // Don't throw error from audit logging to avoid breaking main functionality
@@ -67,7 +71,11 @@ export class GeneralStoreAuditService {
   /**
    * Log category creation
    */
-  static async logCategoryCreation(staffId: number, categoryData: any, request: Request): Promise<void> {
+  static async logCategoryCreation(
+    staffId: number,
+    categoryData: any,
+    request: Request
+  ): Promise<void> {
     await this.logAuditEvent({
       staffId,
       module: AuditModule.CATEGORY,
@@ -75,14 +83,20 @@ export class GeneralStoreAuditService {
       entityType: 'GeneralStoreCategory',
       description: `Category "${categoryData.name}" created`,
       newValues: categoryData,
-      request
+      request,
     });
   }
 
   /**
    * Log category update
    */
-  static async logCategoryUpdate(staffId: number, categoryId: number, oldData: any, newData: any, request: Request): Promise<void> {
+  static async logCategoryUpdate(
+    staffId: number,
+    categoryId: number,
+    oldData: any,
+    newData: any,
+    request: Request
+  ): Promise<void> {
     await this.logAuditEvent({
       staffId,
       module: AuditModule.CATEGORY,
@@ -92,14 +106,19 @@ export class GeneralStoreAuditService {
       description: `Category "${newData.name}" updated`,
       oldValues: oldData,
       newValues: newData,
-      request
+      request,
     });
   }
 
   /**
    * Log category deletion
    */
-  static async logCategoryDeletion(staffId: number, categoryId: number, categoryData: any, request: Request): Promise<void> {
+  static async logCategoryDeletion(
+    staffId: number,
+    categoryId: number,
+    categoryData: any,
+    request: Request
+  ): Promise<void> {
     await this.logAuditEvent({
       staffId,
       module: AuditModule.CATEGORY,
@@ -108,7 +127,7 @@ export class GeneralStoreAuditService {
       entityId: categoryId,
       description: `Category "${categoryData.name}" deleted`,
       oldValues: categoryData,
-      request
+      request,
     });
   }
 
@@ -123,14 +142,20 @@ export class GeneralStoreAuditService {
       entityType: 'GeneralStoreItem',
       description: `Item "${itemData.name}" (${itemData.item_code}) created`,
       newValues: itemData,
-      request
+      request,
     });
   }
 
   /**
    * Log item update
    */
-  static async logItemUpdate(staffId: number, itemId: number, oldData: any, newData: any, request: Request): Promise<void> {
+  static async logItemUpdate(
+    staffId: number,
+    itemId: number,
+    oldData: any,
+    newData: any,
+    request: Request
+  ): Promise<void> {
     await this.logAuditEvent({
       staffId,
       module: AuditModule.ITEM,
@@ -140,14 +165,18 @@ export class GeneralStoreAuditService {
       description: `Item "${newData.name}" (${newData.item_code}) updated`,
       oldValues: oldData,
       newValues: newData,
-      request
+      request,
     });
   }
 
   /**
    * Log stock movement
    */
-  static async logStockMovement(staffId: number, movementData: any, request: Request): Promise<void> {
+  static async logStockMovement(
+    staffId: number,
+    movementData: any,
+    request: Request
+  ): Promise<void> {
     const action = this.getMovementAction(movementData.movement_type);
     await this.logAuditEvent({
       staffId,
@@ -156,14 +185,18 @@ export class GeneralStoreAuditService {
       entityType: 'GeneralStoreMovement',
       description: `${movementData.movement_type} movement: ${movementData.quantity} units of item ${movementData.item_id}`,
       newValues: movementData,
-      request
+      request,
     });
   }
 
   /**
    * Log request creation
    */
-  static async logRequestCreation(staffId: number, requestData: any, request: Request): Promise<void> {
+  static async logRequestCreation(
+    staffId: number,
+    requestData: any,
+    request: Request
+  ): Promise<void> {
     await this.logAuditEvent({
       staffId,
       module: AuditModule.REQUEST,
@@ -171,14 +204,19 @@ export class GeneralStoreAuditService {
       entityType: 'GeneralStoreRequest',
       description: `Request ${requestData.request_number} created for ${requestData.requesting_department}`,
       newValues: requestData,
-      request
+      request,
     });
   }
 
   /**
    * Log request approval
    */
-  static async logRequestApproval(staffId: number, requestId: number, requestData: any, request: Request): Promise<void> {
+  static async logRequestApproval(
+    staffId: number,
+    requestId: number,
+    requestData: any,
+    request: Request
+  ): Promise<void> {
     await this.logAuditEvent({
       staffId,
       module: AuditModule.REQUEST,
@@ -187,14 +225,20 @@ export class GeneralStoreAuditService {
       entityId: requestId,
       description: `Request ${requestData.request_number} approved`,
       newValues: { status: 'APPROVED', approved_by: staffId },
-      request
+      request,
     });
   }
 
   /**
    * Log request rejection
    */
-  static async logRequestRejection(staffId: number, requestId: number, requestData: any, rejectionReason: string, request: Request): Promise<void> {
+  static async logRequestRejection(
+    staffId: number,
+    requestId: number,
+    requestData: any,
+    rejectionReason: string,
+    request: Request
+  ): Promise<void> {
     await this.logAuditEvent({
       staffId,
       module: AuditModule.REQUEST,
@@ -203,14 +247,19 @@ export class GeneralStoreAuditService {
       entityId: requestId,
       description: `Request ${requestData.request_number} rejected: ${rejectionReason}`,
       newValues: { status: 'REJECTED', rejection_reason: rejectionReason },
-      request
+      request,
     });
   }
 
   /**
    * Log request fulfillment
    */
-  static async logRequestFulfillment(staffId: number, requestId: number, requestData: any, request: Request): Promise<void> {
+  static async logRequestFulfillment(
+    staffId: number,
+    requestId: number,
+    requestData: any,
+    request: Request
+  ): Promise<void> {
     await this.logAuditEvent({
       staffId,
       module: AuditModule.REQUEST,
@@ -219,14 +268,19 @@ export class GeneralStoreAuditService {
       entityId: requestId,
       description: `Request ${requestData.request_number} fulfilled`,
       newValues: { status: 'FULFILLED' },
-      request
+      request,
     });
   }
 
   /**
    * Log report generation
    */
-  static async logReportGeneration(staffId: number, reportType: string, filters: any, request: Request): Promise<void> {
+  static async logReportGeneration(
+    staffId: number,
+    reportType: string,
+    filters: any,
+    request: Request
+  ): Promise<void> {
     await this.logAuditEvent({
       staffId,
       module: AuditModule.REPORT,
@@ -234,14 +288,19 @@ export class GeneralStoreAuditService {
       entityType: 'Report',
       description: `${reportType} report generated`,
       metadata: { reportType, filters },
-      request
+      request,
     });
   }
 
   /**
    * Log report export
    */
-  static async logReportExport(staffId: number, reportType: string, filters: any, request: Request): Promise<void> {
+  static async logReportExport(
+    staffId: number,
+    reportType: string,
+    filters: any,
+    request: Request
+  ): Promise<void> {
     await this.logAuditEvent({
       staffId,
       module: AuditModule.REPORT,
@@ -249,14 +308,19 @@ export class GeneralStoreAuditService {
       entityType: 'Report',
       description: `${reportType} report exported`,
       metadata: { reportType, filters },
-      request
+      request,
     });
   }
 
   /**
    * Log system error
    */
-  static async logSystemError(staffId: number, error: Error, context: string, request: Request): Promise<void> {
+  static async logSystemError(
+    staffId: number,
+    error: Error,
+    context: string,
+    request: Request
+  ): Promise<void> {
     await this.logAuditEvent({
       staffId,
       module: AuditModule.SYSTEM,
@@ -266,7 +330,7 @@ export class GeneralStoreAuditService {
       isSuccessful: false,
       errorMessage: error.message,
       metadata: { context, stack: error.stack },
-      request
+      request,
     });
   }
 
@@ -293,44 +357,48 @@ export class GeneralStoreAuditService {
    */
   static async getAuditLogs(filters: any = {}, pagination: any = {}): Promise<any> {
     const where: any = {};
-    
+
     if (filters.staffId) {
       where.staff_id = filters.staffId;
     }
-    
+
     if (filters.module) {
       where.module = filters.module;
     }
-    
+
     if (filters.action) {
       where.action = filters.action;
     }
-    
+
     if (filters.entityType) {
       where.entity_type = filters.entityType;
     }
-    
+
     if (filters.entityId) {
       where.entity_id = filters.entityId;
     }
-    
+
     if (filters.isSuccessful !== undefined) {
       where.is_successful = filters.isSuccessful;
     }
-    
+
     if (filters.startDate && filters.endDate) {
       where.created_at = {
-        [require('sequelize').Op.between]: [filters.startDate, filters.endDate]
+        [require('sequelize').Op.between]: [filters.startDate, filters.endDate],
       };
     }
 
     const options = {
       where,
       include: [
-        { model: require('../../database/models/staff').Staff, as: 'staff', attributes: ['id', 'firstname', 'lastname', 'username'] }
+        {
+          model: require('../../database/models/staff').Staff,
+          as: 'staff',
+          attributes: ['id', 'firstname', 'lastname', 'username'],
+        },
       ],
       order: [['created_at', 'DESC']],
-      ...pagination
+      ...pagination,
     };
 
     return await GeneralStoreAuditLog.findAndCountAll(options);

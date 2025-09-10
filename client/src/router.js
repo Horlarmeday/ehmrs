@@ -148,6 +148,61 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            // Deceased Patient Management Routes
+            {
+              path: 'deceased-management',
+              name: 'DeceasedPatientManagement',
+              component: () => import('@/view/pages/DeceasedPatientManagement/DeceasedPatientManagement.vue'),
+              meta: {
+                requiresAuth: true,
+                title: 'Deceased Patient Management',
+              },
+            },
+            {
+              path: 'death-statistics',
+              name: 'DeathStatistics',
+              component: () => import('@/view/pages/DeceasedPatientManagement/DeathStatisticsDashboard.vue'),
+              meta: {
+                requiresAuth: true,
+                title: 'Death Statistics Dashboard',
+              },
+            },
+            {
+              path: 'mortality-reports',
+              name: 'MortalityReports',
+              component: () => import('@/view/pages/DeceasedPatientManagement/MortalityReports.vue'),
+              meta: {
+                requiresAuth: true,
+                title: 'Mortality Reports',
+              },
+            },
+            {
+              path: 'death-certificate-tracking',
+              name: 'DeathCertificateTracking',
+              component: () => import('@/view/pages/DeceasedPatientManagement/DeathCertificateTracking.vue'),
+              meta: {
+                requiresAuth: true,
+                title: 'Death Certificate Tracking',
+              },
+            },
+            {
+              path: 'deceased-patients-list',
+              name: 'DeceasedPatientsList',
+              component: () => import('@/view/pages/DeceasedPatientManagement/DeceasedPatientsList.vue'),
+              meta: {
+                requiresAuth: true,
+                title: 'Deceased Patients List',
+              },
+            },
+            {
+              path: 'certificate-verification',
+              name: 'CertificateVerification',
+              component: () => import('@/view/pages/DeceasedPatientManagement/CertificateVerification.vue'),
+              meta: {
+                requiresAuth: true,
+                title: 'Certificate Verification',
+              },
+            },
           ],
         },
         // EMPLOYEE
@@ -286,7 +341,7 @@ const router = new Router({
           children: [
             {
               path: '',
-              redirect: 'list'
+              redirect: 'list',
             },
             {
               path: 'home',
@@ -318,7 +373,7 @@ const router = new Router({
               component: () => import('@/view/pages/appointments/pages/BookAppointment.vue'),
               meta: {
                 requiresAuth: true,
-                roles: ['Reception', 'Medical Records'] // Only these roles can book appointments
+                roles: ['Reception', 'Medical Records'], // Only these roles can book appointments
               },
             },
             {
@@ -340,7 +395,8 @@ const router = new Router({
             {
               path: ':id',
               name: 'appointment-details',
-              component: () => import('@/view/pages/appointments/components/AppointmentDetailsModal.vue'),
+              component: () =>
+                import('@/view/pages/appointments/components/AppointmentDetailsModal.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -702,6 +758,14 @@ const router = new Router({
               path: 'store-type',
               name: 'store-type',
               component: () => import('@/view/pages/store/StoreType.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'universal-manager',
+              name: 'universal-store-manager',
+              component: () => import('@/view/components/shared/UniversalStoreManager.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1303,6 +1367,49 @@ const router = new Router({
                   },
                 },
               ],
+            },
+            {
+              path: 'dispensaries',
+              name: 'general-store-dispensaries',
+              component: () =>
+                import('@/view/pages/generalStore/dispensaries/DispensariesList.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'dispensaries/create',
+              name: 'general-store-create-dispensary',
+              component: () =>
+                import('@/view/pages/generalStore/dispensaries/CreateDispensary.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'dispensaries/:id',
+              name: 'general-store-dispensary-details',
+              component: () =>
+                import('@/view/pages/generalStore/dispensaries/DispensaryDetails.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'dispensaries/:id/edit',
+              name: 'general-store-edit-dispensary',
+              component: () => import('@/view/pages/generalStore/dispensaries/EditDispensary.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'dispensaries/:id/stock',
+              name: 'general-store-dispensary-stock',
+              component: () => import('@/view/pages/generalStore/dispensaries/DispensaryStock.vue'),
+              meta: {
+                requiresAuth: true,
+              },
             },
             {
               path: 'settings',

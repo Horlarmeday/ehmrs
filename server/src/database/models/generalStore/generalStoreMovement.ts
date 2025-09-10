@@ -11,35 +11,35 @@ import { Staff } from '../staff';
 import { GeneralStoreItem } from './generalStoreItem';
 import { MovementType } from './types';
 
-@Table({ 
-  timestamps: true, 
+@Table({
+  timestamps: true,
   tableName: 'General_Store_Movements',
   indexes: [
     {
       name: 'idx_general_store_movement_item',
-      fields: ['item_id']
+      fields: ['item_id'],
     },
     {
       name: 'idx_general_store_movement_type',
-      fields: ['movement_type']
+      fields: ['movement_type'],
     },
     {
       name: 'idx_general_store_movement_date',
-      fields: ['movement_date']
+      fields: ['movement_date'],
     },
     {
       name: 'idx_general_store_movement_staff',
-      fields: ['staff_id']
+      fields: ['staff_id'],
     },
     {
       name: 'idx_general_store_movement_reference',
-      fields: ['reference_type', 'reference_id']
+      fields: ['reference_type', 'reference_id'],
     },
     {
       name: 'idx_general_store_movement_composite_item_date',
-      fields: ['item_id', 'movement_date']
-    }
-  ]
+      fields: ['item_id', 'movement_date'],
+    },
+  ],
 })
 export class GeneralStoreMovement extends Model {
   @PrimaryKey
@@ -222,7 +222,7 @@ export class GeneralStoreMovement extends Model {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   }
 

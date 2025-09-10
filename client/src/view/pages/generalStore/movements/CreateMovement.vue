@@ -77,7 +77,6 @@
                       type="number"
                       class="form-control"
                       :class="{ 'is-invalid': errors.quantity }"
-                      placeholder="Enter quantity"
                       min="0.01"
                       step="0.01"
                       required
@@ -96,7 +95,6 @@
                       type="text"
                       class="form-control"
                       :class="{ 'is-invalid': errors.unit }"
-                      placeholder="e.g., pieces, kg, liters"
                       readonly
                     />
                     <div v-if="errors.unit" class="invalid-feedback">
@@ -113,7 +111,6 @@
                       type="number"
                       class="form-control"
                       :class="{ 'is-invalid': errors.unit_price }"
-                      placeholder="0.00"
                       min="0"
                       step="0.01"
                     />
@@ -158,7 +155,6 @@
                       type="text"
                       class="form-control"
                       :class="{ 'is-invalid': errors.reference_number }"
-                      placeholder="Enter reference number"
                     />
                     <div v-if="errors.reference_number" class="invalid-feedback">
                       {{ errors.reference_number }}
@@ -263,7 +259,6 @@
                   class="form-control"
                   :class="{ 'is-invalid': errors.notes }"
                   rows="4"
-                  placeholder="Enter additional notes or comments"
                 ></textarea>
                 <div v-if="errors.notes" class="invalid-feedback">
                   {{ errors.notes }}
@@ -403,7 +398,6 @@ export default {
       try {
         await this.$store.dispatch('generalStore/fetchItems', { limit: 200 });
       } catch (error) {
-        console.error('Error loading items:', error);
         this.$toast.error('Failed to load items');
       }
     },
@@ -458,9 +452,87 @@ export default {
         currency: 'NGN',
       }).format(amount);
     },
+    validateForm() {
+      this.errors = {};
+
+      // Required fields
+      if (!this.form.type) {
+        this.errors.type = 'Movement type is required';
+      }
+
+      if (!this.form.item_id) {
+        this.errors.item_id = 'Item selection is required';
+      }
+
+      if (!this.form.quantity) {
+        this.errors.quantity = 'Quantity is required';
+      } else if (isNaN(this.form.quantity) || parseFloat(this.form.quantity) <= 0) {
+        this.errors.quantity = 'Quantity must be a positive number';
+      }
+
+      if (!this.form.unit_price) {
+        this.errors.unit_price = 'Unit price is required';
+      } else if (isNaN(this.form.unit_price) || parseFloat(this.form.unit_price) < 0) {
+        this.errors.unit_price = 'Unit price must be a valid number';
+      }
+
+      if (!this.form.reason) {
+        this.errors.reason = 'Reason is required';
+      }
+
+      if (!this.form.movement_date) {
+        this.errors.movement_date = 'Movement date is required';
+      }
+
+      // Conditional validations
+      if (this.showLocationFields) {
+        if (!this.form.source_location) {
+          this.errors.source_location = 'Source location is required for transfers';
+        }
+        if (!this.form.destination_location) {
+          this.errors.destination_location = 'Destination location is required for transfers';
+        }
+      }
+
+      // Reference number validation
+      if (this.form.reference_number && this.form.reference_number.length > 50) {
+        this.errors.reference_number = 'Reference number must be 50 characters or less';
+      }
+
+      // Notes validation
+      if (this.form.notes && this.form.notes.length > 500) {
+        this.errors.notes = 'Notes must be 500 characters or less';
+      }
+
+      // Stock level validation for outgoing movements
+      if (this.form.type === 'out' && this.selectedItem.current_stock) {
+        const currentStock = parseFloat(this.selectedItem.current_stock);
+        const quantity = parseFloat(this.form.quantity);
+        if (quantity > currentStock) {
+          this.errors.quantity = `Insufficient stock. Available: ${currentStock}`;
+        }
+      }
+
+      return Object.keys(this.errors).length === 0;
+    },
+
+    hasError(field) {
+      return !!this.errors[field];
+    },
+
+    getError(field) {
+      return this.errors[field] || '';
+    },
+
     async handleSubmit() {
       this.submitting = true;
       this.errors = {};
+
+      if (!this.validateForm()) {
+        this.submitting = false;
+        this.$toast.error('Please fix the validation errors before submitting.');
+        return;
+      }
 
       try {
         await this.$store.dispatch('generalStore/createMovement', this.form);

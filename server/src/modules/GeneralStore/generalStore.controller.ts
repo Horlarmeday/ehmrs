@@ -1,8 +1,8 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { GeneralStoreService } from './generalStore.service';
 import { GeneralStoreAuditService } from './audit.service';
 import { BadException } from '../../common/util/api-error';
-import { calcLimitAndOffset } from '../../core/helpers/helper';
+import { calcLimitAndOffset, StatusCodes } from '../../core/helpers/helper';
 import { Op } from 'sequelize';
 import Joi from 'joi';
 import {
@@ -24,10 +24,20 @@ import {
   reportFilterSchema,
 } from './validations';
 import { AuditAction, AuditModule } from '../../database/models/generalStoreAudit';
+import {
+  createPaginatedResponse,
+  createItemResponse,
+  createCreatedResponse,
+  createDeletedResponse,
+  createValidationErrorResponse,
+  createNotFoundResponse,
+  createServerErrorResponse,
+  createErrorResponse,
+} from './utils/response.helper';
 
 export class GeneralStoreController {
   // Validation helper method
-  private static validateRequest(data: any, schema: Joi.Schema): any {
+  private static validateRequest(data: any, schema: Joi.Schema) {
     const { error, value } = schema.validate(data);
     if (error) {
       throw new BadException('Validation Error', 400, error.details[0].message);
@@ -36,10 +46,10 @@ export class GeneralStoreController {
   }
 
   // Category Management
-  static async getCategories(req: Request, res: Response) {
+  static async getCategories(req: Request, res: Response, next: NextFunction) {
     try {
       // Validate query parameters
-      const validatedQuery = this.validateRequest(req.query, paginationSchema);
+      const validatedQuery = GeneralStoreController.validateRequest(req.query, paginationSchema);
       const { page = 1, limit = 20, parent_id, is_active } = validatedQuery;
       const { limit: paginate, offset } = calcLimitAndOffset(Number(page), Number(limit));
 
@@ -49,105 +59,59 @@ export class GeneralStoreController {
 
       const result = await GeneralStoreService.getCategories(filters, { limit: paginate, offset });
 
-      res.json({
-        success: true,
-        message: 'Categories retrieved successfully',
-        data: result.rows,
-        pagination: {
-          current_page: Number(page),
-          total_pages: Math.ceil(result.count / paginate),
-          total_items: result.count,
-          items_per_page: paginate,
-        },
-      });
+      return createPaginatedResponse(
+        res,
+        result.rows,
+        result.count,
+        Number(page),
+        paginate,
+        'Categories retrieved successfully'
+      );
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async getCategoryById(req: Request, res: Response) {
+  static async getCategoryById(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
       const category = await GeneralStoreService.getCategoryById(Number(id));
 
-      res.json({
-        success: true,
-        message: 'Category retrieved successfully',
-        data: category,
-      });
+      return createItemResponse(res, category, 'Category retrieved successfully');
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async createCategory(req: Request, res: Response) {
+  static async createCategory(req: Request, res: Response, next: NextFunction) {
     try {
       // Validate request body
-      const validatedData = this.validateRequest(req.body, createCategorySchema);
-      const staffId = (req as any).user.id;
+      const validatedData = GeneralStoreController.validateRequest(req.body, createCategorySchema);
+      const staffId = (req as any).user.sub;
+
       const category = await GeneralStoreService.createCategory(validatedData, staffId);
 
       // Log audit event
       await GeneralStoreAuditService.logCategoryCreation(staffId, category, req);
 
-      res.status(201).json({
-        success: true,
-        message: 'Category created successfully',
-        data: category,
-      });
+      return createCreatedResponse(res, category, 'Category created successfully');
     } catch (error) {
       // Log error for audit
-      const staffId = (req as any).user?.id;
+      const staffId = (req as any).user?.sub;
       if (staffId) {
         await GeneralStoreAuditService.logSystemError(staffId, error, 'createCategory', req);
       }
 
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async updateCategory(req: Request, res: Response) {
+  static async updateCategory(req: Request, res: Response, next: NextFunction) {
     try {
       // Validate request body
-      const validatedData = this.validateRequest(req.body, updateCategorySchema);
+      const validatedData = GeneralStoreController.validateRequest(req.body, updateCategorySchema);
       const { id } = req.params;
-      const staffId = (req as any).user.id;
+      const staffId = (req as any).user.sub;
 
       // Get old category data for audit
       const oldCategory = await GeneralStoreService.getCategoryById(Number(id));
@@ -162,38 +126,22 @@ export class GeneralStoreController {
         req
       );
 
-      res.json({
-        success: true,
-        message: 'Category updated successfully',
-        data: category,
-      });
+      return createItemResponse(res, category, 'Category updated successfully');
     } catch (error) {
       // Log error for audit
-      const staffId = (req as any).user?.id;
+      const staffId = (req as any).user?.sub;
       if (staffId) {
         await GeneralStoreAuditService.logSystemError(staffId, error, 'updateCategory', req);
       }
 
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async deleteCategory(req: Request, res: Response) {
+  static async deleteCategory(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const staffId = (req as any).user?.id;
+      const staffId = (req as any).user?.sub;
 
       // Get category data for audit before deletion
       const category = await GeneralStoreService.getCategoryById(Number(id));
@@ -204,34 +152,19 @@ export class GeneralStoreController {
         await GeneralStoreAuditService.logCategoryDeletion(staffId, Number(id), category, req);
       }
 
-      res.json({
-        success: true,
-        message: result.message,
-      });
+      return createDeletedResponse(res, result.message);
     } catch (error) {
       // Log error for audit
-      const staffId = (req as any).user?.id;
+      const staffId = (req as any).user?.sub;
       if (staffId) {
         await GeneralStoreAuditService.logSystemError(staffId, error, 'deleteCategory', req);
       }
 
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async getSubcategoriesByCategory(req: Request, res: Response) {
+  static async getSubcategoriesByCategory(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
       const { page = 1, limit = 20 } = req.query;
@@ -243,39 +176,24 @@ export class GeneralStoreController {
         offset,
       });
 
-      res.json({
-        success: true,
-        message: 'Subcategories retrieved successfully',
-        data: result.rows,
-        pagination: {
-          current_page: Number(page),
-          total_pages: Math.ceil(result.count / paginate),
-          total_items: result.count,
-          items_per_page: paginate,
-        },
-      });
+      return createPaginatedResponse(
+        res,
+        result.rows,
+        result.count,
+        Number(page),
+        paginate,
+        'Subcategories retrieved successfully'
+      );
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
   // Subcategory Management
-  static async getSubcategories(req: Request, res: Response) {
+  static async getSubcategories(req: Request, res: Response, next: NextFunction) {
     try {
       // Validate query parameters
-      const validatedQuery = this.validateRequest(req.query, paginationSchema);
+      const validatedQuery = GeneralStoreController.validateRequest(req.query, paginationSchema);
       const { page = 1, limit = 20, category_id, is_active } = validatedQuery;
       const { limit: paginate, offset } = calcLimitAndOffset(Number(page), Number(limit));
 
@@ -288,158 +206,91 @@ export class GeneralStoreController {
         offset,
       });
 
-      res.json({
-        success: true,
-        message: 'Subcategories retrieved successfully',
-        data: result.rows,
-        pagination: {
-          current_page: Number(page),
-          total_pages: Math.ceil(result.count / paginate),
-          total_items: result.count,
-          items_per_page: paginate,
-        },
-      });
+      return createPaginatedResponse(
+        res,
+        result.rows,
+        result.count,
+        Number(page),
+        paginate,
+        'Subcategories retrieved successfully'
+      );
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async getSubcategoryById(req: Request, res: Response) {
+  static async getSubcategoryById(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
       const subcategory = await GeneralStoreService.getSubcategoryById(Number(id));
 
-      res.json({
-        success: true,
-        message: 'Subcategory retrieved successfully',
-        data: subcategory,
-      });
+      return createItemResponse(res, subcategory, 'Subcategory retrieved successfully');
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async createSubcategory(req: Request, res: Response) {
+  static async createSubcategory(req: Request, res: Response, next: NextFunction) {
     try {
       // Validate request body
-      const validatedData = this.validateRequest(req.body, createSubcategorySchema);
-      const staffId = (req as any).user.id;
+      const validatedData = GeneralStoreController.validateRequest(
+        req.body,
+        createSubcategorySchema
+      );
+      const staffId = (req as any).user.sub;
       const subcategory = await GeneralStoreService.createSubcategory(validatedData, staffId);
 
-      res.status(201).json({
-        success: true,
-        message: 'Subcategory created successfully',
-        data: subcategory,
-      });
+      return createCreatedResponse(res, subcategory, 'Subcategory created successfully');
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async updateSubcategory(req: Request, res: Response) {
+  static async updateSubcategory(req: Request, res: Response, next: NextFunction) {
     try {
       // Validate request body
-      const validatedData = this.validateRequest(req.body, updateSubcategorySchema);
+      const validatedData = GeneralStoreController.validateRequest(
+        req.body,
+        updateSubcategorySchema
+      );
       const { id } = req.params;
-      const staffId = (req as any).user.id;
+      const staffId = (req as any).user.sub;
       const subcategory = await GeneralStoreService.updateSubcategory(
         Number(id),
         validatedData,
         staffId
       );
 
-      res.json({
-        success: true,
-        message: 'Subcategory updated successfully',
-        data: subcategory,
-      });
+      return createItemResponse(res, subcategory, 'Subcategory updated successfully');
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async deleteSubcategory(req: Request, res: Response) {
+  static async deleteSubcategory(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
       const result = await GeneralStoreService.deleteSubcategory(Number(id));
 
-      res.json({
-        success: true,
-        message: result.message,
-      });
+      return createDeletedResponse(res, result.message);
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
   // Item Management
-  static async getItems(req: Request, res: Response) {
+  static async getItems(req: Request, res: Response, next: NextFunction) {
     try {
       // Validate query parameters
-      const validatedQuery = this.validateRequest(req.query, paginationSchema);
-      const validatedFilters = this.validateRequest(req.query, itemFilterSchema);
-      const { page = 1, limit = 20 } = validatedQuery;
-      const { category_id, subcategory_id, status, supplier_id } = validatedFilters;
+      const validatedFilters = GeneralStoreController.validateRequest(req.query, itemFilterSchema);
+      const {
+        page = 1,
+        limit = 20,
+        category_id,
+        subcategory_id,
+        status,
+        supplier_id,
+      } = validatedFilters;
       const { limit: paginate, offset } = calcLimitAndOffset(Number(page), Number(limit));
 
       const filters: any = {};
@@ -450,160 +301,79 @@ export class GeneralStoreController {
 
       const result = await GeneralStoreService.getItems(filters, { limit: paginate, offset });
 
-      res.json({
-        success: true,
-        message: 'Items retrieved successfully',
-        data: result.rows,
-        pagination: {
-          current_page: Number(page),
-          total_pages: Math.ceil(result.count / paginate),
-          total_items: result.count,
-          items_per_page: paginate,
-        },
-      });
+      return createPaginatedResponse(
+        res,
+        result.rows,
+        result.count,
+        Number(page),
+        paginate,
+        'Items retrieved successfully'
+      );
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async getItemById(req: Request, res: Response) {
+  static async getItemById(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
       const item = await GeneralStoreService.getItemById(Number(id));
 
-      res.json({
-        success: true,
-        message: 'Item retrieved successfully',
-        data: item,
-      });
+      return createItemResponse(res, item, 'Item retrieved successfully');
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async createItem(req: Request, res: Response) {
+  static async createItem(req: Request, res: Response, next: NextFunction) {
     try {
       // Validate request body
-      const validatedData = this.validateRequest(req.body, createItemSchema);
-      const staffId = (req as any).user.id;
+      const validatedData = GeneralStoreController.validateRequest(req.body, createItemSchema);
+      const staffId = (req as any).user.sub;
       const item = await GeneralStoreService.createItem(validatedData, staffId);
 
-      res.status(201).json({
-        success: true,
-        message: 'Item created successfully',
-        data: item,
-      });
+      return createCreatedResponse(res, item, 'Item created successfully');
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async updateItem(req: Request, res: Response) {
+  static async updateItem(req: Request, res: Response, next: NextFunction) {
     try {
       // Validate request body
-      const validatedData = this.validateRequest(req.body, updateItemSchema);
+      const validatedData = GeneralStoreController.validateRequest(req.body, updateItemSchema);
       const { id } = req.params;
-      const staffId = (req as any).user.id;
+      const staffId = (req as any).user.sub;
       const item = await GeneralStoreService.updateItem(Number(id), validatedData, staffId);
 
-      res.json({
-        success: true,
-        message: 'Item updated successfully',
-        data: item,
-      });
+      return createItemResponse(res, item, 'Item updated successfully');
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async deleteItem(req: Request, res: Response) {
+  static async deleteItem(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
       const result = await GeneralStoreService.deleteItem(Number(id));
 
-      res.json({
-        success: true,
-        message: result.message,
-      });
+      return createDeletedResponse(res, result.message);
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async searchItems(req: Request, res: Response) {
+  static async searchItems(req: Request, res: Response, next: NextFunction) {
     try {
       // Validate query parameters
-      const validatedQuery = this.validateRequest(req.query, paginationSchema);
-      const validatedFilters = this.validateRequest(req.query, itemFilterSchema);
+      const validatedQuery = GeneralStoreController.validateRequest(req.query, paginationSchema);
+      const validatedFilters = GeneralStoreController.validateRequest(req.query, itemFilterSchema);
       const { page = 1, limit = 20 } = validatedQuery;
       const { q, category_id, subcategory_id, status } = validatedFilters;
       const { limit: paginate, offset } = calcLimitAndOffset(Number(page), Number(limit));
 
       if (!q || typeof q !== 'string') {
-        return res.status(400).json({
-          success: false,
-          message: 'Search query is required',
-        });
+        return createErrorResponse(res, 'Search query is required', 400);
       }
 
       const filters: any = {};
@@ -613,95 +383,57 @@ export class GeneralStoreController {
 
       const result = await GeneralStoreService.searchItems(q, filters, { limit: paginate, offset });
 
-      res.json({
-        success: true,
-        message: 'Search completed successfully',
-        data: result.rows,
-        pagination: {
-          current_page: Number(page),
-          total_pages: Math.ceil(result.count / paginate),
-          total_items: result.count,
-          items_per_page: paginate,
-        },
-      });
+      return createPaginatedResponse(
+        res,
+        result.rows,
+        result.count,
+        Number(page),
+        paginate,
+        'Search completed successfully'
+      );
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async getLowStockItems(req: Request, res: Response) {
+  static async getLowStockItems(req: Request, res: Response, next: NextFunction) {
     try {
       const items = await GeneralStoreService.getLowStockItems();
 
-      res.json({
-        success: true,
-        message: 'Low stock items retrieved successfully',
-        data: items,
-      });
+      return createItemResponse(res, items, 'Low stock items retrieved successfully');
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async getExpiringItems(req: Request, res: Response) {
+  static async getExpiringItems(req: Request, res: Response, next: NextFunction) {
     try {
       const { days = 30 } = req.query;
       const items = await GeneralStoreService.getExpiringItems(Number(days));
 
-      res.json({
-        success: true,
-        message: 'Expiring items retrieved successfully',
-        data: items,
-      });
+      return createItemResponse(res, items, 'Expiring items retrieved successfully');
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
   // Stock Movements
-  static async getMovements(req: Request, res: Response) {
+  static async getMovements(req: Request, res: Response, next: NextFunction) {
     try {
       // Validate query parameters
-      const validatedQuery = this.validateRequest(req.query, paginationSchema);
-      const validatedFilters = this.validateRequest(req.query, movementFilterSchema);
-      const { page = 1, limit = 20 } = validatedQuery;
-      const { item_id, movement_type, start_date, end_date, staff_id } = validatedFilters;
+      const validatedFilters = GeneralStoreController.validateRequest(
+        req.query,
+        movementFilterSchema
+      );
+      const {
+        page = 1,
+        limit = 20,
+        item_id,
+        movement_type,
+        start_date,
+        end_date,
+        staff_id,
+      } = validatedFilters;
       const { limit: paginate, offset } = calcLimitAndOffset(Number(page), Number(limit));
 
       const filters: any = {};
@@ -715,39 +447,24 @@ export class GeneralStoreController {
 
       const result = await GeneralStoreService.getMovements(filters, { limit: paginate, offset });
 
-      res.json({
-        success: true,
-        message: 'Movements retrieved successfully',
-        data: result.rows,
-        pagination: {
-          current_page: Number(page),
-          total_pages: Math.ceil(result.count / paginate),
-          total_items: result.count,
-          items_per_page: paginate,
-        },
-      });
+      return createPaginatedResponse(
+        res,
+        result.rows,
+        result.count,
+        Number(page),
+        paginate,
+        'Movements retrieved successfully'
+      );
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async createMovement(req: Request, res: Response) {
+  static async createMovement(req: Request, res: Response, next: NextFunction) {
     try {
       // Validate request body
-      const validatedData = this.validateRequest(req.body, createMovementSchema);
-      const staffId = (req as any).user.id;
+      const validatedData = GeneralStoreController.validateRequest(req.body, createMovementSchema);
+      const staffId = (req as any).user.sub;
       const { movement_type } = validatedData;
 
       let result;
@@ -759,29 +476,13 @@ export class GeneralStoreController {
         result = await GeneralStoreService.createMovement(validatedData, staffId);
       }
 
-      res.status(201).json({
-        success: true,
-        message: result.message || 'Movement created successfully',
-        data: result,
-      });
+      return createCreatedResponse(res, result, result.message || 'Movement created successfully');
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async getItemMovements(req: Request, res: Response) {
+  static async getItemMovements(req: Request, res: Response, next: NextFunction) {
     try {
       const { itemId } = req.params;
       const { start_date, end_date } = req.query;
@@ -794,30 +495,14 @@ export class GeneralStoreController {
 
       const movements = await GeneralStoreService.getItemMovements(Number(itemId), filters);
 
-      res.json({
-        success: true,
-        message: 'Item movements retrieved successfully',
-        data: movements,
-      });
+      return createItemResponse(res, movements, 'Item movements retrieved successfully');
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
   // Request Management
-  static async getRequests(req: Request, res: Response) {
+  static async getRequests(req: Request, res: Response, next: NextFunction) {
     try {
       const {
         page = 1,
@@ -841,160 +526,81 @@ export class GeneralStoreController {
 
       const result = await GeneralStoreService.getRequests(filters, { limit: paginate, offset });
 
-      res.json({
-        success: true,
-        message: 'Requests retrieved successfully',
-        data: result.rows,
-        pagination: {
-          current_page: Number(page),
-          total_pages: Math.ceil(result.count / paginate),
-          total_items: result.count,
-          items_per_page: paginate,
-        },
-      });
+      return createPaginatedResponse(
+        res,
+        result.rows,
+        result.count,
+        Number(page),
+        paginate,
+        'Requests retrieved successfully'
+      );
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async getRequestById(req: Request, res: Response) {
+  static async getRequestById(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
       const request = await GeneralStoreService.getRequestById(Number(id));
 
-      res.json({
-        success: true,
-        message: 'Request retrieved successfully',
-        data: request,
-      });
+      return createItemResponse(res, request, 'Request retrieved successfully');
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async createRequest(req: Request, res: Response) {
+  static async createRequest(req: Request, res: Response, next: NextFunction) {
     try {
       // Validate request body
-      const validatedData = this.validateRequest(req.body, createRequestSchema);
-      const staffId = (req as any).user.id;
+      const validatedData = GeneralStoreController.validateRequest(req.body, createRequestSchema);
+      const staffId = (req as any).user.sub;
       const request = await GeneralStoreService.createRequest(validatedData, staffId);
 
-      res.status(201).json({
-        success: true,
-        message: 'Request created successfully',
-        data: request,
-      });
+      return createCreatedResponse(res, request, 'Request created successfully');
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  // static async updateRequest(req: Request, res: Response) {
-  //   try {
-  //     // Validate request body
-  //     const validatedData = this.validateRequest(req.body, createRequestSchema);
-  //     const { id } = req.params;
-  //     const staffId = (req as any).user.id;
-  //     const request = await GeneralStoreService.updateRequest(Number(id), validatedData, staffId);
-  //
-  //     res.json({
-  //       success: true,
-  //       message: 'Request updated successfully',
-  //       data: request,
-  //     });
-  //   } catch (error) {
-  //     if (error instanceof BadException) {
-  //       res.status(error.statusCode).json({
-  //         success: false,
-  //         message: error.message,
-  //         error: error.error,
-  //       });
-  //     } else {
-  //       res.status(500).json({
-  //         success: false,
-  //         message: 'Internal server error',
-  //         error: error.message,
-  //       });
-  //     }
-  //   }
-  // }
-
-  static async approveRequest(req: Request, res: Response) {
+  static async updateRequest(req: Request, res: Response, next: NextFunction) {
     try {
       // Validate request body
-      const validatedData = this.validateRequest(req.body, approveRequestSchema);
+      const validatedData = GeneralStoreController.validateRequest(req.body, createRequestSchema);
       const { id } = req.params;
-      const approverId = (req as any).user.id;
+      const staffId = (req as any).user.sub;
+      const request = await GeneralStoreService.updateRequest(Number(id), validatedData, staffId);
+
+      return createItemResponse(res, request, 'Request updated successfully');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async approveRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      // Validate request body
+      const validatedData = GeneralStoreController.validateRequest(req.body, approveRequestSchema);
+      const { id } = req.params;
+      const approverId = (req as any).user.sub;
       const result = await GeneralStoreService.approveRequest(
         Number(id),
         validatedData.approved_items,
         approverId
       );
 
-      res.json({
-        success: true,
-        message: result.message,
-        data: result.request,
-      });
+      return createItemResponse(res, result.request, result.message);
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async rejectRequest(req: Request, res: Response) {
+  static async rejectRequest(req: Request, res: Response, next: NextFunction) {
     try {
       // Validate request body
-      const validatedData = this.validateRequest(req.body, rejectRequestSchema);
+      const validatedData = GeneralStoreController.validateRequest(req.body, rejectRequestSchema);
       const { id } = req.params;
-      const approverId = (req as any).user.id;
+      const approverId = (req as any).user.sub;
       const result = await GeneralStoreService.rejectRequest(
         Number(id),
         validatedData.rejection_reason,
@@ -1007,28 +613,16 @@ export class GeneralStoreController {
         data: result.request,
       });
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async fulfillRequest(req: Request, res: Response) {
+  static async fulfillRequest(req: Request, res: Response, next: NextFunction) {
     try {
       // Validate request body
-      const validatedData = this.validateRequest(req.body, fulfillRequestSchema);
+      const validatedData = GeneralStoreController.validateRequest(req.body, fulfillRequestSchema);
       const { id } = req.params;
-      const staffId = (req as any).user.id;
+      const staffId = (req as any).user.sub;
       const result = await GeneralStoreService.fulfillRequest(
         Number(id),
         validatedData.issued_items,
@@ -1041,66 +635,39 @@ export class GeneralStoreController {
         data: result.request,
       });
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async getMyRequests(req: Request, res: Response) {
+  static async getMyRequests(req: Request, res: Response, next: NextFunction) {
     try {
       // Validate query parameters
-      const validatedQuery = this.validateRequest(req.query, paginationSchema);
+      const validatedQuery = GeneralStoreController.validateRequest(req.query, paginationSchema);
       const { page = 1, limit = 20 } = validatedQuery;
       const { limit: paginate, offset } = calcLimitAndOffset(Number(page), Number(limit));
 
-      const result = await GeneralStoreService.getMyRequests((req as any).user.id, {
+      const result = await GeneralStoreService.getMyRequests((req as any).user.sub, {
         limit: paginate,
         offset,
       });
 
-      res.json({
-        success: true,
-        message: 'My requests retrieved successfully',
-        data: result.rows,
-        pagination: {
-          current_page: Number(page),
-          total_pages: Math.ceil(result.count / paginate),
-          total_items: result.count,
-          items_per_page: paginate,
-        },
-      });
+      return createPaginatedResponse(
+        res,
+        result.rows,
+        result.count,
+        Number(page),
+        paginate,
+        'My requests retrieved successfully'
+      );
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async getPendingApprovalRequests(req: Request, res: Response) {
+  static async getPendingApprovalRequests(req: Request, res: Response, next: NextFunction) {
     try {
       // Validate query parameters
-      const validatedQuery = this.validateRequest(req.query, paginationSchema);
+      const validatedQuery = GeneralStoreController.validateRequest(req.query, paginationSchema);
       const { page = 1, limit = 20 } = validatedQuery;
       const { limit: paginate, offset } = calcLimitAndOffset(Number(page), Number(limit));
 
@@ -1109,39 +676,24 @@ export class GeneralStoreController {
         offset,
       });
 
-      res.json({
-        success: true,
-        message: 'Pending approval requests retrieved successfully',
-        data: result.rows,
-        pagination: {
-          current_page: Number(page),
-          total_pages: Math.ceil(result.count / paginate),
-          total_items: result.count,
-          items_per_page: paginate,
-        },
-      });
+      return createPaginatedResponse(
+        res,
+        result.rows,
+        result.count,
+        Number(page),
+        paginate,
+        'Pending approval requests retrieved successfully'
+      );
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
   // Reports
-  static async getStockReport(req: Request, res: Response) {
+  static async getStockReport(req: Request, res: Response, next: NextFunction) {
     try {
       // Validate query parameters
-      const validatedFilters = this.validateRequest(req.query, itemFilterSchema);
+      const validatedFilters = GeneralStoreController.validateRequest(req.query, itemFilterSchema);
       const { category_id, subcategory_id, status, include_zero } = validatedFilters;
 
       const filters: any = {};
@@ -1154,32 +706,19 @@ export class GeneralStoreController {
 
       const report = await GeneralStoreService.getStockReport(filters);
 
-      res.json({
-        success: true,
-        message: 'Stock report generated successfully',
-        data: report,
-      });
+      return createItemResponse(res, report, 'Stock report generated successfully');
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async getMovementReport(req: Request, res: Response) {
+  static async getMovementReport(req: Request, res: Response, next: NextFunction) {
     try {
       // Validate query parameters
-      const validatedFilters = this.validateRequest(req.query, movementFilterSchema);
+      const validatedFilters = GeneralStoreController.validateRequest(
+        req.query,
+        movementFilterSchema
+      );
       const { item_id, movement_type, start_date, end_date, staff_id } = validatedFilters;
 
       const filters: any = {};
@@ -1193,34 +732,21 @@ export class GeneralStoreController {
 
       const report = await GeneralStoreService.getMovementReport(filters);
 
-      res.json({
-        success: true,
-        message: 'Movement report generated successfully',
-        data: report,
-      });
+      return createItemResponse(res, report, 'Movement report generated successfully');
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async getUsageReport(req: Request, res: Response) {
+  static async getUsageReport(req: Request, res: Response, next: NextFunction) {
     try {
       // Validate query parameters
-      const validatedFilters = this.validateRequest(req.query, reportFilterSchema);
+      const validatedFilters = GeneralStoreController.validateRequest(
+        req.query,
+        reportFilterSchema
+      );
       const { department_id, start_date, end_date } = validatedFilters;
-      const staffId = (req as any).user?.id;
+      const staffId = (req as any).user?.sub;
 
       const dateRange = {
         start_date: new Date(start_date as string),
@@ -1242,40 +768,27 @@ export class GeneralStoreController {
         );
       }
 
-      res.json({
-        success: true,
-        message: 'Usage report generated successfully',
-        data: report,
-      });
+      return createItemResponse(res, report, 'Usage report generated successfully');
     } catch (error) {
       // Log error for audit
-      const staffId = (req as any).user?.id;
+      const staffId = (req as any).user?.sub;
       if (staffId) {
         await GeneralStoreAuditService.logSystemError(staffId, error, 'getUsageReport', req);
       }
 
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async getCostReport(req: Request, res: Response) {
+  static async getCostReport(req: Request, res: Response, next: NextFunction) {
     try {
       // Validate query parameters
-      const validatedFilters = this.validateRequest(req.query, reportFilterSchema);
+      const validatedFilters = GeneralStoreController.validateRequest(
+        req.query,
+        reportFilterSchema
+      );
       const { start_date, end_date, group_by, category_id, subcategory_id } = validatedFilters;
-      const staffId = (req as any).user?.id;
+      const staffId = (req as any).user?.sub;
 
       const filters: any = {
         start_date: new Date(start_date as string),
@@ -1298,102 +811,62 @@ export class GeneralStoreController {
         );
       }
 
-      res.json({
-        success: true,
-        message: 'Cost report generated successfully',
-        data: report,
-      });
+      return createItemResponse(res, report, 'Cost report generated successfully');
     } catch (error) {
       // Log error for audit
-      const staffId = (req as any).user?.id;
+      const staffId = (req as any).user?.sub;
       if (staffId) {
         await GeneralStoreAuditService.logSystemError(staffId, error, 'getCostReport', req);
       }
 
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async getLowStockReport(req: Request, res: Response) {
+  static async getLowStockReport(req: Request, res: Response, next: NextFunction) {
     try {
       const items = await GeneralStoreService.getLowStockItems();
 
-      res.json({
-        success: true,
-        message: 'Low stock report generated successfully',
-        data: {
+      return createItemResponse(
+        res,
+        {
           items,
           summary: {
             total_items: items.length,
             low_stock_count: items.length,
           },
         },
-      });
+        'Low stock report generated successfully'
+      );
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async getExpiringReport(req: Request, res: Response) {
+  static async getExpiringReport(req: Request, res: Response, next: NextFunction) {
     try {
       const { days = 30 } = req.query;
       const items = await GeneralStoreService.getExpiringItems(Number(days));
 
-      res.json({
-        success: true,
-        message: 'Expiring items report generated successfully',
-        data: {
+      return createItemResponse(
+        res,
+        {
           items,
           summary: {
             total_items: items.length,
             days_ahead: Number(days),
           },
         },
-      });
+        'Expiring items report generated successfully'
+      );
     } catch (error) {
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async getAuditLogs(req: Request, res: Response) {
+  static async getAuditLogs(req: Request, res: Response, next: NextFunction) {
     try {
-      const staffId = (req as any).user?.id;
+      const staffId = (req as any).user?.sub;
       const {
         page = 1,
         limit = 20,
@@ -1437,47 +910,66 @@ export class GeneralStoreController {
         });
       }
 
-      res.json({
-        success: true,
-        message: 'Audit logs retrieved successfully',
-        data: result.rows,
-        pagination: {
-          current_page: Number(page),
-          total_pages: Math.ceil(result.count / paginate),
-          total_items: result.count,
-          items_per_page: paginate,
-        },
-      });
+      return createPaginatedResponse(
+        res,
+        result.rows,
+        result.count,
+        Number(page),
+        paginate,
+        'Audit logs retrieved successfully'
+      );
     } catch (error) {
       // Log error for audit
-      const staffId = (req as any).user?.id;
+      const staffId = (req as any).user?.sub;
       if (staffId) {
         await GeneralStoreAuditService.logSystemError(staffId, error, 'getAuditLogs', req);
       }
 
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
+      next(error);
+    }
+  }
+
+  // Dashboard Management
+  static async getDashboardStats(req: Request, res: Response, next: NextFunction) {
+    try {
+      const stats = await GeneralStoreService.getDashboardStats();
+
+      return createItemResponse(res, stats, 'Dashboard statistics retrieved successfully');
+    } catch (error) {
+      // Log error for audit
+      const staffId = (req as any).user?.sub;
+      if (staffId) {
+        await GeneralStoreAuditService.logSystemError(staffId, error, 'getDashboardStats', req);
       }
+
+      next(error);
+    }
+  }
+
+  static async getRecentReports(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { limit = 10 } = req.query;
+      const reports = await GeneralStoreService.getRecentReports(Number(limit));
+
+      return createItemResponse(res, reports, 'Recent reports retrieved successfully');
+    } catch (error) {
+      // Log error for audit
+      const staffId = (req as any).user?.sub;
+      if (staffId) {
+        await GeneralStoreAuditService.logSystemError(staffId, error, 'getRecentReports', req);
+      }
+
+      next(error);
     }
   }
 
   // Settings Management
-  static async getSettings(req: Request, res: Response) {
+  static async getSettings(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await GeneralStoreService.getSettings();
 
       // Log audit
-      const staffId = (req as any).user?.id;
+      const staffId = (req as any).user?.sub;
       if (staffId) {
         await GeneralStoreAuditService.logAuditEvent({
           staffId,
@@ -1489,40 +981,24 @@ export class GeneralStoreController {
         });
       }
 
-      res.json({
-        success: true,
-        message: 'Settings retrieved successfully',
-        data: result,
-      });
+      return createItemResponse(res, result, 'Settings retrieved successfully');
     } catch (error) {
       // Log error for audit
-      const staffId = (req as any).user?.id;
+      const staffId = (req as any).user?.sub;
       if (staffId) {
         await GeneralStoreAuditService.logSystemError(staffId, error, 'getSettings', req);
       }
 
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
-  static async updateSettings(req: Request, res: Response) {
+  static async updateSettings(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await GeneralStoreService.updateSettings(req.body);
 
       // Log audit
-      const staffId = (req as any).user?.id;
+      const staffId = (req as any).user?.sub;
       if (staffId) {
         await GeneralStoreAuditService.logAuditEvent({
           staffId,
@@ -1536,242 +1012,280 @@ export class GeneralStoreController {
         });
       }
 
-      res.json({
-        success: true,
-        message: 'Settings updated successfully',
-        data: result,
-      });
+      return createItemResponse(res, result, 'Settings updated successfully');
     } catch (error) {
       // Log error for audit
-      const staffId = (req as any).user?.id;
+      const staffId = (req as any).user?.sub;
       if (staffId) {
         await GeneralStoreAuditService.logSystemError(staffId, error, 'updateSettings', req);
       }
 
-      if (error instanceof BadException) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-          error: error.error,
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message,
-        });
-      }
+      next(error);
     }
   }
 
   // Export Methods
-  // static async exportStockReport(req: Request, res: Response) {
-  //   try {
-  //     const validatedFilters = this.validateRequest(req.query, itemFilterSchema);
-  //     const {
-  //       category_id,
-  //       subcategory_id,
-  //       status,
-  //       include_zero,
-  //       format = 'csv',
-  //     } = validatedFilters;
-  //     const staffId = (req as any).user?.id;
-  //
-  //     const filters: any = {};
-  //     if (category_id) filters.category_id = Number(category_id);
-  //     if (subcategory_id) filters.subcategory_id = Number(subcategory_id);
-  //     if (status) filters.status = status;
-  //     if (include_zero === 'false') {
-  //       filters.current_stock = { [Op.gt]: 0 };
-  //     }
-  //
-  //     const report = await GeneralStoreService.getStockReport(filters);
-  //     const exportResult = await GeneralStoreService.exportReport(report, format, 'stock');
-  //
-  //     // Log audit event
-  //     if (staffId) {
-  //       await GeneralStoreAuditService.logReportGeneration(
-  //         staffId,
-  //         `Stock Report Export (${format.toUpperCase()})`,
-  //         validatedFilters,
-  //         req
-  //       );
-  //     }
-  //
-  //     res.setHeader('Content-Type', exportResult.contentType);
-  //     res.setHeader('Content-Disposition', `attachment; filename="${exportResult.filename}"`);
-  //     res.send(exportResult.data);
-  //   } catch (error) {
-  //     if (error instanceof BadException) {
-  //       res.status(error.statusCode).json({
-  //         success: false,
-  //         message: error.message,
-  //         error: error.error,
-  //       });
-  //     } else {
-  //       res.status(500).json({
-  //         success: false,
-  //         message: 'Internal server error',
-  //         error: error.message,
-  //       });
-  //     }
-  //   }
-  // }
+  static async exportStockReport(req: Request, res: Response, next: NextFunction) {
+    try {
+      const validatedFilters = GeneralStoreController.validateRequest(req.query, itemFilterSchema);
+      const {
+        category_id,
+        subcategory_id,
+        status,
+        include_zero,
+        format = 'csv',
+      } = validatedFilters;
+      const staffId = (req as any).user?.sub;
 
-  // static async exportMovementReport(req: Request, res: Response) {
-  //   try {
-  //     const validatedFilters = this.validateRequest(req.query, movementFilterSchema);
-  //     const {
-  //       item_id,
-  //       movement_type,
-  //       start_date,
-  //       end_date,
-  //       staff_id,
-  //       format = 'csv',
-  //     } = validatedFilters;
-  //     const userId = (req as any).user?.id;
-  //
-  //     const filters: any = {};
-  //     if (item_id) filters.item_id = Number(item_id);
-  //     if (movement_type) filters.movement_type = movement_type;
-  //     if (staff_id) filters.staff_id = Number(staff_id);
-  //     if (start_date && end_date) {
-  //       filters.start_date = new Date(start_date as string);
-  //       filters.end_date = new Date(end_date as string);
-  //     }
-  //
-  //     const report = await GeneralStoreService.getMovementReport(filters);
-  //     const exportResult = await GeneralStoreService.exportReport(report, format, 'movements');
-  //
-  //     // Log audit event
-  //     if (userId) {
-  //       await GeneralStoreAuditService.logReportGeneration(
-  //         userId,
-  //         `Movement Report Export (${format.toUpperCase()})`,
-  //         validatedFilters,
-  //         req
-  //       );
-  //     }
-  //
-  //     res.setHeader('Content-Type', exportResult.contentType);
-  //     res.setHeader('Content-Disposition', `attachment; filename="${exportResult.filename}"`);
-  //     res.send(exportResult.data);
-  //   } catch (error) {
-  //     if (error instanceof BadException) {
-  //       res.status(error.statusCode).json({
-  //         success: false,
-  //         message: error.message,
-  //         error: error.error,
-  //       });
-  //     } else {
-  //       res.status(500).json({
-  //         success: false,
-  //         message: 'Internal server error',
-  //         error: error.message,
-  //       });
-  //     }
-  //   }
-  // }
+      const filters: any = {};
+      if (category_id) filters.category_id = Number(category_id);
+      if (subcategory_id) filters.subcategory_id = Number(subcategory_id);
+      if (status) filters.status = status;
+      if (include_zero === 'false') {
+        filters.current_stock = { [Op.gt]: 0 };
+      }
 
-  // static async exportUsageReport(req: Request, res: Response) {
-  //   try {
-  //     const validatedFilters = this.validateRequest(req.query, reportFilterSchema);
-  //     const { department_id, start_date, end_date, format = 'csv' } = validatedFilters;
-  //     const staffId = (req as any).user?.id;
-  //
-  //     const dateRange = {
-  //       start_date: new Date(start_date as string),
-  //       end_date: new Date(end_date as string),
-  //     };
-  //
-  //     const report = await GeneralStoreService.getUsageReport(
-  //       Number(department_id) || 0,
-  //       dateRange
-  //     );
-  //     const exportResult = await GeneralStoreService.exportReport(report, format, 'usage');
-  //
-  //     // Log audit event
-  //     if (staffId) {
-  //       await GeneralStoreAuditService.logReportGeneration(
-  //         staffId,
-  //         `Usage Report Export (${format.toUpperCase()})`,
-  //         validatedFilters,
-  //         req
-  //       );
-  //     }
-  //
-  //     res.setHeader('Content-Type', exportResult.contentType);
-  //     res.setHeader('Content-Disposition', `attachment; filename="${exportResult.filename}"`);
-  //     res.send(exportResult.data);
-  //   } catch (error) {
-  //     if (error instanceof BadException) {
-  //       res.status(error.statusCode).json({
-  //         success: false,
-  //         message: error.message,
-  //         error: error.error,
-  //       });
-  //     } else {
-  //       res.status(500).json({
-  //         success: false,
-  //         message: 'Internal server error',
-  //         error: error.message,
-  //       });
-  //     }
-  //   }
-  // }
-  //
-  // static async exportCostReport(req: Request, res: Response) {
-  //   try {
-  //     const validatedFilters = this.validateRequest(req.query, reportFilterSchema);
-  //     const {
-  //       start_date,
-  //       end_date,
-  //       group_by,
-  //       category_id,
-  //       subcategory_id,
-  //       format = 'csv',
-  //     } = validatedFilters;
-  //     const staffId = (req as any).user?.id;
-  //
-  //     const filters: any = {
-  //       start_date: new Date(start_date as string),
-  //       end_date: new Date(end_date as string),
-  //     };
-  //
-  //     if (group_by) filters.group_by = group_by;
-  //     if (category_id) filters.category_id = Number(category_id);
-  //     if (subcategory_id) filters.subcategory_id = Number(subcategory_id);
-  //
-  //     const report = await GeneralStoreService.getCostReport(filters);
-  //     const exportResult = await GeneralStoreService.exportReport(report, format, 'costs');
-  //
-  //     // Log audit event
-  //     if (staffId) {
-  //       await GeneralStoreAuditService.logReportGeneration(
-  //         staffId,
-  //         `Cost Report Export (${format.toUpperCase()})`,
-  //         validatedFilters,
-  //         req
-  //       );
-  //     }
-  //
-  //     res.setHeader('Content-Type', exportResult.contentType);
-  //     res.setHeader('Content-Disposition', `attachment; filename="${exportResult.filename}"`);
-  //     res.send(exportResult.data);
-  //   } catch (error) {
-  //     if (error instanceof BadException) {
-  //       res.status(error.statusCode).json({
-  //         success: false,
-  //         message: error.message,
-  //         error: error.error,
-  //       });
-  //     } else {
-  //       res.status(500).json({
-  //         success: false,
-  //         message: 'Internal server error',
-  //         error: error.message,
-  //       });
-  //     }
-  //   }
-  // }
+      const report = await GeneralStoreService.getStockReport(filters);
+      const exportResult = await GeneralStoreService.exportReport(report, format, 'stock');
+
+      // Log audit event
+      if (staffId) {
+        await GeneralStoreAuditService.logReportGeneration(
+          staffId,
+          `Stock Report Export (${format.toUpperCase()})`,
+          validatedFilters,
+          req
+        );
+      }
+
+      res.setHeader('Content-Type', exportResult.contentType);
+      res.setHeader('Content-Disposition', `attachment; filename="${exportResult.filename}"`);
+      res.send(exportResult.data);
+    } catch (error) {
+      // Log error for audit
+      const staffId = (req as any).user?.sub;
+      if (staffId) {
+        await GeneralStoreAuditService.logSystemError(staffId, error, 'exportStockReport', req);
+      }
+
+      next(error);
+    }
+  }
+
+  static async exportMovementReport(req: Request, res: Response, next: NextFunction) {
+    try {
+      const validatedFilters = GeneralStoreController.validateRequest(
+        req.query,
+        movementFilterSchema
+      );
+      const {
+        item_id,
+        movement_type,
+        start_date,
+        end_date,
+        staff_id,
+        format = 'csv',
+      } = validatedFilters;
+      const staffId = (req as any).user?.sub;
+
+      const filters: any = {};
+      if (item_id) filters.item_id = Number(item_id);
+      if (movement_type) filters.movement_type = movement_type;
+      if (staff_id) filters.staff_id = Number(staff_id);
+      if (start_date && end_date) {
+        filters.start_date = new Date(start_date as string);
+        filters.end_date = new Date(end_date as string);
+      }
+
+      const report = await GeneralStoreService.getMovementReport(filters);
+      const exportResult = await GeneralStoreService.exportReport(report, format, 'movements');
+
+      // Log audit event
+      if (staffId) {
+        await GeneralStoreAuditService.logReportGeneration(
+          staffId,
+          `Movement Report Export (${format.toUpperCase()})`,
+          validatedFilters,
+          req
+        );
+      }
+
+      res.setHeader('Content-Type', exportResult.contentType);
+      res.setHeader('Content-Disposition', `attachment; filename="${exportResult.filename}"`);
+      res.send(exportResult.data);
+    } catch (error) {
+      // Log error for audit
+      const staffId = (req as any).user?.sub;
+      if (staffId) {
+        await GeneralStoreAuditService.logSystemError(staffId, error, 'exportMovementReport', req);
+      }
+
+      next(error);
+    }
+  }
+
+  static async exportUsageReport(req: Request, res: Response, next: NextFunction) {
+    try {
+      const validatedFilters = GeneralStoreController.validateRequest(
+        req.query,
+        reportFilterSchema
+      );
+      const { department_id, start_date, end_date, format = 'csv' } = validatedFilters;
+      const staffId = (req as any).user?.sub;
+
+      const dateRange = {
+        start_date: new Date(start_date as string),
+        end_date: new Date(end_date as string),
+      };
+
+      const report = await GeneralStoreService.getUsageReport(
+        Number(department_id) || 0,
+        dateRange
+      );
+      const exportResult = await GeneralStoreService.exportReport(report, format, 'usage');
+
+      // Log audit event
+      if (staffId) {
+        await GeneralStoreAuditService.logReportGeneration(
+          staffId,
+          `Usage Report Export (${format.toUpperCase()})`,
+          validatedFilters,
+          req
+        );
+      }
+
+      res.setHeader('Content-Type', exportResult.contentType);
+      res.setHeader('Content-Disposition', `attachment; filename="${exportResult.filename}"`);
+      res.send(exportResult.data);
+    } catch (error) {
+      // Log error for audit
+      const staffId = (req as any).user?.sub;
+      if (staffId) {
+        await GeneralStoreAuditService.logSystemError(staffId, error, 'exportUsageReport', req);
+      }
+
+      next(error);
+    }
+  }
+  static async exportCostReport(req: Request, res: Response, next: NextFunction) {
+    try {
+      const validatedFilters = GeneralStoreController.validateRequest(
+        req.query,
+        reportFilterSchema
+      );
+      const {
+        start_date,
+        end_date,
+        group_by,
+        category_id,
+        subcategory_id,
+        format = 'csv',
+      } = validatedFilters;
+      const staffId = (req as any).user?.sub;
+
+      const filters: any = {
+        start_date: new Date(start_date as string),
+        end_date: new Date(end_date as string),
+      };
+
+      if (group_by) filters.group_by = group_by;
+      if (category_id) filters.category_id = Number(category_id);
+      if (subcategory_id) filters.subcategory_id = Number(subcategory_id);
+
+      const report = await GeneralStoreService.getCostReport(filters);
+      const exportResult = await GeneralStoreService.exportReport(report, format, 'costs');
+
+      // Log audit event
+      if (staffId) {
+        await GeneralStoreAuditService.logReportGeneration(
+          staffId,
+          `Cost Report Export (${format.toUpperCase()})`,
+          validatedFilters,
+          req
+        );
+      }
+
+      res.setHeader('Content-Type', exportResult.contentType);
+      res.setHeader('Content-Disposition', `attachment; filename="${exportResult.filename}"`);
+      res.send(exportResult.data);
+    } catch (error) {
+      // Log error for audit
+      const staffId = (req as any).user?.sub;
+      if (staffId) {
+        await GeneralStoreAuditService.logSystemError(staffId, error, 'exportCostReport', req);
+      }
+
+      next(error);
+    }
+  }
+
+  // Request Workflow Methods (Consolidated)
+  static async cancelRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const { notes, cancelled_by, reason } = req.body;
+
+      const request = await GeneralStoreService.cancelRequest(Number(id), {
+        notes,
+        cancelled_by: cancelled_by || (req as any).user.sub,
+        reason,
+      });
+
+      return createItemResponse(res, request, 'Request cancelled successfully', StatusCodes.OK);
+    } catch (error) {
+      // Log error for audit
+      const staffId = (req as any).user?.sub;
+      if (staffId) {
+        await GeneralStoreAuditService.logSystemError(staffId, error, 'cancelRequest', req);
+      }
+
+      next(error);
+    }
+  }
+
+  // Movement Workflow Methods
+  static async approveMovement(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const { notes, approved_by } = req.body;
+
+      const movement = await GeneralStoreService.approveMovement(Number(id), {
+        notes,
+        approved_by: approved_by || (req as any).user?.sub,
+      });
+
+      return createItemResponse(res, movement, 'Movement approved successfully', StatusCodes.OK);
+    } catch (error) {
+      // Log error for audit
+      const staffId = (req as any).user?.sub;
+      if (staffId) {
+        await GeneralStoreAuditService.logSystemError(staffId, error, 'approveMovement', req);
+      }
+
+      next(error);
+    }
+  }
+
+  static async rejectMovement(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const { notes, rejected_by, reason } = req.body;
+
+      const movement = await GeneralStoreService.rejectMovement(Number(id), {
+        notes,
+        rejected_by: rejected_by || (req as any).user?.sub,
+        reason,
+      });
+
+      return createItemResponse(res, movement, 'Movement rejected successfully', StatusCodes.OK);
+    } catch (error) {
+      // Log error for audit
+      const staffId = (req as any).user?.sub;
+      if (staffId) {
+        await GeneralStoreAuditService.logSystemError(staffId, error, 'rejectMovement', req);
+      }
+
+      next(error);
+    }
+  }
 }

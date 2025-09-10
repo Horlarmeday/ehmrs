@@ -129,7 +129,6 @@
                 type="number"
                 min="0"
                 class="form-control"
-                placeholder="0"
                 @input="handleFilterChange"
               />
             </div>
@@ -141,7 +140,6 @@
                 type="number"
                 min="0"
                 class="form-control"
-                placeholder="1000"
                 @input="handleFilterChange"
               />
             </div>
@@ -173,7 +171,6 @@
                 v-model="filters.reference"
                 type="text"
                 class="form-control"
-                placeholder="Search by reference number, notes, or description"
                 @input="handleFilterChange"
               />
             </div>
@@ -473,14 +470,15 @@ export default {
         await this.$store.dispatch('generalStore/fetchItems', { status: 'ACTIVE' });
         this.items = this.$store.state.generalStore.items;
 
-        // TODO: Load users when user management is implemented
-        this.users = [
+        // Load users from staff data
+        await this.$store.dispatch('generalStore/fetchStaff');
+        this.users = this.$store.state.generalStore.staff || [
           { id: 1, name: 'John Doe' },
           { id: 2, name: 'Jane Smith' },
           { id: 3, name: 'Bob Johnson' },
         ];
       } catch (error) {
-        console.error('Error loading form data:', error);
+        this.$toast.error('Failed to load form data');
       }
     },
 
@@ -515,7 +513,6 @@ export default {
 
         this.$toast.success('Movement report generated successfully');
       } catch (error) {
-        console.error('Error generating report:', error);
         this.$toast.error('Failed to generate report. Please try again.');
       } finally {
         this.loading = false;
@@ -644,30 +641,80 @@ export default {
 
     viewUser(user) {
       if (user) {
-        // TODO: Implement user view when user management is available
-        this.$toast.info(`Viewing user: ${user.name}`);
+        // Navigate to user profile or show user details modal
+        this.$router.push(`/staff/${user.id}`);
       }
     },
 
-    exportReport() {
+    async exportReport() {
       if (!this.reportData) return;
 
-      // TODO: Implement export functionality
-      this.$toast.info('Export functionality coming soon');
+      try {
+        const reportName = `Movement_Report_${new Date().toISOString().split('T')[0]}`;
+        await this.$exportData(this.reportData, reportName, 'xlsx', {
+          formatters: {
+            quantity: (value) => Number(value || 0),
+            unit_price: (value) => Number(value || 0).toFixed(2),
+            total_price: (value) => Number(value || 0).toFixed(2),
+            created_at: (value) => new Date(value).toLocaleDateString(),
+          }
+        });
+      } catch (error) {
+        this.$logError('Failed to export movement report', error);
+        this.$toast.error('Failed to export report');
+      }
     },
 
-    printReport() {
+    async printReport() {
       if (!this.reportData) return;
 
-      // TODO: Implement print functionality
-      this.$toast.info('Print functionality coming soon');
+      try {
+        const reportConfig = {
+          title: 'Movement Report',
+          subtitle: `Generated on ${new Date().toLocaleDateString()}`,
+          orientation: 'landscape',
+          format: 'a4',
+        };
+        await this.$printReport(this.reportData, reportConfig);
+      } catch (error) {
+        this.$logError('Failed to print movement report', error);
+        this.$toast.error('Failed to print report');
+      }
     },
 
-    shareReport() {
+    async shareReport() {
       if (!this.reportData) return;
 
-      // TODO: Implement share functionality
-      this.$toast.info('Share functionality coming soon');
+      try {
+        const reportData = {
+          title: 'Movement Report',
+          data: this.reportData,
+          generated_at: new Date().toISOString(),
+          filters: this.filters,
+        };
+
+        if (navigator.share) {
+          const blob = new Blob([JSON.stringify(reportData, null, 2)], {
+            type: 'application/json',
+          });
+          const file = new File([blob], `movement_report_${new Date().toISOString().split('T')[0]}.json`, {
+            type: 'application/json',
+          });
+          
+          await navigator.share({
+            title: 'Movement Report',
+            text: 'Movement report data from EHMRS',
+            files: [file],
+          });
+        } else {
+          // Fallback: copy to clipboard
+          await navigator.clipboard.writeText(JSON.stringify(reportData, null, 2));
+          this.$toast.success('Report data copied to clipboard');
+        }
+      } catch (error) {
+        this.$logError('Failed to share movement report', error);
+        this.$toast.error('Failed to share report');
+      }
     },
   },
 };

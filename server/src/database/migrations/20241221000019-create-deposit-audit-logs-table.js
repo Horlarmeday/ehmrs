@@ -8,17 +8,17 @@ module.exports = {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true,
-        allowNull: false
+        allowNull: false,
       },
       deposit_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
           model: 'patient_deposits',
-          key: 'id'
+          key: 'id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'CASCADE'
+        onDelete: 'CASCADE',
       },
       action_type: {
         type: Sequelize.ENUM(
@@ -35,98 +35,98 @@ module.exports = {
           'MANUAL_OVERRIDE',
           'SYSTEM_MAINTENANCE'
         ),
-        allowNull: false
+        allowNull: false,
       },
       severity: {
         type: Sequelize.ENUM('INFO', 'WARNING', 'ERROR', 'CRITICAL'),
         defaultValue: 'INFO',
-        allowNull: false
+        allowNull: false,
       },
       action_description: {
         type: Sequelize.STRING(255),
-        allowNull: false
+        allowNull: false,
       },
       details: {
         type: Sequelize.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       old_values: {
         type: Sequelize.JSON,
-        allowNull: true
+        allowNull: true,
       },
       new_values: {
         type: Sequelize.JSON,
-        allowNull: true
+        allowNull: true,
       },
       metadata: {
         type: Sequelize.JSON,
-        allowNull: true
+        allowNull: true,
       },
       performed_by: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
           model: 'staff',
-          key: 'id'
+          key: 'id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'RESTRICT'
+        onDelete: 'RESTRICT',
       },
       ip_address: {
         type: Sequelize.STRING(45),
-        allowNull: true
+        allowNull: true,
       },
       user_agent: {
         type: Sequelize.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       session_id: {
         type: Sequelize.STRING(255),
-        allowNull: true
+        allowNull: true,
       },
       request_id: {
         type: Sequelize.STRING(255),
-        allowNull: true
+        allowNull: true,
       },
       endpoint: {
         type: Sequelize.STRING(255),
-        allowNull: true
+        allowNull: true,
       },
       http_method: {
         type: Sequelize.STRING(10),
-        allowNull: true
+        allowNull: true,
       },
       response_status: {
         type: Sequelize.INTEGER,
-        allowNull: true
+        allowNull: true,
       },
       response_time_ms: {
         type: Sequelize.INTEGER,
-        allowNull: true
+        allowNull: true,
       },
       is_system_action: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
-        allowNull: false
+        allowNull: false,
       },
       error_message: {
         type: Sequelize.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       stack_trace: {
         type: Sequelize.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: Sequelize.NOW
+        defaultValue: Sequelize.NOW,
       },
       updatedAt: {
         type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: Sequelize.NOW
-      }
+        defaultValue: Sequelize.NOW,
+      },
     });
 
     // Add indexes for better performance
@@ -151,5 +151,5 @@ module.exports = {
 
     // Drop the table
     await queryInterface.dropTable('deposit_audit_logs');
-  }
+  },
 };

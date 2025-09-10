@@ -34,6 +34,11 @@ export enum JobName {
   MIGRATE_PHARMACY_STORE_ITEMS = 'Migrate pharmacy store items',
   MIGRATE_PATIENT_HISTORY = 'Migrate patient history',
   MIGRATE_PATIENT_DIAGNOSES = 'Migrate patient diagnoses',
+  // Inventory Alert Jobs
+  INVENTORY_STOCK_LEVEL_CHECK = 'Inventory stock level check',
+  INVENTORY_EXPIRY_CHECK = 'Inventory expiry check',
+  INVENTORY_ALERT_ESCALATION = 'Inventory alert escalation',
+  INVENTORY_ALERT_AUTO_RESOLVE = 'Inventory alert auto resolve',
 }
 
 export const CronTimer = {
@@ -41,6 +46,11 @@ export const CronTimer = {
     process.env.NODE_ENV === 'development' ? '0 2 * * *' : '*/5 * * * *', // every 5 minutes
   [JobName.CLOSE_ANTENATAL_ACCOUNT]: '0 1 * * *', // every 1am
   [JobName.END_VISIT]: '0 0 * * *', // 12am
+  // Inventory Alert Jobs
+  [JobName.INVENTORY_STOCK_LEVEL_CHECK]: '*/15 * * * *', // every 15 minutes
+  [JobName.INVENTORY_EXPIRY_CHECK]: '0 */6 * * *', // every 6 hours
+  [JobName.INVENTORY_ALERT_ESCALATION]: '*/30 * * * *', // every 30 minutes
+  [JobName.INVENTORY_ALERT_AUTO_RESOLVE]: '0 1 * * *', // daily at 1 AM
 };
 
 export const ImmediateJob = {

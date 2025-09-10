@@ -267,6 +267,29 @@
       </div>
 
       <div class="col-lg-4 col-md-6 mb-6">
+        <div
+          class="nav-card card card-custom h-100"
+          @click="navigateTo('/general-store/dispensaries')"
+        >
+          <div class="card-body text-center p-6">
+            <div class="nav-card-icon bg-light-success rounded-circle mx-auto mb-4">
+              <i class="flaticon2-shop text-success icon-4x"></i>
+            </div>
+            <h4 class="font-weight-bold text-dark mb-3">Dispensary Management</h4>
+            <p class="text-muted mb-4">
+              Manage dispensaries, transfer stock, and track distribution workflows
+            </p>
+            <div class="nav-card-stats">
+              <span class="badge badge-success mr-2"
+                >{{ statistics.activeDispensaries || 0 }} Active</span
+              >
+              <span class="badge badge-info">{{ statistics.totalDispensaries || 0 }} Total</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6 mb-6">
         <div class="nav-card card card-custom h-100" @click="navigateTo('/general-store/settings')">
           <div class="card-body text-center p-6">
             <div class="nav-card-icon bg-light-dark rounded-circle mx-auto mb-4">
@@ -397,6 +420,8 @@ export default {
         approvedRequests: 0,
         totalMovements: 0,
         todayMovements: 0,
+        totalDispensaries: 0,
+        activeDispensaries: 0,
       },
       recentMovements: [],
       lowStockItems: [],
@@ -426,6 +451,7 @@ export default {
           this.$store.dispatch('generalStore/fetchMovements', { limit: 5 }),
           this.$store.dispatch('generalStore/fetchCategories', { limit: 1 }),
           this.$store.dispatch('generalStore/fetchSubcategories', { limit: 1 }),
+          this.$store.dispatch('generalStore/fetchDispensaries', { limit: 1 }),
         ]);
 
         // Update statistics
@@ -435,7 +461,7 @@ export default {
         this.recentMovements = this.$store.state.generalStore.movements;
         this.lowStockItems = this.$store.state.generalStore.lowStockItems;
       } catch (error) {
-        console.error('Error loading dashboard data:', error);
+        this.$toast.error('Failed to load dashboard data');
       } finally {
         this.loading = false;
       }
@@ -454,6 +480,8 @@ export default {
         approvedRequests: state.requests.filter(r => r.status === 'APPROVED').length,
         totalMovements: state.movementsTotal,
         todayMovements: this.getTodayMovements(state.movements),
+        totalDispensaries: state.dispensariesTotal,
+        activeDispensaries: state.dispensaries.filter(d => d.is_active).length,
       };
     },
 

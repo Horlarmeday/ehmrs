@@ -27,7 +27,7 @@ export default async (
   server.use(express.static('download'));
   // server.use(serveStatic(path.join(__dirname, '../../../../client/dist')));
   server.use('/static', express.static(path.join(__dirname, '../../public')));
-  
+
   // Initialize accounting system after middleware setup
   try {
     console.log('🚀 Initializing Accounting System...');
@@ -38,7 +38,7 @@ export default async (
     // Continue server startup but log the error
     console.warn('⚠️  Server will continue without accounting system initialization');
   }
-  
+
   server.use('/dash', () => {
     agenda.on('ready', () => {
       Agendash(agenda);

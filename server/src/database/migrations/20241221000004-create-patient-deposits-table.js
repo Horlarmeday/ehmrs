@@ -7,74 +7,74 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       patient_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
           model: 'patients',
-          key: 'id'
+          key: 'id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'CASCADE'
+        onDelete: 'CASCADE',
       },
       amount: {
         type: Sequelize.DECIMAL(10, 2),
-        allowNull: false
+        allowNull: false,
       },
       deposit_type: {
         type: Sequelize.ENUM('CASH', 'BANK_TRANSFER', 'CARD', 'MOBILE_MONEY', 'OTHER'),
-        allowNull: false
+        allowNull: false,
       },
       reference_number: {
         type: Sequelize.STRING(50),
         allowNull: false,
-        unique: true
+        unique: true,
       },
       description: {
         type: Sequelize.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       status: {
         type: Sequelize.ENUM('ACTIVE', 'USED', 'REFUNDED', 'EXPIRED'),
         allowNull: false,
-        defaultValue: 'ACTIVE'
+        defaultValue: 'ACTIVE',
       },
       expiry_date: {
         type: Sequelize.DATE,
-        allowNull: true
+        allowNull: true,
       },
       created_by: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
           model: 'staff',
-          key: 'id'
+          key: 'id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'RESTRICT'
+        onDelete: 'RESTRICT',
       },
       updated_by: {
         type: Sequelize.INTEGER,
         allowNull: true,
         references: {
           model: 'staff',
-          key: 'id'
+          key: 'id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'SET NULL'
+        onDelete: 'SET NULL',
       },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
       updated_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')
-      }
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+      },
     });
 
     // Add indexes
@@ -87,5 +87,5 @@ module.exports = {
 
   down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('patient_deposits');
-  }
+  },
 };

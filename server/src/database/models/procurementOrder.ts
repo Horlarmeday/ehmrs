@@ -28,32 +28,32 @@ export enum ProcurementOrderStatus {
   CANCELLED = 'CANCELLED',
 }
 
-@Table({ 
-  timestamps: true, 
+@Table({
+  timestamps: true,
   tableName: 'Procurement_Orders',
   indexes: [
     {
       name: 'idx_procurement_order_vendor',
-      fields: ['vendor_id']
+      fields: ['vendor_id'],
     },
     {
       name: 'idx_procurement_order_status',
-      fields: ['status']
+      fields: ['status'],
     },
     {
       name: 'idx_procurement_order_date',
-      fields: ['order_date']
+      fields: ['order_date'],
     },
     {
       name: 'idx_procurement_order_expected_delivery',
-      fields: ['expected_delivery_date']
+      fields: ['expected_delivery_date'],
     },
     {
       name: 'idx_procurement_order_po_number_unique',
       fields: ['po_number'],
-      unique: true
-    }
-  ]
+      unique: true,
+    },
+  ],
 })
 export class ProcurementOrder extends Model {
   @PrimaryKey

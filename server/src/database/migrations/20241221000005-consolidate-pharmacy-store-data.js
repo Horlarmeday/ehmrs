@@ -3,119 +3,123 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     const transaction = await queryInterface.sequelize.transaction();
-    
+
     try {
       console.log('Starting PharmacyStore data consolidation...');
-      
+
       // Step 1: Create temporary table to store consolidated data
-      await queryInterface.createTable('Pharmacy_Store_Consolidated', {
-        id: {
-          type: Sequelize.INTEGER,
-          primaryKey: true,
-          autoIncrement: true,
-          allowNull: false,
+      await queryInterface.createTable(
+        'Pharmacy_Store_Consolidated',
+        {
+          id: {
+            type: Sequelize.INTEGER,
+            primaryKey: true,
+            autoIncrement: true,
+            allowNull: false,
+          },
+          drug_id: {
+            type: Sequelize.INTEGER,
+            allowNull: false,
+          },
+          shelf: {
+            type: Sequelize.STRING,
+            allowNull: true,
+          },
+          product_code: {
+            type: Sequelize.STRING,
+            allowNull: true,
+          },
+          batch: {
+            type: Sequelize.STRING,
+            allowNull: true,
+          },
+          voucher: {
+            type: Sequelize.STRING,
+            allowNull: true,
+          },
+          quantity_received: {
+            type: Sequelize.INTEGER,
+            allowNull: false,
+          },
+          quantity_remaining: {
+            type: Sequelize.INTEGER,
+            allowNull: false,
+          },
+          unit_id: {
+            type: Sequelize.INTEGER,
+            allowNull: false,
+          },
+          unit_price: {
+            type: Sequelize.DECIMAL(12, 2),
+            allowNull: false,
+          },
+          selling_price: {
+            type: Sequelize.DECIMAL(12, 2),
+            allowNull: false,
+          },
+          total_price: {
+            type: Sequelize.DECIMAL(12, 2),
+            allowNull: false,
+          },
+          expiration: {
+            type: Sequelize.DATE,
+            allowNull: true,
+          },
+          dosage_form_id: {
+            type: Sequelize.INTEGER,
+            allowNull: true,
+          },
+          staff_id: {
+            type: Sequelize.INTEGER,
+            allowNull: true,
+          },
+          date_received: {
+            type: Sequelize.DATE,
+            allowNull: true,
+          },
+          measurement_id: {
+            type: Sequelize.INTEGER,
+            allowNull: true,
+          },
+          strength_input: {
+            type: Sequelize.STRING,
+            allowNull: true,
+          },
+          route_id: {
+            type: Sequelize.INTEGER,
+            allowNull: true,
+          },
+          drug_form: {
+            type: Sequelize.ENUM('Drug', 'Consumable'),
+            allowNull: false,
+          },
+          brand: {
+            type: Sequelize.STRING,
+            allowNull: true,
+          },
+          vendor_id: {
+            type: Sequelize.INTEGER,
+            allowNull: true,
+          },
+          procurement_order_id: {
+            type: Sequelize.INTEGER,
+            allowNull: true,
+          },
+          old_ids: {
+            type: Sequelize.TEXT, // JSON array of old IDs for reference
+            allowNull: true,
+          },
+          createdAt: {
+            type: Sequelize.DATE,
+            allowNull: false,
+          },
+          updatedAt: {
+            type: Sequelize.DATE,
+            allowNull: false,
+          },
         },
-        drug_id: {
-          type: Sequelize.INTEGER,
-          allowNull: false,
-        },
-        shelf: {
-          type: Sequelize.STRING,
-          allowNull: true,
-        },
-        product_code: {
-          type: Sequelize.STRING,
-          allowNull: true,
-        },
-        batch: {
-          type: Sequelize.STRING,
-          allowNull: true,
-        },
-        voucher: {
-          type: Sequelize.STRING,
-          allowNull: true,
-        },
-        quantity_received: {
-          type: Sequelize.INTEGER,
-          allowNull: false,
-        },
-        quantity_remaining: {
-          type: Sequelize.INTEGER,
-          allowNull: false,
-        },
-        unit_id: {
-          type: Sequelize.INTEGER,
-          allowNull: false,
-        },
-        unit_price: {
-          type: Sequelize.DECIMAL(12, 2),
-          allowNull: false,
-        },
-        selling_price: {
-          type: Sequelize.DECIMAL(12, 2),
-          allowNull: false,
-        },
-        total_price: {
-          type: Sequelize.DECIMAL(12, 2),
-          allowNull: false,
-        },
-        expiration: {
-          type: Sequelize.DATE,
-          allowNull: true,
-        },
-        dosage_form_id: {
-          type: Sequelize.INTEGER,
-          allowNull: true,
-        },
-        staff_id: {
-          type: Sequelize.INTEGER,
-          allowNull: true,
-        },
-        date_received: {
-          type: Sequelize.DATE,
-          allowNull: true,
-        },
-        measurement_id: {
-          type: Sequelize.INTEGER,
-          allowNull: true,
-        },
-        strength_input: {
-          type: Sequelize.STRING,
-          allowNull: true,
-        },
-        route_id: {
-          type: Sequelize.INTEGER,
-          allowNull: true,
-        },
-        drug_form: {
-          type: Sequelize.ENUM('Drug', 'Consumable'),
-          allowNull: false,
-        },
-        brand: {
-          type: Sequelize.STRING,
-          allowNull: true,
-        },
-        vendor_id: {
-          type: Sequelize.INTEGER,
-          allowNull: true,
-        },
-        procurement_order_id: {
-          type: Sequelize.INTEGER,
-          allowNull: true,
-        },
-        old_ids: {
-          type: Sequelize.TEXT, // JSON array of old IDs for reference
-          allowNull: true,
-        },
-        createdAt: {
-          type: Sequelize.DATE,
-          allowNull: false,
-        },
-        updatedAt: {
-          type: Sequelize.DATE,
-          allowNull: false,
-        },
-      }, { transaction });
+        { transaction }
+      );
 
       // Step 2: Insert consolidated data
       const consolidationQuery = `
@@ -221,57 +225,77 @@ module.exports = {
       await queryInterface.sequelize.query(updateInventoryQuery, { transaction });
 
       // Step 5: Backup old table and rename
-      await queryInterface.renameTable('Pharmacy_Store_Items', 'Pharmacy_Store_Items_Old', { transaction });
-      await queryInterface.renameTable('Pharmacy_Store_Consolidated', 'Pharmacy_Store_Items', { transaction });
+      await queryInterface.renameTable('Pharmacy_Store_Items', 'Pharmacy_Store_Items_Old', {
+        transaction,
+      });
+      await queryInterface.renameTable('Pharmacy_Store_Consolidated', 'Pharmacy_Store_Items', {
+        transaction,
+      });
 
       // Step 6: Add foreign key constraints
-      await queryInterface.addConstraint('Pharmacy_Store_Items', {
-        fields: ['drug_id'],
-        type: 'foreign key',
-        name: 'fk_pharmacy_store_drug',
-        references: {
-          table: 'Drugs',
-          field: 'id',
+      await queryInterface.addConstraint(
+        'Pharmacy_Store_Items',
+        {
+          fields: ['drug_id'],
+          type: 'foreign key',
+          name: 'fk_pharmacy_store_drug',
+          references: {
+            table: 'Drugs',
+            field: 'id',
+          },
+          onUpdate: 'CASCADE',
+          onDelete: 'RESTRICT',
         },
-        onUpdate: 'CASCADE',
-        onDelete: 'RESTRICT',
-      }, { transaction });
+        { transaction }
+      );
 
-      await queryInterface.addConstraint('Pharmacy_Store_Items', {
-        fields: ['unit_id'],
-        type: 'foreign key',
-        name: 'fk_pharmacy_store_unit',
-        references: {
-          table: 'Units',
-          field: 'id',
+      await queryInterface.addConstraint(
+        'Pharmacy_Store_Items',
+        {
+          fields: ['unit_id'],
+          type: 'foreign key',
+          name: 'fk_pharmacy_store_unit',
+          references: {
+            table: 'Units',
+            field: 'id',
+          },
+          onUpdate: 'CASCADE',
+          onDelete: 'RESTRICT',
         },
-        onUpdate: 'CASCADE',
-        onDelete: 'RESTRICT',
-      }, { transaction });
+        { transaction }
+      );
 
-      await queryInterface.addConstraint('Pharmacy_Store_Items', {
-        fields: ['staff_id'],
-        type: 'foreign key',
-        name: 'fk_pharmacy_store_staff',
-        references: {
-          table: 'Staffs',
-          field: 'id',
+      await queryInterface.addConstraint(
+        'Pharmacy_Store_Items',
+        {
+          fields: ['staff_id'],
+          type: 'foreign key',
+          name: 'fk_pharmacy_store_staff',
+          references: {
+            table: 'Staffs',
+            field: 'id',
+          },
+          onUpdate: 'CASCADE',
+          onDelete: 'SET NULL',
         },
-        onUpdate: 'CASCADE',
-        onDelete: 'SET NULL',
-      }, { transaction });
+        { transaction }
+      );
 
-      await queryInterface.addConstraint('Pharmacy_Store_Items', {
-        fields: ['vendor_id'],
-        type: 'foreign key',
-        name: 'fk_pharmacy_store_vendor',
-        references: {
-          table: 'Vendors',
-          field: 'id',
+      await queryInterface.addConstraint(
+        'Pharmacy_Store_Items',
+        {
+          fields: ['vendor_id'],
+          type: 'foreign key',
+          name: 'fk_pharmacy_store_vendor',
+          references: {
+            table: 'Vendors',
+            field: 'id',
+          },
+          onUpdate: 'CASCADE',
+          onDelete: 'SET NULL',
         },
-        onUpdate: 'CASCADE',
-        onDelete: 'SET NULL',
-      }, { transaction });
+        { transaction }
+      );
 
       // Step 7: Add indexes for performance
       await queryInterface.addIndex('Pharmacy_Store_Items', ['drug_id'], { transaction });
@@ -281,7 +305,6 @@ module.exports = {
 
       await transaction.commit();
       console.log('PharmacyStore data consolidation completed successfully!');
-      
     } catch (error) {
       await transaction.rollback();
       console.error('Error during PharmacyStore consolidation:', error);
@@ -291,18 +314,21 @@ module.exports = {
 
   down: async (queryInterface, Sequelize) => {
     const transaction = await queryInterface.sequelize.transaction();
-    
+
     try {
       // Restore original table
-      await queryInterface.renameTable('Pharmacy_Store_Items', 'Pharmacy_Store_Items_New', { transaction });
-      await queryInterface.renameTable('Pharmacy_Store_Items_Old', 'Pharmacy_Store_Items', { transaction });
-      
+      await queryInterface.renameTable('Pharmacy_Store_Items', 'Pharmacy_Store_Items_New', {
+        transaction,
+      });
+      await queryInterface.renameTable('Pharmacy_Store_Items_Old', 'Pharmacy_Store_Items', {
+        transaction,
+      });
+
       // Drop temporary table
       await queryInterface.dropTable('Pharmacy_Store_Items_New', { transaction });
-      
+
       await transaction.commit();
       console.log('PharmacyStore consolidation rolled back successfully!');
-      
     } catch (error) {
       await transaction.rollback();
       console.error('Error during rollback:', error);

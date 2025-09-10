@@ -19,27 +19,27 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 
-@Table({ 
-  timestamps: true, 
+@Table({
+  timestamps: true,
   tableName: 'Stock_Audit_Items',
   indexes: [
     {
       name: 'idx_stock_audit_item_audit',
-      fields: ['stock_audit_id']
+      fields: ['stock_audit_id'],
     },
     {
       name: 'idx_stock_audit_item_drug',
-      fields: ['drug_id']
+      fields: ['drug_id'],
     },
     {
       name: 'idx_stock_audit_item_variance',
-      fields: ['variance']
+      fields: ['variance'],
     },
     {
       name: 'idx_stock_audit_item_variance_value',
-      fields: ['variance_value']
-    }
-  ]
+      fields: ['variance_value'],
+    },
+  ],
 })
 export class StockAuditItem extends Model {
   @PrimaryKey

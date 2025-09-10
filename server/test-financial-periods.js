@@ -7,10 +7,10 @@ const TEST_PERIOD = {
   period_type: 'QUARTERLY',
   start_date: '2024-01-01',
   end_date: '2024-03-31',
-  opening_balance: 1000.00,
+  opening_balance: 1000.0,
   description: 'Test financial period for Q1 2024',
   status: 'DRAFT',
-  auto_close: false
+  auto_close: false,
 };
 
 async function testFinancialPeriods() {
@@ -20,7 +20,10 @@ async function testFinancialPeriods() {
     // Test 1: Create a financial period
     console.log('1️⃣ Testing CREATE financial period...');
     try {
-      const createResponse = await axios.post(`${BASE_URL}/accounting/financial-periods`, TEST_PERIOD);
+      const createResponse = await axios.post(
+        `${BASE_URL}/accounting/financial-periods`,
+        TEST_PERIOD
+      );
       console.log('✅ CREATE successful:', createResponse.data.message);
       const periodId = createResponse.data.data.id;
       console.log(`   Period ID: ${periodId}\n`);
@@ -62,7 +65,6 @@ async function testFinancialPeriods() {
     }
 
     console.log('🎉 Financial Periods API test completed!');
-
   } catch (error) {
     console.error('💥 Test failed with error:', error.message);
   }

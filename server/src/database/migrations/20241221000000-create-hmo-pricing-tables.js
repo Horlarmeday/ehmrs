@@ -280,9 +280,20 @@ module.exports = {
     await queryInterface.addIndex('HMO_Test_Pricing', ['test_id', 'insurance_id']);
     await queryInterface.addIndex('HMO_Test_Pricing', ['status', 'effective_from', 'effective_to']);
     await queryInterface.addIndex('HMO_Service_Pricing', ['service_id', 'insurance_id']);
-    await queryInterface.addIndex('HMO_Service_Pricing', ['status', 'effective_from', 'effective_to']);
-    await queryInterface.addIndex('HMO_Investigation_Pricing', ['investigation_id', 'insurance_id']);
-    await queryInterface.addIndex('HMO_Investigation_Pricing', ['status', 'effective_from', 'effective_to']);
+    await queryInterface.addIndex('HMO_Service_Pricing', [
+      'status',
+      'effective_from',
+      'effective_to',
+    ]);
+    await queryInterface.addIndex('HMO_Investigation_Pricing', [
+      'investigation_id',
+      'insurance_id',
+    ]);
+    await queryInterface.addIndex('HMO_Investigation_Pricing', [
+      'status',
+      'effective_from',
+      'effective_to',
+    ]);
   },
 
   down: async (queryInterface, Sequelize) => {

@@ -41,7 +41,6 @@
                       type="text"
                       class="form-control"
                       :class="{ 'is-invalid': errors.name }"
-                      placeholder="Enter subcategory name"
                       required
                     />
                     <div v-if="errors.name" class="invalid-feedback">
@@ -85,7 +84,6 @@
                       type="text"
                       class="form-control"
                       :class="{ 'is-invalid': errors.code }"
-                      placeholder="Enter subcategory code (optional)"
                     />
                     <div v-if="errors.code" class="invalid-feedback">
                       {{ errors.code }}
@@ -122,7 +120,6 @@
                   class="form-control"
                   :class="{ 'is-invalid': errors.description }"
                   rows="4"
-                  placeholder="Enter subcategory description"
                 ></textarea>
                 <div v-if="errors.description" class="invalid-feedback">
                   {{ errors.description }}
@@ -139,7 +136,6 @@
                       type="number"
                       class="form-control"
                       :class="{ 'is-invalid': errors.sort_order }"
-                      placeholder="0"
                       min="0"
                     />
                     <div v-if="errors.sort_order" class="invalid-feedback">
@@ -308,7 +304,6 @@ export default {
       try {
         await this.$store.dispatch('generalStore/fetchCategories');
       } catch (error) {
-        console.error('Error loading categories:', error);
         this.$toast.error('Failed to load categories');
       }
     },
@@ -333,7 +328,6 @@ export default {
           };
         }
       } catch (error) {
-        console.error('Error loading subcategory:', error);
         this.$toast.error('Failed to load subcategory');
       } finally {
         this.loading = false;

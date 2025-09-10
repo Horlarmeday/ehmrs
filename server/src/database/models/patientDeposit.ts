@@ -198,22 +198,22 @@ export class PatientDeposit extends Model<PatientDeposit> {
     if (!instance.initial_amount) {
       instance.initial_amount = instance.amount;
     }
-    
+
     // Set current balance equal to amount on creation
     if (!instance.current_balance) {
       instance.current_balance = instance.amount;
     }
-    
+
     // Set refundable amount equal to amount on creation
     if (!instance.refundable_amount) {
       instance.refundable_amount = instance.amount;
     }
-    
+
     // Set deposit date to current date if not provided
     if (!instance.deposit_date) {
       instance.deposit_date = new Date();
     }
-    
+
     // Set last activity date to current date
     instance.last_activity_date = new Date();
   }
@@ -222,12 +222,12 @@ export class PatientDeposit extends Model<PatientDeposit> {
   static beforeUpdatePatientDeposit(instance: any) {
     // Update last activity date on any change
     instance.last_activity_date = new Date();
-    
+
     // Validate that current_balance is never negative
     if (instance.current_balance < 0) {
       throw new Error('Current balance cannot be negative');
     }
-    
+
     // Validate that refundable_amount never exceeds current_balance
     if (instance.refundable_amount > instance.current_balance) {
       throw new Error('Refundable amount cannot exceed current balance');

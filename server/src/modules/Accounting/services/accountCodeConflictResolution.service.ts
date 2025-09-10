@@ -183,7 +183,11 @@ export class AccountCodeConflictResolutionService {
         suggestedResolution: ResolutionStrategy.GENERATE_NEW_CODE,
       };
     } catch (error) {
-      throw new BadException('Duplicate Code Check Failed', 500, `Failed to check duplicate code: ${error.message}`);
+      throw new BadException(
+        'Duplicate Code Check Failed',
+        500,
+        `Failed to check duplicate code: ${error.message}`
+      );
     }
   }
 
@@ -228,7 +232,11 @@ export class AccountCodeConflictResolutionService {
         suggestedResolution: ResolutionStrategy.GENERATE_NEW_CODE,
       };
     } catch (error) {
-      throw new BadException('Duplicate Name Check Failed', 500, `Failed to check duplicate name: ${error.message}`);
+      throw new BadException(
+        'Duplicate Name Check Failed',
+        500,
+        `Failed to check duplicate name: ${error.message}`
+      );
     }
   }
 
@@ -356,7 +364,11 @@ export class AccountCodeConflictResolutionService {
         suggestedResolution: ResolutionStrategy.GENERATE_NEW_CODE,
       };
     } catch (error) {
-      throw new BadException('Circular Reference Check Failed', 500, `Failed to check circular reference: ${error.message}`);
+      throw new BadException(
+        'Circular Reference Check Failed',
+        500,
+        `Failed to check circular reference: ${error.message}`
+      );
     }
   }
 
@@ -430,7 +442,11 @@ export class AccountCodeConflictResolutionService {
 
       throw new Error('Unable to generate alternative code');
     } catch (error) {
-      throw new BadException('Alternative Code Generation Failed', 500, `Failed to generate alternative code: ${error.message}`);
+      throw new BadException(
+        'Alternative Code Generation Failed',
+        500,
+        `Failed to generate alternative code: ${error.message}`
+      );
     }
   }
 
@@ -508,7 +524,11 @@ export class AccountCodeConflictResolutionService {
         message: `Manual intervention required: ${validation.errors.join(', ')}`,
       };
     } catch (error) {
-      throw new BadException('Conflict Resolution Failed', 500, `Failed to resolve conflicts: ${error.message}`);
+      throw new BadException(
+        'Conflict Resolution Failed',
+        500,
+        `Failed to resolve conflicts: ${error.message}`
+      );
     }
   }
 
@@ -558,7 +578,11 @@ export class AccountCodeConflictResolutionService {
         warnings: validation.warnings,
       };
     } catch (error) {
-      throw new BadException('Conflict Suggestions Failed', 500, `Failed to get conflict resolution suggestions: ${error.message}`);
+      throw new BadException(
+        'Conflict Suggestions Failed',
+        500,
+        `Failed to get conflict resolution suggestions: ${error.message}`
+      );
     }
   }
 }

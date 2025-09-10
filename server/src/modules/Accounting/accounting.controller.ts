@@ -789,7 +789,7 @@ export class AccountingController {
   ): Promise<void> {
     try {
       const { paymentId } = req.params;
-      
+
       if (!paymentId || isNaN(parseInt(paymentId))) {
         res.status(400).json({
           success: false,
@@ -800,7 +800,7 @@ export class AccountingController {
 
       // Get receipt data from service
       const receiptData = await AccountingService.getPaymentReceiptData(parseInt(paymentId));
-      
+
       if (!receiptData) {
         res.status(404).json({
           success: false,
@@ -811,7 +811,7 @@ export class AccountingController {
 
       // Import receipt helper to avoid circular dependencies
       const { printClinicalReceiptPDF } = await import('./helper/receipt.helper');
-      
+
       // Generate and stream PDF receipt
       await printClinicalReceiptPDF({
         receiptData,

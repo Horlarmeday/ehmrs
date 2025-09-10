@@ -32,7 +32,6 @@
                     type="text"
                     class="form-control"
                     :class="{ 'is-invalid': errors.name }"
-                    placeholder="Enter category name"
                     required
                   />
                   <div v-if="errors.name" class="invalid-feedback d-block">
@@ -47,7 +46,6 @@
                     type="text"
                     class="form-control"
                     :class="{ 'is-invalid': errors.code }"
-                    placeholder="e.g., CAT001, OFFICE, MEDICAL"
                   />
                   <div v-if="errors.code" class="invalid-feedback d-block">
                     {{ errors.code }}
@@ -64,7 +62,6 @@
                     class="form-control"
                     :class="{ 'is-invalid': errors.description }"
                     rows="3"
-                    placeholder="Enter detailed description of the category..."
                   ></textarea>
                   <div v-if="errors.description" class="invalid-feedback d-block">
                     {{ errors.description }}
@@ -105,7 +102,6 @@
                     min="0"
                     class="form-control"
                     :class="{ 'is-invalid': errors.sort_order }"
-                    placeholder="0"
                   />
                   <div v-if="errors.sort_order" class="invalid-feedback d-block">
                     {{ errors.sort_order }}
@@ -141,7 +137,6 @@
                       type="text"
                       class="form-control"
                       :class="{ 'is-invalid': errors.icon_class }"
-                      placeholder="flaticon2-folder"
                     />
                   </div>
                   <div v-if="errors.icon_class" class="invalid-feedback d-block">
@@ -183,7 +178,6 @@
                     class="form-control"
                     :class="{ 'is-invalid': errors.metadata }"
                     rows="3"
-                    placeholder="Enter additional metadata in JSON format (optional)"
                   ></textarea>
                   <div v-if="errors.metadata" class="invalid-feedback d-block">
                     {{ errors.metadata }}
@@ -449,7 +443,7 @@ export default {
     },
 
     isDescendant(categoryId) {
-      console.log(categoryId);
+      console.log('categoryId', categoryId);
       // Simple check to prevent circular references
       // In a real implementation, you'd want a more sophisticated check
       return false;

@@ -36,7 +36,6 @@
                       type="text"
                       class="form-control"
                       :class="{ 'is-invalid': errors.item_code }"
-                      placeholder="001"
                       required
                     />
                   </div>
@@ -55,7 +54,6 @@
                     type="text"
                     class="form-control"
                     :class="{ 'is-invalid': errors.name }"
-                    placeholder="Enter item name"
                     required
                   />
                   <div v-if="errors.name" class="invalid-feedback d-block">
@@ -70,7 +68,6 @@
                     class="form-control"
                     :class="{ 'is-invalid': errors.description }"
                     rows="3"
-                    placeholder="Enter detailed description of the item..."
                   ></textarea>
                   <div v-if="errors.description" class="invalid-feedback d-block">
                     {{ errors.description }}
@@ -191,7 +188,6 @@
                     type="text"
                     class="form-control"
                     :class="{ 'is-invalid': errors.manufacturer }"
-                    placeholder="Enter manufacturer name"
                   />
                   <div v-if="errors.manufacturer" class="invalid-feedback d-block">
                     {{ errors.manufacturer }}
@@ -205,7 +201,6 @@
                     type="text"
                     class="form-control"
                     :class="{ 'is-invalid': errors.model_number }"
-                    placeholder="Enter model/serial number"
                   />
                   <div v-if="errors.model_number" class="invalid-feedback d-block">
                     {{ errors.model_number }}
@@ -219,7 +214,6 @@
                     class="form-control"
                     :class="{ 'is-invalid': errors.specifications }"
                     rows="3"
-                    placeholder="Enter technical specifications (JSON format recommended)"
                   ></textarea>
                   <div v-if="errors.specifications" class="invalid-feedback d-block">
                     {{ errors.specifications }}
@@ -257,7 +251,6 @@
                     min="0"
                     class="form-control"
                     :class="{ 'is-invalid': errors.unit_cost }"
-                    placeholder="0.00"
                     required
                   />
                 </div>
@@ -274,7 +267,6 @@
                   min="0"
                   class="form-control"
                   :class="{ 'is-invalid': errors.minimum_stock }"
-                  placeholder="0"
                   required
                 />
                 <div v-if="errors.minimum_stock" class="invalid-feedback d-block">
@@ -293,7 +285,6 @@
                   min="0"
                   class="form-control"
                   :class="{ 'is-invalid': errors.maximum_stock }"
-                  placeholder="0"
                 />
                 <div v-if="errors.maximum_stock" class="invalid-feedback d-block">
                   {{ errors.maximum_stock }}
@@ -311,7 +302,6 @@
                   min="0"
                   class="form-control"
                   :class="{ 'is-invalid': errors.current_stock }"
-                  placeholder="0"
                   readonly
                 />
                 <div v-if="errors.current_stock" class="invalid-feedback d-block">
@@ -340,7 +330,6 @@
                   type="text"
                   class="form-control"
                   :class="{ 'is-invalid': errors.location }"
-                  placeholder="e.g., Warehouse A, Room 101"
                 />
                 <div v-if="errors.location" class="invalid-feedback d-block">
                   {{ errors.location }}
@@ -354,7 +343,6 @@
                   type="text"
                   class="form-control"
                   :class="{ 'is-invalid': errors.shelf_number }"
-                  placeholder="e.g., A1-B2, Shelf 3"
                 />
                 <div v-if="errors.shelf_number" class="invalid-feedback d-block">
                   {{ errors.shelf_number }}
@@ -531,28 +519,50 @@ export default {
         this.categories = this.$store.state.generalStore.categories;
         this.subcategories = this.$store.state.generalStore.subcategories;
       } catch (error) {
-        console.error('Error loading form data:', error);
+        this.$toast.error('Failed to load form data');
       }
     },
 
     async loadUnits() {
-      // TODO: Implement units loading from store
-      this.units = [
-        { id: 1, name: 'Pieces' },
-        { id: 2, name: 'Boxes' },
-        { id: 3, name: 'Meters' },
-        { id: 4, name: 'Liters' },
-        { id: 5, name: 'Kilograms' },
-      ];
+      try {
+        await this.$store.dispatch('generalStore/fetchUnits');
+        this.units = this.$store.state.generalStore.units || [
+          { id: 1, name: 'Pieces' },
+          { id: 2, name: 'Boxes' },
+          { id: 3, name: 'Meters' },
+          { id: 4, name: 'Liters' },
+          { id: 5, name: 'Kilograms' },
+        ];
+      } catch (error) {
+        this.$logError('Failed to load units', error);
+        // Fallback to default units
+        this.units = [
+          { id: 1, name: 'Pieces' },
+          { id: 2, name: 'Boxes' },
+          { id: 3, name: 'Meters' },
+          { id: 4, name: 'Liters' },
+          { id: 5, name: 'Kilograms' },
+        ];
+      }
     },
 
     async loadSuppliers() {
-      // TODO: Implement suppliers loading from store
-      this.suppliers = [
-        { id: 1, name: 'General Supplies Co.' },
-        { id: 2, name: 'Medical Equipment Ltd.' },
-        { id: 3, name: 'Hospital Supplies Inc.' },
-      ];
+      try {
+        await this.$store.dispatch('generalStore/fetchSuppliers');
+        this.suppliers = this.$store.state.generalStore.suppliers || [
+          { id: 1, name: 'General Supplies Co.' },
+          { id: 2, name: 'Medical Equipment Ltd.' },
+          { id: 3, name: 'Hospital Supplies Inc.' },
+        ];
+      } catch (error) {
+        this.$logError('Failed to load suppliers', error);
+        // Fallback to default suppliers
+        this.suppliers = [
+          { id: 1, name: 'General Supplies Co.' },
+          { id: 2, name: 'Medical Equipment Ltd.' },
+          { id: 3, name: 'Hospital Supplies Inc.' },
+        ];
+      }
     },
 
     populateForm() {
@@ -633,8 +643,97 @@ export default {
       return Object.keys(this.errors).length === 0;
     },
 
+    validateForm() {
+      const errors = {};
+      
+      // Required fields validation
+      if (!this.form.item_code?.trim()) {
+        errors.item_code = 'Item code is required';
+      } else if (this.form.item_code.length > 50) {
+        errors.item_code = 'Item code must not exceed 50 characters';
+      }
+      
+      if (!this.form.name?.trim()) {
+        errors.name = 'Item name is required';
+      } else if (this.form.name.length > 255) {
+        errors.name = 'Item name must not exceed 255 characters';
+      }
+      
+      if (!this.form.category_id) {
+        errors.category_id = 'Category is required';
+      }
+      
+      if (!this.form.unit_id) {
+        errors.unit_id = 'Unit is required';
+      }
+      
+      // Numeric validations
+      if (this.form.unit_cost !== null && this.form.unit_cost !== undefined) {
+        const cost = parseFloat(this.form.unit_cost);
+        if (isNaN(cost) || cost < 0) {
+          errors.unit_cost = 'Unit cost must be a valid positive number';
+        }
+      }
+      
+      if (this.form.minimum_stock !== null && this.form.minimum_stock !== undefined) {
+        const minStock = parseInt(this.form.minimum_stock);
+        if (isNaN(minStock) || minStock < 0) {
+          errors.minimum_stock = 'Minimum stock must be a valid non-negative number';
+        }
+      }
+      
+      if (this.form.maximum_stock !== null && this.form.maximum_stock !== undefined) {
+        const maxStock = parseInt(this.form.maximum_stock);
+        if (isNaN(maxStock) || maxStock < 0) {
+          errors.maximum_stock = 'Maximum stock must be a valid non-negative number';
+        }
+        
+        // Check if maximum stock is greater than minimum stock
+        const minStock = parseInt(this.form.minimum_stock);
+        if (!isNaN(minStock) && !isNaN(maxStock) && maxStock < minStock) {
+          errors.maximum_stock = 'Maximum stock must be greater than or equal to minimum stock';
+        }
+      }
+      
+      // Text length validations
+      if (this.form.description && this.form.description.length > 1000) {
+        errors.description = 'Description must not exceed 1000 characters';
+      }
+      
+      if (this.form.manufacturer && this.form.manufacturer.length > 255) {
+        errors.manufacturer = 'Manufacturer name must not exceed 255 characters';
+      }
+      
+      if (this.form.model_number && this.form.model_number.length > 100) {
+        errors.model_number = 'Model number must not exceed 100 characters';
+      }
+      
+      if (this.form.location && this.form.location.length > 255) {
+        errors.location = 'Location must not exceed 255 characters';
+      }
+      
+      if (this.form.shelf_number && this.form.shelf_number.length > 50) {
+        errors.shelf_number = 'Shelf number must not exceed 50 characters';
+      }
+      
+      this.errors = errors;
+      return Object.keys(errors).length === 0;
+    },
+    
+    hasError(field) {
+      return !!this.errors[field];
+    },
+    
+    getError(field) {
+      return this.errors[field];
+    },
+    
     async handleSubmit() {
+      if (this.loading) return;
+      
+      // Validate form
       if (!this.validateForm()) {
+        this.$toast.error('Please fix the validation errors before submitting.');
         return;
       }
 
@@ -671,7 +770,11 @@ export default {
         }, 2000);
       } catch (error) {
         console.error('Error updating item:', error);
-        this.$toast.error('Failed to update item. Please try again.');
+        if (error.response?.data?.errors) {
+          this.errors = error.response.data.errors;
+        } else {
+          this.$toast.error('Failed to update item. Please try again.');
+        }
       } finally {
         this.loading = false;
       }

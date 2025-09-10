@@ -156,11 +156,7 @@ export class HMOPricingController {
   static async calculateDrugPricing(req: Request, res: Response) {
     try {
       const { drug_id, insurance_id, quantity = 1 } = req.body;
-      const pricing = await HMOPricingService.calculateDrugPricing(
-        drug_id,
-        insurance_id,
-        quantity
-      );
+      const pricing = await HMOPricingService.calculateDrugPricing(drug_id, insurance_id, quantity);
       res.status(200).json({
         success: true,
         message: 'Drug pricing calculated successfully',
@@ -190,10 +186,7 @@ export class HMOPricingController {
   static async calculateTestPricing(req: Request, res: Response) {
     try {
       const { test_id, insurance_id } = req.body;
-      const pricing = await HMOPricingService.calculateTestPricing(
-        test_id,
-        insurance_id
-      );
+      const pricing = await HMOPricingService.calculateTestPricing(test_id, insurance_id);
       res.status(200).json({
         success: true,
         message: 'Test pricing calculated successfully',
@@ -223,10 +216,7 @@ export class HMOPricingController {
   static async calculateServicePricing(req: Request, res: Response) {
     try {
       const { service_id, insurance_id } = req.body;
-      const pricing = await HMOPricingService.calculateServicePricing(
-        service_id,
-        insurance_id
-      );
+      const pricing = await HMOPricingService.calculateServicePricing(service_id, insurance_id);
       res.status(200).json({
         success: true,
         message: 'Service pricing calculated successfully',
@@ -354,10 +344,9 @@ export class HMOPricingController {
       res.setHeader('Content-Disposition', `attachment; filename="${result.filename}"`);
 
       // Convert data to CSV format
-      const csvContent = [
-        result.headers.join(','),
-        ...result.data.map(row => row.join(','))
-      ].join('\n');
+      const csvContent = [result.headers.join(','), ...result.data.map(row => row.join(','))].join(
+        '\n'
+      );
 
       res.status(200).send(csvContent);
     } catch (error) {

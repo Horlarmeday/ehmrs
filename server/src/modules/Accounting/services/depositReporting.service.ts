@@ -178,14 +178,17 @@ export class DepositReportingService {
 
       const deposits = await PatientDeposit.findAll({
         where: whereClause,
-        include: ['patient']
+        include: ['patient'],
       });
 
       // Calculate summary statistics
       const totalDeposits = deposits.length;
       const totalInitialAmount = deposits.reduce((sum, d) => sum + (d.initial_amount || 0), 0);
       const totalCurrentBalance = deposits.reduce((sum, d) => sum + (d.current_balance || 0), 0);
-      const totalRefundableAmount = deposits.reduce((sum, d) => sum + (d.refundable_amount || 0), 0);
+      const totalRefundableAmount = deposits.reduce(
+        (sum, d) => sum + (d.refundable_amount || 0),
+        0
+      );
       const totalUsed = totalInitialAmount - totalCurrentBalance;
       const totalRefunded = totalInitialAmount - totalRefundableAmount;
 
@@ -194,7 +197,8 @@ export class DepositReportingService {
       const refundedDeposits = deposits.filter(d => d.status === 'REFUNDED').length;
 
       const averageDepositAmount = totalDeposits > 0 ? totalInitialAmount / totalDeposits : 0;
-      const averageUtilizationRate = totalInitialAmount > 0 ? (totalUsed / totalInitialAmount) * 100 : 0;
+      const averageUtilizationRate =
+        totalInitialAmount > 0 ? (totalUsed / totalInitialAmount) * 100 : 0;
 
       return {
         totalDeposits,
@@ -210,8 +214,8 @@ export class DepositReportingService {
         averageUtilizationRate,
         period: {
           startDate: filters.startDate || new Date(0),
-          endDate: filters.endDate || new Date()
-        }
+          endDate: filters.endDate || new Date(),
+        },
       };
     } catch (error) {
       throw new BadException('Failed to generate deposit summary report', 500, error.message);
@@ -236,7 +240,7 @@ export class DepositReportingService {
 
       if (filters.patientId) {
         whereClause.deposit_id = {
-          [Op.in]: await this.getDepositIdsForPatient(filters.patientId)
+          [Op.in]: await this.getDepositIdsForPatient(filters.patientId),
         };
       }
 
@@ -246,14 +250,14 @@ export class DepositReportingService {
           {
             model: PatientDeposit,
             as: 'deposit',
-            include: ['patient']
+            include: ['patient'],
           },
           {
             model: require('../../../database/models/staff').Staff,
-            as: 'createdByStaff'
-          }
+            as: 'createdByStaff',
+          },
         ],
-        order: [['createdAt', 'DESC']]
+        order: [['createdAt', 'DESC']],
       });
 
       // Format transactions
@@ -261,14 +265,16 @@ export class DepositReportingService {
         id: t.id,
         deposit_id: t.deposit_id,
         reference_number: t.reference_number,
-        patient_name: `${t.deposit?.patient?.firstname || ''} ${t.deposit?.patient?.lastname || ''}`.trim(),
+        patient_name: `${t.deposit?.patient?.firstname || ''} ${t.deposit?.patient?.lastname ||
+          ''}`.trim(),
         transaction_type: t.transaction_type,
         amount: t.amount,
         previous_balance: t.previous_balance,
         new_balance: t.new_balance,
         description: t.description,
         created_at: t.createdAt,
-        created_by: `${t.createdByStaff?.firstname || ''} ${t.createdByStaff?.lastname || ''}`.trim()
+        created_by: `${t.createdByStaff?.firstname || ''} ${t.createdByStaff?.lastname ||
+          ''}`.trim(),
       }));
 
       // Calculate summary
@@ -299,15 +305,15 @@ export class DepositReportingService {
       return {
         period: {
           startDate: filters.startDate || new Date(0),
-          endDate: filters.endDate || new Date()
+          endDate: filters.endDate || new Date(),
         },
         transactions: formattedTransactions,
         summary: {
           totalTransactions,
           totalAmount,
           byType,
-          byDate
-        }
+          byDate,
+        },
       };
     } catch (error) {
       throw new BadException('Failed to generate deposit activity report', 500, error.message);
@@ -341,7 +347,7 @@ export class DepositReportingService {
 
       const deposits = await PatientDeposit.findAll({
         where: whereClause,
-        include: ['patient']
+        include: ['patient'],
       });
 
       if (deposits.length === 0) {
@@ -363,14 +369,17 @@ export class DepositReportingService {
         status: d.status,
         deposit_type: d.deposit_type,
         deposit_date: d.deposit_date,
-        last_activity_date: d.last_activity_date
+        last_activity_date: d.last_activity_date,
       }));
 
       // Calculate summary
       const totalDeposits = deposits.length;
       const totalInitialAmount = deposits.reduce((sum, d) => sum + (d.amount || 0), 0);
       const totalCurrentBalance = deposits.reduce((sum, d) => sum + (d.current_balance || 0), 0);
-      const totalRefundableAmount = deposits.reduce((sum, d) => sum + (d.refundable_amount || 0), 0);
+      const totalRefundableAmount = deposits.reduce(
+        (sum, d) => sum + (d.refundable_amount || 0),
+        0
+      );
       const totalUsed = totalInitialAmount - totalCurrentBalance;
       const totalRefunded = totalInitialAmount - totalRefundableAmount;
       const averageDepositAmount = totalDeposits > 0 ? totalInitialAmount / totalDeposits : 0;
@@ -381,7 +390,7 @@ export class DepositReportingService {
           id: patient.id,
           firstname: patient.firstname,
           lastname: patient.lastname,
-          patient_number: patient.hospital_id || patient.id?.toString() || ''
+          patient_number: patient.hospital_id || patient.id?.toString() || '',
         },
         deposits: formattedDeposits,
         summary: {
@@ -392,8 +401,8 @@ export class DepositReportingService {
           totalUsed,
           totalRefunded,
           averageDepositAmount,
-          utilizationRate
-        }
+          utilizationRate,
+        },
       };
     } catch (error) {
       throw new BadException('Failed to generate patient deposit report', 500, error.message);
@@ -430,7 +439,7 @@ export class DepositReportingService {
         reconciledDeposits: filteredResults.filter(r => r.isReconciled).length,
         discrepancyCount: filteredResults.filter(r => !r.isReconciled).length,
         totalDiscrepancyAmount: filteredResults.reduce((sum, r) => sum + r.balanceDiscrepancy, 0),
-        reconciliationStatus: reconciliation.reconciliationStatus
+        reconciliationStatus: reconciliation.reconciliationStatus,
       };
 
       // Format details
@@ -442,16 +451,16 @@ export class DepositReportingService {
         calculatedBalance: r.calculatedBalance,
         discrepancy: r.balanceDiscrepancy,
         isReconciled: r.isReconciled,
-        issues: r.reconciliationIssues || []
+        issues: r.reconciliationIssues || [],
       }));
 
       return {
         period: {
           startDate: filters.startDate || new Date(0),
-          endDate: filters.endDate || new Date()
+          endDate: filters.endDate || new Date(),
         },
         summary,
-        details
+        details,
       };
     } catch (error) {
       throw new BadException('Failed to generate reconciliation report', 500, error.message);
@@ -461,13 +470,11 @@ export class DepositReportingService {
   /**
    * Generate expiry report for deposits expiring soon
    */
-  static async generateExpiryReport(
-    filters: ReportFilters = {}
-  ): Promise<ExpiryReport> {
+  static async generateExpiryReport(filters: ReportFilters = {}): Promise<ExpiryReport> {
     try {
       const whereClause: any = {
         status: 'ACTIVE',
-        current_balance: { [Op.gt]: 0 }
+        current_balance: { [Op.gt]: 0 },
       };
 
       // Apply filters
@@ -479,7 +486,7 @@ export class DepositReportingService {
 
       const deposits = await PatientDeposit.findAll({
         where: whereClause,
-        include: ['patient']
+        include: ['patient'],
       });
 
       const now = new Date();
@@ -488,9 +495,11 @@ export class DepositReportingService {
           // Calculate days until expiry (assuming 1 year from creation)
           const expiryDate = new Date(d.createdAt);
           expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-          
-          const daysUntilExpiry = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-          
+
+          const daysUntilExpiry = Math.ceil(
+            (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+          );
+
           // Determine risk level
           let riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' = 'LOW';
           if (daysUntilExpiry <= 30) riskLevel = 'HIGH';
@@ -503,7 +512,7 @@ export class DepositReportingService {
             amount: d.amount,
             current_balance: d.current_balance,
             daysUntilExpiry,
-            risk_level: riskLevel
+            risk_level: riskLevel,
           };
         })
         .filter(d => d.daysUntilExpiry <= 365) // Only deposits expiring within a year
@@ -516,7 +525,7 @@ export class DepositReportingService {
       const byRiskLevel: Record<string, { count: number; amount: number }> = {
         LOW: { count: 0, amount: 0 },
         MEDIUM: { count: 0, amount: 0 },
-        HIGH: { count: 0, amount: 0 }
+        HIGH: { count: 0, amount: 0 },
       };
 
       expiringDeposits.forEach(d => {
@@ -527,10 +536,14 @@ export class DepositReportingService {
       // Generate recommendations
       const recommendations: string[] = [];
       if (byRiskLevel.HIGH.count > 0) {
-        recommendations.push(`Immediate action required: ${byRiskLevel.HIGH.count} deposits expiring within 30 days`);
+        recommendations.push(
+          `Immediate action required: ${byRiskLevel.HIGH.count} deposits expiring within 30 days`
+        );
       }
       if (byRiskLevel.MEDIUM.count > 0) {
-        recommendations.push(`Plan ahead: ${byRiskLevel.MEDIUM.count} deposits expiring within 90 days`);
+        recommendations.push(
+          `Plan ahead: ${byRiskLevel.MEDIUM.count} deposits expiring within 90 days`
+        );
       }
       if (byRiskLevel.LOW.count > 0) {
         recommendations.push(`Monitor: ${byRiskLevel.LOW.count} deposits expiring within a year`);
@@ -539,15 +552,15 @@ export class DepositReportingService {
       return {
         period: {
           startDate: filters.startDate || new Date(0),
-          endDate: filters.endDate || new Date()
+          endDate: filters.endDate || new Date(),
         },
         expiringDeposits,
         summary: {
           totalExpiring,
           totalAmount,
           byRiskLevel,
-          recommendations
-        }
+          recommendations,
+        },
       };
     } catch (error) {
       throw new BadException('Failed to generate expiry report', 500, error.message);
@@ -560,7 +573,7 @@ export class DepositReportingService {
   private static async getDepositIdsForPatient(patientId: number): Promise<number[]> {
     const deposits = await PatientDeposit.findAll({
       where: { patient_id: patientId },
-      attributes: ['id']
+      attributes: ['id'],
     });
     return deposits.map(d => d.id);
   }
@@ -568,10 +581,7 @@ export class DepositReportingService {
   /**
    * Export report to CSV format
    */
-  static async exportReportToCSV(
-    reportData: any,
-    reportType: string
-  ): Promise<string> {
+  static async exportReportToCSV(reportData: any, reportType: string): Promise<string> {
     try {
       let csvContent = '';
       let headers: string[] = [];
@@ -590,7 +600,7 @@ export class DepositReportingService {
             ['Used Deposits', reportData.usedDeposits],
             ['Refunded Deposits', reportData.refundedDeposits],
             ['Average Deposit Amount', reportData.averageDepositAmount],
-            ['Average Utilization Rate', `${reportData.averageUtilizationRate}%`]
+            ['Average Utilization Rate', `${reportData.averageUtilizationRate}%`],
           ];
           break;
 
@@ -623,7 +633,11 @@ export class DepositReportingService {
           break;
 
         default:
-          throw new BadException('Unsupported Report Type', 400, 'Unsupported report type for CSV export');
+          throw new BadException(
+            'Unsupported Report Type',
+            400,
+            'Unsupported report type for CSV export'
+          );
       }
 
       // Generate CSV content

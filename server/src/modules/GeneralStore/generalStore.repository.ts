@@ -16,6 +16,7 @@ import { Staff } from '../../database/models/staff';
 import { Vendor } from '../../database/models/vendor';
 import { Unit } from '../../database/models/unit';
 import { BadException } from '../../common/util/api-error';
+import sequelizeConnection from '../../database/config/config';
 
 export class GeneralStoreRepository {
   // Category Management
@@ -620,6 +621,80 @@ export class GeneralStoreRepository {
     }
   }
 
+  static async updateRequest(
+    id: number,
+    requestData: any,
+    staffId: number
+  ): Promise<GeneralStoreRequest> {
+    try {
+      const request = await GeneralStoreRequest.findByPk(id);
+      if (!request) {
+        throw new BadException('Error', 404, 'Request not found');
+      }
+
+      await sequelizeConnection.transaction(async t => {
+        // Update request metadata if provided
+        const updateFields: any = {};
+        if (requestData.requesting_department !== undefined) {
+          updateFields.requesting_department = requestData.requesting_department;
+        }
+        if (requestData.priority !== undefined) {
+          updateFields.priority = requestData.priority;
+        }
+        if (requestData.required_date !== undefined) {
+          updateFields.required_date = new Date(requestData.required_date);
+        }
+        if (requestData.notes !== undefined) {
+          updateFields.notes = requestData.notes;
+        }
+        if (Object.keys(updateFields).length > 0) {
+          await GeneralStoreRequest.update(updateFields, { where: { id }, transaction: t });
+        }
+
+        // Replace items if provided
+        if (Array.isArray(requestData.items)) {
+          // Remove existing items
+          await GeneralStoreRequestItem.destroy({ where: { request_id: id }, transaction: t });
+
+          // Create new items
+          for (const itemData of requestData.items) {
+            const item = await GeneralStoreItem.findByPk(itemData.item_id);
+            if (!item) {
+              throw new BadException('Error', 400, `Item with ID ${itemData.item_id} not found`);
+            }
+
+            const quantity = Number(itemData.quantity_requested);
+            if (!Number.isFinite(quantity) || quantity <= 0) {
+              throw new BadException('Error', 400, `Invalid quantity for item ${itemData.item_id}`);
+            }
+
+            await GeneralStoreRequestItem.create(
+              {
+                request_id: id,
+                item_id: itemData.item_id,
+                quantity_requested: quantity,
+                unit_cost: item.unit_cost,
+                total_cost: quantity * item.unit_cost,
+                notes: itemData.notes,
+                status: ItemRequestStatus.PENDING,
+              },
+              { transaction: t }
+            );
+          }
+        }
+      });
+
+      // Recalculate total cost after transaction
+      await this.calculateRequestCost(id);
+
+      // Return updated request with relations
+      return await this.getRequestById(id);
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Error', 500, `Failed to update request: ${error.message}`);
+    }
+  }
+
   static async getRequests(filters: any = {}, pagination: any = {}): Promise<any> {
     try {
       const where: WhereOptions = {};
@@ -822,6 +897,118 @@ export class GeneralStoreRepository {
     }
   }
 
+  // Dashboard Statistics
+  static async getItemsCount(): Promise<number> {
+    try {
+      return await GeneralStoreItem.count();
+    } catch (error) {
+      throw new BadException('Error', 500, `Failed to get items count: ${error.message}`);
+    }
+  }
+
+  static async getActiveItemsCount(): Promise<number> {
+    try {
+      return await GeneralStoreItem.count({
+        where: { status: ItemStatus.ACTIVE },
+      });
+    } catch (error) {
+      throw new BadException('Error', 500, `Failed to get active items count: ${error.message}`);
+    }
+  }
+
+  static async getLowStockItemsCount(): Promise<number> {
+    try {
+      const items = await GeneralStoreItem.findAll({
+        where: { status: ItemStatus.ACTIVE },
+      });
+      return items.filter(item => item.current_stock <= item.minimum_stock).length;
+    } catch (error) {
+      throw new BadException('Error', 500, `Failed to get low stock items count: ${error.message}`);
+    }
+  }
+
+  static async getTotalValue(): Promise<number> {
+    try {
+      const result = await GeneralStoreItem.findAll({
+        attributes: [
+          [
+            sequelizeConnection.fn('SUM', sequelizeConnection.col('current_stock * unit_cost')),
+            'totalValue',
+          ],
+        ],
+        where: { status: ItemStatus.ACTIVE },
+      });
+      return result[0]?.getDataValue('totalValue') || 0;
+    } catch (error) {
+      throw new BadException('Error', 500, `Failed to get total value: ${error.message}`);
+    }
+  }
+
+  static async getCategoriesCount(): Promise<number> {
+    try {
+      return await GeneralStoreCategory.count();
+    } catch (error) {
+      throw new BadException('Error', 500, `Failed to get categories count: ${error.message}`);
+    }
+  }
+
+  static async getSubcategoriesCount(): Promise<number> {
+    try {
+      return await GeneralStoreSubcategory.count();
+    } catch (error) {
+      throw new BadException('Error', 500, `Failed to get subcategories count: ${error.message}`);
+    }
+  }
+
+  static async getRequestsCount(): Promise<number> {
+    try {
+      return await GeneralStoreRequest.count();
+    } catch (error) {
+      throw new BadException('Error', 500, `Failed to get requests count: ${error.message}`);
+    }
+  }
+
+  static async getPendingRequestsCount(): Promise<number> {
+    try {
+      return await GeneralStoreRequest.count({
+        where: { status: RequestStatus.PENDING },
+      });
+    } catch (error) {
+      throw new BadException(
+        'Error',
+        500,
+        `Failed to get pending requests count: ${error.message}`
+      );
+    }
+  }
+
+  static async getMovementsCount(): Promise<number> {
+    try {
+      return await GeneralStoreMovement.count();
+    } catch (error) {
+      throw new BadException('Error', 500, `Failed to get movements count: ${error.message}`);
+    }
+  }
+
+  static async getTodayMovementsCount(): Promise<number> {
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      return await GeneralStoreMovement.count({
+        where: {
+          movement_date: {
+            [Op.between]: [today, tomorrow],
+          },
+        },
+      });
+    } catch (error) {
+      throw new BadException('Error', 500, `Failed to get today movements count: ${error.message}`);
+    }
+  }
+
   // Settings Management
   static async getSettings(): Promise<any> {
     try {
@@ -832,7 +1019,7 @@ export class GeneralStoreRepository {
         expiry_warning_days: 30,
         auto_approve_requests: false,
         require_approval_above_amount: 1000,
-        default_currency: 'USD',
+        default_currency: 'NGN',
         enable_barcode_scanning: true,
         enable_notifications: true,
         backup_frequency: 'daily',
@@ -848,10 +1035,10 @@ export class GeneralStoreRepository {
       // In a real implementation, you would update a settings table
       const currentSettings = await this.getSettings();
       const updatedSettings = { ...currentSettings, ...settingsData };
-      
+
       // Here you would typically save to database
       // await SettingsModel.update(updatedSettings, { where: { id: 1 } });
-      
+
       return updatedSettings;
     } catch (error) {
       throw new BadException('Error', 500, `Failed to update settings: ${error.message}`);

@@ -21,45 +21,45 @@ export enum EmergencyBedStatus {
 }
 
 export enum EmergencyBedType {
-  RESUSCITATION = 'RESUSCITATION',     // For critical patients
-  MONITORING = 'MONITORING',           // For patients needing monitoring
-  OBSERVATION = 'OBSERVATION',         // For short-term observation
-  ISOLATION = 'ISOLATION',             // For infectious patients
-  PEDIATRIC = 'PEDIATRIC',             // For pediatric patients
-  OBSTETRIC = 'OBSTETRIC',             // For obstetric emergencies
-  PSYCHIATRIC = 'PSYCHIATRIC',         // For psychiatric emergencies
-  TRAUMA = 'TRAUMA',                   // For trauma patients
+  RESUSCITATION = 'RESUSCITATION', // For critical patients
+  MONITORING = 'MONITORING', // For patients needing monitoring
+  OBSERVATION = 'OBSERVATION', // For short-term observation
+  ISOLATION = 'ISOLATION', // For infectious patients
+  PEDIATRIC = 'PEDIATRIC', // For pediatric patients
+  OBSTETRIC = 'OBSTETRIC', // For obstetric emergencies
+  PSYCHIATRIC = 'PSYCHIATRIC', // For psychiatric emergencies
+  TRAUMA = 'TRAUMA', // For trauma patients
 }
 
-@Table({ 
-  timestamps: true, 
+@Table({
+  timestamps: true,
   tableName: 'Emergency_Beds',
   indexes: [
     {
       name: 'idx_emergency_bed_number',
-      fields: ['bed_number']
+      fields: ['bed_number'],
     },
     {
       name: 'idx_emergency_bed_type',
-      fields: ['bed_type']
+      fields: ['bed_type'],
     },
     {
       name: 'idx_emergency_bed_status',
-      fields: ['status']
+      fields: ['status'],
     },
     {
       name: 'idx_emergency_bed_ward',
-      fields: ['ward_id']
+      fields: ['ward_id'],
     },
     {
       name: 'idx_emergency_bed_zone',
-      fields: ['zone']
+      fields: ['zone'],
     },
     {
       name: 'idx_emergency_bed_composite',
-      fields: ['status', 'bed_type', 'zone']
-    }
-  ]
+      fields: ['status', 'bed_type', 'zone'],
+    },
+  ],
 })
 export class EmergencyBed extends Model {
   @PrimaryKey
@@ -218,20 +218,20 @@ export class EmergencyBed extends Model {
   // Helper method to check if bed has required equipment
   hasRequiredEquipment(requiredEquipment: string[]): boolean {
     const availableEquipment = [];
-    
+
     if (this.has_monitoring) availableEquipment.push('monitoring');
     if (this.has_ventilator) availableEquipment.push('ventilator');
     if (this.has_defibrillator) availableEquipment.push('defibrillator');
     if (this.has_suction) availableEquipment.push('suction');
     if (this.has_oxygen) availableEquipment.push('oxygen');
 
-    return requiredEquipment.every(equipment => 
-      availableEquipment.includes(equipment)
-    );
+    return requiredEquipment.every(equipment => availableEquipment.includes(equipment));
   }
 
   // Helper method to get bed location string
   getLocationString(): string {
-    return `${this.zone}${this.room_number ? ` - Room ${this.room_number}` : ''} - Bed ${this.bed_number}`;
+    return `${this.zone}${this.room_number ? ` - Room ${this.room_number}` : ''} - Bed ${
+      this.bed_number
+    }`;
   }
 }

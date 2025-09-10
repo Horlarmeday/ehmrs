@@ -213,7 +213,14 @@ module.exports = {
           comment: 'Amount covered by insurance',
         },
         claim_status: {
-          type: Sequelize.ENUM('PENDING', 'SUBMITTED', 'APPROVED', 'REJECTED', 'PAID', 'PARTIALLY_APPROVED'),
+          type: Sequelize.ENUM(
+            'PENDING',
+            'SUBMITTED',
+            'APPROVED',
+            'REJECTED',
+            'PAID',
+            'PARTIALLY_APPROVED'
+          ),
           allowNull: false,
           defaultValue: 'PENDING',
           comment: 'Status of the insurance claim',
@@ -626,7 +633,13 @@ module.exports = {
           onDelete: 'RESTRICT',
         },
         movement_type: {
-          type: Sequelize.ENUM('CASH_IN', 'CASH_OUT', 'PAYMENT_RECEIVED', 'REFUND_GIVEN', 'ADJUSTMENT'),
+          type: Sequelize.ENUM(
+            'CASH_IN',
+            'CASH_OUT',
+            'PAYMENT_RECEIVED',
+            'REFUND_GIVEN',
+            'ADJUSTMENT'
+          ),
           allowNull: false,
           comment: 'Type of cash movement',
         },
@@ -837,7 +850,6 @@ module.exports = {
       await queryInterface.addIndex('cash_transactions', ['status']);
 
       console.log('✅ Payment method-specific tables created successfully');
-
     } catch (error) {
       console.error('❌ Error creating payment method-specific tables:', error);
       throw error;
@@ -853,10 +865,9 @@ module.exports = {
       await queryInterface.dropTable('bank_transfers');
 
       console.log('✅ Payment method-specific tables dropped successfully');
-
     } catch (error) {
       console.error('❌ Error dropping payment method-specific tables:', error);
       throw error;
     }
-  }
+  },
 };

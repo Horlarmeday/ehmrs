@@ -5,6 +5,11 @@ export default [
     name: 'Visits',
   },
   {
+    url: '/visit/dialysis-management',
+    icon: 'flaticon2-user-1',
+    name: 'Dialysis',
+  },
+  {
     url: '/visit/treatments',
     icon: 'fas fa-user-injured',
     name: 'Treatment Records',

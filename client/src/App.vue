@@ -1,7 +1,7 @@
 <template>
-  <keep-alive>
-    <router-view></router-view>
-  </keep-alive>
+    <keep-alive>
+      <router-view></router-view>
+    </keep-alive>
 </template>
 
 <style lang="scss">
@@ -41,8 +41,18 @@ input[type='number'] {
 <script>
 import { OVERRIDE_LAYOUT_CONFIG } from '@/core/services/store/config.module';
 import axios from 'axios';
+// import DebugPanel from '@/core/components/DebugPanel.vue';
+
 export default {
   name: 'EHMRS',
+  components: {
+    // DebugPanel,
+  },
+  computed: {
+    isDevelopment() {
+      return process.env.NODE_ENV === 'development';
+    },
+  },
   created: function() {
     axios.interceptors.response.use(undefined, function(err) {
       // eslint-disable-next-line no-unused-vars

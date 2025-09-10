@@ -53,7 +53,9 @@ export class VisitBillingHelper {
           patient_id: patientId,
           visit_id: visitId,
           items: [], // Start with empty items
-          billing_mode: (patientInsurance ? BillingMode.INSURANCE : BillingMode.CASH) as BillingMode,
+          billing_mode: (patientInsurance
+            ? BillingMode.INSURANCE
+            : BillingMode.CASH) as BillingMode,
           payment_collection_method: PaymentCollectionMethod.POINT_OF_SERVICE,
           payment_collection_point: 'main-cashier',
           patient_co_pay_amount: 0,
@@ -71,7 +73,11 @@ export class VisitBillingHelper {
 
       return bill;
     } catch (error) {
-      throw new BadException(`Failed to get or create bill for visit: ${error.message}`, 500);
+      throw new BadException(
+        `Failed to get or create bill for visit: ${error.message}`,
+        500,
+        error.message
+      );
     }
   }
 
@@ -132,7 +138,11 @@ export class VisitBillingHelper {
       return billItem;
     } catch (error) {
       console.error(error);
-      throw new BadException(`Failed to add prescribed drug to bill: ${error.message}`, 500);
+      throw new BadException(
+        `Failed to add prescribed drug to bill: ${error.message}`,
+        500,
+        error.message
+      );
     }
   }
 
@@ -192,8 +202,11 @@ export class VisitBillingHelper {
 
       return billItem;
     } catch (error) {
-      console.error(error);
-      throw new BadException(`Failed to add prescribed test to bill: ${error.message}`, 500);
+      throw new BadException(
+        `Failed to add prescribed test to bill: ${error.message}`,
+        500,
+        error.message
+      );
     }
   }
 
@@ -234,8 +247,7 @@ export class VisitBillingHelper {
         total_price: pricing.totalPrice,
         final_price: pricing.totalPrice,
         discount_percentage: 0,
-        notes: `Prescribed investigation: ${investigation?.name ||
-          'Unknown investigation'}`,
+        notes: `Prescribed investigation: ${investigation?.name || 'Unknown investigation'}`,
         created_by: staffId,
         item_name: investigation?.name || 'Unknown investigation',
         item_code: investigation?.name?.toLowerCase() || 'Unknown code',
@@ -256,7 +268,8 @@ export class VisitBillingHelper {
     } catch (error) {
       throw new BadException(
         `Failed to add prescribed investigation to bill: ${error.message}`,
-        500
+        500,
+        error.message
       );
     }
   }
@@ -317,7 +330,13 @@ export class VisitBillingHelper {
 
       return billItem;
     } catch (error) {
-      throw new BadException(`Failed to add prescribed service to bill: ${error.message}`, 500);
+      console.error(error);
+      const err = error as Error;
+      throw new BadException(
+        `Failed to add prescribed service to bill: ${error.message}`,
+        500,
+        err.message
+      );
     }
   }
 
@@ -416,6 +435,7 @@ export class VisitBillingHelper {
       );
     } catch (error) {
       console.error('Failed to update bill totals:', error);
+      throw error;
     }
   }
 
@@ -828,7 +848,10 @@ export class VisitBillingHelper {
         await VisitBillingHelper.updateBillTotals(billId);
       }
     } catch (error) {
-      throw new BadException(`Failed to remove prescribed investigation from bill: ${error.message}`, 500);
+      throw new BadException(
+        `Failed to remove prescribed investigation from bill: ${error.message}`,
+        500
+      );
     }
   }
 
@@ -852,7 +875,10 @@ export class VisitBillingHelper {
         await VisitBillingHelper.updateBillTotals(billId);
       }
     } catch (error) {
-      throw new BadException(`Failed to remove prescribed service from bill: ${error.message}`, 500);
+      throw new BadException(
+        `Failed to remove prescribed service from bill: ${error.message}`,
+        500
+      );
     }
   }
 }

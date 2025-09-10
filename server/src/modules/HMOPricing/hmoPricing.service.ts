@@ -2,7 +2,8 @@ import {
   HMODrugPricing,
   HMOTestPricing,
   HMOServicePricing,
-  HMOInvestigationPricing, HMO,
+  HMOInvestigationPricing,
+  HMO,
 } from '../../database/models';
 import { BadException } from '../../common/util/api-error';
 import { Insurance, Drug, Test, Service, Investigation } from '../../database/models';

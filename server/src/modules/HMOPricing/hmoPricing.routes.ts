@@ -69,7 +69,11 @@ router.post(
 );
 
 // PUT and DELETE routes for updating and deleting
-router.put('/services/:id', validateCreateServicePricing, HMOPricingController.updateServicePricing);
+router.put(
+  '/services/:id',
+  validateCreateServicePricing,
+  HMOPricingController.updateServicePricing
+);
 router.delete('/services/:id', HMOPricingController.deleteServicePricing);
 
 /**
@@ -92,7 +96,11 @@ router.post(
 );
 
 // PUT and DELETE routes for updating and deleting
-router.put('/investigations/:id', validateCreateInvestigationPricing, HMOPricingController.updateInvestigationPricing);
+router.put(
+  '/investigations/:id',
+  validateCreateInvestigationPricing,
+  HMOPricingController.updateInvestigationPricing
+);
 router.delete('/investigations/:id', HMOPricingController.deleteInvestigationPricing);
 
 /**

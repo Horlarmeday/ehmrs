@@ -330,7 +330,6 @@ export default {
         await this.$store.dispatch('generalStore/fetchCategories');
         this.categories = this.$store.getters['generalStore/categories'] || [];
       } catch (error) {
-        console.error('Error loading initial data:', error);
         this.$toast.error('Failed to load filter data');
       }
     },
@@ -351,7 +350,6 @@ export default {
 
         this.$toast.success('Cost report generated successfully');
       } catch (error) {
-        console.error('Error generating cost report:', error);
         this.$toast.error('Failed to generate cost report');
       } finally {
         this.loading = false;

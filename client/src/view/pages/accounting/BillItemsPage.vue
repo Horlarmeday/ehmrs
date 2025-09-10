@@ -225,7 +225,7 @@
                 <i class="fas fa-th-large text-primary mr-2"></i>
                 Bill Items ({{ filteredItems.length }} of {{ billItems.length }})
               </h6>
-              
+
               <div class="view-controls">
                 <b-button-group size="sm">
                   <b-button

@@ -609,7 +609,6 @@ export default {
 
         this.$toast.success('Usage report generated successfully');
       } catch (error) {
-        console.error('Error generating usage report:', error);
         this.$toast.error('Failed to generate usage report');
       } finally {
         this.loading = false;

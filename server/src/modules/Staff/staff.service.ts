@@ -27,10 +27,16 @@ class StaffService {
     const user = await findByPhoneOrUsername({ phone: body.phone, username: body.username });
     if (user) throw new BadException('INVALID', 400, EXISTING_STAFF);
 
-    // Save photo to disk
-    const fileName = await processSnappedPhoto(body.photo, body.firstname);
+    let fileName: string;
+    if (body.photo) {
+      fileName = await processSnappedPhoto(body.photo, body.firstname);
+    }
 
-    return createStaff({ ...body, fileName });
+    const createdStaff = await createStaff({ ...body, fileName });
+    const staff = await getStaffById(createdStaff.id);
+
+    const { password, ...rest } = staff.toJSON();
+    return rest;
   }
 
   /**

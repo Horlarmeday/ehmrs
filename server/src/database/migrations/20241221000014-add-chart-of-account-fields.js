@@ -5,21 +5,21 @@ module.exports = {
     await queryInterface.addColumn('Chart_of_Account', 'tax_code', {
       type: Sequelize.STRING,
       allowNull: true,
-      after: 'balance'
+      after: 'balance',
     });
 
     await queryInterface.addColumn('Chart_of_Account', 'budget_allocation', {
       type: Sequelize.DECIMAL(15, 2),
       allowNull: true,
       defaultValue: 0,
-      after: 'tax_code'
+      after: 'tax_code',
     });
 
     await queryInterface.addColumn('Chart_of_Account', 'allow_manual_entries', {
       type: Sequelize.BOOLEAN,
       allowNull: true,
       defaultValue: true,
-      after: 'budget_allocation'
+      after: 'budget_allocation',
     });
   },
 
@@ -27,5 +27,5 @@ module.exports = {
     await queryInterface.removeColumn('Chart_of_Account', 'tax_code');
     await queryInterface.removeColumn('Chart_of_Account', 'budget_allocation');
     await queryInterface.removeColumn('Chart_of_Account', 'allow_manual_entries');
-  }
+  },
 };

@@ -48,3 +48,6 @@ images/
 public/
 # Sentry Config File
 .sentryclirc
+.trae/
+.claude/
+.cursor/

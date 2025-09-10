@@ -34,31 +34,31 @@ export enum ChangeType {
   CANCELLATION = 'CANCELLATION',
 }
 
-@Table({ 
-  timestamps: true, 
+@Table({
+  timestamps: true,
   tableName: 'Procurement_Order_History',
   indexes: [
     {
       name: 'idx_procurement_order_history_order',
-      fields: ['procurement_order_id']
+      fields: ['procurement_order_id'],
     },
     {
       name: 'idx_procurement_order_history_action',
-      fields: ['action']
+      fields: ['action'],
     },
     {
       name: 'idx_procurement_order_history_staff',
-      fields: ['staff_id']
+      fields: ['staff_id'],
     },
     {
       name: 'idx_procurement_order_history_date',
-      fields: ['createdAt']
+      fields: ['createdAt'],
     },
     {
       name: 'idx_procurement_order_history_composite',
-      fields: ['procurement_order_id', 'action', 'createdAt']
-    }
-  ]
+      fields: ['procurement_order_id', 'action', 'createdAt'],
+    },
+  ],
 })
 export class ProcurementOrderHistory extends Model {
   @PrimaryKey
@@ -70,8 +70,8 @@ export class ProcurementOrderHistory extends Model {
     type: DataType.INTEGER,
     allowNull: false,
     validate: {
-      notEmpty: { msg: 'procurement order is required' }
-    }
+      notEmpty: { msg: 'procurement order is required' },
+    },
   })
   procurement_order_id: number;
 
@@ -79,8 +79,8 @@ export class ProcurementOrderHistory extends Model {
     type: DataType.ENUM(...Object.values(HistoryAction)),
     allowNull: false,
     validate: {
-      notEmpty: { msg: 'action is required' }
-    }
+      notEmpty: { msg: 'action is required' },
+    },
   })
   action: HistoryAction;
 
@@ -88,8 +88,8 @@ export class ProcurementOrderHistory extends Model {
     type: DataType.ENUM(...Object.values(ChangeType)),
     allowNull: false,
     validate: {
-      notEmpty: { msg: 'change type is required' }
-    }
+      notEmpty: { msg: 'change type is required' },
+    },
   })
   change_type: ChangeType;
 
@@ -98,8 +98,8 @@ export class ProcurementOrderHistory extends Model {
     type: DataType.INTEGER,
     allowNull: false,
     validate: {
-      notEmpty: { msg: 'staff is required' }
-    }
+      notEmpty: { msg: 'staff is required' },
+    },
   })
   staff_id: number;
 
@@ -149,7 +149,11 @@ export class ProcurementOrderHistory extends Model {
   /**
    * Create history record for procurement order creation
    */
-  static async logCreation(orderId: number, staffId: number, orderData: any): Promise<ProcurementOrderHistory> {
+  static async logCreation(
+    orderId: number,
+    staffId: number,
+    orderData: any
+  ): Promise<ProcurementOrderHistory> {
     return await this.create({
       procurement_order_id: orderId,
       action: HistoryAction.CREATED,
@@ -159,14 +163,20 @@ export class ProcurementOrderHistory extends Model {
       old_value: null,
       new_value: JSON.stringify(orderData),
       reason: 'Procurement order created',
-      notes: 'Initial creation of procurement order'
+      notes: 'Initial creation of procurement order',
     });
   }
 
   /**
    * Create history record for status change
    */
-  static async logStatusChange(orderId: number, staffId: number, oldStatus: string, newStatus: string, reason?: string): Promise<ProcurementOrderHistory> {
+  static async logStatusChange(
+    orderId: number,
+    staffId: number,
+    oldStatus: string,
+    newStatus: string,
+    reason?: string
+  ): Promise<ProcurementOrderHistory> {
     return await this.create({
       procurement_order_id: orderId,
       action: HistoryAction.STATUS_CHANGED,
@@ -176,14 +186,21 @@ export class ProcurementOrderHistory extends Model {
       old_value: oldStatus,
       new_value: newStatus,
       reason: reason || `Status changed from ${oldStatus} to ${newStatus}`,
-      notes: `Status transition: ${oldStatus} → ${newStatus}`
+      notes: `Status transition: ${oldStatus} → ${newStatus}`,
     });
   }
 
   /**
    * Create history record for field update
    */
-  static async logFieldUpdate(orderId: number, staffId: number, fieldName: string, oldValue: any, newValue: any, reason?: string): Promise<ProcurementOrderHistory> {
+  static async logFieldUpdate(
+    orderId: number,
+    staffId: number,
+    fieldName: string,
+    oldValue: any,
+    newValue: any,
+    reason?: string
+  ): Promise<ProcurementOrderHistory> {
     return await this.create({
       procurement_order_id: orderId,
       action: HistoryAction.UPDATED,
@@ -193,14 +210,18 @@ export class ProcurementOrderHistory extends Model {
       old_value: typeof oldValue === 'object' ? JSON.stringify(oldValue) : String(oldValue),
       new_value: typeof newValue === 'object' ? JSON.stringify(newValue) : String(newValue),
       reason: reason || `Field ${fieldName} updated`,
-      notes: `Field update: ${fieldName}`
+      notes: `Field update: ${fieldName}`,
     });
   }
 
   /**
    * Create history record for approval
    */
-  static async logApproval(orderId: number, staffId: number, approvalData: any): Promise<ProcurementOrderHistory> {
+  static async logApproval(
+    orderId: number,
+    staffId: number,
+    approvalData: any
+  ): Promise<ProcurementOrderHistory> {
     return await this.create({
       procurement_order_id: orderId,
       action: HistoryAction.APPROVED,
@@ -210,14 +231,18 @@ export class ProcurementOrderHistory extends Model {
       old_value: null,
       new_value: JSON.stringify(approvalData),
       reason: 'Procurement order approved',
-      notes: 'Order approved for vendor processing'
+      notes: 'Order approved for vendor processing',
     });
   }
 
   /**
    * Create history record for cancellation
    */
-  static async logCancellation(orderId: number, staffId: number, cancellationReason: string): Promise<ProcurementOrderHistory> {
+  static async logCancellation(
+    orderId: number,
+    staffId: number,
+    cancellationReason: string
+  ): Promise<ProcurementOrderHistory> {
     return await this.create({
       procurement_order_id: orderId,
       action: HistoryAction.CANCELLED,
@@ -227,7 +252,7 @@ export class ProcurementOrderHistory extends Model {
       old_value: null,
       new_value: cancellationReason,
       reason: 'Procurement order cancelled',
-      notes: `Order cancelled: ${cancellationReason}`
+      notes: `Order cancelled: ${cancellationReason}`,
     });
   }
 
@@ -240,31 +265,34 @@ export class ProcurementOrderHistory extends Model {
       include: [
         {
           model: Staff,
-          attributes: ['first_name', 'last_name', 'email']
-        }
+          attributes: ['first_name', 'last_name', 'email'],
+        },
       ],
-      order: [['createdAt', 'ASC']]
+      order: [['createdAt', 'ASC']],
     });
   }
 
   /**
    * Get history by action type
    */
-  static async getHistoryByAction(action: HistoryAction, limit: number = 100): Promise<ProcurementOrderHistory[]> {
+  static async getHistoryByAction(
+    action: HistoryAction,
+    limit = 100
+  ): Promise<ProcurementOrderHistory[]> {
     return await this.findAll({
       where: { action },
       include: [
         {
           model: ProcurementOrder,
-          attributes: ['po_number', 'total_amount', 'status']
+          attributes: ['po_number', 'total_amount', 'status'],
         },
         {
           model: Staff,
-          attributes: ['first_name', 'last_name']
-        }
+          attributes: ['first_name', 'last_name'],
+        },
       ],
       order: [['createdAt', 'DESC']],
-      limit
+      limit,
     });
   }
 
@@ -303,14 +331,14 @@ export class ProcurementOrderHistory extends Model {
       include: [
         {
           model: ProcurementOrder,
-          attributes: ['po_number', 'total_amount', 'status', 'vendor_id']
+          attributes: ['po_number', 'total_amount', 'status', 'vendor_id'],
         },
         {
           model: Staff,
-          attributes: ['first_name', 'last_name', 'email']
-        }
+          attributes: ['first_name', 'last_name', 'email'],
+        },
       ],
-      order: [['createdAt', 'DESC']]
+      order: [['createdAt', 'DESC']],
     });
   }
 }

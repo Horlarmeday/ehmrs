@@ -1,19 +1,15 @@
 import { Transaction } from 'sequelize';
 import { BadException } from '../../../common/util/api-error';
-import { 
+import {
   Staff,
   ClinicalPayment,
   BankTransfer,
   InsuranceClaim,
   POSTerminalTransaction,
   JournalEntry,
-  JournalEntryLine
+  JournalEntryLine,
 } from '../../../database/models';
-import { 
-  PaymentStatus,
-  BankTransferStatus,
-  JournalEntryStatus
-} from '../enums';
+import { PaymentStatus, BankTransferStatus, JournalEntryStatus } from '../enums';
 import { logger } from '../../../core/helpers/logger';
 
 // ===== SETTLEMENT EXCEPTION INTERFACES =====
@@ -61,7 +57,7 @@ export interface AutoResolutionRule {
 
 /**
  * Settlement Exception Handler Service
- * 
+ *
  * This service handles comprehensive exception management for settlement processes including:
  * - Exception detection and classification
  * - Automatic resolution attempts
@@ -71,7 +67,6 @@ export interface AutoResolutionRule {
  * - Exception analytics and reporting
  */
 export class SettlementExceptionHandlerService {
-
   // ===== EXCEPTION DETECTION AND CLASSIFICATION =====
 
   /**
@@ -86,24 +81,40 @@ export class SettlementExceptionHandlerService {
 
     try {
       // Check for common settlement exceptions
-      const reconciliationExceptions = await this.checkReconciliationExceptions(entityType, entityId, context);
-      const settlementExceptions = await this.checkSettlementExceptions(entityType, entityId, context);
+      const reconciliationExceptions = await this.checkReconciliationExceptions(
+        entityType,
+        entityId,
+        context
+      );
+      const settlementExceptions = await this.checkSettlementExceptions(
+        entityType,
+        entityId,
+        context
+      );
       const approvalExceptions = await this.checkApprovalExceptions(entityType, entityId, context);
       const postingExceptions = await this.checkPostingExceptions(entityType, entityId, context);
 
-      exceptions.push(...reconciliationExceptions, ...settlementExceptions, ...approvalExceptions, ...postingExceptions);
+      exceptions.push(
+        ...reconciliationExceptions,
+        ...settlementExceptions,
+        ...approvalExceptions,
+        ...postingExceptions
+      );
 
       // Log detected exceptions
       if (exceptions.length > 0) {
         logger.warn(`Detected ${exceptions.length} settlement exceptions`, {
           entity_type: entityType,
           entity_id: entityId,
-          exceptions: exceptions.map(e => ({ type: e.type, severity: e.severity, description: e.description })),
+          exceptions: exceptions.map(e => ({
+            type: e.type,
+            severity: e.severity,
+            description: e.description,
+          })),
         });
       }
 
       return exceptions;
-
     } catch (error) {
       logger.error('Exception detection failed:', error);
       throw new BadException(
@@ -141,7 +152,12 @@ export class SettlementExceptionHandlerService {
             entity_id: entityId,
             error_code: 'AMOUNT_VARIANCE',
             error_message: `Expected: ${context.expected_amount}, Actual: ${context.actual_amount}`,
-            context_data: { variance, variancePercentage, expected: context.expected_amount, actual: context.actual_amount },
+            context_data: {
+              variance,
+              variancePercentage,
+              expected: context.expected_amount,
+              actual: context.actual_amount,
+            },
             created_at: new Date(),
             auto_resolution_attempted: false,
             escalation_level: 0,
@@ -151,8 +167,12 @@ export class SettlementExceptionHandlerService {
 
       // Check for date mismatches
       if (context.expected_date && context.actual_date) {
-        const dateDiff = Math.abs(new Date(context.expected_date).getTime() - new Date(context.actual_date).getTime()) / (1000 * 60 * 60 * 24);
-        
+        const dateDiff =
+          Math.abs(
+            new Date(context.expected_date).getTime() - new Date(context.actual_date).getTime()
+          ) /
+          (1000 * 60 * 60 * 24);
+
         if (dateDiff > 3) {
           exceptions.push({
             id: `REC-${Date.now()}-${entityId}`,
@@ -164,14 +184,17 @@ export class SettlementExceptionHandlerService {
             entity_id: entityId,
             error_code: 'DATE_VARIANCE',
             error_message: `Expected: ${context.expected_date}, Actual: ${context.actual_date}`,
-            context_data: { dateDiff, expected: context.expected_date, actual: context.actual_date },
+            context_data: {
+              dateDiff,
+              expected: context.expected_date,
+              actual: context.actual_date,
+            },
             created_at: new Date(),
             auto_resolution_attempted: false,
             escalation_level: 0,
           });
         }
       }
-
     } catch (error) {
       logger.error('Reconciliation exception check failed:', error);
     }
@@ -227,7 +250,6 @@ export class SettlementExceptionHandlerService {
           escalation_level: 0,
         });
       }
-
     } catch (error) {
       logger.error('Settlement exception check failed:', error);
     }
@@ -283,7 +305,6 @@ export class SettlementExceptionHandlerService {
           escalation_level: 0,
         });
       }
-
     } catch (error) {
       logger.error('Approval exception check failed:', error);
     }
@@ -339,7 +360,6 @@ export class SettlementExceptionHandlerService {
           escalation_level: 0,
         });
       }
-
     } catch (error) {
       logger.error('Posting exception check failed:', error);
     }
@@ -410,7 +430,8 @@ export class SettlementExceptionHandlerService {
     try {
       if (exception.error_code === 'AMOUNT_VARIANCE') {
         const variance = exception.context_data.variance;
-        if (variance < 0.01) { // Less than 1 cent
+        if (variance < 0.01) {
+          // Less than 1 cent
           return {
             exception_id: exception.id,
             resolution_type: 'AUTO',
@@ -424,7 +445,8 @@ export class SettlementExceptionHandlerService {
 
       if (exception.error_code === 'DATE_VARIANCE') {
         const dateDiff = exception.context_data.dateDiff;
-        if (dateDiff <= 1) { // Within 1 day
+        if (dateDiff <= 1) {
+          // Within 1 day
           return {
             exception_id: exception.id,
             resolution_type: 'AUTO',
@@ -542,7 +564,6 @@ export class SettlementExceptionHandlerService {
 
       // Apply the resolution action
       await this.applyResolutionAction(exceptionId, resolution);
-
     } catch (error) {
       logger.error(`Manual resolution failed for exception ${exceptionId}:`, error);
       throw new BadException(
@@ -678,10 +699,7 @@ export class SettlementExceptionHandlerService {
   /**
    * Rollback settlement changes
    */
-  static async rollbackSettlementChanges(
-    entityType: string,
-    entityId: number
-  ): Promise<boolean> {
+  static async rollbackSettlementChanges(entityType: string, entityId: number): Promise<boolean> {
     try {
       // In a production system, you would implement rollback logic
       logger.info(`Rolling back settlement changes: ${entityType} ${entityId}`);
@@ -724,10 +742,7 @@ export class SettlementExceptionHandlerService {
   /**
    * Get exception trends
    */
-  static async getExceptionTrends(
-    startDate?: Date,
-    endDate?: Date
-  ): Promise<any> {
+  static async getExceptionTrends(startDate?: Date, endDate?: Date): Promise<any> {
     try {
       // In a production system, you would query exception trends
       // For now, return mock data

@@ -13,12 +13,12 @@ const { JournalEntryStatus } = require('./src/modules/Accounting/enums');
 
 async function testPhase3Completion() {
   console.log('🚀 Testing Phase 3 Completion: Enhanced Journal Entry System');
-  console.log('=' .repeat(60));
+  console.log('='.repeat(60));
 
   try {
     // Test 1: Create test data
     console.log('\n📋 Test 1: Creating test data...');
-    
+
     // Create test staff
     const staff = await Staff.create({
       firstname: 'Test',
@@ -62,7 +62,7 @@ async function testPhase3Completion() {
       code: '1001',
       name: 'Cash Account',
       type: 'ASSET',
-      balance: 10000.00,
+      balance: 10000.0,
       is_active: true,
     });
 
@@ -70,7 +70,7 @@ async function testPhase3Completion() {
       code: '4001',
       name: 'Patient Revenue',
       type: 'INCOME',
-      balance: 0.00,
+      balance: 0.0,
       is_active: true,
     });
 
@@ -78,7 +78,7 @@ async function testPhase3Completion() {
       code: '5001',
       name: 'Operating Expenses',
       type: 'EXPENSE',
-      balance: 0.00,
+      balance: 0.0,
       is_active: true,
     });
 
@@ -86,7 +86,7 @@ async function testPhase3Completion() {
 
     // Test 2: Create journal entry workflow
     console.log('\n📋 Test 2: Testing journal entry workflow...');
-    
+
     // Create a journal entry
     const journalEntry = await JournalEntry.create({
       reference: 'JE-TEST-001',
@@ -104,16 +104,16 @@ async function testPhase3Completion() {
       {
         journal_entry_id: journalEntry.id,
         account_id: cashAccount.id,
-        debit: 5000.00,
-        credit: 0.00,
+        debit: 5000.0,
+        credit: 0.0,
         description: 'Cash received for patient services',
         line_type: 'STANDARD',
       },
       {
         journal_entry_id: journalEntry.id,
         account_id: revenueAccount.id,
-        debit: 0.00,
-        credit: 5000.00,
+        debit: 0.0,
+        credit: 5000.0,
         description: 'Revenue from patient services',
         line_type: 'STANDARD',
       },
@@ -123,7 +123,7 @@ async function testPhase3Completion() {
 
     // Test 3: Test approval workflow
     console.log('\n📋 Test 3: Testing approval workflow...');
-    
+
     // Move to pending approval
     await journalEntry.update({
       status: JournalEntryStatus.PENDING_APPROVAL,
@@ -133,13 +133,17 @@ async function testPhase3Completion() {
 
     // Approve the entry
     const { AccountingRepository } = require('./src/modules/Accounting/accounting.repository');
-    await AccountingRepository.approveJournalEntry(journalEntry.id, staff.id, 'Approved for posting');
+    await AccountingRepository.approveJournalEntry(
+      journalEntry.id,
+      staff.id,
+      'Approved for posting'
+    );
 
     console.log('✅ Entry approved successfully');
 
     // Test 4: Test posting workflow
     console.log('\n📋 Test 4: Testing posting workflow...');
-    
+
     // Post the entry
     await AccountingRepository.postJournalEntry(journalEntry.id, staff.id);
 
@@ -149,11 +153,13 @@ async function testPhase3Completion() {
     await cashAccount.reload();
     await revenueAccount.reload();
 
-    console.log(`✅ Account balances updated - Cash: ${cashAccount.balance}, Revenue: ${revenueAccount.balance}`);
+    console.log(
+      `✅ Account balances updated - Cash: ${cashAccount.balance}, Revenue: ${revenueAccount.balance}`
+    );
 
     // Test 5: Test reversal system
     console.log('\n📋 Test 5: Testing reversal system...');
-    
+
     // Reverse the entry
     const reversalEntry = await AccountingRepository.reverseJournalEntry(
       journalEntry.id,
@@ -166,14 +172,14 @@ async function testPhase3Completion() {
 
     // Test 6: Test audit trail
     console.log('\n📋 Test 6: Testing audit trail...');
-    
+
     const auditTrail = await AccountingRepository.getJournalEntryAuditTrail(journalEntry.id);
     console.log('✅ Audit trail retrieved successfully');
     console.log(`✅ Audit trail has ${auditTrail.audit_trail.length} entries`);
 
     // Test 7: Test transaction rollback
     console.log('\n📋 Test 7: Testing transaction rollback...');
-    
+
     // Create another entry to test rollback
     const testEntry = await JournalEntry.create({
       reference: 'JE-TEST-002',
@@ -190,16 +196,16 @@ async function testPhase3Completion() {
       {
         journal_entry_id: testEntry.id,
         account_id: cashAccount.id,
-        debit: 1000.00,
-        credit: 0.00,
+        debit: 1000.0,
+        credit: 0.0,
         description: 'Test cash debit',
         line_type: 'STANDARD',
       },
       {
         journal_entry_id: testEntry.id,
         account_id: expenseAccount.id,
-        debit: 0.00,
-        credit: 1000.00,
+        debit: 0.0,
+        credit: 1000.0,
         description: 'Test expense credit',
         line_type: 'STANDARD',
       },
@@ -223,7 +229,7 @@ async function testPhase3Completion() {
 
     // Test 8: Test statistics and reporting
     console.log('\n📋 Test 8: Testing statistics and reporting...');
-    
+
     const stats = await AccountingRepository.getJournalEntryStatistics();
     console.log('✅ Journal entry statistics retrieved');
     console.log(`✅ Total entries: ${stats.total_entries}`);
@@ -234,15 +240,14 @@ async function testPhase3Completion() {
 
     // Test 9: Test recovery information
     console.log('\n📋 Test 9: Testing recovery information...');
-    
+
     const recoveryInfo = await AccountingRepository.getTransactionRecoveryInfo(journalEntry.id);
     console.log('✅ Recovery information retrieved');
     console.log(`✅ Entry can be rolled back: ${recoveryInfo.can_be_rolled_back}`);
     console.log(`✅ Rollback risks: ${recoveryInfo.rollback_risks.length}`);
 
     console.log('\n🎉 All Phase 3 tests completed successfully!');
-    console.log('=' .repeat(60));
-
+    console.log('='.repeat(60));
   } catch (error) {
     console.error('❌ Test failed:', error.message);
     console.error('Stack trace:', error.stack);
@@ -261,7 +266,7 @@ async function testPhase3Completion() {
     } catch (cleanupError) {
       console.error('⚠️ Cleanup error:', cleanupError.message);
     }
-    
+
     await sequelize.close();
     console.log('✅ Database connection closed');
   }

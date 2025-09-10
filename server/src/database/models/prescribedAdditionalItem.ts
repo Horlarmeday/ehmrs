@@ -54,6 +54,7 @@ export enum Source {
   CONSULTATION = 'Consultation',
   THEATER = 'Theater',
   IMMUNIZATION = 'Immunization',
+  DIALYSIS = 'DIALYSIS',
 }
 
 @Table({ timestamps: true, tableName: 'Additional_item_prescriptions' })
@@ -310,7 +311,13 @@ export class PrescribedAdditionalItem extends Model {
   surgery_id: number;
 
   @Column({
-    type: DataType.ENUM(Source.ANC, Source.CONSULTATION, Source.THEATER, Source.IMMUNIZATION),
+    type: DataType.ENUM(
+      Source.ANC,
+      Source.CONSULTATION,
+      Source.THEATER,
+      Source.IMMUNIZATION,
+      Source.DIALYSIS
+    ),
     defaultValue: Source.CONSULTATION,
   })
   source: Source;

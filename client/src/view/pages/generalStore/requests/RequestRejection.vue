@@ -229,7 +229,6 @@
                 class="form-control"
                 :class="{ 'is-invalid': errors.detailed_reason }"
                 rows="3"
-                placeholder="Provide detailed explanation for the rejection..."
                 required
               ></textarea>
               <div v-if="errors.detailed_reason" class="invalid-feedback d-block">
@@ -247,7 +246,6 @@
                 class="form-control"
                 :class="{ 'is-invalid': errors.suggestions }"
                 rows="2"
-                placeholder="Suggestions for improving the request..."
               ></textarea>
               <div v-if="errors.suggestions" class="invalid-feedback d-block">
                 {{ errors.suggestions }}
@@ -264,7 +262,6 @@
                 class="form-control"
                 :class="{ 'is-invalid': errors.alternative_solutions }"
                 rows="2"
-                placeholder="Alternative solutions or workarounds..."
               ></textarea>
               <div v-if="errors.alternative_solutions" class="invalid-feedback d-block">
                 {{ errors.alternative_solutions }}

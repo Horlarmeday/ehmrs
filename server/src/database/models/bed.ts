@@ -15,7 +15,6 @@ export enum BedStatus {
   UNTAKEN = 'Untaken',
 }
 
-
 @Table({ tableName: 'beds' })
 export class Bed extends Model {
   @PrimaryKey
@@ -58,8 +57,6 @@ export class Bed extends Model {
   @ForeignKey(() => Ward)
   @Column({ type: DataType.INTEGER })
   ward_id: string;
-
-
 
   // Helper method to check if bed is available
   isAvailable(): boolean {

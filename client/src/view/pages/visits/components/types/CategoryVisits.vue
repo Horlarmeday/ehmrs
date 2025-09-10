@@ -154,10 +154,10 @@ export default {
       return this.$store.dispatch('visit/fetchCategoryVisits', {
         currentPage,
         itemsPerPage,
-        category: this.category,
+        // category: this.category,
         ...(search && { search }),
         ...(start && end && { start, end }),
-        ...(this.filter && { filter: this.filter }),
+        // ...(this.filter && { filter: this.filter }),
       });
     },
   },

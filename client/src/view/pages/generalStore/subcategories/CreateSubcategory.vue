@@ -31,7 +31,6 @@
                       type="text"
                       class="form-control"
                       :class="{ 'is-invalid': errors.name }"
-                      placeholder="Enter subcategory name"
                       required
                     />
                     <div v-if="errors.name" class="invalid-feedback">
@@ -75,7 +74,6 @@
                       type="text"
                       class="form-control"
                       :class="{ 'is-invalid': errors.code }"
-                      placeholder="Enter subcategory code (optional)"
                     />
                     <div v-if="errors.code" class="invalid-feedback">
                       {{ errors.code }}
@@ -112,7 +110,6 @@
                   class="form-control"
                   :class="{ 'is-invalid': errors.description }"
                   rows="4"
-                  placeholder="Enter subcategory description"
                 ></textarea>
                 <div v-if="errors.description" class="invalid-feedback">
                   {{ errors.description }}
@@ -129,7 +126,6 @@
                       type="number"
                       class="form-control"
                       :class="{ 'is-invalid': errors.sort_order }"
-                      placeholder="0"
                       min="0"
                     />
                     <div v-if="errors.sort_order" class="invalid-feedback">
@@ -253,7 +249,6 @@ export default {
       try {
         await this.$store.dispatch('generalStore/fetchCategories');
       } catch (error) {
-        console.error('Error loading categories:', error);
         this.$toast.error('Failed to load categories');
       } finally {
         this.loading = false;
@@ -271,8 +266,6 @@ export default {
         // Redirect to the subcategories list
         this.$router.push({ name: 'general-store-subcategories' });
       } catch (error) {
-        console.error('Error creating subcategory:', error);
-
         if (error.response?.data?.errors) {
           this.errors = error.response.data.errors;
         } else {

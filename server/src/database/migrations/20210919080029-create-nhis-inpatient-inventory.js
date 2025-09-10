@@ -74,5 +74,5 @@ module.exports = {
   },
   down: (queryInterface, Sequelize) => {
     return queryInterface.dropTable('Nhis_Inpatient_Inventories');
-  }
+  },
 };

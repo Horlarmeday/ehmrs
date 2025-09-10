@@ -24,7 +24,7 @@ export function validateOrderAdditionalItems(item: any) {
           DrugType.PRIVATE,
           DrugType.RETAINERSHIP
         ),
-        source: Joi.string().valid('Antenatal', 'Consultation', 'Theater'),
+        source: Joi.string().valid('Antenatal', 'Consultation', 'Theater', 'Dialysis'),
         ante_natal_id: Joi.number()
           .allow('')
           .optional(),

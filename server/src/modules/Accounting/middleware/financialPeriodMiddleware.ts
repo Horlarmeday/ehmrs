@@ -28,7 +28,7 @@ export const enforceFinancialPeriodRestrictions = async (
 
     // Get transaction date from request body or use current date
     let transactionDate: Date;
-    
+
     // Check for actual fields that exist in the DTOs
     if (req.body.start_date) {
       transactionDate = new Date(req.body.start_date);
@@ -60,17 +60,19 @@ export const enforceFinancialPeriodRestrictions = async (
 
     // Add period information to request for downstream use
     (req as any).financialPeriod = validation.period;
-    
+
     next();
   } catch (error) {
     if (error instanceof BadException) {
       next(error);
     } else {
-      next(new BadException(
-        'Financial Period Validation Error',
-        500,
-        `Failed to validate financial period: ${error.message}`
-      ));
+      next(
+        new BadException(
+          'Financial Period Validation Error',
+          500,
+          `Failed to validate financial period: ${error.message}`
+        )
+      );
     }
   }
 };
@@ -85,7 +87,7 @@ export const validateFinancialPeriodAccess = async (
 ): Promise<void> => {
   try {
     const periodId = parseInt(req.params.periodId || req.params.id);
-    
+
     if (!periodId || isNaN(periodId)) {
       return next();
     }
@@ -107,17 +109,19 @@ export const validateFinancialPeriodAccess = async (
 
     // Add validated period to request
     (req as any).validatedPeriod = validation.period;
-    
+
     next();
   } catch (error) {
     if (error instanceof BadException) {
       next(error);
     } else {
-      next(new BadException(
-        'Financial Period Access Validation Error',
-        500,
-        `Failed to validate financial period access: ${error.message}`
-      ));
+      next(
+        new BadException(
+          'Financial Period Access Validation Error',
+          500,
+          `Failed to validate financial period access: ${error.message}`
+        )
+      );
     }
   }
 };
@@ -133,7 +137,7 @@ export const ensureFinancialPeriodsConfigured = async (
   try {
     // Check if there's at least one active financial period
     const currentPeriod = await FinancialPeriodValidationService.getCurrentActivePeriod();
-    
+
     if (!currentPeriod) {
       throw new BadException(
         'Financial Periods Not Configured',
@@ -144,17 +148,19 @@ export const ensureFinancialPeriodsConfigured = async (
 
     // Add current period to request
     (req as any).currentFinancialPeriod = currentPeriod;
-    
+
     next();
   } catch (error) {
     if (error instanceof BadException) {
       next(error);
     } else {
-      next(new BadException(
-        'Financial Period Configuration Check Failed',
-        500,
-        `Failed to check financial period configuration: ${error.message}`
-      ));
+      next(
+        new BadException(
+          'Financial Period Configuration Check Failed',
+          500,
+          `Failed to check financial period configuration: ${error.message}`
+        )
+      );
     }
   }
 };
@@ -170,14 +176,14 @@ function isFinancialEndpoint(path: string, method: string): boolean {
     '/deposits',
     '/journal-entries',
     '/transactions',
-    '/financial-reports'
+    '/financial-reports',
   ];
 
   const financialMethods = ['POST', 'PUT', 'PATCH'];
 
   // Check if path contains financial endpoints
   const isFinancialPath = financialPaths.some(fp => path.includes(fp));
-  
+
   // Check if method modifies financial data
   const isFinancialMethod = financialMethods.includes(method.toUpperCase());
 
@@ -213,21 +219,23 @@ export const logFinancialPeriodViolations = (
 ): void => {
   // Log any period violations for audit trail
   const originalSend = res.send;
-  
+
   res.send = function(data) {
     if (res.statusCode === 403 && data && typeof data === 'string') {
       try {
         const parsedData = JSON.parse(data);
         if (parsedData.message && parsedData.message.includes('Financial Period')) {
-          logger.info(`[FINANCIAL PERIOD VIOLATION] ${req.method} ${req.path} - User: ${req.user.sub} - ${parsedData.message}`);
+          logger.info(
+            `[FINANCIAL PERIOD VIOLATION] ${req.method} ${req.path} - User: ${req.user.sub} - ${parsedData.message}`
+          );
         }
       } catch (e) {
         // Ignore parsing errors
       }
     }
-    
+
     return originalSend.call(this, data);
   };
-  
+
   next();
 };

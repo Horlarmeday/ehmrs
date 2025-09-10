@@ -3,10 +3,10 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     const transaction = await queryInterface.sequelize.transaction();
-    
+
     try {
       console.log('Starting data integrity validation...');
-      
+
       // Step 1: Validate PharmacyStore consolidation
       const duplicateCheck = await queryInterface.sequelize.query(
         `SELECT 
@@ -20,7 +20,7 @@ module.exports = {
         HAVING COUNT(*) > 1`,
         { type: Sequelize.QueryTypes.SELECT, transaction }
       );
-      
+
       if (duplicateCheck.length > 0) {
         console.warn(`⚠️  Found ${duplicateCheck.length} duplicate entries that need attention:`);
         duplicateCheck.forEach(dup => {
@@ -29,7 +29,7 @@ module.exports = {
       } else {
         console.log('✅ No duplicate PharmacyStore entries found');
       }
-      
+
       // Step 2: Validate HMO pricing coverage
       const hmoDrugCoverage = await queryInterface.sequelize.query(
         `SELECT 
@@ -41,7 +41,7 @@ module.exports = {
         WHERE d.status = 'Active'`,
         { type: Sequelize.QueryTypes.SELECT, transaction }
       );
-      
+
       const hmoTestCoverage = await queryInterface.sequelize.query(
         `SELECT 
           COUNT(DISTINCT t.id) as total_tests,
@@ -52,7 +52,7 @@ module.exports = {
         WHERE t.status = 'Active'`,
         { type: Sequelize.QueryTypes.SELECT, transaction }
       );
-      
+
       const hmoServiceCoverage = await queryInterface.sequelize.query(
         `SELECT 
           COUNT(DISTINCT s.id) as total_services,
@@ -63,7 +63,7 @@ module.exports = {
         WHERE s.status = 'Active'`,
         { type: Sequelize.QueryTypes.SELECT, transaction }
       );
-      
+
       const hmoInvestigationCoverage = await queryInterface.sequelize.query(
         `SELECT 
           COUNT(DISTINCT i.id) as total_investigations,
@@ -74,13 +74,21 @@ module.exports = {
         WHERE i.status = 'Active'`,
         { type: Sequelize.QueryTypes.SELECT, transaction }
       );
-      
+
       console.log('📊 HMO Pricing Coverage Summary:');
-      console.log(`   Drugs: ${hmoDrugCoverage[0].covered_drugs}/${hmoDrugCoverage[0].total_drugs} covered`);
-      console.log(`   Tests: ${hmoTestCoverage[0].covered_tests}/${hmoTestCoverage[0].total_tests} covered`);
-      console.log(`   Services: ${hmoServiceCoverage[0].covered_services}/${hmoServiceCoverage[0].total_services} covered`);
-      console.log(`   Investigations: ${hmoInvestigationCoverage[0].covered_investigations}/${hmoInvestigationCoverage[0].total_investigations} covered`);
-      
+      console.log(
+        `   Drugs: ${hmoDrugCoverage[0].covered_drugs}/${hmoDrugCoverage[0].total_drugs} covered`
+      );
+      console.log(
+        `   Tests: ${hmoTestCoverage[0].covered_tests}/${hmoTestCoverage[0].total_tests} covered`
+      );
+      console.log(
+        `   Services: ${hmoServiceCoverage[0].covered_services}/${hmoServiceCoverage[0].total_services} covered`
+      );
+      console.log(
+        `   Investigations: ${hmoInvestigationCoverage[0].covered_investigations}/${hmoInvestigationCoverage[0].total_investigations} covered`
+      );
+
       // Step 3: Validate foreign key relationships
       const orphanedInventoryItems = await queryInterface.sequelize.query(
         `SELECT COUNT(*) as count
@@ -89,13 +97,13 @@ module.exports = {
          WHERE ii.pharmacy_store_id IS NOT NULL AND psi.id IS NULL`,
         { type: Sequelize.QueryTypes.SELECT, transaction }
       );
-      
+
       if (orphanedInventoryItems[0].count > 0) {
         console.warn(`⚠️  Found ${orphanedInventoryItems[0].count} orphaned InventoryItems`);
       } else {
         console.log('✅ All InventoryItems have valid PharmacyStore references');
       }
-      
+
       // Step 4: Validate insurance coverage
       const insuranceCoverage = await queryInterface.sequelize.query(
         `SELECT 
@@ -113,12 +121,14 @@ module.exports = {
         GROUP BY i.id, i.name`,
         { type: Sequelize.QueryTypes.SELECT, transaction }
       );
-      
+
       console.log('🏥 Insurance Coverage Summary:');
       insuranceCoverage.forEach(insurance => {
-        console.log(`   ${insurance.insurance_name}: ${insurance.drugs_covered} drugs, ${insurance.tests_covered} tests, ${insurance.services_covered} services, ${insurance.investigations_covered} investigations`);
+        console.log(
+          `   ${insurance.insurance_name}: ${insurance.drugs_covered} drugs, ${insurance.tests_covered} tests, ${insurance.services_covered} services, ${insurance.investigations_covered} investigations`
+        );
       });
-      
+
       // Step 5: Check for missing procurement_order_id in PharmacyStore
       const missingProcurementOrders = await queryInterface.sequelize.query(
         `SELECT COUNT(*) as count
@@ -126,9 +136,11 @@ module.exports = {
          WHERE procurement_order_id IS NULL`,
         { type: Sequelize.QueryTypes.SELECT, transaction }
       );
-      
-      console.log(`📦 PharmacyStore items without procurement orders: ${missingProcurementOrders[0].count}`);
-      
+
+      console.log(
+        `📦 PharmacyStore items without procurement orders: ${missingProcurementOrders[0].count}`
+      );
+
       // Step 6: Generate summary report
       const summary = {
         timestamp: new Date().toISOString(),
@@ -143,59 +155,69 @@ module.exports = {
         insurance_coverage: insuranceCoverage.length,
         missing_procurement_orders: missingProcurementOrders[0].count,
       };
-      
+
       console.log('📋 Data Integrity Validation Summary:');
       console.log(JSON.stringify(summary, null, 2));
-      
+
       // Step 7: Create validation log table
-      await queryInterface.createTable('Migration_Validation_Log', {
-        id: {
-          type: Sequelize.INTEGER,
-          primaryKey: true,
-          autoIncrement: true,
-          allowNull: false,
+      await queryInterface.createTable(
+        'Migration_Validation_Log',
+        {
+          id: {
+            type: Sequelize.INTEGER,
+            primaryKey: true,
+            autoIncrement: true,
+            allowNull: false,
+          },
+          migration_name: {
+            type: Sequelize.STRING,
+            allowNull: false,
+          },
+          validation_summary: {
+            type: Sequelize.TEXT,
+            allowNull: false,
+          },
+          status: {
+            type: Sequelize.ENUM('PASSED', 'WARNING', 'FAILED'),
+            defaultValue: 'PASSED',
+          },
+          details: {
+            type: Sequelize.TEXT,
+            allowNull: true,
+          },
+          createdAt: {
+            type: Sequelize.DATE,
+            allowNull: false,
+          },
+          updatedAt: {
+            type: Sequelize.DATE,
+            allowNull: false,
+          },
         },
-        migration_name: {
-          type: Sequelize.STRING,
-          allowNull: false,
-        },
-        validation_summary: {
-          type: Sequelize.TEXT,
-          allowNull: false,
-        },
-        status: {
-          type: Sequelize.ENUM('PASSED', 'WARNING', 'FAILED'),
-          defaultValue: 'PASSED',
-        },
-        details: {
-          type: Sequelize.TEXT,
-          allowNull: true,
-        },
-        createdAt: {
-          type: Sequelize.DATE,
-          allowNull: false,
-        },
-        updatedAt: {
-          type: Sequelize.DATE,
-          allowNull: false,
-        },
-      }, { transaction });
-      
+        { transaction }
+      );
+
       // Step 8: Log validation results
-      const validationStatus = duplicateCheck.length === 0 && orphanedInventoryItems[0].count === 0 ? 'PASSED' : 'WARNING';
-      
-      await queryInterface.bulkInsert('Migration_Validation_Log', [{
-        migration_name: 'Phase 2 Data Migration',
-        validation_summary: JSON.stringify(summary),
-        status: validationStatus,
-        details: `Validation completed with ${duplicateCheck.length} duplicates and ${orphanedInventoryItems[0].count} orphaned items`,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }], { transaction });
-      
+      const validationStatus =
+        duplicateCheck.length === 0 && orphanedInventoryItems[0].count === 0 ? 'PASSED' : 'WARNING';
+
+      await queryInterface.bulkInsert(
+        'Migration_Validation_Log',
+        [
+          {
+            migration_name: 'Phase 2 Data Migration',
+            validation_summary: JSON.stringify(summary),
+            status: validationStatus,
+            details: `Validation completed with ${duplicateCheck.length} duplicates and ${orphanedInventoryItems[0].count} orphaned items`,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ],
+        { transaction }
+      );
+
       await transaction.commit();
       console.log('✅ Data integrity validation completed successfully!');
-      
     } catch (error) {
       await transaction.rollback();
       console.error('❌ Error during data integrity validation:', error);
@@ -205,14 +227,13 @@ module.exports = {
 
   down: async (queryInterface, Sequelize) => {
     const transaction = await queryInterface.sequelize.transaction();
-    
+
     try {
       // Remove validation log table
       await queryInterface.dropTable('Migration_Validation_Log', { transaction });
-      
+
       await transaction.commit();
       console.log('Data integrity validation log removed successfully!');
-      
     } catch (error) {
       await transaction.rollback();
       console.error('Error during rollback:', error);

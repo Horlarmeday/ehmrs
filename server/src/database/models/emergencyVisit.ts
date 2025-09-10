@@ -48,46 +48,46 @@ export enum EmergencyType {
 }
 
 export enum TriageCategory {
-  IMMEDIATE = 'IMMEDIATE',     // Red - Life-threatening
-  EMERGENT = 'EMERGENT',       // Orange - Very urgent
-  URGENT = 'URGENT',           // Yellow - Urgent
+  IMMEDIATE = 'IMMEDIATE', // Red - Life-threatening
+  EMERGENT = 'EMERGENT', // Orange - Very urgent
+  URGENT = 'URGENT', // Yellow - Urgent
   LESS_URGENT = 'LESS_URGENT', // Green - Less urgent
-  NON_URGENT = 'NON_URGENT',   // Blue - Non-urgent
+  NON_URGENT = 'NON_URGENT', // Blue - Non-urgent
 }
 
-@Table({ 
-  timestamps: true, 
+@Table({
+  timestamps: true,
   tableName: 'Emergency_Visits',
   indexes: [
     {
       name: 'idx_emergency_visit_patient',
-      fields: ['patient_id']
+      fields: ['patient_id'],
     },
     {
       name: 'idx_emergency_visit_status',
-      fields: ['status']
+      fields: ['status'],
     },
     {
       name: 'idx_emergency_visit_type',
-      fields: ['emergency_type']
+      fields: ['emergency_type'],
     },
     {
       name: 'idx_emergency_visit_triage',
-      fields: ['triage_category']
+      fields: ['triage_category'],
     },
     {
       name: 'idx_emergency_visit_arrival',
-      fields: ['arrival_time']
+      fields: ['arrival_time'],
     },
     {
       name: 'idx_emergency_visit_priority',
-      fields: ['priority_score']
+      fields: ['priority_score'],
     },
     {
       name: 'idx_emergency_visit_composite',
-      fields: ['status', 'triage_category', 'arrival_time']
-    }
-  ]
+      fields: ['status', 'triage_category', 'arrival_time'],
+    },
+  ],
 })
 export class EmergencyVisit extends Model {
   @PrimaryKey

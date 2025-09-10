@@ -3,12 +3,14 @@ import verify from '../../../core/middleware/verify';
 import { RadiologyOrderController } from './radiology-order.controller';
 import patientMustBeDiagnosed from '../../../core/middleware/patientMustBeDiagnosed';
 import { createEncounter } from '../../../core/middleware/createEncounter';
+import checkPatientNotDeceased from '../../../core/middleware/checkPatientNotDeceased';
 
 const router = Router();
 router.post(
   '/create/:id',
   verify,
   patientMustBeDiagnosed,
+  checkPatientNotDeceased,
   createEncounter,
   RadiologyOrderController.orderInvestigationTest
 );

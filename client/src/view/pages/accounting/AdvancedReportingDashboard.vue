@@ -95,15 +95,22 @@
                 <div v-if="profitLossStatement" class="report-content">
                   <div class="metric-row">
                     <span class="metric-label">Total Revenue:</span>
-                    <span class="metric-value text-success">{{ formatCurrency(profitLossStatement.totalRevenue || 0) }}</span>
+                    <span class="metric-value text-success">{{
+                      formatCurrency(profitLossStatement.totalRevenue || 0)
+                    }}</span>
                   </div>
                   <div class="metric-row">
                     <span class="metric-label">Total Expenses:</span>
-                    <span class="metric-value text-danger">{{ formatCurrency(profitLossStatement.totalExpenses || 0) }}</span>
+                    <span class="metric-value text-danger">{{
+                      formatCurrency(profitLossStatement.totalExpenses || 0)
+                    }}</span>
                   </div>
                   <div class="metric-row">
                     <span class="metric-label">Net Income:</span>
-                    <span class="metric-value" :class="getNetIncomeClass(profitLossStatement.netIncome)">
+                    <span
+                      class="metric-value"
+                      :class="getNetIncomeClass(profitLossStatement.netIncome)"
+                    >
                       {{ formatCurrency(profitLossStatement.netIncome || 0) }}
                     </span>
                   </div>
@@ -125,15 +132,21 @@
                 <div v-if="balanceSheet" class="report-content">
                   <div class="metric-row">
                     <span class="metric-label">Total Assets:</span>
-                    <span class="metric-value text-success">{{ formatCurrency(balanceSheet.totalAssets || 0) }}</span>
+                    <span class="metric-value text-success">{{
+                      formatCurrency(balanceSheet.totalAssets || 0)
+                    }}</span>
                   </div>
                   <div class="metric-row">
                     <span class="metric-label">Total Liabilities:</span>
-                    <span class="metric-value text-danger">{{ formatCurrency(balanceSheet.totalLiabilities || 0) }}</span>
+                    <span class="metric-value text-danger">{{
+                      formatCurrency(balanceSheet.totalLiabilities || 0)
+                    }}</span>
                   </div>
                   <div class="metric-row">
                     <span class="metric-label">Total Equity:</span>
-                    <span class="metric-value text-info">{{ formatCurrency(balanceSheet.totalEquity || 0) }}</span>
+                    <span class="metric-value text-info">{{
+                      formatCurrency(balanceSheet.totalEquity || 0)
+                    }}</span>
                   </div>
                 </div>
                 <div v-else class="text-muted">Click refresh to load data</div>
@@ -162,15 +175,21 @@
                 <div v-if="operationalPerformance" class="report-content">
                   <div class="metric-row">
                     <span class="metric-label">Success Rate:</span>
-                    <span class="metric-value text-success">{{ (operationalPerformance.successRate || 0).toFixed(1) }}%</span>
+                    <span class="metric-value text-success"
+                      >{{ (operationalPerformance.successRate || 0).toFixed(1) }}%</span
+                    >
                   </div>
                   <div class="metric-row">
                     <span class="metric-label">Avg Processing Time:</span>
-                    <span class="metric-value">{{ operationalPerformance.avgProcessingTime || 0 }}s</span>
+                    <span class="metric-value"
+                      >{{ operationalPerformance.avgProcessingTime || 0 }}s</span
+                    >
                   </div>
                   <div class="metric-row">
                     <span class="metric-label">Total Transactions:</span>
-                    <span class="metric-value">{{ operationalPerformance.totalTransactions || 0 }}</span>
+                    <span class="metric-value">{{
+                      operationalPerformance.totalTransactions || 0
+                    }}</span>
                   </div>
                 </div>
                 <div v-else class="text-muted">Click refresh to load data</div>
@@ -188,7 +207,11 @@
               </div>
               <div class="card-body">
                 <div v-if="paymentMethodUtilization" class="report-content">
-                  <div v-for="method in paymentMethodUtilization.topMethods" :key="method.method" class="metric-row">
+                  <div
+                    v-for="method in paymentMethodUtilization.topMethods"
+                    :key="method.method"
+                    class="metric-row"
+                  >
                     <span class="metric-label">{{ method.method }}:</span>
                     <span class="metric-value">{{ (method.percentage || 0).toFixed(1) }}%</span>
                   </div>
@@ -219,7 +242,10 @@
                 <div v-if="paymentTrendAnalysis" class="report-content">
                   <div class="metric-row">
                     <span class="metric-label">Growth Rate:</span>
-                    <span class="metric-value" :class="getGrowthClass(paymentTrendAnalysis.growthRate)">
+                    <span
+                      class="metric-value"
+                      :class="getGrowthClass(paymentTrendAnalysis.growthRate)"
+                    >
                       {{ (paymentTrendAnalysis.growthRate || 0).toFixed(1) }}%
                     </span>
                   </div>
@@ -229,7 +255,9 @@
                   </div>
                   <div class="metric-row">
                     <span class="metric-label">Seasonal Pattern:</span>
-                    <span class="metric-value">{{ paymentTrendAnalysis.seasonalPattern || 'N/A' }}</span>
+                    <span class="metric-value">{{
+                      paymentTrendAnalysis.seasonalPattern || 'N/A'
+                    }}</span>
                   </div>
                 </div>
                 <div v-else class="text-muted">Click refresh to load data</div>
@@ -249,11 +277,15 @@
                 <div v-if="predictiveAnalytics" class="report-content">
                   <div class="metric-row">
                     <span class="metric-label">Next Month Forecast:</span>
-                    <span class="metric-value text-primary">{{ formatCurrency(predictiveAnalytics.nextMonthForecast || 0) }}</span>
+                    <span class="metric-value text-primary">{{
+                      formatCurrency(predictiveAnalytics.nextMonthForecast || 0)
+                    }}</span>
                   </div>
                   <div class="metric-row">
                     <span class="metric-label">Confidence Level:</span>
-                    <span class="metric-value">{{ (predictiveAnalytics.confidenceLevel || 0).toFixed(1) }}%</span>
+                    <span class="metric-value"
+                      >{{ (predictiveAnalytics.confidenceLevel || 0).toFixed(1) }}%</span
+                    >
                   </div>
                   <div class="metric-row">
                     <span class="metric-label">Risk Assessment:</span>
@@ -283,7 +315,7 @@ export default {
         startDate: '',
         endDate: '',
         department: '',
-        reportType: 'comprehensive'
+        reportType: 'comprehensive',
       },
       departmentOptions: [
         { value: '', text: 'All Departments' },
@@ -291,14 +323,14 @@ export default {
         { value: 'laboratory', text: 'Laboratory' },
         { value: 'radiology', text: 'Radiology' },
         { value: 'services', text: 'Services' },
-        { value: 'consultation', text: 'Consultation' }
+        { value: 'consultation', text: 'Consultation' },
       ],
       reportTypeOptions: [
         { value: 'comprehensive', text: 'Comprehensive' },
         { value: 'financial', text: 'Financial Only' },
         { value: 'operational', text: 'Operational Only' },
-        { value: 'business-intelligence', text: 'Business Intelligence Only' }
-      ]
+        { value: 'business-intelligence', text: 'Business Intelligence Only' },
+      ],
     };
   },
   computed: {
@@ -309,7 +341,7 @@ export default {
       'getOperationalPerformanceReport',
       'getPaymentMethodUtilization',
       'getPaymentTrendAnalysis',
-      'getPredictiveAnalytics'
+      'getPredictiveAnalytics',
     ]),
     profitLossStatement() {
       return this.getProfitLossStatement;
@@ -328,7 +360,7 @@ export default {
     },
     predictiveAnalytics() {
       return this.getPredictiveAnalytics;
-    }
+    },
   },
   methods: {
     ...mapActions('accounting', [
@@ -337,9 +369,9 @@ export default {
       'fetchOperationalPerformanceReport',
       'fetchPaymentMethodUtilization',
       'fetchPaymentTrendAnalysis',
-      'fetchPredictiveAnalytics'
+      'fetchPredictiveAnalytics',
     ]),
-    
+
     setDefaultDates() {
       const endDate = new Date();
       const startDate = new Date();
@@ -357,7 +389,7 @@ export default {
           this.loadOperationalPerformance(),
           this.loadPaymentMethodUtilization(),
           this.loadPaymentTrendAnalysis(),
-          this.loadPredictiveAnalytics()
+          this.loadPredictiveAnalytics(),
         ]);
       } catch (error) {
         console.error('Failed to load reports:', error);
@@ -433,7 +465,7 @@ export default {
     formatCurrency(amount) {
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency: 'USD'
+        currency: 'USD',
       }).format(amount);
     },
 
@@ -447,17 +479,17 @@ export default {
 
     getRiskClass(riskLevel) {
       const riskClasses = {
-        'LOW': 'text-success',
-        'MEDIUM': 'text-warning',
-        'HIGH': 'text-danger'
+        LOW: 'text-success',
+        MEDIUM: 'text-warning',
+        HIGH: 'text-danger',
       };
       return riskClasses[riskLevel] || 'text-muted';
-    }
+    },
   },
   async mounted() {
     this.setDefaultDates();
     await this.loadAllReports();
-  }
+  },
 };
 </script>
 

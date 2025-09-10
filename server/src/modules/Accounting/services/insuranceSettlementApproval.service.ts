@@ -1,15 +1,13 @@
 import { Transaction } from 'sequelize';
 import { BadException } from '../../../common/util/api-error';
-import { 
+import {
   Staff,
   InsuranceClaim,
   ClinicalPayment,
   JournalEntry,
-  JournalEntryLine
+  JournalEntryLine,
 } from '../../../database/models';
-import { 
-  JournalEntryStatus
-} from '../enums';
+import { JournalEntryStatus } from '../enums';
 import { logger } from '../../../core/helpers/logger';
 
 // ===== INSURANCE SETTLEMENT APPROVAL INTERFACES =====
@@ -48,7 +46,7 @@ export interface InsuranceApprovalStep {
 
 /**
  * Insurance Settlement Approval Service
- * 
+ *
  * This service handles the approval workflow for insurance claim settlements including:
  * - Multi-stage approval process
  * - Claim validation and verification
@@ -57,7 +55,6 @@ export interface InsuranceApprovalStep {
  * - Journal entry creation upon approval
  */
 export class InsuranceSettlementApprovalService {
-
   // ===== APPROVAL WORKFLOW MANAGEMENT =====
 
   /**
@@ -71,14 +68,20 @@ export class InsuranceSettlementApprovalService {
       // Validate claim exists
       const claim = await InsuranceClaim.findOne({
         where: { claim_reference: settlementData.claim_reference },
-        include: [{
-          model: ClinicalPayment,
-          as: 'payment',
-        }],
+        include: [
+          {
+            model: ClinicalPayment,
+            as: 'payment',
+          },
+        ],
       });
 
       if (!claim) {
-        throw new BadException('Insurance Claim Not Found', 404, 'The specified insurance claim does not exist');
+        throw new BadException(
+          'Insurance Claim Not Found',
+          404,
+          'The specified insurance claim does not exist'
+        );
       }
 
       // Validate claim status
@@ -97,14 +100,16 @@ export class InsuranceSettlementApprovalService {
         settlement_id: settlementData.settlement_id,
         claim_reference: settlementData.claim_reference,
         current_status: 'PENDING_APPROVAL',
-        approval_history: [{
-          step: 1,
-          action: 'SUBMITTED',
-          staff_id: settlementData.approved_by,
-          staff_name: await this.getStaffName(settlementData.approved_by),
-          timestamp: new Date(),
-          notes: 'Insurance settlement submitted for approval',
-        }],
+        approval_history: [
+          {
+            step: 1,
+            action: 'SUBMITTED',
+            staff_id: settlementData.approved_by,
+            staff_name: await this.getStaffName(settlementData.approved_by),
+            timestamp: new Date(),
+            notes: 'Insurance settlement submitted for approval',
+          },
+        ],
         can_approve: true,
         can_reject: true,
         can_post: false,
@@ -112,10 +117,14 @@ export class InsuranceSettlementApprovalService {
       };
 
       // Log submission
-      await this.logApprovalAction(workflow, 'SUBMITTED', settlementData.approved_by, 'Insurance settlement submitted for approval');
+      await this.logApprovalAction(
+        workflow,
+        'SUBMITTED',
+        settlementData.approved_by,
+        'Insurance settlement submitted for approval'
+      );
 
       return workflow;
-
     } catch (error) {
       logger.error('Insurance settlement submission failed:', error);
       throw new BadException(
@@ -168,10 +177,14 @@ export class InsuranceSettlementApprovalService {
       workflow.can_post = true;
 
       // Log approval
-      await this.logApprovalAction(workflow, 'APPROVED', staffId, approvalNotes || 'Insurance settlement approved');
+      await this.logApprovalAction(
+        workflow,
+        'APPROVED',
+        staffId,
+        approvalNotes || 'Insurance settlement approved'
+      );
 
       return workflow;
-
     } catch (error) {
       logger.error('Insurance settlement approval failed:', error);
       throw new BadException(
@@ -224,7 +237,6 @@ export class InsuranceSettlementApprovalService {
       await this.logApprovalAction(workflow, 'REJECTED', staffId, rejectionReason);
 
       return workflow;
-
     } catch (error) {
       logger.error('Insurance settlement rejection failed:', error);
       throw new BadException(
@@ -258,7 +270,12 @@ export class InsuranceSettlementApprovalService {
       }
 
       // Create journal entries for settlement
-      await this.createSettlementJournalEntries(settlementId, workflow.claim_reference, staffId, postingNotes);
+      await this.createSettlementJournalEntries(
+        settlementId,
+        workflow.claim_reference,
+        staffId,
+        postingNotes
+      );
 
       // Update workflow status
       workflow.current_status = 'POSTED';
@@ -277,10 +294,14 @@ export class InsuranceSettlementApprovalService {
       workflow.can_post = false;
 
       // Log posting
-      await this.logApprovalAction(workflow, 'POSTED', staffId, postingNotes || 'Insurance settlement posted');
+      await this.logApprovalAction(
+        workflow,
+        'POSTED',
+        staffId,
+        postingNotes || 'Insurance settlement posted'
+      );
 
       return workflow;
-
     } catch (error) {
       logger.error('Insurance settlement posting failed:', error);
       throw new BadException(
@@ -331,7 +352,11 @@ export class InsuranceSettlementApprovalService {
     }
 
     if (claim.claim_status !== 'APPROVED') {
-      throw new BadException('Invalid Claim Status', 400, 'Claim status has changed and is no longer valid for settlement');
+      throw new BadException(
+        'Invalid Claim Status',
+        400,
+        'Claim status has changed and is no longer valid for settlement'
+      );
     }
   }
 
@@ -380,7 +405,9 @@ export class InsuranceSettlementApprovalService {
   /**
    * Get settlement workflow
    */
-  private static async getSettlementWorkflow(settlementId: string): Promise<InsuranceSettlementApprovalWorkflow | null> {
+  private static async getSettlementWorkflow(
+    settlementId: string
+  ): Promise<InsuranceSettlementApprovalWorkflow | null> {
     // In a production system, you would query a workflow table
     // For now, return null to simulate workflow not found
     return null;
@@ -410,7 +437,8 @@ export class InsuranceSettlementApprovalService {
       // Create settlement journal entry
       const journalEntry = await JournalEntry.create({
         reference: `INS-SETTLEMENT-${settlementId}`,
-        description: `Insurance settlement posting for claim ${claimReference}: ${postingNotes || 'Settlement posted'}`,
+        description: `Insurance settlement posting for claim ${claimReference}: ${postingNotes ||
+          'Settlement posted'}`,
         transaction_date: new Date(),
         entry_type: 'INSURANCE_SETTLEMENT_POSTING',
         status: JournalEntryStatus.POSTED,
@@ -440,7 +468,6 @@ export class InsuranceSettlementApprovalService {
       ]);
 
       logger.info(`Journal entries created for insurance settlement posting: ${settlementId}`);
-
     } catch (error) {
       logger.error('Failed to create journal entries for insurance settlement posting:', error);
       throw new BadException(
@@ -524,7 +551,9 @@ export class InsuranceSettlementApprovalService {
   /**
    * Get approval history for insurance settlement
    */
-  static async getInsuranceSettlementApprovalHistory(settlementId: string): Promise<InsuranceApprovalStep[]> {
+  static async getInsuranceSettlementApprovalHistory(
+    settlementId: string
+  ): Promise<InsuranceApprovalStep[]> {
     try {
       // In a production system, you would query approval history
       // For now, return empty array
@@ -542,10 +571,7 @@ export class InsuranceSettlementApprovalService {
   /**
    * Get insurance settlement analytics
    */
-  static async getInsuranceSettlementAnalytics(
-    startDate?: Date,
-    endDate?: Date
-  ): Promise<any> {
+  static async getInsuranceSettlementAnalytics(startDate?: Date, endDate?: Date): Promise<any> {
     try {
       // In a production system, you would query settlement analytics
       // For now, return mock data

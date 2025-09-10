@@ -246,7 +246,14 @@ export const bankAccountFiltersSchema = Joi.object({
     }),
 
   sort: Joi.string()
-    .valid('bank_name', 'account_number', 'account_name', 'current_balance', 'createdAt', 'updatedAt')
+    .valid(
+      'bank_name',
+      'account_number',
+      'account_name',
+      'current_balance',
+      'createdAt',
+      'updatedAt'
+    )
     .optional()
     .default('bank_name')
     .messages({

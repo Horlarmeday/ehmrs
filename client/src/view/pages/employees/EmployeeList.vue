@@ -36,7 +36,7 @@
       <!--begin::Body-->
       <div v-if="employees.length" class="card-body pt-0 pb-3">
         <!--begin::Table-->
-        <div class="table-responsive">
+        <div class="table-responsive employee-table-container">
           <table class="table table-head-custom table-vertical-center table-head-bg">
             <thead>
               <tr class="text-uppercase">
@@ -47,7 +47,7 @@
                 <th style="min-width: 100px">Sub Role</th>
                 <th style="min-width: 100px">status</th>
                 <th style="min-width: 160px">Date</th>
-                <th class="pr-0" style="min-width: 100px">Actions</th>
+                <th class="pr-0" style="min-width: 120px">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -112,7 +112,8 @@
                     toggle-class="btn btn-icon btn-light btn-hover-primary btn-sm"
                     no-caret
                     right
-                    no-flip
+                    boundary="viewport"
+                    offset="0"
                   >
                     <template v-slot:button-content>
                       <i class="ki ki-bold-more-hor"></i>
@@ -179,7 +180,7 @@ export default {
     return {
       search: '',
       currentPage: 1,
-      itemsPerPage: 10,
+      itemsPerPage: 30,
       displayPrompt: false,
       staffToEdit: {},
       ACTIVE: 'Active',
@@ -278,8 +279,8 @@ export default {
         search: this.search,
       });
       this.fetchEmployees({
-        currentPage: this.$route.query.currentPage,
-        itemsPerPage: this.$route.query.itemsPerPage,
+        currentPage: this.$route.query.currentPage || this.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         search: this.$route.query.search || null,
       });
     },
@@ -288,7 +289,9 @@ export default {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
-        search: this.$route.query.search,
+        search: this.$route.query.search || this.search,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
       });
       this.$store.dispatch('employee/fetchEmployees', {
         currentPage: this.$route.query.currentPage,
@@ -306,8 +309,8 @@ export default {
         search: this.$route.query.search,
       });
       this.$store.dispatch('employee/fetchEmployees', {
-        currentPage: this.$route.query.currentPage,
-        itemsPerPage: this.$route.query.itemsPerPage,
+        currentPage: this.$route.query.currentPage || this.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         start: this.$route.query.startDate,
         end: this.$route.query.endDate,
         search: this.$route.query.search,
@@ -328,22 +331,66 @@ export default {
       this.displayPrompt = false;
     },
 
-    fetchEmployees({ currentPage, itemsPerPage, search }) {
+    fetchEmployees({ currentPage, itemsPerPage, search, start, end }) {
       return this.$store.dispatch('employee/fetchEmployees', {
         currentPage,
         itemsPerPage,
         ...(search && { search }),
+        ...(start && end && { start, end }),
       });
     },
   },
   created() {
     this.fetchEmployees({
-      currentPage: this.$route.query.currentPage,
-      itemsPerPage: this.$route.query.itemsPerPage,
-      search: this.$route.query.search,
+      currentPage: this.$route.query.currentPage || this.currentPage,
+      itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+      search: this.$route.query.search || this.search,
+      start: this.$route.query.startDate,
+      end: this.$route.query.endDate,
     });
   },
 };
 </script>
 
-<style></style>
+<style scoped>
+.employee-table-container {
+  position: relative;
+  overflow: visible;
+}
+
+/* Ensure dropdown doesn't cause layout shifts */
+.employee-table-container .dropdown-menu {
+  position: absolute !important;
+  z-index: 1050;
+  min-width: 160px;
+}
+
+/* Fix for single record dropdown positioning */
+.employee-table-container .table tbody tr:last-child .dropdown-menu {
+  right: 0;
+  left: auto;
+  transform: translateX(0);
+}
+
+/* Ensure table doesn't expand when dropdown opens */
+.employee-table-container .table {
+  table-layout: fixed;
+}
+
+/* Actions column should have fixed width */
+.employee-table-container .table th:last-child,
+.employee-table-container .table td:last-child {
+  width: 120px;
+  min-width: 120px;
+  max-width: 120px;
+}
+
+/* Ensure dropdown button doesn't cause overflow */
+.employee-table-container .btn-icon {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+</style>

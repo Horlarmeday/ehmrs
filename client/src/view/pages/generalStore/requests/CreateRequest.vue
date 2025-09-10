@@ -90,7 +90,6 @@
                     type="text"
                     class="form-control"
                     :class="{ 'is-invalid': errors.request_number }"
-                    placeholder="Auto-generated"
                     disabled
                   />
                   <small class="form-text text-muted">
@@ -105,7 +104,6 @@
                     class="form-control"
                     :class="{ 'is-invalid': errors.notes }"
                     rows="3"
-                    placeholder="Any general notes about this request..."
                   ></textarea>
                   <div v-if="errors.notes" class="invalid-feedback d-block">
                     {{ errors.notes }}
@@ -196,7 +194,6 @@
                             step="1"
                             class="form-control"
                             :class="{ 'is-invalid': getItemError(index, 'quantity_requested') }"
-                            placeholder="1"
                             @input="calculateItemCost(index)"
                             required
                           />
@@ -221,7 +218,6 @@
                               min="0"
                               class="form-control"
                               :class="{ 'is-invalid': getItemError(index, 'unit_cost') }"
-                              placeholder="0.00"
                               disabled
                             />
                           </div>
@@ -244,7 +240,6 @@
                               type="number"
                               step="0.01"
                               class="form-control"
-                              placeholder="0.00"
                               disabled
                             />
                           </div>
@@ -257,7 +252,6 @@
                             class="form-control"
                             :class="{ 'is-invalid': getItemError(index, 'notes') }"
                             rows="2"
-                            placeholder="Any specific notes about this item..."
                           ></textarea>
                           <div v-if="getItemError(index, 'notes')" class="invalid-feedback d-block">
                             {{ getItemError(index, 'notes') }}
@@ -489,7 +483,7 @@ export default {
         await this.$store.dispatch('generalStore/fetchItems', { status: 'ACTIVE' });
         this.availableItems = this.$store.state.generalStore.items;
       } catch (error) {
-        console.error('Error loading form data:', error);
+        this.$toast.error('Failed to load form data');
       }
     },
 
@@ -662,7 +656,6 @@ export default {
           this.resetForm();
         }, 2000);
       } catch (error) {
-        console.error('Error creating request:', error);
         this.$toast.error('Failed to create request. Please try again.');
       } finally {
         this.loading = false;

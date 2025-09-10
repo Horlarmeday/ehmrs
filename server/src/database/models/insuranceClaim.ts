@@ -9,6 +9,7 @@ import {
 } from 'sequelize-typescript';
 import { ClinicalPayment } from './clinicalPayment';
 import { Staff } from './staff';
+import { HMOClaimStatus } from '../../modules/Accounting/enums';
 
 @Table({ timestamps: true, tableName: 'insurance_claims' })
 export class InsuranceClaim extends Model {
@@ -76,7 +77,7 @@ export class InsuranceClaim extends Model {
     defaultValue: 'PENDING',
     comment: 'Status of the insurance claim',
   })
-  claim_status: string;
+  claim_status: HMOClaimStatus;
 
   @Column({
     type: DataType.TEXT,

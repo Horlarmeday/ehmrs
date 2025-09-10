@@ -33,6 +33,35 @@
             <date-filter @filterbydate="searchByDate" label="Patient" />
           </div>
         </div>
+        <div class="row">
+          <div class="col-lg-4">
+            <div class="form-group">
+              <label>Filter by Medical Status</label>
+              <select
+                class="form-control"
+                v-model="selectedMedicalStatus"
+                @change="filterByMedicalStatus"
+              >
+                <option value="">All Patients</option>
+                <option value="Inpatient">Inpatient</option>
+                <option value="Outpatient">Outpatient</option>
+                <option value="Deceased">Deceased</option>
+              </select>
+              <span class="form-text text-muted">Filter by patient medical status</span>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="form-group">
+              <label>Sort by</label>
+              <select class="form-control" v-model="selectedSortOption" @change="sortPatients">
+                <option value="createdAt">Registration Date</option>
+                <option value="fullname">Name</option>
+                <option value="patient_status">Medical Status</option>
+                <option value="date_of_death">Death Date</option>
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!--begin::Body-->
@@ -47,16 +76,21 @@
                 <th style="min-width: 100px">
                   <span class="text-primary">Gender</span>
                 </th>
-                <th style="min-width: 100px">Age</th>
+                <!-- <th style="min-width: 100px">Age</th> -->
                 <th style="min-width: 100px">account type</th>
                 <th style="min-width: 160px">Registration Date</th>
                 <th style="min-width: 100px">Status</th>
+                <th style="min-width: 100px">Medical Status</th>
                 <th style="min-width: 160px">Registered By</th>
                 <th class="pr-0 " style="min-width: 70px">Action</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="patient in patients" :key="patient.id">
+              <tr
+                v-for="patient in patients"
+                :key="patient.id"
+                :class="{ 'table-danger': patient.patient_status === 'Deceased' }"
+              >
                 <td class="pl-5">
                   <span
                     v-b-tooltip.hover
@@ -82,11 +116,11 @@
                     {{ patient.gender }}
                   </span>
                 </td>
-                <td>
+                <!-- <td>
                   <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                     {{ patient.date_of_birth | dayjs('from', 'now', true) }}
                   </span>
-                </td>
+                </td> -->
                 <td>
                   <span
                     :class="displayLabel(patient.patient_type)"
@@ -106,30 +140,53 @@
                   }}</span>
                 </td>
                 <td>
+                  <span
+                    :class="getMedicalStatusColor(patient.patient_status)"
+                    class="label label-dot mr-2"
+                  ></span>
+                  <span
+                    :class="getMedicalStatusTextColor(patient.patient_status)"
+                    class="font-weight-bold"
+                    >{{ patient.patient_status }}</span
+                  >
+                  <div
+                    v-if="patient.patient_status === 'Deceased' && patient.date_of_death"
+                    class="text-muted small"
+                  >
+                    Died: {{ formatDate(patient.date_of_death) }}
+                  </div>
+                </td>
+                <td>
                   <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{
-                    patient?.staff?.fullname
+                    patient?.staff?.fullname || patient?.updatedBy?.fullname || 'Unknown'
                   }}</span>
                 </td>
                 <td class="pr-0">
                   <router-link
                     :class="{
                       disabled:
-                        !allowedRoles.includes(currentUser.role) || patient.status !== ACTIVE,
+                        !allowedRoles.includes(currentUser.role) ||
+                        patient.status !== ACTIVE ||
+                        patient.patient_status === 'Deceased',
                     }"
-                    title="Start a Visit"
+                    :title="
+                      patient.patient_status === 'Deceased'
+                        ? 'Cannot start visit for deceased patient'
+                        : 'Start a Visit'
+                    "
                     :to="`/visit/new/${patient.id}`"
                     class="btn btn-icon btn-light btn-hover-primary btn-sm mx-2"
                     v-b-tooltip.hover
                   >
                     <arrow-right-icon />
                   </router-link>
-                  <a
+                  <!-- <a
                     v-if="deactivateUserAllowedRoles.includes(currentUser.role)"
                     @click.stop="showConfirmAlert(patient)"
                     href="#"
                     class="btn btn-icon btn-light btn-hover-primary btn-sm"
                     ><dish-icon
-                  /></a>
+                  /></a> -->
                 </td>
               </tr>
             </tbody>
@@ -162,7 +219,7 @@ import CreateVisit from '../../visits/create/CreateVisit-Deprecated.vue';
 import { getPatientDotStatus, parseJwt, setUrlQueryParams } from '@/common/common';
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
 import dayjs from 'dayjs';
-import DishIcon from '@/assets/icons/DishIcon.vue';
+// import DishIcon from '@/assets/icons/DishIcon.vue';
 import Swal from 'sweetalert2';
 export default {
   data() {
@@ -176,13 +233,15 @@ export default {
       itemsPerPage: 10,
       ACTIVE: 'active',
       isDisabled: false,
+      selectedMedicalStatus: '',
+      selectedSortOption: 'createdAt',
       allowedRoles: ['Super Admin', 'Medical Records', 'Admin'],
       deactivateUserAllowedRoles: ['Super Admin', 'Admin'],
       currentUser: parseJwt(localStorage.getItem('user_token')),
     };
   },
   components: {
-    DishIcon,
+    //DishIcon,
     ArrowRightIcon,
     CreateVisit,
     Pagination,
@@ -300,12 +359,14 @@ export default {
       });
     },
 
-    fetchPatients({ currentPage, itemsPerPage, search, start, end }) {
+    fetchPatients({ currentPage, itemsPerPage, search, start, end, patient_status, sortBy }) {
       return this.$store.dispatch('patient/fetchPatients', {
         currentPage,
         itemsPerPage,
         ...(search && { search }),
         ...(start && end && { start, end }),
+        ...(patient_status && { patient_status }),
+        ...(sortBy && { sortBy }),
       });
     },
 
@@ -321,6 +382,63 @@ export default {
       if (status === 'inactive') return 'text-warning';
       if (status === 'banned') return 'text-danger';
       return 'text-info';
+    },
+
+    getMedicalStatusColor(patientStatus) {
+      if (patientStatus === 'Inpatient') return 'label-info';
+      if (patientStatus === 'Outpatient') return 'label-primary';
+      if (patientStatus === 'Deceased') return 'label-danger';
+      return 'label-secondary';
+    },
+
+    getMedicalStatusTextColor(patientStatus) {
+      if (patientStatus === 'Inpatient') return 'text-info';
+      if (patientStatus === 'Outpatient') return 'text-primary';
+      if (patientStatus === 'Deceased') return 'text-danger';
+      return 'text-secondary';
+    },
+
+    formatDate(date) {
+      if (!date) return 'N/A';
+      return new Date(date).toLocaleDateString();
+    },
+
+    filterByMedicalStatus() {
+      // Filter patients by medical status
+      if (this.selectedMedicalStatus) {
+        this.$store.dispatch('patient/fetchPatients', {
+          currentPage: 1,
+          itemsPerPage: this.itemsPerPage,
+          patient_status: this.selectedMedicalStatus,
+          search: this.patient_name || null,
+          start: this.start,
+          end: this.end,
+          sortBy: this.selectedSortOption,
+        });
+      } else {
+        // Show all patients
+        this.fetchPatients({
+          currentPage: 1,
+          itemsPerPage: this.itemsPerPage,
+          search: this.patient_name || null,
+          start: this.start,
+          end: this.end,
+          sortBy: this.selectedSortOption,
+        });
+      }
+    },
+
+    sortPatients() {
+      // Re-fetch patients with new sorting
+      this.fetchPatients({
+        currentPage: 1,
+        itemsPerPage: this.itemsPerPage,
+        search: this.patient_name || null,
+        start: this.start,
+        end: this.end,
+        sortBy: this.selectedSortOption,
+        patient_status: this.selectedMedicalStatus || null,
+      });
     },
 
     showConfirmAlert(patient) {

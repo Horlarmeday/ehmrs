@@ -36,7 +36,11 @@ router.post('/time-block/create', verify, AppointmentController.createTimeBlock)
 router.post('/waitlist/add', verify, AppointmentController.addToWaitlist);
 router.post('/schedule-template/create', verify, AppointmentController.createScheduleTemplate);
 router.post('/schedule-template/apply', verify, AppointmentController.applyScheduleTemplate);
-router.get('/doctor/:doctorId/schedule-overview', verify, AppointmentController.getScheduleOverview);
+router.get(
+  '/doctor/:doctorId/schedule-overview',
+  verify,
+  AppointmentController.getScheduleOverview
+);
 router.get('/waitlist/check-slots', verify, AppointmentController.checkWaitlistSlots);
 
 export default router;

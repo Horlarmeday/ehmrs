@@ -79,7 +79,6 @@
                     min="0"
                     class="form-control"
                     :class="{ 'is-invalid': errors.current_stock }"
-                    placeholder="0.00"
                     required
                   />
                   <div v-if="errors.current_stock" class="invalid-feedback d-block">
@@ -98,7 +97,6 @@
                     step="0.01"
                     class="form-control"
                     disabled
-                    placeholder="0.00"
                   />
                   <small class="form-text text-muted">
                     Current stock in the system (read-only)
@@ -113,7 +111,6 @@
                     step="0.01"
                     class="form-control"
                     :class="{ 'is-invalid': errors.adjustment_quantity }"
-                    placeholder="0.00"
                     disabled
                   />
                   <div v-if="errors.adjustment_quantity" class="invalid-feedback d-block">
@@ -137,7 +134,6 @@
                       min="0"
                       class="form-control"
                       :class="{ 'is-invalid': errors.unit_cost }"
-                      placeholder="0.00"
                     />
                   </div>
                   <div v-if="errors.unit_cost" class="invalid-feedback d-block">
@@ -155,7 +151,6 @@
                     type="text"
                     class="form-control"
                     :class="{ 'is-invalid': errors.location }"
-                    placeholder="e.g., Warehouse A, Room 101"
                   />
                   <div v-if="errors.location" class="invalid-feedback d-block">
                     {{ errors.location }}
@@ -189,7 +184,6 @@
                     class="form-control"
                     :class="{ 'is-invalid': errors.reason }"
                     rows="3"
-                    placeholder="Detailed explanation of why this adjustment is necessary..."
                     required
                   ></textarea>
                   <div v-if="errors.reason" class="invalid-feedback d-block">
@@ -207,7 +201,6 @@
                     class="form-control"
                     :class="{ 'is-invalid': errors.notes }"
                     rows="2"
-                    placeholder="Any additional information or supporting details..."
                   ></textarea>
                   <div v-if="errors.notes" class="invalid-feedback d-block">
                     {{ errors.notes }}
@@ -514,7 +507,7 @@ export default {
         await this.$store.dispatch('generalStore/fetchItems', { status: 'ACTIVE' });
         this.availableItems = this.$store.state.generalStore.items;
       } catch (error) {
-        console.error('Error loading form data:', error);
+        this.$toast.error('Failed to load form data');
       }
     },
 
@@ -738,7 +731,6 @@ export default {
           this.resetForm();
         }, 2000);
       } catch (error) {
-        console.error('Error processing adjustment:', error);
         this.$toast.error('Failed to process adjustment. Please try again.');
       } finally {
         this.loading = false;

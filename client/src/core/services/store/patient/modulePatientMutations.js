@@ -23,6 +23,10 @@ export default {
     state.patientProfile = patient;
   },
 
+  UPDATE_PATIENT_PROFILE(state, patient) {
+    state.patientProfile = patient;
+  },
+
   SET_CURRENT_PATIENT(state, patient) {
     state.currentPatient = patient;
   },
@@ -47,4 +51,32 @@ export default {
 
   // eslint-disable-next-line no-unused-vars
   DOWNLOAD_HOSPITAL_CARD(state, patient) {},
+
+  /**
+   * DEATH STATISTICS AND REPORTING
+   */
+  SET_DEATH_STATISTICS(state, statistics) {
+    state.deathStatistics = statistics;
+  },
+
+  SET_MORTALITY_REPORTS(state, reports) {
+    state.mortalityReports = reports;
+  },
+
+  SET_DEATH_CERTIFICATE_TRACKING(state, tracking) {
+    state.deathCertificateTracking = tracking;
+  },
+
+  // Certificate verification mutations
+  SET_CERTIFICATE_VERIFICATION(state, data) {
+    state.certificateVerification = data;
+  },
+
+  SET_ALL_SIGNATURES(state, data) {
+    state.allSignatures = data.signatures || [];
+  },
+
+  SET_MISSING_DEATH_CERTIFICATE_NUMBERS(state, data) {
+    state.missingDeathCertificateNumbers = data;
+  },
 };

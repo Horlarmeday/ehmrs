@@ -138,7 +138,6 @@ export class Appointment extends Model {
   })
   status: AppointmentStatus;
 
-
   @Column({
     type: DataType.STRING,
     allowNull: false,

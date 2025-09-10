@@ -11,7 +11,7 @@
               </div>
               <div class="col-auto">
                 <router-link
-                  :to="{ name: 'general-store-request-details', params: { id: request.id } }"
+                  :to="{ name: 'general-store-request-details', params: { id: $route.params.id } }"
                   class="btn btn-secondary"
                 >
                   <i class="fas fa-arrow-left"></i> Back to Details
@@ -20,7 +20,7 @@
             </div>
           </div>
           <div class="card-body">
-            <div v-if="loading" class="text-center py-5">
+            <div v-if="isLoading" class="text-center py-5">
               <div class="spinner-border text-primary" role="status">
                 <span class="sr-only">Loading...</span>
               </div>
@@ -68,7 +68,6 @@
                             type="number"
                             class="form-control"
                             :class="{ 'is-invalid': getItemError(index, 'quantity') }"
-                            placeholder="Quantity"
                             min="1"
                             required
                           />
@@ -90,7 +89,6 @@
                             v-model="item.notes"
                             type="text"
                             class="form-control"
-                            placeholder="Item notes"
                           />
                         </td>
                         <td>
@@ -143,7 +141,6 @@
                       type="text"
                       class="form-control"
                       :class="{ 'is-invalid': errors.requested_by }"
-                      placeholder="Enter requester name"
                       required
                     />
                     <div v-if="errors.requested_by" class="invalid-feedback">
@@ -198,7 +195,6 @@
                   class="form-control"
                   :class="{ 'is-invalid': errors.purpose }"
                   rows="3"
-                  placeholder="Explain the purpose of this request"
                 ></textarea>
                 <div v-if="errors.purpose" class="invalid-feedback">
                   {{ errors.purpose }}
@@ -213,7 +209,6 @@
                   class="form-control"
                   :class="{ 'is-invalid': errors.notes }"
                   rows="3"
-                  placeholder="Any additional notes or comments"
                 ></textarea>
                 <div v-if="errors.notes" class="invalid-feedback">
                   {{ errors.notes }}
@@ -229,7 +224,7 @@
                   {{ submitting ? 'Updating...' : 'Update Request' }}
                 </button>
                 <router-link
-                  :to="{ name: 'general-store-request-details', params: { id: request.id } }"
+                  :to="{ name: 'general-store-request-details', params: { id: $route.params.id } }"
                   class="btn btn-secondary ml-2"
                 >
                   Cancel
@@ -244,15 +239,13 @@
 </template>
 
 <script>
-import axios from '@/axios';
+// import axios from '@/axios';
+import { mapActions, mapState } from 'vuex';
 
 export default {
   name: 'EditRequest',
   data() {
     return {
-      request: {},
-      items: [],
-      departments: [],
       form: {
         items: [
           {
@@ -269,65 +262,70 @@ export default {
         purpose: '',
         notes: '',
       },
-      loading: true,
       submitting: false,
       errors: {},
     };
   },
+  computed: {
+    ...mapState('generalStore', {
+      items: state => state.items,
+      currentRequest: state => state.currentRequest,
+      generalError: state => state.error,
+      generalLoading: state => state.loading,
+    }),
+    ...mapState('model', {
+      departments: state => state.departments,
+    }),
+    isLoading() {
+      return this.generalLoading;
+    },
+    request() {
+      return this.currentRequest || {};
+    },
+  },
   async mounted() {
-    await this.loadItems();
-    await this.loadDepartments();
-    await this.loadRequest();
+    try {
+      // Load items (general store)
+      await this.fetchItems({ limit: 200 });
+
+      // Load departments via model module (account module deprecated)
+      await this.fetchDepartments({ currentPage: 1, itemsPerPage: 1000, search: '' });
+
+      // Load request details and populate form
+      await this.fetchRequestById(this.$route.params.id);
+      const req = this.currentRequest || {};
+      this.form = {
+        items:
+          req.items && Array.isArray(req.items) && req.items.length
+            ? req.items.map(i => ({
+                item_id: i.item_id || i.id || '',
+                quantity: i.quantity || 1,
+                priority: i.priority || 'medium',
+                notes: i.notes || '',
+              }))
+            : [
+                {
+                  item_id: '',
+                  quantity: 1,
+                  priority: 'medium',
+                  notes: '',
+                },
+              ],
+        department_id: req.department_id || '',
+        requested_by: req.requested_by || '',
+        priority: req.priority || 'medium',
+        expected_date: req.expected_date || '',
+        purpose: req.purpose || '',
+        notes: req.notes || '',
+      };
+    } catch (error) {
+      this.$toast && this.$toast.error('Failed to initialize edit form');
+    }
   },
   methods: {
-    async loadItems() {
-      try {
-        const response = await axios.get('/general-store/items', { params: { limit: 200 } });
-        this.items = response.data.data || [];
-      } catch (error) {
-        console.error('Error loading items:', error);
-        this.$toast.error('Failed to load items');
-      }
-    },
-    async loadDepartments() {
-      try {
-        const response = await axios.get('/departments');
-        this.departments = response.data.data || [];
-      } catch (error) {
-        console.error('Error loading departments:', error);
-        this.$toast.error('Failed to load departments');
-      }
-    },
-    async loadRequest() {
-      try {
-        const response = await axios.get(`/general-store/requests/${this.$route.params.id}`);
-        this.request = response.data.data || {};
+    ...mapActions('generalStore', ['fetchItems', 'fetchRequestById', 'updateRequest']),
+    ...mapActions('model', ['fetchDepartments']),
 
-        // Populate form with existing data
-        this.form = {
-          items: this.request.items || [
-            {
-              item_id: '',
-              quantity: 1,
-              priority: 'medium',
-              notes: '',
-            },
-          ],
-          department_id: this.request.department_id || '',
-          requested_by: this.request.requested_by || '',
-          priority: this.request.priority || 'medium',
-          expected_date: this.request.expected_date || '',
-          purpose: this.request.purpose || '',
-          notes: this.request.notes || '',
-        };
-      } catch (error) {
-        console.error('Error loading request:', error);
-        this.$toast.error('Failed to load request');
-        this.error = 'Failed to load request';
-      } finally {
-        this.loading = false;
-      }
-    },
     addItem() {
       this.form.items.push({
         item_id: '',
@@ -349,9 +347,9 @@ export default {
       this.errors = {};
 
       try {
-        await axios.put(`/general-store/requests/${this.$route.params.id}`, this.form);
+        await this.updateRequest({ id: this.$route.params.id, data: this.form });
 
-        this.$toast.success('Request updated successfully!');
+        this.$toast && this.$toast.success('Request updated successfully!');
 
         // Redirect to the request details
         this.$router.push({
@@ -364,7 +362,7 @@ export default {
         if (error.response?.data?.errors) {
           this.errors = error.response.data.errors;
         } else {
-          this.$toast.error('Failed to update request. Please try again.');
+          this.$toast && this.$toast.error('Failed to update request. Please try again.');
         }
       } finally {
         this.submitting = false;

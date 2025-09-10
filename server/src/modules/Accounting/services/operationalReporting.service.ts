@@ -1,6 +1,6 @@
 import { Transaction, Op, Sequelize } from 'sequelize';
 import { BadException } from '../../../common/util/api-error';
-import { 
+import {
   ClinicalPayment,
   BankTransfer,
   InsuranceClaim,
@@ -10,13 +10,9 @@ import {
   JournalEntry,
   JournalEntryLine,
   Staff,
-  Department
+  Department,
 } from '../../../database/models';
-import { 
-  PaymentStatus,
-  PaymentMethod,
-  BankTransferStatus
-} from '../enums';
+import { PaymentStatus, PaymentMethod, BankTransferStatus } from '../enums';
 import { logger } from '../../../core/helpers/logger';
 
 // ===== OPERATIONAL REPORTING INTERFACES =====
@@ -283,7 +279,7 @@ export interface ExceptionErrorReport {
 
 /**
  * Operational Reporting Service
- * 
+ *
  * This service provides comprehensive operational reporting including:
  * - Payment Processing Performance
  * - Payment Method Utilization Analysis
@@ -292,7 +288,6 @@ export interface ExceptionErrorReport {
  * - Exception and Error Reporting
  */
 export class OperationalReportingService {
-
   // ===== PAYMENT PROCESSING PERFORMANCE =====
 
   /**
@@ -303,7 +298,7 @@ export class OperationalReportingService {
   ): Promise<PaymentProcessingPerformance> {
     try {
       const { start_date, end_date, department, payment_method } = filters;
-      
+
       // Build date filters
       const dateFilter: any = {};
       if (start_date && end_date) {
@@ -324,11 +319,13 @@ export class OperationalReportingService {
       // Get all payment transactions
       const payments = await ClinicalPayment.findAll({
         where: { ...dateFilter, ...additionalFilters },
-        include: [{
-          model: Staff,
-          as: 'processedBy',
-          attributes: ['id', 'firstname', 'lastname'],
-        }],
+        include: [
+          {
+            model: Staff,
+            as: 'processedBy',
+            attributes: ['id', 'firstname', 'lastname'],
+          },
+        ],
         order: [['processed_at', 'ASC']],
       });
 
@@ -337,7 +334,8 @@ export class OperationalReportingService {
       const successfulTransactions = payments.filter(p => p.status === PaymentStatus.PAID).length;
       const failedTransactions = payments.filter(p => p.status === PaymentStatus.FAILED).length;
       const pendingTransactions = payments.filter(p => p.status === PaymentStatus.PENDING).length;
-      const successRate = totalTransactions > 0 ? (successfulTransactions / totalTransactions) * 100 : 0;
+      const successRate =
+        totalTransactions > 0 ? (successfulTransactions / totalTransactions) * 100 : 0;
 
       // Calculate total volume and processing time
       const totalVolume = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
@@ -374,7 +372,6 @@ export class OperationalReportingService {
         performance_by_staff: staffPerformance,
         trends,
       };
-
     } catch (error) {
       logger.error('Failed to generate payment processing performance report:', error);
       throw new BadException(
@@ -395,7 +392,7 @@ export class OperationalReportingService {
   ): Promise<PaymentMethodUtilization> {
     try {
       const { start_date, end_date } = filters;
-      
+
       // Build date filters
       const dateFilter: any = {};
       if (start_date && end_date) {
@@ -440,7 +437,6 @@ export class OperationalReportingService {
         trends,
         recommendations,
       };
-
     } catch (error) {
       logger.error('Failed to generate payment method utilization report:', error);
       throw new BadException(
@@ -461,7 +457,7 @@ export class OperationalReportingService {
   ): Promise<ReconciliationStatusReport> {
     try {
       const { start_date, end_date, department } = filters;
-      
+
       // Build date filters
       const dateFilter: any = {};
       if (start_date && end_date) {
@@ -474,11 +470,13 @@ export class OperationalReportingService {
       // For now, we'll simulate reconciliation status based on payment data
       const payments = await ClinicalPayment.findAll({
         where: dateFilter,
-        include: [{
-          model: Staff,
-          as: 'processedBy',
-          attributes: ['id', 'firstname', 'lastname'],
-        }],
+        include: [
+          {
+            model: Staff,
+            as: 'processedBy',
+            attributes: ['id', 'firstname', 'lastname'],
+          },
+        ],
       });
 
       // Calculate reconciliation metrics
@@ -521,7 +519,6 @@ export class OperationalReportingService {
         exceptions,
         aging_analysis: agingAnalysis,
       };
-
     } catch (error) {
       logger.error('Failed to generate reconciliation status report:', error);
       throw new BadException(
@@ -542,7 +539,7 @@ export class OperationalReportingService {
   ): Promise<SettlementTrackingReport> {
     try {
       const { start_date, end_date, department } = filters;
-      
+
       // Build date filters
       const dateFilter: any = {};
       if (start_date && end_date) {
@@ -555,19 +552,22 @@ export class OperationalReportingService {
       // For now, we'll simulate settlement data based on payment data
       const payments = await ClinicalPayment.findAll({
         where: dateFilter,
-        include: [{
-          model: Staff,
-          as: 'processedBy',
-          attributes: ['id', 'firstname', 'lastname'],
-        }],
+        include: [
+          {
+            model: Staff,
+            as: 'processedBy',
+            attributes: ['id', 'firstname', 'lastname'],
+          },
+        ],
       });
 
       // Calculate settlement metrics
       const totalSettlements = payments.length;
-        const completedSettlements = payments.filter(p => p.status === PaymentStatus.PAID).length;
+      const completedSettlements = payments.filter(p => p.status === PaymentStatus.PAID).length;
       const pendingSettlements = payments.filter(p => p.status === PaymentStatus.PENDING).length;
       const failedSettlements = payments.filter(p => p.status === PaymentStatus.FAILED).length;
-      const completionRate = totalSettlements > 0 ? (completedSettlements / totalSettlements) * 100 : 0;
+      const completionRate =
+        totalSettlements > 0 ? (completedSettlements / totalSettlements) * 100 : 0;
 
       // Calculate amounts and timing
       const totalAmount = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
@@ -580,7 +580,11 @@ export class OperationalReportingService {
       const settlementByDepartment = await this.calculateSettlementByDepartment(payments);
 
       // Settlement timeline
-      const settlementTimeline = await this.calculateSettlementTimeline(payments, start_date, end_date);
+      const settlementTimeline = await this.calculateSettlementTimeline(
+        payments,
+        start_date,
+        end_date
+      );
 
       // Bottleneck analysis
       const bottlenecks = this.analyzeSettlementBottlenecks(payments);
@@ -604,7 +608,6 @@ export class OperationalReportingService {
         settlement_timeline: settlementTimeline,
         bottlenecks,
       };
-
     } catch (error) {
       logger.error('Failed to generate settlement tracking report:', error);
       throw new BadException(
@@ -625,7 +628,7 @@ export class OperationalReportingService {
   ): Promise<ExceptionErrorReport> {
     try {
       const { start_date, end_date, department } = filters;
-      
+
       // Build date filters
       const dateFilter: any = {};
       if (start_date && end_date) {
@@ -637,15 +640,17 @@ export class OperationalReportingService {
       // Get exception data (this would come from exception tables in production)
       // For now, we'll simulate exception data based on failed payments
       const failedPayments = await ClinicalPayment.findAll({
-        where: { 
+        where: {
           ...dateFilter,
           status: PaymentStatus.FAILED,
         },
-        include: [{
-          model: Staff,
-          as: 'processedBy',
-          attributes: ['id', 'firstname', 'lastname'],
-        }],
+        include: [
+          {
+            model: Staff,
+            as: 'processedBy',
+            attributes: ['id', 'firstname', 'lastname'],
+          },
+        ],
       });
 
       // Calculate exception metrics
@@ -696,7 +701,6 @@ export class OperationalReportingService {
         trends,
         recommendations,
       };
-
     } catch (error) {
       logger.error('Failed to generate exception error report:', error);
       throw new BadException(
@@ -723,7 +727,7 @@ export class OperationalReportingService {
       .filter(time => time > 0);
 
     if (processingTimes.length === 0) return 0;
-    
+
     const totalTime = processingTimes.reduce((sum, time) => sum + time, 0);
     return totalTime / processingTimes.length / (1000 * 60 * 60); // Convert to hours
   }
@@ -733,7 +737,7 @@ export class OperationalReportingService {
    */
   private static async calculateMethodPerformance(payments: any[]): Promise<any[]> {
     const methodGroups = new Map<string, any[]>();
-    
+
     payments.forEach(payment => {
       const method = payment.payment_method || 'UNKNOWN';
       if (!methodGroups.has(method)) {
@@ -767,13 +771,16 @@ export class OperationalReportingService {
   private static async calculateDepartmentPerformance(payments: any[]): Promise<any[]> {
     // This would need department information from the payment data
     // For now, return a simplified version
-    return [{
-      department: 'General',
-      transaction_count: payments.length,
-      success_rate: payments.filter(p => p.status === PaymentStatus.PAID).length / payments.length * 100,
-      total_volume: payments.reduce((sum, p) => sum + (p.amount || 0), 0),
-      average_amount: payments.reduce((sum, p) => sum + (p.amount || 0), 0) / payments.length,
-    }];
+    return [
+      {
+        department: 'General',
+        transaction_count: payments.length,
+        success_rate:
+          (payments.filter(p => p.status === PaymentStatus.PAID).length / payments.length) * 100,
+        total_volume: payments.reduce((sum, p) => sum + (p.amount || 0), 0),
+        average_amount: payments.reduce((sum, p) => sum + (p.amount || 0), 0) / payments.length,
+      },
+    ];
   }
 
   /**
@@ -781,7 +788,7 @@ export class OperationalReportingService {
    */
   private static async calculateStaffPerformance(payments: any[]): Promise<any[]> {
     const staffGroups = new Map<number, any[]>();
-    
+
     payments.forEach(payment => {
       const staffId = payment.processed_by || 0;
       if (!staffGroups.has(staffId)) {
@@ -821,7 +828,7 @@ export class OperationalReportingService {
   ): Promise<any[]> {
     // Group payments by date
     const dateGroups = new Map<string, any[]>();
-    
+
     payments.forEach(payment => {
       const date = new Date(payment.processed_at).toISOString().split('T')[0];
       if (!dateGroups.has(date)) {
@@ -830,41 +837,93 @@ export class OperationalReportingService {
       dateGroups.get(date)!.push(payment);
     });
 
-    return Array.from(dateGroups.entries()).map(([date, datePayments]) => {
-      const totalCount = datePayments.length;
-      const successCount = datePayments.filter(p => p.status === PaymentStatus.PAID).length;
-      const successRate = totalCount > 0 ? (successCount / totalCount) * 100 : 0;
-      const totalVolume = datePayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+    return Array.from(dateGroups.entries())
+      .map(([date, datePayments]) => {
+        const totalCount = datePayments.length;
+        const successCount = datePayments.filter(p => p.status === PaymentStatus.PAID).length;
+        const successRate = totalCount > 0 ? (successCount / totalCount) * 100 : 0;
+        const totalVolume = datePayments.reduce((sum, p) => sum + (p.amount || 0), 0);
 
-      return {
-        date,
-        transaction_count: totalCount,
-        success_rate: successRate,
-        total_volume: totalVolume,
-      };
-    }).sort((a, b) => a.date.localeCompare(b.date));
+        return {
+          date,
+          transaction_count: totalCount,
+          success_rate: successRate,
+          total_volume: totalVolume,
+        };
+      })
+      .sort((a, b) => a.date.localeCompare(b.date));
   }
 
   // Additional helper methods for other reports...
-  private static async calculateMethodDistribution(payments: any[]): Promise<any[]> { return []; }
-  private static async calculateDetailedMethodAnalysis(payments: any[]): Promise<any[]> { return []; }
-  private static async calculateUtilizationTrends(payments: any[], startDate?: string, endDate?: string): Promise<any[]> { return []; }
-  private static generateUtilizationRecommendations(methodAnalysis: any[]): any[] { return []; }
-  private static async calculateReconciliationStatusByMethod(payments: any[]): Promise<any[]> { return []; }
-  private static async calculateReconciliationStatusByDepartment(payments: any[]): Promise<any[]> { return []; }
-  private static analyzeReconciliationExceptions(payments: any[]): any[] { return []; }
-  private static calculateReconciliationAging(payments: any[]): any[] { return []; }
-  private static async calculateSettlementByMethod(payments: any[]): Promise<any[]> { return []; }
-  private static async calculateSettlementByDepartment(payments: any[]): Promise<any[]> { return []; }
-  private static async calculateSettlementTimeline(payments: any[], startDate?: string, endDate?: string): Promise<any[]> { return []; }
-  private static analyzeSettlementBottlenecks(payments: any[]): any[] { return []; }
-  private static calculateExceptionsByType(failedPayments: any[]): any[] { return []; }
-  private static calculateExceptionsBySeverity(failedPayments: any[]): any[] { return []; }
-  private static calculateExceptionsByPaymentMethod(failedPayments: any[]): any[] { return []; }
-  private static calculateResolutionPerformance(failedPayments: any[]): any[] { return []; }
-  private static calculateExceptionTrends(failedPayments: any[], startDate?: string, endDate?: string): any[] { return []; }
-  private static generateExceptionRecommendations(failedPayments: any[]): any[] { return []; }
-  private static calculateAverageSettlementTime(payments: any[]): number { return 0; }
+  private static async calculateMethodDistribution(payments: any[]): Promise<any[]> {
+    return [];
+  }
+  private static async calculateDetailedMethodAnalysis(payments: any[]): Promise<any[]> {
+    return [];
+  }
+  private static async calculateUtilizationTrends(
+    payments: any[],
+    startDate?: string,
+    endDate?: string
+  ): Promise<any[]> {
+    return [];
+  }
+  private static generateUtilizationRecommendations(methodAnalysis: any[]): any[] {
+    return [];
+  }
+  private static async calculateReconciliationStatusByMethod(payments: any[]): Promise<any[]> {
+    return [];
+  }
+  private static async calculateReconciliationStatusByDepartment(payments: any[]): Promise<any[]> {
+    return [];
+  }
+  private static analyzeReconciliationExceptions(payments: any[]): any[] {
+    return [];
+  }
+  private static calculateReconciliationAging(payments: any[]): any[] {
+    return [];
+  }
+  private static async calculateSettlementByMethod(payments: any[]): Promise<any[]> {
+    return [];
+  }
+  private static async calculateSettlementByDepartment(payments: any[]): Promise<any[]> {
+    return [];
+  }
+  private static async calculateSettlementTimeline(
+    payments: any[],
+    startDate?: string,
+    endDate?: string
+  ): Promise<any[]> {
+    return [];
+  }
+  private static analyzeSettlementBottlenecks(payments: any[]): any[] {
+    return [];
+  }
+  private static calculateExceptionsByType(failedPayments: any[]): any[] {
+    return [];
+  }
+  private static calculateExceptionsBySeverity(failedPayments: any[]): any[] {
+    return [];
+  }
+  private static calculateExceptionsByPaymentMethod(failedPayments: any[]): any[] {
+    return [];
+  }
+  private static calculateResolutionPerformance(failedPayments: any[]): any[] {
+    return [];
+  }
+  private static calculateExceptionTrends(
+    failedPayments: any[],
+    startDate?: string,
+    endDate?: string
+  ): any[] {
+    return [];
+  }
+  private static generateExceptionRecommendations(failedPayments: any[]): any[] {
+    return [];
+  }
+  private static calculateAverageSettlementTime(payments: any[]): number {
+    return 0;
+  }
 }
 
 export default OperationalReportingService;

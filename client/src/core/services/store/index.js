@@ -31,6 +31,7 @@ import procurement from './procurement/index';
 import stockAudit from './stockAudit/index';
 import emergency from './emergency/index';
 import generalStore from './generalStore/index';
+import inventoryAlerts from './inventoryAlerts/index';
 import appointments from './appointments/moduleAppointments';
 import htmlClass from './htmlclass.module';
 import config from './config.module';
@@ -70,6 +71,7 @@ export default new Vuex.Store({
     stockAudit,
     emergency,
     generalStore,
+    inventoryAlerts,
     appointments,
     htmlClass,
     config,

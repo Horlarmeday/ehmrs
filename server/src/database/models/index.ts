@@ -11,6 +11,7 @@ export { CarePlan } from './carePlan';
 export { Complaint } from './complaint';
 export { ClinicalNote } from './clinicalNote';
 export { Default } from './default';
+export { DeceasedPatientAudit } from './deceasedPatientAudit';
 export { Discharge } from './discharge';
 export { Department } from './department';
 export { Delivery } from './delivery';
@@ -105,6 +106,8 @@ export {
   GeneralStoreMovement,
   GeneralStoreRequest,
   GeneralStoreRequestItem,
+  GeneralStoreDispensary,
+  GeneralStoreDispensaryItem,
 } from './generalStore';
 export { GeneralStoreAuditLog } from './generalStoreAudit';
 
@@ -129,6 +132,11 @@ export { CashTransaction } from './cashTransaction';
 // Cash Register System Models
 export { CashRegister } from './cashRegister';
 export { CashMovement } from './cashMovement';
+
+// Inventory Alert Models
+export { InventoryAlert } from './inventoryAlert';
+export { InventoryAlertConfiguration } from './inventoryAlertConfiguration';
+export { InventoryAlertLog } from './inventoryAlertLog';
 
 // Dialysis Models
 export { DialysisVisit } from './dialysisVisit';

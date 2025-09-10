@@ -62,7 +62,7 @@ export class BankAccount extends Model {
     allowNull: false,
     defaultValue: 0,
     validate: {
-      min: 0
+      min: 0,
     },
   })
   current_balance: number;

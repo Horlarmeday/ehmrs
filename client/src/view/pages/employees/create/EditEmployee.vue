@@ -169,7 +169,7 @@
           </select>
         </div>
       </div>
-      <div class="form-group row">
+      <!-- <div class="form-group row">
         <div class="col-lg-4">
           <label>Date of First Appointment <span class="text-danger">*</span></label>
           <datepicker
@@ -268,8 +268,8 @@
           />
           <span class="text-danger text-sm">{{ errors.first('chs_cms') }}</span>
         </div>
-      </div>
-      <div class="form-group row">
+      </div> -->
+      <!-- <div class="form-group row">
         <div class="col-lg-4">
           <label>Step <span class="text-danger">*</span></label>
           <input
@@ -309,7 +309,7 @@
           />
           <span class="text-danger text-sm">{{ errors.first('nin') }}</span>
         </div>
-      </div>
+      </div> -->
       <div>
         <button
           ref="kt_employee_submit"
@@ -355,15 +355,15 @@ export default {
       role: '',
       sub_role: '',
       relationship: '',
-      date_of_first_appointment: '',
-      date_of_commencement: '',
-      dolp: '',
-      qualification: '',
-      present_rank: '',
-      chs_cms: '',
-      step: '',
-      dd_for_retirement: '',
-      nin: '',
+      // date_of_first_appointment: '',
+      // date_of_commencement: '',
+      // dolp: '',
+      // qualification: '',
+      // present_rank: '',
+      // chs_cms: '',
+      // step: '',
+      // dd_for_retirement: '',
+      // nin: '',
       departments,
       roles,
       sub_roles,
@@ -405,15 +405,15 @@ export default {
           sub_role,
           phone,
           username,
-          date_of_first_appointment,
-          date_of_commencement,
-          dolp,
-          qualification,
-          present_rank,
-          chs_cms,
-          step,
-          dd_for_retirement,
-          nin,
+          // date_of_first_appointment,
+          // date_of_commencement,
+          // dolp,
+          // qualification,
+          // present_rank,
+          // chs_cms,
+          // step,
+          // dd_for_retirement,
+          // nin,
         } = JSON.parse(JSON.stringify(this.data));
         this.id = id;
         this.firstname = firstname;
@@ -428,15 +428,15 @@ export default {
         this.department = department;
         this.gender = gender;
         this.username = username;
-        this.date_of_first_appointment = date_of_first_appointment;
-        this.date_of_commencement = date_of_commencement;
-        this.dolp = dolp;
-        this.qualification = qualification;
-        this.present_rank = present_rank;
-        this.chs_cms = chs_cms;
-        this.step = step;
-        this.dd_for_retirement = dd_for_retirement;
-        this.nin = nin;
+        // this.date_of_first_appointment = date_of_first_appointment;
+        // this.date_of_commencement = date_of_commencement;
+        // this.dolp = dolp;
+        // this.qualification = qualification;
+        // this.present_rank = present_rank;
+        // this.chs_cms = chs_cms;
+        // this.step = step;
+        // this.dd_for_retirement = dd_for_retirement;
+        // this.nin = nin;
       }
     },
   },
@@ -472,15 +472,15 @@ export default {
       this.department = '';
       this.role = '';
       this.sub_role = '';
-      this.date_of_first_appointment = '';
-      this.date_of_commencement = '';
-      this.dolp = '';
-      this.qualification = '';
-      this.present_rank = '';
-      this.chs_cms = '';
-      this.step = '';
-      this.dd_for_retirement = '';
-      this.nin = '';
+      // this.date_of_first_appointment = '';
+      // this.date_of_commencement = '';
+      // this.dolp = '';
+      // this.qualification = '';
+      // this.present_rank = '';
+      // this.chs_cms = '';
+      // this.step = '';
+      // this.dd_for_retirement = '';
+      // this.nin = '';
     },
 
     initializeRequest(button) {
@@ -517,19 +517,18 @@ export default {
         sub_role: this.sub_role?.text,
         address: this.address,
         photo: this.image,
-        date_of_first_appointment: this.date_of_first_appointment,
-        date_of_commencement: this.date_of_commencement,
-        dolp: this.dolp,
-        qualification: this.qualification,
-        present_rank: this.present_rank,
-        chs_cms: this.chs_cms,
-        step: this.step,
-        dd_for_retirement: this.dd_for_retirement,
-        nin: this.nin,
+        // date_of_first_appointment: this.date_of_first_appointment,
+        // date_of_commencement: this.date_of_commencement,
+        // dolp: this.dolp,
+        // qualification: this.qualification,
+        // present_rank: this.present_rank,
+        // chs_cms: this.chs_cms,
+        // step: this.step,
+        // dd_for_retirement: this.dd_for_retirement,
+        // nin: this.nin,
         id: this.id,
       };
 
-      console.log(data);
       this.$store
         .dispatch('employee/updateEmployee', data)
         .then(() => this.initializeRequest(submitButton))

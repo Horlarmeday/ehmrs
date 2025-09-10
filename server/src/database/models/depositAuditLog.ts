@@ -23,14 +23,14 @@ export enum AuditActionType {
   RECONCILIATION = 'RECONCILIATION',
   EXPIRY_PROCESSED = 'EXPIRY_PROCESSED',
   MANUAL_OVERRIDE = 'MANUAL_OVERRIDE',
-  SYSTEM_MAINTENANCE = 'SYSTEM_MAINTENANCE'
+  SYSTEM_MAINTENANCE = 'SYSTEM_MAINTENANCE',
 }
 
 export enum AuditSeverity {
   INFO = 'INFO',
   WARNING = 'WARNING',
   ERROR = 'ERROR',
-  CRITICAL = 'CRITICAL'
+  CRITICAL = 'CRITICAL',
 }
 
 @Table({ timestamps: true, tableName: 'deposit_audit_logs' })
@@ -183,7 +183,9 @@ export class DepositAuditLog extends Model {
 
     // Auto-generate request ID if not provided
     if (!instance.request_id) {
-      instance.request_id = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      instance.request_id = `req_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
     }
 
     // Set default severity if not provided

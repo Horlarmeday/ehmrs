@@ -1,18 +1,14 @@
 import { Transaction } from 'sequelize';
 import { BadException } from '../../../common/util/api-error';
-import { 
+import {
   ClinicalPayment,
   Staff,
   BankAccount,
   BankTransfer,
   JournalEntry,
-  JournalEntryLine
+  JournalEntryLine,
 } from '../../../database/models';
-import { 
-  PaymentStatus,
-  BankTransferStatus,
-  JournalEntryStatus
-} from '../enums';
+import { PaymentStatus, BankTransferStatus, JournalEntryStatus } from '../enums';
 import { logger } from '../../../core/helpers/logger';
 
 // ===== BANK RECONCILIATION INTERFACES =====
@@ -59,7 +55,13 @@ export interface ReconciliationResult {
 }
 
 export interface ReconciliationException {
-  type: 'AMOUNT_MISMATCH' | 'DATE_MISMATCH' | 'REFERENCE_MISMATCH' | 'DUPLICATE' | 'MISSING_SYSTEM' | 'MISSING_BANK';
+  type:
+    | 'AMOUNT_MISMATCH'
+    | 'DATE_MISMATCH'
+    | 'REFERENCE_MISMATCH'
+    | 'DUPLICATE'
+    | 'MISSING_SYSTEM'
+    | 'MISSING_BANK';
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   description: string;
   bank_transaction?: BankStatementTransaction;
@@ -71,7 +73,7 @@ export interface ReconciliationException {
 
 /**
  * Bank Reconciliation Service
- * 
+ *
  * This service handles comprehensive bank reconciliation including:
  * - Bank statement import and processing
  * - Automated transaction matching
@@ -80,7 +82,6 @@ export interface ReconciliationException {
  * - Audit trail and reporting
  */
 export class BankReconciliationService {
-
   // ===== BANK STATEMENT IMPORT =====
 
   /**
@@ -94,7 +95,11 @@ export class BankReconciliationService {
       // Validate bank account
       const bankAccount = await BankAccount.findByPk(statementData.bank_account_id);
       if (!bankAccount) {
-        throw new BadException('Bank Account Not Found', 404, 'The specified bank account does not exist');
+        throw new BadException(
+          'Bank Account Not Found',
+          404,
+          'The specified bank account does not exist'
+        );
       }
 
       // Validate statement data
@@ -114,7 +119,6 @@ export class BankReconciliationService {
       await this.logBankStatementImport(statement, reconciliationResult, transaction);
 
       return reconciliationResult;
-
     } catch (error) {
       logger.error('Bank statement import failed:', error);
       throw new BadException(
@@ -149,7 +153,7 @@ export class BankReconciliationService {
     // Validate transaction dates
     const today = new Date();
     const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-    
+
     for (const transaction of statementData.transactions) {
       if (transaction.transaction_date > today) {
         throw new BadException(
@@ -158,7 +162,7 @@ export class BankReconciliationService {
           'Transaction date cannot be in the future'
         );
       }
-      
+
       if (transaction.transaction_date < thirtyDaysAgo) {
         throw new BadException(
           'Transaction Too Old',
@@ -228,11 +232,11 @@ export class BankReconciliationService {
     for (const bankTransaction of bankTransactions) {
       try {
         const match = await this.findBestMatch(bankTransaction, systemTransactions);
-        
+
         if (match && match.match_confidence >= 0.8) {
           matches.push(match);
           matchedCount++;
-          
+
           // Mark system transaction as reconciled
           await this.markTransactionReconciled(match.system_transaction, match, transaction);
         } else {
@@ -272,7 +276,7 @@ export class BankReconciliationService {
 
     for (const systemTransaction of systemTransactions) {
       const confidence = this.calculateMatchConfidence(bankTransaction, systemTransaction);
-      
+
       if (confidence > bestConfidence && confidence >= 0.6) {
         bestConfidence = confidence;
         bestMatch = {
@@ -307,7 +311,7 @@ export class BankReconciliationService {
       // BankTransfer - get amount from related ClinicalPayment
       systemAmount = (systemTransaction as any).payment?.amount || 0;
     }
-    
+
     const amountMatch = Math.abs(bankTransaction.amount - systemAmount) < 0.01;
     confidence += amountMatch ? 0.4 : 0;
     totalFactors += 0.4;
@@ -315,7 +319,7 @@ export class BankReconciliationService {
     // Date matching (30% weight)
     const bankDate = new Date(bankTransaction.transaction_date);
     let systemDate: Date;
-    
+
     if ('createdAt' in systemTransaction) {
       // ClinicalPayment
       systemDate = new Date(systemTransaction.createdAt);
@@ -323,7 +327,7 @@ export class BankReconciliationService {
       // BankTransfer
       systemDate = new Date(systemTransaction.createdAt);
     }
-    
+
     const dateDiff = Math.abs(bankDate.getTime() - systemDate.getTime()) / (1000 * 60 * 60 * 24);
     const dateMatch = dateDiff <= 3; // Within 3 days
     confidence += dateMatch ? 0.3 : 0;
@@ -336,15 +340,14 @@ export class BankReconciliationService {
       systemReference = systemTransaction.payment_reference || '';
     } else {
       // BankTransfer
-      systemReference = systemTransaction.bank_statement_reference || 
-                      systemTransaction.settlement_reference || 
-                      systemTransaction.confirmation_reference || '';
+      systemReference =
+        systemTransaction.bank_statement_reference ||
+        systemTransaction.settlement_reference ||
+        systemTransaction.confirmation_reference ||
+        '';
     }
-    
-    const referenceMatch = this.fuzzyStringMatch(
-      bankTransaction.reference,
-      systemReference
-    );
+
+    const referenceMatch = this.fuzzyStringMatch(bankTransaction.reference, systemReference);
     confidence += referenceMatch * 0.2;
     totalFactors += 0.2;
 
@@ -357,11 +360,8 @@ export class BankReconciliationService {
       // BankTransfer
       systemDescription = systemTransaction.transfer_notes || '';
     }
-    
-    const descriptionMatch = this.fuzzyStringMatch(
-      bankTransaction.description,
-      systemDescription
-    );
+
+    const descriptionMatch = this.fuzzyStringMatch(bankTransaction.description, systemDescription);
     confidence += descriptionMatch * 0.1;
     totalFactors += 0.1;
 
@@ -373,19 +373,19 @@ export class BankReconciliationService {
    */
   private static fuzzyStringMatch(str1: string, str2: string): number {
     if (!str1 || !str2) return 0;
-    
+
     const s1 = str1.toLowerCase().replace(/[^a-z0-9]/g, '');
     const s2 = str2.toLowerCase().replace(/[^a-z0-9]/g, '');
-    
+
     if (s1 === s2) return 1;
     if (s1.includes(s2) || s2.includes(s1)) return 0.8;
-    
+
     // Simple similarity calculation
     const longer = s1.length > s2.length ? s1 : s2;
     const shorter = s1.length > s2.length ? s2 : s1;
-    
+
     if (longer.length === 0) return 1;
-    
+
     const editDistance = this.levenshteinDistance(longer, shorter);
     return (longer.length - editDistance) / longer.length;
   }
@@ -394,11 +394,13 @@ export class BankReconciliationService {
    * Calculate Levenshtein distance for string similarity
    */
   private static levenshteinDistance(str1: string, str2: string): number {
-    const matrix = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
-    
+    const matrix = Array(str2.length + 1)
+      .fill(null)
+      .map(() => Array(str1.length + 1).fill(null));
+
     for (let i = 0; i <= str1.length; i++) matrix[0][i] = i;
     for (let j = 0; j <= str2.length; j++) matrix[j][0] = j;
-    
+
     for (let j = 1; j <= str2.length; j++) {
       for (let i = 1; i <= str1.length; i++) {
         const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1;
@@ -409,7 +411,7 @@ export class BankReconciliationService {
         );
       }
     }
-    
+
     return matrix[str2.length][str1.length];
   }
 
@@ -431,7 +433,7 @@ export class BankReconciliationService {
     confidence: number
   ): string {
     const reasons = [];
-    
+
     // Amount matching
     let systemAmount = 0;
     if ('amount' in systemTransaction) {
@@ -441,15 +443,15 @@ export class BankReconciliationService {
       // BankTransfer - get amount from related ClinicalPayment
       systemAmount = (systemTransaction as any).payment?.amount || 0;
     }
-    
+
     if (Math.abs(bankTransaction.amount - systemAmount) < 0.01) {
       reasons.push('Amount matches exactly');
     }
-    
+
     // Date matching
     const bankDate = new Date(bankTransaction.transaction_date);
     let systemDate: Date;
-    
+
     if ('createdAt' in systemTransaction) {
       // ClinicalPayment
       systemDate = new Date(systemTransaction.createdAt);
@@ -457,21 +459,21 @@ export class BankReconciliationService {
       // BankTransfer
       systemDate = new Date(systemTransaction.createdAt);
     }
-    
+
     const dateDiff = Math.abs(bankDate.getTime() - systemDate.getTime()) / (1000 * 60 * 60 * 24);
-    
+
     if (dateDiff <= 1) {
       reasons.push('Date matches exactly');
     } else if (dateDiff <= 3) {
       reasons.push('Date within 3 days');
     }
-    
+
     if (confidence >= 0.95) {
       reasons.push('High confidence match');
     } else if (confidence >= 0.8) {
       reasons.push('Good confidence match');
     }
-    
+
     return reasons.join('; ');
   }
 
@@ -480,13 +482,16 @@ export class BankReconciliationService {
   /**
    * Create exception for unmatched bank transaction
    */
-  private static createUnmatchedException(bankTransaction: BankStatementTransaction): ReconciliationException {
+  private static createUnmatchedException(
+    bankTransaction: BankStatementTransaction
+  ): ReconciliationException {
     return {
       type: 'MISSING_SYSTEM',
       severity: 'MEDIUM',
       description: `Bank transaction ${bankTransaction.reference} has no matching system transaction`,
       bank_transaction: bankTransaction,
-      suggested_action: 'Review transaction and create manual match or investigate missing system entry',
+      suggested_action:
+        'Review transaction and create manual match or investigate missing system entry',
     };
   }
 
@@ -518,7 +523,7 @@ export class BankReconciliationService {
   ): Promise<Array<ClinicalPayment | BankTransfer>> {
     const startDate = new Date(statementDate);
     startDate.setDate(startDate.getDate() - 7); // Include transactions 7 days before statement
-    
+
     const endDate = new Date(statementDate);
     endDate.setDate(endDate.getDate() + 7); // Include transactions 7 days after statement
 
@@ -533,10 +538,12 @@ export class BankReconciliationService {
           [require('sequelize').Op.in]: ['PENDING', 'CONFIRMED'],
         },
       },
-      include: [{
-        model: ClinicalPayment,
-        as: 'payment',
-      }],
+      include: [
+        {
+          model: ClinicalPayment,
+          as: 'payment',
+        },
+      ],
       transaction,
     });
 
@@ -556,20 +563,26 @@ export class BankReconciliationService {
   ): Promise<void> {
     if ('payment_reference' in transaction) {
       // ClinicalPayment
-      await transaction.update({
-        status: 'RECONCILED',
-        notes: transaction.notes ? 
-          `${transaction.notes}\n\nReconciled: ${match.match_reason}` :
-          `Reconciled: ${match.match_reason}`,
-      }, { transaction: transactionContext });
+      await transaction.update(
+        {
+          status: 'RECONCILED',
+          notes: transaction.notes
+            ? `${transaction.notes}\n\nReconciled: ${match.match_reason}`
+            : `Reconciled: ${match.match_reason}`,
+        },
+        { transaction: transactionContext }
+      );
     } else {
       // BankTransfer
-      await transaction.update({
-        transfer_status: 'RECONCILED',
-        transfer_notes: transaction.transfer_notes ?
-          `${transaction.transfer_notes}\n\nReconciled: ${match.match_reason}` :
-          `Reconciled: ${match.match_reason}`,
-      }, { transaction: transactionContext });
+      await transaction.update(
+        {
+          transfer_status: 'RECONCILED',
+          transfer_notes: transaction.transfer_notes
+            ? `${transaction.transfer_notes}\n\nReconciled: ${match.match_reason}`
+            : `Reconciled: ${match.match_reason}`,
+        },
+        { transaction: transactionContext }
+      );
     }
   }
 
@@ -616,7 +629,6 @@ export class BankReconciliationService {
 
       // Create approval journal entry
       await this.createReconciliationApprovalEntry(reconciliationId, staffId, approvalNotes);
-
     } catch (error) {
       logger.error('Reconciliation approval failed:', error);
       throw new BadException(

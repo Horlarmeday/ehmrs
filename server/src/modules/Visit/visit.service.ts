@@ -163,7 +163,7 @@ class VisitService {
           patient_id: visitData.patient_id,
           doctor_id: visitData.doctor_id || visitData.staff_id || 1, // Use doctor_id or staff_id or default
           dialysis_type: visitData?.dialysis_type || DialysisType.HEMODIALYSIS, // Default type
-          status: DialysisStatus.SCHEDULED,
+          status: DialysisStatus.IN_PROGRESS,
           scheduled_date: visit.date_visit_start,
           scheduled_time: visitData.scheduled_time || '09:00:00', // Default time
           planned_duration_minutes: 240, // Default 4 hours

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { GeneralStoreController } from './generalStore.controller';
 import verify from '../../core/middleware/verify';
 import { authorize } from '../../core/middleware/authorize';
+import dispensaryRoutes from './routes/dispensary.routes';
 
 const router = Router();
 
@@ -44,10 +45,14 @@ router.get('/requests/my-requests', GeneralStoreController.getMyRequests);
 router.get('/requests/pending-approval', GeneralStoreController.getPendingApprovalRequests);
 router.get('/requests/:id', GeneralStoreController.getRequestById);
 router.post('/requests', GeneralStoreController.createRequest);
-// router.put('/requests/:id', GeneralStoreController.updateRequest);
+router.put('/requests/:id', GeneralStoreController.updateRequest);
 router.put('/requests/:id/approve', GeneralStoreController.approveRequest);
 router.put('/requests/:id/reject', GeneralStoreController.rejectRequest);
 router.put('/requests/:id/fulfill', GeneralStoreController.fulfillRequest);
+
+// Dashboard
+router.get('/dashboard/stats', GeneralStoreController.getDashboardStats);
+router.get('/reports/recent', GeneralStoreController.getRecentReports);
 
 // Reports and Analytics
 router.get('/reports/stock', GeneralStoreController.getStockReport);
@@ -58,10 +63,10 @@ router.get('/reports/low-stock', GeneralStoreController.getLowStockReport);
 router.get('/reports/expiring', GeneralStoreController.getExpiringReport);
 
 // Export Reports
-// router.get('/reports/stock/export', GeneralStoreController.exportStockReport);
-// router.get('/reports/movements/export', GeneralStoreController.exportMovementReport);
-// router.get('/reports/usage/export', GeneralStoreController.exportUsageReport);
-// router.get('/reports/costs/export', GeneralStoreController.exportCostReport);
+router.get('/reports/stock/export', GeneralStoreController.exportStockReport);
+router.get('/reports/movements/export', GeneralStoreController.exportMovementReport);
+router.get('/reports/usage/export', GeneralStoreController.exportUsageReport);
+router.get('/reports/costs/export', GeneralStoreController.exportCostReport);
 
 // Settings
 router.get('/settings', GeneralStoreController.getSettings);
@@ -69,5 +74,15 @@ router.put('/settings', GeneralStoreController.updateSettings);
 
 // Audit Logs
 router.get('/audit-logs', GeneralStoreController.getAuditLogs);
+
+// Request Workflow Routes (Additional)
+router.post('/requests/:id/cancel', GeneralStoreController.cancelRequest);
+
+// Movement Workflow Routes
+router.post('/movements/:id/approve', GeneralStoreController.approveMovement);
+router.post('/movements/:id/reject', GeneralStoreController.rejectMovement);
+
+// Dispensary Management Routes
+router.use('/dispensaries', dispensaryRoutes);
 
 export default router;

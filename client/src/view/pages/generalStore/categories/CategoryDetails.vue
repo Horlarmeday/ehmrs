@@ -602,7 +602,6 @@ export default {
           this.$router.push('/general-store/categories');
         }
       } catch (error) {
-        console.error('Error loading category details:', error);
         this.$toast.error('Failed to load category details');
       } finally {
         this.loading = false;
@@ -693,14 +692,61 @@ export default {
       await this.loadCategoryDetails();
     },
 
-    printCategory() {
-      // TODO: Implement print functionality
-      this.$toast.info('Print functionality coming soon');
+    async printCategory() {
+      try {
+        const categoryData = [{
+          id: this.category.id,
+          name: this.category.name,
+          code: this.category.code,
+          description: this.category.description,
+          parent_category: this.category.parent?.name || 'Root Category',
+          subcategories_count: this.subcategories.length,
+          items_count: this.categoryItems.length,
+          is_active: this.category.is_active,
+          icon_class: this.category.icon_class,
+          color_theme: this.category.color_theme,
+          created_at: this.category.created_at,
+        }];
+
+        const reportConfig = {
+          title: `Category Details - ${this.category.name}`,
+          subtitle: `Category Code: ${this.category.code}`,
+          orientation: 'portrait',
+          format: 'a4',
+        };
+        await this.$printReport(categoryData, reportConfig);
+      } catch (error) {
+        this.$logError('Failed to print category details', error, { categoryId: this.category.id });
+        this.$toast.error('Failed to print category details');
+      }
     },
 
-    exportCategory() {
-      // TODO: Implement export functionality
-      this.$toast.info('Export functionality coming soon');
+    async exportCategory() {
+      try {
+        const categoryData = [{
+          id: this.category.id,
+          name: this.category.name,
+          code: this.category.code,
+          description: this.category.description,
+          parent_category: this.category.parent?.name || 'Root Category',
+          subcategories_count: this.subcategories.length,
+          items_count: this.categoryItems.length,
+          is_active: this.category.is_active,
+          icon_class: this.category.icon_class,
+          color_theme: this.category.color_theme,
+          created_at: this.category.created_at,
+        }];
+
+        const reportName = `Category_${this.category.code || this.category.name}_${new Date().toISOString().split('T')[0]}`;
+        await this.$exportData(categoryData, reportName, 'xlsx', {
+          formatters: {
+            created_at: (value) => new Date(value).toLocaleDateString(),
+          }
+        });
+      } catch (error) {
+        this.$logError('Failed to export category details', error, { categoryId: this.category.id });
+        this.$toast.error('Failed to export category details');
+      }
     },
   },
 };

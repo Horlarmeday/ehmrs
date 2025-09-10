@@ -39,47 +39,49 @@ export class FinancialPeriodValidationService {
   ): Promise<PeriodValidationResult> {
     try {
       const period = await FinancialPeriod.findByPk(periodId, { transaction });
-      
+
       if (!period) {
         return {
           valid: false,
           message: 'Financial period not found',
-          errors: ['Period does not exist']
+          errors: ['Period does not exist'],
         };
       }
 
-          // Check if period is suspended (no operations allowed)
-    if (period.status === FinancialPeriodStatus.SUSPENDED) {
-      return {
-        valid: false,
-        message: 'Financial period is suspended and cannot be modified',
-        errors: ['Period is suspended']
-      };
-    }
+      // Check if period is suspended (no operations allowed)
+      if (period.status === FinancialPeriodStatus.SUSPENDED) {
+        return {
+          valid: false,
+          message: 'Financial period is suspended and cannot be modified',
+          errors: ['Period is suspended'],
+        };
+      }
 
       // Check if period is closed for transactions
       if (operation === 'transaction' && period.status === FinancialPeriodStatus.CLOSED) {
         return {
           valid: false,
           message: 'Financial period is closed and cannot accept new transactions',
-          errors: ['Period is closed for transactions']
+          errors: ['Period is closed for transactions'],
         };
       }
 
       // Check if period is closed for modifications
-      if ((operation === 'update' || operation === 'delete') && 
-          period.status === FinancialPeriodStatus.CLOSED) {
+      if (
+        (operation === 'update' || operation === 'delete') &&
+        period.status === FinancialPeriodStatus.CLOSED
+      ) {
         return {
           valid: false,
           message: 'Financial period is closed and cannot be modified',
-          errors: ['Period is closed for modifications']
+          errors: ['Period is closed for modifications'],
         };
       }
 
       return {
         valid: true,
         message: 'Period validation successful',
-        period
+        period,
       };
     } catch (error) {
       throw new BadException(
@@ -101,12 +103,12 @@ export class FinancialPeriodValidationService {
   ): Promise<PeriodValidationResult> {
     try {
       const period = await FinancialPeriod.findByPk(periodId, { transaction });
-      
+
       if (!period) {
         return {
           valid: false,
           message: 'Financial period not found',
-          errors: ['Period does not exist']
+          errors: ['Period does not exist'],
         };
       }
 
@@ -120,14 +122,14 @@ export class FinancialPeriodValidationService {
             // Check if period can be closed
             const canClose = await this.canPeriodBeClosed(periodId, transaction);
             if (!canClose.valid) {
-              errors.push(...canClose.errors || []);
+              errors.push(...(canClose.errors || []));
             }
-                        } else if (newStatus === FinancialPeriodStatus.SUSPENDED) {
-          // Check if period can be suspended
-          const canSuspend = await this.canPeriodBeSuspended(periodId, transaction);
-          if (!canSuspend.valid) {
-            errors.push(...canSuspend.errors || []);
-          }
+          } else if (newStatus === FinancialPeriodStatus.SUSPENDED) {
+            // Check if period can be suspended
+            const canSuspend = await this.canPeriodBeSuspended(periodId, transaction);
+            if (!canSuspend.valid) {
+              errors.push(...(canSuspend.errors || []));
+            }
           }
           break;
 
@@ -136,7 +138,7 @@ export class FinancialPeriodValidationService {
             // Check if period can be reopened
             const canReopen = await this.canPeriodBeReopened(periodId, transaction);
             if (!canReopen.valid) {
-              errors.push(...canReopen.errors || []);
+              errors.push(...(canReopen.errors || []));
             }
           }
           break;
@@ -146,7 +148,7 @@ export class FinancialPeriodValidationService {
             // Check if period can be unsuspended
             const canUnsuspend = await this.canPeriodBeUnsuspended(periodId, transaction);
             if (!canUnsuspend.valid) {
-              errors.push(...canUnsuspend.errors || []);
+              errors.push(...(canUnsuspend.errors || []));
             }
           }
           break;
@@ -159,14 +161,14 @@ export class FinancialPeriodValidationService {
         return {
           valid: false,
           message: 'Period state change validation failed',
-          errors
+          errors,
         };
       }
 
       return {
         valid: true,
         message: 'Period state change validation successful',
-        period
+        period,
       };
     } catch (error) {
       throw new BadException(
@@ -196,7 +198,7 @@ export class FinancialPeriodValidationService {
           return {
             valid: false,
             message: 'Specified financial period not found',
-            errors: ['Period does not exist']
+            errors: ['Period does not exist'],
           };
         }
       } else {
@@ -205,16 +207,16 @@ export class FinancialPeriodValidationService {
           where: {
             start_date: { [require('sequelize').Op.lte]: transactionDate },
             end_date: { [require('sequelize').Op.gte]: transactionDate },
-            status: FinancialPeriodStatus.OPEN
+            status: FinancialPeriodStatus.OPEN,
           },
-          transaction
+          transaction,
         });
 
         if (!targetPeriod) {
           return {
             valid: false,
             message: 'No open financial period found for transaction date',
-            errors: ['Transaction date falls outside any open period']
+            errors: ['Transaction date falls outside any open period'],
           };
         }
       }
@@ -224,7 +226,7 @@ export class FinancialPeriodValidationService {
         return {
           valid: false,
           message: 'Financial period is not open for transactions',
-          errors: [`Period status is ${targetPeriod.status}`]
+          errors: [`Period status is ${targetPeriod.status}`],
         };
       }
 
@@ -234,15 +236,17 @@ export class FinancialPeriodValidationService {
           valid: false,
           message: 'Transaction date is outside period bounds',
           errors: [
-            `Transaction date ${transactionDate.toISOString().split('T')[0]} is outside period ${targetPeriod.start_date.toISOString().split('T')[0]} to ${targetPeriod.end_date.toISOString().split('T')[0]}`
-          ]
+            `Transaction date ${transactionDate.toISOString().split('T')[0]} is outside period ${
+              targetPeriod.start_date.toISOString().split('T')[0]
+            } to ${targetPeriod.end_date.toISOString().split('T')[0]}`,
+          ],
         };
       }
 
       return {
         valid: true,
         message: 'Transaction period validation successful',
-        period: targetPeriod
+        period: targetPeriod,
       };
     } catch (error) {
       throw new BadException(
@@ -263,12 +267,12 @@ export class FinancialPeriodValidationService {
   ): Promise<PeriodValidationResult> {
     try {
       const period = await FinancialPeriod.findByPk(periodId, { transaction });
-      
+
       if (!period) {
         return {
           valid: false,
           message: 'Financial period not found',
-          errors: ['Period does not exist']
+          errors: ['Period does not exist'],
         };
       }
 
@@ -276,7 +280,7 @@ export class FinancialPeriodValidationService {
         return {
           valid: false,
           message: 'Only open periods can be reconciled',
-          errors: [`Period status is ${period.status}`]
+          errors: [`Period status is ${period.status}`],
         };
       }
 
@@ -286,7 +290,7 @@ export class FinancialPeriodValidationService {
         return {
           valid: false,
           message: 'Period has pending transactions that must be processed before reconciliation',
-          errors: ['Pending transactions exist']
+          errors: ['Pending transactions exist'],
         };
       }
 
@@ -296,14 +300,14 @@ export class FinancialPeriodValidationService {
         return {
           valid: false,
           message: 'Period has unposted journal entries that must be posted before reconciliation',
-          errors: ['Unposted journal entries exist']
+          errors: ['Unposted journal entries exist'],
         };
       }
 
       return {
         valid: true,
         message: 'Period reconciliation validation successful',
-        period
+        period,
       };
     } catch (error) {
       throw new BadException(
@@ -320,14 +324,14 @@ export class FinancialPeriodValidationService {
   static async getCurrentActivePeriod(transaction?: Transaction): Promise<any> {
     try {
       const currentDate = new Date();
-      
+
       const activePeriod = await FinancialPeriod.findOne({
         where: {
           start_date: { [require('sequelize').Op.lte]: currentDate },
           end_date: { [require('sequelize').Op.gte]: currentDate },
-          status: FinancialPeriodStatus.OPEN
+          status: FinancialPeriodStatus.OPEN,
         },
-        transaction
+        transaction,
       });
 
       return activePeriod;
@@ -355,19 +359,19 @@ export class FinancialPeriodValidationService {
           // New period starts within existing period
           {
             start_date: { [require('sequelize').Op.lte]: startDate },
-            end_date: { [require('sequelize').Op.gte]: startDate }
+            end_date: { [require('sequelize').Op.gte]: startDate },
           },
           // New period ends within existing period
           {
             start_date: { [require('sequelize').Op.lte]: endDate },
-            end_date: { [require('sequelize').Op.gte]: endDate }
+            end_date: { [require('sequelize').Op.gte]: endDate },
           },
           // New period completely contains existing period
           {
             start_date: { [require('sequelize').Op.gte]: startDate },
-            end_date: { [require('sequelize').Op.lte]: endDate }
-          }
-        ]
+            end_date: { [require('sequelize').Op.lte]: endDate },
+          },
+        ],
       };
 
       if (excludePeriodId) {
@@ -376,15 +380,16 @@ export class FinancialPeriodValidationService {
 
       const overlappingPeriods = await FinancialPeriod.findAll({
         where: whereClause,
-        transaction
+        transaction,
       });
 
       return {
         hasOverlap: overlappingPeriods.length > 0,
         overlappingPeriods,
-        message: overlappingPeriods.length > 0 
-          ? `Found ${overlappingPeriods.length} overlapping period(s)` 
-          : 'No overlaps found'
+        message:
+          overlappingPeriods.length > 0
+            ? `Found ${overlappingPeriods.length} overlapping period(s)`
+            : 'No overlaps found',
       };
     } catch (error) {
       throw new BadException(

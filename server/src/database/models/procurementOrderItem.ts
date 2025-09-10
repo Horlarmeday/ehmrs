@@ -109,11 +109,7 @@ export class ProcurementOrderItem extends Model {
   total_price: number;
 
   @Column({
-    type: DataType.ENUM(
-      ReceiptStatus.PENDING,
-      ReceiptStatus.PARTIAL,
-      ReceiptStatus.COMPLETE
-    ),
+    type: DataType.ENUM(ReceiptStatus.PENDING, ReceiptStatus.PARTIAL, ReceiptStatus.COMPLETE),
     defaultValue: ReceiptStatus.PENDING,
   })
   receipt_status: ReceiptStatus;

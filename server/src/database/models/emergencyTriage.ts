@@ -19,31 +19,31 @@ export enum TriageStatus {
   UPDATED = 'UPDATED',
 }
 
-@Table({ 
-  timestamps: true, 
+@Table({
+  timestamps: true,
   tableName: 'Emergency_Triages',
   indexes: [
     {
       name: 'idx_emergency_triage_visit',
-      fields: ['emergency_visit_id']
+      fields: ['emergency_visit_id'],
     },
     {
       name: 'idx_emergency_triage_nurse',
-      fields: ['triage_nurse_id']
+      fields: ['triage_nurse_id'],
     },
     {
       name: 'idx_emergency_triage_status',
-      fields: ['status']
+      fields: ['status'],
     },
     {
       name: 'idx_emergency_triage_created',
-      fields: ['createdAt']
+      fields: ['createdAt'],
     },
     {
       name: 'idx_emergency_triage_composite',
-      fields: ['emergency_visit_id', 'status', 'createdAt']
-    }
-  ]
+      fields: ['emergency_visit_id', 'status', 'createdAt'],
+    },
+  ],
 })
 export class EmergencyTriage extends Model {
   @PrimaryKey
@@ -251,12 +251,18 @@ export class EmergencyTriage extends Model {
   // Helper method to get triage category based on priority score
   getTriageCategory(): string {
     switch (this.priority_score) {
-      case 1: return 'IMMEDIATE';
-      case 2: return 'EMERGENT';
-      case 3: return 'URGENT';
-      case 4: return 'LESS_URGENT';
-      case 5: return 'NON_URGENT';
-      default: return 'NON_URGENT';
+      case 1:
+        return 'IMMEDIATE';
+      case 2:
+        return 'EMERGENT';
+      case 3:
+        return 'URGENT';
+      case 4:
+        return 'LESS_URGENT';
+      case 5:
+        return 'NON_URGENT';
+      default:
+        return 'NON_URGENT';
     }
   }
 }

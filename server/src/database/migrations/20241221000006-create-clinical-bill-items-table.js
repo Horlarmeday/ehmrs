@@ -7,74 +7,74 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       bill_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
           model: 'clinical_bills',
-          key: 'id'
+          key: 'id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'CASCADE'
+        onDelete: 'CASCADE',
       },
       item_type: {
         type: Sequelize.ENUM('DRUG', 'TEST', 'INVESTIGATION', 'SERVICE', 'ADDITIONAL_ITEM'),
-        allowNull: false
+        allowNull: false,
       },
       item_id: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       item_name: {
         type: Sequelize.STRING(255),
-        allowNull: false
+        allowNull: false,
       },
       item_code: {
         type: Sequelize.STRING(50),
-        allowNull: false
+        allowNull: false,
       },
       quantity: {
         type: Sequelize.DECIMAL(10, 2),
-        allowNull: false
+        allowNull: false,
       },
       unit_price: {
         type: Sequelize.DECIMAL(10, 2),
-        allowNull: false
+        allowNull: false,
       },
       total_price: {
         type: Sequelize.DECIMAL(10, 2),
-        allowNull: false
+        allowNull: false,
       },
       discount_percentage: {
         type: Sequelize.DECIMAL(5, 2),
         allowNull: false,
-        defaultValue: 0
+        defaultValue: 0,
       },
       discount_amount: {
         type: Sequelize.DECIMAL(10, 2),
         allowNull: false,
-        defaultValue: 0
+        defaultValue: 0,
       },
       final_price: {
         type: Sequelize.DECIMAL(10, 2),
-        allowNull: false
+        allowNull: false,
       },
       notes: {
         type: Sequelize.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
       updated_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')
-      }
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+      },
     });
 
     // Add indexes
@@ -86,5 +86,5 @@ module.exports = {
 
   down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('clinical_bill_items');
-  }
+  },
 };

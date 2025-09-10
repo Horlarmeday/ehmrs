@@ -29,11 +29,11 @@ export default [
     icon: 'fab fa-rev',
     name: 'Discharged Patients',
   },
-  // {
-  //   url: '/appointment/active',
-  //   icon: 'flaticon-event-calendar-symbol',
-  //   name: 'Appointment Scheduling',
-  // },
+  {
+    url: '/appointments',
+    icon: 'flaticon-event-calendar-symbol',
+    name: 'Appointment Scheduling',
+  },
   // {
   //   url: '/program/program-type',
   //   icon: 'flaticon-security',

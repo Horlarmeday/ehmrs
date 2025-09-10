@@ -98,10 +98,7 @@
               </b-form-group>
             </div>
             <div class="col-md-2">
-              <date-filter
-                v-model="filters.startDate"
-                @change="loadEntries"
-              />
+              <date-filter v-model="filters.startDate" @change="loadEntries" />
               <b-form-group label="Date Range" label-for="date-filter">
                 <b-form-input
                   id="date-filter"

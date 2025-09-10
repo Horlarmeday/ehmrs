@@ -224,7 +224,6 @@
                 class="form-control"
                 :class="{ 'is-invalid': errors.approval_notes }"
                 rows="3"
-                placeholder="Any notes about the approval decision..."
               ></textarea>
               <div v-if="errors.approval_notes" class="invalid-feedback d-block">
                 {{ errors.approval_notes }}
@@ -241,7 +240,6 @@
                 class="form-control"
                 :class="{ 'is-invalid': errors.special_instructions }"
                 rows="2"
-                placeholder="Any special instructions for fulfillment..."
               ></textarea>
               <div v-if="errors.special_instructions" class="invalid-feedback d-block">
                 {{ errors.special_instructions }}

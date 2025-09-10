@@ -53,6 +53,20 @@
             >
               <i class="fas fa-sticky-note mr-2"></i>Notes
             </button>
+            <button
+              class="btn btn-light-primary btn-sm font-weight-bold"
+              :class="{ active: activeTab === 'items' }"
+              @click="setActiveTab('items')"
+            >
+              <i class="fas fa-boxes mr-2"></i>Items
+            </button>
+            <button
+              class="btn btn-light-primary btn-sm font-weight-bold"
+              :class="{ active: activeTab === 'services' }"
+              @click="setActiveTab('services')"
+            >
+              <i class="fas fa-concierge-bell mr-2"></i>Services
+            </button>
           </div>
         </div>
       </div>
@@ -578,13 +592,22 @@
             <div class="col-md-3">
               <div class="form-group">
                 <label class="form-label font-weight-bold">Machine Type</label>
-                <input
-                  type="text"
-                  v-model="assessmentForm.machine_type"
-                  class="form-control"
+                <select
                   :disabled="!isEditingAssessment"
-                  placeholder="e.g., Fresenius 5008"
-                />
+                  class="form-control"
+                  v-model="assessmentForm.machine_type"
+                >
+                  <option v-for="machine in machines" :value="machine" :key="machine">{{
+                    machine
+                  }}</option>
+                </select>
+                <!--                <input-->
+                <!--                  type="text"-->
+                <!--                  v-model="assessmentForm.machine_type"-->
+                <!--                  class="form-control"-->
+                <!--                  :disabled="!isEditingAssessment"-->
+                <!--                  placeholder="e.g., Fresenius 5008"-->
+                <!--                />-->
               </div>
             </div>
             <div class="col-md-3">
@@ -625,8 +648,10 @@
                   <option value="">Select Route</option>
                   <option value="AV Fistula">AV Fistula</option>
                   <option value="AV Graft">AV Graft</option>
-                  <option value="Tunneled Catheter">Tunneled Catheter</option>
-                  <option value="Non-tunneled Catheter">Non-tunneled Catheter</option>
+                  <option value="Femoral">Femoral</option>
+                  <option value="Central Line">Central Line</option>
+                  <!--                  <option value="Tunneled Catheter">Tunneled Catheter</option>-->
+                  <!--                  <option value="Non-tunneled Catheter">Non-tunneled Catheter</option>-->
                 </select>
               </div>
             </div>
@@ -878,7 +903,7 @@
               </div>
               <div class="col-md-3">
                 <div class="form-group">
-                  <label class="form-label font-weight-bold">Ultrafiltration Rate (ml/hr)</label>
+                  <label class="form-label font-weight-bold">Ultrafiltration Rate (l/hr)</label>
                   <input
                     type="number"
                     v-model="vitalsForm.ultrafiltration_rate"
@@ -907,9 +932,10 @@
                 <div class="form-group">
                   <label class="form-label font-weight-bold">Venous Pressure (mmHg)</label>
                   <input
-                    type="number"
+                    type="text"
                     v-model="vitalsForm.venous_pressure"
                     class="form-control"
+                    placeholder="120/80"
                     min="0"
                     max="300"
                     step="1"
@@ -918,7 +944,7 @@
               </div>
               <div class="col-md-3">
                 <div class="form-group">
-                  <label class="form-label font-weight-bold">IVF (ml)</label>
+                  <label class="form-label font-weight-bold">Ultrafiltration Goal (ltr)</label>
                   <input
                     type="number"
                     v-model="vitalsForm.ivf"
@@ -945,7 +971,17 @@
             </div>
 
             <div class="row">
-              <div class="col-md-6">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label class="form-label font-weight-bold">Ultrafiltration Volume (ltr)</label>
+                  <input
+                    type="text"
+                    v-model="vitalsForm.ultrafiltration_volume"
+                    class="form-control"
+                  />
+                </div>
+              </div>
+              <div class="col-md-4">
                 <div class="form-group">
                   <label class="form-label font-weight-bold">Blood Pressure (mmHg)</label>
                   <input
@@ -1294,6 +1330,213 @@
         </div>
       </div>
     </div>
+
+    <!-- Items Tab -->
+    <div v-show="activeTab === 'items'">
+      <div class="card card-custom">
+        <div class="card-header border-0 py-4">
+          <h4 class="card-title font-weight-bolder text-dark">
+            <i class="fas fa-boxes text-info mr-2"></i>
+            Dialysis Items & Consumables
+          </h4>
+          <div class="card-toolbar">
+            <button class="btn btn-primary btn-sm" @click="addNewItem">
+              <i class="fas fa-plus mr-2"></i>Add Item
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- Items Form -->
+          <div v-if="itemsForm.items.length > 0">
+            <div v-for="(item, i) in itemsForm.items" :key="i" class="form-group row">
+              <div class="col-lg-6">
+                <label class="form-label font-weight-bold">Item</label>
+                <v-select
+                  @search="onItemSearch"
+                  v-model="item.item"
+                  label="name"
+                  :options="itemsOptions"
+                  :reduce="
+                    items => ({
+                      name: items.name,
+                      drug_id: items.id,
+                      drug_type: items?.drug_type,
+                      drug_form: items?.drug_form,
+                      price: items.price,
+                      unit_id: items.unit_id,
+                      quantity_remaining: items?.quantity_remaining,
+                    })
+                  "
+                  placeholder="Search for dialysis items..."
+                />
+              </div>
+              <div class="col-lg-4">
+                <label class="form-label font-weight-bold">Quantity</label>
+                <input
+                  v-model="item.quantity"
+                  type="number"
+                  class="form-control"
+                  placeholder="Quantity"
+                  min="1"
+                />
+              </div>
+              <div class="col-lg-2">
+                <label class="form-label font-weight-bold">&nbsp;</label>
+                <div class="d-flex">
+                  <button
+                    v-if="i === 0"
+                    class="btn btn-light-primary btn-sm mr-2"
+                    @click="addNewItem"
+                    title="Add Item"
+                  >
+                    <i class="fas fa-plus"></i>
+                  </button>
+                  <button
+                    class="btn btn-light-danger btn-sm"
+                    @click="removeItem(i)"
+                    title="Remove Item"
+                  >
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <error-banner
+              v-if="itemsForm.showError"
+              :message="itemsForm.errorMessage"
+              :lists="itemsForm.errorList"
+            />
+
+            <div class="text-right mt-4">
+              <button
+                class="btn btn-primary"
+                @click="submitItems"
+                :disabled="isSaving || !itemsForm.items.length"
+                ref="kt_submitItems"
+              >
+                <i class="fas fa-spinner fa-spin mr-2" v-if="isSaving"></i>
+                <i class="fas fa-save mr-2" v-else></i>
+                {{ isSaving ? 'Saving...' : 'Submit Items' }}
+              </button>
+            </div>
+          </div>
+
+          <div v-else class="text-center py-4">
+            <p class="text-muted">No items added yet.</p>
+            <p class="text-muted">Click "Add Item" to start ordering dialysis consumables.</p>
+          </div>
+
+          <!-- Ordered Items Display -->
+          <div v-if="orderedItems.length > 0" class="mt-5">
+            <h5 class="font-weight-bold mb-3">
+              <i class="fas fa-list-alt text-info mr-2"></i>
+              Ordered Items
+            </h5>
+            <additional-items-table :items="orderedItems" />
+            <pagination
+              v-if="orderedItems?.length"
+              :total-pages="itemsPages"
+              :total="totalOrderedItems"
+              :per-page="itemsPerPage"
+              :current-page="itemsCurrentPage"
+              @pagechanged="onItemsPageChange"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Services Tab -->
+    <div v-show="activeTab === 'services'">
+      <div class="card card-custom">
+        <div class="card-header border-0 py-4">
+          <h4 class="card-title font-weight-bolder text-dark">
+            <i class="fas fa-concierge-bell text-success mr-2"></i>
+            Dialysis Services & Procedures
+          </h4>
+          <div class="card-toolbar">
+            <button class="btn btn-primary btn-sm" @click="addService">
+              <i class="fas fa-plus mr-2"></i>Add Service
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- Services Form -->
+          <div class="form-group row">
+            <label class="col-lg-3 col-form-label font-weight-bold">Select Service(s):</label>
+            <div class="col-lg-6">
+              <v-select
+                :multiple="true"
+                name="service"
+                @search="onServiceSearch"
+                v-model="servicesForm.selectedServices"
+                label="name"
+                :options="servicesOptions"
+                :reduce="
+                  services => ({
+                    id: services.id,
+                    price: services.price,
+                    name: services.name,
+                  })
+                "
+                placeholder="Search for dialysis services..."
+              >
+                <template #option="{ price, name }">
+                  <span>{{ name }} - </span>
+                  <strong> {{ price || '' }}</strong>
+                </template>
+              </v-select>
+            </div>
+          </div>
+
+          <!-- Selected Services Display -->
+          <div v-if="servicesForm.selectedServices.length > 0" class="mt-4">
+            <h6 class="font-weight-bold mb-3">Selected Services:</h6>
+            <div class="selected-services">
+              <span
+                v-for="(service, index) in servicesForm.selectedServices"
+                :key="index"
+                class="badge badge-primary mr-2 mb-2 p-2"
+              >
+                {{ service.name }} - ₦{{ service.price }}
+                <i class="fas fa-times ml-2 cursor-pointer" @click="removeService(index)"></i>
+              </span>
+            </div>
+          </div>
+
+          <div class="text-right mt-4">
+            <button
+              class="btn btn-primary"
+              @click="submitServices"
+              :disabled="isSaving || !servicesForm.selectedServices.length"
+              ref="kt_submitServices"
+            >
+              <i class="fas fa-spinner fa-spin mr-2" v-if="isSaving"></i>
+              <i class="fas fa-save mr-2" v-else></i>
+              {{ isSaving ? 'Saving...' : 'Submit Services' }}
+            </button>
+          </div>
+
+          <!-- Ordered Services Display -->
+          <div v-if="orderedServices.length > 0" class="mt-5">
+            <h5 class="font-weight-bold mb-3">
+              <i class="fas fa-list-alt text-success mr-2"></i>
+              Ordered Services
+            </h5>
+            <services-table :services="orderedServices" />
+            <pagination
+              v-if="orderedServices?.length"
+              :total-pages="servicesPages"
+              :total="totalOrderedServices"
+              :per-page="servicesPerPage"
+              :current-page="servicesCurrentPage"
+              @pagechanged="onServicesPageChange"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -1301,10 +1544,14 @@
 import dayjs from 'dayjs';
 import vSelect from 'vue-select';
 import { debounce, parseJwt } from '@/common/common';
+import ErrorBanner from '@/view/components/util/ErrorBanner.vue';
+import AdditionalItemsTable from '@/view/components/table/AdditionalItemsTable.vue';
+import ServicesTable from '@/view/components/table/ServicesTable.vue';
+import Pagination from '@/utils/Pagination.vue';
 
 export default {
   name: 'DialysisConsultation',
-  components: { vSelect },
+  components: { vSelect, ErrorBanner, AdditionalItemsTable, ServicesTable, Pagination },
   data() {
     return {
       activeTab: 'overview',
@@ -1400,6 +1647,7 @@ export default {
         weight: null,
         blood_flow_rate: null,
         ultrafiltration_rate: null,
+        ultrafiltration_volume: null,
         ap: '',
         venous_pressure: null,
         ivf: null,
@@ -1430,6 +1678,35 @@ export default {
       // Loading states
       isLoading: false,
       isSaving: false,
+      machines: ['Fresenius', 'Nipro', 'Nikkiso'],
+
+      // Items form data
+      itemsForm: {
+        items: [
+          {
+            item: '',
+            quantity: 1,
+          },
+        ],
+        inventory_id: null,
+        showError: false,
+        errorMessage: '',
+        errorList: [],
+      },
+
+      // Services form data
+      servicesForm: {
+        selectedServices: [],
+        isMultiple: true,
+      },
+
+      // Ordered items and services display
+      orderedItems: [],
+      orderedServices: [],
+      itemsCurrentPage: 1,
+      servicesCurrentPage: 1,
+      itemsPerPage: 10,
+      servicesPerPage: 10,
     };
   },
 
@@ -1441,6 +1718,47 @@ export default {
 
     icd10Diagnoses() {
       return this.$store.state.diagnosis.icd10Diseases || [];
+    },
+
+    // Items options from store
+    itemsOptions() {
+      return (
+        this.$store.state.inventory.items?.map(item => ({
+          name: item?.drug?.name,
+          id: item?.drug?.id,
+          price: item.selling_price,
+          drug_type: item.drug_type,
+          unit_id: item?.unit_id,
+          drug_form: item?.drug_form,
+          quantity_remaining: item?.quantity_remaining,
+        })) || []
+      );
+    },
+
+    // Services options from store
+    servicesOptions() {
+      return this.$store.state.model.services || [];
+    },
+
+    // Inventories for items
+    inventories() {
+      return this.$store.state.inventory.inventories || [];
+    },
+
+    // Pagination for ordered items
+    totalOrderedItems() {
+      return this.$store.state.order.totalAdditionalItemsOrders || 0;
+    },
+    itemsPages() {
+      return this.$store.state.order.additionalItemsOrdersPages;
+    },
+
+    // Pagination for ordered services
+    totalOrderedServices() {
+      return this.$store.state.order.totalServices || 0;
+    },
+    servicesPages() {
+      return this.$store.state.order.servicePages;
     },
   },
 
@@ -1779,6 +2097,7 @@ export default {
           weight: null,
           blood_flow_rate: null,
           ultrafiltration_rate: null,
+          ultrafiltration_volume: null,
           ap: '',
           venous_pressure: null,
           ivf: null,
@@ -2051,6 +2370,7 @@ export default {
         weight: null,
         blood_flow_rate: null,
         ultrafiltration_rate: null,
+        ultrafiltration_volume: null,
         ap: '',
         venous_pressure: null,
         ivf: null,
@@ -2084,10 +2404,258 @@ export default {
 
       console.log('expandedVitals updated:', this.expandedVitals);
     },
+
+    // Items management methods
+    addNewItem() {
+      this.itemsForm.items.push({
+        item: '',
+        quantity: 1,
+      });
+    },
+
+    removeItem(index) {
+      this.itemsForm.items.splice(index, 1);
+    },
+
+    onItemSearch(search, loading) {
+      if (search.length > 2) {
+        loading(true);
+        this.searchItems(loading, search, this);
+      }
+    },
+
+    searchItems: debounce((loading, search, vm) => {
+      const inventory = vm.getInventoryId();
+      vm.$store
+        .dispatch('inventory/fetchInventoryItems', {
+          search,
+          inventory,
+          //filter: { drug_form: 'Consumable' },
+        })
+        .then(() => loading(false));
+    }, 500),
+
+    getInventoryId() {
+      // For dialysis, use general store or create dialysis-specific inventory
+      const generalInventory = this.inventories.find(inventory =>
+        inventory.name.toLowerCase().includes('cash')
+      );
+      return generalInventory?.id || this.inventories[0]?.id;
+    },
+
+    async submitItems() {
+      this.itemsForm.showError = false;
+
+      // Validate items
+      if (this.itemsForm.items.some(({ item }) => !item)) {
+        return this.$notify({
+          group: 'foo',
+          title: 'Error',
+          text: 'Please select an item for all entries',
+          type: 'error',
+        });
+      }
+
+      // Check quantity validation
+      const invalidItems = this.itemsForm.items.filter(
+        item => item.item.quantity_remaining === 0 || +item.quantity > +item.item.quantity_remaining
+      );
+
+      if (invalidItems?.length) {
+        this.itemsForm.showError = true;
+        this.itemsForm.errorMessage = `The following items are currently low in quantity in the dispensary`;
+        this.itemsForm.errorList = invalidItems.map(item => {
+          return `${item.item.name}; Quantity remaining: ${item.item.quantity_remaining}`;
+        });
+        return;
+      }
+
+      try {
+        this.isSaving = true;
+        const visitId = this.$route.params.id;
+
+        const data = this.itemsForm.items.map(({ item, quantity }) => ({
+          ...item,
+          quantity_to_dispense: quantity,
+          inventory_id: this.getInventoryId(),
+          source: 'Consultation',
+        }));
+
+        await this.$store.dispatch('order/orderAdditionalItems', { data, id: visitId });
+
+        this.$notify({
+          group: 'foo',
+          title: 'Items Ordered',
+          text: 'Dialysis items have been ordered successfully.',
+          type: 'success',
+        });
+
+        // Reset form
+        this.itemsForm.items = [{ item: '', quantity: 1 }];
+        this.itemsForm.showError = false;
+        // Refresh ordered items display
+        this.fetchOrderedItems();
+      } catch (error) {
+        console.error('Failed to submit items:', error);
+        this.$notify({
+          group: 'foo',
+          title: 'Error',
+          text: 'Failed to submit items: ' + error.message,
+          type: 'error',
+        });
+      } finally {
+        this.isSaving = false;
+      }
+    },
+
+    // Services management methods
+    addService() {
+      // This method is for UI consistency, actual service selection is handled by v-select
+      this.$notify({
+        group: 'foo',
+        title: 'Add Service',
+        text: 'Use the search box above to select services.',
+        type: 'info',
+      });
+    },
+
+    removeService(index) {
+      this.servicesForm.selectedServices.splice(index, 1);
+    },
+
+    onServiceSearch(search, loading) {
+      if (search.length > 2) {
+        loading(true);
+        this.searchServices(loading, search, this);
+      }
+    },
+
+    searchServices: debounce((loading, search, vm) => {
+      vm.$store
+        .dispatch('model/fetchServices', {
+          currentPage: 1,
+          itemsPerPage: 50,
+          search,
+        })
+        .then(() => loading(false))
+        .catch(() => loading(false));
+    }, 500),
+
+    async submitServices() {
+      if (!this.servicesForm.selectedServices.length) {
+        return this.$notify({
+          group: 'foo',
+          title: 'Error',
+          text: 'Please select at least one service',
+          type: 'error',
+        });
+      }
+
+      try {
+        this.isSaving = true;
+        const visitId = this.$route.params.id;
+
+        const services = this.servicesForm.selectedServices.map(service => ({
+          service_id: service.id,
+          service_type: 'Cash',
+          is_urgent: false,
+          price: service.price,
+          source: 'Consultation',
+        }));
+
+        await this.$store.dispatch('order/orderAdditionalService', {
+          services,
+          id: visitId,
+        });
+
+        this.$notify({
+          group: 'foo',
+          title: 'Services Ordered',
+          text: 'Dialysis services have been ordered successfully.',
+          type: 'success',
+        });
+
+        // Reset form
+        this.servicesForm.selectedServices = [];
+        // Refresh ordered services display
+        this.fetchOrderedServices();
+      } catch (error) {
+        console.error('Failed to submit services:', error);
+        this.$notify({
+          group: 'foo',
+          title: 'Error',
+          text: 'Failed to submit services: ' + error.message,
+          type: 'error',
+        });
+      } finally {
+        this.isSaving = false;
+      }
+    },
+
+    // Methods for displaying ordered items and services
+    async fetchOrderedItems() {
+      try {
+        const visitId = this.$route.params.id;
+        const filter = { visit_id: visitId };
+
+        await this.$store.dispatch('order/fetchPrescribedAdditionalItems', {
+          currentPage: this.itemsCurrentPage,
+          itemsPerPage: this.itemsPerPage,
+          filter,
+        });
+
+        this.orderedItems = this.$store.state.order.additional_items_orders || [];
+      } catch (error) {
+        console.error('Failed to fetch ordered items:', error);
+      }
+    },
+
+    async fetchOrderedServices() {
+      try {
+        const visitId = this.$route.params.id;
+        const filter = { visit_id: visitId };
+
+        await this.$store.dispatch('order/fetchPrescribedServicesPerVisit', {
+          currentPage: this.servicesCurrentPage,
+          itemsPerPage: this.servicesPerPage,
+          filter,
+        });
+
+        this.orderedServices = this.$store.state.order.service_orders || [];
+      } catch (error) {
+        console.error('Failed to fetch ordered services:', error);
+      }
+    },
+
+    onItemsPageChange(page) {
+      this.itemsCurrentPage = page;
+      this.fetchOrderedItems();
+    },
+
+    onServicesPageChange(page) {
+      this.servicesCurrentPage = page;
+      this.fetchOrderedServices();
+    },
   },
 
   created() {
     this.loadConsultationData();
+    // Initialize inventories for items
+    this.$store.dispatch('inventory/fetchInventories');
+    // Initialize services
+    this.$store.dispatch('model/fetchServices', {
+      currentPage: 1,
+      itemsPerPage: 50,
+    });
+
+    this.$store.dispatch('inventory/fetchInventoryItems', {
+      currentPage: 1,
+      itemsPerPage: 50,
+      inventory: 1,
+    });
+    // Fetch ordered items and services
+    this.fetchOrderedItems();
+    this.fetchOrderedServices();
   },
 
   beforeDestroy() {
@@ -2475,5 +3043,46 @@ export default {
   margin-top: 10px;
   padding-top: 10px;
   border-top: 1px dashed #eee;
+}
+
+/* Items and Services tabs styles */
+.selected-services {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.selected-services .badge {
+  font-size: 0.85em;
+  padding: 8px 12px;
+  border-radius: 20px;
+  background-color: #3699ff;
+  color: white;
+  border: none;
+  box-shadow: 0 2px 4px rgba(54, 153, 255, 0.3);
+}
+
+.selected-services .badge i {
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.selected-services .badge i:hover {
+  opacity: 1;
+}
+
+/* Items form styling */
+.items-form .form-group {
+  margin-bottom: 1rem;
+}
+
+.items-form .btn {
+  margin-left: 0.5rem;
+}
+
+/* Services form styling */
+.services-form .form-group {
+  margin-bottom: 1rem;
 }
 </style>

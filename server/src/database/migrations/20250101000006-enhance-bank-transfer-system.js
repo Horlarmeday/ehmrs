@@ -5,7 +5,7 @@ module.exports = {
     try {
       // Add new columns to Clinical_Payment table for bank transfer tracking
       const tableInfo = await queryInterface.describeTable('Clinical_Payment');
-      
+
       // Add transfer_date column if it doesn't exist
       if (!tableInfo.transfer_date) {
         await queryInterface.addColumn('Clinical_Payment', 'transfer_date', {
@@ -260,7 +260,7 @@ module.exports = {
         'transfer_currency',
         'exchange_rate',
         'original_amount',
-        'original_currency'
+        'original_currency',
       ];
 
       for (const column of columnsToRemove) {
@@ -287,5 +287,5 @@ module.exports = {
       console.error('❌ Error reverting Clinical_Payment table enhancements:', error);
       throw error;
     }
-  }
+  },
 };

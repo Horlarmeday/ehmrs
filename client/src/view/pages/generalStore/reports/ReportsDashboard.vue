@@ -626,29 +626,12 @@ export default {
 
     async loadRecentReports() {
       try {
-        // TODO: Implement recent reports loading
-        this.recentReports = [
-          {
-            id: 1,
-            name: 'Monthly Stock Report',
-            description: 'Comprehensive stock level analysis',
-            type: 'STOCK',
-            generated_by: 'John Doe',
-            generated_at: new Date(),
-            status: 'COMPLETED',
-          },
-          {
-            id: 2,
-            name: 'Cost Analysis Q1',
-            description: 'Financial performance analysis',
-            type: 'FINANCIAL',
-            generated_by: 'Jane Smith',
-            generated_at: new Date(Date.now() - 86400000),
-            status: 'COMPLETED',
-          },
-        ];
+        await this.$store.dispatch('generalStore/fetchRecentReports');
+        this.recentReports = this.$store.state.generalStore.recentReports || [];
       } catch (error) {
-        console.error('Error loading recent reports:', error);
+        this.$logError('Error loading recent reports', error);
+        // Fallback to empty array if API fails
+        this.recentReports = [];
       }
     },
 
@@ -755,56 +738,133 @@ export default {
     },
 
     // Export Methods
-    exportStockReport() {
-      this.$toast.info('Stock report export functionality coming soon');
+    async exportStockReport() {
+      try {
+        this.$router.push({ name: 'general-store-stock-report' });
+      } catch (error) {
+        this.$logError('Failed to navigate to stock report', error);
+        this.$toast.error('Failed to open stock report');
+      }
     },
 
-    exportLowStockReport() {
-      this.$toast.info('Low stock report export functionality coming soon');
+    async exportLowStockReport() {
+      try {
+        this.$router.push({ name: 'general-store-stock-report', query: { filter: 'low_stock' } });
+      } catch (error) {
+        this.$logError('Failed to navigate to low stock report', error);
+        this.$toast.error('Failed to open low stock report');
+      }
     },
 
-    exportExpiringReport() {
-      this.$toast.info('Expiring items report export functionality coming soon');
+    async exportExpiringReport() {
+      try {
+        this.$router.push({ name: 'general-store-stock-report', query: { filter: 'expiring' } });
+      } catch (error) {
+        this.$logError('Failed to navigate to expiring items report', error);
+        this.$toast.error('Failed to open expiring items report');
+      }
     },
 
-    exportMovementReport() {
-      this.$toast.info('Movement report export functionality coming soon');
+    async exportMovementReport() {
+      try {
+        this.$router.push({ name: 'general-store-movement-report' });
+      } catch (error) {
+        this.$logError('Failed to navigate to movement report', error);
+        this.$toast.error('Failed to open movement report');
+      }
     },
 
-    exportTimelineReport() {
-      this.$toast.info('Timeline report export functionality coming soon');
+    async exportTimelineReport() {
+      try {
+        this.$router.push({ name: 'general-store-movement-report', query: { view: 'timeline' } });
+      } catch (error) {
+        this.$logError('Failed to navigate to timeline report', error);
+        this.$toast.error('Failed to open timeline report');
+      }
     },
 
-    exportUserActivityReport() {
-      this.$toast.info('User activity report export functionality coming soon');
+    async exportUserActivityReport() {
+      try {
+        this.$router.push({ name: 'general-store-movement-report', query: { view: 'user_activity' } });
+      } catch (error) {
+        this.$logError('Failed to navigate to user activity report', error);
+        this.$toast.error('Failed to open user activity report');
+      }
     },
 
-    exportCostReport() {
-      this.$toast.info('Cost report export functionality coming soon');
+    async exportCostReport() {
+      try {
+        this.$router.push({ name: 'general-store-cost-report' });
+      } catch (error) {
+        this.$logError('Failed to navigate to cost report', error);
+        this.$toast.error('Failed to open cost report');
+      }
     },
 
-    exportBudgetReport() {
-      this.$toast.info('Budget report export functionality coming soon');
+    async exportBudgetReport() {
+      try {
+        this.$router.push({ name: 'general-store-cost-report', query: { type: 'budget' } });
+      } catch (error) {
+        this.$logError('Failed to navigate to budget report', error);
+        this.$toast.error('Failed to open budget report');
+      }
     },
 
-    exportROIReport() {
-      this.$toast.info('ROI report export functionality coming soon');
+    async exportROIReport() {
+      try {
+        this.$router.push({ name: 'general-store-cost-report', query: { type: 'roi' } });
+      } catch (error) {
+        this.$logError('Failed to navigate to ROI report', error);
+        this.$toast.error('Failed to open ROI report');
+      }
     },
 
-    exportUsageReport() {
-      this.$toast.info('Usage report export functionality coming soon');
+    async exportUsageReport() {
+      try {
+        this.$router.push({ name: 'general-store-usage-report' });
+      } catch (error) {
+        this.$logError('Failed to navigate to usage report', error);
+        this.$toast.error('Failed to open usage report');
+      }
     },
 
-    exportTrendsReport() {
-      this.$toast.info('Trends report export functionality coming soon');
+    async exportTrendsReport() {
+      try {
+        this.$router.push({ name: 'general-store-usage-report', query: { type: 'trends' } });
+      } catch (error) {
+        this.$logError('Failed to navigate to trends report', error);
+        this.$toast.error('Failed to open trends report');
+      }
     },
 
-    exportDepartmentUsageReport() {
-      this.$toast.info('Department usage report export functionality coming soon');
+    async exportDepartmentUsageReport() {
+      try {
+        this.$router.push({ name: 'general-store-usage-report', query: { type: 'department' } });
+      } catch (error) {
+        this.$logError('Failed to navigate to department usage report', error);
+        this.$toast.error('Failed to open department usage report');
+      }
     },
 
-    exportAllReports() {
-      this.$toast.info('Export all reports functionality coming soon');
+    async exportAllReports() {
+      try {
+        const reportData = {
+          stock_report: this.statistics,
+          recent_reports: this.recentReports,
+          generated_at: new Date().toISOString(),
+          generated_by: this.$store.state.auth.user?.name || 'System',
+        };
+
+        const reportName = `All_Reports_${new Date().toISOString().split('T')[0]}`;
+        await this.$exportData([reportData], reportName, 'xlsx', {
+          formatters: {
+            generated_at: (value) => new Date(value).toLocaleDateString(),
+          }
+        });
+      } catch (error) {
+        this.$logError('Failed to export all reports', error);
+        this.$toast.error('Failed to export all reports');
+      }
     },
 
     // Report Actions

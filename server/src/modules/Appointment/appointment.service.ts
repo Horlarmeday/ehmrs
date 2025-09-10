@@ -50,7 +50,7 @@ class AppointmentService {
       appointment_date,
       appointment_time,
       duration_minutes,
-      type,
+      type, // Handle frontend field name
     } = body;
 
     // Validate patient exists and is not banned
@@ -60,6 +60,13 @@ class AppointmentService {
     }
     if (patient.status === Status.BANNED) {
       throw new BadException('INVALID', StatusCodes.BAD_REQUEST, 'Patient is banned');
+    }
+    if (patient.patient_status === 'Deceased') {
+      throw new BadException(
+        'INVALID', 
+        StatusCodes.BAD_REQUEST, 
+        `Cannot create appointment for deceased patient ${patient.fullname}. Patient died on ${patient.date_of_death ? new Date(patient.date_of_death).toLocaleDateString() : 'unknown date'}.`
+      );
     }
 
     // Validate doctor exists
@@ -103,7 +110,15 @@ class AppointmentService {
       );
     }
 
-    return await createAppointment(body);
+    // Auto-populate missing fields
+    const appointmentData = {
+      ...body,
+      type: body.type,
+      professional: body.professional || doctor.role || 'Doctor',
+      department: body.department || doctor.department || 'General Medicine',
+    };
+
+    return await createAppointment(appointmentData);
   }
 
   /**
@@ -112,7 +127,28 @@ class AppointmentService {
    * @returns {Promise<{count: number, rows: Appointment[]}>} appointments with pagination
    */
   static async getAppointmentsService(params: AppointmentSearchParams) {
-    return await getAppointments(params);
+    // Map AppointmentSearchParams to repository expected format
+    const repositoryParams = {
+      // Pagination
+      currentPage: params.page,
+      pageLimit: params.pageSize,
+      // Search
+      search: params.search,
+      // Filters
+      patient_id: params.filters?.patient_id,
+      doctor_id: params.filters?.doctor_id,
+      status: params.filters?.status,
+      type: params.filters?.type,
+      department: params.filters?.department,
+      // Date filters
+      start: params.filters?.start_date,
+      end: params.filters?.end_date,
+      // Sort
+      sortBy: params.sortBy,
+      sortOrder: params.sortOrder,
+    };
+
+    return await getAppointments(repositoryParams);
   }
 
   /**

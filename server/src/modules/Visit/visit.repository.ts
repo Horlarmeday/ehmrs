@@ -422,7 +422,7 @@ export async function searchCategoryVisits({
     paginate: +pageLimit,
     order: [['date_visit_start', 'DESC']],
     where: {
-      category,
+      // category,
       status: VisitStatus.ONGOING,
       ...(filter && JSON.parse(filter)),
     },
@@ -494,7 +494,7 @@ export async function getCategoryVisits({
     paginate: +pageLimit,
     order: [['date_visit_start', 'DESC']],
     where: {
-      category,
+      // category,
       status: VisitStatus.ONGOING,
       ...(filter && JSON.parse(filter)),
     },

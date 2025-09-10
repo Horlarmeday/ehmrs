@@ -2,7 +2,8 @@
 import {
   deletePrescribedTest,
   getOnePrescribedTest,
-  getPrescribedTests, getPrescriptionTests,
+  getPrescribedTests,
+  getPrescriptionTests,
   orderBulkTest,
   prescribeTest,
   updatePrescribedTest,
@@ -157,7 +158,6 @@ export class LabOrderService {
 
     return createTestPrescription(this.testPrescriptionData(data, patient_id));
   }
-
 
   /**
    * update bulk prescribed tests

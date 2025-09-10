@@ -6,6 +6,7 @@ import { BadException } from '../../../common/util/api-error';
 import { StatusCodes } from '../../../core/helpers/helper';
 import { Appointment, Visit } from '../../../database/models';
 import { Status } from '../../../database/models/patient';
+import { getLastActiveVisit } from '../../Visit/visit.repository';
 
 export class AppointmentCheckInService {
   /**
@@ -60,19 +61,20 @@ export class AppointmentCheckInService {
     }
 
     // Check for existing active visit first
-    const { getLastActiveVisit } = require('../../Visit/visit.repository');
     const existingVisit = await getLastActiveVisit(appointment.patient_id);
-    
+
     let visit: Visit;
-    
+
     if (existingVisit) {
       // Use existing active visit
       visit = existingVisit;
-      console.log(`Using existing active visit ID: ${visit.id} for patient ${appointment.patient_id}`);
+      console.log(
+        `Using existing active visit ID: ${visit.id} for patient ${appointment.patient_id}`
+      );
     } else {
       // Create new visit only if no active visit exists
       const visitCategory = AppointmentService.mapAppointmentTypeToVisitCategory(appointment.type);
-      
+
       const visitData: CreateVisit = {
         patient_id: appointment.patient_id,
         category: visitCategory,
@@ -82,14 +84,14 @@ export class AppointmentCheckInService {
         doctor_id: appointment.doctor_id,
         ante_natal_id: undefined, // Will be set by visit service if needed
         immunization_id: undefined, // Will be set by visit service if needed
-        
+
         // Additional fields for specialized visit types
         chief_complaint: checkInData.chief_complaint || appointment.reason_for_visit,
         initial_assessment: checkInData.initial_assessment || appointment.notes,
-        
+
         // Emergency-specific fields
         emergency_priority: checkInData.emergency_priority,
-        
+
         // Dialysis-specific fields
         dialysis_type: checkInData.dialysis_type,
         dialysis_notes: checkInData.dialysis_notes,
@@ -209,10 +211,8 @@ export class AppointmentCheckInService {
       }
 
       // Check if patient has an active visit
-      const { getLastActiveVisit } = require('../../Visit/visit.repository');
       const activeVisit = await getLastActiveVisit(appointment.patient_id);
       hasActiveVisit = !!activeVisit;
-
     } catch (error) {
       issues.push('Appointment not found');
     }

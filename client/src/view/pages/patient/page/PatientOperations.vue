@@ -55,6 +55,11 @@ export default {
           desc: 'View discharge records',
           link: '/admission/discharge-patients',
         },
+        {
+          name: 'Deceased Patients',
+          desc: 'View deceased patients',
+          link: '/patient/deceased-management',
+        },
       ],
     };
   },

@@ -14,11 +14,11 @@ export default [
     icon: 'flaticon2-user',
     name: 'Patients Operations',
   },
-  // {
-  //   url: '/appointment/active',
-  //   icon: 'flaticon-event-calendar-symbol',
-  //   name: 'Appointment Scheduling',
-  // },
+  {
+    url: '/appointments',
+    icon: 'flaticon-event-calendar-symbol',
+    name: 'Appointment Scheduling',
+  },
   {
     url: '/settings/choose-type',
     icon: 'fas fa-user-cog',
@@ -64,26 +64,26 @@ export default [
     icon: 'fas fa-laptop-house',
     name: 'Dispensary',
   },
-  {
-    url: '/account/transactions',
-    icon: 'far fa-money-bill-alt',
-    name: 'Payments',
-  },
-  {
-    url: '/reports/active',
-    icon: 'flaticon2-list-1',
-    name: 'Reports',
-  },
-  {
-    url: '/statistics',
-    icon: 'flaticon-statistics',
-    name: 'Statistics',
-  },
-  {
-    url: '/analytics/',
-    icon: 'far fa-chart-bar',
-    name: 'Analytics',
-  },
+  // {
+  //   url: '/account/transactions',
+  //   icon: 'far fa-money-bill-alt',
+  //   name: 'Payments',
+  // },
+  // {
+  //   url: '/reports/active',
+  //   icon: 'flaticon2-list-1',
+  //   name: 'Reports',
+  // },
+  // {
+  //   url: '/statistics',
+  //   icon: 'flaticon-statistics',
+  //   name: 'Statistics',
+  // },
+  // {
+  //   url: '/analytics/',
+  //   icon: 'far fa-chart-bar',
+  //   name: 'Analytics',
+  // },
   {
     url: '/pharmacy/pharmacy-type',
     icon: 'fas fa-tablets',

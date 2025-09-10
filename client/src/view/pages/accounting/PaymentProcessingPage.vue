@@ -957,7 +957,7 @@
         <div class="success-icon mb-4">
           <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
         </div>
-        
+
         <h4 class="text-success mb-3">Payment Processed Successfully!</h4>
         <p class="text-muted mb-4">
           Your payment has been processed and recorded in the system.
@@ -965,7 +965,7 @@
 
         <div class="receipt-options">
           <h6 class="mb-3">What would you like to do next?</h6>
-          
+
           <div class="row">
             <div class="col-md-6 mb-3">
               <b-button
@@ -982,7 +982,7 @@
                 <span v-else>Download Receipt</span>
               </b-button>
             </div>
-            
+
             <div class="col-md-6 mb-3">
               <b-button
                 variant="outline-primary"
@@ -997,10 +997,7 @@
           </div>
 
           <div class="mt-4">
-            <b-button
-              variant="outline-secondary"
-              @click="closeReceiptOptions"
-            >
+            <b-button variant="outline-secondary" @click="closeReceiptOptions">
               <i class="fas fa-times mr-2"></i>Close & Return to Bills
             </b-button>
           </div>
@@ -1106,7 +1103,7 @@ export default {
         { value: 'DEPOSIT', text: 'Deposit Payment' },
         { value: 'POINT_OF_SERVICE', text: 'Point of Service' },
       ],
-      
+
       // Receipt functionality
       showReceiptOptions: false,
       lastProcessedPaymentId: null,
@@ -2035,7 +2032,7 @@ export default {
 
           // Store payment ID for receipt generation
           this.lastProcessedPaymentId = result.data?.id || result.data?.payment?.id;
-          
+
           // Show receipt options modal
           this.showReceiptOptions = true;
         } else {
@@ -2099,7 +2096,7 @@ export default {
 
       try {
         this.isDownloadingReceipt = true;
-        
+
         const result = await this.$store.dispatch(
           'accounting/downloadPaymentReceipt',
           this.lastProcessedPaymentId
@@ -2129,7 +2126,7 @@ export default {
     closeReceiptOptions() {
       this.showReceiptOptions = false;
       this.lastProcessedPaymentId = null;
-      
+
       // Navigate back to bill items page
       this.$router.push({
         name: 'bill-items',

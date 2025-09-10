@@ -4,10 +4,10 @@ import { AppointmentStatus, AppointmentType } from '../../../database/models/app
 import { BadException } from '../../../common/util/api-error';
 import { StatusCodes } from '../../../core/helpers/helper';
 import AppointmentService from '../appointment.service';
-import { 
-  createAppointment, 
-  getAppointmentsByDoctor, 
-  getDoctorAvailability 
+import {
+  createAppointment,
+  getAppointmentsByDoctor,
+  getDoctorAvailability,
 } from '../appointment.repository';
 import { CreateAppointment } from '../interfaces/appointment.interface';
 
@@ -68,7 +68,10 @@ export class ScheduleManagementService {
   static async createRecurringAppointments(data: RecurringAppointmentData): Promise<Appointment[]> {
     const { base_appointment, recurrence_pattern } = data;
     const appointments: Appointment[] = [];
-    const dates = this.generateRecurrenceDates(base_appointment.appointment_date, recurrence_pattern);
+    const dates = this.generateRecurrenceDates(
+      base_appointment.appointment_date,
+      recurrence_pattern
+    );
 
     for (const date of dates) {
       try {
@@ -85,7 +88,7 @@ export class ScheduleManagementService {
             ...base_appointment,
             appointment_date: date,
           };
-          
+
           const appointment = await createAppointment(appointmentData);
           appointments.push(appointment);
         } else {
@@ -106,11 +109,11 @@ export class ScheduleManagementService {
    * @returns {Date[]} array of dates
    */
   private static generateRecurrenceDates(
-    startDate: Date, 
+    startDate: Date,
     pattern: RecurringAppointmentData['recurrence_pattern']
   ): Date[] {
     const dates: Date[] = [];
-    let currentDate = new Date(startDate);
+    const currentDate = new Date(startDate);
     let occurrences = 0;
     const maxOccurrences = pattern.max_occurrences || 52; // Default to 1 year
     const endDate = pattern.end_date || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year from now
@@ -127,7 +130,7 @@ export class ScheduleManagementService {
           currentDate.setDate(currentDate.getDate() + pattern.interval);
           break;
         case 'weekly':
-          currentDate.setDate(currentDate.getDate() + (pattern.interval * 7));
+          currentDate.setDate(currentDate.getDate() + pattern.interval * 7);
           break;
         case 'monthly':
           currentDate.setMonth(currentDate.getMonth() + pattern.interval);
@@ -145,13 +148,13 @@ export class ScheduleManagementService {
    * @returns {boolean} whether date is valid
    */
   private static isValidRecurrenceDate(
-    date: Date, 
+    date: Date,
     pattern: RecurringAppointmentData['recurrence_pattern']
   ): boolean {
     if (pattern.frequency === 'weekly' && pattern.days_of_week) {
       return pattern.days_of_week.includes(date.getDay());
     }
-    
+
     if (pattern.frequency === 'monthly' && pattern.day_of_month) {
       return date.getDate() === pattern.day_of_month;
     }
@@ -185,9 +188,9 @@ export class ScheduleManagementService {
 
     // Create appointment to block the time
     const appointment = await createAppointment(blockAppointment as any);
-    
+
     // Mark as a special "blocked" status (using cancelled for now)
-    await appointment.update({ 
+    await appointment.update({
       status: AppointmentStatus.CANCELLED,
       cancellation_reason: `TIME_BLOCK: ${timeBlock.block_type.toUpperCase()}`,
     });
@@ -238,7 +241,7 @@ export class ScheduleManagementService {
    * @returns {Promise<WaitlistEntry[]>} notifiable waitlist entries
    */
   static async checkWaitlistForAvailableSlots(
-    doctorId: number, 
+    doctorId: number,
     date: Date
   ): Promise<WaitlistEntry[]> {
     // Get available slots for the date
@@ -262,14 +265,17 @@ export class ScheduleManagementService {
   static async createDoctorScheduleTemplate(template: DoctorScheduleTemplate): Promise<any> {
     // In a full implementation, this would be stored in a DoctorScheduleTemplates table
     // For now, we'll return the template with validation
-    
+
     const doctor = await Staff.findByPk(template.doctor_id);
     if (!doctor) {
       throw new BadException('NOT_FOUND', StatusCodes.NOT_FOUND, 'Doctor not found');
     }
 
     // Validate time format
-    if (!this.isValidTimeFormat(template.start_time) || !this.isValidTimeFormat(template.end_time)) {
+    if (
+      !this.isValidTimeFormat(template.start_time) ||
+      !this.isValidTimeFormat(template.end_time)
+    ) {
       throw new BadException('INVALID', StatusCodes.BAD_REQUEST, 'Invalid time format');
     }
 
@@ -303,7 +309,7 @@ export class ScheduleManagementService {
 
     while (currentDate <= endDate) {
       const dayOfWeek = currentDate.getDay();
-      
+
       // Simulate getting template for this day
       const template = {
         doctor_id: doctorId,
@@ -318,7 +324,7 @@ export class ScheduleManagementService {
 
       // Generate slots for this day
       const daySlots = await AppointmentService.getAvailableSlotsService(
-        doctorId, 
+        doctorId,
         new Date(currentDate),
         template.appointment_duration
       );
@@ -352,7 +358,10 @@ export class ScheduleManagementService {
           [Op.notIn]: [AppointmentStatus.CANCELLED, AppointmentStatus.NO_SHOW],
         },
       },
-      order: [['appointment_date', 'ASC'], ['appointment_time', 'ASC']],
+      order: [
+        ['appointment_date', 'ASC'],
+        ['appointment_time', 'ASC'],
+      ],
     });
   }
 
@@ -360,13 +369,13 @@ export class ScheduleManagementService {
     // Find potential slots in the preferred date range
     const slots = [];
     const currentDate = new Date(entry.preferred_date_start);
-    
+
     while (currentDate <= entry.preferred_date_end) {
       const dailySlots = await AppointmentService.getAvailableSlotsService(
         entry.doctor_id,
         new Date(currentDate)
       );
-      
+
       const availableSlots = dailySlots.filter(slot => slot.available);
       if (availableSlots.length > 0) {
         slots.push({
@@ -374,7 +383,7 @@ export class ScheduleManagementService {
           available_times: availableSlots.map(s => s.time),
         });
       }
-      
+
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
@@ -423,8 +432,10 @@ export class ScheduleManagementService {
       date: date.toISOString().split('T')[0],
       summary: {
         total_appointments: appointments.length,
-        confirmed_appointments: appointments.filter(a => a.status === AppointmentStatus.CONFIRMED).length,
-        pending_appointments: appointments.filter(a => a.status === AppointmentStatus.SCHEDULED).length,
+        confirmed_appointments: appointments.filter(a => a.status === AppointmentStatus.CONFIRMED)
+          .length,
+        pending_appointments: appointments.filter(a => a.status === AppointmentStatus.SCHEDULED)
+          .length,
         available_slots: freeSlots.length,
         booked_slots: bookedSlots.length,
         utilization_rate: Math.round((bookedSlots.length / availableSlots.length) * 100),

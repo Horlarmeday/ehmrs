@@ -49,11 +49,11 @@ export default {
         desc: 'General store contains all items used in the hospital',
         link: '/general-store',
       },
-      {
-        name: 'Laboratory Store',
-        desc: 'Laboratory store contains all items used in the laboratory',
-        link: '/store/laboratory',
-      },
+      // {
+      //   name: 'Laboratory Store',
+      //   desc: 'Laboratory store contains all items used in the laboratory',
+      //   link: '/store/laboratory',
+      // },
     ],
   }),
   methods: {

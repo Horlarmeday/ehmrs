@@ -9,13 +9,13 @@ const testPaymentData = {
   bill_id: 1,
   patient_id: 1,
   selected_items: [1, 2],
-  amount: 150.00,
+  amount: 150.0,
   payment_method: 'CASH',
   payment_type: 'FULL',
   payment_date: new Date().toISOString(),
   notes: 'Test payment for validation framework',
-  cash_received: 200.00,
-  change_given: 50.00
+  cash_received: 200.0,
+  change_given: 50.0,
 };
 
 // Test scenarios
@@ -23,74 +23,74 @@ const testScenarios = [
   {
     name: 'Valid Cash Payment',
     data: { ...testPaymentData },
-    expectedResult: 'success'
+    expectedResult: 'success',
   },
   {
     name: 'Invalid Amount (Negative)',
-    data: { ...testPaymentData, amount: -50.00 },
-    expectedResult: 'validation_error'
+    data: { ...testPaymentData, amount: -50.0 },
+    expectedResult: 'validation_error',
   },
   {
     name: 'Invalid Amount (Exceeds Bill)',
-    data: { ...testPaymentData, amount: 1000.00 },
-    expectedResult: 'validation_error'
+    data: { ...testPaymentData, amount: 1000.0 },
+    expectedResult: 'validation_error',
   },
   {
     name: 'Invalid Payment Method',
     data: { ...testPaymentData, payment_method: 'INVALID_METHOD' },
-    expectedResult: 'validation_error'
+    expectedResult: 'validation_error',
   },
   {
     name: 'Missing Required Fields',
     data: { bill_id: 1, patient_id: 1 },
-    expectedResult: 'validation_error'
+    expectedResult: 'validation_error',
   },
   {
     name: 'Card Payment Without POS Terminal',
-    data: { 
-      ...testPaymentData, 
+    data: {
+      ...testPaymentData,
       payment_method: 'CARD',
-      pos_terminal_id: null 
+      pos_terminal_id: null,
     },
-    expectedResult: 'validation_error'
+    expectedResult: 'validation_error',
   },
   {
     name: 'Bank Transfer Without Bank Account',
-    data: { 
-      ...testPaymentData, 
+    data: {
+      ...testPaymentData,
       payment_method: 'BANK_TRANSFER',
-      bank_account_id: null 
+      bank_account_id: null,
     },
-    expectedResult: 'validation_error'
+    expectedResult: 'validation_error',
   },
   {
     name: 'Insurance Payment Without Provider',
-    data: { 
-      ...testPaymentData, 
+    data: {
+      ...testPaymentData,
       payment_method: 'INSURANCE',
-      insurance_provider: null 
+      insurance_provider: null,
     },
-    expectedResult: 'validation_error'
+    expectedResult: 'validation_error',
   },
   {
     name: 'Deposit Payment Without Usage Amount',
-    data: { 
-      ...testPaymentData, 
+    data: {
+      ...testPaymentData,
       payment_method: 'DEPOSIT',
-      deposit_usage: null 
+      deposit_usage: null,
     },
-    expectedResult: 'validation_error'
+    expectedResult: 'validation_error',
   },
   {
     name: 'Large Cash Payment (Requires Approval)',
-    data: { 
-      ...testPaymentData, 
-      amount: 15000.00,
-      cash_received: 15000.00,
-      change_given: 0.00
+    data: {
+      ...testPaymentData,
+      amount: 15000.0,
+      cash_received: 15000.0,
+      change_given: 0.0,
     },
-    expectedResult: 'approval_required'
-  }
+    expectedResult: 'approval_required',
+  },
 ];
 
 // Test functions
@@ -99,18 +99,14 @@ async function testPaymentValidation() {
 
   for (const scenario of testScenarios) {
     console.log(`📋 Testing: ${scenario.name}`);
-    
+
     try {
-      const response = await axios.post(
-        `${BASE_URL}/accounting/process-payment`,
-        scenario.data,
-        {
-          headers: {
-            'Authorization': `Bearer ${TEST_TOKEN}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+      const response = await axios.post(`${BASE_URL}/accounting/process-payment`, scenario.data, {
+        headers: {
+          Authorization: `Bearer ${TEST_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
       if (scenario.expectedResult === 'success') {
         console.log('✅ PASSED: Payment processed successfully');
@@ -119,11 +115,10 @@ async function testPaymentValidation() {
       } else {
         console.log('❌ FAILED: Expected validation error but payment was processed');
       }
-
     } catch (error) {
       if (error.response) {
         const { status, data } = error.response;
-        
+
         if (scenario.expectedResult === 'validation_error' && status === 400) {
           console.log('✅ PASSED: Validation error as expected');
           console.log(`   Error: ${data.message}`);
@@ -140,7 +135,7 @@ async function testPaymentValidation() {
         console.log(`   Error: ${error.message}`);
       }
     }
-    
+
     console.log(''); // Empty line for readability
   }
 }
@@ -148,23 +143,18 @@ async function testPaymentValidation() {
 // Test validation service directly (if available)
 async function testValidationServiceDirectly() {
   console.log('🔧 Testing Validation Service Directly\n');
-  
+
   try {
     // This would test the validation service without going through the full payment process
-    const response = await axios.post(
-      `${BASE_URL}/accounting/validate-payment`,
-      testPaymentData,
-      {
-        headers: {
-          'Authorization': `Bearer ${TEST_TOKEN}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+    const response = await axios.post(`${BASE_URL}/accounting/validate-payment`, testPaymentData, {
+      headers: {
+        Authorization: `Bearer ${TEST_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+    });
 
     console.log('✅ Validation service response:');
     console.log(JSON.stringify(response.data, null, 2));
-
   } catch (error) {
     if (error.response) {
       console.log('❌ Validation service error:');
@@ -178,21 +168,20 @@ async function testValidationServiceDirectly() {
 // Test payment options
 async function testPaymentOptions() {
   console.log('💳 Testing Payment Options\n');
-  
+
   try {
     const response = await axios.get(
       `${BASE_URL}/accounting/payment-options?billId=1&patientId=1`,
       {
         headers: {
-          'Authorization': `Bearer ${TEST_TOKEN}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${TEST_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
       }
     );
 
     console.log('✅ Payment options response:');
     console.log(JSON.stringify(response.data, null, 2));
-
   } catch (error) {
     if (error.response) {
       console.log('❌ Payment options error:');
@@ -206,22 +195,21 @@ async function testPaymentOptions() {
 // Main test execution
 async function runTests() {
   console.log('🚀 Starting Payment Validation Framework Tests\n');
-  console.log('=' .repeat(60));
+  console.log('='.repeat(60));
 
   try {
     // Test 1: Payment validation through API
     await testPaymentValidation();
-    
-    console.log('=' .repeat(60));
-    
+
+    console.log('='.repeat(60));
+
     // Test 2: Payment options
     await testPaymentOptions();
-    
-    console.log('=' .repeat(60));
-    
+
+    console.log('='.repeat(60));
+
     // Test 3: Direct validation service (if endpoint exists)
     await testValidationServiceDirectly();
-
   } catch (error) {
     console.error('❌ Test execution failed:', error.message);
   }
@@ -238,5 +226,5 @@ module.exports = {
   testPaymentValidation,
   testPaymentOptions,
   testValidationServiceDirectly,
-  runTests
+  runTests,
 };

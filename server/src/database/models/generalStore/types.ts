@@ -1,36 +1,36 @@
 export enum ItemStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
-  DISCONTINUED = 'DISCONTINUED'
+  DISCONTINUED = 'DISCONTINUED',
 }
 
 export enum MovementType {
-  IN = 'IN',                    // Stock received
-  OUT = 'OUT',                  // Stock issued
-  TRANSFER = 'TRANSFER',        // Stock transferred
-  ADJUSTMENT = 'ADJUSTMENT'     // Stock adjusted (correction)
+  IN = 'IN', // Stock received
+  OUT = 'OUT', // Stock issued
+  TRANSFER = 'TRANSFER', // Stock transferred
+  ADJUSTMENT = 'ADJUSTMENT', // Stock adjusted (correction)
 }
 
 export enum RequestStatus {
-  PENDING = 'PENDING',          // Awaiting approval
-  APPROVED = 'APPROVED',        // Approved, awaiting fulfillment
-  REJECTED = 'REJECTED',        // Rejected
-  FULFILLED = 'FULFILLED',      // Completely fulfilled
-  PARTIALLY_FULFILLED = 'PARTIALLY_FULFILLED' // Partially fulfilled
+  PENDING = 'PENDING', // Awaiting approval
+  APPROVED = 'APPROVED', // Approved, awaiting fulfillment
+  REJECTED = 'REJECTED', // Rejected
+  FULFILLED = 'FULFILLED', // Completely fulfilled
+  PARTIALLY_FULFILLED = 'PARTIALLY_FULFILLED', // Partially fulfilled
 }
 
 export enum Priority {
-  LOW = 'LOW',                  // Normal priority
-  MEDIUM = 'MEDIUM',            // Medium priority
-  HIGH = 'HIGH',                // High priority
-  URGENT = 'URGENT'             // Urgent priority
+  LOW = 'LOW', // Normal priority
+  MEDIUM = 'MEDIUM', // Medium priority
+  HIGH = 'HIGH', // High priority
+  URGENT = 'URGENT', // Urgent priority
 }
 
 export enum ItemRequestStatus {
-  PENDING = 'PENDING',          // Awaiting approval
-  APPROVED = 'APPROVED',        // Approved, awaiting issuance
-  ISSUED = 'ISSUED',            // Completely issued
-  PARTIALLY_ISSUED = 'PARTIALLY_ISSUED' // Partially issued
+  PENDING = 'PENDING', // Awaiting approval
+  APPROVED = 'APPROVED', // Approved, awaiting issuance
+  ISSUED = 'ISSUED', // Completely issued
+  PARTIALLY_ISSUED = 'PARTIALLY_ISSUED', // Partially issued
 }
 
 // DTOs for API requests

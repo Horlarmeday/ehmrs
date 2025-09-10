@@ -432,11 +432,14 @@ export class PaymentProcessingService {
 
       await ClinicalPaymentItem.bulkCreate(paymentItemRecords, { transaction });
 
-      logger.info(`Created ${paymentItemRecords.length} payment-item records for payment ${paymentId}`, {
-        paymentId,
-        itemCount: paymentItemRecords.length,
-        totalAmount: totalPaymentAmount,
-      });
+      logger.info(
+        `Created ${paymentItemRecords.length} payment-item records for payment ${paymentId}`,
+        {
+          paymentId,
+          itemCount: paymentItemRecords.length,
+          totalAmount: totalPaymentAmount,
+        }
+      );
     } catch (error) {
       logger.error('Failed to create payment-item records:', error);
       throw new BadException('Failed to create payment-item records', 500, error.message);
@@ -456,14 +459,17 @@ export class PaymentProcessingService {
     percentage: number;
   }> {
     const totalItemsCost = selectedItems.reduce(
-      (sum, item) => sum + (parseFloat(item.total_price?.toString()) || parseFloat(item.unit_price?.toString()) || 0),
+      (sum, item) =>
+        sum +
+        (parseFloat(item.total_price?.toString()) || parseFloat(item.unit_price?.toString()) || 0),
       0
     );
 
     // If payment covers all items fully
     if (totalPaymentAmount >= totalItemsCost) {
       return selectedItems.map(item => {
-        const itemCost = parseFloat(item.total_price?.toString()) || parseFloat(item.unit_price?.toString()) || 0;
+        const itemCost =
+          parseFloat(item.total_price?.toString()) || parseFloat(item.unit_price?.toString()) || 0;
         return {
           billItemId: item.id,
           amountToPay: itemCost,
@@ -476,7 +482,8 @@ export class PaymentProcessingService {
     // If payment is partial, distribute proportionally
     const paymentRatio = totalPaymentAmount / totalItemsCost;
     return selectedItems.map(item => {
-      const itemCost = parseFloat(item.total_price?.toString()) || parseFloat(item.unit_price?.toString()) || 0;
+      const itemCost =
+        parseFloat(item.total_price?.toString()) || parseFloat(item.unit_price?.toString()) || 0;
       const amountToPay = itemCost * paymentRatio;
       return {
         billItemId: item.id,

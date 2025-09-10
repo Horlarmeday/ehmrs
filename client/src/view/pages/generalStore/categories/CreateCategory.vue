@@ -1,18 +1,7 @@
 <template>
   <div class="create-category-form">
-    <!-- Form Header -->
-    <div class="form-header mb-4">
-      <h3 class="text-dark font-weight-bold mb-2">
-        <i class="flaticon2-plus text-success mr-2"></i>
-        Create New Category
-      </h3>
-      <p class="text-muted mb-0">
-        Add a new category or subcategory to organize your items
-      </p>
-    </div>
-
     <!-- Main Form -->
-    <form @submit.prevent="handleSubmit" class="category-form">
+    <form @submit.prevent="handleSubmit" class="category-form p-3">
       <div class="row">
         <!-- Basic Information -->
         <div class="col-lg-8">
@@ -32,7 +21,6 @@
                     type="text"
                     class="form-control"
                     :class="{ 'is-invalid': errors.name }"
-                    placeholder="Enter category name"
                     required
                   />
                   <div v-if="errors.name" class="invalid-feedback d-block">
@@ -47,7 +35,6 @@
                     type="text"
                     class="form-control"
                     :class="{ 'is-invalid': errors.code }"
-                    placeholder="e.g., CAT001, OFFICE, MEDICAL"
                   />
                   <div v-if="errors.code" class="invalid-feedback d-block">
                     {{ errors.code }}
@@ -64,7 +51,6 @@
                     class="form-control"
                     :class="{ 'is-invalid': errors.description }"
                     rows="3"
-                    placeholder="Enter detailed description of the category..."
                   ></textarea>
                   <div v-if="errors.description" class="invalid-feedback d-block">
                     {{ errors.description }}
@@ -105,7 +91,6 @@
                     min="0"
                     class="form-control"
                     :class="{ 'is-invalid': errors.sort_order }"
-                    placeholder="0"
                   />
                   <div v-if="errors.sort_order" class="invalid-feedback d-block">
                     {{ errors.sort_order }}
@@ -141,7 +126,6 @@
                       type="text"
                       class="form-control"
                       :class="{ 'is-invalid': errors.icon_class }"
-                      placeholder="flaticon2-folder"
                     />
                   </div>
                   <div v-if="errors.icon_class" class="invalid-feedback d-block">
@@ -183,7 +167,6 @@
                     class="form-control"
                     :class="{ 'is-invalid': errors.metadata }"
                     rows="3"
-                    placeholder="Enter additional metadata in JSON format (optional)"
                   ></textarea>
                   <div v-if="errors.metadata" class="invalid-feedback d-block">
                     {{ errors.metadata }}
@@ -380,7 +363,7 @@
                 </span>
               </div>
 
-              <div class="action-buttons">
+              <div v-if="showActions" class="action-buttons">
                 <button type="button" @click="$emit('cancel')" class="btn btn-light btn-lg mr-3">
                   <i class="flaticon2-close mr-2"></i>
                   Cancel
@@ -408,6 +391,12 @@
 <script>
 export default {
   name: 'CreateCategoryForm',
+  props: {
+    showActions: {
+      type: Boolean,
+      default: true,
+    },
+  },
   data() {
     return {
       loading: false,
@@ -532,11 +521,15 @@ export default {
           this.resetForm();
         }, 2000);
       } catch (error) {
-        console.error('Error creating category:', error);
         this.$toast.error('Failed to create category. Please try again.');
       } finally {
         this.loading = false;
       }
+    },
+
+    submitForm() {
+      // External method to trigger form submission
+      this.handleSubmit();
     },
 
     resetForm() {
@@ -566,12 +559,7 @@ export default {
   position: relative;
 }
 
-.form-header {
-  text-align: center;
-  padding: 2rem;
-  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-  border-radius: 0.5rem;
-}
+/* Form header styles removed - now handled by modal header */
 
 .form-label.required::after {
   content: ' *';
@@ -670,10 +658,9 @@ export default {
 }
 
 .form-actions {
-  position: sticky;
-  bottom: 0;
-  background: white;
-  z-index: 100;
+  margin-top: 2rem;
+  border-top: 1px solid #e9ecef;
+  background: #f8f9fa;
 }
 
 .form-status {
@@ -699,10 +686,6 @@ export default {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .form-header {
-    padding: 1rem;
-  }
-
   .action-buttons {
     flex-direction: column;
     width: 100%;
@@ -715,6 +698,10 @@ export default {
 
   .form-actions .card-body {
     padding: 1rem;
+  }
+
+  .category-form {
+    padding: 1rem !important;
   }
 }
 </style>

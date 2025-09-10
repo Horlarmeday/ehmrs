@@ -1,5 +1,12 @@
 /* eslint-disable camelcase */
-import { PrescribedTest, Staff, Test, TestResult, Patient, ClinicalBill } from '../../../database/models';
+import {
+  PrescribedTest,
+  Staff,
+  Test,
+  TestResult,
+  Patient,
+  ClinicalBill,
+} from '../../../database/models';
 import sequelize, { WhereOptions } from 'sequelize';
 import { staffAttributes } from '../../Antenatal/antenatal.repository';
 import { BadException } from '../../../common/util/api-error';

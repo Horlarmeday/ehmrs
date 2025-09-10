@@ -34,12 +34,14 @@ import Antenatal from './nurse/antenatal/Dashboard.vue';
 import HealthInsurance from './nhis/Dashboard.vue';
 import CustomerCare from './reception/Dashboard.vue';
 import Theater from './nurse/theater/Dashboard.vue';
-import FinancialOfficer from './financeOfficer/Dashboard.vue';
+import FinancialOfficer from '../accounting/AccountingDashboard.vue';
 import HODNurse from './nurse/hod/Dashboard.vue';
 import HODLaboratory from './laboratory/hod/Dashboard.vue';
 import Emergency from './nurse/emergency/Dashboard.vue';
 import VIPWard from './nurse/vip/Dashboard.vue';
 import HODPharmacy from './pharmacy/hod/Dashboard.vue';
+import StoreAdmin from './store/admin/Dashboard.vue';
+import GeneralStore from './store/generalStore/Dashboard.vue';
 import { parseJwt } from '@/common/common';
 import { departments } from '@/view/pages/employees/create/employeeRoles';
 import Admin from '@/view/pages/admin/Admin.vue';
@@ -68,6 +70,7 @@ import Infertility from '@/view/pages/home/medicalPractitioners/infertility/Dash
 import ObstetricEndocrinologist from '@/view/pages/home/medicalPractitioners/obstetricEndocrinologist/Dashboard.vue';
 import MaternalFetalMedicine from '@/view/pages/home/medicalPractitioners/maternalFetalMedicine/Dashboard.vue';
 import PediatricEmergency from '@/view/pages/home/medicalPractitioners/pediatricEmergency/Dashboard.vue';
+import NursingAssistant from '@/view/pages/home/nurse/nursingAssistant/Dashboard.vue';
 
 const DEPARTMENTS = {
   MEDICAL_PRACTITIONERS: 'Medical Practitioners',
@@ -104,16 +107,18 @@ const ROLES = {
   GENERAL_PRACTITIONER: 'General Practitioner',
   GERIATRICS: 'Geriatrics',
   GYNECOLOGY_ONCOLOGIST: 'Gynecology Oncologist',
-  HOD_LABORATORY: 'HOD Laboratory',
-  HOD_PHARMACY: 'HOD Pharmacy',
-  HOD_RADIOLOGY: 'HOD Radiology',
+  HOD_LABORATORY: 'Laboratory Admin',
+  HOD_PHARMACY: 'Pharmacy Admin',
+  HOD_RADIOLOGY: 'Radiology Admin',
+  STORE_ADMIN: 'Store Admin',
   HEALTH_INSURANCE: 'Health Insurance',
   INFECTIOUS_DISEASE: 'Infectious Disease',
   INFECTIOUS_DISEASE_SPECIALIST: 'Infectious Disease Specialist',
   INFERTILITY: 'Infertility',
   LAB_STORE: 'Lab Store',
+  GENERAL_STORE: 'General Store',
   LABORATORY_MANAGER: 'Laboratory Manager',
-  LABORATORY_RECEPTIONIST: 'Laboratory Receptionist',
+  LABORATORY_RECEPTIONIST: 'Laboratory Scientist',
   LABORATORY_TECHNICIAN: 'Laboratory Technician',
   LIFESTYLE_MEDICINE: 'Lifestyle Medicine',
   MATERNAL_FETAL_MEDICINE: 'Maternal-Fetal Medicine',
@@ -139,6 +144,7 @@ const ROLES = {
   HOSPICES_AND_PALLIATIVE_CARE: 'Hospices and Palliative Care',
   EAR_NOSE_AND_THROAT_ENT_SPECIALIST: 'Ear, Nose and Throat (ENT) Specialist',
   GASTROENTEROLOGIST: 'Gastroenterologist',
+  NURSING_ASSISTANT: 'Nursing Assistant',
 };
 
 const SubRoles = {
@@ -152,6 +158,7 @@ const SubRoles = {
   HOD: 'HOD',
   EMERGENCY: 'Accident & Emergency',
   VIP_PRIVATE: 'VIP/Private',
+  DIALYSIS: 'Dialysis',
 };
 export default {
   data: () => ({
@@ -171,7 +178,6 @@ export default {
           case DEPARTMENTS.RECORDS:
             return this.getMedicalRecordsDashboard(parsedToken.role);
           case DEPARTMENTS.RADIOLOGY: {
-            console.log(parsedToken);
             return this.getRadiologyDashboard(parsedToken.role);
           }
           case DEPARTMENTS.PHARMACY:
@@ -179,7 +185,7 @@ export default {
           case DEPARTMENTS.LABORATORY:
             return this.getLaboratoryDashboard(parsedToken.role);
           case DEPARTMENTS.NURSING:
-            return this.getNurseDashboard(parsedToken.sub_role);
+            return this.getNurseDashboard(parsedToken.sub_role, parsedToken.role);
           case DEPARTMENTS.ACCOUNTS:
             return this.getAccountsDashboard(parsedToken.role);
           case DEPARTMENTS.RECEPTION:
@@ -206,7 +212,10 @@ export default {
       }
     },
 
-    getNurseDashboard(subRole) {
+    getNurseDashboard(subRole, role) {
+      if (role === ROLES.NURSING_ASSISTANT) {
+        return (this.dashboardComponent = NursingAssistant);
+      }
       switch (subRole) {
         case SubRoles.G_OPD:
           return (this.dashboardComponent = GOPD);
@@ -228,6 +237,8 @@ export default {
           return (this.dashboardComponent = Emergency);
         case SubRoles.VIP_PRIVATE:
           return (this.dashboardComponent = VIPWard);
+        case SubRoles.DIALYSIS:
+          return (this.dashboardComponent = GOPD);
       }
     },
 
@@ -422,6 +433,10 @@ export default {
           return (this.dashboardComponent = PharmacyStore);
         case ROLES.LAB_STORE:
           return (this.dashboardComponent = PharmacyStore);
+        case ROLES.STORE_ADMIN:
+          return (this.dashboardComponent = StoreAdmin);
+        case ROLES.GENERAL_STORE:
+          return (this.dashboardComponent = GeneralStore);
         default:
           return (this.dashboardComponent = PharmacyStore);
       }

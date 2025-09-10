@@ -31,10 +31,10 @@ const departments = [
     id: 9,
     department: 'Medical Practitioners',
   },
-  {
-    id: 10,
-    department: 'Reception',
-  },
+  // {
+  //   id: 10,
+  //   department: 'Reception',
+  // },
   {
     id: 11,
     department: 'Accounts',
@@ -102,7 +102,7 @@ const roles = [
   },
   {
     id: 7,
-    role: 'Lab Store',
+    role: 'Procurement Officer',
     dept_id: 7,
   },
   {
@@ -337,27 +337,27 @@ const roles = [
   },
   {
     id: 54,
-    role: 'Laboratory Receptionist',
+    role: 'Laboratory Scientist',
     dept_id: 5,
   },
-  {
-    id: 55,
-    role: 'Laboratory Manager',
-    dept_id: 5,
-  },
+  // {
+  //   id: 55,
+  //   role: 'Laboratory Manager',
+  //   dept_id: 5,
+  // },
   {
     id: 56,
-    role: 'HOD Laboratory',
+    role: 'Laboratory Admin',
     dept_id: 5,
   },
   {
     id: 57,
-    role: 'HOD Radiology',
+    role: 'Radiology Admin',
     dept_id: 8,
   },
   {
     id: 58,
-    role: 'HOD Pharmacy',
+    role: 'Pharmacy Admin',
     dept_id: 4,
   },
   {
@@ -374,6 +374,21 @@ const roles = [
     id: 61,
     role: 'Nephrologist',
     dept_id: 9,
+  },
+  {
+    id: 62,
+    role: 'Store Admin',
+    dept_id: 7,
+  },
+  {
+    id: 63,
+    role: 'Nursing Assistant',
+    dept_id: 2,
+  },
+  {
+    id: 64,
+    role: 'Finance Admin',
+    dept_id: 11,
   },
 ];
 
@@ -497,6 +512,11 @@ const sub_roles = [
     id: 24,
     sub: 'Director',
     role_id: 59,
+  },
+  {
+    id: 25,
+    sub: 'Dialysis',
+    role_id: 2,
   },
 ];
 

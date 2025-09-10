@@ -308,11 +308,11 @@ export const getAdmittedPatients = async ({
         model: Ward,
         as: 'ward',
         attributes: ['name', 'occupant_type'],
-        where: {
-          ...(filter && {
-            [Op.or]: [{ ...JSON.parse(filter) }, { occupant_type: 'All' }],
-          }),
-        },
+        // where: {
+        //   ...(filter && {
+        //     [Op.or]: [{ ...JSON.parse(filter) }, { occupant_type: 'All' }],
+        //   }),
+        // },
       },
       { model: Staff, as: 'examiner', attributes: staffAttributes },
       {

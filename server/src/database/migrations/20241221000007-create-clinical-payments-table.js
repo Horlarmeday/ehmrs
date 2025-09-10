@@ -7,113 +7,121 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       payment_reference: {
         type: Sequelize.STRING(50),
         allowNull: false,
-        unique: true
+        unique: true,
       },
       bill_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
           model: 'clinical_bills',
-          key: 'id'
+          key: 'id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'CASCADE'
+        onDelete: 'CASCADE',
       },
       patient_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
           model: 'patients',
-          key: 'id'
+          key: 'id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'CASCADE'
+        onDelete: 'CASCADE',
       },
       amount: {
         type: Sequelize.DECIMAL(10, 2),
-        allowNull: false
+        allowNull: false,
       },
       payment_method: {
-        type: Sequelize.ENUM('CASH', 'BANK_TRANSFER', 'CARD', 'MOBILE_MONEY', 'DEPOSIT', 'INSURANCE', 'OTHER'),
-        allowNull: false
+        type: Sequelize.ENUM(
+          'CASH',
+          'BANK_TRANSFER',
+          'CARD',
+          'MOBILE_MONEY',
+          'DEPOSIT',
+          'INSURANCE',
+          'OTHER'
+        ),
+        allowNull: false,
       },
       payment_type: {
         type: Sequelize.ENUM('FULL', 'PARTIAL', 'DEPOSIT', 'REFUND'),
-        allowNull: false
+        allowNull: false,
       },
       transaction_id: {
         type: Sequelize.STRING(100),
-        allowNull: true
+        allowNull: true,
       },
       bank_reference: {
         type: Sequelize.STRING(100),
-        allowNull: true
+        allowNull: true,
       },
       card_type: {
         type: Sequelize.STRING(50),
-        allowNull: true
+        allowNull: true,
       },
       mobile_money_provider: {
         type: Sequelize.STRING(50),
-        allowNull: true
+        allowNull: true,
       },
       deposit_id: {
         type: Sequelize.INTEGER,
         allowNull: true,
         references: {
           model: 'patient_deposits',
-          key: 'id'
+          key: 'id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'SET NULL'
+        onDelete: 'SET NULL',
       },
       insurance_provider: {
         type: Sequelize.STRING(100),
-        allowNull: true
+        allowNull: true,
       },
       insurance_claim_number: {
         type: Sequelize.STRING(100),
-        allowNull: true
+        allowNull: true,
       },
       notes: {
         type: Sequelize.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       status: {
         type: Sequelize.ENUM('PENDING', 'COMPLETED', 'FAILED', 'CANCELLED', 'REFUNDED'),
         allowNull: false,
-        defaultValue: 'PENDING'
+        defaultValue: 'PENDING',
       },
       processed_by: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
           model: 'staff',
-          key: 'id'
+          key: 'id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'RESTRICT'
+        onDelete: 'RESTRICT',
       },
       processed_at: {
         type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
       updated_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')
-      }
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+      },
     });
 
     // Add indexes
@@ -129,5 +137,5 @@ module.exports = {
 
   down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('clinical_payments');
-  }
+  },
 };

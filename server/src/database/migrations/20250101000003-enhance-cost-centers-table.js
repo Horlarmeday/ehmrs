@@ -64,5 +64,5 @@ module.exports = {
       console.error('❌ Error reverting cost_centers table enhancements:', error);
       throw error;
     }
-  }
+  },
 };

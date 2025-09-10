@@ -1,15 +1,13 @@
 import { Transaction } from 'sequelize';
 import { BadException } from '../../../common/util/api-error';
-import { 
+import {
   Staff,
   POSTerminal,
   ClinicalPayment,
   JournalEntry,
-  JournalEntryLine
+  JournalEntryLine,
 } from '../../../database/models';
-import { 
-  JournalEntryStatus
-} from '../enums';
+import { JournalEntryStatus } from '../enums';
 import { logger } from '../../../core/helpers/logger';
 
 // ===== POS SETTLEMENT APPROVAL INTERFACES =====
@@ -46,7 +44,7 @@ export interface ApprovalStep {
 
 /**
  * POS Terminal Settlement Approval Service
- * 
+ *
  * This service handles the approval workflow for POS terminal settlements including:
  * - Multi-stage approval process
  * - Approval validation and constraints
@@ -54,7 +52,6 @@ export interface ApprovalStep {
  * - Journal entry creation upon approval
  */
 export class POSSettlementApprovalService {
-
   // ===== APPROVAL WORKFLOW MANAGEMENT =====
 
   /**
@@ -68,7 +65,11 @@ export class POSSettlementApprovalService {
       // Validate terminal exists
       const terminal = await POSTerminal.findByPk(settlementData.terminal_id);
       if (!terminal) {
-        throw new BadException('POS Terminal Not Found', 404, 'The specified POS terminal does not exist');
+        throw new BadException(
+          'POS Terminal Not Found',
+          404,
+          'The specified POS terminal does not exist'
+        );
       }
 
       // Validate approver permissions
@@ -78,24 +79,30 @@ export class POSSettlementApprovalService {
       const workflow: POSSettlementApprovalWorkflow = {
         settlement_id: settlementData.settlement_id,
         current_status: 'PENDING_APPROVAL',
-        approval_history: [{
-          step: 1,
-          action: 'SUBMITTED',
-          staff_id: settlementData.approved_by,
-          staff_name: await this.getStaffName(settlementData.approved_by),
-          timestamp: new Date(),
-          notes: 'Settlement submitted for approval',
-        }],
+        approval_history: [
+          {
+            step: 1,
+            action: 'SUBMITTED',
+            staff_id: settlementData.approved_by,
+            staff_name: await this.getStaffName(settlementData.approved_by),
+            timestamp: new Date(),
+            notes: 'Settlement submitted for approval',
+          },
+        ],
         can_approve: true,
         can_reject: true,
         can_post: false,
       };
 
       // Log submission
-      await this.logApprovalAction(workflow, 'SUBMITTED', settlementData.approved_by, 'Settlement submitted for approval');
+      await this.logApprovalAction(
+        workflow,
+        'SUBMITTED',
+        settlementData.approved_by,
+        'Settlement submitted for approval'
+      );
 
       return workflow;
-
     } catch (error) {
       logger.error('Settlement submission failed:', error);
       throw new BadException(
@@ -145,10 +152,14 @@ export class POSSettlementApprovalService {
       workflow.can_post = true;
 
       // Log approval
-      await this.logApprovalAction(workflow, 'APPROVED', staffId, approvalNotes || 'Settlement approved');
+      await this.logApprovalAction(
+        workflow,
+        'APPROVED',
+        staffId,
+        approvalNotes || 'Settlement approved'
+      );
 
       return workflow;
-
     } catch (error) {
       logger.error('Settlement approval failed:', error);
       throw new BadException(
@@ -201,7 +212,6 @@ export class POSSettlementApprovalService {
       await this.logApprovalAction(workflow, 'REJECTED', staffId, rejectionReason);
 
       return workflow;
-
     } catch (error) {
       logger.error('Settlement rejection failed:', error);
       throw new BadException(
@@ -254,10 +264,14 @@ export class POSSettlementApprovalService {
       workflow.can_post = false;
 
       // Log posting
-      await this.logApprovalAction(workflow, 'POSTED', staffId, postingNotes || 'Settlement posted');
+      await this.logApprovalAction(
+        workflow,
+        'POSTED',
+        staffId,
+        postingNotes || 'Settlement posted'
+      );
 
       return workflow;
-
     } catch (error) {
       logger.error('Settlement posting failed:', error);
       throw new BadException(
@@ -316,7 +330,9 @@ export class POSSettlementApprovalService {
   /**
    * Get settlement workflow
    */
-  private static async getSettlementWorkflow(settlementId: string): Promise<POSSettlementApprovalWorkflow | null> {
+  private static async getSettlementWorkflow(
+    settlementId: string
+  ): Promise<POSSettlementApprovalWorkflow | null> {
     // In a production system, you would query a workflow table
     // For now, return null to simulate workflow not found
     return null;
@@ -375,7 +391,6 @@ export class POSSettlementApprovalService {
       ]);
 
       logger.info(`Journal entries created for POS settlement posting: ${settlementId}`);
-
     } catch (error) {
       logger.error('Failed to create journal entries for settlement posting:', error);
       throw new BadException(

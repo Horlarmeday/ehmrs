@@ -3,7 +3,8 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     // Check if table already exists
-    const tableExists = await queryInterface.showAllTables()
+    const tableExists = await queryInterface
+      .showAllTables()
       .then(tables => tables.includes('financial_periods'));
 
     if (tableExists) {
@@ -16,65 +17,65 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       name: {
         type: Sequelize.STRING(100),
         allowNull: false,
-        unique: true
+        unique: true,
       },
       start_date: {
         type: Sequelize.DATE,
-        allowNull: false
+        allowNull: false,
       },
       end_date: {
         type: Sequelize.DATE,
-        allowNull: false
+        allowNull: false,
       },
       status: {
         type: Sequelize.ENUM('OPEN', 'CLOSED', 'LOCKED'),
         allowNull: false,
-        defaultValue: 'OPEN'
+        defaultValue: 'OPEN',
       },
       balance: {
         type: Sequelize.DECIMAL(15, 2),
         allowNull: false,
-        defaultValue: 0.00
+        defaultValue: 0.0,
       },
       notes: {
         type: Sequelize.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       created_by: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
           model: 'staff',
-          key: 'id'
+          key: 'id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'RESTRICT'
+        onDelete: 'RESTRICT',
       },
       updated_by: {
         type: Sequelize.INTEGER,
         allowNull: true,
         references: {
           model: 'staff',
-          key: 'id'
+          key: 'id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'SET NULL'
+        onDelete: 'SET NULL',
       },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
       updated_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')
-      }
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+      },
     });
 
     // Add indexes for better performance
@@ -91,11 +92,11 @@ module.exports = {
       start_date: new Date(`${currentYear}-01-01`),
       end_date: new Date(`${currentYear}-12-31`),
       status: 'OPEN',
-      balance: 0.00,
+      balance: 0.0,
       notes: `Default financial period for fiscal year ${currentYear}`,
       created_by: 1, // Assuming admin user ID is 1
       created_at: new Date(),
-      updated_at: new Date()
+      updated_at: new Date(),
     };
 
     await queryInterface.bulkInsert('financial_periods', [defaultPeriod]);
@@ -106,5 +107,5 @@ module.exports = {
   down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('financial_periods');
     console.log('✅ Successfully dropped financial_periods table');
-  }
+  },
 };

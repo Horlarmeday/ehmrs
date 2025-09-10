@@ -50,9 +50,20 @@ export const patientAttributes = [
   'patient_type',
   'is_difficult_patient',
   'status',
+  'patient_status',
 ];
 
-export const visitAttributes = ['id', 'date_visit_start', 'type', 'category', 'date_visit_ended', 'is_taken', 'has_done_vitals', 'status', 'professional'];
+export const visitAttributes = [
+  'id',
+  'date_visit_start',
+  'type',
+  'category',
+  'date_visit_ended',
+  'is_taken',
+  'has_done_vitals',
+  'status',
+  'professional',
+];
 
 /**
  * process base64 image string into an actual image a writes to disk

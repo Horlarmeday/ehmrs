@@ -16,14 +16,14 @@ export enum AuditActionType {
   SETTLEMENT = 'SETTLEMENT',
   EXPIRY_PROCESSED = 'EXPIRY_PROCESSED',
   MANUAL_OVERRIDE = 'MANUAL_OVERRIDE',
-  SYSTEM_MAINTENANCE = 'SYSTEM_MAINTENANCE'
+  SYSTEM_MAINTENANCE = 'SYSTEM_MAINTENANCE',
 }
 
 export enum AuditSeverity {
   INFO = 'INFO',
   WARNING = 'WARNING',
   ERROR = 'ERROR',
-  CRITICAL = 'CRITICAL'
+  CRITICAL = 'CRITICAL',
 }
 
 export interface AuditLogData {
@@ -64,38 +64,42 @@ export class DepositAuditService {
   /**
    * Create a comprehensive audit log entry
    */
-  static async createAuditLog(
-    data: AuditLogData,
-    transaction?: Transaction
-  ): Promise<any> {
+  static async createAuditLog(data: AuditLogData, transaction?: Transaction): Promise<any> {
     try {
       // Create audit log entry using the dedicated DepositAuditLog model
-      const auditEntry = await DepositAuditLog.create({
-        deposit_id: data.deposit_id,
-        action_type: data.action_type,
-        severity: data.severity || AuditSeverity.INFO,
-        action_description: data.action_description,
-        details: data.details,
-        old_values: data.old_values,
-        new_values: data.new_values,
-        metadata: data.metadata,
-        performed_by: data.performed_by,
-        ip_address: data.ip_address,
-        user_agent: data.user_agent,
-        session_id: data.session_id,
-        request_id: data.request_id,
-        endpoint: data.endpoint,
-        http_method: data.http_method,
-        response_status: data.response_status,
-        response_time_ms: data.response_time_ms,
-        is_system_action: data.is_system_action || false,
-        error_message: data.error_message,
-        stack_trace: data.stack_trace
-      }, { transaction });
+      const auditEntry = await DepositAuditLog.create(
+        {
+          deposit_id: data.deposit_id,
+          action_type: data.action_type,
+          severity: data.severity || AuditSeverity.INFO,
+          action_description: data.action_description,
+          details: data.details,
+          old_values: data.old_values,
+          new_values: data.new_values,
+          metadata: data.metadata,
+          performed_by: data.performed_by,
+          ip_address: data.ip_address,
+          user_agent: data.user_agent,
+          session_id: data.session_id,
+          request_id: data.request_id,
+          endpoint: data.endpoint,
+          http_method: data.http_method,
+          response_status: data.response_status,
+          response_time_ms: data.response_time_ms,
+          is_system_action: data.is_system_action || false,
+          error_message: data.error_message,
+          stack_trace: data.stack_trace,
+        },
+        { transaction }
+      );
 
       return auditEntry;
     } catch (error) {
-      throw new BadException('Audit Log Creation Failed', 500, `Failed to create audit log: ${error.message}`);
+      throw new BadException(
+        'Audit Log Creation Failed',
+        500,
+        `Failed to create audit log: ${error.message}`
+      );
     }
   }
 
@@ -108,22 +112,25 @@ export class DepositAuditService {
     metadata?: any,
     transaction?: Transaction
   ): Promise<void> {
-    await this.createAuditLog({
-      deposit_id: deposit.id,
-      action_type: AuditActionType.CREATE,
-      severity: AuditSeverity.INFO,
-      action_description: 'Patient deposit created',
-      details: `Deposit of ${deposit.amount} created for patient ${deposit.patient_id}`,
-      new_values: {
-        amount: deposit.amount,
-        deposit_type: deposit.deposit_type,
-        status: deposit.status,
-        reference_number: deposit.reference_number
+    await this.createAuditLog(
+      {
+        deposit_id: deposit.id,
+        action_type: AuditActionType.CREATE,
+        severity: AuditSeverity.INFO,
+        action_description: 'Patient deposit created',
+        details: `Deposit of ${deposit.amount} created for patient ${deposit.patient_id}`,
+        new_values: {
+          amount: deposit.amount,
+          deposit_type: deposit.deposit_type,
+          status: deposit.status,
+          reference_number: deposit.reference_number,
+        },
+        metadata,
+        performed_by: performedBy,
+        is_system_action: false,
       },
-      metadata,
-      performed_by: performedBy,
-      is_system_action: false
-    }, transaction);
+      transaction
+    );
   }
 
   /**
@@ -138,18 +145,21 @@ export class DepositAuditService {
     metadata?: any,
     transaction?: Transaction
   ): Promise<void> {
-    await this.createAuditLog({
-      deposit_id: depositId,
-      action_type: AuditActionType.STATUS_CHANGE,
-      severity: AuditSeverity.INFO,
-      action_description: 'Deposit status changed',
-      details: `Status changed from ${oldStatus} to ${newStatus}${reason ? `: ${reason}` : ''}`,
-      old_values: { status: oldStatus },
-      new_values: { status: newStatus, reason },
-      metadata,
-      performed_by: performedBy,
-      is_system_action: false
-    }, transaction);
+    await this.createAuditLog(
+      {
+        deposit_id: depositId,
+        action_type: AuditActionType.STATUS_CHANGE,
+        severity: AuditSeverity.INFO,
+        action_description: 'Deposit status changed',
+        details: `Status changed from ${oldStatus} to ${newStatus}${reason ? `: ${reason}` : ''}`,
+        old_values: { status: oldStatus },
+        new_values: { status: newStatus, reason },
+        metadata,
+        performed_by: performedBy,
+        is_system_action: false,
+      },
+      transaction
+    );
   }
 
   /**
@@ -166,18 +176,28 @@ export class DepositAuditService {
     metadata?: any,
     transaction?: Transaction
   ): Promise<void> {
-    await this.createAuditLog({
-      deposit_id: depositId,
-      action_type: AuditActionType.BALANCE_CHANGE,
-      severity: AuditSeverity.INFO,
-      action_description: 'Deposit balance changed',
-      details: `${changeType} of ${changeAmount} applied. Balance changed from ${oldBalance} to ${newBalance}${reason ? `: ${reason}` : ''}`,
-      old_values: { balance: oldBalance },
-      new_values: { balance: newBalance, change_amount: changeAmount, change_type: changeType, reason },
-      metadata,
-      performed_by: performedBy,
-      is_system_action: false
-    }, transaction);
+    await this.createAuditLog(
+      {
+        deposit_id: depositId,
+        action_type: AuditActionType.BALANCE_CHANGE,
+        severity: AuditSeverity.INFO,
+        action_description: 'Deposit balance changed',
+        details: `${changeType} of ${changeAmount} applied. Balance changed from ${oldBalance} to ${newBalance}${
+          reason ? `: ${reason}` : ''
+        }`,
+        old_values: { balance: oldBalance },
+        new_values: {
+          balance: newBalance,
+          change_amount: changeAmount,
+          change_type: changeType,
+          reason,
+        },
+        metadata,
+        performed_by: performedBy,
+        is_system_action: false,
+      },
+      transaction
+    );
   }
 
   /**
@@ -191,17 +211,20 @@ export class DepositAuditService {
     metadata?: any,
     transaction?: Transaction
   ): Promise<void> {
-    await this.createAuditLog({
-      deposit_id: depositId,
-      action_type: AuditActionType.REFUND_PROCESSED,
-      severity: AuditSeverity.INFO,
-      action_description: 'Deposit refund processed',
-      details: `Refund of ${refundAmount} processed: ${reason}`,
-      new_values: { refund_amount: refundAmount, reason },
-      metadata,
-      performed_by: performedBy,
-      is_system_action: false
-    }, transaction);
+    await this.createAuditLog(
+      {
+        deposit_id: depositId,
+        action_type: AuditActionType.REFUND_PROCESSED,
+        severity: AuditSeverity.INFO,
+        action_description: 'Deposit refund processed',
+        details: `Refund of ${refundAmount} processed: ${reason}`,
+        new_values: { refund_amount: refundAmount, reason },
+        metadata,
+        performed_by: performedBy,
+        is_system_action: false,
+      },
+      transaction
+    );
   }
 
   /**
@@ -215,17 +238,20 @@ export class DepositAuditService {
     metadata?: any,
     transaction?: Transaction
   ): Promise<void> {
-    await this.createAuditLog({
-      deposit_id: depositId,
-      action_type: AuditActionType.USAGE_PROCESSED,
-      severity: AuditSeverity.INFO,
-      action_description: 'Deposit usage processed',
-      details: `Usage of ${usageAmount} applied to bill ${billId}`,
-      new_values: { usage_amount: usageAmount, bill_id: billId },
-      metadata,
-      performed_by: performedBy,
-      is_system_action: false
-    }, transaction);
+    await this.createAuditLog(
+      {
+        deposit_id: depositId,
+        action_type: AuditActionType.USAGE_PROCESSED,
+        severity: AuditSeverity.INFO,
+        action_description: 'Deposit usage processed',
+        details: `Usage of ${usageAmount} applied to bill ${billId}`,
+        new_values: { usage_amount: usageAmount, bill_id: billId },
+        metadata,
+        performed_by: performedBy,
+        is_system_action: false,
+      },
+      transaction
+    );
   }
 
   /**
@@ -240,17 +266,24 @@ export class DepositAuditService {
     metadata?: any,
     transaction?: Transaction
   ): Promise<void> {
-    await this.createAuditLog({
-      deposit_id: depositId,
-      action_type: AuditActionType.ADJUSTMENT_MADE,
-      severity: AuditSeverity.WARNING,
-      action_description: 'Deposit adjustment made',
-      details: `${adjustmentType} adjustment of ${adjustmentAmount} applied: ${reason}`,
-      new_values: { adjustment_amount: adjustmentAmount, adjustment_type: adjustmentType, reason },
-      metadata,
-      performed_by: performedBy,
-      is_system_action: false
-    }, transaction);
+    await this.createAuditLog(
+      {
+        deposit_id: depositId,
+        action_type: AuditActionType.ADJUSTMENT_MADE,
+        severity: AuditSeverity.WARNING,
+        action_description: 'Deposit adjustment made',
+        details: `${adjustmentType} adjustment of ${adjustmentAmount} applied: ${reason}`,
+        new_values: {
+          adjustment_amount: adjustmentAmount,
+          adjustment_type: adjustmentType,
+          reason,
+        },
+        metadata,
+        performed_by: performedBy,
+        is_system_action: false,
+      },
+      transaction
+    );
   }
 
   /**
@@ -264,17 +297,20 @@ export class DepositAuditService {
     metadata?: any,
     transaction?: Transaction
   ): Promise<void> {
-    await this.createAuditLog({
-      deposit_id: depositId,
-      action_type: AuditActionType.RECONCILIATION,
-      severity: AuditSeverity.INFO,
-      action_description: 'Deposit reconciliation performed',
-      details,
-      new_values: { reconciliation_type: reconciliationType },
-      metadata,
-      performed_by: performedBy,
-      is_system_action: false
-    }, transaction);
+    await this.createAuditLog(
+      {
+        deposit_id: depositId,
+        action_type: AuditActionType.RECONCILIATION,
+        severity: AuditSeverity.INFO,
+        action_description: 'Deposit reconciliation performed',
+        details,
+        new_values: { reconciliation_type: reconciliationType },
+        metadata,
+        performed_by: performedBy,
+        is_system_action: false,
+      },
+      transaction
+    );
   }
 
   /**
@@ -289,31 +325,34 @@ export class DepositAuditService {
     transaction?: Transaction
   ): Promise<void> {
     try {
-      await DepositAuditLog.create({
-        deposit_id: null, // Not tied to a specific deposit
-        action_type: AuditActionType.SETTLEMENT,
-        severity: AuditSeverity.INFO,
-        details: `POS Terminal ${pos_terminal_id} settlement processed`,
-        old_values: {
-          pos_terminal_id,
-          settlement_reference,
-          total_amount: totalAmount
+      await DepositAuditLog.create(
+        {
+          deposit_id: null, // Not tied to a specific deposit
+          action_type: AuditActionType.SETTLEMENT,
+          severity: AuditSeverity.INFO,
+          details: `POS Terminal ${pos_terminal_id} settlement processed`,
+          old_values: {
+            pos_terminal_id,
+            settlement_reference,
+            total_amount: totalAmount,
+          },
+          new_values: {
+            settlement_status: 'SETTLED',
+            settled_at: new Date(),
+            journal_entry_id,
+          },
+          performed_by: settled_by,
+          ip_address: '127.0.0.1', // Will be updated with actual IP
+          user_agent: 'System Settlement',
+          session_id: `settlement-${Date.now()}`,
+          metadata: {
+            settlement_reference,
+            total_amount: totalAmount,
+            journal_entry_id,
+          },
         },
-        new_values: {
-          settlement_status: 'SETTLED',
-          settled_at: new Date(),
-          journal_entry_id
-        },
-        performed_by: settled_by,
-        ip_address: '127.0.0.1', // Will be updated with actual IP
-        user_agent: 'System Settlement',
-        session_id: `settlement-${Date.now()}`,
-        metadata: {
-          settlement_reference,
-          total_amount: totalAmount,
-          journal_entry_id
-        }
-      }, { transaction });
+        { transaction }
+      );
     } catch (error) {
       console.error('Failed to log POS terminal settlement:', error);
     }
@@ -329,17 +368,20 @@ export class DepositAuditService {
     metadata?: any,
     transaction?: Transaction
   ): Promise<void> {
-    await this.createAuditLog({
-      deposit_id: depositId,
-      action_type: AuditActionType.SYSTEM_MAINTENANCE,
-      severity: AuditSeverity.INFO,
-      action_description: 'System maintenance performed',
-      details,
-      new_values: { maintenance_action: action },
-      metadata,
-      performed_by: 1, // System user ID
-      is_system_action: true
-    }, transaction);
+    await this.createAuditLog(
+      {
+        deposit_id: depositId,
+        action_type: AuditActionType.SYSTEM_MAINTENANCE,
+        severity: AuditSeverity.INFO,
+        action_description: 'System maintenance performed',
+        details,
+        new_values: { maintenance_action: action },
+        metadata,
+        performed_by: 1, // System user ID
+        is_system_action: true,
+      },
+      transaction
+    );
   }
 
   /**
@@ -353,18 +395,21 @@ export class DepositAuditService {
     metadata?: any,
     transaction?: Transaction
   ): Promise<void> {
-    await this.createAuditLog({
-      deposit_id: depositId,
-      action_type: AuditActionType.UPDATE, // Using UPDATE for errors
-      severity: AuditSeverity.ERROR,
-      action_description: 'Error occurred during deposit operation',
-      details: `Error in ${context}: ${error.message}`,
-      error_message: error.message,
-      stack_trace: error.stack,
-      metadata,
-      performed_by: performedBy,
-      is_system_action: false
-    }, transaction);
+    await this.createAuditLog(
+      {
+        deposit_id: depositId,
+        action_type: AuditActionType.UPDATE, // Using UPDATE for errors
+        severity: AuditSeverity.ERROR,
+        action_description: 'Error occurred during deposit operation',
+        details: `Error in ${context}: ${error.message}`,
+        error_message: error.message,
+        stack_trace: error.stack,
+        metadata,
+        performed_by: performedBy,
+        is_system_action: false,
+      },
+      transaction
+    );
   }
 
   /**
@@ -376,7 +421,7 @@ export class DepositAuditService {
   ): Promise<any[]> {
     try {
       const whereClause: any = {
-        deposit_id: depositId
+        deposit_id: depositId,
       };
 
       // Query the dedicated DepositAuditLog table
@@ -385,7 +430,7 @@ export class DepositAuditService {
         include: ['performedByStaff'],
         order: [['createdAt', 'DESC']],
         limit: filters?.limit || 100,
-        offset: filters?.offset || 0
+        offset: filters?.offset || 0,
       });
 
       // Format audit log entries
@@ -411,7 +456,7 @@ export class DepositAuditService {
         is_system_action: log.is_system_action,
         error_message: log.error_message,
         stack_trace: log.stack_trace,
-        metadata: log.metadata
+        metadata: log.metadata,
       }));
     } catch (error) {
       throw new BadException('Failed to get deposit audit trail', 500, error.message);
@@ -421,9 +466,7 @@ export class DepositAuditService {
   /**
    * Get comprehensive audit summary
    */
-  static async getAuditSummary(
-    filters?: AuditQueryFilters
-  ): Promise<any> {
+  static async getAuditSummary(filters?: AuditQueryFilters): Promise<any> {
     try {
       const whereClause: any = {};
 
@@ -443,12 +486,8 @@ export class DepositAuditService {
 
       const auditLogs = await DepositAuditLog.findAll({
         where: whereClause,
-        attributes: [
-          'createdAt',
-          'action_type',
-          'severity'
-        ],
-        order: [['createdAt', 'DESC']]
+        attributes: ['createdAt', 'action_type', 'severity'],
+        order: [['createdAt', 'DESC']],
       });
 
       // Calculate summary statistics
@@ -459,7 +498,7 @@ export class DepositAuditService {
         daily_activity: {},
         error_count: 0,
         warning_count: 0,
-        info_count: 0
+        info_count: 0,
       };
 
       auditLogs.forEach(log => {
@@ -468,7 +507,8 @@ export class DepositAuditService {
         const date = log.createdAt.toISOString().split('T')[0];
 
         // Count by action type
-        summary.action_type_breakdown[auditType] = (summary.action_type_breakdown[auditType] || 0) + 1;
+        summary.action_type_breakdown[auditType] =
+          (summary.action_type_breakdown[auditType] || 0) + 1;
 
         // Count by severity
         summary.severity_breakdown[severity] = (summary.severity_breakdown[severity] || 0) + 1;

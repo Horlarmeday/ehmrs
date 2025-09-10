@@ -12,7 +12,7 @@ import verify from '../../core/middleware/verify';
 
 const router = Router();
 
-router.use(verify)
+router.use(verify);
 
 /**
  * Procurement Orders Routes
@@ -27,8 +27,16 @@ router.put('/orders/:id', validateUpdateOrder, ProcurementController.updateProcu
  */
 router.post('/orders/:id/approve', ProcurementController.approveProcurementOrder);
 router.post('/orders/:id/send', validateSendOrder, ProcurementController.sendProcurementOrder);
-router.post('/orders/:id/receive', validateReceiveOrderItems, ProcurementController.receiveProcurementOrderItems);
-router.post('/orders/:id/cancel', validateCancelOrder, ProcurementController.cancelProcurementOrder);
+router.post(
+  '/orders/:id/receive',
+  validateReceiveOrderItems,
+  ProcurementController.receiveProcurementOrderItems
+);
+router.post(
+  '/orders/:id/cancel',
+  validateCancelOrder,
+  ProcurementController.cancelProcurementOrder
+);
 
 /**
  * Procurement Analytics Routes

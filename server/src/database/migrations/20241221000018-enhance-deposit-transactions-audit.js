@@ -11,5 +11,5 @@ module.exports = {
   async down(queryInterface, Sequelize) {
     // No columns to remove
     console.log('Migration down: No columns to remove');
-  }
+  },
 };

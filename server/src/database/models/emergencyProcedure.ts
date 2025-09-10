@@ -32,16 +32,16 @@ export enum ProcedureType {
   OTHER = 'OTHER',
 }
 
-@Table({ 
-  timestamps: true, 
+@Table({
+  timestamps: true,
   tableName: 'Emergency_Procedures',
   indexes: [
     { name: 'idx_emergency_procedure_visit', fields: ['emergency_visit_id'] },
     { name: 'idx_emergency_procedure_type', fields: ['procedure_type'] },
     { name: 'idx_emergency_procedure_status', fields: ['status'] },
     { name: 'idx_emergency_procedure_doctor', fields: ['performing_doctor_id'] },
-    { name: 'idx_emergency_procedure_composite', fields: ['emergency_visit_id', 'status'] }
-  ]
+    { name: 'idx_emergency_procedure_composite', fields: ['emergency_visit_id', 'status'] },
+  ],
 })
 export class EmergencyProcedure extends Model {
   @PrimaryKey
@@ -52,7 +52,7 @@ export class EmergencyProcedure extends Model {
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    validate: { notEmpty: { msg: 'emergency visit is required' } }
+    validate: { notEmpty: { msg: 'emergency visit is required' } },
   })
   emergency_visit_id: number;
 
@@ -60,14 +60,14 @@ export class EmergencyProcedure extends Model {
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    validate: { notEmpty: { msg: 'performing doctor is required' } }
+    validate: { notEmpty: { msg: 'performing doctor is required' } },
   })
   performing_doctor_id: number;
 
   @Column({
     type: DataType.ENUM(...Object.values(ProcedureType)),
     allowNull: false,
-    validate: { notEmpty: { msg: 'procedure type is required' } }
+    validate: { notEmpty: { msg: 'procedure type is required' } },
   })
   procedure_type: ProcedureType;
 

@@ -399,5 +399,5 @@ module.exports = {
       console.error('❌ Error reverting cash register system tables:', error);
       throw error;
     }
-  }
+  },
 };

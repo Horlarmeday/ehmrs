@@ -11,27 +11,27 @@ import { GeneralStoreRequest } from './generalStoreRequest';
 import { GeneralStoreItem } from './generalStoreItem';
 import { ItemRequestStatus } from './types';
 
-@Table({ 
-  timestamps: true, 
+@Table({
+  timestamps: true,
   tableName: 'General_Store_Request_Items',
   indexes: [
     {
       name: 'idx_general_store_request_item_request',
-      fields: ['request_id']
+      fields: ['request_id'],
     },
     {
       name: 'idx_general_store_request_item_item',
-      fields: ['item_id']
+      fields: ['item_id'],
     },
     {
       name: 'idx_general_store_request_item_status',
-      fields: ['status']
+      fields: ['status'],
     },
     {
       name: 'idx_general_store_request_item_composite_request_item',
-      fields: ['request_id', 'item_id']
-    }
-  ]
+      fields: ['request_id', 'item_id'],
+    },
+  ],
 })
 export class GeneralStoreRequestItem extends Model {
   @PrimaryKey
@@ -171,12 +171,12 @@ export class GeneralStoreRequestItem extends Model {
 
   getApprovalRate(): number {
     if (this.quantity_requested === 0) return 0;
-    return (this.quantity_approved || 0) / this.quantity_requested * 100;
+    return ((this.quantity_approved || 0) / this.quantity_requested) * 100;
   }
 
   getIssuanceRate(): number {
     if (this.quantity_approved === 0) return 0;
-    return this.quantity_issued / this.quantity_approved * 100;
+    return (this.quantity_issued / this.quantity_approved) * 100;
   }
 
   isFullyApproved(): boolean {

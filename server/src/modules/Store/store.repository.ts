@@ -620,15 +620,12 @@ export const dispensePharmacyItems = async (items: ItemsToDispensedBody[], staff
       const drugType = dispensary?.accepted_drug_type.split(' ')?.[0];
 
       const mappedItem = mapInventoryItem(storeItem, { ...item, drug_type: drugType }, staff_id);
-      console.log(mappedItem, 'mappedItem');
       return sequelizeConnection.transaction(async t => {
         const [inventoryItem, created] = await InventoryItem.findOrCreate({
           where: { drug_id: mappedItem.drug_id, inventory_id: mappedItem.inventory_id },
           defaults: { ...mappedItem },
           transaction: t,
         });
-
-        console.log(inventoryItem, created, 'inventoryItem');
 
         if (!created) {
           await InventoryItem.update(

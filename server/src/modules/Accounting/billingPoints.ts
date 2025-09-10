@@ -12,7 +12,13 @@ export interface BillingPoint {
   description?: string;
 }
 
-export type PaymentMethod = 'CASH' | 'POS' | 'BANK_TRANSFER' | 'MOBILE_MONEY' | 'INSURANCE' | 'DEPOSIT';
+export type PaymentMethod =
+  | 'CASH'
+  | 'POS'
+  | 'BANK_TRANSFER'
+  | 'MOBILE_MONEY'
+  | 'INSURANCE'
+  | 'DEPOSIT';
 
 export const BILLING_POINTS: BillingPoint[] = [
   {
@@ -23,7 +29,7 @@ export const BILLING_POINTS: BillingPoint[] = [
     payment_methods: ['CASH', 'POS', 'BANK_TRANSFER', 'MOBILE_MONEY', 'INSURANCE', 'DEPOSIT'],
     staff_roles: ['CASHIER', 'ACCOUNTANT', 'ADMIN'],
     is_active: true,
-    description: 'Central cashier office for all hospital payments'
+    description: 'Central cashier office for all hospital payments',
   },
   {
     id: 'accounting-office',
@@ -33,7 +39,7 @@ export const BILLING_POINTS: BillingPoint[] = [
     payment_methods: ['BANK_TRANSFER', 'INSURANCE', 'DEPOSIT'],
     staff_roles: ['ACCOUNTANT', 'ADMIN'],
     is_active: true,
-    description: 'Accounting office for complex transactions and insurance claims'
+    description: 'Accounting office for complex transactions and insurance claims',
   },
   {
     id: 'emergency-cashier',
@@ -43,8 +49,8 @@ export const BILLING_POINTS: BillingPoint[] = [
     payment_methods: ['CASH', 'POS', 'MOBILE_MONEY', 'DEPOSIT'],
     staff_roles: ['CASHIER', 'ACCOUNTANT'],
     is_active: true,
-    description: 'Emergency cashier for urgent care payments (staffed by accounting department)'
-  }
+    description: 'Emergency cashier for urgent care payments (staffed by accounting department)',
+  },
 ];
 
 export const getBillingPointById = (id: string): BillingPoint | undefined => {
@@ -60,13 +66,11 @@ export const getActiveBillingPoints = (): BillingPoint[] => {
 };
 
 export const getBillingPointsByPaymentMethod = (paymentMethod: PaymentMethod): BillingPoint[] => {
-  return BILLING_POINTS.filter(point => 
-    point.is_active && point.payment_methods.includes(paymentMethod)
+  return BILLING_POINTS.filter(
+    point => point.is_active && point.payment_methods.includes(paymentMethod)
   );
 };
 
 export const getBillingPointsByStaffRole = (staffRole: string): BillingPoint[] => {
-  return BILLING_POINTS.filter(point => 
-    point.is_active && point.staff_roles.includes(staffRole)
-  );
+  return BILLING_POINTS.filter(point => point.is_active && point.staff_roles.includes(staffRole));
 };
