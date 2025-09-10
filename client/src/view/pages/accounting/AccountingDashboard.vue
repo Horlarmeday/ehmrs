@@ -158,7 +158,7 @@
                 </div>
                 <div class="activity-content">
                   <div class="activity-title">
-                    Bill #{{ bill.bill_number }} - {{ bill.patient_name }}
+                    Bill #{{ bill.bill_number }} - {{ bill.patient.fullname }}
                   </div>
                   <div class="activity-details">
                     {{ formatCurrency(bill.final_amount) }} • {{ formatDate(bill.createdAt) }}

@@ -44,7 +44,7 @@ export const inventoryStockLevelCheck = async (_job: Job) => {
     const pharmacyItems = await PharmacyStore.findAll({
       where: {
         [Op.or]: [
-          { quantity_remaining: { [Op.lte]: 10 } }, // Default threshold
+          { quantity_remaining: { [Op.lte]: 20 } }, // Default threshold
           { quantity_remaining: 0 },
         ],
       },
@@ -68,7 +68,7 @@ export const inventoryStockLevelCheck = async (_job: Job) => {
     // Check Dispensary items
     const dispensaryItems = await GeneralStoreDispensaryItem.findAll({
       where: {
-        [Op.or]: [{ quantity_remaining: { [Op.lte]: 5 } }, { quantity_remaining: 0 }],
+        [Op.or]: [{ quantity_remaining: { [Op.lte]: 20 } }, { quantity_remaining: 0 }],
       },
       include: ['dispensary', 'item'],
     });
@@ -78,7 +78,7 @@ export const inventoryStockLevelCheck = async (_job: Job) => {
         itemId: item.item_id,
         dispensaryId: item.dispensary_id,
         currentStock: item.quantity_remaining,
-        minimumStock: 5, // Default minimum stock for dispensary items
+        minimumStock: 20, // Default minimum stock for dispensary items
         expiryDate: item.expiration_date,
         itemName: item.item?.name || 'Unknown Item',
         storeType: 'GENERAL' as StoreType,

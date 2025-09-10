@@ -4,8 +4,6 @@ import NProgress from 'nprogress';
 import store from './core/services/store/index';
 import { notifyError, notifyGeneralError, notifySuccess } from './common/common';
 
-const token = localStorage.getItem('user_token');
-
 const calculatePercentage = (loaded, total) => Math.floor((loaded * 1.0) / total);
 
 axios.defaults.onDownloadProgress = e => {
@@ -14,8 +12,13 @@ axios.defaults.onDownloadProgress = e => {
 };
 
 axios.defaults.baseURL = '/api';
-axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 axios.defaults.timeout = 180000;
+
+// Set initial token if it exists
+const token = localStorage.getItem('user_token');
+if (token) {
+  axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+}
 
 NProgress.setColor = color => {
   const style = document.createElement('style');
@@ -32,6 +35,12 @@ NProgress.setColor = color => {
 
 axios.interceptors.request.use(
   config => {
+    // Dynamically set Authorization header on each request
+    const token = localStorage.getItem('user_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    
     NProgress.setColor('black');
     NProgress.start();
     return config;

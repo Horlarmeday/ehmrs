@@ -91,4 +91,21 @@ export default {
     reports: false,
     dashboard: false,
   },
+
+  // Cache management
+  cache: {
+    timestamps: {},
+    ttl: {
+      categories: 5 * 60 * 1000, // 5 minutes
+      subcategories: 5 * 60 * 1000, // 5 minutes
+      items: 2 * 60 * 1000, // 2 minutes
+      movements: 1 * 60 * 1000, // 1 minute
+      requests: 30 * 1000, // 30 seconds
+      dispensaries: 5 * 60 * 1000, // 5 minutes
+      dashboard: 1 * 60 * 1000, // 1 minute
+    },
+  },
+
+  // In-flight requests tracking
+  inFlightRequests: {},
 };

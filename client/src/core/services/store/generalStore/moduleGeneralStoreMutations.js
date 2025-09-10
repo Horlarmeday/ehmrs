@@ -400,12 +400,12 @@ export default {
   },
 
   // Update individual items
-  UPDATE_REQUEST(state, request) {
-    const index = state.requests.findIndex((r) => r.id === request.id);
-    if (index !== -1) {
-      state.requests.splice(index, 1, request);
-    }
-  },
+  // UPDATE_REQUEST(state, request) {
+  //   const index = state.requests.findIndex((r) => r.id === request.id);
+  //   if (index !== -1) {
+  //     state.requests.splice(index, 1, request);
+  //   }
+  // },
 
   UPDATE_MOVEMENT(state, movement) {
     const index = state.movements.findIndex((m) => m.id === movement.id);
@@ -414,31 +414,31 @@ export default {
     }
   },
 
-  UPDATE_ITEM(state, item) {
-    const index = state.items.findIndex((i) => i.id === item.id);
-    if (index !== -1) {
-      state.items.splice(index, 1, item);
-    }
-  },
+  // UPDATE_ITEM(state, item) {
+  //   const index = state.items.findIndex((i) => i.id === item.id);
+  //   if (index !== -1) {
+  //     state.items.splice(index, 1, item);
+  //   }
+  // },
 
-  UPDATE_CATEGORY(state, category) {
-    const index = state.categories.findIndex((c) => c.id === category.id);
-    if (index !== -1) {
-      state.categories.splice(index, 1, category);
-    }
-  },
+  // UPDATE_CATEGORY(state, category) {
+  //   const index = state.categories.findIndex((c) => c.id === category.id);
+  //   if (index !== -1) {
+  //     state.categories.splice(index, 1, category);
+  //   }
+  // },
 
-  UPDATE_SUBCATEGORY(state, subcategory) {
-    const index = state.subcategories.findIndex((s) => s.id === subcategory.id);
-    if (index !== -1) {
-      state.subcategories.splice(index, 1, subcategory);
-    }
-  },
+  // UPDATE_SUBCATEGORY(state, subcategory) {
+  //   const index = state.subcategories.findIndex((s) => s.id === subcategory.id);
+  //   if (index !== -1) {
+  //     state.subcategories.splice(index, 1, subcategory);
+  //   }
+  // },
 
-  UPDATE_DISPENSARY(state, dispensary) {
-    const index = state.dispensaries.findIndex((d) => d.id === dispensary.id);
-    if (index !== -1) {
-      state.dispensaries.splice(index, 1, dispensary);
-    }
-  },
+  // UPDATE_DISPENSARY(state, dispensary) {
+  //   const index = state.dispensaries.findIndex((d) => d.id === dispensary.id);
+  //   if (index !== -1) {
+  //     state.dispensaries.splice(index, 1, dispensary);
+  //   }
+  // },
 };

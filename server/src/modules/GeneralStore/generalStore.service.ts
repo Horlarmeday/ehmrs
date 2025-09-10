@@ -33,6 +33,12 @@ export class GeneralStoreService {
   // Category Management
   static async createCategory(categoryData: CreateCategoryDto, staffId: number) {
     try {
+      // Check for duplicate category name
+      const existingCategory = await GeneralStoreRepository.getCategoryByName(categoryData.name);
+      if (existingCategory) {
+        throw new BadException('Error', 400, 'Category name already exists');
+      }
+
       // Validate parent category exists if provided
       if (categoryData.parent_id) {
         const parentCategory = await GeneralStoreRepository.getCategoryById(categoryData.parent_id);
@@ -915,7 +921,7 @@ export class GeneralStoreService {
     }
   }
 
-  static async getRecentReports(staffId: number, limit: number = 10) {
+  static async getRecentReports(staffId: number, limit = 10) {
     try {
       // This would typically query a reports table
       // For now, return mock data
@@ -958,7 +964,11 @@ export class GeneralStoreService {
         data: reportData,
       };
     } catch (error) {
-      throw new BadException('Error', 500, `Failed to export ${reportType} report: ${error.message}`);
+      throw new BadException(
+        'Error',
+        500,
+        `Failed to export ${reportType} report: ${error.message}`
+      );
     }
   }
 
@@ -1003,13 +1013,17 @@ export class GeneralStoreService {
         throw new BadException('INVALID_STATUS', 400, 'Request is not in pending status');
       }
 
-      const updatedRequest = await GeneralStoreRepository.updateRequest(requestId, {
-        status: 'CANCELLED',
-        cancelled_at: new Date(),
-        cancelled_by: cancellationData.cancelled_by,
-        cancellation_reason: cancellationData.reason,
-        cancellation_notes: cancellationData.notes,
-      }, cancellationData.cancelled_by);
+      const updatedRequest = await GeneralStoreRepository.updateRequest(
+        requestId,
+        {
+          status: 'CANCELLED',
+          cancelled_at: new Date(),
+          cancelled_by: cancellationData.cancelled_by,
+          cancellation_reason: cancellationData.reason,
+          cancellation_notes: cancellationData.notes,
+        },
+        cancellationData.cancelled_by
+      );
 
       return updatedRequest;
     } catch (error) {

@@ -312,19 +312,19 @@ const enhancedActions = {
   },
 
   // Development actions
-  async devExportState({ commit, state }) {
+  async devExportState({ commit }) {
     if (process.env.NODE_ENV === 'development') {
       commit('DEV_EXPORT_STATE');
     }
   },
 
-  async devValidateState({ commit, state }) {
+  async devValidateState({ commit }) {
     if (process.env.NODE_ENV === 'development') {
       commit('DEV_VALIDATE_STATE');
     }
   },
 
-  async devCheckMemoryLeaks({ commit, state }) {
+  async devCheckMemoryLeaks({ commit }) {
     if (process.env.NODE_ENV === 'development') {
       commit('DEV_CHECK_MEMORY_LEAKS');
     }

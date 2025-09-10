@@ -133,6 +133,16 @@ export class GeneralStoreRepository {
     }
   }
 
+  static async getCategoryByName(name: string): Promise<GeneralStoreCategory | null> {
+    try {
+      return await GeneralStoreCategory.findOne({
+        where: { name },
+      });
+    } catch (error) {
+      throw new BadException('Error', 500, `Failed to fetch category by name: ${error.message}`);
+    }
+  }
+
   // Subcategory Management
   static async createSubcategory(
     subcategoryData: any,

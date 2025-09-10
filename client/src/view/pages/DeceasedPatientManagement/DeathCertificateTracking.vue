@@ -89,7 +89,9 @@
               <div class="text-primary mb-2">
                 <i class="fas fa-certificate fa-2x"></i>
               </div>
-              <h3 class="mb-1">{{ tracking && tracking.summary ? tracking.summary.total_certificates : 0 }}</h3>
+              <h3 class="mb-1">
+                {{ tracking && tracking.summary ? tracking.summary.total_certificates : 0 }}
+              </h3>
               <p class="text-muted mb-0">Total Certificates</p>
             </b-card-body>
           </b-card>
@@ -100,7 +102,9 @@
               <div class="text-info mb-2">
                 <i class="fas fa-file-alt fa-2x"></i>
               </div>
-              <h3 class="mb-1">{{ tracking && tracking.summary ? tracking.summary.generated : 0 }}</h3>
+              <h3 class="mb-1">
+                {{ tracking && tracking.summary ? tracking.summary.generated : 0 }}
+              </h3>
               <p class="text-muted mb-0">Generated</p>
             </b-card-body>
           </b-card>
@@ -111,7 +115,9 @@
               <div class="text-warning mb-2">
                 <i class="fas fa-print fa-2x"></i>
               </div>
-              <h3 class="mb-1">{{ tracking && tracking.summary ? tracking.summary.printed : 0 }}</h3>
+              <h3 class="mb-1">
+                {{ tracking && tracking.summary ? tracking.summary.printed : 0 }}
+              </h3>
               <p class="text-muted mb-0">Printed</p>
             </b-card-body>
           </b-card>
@@ -122,7 +128,9 @@
               <div class="text-success mb-2">
                 <i class="fas fa-check-circle fa-2x"></i>
               </div>
-              <h3 class="mb-1">{{ tracking && tracking.summary ? tracking.summary.delivered : 0 }}</h3>
+              <h3 class="mb-1">
+                {{ tracking && tracking.summary ? tracking.summary.delivered : 0 }}
+              </h3>
               <p class="text-muted mb-0">Delivered</p>
             </b-card-body>
           </b-card>
@@ -137,7 +145,13 @@
               <h6 class="mb-0">Certificates by Status</h6>
             </b-card-header>
             <b-card-body>
-              <div v-if="tracking && tracking.breakdown && Object.keys(tracking.breakdown.by_status).length > 0">
+              <div
+                v-if="
+                  tracking &&
+                    tracking.breakdown &&
+                    Object.keys(tracking.breakdown.by_status).length > 0
+                "
+              >
                 <canvas ref="statusChart" height="300"></canvas>
               </div>
               <div v-else class="text-center text-muted py-4">
@@ -152,7 +166,13 @@
               <h6 class="mb-0">Certificates by Department</h6>
             </b-card-header>
             <b-card-body>
-              <div v-if="tracking && tracking.breakdown && Object.keys(tracking.breakdown.by_department).length > 0">
+              <div
+                v-if="
+                  tracking &&
+                    tracking.breakdown &&
+                    Object.keys(tracking.breakdown.by_department).length > 0
+                "
+              >
                 <canvas ref="departmentChart" height="300"></canvas>
               </div>
               <div v-else class="text-center text-muted py-4">
@@ -171,7 +191,13 @@
               <h6 class="mb-0">Certificates by Month</h6>
             </b-card-header>
             <b-card-body>
-              <div v-if="tracking && tracking.breakdown && Object.keys(tracking.breakdown.by_month).length > 0">
+              <div
+                v-if="
+                  tracking &&
+                    tracking.breakdown &&
+                    Object.keys(tracking.breakdown.by_month).length > 0
+                "
+              >
                 <canvas ref="monthlyChart" height="300"></canvas>
               </div>
               <div v-else class="text-center text-muted py-4">
@@ -320,14 +346,14 @@ export default {
   computed: {
     filteredCertificates() {
       if (!this.tracking || !this.tracking.certificates) return [];
-      
+
       let filtered = this.tracking.certificates;
-      
+
       // Filter by status
       if (this.filters.status !== 'all') {
         filtered = filtered.filter(cert => cert.certificate_status === this.filters.status);
       }
-      
+
       return filtered;
     },
   },
@@ -336,11 +362,11 @@ export default {
   },
   methods: {
     ...mapActions('patient', ['getDeathCertificateTracking']),
-    
+
     async loadTracking() {
       this.loading = true;
       this.error = null;
-      
+
       try {
         const params = {
           date_from: this.filters.start,
@@ -348,9 +374,9 @@ export default {
           status: this.filters.status,
           department: this.filters.department,
         };
-        
+
         this.tracking = await this.getDeathCertificateTracking(params);
-        
+
         // Render charts after data is loaded
         this.$nextTick(() => {
           this.renderCharts();
@@ -362,16 +388,16 @@ export default {
         this.loading = false;
       }
     },
-    
+
     async refreshData() {
       await this.loadTracking();
     },
-    
+
     applyFilters() {
       this.currentPage = 1;
       this.loadTracking();
     },
-    
+
     clearFilters() {
       this.filters = {
         start: '',
@@ -381,47 +407,44 @@ export default {
       };
       this.applyFilters();
     },
-    
+
     renderCharts() {
       if (!this.tracking) return;
-      
+
       // Destroy existing charts
       Object.values(this.charts).forEach(chart => {
         if (chart) chart.destroy();
       });
-      
+
       // Render status chart
       this.renderStatusChart();
-      
+
       // Render department chart
       this.renderDepartmentChart();
-      
+
       // Render monthly chart
       this.renderMonthlyChart();
     },
-    
+
     renderStatusChart() {
       const ctx = this.$refs.statusChart;
       if (!ctx) return;
-      
+
       if (!this.tracking || !this.tracking.breakdown || !this.tracking.breakdown.by_status) return;
       const data = this.tracking.breakdown.by_status;
       const labels = Object.keys(data);
       const values = Object.values(data);
-      
+
       this.charts.status = new Chart(ctx, {
         type: 'doughnut',
         data: {
           labels,
-          datasets: [{
-            data: values,
-            backgroundColor: [
-              '#FF6384',
-              '#36A2EB',
-              '#FFCE56',
-              '#4BC0C0',
-            ],
-          }],
+          datasets: [
+            {
+              data: values,
+              backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
+            },
+          ],
         },
         options: {
           responsive: true,
@@ -429,27 +452,30 @@ export default {
         },
       });
     },
-    
+
     renderDepartmentChart() {
       const ctx = this.$refs.departmentChart;
       if (!ctx) return;
-      
-      if (!this.tracking || !this.tracking.breakdown || !this.tracking.breakdown.by_department) return;
+
+      if (!this.tracking || !this.tracking.breakdown || !this.tracking.breakdown.by_department)
+        return;
       const data = this.tracking.breakdown.by_department;
       const labels = Object.keys(data);
       const values = Object.values(data);
-      
+
       this.charts.department = new Chart(ctx, {
         type: 'bar',
         data: {
           labels,
-          datasets: [{
-            label: 'Certificates',
-            data: values,
-            backgroundColor: 'rgba(54, 162, 235, 0.8)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1,
-          }],
+          datasets: [
+            {
+              label: 'Certificates',
+              data: values,
+              backgroundColor: 'rgba(54, 162, 235, 0.8)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 1,
+            },
+          ],
         },
         options: {
           responsive: true,
@@ -462,27 +488,29 @@ export default {
         },
       });
     },
-    
+
     renderMonthlyChart() {
       const ctx = this.$refs.monthlyChart;
       if (!ctx) return;
-      
+
       if (!this.tracking || !this.tracking.breakdown || !this.tracking.breakdown.by_month) return;
       const data = this.tracking.breakdown.by_month;
       const labels = Object.keys(data).sort();
       const values = labels.map(label => data[label]);
-      
+
       this.charts.monthly = new Chart(ctx, {
         type: 'line',
         data: {
           labels,
-          datasets: [{
-            label: 'Certificates',
-            data: values,
-            borderColor: 'rgb(75, 192, 192)',
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-            tension: 0.1,
-          }],
+          datasets: [
+            {
+              label: 'Certificates',
+              data: values,
+              borderColor: 'rgb(75, 192, 192)',
+              backgroundColor: 'rgba(75, 192, 192, 0.2)',
+              tension: 0.1,
+            },
+          ],
         },
         options: {
           responsive: true,
@@ -495,7 +523,7 @@ export default {
         },
       });
     },
-    
+
     getStatusVariant(status) {
       const variants = {
         generated: 'primary',
@@ -505,7 +533,7 @@ export default {
       };
       return variants[status] || 'secondary';
     },
-    
+
     viewCertificate(certificate) {
       // Open certificate in modal or new tab
       this.$router.push({
@@ -513,19 +541,25 @@ export default {
         params: { id: certificate.id },
       });
     },
-    
+
     downloadCertificate(certificate) {
-      // Download PDF certificate
-      const url = `/api/patients/death-certificate-pdf/${certificate.id}`;
-      window.open(url, '_blank');
+      this.$store.dispatch('patient/printDeathCertificate', { id: certificate.id });
+      // .then(response => {
+      //   // // Download PDF certificate
+      //   // const url = `/api/patients/death-certificate-pdf/${certificate.id}`;
+      //   // window.open(url, '_blank');
+      // })
+      // .catch(error => {
+      //   console.error('Error downloading certificate:', error);
+      // });
     },
-    
+
     formatDate(dateString) {
       if (!dateString) return 'Unknown';
       return new Date(dateString).toLocaleDateString();
     },
   },
-  
+
   beforeDestroy() {
     // Clean up charts
     Object.values(this.charts).forEach(chart => {
@@ -541,7 +575,7 @@ export default {
 }
 
 .card {
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border: none;
 }
 

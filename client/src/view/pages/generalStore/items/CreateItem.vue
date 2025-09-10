@@ -181,11 +181,11 @@
                 <div class="col-md-6 mb-3">
                   <label class="form-label">Model Number</label>
                   <input
-                  v-model="form.model_number"
-                  type="text"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.model_number }"
-                />
+                    v-model="form.model_number"
+                    type="text"
+                    class="form-control"
+                    :class="{ 'is-invalid': errors.model_number }"
+                  />
                   <div v-if="errors.model_number" class="invalid-feedback d-block">
                     {{ errors.model_number }}
                   </div>
@@ -409,7 +409,11 @@
               </div>
 
               <div class="action-buttons">
-                <button type="button" @click="$emit('cancel')" class="btn btn-light btn-lg mr-3">
+                <button
+                  type="button"
+                  @click="$router.push('/general-store')"
+                  class="btn btn-light btn-lg mr-3"
+                >
                   <i class="flaticon2-close mr-2"></i>
                   Cancel
                 </button>
@@ -500,43 +504,31 @@ export default {
 
     async loadUnits() {
       try {
-        await this.$store.dispatch('generalStore/fetchUnits');
-        this.units = this.$store.state.generalStore.units || [
-          { id: 1, name: 'Pieces' },
-          { id: 2, name: 'Boxes' },
-          { id: 3, name: 'Meters' },
-          { id: 4, name: 'Liters' },
-          { id: 5, name: 'Kilograms' },
-        ];
+        await this.$store.dispatch('model/fetchUnits', {
+          currentPage: 1,
+          itemsPerPage: 100,
+        });
+        this.units = this.$store.state.model.units;
       } catch (error) {
-        this.$logError('Failed to load units', error);
-        // Fallback to default units
-        this.units = [
-          { id: 1, name: 'Pieces' },
-          { id: 2, name: 'Boxes' },
-          { id: 3, name: 'Meters' },
-          { id: 4, name: 'Liters' },
-          { id: 5, name: 'Kilograms' },
-        ];
+        this.$notify({
+          message: 'Failed to load units',
+          type: 'error',
+        });
       }
     },
 
     async loadSuppliers() {
       try {
-        await this.$store.dispatch('generalStore/fetchSuppliers');
-        this.suppliers = this.$store.state.generalStore.suppliers || [
-          { id: 1, name: 'General Supplies Co.' },
-          { id: 2, name: 'Medical Equipment Ltd.' },
-          { id: 3, name: 'Hospital Supplies Inc.' },
-        ];
+        await this.$store.dispatch('store/fetchVendors', {
+          currentPage: 1,
+          itemsPerPage: 100,
+        });
+        this.suppliers = this.$store.state.store.vendors;
       } catch (error) {
-        this.$logError('Failed to load suppliers', error);
-        // Fallback to default suppliers
-        this.suppliers = [
-          { id: 1, name: 'General Supplies Co.' },
-          { id: 2, name: 'Medical Equipment Ltd.' },
-          { id: 3, name: 'Hospital Supplies Inc.' },
-        ];
+        this.$notify({
+          message: 'Failed to load suppliers',
+          type: 'error',
+        });
       }
     },
 
@@ -553,7 +545,8 @@ export default {
       } else if (this.form.item_code.length < 3) {
         this.errors.item_code = 'Item code must be at least 3 characters';
       } else if (!/^[A-Z0-9-_]+$/i.test(this.form.item_code)) {
-        this.errors.item_code = 'Item code can only contain letters, numbers, hyphens, and underscores';
+        this.errors.item_code =
+          'Item code can only contain letters, numbers, hyphens, and underscores';
       }
 
       if (!this.form.name) {
@@ -603,7 +596,10 @@ export default {
         }
       }
 
-      if (this.form.initial_stock && (isNaN(this.form.initial_stock) || parseInt(this.form.initial_stock) < 0)) {
+      if (
+        this.form.initial_stock &&
+        (isNaN(this.form.initial_stock) || parseInt(this.form.initial_stock) < 0)
+      ) {
         this.errors.initial_stock = 'Initial stock must be a non-negative number';
       }
 

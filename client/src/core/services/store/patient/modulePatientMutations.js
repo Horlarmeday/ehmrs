@@ -79,4 +79,8 @@ export default {
   SET_MISSING_DEATH_CERTIFICATE_NUMBERS(state, data) {
     state.missingDeathCertificateNumbers = data;
   },
+
+  SET_DEATH_CERTIFICATE(state, data) {
+    state.deathCertificate = data;
+  },
 };

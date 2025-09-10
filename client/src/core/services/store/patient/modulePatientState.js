@@ -16,4 +16,5 @@ export default {
   certificateVerification: null,
   allSignatures: [],
   missingDeathCertificateNumbers: null,
+  deathCertificate: null,
 };

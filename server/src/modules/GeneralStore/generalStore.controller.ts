@@ -18,6 +18,7 @@ import {
   rejectRequestSchema,
   fulfillRequestSchema,
   paginationSchema,
+  categoryFilterSchema,
   itemFilterSchema,
   movementFilterSchema,
   requestFilterSchema,
@@ -49,13 +50,19 @@ export class GeneralStoreController {
   static async getCategories(req: Request, res: Response, next: NextFunction) {
     try {
       // Validate query parameters
-      const validatedQuery = GeneralStoreController.validateRequest(req.query, paginationSchema);
+      const validatedQuery = GeneralStoreController.validateRequest(
+        req.query,
+        categoryFilterSchema
+      );
       const { page = 1, limit = 20, parent_id, is_active } = validatedQuery;
       const { limit: paginate, offset } = calcLimitAndOffset(Number(page), Number(limit));
 
       const filters: any = {};
       if (parent_id !== undefined) filters.parent_id = Number(parent_id);
-      if (is_active !== undefined) filters.is_active = is_active === 'true';
+      if (is_active !== undefined) {
+        // Handle both boolean and string values for is_active
+        filters.is_active = typeof is_active === 'boolean' ? is_active : is_active === 'true';
+      }
 
       const result = await GeneralStoreService.getCategories(filters, { limit: paginate, offset });
 

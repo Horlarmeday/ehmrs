@@ -24,18 +24,14 @@ export default {
     //   errorReportingService
     // );
 
-    // Error reporting mixin methods disabled to prevent Vue method conflicts
+    // Global error capture mixin - temporarily disabled for debugging
     Vue.mixin({
+      errorCaptured(err, instance, info) {
+        // Temporarily disabled to debug redirect issue
+        console.log('Error captured but not processed:', err.message, instance, info);
 
-      // Report component errors
-      errorCaptured(error, instance, info) {
-        this.$errorReporting.reportComponentError(error, {
-          component: instance.$options.name || 'Unknown',
-          route: this.$route?.path,
-          info,
-          lifecycle: 'errorCaptured',
-        });
-        return false; // Don't prevent error from propagating
+        // Return true to allow error to propagate (default behavior)
+        return true;
       },
     });
 
@@ -72,4 +68,5 @@ export default {
     });
   },
 };
+
 

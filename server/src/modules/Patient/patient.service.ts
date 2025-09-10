@@ -55,16 +55,12 @@ class PatientService {
     if (patient && age >= 18)
       throw new BadException('INVALID', StatusCodes.BAD_REQUEST, PATIENT_EXIST);
 
-      let fileName;
+    let fileName;
     try {
       if (patient?.photo) {
         // Save photo to disk
-         fileName = await processSnappedPhoto(
-          createPatientBody.photo,
-          createPatientBody.firstname
-        );
+        fileName = await processSnappedPhoto(createPatientBody.photo, createPatientBody.firstname);
       }
-   
 
       const createdPatient = await createPatientAccount({ ...createPatientBody, fileName });
       JobSchedule.assignHospitalNumber(createdPatient.id);
@@ -299,7 +295,10 @@ class PatientService {
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
-    const timestamp = now.getTime().toString().slice(-6); // Last 6 digits of timestamp
+    const timestamp = now
+      .getTime()
+      .toString()
+      .slice(-6); // Last 6 digits of timestamp
 
     return `DC-${year}${month}${day}-${timestamp}`;
   }
@@ -311,7 +310,9 @@ class PatientService {
    * @param {number} staffId - Staff member ID performing the action
    * @returns {Promise<{ updated: number; patients: any[] }>} Update results
    */
-  static async generateMissingDeathCertificateNumbers(staffId: number): Promise<{ updated: number; patients: any[] }> {
+  static async generateMissingDeathCertificateNumbers(
+    staffId: number
+  ): Promise<{ updated: number; patients: any[] }> {
     const { Patient } = await import('../../database/models');
 
     // Find deceased patients without certificate numbers
@@ -320,7 +321,15 @@ class PatientService {
         patient_status: PatientStatus.DECEASED,
         death_certificate_number: null,
       },
-      attributes: ['id', 'fullname', 'hospital_id', 'date_of_death', 'firstname', 'lastname', 'middlename'],
+      attributes: [
+        'id',
+        'fullname',
+        'hospital_id',
+        'date_of_death',
+        'firstname',
+        'lastname',
+        'middlename',
+      ],
     });
 
     const updatedPatients = [];
@@ -385,7 +394,8 @@ class PatientService {
     }
 
     // Generate death certificate number if not provided
-    const certificateNumber = deathData.death_certificate_number || this.generateDeathCertificateNumber();
+    const certificateNumber =
+      deathData.death_certificate_number || this.generateDeathCertificateNumber();
 
     const updateData = {
       patient_status: PatientStatus.DECEASED,
@@ -1071,7 +1081,11 @@ Date: ${new Date().toLocaleString()}
    * @param {string} end - End date
    * @returns {any} Department mortality report
    */
-  static generateDepartmentMortalityReport(deceasedPatients: Patient[], start?: string, end?: string) {
+  static generateDepartmentMortalityReport(
+    deceasedPatients: Patient[],
+    start?: string,
+    end?: string
+  ) {
     // Group by department
     const departmentStats = deceasedPatients.reduce((acc, patient) => {
       const dept = patient.markedDeceasedBy?.department || 'Unknown';
@@ -1700,7 +1714,7 @@ Date: ${new Date().toLocaleString()}
   static async generateDeathCertificatePDF(
     patientId: number,
     res: any,
-    includeDigitalSignature = false
+    includeDigitalSignature = true
   ) {
     const patient = await getPatientById(patientId);
 

@@ -16,7 +16,7 @@
           <div class="d-flex justify-content-end">
             <button
               v-if="ALLOWED_ROLES.includes(user.role)"
-              @click="showCreateModal = true"
+              @click="createNewCategory"
               class="btn btn-success btn-lg mr-3"
             >
               <i class="flaticon2-plus mr-2"></i>
@@ -513,6 +513,10 @@ export default {
     parentCategories() {
       return this.categories.filter(cat => !cat.parent_id);
     },
+    // Add filters computed property to match template usage
+    filters() {
+      return this.allFilters;
+    },
   },
   async created() {
     await this.loadData();
@@ -607,6 +611,10 @@ export default {
 
     editCategory(category) {
       this.$router.push(`/general-store/categories/${category.id}/edit`);
+    },
+
+    createNewCategory() {
+      this.$router.push(`/general-store/categories/create`);
     },
 
     async deleteCategory(category) {

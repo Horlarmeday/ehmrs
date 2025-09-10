@@ -500,4 +500,36 @@ export default {
         });
     });
   },
+
+  printDeathCertificate({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/patients/death-certificate-pdf/${payload.id}?digital_signature=true`, {
+          responseType: 'arraybuffer', // 👈 Keep this
+        })
+        .then(response => {
+          const contentType = response.headers['content-type'].split(';')[0];
+          const blob = new Blob([response.data], { type: contentType });
+          const blobUrl = window.URL.createObjectURL(blob);
+
+          // Open in a new tab or iframe for printing
+          const printWindow = window.open(blobUrl, '_blank');
+          if (!printWindow) {
+            reject(new Error('Popup blocked. Please allow popups for this site.'));
+            return;
+          }
+
+          // Give the browser a moment to load the PDF, then trigger print
+          printWindow.onload = () => {
+            printWindow.focus();
+            printWindow.print();
+          };
+          commit('SET_DEATH_CERTIFICATE', []);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
 };

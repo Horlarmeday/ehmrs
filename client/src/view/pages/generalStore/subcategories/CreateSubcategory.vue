@@ -30,11 +30,11 @@
                       v-model="form.name"
                       type="text"
                       class="form-control"
-                      :class="{ 'is-invalid': errors.name }"
+                      :class="{ 'is-invalid': formErrors.name }"
                       required
                     />
-                    <div v-if="errors.name" class="invalid-feedback">
-                      {{ errors.name }}
+                    <div v-if="formErrors.name" class="invalid-feedback">
+                      {{ formErrors.name }}
                     </div>
                   </div>
                 </div>
@@ -45,7 +45,7 @@
                       id="category"
                       v-model="form.category_id"
                       class="form-control"
-                      :class="{ 'is-invalid': errors.category_id }"
+                      :class="{ 'is-invalid': formErrors.category_id }"
                       required
                     >
                       <option value="">Select a category</option>
@@ -57,8 +57,8 @@
                         {{ category.name }}
                       </option>
                     </select>
-                    <div v-if="errors.category_id" class="invalid-feedback">
-                      {{ errors.category_id }}
+                    <div v-if="formErrors.category_id" class="invalid-feedback">
+                      {{ formErrors.category_id }}
                     </div>
                   </div>
                 </div>
@@ -73,10 +73,10 @@
                       v-model="form.code"
                       type="text"
                       class="form-control"
-                      :class="{ 'is-invalid': errors.code }"
+                      :class="{ 'is-invalid': formErrors.code }"
                     />
-                    <div v-if="errors.code" class="invalid-feedback">
-                      {{ errors.code }}
+                    <div v-if="formErrors.code" class="invalid-feedback">
+                      {{ formErrors.code }}
                     </div>
                     <small class="form-text text-muted">
                       A unique code to identify this subcategory
@@ -90,13 +90,13 @@
                       id="status"
                       v-model="form.status"
                       class="form-control"
-                      :class="{ 'is-invalid': errors.status }"
+                      :class="{ 'is-invalid': formErrors.status }"
                     >
                       <option value="active">Active</option>
                       <option value="inactive">Inactive</option>
                     </select>
-                    <div v-if="errors.status" class="invalid-feedback">
-                      {{ errors.status }}
+                    <div v-if="formErrors.status" class="invalid-feedback">
+                      {{ formErrors.status }}
                     </div>
                   </div>
                 </div>
@@ -108,11 +108,11 @@
                   id="description"
                   v-model="form.description"
                   class="form-control"
-                  :class="{ 'is-invalid': errors.description }"
+                  :class="{ 'is-invalid': formErrors.description }"
                   rows="4"
                 ></textarea>
-                <div v-if="errors.description" class="invalid-feedback">
-                  {{ errors.description }}
+                <div v-if="formErrors.description" class="invalid-feedback">
+                  {{ formErrors.description }}
                 </div>
               </div>
 
@@ -125,11 +125,11 @@
                       v-model.number="form.sort_order"
                       type="number"
                       class="form-control"
-                      :class="{ 'is-invalid': errors.sort_order }"
+                      :class="{ 'is-invalid': formErrors.sort_order }"
                       min="0"
                     />
-                    <div v-if="errors.sort_order" class="invalid-feedback">
-                      {{ errors.sort_order }}
+                    <div v-if="formErrors.sort_order" class="invalid-feedback">
+                      {{ formErrors.sort_order }}
                     </div>
                     <small class="form-text text-muted">
                       Lower numbers appear first in lists
@@ -144,11 +144,11 @@
                       v-model="form.color"
                       type="color"
                       class="form-control form-control-color"
-                      :class="{ 'is-invalid': errors.color }"
+                      :class="{ 'is-invalid': formErrors.color }"
                       title="Choose a color for this subcategory"
                     />
-                    <div v-if="errors.color" class="invalid-feedback">
-                      {{ errors.color }}
+                    <div v-if="formErrors.color" class="invalid-feedback">
+                      {{ formErrors.color }}
                     </div>
                   </div>
                 </div>
@@ -227,7 +227,7 @@ export default {
         is_featured: false,
         requires_approval: false,
       },
-      errors: {},
+      formErrors: {},
       submitting: false,
       loading: false,
     };
@@ -256,18 +256,27 @@ export default {
     },
     async handleSubmit() {
       this.submitting = true;
-      this.errors = {};
+      this.formErrors = {};
 
       try {
-        await this.$store.dispatch('generalStore/createSubcategory', this.form);
+        // Only send fields that are allowed by the backend schema
+        const subcategoryData = {
+          name: this.form.name,
+          category_id: this.form.category_id,
+          description: this.form.description,
+          is_active: this.form.status === 'active'
+        };
+
+        await this.$store.dispatch('generalStore/createSubcategory', subcategoryData);
 
         this.$toast.success('Subcategory created successfully!');
 
         // Redirect to the subcategories list
         this.$router.push({ name: 'general-store-subcategories' });
       } catch (error) {
-        if (error.response?.data?.errors) {
-          this.errors = error.response.data.errors;
+        // The axios interceptor returns error.response.data, so error is already the data object
+        if (error.errors) {
+          this.formErrors = error.errors;
         } else {
           this.$toast.error('Failed to create subcategory. Please try again.');
         }

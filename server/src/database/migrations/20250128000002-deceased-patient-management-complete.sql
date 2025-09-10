@@ -171,8 +171,8 @@ SELECT
   TIMESTAMPDIFF(YEAR, p.date_of_birth, p.date_of_death) AS age_at_death,
   DATEDIFF(p.date_of_death, p.date_of_birth) AS days_lived
 FROM `Patients` p
-LEFT JOIN `Staff` s ON p.marked_deceased_by = s.id
-LEFT JOIN `Staff` rs ON p.revived_by = rs.id
+LEFT JOIN `Staffs` s ON p.marked_deceased_by = s.id
+LEFT JOIN `Staffs` rs ON p.revived_by = rs.id
 WHERE p.patient_status = 'Deceased';
 
 -- View for death statistics

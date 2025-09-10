@@ -38,7 +38,7 @@ export default {
           const token = response.data.token;
           const user = response.data.data;
           localStorage.setItem('user_token', token);
-          axios.defaults.headers.common['authorization'] = `Bearer ${token}`;
+          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
           commit('auth_success', token, user);
           resolve(response);
         })
@@ -74,7 +74,7 @@ export default {
     return new Promise((resolve, reject) => {
       commit('logout');
       localStorage.removeItem('user_token');
-      delete axios.defaults.headers.common['authorization'];
+      delete axios.defaults.headers.common['Authorization'];
       window.location.replace('/');
       resolve();
     });

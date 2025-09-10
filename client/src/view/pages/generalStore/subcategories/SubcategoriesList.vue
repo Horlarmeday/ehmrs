@@ -50,7 +50,7 @@
                 </select>
               </div>
               <div class="col-md-3">
-                <select v-model="statusFilter" class="form-control" @change="handleStatusFilter">
+                <select v-model="selectedStatus" class="form-control" @change="handleStatusFilter">
                   <option value="">All Status</option>
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
@@ -209,8 +209,8 @@ export default {
         filtered = filtered.filter(sub => sub.category_id === this.selectedCategory);
       }
 
-      if (this.statusFilter) {
-        filtered = filtered.filter(sub => sub.status === this.statusFilter);
+      if (this.selectedStatus) {
+        filtered = filtered.filter(sub => sub.status === this.selectedStatus);
       }
 
       return filtered;

@@ -1,4 +1,5 @@
 import axios from '../../../../axios';
+import { createCachedAction } from './cacheHelpers.js';
 
 // Standardized error handling
 const handleError = (error, entityName, operation = 'fetch') => {
@@ -74,7 +75,7 @@ const createStandardizedAction = (entityName, endpoint, commitMutations) => {
 
       axios
         .get(endpoint, { params })
-        .then((response) => {
+        .then(response => {
           const data = response.data.data;
           const pagination = response.data.pagination || {};
 
@@ -102,7 +103,7 @@ const createStandardizedAction = (entityName, endpoint, commitMutations) => {
           commit('SET_LOADING_STATE', { operation: entityName, loading: false });
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           const { errorMessage, errorDetails } = handleError(error, entityName, 'fetch');
           commit('SET_ERROR', errorMessage);
           if (errorDetails) {
@@ -140,14 +141,14 @@ const createCRUDAction = (entityName, endpoint, operation, commitMutation) => {
       }
 
       request
-        .then((response) => {
+        .then(response => {
           if (commitMutation) {
             commit(commitMutation, response.data.data || payload);
           }
           commit('SET_LOADING_STATE', { operation: entityName, loading: false });
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           const { errorMessage, errorDetails } = handleError(error, entityName, operation);
           commit('SET_ERROR', errorMessage);
           if (errorDetails) {
@@ -160,25 +161,52 @@ const createCRUDAction = (entityName, endpoint, operation, commitMutation) => {
   };
 };
 
-export default {
-  // Categories
-  fetchCategories: createStandardizedAction('categories', '/general-store/categories', {
+// Create cached versions of frequently used actions
+const originalFetchCategories = createStandardizedAction(
+  'categories',
+  '/general-store/categories',
+  {
     setItems: 'SET_CATEGORIES',
     setTotal: 'SET_CATEGORIES_TOTAL',
     setPages: 'SET_CATEGORIES_PAGES',
-  }),
+  }
+);
+
+const originalFetchSubcategories = createStandardizedAction(
+  'subcategories',
+  '/general-store/subcategories',
+  {
+    setItems: 'SET_SUBCATEGORIES',
+    setTotal: 'SET_SUBCATEGORIES_TOTAL',
+    setPages: 'SET_SUBCATEGORIES_PAGES',
+  }
+);
+
+const originalFetchItems = createStandardizedAction('items', '/general-store/items', {
+  setItems: 'SET_ITEMS',
+  setTotal: 'SET_ITEMS_TOTAL',
+  setPages: 'SET_ITEMS_PAGES',
+});
+
+export default {
+  // Categories - with caching
+  fetchCategories: createCachedAction(
+    originalFetchCategories,
+    'categories',
+    state => state.categories
+  ),
 
   fetchCategoryById({ commit }, categoryId) {
     commit('SET_LOADING', true);
     return new Promise((resolve, reject) => {
       axios
         .get(`/general-store/categories/${categoryId}`)
-        .then((response) => {
+        .then(response => {
           commit('SET_CURRENT_CATEGORY', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to fetch category');
           commit('SET_LOADING', false);
           reject(error);
@@ -206,24 +234,24 @@ export default {
     'DELETE_CATEGORY'
   ),
 
-  // Subcategories
-  fetchSubcategories: createStandardizedAction('subcategories', '/general-store/subcategories', {
-    setItems: 'SET_SUBCATEGORIES',
-    setTotal: 'SET_SUBCATEGORIES_TOTAL',
-    setPages: 'SET_SUBCATEGORIES_PAGES',
-  }),
+  // Subcategories - with caching
+  fetchSubcategories: createCachedAction(
+    originalFetchSubcategories,
+    'subcategories',
+    state => state.subcategories
+  ),
 
   fetchSubcategoryById({ commit }, subcategoryId) {
     commit('SET_LOADING', true);
     return new Promise((resolve, reject) => {
       axios
         .get(`/general-store/subcategories/${subcategoryId}`)
-        .then((response) => {
+        .then(response => {
           commit('SET_CURRENT_SUBCATEGORY', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to fetch subcategory');
           commit('SET_LOADING', false);
           reject(error);
@@ -236,12 +264,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/general-store/subcategories', subcategoryData)
-        .then((response) => {
+        .then(response => {
           commit('ADD_SUBCATEGORY', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to create subcategory');
           commit('SET_LOADING', false);
           reject(error);
@@ -254,12 +282,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/general-store/subcategories/${id}`, data)
-        .then((response) => {
+        .then(response => {
           commit('UPDATE_SUBCATEGORY', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to update subcategory');
           commit('SET_LOADING', false);
           reject(error);
@@ -272,12 +300,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .delete(`/general-store/subcategories/${subcategoryId}`)
-        .then((response) => {
+        .then(response => {
           commit('DELETE_SUBCATEGORY', subcategoryId);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to delete subcategory');
           commit('SET_LOADING', false);
           reject(error);
@@ -285,12 +313,8 @@ export default {
     });
   },
 
-  // Items
-  fetchItems: createStandardizedAction('items', '/general-store/items', {
-    setItems: 'SET_ITEMS',
-    setTotal: 'SET_ITEMS_TOTAL',
-    setPages: 'SET_ITEMS_PAGES',
-  }),
+  // Items - with caching
+  fetchItems: createCachedAction(originalFetchItems, 'items', state => state.items),
 
   searchItems({ commit }, payload = {}) {
     commit('SET_LOADING', true);
@@ -307,14 +331,14 @@ export default {
 
       axios
         .get('/general-store/items/search', { params })
-        .then((response) => {
+        .then(response => {
           commit('SET_ITEMS', response.data.data);
           commit('SET_ITEMS_TOTAL', response.data.pagination.total_items);
           commit('SET_ITEMS_PAGES', response.data.pagination.total_pages);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to search items');
           commit('SET_LOADING', false);
           reject(error);
@@ -327,12 +351,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/general-store/items', itemData)
-        .then((response) => {
+        .then(response => {
           commit('ADD_ITEM', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to create item');
           commit('SET_LOADING', false);
           reject(error);
@@ -345,12 +369,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/general-store/items/${id}`, data)
-        .then((response) => {
+        .then(response => {
           commit('UPDATE_ITEM', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to update item');
           commit('SET_LOADING', false);
           reject(error);
@@ -363,12 +387,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .delete(`/general-store/items/${itemId}`)
-        .then((response) => {
+        .then(response => {
           commit('DELETE_ITEM', itemId);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to delete item');
           commit('SET_LOADING', false);
           reject(error);
@@ -381,12 +405,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/general-store/items/low-stock')
-        .then((response) => {
+        .then(response => {
           commit('SET_LOW_STOCK_ITEMS', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to fetch low stock items');
           commit('SET_LOADING', false);
           reject(error);
@@ -399,12 +423,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/general-store/items/expiring', { params: { days } })
-        .then((response) => {
+        .then(response => {
           commit('SET_EXPIRING_ITEMS', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to fetch expiring items');
           commit('SET_LOADING', false);
           reject(error);
@@ -424,12 +448,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/general-store/movements', movementData)
-        .then((response) => {
+        .then(response => {
           commit('ADD_MOVEMENT', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to create movement');
           commit('SET_LOADING', false);
           reject(error);
@@ -449,12 +473,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/general-store/requests', requestData)
-        .then((response) => {
+        .then(response => {
           commit('ADD_REQUEST', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to create request');
           commit('SET_LOADING', false);
           reject(error);
@@ -467,12 +491,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/general-store/requests/${id}`, data)
-        .then((response) => {
+        .then(response => {
           commit('UPDATE_REQUEST', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to update request');
           commit('SET_LOADING', false);
           reject(error);
@@ -485,12 +509,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/general-store/requests/${requestId}`)
-        .then((response) => {
+        .then(response => {
           commit('SET_CURRENT_REQUEST', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to fetch request details');
           commit('SET_LOADING', false);
           reject(error);
@@ -503,12 +527,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/general-store/requests/${id}/approve`, { approved_items: approvedItems })
-        .then((response) => {
+        .then(response => {
           commit('UPDATE_REQUEST', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to approve request');
           commit('SET_LOADING', false);
           reject(error);
@@ -521,12 +545,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/general-store/requests/${id}/reject`, { rejection_reason: rejectionReason })
-        .then((response) => {
+        .then(response => {
           commit('UPDATE_REQUEST', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to reject request');
           commit('SET_LOADING', false);
           reject(error);
@@ -539,12 +563,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/general-store/requests/${id}/fulfill`, { issued_items: issuedItems })
-        .then((response) => {
+        .then(response => {
           commit('UPDATE_REQUEST', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to fulfill request');
           commit('SET_LOADING', false);
           reject(error);
@@ -562,12 +586,12 @@ export default {
 
       axios
         .get('/general-store/requests/my-requests', { params })
-        .then((response) => {
+        .then(response => {
           commit('SET_MY_REQUESTS', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to fetch my requests');
           commit('SET_LOADING', false);
           reject(error);
@@ -585,12 +609,12 @@ export default {
 
       axios
         .get('/general-store/requests/pending-approval', { params })
-        .then((response) => {
+        .then(response => {
           commit('SET_PENDING_APPROVAL_REQUESTS', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit(
             'SET_ERROR',
             error.response?.data?.message || 'Failed to fetch pending approval requests'
@@ -607,12 +631,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/general-store/reports/stock', { params: filters })
-        .then((response) => {
+        .then(response => {
           commit('SET_STOCK_REPORT', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to generate stock report');
           commit('SET_LOADING', false);
           reject(error);
@@ -625,12 +649,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/general-store/reports/movements', { params: filters })
-        .then((response) => {
+        .then(response => {
           commit('SET_MOVEMENT_REPORT', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit(
             'SET_ERROR',
             error.response?.data?.message || 'Failed to generate movement report'
@@ -646,12 +670,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/general-store/reports/usage', { params: filters })
-        .then((response) => {
+        .then(response => {
           commit('SET_USAGE_REPORT', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to generate usage report');
           commit('SET_LOADING', false);
           reject(error);
@@ -664,12 +688,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/general-store/reports/costs', { params: filters })
-        .then((response) => {
+        .then(response => {
           commit('SET_COST_REPORT', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to generate cost report');
           commit('SET_LOADING', false);
           reject(error);
@@ -686,11 +710,11 @@ export default {
           params: filters,
           responseType: 'blob',
         })
-        .then((response) => {
+        .then(response => {
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to export stock report');
           commit('SET_LOADING', false);
           reject(error);
@@ -706,11 +730,11 @@ export default {
           params: filters,
           responseType: 'blob',
         })
-        .then((response) => {
+        .then(response => {
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to export movement report');
           commit('SET_LOADING', false);
           reject(error);
@@ -726,11 +750,11 @@ export default {
           params: filters,
           responseType: 'blob',
         })
-        .then((response) => {
+        .then(response => {
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to export usage report');
           commit('SET_LOADING', false);
           reject(error);
@@ -746,11 +770,11 @@ export default {
           params: filters,
           responseType: 'blob',
         })
-        .then((response) => {
+        .then(response => {
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to export cost report');
           commit('SET_LOADING', false);
           reject(error);
@@ -798,12 +822,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/general-store/dispensaries/${dispensaryId}`)
-        .then((response) => {
+        .then(response => {
           commit('SET_CURRENT_DISPENSARY', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to fetch dispensary');
           commit('SET_LOADING', false);
           reject(error);
@@ -816,12 +840,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/general-store/dispensaries', dispensaryData)
-        .then((response) => {
+        .then(response => {
           commit('ADD_DISPENSARY', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to create dispensary');
           commit('SET_LOADING', false);
           reject(error);
@@ -834,12 +858,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/general-store/dispensaries/${id}`, data)
-        .then((response) => {
+        .then(response => {
           commit('UPDATE_DISPENSARY', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to update dispensary');
           commit('SET_LOADING', false);
           reject(error);
@@ -852,12 +876,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .delete(`/general-store/dispensaries/${dispensaryId}`)
-        .then((response) => {
+        .then(response => {
           commit('DELETE_DISPENSARY', dispensaryId);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to delete dispensary');
           commit('SET_LOADING', false);
           reject(error);
@@ -870,12 +894,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/general-store/dispensaries/${dispensaryId}/stock`)
-        .then((response) => {
+        .then(response => {
           commit('SET_DISPENSARY_STOCK', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to fetch dispensary stock');
           commit('SET_LOADING', false);
           reject(error);
@@ -888,12 +912,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/general-store/dispensaries/${dispensaryId}/metrics`)
-        .then((response) => {
+        .then(response => {
           commit('SET_DISPENSARY_METRICS', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit(
             'SET_ERROR',
             error.response?.data?.message || 'Failed to fetch dispensary metrics'
@@ -909,11 +933,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/general-store/dispensaries/transfer', transferData)
-        .then((response) => {
+        .then(response => {
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit(
             'SET_ERROR',
             error.response?.data?.message || 'Failed to transfer items to dispensary'
@@ -929,11 +953,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/general-store/dispensaries/dispense', dispenseData)
-        .then((response) => {
+        .then(response => {
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to dispense item');
           commit('SET_LOADING', false);
           reject(error);
@@ -946,11 +970,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/general-store/dispensaries/workflow/auto-replenish', { dispensary_id })
-        .then((response) => {
+        .then(response => {
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit(
             'SET_ERROR',
             error.response?.data?.message || 'Failed to auto-replenish dispensary'
@@ -966,11 +990,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/general-store/dispensaries/dispense', dispenseData)
-        .then((response) => {
+        .then(response => {
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to dispense item');
           commit('SET_LOADING', false);
           reject(error);
@@ -983,11 +1007,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/general-store/dispensaries/${dispensaryId}/activity`)
-        .then((response) => {
+        .then(response => {
           commit('SET_LOADING', false);
           resolve(response.data.data);
         })
-        .catch((error) => {
+        .catch(error => {
           commit(
             'SET_ERROR',
             error.response?.data?.message || 'Failed to fetch dispensary activity'
@@ -1004,13 +1028,13 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/general-store/settings')
-        .then((response) => {
+        .then(response => {
           const data = response.data?.data || {};
           commit('SET_SETTINGS', data);
           commit('SET_LOADING', false);
           resolve(data);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to fetch settings');
           commit('SET_LOADING', false);
           reject(error);
@@ -1023,13 +1047,13 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put('/general-store/settings', settings)
-        .then((response) => {
+        .then(response => {
           const data = response.data?.data || settings;
           commit('SET_SETTINGS', data);
           commit('SET_LOADING', false);
           resolve(data);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to update settings');
           commit('SET_LOADING', false);
           reject(error);
@@ -1043,12 +1067,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/general-store/items/${itemId}`)
-        .then((response) => {
+        .then(response => {
           commit('SET_CURRENT_ITEM', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to fetch item details');
           commit('SET_LOADING', false);
           reject(error);
@@ -1070,12 +1094,12 @@ export default {
 
       axios
         .get('/general-store/movements', { params })
-        .then((response) => {
+        .then(response => {
           commit('SET_ITEM_MOVEMENTS', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to fetch item movements');
           commit('SET_LOADING', false);
           reject(error);
@@ -1088,12 +1112,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/general-store/dashboard/stats')
-        .then((response) => {
+        .then(response => {
           commit('SET_DASHBOARD_STATS', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to fetch dashboard stats');
           commit('SET_LOADING', false);
           reject(error);
@@ -1110,12 +1134,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/general-store/reports/recent')
-        .then((response) => {
+        .then(response => {
           commit('SET_RECENT_REPORTS', response.data.data);
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to fetch recent reports');
           commit('SET_LOADING', false);
           reject(error);

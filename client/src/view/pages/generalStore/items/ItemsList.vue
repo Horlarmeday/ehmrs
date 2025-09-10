@@ -16,7 +16,7 @@
           <div class="d-flex justify-content-end">
             <button
               v-if="ALLOWED_ROLES.includes(user.role)"
-              @click="showCreateModal = true"
+              @click="createNewItem"
               class="btn btn-primary btn-lg mr-3"
             >
               <i class="flaticon2-plus mr-2"></i>
@@ -586,6 +586,10 @@ export default {
 
     editItem(item) {
       this.$router.push(`/general-store/items/${item.id}/edit`);
+    },
+
+    createNewItem() {
+      this.$router.push('/general-store/items/create');
     },
 
     async deleteItem(item) {

@@ -1,4 +1,43 @@
 import axios from '../../../../axios';
+import { createCachedAction, invalidateCache } from '../generalStore/cacheHelpers.js';
+
+// Create original actions for caching
+const originalFetchInventories = ({ commit }) => {
+  return new Promise((resolve, reject) => {
+    axios
+      .get(`/inventory/get`)
+      .then(response => {
+        commit('SET_INVENTORIES', response.data.data);
+        resolve(response);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
+const originalFetchInventoryItems = ({ commit }, payload) => {
+  return new Promise((resolve, reject) => {
+    axios
+      .get(`/inventory/get/${payload.inventory}/items`, {
+        params: {
+          currentPage: payload.currentPage,
+          pageLimit: payload.itemsPerPage,
+          search: payload.search,
+          filter: payload?.filter,
+        },
+      })
+      .then(response => {
+        commit('SET_ITEMS', response.data.data.docs);
+        commit('SET_ITEMS_TOTAL', response.data.data.total);
+        commit('SET_NUMB_PAGES', response.data.data.pages);
+        resolve(response);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
 
 export default {
   addInventory({ commit }, inventory) {
@@ -7,6 +46,8 @@ export default {
         .post(`/inventory/create`, inventory)
         .then(response => {
           commit('ADD_INVENTORY', response.data.data);
+          // Invalidate inventories cache
+          invalidateCache('inventories');
           resolve(response);
         })
         .catch(error => {
@@ -15,19 +56,12 @@ export default {
     });
   },
 
-  fetchInventories({ commit }) {
-    return new Promise((resolve, reject) => {
-      axios
-        .get(`/inventory/get`)
-        .then(response => {
-          commit('SET_INVENTORIES', response.data.data);
-          resolve(response);
-        })
-        .catch(error => {
-          reject(error);
-        });
-    });
-  },
+  // Cached version of fetchInventories
+  fetchInventories: createCachedAction(
+    originalFetchInventories,
+    'inventories',
+    (state) => state.inventories
+  ),
 
   updateInventory({ commit }, inventory) {
     return new Promise((resolve, reject) => {
@@ -35,6 +69,9 @@ export default {
         .post(`/inventory/update`, inventory)
         .then(response => {
           commit('UPDATE_INVENTORY', response.data.data);
+          // Invalidate related caches
+          invalidateCache('inventories');
+          invalidateCache('inventory_items');
           resolve(response);
         })
         .catch(error => {
@@ -43,28 +80,12 @@ export default {
     });
   },
 
-  fetchInventoryItems({ commit }, payload) {
-    return new Promise((resolve, reject) => {
-      axios
-        .get(`/inventory/get/${payload.inventory}/items`, {
-          params: {
-            currentPage: payload.currentPage,
-            pageLimit: payload.itemsPerPage,
-            search: payload.search,
-            filter: payload?.filter,
-          },
-        })
-        .then(response => {
-          commit('SET_ITEMS', response.data.data.docs);
-          commit('SET_ITEMS_TOTAL', response.data.data.total);
-          commit('SET_NUMB_PAGES', response.data.data.pages);
-          resolve(response);
-        })
-        .catch(error => {
-          reject(error);
-        });
-    });
-  },
+  // Cached version of fetchInventoryItems
+  fetchInventoryItems: createCachedAction(
+    originalFetchInventoryItems,
+    'inventory_items',
+    (state) => state.items
+  ),
 
   fetchInventoryItem({ commit }, payload) {
     return new Promise((resolve, reject) => {
@@ -108,6 +129,8 @@ export default {
         .put(`/inventory/item/update/`, inventory)
         .then(response => {
           commit('UPDATE_ITEM', response.data.data);
+          // Invalidate inventory items cache
+          invalidateCache('inventory_items');
           resolve(response);
         })
         .catch(error => {

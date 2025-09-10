@@ -34,6 +34,25 @@ export const createCategorySchema = Joi.object({
   is_active: Joi.boolean()
     .optional()
     .default(true),
+
+  code: Joi.string()
+    .optional()
+    .allow(''),
+  icon_class: Joi.string()
+    .optional()
+    .allow(''),
+  is_featured: Joi.boolean()
+    .optional()
+    .allow(''),
+  is_restricted: Joi.boolean()
+    .optional()
+    .allow(''),
+  requires_approval: Joi.boolean()
+    .optional()
+    .allow(''),
+  sort_order: Joi.number()
+    .optional()
+    .allow(''),
 });
 
 export const updateCategorySchema = Joi.object({
@@ -736,6 +755,66 @@ export const paginationSchema = Joi.object({
   return value;
 });
 
+export const categoryFilterSchema = Joi.object({
+  // Support both old and new parameter names for backward compatibility
+  page: Joi.number()
+    .optional()
+    .min(1)
+    .default(1)
+    .messages({
+      'number.base': 'Page must be a valid number',
+      'number.min': 'Page must be at least 1',
+    }),
+  currentPage: Joi.number()
+    .optional()
+    .min(1)
+    .messages({
+      'number.base': 'Current page must be a valid number',
+      'number.min': 'Current page must be at least 1',
+    }),
+  limit: Joi.number()
+    .optional()
+    .min(1)
+    .max(100)
+    .default(20)
+    .messages({
+      'number.base': 'Limit must be a valid number',
+      'number.min': 'Limit must be at least 1',
+      'number.max': 'Limit cannot exceed 100',
+    }),
+  pageLimit: Joi.number()
+    .optional()
+    .min(1)
+    .max(100)
+    .messages({
+      'number.base': 'Page limit must be a valid number',
+      'number.min': 'Page limit must be at least 1',
+      'number.max': 'Page limit cannot exceed 100',
+    }),
+  parent_id: Joi.number()
+    .optional()
+    .positive()
+    .allow(null)
+    .messages({
+      'number.base': 'Parent ID must be a valid number',
+      'number.positive': 'Parent ID must be a positive number',
+    }),
+  is_active: Joi.boolean()
+    .optional()
+    .messages({
+      'boolean.base': 'is_active must be a boolean value',
+    }),
+}).custom((value, helpers) => {
+  // Normalize parameter names - prefer new names over old names
+  if (value.currentPage && !value.page) {
+    value.page = value.currentPage;
+  }
+  if (value.pageLimit && !value.limit) {
+    value.limit = value.pageLimit;
+  }
+  return value;
+});
+
 export const itemFilterSchema = Joi.object({
   // Support both old and new parameter names for backward compatibility
   page: Joi.number()
@@ -1032,7 +1111,7 @@ export const reportFilterSchema = Joi.object({
   if (value.end && !value.end_date) {
     value.end_date = value.end;
   }
-  
+
   // Ensure at least one date range is provided
   if (!value.start_date && !value.start) {
     return helpers.error('any.required', { message: 'Start date is required' });
@@ -1040,6 +1119,6 @@ export const reportFilterSchema = Joi.object({
   if (!value.end_date && !value.end) {
     return helpers.error('any.required', { message: 'End date is required' });
   }
-  
+
   return value;
 });

@@ -1,7 +1,7 @@
 // Normalized actions for entity-based state management
 // Handles API calls and state updates with proper normalization
 
-const axios = require('../../../../axios');
+import axios from '../../../../axios';
 
 // Helper function to normalize entity data
 const normalizeEntity = (entity, id = 'id') => {
@@ -9,7 +9,7 @@ const normalizeEntity = (entity, id = 'id') => {
     const byId = {};
     const allIds = [];
 
-    entity.forEach((item) => {
+    entity.forEach(item => {
       const itemId = item[id];
       byId[itemId] = item;
       allIds.push(itemId);
@@ -28,7 +28,7 @@ const normalizeEntity = (entity, id = 'id') => {
 const createLookupTable = (entities, lookupKey) => {
   const lookup = {};
 
-  entities.forEach((entity) => {
+  entities.forEach(entity => {
     const key = entity[lookupKey];
     if (key) {
       if (!lookup[key]) lookup[key] = [];
@@ -39,7 +39,7 @@ const createLookupTable = (entities, lookupKey) => {
   return lookup;
 };
 
-const normalizedActions = {
+export default {
   // Categories actions
   fetchCategories({ commit, state }, payload = {}) {
     return new Promise((resolve, reject) => {
@@ -51,8 +51,8 @@ const normalizedActions = {
         commit('SET_LOADING_STATE', { entity: 'categories', loading: true });
 
         axios
-          .get('/api/general-store/categories', { params: payload })
-          .then((response) => {
+          .get('/general-store/categories', { params: payload })
+          .then(response => {
             const categories = response.data.data.docs || response.data.data;
             const normalized = normalizeEntity(categories);
 
@@ -75,7 +75,7 @@ const normalizedActions = {
             commit('SET_LOADING_STATE', { entity: 'categories', loading: false });
             resolve(response);
           })
-          .catch((error) => {
+          .catch(error => {
             commit('SET_ERROR', {
               message: 'Failed to fetch categories',
               details: error.response?.data || error.message,
@@ -90,13 +90,13 @@ const normalizedActions = {
     });
   },
 
-  createCategory({ commit, dispatch }, payload) {
+  createCategory({ commit }, payload) {
     return new Promise((resolve, reject) => {
       commit('SET_LOADING_STATE', { entity: 'categories', loading: true });
 
       axios
-        .post('/api/general-store/categories', payload)
-        .then((response) => {
+        .post('/general-store/categories', payload)
+        .then(response => {
           const category = response.data.data;
           commit('ADD_CATEGORY', category);
           commit('SET_LOADING_STATE', { entity: 'categories', loading: false });
@@ -106,7 +106,7 @@ const normalizedActions = {
 
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', {
             message: 'Failed to create category',
             details: error.response?.data || error.message,
@@ -122,8 +122,8 @@ const normalizedActions = {
       commit('SET_LOADING_STATE', { entity: 'categories', loading: true });
 
       axios
-        .put(`/api/general-store/categories/${id}`, payload)
-        .then((response) => {
+        .put(`/general-store/categories/${id}`, payload)
+        .then(response => {
           const category = response.data.data;
           commit('UPDATE_CATEGORY', category);
           commit('SET_LOADING_STATE', { entity: 'categories', loading: false });
@@ -133,7 +133,7 @@ const normalizedActions = {
 
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', {
             message: 'Failed to update category',
             details: error.response?.data || error.message,
@@ -149,8 +149,8 @@ const normalizedActions = {
       commit('SET_LOADING_STATE', { entity: 'categories', loading: true });
 
       axios
-        .delete(`/api/general-store/categories/${id}`)
-        .then((response) => {
+        .delete(`/general-store/categories/${id}`)
+        .then(response => {
           commit('REMOVE_CATEGORY', id);
           commit('SET_LOADING_STATE', { entity: 'categories', loading: false });
 
@@ -159,7 +159,7 @@ const normalizedActions = {
 
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', {
             message: 'Failed to delete category',
             details: error.response?.data || error.message,
@@ -180,8 +180,8 @@ const normalizedActions = {
         commit('SET_LOADING_STATE', { entity: 'subcategories', loading: true });
 
         axios
-          .get('/api/general-store/subcategories', { params: payload })
-          .then((response) => {
+          .get('/general-store/subcategories', { params: payload })
+          .then(response => {
             const subcategories = response.data.data.docs || response.data.data;
             const normalized = normalizeEntity(subcategories);
             const byCategory = createLookupTable(subcategories, 'category_id');
@@ -206,7 +206,7 @@ const normalizedActions = {
             commit('SET_LOADING_STATE', { entity: 'subcategories', loading: false });
             resolve(response);
           })
-          .catch((error) => {
+          .catch(error => {
             commit('SET_ERROR', {
               message: 'Failed to fetch subcategories',
               details: error.response?.data || error.message,
@@ -225,8 +225,8 @@ const normalizedActions = {
       commit('SET_LOADING_STATE', { entity: 'subcategories', loading: true });
 
       axios
-        .post('/api/general-store/subcategories', payload)
-        .then((response) => {
+        .post('/general-store/subcategories', payload)
+        .then(response => {
           const subcategory = response.data.data;
           commit('ADD_SUBCATEGORY', subcategory);
           commit('SET_LOADING_STATE', { entity: 'subcategories', loading: false });
@@ -234,7 +234,7 @@ const normalizedActions = {
           commit('INVALIDATE_CACHE', 'subcategories');
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', {
             message: 'Failed to create subcategory',
             details: error.response?.data || error.message,
@@ -250,8 +250,8 @@ const normalizedActions = {
       commit('SET_LOADING_STATE', { entity: 'subcategories', loading: true });
 
       axios
-        .put(`/api/general-store/subcategories/${id}`, payload)
-        .then((response) => {
+        .put(`/general-store/subcategories/${id}`, payload)
+        .then(response => {
           const subcategory = response.data.data;
           commit('UPDATE_SUBCATEGORY', subcategory);
           commit('SET_LOADING_STATE', { entity: 'subcategories', loading: false });
@@ -259,7 +259,7 @@ const normalizedActions = {
           commit('INVALIDATE_CACHE', 'subcategories');
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', {
             message: 'Failed to update subcategory',
             details: error.response?.data || error.message,
@@ -275,15 +275,15 @@ const normalizedActions = {
       commit('SET_LOADING_STATE', { entity: 'subcategories', loading: true });
 
       axios
-        .delete(`/api/general-store/subcategories/${id}`)
-        .then((response) => {
+        .delete(`/general-store/subcategories/${id}`)
+        .then(response => {
           commit('REMOVE_SUBCATEGORY', id);
           commit('SET_LOADING_STATE', { entity: 'subcategories', loading: false });
 
           commit('INVALIDATE_CACHE', 'subcategories');
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', {
             message: 'Failed to delete subcategory',
             details: error.response?.data || error.message,
@@ -304,16 +304,16 @@ const normalizedActions = {
         commit('SET_LOADING_STATE', { entity: 'items', loading: true });
 
         axios
-          .get('/api/general-store/items', { params: payload })
-          .then((response) => {
+          .get('/general-store/items', { params: payload })
+          .then(response => {
             const items = response.data.data.docs || response.data.data;
             const normalized = normalizeEntity(items);
             const byCategory = createLookupTable(items, 'category_id');
             const bySubcategory = createLookupTable(items, 'subcategory_id');
 
             // Identify low stock and expiring items
-            const lowStock = items.filter((item) => item.is_low_stock).map((item) => item.id);
-            const expiring = items.filter((item) => item.is_expiring).map((item) => item.id);
+            const lowStock = items.filter(item => item.is_low_stock).map(item => item.id);
+            const expiring = items.filter(item => item.is_expiring).map(item => item.id);
 
             commit('SET_ITEMS', {
               byId: normalized.byId,
@@ -338,7 +338,7 @@ const normalizedActions = {
             commit('SET_LOADING_STATE', { entity: 'items', loading: false });
             resolve(response);
           })
-          .catch((error) => {
+          .catch(error => {
             commit('SET_ERROR', {
               message: 'Failed to fetch items',
               details: error.response?.data || error.message,
@@ -363,15 +363,15 @@ const normalizedActions = {
       commit('SET_LOADING_STATE', { entity: 'items', loading: true });
 
       axios
-        .get(`/api/general-store/items/${id}`)
-        .then((response) => {
+        .get(`/general-store/items/${id}`)
+        .then(response => {
           const item = response.data.data;
           commit('ADD_ITEM', item);
           commit('SET_CURRENT_SELECTION', { entity: 'item', id });
           commit('SET_LOADING_STATE', { entity: 'items', loading: false });
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', {
             message: 'Failed to fetch item',
             details: error.response?.data || error.message,
@@ -387,8 +387,8 @@ const normalizedActions = {
       commit('SET_LOADING_STATE', { entity: 'items', loading: true });
 
       axios
-        .post('/api/general-store/items', payload)
-        .then((response) => {
+        .post('/general-store/items', payload)
+        .then(response => {
           const item = response.data.data;
           commit('ADD_ITEM', item);
           commit('SET_LOADING_STATE', { entity: 'items', loading: false });
@@ -396,7 +396,7 @@ const normalizedActions = {
           commit('INVALIDATE_CACHE', 'items');
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', {
             message: 'Failed to create item',
             details: error.response?.data || error.message,
@@ -412,8 +412,8 @@ const normalizedActions = {
       commit('SET_LOADING_STATE', { entity: 'items', loading: true });
 
       axios
-        .put(`/api/general-store/items/${id}`, payload)
-        .then((response) => {
+        .put(`/general-store/items/${id}`, payload)
+        .then(response => {
           const item = response.data.data;
           commit('UPDATE_ITEM', item);
           commit('SET_LOADING_STATE', { entity: 'items', loading: false });
@@ -421,7 +421,7 @@ const normalizedActions = {
           commit('INVALIDATE_CACHE', 'items');
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', {
             message: 'Failed to update item',
             details: error.response?.data || error.message,
@@ -437,15 +437,15 @@ const normalizedActions = {
       commit('SET_LOADING_STATE', { entity: 'items', loading: true });
 
       axios
-        .delete(`/api/general-store/items/${id}`)
-        .then((response) => {
+        .delete(`/general-store/items/${id}`)
+        .then(response => {
           commit('REMOVE_ITEM', id);
           commit('SET_LOADING_STATE', { entity: 'items', loading: false });
 
           commit('INVALIDATE_CACHE', 'items');
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', {
             message: 'Failed to delete item',
             details: error.response?.data || error.message,
@@ -466,8 +466,8 @@ const normalizedActions = {
         commit('SET_LOADING_STATE', { entity: 'movements', loading: true });
 
         axios
-          .get('/api/general-store/movements', { params: payload })
-          .then((response) => {
+          .get('/general-store/movements', { params: payload })
+          .then(response => {
             const movements = response.data.data.docs || response.data.data;
             const normalized = normalizeEntity(movements);
             const byItem = createLookupTable(movements, 'item_id');
@@ -494,7 +494,7 @@ const normalizedActions = {
             commit('SET_LOADING_STATE', { entity: 'movements', loading: false });
             resolve(response);
           })
-          .catch((error) => {
+          .catch(error => {
             commit('SET_ERROR', {
               message: 'Failed to fetch movements',
               details: error.response?.data || error.message,
@@ -513,8 +513,8 @@ const normalizedActions = {
       commit('SET_LOADING_STATE', { entity: 'movements', loading: true });
 
       axios
-        .post('/api/general-store/movements', payload)
-        .then((response) => {
+        .post('/general-store/movements', payload)
+        .then(response => {
           const movement = response.data.data;
           commit('ADD_MOVEMENT', movement);
           commit('SET_LOADING_STATE', { entity: 'movements', loading: false });
@@ -525,7 +525,7 @@ const normalizedActions = {
 
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', {
             message: 'Failed to create movement',
             details: error.response?.data || error.message,
@@ -546,18 +546,18 @@ const normalizedActions = {
         commit('SET_LOADING_STATE', { entity: 'requests', loading: true });
 
         axios
-          .get('/api/general-store/requests', { params: payload })
-          .then((response) => {
+          .get('/general-store/requests', { params: payload })
+          .then(response => {
             const requests = response.data.data.docs || response.data.data;
             const normalized = normalizeEntity(requests);
             const byStatus = createLookupTable(requests, 'status');
             const byUser = createLookupTable(requests, 'user_id');
 
             // Identify special request collections
-            const myRequests = requests.filter((req) => req.is_my_request).map((req) => req.id);
+            const myRequests = requests.filter(req => req.is_my_request).map(req => req.id);
             const pendingApproval = requests
-              .filter((req) => req.status === 'pending_approval')
-              .map((req) => req.id);
+              .filter(req => req.status === 'pending_approval')
+              .map(req => req.id);
 
             commit('SET_REQUESTS', {
               byId: normalized.byId,
@@ -582,7 +582,7 @@ const normalizedActions = {
             commit('SET_LOADING_STATE', { entity: 'requests', loading: false });
             resolve(response);
           })
-          .catch((error) => {
+          .catch(error => {
             commit('SET_ERROR', {
               message: 'Failed to fetch requests',
               details: error.response?.data || error.message,
@@ -606,15 +606,15 @@ const normalizedActions = {
       commit('SET_LOADING_STATE', { entity: 'requests', loading: true });
 
       axios
-        .get(`/api/general-store/requests/${id}`)
-        .then((response) => {
+        .get(`/general-store/requests/${id}`)
+        .then(response => {
           const request = response.data.data;
           commit('ADD_REQUEST', request);
           commit('SET_CURRENT_SELECTION', { entity: 'request', id });
           commit('SET_LOADING_STATE', { entity: 'requests', loading: false });
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', {
             message: 'Failed to fetch request',
             details: error.response?.data || error.message,
@@ -630,8 +630,8 @@ const normalizedActions = {
       commit('SET_LOADING_STATE', { entity: 'requests', loading: true });
 
       axios
-        .post('/api/general-store/requests', payload)
-        .then((response) => {
+        .post('/general-store/requests', payload)
+        .then(response => {
           const request = response.data.data;
           commit('ADD_REQUEST', request);
           commit('SET_LOADING_STATE', { entity: 'requests', loading: false });
@@ -639,7 +639,7 @@ const normalizedActions = {
           commit('INVALIDATE_CACHE', 'requests');
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', {
             message: 'Failed to create request',
             details: error.response?.data || error.message,
@@ -655,8 +655,8 @@ const normalizedActions = {
       commit('SET_LOADING_STATE', { entity: 'requests', loading: true });
 
       axios
-        .put(`/api/general-store/requests/${id}`, payload)
-        .then((response) => {
+        .put(`/general-store/requests/${id}`, payload)
+        .then(response => {
           const request = response.data.data;
           commit('UPDATE_REQUEST', request);
           commit('SET_LOADING_STATE', { entity: 'requests', loading: false });
@@ -664,7 +664,7 @@ const normalizedActions = {
           commit('INVALIDATE_CACHE', 'requests');
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', {
             message: 'Failed to update request',
             details: error.response?.data || error.message,
@@ -680,8 +680,8 @@ const normalizedActions = {
       commit('SET_LOADING_STATE', { entity: 'requests', loading: true });
 
       axios
-        .put(`/api/general-store/requests/${id}/approve`, payload)
-        .then((response) => {
+        .put(`/general-store/requests/${id}/approve`, payload)
+        .then(response => {
           const request = response.data.data;
           commit('UPDATE_REQUEST', request);
           commit('SET_LOADING_STATE', { entity: 'requests', loading: false });
@@ -689,7 +689,7 @@ const normalizedActions = {
           commit('INVALIDATE_CACHE', 'requests');
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', {
             message: 'Failed to approve request',
             details: error.response?.data || error.message,
@@ -705,8 +705,8 @@ const normalizedActions = {
       commit('SET_LOADING_STATE', { entity: 'requests', loading: true });
 
       axios
-        .put(`/api/general-store/requests/${id}/fulfill`, payload)
-        .then((response) => {
+        .put(`/general-store/requests/${id}/fulfill`, payload)
+        .then(response => {
           const request = response.data.data;
           commit('UPDATE_REQUEST', request);
           commit('SET_LOADING_STATE', { entity: 'requests', loading: false });
@@ -718,7 +718,7 @@ const normalizedActions = {
 
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', {
             message: 'Failed to fulfill request',
             details: error.response?.data || error.message,
@@ -739,8 +739,8 @@ const normalizedActions = {
         commit('SET_LOADING_STATE', { entity: 'dispensaries', loading: true });
 
         axios
-          .get('/api/general-store/dispensaries', { params: payload })
-          .then((response) => {
+          .get('/general-store/dispensaries', { params: payload })
+          .then(response => {
             const dispensaries = response.data.data.docs || response.data.data;
             const normalized = normalizeEntity(dispensaries);
 
@@ -763,7 +763,7 @@ const normalizedActions = {
             commit('SET_LOADING_STATE', { entity: 'dispensaries', loading: false });
             resolve(response);
           })
-          .catch((error) => {
+          .catch(error => {
             commit('SET_ERROR', {
               message: 'Failed to fetch dispensaries',
               details: error.response?.data || error.message,
@@ -782,14 +782,14 @@ const normalizedActions = {
       commit('SET_LOADING_STATE', { entity: 'dispensaries', loading: true });
 
       axios
-        .get(`/api/general-store/dispensaries/${dispensaryId}/stock`)
-        .then((response) => {
+        .get(`/general-store/dispensaries/${dispensaryId}/stock`)
+        .then(response => {
           const stock = response.data.data;
           commit('SET_DISPENSARY_STOCK', { dispensaryId, stock });
           commit('SET_LOADING_STATE', { entity: 'dispensaries', loading: false });
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', {
             message: 'Failed to fetch dispensary stock',
             details: error.response?.data || error.message,
@@ -806,13 +806,13 @@ const normalizedActions = {
       commit('SET_LOADING_STATE', { entity: 'dashboard', loading: true });
 
       axios
-        .get('/api/general-store/dashboard/stats')
-        .then((response) => {
+        .get('/general-store/dashboard/stats')
+        .then(response => {
           commit('SET_DASHBOARD_STATS', response.data.data);
           commit('SET_LOADING_STATE', { entity: 'dashboard', loading: false });
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', {
             message: 'Failed to fetch dashboard stats',
             details: error.response?.data || error.message,
@@ -829,13 +829,13 @@ const normalizedActions = {
       commit('SET_LOADING_STATE', { entity: 'reports', loading: true });
 
       axios
-        .get('/api/general-store/reports/stock', { params: payload })
-        .then((response) => {
+        .get('/general-store/reports/stock', { params: payload })
+        .then(response => {
           commit('SET_STOCK_REPORT', response.data.data);
           commit('SET_LOADING_STATE', { entity: 'reports', loading: false });
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', {
             message: 'Failed to fetch stock report',
             details: error.response?.data || error.message,
@@ -851,13 +851,13 @@ const normalizedActions = {
       commit('SET_LOADING_STATE', { entity: 'reports', loading: true });
 
       axios
-        .get('/api/general-store/reports/movement', { params: payload })
-        .then((response) => {
+        .get('/general-store/reports/movement', { params: payload })
+        .then(response => {
           commit('SET_MOVEMENT_REPORT', response.data.data);
           commit('SET_LOADING_STATE', { entity: 'reports', loading: false });
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', {
             message: 'Failed to fetch movement report',
             details: error.response?.data || error.message,
@@ -873,13 +873,13 @@ const normalizedActions = {
       commit('SET_LOADING_STATE', { entity: 'reports', loading: true });
 
       axios
-        .get('/api/general-store/reports/recent')
-        .then((response) => {
+        .get('/general-store/reports/recent')
+        .then(response => {
           commit('SET_RECENT_REPORTS', response.data.data);
           commit('SET_LOADING_STATE', { entity: 'reports', loading: false });
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', {
             message: 'Failed to fetch recent reports',
             details: error.response?.data || error.message,
@@ -896,13 +896,13 @@ const normalizedActions = {
       commit('SET_LOADING_STATE', { entity: 'settings', loading: true });
 
       axios
-        .get('/api/general-store/settings')
-        .then((response) => {
+        .get('/general-store/settings')
+        .then(response => {
           commit('SET_SETTINGS', response.data.data);
           commit('SET_LOADING_STATE', { entity: 'settings', loading: false });
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', {
             message: 'Failed to fetch settings',
             details: error.response?.data || error.message,
@@ -918,13 +918,13 @@ const normalizedActions = {
       commit('SET_LOADING_STATE', { entity: 'settings', loading: true });
 
       axios
-        .put('/api/general-store/settings', payload)
-        .then((response) => {
+        .put('/general-store/settings', payload)
+        .then(response => {
           commit('SET_SETTINGS', response.data.data);
           commit('SET_LOADING_STATE', { entity: 'settings', loading: false });
           resolve(response);
         })
-        .catch((error) => {
+        .catch(error => {
           commit('SET_ERROR', {
             message: 'Failed to update settings',
             details: error.response?.data || error.message,
@@ -998,5 +998,3 @@ const normalizedActions = {
     commit('CLEAR_ALL_STATE');
   },
 };
-
-module.exports = normalizedActions;
