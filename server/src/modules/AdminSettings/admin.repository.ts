@@ -672,7 +672,7 @@ export const getStaffEncounterDetails = async (
 export const getEncounterActions = async (encounterId: number) => {
   const encounter = await Encounter.findByPk(encounterId, {
     include: [
-      { model: Staff, as: 'examiner', attributes: staffAttributes },
+      { model: Staff, attributes: staffAttributes },
       { model: Patient, attributes: patientAttributes },
       { model: Visit, attributes: ['id', 'category', 'status'] },
     ],
@@ -707,33 +707,30 @@ const getRelatedActions = async (encounter: any) => {
     investigationPrescriptions,
     servicePrescriptions,
   ] = await Promise.all([
-    DrugPrescription.findAll({
-      where: { visit_id, patient_id, requester: staff_id },
-      include: [
-        { model: Staff, as: 'examiner', attributes: staffAttributes },
-        {
-          model: PrescribedDrug,
-          include: [{ model: Drug }, { model: DosageForm }, { model: RoutesOfAdministration }],
-        },
-      ],
+    PrescribedDrug.findAll({
+      where: { visit_id, patient_id, examiner: staff_id },
+      include: [{ model: Drug }, { model: DosageForm }, { model: RoutesOfAdministration }, { model: Staff, as: 'requester', attributes: staffAttributes }],
       order: [['date_prescribed', 'DESC']],
     }),
-    TestPrescription.findAll({
+
+    PrescribedTest.findAll({
       where: { visit_id, patient_id, requester: staff_id },
       include: [
         { model: Staff, as: 'examiner', attributes: staffAttributes },
-        { model: PrescribedTest, include: [{ model: Test }] },
+        { model: Test },
       ],
       order: [['date_requested', 'DESC']],
     }),
-    InvestigationPrescription.findAll({
-      where: { visit_id, patient_id, requester: staff_id },
+
+    PrescribedInvestigation.findAll({
+          where: { visit_id, patient_id, requester: staff_id },
       include: [
         { model: Staff, as: 'examiner', attributes: staffAttributes },
-        { model: PrescribedInvestigation, include: [{ model: Investigation }] },
+        { model: Investigation },
       ],
       order: [['date_requested', 'DESC']],
     }),
+
     PrescribedService.findAll({
       where: { visit_id, patient_id, requester: staff_id },
       include: [{ model: Staff, as: 'examiner', attributes: staffAttributes }, { model: Service }],
@@ -749,19 +746,19 @@ const getRelatedActions = async (encounter: any) => {
   // Get observations and clinical notes
   const [observations, triages, diagnoses] = await Promise.all([
     Observation.findAll({
-      where: { visit_id, patient_id, examiner: staff_id },
-      include: [{ model: Staff, as: 'examiner', attributes: staffAttributes }],
+      where: { visit_id, patient_id, staff_id },
+      include: [{ model: Staff, attributes: staffAttributes }],
       order: [['createdAt', 'DESC']],
     }),
     Triage.findAll({
-      where: { visit_id, patient_id, examiner: staff_id },
-      include: [{ model: Staff, as: 'examiner', attributes: staffAttributes }],
+      where: { visit_id, patient_id, staff_id },
+      include: [{ model: Staff, attributes: staffAttributes }],
       order: [['createdAt', 'DESC']],
     }),
     Diagnosis.findAll({
-      where: { visit_id, patient_id, examiner: staff_id },
+      where: { visit_id, patient_id, staff_id },
       include: [
-        { model: Staff, as: 'examiner', attributes: staffAttributes },
+        { model: Staff, attributes: staffAttributes },
         { model: ICD10Disease },
         { model: ICPC2Disease },
       ],

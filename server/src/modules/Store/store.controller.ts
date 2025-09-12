@@ -3,9 +3,15 @@ import {
   validateCreateVendor,
   validateDispenseItems,
   validateExportedData,
+  validateGenericDrug,
   validateLaboratoryItem,
   validatePharmacyItem,
   validateReorderItems,
+  validateInventoryReportFilters,
+  validateDispenseReportFilters,
+  validateExpiryReportFilters,
+  validateStockLevelReportFilters,
+  validateVendorPerformanceReportFilters,
 } from './validations';
 import StoreService from './store.service';
 import { errorResponse } from '../../common/responses/error-responses';
@@ -398,6 +404,170 @@ class StoreController {
         httpCode: StatusCodes.OK,
         message: SUCCESS,
         data: vendor,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /*********************************
+   * PHARMACY REPORTS
+   *********************************/
+
+  /**
+   * Get inventory reports with analytics
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with inventory report data
+   */
+  static async getInventoryReports(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { error, value } = validateInventoryReportFilters(req.query);
+      if (error) {
+        return errorResponse({
+          res,
+          httpCode: StatusCodes.BAD_REQUEST,
+          message: error.details[0].message,
+        });
+      }
+      const reports = await StoreService.getInventoryReportsService(value);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data: reports,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * Get dispense reports with trend analysis
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with dispense report data
+   */
+  static async getDispenseReports(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { error, value } = validateDispenseReportFilters(req.query);
+      if (error) {
+        return errorResponse({
+          res,
+          httpCode: StatusCodes.BAD_REQUEST,
+          message: error.details[0].message,
+        });
+      }
+      const reports = await StoreService.getDispenseReportsService(value);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data: reports,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * Get expiry tracking reports with risk analysis
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with expiry report data
+   */
+  static async getExpiryReports(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { error, value } = validateExpiryReportFilters(req.query);
+      if (error) {
+        return errorResponse({
+          res,
+          httpCode: StatusCodes.BAD_REQUEST,
+          message: error.details[0].message,
+        });
+      }
+      const reports = await StoreService.getExpiryReportsService(value);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data: reports,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * Get stock level analysis reports
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with stock level report data
+   */
+  static async getStockLevelReports(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { error, value } = validateStockLevelReportFilters(req.query);
+      if (error) {
+        return errorResponse({
+          res,
+          httpCode: StatusCodes.BAD_REQUEST,
+          message: error.details[0].message,
+        });
+      }
+      const reports = await StoreService.getStockLevelReportsService(value);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data: reports,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * Get vendor performance reports with analysis
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with vendor performance report data
+   */
+  static async getVendorPerformanceReports(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { error, value } = validateVendorPerformanceReportFilters(req.query);
+      if (error) {
+        return errorResponse({
+          res,
+          httpCode: StatusCodes.BAD_REQUEST,
+          message: error.details[0].message,
+        });
+      }
+      const reports = await StoreService.getVendorPerformanceReportsService(value);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data: reports,
       });
     } catch (e) {
       return next(e);

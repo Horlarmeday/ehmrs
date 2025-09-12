@@ -39,7 +39,6 @@
                       `/statistics/encounters/${encounter.doctorId}?startDate=${$route.query
                         .startDate || ''}&endDate=${$route.query.endDate || ''}`
                     "
-                    class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
                   >
                     {{ encounter.doctorName }}
                   </router-link>
@@ -85,6 +84,7 @@ import Pagination from '@/utils/Pagination.vue';
 import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
 import ViewIcon from '@/assets/icons/ViewIcon.vue';
 import EncounterSearchFilter from '@/utils/EncounterSearchFilter.vue';
+import dayjs from 'dayjs';
 
 export default {
   data() {
@@ -175,12 +175,13 @@ export default {
 
     searchByDate(range) {
       const { start, end, dateSpin } = range;
+      console.log(start, end);
       this.currentPage = 1;
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
-        startDate: start,
-        endDate: end,
+        startDate: dayjs(start).format('YYYY-MM-DD'),
+        endDate: dayjs(end).format('YYYY-MM-DD'),
       });
       this.fetchEncounters({
         currentPage: this.currentPage,

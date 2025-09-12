@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { literal, Op, WhereOptions } from 'sequelize';
+import { literal, Op, QueryTypes, WhereOptions } from 'sequelize';
 import {
   Drug,
   PharmacyStore,
@@ -442,6 +442,84 @@ export const resetPharmacyStoreItemsQuantities = async () => {
   return await PharmacyStore.update(
     { quantity_remaining: 0, quantity_received: 0 },
     { where: { id: pharmacyItemIds } }
+  );
+}
+
+/**
+ * Get sales reports with revenue analysis
+ * @param filters - Filter options for the report
+ * @returns {Promise} Sales report data
+ */
+export async function getSalesReports(filters: {
+  startDate?: string;
+  endDate?: string;
+  drugId?: number;
+  inventoryId?: number;
+  drugType?: string;
+  groupBy?: 'day' | 'week' | 'month';
+}) {
+  const whereClause: WhereOptions = {
+    history_type: HistoryType.DISPENSED,
+  };
+
+  if (filters.startDate && filters.endDate) {
+    whereClause.history_date = {
+      [Op.between]: [filters.startDate, filters.endDate],
+    };
+  }
+
+  if (filters.drugId) {
+    whereClause['$PharmacyStore.drug_id$'] = filters.drugId;
+  }
+
+  if (filters.inventoryId) {
+    whereClause.inventory_id = filters.inventoryId;
+  }
+
+  if (filters.drugType) {
+    whereClause['$PharmacyStore.drug_type$'] = filters.drugType;
+  }
+
+  let dateFormat = '%Y-%m-%d';
+  if (filters.groupBy === 'week') {
+    dateFormat = '%Y-%u';
+  } else if (filters.groupBy === 'month') {
+    dateFormat = '%Y-%m';
+  }
+
+  return sequelizeConnection.query(
+    `
+    SELECT 
+      DATE_FORMAT(psh.history_date, '${dateFormat}') as period,
+      COUNT(DISTINCT psh.id) as total_transactions,
+      SUM(psh.quantity_dispensed) as total_quantity_sold,
+      SUM(psh.quantity_dispensed * psh.selling_price) as total_revenue,
+      SUM(psh.quantity_dispensed * psh.unit_price) as total_cost,
+      SUM(psh.quantity_dispensed * (psh.selling_price - psh.unit_price)) as total_profit,
+      AVG(psh.selling_price) as avg_selling_price,
+      COUNT(DISTINCT ps.drug_id) as unique_drugs_sold,
+      COUNT(DISTINCT psh.inventory_id) as unique_inventories,
+      CASE 
+        WHEN SUM(psh.quantity_dispensed * psh.unit_price) > 0 THEN
+          (SUM(psh.quantity_dispensed * (psh.selling_price - psh.unit_price)) / 
+           SUM(psh.quantity_dispensed * psh.unit_price)) * 100
+        ELSE 0
+      END as profit_margin_percentage
+    FROM Pharmacy_Store_Histories psh
+    JOIN Pharmacy_Store_Items ps ON psh.pharmacy_store_id = ps.id
+    JOIN Drug d ON ps.drug_id = d.id
+    WHERE psh.history_type = 'dispensed'
+    ${filters.startDate && filters.endDate ? 
+      `AND psh.history_date BETWEEN '${filters.startDate}' AND '${filters.endDate}'` : ''}
+    ${filters.drugId ? `AND ps.drug_id = ${filters.drugId}` : ''}
+    ${filters.inventoryId ? `AND psh.inventory_id = ${filters.inventoryId}` : ''}
+    ${filters.drugType ? `AND ps.drug_type = '${filters.drugType}'` : ''}
+    GROUP BY DATE_FORMAT(psh.history_date, '${dateFormat}')
+    ORDER BY period DESC
+    `,
+    {
+      type: QueryTypes.SELECT,
+    }
   );
 };
 
@@ -886,4 +964,448 @@ export async function getLaboratoryItems(currentPage = 1, pageLimit = 10) {
       },
     ],
   });
+}
+
+/** ***********************
+ * PHARMACY REPORTS
+ ********************** */
+
+/**
+ * Get inventory reports with aggregated data
+ * @param filters - Filter options for the report
+ * @returns {Promise} Inventory report data
+ */
+export async function getInventoryReports(filters: {
+  startDate?: string;
+  endDate?: string;
+  drugId?: number;
+  vendorId?: number;
+  drugType?: string;
+}) {
+  const whereClause: WhereOptions = {};
+  const includeClause = [
+    {
+      model: Drug,
+      attributes: ['id', 'name',],
+    },
+    {
+      model: Unit,
+      attributes: ['name'],
+    },
+    {
+      model: DosageForm,
+      attributes: ['name'],
+    },
+    {
+      model: Vendor,
+      attributes: ['name'],
+    },
+  ];
+
+  if (filters.startDate && filters.endDate) {
+    whereClause.date_received = {
+      [Op.between]: [filters.startDate, filters.endDate],
+    };
+  }
+
+  if (filters.drugId) {
+    whereClause.drug_id = filters.drugId;
+  }
+
+  if (filters.vendorId) {
+    whereClause.vendor_id = filters.vendorId;
+  }
+
+  if (filters.drugType) {
+    whereClause.drug_type = filters.drugType;
+  }
+
+  return PharmacyStore.findAll({
+    where: whereClause,
+    include: includeClause,
+    attributes: [
+      'id',
+      'drug_id',
+      'vendor_id',
+      'quantity_received',
+      'quantity_remaining',
+      'unit_price',
+      'selling_price',
+      'total_price',
+      'expiration',
+      'date_received',
+      'drug_type',
+      'batch',
+      [literal('(quantity_received - quantity_remaining)'), 'quantity_dispensed'],
+      [literal('(quantity_received - quantity_remaining) * selling_price'), 'revenue_generated'],
+    ],
+    order: [['date_received', 'DESC']],
+  });
+}
+
+/**
+ * Get dispense reports with historical data
+ * @param filters - Filter options for the report
+ * @returns {Promise} Dispense report data
+ */
+export async function getDispenseReports(filters: {
+  startDate?: string;
+  endDate?: string;
+  drugId?: number;
+  inventoryId?: number;
+  dispensedBy?: number;
+}) {
+  const whereClause: WhereOptions = {};
+
+  if (filters.startDate && filters.endDate) {
+    whereClause.history_date = {
+      [Op.between]: [filters.startDate, filters.endDate],
+    };
+  }
+
+  if (filters.drugId) {
+    whereClause['$PharmacyStore.drug_id$'] = filters.drugId;
+  }
+
+  if (filters.inventoryId) {
+    whereClause.inventory_id = filters.inventoryId;
+  }
+
+  if (filters.dispensedBy) {
+    whereClause.dispensed_by = filters.dispensedBy;
+  }
+
+  return PharmacyStoreHistory.findAll({
+    where: {
+      ...whereClause,
+      history_type: HistoryType.DISPENSED,
+    },
+    include: [
+      {
+        model: PharmacyStore,
+        attributes: ['drug_id', 'batch', 'expiration'],
+        include: [
+          {
+            model: Drug,
+            attributes: ['name', 'id'],
+          },
+          {
+            model: Unit,
+            attributes: ['name'],
+          },
+        ],
+      },
+      {
+        model: Inventory,
+        attributes: ['name'],
+      },
+      {
+        model: Staff,
+        attributes: staffAttributes,
+        as: 'staff',
+      },
+    ],
+    attributes: [
+      'id',
+      'quantity_dispensed',
+      'quantity_remaining',
+      'selling_price',
+      'unit_price',
+      'history_date',
+      'item_receiver',
+      [literal('quantity_dispensed * selling_price'), 'total_amount'],
+    ],
+    order: [['history_date', 'DESC']],
+  });
+}
+
+/**
+ * Get expiry tracking reports
+ * @param filters - Filter options for the report
+ * @returns {Promise} Expiry report data
+ */
+export async function getExpiryReports(filters: {
+  daysToExpiry?: number;
+  includeExpired?: boolean;
+  drugId?: number;
+  vendorId?: number;
+}) {
+  const whereClause: WhereOptions = {
+    quantity_remaining: {
+      [Op.gt]: 0,
+    },
+  };
+
+  const currentDate = new Date();
+  const daysToExpiry = filters.daysToExpiry || 30;
+  const expiryThreshold = new Date(currentDate.getTime() + daysToExpiry * 24 * 60 * 60 * 1000);
+
+  if (filters.includeExpired) {
+    whereClause.expiration = {
+      [Op.lte]: expiryThreshold,
+    };
+  } else {
+    whereClause.expiration = {
+      [Op.between]: [currentDate, expiryThreshold],
+    };
+  }
+
+  if (filters.drugId) {
+    whereClause.drug_id = filters.drugId;
+  }
+
+  if (filters.vendorId) {
+    whereClause.vendor_id = filters.vendorId;
+  }
+
+  return PharmacyStore.findAll({
+    where: whereClause,
+    include: [
+      {
+        model: Drug,
+        attributes: ['name', 'id'],
+      },
+      {
+        model: Unit,
+        attributes: ['name'],
+      },
+      {
+        model: Vendor,
+        attributes: ['name'],
+      },
+    ],
+    attributes: [
+      'id',
+      'drug_id',
+      'vendor_id',
+      'quantity_remaining',
+      'unit_price',
+      'selling_price',
+      'expiration',
+      'batch',
+      'date_received',
+      [literal('DATEDIFF(expiration, NOW())'), 'days_to_expiry'],
+      [literal('quantity_remaining * unit_price'), 'potential_loss_value'],
+    ],
+    order: [['expiration', 'ASC']],
+  });
+}
+
+/**
+ * Get stock level analysis reports
+ * @param filters - Filter options for the report
+ * @returns {Promise} Stock level report data
+ */
+export async function getStockLevelReports(filters: {
+  threshold?: 'low' | 'adequate' | 'overstocked';
+  drugId?: number;
+  vendorId?: number;
+  sortBy?: 'quantity' | 'value' | 'turnover';
+  order?: 'ASC' | 'DESC';
+}) {
+  const whereClause: WhereOptions = {};
+  let havingClause = '';
+
+  if (filters.drugId) {
+    whereClause.drug_id = filters.drugId;
+  }
+
+  if (filters.vendorId) {
+    whereClause.vendor_id = filters.vendorId;
+  }
+
+  // Define stock level thresholds based on minimum quantity
+  if (filters.threshold === 'low') {
+    havingClause = 'HAVING total_quantity <= minimum_quantity';
+  } else if (filters.threshold === 'adequate') {
+    havingClause =
+      'HAVING total_quantity > minimum_quantity AND total_quantity <= (minimum_quantity * 3)';
+  } else if (filters.threshold === 'overstocked') {
+    havingClause = 'HAVING total_quantity > (minimum_quantity * 3)';
+  }
+
+  const orderBy = filters.sortBy || 'quantity';
+  const orderDirection = filters.order || 'DESC';
+
+  let orderClause;
+  switch (orderBy) {
+    case 'value':
+      orderClause = [['total_value', orderDirection]];
+      break;
+    case 'turnover':
+      orderClause = [['turnover_rate', orderDirection]];
+      break;
+    default:
+      orderClause = [['total_quantity', orderDirection]];
+  }
+
+  return sequelizeConnection.query(
+    `
+    SELECT 
+      ps.drug_id,
+      d.name as drug_name,
+      u.name as unit_name,
+      v.name as vendor_name,
+      SUM(ps.quantity_remaining) as total_quantity,
+      AVG(ps.unit_price) as avg_unit_price,
+      AVG(psh.selling_price) as avg_selling_price,
+      SUM(ps.quantity_remaining * ps.unit_price) as total_value,
+      MIN(ps.expiration) as earliest_expiry,
+      MAX(ps.minimum_quantity) as minimum_quantity,
+      CASE 
+        WHEN SUM(ps.quantity_remaining) <= MAX(ps.minimum_quantity) THEN 'low'
+        WHEN SUM(ps.quantity_remaining) <= (MAX(ps.minimum_quantity) * 3) THEN 'adequate'
+        ELSE 'overstocked'
+      END as stock_status,
+      COALESCE(
+        (SELECT SUM(psh.quantity_dispensed) 
+         FROM Pharmacy_Store_Histories psh
+      WHERE psh.pharmacy_store_id IN (
+        SELECT id FROM Pharmacy_Store_Items WHERE drug_id = ps.drug_id
+         ) 
+         AND psh.history_date >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        ), 0
+      ) as monthly_dispensed,
+      CASE 
+        WHEN SUM(ps.quantity_remaining) > 0 THEN 
+          COALESCE(
+            (SELECT SUM(psh.quantity_dispensed) 
+             FROM Pharmacy_Store_Histories psh
+      WHERE psh.pharmacy_store_id IN (
+        SELECT id FROM Pharmacy_Store_Items WHERE drug_id = ps.drug_id
+             ) 
+             AND psh.history_date >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+            ), 0
+          ) / SUM(ps.quantity_remaining)
+        ELSE 0
+      END as turnover_rate
+    FROM Pharmacy_Store_Items ps
+    LEFT JOIN Drug d ON ps.drug_id = d.id
+    LEFT JOIN Unit u ON ps.unit_id = u.id
+    LEFT JOIN Vendor v ON ps.vendor_id = v.id
+    WHERE ps.quantity_remaining > 0 ${
+      Object.keys(whereClause).length > 0 ? 'AND' : ''
+    } ${Object.entries(whereClause)
+      .map(([key, value]) => `ps.${key} = ${typeof value === 'string' ? `'${value}'` : value}`)
+      .join(' AND ')}
+    GROUP BY ps.drug_id, d.name, u.name, v.name
+    ${havingClause}
+    ORDER BY ${
+      orderBy === 'quantity'
+        ? 'total_quantity'
+        : orderBy === 'value'
+        ? 'total_value'
+        : 'turnover_rate'
+    } ${orderDirection}
+    `,
+    {
+      type: QueryTypes.SELECT,
+    }
+  );
+}
+
+/**
+ * Get vendor performance reports
+ * @param filters - Filter options for the report
+ * @returns {Promise} Vendor performance report data
+ */
+export async function getVendorPerformanceReports(filters: {
+  startDate?: string;
+  endDate?: string;
+  vendorId?: number;
+  sortBy?: 'revenue' | 'quantity' | 'reliability';
+  order?: 'ASC' | 'DESC';
+}) {
+  const whereClause: WhereOptions = {};
+
+  if (filters.startDate && filters.endDate) {
+    whereClause.date_received = {
+      [Op.between]: [filters.startDate, filters.endDate],
+    };
+  }
+
+  if (filters.vendorId) {
+    whereClause.vendor_id = filters.vendorId;
+  }
+
+  const orderBy = filters.sortBy || 'revenue';
+  const orderDirection = filters.order || 'DESC';
+
+  return sequelizeConnection.query(
+    `
+    SELECT 
+      v.id as vendor_id,
+      v.name as vendor_name,
+      v.contact_person,
+      v.phone,
+      v.email,
+      COUNT(DISTINCT ps.id) as total_items_supplied,
+      SUM(ps.quantity_received) as total_quantity_supplied,
+      SUM(ps.total_price) as total_purchase_value,
+      AVG(ps.unit_price) as avg_unit_price,
+      COUNT(DISTINCT ps.drug_id) as unique_drugs_supplied,
+      COALESCE(
+        (SELECT SUM(psh.quantity_dispensed * psh.selling_price)
+         FROM Pharmacy_Store_Histories psh
+         JOIN Pharmacy_Store_Items ps2 ON psh.pharmacy_store_id = ps2.id
+         WHERE ps2.vendor_id = v.id
+         ${
+           filters.startDate && filters.endDate
+             ? `AND psh.history_date BETWEEN '${filters.startDate}' AND '${filters.endDate}'`
+             : ''
+         }
+        ), 0
+      ) as total_revenue_generated,
+      COALESCE(
+        (SELECT COUNT(*)
+         FROM Pharmacy_Store_Items ps3
+         WHERE ps3.vendor_id = v.id
+         AND ps3.expiration < NOW()
+         AND ps3.quantity_remaining > 0
+        ), 0
+      ) as expired_items_count,
+      COALESCE(
+        (SELECT AVG(DATEDIFF(ps4.date_received, ps4.createdAt))
+         FROM Pharmacy_Store_Items ps4
+         WHERE ps4.vendor_id = v.id
+        ), 0
+      ) as avg_delivery_time_days,
+      CASE 
+        WHEN COUNT(DISTINCT ps.id) > 0 THEN
+          (COUNT(DISTINCT ps.id) - COALESCE(
+            (SELECT COUNT(*)
+             FROM Pharmacy_Store_Items ps5
+             WHERE ps5.vendor_id = v.id
+             AND ps5.expiration < NOW()
+             AND ps5.quantity_remaining > 0
+            ), 0
+          )) / COUNT(DISTINCT ps.id) * 100
+        ELSE 0
+      END as reliability_score
+    FROM Vendor v
+    LEFT JOIN Pharmacy_Store_Items ps ON v.id = ps.vendor_id
+    WHERE v.is_active = 1 ${Object.keys(whereClause).length > 0 ? 'AND' : ''} ${Object.entries(
+      whereClause
+    )
+      .map(([key, value]) => {
+        if (key === 'date_received' && typeof value === 'object' && value[Op.between]) {
+          return `ps.date_received BETWEEN '${value[Op.between][0]}' AND '${value[Op.between][1]}'`;
+        }
+        return `ps.${key} = ${typeof value === 'string' ? `'${value}'` : value}`;
+      })
+      .join(' AND ')}
+    GROUP BY v.id, v.name, v.contact_person, v.phone, v.email
+    HAVING total_items_supplied > 0
+    ORDER BY ${
+      orderBy === 'revenue'
+        ? 'total_revenue_generated'
+        : orderBy === 'quantity'
+        ? 'total_quantity_supplied'
+        : 'reliability_score'
+    } ${orderDirection}
+    `,
+    {
+      type: QueryTypes.SELECT,
+    }
+  );
 }

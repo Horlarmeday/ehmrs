@@ -35,6 +35,7 @@ export default {
    * PRESCRIPTIONS
    */
   prescription: null,
+  loading: false,
   prescriptions: [],
   totalPrescription: 0,
   prescriptionPages: 0,

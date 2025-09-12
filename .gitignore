@@ -47,3 +47,6 @@ config.json
 server/config.json
 .client
 .server
+.trae/
+.cursor/
+.claude/

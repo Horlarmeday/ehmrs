@@ -408,7 +408,7 @@ export default {
       axios
         .get('/settings/encounters/details', {
           params: {
-            staff_id: payload.staffId,
+            staff_id: payload.staff_id,
             start: payload.start,
             end: payload.end,
           },

@@ -5,6 +5,9 @@
 </template>
 
 <style lang="scss">
+// Design tokens and custom properties
+@import 'assets/styles/design-tokens.css';
+
 // 3rd party plugins css
 @import '~bootstrap-vue/dist/bootstrap-vue.css';
 @import '~perfect-scrollbar/css/perfect-scrollbar.css';

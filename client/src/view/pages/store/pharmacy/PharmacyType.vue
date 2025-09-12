@@ -52,7 +52,7 @@ export default {
       },
       {
         name: 'Trends',
-        link: '/store/pharmacy/trends',
+        link: '/store/pharmacy/reports',
         desc: 'Click here to view the store behaviour trends',
       },
       {

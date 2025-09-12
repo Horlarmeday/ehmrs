@@ -27,4 +27,13 @@ export default {
   labItems: [],
   totalLabItems: 0,
   labItemPages: 0,
+
+  // Reports
+  inventoryReports: [],
+  dispenseReports: [],
+  salesReports: [],
+  expiryReports: [],
+  stockLevelReports: [],
+  vendorPerformanceReports: [],
+  dashboardOverview: null,
 };

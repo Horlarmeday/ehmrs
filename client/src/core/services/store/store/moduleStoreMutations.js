@@ -133,4 +133,27 @@ export default {
     const itemIndex = state.labItems.findIndex(p => p.id === item.id);
     Object.assign(state.labItems[itemIndex], item);
   },
+
+  // Report Mutations
+  SET_INVENTORY_REPORTS(state, reports) {
+    state.inventoryReports = reports;
+  },
+  SET_DISPENSE_REPORTS(state, reports) {
+    state.dispenseReports = reports;
+  },
+  SET_SALES_REPORTS(state, reports) {
+    state.salesReports = reports;
+  },
+  SET_EXPIRY_REPORTS(state, reports) {
+    state.expiryReports = reports;
+  },
+  SET_STOCK_LEVEL_REPORTS(state, reports) {
+    state.stockLevelReports = reports;
+  },
+  SET_VENDOR_PERFORMANCE_REPORTS(state, reports) {
+    state.vendorPerformanceReports = reports;
+  },
+  SET_DASHBOARD_OVERVIEW(state, overview) {
+    state.dashboardOverview = overview;
+  },
 };

@@ -156,3 +156,86 @@ export const validateCreateVendor = vendor => {
   });
   return schema.validate(vendor);
 };
+
+// Report validation schemas
+export const validateReportFilters = filters => {
+  const schema = Joi.object({
+    startDate: Joi.date().optional(),
+    endDate: Joi.date().optional(),
+    drugId: Joi.number().optional(),
+    vendorId: Joi.number().optional(),
+    drugType: Joi.string().valid('CASH', 'NHIS', 'PRIVATE').optional(),
+    category: Joi.string().optional(),
+    limit: Joi.number().min(1).max(1000).default(100).optional(),
+    offset: Joi.number().min(0).default(0).optional(),
+    sortBy: Joi.string().valid('date', 'quantity', 'value', 'name').default('date').optional(),
+    sortOrder: Joi.string().valid('ASC', 'DESC').default('DESC').optional(),
+  });
+  return schema.validate(filters);
+};
+
+export const validateInventoryReportFilters = filters => {
+  const schema = Joi.object({
+    startDate: Joi.date().optional(),
+    endDate: Joi.date().optional(),
+    drugId: Joi.number().optional(),
+    vendorId: Joi.number().optional(),
+    drugType: Joi.string().valid('CASH', 'NHIS', 'PRIVATE').optional(),
+    movementType: Joi.string().valid('IN', 'OUT', 'ADJUSTMENT').optional(),
+    limit: Joi.number().min(1).max(1000).default(100).optional(),
+    offset: Joi.number().min(0).default(0).optional(),
+  });
+  return schema.validate(filters);
+};
+
+export const validateDispenseReportFilters = filters => {
+  const schema = Joi.object({
+    startDate: Joi.date().optional(),
+    endDate: Joi.date().optional(),
+    drugId: Joi.number().optional(),
+    dispensaryId: Joi.number().optional(),
+    receiverId: Joi.number().optional(),
+    drugType: Joi.string().valid('CASH', 'NHIS', 'PRIVATE').optional(),
+    limit: Joi.number().min(1).max(1000).default(100).optional(),
+    offset: Joi.number().min(0).default(0).optional(),
+  });
+  return schema.validate(filters);
+};
+
+export const validateExpiryReportFilters = filters => {
+  const schema = Joi.object({
+    daysToExpiry: Joi.number().min(0).max(365).default(30).optional(),
+    drugId: Joi.number().optional(),
+    vendorId: Joi.number().optional(),
+    drugType: Joi.string().valid('CASH', 'NHIS', 'PRIVATE').optional(),
+    status: Joi.string().valid('EXPIRED', 'EXPIRING_SOON', 'VALID').optional(),
+    limit: Joi.number().min(1).max(1000).default(100).optional(),
+    offset: Joi.number().min(0).default(0).optional(),
+  });
+  return schema.validate(filters);
+};
+
+export const validateStockLevelReportFilters = filters => {
+  const schema = Joi.object({
+    drugId: Joi.number().optional(),
+    vendorId: Joi.number().optional(),
+    drugType: Joi.string().valid('CASH', 'NHIS', 'PRIVATE').optional(),
+    stockLevel: Joi.string().valid('LOW', 'MEDIUM', 'HIGH', 'OUT_OF_STOCK').optional(),
+    threshold: Joi.number().min(0).default(10).optional(),
+    limit: Joi.number().min(1).max(1000).default(100).optional(),
+    offset: Joi.number().min(0).default(0).optional(),
+  });
+  return schema.validate(filters);
+};
+
+export const validateVendorPerformanceReportFilters = filters => {
+  const schema = Joi.object({
+    startDate: Joi.date().optional(),
+    endDate: Joi.date().optional(),
+    vendorId: Joi.number().optional(),
+    performanceMetric: Joi.string().valid('DELIVERY_TIME', 'QUALITY', 'COST', 'RELIABILITY').optional(),
+    limit: Joi.number().min(1).max(1000).default(100).optional(),
+    offset: Joi.number().min(0).default(0).optional(),
+  });
+  return schema.validate(filters);
+};

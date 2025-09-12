@@ -656,6 +656,54 @@ const router = new Router({
                     requiresAuth: true,
                   },
                 },
+                {
+                  path: 'reports',
+                  name: 'pharmacy-reports',
+                  component: () => import('@/view/pages/store/pharmacy/reports/ReportsDashboard.vue'),
+                  meta: {
+                    requiresAuth: true,
+                  },
+                },
+                {
+                  path: 'reports/inventory',
+                  name: 'pharmacy-inventory-report',
+                  component: () => import('@/view/pages/store/pharmacy/reports/InventoryReport.vue'),
+                  meta: {
+                    requiresAuth: true,
+                  },
+                },
+                {
+                  path: 'reports/dispense',
+                  name: 'pharmacy-dispense-report',
+                  component: () => import('@/view/pages/store/pharmacy/reports/DispenseReport.vue'),
+                  meta: {
+                    requiresAuth: true,
+                  },
+                },
+                {
+                  path: 'reports/expiry',
+                  name: 'pharmacy-expiry-report',
+                  component: () => import('@/view/pages/store/pharmacy/reports/ExpiryReport.vue'),
+                  meta: {
+                    requiresAuth: true,
+                  },
+                },
+                {
+                  path: 'reports/stock-levels',
+                  name: 'pharmacy-stock-levels-report',
+                  component: () => import('@/view/pages/store/pharmacy/reports/StockLevelReport.vue'),
+                  meta: {
+                    requiresAuth: true,
+                  },
+                },
+                {
+                  path: 'reports/vendor-performance',
+                  name: 'pharmacy-vendor-performance-report',
+                  component: () => import('@/view/pages/store/pharmacy/reports/VendorPerformanceReport.vue'),
+                  meta: {
+                    requiresAuth: true,
+                  },
+                },
               ],
             },
             {
@@ -748,6 +796,14 @@ const router = new Router({
             {
               path: 'prescriptions/:id',
               name: 'drug-prescription',
+              component: () => import('@/view/pages/pharmacy/PrescriptionDetailUpdate.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'prescriptions/:id/update',
+              name: 'drug-prescription-update',
               component: () => import('@/view/pages/pharmacy/PrescriptionDetail.vue'),
               meta: {
                 requiresAuth: true,

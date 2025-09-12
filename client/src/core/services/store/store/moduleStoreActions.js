@@ -345,4 +345,103 @@ export default {
         });
     });
   },
+
+  // Report Actions
+  fetchInventoryReports({ commit }, filters) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/store/reports/inventory', { params: filters })
+        .then(response => {
+          commit('SET_INVENTORY_REPORTS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchDispenseReports({ commit }, filters) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/store/reports/dispense', { params: filters })
+        .then(response => {
+          commit('SET_DISPENSE_REPORTS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchSalesReports({ commit }, filters) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/store/reports/sales', { params: filters })
+        .then(response => {
+          commit('SET_SALES_REPORTS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchExpiryReports({ commit }, filters) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/store/reports/expiry', { params: filters })
+        .then(response => {
+          commit('SET_EXPIRY_REPORTS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchStockLevelReports({ commit }, filters) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/store/reports/stock-level', { params: filters })
+        .then(response => {
+          commit('SET_STOCK_LEVEL_REPORTS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchVendorPerformanceReports({ commit }, filters) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/store/reports/vendor-performance', { params: filters })
+        .then(response => {
+          commit('SET_VENDOR_PERFORMANCE_REPORTS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchDashboardOverview({ commit }, filters) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/store/reports/dashboard', { params: filters })
+        .then(response => {
+          commit('SET_DASHBOARD_OVERVIEW', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
 };

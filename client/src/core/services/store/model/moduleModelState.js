@@ -29,7 +29,7 @@ export default {
   encounters: [],
   totalEncounters: 0,
   encountersPages: 0,
-  
+
   // Encounter Details
   encounterDetails: null,
   encounterActions: null,
