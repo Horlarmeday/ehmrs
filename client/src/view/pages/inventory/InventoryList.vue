@@ -142,11 +142,15 @@ export default {
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         search: this.$route.query.search || null,
         name: this.inventoryName,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
       });
       this.fetchInventoryItems({
         currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         search: this.$route.query.search || null,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
       });
     },
 
@@ -182,20 +186,25 @@ export default {
         itemsPerPage: pagecount,
         search: this.$route.query.search || null,
         name: this.inventoryName,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
       });
       this.fetchInventoryItems({
         currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: pagecount,
         search: this.$route.query.search || null,
+        start: this.$route.query.startDate,
+        end: this.$route.query.endDate,
       });
     },
 
-    fetchInventoryItems({ currentPage, itemsPerPage, search }) {
+    fetchInventoryItems({ currentPage, itemsPerPage, search, start, end }) {
       return this.$store.dispatch('inventory/fetchInventoryItems', {
         currentPage,
         itemsPerPage,
         inventory: this.$route.params.id,
         ...(search && { search }),
+        ...(start && end && { start, end }),
       });
     },
 
