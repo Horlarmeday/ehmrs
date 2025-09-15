@@ -111,6 +111,39 @@
       </div>
 
       <div class="detail-card">
+        <div class="detail-icon">📅</div>
+        <div class="detail-content">
+          <div class="detail-label">PRESCRIBED</div>
+          <div class="detail-value">
+            {{ formatDate(prescription.date_prescribed) }}
+          </div>
+          <div class="detail-description">date prescribed</div>
+        </div>
+      </div>
+
+      <div class="detail-card">
+        <div class="detail-icon">📅</div>
+        <div class="detail-content">
+          <div class="detail-label">DISPENSED</div>
+          <div class="detail-value">
+            {{ prescription.date_dispensed | dayjs('MMM D, YYYY, h:mma') }}
+          </div>
+          <div class="detail-description">date dispensed</div>
+        </div>
+      </div>
+
+      <div class="detail-card">
+        <div class="detail-icon">👨‍⚕️</div>
+        <div class="detail-content">
+          <div class="detail-label">DISPENSER</div>
+          <div class="detail-value">
+            {{ prescription.dispenser?.fullname || 'Not assigned' }}
+          </div>
+          <div class="detail-description">dispensed by</div>
+        </div>
+      </div>
+
+      <div class="detail-card">
         <div class="detail-icon">💎</div>
         <div class="detail-content">
           <div class="detail-label">TOTAL</div>
@@ -329,6 +362,15 @@ export default {
     },
   },
   methods: {
+    formatDate(dateString) {
+      if (!dateString) return 'Not dispensed';
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+    },
+
     handleDispense() {
       if (this.prescription.shouldDisableDispense) return;
       this.showDispenseForm = true;

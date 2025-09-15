@@ -97,6 +97,15 @@
       </div>
 
       <div class="detail-card">
+        <div class="detail-icon">📅</div>
+        <div class="detail-content">
+          <div class="detail-label">DISPENSED</div>
+          <div class="detail-value">{{ formatDateDispensed(item.date_dispensed) }}</div>
+          <div class="detail-description">date dispensed</div>
+        </div>
+      </div>
+
+      <div class="detail-card">
         <div class="detail-icon">👨‍⚕️</div>
         <div class="detail-content">
           <div class="detail-label">PRESCRIBER</div>
@@ -105,6 +114,14 @@
         </div>
       </div>
 
+      <div class="detail-card">
+        <div class="detail-icon">👨‍⚕️</div>
+        <div class="detail-content">
+          <div class="detail-label">DISPENSER</div>
+          <div class="detail-value">{{ item.dispenser?.fullname || 'Not assigned' }}</div>
+          <div class="detail-description">dispensed by</div>
+        </div>
+      </div>
     </div>
 
     <!-- Action Buttons -->
@@ -298,6 +315,15 @@ export default {
   methods: {
     formatDate(dateString) {
       if (!dateString) return 'Unknown';
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+    },
+
+    formatDateDispensed(dateString) {
+      if (!dateString) return 'Not dispensed';
       return new Date(dateString).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
