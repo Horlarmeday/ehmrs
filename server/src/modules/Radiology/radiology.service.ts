@@ -25,7 +25,7 @@ import {
   RadiologyApprovalDto,
   RadiologyResultDto,
 } from './dto/radiology.dto';
-import { TestStatus } from '../../database/models/prescribedTest';
+import { InvestigationStatus as TestStatus } from '../../database/enums';
 import { isEmpty } from 'lodash';
 import { changeTestResultsStatus } from '../Laboratory/laboratory.repository';
 

@@ -22,20 +22,7 @@ import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { InvestigationResult } from './investigationResult';
 import { PrescribedInvestigation } from './prescribedInvestigation';
 import { Antenatal } from './antenatal';
-
-export enum Source {
-  ANC = 'Antenatal',
-  CONSULTATION = 'Consultation',
-}
-
-export enum InvestigationStatus {
-  PENDING = 'Pending',
-  COMPLETED = 'Completed',
-  RESULT_ADDED = 'Result Added',
-  PARTIAL_RESULT = 'Partial Result',
-  PARTIAL_APPROVED = 'Partial Approved',
-  REFERRED = 'Referred',
-}
+import { Source, InvestigationStatus } from '../enums';
 
 @Table({ timestamps: true, tableName: 'Investigation_Prescriptions' })
 export class InvestigationPrescription extends Model {

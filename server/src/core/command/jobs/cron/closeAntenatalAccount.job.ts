@@ -1,7 +1,7 @@
 import { logger, taggedMessaged } from '../../../helpers/logger';
 import { Antenatal } from '../../../../database/models';
 import dayjs from 'dayjs';
-import { AccountStatus } from '../../../../database/models/antenatal';
+import { AccountStatus } from '../../../../database/enums';
 import { processTasksExecution } from '../../../helpers/tasksProcessor';
 import { Op } from 'sequelize';
 

@@ -18,7 +18,7 @@ import {
   getAntenatalObservations,
   staffAttributes,
 } from '../Antenatal/antenatal.repository';
-import { VisitCategory } from '../../database/models/visit';
+import { VisitCategory } from '../../database/enums';
 import { getWardRounds } from '../Admission/admission.repository';
 import { getVisitsPrescriptions } from '../Pharmacy/pharmacy.repository';
 

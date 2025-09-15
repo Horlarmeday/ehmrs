@@ -17,30 +17,7 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
-
-export enum TestType {
-  PRIMARY = 'Primary',
-  SECONDARY = 'Secondary',
-}
-
-export enum ResultForm {
-  DEFAULT_RESULT_FORM = 'DefaultResultForm',
-  WIDAL_REACTION_FORM = 'WidalReactionForm',
-  ANALYTE_FORM = 'AnalyteForm',
-  BILIRUBIN_FORM = 'BilirubinForm',
-  OGTT_FORM = 'OGTTForm',
-  SERUM_FORM = 'SerumForm',
-  LFT_FORM = 'LFTForm',
-  LIPID_PROFILE_FORM = 'LipidProfileForm',
-  SEUCR_FORM = 'SEUCrForm',
-  SPUTUM_FORM = 'SputumForm',
-  STOOL_ANALYSIS_FORM = 'StoolAnalysisForm',
-  SEMEN_ANALYSIS_FORM = 'SemenAnalysisForm',
-  URINALYSIS_FORM = 'UrinalysisForm',
-  URINE_SWAB_FORM = 'UrineSwabForm',
-  HORMONAL_ASSAY_FORM = 'HormonalAssayForm',
-  GLUCOSE_FORM = 'GlucoseForm',
-}
+import { GeneralTestType as TestType, ResultForm } from '../enums';
 
 @Table({ timestamps: true })
 export class Test extends Model {

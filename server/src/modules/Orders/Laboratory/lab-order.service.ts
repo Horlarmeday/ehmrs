@@ -16,15 +16,17 @@ import {
   getTestPrice,
 } from '../../Laboratory/laboratory.repository';
 import { isToday, StatusCodes } from '../../../core/helpers/helper';
-import { TestStatus } from '../../../database/models/testPrescription';
 import { getVisitById } from '../../Visit/visit.repository';
 import { NHISApprovalStatus } from '../../../core/helpers/general';
-import { PrescriptionType } from '../../../database/models/prescribedTest';
-import { PaymentStatus } from '../../../database/models/prescribedDrug';
 import { BadException } from '../../../common/util/api-error';
 import { CANNOT_DELETE_TEST } from './messages/response-messages';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
-import { TestType } from '../../../database/models/test';
+import {
+  PaymentStatus,
+  PrescriptionType,
+  GeneralTestType as TestType,
+  PrescribedTestStatus as TestStatus,
+} from '../../../database/enums';
 
 export class LabOrderService {
   /**

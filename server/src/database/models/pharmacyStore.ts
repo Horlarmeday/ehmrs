@@ -9,8 +9,8 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { Unit } from './unit';
-import { Staff, Status } from './staff';
-import { Drug, DrugForm } from './drug';
+import { Staff } from './staff';
+import { Drug } from './drug';
 import { Measurement } from './measurement';
 import { DosageForm } from './dosageForm';
 import { RoutesOfAdministration } from './routesOfAdministration';
@@ -23,13 +23,8 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Vendor } from './vendor';
+import { Status, PharmacyDrugType, DrugForm } from '../enums';
 
-export enum DrugType {
-  CASH = 'Cash',
-  NHIS = 'NHIS',
-  PRIVATE = 'Private',
-  RETAINERSHIP = 'Retainership',
-}
 @DefaultScope(() => ({
   where: {
     status: Status.ACTIVE,
@@ -166,7 +161,12 @@ export class PharmacyStore extends Model {
   drug_form: DrugForm;
 
   @Column({
-    type: DataType.ENUM(DrugType.CASH, DrugType.NHIS, DrugType.PRIVATE, DrugType.RETAINERSHIP),
+    type: DataType.ENUM(
+      PharmacyDrugType.CASH,
+      PharmacyDrugType.NHIS,
+      PharmacyDrugType.PRIVATE,
+      PharmacyDrugType.RETAINERSHIP
+    ),
     allowNull: false,
     validate: {
       notEmpty: {
@@ -174,7 +174,7 @@ export class PharmacyStore extends Model {
       },
     },
   })
-  drug_type: DrugType;
+  drug_type: PharmacyDrugType;
 
   @Column({ type: DataType.ENUM(Status.ACTIVE, Status.INACTIVE), defaultValue: Status.ACTIVE })
   status: Status;

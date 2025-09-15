@@ -1,6 +1,6 @@
 import { DRUG_FORM } from '../../Pharmacy/interface/generic-drugs.interface';
 import { DRUG_TYPE } from '../../Orders/Pharmacy/interface/prescribed-drug.interface';
-import { DrugType } from '../../../database/models/pharmacyStore';
+import { PharmacyDrugType as DrugType } from '../../../database/enums';
 
 export class InventoryItem {
   id?: number;

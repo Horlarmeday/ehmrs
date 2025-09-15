@@ -14,7 +14,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { PatientType } from '../../modules/Patient/types/patient.types';
-import { Gender, Staff } from './staff';
+import { Staff } from './staff';
 
 import {
   FindAttributeOptions,
@@ -26,18 +26,7 @@ import {
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { PatientInsurance } from './patientInsurance';
 import { Visit } from './visit';
-
-export enum PatientStatus {
-  INPATIENT = 'Inpatient',
-  OUTPATIENT = 'Outpatient',
-  DECEASED = 'Deceased',
-}
-
-export enum Status {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  BANNED = 'banned',
-}
+import { Gender, PatientStatus, Status } from '../enums';
 
 @Table({ timestamps: true })
 export class Patient extends Model {
@@ -79,7 +68,7 @@ export class Patient extends Model {
       },
     },
   })
-  gender: string;
+  gender: Gender;
 
   @Column({
     type: DataType.STRING,
@@ -264,7 +253,7 @@ export class Patient extends Model {
   is_difficult_patient?: string;
 
   @Column({
-    type: DataType.ENUM(Status.ACTIVE, Status.INACTIVE),
+    type: DataType.ENUM(Status.ACTIVE, Status.INACTIVE, Status.BANNED),
     defaultValue: Status.ACTIVE,
   })
   status?: Status;

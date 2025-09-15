@@ -18,10 +18,8 @@ export class Staff {
   password: string;
 }
 
-export enum Status {
-  ACTIVE = 'Active',
-  INACTIVE = 'Inactive',
-}
+import { Status } from '../../../database/enums';
+export { Status };
 
 export class StaffQueryParam {
   currentPage?: number;

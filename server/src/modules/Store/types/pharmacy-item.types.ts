@@ -2,7 +2,6 @@ import { DRUG_FORM } from '../../Pharmacy/interface/generic-drugs.interface';
 import { DRUG_TYPE } from '../../Orders/Pharmacy/interface/prescribed-drug.interface';
 import { PharmacyStore } from '../../../database/models';
 import { ItemsToDispensedBody } from '../../Inventory/types/inventory-item.types';
-import { HistoryType } from '../../../database/models/inventoryItemHistory';
 type STATUS = 'Active' | 'Inactive';
 
 export class PharmacyItem {

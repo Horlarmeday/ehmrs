@@ -19,7 +19,6 @@ import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Patient } from './patient';
 import { Visit } from './visit';
 import { Service } from './service';
-import { Antenatal } from './antenatal';
 import { PatientInsurance } from './patientInsurance';
 
 @Table({ timestamps: true, tableName: 'Surgery_Requests' })

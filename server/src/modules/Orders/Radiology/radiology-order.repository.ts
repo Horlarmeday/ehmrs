@@ -11,15 +11,13 @@ import { staffAttributes } from '../../Antenatal/antenatal.repository';
 import { getDrugType, StatusCodes } from '../../../core/helpers/helper';
 import { BadException } from '../../../common/util/api-error';
 import { ERROR_UPDATING_INVESTIGATION, HSG_ITEMS_MISSING } from './messages/response-messages';
-import sequelizeConnection from '../../../database/config/config';
+import { sequelizeConnection } from '../../../database/config/data-source';
 import { getOneDefault } from '../../AdminSettings/admin.repository';
-import { DefaultType } from '../../../database/models/default';
-import { DrugForm } from '../../../database/models/drug';
-import { DrugType } from '../../../database/models/pharmacyStore';
+import { DefaultType, DrugForm, PharmacyDrugType } from '../../../database/enums';
 import { NHISApprovalStatus } from '../../../core/helpers/general';
 import { getDrugPrice } from '../../Pharmacy/pharmacy.repository';
 import { getInventories, getInventoryItemQuery } from '../../Inventory/inventory.repository';
-import { DrugGroup } from '../../../database/models/prescribedDrug';
+import { DrugGroup } from '../../../database/enums';
 import PharmacyOrderService from '../Pharmacy/pharmacy-order.service';
 import {
   InsertHSGAdditionalItemsType,
@@ -149,19 +147,19 @@ const insertHSGAdditionalItems = async ({
         frequency: drug?.frequency,
         duration: 1,
         duration_unit: 'Days',
-        total_price: drug?.drug?.drug_type === DrugType.NHIS ? drugPrice * 0.1 : drugPrice,
+        total_price: drug?.drug?.drug_type === PharmacyDrugType.NHIS ? drugPrice * 0.1 : drugPrice,
         examiner: investigations?.[0]?.requester,
         patient_id: patient?.id,
         visit_id,
         start_date: Date.now(),
         date_prescribed: Date.now(),
         drug_prescription_id: drugPrescription?.id,
-        drug_group: drug?.drug?.drug_type === DrugType.NHIS ? DrugGroup.PRIMARY : null,
+        drug_group: drug?.drug?.drug_type === PharmacyDrugType.NHIS ? DrugGroup.PRIMARY : null,
         inventory_id,
         source: investigations[0]?.source,
         ante_natal_id: investigations[0]?.ante_natal_id,
         unit_id: drug?.drug?.unit_id,
-        ...(drug?.drug?.drug_type === DrugType.NHIS && {
+        ...(drug?.drug?.drug_type === PharmacyDrugType.NHIS && {
           nhis_status: NHISApprovalStatus.PENDING,
         }),
         patient_insurance_id: insurance?.id,
@@ -190,7 +188,7 @@ const insertHSGAdditionalItems = async ({
         drug_type: drug?.drug?.drug_type,
         quantity_prescribed: drug?.quantity,
         quantity_to_dispense: drug?.quantity,
-        total_price: drug?.drug?.drug_type === DrugType.NHIS ? drugPrice * 0.1 : drugPrice,
+        total_price: drug?.drug?.drug_type === PharmacyDrugType.NHIS ? drugPrice * 0.1 : drugPrice,
         examiner: investigations?.[0]?.requester,
         patient_id: patient?.id,
         start_date: Date.now(),
@@ -199,7 +197,7 @@ const insertHSGAdditionalItems = async ({
         source: investigations[0]?.source,
         ante_natal_id: investigations[0]?.ante_natal_id,
         unit_id: drug?.drug?.unit_id,
-        ...(drug?.drug?.drug_type === DrugType.NHIS && {
+        ...(drug?.drug?.drug_type === PharmacyDrugType.NHIS && {
           nhis_status: NHISApprovalStatus.PENDING,
         }),
         patient_insurance_id: insurance?.id,

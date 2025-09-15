@@ -16,13 +16,9 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
+import { GeneralServiceType as ServiceType } from '../enums';
 
-export enum ServiceType {
-  PRIMARY = 'Primary',
-  SECONDARY = 'Secondary',
-}
-
-@Table({ timestamps: true })
+@Table({ timestamps: true, tableName: 'Services' })
 export class Service extends Model {
   @PrimaryKey
   @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })

@@ -28,17 +28,19 @@ import {
   StatusCodes,
 } from '../../core/helpers/helper';
 import { chain } from 'lodash';
-import { PrescriptionType, TestStatus } from '../../database/models/prescribedTest';
-import sequelizeConnection from '../../database/config/config';
-import { ResultStatus } from '../../database/models/testResult';
+import { sequelizeConnection } from '../../database/config/data-source';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { BadException } from '../../common/util/api-error';
 import { CANNOT_ADD_RESULTS, RESULT_NOT_FOUND, TEST_NOT_FOUND } from './messages/response-messages';
 import { Result } from './dto/laboratory-result.dto';
-import { PaymentStatus } from '../../database/models/prescribedDrug';
-import { Test as TestType } from '../Orders/Laboratory/interface/prescribed-test.body';
 import { ERROR_UPDATING_TEST } from '../Orders/Laboratory/messages/response-messages';
-import { getOnePrescribedTest } from '../Orders/Laboratory/lab-order.repository';
+import {
+  PaymentStatus,
+  PrescriptionType,
+  PrescribedTestStatus as TestStatus,
+  ResultStatus,
+} from '../../database/enums';
+import { TestBody } from '../Orders/Laboratory/interface/prescribed-test.body';
 
 const testResultFieldsToUpdate = (fields: string[] = []) => [
   'prescribed_test_id',
@@ -219,7 +221,7 @@ const testPriceTariff = async (insurance: PatientInsurance, test_id: number) => 
   return price;
 };
 
-export const getTestPrice = async (patient: Patient, test: TestType) => {
+export const getTestPrice = async (patient: Patient, test: TestBody) => {
   if (!canUsePriceTariff(patient)) return test.price;
   if (test.test_type === PrescriptionType.CASH) return test.price;
 

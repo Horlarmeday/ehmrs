@@ -7,11 +7,10 @@ import {
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
-import { Test, TestType } from './test';
+import { Test } from './test';
 import { Staff } from './staff';
 import { Visit } from './visit';
 import { Patient } from './patient';
-import { BillingStatus, PaymentStatus } from './prescribedDrug';
 import {
   FindAttributeOptions,
   GroupOption,
@@ -21,35 +20,24 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Sample } from './sample';
-import { Source, TestPrescription } from './testPrescription';
+import { TestPrescription } from './testPrescription';
 import { TestResult } from './testResult';
 import { Antenatal } from './antenatal';
 import { SurgeryRequest } from './surgeryRequest';
 import { NHISApprovalStatus } from '../../core/helpers/general';
 import { PatientInsurance } from './patientInsurance';
+import {
+  BillingStatus,
+  PaymentStatus,
+  Source,
+  PrescriptionType,
+  PrescribedTestStatus as TestStatus,
+  ResultStatus,
+  GeneralTestType as TestType,
+} from '../enums';
 
-export enum PrescriptionType {
-  CASH = 'Cash',
-  NHIS = 'NHIS',
-  OTHER = 'Other',
-  PRIVATE = 'Private',
-}
-
-export enum TestStatus {
-  PENDING = 'Pending',
-  REFERRED = 'Referred',
-  COMPLETED = 'Completed',
-  RESULT_ADDED = 'Result Added',
-  SAMPLE_COLLECTED = 'Sample Collected',
-  VERIFIED = 'Verified',
-  APPROVED = 'Approved',
-}
-
-export enum ResultStatus {
-  ACCEPTED = 'Accepted',
-  REJECTED = 'Rejected',
-  PENDING = 'Pending',
-}
+// Re-export PrescriptionType for external use
+export { PrescriptionType };
 
 @Table({ timestamps: true, tableName: 'Prescribed_Tests' })
 export class PrescribedTest extends Model {

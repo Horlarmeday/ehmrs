@@ -1,7 +1,6 @@
-import { PrescriptionType } from '../../../../database/models/prescribedTest';
-import { Source } from '../../../../database/models/testPrescription';
+import { PrescriptionType, Source } from '../../../../database/enums';
 
-export type Test = {
+export type TestBody = {
   test_id: number;
   sample_id: number;
   test_type: PrescriptionType;
@@ -11,7 +10,7 @@ export type Test = {
 };
 
 export class PrescribedTestBody {
-  tests: Array<Test>;
+  tests: Array<TestBody>;
   staff_id: number;
   visit_id: number;
 }

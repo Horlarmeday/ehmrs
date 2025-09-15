@@ -43,7 +43,7 @@ import {
 } from '../../core/helpers/helper';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { staffAttributes } from '../Antenatal/antenatal.repository';
-import { BedStatus } from '../../database/models/bed';
+import { BedStatus } from '../../database/enums';
 import dayjs from 'dayjs';
 
 /** ***********************
@@ -709,21 +709,23 @@ const getRelatedActions = async (encounter: any) => {
   ] = await Promise.all([
     PrescribedDrug.findAll({
       where: { visit_id, patient_id, examiner: staff_id },
-      include: [{ model: Drug }, { model: DosageForm }, { model: RoutesOfAdministration }, { model: Staff, as: 'requester', attributes: staffAttributes }],
+      include: [
+        { model: Drug },
+        { model: DosageForm },
+        { model: RoutesOfAdministration },
+        { model: Staff, as: 'requester', attributes: staffAttributes },
+      ],
       order: [['date_prescribed', 'DESC']],
     }),
 
     PrescribedTest.findAll({
       where: { visit_id, patient_id, requester: staff_id },
-      include: [
-        { model: Staff, as: 'examiner', attributes: staffAttributes },
-        { model: Test },
-      ],
+      include: [{ model: Staff, as: 'examiner', attributes: staffAttributes }, { model: Test }],
       order: [['date_requested', 'DESC']],
     }),
 
     PrescribedInvestigation.findAll({
-          where: { visit_id, patient_id, requester: staff_id },
+      where: { visit_id, patient_id, requester: staff_id },
       include: [
         { model: Staff, as: 'examiner', attributes: staffAttributes },
         { model: Investigation },

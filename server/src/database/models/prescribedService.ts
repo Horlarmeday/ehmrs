@@ -10,7 +10,6 @@ import {
 import { Staff } from './staff';
 import { Visit } from './visit';
 import { Patient } from './patient';
-import { BillingStatus, PaymentStatus } from './prescribedDrug';
 import {
   FindAttributeOptions,
   GroupOption,
@@ -24,24 +23,13 @@ import { Antenatal } from './antenatal';
 import { SurgeryRequest } from './surgeryRequest';
 import { NHISApprovalStatus } from '../../core/helpers/general';
 import { PatientInsurance } from './patientInsurance';
-
-export enum ServiceType {
-  CASH = 'Cash',
-  NHIS = 'NHIS',
-  OTHER = 'Other',
-  PRIVATE = 'Private',
-}
-
-export enum Source {
-  ANC = 'Antenatal',
-  CONSULTATION = 'Consultation',
-  THEATER = 'Theater',
-}
-
-export enum ServiceGroup {
-  PRIMARY = 'Primary',
-  SECONDARY = 'Secondary',
-}
+import {
+  PaymentStatus,
+  BillingStatus,
+  PrescribedServiceType as ServiceType,
+  ServiceGroup,
+  Source,
+} from '../enums';
 
 @Table({ timestamps: true, tableName: 'Prescribed_Services' })
 export class PrescribedService extends Model {

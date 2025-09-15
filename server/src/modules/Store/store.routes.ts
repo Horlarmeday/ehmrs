@@ -29,6 +29,7 @@ router.get('/reports/sales-performance', verify, ReportsController.getSalesPerfo
 router.get('/reports/expiry-tracking', verify, ReportsController.getExpiryTracking);
 router.get('/reports/stock-levels', verify, ReportsController.getStockLevels);
 router.get('/reports/trends-analysis', verify, ReportsController.getTrendsAnalysis);
+router.get('/reports/vendor-performance', verify, ReportsController.getVendorPerformance);
 router.get('/reports/movement-history', verify, ReportsController.getMovementHistory);
 router.get('/reports/pharmacy-analytics', verify, ReportsController.getPharmacyAnalytics);
 router.get('/reports/revenue-analysis', verify, ReportsController.getRevenueAnalysis);
@@ -38,11 +39,10 @@ router.get('/reports/export/csv', verify, ReportsController.exportToCSV);
 router.get('/reports/export/pdf', verify, ReportsController.exportToPDF);
 router.post('/reports/schedule', verify, ReportsController.scheduleReport);
 
-// New pharmacy reports endpoints
-router.get('/reports/inventory', verify, StoreController.getInventoryReports);
-router.get('/reports/dispense', verify, StoreController.getDispenseReports);
-router.get('/reports/expiry', verify, StoreController.getExpiryReports);
-router.get('/reports/stock-levels-analysis', verify, StoreController.getStockLevelReports);
-router.get('/reports/vendor-performance', verify, StoreController.getVendorPerformanceReports);
+// Consolidated pharmacy reports endpoints under ReportsController
+router.get('/reports/inventory', verify, ReportsController.getInventoryMovements);
+router.get('/reports/dispense', verify, ReportsController.getInventoryMovements);
+router.get('/reports/expiry', verify, ReportsController.getExpiryTracking);
+router.get('/reports/stock-levels-analysis', verify, ReportsController.getStockLevels);
 
 export default router;

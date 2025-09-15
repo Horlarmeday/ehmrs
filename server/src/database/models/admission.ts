@@ -22,11 +22,7 @@ import { Bed } from './bed';
 import { Visit } from './visit';
 import { Antenatal } from './antenatal';
 import { PatientInsurance } from './patientInsurance';
-
-export enum DischargeStatus {
-  DISCHARGED = 'Discharged',
-  ON_ADMISSION = 'On Admission',
-}
+import { DischargeStatus } from '../enums';
 
 @Table({ timestamps: true })
 export class Admission extends Model {

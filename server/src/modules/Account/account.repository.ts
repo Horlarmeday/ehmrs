@@ -1,4 +1,4 @@
-import sequelizeConnection from '../../database/config/config';
+import { sequelizeConnection } from '../../database/config/data-source';
 import {
   Payment,
   PaymentHistory,
@@ -8,10 +8,9 @@ import {
   PrescribedService,
   PrescribedTest,
 } from '../../database/models';
-import { PaymentStatus } from '../../database/models/prescribedDrug';
-import { ServiceName } from '../../database/models/paymentHistory';
 import { generateRandomNumbers } from '../../core/helpers/helper';
 import { Transaction } from 'sequelize';
+import { PaymentStatus, ServiceName } from '../../database/enums';
 
 export const createPaymentHistory = async data => {
   const {

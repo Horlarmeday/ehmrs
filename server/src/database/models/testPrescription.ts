@@ -22,17 +22,7 @@ import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { PrescribedTest } from './prescribedTest';
 import { TestResult } from './testResult';
 import { Antenatal } from './antenatal';
-
-export enum Source {
-  ANC = 'Antenatal',
-  CONSULTATION = 'Consultation',
-}
-
-export enum TestStatus {
-  PENDING = 'Pending',
-  COMPLETED = 'Completed',
-  SAMPLE_COLLECTED = 'Sample Collected',
-}
+import { Source, PrescribedTestStatus as TestStatus } from '../enums';
 
 @Table({ timestamps: true, tableName: 'Test_Prescriptions' })
 export class TestPrescription extends Model {

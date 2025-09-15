@@ -19,6 +19,7 @@ import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Patient } from './patient';
 import { Antenatal } from './antenatal';
 import { Visit } from './visit';
+
 @Table({ timestamps: true, tableName: 'Clinical_Notes' })
 export class ClinicalNote extends Model {
   @PrimaryKey

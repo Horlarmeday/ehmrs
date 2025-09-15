@@ -1,7 +1,6 @@
 import { Op, Optional, WhereOptions } from 'sequelize';
 import { Immunization, Patient, Staff } from '../../database/models';
 import { staffAttributes, patientAttributes } from '../../core/helpers/helper';
-import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 
 /**
  * Enrol patient for immunization

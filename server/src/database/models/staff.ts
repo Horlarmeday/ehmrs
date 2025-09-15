@@ -17,17 +17,8 @@ import {
   Order,
   WhereOptions,
 } from 'sequelize/types/model';
+import { Gender, Status } from '../enums';
 
-export enum Gender {
-  MALE = 'Male',
-  FEMALE = 'Female',
-  OTHER = 'Other',
-}
-
-export enum Status {
-  ACTIVE = 'Active',
-  INACTIVE = 'Inactive',
-}
 // @DefaultScope(() => ({
 //   where: {
 //     status: Status.ACTIVE,

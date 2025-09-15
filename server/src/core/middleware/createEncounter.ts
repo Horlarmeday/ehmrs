@@ -1,10 +1,11 @@
-import { Encounter, EncounterType } from '../../database/models/encounter';
+import { Encounter } from '../../database/models';
 import { NextFunction, Request, Response } from 'express';
 import { Op } from 'sequelize';
 import { errorResponse } from '../../common/responses/error-responses';
 import { getVisitById } from '../../modules/Visit/visit.repository';
 import dayjs from 'dayjs';
 import { logger } from '../helpers/logger';
+import { EncounterType } from '../../database/enums';
 
 interface CreateEncounterOptions {
   encounterType?: EncounterType;
@@ -75,7 +76,9 @@ export const createEncounter = async (
         visit_id: id,
         patient_id: visit.patient_id,
         time_of_encounter: {
-          [Op.gt]: dayjs().subtract(HOURS_DIFF, 'hours').toDate(),
+          [Op.gt]: dayjs()
+            .subtract(HOURS_DIFF, 'hours')
+            .toDate(),
         },
       },
       order: [['time_of_encounter', 'DESC']],
@@ -140,10 +143,10 @@ export const createEncounter = async (
     next();
   } catch (error) {
     console.error('Error in createEncounter middleware:', error);
-    return errorResponse({ 
-      res, 
-      message: 'Failed to create or update encounter', 
-      httpCode: 500 
+    return errorResponse({
+      res,
+      message: 'Failed to create or update encounter',
+      httpCode: 500,
     });
   }
 };
@@ -239,16 +242,10 @@ export const updateEncounterWithEntityId = async (
         related_entity_type: relatedEntityType,
         [Op.and]: [
           {
-            [Op.or]: [
-              { encounter_type: encounterType }, 
-              { encounter_type: 'Multiple' }
-            ],
+            [Op.or]: [{ encounter_type: encounterType }, { encounter_type: 'Multiple' }],
           },
           {
-            [Op.or]: [
-              { related_entity_id: null }, 
-              { related_entity_id: { [Op.ne]: entityId } }
-            ],
+            [Op.or]: [{ related_entity_id: null }, { related_entity_id: { [Op.ne]: entityId } }],
           },
         ],
       },
@@ -257,7 +254,7 @@ export const updateEncounterWithEntityId = async (
     });
 
     // Batch update for better performance
-    const updatePromises = encounters.map(async (encounter) => {
+    const updatePromises = encounters.map(async encounter => {
       const metadata = safeJsonParse(encounter.metadata);
       const entityIds = metadata.entityIds || {};
 

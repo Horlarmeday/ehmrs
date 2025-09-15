@@ -17,13 +17,7 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Patient } from './patient';
-
-export enum AccountStatus {
-  ACTIVE = 'ACTIVE',
-  COMPLETED = 'COMPLETED',
-  DISCONTINUED = 'DISCONTINUED',
-  INACTIVE = 'INACTIVE',
-}
+import { AntenatalAccountStatus } from '../enums';
 
 @Table({ timestamps: true, tableName: 'Antenatal_Accounts' })
 export class Antenatal extends Model {
@@ -116,14 +110,14 @@ export class Antenatal extends Model {
 
   @Column({
     type: DataType.ENUM(
-      AccountStatus.ACTIVE,
-      AccountStatus.INACTIVE,
-      AccountStatus.COMPLETED,
-      AccountStatus.DISCONTINUED
+      AntenatalAccountStatus.ACTIVE,
+      AntenatalAccountStatus.INACTIVE,
+      AntenatalAccountStatus.COMPLETED,
+      AntenatalAccountStatus.DISCONTINUED
     ),
-    defaultValue: AccountStatus.INACTIVE,
+    defaultValue: AntenatalAccountStatus.INACTIVE,
   })
-  account_status: AccountStatus;
+  account_status: AntenatalAccountStatus;
 
   @Column({
     type: DataType.STRING,

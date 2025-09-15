@@ -36,7 +36,7 @@ import {
   updateAdmission,
 } from './admission.repository';
 import { getVisitById } from '../Visit/visit.repository';
-import { Admission, DischargeStatus } from '../../database/models/admission';
+import { Admission } from '../../database/models';
 import { BadException } from '../../common/util/api-error';
 import { StatusCodes } from '../../core/helpers/helper';
 import { PATIENT_ON_ADMISSION } from './messages/response-messages';
@@ -49,9 +49,9 @@ import {
   WardRound,
 } from '../../database/models';
 import { getVisitPrescriptions } from '../Consultation/consultation.repository';
-import { VisitCategory } from '../../database/models/visit';
 import { CreateDeliveryInfo, CreatePostNatal } from '../Antenatal/types/antenatal.types';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
+import { DischargeStatus, VisitCategory } from '../../database/enums';
 
 export class AdmissionService {
   /**

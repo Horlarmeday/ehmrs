@@ -35,19 +35,14 @@
     <!-- Quick Actions -->
     <div class="row mb-8">
       <div class="col-lg-6 col-xl-4 mb-6" v-for="(action, i) in quickActions" :key="i">
-        <div class="card card-custom card-stretch gutter-b">
-          <div class="card-body">
-            <div class="d-flex align-items-center justify-content-between">
-              <div class="d-flex flex-column">
-                <h4 class="text-dark font-weight-bold mb-3">{{ action.title }}</h4>
-                <p class="text-muted mb-0">{{ action.description }}</p>
-              </div>
-              <div class="ml-6">
-                <router-link :to="action.route" class="btn btn-light-primary font-weight-bold">
-                  View Report
-                </router-link>
-              </div>
-            </div>
+        <div class="card h-100 shadow-sm">
+          <div class="card-body text-center">
+            <i :class="`fas fa-${action.icon} fa-2x text-primary mb-3`"></i>
+            <h5 class="card-title">{{ action.title }}</h5>
+            <p class="card-text text-muted">{{ action.description }}</p>
+            <router-link :to="action.route" class="btn btn-primary btn-sm">
+              View Report
+            </router-link>
           </div>
         </div>
       </div>
@@ -66,20 +61,21 @@
             </h3>
           </div>
           <div class="card-body pt-2">
-            <div class="timeline timeline-3">
-              <div class="timeline-item" v-for="(activity, index) in recentActivity" :key="index">
-                <div class="timeline-media">
-                  <i :class="activity.icon" :style="{ color: activity.color }"></i>
+            <div class="list-group">
+              <div
+                v-for="activity in recentActivity"
+                :key="activity.id"
+                class="list-group-item d-flex justify-content-between align-items-center"
+              >
+                <div>
+                  <h6 class="mb-1">{{ activity.title }}</h6>
+                  <p class="mb-1 text-muted">{{ activity.description }}</p>
+                  <small class="text-muted">{{ formatDate(activity.timestamp) }}</small>
                 </div>
-                <div class="timeline-content">
-                  <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="text-dark font-weight-bold">{{ activity.title }}</span>
-                    <span class="text-muted font-size-sm">{{
-                      formatDate(activity.timestamp)
-                    }}</span>
-                  </div>
-                  <p class="text-muted mb-0">{{ activity.description }}</p>
-                </div>
+                <span class="badge badge-primary badge-pill">{{ activity.type }}</span>
+              </div>
+              <div v-if="recentActivity.length === 0" class="text-center py-4 text-muted">
+                No recent activity
               </div>
             </div>
           </div>
@@ -118,16 +114,14 @@
 
 <script>
 import { mapActions, mapState } from 'vuex';
-import OverviewCard from '@/components/OverviewCard.vue';
-import QuickActionCard from '@/components/QuickActionCard.vue';
-import RecentActivityItem from '@/components/RecentActivityItem.vue';
+import ReportCard from './components/ReportCard.vue';
+import ExportButton from './components/ExportButton.vue';
 
 export default {
   name: 'ReportsDashboard',
   components: {
-    OverviewCard,
-    QuickActionCard,
-    RecentActivityItem,
+    ReportCard,
+    ExportButton,
   },
   data() {
     return {
@@ -158,6 +152,13 @@ export default {
         },
       ],
       isLoading: false,
+      availableReports: [
+        { id: 'sales', name: 'Sales Report', type: 'sales' },
+        { id: 'inventory', name: 'Inventory Report', type: 'inventory' },
+        { id: 'stock-levels', name: 'Stock Levels Report', type: 'stock-levels' },
+        { id: 'expiry', name: 'Expiry Report', type: 'expiry' },
+        { id: 'vendor-performance', name: 'Vendor Performance Report', type: 'vendor-performance' },
+      ],
     };
   },
   computed: {
@@ -167,7 +168,7 @@ export default {
         return [
           {
             title: 'Total Revenue',
-            value: '₦0',
+            value: '₦10',
             change: '+0%',
             changeType: 'positive',
             icon: 'trending-up',
@@ -228,22 +229,50 @@ export default {
     },
     quickStats() {
       if (!this.dashboardOverview) {
-        return {
-          todayRevenue: '₦0',
-          todayDispensed: 0,
-          pendingOrders: 0,
-          criticalStock: 0,
-        };
+        return [
+          { label: 'Today Revenue', value: '₦0', icon: 'fas fa-chart-line', color: '#1BC5BD' },
+          { label: 'Items Dispensed', value: '0', icon: 'fas fa-pills', color: '#8950FC' },
+          { label: 'Pending Orders', value: '0', icon: 'fas fa-clock', color: '#FFA800' },
+          {
+            label: 'Critical Stock',
+            value: '0',
+            icon: 'fas fa-exclamation-triangle',
+            color: '#F64E60',
+          },
+        ];
       }
-      return {
-        todayRevenue: `₦${this.dashboardOverview.todayRevenue?.toLocaleString() || '0'}`,
-        todayDispensed: this.dashboardOverview.todayDispensed || 0,
-        pendingOrders: this.dashboardOverview.pendingOrders || 0,
-        criticalStock: this.dashboardOverview.criticalStock || 0,
-      };
+      return [
+        {
+          label: 'Today Revenue',
+          value: `₦${this.dashboardOverview.todayRevenue?.toLocaleString() || '0'}`,
+          icon: 'fas fa-chart-line',
+          color: '#1BC5BD',
+        },
+        {
+          label: 'Items Dispensed',
+          value: this.dashboardOverview.todayDispensed?.toLocaleString() || '0',
+          icon: 'fas fa-pills',
+          color: '#8950FC',
+        },
+        {
+          label: 'Pending Orders',
+          value: this.dashboardOverview.pendingOrders?.toLocaleString() || '0',
+          icon: 'fas fa-clock',
+          color: '#FFA800',
+        },
+        {
+          label: 'Critical Stock',
+          value: this.dashboardOverview.criticalStock?.toLocaleString() || '0',
+          icon: 'fas fa-exclamation-triangle',
+          color: '#F64E60',
+        },
+      ];
     },
     recentActivity() {
       return this.dashboardOverview?.recentActivity || [];
+    },
+    loading() {
+      return this.isLoading;
     },
   },
   methods: {
@@ -260,6 +289,13 @@ export default {
       } finally {
         this.isLoading = false;
       }
+    },
+    async refreshData() {
+      await this.loadDashboardData();
+    },
+    formatDate(timestamp) {
+      if (!timestamp) return '';
+      return new Date(timestamp).toLocaleString();
     },
   },
   async mounted() {

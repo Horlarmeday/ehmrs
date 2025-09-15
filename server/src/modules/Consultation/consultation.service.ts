@@ -10,10 +10,8 @@ import {
   getDiagnoses,
   getHistories,
 } from './consultation.repository';
-import { checkValueExists } from '../../core/helpers/helper';
 import VisitService from '../Visit/visit.service';
 import { Observation } from './interface/consultation.interface';
-import { AntenatalObservation, Complaint, Diagnosis, History } from '../../database/models';
 import { getVisitById, updateVisit } from '../Visit/visit.repository';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 

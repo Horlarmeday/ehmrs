@@ -16,9 +16,8 @@ import {
   InventoryItemHistory,
   Vendor,
 } from '../../database/models';
-import { DrugType } from '../../database/models/pharmacyStore';
-import sequelizeConnection from '../../database/config/config';
-import { HistoryType } from '../../database/models/inventoryItemHistory';
+import { PharmacyDrugType, LogType, HistoryType } from '../../database/enums';
+import { sequelizeConnection } from '../../database/config/data-source';
 import { ItemsToReorder } from './types/pharmacy-item.types';
 import { BadException } from '../../common/util/api-error';
 import { ItemsToDispensedBody } from '../Inventory/types/inventory-item.types';
@@ -26,7 +25,6 @@ import { getAnInventory } from '../Inventory/inventory.repository';
 import { lt } from 'lodash';
 import { INVALID_INVENTORY, INVALID_QUANTITY } from '../Inventory/messages/response-messages';
 import { staffAttributes, StatusCodes } from '../../core/helpers/helper';
-import { LogType } from '../../database/models/pharmacyStoreLog';
 
 /** ***********************
  * PHARMACY STORE
@@ -81,7 +79,7 @@ export async function createCashItem(data) {
     route_id,
     drug_form,
     brand,
-    drug_type: DrugType.CASH,
+    drug_type: PharmacyDrugType.CASH,
     vendor_id,
   });
 }
@@ -135,7 +133,7 @@ export async function createNHISItem(data) {
     route_id,
     drug_form,
     brand,
-    drug_type: DrugType.NHIS,
+    drug_type: PharmacyDrugType.NHIS,
     vendor_id,
   });
 }
@@ -189,7 +187,7 @@ export async function createPrivateItem(data) {
     route_id,
     drug_form,
     brand,
-    drug_type: DrugType.PRIVATE,
+    drug_type: PharmacyDrugType.PRIVATE,
     vendor_id,
   });
 }
@@ -443,7 +441,7 @@ export const resetPharmacyStoreItemsQuantities = async () => {
     { quantity_remaining: 0, quantity_received: 0 },
     { where: { id: pharmacyItemIds } }
   );
-}
+};
 
 /**
  * Get sales reports with revenue analysis
@@ -496,7 +494,7 @@ export async function getSalesReports(filters: {
       SUM(psh.quantity_dispensed * psh.selling_price) as total_revenue,
       SUM(psh.quantity_dispensed * psh.unit_price) as total_cost,
       SUM(psh.quantity_dispensed * (psh.selling_price - psh.unit_price)) as total_profit,
-      AVG(psh.selling_price) as avg_selling_price,
+      AVG(ps.selling_price) as avg_selling_price,
       COUNT(DISTINCT ps.drug_id) as unique_drugs_sold,
       COUNT(DISTINCT psh.inventory_id) as unique_inventories,
       CASE 
@@ -509,8 +507,11 @@ export async function getSalesReports(filters: {
     JOIN Pharmacy_Store_Items ps ON psh.pharmacy_store_id = ps.id
     JOIN Drug d ON ps.drug_id = d.id
     WHERE psh.history_type = 'dispensed'
-    ${filters.startDate && filters.endDate ? 
-      `AND psh.history_date BETWEEN '${filters.startDate}' AND '${filters.endDate}'` : ''}
+    ${
+      filters.startDate && filters.endDate
+        ? `AND psh.history_date BETWEEN '${filters.startDate}' AND '${filters.endDate}'`
+        : ''
+    }
     ${filters.drugId ? `AND ps.drug_id = ${filters.drugId}` : ''}
     ${filters.inventoryId ? `AND psh.inventory_id = ${filters.inventoryId}` : ''}
     ${filters.drugType ? `AND ps.drug_type = '${filters.drugType}'` : ''}
@@ -521,7 +522,7 @@ export async function getSalesReports(filters: {
       type: QueryTypes.SELECT,
     }
   );
-};
+}
 
 /**
  * update a pharmacy store item
@@ -986,7 +987,7 @@ export async function getInventoryReports(filters: {
   const includeClause = [
     {
       model: Drug,
-      attributes: ['id', 'name',],
+      attributes: ['id', 'name'],
     },
     {
       model: Unit,
@@ -1102,7 +1103,12 @@ export async function getDispenseReports(filters: {
       {
         model: Staff,
         attributes: staffAttributes,
-        as: 'staff',
+        as: 'dispenser',
+      },
+      {
+        model: Staff,
+        attributes: staffAttributes,
+        as: 'receiver',
       },
     ],
     attributes: [
@@ -1113,7 +1119,7 @@ export async function getDispenseReports(filters: {
       'unit_price',
       'history_date',
       'item_receiver',
-      [literal('quantity_dispensed * selling_price'), 'total_amount'],
+      [literal('quantity_dispensed * `PharmacyStoreHistory`.`selling_price`'), 'total_amount'],
     ],
     order: [['history_date', 'DESC']],
   });
@@ -1248,13 +1254,13 @@ export async function getStockLevelReports(filters: {
       v.name as vendor_name,
       SUM(ps.quantity_remaining) as total_quantity,
       AVG(ps.unit_price) as avg_unit_price,
-      AVG(psh.selling_price) as avg_selling_price,
+      AVG(ps.selling_price) as avg_selling_price,
       SUM(ps.quantity_remaining * ps.unit_price) as total_value,
       MIN(ps.expiration) as earliest_expiry,
-      MAX(ps.minimum_quantity) as minimum_quantity,
+      10 as minimum_quantity,
       CASE 
-        WHEN SUM(ps.quantity_remaining) <= MAX(ps.minimum_quantity) THEN 'low'
-        WHEN SUM(ps.quantity_remaining) <= (MAX(ps.minimum_quantity) * 3) THEN 'adequate'
+        WHEN SUM(ps.quantity_remaining) <= 10 THEN 'low'
+        WHEN SUM(ps.quantity_remaining) <= 30 THEN 'adequate'
         ELSE 'overstocked'
       END as stock_status,
       COALESCE(
@@ -1280,9 +1286,10 @@ export async function getStockLevelReports(filters: {
         ELSE 0
       END as turnover_rate
     FROM Pharmacy_Store_Items ps
-    LEFT JOIN Drug d ON ps.drug_id = d.id
-    LEFT JOIN Unit u ON ps.unit_id = u.id
-    LEFT JOIN Vendor v ON ps.vendor_id = v.id
+    LEFT JOIN Drugs d ON ps.drug_id = d.id
+    LEFT JOIN Units u ON ps.unit_id = u.id
+    LEFT JOIN Vendors v ON ps.vendor_id = v.id
+    LEFT JOIN Pharmacy_Store_Histories psh ON ps.id = psh.pharmacy_store_id
     WHERE ps.quantity_remaining > 0 ${
       Object.keys(whereClause).length > 0 ? 'AND' : ''
     } ${Object.entries(whereClause)
@@ -1336,7 +1343,6 @@ export async function getVendorPerformanceReports(filters: {
     SELECT 
       v.id as vendor_id,
       v.name as vendor_name,
-      v.contact_person,
       v.phone,
       v.email,
       COUNT(DISTINCT ps.id) as total_items_supplied,
@@ -1382,11 +1388,9 @@ export async function getVendorPerformanceReports(filters: {
           )) / COUNT(DISTINCT ps.id) * 100
         ELSE 0
       END as reliability_score
-    FROM Vendor v
+    FROM Vendors v
     LEFT JOIN Pharmacy_Store_Items ps ON v.id = ps.vendor_id
-    WHERE v.is_active = 1 ${Object.keys(whereClause).length > 0 ? 'AND' : ''} ${Object.entries(
-      whereClause
-    )
+    WHERE 1=1 ${Object.keys(whereClause).length > 0 ? 'AND' : ''} ${Object.entries(whereClause)
       .map(([key, value]) => {
         if (key === 'date_received' && typeof value === 'object' && value[Op.between]) {
           return `ps.date_received BETWEEN '${value[Op.between][0]}' AND '${value[Op.between][1]}'`;
@@ -1394,7 +1398,7 @@ export async function getVendorPerformanceReports(filters: {
         return `ps.${key} = ${typeof value === 'string' ? `'${value}'` : value}`;
       })
       .join(' AND ')}
-    GROUP BY v.id, v.name, v.contact_person, v.phone, v.email
+    GROUP BY v.id, v.name, v.phone, v.email
     HAVING total_items_supplied > 0
     ORDER BY ${
       orderBy === 'revenue'

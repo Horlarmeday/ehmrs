@@ -7,7 +7,7 @@ import {
 import { RadiologyService } from './radiology.service';
 import { errorResponse } from '../../common/responses/error-responses';
 import { StatusCodes } from '../../core/helpers/helper';
-import { validateChangeTestResultStatus, validateTestTariff } from '../Laboratory/validations';
+import { validateTestTariff } from '../Laboratory/validations';
 import { successResponse } from '../../common/responses/success-responses';
 import {
   DATA_SAVED,
@@ -15,7 +15,6 @@ import {
   DATA_RETRIEVED,
 } from '../AdminSettings/messages/response-messages';
 import { NextFunction, Response, Request } from 'express';
-import LaboratoryService from '../Laboratory/laboratory.service';
 import { validateUpdateInvestigationsResultStatus } from '../Orders/Radiology/validations';
 
 export class RadiologyController {

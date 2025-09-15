@@ -8,7 +8,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { Unit } from './unit';
-import { Staff, Status } from './staff';
+import { Staff } from './staff';
 import {
   FindAttributeOptions,
   GroupOption,
@@ -17,10 +17,10 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
-import { DrugType, PharmacyStore } from './pharmacyStore';
+import { PharmacyStore } from './pharmacyStore';
 import { Inventory } from './inventory';
-import { HistoryType } from './inventoryItemHistory';
 import { Vendor } from './vendor';
+import { HistoryType } from '../enums';
 
 @Table({ timestamps: true, tableName: 'Pharmacy_Store_Histories' })
 export class PharmacyStoreHistory extends Model {

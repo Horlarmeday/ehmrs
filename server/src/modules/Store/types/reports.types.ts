@@ -17,9 +17,7 @@ export interface SortParams {
 }
 
 // Dashboard Overview Interfaces
-export interface DashboardOverviewParams {
-  // No specific parameters needed for dashboard overview
-}
+export type DashboardOverviewParams = Record<string, never>;
 
 export interface RecentMovement {
   id: number;
@@ -40,11 +38,26 @@ export interface RecentMovement {
 }
 
 export interface DashboardOverviewResponse {
-  totalInventoryValue: number;
-  lowStockCount: number;
-  nearExpiryCount: number;
-  monthlySales: number;
-  recentMovements: RecentMovement[];
+  revenue: {
+    total: number;
+    change: number;
+    trend: 'up' | 'down' | 'stable';
+  };
+  dispensed: {
+    total: number;
+    change: number;
+    trend: 'up' | 'down' | 'stable';
+  };
+  stock: {
+    total: number;
+    change: number;
+    trend: 'up' | 'down' | 'stable';
+  };
+  expiry: {
+    total: number;
+    change: number;
+    trend: 'up' | 'down' | 'stable';
+  };
 }
 
 // Inventory Movements Interfaces
@@ -227,6 +240,24 @@ export interface SalesPerformanceResponse {
   periodComparison: PeriodComparison;
 }
 
+// Vendor Performance Interfaces
+export interface VendorPerformanceParams extends DateRange {
+  vendorId?: number;
+  sortBy?: string;
+  order?: 'ASC' | 'DESC';
+}
+
+export interface VendorPerformanceResponse {
+  vendors: VendorPerformance[];
+  totalVendors: number;
+  summary: {
+    totalPurchaseValue: number;
+    totalRevenueGenerated: number;
+    averageReliabilityScore: number;
+    topPerformingVendor: string;
+  };
+}
+
 // Expiry Tracking Interfaces
 export interface ExpiryTrackingParams extends DateRange, PaginationParams {
   threshold?: number; // days until expiry
@@ -351,7 +382,13 @@ export interface TrendMetrics {
 }
 
 export interface PredictiveInsight {
-  type: 'revenue_forecast' | 'demand_spike' | 'demand_decline' | 'seasonal_peak' | 'seasonal_low' | 'high_volatility';
+  type:
+    | 'revenue_forecast'
+    | 'demand_spike'
+    | 'demand_decline'
+    | 'seasonal_peak'
+    | 'seasonal_low'
+    | 'high_volatility';
   category: 'financial' | 'inventory' | 'seasonal' | 'risk';
   confidence: 'high' | 'medium' | 'low';
   insight: string;

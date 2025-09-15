@@ -19,7 +19,7 @@ import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Staff } from './staff';
 import { PrescribedInvestigation } from './prescribedInvestigation';
 import { InvestigationPrescription } from './investigationPrescription';
-import { ResultStatus } from './testResult';
+import { ResultStatus } from '../enums';
 
 @Table({ timestamps: true, tableName: 'Investigation_Results' })
 export class InvestigationResult extends Model {

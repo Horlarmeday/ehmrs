@@ -18,10 +18,7 @@ import {
   StatusCodes,
 } from '../../core/helpers/helper';
 import { getModelById, getPeriodQuery } from '../../core/helpers/general';
-import { InvestigationStatus as Status } from '../../database/models/investigationPrescription';
-import { InvestigationStatus } from '../../database/models/prescribedInvestigation';
-import sequelizeConnection from '../../database/config/config';
-import { ResultStatus } from '../../database/models/testResult';
+import { sequelizeConnection } from '../../database/config/data-source';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { CreateInvestigationDto, Result } from './dto/radiology.dto';
 import { BadException } from '../../common/util/api-error';
@@ -30,10 +27,14 @@ import {
   INVESTIGATION_NOT_FOUND,
   RESULT_NOT_FOUND,
 } from './messages/response-messages';
-import { PaymentStatus } from '../../database/models/prescribedDrug';
 import { Investigation as InvestigationType } from '../Orders/Radiology/types/radiology-order.types';
-import { PrescriptionType, TestStatus } from '../../database/models/prescribedTest';
 import { ERROR_UPDATING_INVESTIGATION } from '../Orders/Radiology/messages/response-messages';
+import {
+  PaymentStatus,
+  InvestigationStatus,
+  ResultStatus,
+  PrescriptionType,
+} from '../../database/enums';
 
 /**
  * create new imaging
@@ -295,7 +296,10 @@ export const getRequestedInvestigations = async ({
 }) => {
   const { limit, offset } = calcLimitAndOffset(+currentPage, +pageLimit);
   const query = {
-    [Op.or]: [{ status: Status.PENDING }, { status: Status.PARTIAL_RESULT }],
+    [Op.or]: [
+      { status: InvestigationStatus.PENDING },
+      { status: InvestigationStatus.PARTIAL_RESULT },
+    ],
     ...(period && getPeriodQuery(period, 'date_requested')),
     ...(start && end && dateIntervalQuery('date_requested', start, end)),
   };
@@ -473,7 +477,9 @@ export const appendInvestigationResults = async (data: any[]) => {
       transaction: t,
     });
     const statusToUpdate =
-      prescribedInvestigationCount === results.length ? Status.RESULT_ADDED : Status.PARTIAL_RESULT;
+      prescribedInvestigationCount === results.length
+        ? InvestigationStatus.RESULT_ADDED
+        : InvestigationStatus.PARTIAL_RESULT;
 
     await InvestigationPrescription.update(
       { status: statusToUpdate },
@@ -492,7 +498,10 @@ export const getInvestigationsForApproval = async ({
 }) => {
   const { limit, offset } = calcLimitAndOffset(+currentPage, +pageLimit);
   const query = {
-    [Op.or]: [{ status: Status.RESULT_ADDED }, { status: Status.PARTIAL_RESULT }],
+    [Op.or]: [
+      { status: InvestigationStatus.RESULT_ADDED },
+      { status: InvestigationStatus.PARTIAL_RESULT },
+    ],
     ...(start && end && dateIntervalQuery('date_requested', start, end)),
   };
   const investigations = await InvestigationPrescription.findAll({
@@ -592,7 +601,7 @@ export const approveInvestigationResults = async (
       where: {
         investigation_prescription_id: data[0].investigation_prescription_id,
         status: {
-          [Op.ne]: Status.REFERRED,
+          [Op.ne]: InvestigationStatus.REFERRED,
         },
       },
       transaction: t,
@@ -606,8 +615,8 @@ export const approveInvestigationResults = async (
     });
     const statusToUpdate =
       prescribedInvestigationsCount === approvedInvestigationsCount
-        ? Status.COMPLETED
-        : Status.PARTIAL_APPROVED;
+        ? InvestigationStatus.COMPLETED
+        : InvestigationStatus.PARTIAL_APPROVED;
     if (prescribedInvestigationsCount === data.length) {
       await InvestigationPrescription.update(
         { status: statusToUpdate },
@@ -627,7 +636,10 @@ export const getInvestigationsResults = async ({
 }) => {
   const { limit, offset } = calcLimitAndOffset(+currentPage, +pageLimit);
   const query = {
-    [Op.or]: [{ status: Status.COMPLETED }, { status: Status.PARTIAL_RESULT }],
+    [Op.or]: [
+      { status: InvestigationStatus.COMPLETED },
+      { status: InvestigationStatus.PARTIAL_RESULT },
+    ],
     ...(start && end && dateIntervalQuery('date_requested', start, end)),
   };
   const investigations = await InvestigationPrescription.findAll({

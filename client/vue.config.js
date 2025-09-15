@@ -29,13 +29,18 @@ module.exports = {
     watch: true,
   },
   chainWebpack: config => {
-    config.module
-      .rule('eslint')
-      .use('eslint-loader')
-      .tap(options => {
-        options.configFile = path.resolve(__dirname, '.eslintrc.js');
-        return options;
-      });
+    // Check if eslint rule exists before modifying
+    if (config.module.rules.has('eslint')) {
+      config.module
+        .rule('eslint')
+        .use('eslint-loader')
+        .tap(options => {
+          if (options) {
+            options.configFile = path.resolve(__dirname, '.eslintrc.js');
+          }
+          return options || {};
+        });
+    }
   },
   // css: {
   //   loaderOptions: {

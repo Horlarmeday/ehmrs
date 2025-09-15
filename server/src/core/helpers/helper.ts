@@ -20,7 +20,7 @@ import { padNumberWithZero } from './general';
 import { PrescribedAdditionalItemBody } from '../../modules/Orders/Pharmacy/interface/prescribed-drug.body';
 import { getOneService } from '../../modules/AdminSettings/admin.repository';
 import { getTestPrescription } from '../../modules/Laboratory/laboratory.repository';
-import { DrugType } from '../../database/models/pharmacyStore';
+import { PharmacyDrugType } from '../../database/enums';
 import { prescribeService } from '../../modules/Orders/Service/service-order.repository';
 import { chain } from 'lodash';
 
@@ -245,16 +245,16 @@ export const flattenArray = (arrayOfArrays: PrescribedAdditionalItemBody[][]) =>
   arrayOfArrays.reduce((acc, curr) => acc.concat(curr), []);
 
 export const getDrugType = (has_insurance: boolean, insurance: PatientInsurance) => {
-  if (!has_insurance) return DrugType.CASH;
+  if (!has_insurance) return PharmacyDrugType.CASH;
 
   const insuranceMapping = {
-    NHIS: DrugType.NHIS,
-    PHIS: DrugType.PRIVATE,
-    FHSS: DrugType.NHIS,
-    Retainership: DrugType.CASH,
+    NHIS: PharmacyDrugType.NHIS,
+    PHIS: PharmacyDrugType.PRIVATE,
+    FHSS: PharmacyDrugType.NHIS,
+    Retainership: PharmacyDrugType.CASH,
   };
 
-  return insuranceMapping[insurance?.insurance?.name] || DrugType.CASH;
+  return insuranceMapping[insurance?.insurance?.name] || PharmacyDrugType.CASH;
 };
 
 type SingleOrMultipleServices = {

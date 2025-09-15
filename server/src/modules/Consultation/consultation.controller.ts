@@ -7,7 +7,7 @@ import { errorResponse } from '../../common/responses/error-responses';
 import { StatusCodes } from '../../core/helpers/helper';
 import { NextFunction, Request, Response } from 'express';
 import { updateEncounterWithEntityId } from '../../core/middleware/createEncounter';
-import { EncounterType } from '../../database/models/encounter';
+import { EncounterType } from '../../database/enums';
 
 class ConsultationController {
   /**

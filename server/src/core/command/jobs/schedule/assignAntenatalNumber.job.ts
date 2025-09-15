@@ -5,7 +5,7 @@ import {
   getOneAntenatalAccount,
   updateAntenatalAccount,
 } from '../../../../modules/Antenatal/antenatal.repository';
-import { AccountStatus } from '../../../../database/models/antenatal';
+import { AccountStatus } from '../../../../database/enums';
 
 type AssignAntenatalNumberData = {
   id: number;

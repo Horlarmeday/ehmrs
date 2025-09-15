@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { AcceptedDrugType } from '../../database/models/inventory';
+import { AcceptedDrugType } from '../../database/enums';
 import { ExportDataType } from './types/inventory.types';
 
 export const validateCreateInventory = inventory => {

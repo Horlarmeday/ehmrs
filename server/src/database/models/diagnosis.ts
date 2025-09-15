@@ -23,16 +23,8 @@ import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { ICD10Disease } from './icd10_disease';
 import { ICPC2Disease } from './icpc2_disease';
 import { PatientInsurance } from './patientInsurance';
+import { Certainty, DiagnosisType } from '../enums';
 
-export enum Certainty {
-  PRESUMED = 'Presumed',
-  CONFIRMED = 'Confirmed',
-}
-
-export enum DiagnosisType {
-  ICPC2 = 'ICPC2',
-  ICD10 = 'ICD10',
-}
 const attributes = ['diagnosis', 'code', 'id'];
 @DefaultScope(() => ({
   include: [

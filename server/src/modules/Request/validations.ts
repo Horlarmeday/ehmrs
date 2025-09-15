@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { RequestStatus } from '../../database/models/request';
+import { RequestStatus } from '../../database/enums';
 
 export function validateCreateRequests(request: any) {
   const schema = Joi.object({

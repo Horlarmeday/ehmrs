@@ -21,7 +21,7 @@ import { NextFunction, Request, Response } from 'express';
 import { isEmpty } from 'lodash';
 import { EMPTY_REQUEST_BODY } from './messages/response-messages';
 import { updateEncounterWithEntityId } from '../../../core/middleware/createEncounter';
-import { EncounterType } from '../../../database/models/encounter';
+import { EncounterType } from '../../../database/enums';
 
 export class PharmacyOrderController {
   /**

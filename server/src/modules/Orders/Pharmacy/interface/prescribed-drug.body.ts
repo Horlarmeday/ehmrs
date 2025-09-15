@@ -1,5 +1,4 @@
-import { DrugType } from '../../../../database/models/pharmacyStore';
-import { DrugForm } from '../../../../database/models/drug';
+import { DrugForm, PharmacyDrugType as DrugType } from '../../../../database/enums';
 import { Patient, PatientInsurance, PrescribedInvestigation } from '../../../../database/models';
 import { Transaction } from 'sequelize';
 

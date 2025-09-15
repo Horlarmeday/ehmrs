@@ -12,7 +12,7 @@ import { getInventoryItemQuery } from '../Inventory/inventory.repository';
 import { getOnePharmacyStoreItem } from '../Store/store.repository';
 import { ItemsToDispensedBody } from '../Inventory/types/inventory-item.types';
 import StoreService from '../Store/store.service';
-import { RequestStatus } from '../../database/models/request';
+import { RequestStatus } from '../../database/enums';
 import { BadException } from '../../common/util/api-error';
 
 export class RequestService {

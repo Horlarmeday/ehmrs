@@ -11,16 +11,14 @@ import PatientService from '../../Patient/patient.service';
 import { PrescribedService, Service } from '../../../database/models';
 import { PrescribedBulkServiceBody } from './types/service-order.types';
 import { getServicePrice } from '../../AdminSettings/admin.repository';
-import { PrescriptionType } from '../../../database/models/prescribedTest';
 import { NHISApprovalStatus } from '../../../core/helpers/general';
-import { ServiceType } from '../../../database/models/prescribedService';
-import { PaymentStatus } from '../../../database/models/prescribedDrug';
 import { BadException } from '../../../common/util/api-error';
 import { StatusCodes } from '../../../core/helpers/helper';
 import { CANNOT_DELETE_INVESTIGATION } from '../Radiology/messages/response-messages';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
 import { insertDefaultDialysisItems } from '../../Visit/visit.repository';
 import { logger } from '../../../core/helpers/logger';
+import { PrescribedServiceType as ServiceType, PaymentStatus } from '../../../database/enums';
 
 export class ServiceOrderService {
   /**
@@ -33,18 +31,18 @@ export class ServiceOrderService {
    */
   static async prescribeService(body) {
     const result = await prescribeService(body);
-    
+
     // Check if service contains "dialysis" and insert default items
     if (body.patient_id && body.visit_id) {
       try {
         // Get service details to check name
         const service = await Service.findByPk(body.service_id);
         // Multiple ways to check for dialysis
-        const isDialysis = service && (
-          /dialysis/i.test(service.name) ||
-          service.name.toLowerCase().includes('dialysis') ||
-          service.name.toUpperCase().includes('DIALYSIS')
-        );
+        const isDialysis =
+          service &&
+          (/dialysis/i.test(service.name) ||
+            service.name.toLowerCase().includes('dialysis') ||
+            service.name.toUpperCase().includes('DIALYSIS'));
 
         if (isDialysis) {
           // Get patient and visit details
@@ -56,7 +54,7 @@ export class ServiceOrderService {
               is_default: true,
             }),
           ]);
-          
+
           if (patient && visit) {
             logger.info('Inserting default dialysis items for single service');
             // Insert default dialysis items in background
@@ -75,7 +73,7 @@ export class ServiceOrderService {
         logger.error('Error checking dialysis service:', error);
       }
     }
-    
+
     return result;
   }
 
@@ -115,9 +113,9 @@ export class ServiceOrderService {
         patient_insurance_id: insurance?.id,
       }))
     );
-    
+
     const result = await orderBulkService(bulkServices);
-    
+
     // Check if any service contains "dialysis" and insert default items
     try {
       // Get all service details to check for dialysis
@@ -127,18 +125,18 @@ export class ServiceOrderService {
 
       // Check if any service contains "dialysis" with multiple methods
       const hasDialysisService = serviceDetails.some(service => {
-        const isDialysis = service && (
-          /dialysis/i.test(service.name) ||
-          service.name.toLowerCase().includes('dialysis') ||
-          service.name.toUpperCase().includes('DIALYSIS')
-        );
-        
+        const isDialysis =
+          service &&
+          (/dialysis/i.test(service.name) ||
+            service.name.toLowerCase().includes('dialysis') ||
+            service.name.toUpperCase().includes('DIALYSIS'));
+
         if (isDialysis) {
           logger.info('Dialysis service detected in bulk order:', service.name);
         }
         return isDialysis;
       });
-      
+
       if (hasDialysisService && patient && visit) {
         logger.info('Inserting default dialysis items for bulk service');
         // Insert default dialysis items in background
@@ -155,7 +153,7 @@ export class ServiceOrderService {
     } catch (error) {
       logger.error('Error checking dialysis services for bulk order:', error);
     }
-    
+
     return result;
   }
 

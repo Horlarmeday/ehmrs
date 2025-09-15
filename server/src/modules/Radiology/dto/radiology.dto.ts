@@ -1,5 +1,5 @@
 import { Price } from '../../Laboratory/dto/test-tariff.dto';
-import { InvestigationType } from '../../../database/models/investigation';
+import { InvestigationType } from '../../../database/enums';
 
 export class CreateImagingDto {
   name: string;

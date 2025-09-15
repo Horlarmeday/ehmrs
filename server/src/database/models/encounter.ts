@@ -18,22 +18,7 @@ import {
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Visit } from './visit';
 import { Patient } from './patient';
-
-export enum EncounterType {
-  CONSULTATION = 'Consultation',
-  PRESCRIPTION = 'Prescription',
-  LAB_ORDER = 'Lab Order',
-  RADIOLOGY_ORDER = 'Radiology Order',
-  SERVICE_ORDER = 'Service Order',
-  TRIAGE = 'Triage',
-  OBSERVATION = 'Observation',
-  DIAGNOSIS = 'Diagnosis',
-  ADMISSION = 'Admission',
-  DISCHARGE = 'Discharge',
-  WARD_ROUND = 'Ward Round',
-  CLINICAL_NOTE = 'Clinical Note',
-  MULTIPLE = 'Multiple',
-}
+import { EncounterType } from '../enums';
 
 @Table({ timestamps: true })
 export class Encounter extends Model {

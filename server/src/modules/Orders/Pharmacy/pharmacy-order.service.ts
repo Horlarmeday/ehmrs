@@ -34,16 +34,13 @@ import {
 } from '../../../database/models';
 import PatientService from '../../Patient/patient.service';
 import VisitService from '../../Visit/visit.service';
-import { DrugType } from '../../../database/models/pharmacyStore';
 import {
   createDrugPrescription,
   getDrugPrice,
   getLastDrugPrescription,
 } from '../../Pharmacy/pharmacy.repository';
 import { EXCLUDED_INSURANCE, isToday, StatusCodes } from '../../../core/helpers/helper';
-import { DrugStatus } from '../../../database/models/drugPrescription';
 import { getOneDefault } from '../../AdminSettings/admin.repository';
-import { DefaultType } from '../../../database/models/default';
 import { BadException } from '../../../common/util/api-error';
 import {
   CANNOT_DELETE_DRUG,
@@ -55,12 +52,19 @@ import { getInventoryItemQuery } from '../../Inventory/inventory.repository';
 import { getVisitById } from '../../Visit/visit.repository';
 import { getOneAdmission, getOneAdmissionQuery } from '../../Admission/admission.repository';
 import { getPeriodQuery, NHISApprovalStatus } from '../../../core/helpers/general';
-import { DrugGroup, PaymentStatus } from '../../../database/models/prescribedDrug';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
 import { gt, isEmpty, lt } from 'lodash';
 import { INVALID_QUANTITY } from '../../Inventory/messages/response-messages';
 import { Period } from './interface/prescribed-drug.interface';
-import { DischargeStatus } from '../../../database/models/admission';
+import {
+  Status,
+  PharmacyDrugType as DrugType,
+  PaymentStatus,
+  DefaultType,
+  DrugGroup,
+  DrugStatus,
+  DischargeStatus,
+} from '../../../database/enums';
 
 class PharmacyOrderService {
   /**

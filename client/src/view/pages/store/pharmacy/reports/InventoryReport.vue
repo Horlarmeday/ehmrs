@@ -10,7 +10,10 @@
         <button class="btn btn-light-primary mr-3" @click="refreshData">
           <i class="fas fa-sync-alt"></i> Refresh
         </button>
-        <ExportButton :reports="[{ name: 'Inventory Report', type: 'inventory' }]" :filters="filters" />
+        <ExportButton
+          :reports="[{ name: 'Inventory Report', type: 'inventory' }]"
+          :filters="filters"
+        />
       </div>
     </div>
 
@@ -25,7 +28,11 @@
 
     <!-- Summary Cards -->
     <div class="row mb-8">
-      <div class="col-xl-3 col-lg-6 col-md-6 mb-6" v-for="(summary, index) in summaryData" :key="index">
+      <div
+        class="col-xl-3 col-lg-6 col-md-6 mb-6"
+        v-for="(summary, index) in summaryData"
+        :key="index"
+      >
         <ReportCard
           :title="summary.title"
           :value="summary.value"
@@ -44,11 +51,17 @@
           <div class="card-header border-0 pt-5">
             <h3 class="card-title align-items-start flex-column">
               <span class="card-label font-weight-bolder text-dark">Inventory Value Trend</span>
-              <span class="text-muted mt-3 font-weight-bold font-size-sm">Monthly inventory value changes</span>
+              <span class="text-muted mt-3 font-weight-bold font-size-sm"
+                >Monthly inventory value changes</span
+              >
             </h3>
             <div class="card-toolbar">
               <div class="dropdown dropdown-inline">
-                <button class="btn btn-light-primary btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
+                <button
+                  class="btn btn-light-primary btn-sm dropdown-toggle"
+                  type="button"
+                  data-toggle="dropdown"
+                >
                   {{ selectedPeriod }}
                 </button>
                 <div class="dropdown-menu">
@@ -63,14 +76,23 @@
           <div class="card-body">
             <LineChart
               v-if="!loading && chartData.length > 0"
-              :data="chartData"
+              :series="chartData"
+              :categories="chartCategories"
               :height="300"
               title="Inventory Value"
             />
-            <div v-else-if="loading" class="d-flex justify-content-center align-items-center" style="height: 300px;">
+            <div
+              v-else-if="loading"
+              class="d-flex justify-content-center align-items-center"
+              style="height: 300px;"
+            >
               <div class="spinner-border text-primary" role="status"></div>
             </div>
-            <div v-else class="d-flex justify-content-center align-items-center" style="height: 300px;">
+            <div
+              v-else
+              class="d-flex justify-content-center align-items-center"
+              style="height: 300px;"
+            >
               <p class="text-muted">No data available for the selected period</p>
             </div>
           </div>
@@ -87,14 +109,23 @@
           <div class="card-body">
             <BarChart
               v-if="!loading && categoryData.length > 0"
-              :data="categoryData"
+              :series="categoryData"
+              :categories="categoryCategories"
               :height="300"
               title="Stock by Category"
             />
-            <div v-else-if="loading" class="d-flex justify-content-center align-items-center" style="height: 300px;">
+            <div
+              v-else-if="loading"
+              class="d-flex justify-content-center align-items-center"
+              style="height: 300px;"
+            >
               <div class="spinner-border text-primary" role="status"></div>
             </div>
-            <div v-else class="d-flex justify-content-center align-items-center" style="height: 300px;">
+            <div
+              v-else
+              class="d-flex justify-content-center align-items-center"
+              style="height: 300px;"
+            >
               <p class="text-muted">No category data available</p>
             </div>
           </div>
@@ -107,7 +138,9 @@
       <div class="card-header border-0 pt-5">
         <h3 class="card-title align-items-start flex-column">
           <span class="card-label font-weight-bolder text-dark">Inventory Items</span>
-          <span class="text-muted mt-3 font-weight-bold font-size-sm">Detailed inventory listing</span>
+          <span class="text-muted mt-3 font-weight-bold font-size-sm"
+            >Detailed inventory listing</span
+          >
         </h3>
         <div class="card-toolbar">
           <div class="input-group input-group-sm" style="width: 250px;">
@@ -127,14 +160,7 @@
         </div>
       </div>
       <div class="card-body">
-        <DataTable
-          :data="inventoryItems"
-          :columns="tableColumns"
-          :loading="loading"
-          :pagination="pagination"
-          @page-change="changePage"
-          @sort-change="sortData"
-        />
+        <DataTable :data="inventoryItems" :columns="tableColumns" />
       </div>
     </div>
   </div>
@@ -166,7 +192,9 @@ export default {
       searchQuery: '',
       selectedPeriod: 'Last 30 Days',
       filters: {
-        startDate: dayjs().subtract(30, 'days').format('YYYY-MM-DD'),
+        startDate: dayjs()
+          .subtract(30, 'days')
+          .format('YYYY-MM-DD'),
         endDate: dayjs().format('YYYY-MM-DD'),
         category: '',
         vendor: '',
@@ -212,17 +240,19 @@ export default {
         },
       ],
       chartData: [],
+      chartCategories: [],
       categoryData: [],
+      categoryCategories: [],
       inventoryItems: [],
       tableColumns: [
         { key: 'name', label: 'Item Name', sortable: true },
         { key: 'category', label: 'Category', sortable: true },
         { key: 'quantity', label: 'Quantity', sortable: true },
-        { key: 'unit_price', label: 'Unit Price', sortable: true, format: 'currency' },
-        { key: 'total_value', label: 'Total Value', sortable: true, format: 'currency' },
+        { key: 'unit_price', label: 'Unit Price', sortable: true, type: 'currency' },
+        { key: 'total_value', label: 'Total Value', sortable: true, type: 'currency' },
         { key: 'vendor', label: 'Vendor', sortable: true },
-        { key: 'expiry_date', label: 'Expiry Date', sortable: true, format: 'date' },
-        { key: 'status', label: 'Status', sortable: true, format: 'badge' },
+        { key: 'expiry_date', label: 'Expiry Date', sortable: true, type: 'date' },
+        { key: 'status', label: 'Status', sortable: true },
       ],
       pagination: {
         currentPage: 1,
@@ -250,14 +280,14 @@ export default {
           limit: this.pagination.itemsPerPage,
           search: this.searchQuery,
         };
-        
+
         await this.fetchInventoryReports(params);
         const data = this.inventoryReports;
-        
+
         if (data) {
           this.updateSummaryData(data.summary);
-          this.chartData = data.trends || [];
-          this.categoryData = data.categoryDistribution || [];
+          this.processChartData(data.trends || []);
+          this.processCategoryData(data.categoryDistribution || []);
           this.inventoryItems = data.items || [];
           this.pagination = {
             ...this.pagination,
@@ -285,7 +315,7 @@ export default {
     },
     updateSummaryData(summary) {
       if (!summary) return;
-      
+
       this.summaryData[0].value = summary.totalItems?.toString() || '0';
       this.summaryData[1].value = `₦${this.formatNumber(summary.totalValue || 0)}`;
       this.summaryData[2].value = summary.lowStockItems?.toString() || '0';
@@ -300,7 +330,9 @@ export default {
     },
     resetFilters() {
       this.filters = {
-        startDate: dayjs().subtract(30, 'days').format('YYYY-MM-DD'),
+        startDate: dayjs()
+          .subtract(30, 'days')
+          .format('YYYY-MM-DD'),
         endDate: dayjs().format('YYYY-MM-DD'),
         category: '',
         vendor: '',
@@ -311,14 +343,17 @@ export default {
     },
     changePeriod(period) {
       this.selectedPeriod = period;
-      const days = {
-        'Last 7 Days': 7,
-        'Last 30 Days': 30,
-        'Last 3 Months': 90,
-        'Last 6 Months': 180,
-      }[period] || 30;
-      
-      this.filters.startDate = dayjs().subtract(days, 'days').format('YYYY-MM-DD');
+      const days =
+        {
+          'Last 7 Days': 7,
+          'Last 30 Days': 30,
+          'Last 3 Months': 90,
+          'Last 6 Months': 180,
+        }[period] || 30;
+
+      this.filters.startDate = dayjs()
+        .subtract(days, 'days')
+        .format('YYYY-MM-DD');
       this.filters.endDate = dayjs().format('YYYY-MM-DD');
       this.loadReportData();
     },
@@ -344,6 +379,36 @@ export default {
     },
     formatNumber(value) {
       return new Intl.NumberFormat('en-NG').format(value);
+    },
+    processChartData(trends) {
+      if (!trends || trends.length === 0) {
+        this.chartData = [];
+        this.chartCategories = [];
+        return;
+      }
+
+      this.chartCategories = trends.map(item => item.period || item.date);
+      this.chartData = [
+        {
+          name: 'Inventory Value',
+          data: trends.map(item => item.value || 0),
+        },
+      ];
+    },
+    processCategoryData(categoryDistribution) {
+      if (!categoryDistribution || categoryDistribution.length === 0) {
+        this.categoryData = [];
+        this.categoryCategories = [];
+        return;
+      }
+
+      this.categoryCategories = categoryDistribution.map(item => item.category || item.name);
+      this.categoryData = [
+        {
+          name: 'Stock Count',
+          data: categoryDistribution.map(item => item.count || item.value || 0),
+        },
+      ];
     },
   },
 };

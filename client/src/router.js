@@ -659,7 +659,8 @@ const router = new Router({
                 {
                   path: 'reports',
                   name: 'pharmacy-reports',
-                  component: () => import('@/view/pages/store/pharmacy/reports/ReportsDashboard.vue'),
+                  component: () =>
+                    import('@/view/pages/store/pharmacy/reports/ReportsDashboard.vue'),
                   meta: {
                     requiresAuth: true,
                   },
@@ -667,7 +668,8 @@ const router = new Router({
                 {
                   path: 'reports/inventory',
                   name: 'pharmacy-inventory-report',
-                  component: () => import('@/view/pages/store/pharmacy/reports/InventoryReport.vue'),
+                  component: () =>
+                    import('@/view/pages/store/pharmacy/reports/InventoryReport.vue'),
                   meta: {
                     requiresAuth: true,
                   },
@@ -689,9 +691,10 @@ const router = new Router({
                   },
                 },
                 {
-                  path: 'reports/stock-levels',
-                  name: 'pharmacy-stock-levels-report',
-                  component: () => import('@/view/pages/store/pharmacy/reports/StockLevelReport.vue'),
+                  path: 'reports/stock-level',
+                  name: 'pharmacy-stock-level-report',
+                  component: () =>
+                    import('@/view/pages/store/pharmacy/reports/StockLevelReport.vue'),
                   meta: {
                     requiresAuth: true,
                   },
@@ -699,7 +702,16 @@ const router = new Router({
                 {
                   path: 'reports/vendor-performance',
                   name: 'pharmacy-vendor-performance-report',
-                  component: () => import('@/view/pages/store/pharmacy/reports/VendorPerformanceReport.vue'),
+                  component: () =>
+                    import('@/view/pages/store/pharmacy/reports/VendorPerformanceReport.vue'),
+                  meta: {
+                    requiresAuth: true,
+                  },
+                },
+                {
+                  path: 'reports/sales',
+                  name: 'pharmacy-sales-report',
+                  component: () => import('@/view/pages/store/pharmacy/reports/SalesReport.vue'),
                   meta: {
                     requiresAuth: true,
                   },

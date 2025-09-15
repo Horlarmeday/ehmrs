@@ -12,9 +12,8 @@ import { NextFunction, Request, Response } from 'express';
 import { SUCCESS } from '../../../core/constants';
 import { isEmpty } from 'lodash';
 import { EMPTY_REQUEST_BODY } from './messages/response-messages';
-import { PrescribedBulkServiceBody } from './types/service-order.types';
 import { updateEncounterWithEntityId } from '../../../core/middleware/createEncounter';
-import { EncounterType } from '../../../database/models/encounter';
+import { EncounterType } from '../../../database/enums';
 
 export class ServiceOrderController {
   /**

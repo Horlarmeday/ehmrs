@@ -378,7 +378,7 @@ export default {
   fetchSalesReports({ commit }, filters) {
     return new Promise((resolve, reject) => {
       axios
-        .get('/store/reports/sales', { params: filters })
+        .get('/store/reports/sales-performance', { params: filters })
         .then(response => {
           commit('SET_SALES_REPORTS', response.data.data);
           resolve(response);
@@ -406,7 +406,7 @@ export default {
   fetchStockLevelReports({ commit }, filters) {
     return new Promise((resolve, reject) => {
       axios
-        .get('/store/reports/stock-level', { params: filters })
+        .get('/store/reports/stock-levels', { params: filters })
         .then(response => {
           commit('SET_STOCK_LEVEL_REPORTS', response.data.data);
           resolve(response);

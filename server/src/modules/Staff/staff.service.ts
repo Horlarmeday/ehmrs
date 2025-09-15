@@ -12,7 +12,6 @@ import { processSnappedPhoto } from '../../core/helpers/helper';
 import { EXISTING_STAFF, INVALID_STAFF_ID, STAFF_NOT_FOUND } from './messages/response-messages';
 import { Staff, StaffQueryParam } from './interface/staff.interface';
 import bcrypt from 'bcryptjs';
-import { logger } from '../../core/helpers/logger';
 
 class StaffService {
   /**

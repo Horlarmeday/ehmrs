@@ -23,12 +23,7 @@ import { Patient } from './patient';
 import { PrescribedDrug } from './prescribedDrug';
 import { PrescribedAdditionalItem } from './prescribedAdditionalItem';
 import { Visit } from './visit';
-
-export enum HistoryType {
-  DISPENSED = 'Dispensed',
-  RETURNED = 'Returned',
-  SUPPLIED = 'Supplied',
-}
+import { HistoryType } from '../enums';
 
 @Table({ timestamps: true, tableName: 'Inventory_Item_Histories' })
 export class InventoryItemHistory extends Model {

@@ -7,8 +7,7 @@ import {
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
-import { Drug, DrugForm } from './drug';
-import { DrugType } from './pharmacyStore';
+import { Drug } from './drug';
 import { Staff } from './staff';
 import { Visit } from './visit';
 import { Patient } from './patient';
@@ -28,33 +27,14 @@ import { Antenatal } from './antenatal';
 import { SurgeryRequest } from './surgeryRequest';
 import { NHISApprovalStatus } from '../../core/helpers/general';
 import { PatientInsurance } from './patientInsurance';
-
-export enum DispenseStatus {
-  DISPENSED = 'Dispensed',
-  PENDING = 'Pending',
-  RETURNED = 'Returned',
-  PARTIAL_DISPENSED = 'Partial Dispense',
-  PARTIAL_RETURNED = 'Partial Returned',
-}
-
-export enum PaymentStatus {
-  PENDING = 'Pending',
-  PAID = 'Paid',
-  CLEARED = 'Cleared',
-  PERMITTED = 'Permitted',
-}
-
-export enum BillingStatus {
-  BILLED = 'Billed',
-  UNBILLED = 'Unbilled',
-}
-
-export enum Source {
-  ANC = 'Antenatal',
-  CONSULTATION = 'Consultation',
-  THEATER = 'Theater',
-  IMMUNIZATION = 'Immunization',
-}
+import {
+  PharmacyDrugType as DrugType,
+  DrugForm,
+  DispenseStatus,
+  PaymentStatus,
+  BillingStatus,
+  Source,
+} from '../enums';
 
 @Table({ timestamps: true, tableName: 'Additional_item_prescriptions' })
 export class PrescribedAdditionalItem extends Model {

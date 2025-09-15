@@ -18,14 +18,7 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
-
-export enum ServiceName {
-  DRUGS = 'DRUGS',
-  TESTS = 'TESTS',
-  INVESTIGATIONS = 'INVESTIGATIONS',
-  SERVICES = 'SERVICES',
-  ITEMS = 'ITEMS',
-}
+import { ServiceName } from '../enums';
 
 @Table({ timestamps: true, tableName: 'Payment_Histories' })
 export class PaymentHistory extends Model {

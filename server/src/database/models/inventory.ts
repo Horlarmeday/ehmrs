@@ -18,15 +18,7 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { InventoryItem } from './inventoryItem';
-
-export enum AcceptedDrugType {
-  CASH = 'Cash Drug',
-  NHIS = 'NHIS Drug',
-  PRIVATE = 'Private Drug',
-  RETAINERSHIP = 'Retainership Drug',
-  BOTH = 'Both',
-  ALL = 'All',
-}
+import { AcceptedDrugType } from '../enums';
 
 @Table({ timestamps: true })
 export class Inventory extends Model {

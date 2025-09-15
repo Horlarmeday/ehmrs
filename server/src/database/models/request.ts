@@ -18,12 +18,10 @@ import {
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Inventory } from './inventory';
 import { InventoryItem } from './inventoryItem';
+import { RequestStatus } from '../enums';
 
-export enum RequestStatus {
-  PENDING = 'Pending',
-  GRANTED = 'Granted',
-  DECLINED = 'Declined',
-}
+// Re-export RequestStatus for external use
+export { RequestStatus };
 
 @Table({ timestamps: true, tableName: 'Requests' })
 export class Request extends Model {

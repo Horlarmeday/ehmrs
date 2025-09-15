@@ -10,7 +10,6 @@ import {
 import { Staff } from './staff';
 import { Visit } from './visit';
 import { Patient } from './patient';
-import { BillingStatus, PaymentStatus } from './prescribedDrug';
 import {
   FindAttributeOptions,
   GroupOption,
@@ -19,8 +18,7 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
-import { PrescriptionType } from './prescribedTest';
-import { Investigation, InvestigationType } from './investigation';
+import { Investigation } from './investigation';
 import { InvestigationResult } from './investigationResult';
 import { InvestigationPrescription } from './investigationPrescription';
 import { Antenatal } from './antenatal';
@@ -28,20 +26,14 @@ import { Imaging } from './imaging';
 import { SurgeryRequest } from './surgeryRequest';
 import { NHISApprovalStatus } from '../../core/helpers/general';
 import { PatientInsurance } from './patientInsurance';
-
-export enum InvestigationStatus {
-  PENDING = 'Pending',
-  VERIFIED = 'Verified',
-  APPROVED = 'Approved',
-  RESULT_ADDED = 'Result Added',
-  REFERRED = 'Referred',
-  COMPLETED = 'Completed',
-}
-
-export enum Source {
-  ANC = 'Antenatal',
-  CONSULTATION = 'Consultation',
-}
+import {
+  BillingStatus,
+  PaymentStatus,
+  InvestigationType,
+  Source,
+  InvestigationStatus,
+  PrescriptionType,
+} from '../enums';
 
 @Table({ timestamps: true, tableName: 'Prescribed_Investigations' })
 export class PrescribedInvestigation extends Model {

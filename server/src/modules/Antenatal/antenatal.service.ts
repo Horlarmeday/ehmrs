@@ -6,7 +6,7 @@ import {
   UpdateAntenatalAccount,
 } from './types/antenatal.types';
 import { getPatientById } from '../Patient/patient.repository';
-import { Gender } from '../../database/models/staff';
+import { Gender, AntenatalAccountStatus as AccountStatus } from '../../database/enums';
 import { BadException } from '../../common/util/api-error';
 import { StatusCodes } from '../../core/helpers/helper';
 import {
@@ -27,7 +27,6 @@ import {
   getPreviousPregnancies,
   getOneAntenatalTriage,
 } from './antenatal.repository';
-import { AccountStatus } from '../../database/models/antenatal';
 import { prescribeService } from '../Orders/Service/service-order.repository';
 import { getOneService } from '../AdminSettings/admin.repository';
 import { ANTENATAL_ACCOUNT_EXISTS, FEMALE_REQUIRED } from './messages/antenatal.messages';

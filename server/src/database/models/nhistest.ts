@@ -17,11 +17,7 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
-
-export enum TestType {
-  PRIMARY = 'Primary',
-  SECONDARY = 'Secondary',
-}
+import { GeneralServiceType as TestType } from '../enums';
 
 @Table({ timestamps: true, tableName: 'Nhis_Tests' })
 export class NhisTest extends Model {

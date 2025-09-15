@@ -17,11 +17,7 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Imaging } from './imaging';
-
-export enum InvestigationType {
-  PRIMARY = 'Primary',
-  SECONDARY = 'Secondary',
-}
+import { InvestigationType } from '../enums';
 
 @Table({ timestamps: true })
 export class Investigation extends Model {

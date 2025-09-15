@@ -18,7 +18,6 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
-import { PrescribedTest } from './prescribedTest';
 import { Sample } from './sample';
 import { TestPrescription } from './testPrescription';
 

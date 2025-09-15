@@ -24,7 +24,7 @@ import {
   validateTestResults,
 } from './laboratory.repository';
 import { TestTariffDto } from './dto/test-tariff.dto';
-import { ResultStatus, TestStatus } from '../../database/models/prescribedTest';
+import { ResultStatus, PrescribedTestStatus as TestStatus } from '../../database/enums';
 import { generateLabAccessionNumber, StatusCodes } from '../../core/helpers/helper';
 import { isEmpty } from 'lodash';
 import {

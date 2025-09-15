@@ -50,7 +50,7 @@ import {
   Encounter,
   InventoryItemHistory,
 } from '../../database/models';
-import sequelizeConnection from '../../database/config/config';
+import { sequelizeConnection } from '../../database/config/data-source';
 import { BadException } from '../../common/util/api-error';
 import {
   CANT_MERGE_SELF,

@@ -11,7 +11,7 @@ import { BadException } from '../../common/util/api-error';
 import { ERROR_UPDATE_IMMUNIZATION } from './messages/immunization.messages';
 import { JobSchedule } from '../../core/command/worker/schedule';
 import { createVisit, endVisit, getLastActiveVisit } from '../Visit/visit.repository';
-import { VisitCategory } from '../../database/models/visit';
+import { VisitCategory } from '../../database/enums';
 import { insertSingleOrMultipleServices } from '../../core/helpers/helper';
 
 export class ImmunizationService {

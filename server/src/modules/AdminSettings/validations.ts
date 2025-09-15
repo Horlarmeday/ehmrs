@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { DefaultType } from '../../database/models/default';
+import { DefaultType } from '../../database/enums';
 
 export function validateDepartment(department) {
   const schema = Joi.object({

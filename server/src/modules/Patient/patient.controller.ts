@@ -16,7 +16,7 @@ import { SuccessResponse, successResponse } from '../../common/responses/success
 import { DATA_SAVED, DATA_UPDATED } from '../AdminSettings/messages/response-messages';
 import { NextFunction, Request, Response } from 'express';
 import { SUCCESS } from '../../core/constants';
-import { PATIENT_ACCOUNTS_MERGED, PATIENT_ID_REQUIRED } from './messages/response-messages';
+import { PATIENT_ACCOUNTS_MERGED } from './messages/response-messages';
 
 class PatientController {
   /**

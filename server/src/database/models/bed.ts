@@ -9,11 +9,8 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
+import { BedStatus } from '../enums';
 
-export enum BedStatus {
-  TAKEN = 'Taken',
-  UNTAKEN = 'Untaken',
-}
 @Table({ tableName: 'beds' })
 export class Bed extends Model {
   @PrimaryKey

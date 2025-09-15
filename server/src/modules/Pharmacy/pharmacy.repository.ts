@@ -31,10 +31,8 @@ import {
   Unit,
 } from '../../database/models';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
-import { DispenseStatus } from '../../database/models/prescribedDrug';
-import sequelizeConnection from '../../database/config/config';
-import { HistoryType } from '../../database/models/inventoryItemHistory';
-import { DrugStatus } from '../../database/models/drugPrescription';
+import { DispenseStatus, VisitCategory, DrugStatus, HistoryType } from '../../database/enums';
+import { sequelizeConnection } from '../../database/config/data-source';
 import { DispenseDrugType, ReturnDrugType } from './interface/prescribed-drug.type';
 import {
   getAdditionalItems,
@@ -45,16 +43,9 @@ import {
 import { BadException } from '../../common/util/api-error';
 import { PRESCRIPTION_NOT_FOUND } from './messages/response-messages';
 import { getVisitsQuery } from '../Visit/visit.repository';
-import { VisitCategory } from '../../database/models/visit';
 import { getPrescriptionTests } from '../Orders/Laboratory/lab-order.repository';
-import { getPrescriptionInvestigations } from '../Orders/Radiology/radiology-order.repository';
-import {
-  getAncTriages,
-  getAntenatalClinicalNotes,
-  getAntenatalObservations,
-} from '../Antenatal/antenatal.repository';
+import { getAncTriages, getAntenatalObservations } from '../Antenatal/antenatal.repository';
 import { getTriages } from '../Triage/triage.repository';
-import { getPrescriptionServices } from '../Orders/Service/service-order.repository';
 import {
   getConsultationSummary,
   getPatientDiagnoses,

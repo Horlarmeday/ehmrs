@@ -1,7 +1,7 @@
 import { logger, taggedMessaged } from '../../../helpers/logger';
 import { Visit } from '../../../../database/models';
 import { dateQuery, todayQuery } from '../../../helpers/helper';
-import { VisitCategory, VisitStatus } from '../../../../database/models/visit';
+import { VisitCategory, VisitStatus } from '../../../../database/enums';
 import dayjs from 'dayjs';
 import { processTasksExecution } from '../../../helpers/tasksProcessor';
 import { Op } from 'sequelize';

@@ -1,4 +1,4 @@
-import { AcceptedDrugType } from '../../../database/models/inventory';
+import { AcceptedDrugType } from '../../../database/enums';
 
 export enum ExportDataType {
   CSV = 'CSV',

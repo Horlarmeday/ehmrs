@@ -1,5 +1,5 @@
 import { OperationNoteBody, RequestSurgeryBody } from './types/surgery.types';
-import { getVisitById, searchCategoryVisits } from '../Visit/visit.repository';
+import { getVisitById } from '../Visit/visit.repository';
 import {
   createOperationNote,
   getOneSurgery,
@@ -7,7 +7,7 @@ import {
   getSurgeries,
   requestSurgery,
 } from './surgery.repository';
-import { OperationNote, SurgeryRequest, Visit } from '../../database/models';
+import { OperationNote, SurgeryRequest } from '../../database/models';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 
 export class SurgeryService {

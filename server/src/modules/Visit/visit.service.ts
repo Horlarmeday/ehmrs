@@ -20,9 +20,8 @@ import {
 } from './visit.repository';
 import { Visit } from '../../database/models';
 import { CreateVisit } from './interface/visit.interface';
-import { VisitCategory, VisitStatus } from '../../database/models/visit';
+import { VisitCategory, VisitStatus, AccountStatus, Status } from '../../database/enums';
 import { getOneAntenatalAccount } from '../Antenatal/antenatal.repository';
-import { AccountStatus } from '../../database/models/antenatal';
 import { BadException } from '../../common/util/api-error';
 import { insertSingleOrMultipleServices, StatusCodes } from '../../core/helpers/helper';
 import { Op } from 'sequelize';
@@ -34,10 +33,10 @@ import {
   PATIENT_ON_ADMISSION,
 } from './messages/response.messages';
 import { getPatientById } from '../Patient/patient.repository';
-import { Gender } from '../../database/models/staff';
+import { Gender } from '../../database/enums';
 import { FEMALE_REQUIRED } from '../Antenatal/messages/antenatal.messages';
 import { getOneImmunization } from '../Immunization/immunization.repository';
-import { Status } from '../../database/models/patient';
+import { PatientActiveStatus } from '../../database/enums';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 
 class VisitService {

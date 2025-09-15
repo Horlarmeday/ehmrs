@@ -1,4 +1,4 @@
-import { DischargeType } from '../../../database/models/discharge';
+import { DischargeType } from '../../../database/enums';
 import { JwtTokenType } from '../../Staff/interface/staff.interface';
 
 export type AdmissionBodyType = {

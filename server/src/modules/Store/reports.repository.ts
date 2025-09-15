@@ -16,7 +16,7 @@ import {
   InventoryItem,
   Inventory,
 } from '../../database/models';
-import sequelizeConnection from '../../database/config/config';
+import { sequelizeConnection } from '../../database/config/data-source';
 import {
   DashboardOverviewParams,
   DashboardOverviewResponse,
@@ -36,6 +36,8 @@ import {
   RevenueAnalysisResponse,
   TrendsAnalysisParams,
   TrendsAnalysisResponse,
+  VendorPerformanceParams,
+  VendorPerformanceResponse,
   StockDistribution,
   TimeSeriesDataPoint,
   SeasonalPattern,
@@ -52,14 +54,81 @@ export async function getDashboardOverview(
   params?: DashboardOverviewParams
 ): Promise<DashboardOverviewResponse> {
   try {
-    // Get total inventory value
-    const totalInventoryValueResult = await sequelizeConnection.query(
-      'SELECT SUM(quantity_remaining * unit_price) as total_value FROM Pharmacy_Store_Items WHERE quantity_remaining > 0',
-      { type: QueryTypes.SELECT }
-    );
-    const totalInventoryValue = (totalInventoryValueResult[0] as any)?.total_value || 0;
+    // Helper function to calculate date ranges
+    const calculateDateRanges = () => {
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      const startOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const endOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
-    // Get low stock count (items below 10% of received quantity)
+      return {
+        startDate: startOfMonth,
+        endDate: endOfMonth,
+        prevStartDate: startOfPrevMonth,
+        prevEndDate: endOfPrevMonth,
+      };
+    };
+
+    const { startDate, endDate, prevStartDate, prevEndDate } = calculateDateRanges();
+
+    // Revenue metrics - current and previous month
+    const currentRevenueResult = await sequelizeConnection.query(
+      `
+      SELECT COALESCE(SUM(quantity_dispensed * ps.unit_price), 0) as total
+      FROM Pharmacy_Store_Histories psh
+      JOIN Pharmacy_Store_Items ps ON psh.pharmacy_store_id = ps.id
+      WHERE psh.history_type = 'dispensed'
+      AND psh.createdAt BETWEEN :startDate AND :endDate
+      `,
+      {
+        replacements: { startDate, endDate },
+        type: QueryTypes.SELECT,
+      }
+    );
+
+    const previousRevenueResult = await sequelizeConnection.query(
+      `
+      SELECT COALESCE(SUM(quantity_dispensed * ps.unit_price), 0) as total
+      FROM Pharmacy_Store_Histories psh
+      JOIN Pharmacy_Store_Items ps ON psh.pharmacy_store_id = ps.id
+      WHERE psh.history_type = 'dispensed'
+      AND psh.createdAt BETWEEN :prevStartDate AND :prevEndDate
+      `,
+      {
+        replacements: { prevStartDate, prevEndDate },
+        type: QueryTypes.SELECT,
+      }
+    );
+
+    // Dispensed items metrics - current and previous month
+    const currentDispensedResult = await sequelizeConnection.query(
+      `
+      SELECT COALESCE(SUM(quantity_dispensed), 0) as total
+      FROM Pharmacy_Store_Histories psh
+      WHERE psh.history_type = 'dispensed'
+      AND psh.createdAt BETWEEN :startDate AND :endDate
+      `,
+      {
+        replacements: { startDate, endDate },
+        type: QueryTypes.SELECT,
+      }
+    );
+
+    const previousDispensedResult = await sequelizeConnection.query(
+      `
+      SELECT COALESCE(SUM(quantity_dispensed), 0) as total
+      FROM Pharmacy_Store_Histories psh
+      WHERE psh.history_type = 'dispensed'
+      AND psh.createdAt BETWEEN :prevStartDate AND :prevEndDate
+      `,
+      {
+        replacements: { prevStartDate, prevEndDate },
+        type: QueryTypes.SELECT,
+      }
+    );
+
+    // Stock metrics - low stock count
     const lowStockCount = await PharmacyStore.count({
       where: {
         quantity_remaining: {
@@ -68,7 +137,7 @@ export async function getDashboardOverview(
       },
     });
 
-    // Get near expiry count (items expiring within 30 days)
+    // Expiry metrics - near expiry count (items expiring within 30 days)
     const nearExpiryCount = await PharmacyStore.count({
       where: {
         expiration: {
@@ -77,70 +146,42 @@ export async function getDashboardOverview(
       },
     });
 
-    // Get monthly sales (current month)
-    const currentMonth = new Date();
-    const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-    const endOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+    // Calculate changes and trends
+    const revenueTotal = (currentRevenueResult[0] as any)?.total || 0;
+    const prevRevenueTotal = (previousRevenueResult[0] as any)?.total || 0;
+    const revenueChange =
+      prevRevenueTotal > 0 ? ((revenueTotal - prevRevenueTotal) / prevRevenueTotal) * 100 : 0;
+    const revenueTrend = revenueChange > 5 ? 'up' : revenueChange < -5 ? 'down' : 'stable';
 
-    const monthlySalesResult = await sequelizeConnection.query(
-      `
-      SELECT COALESCE(SUM(quantity_dispensed * ps.unit_price), 0) as monthly_sales
-      FROM Pharmacy_Store_Histories psh
-      JOIN Pharmacy_Store_Items ps ON psh.pharmacy_store_id = ps.id
-      WHERE psh.history_type = 'dispensed'
-      AND psh.createdAt BETWEEN :startOfMonth AND :endOfMonth
-      `,
-      {
-        replacements: { startOfMonth, endOfMonth },
-        type: QueryTypes.SELECT,
-      }
-    );
-
-    const monthlySales = (monthlySalesResult[0] as any)?.monthly_sales || 0;
-
-    // Get recent movements (last 10)
-    const recentMovementsData = await PharmacyStoreHistory.findAll({
-      limit: 10,
-      order: [['createdAt', 'DESC']],
-      include: [
-        {
-          model: PharmacyStore,
-          as: 'store',
-          include: [
-            {
-              model: Drug,
-              attributes: ['name'],
-            },
-          ],
-        },
-        {
-          model: Staff,
-          as: 'dispenser',
-          attributes: staffAttributes,
-        },
-      ],
-    });
-
-    // Map to RecentMovement interface
-    const recentMovements = recentMovementsData.map((movement: any) => ({
-      id: movement.id,
-      action: movement.history_type,
-      quantity_changed:
-        movement.quantity_dispensed ||
-        movement.quantity_supplied ||
-        movement.quantity_returned ||
-        0,
-      createdAt: movement.createdAt,
-      PharmacyStore: movement.store,
-      Staff: movement.dispenser,
-    }));
+    const dispensedTotal = (currentDispensedResult[0] as any)?.total || 0;
+    const prevDispensedTotal = (previousDispensedResult[0] as any)?.total || 0;
+    const dispensedChange =
+      prevDispensedTotal > 0
+        ? ((dispensedTotal - prevDispensedTotal) / prevDispensedTotal) * 100
+        : 0;
+    const dispensedTrend = dispensedChange > 5 ? 'up' : dispensedChange < -5 ? 'down' : 'stable';
 
     return {
-      totalInventoryValue: totalInventoryValue || 0,
-      lowStockCount: lowStockCount || 0,
-      nearExpiryCount: nearExpiryCount || 0,
-      monthlySales: monthlySales || 0,
-      recentMovements,
+      revenue: {
+        total: Math.round(revenueTotal * 100) / 100,
+        change: Math.round(revenueChange * 100) / 100,
+        trend: revenueTrend,
+      },
+      dispensed: {
+        total: dispensedTotal,
+        change: Math.round(dispensedChange * 100) / 100,
+        trend: dispensedTrend,
+      },
+      stock: {
+        total: lowStockCount,
+        change: 0, // For now, set to 0 as we need historical data for comparison
+        trend: 'stable',
+      },
+      expiry: {
+        total: nearExpiryCount,
+        change: 0, // For now, set to 0 as we need historical data for comparison
+        trend: 'stable',
+      },
     };
   } catch (error) {
     console.error('Error in getDashboardOverview:', error);
@@ -182,7 +223,14 @@ export async function getMovementHistory(
       {
         model: PharmacyStore,
         as: 'store',
-        attributes: ['id', 'product_code', 'batch', 'quantity_remaining', 'unit_price', 'selling_price'],
+        attributes: [
+          'id',
+          'product_code',
+          'batch',
+          'quantity_remaining',
+          'unit_price',
+          'selling_price',
+        ],
         include: [
           {
             model: Drug,
@@ -1445,5 +1493,106 @@ export async function getTrendsAnalysis(
   } catch (error) {
     console.error('Error in getTrendsAnalysis:', error);
     throw new Error(`Failed to get trends analysis: ${error.message}`);
+  }
+}
+
+/**
+ * Get vendor performance data
+ */
+export async function getVendorPerformance(
+  params: VendorPerformanceParams
+): Promise<VendorPerformanceResponse> {
+  const { startDate, endDate, vendorId } = params;
+  try {
+    // Vendor performance query
+    const vendorPerformanceQuery = `
+      SELECT 
+        v.id as vendor_id,
+        v.name as vendor_name,
+        v.phone,
+        v.email,
+        v.address,
+        COUNT(DISTINCT ps.id) as total_products,
+        SUM(psh.quantity_dispensed) as total_dispensed,
+        SUM(psh.quantity_dispensed * ps.selling_price) as total_revenue,
+        SUM(psh.quantity_dispensed * ps.unit_price) as total_cost,
+        AVG(ps.selling_price - ps.unit_price) as avg_profit_per_unit,
+        COUNT(DISTINCT DATE(psh.createdAt)) as active_days,
+        MIN(psh.createdAt) as first_transaction,
+        MAX(psh.createdAt) as last_transaction
+      FROM Vendors v
+      LEFT JOIN Pharmacy_Store_Items ps ON v.id = ps.vendor_id
+      LEFT JOIN Pharmacy_Store_Histories psh ON ps.id = psh.pharmacy_store_id
+      WHERE psh.history_type = 'dispensed'
+      ${startDate ? 'AND psh.createdAt >= :startDate' : ''}
+      ${endDate ? 'AND psh.createdAt <= :endDate' : ''}
+      ${vendorId ? 'AND v.id = :vendorId' : ''}
+      GROUP BY v.id, v.name, v.phone, v.email, v.address
+      ORDER BY total_revenue DESC
+    `;
+
+    const vendorData = await sequelizeConnection.query(vendorPerformanceQuery, {
+      replacements: {
+        ...(startDate && { startDate }),
+        ...(endDate && { endDate }),
+        ...(vendorId && { vendorId }),
+      },
+      type: QueryTypes.SELECT,
+    });
+
+    // Process vendor performance data
+    const processedVendors = vendorData.map((vendor: any) => {
+      const totalRevenue = parseFloat(vendor.total_revenue) || 0;
+      const totalCost = parseFloat(vendor.total_cost) || 0;
+      const profit = totalRevenue - totalCost;
+      const profitMargin = totalRevenue > 0 ? (profit / totalRevenue) * 100 : 0;
+
+      return {
+        vendor_id: vendor.vendor_id,
+        vendor_name: vendor.vendor_name,
+        contact_person: vendor.phone || '',
+        phone: vendor.phone || '',
+        email: vendor.email || '',
+        total_items_supplied: parseInt(vendor.total_products) || 0,
+        total_quantity_supplied: parseInt(vendor.total_dispensed) || 0,
+        total_purchase_value: totalCost,
+        avg_unit_price: parseFloat(vendor.avg_profit_per_unit) || 0,
+        unique_drugs_supplied: parseInt(vendor.total_products) || 0,
+        total_revenue_generated: totalRevenue,
+        expired_items_count: 0,
+        avg_delivery_time_days: 0,
+        reliability_score: parseFloat(profitMargin.toFixed(2)),
+      };
+    });
+
+    // Calculate summary statistics
+    const totalVendors = processedVendors.length;
+    const totalRevenue = processedVendors.reduce(
+      (sum, vendor) => sum + vendor.total_revenue_generated,
+      0
+    );
+    const totalPurchaseValue = processedVendors.reduce(
+      (sum, vendor) => sum + vendor.total_purchase_value,
+      0
+    );
+    const avgReliabilityScore =
+      processedVendors.length > 0
+        ? processedVendors.reduce((sum, vendor) => sum + vendor.reliability_score, 0) /
+          processedVendors.length
+        : 0;
+
+    return {
+      vendors: processedVendors,
+      totalVendors,
+      summary: {
+        totalPurchaseValue: parseFloat(totalPurchaseValue.toFixed(2)),
+        totalRevenueGenerated: parseFloat(totalRevenue.toFixed(2)),
+        averageReliabilityScore: parseFloat(avgReliabilityScore.toFixed(2)),
+        topPerformingVendor: processedVendors.length > 0 ? processedVendors[0].vendor_name : 'N/A',
+      },
+    };
+  } catch (error) {
+    console.error('Error in getVendorPerformance:', error);
+    throw new Error(`Failed to get vendor performance: ${error.message}`);
   }
 }

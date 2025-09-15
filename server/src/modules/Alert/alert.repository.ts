@@ -1,6 +1,6 @@
 import { Alert, Staff } from '../../database/models';
 import { Optional } from 'sequelize';
-import { Status } from '../../database/models/alert';
+import { Status } from '../../database/enums';
 import { staffAttributes } from '../../core/helpers/helper';
 
 /**

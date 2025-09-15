@@ -1,7 +1,6 @@
 /* eslint-disable camelcase */
 import { Staff, Triage } from '../../database/models';
 import { WhereOptions } from 'sequelize';
-import { async } from 'rxjs';
 import { staffAttributes } from '../../core/helpers/helper';
 
 /**

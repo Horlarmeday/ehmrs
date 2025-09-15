@@ -47,9 +47,7 @@ import {
   QUANTITY_MORE_THAN_DOCTOR_QUANTITY,
   QUANTITY_MORE_THAN_QUANTITY_LEFT,
   RETURN_QUANTITY_MORE_THAN_DOCTOR_QUANTITY,
-  RETURN_QUANTITY_MORE_THAN_QUANTITY_PRESCRIBED,
 } from './messages/response-messages';
-import { HistoryType } from '../../database/models/inventoryItemHistory';
 import { getVisitById } from '../Visit/visit.repository';
 
 class PharmacyService {

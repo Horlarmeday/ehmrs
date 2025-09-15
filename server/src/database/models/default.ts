@@ -11,18 +11,7 @@ import { Staff } from './staff';
 import { FindAttributeOptions, GroupOption, Includeable } from 'sequelize/types/model';
 import { Order, WhereOptions } from 'sequelize';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
-
-export enum DefaultType {
-  ADMISSION_ITEMS = 'ADMISSION_ITEMS',
-  INJECTION_ITEMS = 'INJECTION_ITEMS',
-  OPERATION_ITEMS = 'OPERATION_ITEMS',
-  ANC_ROUTINE_TESTS = 'ANC_ROUTINE_TESTS',
-  ANC_ROUTINE_DRUGS = 'ANC_ROUTINE_DRUGS',
-  WATER_INJECTIONS = 'WATER_INJECTIONS',
-  CIRCUMCISION_ROUTINE_DRUGS = 'CIRCUMCISION_ROUTINE_DRUGS',
-  HSG_ADDITIONAL_ITEMS = 'HSG_ADDITIONAL_ITEMS',
-  DIALYSIS_ITEMS = 'DIALYSIS_ITEMS',
-}
+import { DefaultType } from '../enums';
 
 @Table({ timestamps: true })
 export class Default extends Model {

@@ -1,5 +1,4 @@
-import sequelize, { literal, Op, Optional, WhereOptions } from 'sequelize';
-
+import sequelize, { literal, Op, WhereOptions } from 'sequelize';
 import {
   Unit,
   Measurement,
@@ -16,10 +15,9 @@ import {
 } from '../../database/models';
 import { RequestReturnToStore, UpdateReturnRequest } from './types/inventory.types';
 import { dateIntervalQuery, staffAttributes } from '../../core/helpers/helper';
-import sequelizeConnection from '../../database/config/config';
-import { HistoryType } from '../../database/models/inventoryItemHistory';
+import { sequelizeConnection } from '../../database/config/data-source';
+import { HistoryType, ReturnItemStatus as Status } from '../../database/enums';
 import { getOnePharmacyStoreItem } from '../Store/store.repository';
-import { Status } from '../../database/models/returnItem';
 
 /**
  * receive product(s) into the inventory

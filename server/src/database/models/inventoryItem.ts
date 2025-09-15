@@ -8,12 +8,11 @@ import {
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
-import { Drug, DrugForm } from './drug';
+import { Drug } from './drug';
 import { Unit } from './unit';
 import { DosageForm } from './dosageForm';
 import { Measurement } from './measurement';
 import { Staff } from './staff';
-import { DrugType } from './pharmacyStore';
 import {
   FindAttributeOptions,
   GroupOption,
@@ -23,11 +22,8 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Inventory } from './inventory';
+import { Status, PharmacyDrugType as DrugType, DrugForm } from '../enums';
 
-export enum Status {
-  ACTIVE = 'Active',
-  INACTIVE = 'Inactive',
-}
 @DefaultScope(() => ({
   where: {
     status: Status.ACTIVE,

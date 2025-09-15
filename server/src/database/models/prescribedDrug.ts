@@ -9,7 +9,6 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { Drug } from './drug';
-import { DrugType } from './pharmacyStore';
 import { Staff } from './staff';
 import { Visit } from './visit';
 import { Patient } from './patient';
@@ -32,38 +31,14 @@ import { SurgeryRequest } from './surgeryRequest';
 import { Immunization } from './immunization';
 import { NHISApprovalStatus } from '../../core/helpers/general';
 import { PatientInsurance } from './patientInsurance';
-
-export enum DispenseStatus {
-  DISPENSED = 'Dispensed',
-  PENDING = 'Pending',
-  RETURNED = 'Returned',
-  PARTIAL_DISPENSED = 'Partial Dispense',
-  PARTIAL_RETURNED = 'Partial Returned',
-}
-
-export enum PaymentStatus {
-  PENDING = 'Pending',
-  PAID = 'Paid',
-  CLEARED = 'Cleared',
-  PERMITTED = 'Permitted',
-}
-
-export enum BillingStatus {
-  BILLED = 'Billed',
-  UNBILLED = 'Unbilled',
-}
-
-export enum DrugGroup {
-  PRIMARY = 'Primary',
-  SECONDARY = 'Secondary',
-}
-
-export enum Source {
-  ANC = 'Antenatal',
-  CONSULTATION = 'Consultation',
-  THEATER = 'Theater',
-  IMMUNIZATION = 'Immunization',
-}
+import {
+  PharmacyDrugType,
+  BillingStatus,
+  DispenseStatus,
+  PaymentStatus,
+  Source,
+  DrugGroup,
+} from '../enums';
 
 @Table({ timestamps: true, tableName: 'Prescribed_Drugs' })
 export class PrescribedDrug extends Model {
@@ -96,7 +71,7 @@ export class PrescribedDrug extends Model {
   dosage_form_id: number;
 
   @Column({
-    type: DataType.ENUM(DrugType.CASH, DrugType.NHIS, DrugType.PRIVATE),
+    type: DataType.ENUM(PharmacyDrugType.CASH, PharmacyDrugType.NHIS, PharmacyDrugType.PRIVATE),
     allowNull: false,
     validate: {
       notEmpty: {
@@ -104,7 +79,7 @@ export class PrescribedDrug extends Model {
       },
     },
   })
-  drug_type: DrugType;
+  drug_type: PharmacyDrugType;
 
   @Column({
     type: DataType.INTEGER,

@@ -20,15 +20,8 @@ import { Patient } from './patient';
 import { Ward } from './ward';
 import { Visit } from './visit';
 import { Admission } from './admission';
+import { DischargeType } from '../enums';
 
-export enum DischargeType {
-  ABSCONDED = 'Absconded',
-  DISCHARGE = 'Discharge',
-  REFER = 'Refer',
-  DEATH = 'Death',
-  LAMA = 'Lama',
-  TRANSFER = 'Transfer',
-}
 @Table({ timestamps: true, tableName: 'Discharges' })
 export class Discharge extends Model {
   @PrimaryKey

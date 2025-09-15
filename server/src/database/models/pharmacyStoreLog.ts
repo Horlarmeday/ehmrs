@@ -8,8 +8,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { Unit } from './unit';
-import { Staff, Status } from './staff';
-import { Drug, DrugForm } from './drug';
+import { Staff } from './staff';
 import { Measurement } from './measurement';
 import { DosageForm } from './dosageForm';
 import { RoutesOfAdministration } from './routesOfAdministration';
@@ -23,18 +22,7 @@ import {
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { PharmacyStore } from './pharmacyStore';
 import { Vendor } from './vendor';
-
-export enum DrugType {
-  CASH = 'Cash',
-  NHIS = 'NHIS',
-  PRIVATE = 'Private',
-  RETAINERSHIP = 'Retainership',
-}
-
-export enum LogType {
-  UPDATE = 'Update',
-  REORDER = 'Reorder',
-}
+import { PharmacyDrugType as DrugType, LogType, DrugForm, Status } from '../enums';
 
 @Table({ timestamps: true, tableName: 'Pharmacy_Store_Item_Logs' })
 export class PharmacyStoreLog extends Model {

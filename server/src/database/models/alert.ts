@@ -17,11 +17,7 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Patient } from './patient';
-
-export enum Status {
-  ACTIVE = 'Active',
-  INACTIVE = 'Inactive',
-}
+import { Status } from '../enums';
 
 @Table({ timestamps: true })
 export class Alert extends Model {

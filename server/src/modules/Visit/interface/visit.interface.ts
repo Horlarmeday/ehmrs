@@ -1,4 +1,4 @@
-import { VisitCategory } from '../../../database/models/visit';
+import { VisitCategory } from '../../../database/enums';
 
 export class CreateVisit {
   patient_id: number;

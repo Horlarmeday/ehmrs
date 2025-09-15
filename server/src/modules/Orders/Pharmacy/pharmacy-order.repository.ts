@@ -16,11 +16,10 @@ import {
 } from '../../../database/models';
 import { Optional, Transaction, WhereOptions } from 'sequelize';
 import dayjs from 'dayjs';
-import { DrugForm } from '../../../database/models/drug';
+import { DrugForm } from '../../../database/enums';
 import { getOneRouteOfAdministration } from '../../Pharmacy/pharmacy.repository';
-import { PatientStatus } from '../../../database/models/patient';
+import { PatientStatus, DefaultType } from '../../../database/enums';
 import { getOneDefault } from '../../AdminSettings/admin.repository';
-import { DefaultType } from '../../../database/models/default';
 import { staffAttributes } from '../../Antenatal/antenatal.repository';
 import { BadException } from '../../../common/util/api-error';
 import {
@@ -34,7 +33,7 @@ import {
   ERROR_UPDATING_ITEM,
   INJECTION_SYRINGES_NOT_FOUND,
 } from './messages/response-messages';
-import sequelizeConnection from '../../../database/config/config';
+import { sequelizeConnection } from '../../../database/config/data-source';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
 
 type PrescribeDrugType = PrescribedDrugBody & {

@@ -16,13 +16,11 @@ import {
 import { PrescribedInvestigationBody } from './types/radiology-order.types';
 import { InvestigationPrescription, PrescribedInvestigation } from '../../../database/models';
 import { isToday, StatusCodes } from '../../../core/helpers/helper';
-import { InvestigationStatus } from '../../../database/models/investigationPrescription';
 import { NHISApprovalStatus } from '../../../core/helpers/general';
-import { PrescriptionType } from '../../../database/models/prescribedTest';
-import { PaymentStatus } from '../../../database/models/prescribedDrug';
 import { BadException } from '../../../common/util/api-error';
 import { CANNOT_DELETE_INVESTIGATION } from './messages/response-messages';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
+import { PaymentStatus, InvestigationStatus, PrescriptionType } from '../../../database/enums';
 
 export class RadiologyOrderService {
   /**

@@ -3,7 +3,11 @@
     <table class="table table-head-custom table-vertical-center">
       <thead>
         <tr class="text-left">
-          <th v-for="column in columns" :key="column.key" class="font-weight-bold text-muted text-uppercase">
+          <th
+            v-for="column in columns"
+            :key="column.key"
+            class="font-weight-bold text-muted text-uppercase"
+          >
             {{ column.label }}
           </th>
         </tr>
@@ -27,35 +31,35 @@ export default {
   props: {
     columns: {
       type: Array,
-      required: true
+      required: true,
     },
     data: {
       type: Array,
-      required: true
-    }
+      required: true,
+    },
   },
   methods: {
     formatValue(value, type) {
-      if (!value && value !== 0) return '-'
-      
+      if (!value && value !== 0) return '-';
+
       switch (type) {
         case 'currency':
-          return new Intl.NumberFormat('en-US', {
+          return new Intl.NumberFormat('en-NG', {
             style: 'currency',
-            currency: 'USD'
-          }).format(value)
+            currency: 'NGN',
+          }).format(value);
         case 'number':
-          return new Intl.NumberFormat().format(value)
+          return new Intl.NumberFormat().format(value);
         case 'date':
-          return new Date(value).toLocaleDateString()
+          return new Date(value).toLocaleDateString();
         case 'percentage':
-          return `${value}%`
+          return `${value}%`;
         default:
-          return value
+          return value;
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style scoped>

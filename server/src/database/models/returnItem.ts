@@ -17,12 +17,7 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { InventoryItem } from './inventoryItem';
-
-export enum Status {
-  RETURNED = 'Returned',
-  PENDING = 'Pending',
-  DECLINED = 'Declined',
-}
+import { ReturnItemStatus as Status } from '../enums';
 
 @Table({ timestamps: true, tableName: 'Return_Items' })
 export class ReturnItem extends Model {

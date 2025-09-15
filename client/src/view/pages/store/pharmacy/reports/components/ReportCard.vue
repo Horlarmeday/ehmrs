@@ -13,8 +13,8 @@
                 {{ value }}
               </template>
             </span>
-            <span 
-              v-if="change && !loading" 
+            <span
+              v-if="change && !loading"
               :class="changeClass"
               class="font-weight-bold font-size-sm"
             >
@@ -23,14 +23,9 @@
           </div>
         </div>
         <div class="ml-6">
-          <div 
-            :class="`symbol symbol-50 symbol-light-${color}`"
-          >
+          <div :class="`symbol symbol-50 symbol-light-${color}`">
             <div class="symbol-label">
-              <i 
-                :class="icon" 
-                :style="{ color: iconColor, fontSize: '24px' }"
-              ></i>
+              <i :class="icon" :style="{ color: iconColor, fontSize: '24px' }"></i>
             </div>
           </div>
         </div>
@@ -62,7 +57,7 @@ export default {
     color: {
       type: String,
       default: 'primary',
-      validator: (value) => ['primary', 'success', 'warning', 'danger', 'info'].includes(value),
+      validator: value => ['primary', 'success', 'warning', 'danger', 'info'].includes(value),
     },
     loading: {
       type: Boolean,
@@ -72,7 +67,7 @@ export default {
   computed: {
     changeClass() {
       if (!this.change) return '';
-      
+
       if (this.change.startsWith('+')) {
         return 'text-success';
       } else if (this.change.startsWith('-')) {
@@ -99,13 +94,17 @@ export default {
   width: 1rem;
   height: 1rem;
   border: 2px solid #f3f3f3;
-  border-top: 2px solid #3699FF;
+  border-top: 2px solid #3699ff;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>

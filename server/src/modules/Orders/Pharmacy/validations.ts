@@ -1,6 +1,5 @@
 import Joi from 'joi';
-import { DrugType } from '../../../database/models/pharmacyStore';
-import { DrugForm } from '../../../database/models/drug';
+import { DrugForm, PharmacyDrugType as DrugType } from '../../../database/enums';
 
 export function validateOrderAdditionalItems(item: any) {
   const schema = Joi.array()

@@ -1,4 +1,4 @@
-import { ServiceType } from '../../../../database/models/prescribedService';
+import { PrescribedServiceType as ServiceType } from '../../../../database/enums';
 
 type Services = {
   service_id: number;

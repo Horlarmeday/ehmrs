@@ -3,18 +3,13 @@ import { NextFunction, Request, Response } from 'express';
 import { ReportsService } from './reports.service';
 import { successResponse, SuccessResponse } from '../../common/responses/success-responses';
 import { StatusCodes } from '../../core/helpers/helper';
-import { validateReportFilters } from './validations';
 import { errorResponse } from '../../common/responses/error-responses';
 
 export class ReportsController {
   /**
    * Get dashboard overview with key metrics
    */
-  static async getDashboardOverview(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
+  static async getDashboardOverview(req: Request, res: Response, next: NextFunction) {
     try {
       const data = await ReportsService.getDashboardOverview();
       return successResponse({
@@ -31,11 +26,7 @@ export class ReportsController {
   /**
    * Get inventory movements with filtering and pagination
    */
-  static async getInventoryMovements(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
+  static async getInventoryMovements(req: Request, res: Response, next: NextFunction) {
     try {
       const {
         startDate,
@@ -52,7 +43,7 @@ export class ReportsController {
       const filters = {
         startDate: startDate as string,
         endDate: endDate as string,
-        drugId: drugId as unknown as number,
+        drugId: (drugId as unknown) as number,
         movementType: movementType as string,
         currentPage: currentPage as string,
         pageLimit: pageLimit as string,
@@ -65,8 +56,8 @@ export class ReportsController {
         res,
         data,
         message: 'Inventory movements retrieved successfully',
-        httpCode: StatusCodes.OK
-    });
+        httpCode: StatusCodes.OK,
+      });
     } catch (error) {
       return next(error);
     }
@@ -75,26 +66,16 @@ export class ReportsController {
   /**
    * Get sales performance data
    */
-  static async getSalesPerformance(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
+  static async getSalesPerformance(req: Request, res: Response, next: NextFunction) {
     try {
-      const {
-        period,
-        startDate,
-        endDate,
-        groupBy,
-        vendorId,
-      } = req.query;
+      const { period, startDate, endDate, groupBy, vendorId } = req.query;
 
       const filters = {
         period: period as string,
         startDate: startDate as string,
         endDate: endDate as string,
         groupBy: groupBy as string,
-        vendorId: vendorId as unknown as number,
+        vendorId: (vendorId as unknown) as number,
       };
 
       const data = await ReportsService.getSalesPerformance(filters);
@@ -102,8 +83,8 @@ export class ReportsController {
         res,
         data,
         message: 'Sales performance data retrieved successfully',
-        httpCode: StatusCodes.OK
-    });
+        httpCode: StatusCodes.OK,
+      });
     } catch (error) {
       return next(error);
     }
@@ -112,24 +93,14 @@ export class ReportsController {
   /**
    * Get expiry tracking data
    */
-  static async getExpiryTracking(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
+  static async getExpiryTracking(req: Request, res: Response, next: NextFunction) {
     try {
-      const {
-        daysToExpiry,
-        includeExpired,
-        categoryId,
-        currentPage,
-        pageLimit,
-      } = req.query;
+      const { daysToExpiry, includeExpired, categoryId, currentPage, pageLimit } = req.query;
 
       const filters = {
         daysToExpiry: daysToExpiry ? parseInt(daysToExpiry as string) : undefined,
         includeExpired: includeExpired === 'true',
-        categoryId: categoryId as unknown as number,
+        categoryId: (categoryId as unknown) as number,
         currentPage: currentPage as string,
         pageLimit: pageLimit as string,
       };
@@ -139,8 +110,8 @@ export class ReportsController {
         res,
         data,
         message: 'Expiry tracking data retrieved successfully',
-        httpCode: StatusCodes.OK
-    });
+        httpCode: StatusCodes.OK,
+      });
     } catch (error) {
       return next(error);
     }
@@ -149,19 +120,9 @@ export class ReportsController {
   /**
    * Get stock levels analysis
    */
-  static async getStockLevels(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
+  static async getStockLevels(req: Request, res: Response, next: NextFunction) {
     try {
-      const {
-        threshold,
-        sortBy,
-        order,
-        currentPage,
-        pageLimit,
-      } = req.query;
+      const { threshold, sortBy, order, currentPage, pageLimit } = req.query;
 
       const filters = {
         threshold: threshold as string,
@@ -176,8 +137,8 @@ export class ReportsController {
         res,
         data,
         message: 'Stock levels analysis retrieved successfully',
-        httpCode: StatusCodes.OK
-    });
+        httpCode: StatusCodes.OK,
+      });
     } catch (error) {
       return next(error);
     }
@@ -186,26 +147,16 @@ export class ReportsController {
   /**
    * Get trends analysis data
    */
-  static async getTrendsAnalysis(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
+  static async getTrendsAnalysis(req: Request, res: Response, next: NextFunction) {
     try {
-      const {
-        period,
-        startDate,
-        endDate,
-        drugId,
-        categoryId,
-      } = req.query;
+      const { period, startDate, endDate, drugId, categoryId } = req.query;
 
       const filters = {
         period: period as string,
         startDate: startDate as string,
         endDate: endDate as string,
-        drugId: drugId as unknown as number,
-        categoryId: categoryId as unknown as number,
+        drugId: (drugId as unknown) as number,
+        categoryId: (categoryId as unknown) as number,
       };
 
       const data = await ReportsService.getTrendsAnalysis(filters);
@@ -213,8 +164,35 @@ export class ReportsController {
         res,
         data,
         message: 'Trends analysis data retrieved successfully',
-        httpCode: StatusCodes.OK
-    });
+        httpCode: StatusCodes.OK,
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * Get vendor performance reports with analysis
+   */
+  static async getVendorPerformance(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { startDate, endDate, vendorId, sortBy, order } = req.query;
+
+      const filters = {
+        startDate: startDate as string,
+        endDate: endDate as string,
+        vendorId: (vendorId as unknown) as number,
+        sortBy: sortBy as string,
+        order: order as string,
+      };
+
+      const data = await ReportsService.getVendorPerformance(filters);
+      return successResponse({
+        res,
+        data,
+        message: 'Vendor performance data retrieved successfully',
+        httpCode: StatusCodes.OK,
+      });
     } catch (error) {
       return next(error);
     }
@@ -244,9 +222,9 @@ export class ReportsController {
         limit: Number(limit),
         startDate: startDate as string,
         endDate: endDate as string,
-        drugId: drugId as unknown as number,
+        drugId: (drugId as unknown) as number,
         movementType: movementType as string,
-        vendorId: vendorId as unknown as number,
+        vendorId: (vendorId as unknown) as number,
       };
 
       const data = await ReportsService.getMovementHistory(filters);
@@ -254,7 +232,7 @@ export class ReportsController {
         res,
         data,
         message: 'Movement history retrieved successfully',
-        httpCode: StatusCodes.OK
+        httpCode: StatusCodes.OK,
       });
     } catch (error) {
       return next(error);
@@ -270,20 +248,14 @@ export class ReportsController {
     next: NextFunction
   ): Promise<SuccessResponse | void> {
     try {
-      const {
-        period = 'monthly',
-        startDate,
-        endDate,
-        vendorId,
-        categoryId,
-      } = req.query;
+      const { period = 'monthly', startDate, endDate, vendorId, categoryId } = req.query;
 
       const filters = {
         period: period as string,
         startDate: startDate as string,
         endDate: endDate as string,
-        vendorId: vendorId as unknown as number,
-        categoryId: categoryId as unknown as number,
+        vendorId: (vendorId as unknown) as number,
+        categoryId: (categoryId as unknown) as number,
       };
 
       const data = await ReportsService.getPharmacyAnalytics(filters);
@@ -291,7 +263,7 @@ export class ReportsController {
         res,
         data,
         message: 'Pharmacy analytics retrieved successfully',
-        httpCode: StatusCodes.OK
+        httpCode: StatusCodes.OK,
       });
     } catch (error) {
       return next(error);
@@ -320,8 +292,8 @@ export class ReportsController {
         period: period as string,
         startDate: startDate as string,
         endDate: endDate as string,
-        vendorId: vendorId as unknown as number,
-        categoryId: categoryId as unknown as number,
+        vendorId: (vendorId as unknown) as number,
+        categoryId: (categoryId as unknown) as number,
         includeComparison: includeComparison === 'true',
       };
 
@@ -330,7 +302,7 @@ export class ReportsController {
         res,
         data,
         message: 'Revenue analysis retrieved successfully',
-        httpCode: StatusCodes.OK
+        httpCode: StatusCodes.OK,
       });
     } catch (error) {
       return next(error);
@@ -352,14 +324,11 @@ export class ReportsController {
         return errorResponse({
           res,
           httpCode: 400,
-          message: 'Report type is required'
-        })
+          message: 'Report type is required',
+        });
       }
 
-      const csvData = await ReportsService.exportToCSV(
-        reportType as string,
-        filters
-      );
+      const csvData = await ReportsService.exportToCSV(reportType as string, filters);
 
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader(
@@ -388,14 +357,11 @@ export class ReportsController {
         return errorResponse({
           res,
           httpCode: 400,
-          message: 'Report type is required'
-        })      
+          message: 'Report type is required',
+        });
       }
 
-      const pdfBuffer = await ReportsService.exportToPDF(
-        reportType as string,
-        filters
-      );
+      const pdfBuffer = await ReportsService.exportToPDF(reportType as string, filters);
 
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader(
@@ -412,11 +378,7 @@ export class ReportsController {
   /**
    * Get report configuration and metadata
    */
-  static async getReportConfig(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ){
+  static async getReportConfig(req: Request, res: Response, next: NextFunction) {
     try {
       const config = {
         availableReports: [
@@ -461,13 +423,7 @@ export class ReportsController {
           periods: ['daily', 'weekly', 'monthly', 'quarterly', 'yearly'],
           movementTypes: ['received', 'dispensed', 'adjusted', 'expired', 'returned'],
           thresholds: ['low', 'adequate', 'overstocked'],
-          sortOptions: [
-            'quantity_remaining',
-            'expiration',
-            'unit_price',
-            'createdAt',
-            'drug_name',
-          ],
+          sortOptions: ['quantity_remaining', 'expiration', 'unit_price', 'createdAt', 'drug_name'],
         },
         exportFormats: ['csv', 'pdf'],
       };
@@ -476,8 +432,8 @@ export class ReportsController {
         res,
         data: config,
         message: 'Report configuration retrieved successfully',
-        httpCode: StatusCodes.OK
-    });
+        httpCode: StatusCodes.OK,
+      });
     } catch (error) {
       return next(error);
     }
@@ -486,29 +442,25 @@ export class ReportsController {
   /**
    * Get cached report data
    */
-  static async getCachedReport(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
+  static async getCachedReport(req: Request, res: Response, next: NextFunction) {
     try {
       const { reportType, cacheKey } = req.params;
 
       const data = await ReportsService.getCachedReport(reportType, cacheKey);
-      
+
       if (!data) {
         return errorResponse({
           res,
           httpCode: 400,
-          message: 'Cached report not found'
-        })
+          message: 'Cached report not found',
+        });
       }
 
       return successResponse({
         res,
         data,
         message: 'Cached report retrieved successfully',
-        httpCode: StatusCodes.OK
+        httpCode: StatusCodes.OK,
       });
     } catch (error) {
       return next(error);
@@ -519,18 +471,12 @@ export class ReportsController {
    * Schedule a report for automatic generation
    */
   static async scheduleReport(
-    req: Request & { user: { sub: number }},
+    req: Request & { user: { sub: number } },
     res: Response,
     next: NextFunction
   ) {
     try {
-      const {
-        reportType,
-        schedule,
-        filters,
-        recipients,
-        format,
-      } = req.body;
+      const { reportType, schedule, filters, recipients, format } = req.body;
 
       const scheduleData = {
         reportType,
@@ -542,13 +488,13 @@ export class ReportsController {
       };
 
       const result = await ReportsService.scheduleReport(scheduleData);
-      
+
       return successResponse({
         res,
         data: result,
         message: 'Report scheduled successfully',
-        httpCode: StatusCodes.CREATED
-    });
+        httpCode: StatusCodes.CREATED,
+      });
     } catch (error) {
       return next(error);
     }

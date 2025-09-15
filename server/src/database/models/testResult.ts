@@ -19,12 +19,7 @@ import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { PrescribedTest } from './prescribedTest';
 import { TestPrescription } from './testPrescription';
 import { Staff } from './staff';
-
-export enum ResultStatus {
-  PENDING = 'Pending',
-  REJECTED = 'Rejected',
-  ACCEPTED = 'Accepted',
-}
+import { ResultStatus } from '../enums';
 
 @Table({ timestamps: true, tableName: 'Test_Results' })
 export class TestResult extends Model {

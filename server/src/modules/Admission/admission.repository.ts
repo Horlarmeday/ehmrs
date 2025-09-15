@@ -1,5 +1,4 @@
-import sequelize from '../../database/config/config';
-import sequelizeConnection from '../../database/config/config';
+import { sequelizeConnection } from '../../database/config/data-source';
 import { Op, Optional, Transaction, WhereOptions } from 'sequelize';
 import {
   Admission,
@@ -22,24 +21,32 @@ import {
   Ward,
   WardRound,
 } from '../../database/models';
-import { BedStatus } from '../../database/models/bed';
-import { ServiceType } from '../../database/models/prescribedService';
-import { PatientStatus, Status } from '../../database/models/patient';
+import {
+  BedStatus,
+  PrescribedServiceType,
+  PatientStatus,
+  PatientActiveStatus,
+  DrugForm,
+  DefaultType,
+  VisitCategory,
+  VisitStatus,
+  Gender,
+  DischargeStatus,
+  DischargeType,
+  DrugStatus,
+  AccountStatus,
+  Source,
+} from '../../database/enums';
 import { getOneDefault, getWardWithService } from '../AdminSettings/admin.repository';
 import { getPatientById } from '../Patient/patient.repository';
 import { AdmissionBodyType, ChangeWardBodyType, DischargeBodyType } from './types/admission.types';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
-import { VisitCategory, VisitStatus } from '../../database/models/visit';
-import { DrugForm } from '../../database/models/drug';
-import { DefaultType } from '../../database/models/default';
-import { Source } from '../../database/models/prescribedDrug';
 import {
   bulkCreateAdditionalItems,
   getAdditionalItems,
   getDrugsPrescribed,
   getPatientTreatments,
 } from '../Orders/Pharmacy/pharmacy-order.repository';
-import { Gender } from '../../database/models/staff';
 import { getInventories } from '../Inventory/inventory.repository';
 import { staffAttributes } from '../Antenatal/antenatal.repository';
 import {
@@ -51,18 +58,14 @@ import {
   patientAttributes,
   StatusCodes,
 } from '../../core/helpers/helper';
-import { DischargeStatus } from '../../database/models/admission';
-import { DischargeType } from '../../database/models/discharge';
 import { getPrescriptionTests } from '../Orders/Laboratory/lab-order.repository';
 import { getPrescriptionInvestigations } from '../Orders/Radiology/radiology-order.repository';
 import { getPrescriptionServices } from '../Orders/Service/service-order.repository';
 import { getPatientDiagnoses } from '../Consultation/consultation.repository';
-import { AccountStatus } from '../../database/models/antenatal';
 import { CreatePostNatal } from '../Antenatal/types/antenatal.types';
 import { BadException } from '../../common/util/api-error';
 import { NO_AVAILABLE_BED } from './messages/response-messages';
 import { createDrugPrescription, getLastDrugPrescription } from '../Pharmacy/pharmacy.repository';
-import { DrugStatus } from '../../database/models/drugPrescription';
 import dayjs from 'dayjs';
 
 enum Ages {
@@ -97,7 +100,7 @@ export const admitPatient = async (data: AdmissionBodyType) => {
     }
   }
 
-  return sequelize.transaction(async (t: Transaction) => {
+  return sequelizeConnection.transaction(async (t: Transaction) => {
     const admission = await Admission.create(
       {
         ...data,
@@ -120,7 +123,7 @@ export const admitPatient = async (data: AdmissionBodyType) => {
         {
           service_id: ward.service.id,
           price: ward.service.price,
-          service_type: ServiceType.CASH,
+          service_type: PrescribedServiceType.CASH,
           requester: admitted_by.sub,
           visit_id,
           patient_id,
@@ -760,18 +763,18 @@ type DischargePatientType = DischargeBodyType & {
 
 type PatientStatusUpdate = {
   patient_status: PatientStatus;
-  status?: Status;
+  status?: PatientActiveStatus;
 };
 
 const getPatientStatusUpdate = (discharge_type: DischargeType): PatientStatusUpdate => {
   const statusMap: Record<DischargeType, PatientStatusUpdate> = {
     [DischargeType.DEATH]: {
       patient_status: PatientStatus.DECEASED,
-      status: Status.INACTIVE,
+      status: PatientActiveStatus.INACTIVE,
     },
     [DischargeType.LAMA]: {
       patient_status: PatientStatus.OUTPATIENT,
-      status: Status.BANNED,
+      status: PatientActiveStatus.BANNED,
     },
     [DischargeType.ABSCONDED]: {
       patient_status: PatientStatus.OUTPATIENT,
@@ -795,7 +798,7 @@ const getPatientStatusUpdate = (discharge_type: DischargeType): PatientStatusUpd
  */
 export const dischargePatient = async (data: DischargePatientType) => {
   const { discharged_by, patient_id, admission_id, discharge_type } = data;
-  return await sequelize.transaction(async (t: Transaction) => {
+  return await sequelizeConnection.transaction(async (t: Transaction) => {
     const admission = await Admission.findOne({ where: { id: admission_id }, transaction: t });
     // create discharge record
     const discharge = await Discharge.create({ ...data }, { transaction: t });

@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { Source } from '../../../database/models/prescribedService';
+import { Source } from '../../../database/enums';
 
 export function validateBulkService(services) {
   const schema = Joi.object({

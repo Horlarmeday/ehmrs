@@ -10,9 +10,9 @@
         <button class="btn btn-light-primary mr-3" @click="refreshData" :disabled="loading">
           <i class="fas fa-sync-alt" :class="{ 'fa-spin': loading }"></i> Refresh
         </button>
-        <ExportButton 
-          :reports="[{ name: 'Sales Report', type: 'sales' }]" 
-          :filters="filters" 
+        <ExportButton
+          :reports="[{ name: 'Sales Report', type: 'sales' }]"
+          :filters="filters"
           @export="handleExport"
         />
       </div>
@@ -29,7 +29,11 @@
 
     <!-- Summary Cards -->
     <div class="row mb-8">
-      <div class="col-xl-3 col-lg-6 col-md-6 mb-6" v-for="(summary, index) in summaryData" :key="index">
+      <div
+        class="col-xl-3 col-lg-6 col-md-6 mb-6"
+        v-for="(summary, index) in summaryData"
+        :key="index"
+      >
         <ReportCard
           :title="summary.title"
           :value="summary.value"
@@ -48,11 +52,17 @@
           <div class="card-header border-0 pt-5">
             <h3 class="card-title align-items-start flex-column">
               <span class="card-label font-weight-bolder text-dark">Revenue Trend</span>
-              <span class="text-muted mt-3 font-weight-bold font-size-sm">Daily sales performance</span>
+              <span class="text-muted mt-3 font-weight-bold font-size-sm"
+                >Daily sales performance</span
+              >
             </h3>
             <div class="card-toolbar">
               <div class="dropdown dropdown-inline">
-                <button class="btn btn-light-primary btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
+                <button
+                  class="btn btn-light-primary btn-sm dropdown-toggle"
+                  type="button"
+                  data-toggle="dropdown"
+                >
                   {{ selectedPeriod }}
                 </button>
                 <div class="dropdown-menu">
@@ -67,14 +77,23 @@
           <div class="card-body">
             <LineChart
               v-if="!loading && chartData.length > 0"
-              :data="chartData"
+              :series="chartData"
+              :categories="chartCategories"
               :height="300"
               title="Revenue"
             />
-            <div v-else-if="loading" class="d-flex justify-content-center align-items-center" style="height: 300px;">
+            <div
+              v-else-if="loading"
+              class="d-flex justify-content-center align-items-center"
+              style="height: 300px;"
+            >
               <div class="spinner-border text-primary" role="status"></div>
             </div>
-            <div v-else class="d-flex justify-content-center align-items-center" style="height: 300px;">
+            <div
+              v-else
+              class="d-flex justify-content-center align-items-center"
+              style="height: 300px;"
+            >
               <p class="text-muted">No sales data available for the selected period</p>
             </div>
           </div>
@@ -91,14 +110,23 @@
           <div class="card-body">
             <BarChart
               v-if="!loading && topProductsData.length > 0"
-              :data="topProductsData"
+              :series="topProductsData"
+              :categories="topProductsCategories"
               :height="300"
               title="Top Products"
             />
-            <div v-else-if="loading" class="d-flex justify-content-center align-items-center" style="height: 300px;">
+            <div
+              v-else-if="loading"
+              class="d-flex justify-content-center align-items-center"
+              style="height: 300px;"
+            >
               <div class="spinner-border text-primary" role="status"></div>
             </div>
-            <div v-else class="d-flex justify-content-center align-items-center" style="height: 300px;">
+            <div
+              v-else
+              class="d-flex justify-content-center align-items-center"
+              style="height: 300px;"
+            >
               <p class="text-muted">No product data available</p>
             </div>
           </div>
@@ -170,7 +198,9 @@ export default {
       searchQuery: '',
       selectedPeriod: 'Last 30 Days',
       filters: {
-        startDate: dayjs().subtract(30, 'days').format('YYYY-MM-DD'),
+        startDate: dayjs()
+          .subtract(30, 'days')
+          .format('YYYY-MM-DD'),
         endDate: dayjs().format('YYYY-MM-DD'),
         drugId: '',
         vendorId: '',
@@ -216,17 +246,19 @@ export default {
         },
       ],
       chartData: [],
+      chartCategories: [],
       topProductsData: [],
+      topProductsCategories: [],
       salesData: [],
       tableColumns: [
-        { key: 'date', label: 'Date', sortable: true, format: 'date' },
+        { key: 'date', label: 'Date', sortable: true, type: 'date' },
         { key: 'drugName', label: 'Product', sortable: true },
         { key: 'quantity', label: 'Quantity', sortable: true },
-        { key: 'unitPrice', label: 'Unit Price', sortable: true, format: 'currency' },
-        { key: 'totalAmount', label: 'Total Amount', sortable: true, format: 'currency' },
+        { key: 'unitPrice', label: 'Unit Price', sortable: true, type: 'currency' },
+        { key: 'totalAmount', label: 'Total Amount', sortable: true, type: 'currency' },
         { key: 'customerType', label: 'Customer Type', sortable: true },
         { key: 'vendorName', label: 'Vendor', sortable: true },
-        { key: 'profit', label: 'Profit', sortable: true, format: 'currency' },
+        { key: 'profit', label: 'Profit', sortable: true, type: 'currency' },
       ],
       pagination: {
         currentPage: 1,
@@ -254,14 +286,14 @@ export default {
           limit: this.pagination.itemsPerPage,
           search: this.searchQuery,
         };
-        
+
         await this.fetchSalesReports(params);
         const data = this.salesReports;
-        
+
         if (data) {
           this.updateSummaryData(data.summary);
-          this.chartData = data.trends || [];
-          this.topProductsData = data.topProducts || [];
+          this.processChartData(data.trends || []);
+          this.processTopProductsData(data.topProducts || []);
           this.salesData = data.transactions || [];
           this.pagination = {
             ...this.pagination,
@@ -280,19 +312,19 @@ export default {
         // Extract unique drugs and vendors from sales reports data
         if (this.salesReports && this.salesReports.transactions) {
           const transactions = this.salesReports.transactions;
-          
+
           // Get unique drugs
           const uniqueDrugs = [...new Set(transactions.map(t => t.drugName).filter(Boolean))];
           this.filterOptions.drugs = uniqueDrugs.map(drug => ({
             value: drug,
-            label: drug
+            label: drug,
           }));
-          
+
           // Get unique vendors
           const uniqueVendors = [...new Set(transactions.map(t => t.vendorName).filter(Boolean))];
           this.filterOptions.vendors = uniqueVendors.map(vendor => ({
             value: vendor,
-            label: vendor
+            label: vendor,
           }));
         }
       } catch (error) {
@@ -301,17 +333,23 @@ export default {
     },
     updateSummaryData(summary) {
       if (!summary) return;
-      
+
       this.summaryData[0].value = `₦${this.formatNumber(summary.totalRevenue || 0)}`;
       this.summaryData[1].value = summary.totalTransactions?.toString() || '0';
       this.summaryData[2].value = `₦${this.formatNumber(summary.averageSale || 0)}`;
       this.summaryData[3].value = summary.topProduct || '-';
-      
+
       // Update change percentages if available
       if (summary.changes) {
-        this.summaryData[0].change = `${summary.changes.revenue > 0 ? '+' : ''}${summary.changes.revenue}%`;
-        this.summaryData[1].change = `${summary.changes.transactions > 0 ? '+' : ''}${summary.changes.transactions}%`;
-        this.summaryData[2].change = `${summary.changes.averageSale > 0 ? '+' : ''}${summary.changes.averageSale}%`;
+        this.summaryData[0].change = `${summary.changes.revenue > 0 ? '+' : ''}${
+          summary.changes.revenue
+        }%`;
+        this.summaryData[1].change = `${summary.changes.transactions > 0 ? '+' : ''}${
+          summary.changes.transactions
+        }%`;
+        this.summaryData[2].change = `${summary.changes.averageSale > 0 ? '+' : ''}${
+          summary.changes.averageSale
+        }%`;
       }
     },
     updateFilters(newFilters) {
@@ -323,7 +361,9 @@ export default {
     },
     resetFilters() {
       this.filters = {
-        startDate: dayjs().subtract(30, 'days').format('YYYY-MM-DD'),
+        startDate: dayjs()
+          .subtract(30, 'days')
+          .format('YYYY-MM-DD'),
         endDate: dayjs().format('YYYY-MM-DD'),
         drugId: '',
         vendorId: '',
@@ -334,14 +374,17 @@ export default {
     },
     changePeriod(period) {
       this.selectedPeriod = period;
-      const days = {
-        'Last 7 Days': 7,
-        'Last 30 Days': 30,
-        'Last 3 Months': 90,
-        'Last 6 Months': 180,
-      }[period] || 30;
-      
-      this.filters.startDate = dayjs().subtract(days, 'days').format('YYYY-MM-DD');
+      const days =
+        {
+          'Last 7 Days': 7,
+          'Last 30 Days': 30,
+          'Last 3 Months': 90,
+          'Last 6 Months': 180,
+        }[period] || 30;
+
+      this.filters.startDate = dayjs()
+        .subtract(days, 'days')
+        .format('YYYY-MM-DD');
       this.filters.endDate = dayjs().format('YYYY-MM-DD');
       this.loadReportData();
     },
@@ -368,7 +411,7 @@ export default {
     async handleExport(format) {
       try {
         this.loading = true;
-        
+
         if (format === 'csv') {
           this.exportToCSV();
         } else if (format === 'pdf') {
@@ -376,7 +419,7 @@ export default {
         } else if (format === 'excel') {
           this.exportToExcel();
         }
-        
+
         this.$toast.success(`Sales report exported as ${format.toUpperCase()}`);
       } catch (error) {
         this.$toast.error('Failed to export report');
@@ -385,21 +428,32 @@ export default {
       }
     },
     exportToCSV() {
-      const headers = ['Date', 'Product', 'Quantity', 'Unit Price', 'Total Amount', 'Customer Type', 'Vendor', 'Profit'];
+      const headers = [
+        'Date',
+        'Product',
+        'Quantity',
+        'Unit Price',
+        'Total Amount',
+        'Customer Type',
+        'Vendor',
+        'Profit',
+      ];
       const csvContent = [
         headers.join(','),
-        ...this.salesData.map(item => [
-          item.date || '',
-          item.drugName || '',
-          item.quantity || 0,
-          item.unitPrice || 0,
-          item.totalAmount || 0,
-          item.customerType || '',
-          item.vendorName || '',
-          item.profit || 0
-        ].join(','))
+        ...this.salesData.map(item =>
+          [
+            item.date || '',
+            item.drugName || '',
+            item.quantity || 0,
+            item.unitPrice || 0,
+            item.totalAmount || 0,
+            item.customerType || '',
+            item.vendorName || '',
+            item.profit || 0,
+          ].join(',')
+        ),
       ].join('\n');
-      
+
       const blob = new Blob([csvContent], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -416,6 +470,36 @@ export default {
     },
     formatNumber(value) {
       return new Intl.NumberFormat('en-NG').format(value);
+    },
+    processChartData(trends) {
+      if (!trends || trends.length === 0) {
+        this.chartData = [];
+        this.chartCategories = [];
+        return;
+      }
+
+      this.chartCategories = trends.map(item => item.period || item.date);
+      this.chartData = [
+        {
+          name: 'Revenue',
+          data: trends.map(item => item.revenue || item.value || 0),
+        },
+      ];
+    },
+    processTopProductsData(topProducts) {
+      if (!topProducts || topProducts.length === 0) {
+        this.topProductsData = [];
+        this.topProductsCategories = [];
+        return;
+      }
+
+      this.topProductsCategories = topProducts.map(item => item.name || item.product);
+      this.topProductsData = [
+        {
+          name: 'Revenue',
+          data: topProducts.map(item => item.revenue || item.value || 0),
+        },
+      ];
     },
   },
 };

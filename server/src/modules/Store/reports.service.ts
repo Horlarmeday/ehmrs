@@ -32,7 +32,7 @@ interface ScheduleData {
   createdBy: number;
 }
 
-const errorPrefix = 'Error'
+const errorPrefix = 'Error';
 
 export class ReportsService {
   /**
@@ -42,7 +42,7 @@ export class ReportsService {
     try {
       const data = await ReportsRepository.getDashboardOverview();
       return data;
-    } catch (error: any) {
+    } catch (error) {
       throw new BadException(errorPrefix, 500, error.message);
     }
   }
@@ -54,11 +54,11 @@ export class ReportsService {
     try {
       const params = {
         ...filters,
-        order: filters.order as 'ASC' | 'DESC'
+        order: filters.order as 'ASC' | 'DESC',
       };
       const data = await ReportsRepository.getInventoryMovements(params);
       return data;
-    } catch (error: any) {
+    } catch (error) {
       throw new BadException(error.message, 500);
     }
   }
@@ -70,12 +70,12 @@ export class ReportsService {
     try {
       // Convert ReportFilters to SalesPerformanceParams
       const params: any = {
-        period: filters.period as 'daily' | 'weekly' | 'monthly' || 'monthly',
-        ...filters
+        period: (filters.period as 'daily' | 'weekly' | 'monthly') || 'monthly',
+        ...filters,
       };
       const data = await ReportsRepository.getSalesPerformance(params);
       return data;
-    } catch (error: any) {
+    } catch (error) {
       throw new BadException(error.message, 500);
     }
   }
@@ -88,11 +88,11 @@ export class ReportsService {
       // Convert ReportFilters to ExpiryTrackingParams
       const params: any = {
         threshold: filters.threshold ? parseInt(filters.threshold) : 30,
-        ...filters
+        ...filters,
       };
       const data = await ReportsRepository.getExpiryTracking(params);
       return data;
-    } catch (error: any) {
+    } catch (error) {
       throw new BadException(error.message, 500);
     }
   }
@@ -105,11 +105,11 @@ export class ReportsService {
       // Convert ReportFilters to StockLevelsParams
       const params: any = {
         threshold: filters.threshold ? parseInt(filters.threshold) : 10,
-        ...filters
+        ...filters,
       };
       const data = await ReportsRepository.getStockLevels(params);
       return data;
-    } catch (error: any) {
+    } catch (error) {
       throw new BadException(error.message, 500);
     }
   }
@@ -121,12 +121,29 @@ export class ReportsService {
     try {
       // Convert ReportFilters to TrendsAnalysisParams
       const params: any = {
-        period: filters.period as 'daily' | 'weekly' | 'monthly' || 'monthly',
-        ...filters
+        period: (filters.period as 'daily' | 'weekly' | 'monthly') || 'monthly',
+        ...filters,
       };
       const data = await ReportsRepository.getTrendsAnalysis(params);
       return data;
-    } catch (error: any) {
+    } catch (error) {
+      throw new BadException(error.message, 500);
+    }
+  }
+
+  /**
+   * Get vendor performance data with analysis
+   */
+  static async getVendorPerformance(filters: ReportFilters) {
+    try {
+      const params: any = {
+        sortBy: filters.sortBy || 'revenue',
+        order: (filters.order as 'ASC' | 'DESC') || 'DESC',
+        ...filters,
+      };
+      const data = await ReportsRepository.getVendorPerformance(params);
+      return data;
+    } catch (error) {
       throw new BadException(error.message, 500);
     }
   }
@@ -141,12 +158,12 @@ export class ReportsService {
         currentPage: filters.page || 1,
         pageLimit: filters.limit || 10,
         sortBy: filters.sortBy || 'createdAt',
-        order: filters.order as 'ASC' | 'DESC' || 'DESC',
-        ...filters
+        order: (filters.order as 'ASC' | 'DESC') || 'DESC',
+        ...filters,
       };
       const data = await ReportsRepository.getMovementHistory(params);
       return data;
-    } catch (error: any) {
+    } catch (error) {
       throw new BadException(error.message, 500);
     }
   }
@@ -157,13 +174,13 @@ export class ReportsService {
   static async getPharmacyAnalytics(filters: ReportFilters) {
     try {
       const params: any = {
-        period: filters.period as 'daily' | 'weekly' | 'monthly' || 'monthly',
-        groupBy: filters.groupBy as 'drug' | 'vendor' || 'drug',
-        ...filters
+        period: (filters.period as 'daily' | 'weekly' | 'monthly') || 'monthly',
+        groupBy: (filters.groupBy as 'drug' | 'vendor') || 'drug',
+        ...filters,
       };
       const data = await ReportsRepository.getPharmacyAnalytics(params);
       return data;
-    } catch (error: any) {
+    } catch (error) {
       throw new BadException(error.message, 500);
     }
   }
@@ -174,12 +191,12 @@ export class ReportsService {
   static async getRevenueAnalysis(filters: ReportFilters) {
     try {
       const params: any = {
-        period: filters.period as 'daily' | 'weekly' | 'monthly' || 'monthly',
-        ...filters
+        period: (filters.period as 'daily' | 'weekly' | 'monthly') || 'monthly',
+        ...filters,
       };
       const data = await ReportsRepository.getRevenueAnalysis(params);
       return data;
-    } catch (error: any) {
+    } catch (error) {
       throw new BadException(error.message, 500);
     }
   }
@@ -190,11 +207,12 @@ export class ReportsService {
   static async exportToCSV(reportType: string, filters: any): Promise<string> {
     try {
       let data: any;
-      
+
       switch (reportType) {
         case 'dashboard':
           data = await ReportsRepository.getDashboardOverview();
           return ReportsService.convertToCSV(data, 'dashboard');
+        case 'inventory':
         case 'inventory-movements':
           data = await ReportsRepository.getInventoryMovements(filters);
           return ReportsService.convertToCSV(data.docs || data, 'inventory-movements');
@@ -203,10 +221,16 @@ export class ReportsService {
           return ReportsService.convertToCSV(data, 'sales-performance');
         case 'expiry-tracking':
           data = await ReportsRepository.getExpiryTracking(filters);
-          return ReportsService.convertToCSV(data.nearExpiryItems?.docs || data.nearExpiryItems, 'expiry-tracking');
+          return ReportsService.convertToCSV(
+            data.nearExpiryItems?.docs || data.nearExpiryItems,
+            'expiry-tracking'
+          );
         case 'stock-levels':
           data = await ReportsRepository.getStockLevels(filters);
-          return ReportsService.convertToCSV(data.stockLevels?.docs || data.stockLevels, 'stock-levels');
+          return ReportsService.convertToCSV(
+            data.stockLevels?.docs || data.stockLevels,
+            'stock-levels'
+          );
         case 'trends-analysis':
           data = await ReportsRepository.getTrendsAnalysis(filters);
           return ReportsService.convertToCSV(data, 'trends-analysis');
@@ -225,7 +249,11 @@ export class ReportsService {
     try {
       // For now, return a simple PDF buffer
       // In a real implementation, you would use a PDF library like puppeteer or jsPDF
-      const pdfContent = `PDF Report: ${reportType}\nGenerated on: ${new Date().toISOString()}\nFilters: ${JSON.stringify(filters, null, 2)}`;
+      const pdfContent = `PDF Report: ${reportType}\nGenerated on: ${new Date().toISOString()}\nFilters: ${JSON.stringify(
+        filters,
+        null,
+        2
+      )}`;
       return Buffer.from(pdfContent, 'utf-8');
     } catch (error) {
       throw new BadException('Failed to export report to PDF', 500);
@@ -240,12 +268,12 @@ export class ReportsService {
       // Simple file-based caching implementation
       const cacheDir = path.join(process.cwd(), 'cache', 'reports');
       const cacheFile = path.join(cacheDir, `${reportType}_${cacheKey}.json`);
-      
+
       if (fs.existsSync(cacheFile)) {
         const cachedData = fs.readFileSync(cacheFile, 'utf-8');
         return JSON.parse(cachedData);
       }
-      
+
       return null;
     } catch (error) {
       throw new BadException('Failed to retrieve cached report', 500);
@@ -265,7 +293,7 @@ export class ReportsService {
         createdAt: new Date(),
         nextRun: ReportsService.calculateNextRun(scheduleData.schedule),
       };
-      
+
       // For now, just return the schedule object
       // In production, this would be saved to a database
       return schedule;
@@ -283,13 +311,13 @@ export class ReportsService {
     }
 
     let csvContent = '';
-    
+
     if (Array.isArray(data)) {
       if (data.length > 0) {
         // Get headers from first object
         const headers = Object.keys(data[0]);
         csvContent += headers.join(',') + '\n';
-        
+
         // Add data rows
         data.forEach(row => {
           const values = headers.map(header => {
@@ -316,7 +344,7 @@ export class ReportsService {
       });
       csvContent += values.join(',') + '\n';
     }
-    
+
     return csvContent;
   }
 
@@ -325,7 +353,7 @@ export class ReportsService {
    */
   static calculateNextRun(schedule: string): Date {
     const now = new Date();
-    
+
     switch (schedule) {
       case 'daily':
         return new Date(now.getTime() + 24 * 60 * 60 * 1000);
@@ -340,5 +368,3 @@ export class ReportsService {
     }
   }
 }
-
-export default ReportsService;

@@ -4,13 +4,10 @@ import {
   getPatientTriages,
   getTriageInAVisit,
 } from './triage.repository';
-import VisitService from '../Visit/visit.service';
 import { getPatientPendingPrescriptions, getVisit, updateVisit } from '../Visit/visit.repository';
 import { Triage } from '../../database/models';
 import { isEmpty } from 'lodash';
 import { BadException } from '../../common/util/api-error';
-import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
-import PatientService from '../Patient/patient.service';
 import { PATIENT_HAS_PENDING_PAYMENT } from './messages/response.messages';
 
 class TriageService {

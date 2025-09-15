@@ -7,9 +7,7 @@ import {
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
-import { Patient } from './patient';
-import { Staff } from './staff';
-import { Visit } from './visit';
+
 import {
   FindAttributeOptions,
   GroupOption,

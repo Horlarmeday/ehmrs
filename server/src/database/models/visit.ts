@@ -20,21 +20,7 @@ import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Antenatal } from './antenatal';
 import { Admission } from './admission';
 import { Immunization } from './immunization';
-
-export enum VisitCategory {
-  IPD = 'Inpatient',
-  OPD = 'Outpatient',
-  EMERGENCY = 'Emergency',
-  ANC = 'Antenatal',
-  IMMUNIZATION = 'Immunization',
-  MATERNITY = 'Maternity',
-  DIALYSIS = 'Dialysis',
-}
-
-export enum VisitStatus {
-  ONGOING = 'Ongoing',
-  ENDED = 'Ended',
-}
+import { VisitCategory, VisitStatus } from '../enums';
 
 @Table({ timestamps: true })
 export class Visit extends Model {

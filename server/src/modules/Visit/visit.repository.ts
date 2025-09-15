@@ -4,7 +4,6 @@ import { Op, WhereOptions } from 'sequelize';
 
 import { Insurance, Patient, PatientInsurance, Staff, Visit } from '../../database/models';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
-import { VisitCategory, VisitStatus } from '../../database/models/visit';
 import {
   calcLimitAndOffset,
   dateIntervalQuery,
@@ -21,19 +20,22 @@ import {
 } from '../Orders/Pharmacy/pharmacy-order.repository';
 import { getOnePrescribedService } from '../Orders/Service/service-order.repository';
 import { getOnePrescribedInvestigation } from '../Orders/Radiology/radiology-order.repository';
-import { PaymentStatus } from '../../database/models/prescribedDrug';
-import { getDefaults, getOneDefault } from '../AdminSettings/admin.repository';
+import { getOneDefault } from '../AdminSettings/admin.repository';
 import { getInventories } from '../Inventory/inventory.repository';
 import { getDrugPrice } from '../Pharmacy/pharmacy.repository';
 import { getInventoryItemQuery } from '../Inventory/inventory.repository';
 import { PrescribedDrug, PrescribedAdditionalItem, DrugPrescription } from '../../database/models';
-import { DrugForm } from '../../database/models/drug';
-import { DrugType } from '../../database/models/pharmacyStore';
-import { DrugGroup } from '../../database/models/prescribedDrug';
-import { DrugStatus } from '../../database/models/drugPrescription';
+import {
+  DrugForm,
+  PharmacyDrugType,
+  DrugGroup,
+  DrugStatus,
+  PaymentStatus,
+  VisitCategory,
+  VisitStatus,
+} from '../../database/enums';
 import { NHISApprovalStatus } from '../../core/helpers/general';
 import { getDrugType, EXCLUDED_INSURANCE } from '../../core/helpers/helper';
-import PharmacyOrderService from '../Orders/Pharmacy/pharmacy-order.service';
 import { isEmpty } from 'lodash';
 import { isToday } from '../../core/helpers/helper';
 
@@ -855,8 +857,9 @@ export const insertDefaultDialysisItems = async ({
       const mapDrugs = await Promise.all(
         drugs.map(async drug => {
           const inventory_id =
-            inventories.find(inventory => inventory.name.toLowerCase().includes(drugType.toLowerCase()))
-              ?.id || 1;
+            inventories.find(inventory =>
+              inventory.name.toLowerCase().includes(drugType.toLowerCase())
+            )?.id || 1;
 
           const inventoryItem = await getInventoryItemQuery({
             inventory_id,
@@ -877,18 +880,19 @@ export const insertDefaultDialysisItems = async ({
             frequency: drug?.frequency || 'OD',
             duration: 1,
             duration_unit: 'Days',
-            total_price: drug?.drug?.drug_type === DrugType.NHIS ? drugPrice * 0.1 : drugPrice,
+            total_price:
+              drug?.drug?.drug_type === PharmacyDrugType.NHIS ? drugPrice * 0.1 : drugPrice,
             examiner: visit.staff_id,
             patient_id: patient.id,
             visit_id: visit.id,
             start_date: Date.now(),
             date_prescribed: Date.now(),
             drug_prescription_id: drugPrescription?.id,
-            drug_group: drug?.drug?.drug_type === DrugType.NHIS ? DrugGroup.PRIMARY : null,
+            drug_group: drug?.drug?.drug_type === PharmacyDrugType.NHIS ? DrugGroup.PRIMARY : null,
             inventory_id,
             source: 'Consultation',
             unit_id: drug?.drug?.unit_id,
-            ...(drug?.drug?.drug_type === DrugType.NHIS && {
+            ...(drug?.drug?.drug_type === PharmacyDrugType.NHIS && {
               nhis_status: NHISApprovalStatus.PENDING,
             }),
             patient_insurance_id: insurance?.id || null,
@@ -904,15 +908,17 @@ export const insertDefaultDialysisItems = async ({
       const mapConsumables = await Promise.all(
         consumables.map(async consumable => {
           const inventory_id =
-            inventories.find(inventory => inventory.name.toLowerCase().includes(drugType.toLowerCase()))
-              ?.id || 1;
+            inventories.find(inventory =>
+              inventory.name.toLowerCase().includes(drugType.toLowerCase())
+            )?.id || 1;
 
           const inventoryItem = await getInventoryItemQuery({
             inventory_id,
             drug_id: consumable?.drug?.drug_id,
           });
           const drugPrice =
-            (await getDrugPrice(patient, consumable?.drug?.drug_id, inventoryItem)) * +consumable?.quantity;
+            (await getDrugPrice(patient, consumable?.drug?.drug_id, inventoryItem)) *
+            +consumable?.quantity;
 
           return {
             drug_form: DrugForm.CONSUMABLE,
@@ -922,7 +928,8 @@ export const insertDefaultDialysisItems = async ({
             drug_type: consumable?.drug?.drug_type,
             quantity_prescribed: consumable?.quantity,
             quantity_to_dispense: consumable?.quantity,
-            total_price: consumable?.drug?.drug_type === DrugType.NHIS ? drugPrice * 0.1 : drugPrice,
+            total_price:
+              consumable?.drug?.drug_type === PharmacyDrugType.NHIS ? drugPrice * 0.1 : drugPrice,
             examiner: visit.staff_id,
             patient_id: patient.id,
             start_date: Date.now(),
@@ -930,7 +937,7 @@ export const insertDefaultDialysisItems = async ({
             inventory_id,
             source: 'Consultation',
             unit_id: consumable?.drug?.unit_id,
-            ...(consumable?.drug?.drug_type === DrugType.NHIS && {
+            ...(consumable?.drug?.drug_type === PharmacyDrugType.NHIS && {
               nhis_status: NHISApprovalStatus.PENDING,
             }),
             patient_insurance_id: insurance?.id || null,

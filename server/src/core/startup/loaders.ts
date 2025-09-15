@@ -2,12 +2,12 @@ import path from 'path';
 import helmet from 'helmet';
 import express from 'express';
 import cors from 'cors';
-import Agendash from 'agendash';
+// import Agendash from 'agendash';
 import morgan from 'morgan';
 import bodyParser from 'body-parser';
 import { RequestHandler } from 'express-serve-static-core';
 import { ParsedQs } from 'qs';
-import agenda from '../command/agenda';
+// import agenda from '../command/agenda';
 // import serveStatic from 'serve-static';
 
 export default (
@@ -26,9 +26,5 @@ export default (
   server.use(express.static('download'));
   // server.use(serveStatic(path.join(__dirname, '../../../../client/dist')));
   server.use('/static', express.static(path.join(__dirname, '../../public')));
-  server.use('/dash', () => {
-    agenda.on('ready', () => {
-      Agendash(agenda);
-    });
-  });
+  // server.use('/dash', Agendash(agenda)); // Temporarily disabled due to collection error
 };
