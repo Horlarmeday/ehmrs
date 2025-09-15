@@ -133,7 +133,7 @@ export default {
   },
   watch: {
     visit(value) {
-      this.tabs.filter(tab => {
+      this.tabs.filter((tab) => {
         if (tab.component === 'wardRound' && value.category === 'Inpatient') {
           tab.showComponent = true;
           return tab;
@@ -199,7 +199,7 @@ export default {
   created() {
     this.loading = true;
     this.getActiveTab();
-    this.$store.dispatch('visit/fetchVisit', this.$route.params.id).then(response => {
+    this.$store.dispatch('visit/fetchVisit', this.$route.params.id).then((response) => {
       const res = response.data.data;
       this.$store.dispatch('patient/setCurrentPatient', {
         ...res.insurance,
@@ -216,5 +216,43 @@ export default {
 }
 .nav-item .nav-link.active {
   background-color: #a9a9a961 !important;
+}
+
+.end-visit-container {
+  margin-left: auto;
+}
+
+.end-visit-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
+}
+
+.end-visit-btn:hover:not(:disabled) {
+  background-color: #c82333;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
+.end-visit-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
+}
+
+.end-visit-btn i {
+  font-size: 1rem;
 }
 </style>

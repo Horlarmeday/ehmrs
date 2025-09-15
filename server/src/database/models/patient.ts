@@ -14,7 +14,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { PatientType } from '../../modules/Patient/types/patient.types';
-import { Gender, Staff } from './staff';
+import { Staff } from './staff';
 
 import {
   FindAttributeOptions,
@@ -37,6 +37,12 @@ export enum Status {
   ACTIVE = 'active',
   INACTIVE = 'inactive',
   BANNED = 'banned',
+}
+
+export enum Gender {
+  MALE = 'Male',
+  FEMALE = 'Female',
+  OTHER = 'Other',
 }
 
 @Table({ timestamps: true })

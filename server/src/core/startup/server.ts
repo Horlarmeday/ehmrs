@@ -1,4 +1,5 @@
 import '../config/env';
+import '../../database/config/db-connection';
 import express from 'express';
 import routes from './routes';
 // import error from '../middleware/error';

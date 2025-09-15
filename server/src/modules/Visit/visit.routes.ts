@@ -6,6 +6,7 @@ const router = Router();
 router.post('/create', verify, VisitController.createVisit);
 router.post('/last-active', verify, VisitController.getLastActiveVisitOrCreate);
 router.put('/update/:id', verify, VisitController.updateVisit);
+router.put('/end/:id', verify, VisitController.endVisit);
 router.get('/active/get', verify, VisitController.getActiveVisits);
 router.get('/all/get', verify, VisitController.getVisits);
 router.get('/category/get', verify, VisitController.getCategoryVisits);

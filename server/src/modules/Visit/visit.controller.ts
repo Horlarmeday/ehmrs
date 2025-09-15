@@ -312,6 +312,34 @@ class VisitController {
       next(e);
     }
   }
+
+  /**
+   * end a visit
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with visit data
+   */
+  static async endVisit(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse> {
+    try {
+      const visit = await VisitService.endVisit(+req.params.id, req.user.sub);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: 'Visit ended successfully',
+        data: visit,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }
 
 export default VisitController;

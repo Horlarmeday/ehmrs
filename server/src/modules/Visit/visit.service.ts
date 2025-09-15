@@ -457,6 +457,30 @@ class VisitService {
   static async getPendingVisitPrescriptions(id: number) {
     return getPatientPendingPrescriptions(id);
   }
+
+  /**
+   * end a visit
+   *
+   * @static
+   * @returns {Promise<Visit>} json object with visit data
+   * @memberOf VisitService
+   * @param visitId
+   * @param staffId
+   */
+  static async endVisit(visitId: number, staffId: number): Promise<Visit> {
+    const visit = await getVisitById(visitId);
+
+    if (!visit) {
+      throw new BadException('INVALID', StatusCodes.NOT_FOUND, 'Visit not found');
+    }
+
+    if (visit.status === VisitStatus.ENDED) {
+      throw new BadException('INVALID', StatusCodes.BAD_REQUEST, 'Visit is already ended');
+    }
+
+    // End the visit using the repository function
+    return endVisit(visit);
+  }
 }
 
 export default VisitService;

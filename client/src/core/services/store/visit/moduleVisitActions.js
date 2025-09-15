@@ -8,11 +8,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/visits/create', visit)
-        .then(response => {
+        .then((response) => {
           commit('ADD_VISIT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -22,11 +22,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/visits/last-active`, visit)
-        .then(response => {
+        .then((response) => {
           commit('ADD_VISIT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -45,13 +45,13 @@ export default {
             filter: payload?.filter,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_ACTIVE_VISITS', response.data.data.docs);
           commit('SET_ACTIVE_VISITS_TOTAL', response.data.data.total);
           commit('SET_ACTIVE_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -61,11 +61,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/visits/${visitId}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_VISIT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -85,13 +85,13 @@ export default {
             end: payload.end,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_CATEGORY_VISITS', response.data.data.docs);
           commit('SET_CATEGORY_VISITS_TOTAL', response.data.data.total);
           commit('SET_CATEGORY_VISITS_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -110,13 +110,13 @@ export default {
             filter: payload?.filter,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_ASSIGNED_VISITS', response.data.data.docs);
           commit('SET_ASSIGNED_VISITS_TOTAL', response.data.data.total);
           commit('SET_ASSIGNED_VISITS_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -134,13 +134,13 @@ export default {
             end: payload.end,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_ALL_VISITS', response.data.data.docs);
           commit('SET_ALL_VISITS_TOTAL', response.data.data.total);
           commit('SET_ALL_VISITS_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -159,13 +159,13 @@ export default {
             filter: payload?.filter,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_PAST_VISITS', response.data.data.docs);
           commit('SET_PAST_VISITS_TOTAL', response.data.data.total);
           commit('SET_PAST_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -175,11 +175,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/visits/prescriptions/${visitId}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_VISIT_PRESCRIPTIONS', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -189,25 +189,45 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/visits/update/${payload.id}`, payload.data)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_VISIT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
   },
 
-  fetchPendingPrescriptions({ commit }, visitId) {
+  fetchPendingPrescriptions(context, visitId) {
     return new Promise((resolve, reject) => {
       axios
         .get(`/visits/pending-prescriptions/${visitId}`)
-        .then(response => {
-          commit('SET_PENDING_PRESCRIPTIONS', response.data.data);
+        .then((response) => {
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * End a visit
+   * @param commit
+   * @param visitId
+   * @returns {Promise<AxiosResponse<any>>}
+   */
+  endVisit({ commit }, visitId) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put(`/visits/end/${visitId}`)
+        .then((response) => {
+          // Update the visit in the store to reflect the ended status
+          commit('UPDATE_VISIT', response.data.data);
+          resolve(response);
+        })
+        .catch((error) => {
           reject(error);
         });
     });

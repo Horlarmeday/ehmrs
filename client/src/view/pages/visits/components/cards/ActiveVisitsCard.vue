@@ -1,5 +1,5 @@
 <template>
-  <div class="row">
+  <div>
     <search @search="onHandleSearch" @filterByDateRange="searchByDate" :show-date-filter="true" />
 
     <div class="card-body pr-0 pl-0">
@@ -10,12 +10,12 @@
           :key="visit.id"
           v-b-tooltip.hover
           :title="visit.patient.fullname"
-          style="min-width: 150px; position: relative;"
+          style="min-width: 150px; position: relative"
         >
           <router-link
             :to="`/visit/update/${visit.id}`"
             class="btn btn-xs btn-icon btn-circle btn-white btn-hover-text-primary btn-shadow"
-            style="position: absolute; top: -3px; right: -1px;"
+            style="position: absolute; top: -3px; right: -1px"
           >
             <i class="fa fa-pen icon-sm text-muted"></i>
           </router-link>

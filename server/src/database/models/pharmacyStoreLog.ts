@@ -8,7 +8,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { Unit } from './unit';
-import { Staff, Status } from './staff';
+import { Staff } from './staff';
 import { Drug, DrugForm } from './drug';
 import { Measurement } from './measurement';
 import { DosageForm } from './dosageForm';
@@ -34,6 +34,11 @@ export enum DrugType {
 export enum LogType {
   UPDATE = 'Update',
   REORDER = 'Reorder',
+}
+
+export enum Status {
+  ACTIVE = 'Active',
+  INACTIVE = 'Inactive',
 }
 
 @Table({ timestamps: true, tableName: 'Pharmacy_Store_Item_Logs' })

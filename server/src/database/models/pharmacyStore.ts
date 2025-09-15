@@ -9,7 +9,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { Unit } from './unit';
-import { Staff, Status } from './staff';
+import { Staff } from './staff';
 import { Drug, DrugForm } from './drug';
 import { Measurement } from './measurement';
 import { DosageForm } from './dosageForm';
@@ -32,6 +32,12 @@ export enum DrugType {
   RETAINERSHIP = 'Retainership',
   PLASCHEMA = 'Plaschema',
 }
+
+export enum Status {
+  ACTIVE = 'Active',
+  INACTIVE = 'Inactive',
+}
+
 @DefaultScope(() => ({
   where: {
     status: Status.ACTIVE,

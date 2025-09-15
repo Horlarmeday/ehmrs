@@ -21,9 +21,9 @@
 
           <b-tab lazy>
             <template v-slot:title>
-              <strong>Antenatal</strong>
+              <strong>Dialysis</strong>
             </template>
-            <visit-category category="Antenatal" />
+            <visit-category category="Dialysis" />
           </b-tab>
 
           <b-tab lazy>

@@ -19,7 +19,7 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
-import { PrescribedDrug, Source } from './prescribedDrug';
+import { PrescribedDrug } from './prescribedDrug';
 import { Antenatal } from './antenatal';
 import { PrescribedAdditionalItem } from './prescribedAdditionalItem';
 
@@ -27,6 +27,13 @@ export enum DrugStatus {
   PENDING = 'Pending',
   COMPLETE_DISPENSE = 'Complete Dispense',
   PARTIAL_DISPENSED = 'Partial Dispense',
+}
+
+export enum Source {
+  ANC = 'Antenatal',
+  CONSULTATION = 'Consultation',
+  THEATER = 'Theater',
+  IMMUNIZATION = 'Immunization',
 }
 
 @Table({ timestamps: true, tableName: 'Drug_Prescriptions' })
