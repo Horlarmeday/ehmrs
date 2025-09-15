@@ -329,21 +329,21 @@ export default {
 
     totalDrugsPrice() {
       if (!this.prescription?.drugs) return 0;
-      const totalPrice = this.prescription.drugs.map(pres => pres.total_price);
+      const totalPrice = this.prescription.drugs.map((pres) => pres.total_price);
       return totalPrice.reduce((acc, cur) => acc + +cur, 0);
     },
 
     totalItemsPrice() {
       if (!this.prescription?.items) return 0;
-      const totalPrice = this.prescription.items.map(pres => pres.total_price);
+      const totalPrice = this.prescription.items.map((pres) => pres.total_price);
       return totalPrice.reduce((acc, cur) => acc + +cur, 0);
     },
 
     nhisMappedTotalPrice() {
       if (!this.prescription?.drugs) return [];
       return this.prescription.drugs
-        ?.filter(drug => drug?.drug_type === 'NHIS')
-        .map(pres => pres.total_price);
+        ?.filter((drug) => drug?.drug_type === 'NHIS')
+        .map((pres) => pres.total_price);
     },
 
     nhis90PercentDrugsPrice() {
@@ -353,7 +353,7 @@ export default {
       );
       const totalActualPrice = mappedTotal10PercentPrice / 0.1;
       const sum = totalActualPrice * 0.9;
-      console.log(sum, 'sum')
+      console.log(sum, 'sum');
       return sum;
     },
 
@@ -367,15 +367,16 @@ export default {
 
     completedCount() {
       const drugsCompleted =
-        this.prescriptions?.filter(p => p.dispense_status === 'Dispensed').length || 0;
-      const itemsCompleted = this.items?.filter(i => i.dispense_status === 'Dispensed').length || 0;
+        this.prescriptions?.filter((p) => p.dispense_status === 'Dispensed').length || 0;
+      const itemsCompleted =
+        this.items?.filter((i) => i.dispense_status === 'Dispensed').length || 0;
       return drugsCompleted + itemsCompleted;
     },
 
     pendingCount() {
       const drugsPending =
-        this.prescriptions?.filter(p => p.dispense_status !== 'Dispensed').length || 0;
-      const itemsPending = this.items?.filter(i => i.dispense_status !== 'Dispensed').length || 0;
+        this.prescriptions?.filter((p) => p.dispense_status !== 'Dispensed').length || 0;
+      const itemsPending = this.items?.filter((i) => i.dispense_status !== 'Dispensed').length || 0;
       return drugsPending + itemsPending;
     },
 
@@ -384,14 +385,14 @@ export default {
 
       // Filter by search term
       if (this.drugSearchTerm) {
-        filtered = filtered.filter(drug =>
+        filtered = filtered.filter((drug) =>
           drug.drug_name.toLowerCase().includes(this.drugSearchTerm.toLowerCase())
         );
       }
 
       // Filter by status
       if (this.drugFilterStatus) {
-        filtered = filtered.filter(drug => drug.dispense_status === this.drugFilterStatus);
+        filtered = filtered.filter((drug) => drug.dispense_status === this.drugFilterStatus);
       }
 
       return filtered;
@@ -402,14 +403,14 @@ export default {
 
       // Filter by search term
       if (this.itemSearchTerm) {
-        filtered = filtered.filter(item =>
+        filtered = filtered.filter((item) =>
           item.item_name.toLowerCase().includes(this.itemSearchTerm.toLowerCase())
         );
       }
 
       // Filter by status
       if (this.itemFilterStatus) {
-        filtered = filtered.filter(item => item.dispense_status === this.itemFilterStatus);
+        filtered = filtered.filter((item) => item.dispense_status === this.itemFilterStatus);
       }
 
       return filtered;
@@ -434,8 +435,8 @@ export default {
 
     canComplete() {
       // Check if all drugs and items are dispensed
-      const allDrugsDispensed = this.prescriptions.every(p => p.dispense_status === 'Dispensed');
-      const allItemsDispensed = this.items.every(i => i.dispense_status === 'Dispensed');
+      const allDrugsDispensed = this.prescriptions.every((p) => p.dispense_status === 'Dispensed');
+      const allItemsDispensed = this.items.every((i) => i.dispense_status === 'Dispensed');
       return allDrugsDispensed && allItemsDispensed;
     },
 
@@ -477,7 +478,7 @@ export default {
           });
           this.fetchPrescription();
         })
-        .catch(error => {
+        .catch((error) => {
           this.$bvToast.toast('Failed to dispense drug', {
             title: 'Error',
             variant: 'danger',
@@ -506,7 +507,7 @@ export default {
           });
           this.fetchPrescription();
         })
-        .catch(error => {
+        .catch((error) => {
           this.$bvToast.toast('Failed to return drug', {
             title: 'Error',
             variant: 'danger',
@@ -520,12 +521,12 @@ export default {
     handleDispenseItem(event) {
       const { item, index, quantity } = event;
       const obj = {
-        item_id: item.id,
+        additional_item_id: item.id,
         quantity_to_dispense: quantity,
       };
 
       this.$store
-        .dispatch('pharmacy/dispenseItem', { id: this.$route.params.id, data: obj })
+        .dispatch('pharmacy/dispenseDrug', { id: this.$route.params.id, data: obj })
         .then(() => {
           this.$bvToast.toast('Item dispensed successfully', {
             title: 'Success',
@@ -534,7 +535,7 @@ export default {
           });
           this.fetchPrescription();
         })
-        .catch(error => {
+        .catch((error) => {
           this.$bvToast.toast('Failed to dispense item', {
             title: 'Error',
             variant: 'danger',
@@ -548,13 +549,13 @@ export default {
     handleReturnItem(event) {
       const { item, index, quantity, reason } = event;
       const obj = {
-        item_id: item.id,
+        additional_item_id: item.id,
         quantity_to_return: quantity,
         reason_for_return: reason,
       };
 
       this.$store
-        .dispatch('pharmacy/returnItem', { id: this.$route.params.id, data: obj })
+        .dispatch('pharmacy/returnDrug', { id: this.$route.params.id, data: obj })
         .then(() => {
           this.$bvToast.toast('Item returned successfully', {
             title: 'Success',
@@ -563,7 +564,7 @@ export default {
           });
           this.fetchPrescription();
         })
-        .catch(error => {
+        .catch((error) => {
           this.$bvToast.toast('Failed to return item', {
             title: 'Error',
             variant: 'danger',
@@ -582,7 +583,7 @@ export default {
       if (!val) return;
 
       this.prescriptions =
-        val.drugs?.map(drug => ({
+        val.drugs?.map((drug) => ({
           id: drug.id,
           drug_name: drug.drug.name,
           drug_type: drug.drug_type,
@@ -618,7 +619,7 @@ export default {
         })) || [];
 
       this.items =
-        val.items?.map(item => ({
+        val.items?.map((item) => ({
           id: item.id,
           item_name: item.drug.name,
           drug_type: item.drug_type,

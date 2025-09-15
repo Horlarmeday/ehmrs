@@ -294,6 +294,10 @@ export default {
           return 'Pending';
         case 'Failed':
           return 'Failed';
+        case 'Permitted':
+          return 'Permitted';
+        case 'Cleared':
+          return 'Cleared';
         default:
           return 'Unknown';
       }
@@ -307,6 +311,10 @@ export default {
           return 'Awaiting payment';
         case 'Failed':
           return 'Payment failed';
+        case 'Permitted':
+          return 'Payment Deferred';
+        case 'Cleared':
+          return 'Payment Cleared';
         default:
           return 'Payment status unknown';
       }
