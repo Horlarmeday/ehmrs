@@ -9,7 +9,7 @@ import {
 import { Op, WhereOptions } from 'sequelize';
 import { dateIntervalQuery, patientAttributes, staffAttributes } from '../../core/helpers/helper';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
-import sequelizeConnection from '../../database/config/config';
+import sequelizeConnection from '../../database/config/data-source';
 import { ServiceType } from '../../database/models/prescribedService';
 import { BadException } from '../../common/util/api-error';
 

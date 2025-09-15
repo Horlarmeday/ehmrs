@@ -22,7 +22,7 @@ import {
   ItemRequestStatus,
 } from '../../../database/models/generalStore/types';
 import { Op } from 'sequelize';
-import sequelizeConnection from '../../../database/config/config';
+import sequelizeConnection from '../../../database/config/data-source';
 
 export interface CreateDispensaryDto {
   name: string;

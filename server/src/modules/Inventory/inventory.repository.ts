@@ -16,7 +16,7 @@ import {
 } from '../../database/models';
 import { RequestReturnToStore, UpdateReturnRequest } from './types/inventory.types';
 import { dateIntervalQuery, staffAttributes } from '../../core/helpers/helper';
-import sequelizeConnection from '../../database/config/config';
+import sequelizeConnection from '../../database/config/data-source';
 import { HistoryType } from '../../database/models/inventoryItemHistory';
 import { getOnePharmacyStoreItem } from '../Store/store.repository';
 import { Status } from '../../database/models/returnItem';

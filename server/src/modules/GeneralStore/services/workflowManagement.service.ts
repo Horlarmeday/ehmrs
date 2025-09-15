@@ -16,7 +16,7 @@ import {
   MovementType,
 } from '../../../database/models/generalStore/types';
 import { Op } from 'sequelize';
-import sequelizeConnection from '../../../database/config/config';
+import sequelizeConnection from '../../../database/config/data-source';
 import { staffAttributes } from '../../../core/helpers/helper';
 
 export interface ApprovalDto {

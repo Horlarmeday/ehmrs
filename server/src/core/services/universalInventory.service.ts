@@ -1,5 +1,5 @@
 import { Transaction, Op } from 'sequelize';
-import sequelizeConnection from '../../database/config/config';
+import sequelizeConnection from '../../database/config/data-source';
 import { BadException } from '../../common/util/api-error';
 import {
   GeneralStoreDispensary,

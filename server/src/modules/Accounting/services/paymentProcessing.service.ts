@@ -33,7 +33,7 @@ import {
 import { PaymentValidationService, PaymentValidationContext } from './paymentValidation.service';
 import { logger } from '../../../core/helpers/logger';
 import { PatientDepositService } from './patientDeposit.service';
-import sequelizeConnection from '../../../database/config/config';
+import sequelizeConnection from '../../../database/config/data-source';
 import { PaymentItemStatus } from '../../../database/models/clinicalPaymentItem';
 
 // ===== PAYMENT RESULT INTERFACES =====

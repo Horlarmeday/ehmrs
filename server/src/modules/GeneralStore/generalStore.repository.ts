@@ -16,7 +16,7 @@ import { Staff } from '../../database/models/staff';
 import { Vendor } from '../../database/models/vendor';
 import { Unit } from '../../database/models/unit';
 import { BadException } from '../../common/util/api-error';
-import sequelizeConnection from '../../database/config/config';
+import sequelizeConnection from '../../database/config/data-source';
 
 export class GeneralStoreRepository {
   // Category Management

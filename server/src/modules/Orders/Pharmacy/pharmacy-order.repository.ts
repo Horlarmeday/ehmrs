@@ -35,7 +35,7 @@ import {
   ERROR_UPDATING_ITEM,
   INJECTION_SYRINGES_NOT_FOUND,
 } from './messages/response-messages';
-import sequelizeConnection from '../../../database/config/config';
+import sequelizeConnection from '../../../database/config/data-source';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
 import { logger } from '../../../core/helpers/logger';
 import { ClinicalBill } from '../../../database/models/clinicalBill';

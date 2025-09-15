@@ -20,7 +20,7 @@ import {
 import { getModelById, getPeriodQuery } from '../../core/helpers/general';
 import { InvestigationStatus as Status } from '../../database/models/investigationPrescription';
 import { InvestigationStatus } from '../../database/models/prescribedInvestigation';
-import sequelizeConnection from '../../database/config/config';
+import sequelizeConnection from '../../database/config/data-source';
 import { ResultStatus } from '../../database/models/testResult';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { CreateInvestigationDto, Result } from './dto/radiology.dto';

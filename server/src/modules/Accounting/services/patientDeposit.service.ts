@@ -22,7 +22,7 @@ import { DepositAuditService } from './depositAudit.service';
 import { JournalEntry } from '../../../database/models/journalEntry';
 import { POSTerminal } from '../../../database/models/posTerminal';
 import { FinancialPeriodValidationService } from './financialPeriodValidation.service';
-import sequelizeConnection from '../../../database/config/config';
+import sequelizeConnection from '../../../database/config/data-source';
 import { logger } from '../../../core/helpers/logger';
 
 export interface CreateDepositData {

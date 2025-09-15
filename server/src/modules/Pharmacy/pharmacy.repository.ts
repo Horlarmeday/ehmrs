@@ -32,7 +32,7 @@ import {
 } from '../../database/models';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { DispenseStatus } from '../../database/models/prescribedDrug';
-import sequelizeConnection from '../../database/config/config';
+import sequelizeConnection from '../../database/config/data-source';
 import { HistoryType } from '../../database/models/inventoryItemHistory';
 import { DrugStatus } from '../../database/models/drugPrescription';
 import { DispenseDrugType, ReturnDrugType } from './interface/prescribed-drug.type';

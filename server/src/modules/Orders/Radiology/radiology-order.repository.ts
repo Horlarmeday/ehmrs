@@ -14,7 +14,7 @@ import { staffAttributes } from '../../Antenatal/antenatal.repository';
 import { getDrugType, StatusCodes } from '../../../core/helpers/helper';
 import { BadException } from '../../../common/util/api-error';
 import { ERROR_UPDATING_INVESTIGATION, HSG_ITEMS_MISSING } from './messages/response-messages';
-import sequelizeConnection from '../../../database/config/config';
+import sequelizeConnection from '../../../database/config/data-source';
 import { getOneDefault } from '../../AdminSettings/admin.repository';
 import { DefaultType } from '../../../database/models/default';
 import { DrugForm } from '../../../database/models/drug';

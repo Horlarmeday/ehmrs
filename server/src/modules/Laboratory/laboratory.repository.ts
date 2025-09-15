@@ -29,7 +29,7 @@ import {
 } from '../../core/helpers/helper';
 import { chain } from 'lodash';
 import { PrescriptionType, TestStatus } from '../../database/models/prescribedTest';
-import sequelizeConnection from '../../database/config/config';
+import sequelizeConnection from '../../database/config/data-source';
 import { ResultStatus } from '../../database/models/testResult';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { BadException } from '../../common/util/api-error';

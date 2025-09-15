@@ -50,8 +50,7 @@ import { BadException } from '../../common/util/api-error';
 import { AccountCodeConflictResolutionService } from './services/accountCodeConflictResolution.service';
 import { logger } from '../../core/helpers/logger';
 import { paginate } from '../../core/helpers/helper';
-import sequelize from 'sequelize';
-import sequelizeConnection from '../../database/config/config';
+import sequelizeConnection from '../../database/config/data-source';
 
 export class AccountingRepository {
   // ===== PHASE 1: CORE FINANCIAL FOUNDATION METHODS =====

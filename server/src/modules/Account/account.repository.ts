@@ -1,4 +1,4 @@
-import sequelizeConnection from '../../database/config/config';
+import sequelizeConnection from '../../database/config/data-source';
 import {
   Payment,
   PaymentHistory,

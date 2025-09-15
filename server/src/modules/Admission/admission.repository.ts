@@ -1,5 +1,4 @@
-import sequelize from '../../database/config/config';
-import sequelizeConnection from '../../database/config/config';
+import sequelizeConnection from '../../database/config/data-source';
 import { Op, Optional, Transaction, WhereOptions } from 'sequelize';
 import {
   Admission,
@@ -97,7 +96,7 @@ export const admitPatient = async (data: AdmissionBodyType) => {
     }
   }
 
-  return sequelize.transaction(async (t: Transaction) => {
+  return sequelizeConnection.transaction(async (t: Transaction) => {
     const admission = await Admission.create(
       {
         ...data,
@@ -795,7 +794,7 @@ const getPatientStatusUpdate = (discharge_type: DischargeType): PatientStatusUpd
  */
 export const dischargePatient = async (data: DischargePatientType) => {
   const { discharged_by, patient_id, admission_id, discharge_type } = data;
-  return await sequelize.transaction(async (t: Transaction) => {
+  return await sequelizeConnection.transaction(async (t: Transaction) => {
     const admission = await Admission.findOne({ where: { id: admission_id }, transaction: t });
     // create discharge record
     const discharge = await Discharge.create({ ...data }, { transaction: t });

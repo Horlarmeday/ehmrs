@@ -16,7 +16,7 @@ import {
   InventoryItemHistory,
   Vendor,
 } from '../../database/models';
-import sequelizeConnection from '../../database/config/config';
+import sequelizeConnection from '../../database/config/data-source';
 import { HistoryType } from '../../database/models/inventoryItemHistory';
 import { ItemsToReorder } from './types/pharmacy-item.types';
 import { BadException } from '../../common/util/api-error';
