@@ -37,7 +37,7 @@ import { logger } from '../../core/helpers/logger';
 import { Op } from 'sequelize';
 import { BillingStatus, HMOClaimStatus } from '../../modules/Accounting/enums';
 import { AppointmentStatus } from '../../database/models/appointment';
-import { PatientStatus } from '../../database/models/patient';
+import { PatientStatus, Status } from '../../database/models/patient';
 import { DispenseStatus, PaymentStatus } from '../../database/models/prescribedDrug';
 
 class PatientService {
@@ -399,6 +399,7 @@ class PatientService {
 
     const updateData = {
       patient_status: PatientStatus.DECEASED,
+      status: Status.INACTIVE,
       date_of_death: deathData.date_of_death,
       cause_of_death: deathData.cause_of_death || null,
       death_certificate_number: certificateNumber,
