@@ -313,6 +313,8 @@
 
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex';
+import { parseJwt } from '@/common/common';
+import dayjs from 'dayjs';
 
 export default {
   name: 'AppointmentsHome',
@@ -322,6 +324,7 @@ export default {
       loadingTodays: false,
       lastUpdated: '',
       refreshInterval: null,
+      currentUser: parseJwt(localStorage.getItem('user_token')),
     };
   },
   computed: {
@@ -330,7 +333,7 @@ export default {
     ...mapGetters('appointments', ['appointmentStats']),
 
     canBookAppointments() {
-      return this.user && ['Reception', 'Medical Records'].includes(this.user.role);
+      return this.user && ['Reception', 'Medical Records'].includes(this.currentUser.role);
     },
 
     stats() {
@@ -382,7 +385,7 @@ export default {
       this.loading = true;
       try {
         await this.loadTodaysAppointments();
-        this.lastUpdated = this.$dayjs().format('h:mm A');
+        this.lastUpdated = dayjs().format('h:mm A');
       } catch (error) {
         this.$bvToast.toast('Failed to refresh dashboard', {
           title: 'Error',

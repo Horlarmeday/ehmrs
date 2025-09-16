@@ -21,7 +21,7 @@
             ref="video"
             id="video"
             v-show="!image && !photoSaved"
-            style="height:1px;width:120px;margin-bottom:20px;"
+            style="height: 1px; width: 120px; margin-bottom: 20px"
             autoplay
           ></video>
           <canvas ref="canvas" id="canvas" width="250" height="187" v-show="image"> </canvas>
@@ -29,7 +29,7 @@
             id="snap"
             v-if="!image && !photoSaved && !videoShowing"
             class="btn btn-success btn-sm mt-4"
-            style="display: block;"
+            style="display: block"
             @click="startCamera()"
           >
             Take Photo
@@ -38,7 +38,7 @@
             id="snap"
             v-if="!image && !photoSaved && videoShowing"
             class="btn btn-success btn-sm"
-            style="display: block;"
+            style="display: block"
             @click="capture()"
           >
             Snap Photo
@@ -150,7 +150,7 @@
               v-model="patient.marital_status"
               name="marital_status"
             >
-              <option value="Married">Married </option>
+              <option value="Married">Married</option>
               <option value="Single">Single</option>
               <option value="Widow">Widow</option>
               <option value="Widower">Widower</option>
@@ -171,7 +171,8 @@
                 v-for="country in countries"
                 :key="country.id"
                 :value="{ id: country.id, text: country.name }"
-                >{{ country.name }}
+              >
+                {{ country.name }}
               </option>
             </select>
           </div>
@@ -187,7 +188,8 @@
                 v-for="state in states"
                 :key="state.id"
                 :value="{ id: state.id, text: state.name }"
-                >{{ state.name }}
+              >
+                {{ state.name }}
               </option>
             </select>
           </div>
@@ -198,7 +200,8 @@
                 v-for="city in cities"
                 :key="city.id"
                 :value="{ id: city.id, text: city.name }"
-                >{{ city.name }}
+              >
+                {{ city.name }}
               </option>
             </select>
           </div>
@@ -405,7 +408,7 @@ export default {
       this.video = this.$refs.video;
       this.video.style = 'display:block;width:250px;margin-bottom:20px;';
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+        navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
           this.video.srcObject = stream;
           this.video.play();
         });
@@ -416,7 +419,7 @@ export default {
       const stream = videoElem.srcObject;
       const tracks = stream.getTracks();
 
-      tracks.forEach(function(track) {
+      tracks.forEach(function (track) {
         track.stop();
       });
 
@@ -450,12 +453,13 @@ export default {
 
     endRequest(response, submitButton) {
       this.removeSpinner(submitButton);
+      this.$router.push(`/patient/profile/${response.data.data.id}`);
       this.stopStreamedVideo(this.video);
       this.handleResponse(response);
     },
 
     updatePatient() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           // set spinner to submit button
           const submitButton = this.$refs['kt-submit'];

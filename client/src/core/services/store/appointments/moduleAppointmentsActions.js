@@ -55,12 +55,11 @@ export default {
       };
 
       axios
-        .get('/appointments', { params: queryParams })
+        .get('/appointments/get', { params: queryParams })
         .then(response => {
-          const { rows, count } = response.data.data;
-          commit('SET_APPOINTMENTS', rows);
-          commit('SET_APPOINTMENTS_TOTAL', count);
-          commit('SET_APPOINTMENTS_PAGES', Math.ceil(count / queryParams.pageLimit));
+          commit('SET_APPOINTMENTS', response.data.data.docs);
+          commit('SET_APPOINTMENTS_TOTAL', response.data.data.total);
+          commit('SET_APPOINTMENTS_PAGES', response.data.data.pages);
           commit('SET_CURRENT_PAGE', queryParams.currentPage);
           commit('SET_LOADING', false);
           resolve(response);

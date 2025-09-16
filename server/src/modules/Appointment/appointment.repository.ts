@@ -42,7 +42,6 @@ export async function getAppointments(query: any) {
     department,
   } = query;
 
-  const { limit, offset } = calcLimitAndOffset(currentPage, pageLimit);
   const where: WhereOptions = {};
 
   // Apply filters
@@ -72,6 +71,7 @@ export async function getAppointments(query: any) {
       { '$patient.firstname$': { [Op.like]: `%${search}%` } },
       { '$patient.lastname$': { [Op.like]: `%${search}%` } },
       { '$patient.phone$': { [Op.like]: `%${search}%` } },
+      { '$patient.hospital_id': { [Op.like]: `%${search}%` } },
       { '$doctor.firstname$': { [Op.like]: `%${search}%` } },
       { '$doctor.lastname$': { [Op.like]: `%${search}%` } },
       { reason_for_visit: { [Op.like]: `%${search}%` } },
@@ -80,10 +80,10 @@ export async function getAppointments(query: any) {
     (where as any)[Op.or] = searchConditions;
   }
 
-  return Appointment.findAndCountAll({
+  return Appointment.paginate({
     where,
-    limit,
-    offset,
+    page: currentPage,
+    paginate: pageLimit,
     order: [
       ['appointment_date', 'DESC'],
       ['appointment_time', 'ASC'],

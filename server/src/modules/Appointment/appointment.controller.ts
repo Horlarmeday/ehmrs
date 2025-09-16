@@ -85,8 +85,14 @@ class AppointmentController {
         // Handle filters
         filters: {
           // Handle date parameter mapping
-          start_date: req.query.start || req.query.date_from ? new Date(req.query.start as string || req.query.date_from as string) : undefined,
-          end_date: req.query.end || req.query.date_to ? new Date(req.query.end as string || req.query.date_to as string) : undefined,
+          start_date:
+            req.query.start || req.query.date_from
+              ? new Date((req.query.start as string) || (req.query.date_from as string))
+              : undefined,
+          end_date:
+            req.query.end || req.query.date_to
+              ? new Date((req.query.end as string) || (req.query.date_to as string))
+              : undefined,
           // Handle other filter parameters
           patient_id: req.query.patient_id ? Number(req.query.patient_id) : undefined,
           doctor_id: req.query.doctor_id ? Number(req.query.doctor_id) : undefined,
