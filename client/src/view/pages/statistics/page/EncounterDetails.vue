@@ -203,8 +203,8 @@
 
 <script>
 import { mapState, mapActions } from 'vuex';
-import moment from 'moment';
 import EncounterActionsView from '@/components/EncounterActionsView.vue';
+import dayjs from 'dayjs';
 
 export default {
   name: 'EncounterDetails',
@@ -250,14 +250,14 @@ export default {
     ...mapState('model', ['encounterDetails', 'encounterActions', 'encounterDetailsLoading']),
     chartSeries() {
       if (!this.encounterDetails?.summary?.encountersByType) return [];
-      return this.encounterDetails.summary.encountersByType.map(type => type.count);
+      return this.encounterDetails.summary.encountersByType.map((type) => type.count);
     },
     chartOptions() {
       return {
         chart: {
           type: 'donut',
         },
-        labels: this.encounterDetails?.summary?.encountersByType?.map(type => type.type) || [],
+        labels: this.encounterDetails?.summary?.encountersByType?.map((type) => type.type) || [],
         colors: ['#007bff', '#28a745', '#ffc107', '#dc3545', '#6f42c1', '#fd7e14'],
         legend: {
           show: false,
@@ -271,7 +271,7 @@ export default {
         },
         dataLabels: {
           enabled: true,
-          formatter: function(val) {
+          formatter: function (val) {
             return Math.round(val) + '%';
           },
         },
@@ -306,10 +306,10 @@ export default {
       this.showActionsModal = true;
     },
     formatDate(date) {
-      return moment(date).format('MMM DD, YYYY');
+      return dayjs(date).format('MMM DD, YYYY');
     },
     formatTime(date) {
-      return moment(date).format('hh:mm A');
+      return dayjs(date).format('hh:mm A');
     },
     getEncounterTypeVariant(type) {
       const variants = {

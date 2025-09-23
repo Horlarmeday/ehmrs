@@ -72,9 +72,9 @@
       <div class="info-card">
         <div class="info-icon">💰</div>
         <div class="info-content">
-          <div class="info-label">UNIT PRICE</div>
-          <div class="info-value">₦{{ unitPrice }}</div>
-          <div class="info-unit">per {{ prescription.dosage_form }}</div>
+          <div class="info-label">PRESCRIBED BY</div>
+          <div class="info-value">{{ prescription?.staff?.fullname || 'Unknown' }}</div>
+          <div class="info-unit">Examiner</div>
         </div>
       </div>
     </div>
@@ -122,6 +122,15 @@
       </div>
 
       <div class="detail-card">
+        <div class="detail-icon">🏷️</div>
+        <div class="detail-content">
+          <div class="detail-label">DRUG TYPE</div>
+          <div class="detail-value">{{ prescription.drug_type }}</div>
+          <div class="detail-description">category</div>
+        </div>
+      </div>
+
+      <div class="detail-card">
         <div class="detail-icon">📅</div>
         <div class="detail-content">
           <div class="detail-label">DISPENSED</div>
@@ -146,9 +155,9 @@
       <div class="detail-card">
         <div class="detail-icon">💎</div>
         <div class="detail-content">
-          <div class="detail-label">TOTAL</div>
+          <div class="detail-label">TOTAL COST</div>
           <div class="detail-value">₦{{ prescription.total_price }}</div>
-          <div class="detail-description">total cost</div>
+          <div class="detail-description">per ₦{{ unitPrice }} unit cost</div>
         </div>
       </div>
     </div>

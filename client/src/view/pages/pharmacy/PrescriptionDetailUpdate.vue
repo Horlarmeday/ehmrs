@@ -96,7 +96,9 @@
                 <div class="payment-card">
                   <div class="payment-icon">💳</div>
                   <div class="payment-content">
-                    <div class="payment-main">₦{{ totalDrugsPrice + totalItemsPrice }}</div>
+                    <div class="payment-main">
+                      ₦{{ formatCurrency(totalDrugsPrice + totalItemsPrice) }}
+                    </div>
                     <div class="payment-details">
                       {{
                         !isEmpty(prescription?.insurance)
@@ -146,7 +148,9 @@
           <div class="metric-icon">💰</div>
           <div class="metric-content">
             <div class="metric-label">TOTAL VALUE</div>
-            <div class="metric-value">₦{{ totalDrugsPrice + totalItemsPrice || 0 }}</div>
+            <div class="metric-value">
+              ₦{{ formatCurrency(totalDrugsPrice + totalItemsPrice || 0) }}
+            </div>
             <div class="metric-description">
               {{
                 !isEmpty(prescription?.insurance)
@@ -159,7 +163,7 @@
         <div class="metric-card">
           <div class="metric-icon">📅</div>
           <div class="metric-content">
-            <div class="metric-label">PRESCRIBED</div>
+            <div class="metric-label">DATE PRESCRIBED</div>
             <div class="metric-value">{{ formatDate(prescription?.createdAt) }}</div>
             <div class="metric-description">by {{ prescription?.examiner?.fullname }}</div>
           </div>
@@ -418,6 +422,13 @@ export default {
   },
   methods: {
     isEmpty,
+    formatCurrency(amount) {
+      if (typeof amount !== 'number') return '0.00';
+      return amount.toLocaleString('en-NG', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+    },
     hideModal() {
       this.displayPrompt = false;
     },
