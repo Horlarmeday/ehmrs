@@ -5,11 +5,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/triage/create/${payload.visit_id}`, payload.triage)
-        .then(response => {
+        .then((response) => {
           commit('ADD_TRIAGE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -23,11 +23,11 @@ export default {
             patientId: payload.patientId,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_TRIAGE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -37,11 +37,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/triage/visit/get/${payload.visit_id}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_TRIAGE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -57,13 +57,13 @@ export default {
             filter: payload.filter,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_TRIAGES', response.data.data.docs);
           commit('SET_TRIAGES_TOTAL', response.data.data.total);
           commit('SET_TRIAGES_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });

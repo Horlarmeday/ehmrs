@@ -4,7 +4,7 @@
       :display-prompt="displayPrompt"
       @closeModal="hideModal"
       :items-to-request="itemsToRequest"
-      @updateItemsToRequest="value => (itemsToRequest = value)"
+      @updateItemsToRequest="(value) => (itemsToRequest = value)"
     />
     <!--begin::Header-->
     <div class="card-header border-0 py-5">

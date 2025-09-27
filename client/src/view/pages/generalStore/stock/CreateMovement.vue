@@ -143,9 +143,7 @@
                   <div v-if="errors.reference_id" class="invalid-feedback d-block">
                     {{ errors.reference_id }}
                   </div>
-                  <small class="form-text text-muted">
-                    Reference number or identifier
-                  </small>
+                  <small class="form-text text-muted"> Reference number or identifier </small>
                 </div>
 
                 <div class="col-md-6 mb-3">
@@ -177,9 +175,7 @@
                   <div v-if="errors.to_location" class="invalid-feedback d-block">
                     {{ errors.to_location }}
                   </div>
-                  <small class="form-text text-muted">
-                    Destination location
-                  </small>
+                  <small class="form-text text-muted"> Destination location </small>
                 </div>
 
                 <div class="col-12 mb-3">
@@ -508,7 +504,7 @@ export default {
 
     handleItemChange() {
       if (this.form.item_id) {
-        this.selectedItem = this.availableItems.find(item => item.id === this.form.item_id);
+        this.selectedItem = this.availableItems.find((item) => item.id === this.form.item_id);
         if (this.selectedItem) {
           this.form.unit_cost = this.selectedItem.unit_cost || '';
           this.handleMovementTypeChange();
@@ -671,7 +667,7 @@ export default {
         if (movementData.unit_cost) movementData.unit_cost = parseFloat(movementData.unit_cost);
 
         // Remove empty optional fields
-        Object.keys(movementData).forEach(key => {
+        Object.keys(movementData).forEach((key) => {
           if (movementData[key] === '' || movementData[key] === null) {
             delete movementData[key];
           }

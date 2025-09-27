@@ -590,21 +590,32 @@ export default {
   data() {
     return {
       loading: false,
-      dashboardStats: {
-        totalItems: 0,
-        activeItems: 0,
-        lowStockItems: 0,
-        totalValue: 0,
-        itemsGrowth: 0,
-        activeGrowth: 0,
-        lowStockGrowth: 0,
-        valueGrowth: 0,
-      },
-      recentReports: [],
     };
   },
   async created() {
     await this.loadDashboardData();
+  },
+  computed: {
+    storeLoading() {
+      return this.$store.state.generalStore.loading;
+    },
+    dashboardStats() {
+      return (
+        this.$store.state.generalStore.dashboardStats || {
+          totalItems: 0,
+          activeItems: 0,
+          lowStockItems: 0,
+          totalValue: 0,
+          itemsGrowth: 0,
+          activeGrowth: 0,
+          lowStockGrowth: 0,
+          valueGrowth: 0,
+        }
+      );
+    },
+    recentReports() {
+      return this.$store.state.generalStore.recentReports || [];
+    },
   },
   methods: {
     async loadDashboardData() {
@@ -612,7 +623,6 @@ export default {
       try {
         // Load dashboard statistics
         await this.$store.dispatch('generalStore/fetchDashboardStats');
-        this.dashboardStats = this.$store.state.generalStore.dashboardStats;
 
         // Load recent reports
         await this.loadRecentReports();
@@ -627,7 +637,6 @@ export default {
     async loadRecentReports() {
       try {
         await this.$store.dispatch('generalStore/fetchRecentReports');
-        this.recentReports = this.$store.state.generalStore.recentReports || [];
       } catch (error) {
         this.$logError('Error loading recent reports', error);
         // Fallback to empty array if API fails
@@ -785,7 +794,10 @@ export default {
 
     async exportUserActivityReport() {
       try {
-        this.$router.push({ name: 'general-store-movement-report', query: { view: 'user_activity' } });
+        this.$router.push({
+          name: 'general-store-movement-report',
+          query: { view: 'user_activity' },
+        });
       } catch (error) {
         this.$logError('Failed to navigate to user activity report', error);
         this.$toast.error('Failed to open user activity report');
@@ -859,7 +871,7 @@ export default {
         await this.$exportData([reportData], reportName, 'xlsx', {
           formatters: {
             generated_at: (value) => new Date(value).toLocaleDateString(),
-          }
+          },
         });
       } catch (error) {
         this.$logError('Failed to export all reports', error);

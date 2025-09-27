@@ -104,7 +104,7 @@ export default {
       this.initValues();
     },
     createImaging() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             imaging_id: this.imaging_id,

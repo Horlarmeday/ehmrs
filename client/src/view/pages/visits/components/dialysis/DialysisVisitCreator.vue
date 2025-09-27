@@ -22,7 +22,7 @@
                   v-model="formData.patient_id"
                   :options="availablePatients"
                   label="fullname"
-                  :reduce="patient => patient.id"
+                  :reduce="(patient) => patient.id"
                   placeholder="Select patient..."
                   class="form-control"
                   required
@@ -125,7 +125,7 @@
                   v-model="formData.doctor_id"
                   :options="availableDoctors"
                   label="fullname"
-                  :reduce="doctor => doctor.id"
+                  :reduce="(doctor) => doctor.id"
                   placeholder="Select doctor..."
                   class="form-control"
                   required
@@ -142,7 +142,7 @@
                   v-model="formData.nurse_id"
                   :options="availableNurses"
                   label="fullname"
-                  :reduce="nurse => nurse.id"
+                  :reduce="(nurse) => nurse.id"
                   placeholder="Select nurse..."
                   class="form-control"
                 />

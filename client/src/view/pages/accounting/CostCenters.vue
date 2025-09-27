@@ -251,9 +251,7 @@
         </div>
       </b-form>
       <template #modal-footer>
-        <b-button variant="secondary" @click="showModal = false">
-          Cancel
-        </b-button>
+        <b-button variant="secondary" @click="showModal = false"> Cancel </b-button>
         <b-button variant="primary" @click="saveCostCenter" :disabled="saving">
           <span v-if="saving"> <i class="fas fa-spinner fa-spin mr-2"></i>Saving... </span>
           <span v-else>
@@ -326,7 +324,7 @@ export default {
         console.log('🏢 Departments from store:', departments);
         this.departmentOptions = [
           { value: '', text: 'Select Department' },
-          ...departments.map(dept => ({
+          ...departments.map((dept) => ({
             value: dept.id,
             text: dept.name,
           })),
@@ -366,7 +364,7 @@ export default {
     },
 
     editCenter(id) {
-      const center = this.costCenters.find(c => c.id === id);
+      const center = this.costCenters.find((c) => c.id === id);
       if (center) {
         this.centerForm = {
           id: center.id,

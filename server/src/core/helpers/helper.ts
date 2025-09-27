@@ -19,10 +19,12 @@ import { Op } from 'sequelize';
 import { padNumberWithZero } from './general';
 import { PrescribedAdditionalItemBody } from '../../modules/Orders/Pharmacy/interface/prescribed-drug.body';
 import { getOneService } from '../../modules/AdminSettings/admin.repository';
-import { getTestPrescription } from '../../modules/Laboratory/laboratory.repository';
+import { getOneTest, getTestPrescription } from '../../modules/Laboratory/laboratory.repository';
 import { DrugType } from '../../database/models/pharmacyStore';
 import { prescribeService } from '../../modules/Orders/Service/service-order.repository';
 import { chain } from 'lodash';
+import { prescribeTest } from '../../modules/Orders/Laboratory/lab-order.repository';
+import { LabOrderService } from '../../modules/Orders/Laboratory/lab-order.service';
 
 const writeFile = promisify(fs.writeFile);
 
@@ -305,7 +307,7 @@ export const insertSingleOrMultipleServices = async ({
     } else {
       const service = await getOneService({ id: service_id });
       await prescribeService({
-        service_id,
+        service_id: service.id,
         service_type: 'Cash',
         price: service.price,
         patient_id,
@@ -316,6 +318,15 @@ export const insertSingleOrMultipleServices = async ({
     }
   }
   return;
+};
+
+export const insertPrescribedTests = async ({ test_id, visit_id, patient_id, staff_id, ante_natal_id }) => {
+  if (!test_id) return;
+  await Promise.all(
+    test_id?.map(async id => {
+      await LabOrderService.prescribeTestService({ test_id: id, visit_id, patient_id, requester: staff_id, ante_natal_id });
+    })
+  );
 };
 
 export const groupDataByField = ({

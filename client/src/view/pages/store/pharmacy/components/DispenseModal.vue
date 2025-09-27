@@ -43,8 +43,8 @@
                 v-for="(inventory, i) in getRightInventory(item)"
                 :key="i"
               >
-                {{ inventory.name }}</option
-              >
+                {{ inventory.name }}
+              </option>
             </select>
           </div>
           <div class="col-lg-3">
@@ -53,7 +53,7 @@
               @search="searchStaffs"
               v-model="item.receiver"
               label="fullname"
-              :reduce="staffs => staffs.id"
+              :reduce="(staffs) => staffs.id"
               :options="staffs"
             />
           </div>
@@ -178,7 +178,7 @@ export default {
       this.$store
         .dispatch('store/dispensePharmacyItems', itemsToDispense)
         .then(() => this.endRequest(submitButton))
-        .catch(err => {
+        .catch((err) => {
           this.removeSpinner(submitButton);
           this.error = err?.message;
         });

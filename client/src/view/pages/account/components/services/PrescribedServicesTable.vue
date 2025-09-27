@@ -95,7 +95,7 @@ export default {
     },
 
     disableBilling() {
-      return this.services.every(service => service.billing_status === 'Billed');
+      return this.services.every((service) => service.billing_status === 'Billed');
     },
   },
   created() {
@@ -113,13 +113,13 @@ export default {
     },
 
     isSelected(service) {
-      return this.selectedServices.some(d => d.id === service.id);
+      return this.selectedServices.some((d) => d.id === service.id);
     },
 
     toggleItem(service) {
       if (this.isSelected(service)) {
         // If the item is already selected, remove it from selectedItems
-        const itemIndex = this.selectedServices.findIndex(d => d.id === service.id);
+        const itemIndex = this.selectedServices.findIndex((d) => d.id === service.id);
         this.selectedServices.splice(itemIndex, 1);
       } else {
         // If the item is not selected, add it to selectedItems

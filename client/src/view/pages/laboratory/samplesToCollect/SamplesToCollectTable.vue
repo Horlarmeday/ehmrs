@@ -29,7 +29,7 @@
             </tr>
           </tbody>
           <tbody v-for="sample in samples" :key="sample.id">
-            <tr>
+            <tr :class="{ disabled: sample.has_paid === false }">
               <td class="pl-4">
                 <div class="d-flex align-items-center">
                   <div>

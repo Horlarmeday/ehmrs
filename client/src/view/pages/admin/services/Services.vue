@@ -8,12 +8,10 @@
         :data="serviceToEdit"
       />
       <div class="card-header" style="min-height: 50px !important">
-        <h3 class="card-title">
-          Service List
-        </h3>
+        <h3 class="card-title">Service List</h3>
       </div>
       <!--begin::Header-->
-      <div class="card-header border-0 ">
+      <div class="card-header border-0">
         <search @search="onHandleSearch" />
         <div class="card-toolbar">
           <a href="#" class="btn btn-primary font-weight-bolder font-size-sm" @click="addNewData">
@@ -34,7 +32,7 @@
                 <th style="min-width: 100px">Price(₦)</th>
                 <th style="min-width: 100px">Code</th>
                 <th style="min-width: 160px">Date</th>
-                <th class="pr-0 " style="min-width: 150px">action</th>
+                <th class="pr-0" style="min-width: 150px">action</th>
               </tr>
             </thead>
             <tbody>

@@ -10,7 +10,7 @@ export default {
     classes: {},
   },
   getters: {
-    getClasses: state => position => {
+    getClasses: (state) => (position) => {
       if (typeof position !== 'undefined') {
         return state.classes[position];
       }

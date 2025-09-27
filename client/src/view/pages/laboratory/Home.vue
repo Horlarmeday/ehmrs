@@ -44,6 +44,12 @@ export default {
       currentUser: parseJwt(localStorage.getItem('user_token')),
       items: [
         {
+          name: 'Tests Orders',
+          desc: 'Click here to view all laboratory tests orders',
+          link: '/laboratory/samples-to-collect',
+          showComponent: true,
+        },
+        {
           name: 'Sample Type',
           link: '/laboratory/sample-types',
           desc: 'Click here to view all test sample type',
@@ -73,7 +79,7 @@ export default {
   watch: {
     currentUser: {
       handler(val) {
-        this.items.filter(tab => {
+        this.items.filter((tab) => {
           if (val.role !== 'Super Admin' && tab.name === 'Results Update') {
             tab.showComponent = false;
           }

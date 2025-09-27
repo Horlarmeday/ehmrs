@@ -96,7 +96,7 @@ export default {
     return {
       isDisabled: false,
       results: this.tests.flatMap(({ data }) =>
-        data.map(test => ({
+        data.map((test) => ({
           prescribed_test_id: test.id,
           test_prescription_id: this.$route.params.id,
           name: test.test.name,

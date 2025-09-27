@@ -174,9 +174,7 @@
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" @click="closeModal">
-            Cancel
-          </button>
+          <button type="button" class="btn btn-secondary" @click="closeModal">Cancel</button>
           <router-link to="/patient/create" class="btn btn-success">
             <i class="fas fa-user-plus mr-1"></i>
             Create New Patient

@@ -99,12 +99,6 @@ export class Visit extends Model {
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'professional is required',
-      },
-    },
   })
   professional: string;
 

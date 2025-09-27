@@ -39,7 +39,7 @@ export default {
     // to avoid conflicts and ensure centralized error handling
 
     // Handle unhandled promise rejections
-    window.addEventListener('unhandledrejection', event => {
+    window.addEventListener('unhandledrejection', (event) => {
       errorReportingService.reportError(event.reason, {
         type: 'unhandled_promise_rejection',
         severity: 'high',
@@ -47,7 +47,7 @@ export default {
     });
 
     // Handle uncaught errors
-    window.addEventListener('error', event => {
+    window.addEventListener('error', (event) => {
       errorReportingService.reportError(event.error, {
         type: 'uncaught_error',
         filename: event.filename,
@@ -68,5 +68,3 @@ export default {
     });
   },
 };
-
-

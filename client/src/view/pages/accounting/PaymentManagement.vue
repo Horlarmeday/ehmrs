@@ -319,7 +319,7 @@ export default {
       },
       set(value) {
         if (value) {
-          this.selectedPayments = new Set(this.filteredPayments.map(p => p.id));
+          this.selectedPayments = new Set(this.filteredPayments.map((p) => p.id));
         } else {
           this.selectedPayments.clear();
         }
@@ -476,7 +476,7 @@ export default {
         for (const payment of payments) {
           await this.printReceipt(payment);
           // Small delay between downloads
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise((resolve) => setTimeout(resolve, 500));
         }
 
         this.$bvToast.toast('All receipts downloaded successfully', {
@@ -504,7 +504,7 @@ export default {
         return;
       }
 
-      const selectedPaymentObjects = this.filteredPayments.filter(p =>
+      const selectedPaymentObjects = this.filteredPayments.filter((p) =>
         this.selectedPayments.has(p.id)
       );
 

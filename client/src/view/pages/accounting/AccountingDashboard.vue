@@ -158,7 +158,7 @@
                 </div>
                 <div class="activity-content">
                   <div class="activity-title">
-                    Bill #{{ bill.bill_number }} - {{ bill.patient.fullname }}
+                    {{ bill.patient.fullname }}
                   </div>
                   <div class="activity-details">
                     {{ formatCurrency(bill.final_amount) }} • {{ formatDate(bill.createdAt) }}
@@ -576,7 +576,7 @@ export default {
       if (routeNames[page]) {
         console.log(`📍 Trying route name: ${routeNames[page]}`);
         try {
-          this.$router.push({ name: routeNames[page] }).catch(err => {
+          this.$router.push({ name: routeNames[page] }).catch((err) => {
             console.error('❌ Route name navigation failed:', err);
             // Fall back to path navigation
             this.navigateByPath(page, pageRoutes[page]);

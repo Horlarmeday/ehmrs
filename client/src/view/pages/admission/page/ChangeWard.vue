@@ -24,7 +24,7 @@ export default {
     fetchAdmission() {
       this.$store
         .dispatch('admission/fetchAdmission', { admissionId: this.$route.params.id })
-        .then(response => {
+        .then((response) => {
           const res = response.data.data;
           this.$store.dispatch('patient/setCurrentPatient', { ...res.insurance, ...res.patient });
         });

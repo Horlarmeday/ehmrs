@@ -12,9 +12,9 @@
           v-model="insurance_id"
           @change="getHMOs"
         >
-          <option :value="insurance.id" v-for="(insurance, i) in insurances" :key="i">{{
-            insurance.name
-          }}</option>
+          <option :value="insurance.id" v-for="(insurance, i) in insurances" :key="i">
+            {{ insurance.name }}
+          </option>
         </select>
         <span class="text-danger text-sm">{{ errors.first('insurance_id') }}</span>
       </div>
@@ -27,7 +27,7 @@
           name="hmo_id"
           v-model="hmo_id"
           label="name"
-          :reduce="hmos => hmos.id"
+          :reduce="(hmos) => hmos.id"
           :options="hmos"
         ></v-select>
         <span class="text-danger text-sm">{{ errors.first('hmo_id') }}</span>
@@ -56,7 +56,7 @@
       <div class="col-lg-4">
         <label>Plan <span class="text-danger">*</span></label>
         <select :disabled="!insurance?.plan" class="form-control" v-model="plan" name="plan">
-          <option value="Social">Social </option>
+          <option value="Social">Social</option>
           <option value="Gold">Gold</option>
           <option value="Bronze">Bronze</option>
           <option value="Silver">Silver</option>

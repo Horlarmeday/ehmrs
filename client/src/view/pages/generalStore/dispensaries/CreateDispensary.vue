@@ -233,50 +233,51 @@ export default {
   methods: {
     validateForm() {
       this.errors = {};
-      
+
       // Required fields
       if (!this.formData.name || this.formData.name.trim().length === 0) {
         this.errors.name = 'Dispensary name is required';
       } else if (this.formData.name.length > 100) {
         this.errors.name = 'Dispensary name must be less than 100 characters';
       }
-      
+
       if (!this.formData.location || this.formData.location.trim().length === 0) {
         this.errors.location = 'Location is required';
       } else if (this.formData.location.length > 200) {
         this.errors.location = 'Location must be less than 200 characters';
       }
-      
+
       // Optional fields validation
       if (this.formData.description && this.formData.description.length > 500) {
         this.errors.description = 'Description must be less than 500 characters';
       }
-      
+
       if (this.formData.manager_name && this.formData.manager_name.length > 100) {
         this.errors.manager_name = 'Manager name must be less than 100 characters';
       }
-      
+
       // Auto-replenish validation
       if (this.formData.auto_replenish_enabled) {
         if (!this.formData.replenish_threshold || this.formData.replenish_threshold <= 0) {
-          this.errors.replenish_threshold = 'Replenish threshold is required when auto-replenish is enabled';
+          this.errors.replenish_threshold =
+            'Replenish threshold is required when auto-replenish is enabled';
         } else if (this.formData.replenish_threshold > 100) {
           this.errors.replenish_threshold = 'Replenish threshold cannot exceed 100%';
         }
       }
-      
+
       // Max capacity validation
       if (this.formData.max_capacity && this.formData.max_capacity <= 0) {
         this.errors.max_capacity = 'Maximum capacity must be greater than 0';
       }
-      
+
       return Object.keys(this.errors).length === 0;
     },
-    
+
     hasError(field) {
       return this.errors && this.errors[field];
     },
-    
+
     getError(field) {
       return this.errors && this.errors[field];
     },

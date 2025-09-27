@@ -8,7 +8,7 @@ export default {
   install(Vue) {
     // Add print service to Vue prototype (for direct access if needed)
     Vue.prototype.$printService = printService;
-    
+
     // Note: Print methods are provided through mixin below with enhanced error handling
     // Removed duplicate prototype methods to avoid conflicts
 
@@ -154,5 +154,3 @@ export default {
     });
   },
 };
-
-

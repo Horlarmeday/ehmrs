@@ -32,7 +32,7 @@ export default {
   },
 
   UPDATE_PATIENT(state, patient) {
-    const patientIndex = state.patients.findIndex(p => p.id === patient.id);
+    const patientIndex = state.patients.findIndex((p) => p.id === patient.id);
     if (patientIndex !== -1) {
       Object.assign(state.patients[patientIndex], patient);
     }

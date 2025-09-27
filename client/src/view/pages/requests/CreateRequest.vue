@@ -18,8 +18,8 @@
               v-model="item.inventory"
             >
               <option :value="inventory.id" v-for="(inventory, i) in inventories" :key="i">
-                {{ inventory.name }}</option
-              >
+                {{ inventory.name }}
+              </option>
             </select>
           </div>
           <div class="col-lg-4">
@@ -30,7 +30,7 @@
               label="name"
               :options="drugOptions"
               :reduce="
-                items => ({
+                (items) => ({
                   name: items.name,
                   id: items.id,
                   unit_name: items?.unit_name,
@@ -121,7 +121,7 @@ export default {
       return this.$store.state.inventory.items;
     },
     drugOptions() {
-      return this.items.map(item => ({
+      return this.items.map((item) => ({
         name: item?.drug?.name,
         id: item?.id,
         drug_id: item?.drug?.id,

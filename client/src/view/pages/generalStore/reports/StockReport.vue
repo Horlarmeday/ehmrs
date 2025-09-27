@@ -401,12 +401,19 @@ export default {
         maxCost: '',
       },
       categories: [],
-      reportData: null,
     };
   },
   async created() {
     await this.loadFormData();
     this.generateReport();
+  },
+  computed: {
+    storeLoading() {
+      return this.$store.state.generalStore.loading;
+    },
+    reportData() {
+      return this.$store.state.generalStore.stockReport;
+    },
   },
   methods: {
     async loadFormData() {
@@ -429,14 +436,13 @@ export default {
         };
 
         // Remove empty filters
-        Object.keys(params).forEach(key => {
+        Object.keys(params).forEach((key) => {
           if (params[key] === '' || params[key] === null) {
             delete params[key];
           }
         });
 
         await this.$store.dispatch('generalStore/generateStockReport', params);
-        this.reportData = this.$store.state.generalStore.stockReport;
 
         this.$toast.success('Stock report generated successfully');
       } catch (error) {
@@ -553,7 +559,7 @@ export default {
             minimum_stock: (value) => Number(value || 0),
             unit_price: (value) => Number(value || 0).toFixed(2),
             total_value: (value) => Number(value || 0).toFixed(2),
-          }
+          },
         });
       } catch (error) {
         this.$logError('Failed to export stock report', error);
@@ -593,10 +599,14 @@ export default {
           const blob = new Blob([JSON.stringify(reportData, null, 2)], {
             type: 'application/json',
           });
-          const file = new File([blob], `stock_report_${new Date().toISOString().split('T')[0]}.json`, {
-            type: 'application/json',
-          });
-          
+          const file = new File(
+            [blob],
+            `stock_report_${new Date().toISOString().split('T')[0]}.json`,
+            {
+              type: 'application/json',
+            }
+          );
+
           await navigator.share({
             title: 'Stock Report',
             text: 'Stock report data from EHMRS',

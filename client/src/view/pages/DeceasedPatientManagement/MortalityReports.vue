@@ -97,7 +97,9 @@
               <div class="text-primary mb-2">
                 <i class="fas fa-chart-bar fa-2x"></i>
               </div>
-              <h3 class="mb-1">{{ reports && reports.summary ? reports.summary.total_deaths : 0 }}</h3>
+              <h3 class="mb-1">
+                {{ reports && reports.summary ? reports.summary.total_deaths : 0 }}
+              </h3>
               <p class="text-muted mb-0">Total Deaths</p>
             </b-card-body>
           </b-card>
@@ -108,8 +110,16 @@
               <div class="text-info mb-2">
                 <i class="fas fa-building fa-2x"></i>
               </div>
-              <h3 class="mb-1">{{ reports && reports.summary ? (reports.summary.total_departments || reports.summary.total_conditions) : 0 }}</h3>
-              <p class="text-muted mb-0">{{ reports && reports.report_type === 'department' ? 'Departments' : 'Conditions' }}</p>
+              <h3 class="mb-1">
+                {{
+                  reports && reports.summary
+                    ? reports.summary.total_departments || reports.summary.total_conditions
+                    : 0
+                }}
+              </h3>
+              <p class="text-muted mb-0">
+                {{ reports && reports.report_type === 'department' ? 'Departments' : 'Conditions' }}
+              </p>
             </b-card-body>
           </b-card>
         </b-col>
@@ -119,7 +129,9 @@
               <div class="text-success mb-2">
                 <i class="fas fa-calendar-alt fa-2x"></i>
               </div>
-              <h3 class="mb-1">{{ reports && reports.date_range ? reports.date_range.start : 'N/A' }}</h3>
+              <h3 class="mb-1">
+                {{ reports && reports.date_range ? reports.date_range.start : 'N/A' }}
+              </h3>
               <p class="text-muted mb-0">Date Range</p>
             </b-card-body>
           </b-card>
@@ -128,7 +140,11 @@
 
       <!-- Department/Condition Reports -->
       <div v-if="reports && (reports.departments || reports.conditions)">
-        <b-card v-for="(item, index) in (reports.departments || reports.conditions)" :key="index" class="mb-4">
+        <b-card
+          v-for="(item, index) in reports.departments || reports.conditions"
+          :key="index"
+          class="mb-4"
+        >
           <b-card-header>
             <div class="d-flex justify-content-between align-items-center">
               <h6 class="mb-0">
@@ -163,8 +179,12 @@
               </b-col>
               <b-col md="3">
                 <div class="text-center">
-                  <h5 class="text-success mb-1">{{ Object.keys(item.deaths_by_cause || item.deaths_by_department).length }}</h5>
-                  <small class="text-muted">{{ reports && reports.report_type === 'department' ? 'Causes' : 'Departments' }}</small>
+                  <h5 class="text-success mb-1">
+                    {{ Object.keys(item.deaths_by_cause || item.deaths_by_department).length }}
+                  </h5>
+                  <small class="text-muted">{{
+                    reports && reports.report_type === 'department' ? 'Causes' : 'Departments'
+                  }}</small>
                 </div>
               </b-col>
             </b-row>
@@ -176,18 +196,19 @@
                 <div v-if="Object.keys(item.deaths_by_month).length > 0">
                   <canvas :ref="`monthlyChart${index}`" height="200"></canvas>
                 </div>
-                <div v-else class="text-center text-muted py-3">
-                  No monthly data available
-                </div>
+                <div v-else class="text-center text-muted py-3">No monthly data available</div>
               </b-col>
               <b-col md="6">
-                <h6 class="mb-3">Deaths by {{ reports && reports.report_type === 'department' ? 'Cause' : 'Department' }}</h6>
-                <div v-if="Object.keys(item.deaths_by_cause || item.deaths_by_department).length > 0">
+                <h6 class="mb-3">
+                  Deaths by
+                  {{ reports && reports.report_type === 'department' ? 'Cause' : 'Department' }}
+                </h6>
+                <div
+                  v-if="Object.keys(item.deaths_by_cause || item.deaths_by_department).length > 0"
+                >
                   <canvas :ref="`breakdownChart${index}`" height="200"></canvas>
                 </div>
-                <div v-else class="text-center text-muted py-3">
-                  No breakdown data available
-                </div>
+                <div v-else class="text-center text-muted py-3">No breakdown data available</div>
               </b-col>
             </b-row>
 
@@ -195,7 +216,12 @@
             <div v-if="Object.keys(item.deaths_by_age_group).length > 0" class="mt-4">
               <h6 class="mb-3">Age Group Distribution</h6>
               <b-row>
-                <b-col v-for="(count, ageGroup) in item.deaths_by_age_group" :key="ageGroup" md="2" class="text-center mb-2">
+                <b-col
+                  v-for="(count, ageGroup) in item.deaths_by_age_group"
+                  :key="ageGroup"
+                  md="2"
+                  class="text-center mb-2"
+                >
                   <div class="border rounded p-2">
                     <div class="h6 mb-1">{{ count }}</div>
                     <small class="text-muted">{{ ageGroup }}</small>
@@ -294,11 +320,11 @@ export default {
   },
   methods: {
     ...mapActions('patient', ['getMortalityReports']),
-    
+
     async loadReports() {
       this.loading = true;
       this.error = null;
-      
+
       try {
         const params = {
           report_type: this.filters.report_type,
@@ -307,12 +333,12 @@ export default {
           department: this.filters.department,
           cause_of_death: this.filters.cause_of_death,
         };
-        
+
         this.reports = await this.getMortalityReports(params);
-        
+
         // Initialize current pages for pagination
         this.initializeCurrentPages();
-        
+
         // Render charts after data is loaded
         this.$nextTick(() => {
           this.renderCharts();
@@ -324,7 +350,7 @@ export default {
         this.loading = false;
       }
     },
-    
+
     initializeCurrentPages() {
       if (this.reports && (this.reports.departments || this.reports.conditions)) {
         const items = this.reports.departments || this.reports.conditions;
@@ -333,19 +359,19 @@ export default {
         });
       }
     },
-    
+
     getCurrentPage(index) {
       return this.currentPages[index] || 1;
     },
-    
+
     async refreshData() {
       await this.loadReports();
     },
-    
+
     applyFilters() {
       this.loadReports();
     },
-    
+
     clearFilters() {
       this.filters = {
         report_type: 'department',
@@ -356,16 +382,16 @@ export default {
       };
       this.applyFilters();
     },
-    
+
     renderCharts() {
       if (!this.reports || (!this.reports.departments && !this.reports.conditions)) return;
-      
+
       // Destroy existing charts
-      Object.values(this.charts).forEach(chart => {
+      Object.values(this.charts).forEach((chart) => {
         if (chart) chart.destroy();
       });
       this.charts = {};
-      
+
       // Render charts for each department/condition
       const items = this.reports.departments || this.reports.conditions;
       items.forEach((item, index) => {
@@ -373,26 +399,28 @@ export default {
         this.renderBreakdownChart(item, index);
       });
     },
-    
+
     renderMonthlyChart(item, index) {
       const ctx = this.$refs[`monthlyChart${index}`];
       if (!ctx || !ctx[0]) return;
-      
+
       const data = item.deaths_by_month;
       const labels = Object.keys(data).sort();
-      const values = labels.map(label => data[label]);
-      
+      const values = labels.map((label) => data[label]);
+
       this.charts[`monthly${index}`] = new Chart(ctx[0], {
         type: 'line',
         data: {
           labels,
-          datasets: [{
-            label: 'Deaths',
-            data: values,
-            borderColor: 'rgb(75, 192, 192)',
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-            tension: 0.1,
-          }],
+          datasets: [
+            {
+              label: 'Deaths',
+              data: values,
+              borderColor: 'rgb(75, 192, 192)',
+              backgroundColor: 'rgba(75, 192, 192, 0.2)',
+              tension: 0.1,
+            },
+          ],
         },
         options: {
           responsive: true,
@@ -405,30 +433,25 @@ export default {
         },
       });
     },
-    
+
     renderBreakdownChart(item, index) {
       const ctx = this.$refs[`breakdownChart${index}`];
       if (!ctx || !ctx[0]) return;
-      
+
       const data = item.deaths_by_cause || item.deaths_by_department;
       const labels = Object.keys(data);
       const values = Object.values(data);
-      
+
       this.charts[`breakdown${index}`] = new Chart(ctx[0], {
         type: 'doughnut',
         data: {
           labels,
-          datasets: [{
-            data: values,
-            backgroundColor: [
-              '#FF6384',
-              '#36A2EB',
-              '#FFCE56',
-              '#4BC0C0',
-              '#9966FF',
-              '#FF9F40',
-            ],
-          }],
+          datasets: [
+            {
+              data: values,
+              backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'],
+            },
+          ],
         },
         options: {
           responsive: true,
@@ -436,16 +459,16 @@ export default {
         },
       });
     },
-    
+
     formatDate(dateString) {
       if (!dateString) return 'Unknown';
       return new Date(dateString).toLocaleDateString();
     },
   },
-  
+
   beforeDestroy() {
     // Clean up charts
-    Object.values(this.charts).forEach(chart => {
+    Object.values(this.charts).forEach((chart) => {
       if (chart) chart.destroy();
     });
   },
@@ -458,7 +481,7 @@ export default {
 }
 
 .card {
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border: none;
 }
 

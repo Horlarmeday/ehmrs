@@ -35,12 +35,8 @@
               <!--end::Symbol-->
               <!--begin::Title-->
               <div>
-                <div class="font-size-h4 text-dark-75 font-weight-bolder">
-                  $2,034
-                </div>
-                <div class="font-size-sm text-muted font-weight-bold mt-1">
-                  Author Sales
-                </div>
+                <div class="font-size-h4 text-dark-75 font-weight-bolder">$2,034</div>
+                <div class="font-size-sm text-muted font-weight-bold mt-1">Author Sales</div>
               </div>
               <!--end::Title-->
             </div>
@@ -60,12 +56,8 @@
               <!--end::Symbol-->
               <!--begin::Title-->
               <div>
-                <div class="font-size-h4 text-dark-75 font-weight-bolder">
-                  $706
-                </div>
-                <div class="font-size-sm text-muted font-weight-bold mt-1">
-                  Commission
-                </div>
+                <div class="font-size-h4 text-dark-75 font-weight-bolder">$706</div>
+                <div class="font-size-sm text-muted font-weight-bold mt-1">Commission</div>
               </div>
               <!--end::Title-->
             </div>
@@ -87,12 +79,8 @@
               <!--end::Symbol-->
               <!--begin::Title-->
               <div>
-                <div class="font-size-h4 text-dark-75 font-weight-bolder">
-                  $49
-                </div>
-                <div class="font-size-sm text-muted font-weight-bold mt-1">
-                  Average Bid
-                </div>
+                <div class="font-size-h4 text-dark-75 font-weight-bolder">$49</div>
+                <div class="font-size-sm text-muted font-weight-bold mt-1">Average Bid</div>
               </div>
               <!--end::Title-->
             </div>
@@ -112,12 +100,8 @@
               <!--end::Symbol-->
               <!--begin::Title-->
               <div>
-                <div class="font-size-h4 text-dark-75 font-weight-bolder">
-                  $5.8M
-                </div>
-                <div class="font-size-sm text-muted font-weight-bold mt-1">
-                  All Time Sales
-                </div>
+                <div class="font-size-h4 text-dark-75 font-weight-bolder">$5.8M</div>
+                <div class="font-size-sm text-muted font-weight-bold mt-1">All Time Sales</div>
               </div>
               <!--end::Title-->
             </div>
@@ -187,7 +171,7 @@ export default {
               show: true,
               label: 'Total',
               fontWeight: 'bold',
-              formatter: function() {
+              formatter: function () {
                 return '60%';
               },
             },

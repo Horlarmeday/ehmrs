@@ -211,10 +211,10 @@
           <div
             v-if="
               accountConflictSuggestions &&
-                (accountConflictSuggestions.conflicts?.length > 0 ||
-                  accountConflictSuggestions.suggestions?.length > 0 ||
-                  accountConflictSuggestions.warnings?.length > 0 ||
-                  accountConflictSuggestions.alternativeCodes?.length > 0)
+              (accountConflictSuggestions.conflicts?.length > 0 ||
+                accountConflictSuggestions.suggestions?.length > 0 ||
+                accountConflictSuggestions.warnings?.length > 0 ||
+                accountConflictSuggestions.alternativeCodes?.length > 0)
             "
             class="conflict-suggestions mb-3"
           >
@@ -231,7 +231,7 @@
                     @click="applyAllSuggestions"
                     v-if="
                       accountConflictSuggestions.alternativeCodes &&
-                        accountConflictSuggestions.alternativeCodes.length > 0
+                      accountConflictSuggestions.alternativeCodes.length > 0
                     "
                   >
                     <i class="fas fa-magic mr-1"></i>Apply All
@@ -272,7 +272,7 @@
               <div
                 v-if="
                   accountConflictSuggestions.suggestions &&
-                    accountConflictSuggestions.suggestions.length > 0
+                  accountConflictSuggestions.suggestions.length > 0
                 "
               >
                 <p class="mb-2"><strong>Suggestions:</strong></p>
@@ -288,7 +288,7 @@
               <div
                 v-if="
                   accountConflictSuggestions.alternativeCodes &&
-                    accountConflictSuggestions.alternativeCodes.length > 0
+                  accountConflictSuggestions.alternativeCodes.length > 0
                 "
               >
                 <p class="mb-2"><strong>Alternative Codes:</strong></p>
@@ -298,7 +298,7 @@
                     :key="code"
                     variant="info"
                     class="mr-2 mb-1"
-                    style="cursor: pointer;"
+                    style="cursor: pointer"
                     @click="useAlternativeCode(code)"
                   >
                     {{ code }}
@@ -308,7 +308,7 @@
               <div
                 v-if="
                   accountConflictSuggestions.warnings &&
-                    accountConflictSuggestions.warnings.length > 0
+                  accountConflictSuggestions.warnings.length > 0
                 "
               >
                 <p class="mb-0"><strong>Warnings:</strong></p>
@@ -325,10 +325,10 @@
           <div
             v-if="
               accountConflictSuggestions &&
-                (accountConflictSuggestions.conflicts?.length > 0 ||
-                  accountConflictSuggestions.suggestions?.length > 0 ||
-                  accountConflictSuggestions.warnings?.length > 0 ||
-                  accountConflictSuggestions.alternativeCodes?.length > 0)
+              (accountConflictSuggestions.conflicts?.length > 0 ||
+                accountConflictSuggestions.suggestions?.length > 0 ||
+                accountConflictSuggestions.warnings?.length > 0 ||
+                accountConflictSuggestions.alternativeCodes?.length > 0)
             "
             class="mt-3 p-3 border rounded bg-light"
           >
@@ -340,7 +340,7 @@
             <div
               v-if="
                 accountConflictSuggestions.suggestions &&
-                  accountConflictSuggestions.suggestions.length > 0
+                accountConflictSuggestions.suggestions.length > 0
               "
               class="mb-3"
             >
@@ -367,7 +367,7 @@
               <div class="col-md-4">
                 <b-form-select
                   v-model="selectedAccountType"
-                  :options="accountTypeOptions.filter(opt => opt.value)"
+                  :options="accountTypeOptions.filter((opt) => opt.value)"
                   placeholder="Select Account Type"
                   @change="validateAccountType"
                 ></b-form-select>
@@ -442,9 +442,7 @@
             <div class="col-md-3">
               <label>&nbsp;</label>
               <div class="d-flex gap-2">
-                <b-button variant="outline-secondary" @click="clearFilters">
-                  Clear
-                </b-button>
+                <b-button variant="outline-secondary" @click="clearFilters"> Clear </b-button>
                 <b-button variant="primary" @click="loadAccounts">
                   <i class="fas fa-search mr-2"></i>Search
                 </b-button>
@@ -668,8 +666,8 @@
                 <div
                   v-if="
                     accountConflictSuggestions &&
-                      (accountConflictSuggestions.suggestions?.length > 0 ||
-                        accountConflictSuggestions.warnings?.length > 0)
+                    (accountConflictSuggestions.suggestions?.length > 0 ||
+                      accountConflictSuggestions.warnings?.length > 0)
                   "
                   class="mt-2"
                 >
@@ -828,10 +826,10 @@
           <div
             v-if="
               accountConflictSuggestions &&
-                (accountConflictSuggestions.conflicts?.length > 0 ||
-                  accountConflictSuggestions.suggestions?.length > 0 ||
-                  accountConflictSuggestions.warnings?.length > 0 ||
-                  accountConflictSuggestions.alternativeCodes?.length > 0)
+              (accountConflictSuggestions.conflicts?.length > 0 ||
+                accountConflictSuggestions.suggestions?.length > 0 ||
+                accountConflictSuggestions.warnings?.length > 0 ||
+                accountConflictSuggestions.alternativeCodes?.length > 0)
             "
             class="conflict-section mt-4 p-3 border rounded bg-light"
           >
@@ -844,7 +842,7 @@
             <div
               v-if="
                 accountConflictSuggestions.suggestions &&
-                  accountConflictSuggestions.suggestions.length > 0
+                accountConflictSuggestions.suggestions.length > 0
               "
               class="mb-3"
             >
@@ -864,7 +862,7 @@
             <div
               v-if="
                 accountConflictSuggestions.alternativeCodes &&
-                  accountConflictSuggestions.alternativeCodes.length > 0
+                accountConflictSuggestions.alternativeCodes.length > 0
               "
               class="mb-3"
             >
@@ -875,7 +873,7 @@
                   :key="code"
                   variant="info"
                   class="mr-2 mb-1"
-                  style="cursor: pointer;"
+                  style="cursor: pointer"
                   @click="useAlternativeCode(code)"
                 >
                   {{ code }}
@@ -888,7 +886,7 @@
             <div
               v-if="
                 accountConflictSuggestions.warnings &&
-                  accountConflictSuggestions.warnings.length > 0
+                accountConflictSuggestions.warnings.length > 0
               "
               class="mb-3"
             >
@@ -912,7 +910,7 @@
                 @click="applyAllSuggestions"
                 v-if="
                   accountConflictSuggestions.alternativeCodes &&
-                    accountConflictSuggestions.alternativeCodes.length > 0
+                  accountConflictSuggestions.alternativeCodes.length > 0
                 "
               >
                 <i class="fas fa-magic mr-1"></i>Apply All
@@ -1131,7 +1129,7 @@ export default {
       try {
         // Filter out empty strings to avoid validation errors
         const params = {};
-        Object.keys(this.filters).forEach(key => {
+        Object.keys(this.filters).forEach((key) => {
           if (
             this.filters[key] !== '' &&
             this.filters[key] !== null &&
@@ -1151,7 +1149,7 @@ export default {
         const accounts = await this.$store.dispatch('accounting/fetchChartOfAccounts', {});
         this.parentAccountOptions = [
           { value: null, text: 'Root Account' },
-          ...(accounts.docs || accounts).map(account => ({
+          ...(accounts.docs || accounts).map((account) => ({
             value: account.id,
             text: `${account.code} - ${account.name}`,
           })),
@@ -1166,12 +1164,12 @@ export default {
       const rootAccounts = [];
 
       // Create a map of all accounts
-      accounts?.forEach(account => {
+      accounts?.forEach((account) => {
         accountMap.set(account.id, { ...account, children: [], expanded: false });
       });
 
       // Build the hierarchy
-      accounts?.forEach(account => {
+      accounts?.forEach((account) => {
         if (account.parent_id) {
           const parent = accountMap.get(account.parent_id);
           if (parent) {
@@ -1188,7 +1186,7 @@ export default {
 
     flattenHierarchy(accounts, level = 0) {
       const result = [];
-      accounts?.forEach(account => {
+      accounts?.forEach((account) => {
         account.level = level;
         result.push(account);
         if (account.children && account.children.length > 0) {
@@ -1199,7 +1197,7 @@ export default {
     },
 
     toggleNode(accountId) {
-      const account = this.hierarchicalAccounts.find(a => a.id === accountId);
+      const account = this.hierarchicalAccounts.find((a) => a.id === accountId);
       if (account) {
         account.expanded = !account.expanded;
       }
@@ -1220,7 +1218,7 @@ export default {
     editAccount(accountId) {
       this.isEditing = true;
       // Find the account from the existing list
-      const account = this.accounts.find(acc => acc.id === accountId);
+      const account = this.accounts.find((acc) => acc.id === accountId);
       if (account) {
         this.loadAccountForEdit(account);
       }
@@ -1349,14 +1347,14 @@ export default {
           let message = 'The following issues were detected:\n\n';
           if (hasConflicts) {
             message += 'Conflicts:\n';
-            result.data.conflicts.forEach(conflict => {
+            result.data.conflicts.forEach((conflict) => {
               message += `• ${conflict.message}\n`;
             });
             message += '\n';
           }
           if (hasWarnings) {
             message += 'Warnings:\n';
-            result.data.warnings.forEach(warning => {
+            result.data.warnings.forEach((warning) => {
               message += `• ${warning}\n`;
             });
             message += '\n';
@@ -1526,7 +1524,7 @@ export default {
       this.loadAccounts();
     },
 
-    debounceSearch: debounce(function() {
+    debounceSearch: debounce(function () {
       this.loadAccounts();
     }, 500),
 
@@ -1988,10 +1986,12 @@ Account Validation Help:
         if (this.validationStatistics) {
           report += 'Validation Statistics:\n';
           report += `Valid Accounts: ${this.validationStatistics.accounts_with_warnings || 0}\n`;
-          report += `Accounts with Warnings: ${this.validationStatistics.accounts_with_warnings ||
-            0}\n`;
-          report += `Accounts with Errors: ${this.validationStatistics.accounts_with_errors ||
-            0}\n`;
+          report += `Accounts with Warnings: ${
+            this.validationStatistics.accounts_with_warnings || 0
+          }\n`;
+          report += `Accounts with Errors: ${
+            this.validationStatistics.accounts_with_errors || 0
+          }\n`;
           report += `Missing Accounts: ${this.validationStatistics.missing_accounts || 0}\n`;
           report += '\n';
         }
@@ -2080,15 +2080,15 @@ Account Validation Help:
       const accounts = this.accounts || [];
       const summary = {
         totalAccounts: accounts.length,
-        activeAccounts: accounts.filter(acc => acc.is_active).length,
-        inactiveAccounts: accounts.filter(acc => !acc.is_active).length,
-        assetAccounts: accounts.filter(acc => acc.type === 'ASSET').length,
-        liabilityAccounts: accounts.filter(acc => acc.type === 'LIABILITY').length,
-        equityAccounts: accounts.filter(acc => acc.type === 'EQUITY').length,
-        revenueAccounts: accounts.filter(acc => acc.type === 'REVENUE').length,
-        expenseAccounts: accounts.filter(acc => acc.type === 'EXPENSE').length,
-        accountsWithBudget: accounts.filter(acc => acc.budget_allocation > 0).length,
-        accountsWithTaxCode: accounts.filter(acc => acc.tax_code).length,
+        activeAccounts: accounts.filter((acc) => acc.is_active).length,
+        inactiveAccounts: accounts.filter((acc) => !acc.is_active).length,
+        assetAccounts: accounts.filter((acc) => acc.type === 'ASSET').length,
+        liabilityAccounts: accounts.filter((acc) => acc.type === 'LIABILITY').length,
+        equityAccounts: accounts.filter((acc) => acc.type === 'EQUITY').length,
+        revenueAccounts: accounts.filter((acc) => acc.type === 'REVENUE').length,
+        expenseAccounts: accounts.filter((acc) => acc.type === 'EXPENSE').length,
+        accountsWithBudget: accounts.filter((acc) => acc.budget_allocation > 0).length,
+        accountsWithTaxCode: accounts.filter((acc) => acc.tax_code).length,
         totalBalance: accounts.reduce((sum, acc) => sum + (acc.balance || 0), 0),
         totalBudget: accounts.reduce((sum, acc) => sum + (acc.budget_allocation || 0), 0),
       };
@@ -2096,7 +2096,9 @@ Account Validation Help:
       let summaryText = 'System Accounts Summary:\n';
       summaryText += '========================\n\n';
       Object.entries(summary).forEach(([key, value]) => {
-        const formattedKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+        const formattedKey = key
+          .replace(/([A-Z])/g, ' $1')
+          .replace(/^./, (str) => str.toUpperCase());
         if (typeof value === 'number' && (key.includes('Balance') || key.includes('Budget'))) {
           summaryText += `${formattedKey}: ${new Intl.NumberFormat('en-NG', {
             style: 'currency',

@@ -96,7 +96,7 @@ export default {
         if (!val) return;
         if (Object.entries(val)?.length) {
           const sputumData = JSON.parse(JSON.stringify(val));
-          Object.keys(this.sputum).forEach(key => {
+          Object.keys(this.sputum).forEach((key) => {
             this.sputum[key] = sputumData[key] || '';
           });
         }
@@ -108,7 +108,7 @@ export default {
       this.debounceInput(this);
     },
 
-    debounceInput: debounce(vm => {
+    debounceInput: debounce((vm) => {
       vm.$emit('emitResult', vm.sputum, vm.testId);
     }, 500),
   },

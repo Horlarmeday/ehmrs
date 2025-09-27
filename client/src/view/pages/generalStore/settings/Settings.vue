@@ -508,7 +508,8 @@ export default {
       }
 
       if (this.form.critical_stock_threshold >= this.form.low_stock_threshold) {
-        this.errors.critical_stock_threshold = 'Critical threshold must be less than low stock threshold';
+        this.errors.critical_stock_threshold =
+          'Critical threshold must be less than low stock threshold';
       }
 
       // Reorder quantity validation

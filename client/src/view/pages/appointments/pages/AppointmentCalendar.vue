@@ -451,18 +451,18 @@ export default {
       let filtered = [...this.appointments];
 
       if (this.filterDoctor) {
-        filtered = filtered.filter(apt => apt.doctor_id === this.filterDoctor);
+        filtered = filtered.filter((apt) => apt.doctor_id === this.filterDoctor);
       }
 
       if (this.filterStatus) {
-        filtered = filtered.filter(apt => apt.status === this.filterStatus);
+        filtered = filtered.filter((apt) => apt.status === this.filterStatus);
       }
 
       return filtered;
     },
 
     doctorOptions() {
-      return this.doctors.map(doctor => ({
+      return this.doctors.map((doctor) => ({
         value: doctor.id,
         text: doctor.fullname,
       }));
@@ -583,11 +583,11 @@ export default {
     },
 
     getDayAppointments(day) {
-      return this.filteredAppointments.filter(apt => apt.appointment_date === day.fullDate);
+      return this.filteredAppointments.filter((apt) => apt.appointment_date === day.fullDate);
     },
 
     getHourAppointments(date, hour) {
-      return this.filteredAppointments.filter(apt => {
+      return this.filteredAppointments.filter((apt) => {
         if (apt.appointment_date !== date) return false;
 
         const appointmentHour = parseInt(apt.appointment_time.split(':')[0]);

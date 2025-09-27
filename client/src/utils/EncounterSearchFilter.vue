@@ -45,16 +45,8 @@ export default {
   data() {
     return {
       search: this.$route.query.search || '',
-      start:
-        this.$route.query.start ||
-        dayjs()
-          .startOf('month')
-          .format('YYYY-MM-DD'),
-      end:
-        this.$route.query.end ||
-        dayjs()
-          .endOf('month')
-          .format('YYYY-MM-DD'),
+      start: this.$route.query.start || dayjs().startOf('month').format('YYYY-MM-DD'),
+      end: this.$route.query.end || dayjs().endOf('month').format('YYYY-MM-DD'),
     };
   },
   methods: {

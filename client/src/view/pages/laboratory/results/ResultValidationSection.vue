@@ -94,7 +94,7 @@ export default {
   },
   computed: {
     shouldDisable() {
-      return this.results.every(result => !result.result);
+      return this.results.every((result) => !result.result);
     },
   },
   data() {
@@ -106,7 +106,7 @@ export default {
       REJECTED: 'Rejected',
       PENDING: 'Pending',
       results: this.tests.flatMap(({ data }) =>
-        data.map(test => ({
+        data.map((test) => ({
           prescribed_test_id: test.id,
           test_prescription_id: this.$route.params.id,
           name: test.test.name,
@@ -138,14 +138,14 @@ export default {
     },
 
     validateTests() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const results = this.results
             .filter(({ result, testStatus }) => !isEmpty(result) && testStatus !== this.APPROVED)
             // eslint-disable-next-line no-unused-vars
             .map(({ result_unit, shouldDisable, testStatus, ...rest }) => rest);
 
-          if (!results?.length || results.every(result => result.status === this.PENDING)) {
+          if (!results?.length || results.every((result) => result.status === this.PENDING)) {
             return this.$notify({
               group: 'foo',
               title: 'Error message',

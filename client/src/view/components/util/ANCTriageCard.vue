@@ -2,7 +2,7 @@
   <div class="container white mb-5">
     <div class="">
       <div class="d-flex justify-content-between pt-2 pb-2">
-        <div class="d-flex flex-column flex-root ">
+        <div class="d-flex flex-column flex-root">
           <span class="font-weight-bolder mb-1">
             <span class="navi-icon mr-2">
               <i class="fa fa-genderless text-danger font-size-h2"></i>

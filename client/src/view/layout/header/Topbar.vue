@@ -113,7 +113,7 @@ export default {
   },
   methods: {
     onLanguageChanged() {
-      this.languageFlag = this.languages.find(val => {
+      this.languageFlag = this.languages.find((val) => {
         return val.lang === i18nService.getActiveLanguage();
       }).flag;
     },

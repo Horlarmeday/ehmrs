@@ -162,9 +162,7 @@
             <div class="col-md-3">
               <label>&nbsp;</label>
               <div class="d-flex gap-2">
-                <b-button variant="outline-secondary" @click="clearFilters">
-                  Clear All
-                </b-button>
+                <b-button variant="outline-secondary" @click="clearFilters"> Clear All </b-button>
                 <b-button
                   variant="outline-warning"
                   @click="clearPatientSearch"
@@ -172,9 +170,7 @@
                 >
                   Clear Search
                 </b-button>
-                <b-button variant="primary" @click="loadDeposits">
-                  Search
-                </b-button>
+                <b-button variant="primary" @click="loadDeposits"> Search </b-button>
               </div>
             </div>
           </div>
@@ -222,9 +218,7 @@
                     <p v-if="filters.patientSearch" class="mb-0">
                       No deposits found for patient search: "{{ filters.patientSearch }}"
                     </p>
-                    <p v-else class="mb-0">
-                      Try adjusting your filters or create a new deposit
-                    </p>
+                    <p v-else class="mb-0">Try adjusting your filters or create a new deposit</p>
                   </td>
                 </tr>
                 <tr v-else-if="loading">
@@ -478,9 +472,7 @@
       </b-form>
 
       <template #modal-footer>
-        <b-button variant="secondary" @click="showDepositModal = false">
-          Cancel
-        </b-button>
+        <b-button variant="secondary" @click="showDepositModal = false"> Cancel </b-button>
         <b-button variant="warning" @click="saveDeposit" :disabled="saving">
           <span v-if="saving"> <i class="fas fa-spinner fa-spin mr-2"></i>Saving... </span>
           <span v-else>
@@ -632,9 +624,7 @@
       </div>
 
       <template #modal-footer>
-        <b-button variant="secondary" @click="showUseDepositModal = false">
-          Cancel
-        </b-button>
+        <b-button variant="secondary" @click="showUseDepositModal = false"> Cancel </b-button>
         <b-button
           variant="success"
           @click="processDepositUsage"
@@ -643,9 +633,7 @@
           <span v-if="processingUsage">
             <i class="fas fa-spinner fa-spin mr-2"></i>Processing...
           </span>
-          <span v-else>
-            Use Deposit
-          </span>
+          <span v-else> Use Deposit </span>
         </b-button>
       </template>
     </b-modal>
@@ -758,14 +746,10 @@
       </b-form>
 
       <template #modal-footer>
-        <b-button variant="secondary" @click="showExportModal = false">
-          Cancel
-        </b-button>
+        <b-button variant="secondary" @click="showExportModal = false"> Cancel </b-button>
         <b-button variant="primary" @click="executeExport" :disabled="exporting">
           <span v-if="exporting"> <i class="fas fa-spinner fa-spin mr-2"></i>Exporting... </span>
-          <span v-else>
-            Export Deposits
-          </span>
+          <span v-else> Export Deposits </span>
         </b-button>
       </template>
     </b-modal>
@@ -1029,7 +1013,7 @@ export default {
         if (response && response.data) {
           this.bankAccountOptions = [
             { value: null, text: 'Select Bank Account' },
-            ...response.data.map(account => ({
+            ...response.data.map((account) => ({
               value: account.id,
               text: `${account.account_name} (${account.account_number})`,
             })),
@@ -1046,7 +1030,7 @@ export default {
         if (response && response.data) {
           this.posTerminalOptions = [
             { value: null, text: 'Select POS Terminal' },
-            ...response.data.map(terminal => ({
+            ...response.data.map((terminal) => ({
               value: terminal.id,
               text: `${terminal.terminal_id} (${terminal.terminal_type})`,
             })),
@@ -1276,7 +1260,7 @@ export default {
 
     // Usage functionality
     useDeposit(depositId) {
-      this.selectedDeposit = this.deposits.find(d => d.id === depositId);
+      this.selectedDeposit = this.deposits.find((d) => d.id === depositId);
       this.usageForm.amount = this.selectedDeposit.amount;
       this.showUseDepositModal = true;
     },
@@ -1401,7 +1385,7 @@ export default {
       this.loadDeposits();
     },
 
-    debounceSearch: debounce(function() {
+    debounceSearch: debounce(function () {
       this.loadDeposits();
     }, 500),
 

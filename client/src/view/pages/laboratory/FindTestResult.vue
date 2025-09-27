@@ -3,9 +3,7 @@
     <!--begin::Card-->
     <div class="card card-custom gutter-b example example-compact">
       <div class="card-header" style="min-height: 50px !important">
-        <h3 class="card-title">
-          Find Test Results
-        </h3>
+        <h3 class="card-title">Find Test Results</h3>
       </div>
       <!--begin::Form-->
       <div class="card-body" style="padding: 1rem 2.25rem">
@@ -49,7 +47,7 @@
                 <th style="min-width: 150px">Patient Name</th>
                 <th style="min-width: 100px">Source</th>
                 <th class="pr-0" style="min-width: 160px">Date</th>
-                <th class="pr-0 " style="min-width: 100px">Action</th>
+                <th class="pr-0" style="min-width: 100px">Action</th>
               </tr>
             </thead>
             <tbody>

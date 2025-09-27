@@ -14,7 +14,10 @@
           <div class="form-group row"></div>
           <div class="form-group row">
             <div class="col-lg-4">
-              <label>Generic Drug <span class="text-danger">*</span></label>
+              <label
+                >Generic Drug <span class="text-danger">*</span> Can't find the drug? Create
+                <router-link to="/pharmacy/generic-drugs">here</router-link></label
+              >
               <v-select
                 v-validate="'required'"
                 data-vv-validate-on="blur"
@@ -23,7 +26,7 @@
                 @search="searchGenericDrugs"
                 v-model="drug_id"
                 label="name"
-                :reduce="items => ({ id: items.id, type: items.type, name: items.name })"
+                :reduce="(items) => ({ id: items.id, type: items.type, name: items.name })"
                 :options="drugs"
               />
               <span class="text-danger text-sm">{{ errors.first('drug') }}</span>
@@ -85,8 +88,9 @@
                   :value="dosageForm.id"
                   v-for="dosageForm in dosageForms"
                   :key="dosageForm.id"
-                  >{{ dosageForm.name }}</option
                 >
+                  {{ dosageForm.name }}
+                </option>
               </select>
               <span class="text-danger text-sm">{{ errors.first('dosage_form') }}</span>
             </div>
@@ -108,17 +112,18 @@
                   :value="measurement.id"
                   v-for="measurement in measurements"
                   :key="measurement.id"
-                  >{{ measurement.name }}</option
                 >
+                  {{ measurement.name }}
+                </option>
               </select>
               <span class="text-danger text-sm">{{ errors.first('strength') }}</span>
             </div>
             <div class="col-lg-4 mt-3" v-if="canSee">
               <label>Route of Administration <span class="text-danger">*</span></label>
               <select class="form-control form-control-sm" v-model="route" name="route">
-                <option :value="route.id" v-for="route in routes" :key="route.id">{{
-                  route.name
-                }}</option>
+                <option :value="route.id" v-for="route in routes" :key="route.id">
+                  {{ route.name }}
+                </option>
               </select>
               <span class="text-danger text-sm">{{ errors.first('route') }}</span>
             </div>
@@ -143,7 +148,7 @@
                 name="unit"
                 v-model="unit"
                 label="name"
-                :reduce="units => units.id"
+                :reduce="(units) => units.id"
                 :options="units"
               />
               <span class="text-danger text-sm">{{ errors.first('unit') }}</span>
@@ -208,9 +213,9 @@
                 v-model="vendor_id"
                 name="vendor"
               >
-                <option :value="vendor.id" v-for="vendor in vendors" :key="vendor.id">{{
-                  vendor.name
-                }}</option>
+                <option :value="vendor.id" v-for="vendor in vendors" :key="vendor.id">
+                  {{ vendor.name }}
+                </option>
               </select>
               <span class="text-danger text-sm">{{ errors.first('vendor') }}</span>
             </div>
@@ -393,6 +398,7 @@ export default {
       currentPage: 1,
       itemsPerPage: 50,
     });
+    this.searchGenericDrugs('');
   },
   methods: {
     initValues() {
@@ -442,7 +448,7 @@ export default {
     searchGenericDrugs(search) {
       this.$store.dispatch('pharmacy/fetchGenericDrugs', {
         currentPage: 1,
-        itemsPerPage: 20,
+        itemsPerPage: 50,
         search,
       });
     },
@@ -459,7 +465,7 @@ export default {
     },
 
     createPharmacyItem() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           // set spinner to submit button
           const submitButton = this.$refs['kt_pharmacy_item_submit'];

@@ -2,9 +2,7 @@
   <div>
     <div class="card card-custom gutter-b example example-compact">
       <div class="card-header" style="min-height: 50px !important">
-        <h3 class="card-title">
-          Merge Accounts
-        </h3>
+        <h3 class="card-title">Merge Accounts</h3>
       </div>
       <!--begin::Header-->
       <div class="card-header border-0">
@@ -23,7 +21,7 @@
               v-model="patient"
               :options="patients"
               :reduce="
-                patients => ({
+                (patients) => ({
                   fullname: patients.fullname,
                   id: patients.id,
                   hospital_id: patients.hospital_id,
@@ -53,7 +51,7 @@
               v-model="sourcePatients"
               :options="patients"
               :reduce="
-                patients => ({
+                (patients) => ({
                   fullname: patients.fullname,
                   id: patients.id,
                   hospital_id: patients.hospital_id,
@@ -149,7 +147,7 @@ export default {
       this.addSpinner(submitButton);
 
       const obj = {
-        sourcePatientIds: this.sourcePatients.map(patient => patient.id),
+        sourcePatientIds: this.sourcePatients.map((patient) => patient.id),
         targetPatientId: this.patient.id,
       };
       this.$store

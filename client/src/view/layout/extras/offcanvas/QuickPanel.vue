@@ -11,7 +11,7 @@
       id="kt_quick_panel"
       ref="kt_quick_panel"
       class="offcanvas offcanvas-right pt-5 pb-10"
-      style="overflow: hidden;"
+      style="overflow: hidden"
     >
       <!--begin::Header-->
       <div

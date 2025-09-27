@@ -3,7 +3,7 @@
   <div
     class="footer kt-grid__item bgi-position-center-center bgi-size-cover bgi-no-cover"
     id="kt_footer"
-    style="background-image: url('media/bg/bg-2.jpg');"
+    style="background-image: url('media/bg/bg-2.jpg')"
   >
     <!--begin::Container-->
     <div class="container py-lg-18 py-8">
@@ -24,26 +24,16 @@
           <h4 class="text-white pb-3">Quick Links</h4>
           <div class="d-flex align-items-center">
             <div class="d-flex flex-column mr-18">
-              <a href="#" class="text-white opacity-55 text-hover-primary">
-                General Reports
-              </a>
+              <a href="#" class="text-white opacity-55 text-hover-primary"> General Reports </a>
               <a href="#" class="py-2 text-white opacity-55 text-hover-primary">
                 Dashboart Widgets
               </a>
-              <a href="#" class="text-white opacity-50 text-hover-primary">
-                Custom Pages
-              </a>
+              <a href="#" class="text-white opacity-50 text-hover-primary"> Custom Pages </a>
             </div>
             <div class="d-flex flex-column">
-              <a href="#" class="text-white opacity-55 text-hover-primary">
-                User Setting
-              </a>
-              <a href="#" class="py-2 text-white opacity-55 text-hover-primary">
-                Custom Pages
-              </a>
-              <a href="#" class="text-white opacity-55 text-hover-primary">
-                Intranet Settings
-              </a>
+              <a href="#" class="text-white opacity-55 text-hover-primary"> User Setting </a>
+              <a href="#" class="py-2 text-white opacity-55 text-hover-primary"> Custom Pages </a>
+              <a href="#" class="text-white opacity-55 text-hover-primary"> Intranet Settings </a>
             </div>
           </div>
         </div>
@@ -51,7 +41,7 @@
         <!--begin::Col-->
         <div class="col-lg-4 my-lg-0 my-5">
           <h4 class="text-white pb-3">Get In Touch</h4>
-          <form class="rounded" style="background-color: rgba(0,0,0,.2);">
+          <form class="rounded" style="background-color: rgba(0, 0, 0, 0.2)">
             <div class="input-group p-2 align-items-center">
               <input
                 type="text"

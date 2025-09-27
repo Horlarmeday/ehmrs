@@ -2,9 +2,7 @@
   <div class="card card-custom gutter-b">
     <div class="card-header flex-wrap border-0 pt-6 pb-0">
       <div class="card-title">
-        <h3 class="card-label">
-          Item Logs
-        </h3>
+        <h3 class="card-label">Item Logs</h3>
       </div>
     </div>
     <div class="card-body">
@@ -14,35 +12,35 @@
         id="kt_datatable"
         style=""
       >
-        <table class="datatable-table" style="display: block;">
+        <table class="datatable-table" style="display: block">
           <thead class="datatable-head">
-            <tr class="datatable-row" style="left: 0px;">
+            <tr class="datatable-row" style="left: 0px">
               <th class="datatable-cell datatable-cell-sort">
-                <span style="width: 108px;">Product Code</span>
+                <span style="width: 108px">Product Code</span>
               </th>
               <th class="datatable-cell datatable-cell-sort">
-                <span style="width: 108px;">Batch</span>
+                <span style="width: 108px">Batch</span>
               </th>
               <th class="datatable-cell datatable-cell-sort">
-                <span style="width: 108px;">Unit Price (₦)</span>
+                <span style="width: 108px">Unit Price (₦)</span>
               </th>
               <th class="datatable-cell datatable-cell-sort">
-                <span style="width: 108px;">Selling Price (₦)</span>
+                <span style="width: 108px">Selling Price (₦)</span>
               </th>
               <th class="datatable-cell datatable-cell-sort">
-                <span style="width: 108px;">Quantity Remaining</span>
+                <span style="width: 108px">Quantity Remaining</span>
               </th>
               <th class="datatable-cell datatable-cell-sort">
-                <span style="width: 108px;">Log Type </span>
+                <span style="width: 108px">Log Type </span>
               </th>
               <th class="datatable-cell datatable-cell-sort">
-                <span style="width: 108px;">Voucher</span>
+                <span style="width: 108px">Voucher</span>
               </th>
               <th class="datatable-cell datatable-cell-sort">
-                <span style="width: 108px;">Date</span>
+                <span style="width: 108px">Date</span>
               </th>
               <th class="datatable-cell datatable-cell-sort">
-                <span style="width: 108px;">Initiated By</span>
+                <span style="width: 108px">Initiated By</span>
               </th>
             </tr>
           </thead>
@@ -55,27 +53,25 @@
               :key="log.id"
               data-row="0"
               class="datatable-row"
-              style="left: 0px;"
+              style="left: 0px"
             >
               <td class="datatable-cell">
-                <span style="width: 108px;">{{ log.product_code }}</span>
+                <span style="width: 108px">{{ log.product_code }}</span>
               </td>
               <td class="datatable-cell">
-                <span style="width: 108px;">{{ log.batch }}</span>
+                <span style="width: 108px">{{ log.batch }}</span>
               </td>
               <td class="datatable-cell">
-                <span style="width: 108px;">{{ log.unit_price }}</span>
+                <span style="width: 108px">{{ log.unit_price }}</span>
               </td>
               <td class="datatable-cell">
-                <span style="width: 108px;">{{ log.selling_price }}</span>
+                <span style="width: 108px">{{ log.selling_price }}</span>
               </td>
               <td class="datatable-cell">
-                <span style="width: 108px;"
-                  >{{ log.quantity_remaining }} {{ log?.unit?.name }}</span
-                >
+                <span style="width: 108px">{{ log.quantity_remaining }} {{ log?.unit?.name }}</span>
               </td>
               <td class="datatable-cell">
-                <span style="width: 108px;"
+                <span style="width: 108px"
                   ><span :class="getLogTypeStatus(log.log_type)" class="label label-dot mr-2"></span
                   ><span :class="getLogTypeTextColor(log.log_type)" class="font-weight-bold">{{
                     log.log_type
@@ -83,17 +79,17 @@
                 >
               </td>
               <td class="datatable-cell">
-                <span style="width: 108px;">
+                <span style="width: 108px">
                   {{ log.voucher }}
                 </span>
               </td>
               <td class="datatable-cell">
-                <span style="width: 108px;">
+                <span style="width: 108px">
                   {{ log.createdAt | dayjs('MMM Do YYYY, h:mma') }}
                 </span>
               </td>
               <td class="datatable-cell">
-                <span style="width: 108px;">
+                <span style="width: 108px">
                   {{ log.staff.firstname }} {{ log.staff.lastname }}
                 </span>
               </td>

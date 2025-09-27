@@ -28,11 +28,11 @@ module.exports = {
     },
     watch: true,
   },
-  chainWebpack: config => {
+  chainWebpack: (config) => {
     config.module
       .rule('eslint')
       .use('eslint-loader')
-      .tap(options => {
+      .tap((options) => {
         options.configFile = path.resolve(__dirname, '.eslintrc.js');
         return options;
       });

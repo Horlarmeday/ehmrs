@@ -53,8 +53,8 @@ export default {
   data() {
     return {
       investigations: this.tests
-        .filter(test => test.status === 'Result Added')
-        .map(test => {
+        .filter((test) => test.status === 'Result Added')
+        .map((test) => {
           return {
             result: test?.result?.result || '',
             name: test.investigation.name,

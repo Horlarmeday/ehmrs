@@ -311,10 +311,10 @@
                 <b-button
                   v-if="
                     !error &&
-                      !filters.search &&
-                      !filters.bank_account_id &&
-                      filters.terminal_type === '' &&
-                      filters.is_active === ''
+                    !filters.search &&
+                    !filters.bank_account_id &&
+                    filters.terminal_type === '' &&
+                    filters.is_active === ''
                   "
                   variant="primary"
                   @click="showCreateModal"
@@ -478,7 +478,7 @@ export default {
 
         if (response && response.success && response.data) {
           // Map bank accounts to select options format
-          this.bankAccountOptions = response.data.map(account => ({
+          this.bankAccountOptions = response.data.map((account) => ({
             value: account.id,
             text: `${account.bank_name} - ${account.account_number}`,
           }));
@@ -504,7 +504,7 @@ export default {
     },
 
     // Search and Filtering
-    debouncedSearch: debounce(function() {
+    debouncedSearch: debounce(function () {
       this.currentPage = 1;
       this.applyFilters();
     }, 300),
@@ -545,7 +545,7 @@ export default {
     // Selection
     toggleSelectAll() {
       if (this.selectAll) {
-        this.selectedItems = this.posTerminals.map(terminal => terminal.id);
+        this.selectedItems = this.posTerminals.map((terminal) => terminal.id);
       } else {
         this.selectedItems = [];
       }
@@ -641,7 +641,7 @@ export default {
 
       try {
         await Promise.all(
-          this.selectedItems.map(id =>
+          this.selectedItems.map((id) =>
             this.$store.dispatch('accounting/togglePOSTerminalStatus', id)
           )
         );
@@ -668,7 +668,7 @@ export default {
 
       try {
         await Promise.all(
-          this.selectedItems.map(id => this.$store.dispatch('accounting/deletePOSTerminal', id))
+          this.selectedItems.map((id) => this.$store.dispatch('accounting/deletePOSTerminal', id))
         );
         this.selectedItems = [];
         this.selectAll = false;

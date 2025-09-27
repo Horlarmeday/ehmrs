@@ -155,7 +155,7 @@ export default {
         evening: { name: 'Evening', slots: [] },
       };
 
-      this.availableSlots.forEach(slot => {
+      this.availableSlots.forEach((slot) => {
         const hour = parseInt(slot.time.split(':')[0]);
         if (hour < 12) {
           groups.morning.slots.push(slot);
@@ -166,7 +166,7 @@ export default {
         }
       });
 
-      return Object.values(groups).filter(group => group.slots.length > 0);
+      return Object.values(groups).filter((group) => group.slots.length > 0);
     },
   },
   watch: {
@@ -250,7 +250,7 @@ export default {
         });
 
         const bookedSlots = new Set();
-        appointments.forEach(appointment => {
+        appointments.forEach((appointment) => {
           const startTime = appointment.appointmentTime.substring(0, 5);
           bookedSlots.add(startTime);
 
@@ -266,7 +266,7 @@ export default {
 
         const excludedSlots = new Set(this.excludeSlots);
 
-        return slots.map(slot => {
+        return slots.map((slot) => {
           if (bookedSlots.has(slot.time)) {
             return {
               ...slot,

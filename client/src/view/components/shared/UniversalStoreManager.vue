@@ -162,7 +162,7 @@ export default {
     storeType: {
       type: String,
       required: true,
-      validator: value => ['pharmacy', 'general_store', 'laboratory'].includes(value),
+      validator: (value) => ['pharmacy', 'general_store', 'laboratory'].includes(value),
     },
     items: {
       type: Array,

@@ -29,7 +29,8 @@
                     v-for="department in departments"
                     :key="department.id"
                     :value="{ id: department.id, text: department.department }"
-                    >{{ department.department }}
+                  >
+                    {{ department.department }}
                   </option>
                 </select>
                 <span class="text-danger text-sm">{{ errors.first('department') }}</span>
@@ -48,7 +49,8 @@
                     v-for="role in roles"
                     :key="role.id"
                     :value="{ id: role.id, text: role.role }"
-                    >{{ role.role }}
+                  >
+                    {{ role.role }}
                   </option>
                 </select>
                 <span class="text-danger text-sm">{{ errors.first('role') }}</span>
@@ -62,7 +64,8 @@
                     v-for="sub in sub_roles"
                     :key="sub.id"
                     :value="{ id: sub.id, text: sub.sub }"
-                    >{{ sub.sub }}
+                  >
+                    {{ sub.sub }}
                   </option>
                 </select>
               </div>
@@ -147,7 +150,7 @@ export default {
     },
 
     updateEmployee() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           // set spinner to submit button
           const submitButton = this.$refs['kt-updateEmployee-submit'];

@@ -102,9 +102,9 @@ export default {
 
     routineItems: {
       get() {
-        const items = this.defaults?.find(def => def.type === this.defaultData)?.data;
+        const items = this.defaults?.find((def) => def.type === this.defaultData)?.data;
         if (items) {
-          return items.map(item => ({
+          return items.map((item) => ({
             name: item?.drug?.name,
             drug_id: item?.drug?.drug_id,
             price: item.drug?.price,
@@ -149,16 +149,16 @@ export default {
       if (!localStorage.getItem('defaults')) {
         this.$store
           .dispatch('model/fetchDefaults')
-          .then(res => localStorage.setItem('defaults', JSON.stringify(res.data.data)));
+          .then((res) => localStorage.setItem('defaults', JSON.stringify(res.data.data)));
       }
     },
 
     isSelected(item) {
-      return this.routineItems.some(t => t.drug_id === item.drug_id);
+      return this.routineItems.some((t) => t.drug_id === item.drug_id);
     },
 
     toggleDrug(item) {
-      const index = this.routineItems.findIndex(t => t.drug_id === item.drug_id);
+      const index = this.routineItems.findIndex((t) => t.drug_id === item.drug_id);
       if (index !== -1) {
         this.routineItems.splice(index, 1); // Remove drug
       } else {
@@ -172,13 +172,13 @@ export default {
 
     getInventoryId() {
       const type = this.switchPosition && this.switchSpot ? 'NHIS' : 'Cash';
-      return this.inventories.find(inventory =>
+      return this.inventories.find((inventory) =>
         inventory.name.toLowerCase().includes(type.toLowerCase())
       )?.id;
     },
 
     submitItems() {
-      const data = this.routineItems.map(item => ({
+      const data = this.routineItems.map((item) => ({
         ...item,
         inventory_id: this.getInventoryId(),
         source: this.source,

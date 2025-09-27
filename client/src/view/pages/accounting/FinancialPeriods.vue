@@ -277,9 +277,7 @@
         </div>
       </b-form>
       <template #modal-footer>
-        <b-button variant="secondary" @click="showModal = false">
-          Cancel
-        </b-button>
+        <b-button variant="secondary" @click="showModal = false"> Cancel </b-button>
         <b-button variant="primary" @click="savePeriod" :disabled="saving">
           <span v-if="saving"> <i class="fas fa-spinner fa-spin mr-2"></i>Saving... </span>
           <span v-else>
@@ -336,9 +334,7 @@
       </div>
 
       <template #modal-footer>
-        <b-button variant="secondary" @click="showActionModal = false">
-          Cancel
-        </b-button>
+        <b-button variant="secondary" @click="showActionModal = false"> Cancel </b-button>
         <b-button :variant="actionModalVariant" @click="executePeriodAction" :disabled="executing">
           <span v-if="executing"> <i class="fas fa-spinner fa-spin mr-2"></i>Processing... </span>
           <span v-else>
@@ -405,7 +401,7 @@ export default {
       return this.$store.getters['accounting/getFinancialPeriodsSummary'] || {};
     },
     currentPeriod() {
-      return this.financialPeriods.find(p => p.is_current);
+      return this.financialPeriods.find((p) => p.is_current);
     },
     actionModalTitle() {
       const titles = {
@@ -416,8 +412,7 @@ export default {
     },
     actionModalMessage() {
       const messages = {
-        open:
-          'You are about to open this financial period. This will make it the current active period.',
+        open: 'You are about to open this financial period. This will make it the current active period.',
         close: 'You are about to close this financial period. This action cannot be undone.',
       };
       return messages[this.selectedAction] || '';
@@ -456,7 +451,7 @@ export default {
     },
 
     editPeriod(id) {
-      const period = this.financialPeriods.find(p => p.id === id);
+      const period = this.financialPeriods.find((p) => p.id === id);
       if (period) {
         // Map server fields to form fields
         this.periodForm = {

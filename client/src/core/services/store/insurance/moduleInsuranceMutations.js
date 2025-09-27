@@ -20,7 +20,7 @@ export default {
   },
 
   UPDATE_INSURANCE(state, insurance) {
-    const insuranceIndex = state.insurances.findIndex(p => p.id === insurance.id);
+    const insuranceIndex = state.insurances.findIndex((p) => p.id === insurance.id);
     Object.assign(state.insurances[insuranceIndex], insurance);
   },
 
@@ -57,7 +57,7 @@ export default {
   },
 
   UPDATE_HMO(state, hmo) {
-    const hmoIndex = state.hmos.findIndex(d => d.id === hmo.id);
+    const hmoIndex = state.hmos.findIndex((d) => d.id === hmo.id);
     Object.assign(state.hmos[hmoIndex], hmo);
   },
 };

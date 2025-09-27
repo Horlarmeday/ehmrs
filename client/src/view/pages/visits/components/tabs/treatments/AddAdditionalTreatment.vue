@@ -48,7 +48,7 @@
 
       <div class="mb-3">
         <button
-          class="btn btn-primary float-right  mb-lg-5"
+          class="btn btn-primary float-right mb-lg-5"
           @click="submitTreatments"
           :disabled="isDisabled || !additionalTreatments.length"
           ref="kt_additionalItems_submit"
@@ -118,7 +118,7 @@ export default {
     },
 
     initValues() {
-      this.additionalTreatments.forEach(treatment => {
+      this.additionalTreatments.forEach((treatment) => {
         treatment.dosage_administered = '';
         treatment.remarks = '';
         treatment.drug = '';
@@ -131,7 +131,7 @@ export default {
       const submitButton = this.$refs['kt_additionalItems_submit'];
       this.addSpinner(submitButton);
 
-      const treatments = this.additionalTreatments.map(treatment => ({
+      const treatments = this.additionalTreatments.map((treatment) => ({
         ...treatment,
         source: this.source,
       }));

@@ -83,9 +83,7 @@
                   <router-link
                     v-b-tooltip.hover
                     title="Change Result Status"
-                    :to="
-                      `/laboratory/results-update/${result.id}?patient=${result.patient.fullname}`
-                    "
+                    :to="`/laboratory/results-update/${result.id}?patient=${result.patient.fullname}`"
                     class="btn btn-icon btn-light btn-hover-primary btn-sm mr-1"
                   >
                     <ArrowRightIcon />

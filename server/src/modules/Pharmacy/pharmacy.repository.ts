@@ -420,6 +420,7 @@ export const getDrugPrescriptions = async ({
   const { limit, offset } = calcLimitAndOffset(+currentPage, +pageLimit);
   const query = {
     [Op.or]: [{ status: DrugStatus.PENDING }, { status: DrugStatus.PARTIAL_DISPENSED }],
+    has_paid: true,
     ...(period && getPeriodQuery(period, 'date_prescribed')),
     ...(start && end && dateIntervalQuery('date_prescribed', start, end)),
   };

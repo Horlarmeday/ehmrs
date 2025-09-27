@@ -918,7 +918,7 @@
         <span class="menu-text">Vuetify</span>
         <i class="menu-arrow"></i>
       </a>
-      <div class="menu-submenu" style="display: none; overflow: hidden;">
+      <div class="menu-submenu" style="display: none; overflow: hidden">
         <span class="menu-arrow"></span>
         <ul class="menu-subnav">
           <li aria-haspopup="true" class="menu-item menu-item-parent">

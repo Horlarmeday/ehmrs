@@ -22,9 +22,7 @@
     <div id="kt_quick_user" ref="kt_quick_user" class="offcanvas offcanvas-right p-10">
       <!--begin::Header-->
       <div class="offcanvas-header d-flex align-items-center justify-content-between pb-5">
-        <h3 class="font-weight-bold m-0">
-          Account
-        </h3>
+        <h3 class="font-weight-bold m-0">Account</h3>
         <a
           href="#"
           class="btn btn-xs btn-icon btn-light btn-hover-primary"
@@ -38,7 +36,7 @@
       <!--begin::Content-->
       <perfect-scrollbar
         class="offcanvas-content pr-5 mr-n5 scroll"
-        style="max-height: 90vh; position: relative;"
+        style="max-height: 90vh; position: relative"
       >
         <!--begin::Header-->
         <div class="d-flex align-items-center mt-5">
@@ -79,9 +77,7 @@
                 </span>
               </a>
             </div>
-            <button class="btn btn-light-primary btn-bold" @click="onLogout">
-              Sign out
-            </button>
+            <button class="btn btn-light-primary btn-bold" @click="onLogout">Sign out</button>
           </div>
         </div>
         <!--end::Header-->
@@ -102,9 +98,7 @@
               </div>
               <div class="navi-text">
                 <div class="font-weight-bold">My Profile</div>
-                <div class="text-muted">
-                  Account settings and more
-                </div>
+                <div class="text-muted">Account settings and more</div>
               </div>
             </div>
           </router-link>

@@ -92,7 +92,7 @@ export default {
   created() {
     this.$store
       .dispatch('immunization/fetchOneImmunizationAccount', this.$route.query.immunization)
-      .then(response => {
+      .then((response) => {
         const res = response.data.data;
         this.$store.dispatch('insurance/fetchPatientDefaultInsurance', res.patient_id);
         this.$store.dispatch('patient/setCurrentPatient', { ...res.insurance, ...res.patient });

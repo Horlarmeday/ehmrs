@@ -13,9 +13,7 @@
     <!--begin::Navigation-->
     <div class="navi navi-hover min-w-md-250px">
       <b-dropdown-text tag="div" class="navi-header font-weight-bold">
-        <span class="font-size-lg">
-          Choose Label:
-        </span>
+        <span class="font-size-lg"> Choose Label: </span>
         <i
           class="flaticon2-information icon-md text-muted"
           v-b-tooltip="'Click to learn more...'"
@@ -25,45 +23,35 @@
       <b-dropdown-text tag="div" class="navi-item">
         <a href="#" class="navi-link">
           <span class="navi-text">
-            <span class="label label-xl label-inline label-light-success">
-              Customer
-            </span>
+            <span class="label label-xl label-inline label-light-success"> Customer </span>
           </span>
         </a>
       </b-dropdown-text>
       <b-dropdown-text tag="div" class="navi-item">
         <a href="#" class="navi-link">
           <span class="navi-text">
-            <span class="label label-xl label-inline label-light-danger">
-              Partner
-            </span>
+            <span class="label label-xl label-inline label-light-danger"> Partner </span>
           </span>
         </a>
       </b-dropdown-text>
       <b-dropdown-text tag="div" class="navi-item">
         <a href="#" class="navi-link">
           <span class="navi-text">
-            <span class="label label-xl label-inline label-light-warning">
-              Suplier
-            </span>
+            <span class="label label-xl label-inline label-light-warning"> Suplier </span>
           </span>
         </a>
       </b-dropdown-text>
       <b-dropdown-text tag="div" class="navi-item">
         <a href="#" class="navi-link">
           <span class="navi-text">
-            <span class="label label-xl label-inline label-light-primary">
-              Member
-            </span>
+            <span class="label label-xl label-inline label-light-primary"> Member </span>
           </span>
         </a>
       </b-dropdown-text>
       <b-dropdown-text tag="div" class="navi-item">
         <a href="#" class="navi-link">
           <span class="navi-text">
-            <span class="label label-xl label-inline label-light-dark">
-              Staff
-            </span>
+            <span class="label label-xl label-inline label-light-dark"> Staff </span>
           </span>
         </a>
       </b-dropdown-text>

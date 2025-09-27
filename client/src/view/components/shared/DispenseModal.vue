@@ -152,9 +152,7 @@
 
     <template #modal-footer="{ ok, cancel }">
       <div class="w-100 d-flex justify-content-between">
-        <button type="button" class="btn btn-light" @click="cancel()">
-          Cancel
-        </button>
+        <button type="button" class="btn btn-light" @click="cancel()">Cancel</button>
         <button
           type="button"
           class="btn btn-success"
@@ -202,7 +200,7 @@ export default {
       if (this.selectedDispensary) {
         // If dispensing from a specific dispensary
         const dispensaryItem = this.selectedDispensary.items?.find(
-          item => item.general_store_item_id === this.selectedItem.id
+          (item) => item.general_store_item_id === this.selectedItem.id
         );
         return dispensaryItem?.quantity || 0;
       }
@@ -265,7 +263,7 @@ export default {
     async loadAvailableDispensaries() {
       try {
         const response = await this.$store.dispatch('generalStore/fetchDispensaries');
-        this.availableDispensaries = response.data.data.filter(d => d.is_active);
+        this.availableDispensaries = response.data.data.filter((d) => d.is_active);
       } catch (error) {
         console.error('Failed to load dispensaries:', error);
       }
@@ -334,7 +332,7 @@ export default {
           item: this.selectedItem,
           dispensary:
             this.selectedDispensary ||
-            this.availableDispensaries.find(d => d.id === this.selectedDispensaryId),
+            this.availableDispensaries.find((d) => d.id === this.selectedDispensaryId),
           quantity: this.dispenseQuantity,
           recipient: this.recipientName,
           purpose: this.dispensePurpose,

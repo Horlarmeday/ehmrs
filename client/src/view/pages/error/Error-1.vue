@@ -7,12 +7,10 @@
       }"
     >
       <!-- begin:: Content -->
-      <h1 class="font-size-sm-100 font-weight-boldest text-dark-75 mt-15" style="font-size: 150px;">
+      <h1 class="font-size-sm-100 font-weight-boldest text-dark-75 mt-15" style="font-size: 150px">
         404
       </h1>
-      <p class="font-size-h3 font-weight-light">
-        OOPS! Something went wrong here
-      </p>
+      <p class="font-size-h3 font-weight-light">OOPS! Something went wrong here</p>
       <!-- end:: Content -->
     </div>
   </div>

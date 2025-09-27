@@ -72,7 +72,7 @@ export default {
     },
 
     createClinicalNote() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             notes: this.notes,

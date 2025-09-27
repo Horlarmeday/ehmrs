@@ -1,6 +1,6 @@
 <template>
   <div>
-    <CategoryVisits category="Outpatient" :url="url" :filter="filter" />
+    <CategoryVisits category="Patient" :url="url" :filter="filter" />
   </div>
 </template>
 <script>

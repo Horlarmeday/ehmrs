@@ -49,9 +49,7 @@
             <b-button variant="outline-primary" @click="clearFilters" class="mr-2">
               Clear
             </b-button>
-            <b-button variant="primary" @click="applyFilters" :disabled="loading">
-              Apply
-            </b-button>
+            <b-button variant="primary" @click="applyFilters" :disabled="loading"> Apply </b-button>
           </b-col>
         </b-row>
       </b-card-body>

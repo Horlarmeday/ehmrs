@@ -9,12 +9,9 @@
           <div class="col-lg-6">
             <label>Anaesthetist:</label>
             <select class="form-control form-control-sm" v-model="anaesthetist">
-              <option
-                :value="anaesthetist.id"
-                v-for="(anaesthetist, i) in anaesthetists"
-                :key="i"
-                >{{ anaesthetist.fullname }}</option
-              >
+              <option :value="anaesthetist.id" v-for="(anaesthetist, i) in anaesthetists" :key="i">
+                {{ anaesthetist.fullname }}
+              </option>
             </select>
           </div>
           <div class="col-lg-6">
@@ -26,9 +23,9 @@
               class="form-control form-control-sm"
               v-model="surgeon"
             >
-              <option :value="surgeon.id" v-for="(surgeon, i) in surgeons" :key="i">{{
-                surgeon.fullname
-              }}</option>
+              <option :value="surgeon.id" v-for="(surgeon, i) in surgeons" :key="i">
+                {{ surgeon.fullname }}
+              </option>
             </select>
             <span class="form-text text-danger">{{ errors.first('surgeon') }}</span>
           </div>
@@ -37,9 +34,9 @@
           <div class="col-lg-6">
             <label>Scrub Nurse:</label>
             <select class="form-control form-control-sm" v-model="scrub_nurse">
-              <option :value="nurse.id" v-for="(nurse, i) in anaesthetists" :key="i">{{
-                nurse.fullname
-              }}</option>
+              <option :value="nurse.id" v-for="(nurse, i) in anaesthetists" :key="i">
+                {{ nurse.fullname }}
+              </option>
             </select>
           </div>
           <div class="col-lg-6">
@@ -51,7 +48,7 @@
               :options="anaesthetists"
               multiple
               :reduce="
-                anaesthetists => ({
+                (anaesthetists) => ({
                   id: anaesthetists.id,
                   name: anaesthetists.fullname,
                 })
@@ -175,11 +172,11 @@ export default {
     },
 
     surgeons() {
-      return this.employees.filter(employee => employee.department === this.MEDICAL_PRACTITIONER);
+      return this.employees.filter((employee) => employee.department === this.MEDICAL_PRACTITIONER);
     },
 
     anaesthetists() {
-      return this.employees.filter(employee => employee.department === this.NURSING);
+      return this.employees.filter((employee) => employee.department === this.NURSING);
     },
   },
   methods: {
@@ -215,7 +212,7 @@ export default {
     },
 
     createOperationNote() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             assistance: this.assistance,

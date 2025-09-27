@@ -41,9 +41,9 @@
             data-vv-validate-on="blur"
             name="sample"
           >
-            <option :value="sample.id" v-for="sample in samples" :key="sample.id">{{
-              sample.name
-            }}</option>
+            <option :value="sample.id" v-for="sample in samples" :key="sample.id">
+              {{ sample.name }}
+            </option>
           </select>
           <span class="text-danger text-sm">{{ errors.first('sample') }}</span>
         </div>
@@ -164,7 +164,7 @@ export default {
       this.initValues();
     },
     createTest() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             sample_id: this.sample_id,

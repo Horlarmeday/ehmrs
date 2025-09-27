@@ -23,7 +23,7 @@
 
       <div class="form-group">
         <label>Select Items to Transfer:</label>
-        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto">
           <table class="table table-bordered">
             <thead class="thead-light">
               <tr>
@@ -135,9 +135,7 @@
 
     <template #modal-footer="{ ok, cancel }">
       <div class="w-100 d-flex justify-content-between">
-        <button type="button" class="btn btn-light" @click="cancel()">
-          Cancel
-        </button>
+        <button type="button" class="btn btn-light" @click="cancel()">Cancel</button>
         <button
           type="button"
           class="btn btn-primary"
@@ -171,7 +169,7 @@ export default {
       return (
         this.selectedItems.length > 0 &&
         this.selectedItems.every(
-          itemId =>
+          (itemId) =>
             this.transferQuantities[itemId] > 0 &&
             this.transferQuantities[itemId] <= this.getAvailableQuantity(this.getItemById(itemId))
         )
@@ -190,7 +188,7 @@ export default {
     show(dispensary, items) {
       this.targetDispensary = dispensary;
       this.availableItems = items.filter(
-        item => (item.quantity_available || item.current_stock || item.stock_quantity || 0) > 0
+        (item) => (item.quantity_available || item.current_stock || item.stock_quantity || 0) > 0
       );
       this.$refs.modal.show();
     },
@@ -265,7 +263,7 @@ export default {
       try {
         const transferData = {
           dispensary_id: this.targetDispensary.id,
-          items: this.selectedItems.map(itemId => ({
+          items: this.selectedItems.map((itemId) => ({
             item_id: itemId,
             quantity: this.transferQuantities[itemId],
           })),
@@ -300,7 +298,7 @@ export default {
     },
 
     getItemById(itemId) {
-      return this.availableItems.find(item => item.id === itemId);
+      return this.availableItems.find((item) => item.id === itemId);
     },
 
     getAvailableQuantity(item) {

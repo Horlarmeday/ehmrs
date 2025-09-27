@@ -503,12 +503,12 @@ export default {
 
       // Apply severity filter
       if (this.currentSeverityFilter) {
-        filtered = filtered.filter(alert => alert.severity === this.currentSeverityFilter);
+        filtered = filtered.filter((alert) => alert.severity === this.currentSeverityFilter);
       }
 
       // Apply category filter
       if (this.currentCategoryFilter) {
-        filtered = filtered.filter(alert => alert.category === this.currentCategoryFilter);
+        filtered = filtered.filter((alert) => alert.category === this.currentCategoryFilter);
       }
 
       // Sort alerts
@@ -542,13 +542,13 @@ export default {
 
       if (this.currentSeverityFilter) {
         totalFiltered = totalFiltered.filter(
-          alert => alert.severity === this.currentSeverityFilter
+          (alert) => alert.severity === this.currentSeverityFilter
         );
       }
 
       if (this.currentCategoryFilter) {
         totalFiltered = totalFiltered.filter(
-          alert => alert.category === this.currentCategoryFilter
+          (alert) => alert.category === this.currentCategoryFilter
         );
       }
 
@@ -608,7 +608,7 @@ export default {
 
     // Selection methods
     selectAllVisibleAlerts() {
-      this.selectedAlerts = this.filteredAndSortedAlerts.map(alert => alert.id);
+      this.selectedAlerts = this.filteredAndSortedAlerts.map((alert) => alert.id);
     },
 
     clearSelection() {
@@ -658,8 +658,8 @@ export default {
 
     async acknowledgeAllFiltered() {
       const unreadIds = this.filteredAndSortedAlerts
-        .filter(alert => !alert.acknowledged_at)
-        .map(alert => alert.id);
+        .filter((alert) => !alert.acknowledged_at)
+        .map((alert) => alert.id);
 
       if (unreadIds.length === 0) return;
 

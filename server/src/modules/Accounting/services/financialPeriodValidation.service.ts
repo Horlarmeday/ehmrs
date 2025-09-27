@@ -1,4 +1,4 @@
-import { Transaction } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 import { FinancialPeriod } from '../../../database/models/financialPeriod';
 import { BadException } from '../../../common/util/api-error';
 import { FinancialPeriodStatus } from '../enums';
@@ -327,8 +327,8 @@ export class FinancialPeriodValidationService {
 
       const activePeriod = await FinancialPeriod.findOne({
         where: {
-          start_date: { [require('sequelize').Op.lte]: currentDate },
-          end_date: { [require('sequelize').Op.gte]: currentDate },
+          start_date: { [Op.lte]: currentDate },
+          end_date: { [Op.gte]: currentDate },
           status: FinancialPeriodStatus.OPEN,
         },
         transaction,

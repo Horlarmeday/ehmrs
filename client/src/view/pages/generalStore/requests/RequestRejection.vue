@@ -6,9 +6,7 @@
         <i class="flaticon2-close text-danger mr-2"></i>
         Reject Request
       </h3>
-      <p class="text-muted mb-0">
-        Review and provide rejection reason for the request
-      </p>
+      <p class="text-muted mb-0">Review and provide rejection reason for the request</p>
     </div>
 
     <!-- Request Summary -->
@@ -200,9 +198,7 @@
               <div v-if="errors.rejection_reason" class="invalid-feedback d-block">
                 {{ errors.rejection_reason }}
               </div>
-              <small class="form-text text-muted">
-                Choose the primary reason for rejection
-              </small>
+              <small class="form-text text-muted"> Choose the primary reason for rejection </small>
             </div>
 
             <div class="col-md-6 mb-3">
@@ -234,9 +230,7 @@
               <div v-if="errors.detailed_reason" class="invalid-feedback d-block">
                 {{ errors.detailed_reason }}
               </div>
-              <small class="form-text text-muted">
-                Explain why the request was rejected
-              </small>
+              <small class="form-text text-muted"> Explain why the request was rejected </small>
             </div>
 
             <div class="col-12 mb-3">
@@ -250,9 +244,7 @@
               <div v-if="errors.suggestions" class="invalid-feedback d-block">
                 {{ errors.suggestions }}
               </div>
-              <small class="form-text text-muted">
-                Helpful suggestions for future requests
-              </small>
+              <small class="form-text text-muted"> Helpful suggestions for future requests </small>
             </div>
 
             <div class="col-12 mb-3">
@@ -548,7 +540,7 @@ export default {
         };
 
         // Remove empty optional fields
-        Object.keys(rejectionData).forEach(key => {
+        Object.keys(rejectionData).forEach((key) => {
           if (rejectionData[key] === '' || rejectionData[key] === null) {
             delete rejectionData[key];
           }

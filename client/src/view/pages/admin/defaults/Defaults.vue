@@ -3,9 +3,7 @@
     <!--begin::Card-->
     <div class="card card-custom gutter-b example example-compact">
       <div class="card-header" style="min-height: 50px !important">
-        <h3 class="card-title">
-          Defaults
-        </h3>
+        <h3 class="card-title">Defaults</h3>
       </div>
       <!--begin::Header-->
       <div class="card-header border-0">
@@ -114,7 +112,7 @@ export default {
   created() {
     this.$store
       .dispatch('model/fetchDefaults')
-      .then(res => localStorage.setItem('defaults', JSON.stringify(res.data.data)));
+      .then((res) => localStorage.setItem('defaults', JSON.stringify(res.data.data)));
   },
 };
 </script>

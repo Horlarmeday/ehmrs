@@ -16,7 +16,7 @@
               v-model="patient"
               :options="patients"
               :reduce="
-                patients => ({
+                (patients) => ({
                   fullname: patients.fullname,
                   firstname: patients.firstname,
                   lastname: patients.lastname,
@@ -182,7 +182,7 @@
                     v-model="service_id"
                     label="name"
                     :options="services"
-                    :reduce="services => services.id"
+                    :reduce="(services) => services.id"
                   />
                 </div>
               </div>

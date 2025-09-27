@@ -17,9 +17,9 @@
             data-vv-validate-on="blur"
             name="category"
           >
-            <option :value="category" v-for="(category, i) in categories" :key="i">{{
-              category
-            }}</option>
+            <option :value="category" v-for="(category, i) in categories" :key="i">
+              {{ category }}
+            </option>
           </select>
           <span class="text-danger text-sm">{{ errors.first('category') }}</span>
         </div>
@@ -32,8 +32,8 @@
             v-validate="'required'"
             data-vv-validate-on="blur"
           >
-            <option v-for="department in departments" :key="department" :value="department"
-              >{{ department }}
+            <option v-for="department in departments" :key="department" :value="department">
+              {{ department }}
             </option>
           </select>
           <span class="text-danger text-sm">{{ errors.first('department') }}</span>
@@ -47,8 +47,8 @@
             v-validate="'required'"
             data-vv-validate-on="blur"
           >
-            <option v-for="professional in professionals" :key="professional" :value="professional"
-              >{{ professional }}
+            <option v-for="professional in professionals" :key="professional" :value="professional">
+              {{ professional }}
             </option>
           </select>
           <span class="text-danger text-sm">{{ errors.first('professional') }}</span>
@@ -105,14 +105,12 @@
             v-model="service_id"
             label="name"
             :options="services"
-            :reduce="services => services.id"
+            :reduce="(services) => services.id"
           />
         </div>
       </div>
       <div>
-        <button ref="kt_visit_submit" @click="updateVisit" class="btn btn-primary">
-          Update
-        </button>
+        <button ref="kt_visit_submit" @click="updateVisit" class="btn btn-primary">Update</button>
       </div>
     </div>
   </div>
@@ -184,15 +182,8 @@ export default {
     visit(val) {
       if (!val) return;
       if (Object.entries(val)?.length) {
-        const {
-          id,
-          professional,
-          category,
-          department,
-          type,
-          date_visit_start,
-          priority,
-        } = JSON.parse(JSON.stringify(val));
+        const { id, professional, category, department, type, date_visit_start, priority } =
+          JSON.parse(JSON.stringify(val));
         this.id = id;
         this.professional = professional;
         this.category = category;
@@ -215,7 +206,7 @@ export default {
     },
 
     updateVisit() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const date = `${dayjs(this.date_of_visit).format('YYYY-MM-DD')} ${this.time_of_visit}`;
           const obj = {
@@ -277,7 +268,7 @@ export default {
     },
   },
   created() {
-    this.$store.dispatch('visit/fetchVisit', this.$route.params.id).then(response => {
+    this.$store.dispatch('visit/fetchVisit', this.$route.params.id).then((response) => {
       const res = response.data.data;
       this.$store.dispatch('patient/setCurrentPatient', {
         ...res.insurance,

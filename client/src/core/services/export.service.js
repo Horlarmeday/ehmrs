@@ -43,9 +43,9 @@ class ExportService {
     const headers = Object.keys(data[0]);
     const csvContent = [
       headers.join(config.delimiter),
-      ...data.map(row =>
+      ...data.map((row) =>
         headers
-          .map(header => {
+          .map((header) => {
             const value = row[header];
             // Escape values that contain delimiter or quotes
             if (
@@ -107,7 +107,7 @@ class ExportService {
     });
 
     const headers = Object.keys(data[0]);
-    const rows = data.map(row => headers.map(header => row[header]));
+    const rows = data.map((row) => headers.map((header) => row[header]));
 
     doc.autoTable({
       head: [headers],
@@ -151,7 +151,7 @@ class ExportService {
 
     const results = [];
 
-    formats.forEach(format => {
+    formats.forEach((format) => {
       try {
         const filename = `${baseFilename}.${format}`;
 
@@ -189,10 +189,10 @@ class ExportService {
 
     const rows = Array.from(tableElement.querySelectorAll('tr'));
     const csvContent = rows
-      .map(row => {
+      .map((row) => {
         const cells = Array.from(row.querySelectorAll('td, th'));
         return cells
-          .map(cell => {
+          .map((cell) => {
             const text = cell.textContent.trim();
             if (text.includes(config.delimiter) || text.includes('"')) {
               return `"${text.replace(/"/g, '""')}"`;
@@ -213,7 +213,7 @@ class ExportService {
     const config = { ...this.defaultOptions.xlsx, ...options };
 
     const rows = Array.from(tableElement.querySelectorAll('tr'));
-    const data = rows.map(row => {
+    const data = rows.map((row) => {
       const cells = Array.from(row.querySelectorAll('td, th'));
       return cells.reduce((obj, cell, index) => {
         obj[`Column_${index + 1}`] = cell.textContent.trim();
@@ -331,7 +331,7 @@ class ExportService {
       throw new Error('Data cannot be empty');
     }
 
-    if (!data.every(item => typeof item === 'object' && item !== null)) {
+    if (!data.every((item) => typeof item === 'object' && item !== null)) {
       throw new Error('All data items must be objects');
     }
 
@@ -342,10 +342,10 @@ class ExportService {
    * Format data for export
    */
   formatDataForExport(data, formatters = {}) {
-    return data.map(item => {
+    return data.map((item) => {
       const formattedItem = { ...item };
 
-      Object.keys(formatters).forEach(key => {
+      Object.keys(formatters).forEach((key) => {
         if (formattedItem[key] !== undefined && formatters[key]) {
           formattedItem[key] = formatters[key](formattedItem[key]);
         }
@@ -362,5 +362,3 @@ const exportService = new ExportService();
 // Export both the class and the instance
 export { ExportService };
 export default exportService;
-
-

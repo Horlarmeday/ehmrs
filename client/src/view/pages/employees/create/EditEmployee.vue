@@ -139,7 +139,8 @@
               v-for="department in departments"
               :key="department.id"
               :value="{ id: department.id, text: department.department }"
-              >{{ department.department }}
+            >
+              {{ department.department }}
             </option>
           </select>
           <span class="text-danger text-sm">{{ errors.first('department') }}</span>
@@ -154,8 +155,8 @@
             data-vv-validate-on="blur"
             @change="getSubRoles"
           >
-            <option v-for="role in roles" :key="role.id" :value="{ id: role.id, text: role.role }"
-              >{{ role.role }}
+            <option v-for="role in roles" :key="role.id" :value="{ id: role.id, text: role.role }">
+              {{ role.role }}
             </option>
           </select>
           <span class="text-danger text-sm">{{ errors.first('role') }}</span>
@@ -163,8 +164,8 @@
         <div class="col-lg-4">
           <label>Sub Roles </label>
           <select class="form-control form-control-sm" v-model="sub_role">
-            <option v-for="sub in sub_roles" :key="sub.id" :value="{ id: sub.id, text: sub.sub }"
-              >{{ sub.sub }}
+            <option v-for="sub in sub_roles" :key="sub.id" :value="{ id: sub.id, text: sub.sub }">
+              {{ sub.sub }}
             </option>
           </select>
         </div>

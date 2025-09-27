@@ -33,7 +33,7 @@ const HtmlClass = {
       const _selfBodyClass = objectPath.get(this.config, 'self.body.class').toString();
       if (_selfBodyClass) {
         const bodyClasses = _selfBodyClass.split(' ');
-        bodyClasses.forEach(cssClass => {
+        bodyClasses.forEach((cssClass) => {
           store.dispatch(ADD_BODY_CLASSNAME, cssClass);
         });
       }

@@ -343,16 +343,12 @@
       </div>
 
       <template #modal-footer>
-        <b-button variant="secondary" @click="showUseDepositModal = false">
-          Cancel
-        </b-button>
+        <b-button variant="secondary" @click="showUseDepositModal = false"> Cancel </b-button>
         <b-button variant="success" @click="processDepositUsage" :disabled="processingUsage">
           <span v-if="processingUsage">
             <i class="fas fa-spinner fa-spin mr-2"></i>Processing...
           </span>
-          <span v-else>
-            Use Deposit
-          </span>
+          <span v-else> Use Deposit </span>
         </b-button>
       </template>
     </b-modal>

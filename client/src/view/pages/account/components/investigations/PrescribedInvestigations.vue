@@ -98,7 +98,9 @@ export default {
     },
 
     disableBilling() {
-      return this.investigations.every(investigation => investigation.billing_status === 'Billed');
+      return this.investigations.every(
+        (investigation) => investigation.billing_status === 'Billed'
+      );
     },
   },
   created() {
@@ -118,13 +120,13 @@ export default {
       return 'label label-inline label-light-info font-weight-bold';
     },
     isSelected(investigation) {
-      return this.selectedInvestigations.some(d => d.id === investigation.id);
+      return this.selectedInvestigations.some((d) => d.id === investigation.id);
     },
 
     toggleItem(investigation) {
       if (this.isSelected(investigation)) {
         // If the item is already selected, remove it from selectedItems
-        const itemIndex = this.selectedInvestigations.findIndex(d => d.id === investigation.id);
+        const itemIndex = this.selectedInvestigations.findIndex((d) => d.id === investigation.id);
         this.selectedInvestigations.splice(itemIndex, 1);
       } else {
         // If the item is not selected, add it to selectedItems

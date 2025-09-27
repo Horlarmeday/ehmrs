@@ -89,7 +89,7 @@ export default {
       this.initValues();
     },
     createSampleType() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             sample_id: this.sample_id,

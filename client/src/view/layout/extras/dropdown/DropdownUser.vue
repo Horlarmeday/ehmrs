@@ -27,9 +27,7 @@
             <i class="flaticon2-calendar-3 text-success"></i>
           </div>
           <div class="navi-text">
-            <div class="font-weight-bold">
-              My Profile
-            </div>
+            <div class="font-weight-bold">My Profile</div>
             <div class="text-muted">
               Account settings and more
               <span class="label label-light-danger label-inline font-weight-bold">update</span>
@@ -46,12 +44,8 @@
             <i class="flaticon2-mail text-warning"></i>
           </div>
           <div class="navi-text">
-            <div class="font-weight-bold">
-              My Messages
-            </div>
-            <div class="text-muted">
-              Inbox and tasks
-            </div>
+            <div class="font-weight-bold">My Messages</div>
+            <div class="text-muted">Inbox and tasks</div>
           </div>
         </div>
       </a>
@@ -64,12 +58,8 @@
             <i class="flaticon2-rocket-1 text-danger"></i>
           </div>
           <div class="navi-text">
-            <div class="font-weight-bold">
-              My Activities
-            </div>
-            <div class="text-muted">
-              Logs and notifications
-            </div>
+            <div class="font-weight-bold">My Activities</div>
+            <div class="text-muted">Logs and notifications</div>
           </div>
         </div>
       </a>
@@ -82,12 +72,8 @@
             <i class="flaticon2-hourglass text-primary"></i>
           </div>
           <div class="navi-text">
-            <div class="font-weight-bold">
-              My Tasks
-            </div>
-            <div class="text-muted">
-              latest tasks and projects
-            </div>
+            <div class="font-weight-bold">My Tasks</div>
+            <div class="text-muted">latest tasks and projects</div>
           </div>
         </div>
       </a>
@@ -95,7 +81,7 @@
 
       <!--begin::Footer-->
       <div class="navi-separator mt-3"></div>
-      <div class="navi-footer  px-8 py-5">
+      <div class="navi-footer px-8 py-5">
         <a href="#" class="btn btn-light-primary font-weight-bold" @click="onLogout">Sign Out</a>
         <a href="#" class="btn btn-clean font-weight-bold">Upgrade Plan</a>
       </div>

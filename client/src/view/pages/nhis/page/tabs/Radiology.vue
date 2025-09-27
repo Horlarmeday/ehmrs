@@ -98,7 +98,7 @@
                   <button
                     :disabled="
                       investigation.nhis_status === APPROVED ||
-                        investigation.nhis_status === DECLINED
+                      investigation.nhis_status === DECLINED
                     "
                     title="Change Investigation Type"
                     v-b-tooltip.hover
@@ -275,7 +275,7 @@ export default {
           ?.toLowerCase()} it!`,
         cancelButtonText: 'No, cancel!',
         reverseButtons: true,
-      }).then(function(result) {
+      }).then(function (result) {
         if (result.value) {
           self.changeInvestigationNhisStatus({ nhis_status, investigation });
         }

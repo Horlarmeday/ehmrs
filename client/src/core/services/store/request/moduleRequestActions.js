@@ -5,11 +5,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/requests/create', requests)
-        .then(response => {
+        .then((response) => {
           commit('ADD_REQUEST', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -28,13 +28,13 @@ export default {
             filter: payload.filter,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_REQUESTS', response.data.data.docs);
           commit('SET_REQUESTS_TOTAL', response.data.data.total);
           commit('SET_REQUESTS_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -50,13 +50,13 @@ export default {
             search: payload.search,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_REQUESTS', response.data.data.docs);
           commit('SET_REQUESTS_TOTAL', response.data.data.total);
           commit('SET_REQUESTS_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -66,11 +66,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put('/requests/update', requests)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_REQUESTS', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });

@@ -107,7 +107,7 @@ export default {
       this.initValues();
     },
     createGenericDrug() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             drug_id: this.drug_id,

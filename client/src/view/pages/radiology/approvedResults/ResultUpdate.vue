@@ -174,7 +174,7 @@ export default {
 
     updateTestResultsStatus() {
       const selectedInvestigationIds = this.selectedInvestigations.map(
-        investigation => investigation.id
+        (investigation) => investigation.id
       );
       this.$store
         .dispatch('radiology/changeBulkInvestigationResultsStatus', {
@@ -198,7 +198,7 @@ export default {
           confirmButton: 'btn btn-primary',
           cancelButton: 'btn btn-default',
         },
-      }).then(function(result) {
+      }).then(function (result) {
         if (result.value) {
           self.updateTestResultsStatus();
         }

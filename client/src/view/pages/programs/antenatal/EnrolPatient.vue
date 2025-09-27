@@ -17,7 +17,7 @@
               :options="patients"
               @input="getPatient"
               :reduce="
-                patients => ({
+                (patients) => ({
                   fullname: patients.fullname,
                   firstname: patients.firstname,
                   lastname: patients.lastname,
@@ -192,7 +192,7 @@ export default {
         department: 'Nursing',
         professional: 'Nurse',
       };
-      this.$store.dispatch('visit/addVisit', obj).then(response => {
+      this.$store.dispatch('visit/addVisit', obj).then((response) => {
         this.initValues();
         this.handleSuccess(response);
       });

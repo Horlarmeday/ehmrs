@@ -124,7 +124,7 @@ export default {
     },
 
     createService() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             service_id: this.service_id,

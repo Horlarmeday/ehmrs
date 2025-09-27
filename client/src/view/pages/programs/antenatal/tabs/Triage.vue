@@ -202,7 +202,7 @@ export default {
         visit_id: this.$route.params.id,
       };
       const emptyValues = Object.values(obj).every(
-        value => value === null || value === undefined || value === ''
+        (value) => value === null || value === undefined || value === ''
       );
       if (emptyValues) {
         return this.$notify({

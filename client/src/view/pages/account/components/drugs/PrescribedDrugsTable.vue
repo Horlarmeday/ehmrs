@@ -9,7 +9,7 @@
       :disable-billing="disableBilling"
     />
     <div class="table-responsive">
-      <table class="table ">
+      <table class="table">
         <thead class="thead-light">
           <tr class="text-uppercase">
             <th scope="col"></th>
@@ -100,7 +100,7 @@ export default {
     },
 
     disableBilling() {
-      return this.drugs.every(drug => drug.billing_status === 'Billed');
+      return this.drugs.every((drug) => drug.billing_status === 'Billed');
     },
   },
   created() {
@@ -148,13 +148,13 @@ export default {
     },
 
     isSelected(drug) {
-      return this.selectedDrugs.some(d => d.id === drug.id);
+      return this.selectedDrugs.some((d) => d.id === drug.id);
     },
 
     toggleItem(drug) {
       if (this.isSelected(drug)) {
         // If the item is already selected, remove it from selectedItems
-        const drugIndex = this.selectedDrugs.findIndex(d => d.id === drug.id);
+        const drugIndex = this.selectedDrugs.findIndex((d) => d.id === drug.id);
         this.selectedDrugs.splice(drugIndex, 1);
       } else {
         // If the item is not selected, add it to selectedItems

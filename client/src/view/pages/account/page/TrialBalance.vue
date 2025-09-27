@@ -77,14 +77,7 @@ export default {
     DatePicker,
   },
   data: () => ({
-    dateRange: [
-      dayjs()
-        .startOf('month')
-        .toDate(),
-      dayjs()
-        .endOf('month')
-        .toDate(),
-    ],
+    dateRange: [dayjs().startOf('month').toDate(), dayjs().endOf('month').toDate()],
   }),
   computed: {
     ...mapGetters('account', ['trialBalance', 'loading']),

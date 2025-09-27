@@ -458,7 +458,7 @@ export default {
     },
     storeDoctors() {
       return this.storeEmployees.filter(
-        emp =>
+        (emp) =>
           emp.department === 'Medical Practitioners' ||
           emp.role === 'General Practitioners' ||
           emp.role === 'Doctor'

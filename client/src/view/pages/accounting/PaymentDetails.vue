@@ -25,9 +25,7 @@
     <div v-else-if="error" class="error-state">
       <i class="fas fa-exclamation-triangle text-danger"></i>
       <p>{{ error }}</p>
-      <b-button variant="outline-primary" size="sm" @click="loadPaymentDetails">
-        Retry
-      </b-button>
+      <b-button variant="outline-primary" size="sm" @click="loadPaymentDetails"> Retry </b-button>
     </div>
 
     <!-- Payment Details -->

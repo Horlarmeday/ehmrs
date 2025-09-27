@@ -46,7 +46,7 @@
                   label="name"
                   :options="drugOptions"
                   :reduce="
-                    items => ({
+                    (items) => ({
                       name: items.name,
                       drug_id: items.id,
                       strength: items?.strength,
@@ -102,9 +102,9 @@
                   v-validate="'required'"
                   data-vv-validate-on="blur"
                 >
-                  <option :value="route.id" v-for="route in routes" :key="route.id">{{
-                    route.name
-                  }}</option>
+                  <option :value="route.id" v-for="route in routes" :key="route.id">
+                    {{ route.name }}
+                  </option>
                 </select>
                 <span class="form-text text-danger">{{ errors.first('route') }}</span>
               </div>
@@ -146,9 +146,9 @@
                   class="form-control form-control-sm"
                   name="frequency"
                 >
-                  <option :value="freq" v-for="(freq, i) in frequencies" :key="i">{{
-                    freq.label
-                  }}</option>
+                  <option :value="freq" v-for="(freq, i) in frequencies" :key="i">
+                    {{ freq.label }}
+                  </option>
                 </select>
                 <span class="form-text text-danger">{{ errors.first('frequency') }}</span>
               </div>
@@ -179,9 +179,9 @@
                   v-validate="'required'"
                   data-vv-validate-on="blur"
                 >
-                  <option :value="unit" v-for="(unit, i) in units" :key="i">{{
-                    unit.label
-                  }}</option>
+                  <option :value="unit" v-for="(unit, i) in units" :key="i">
+                    {{ unit.label }}
+                  </option>
                 </select>
                 <span class="form-text text-danger">{{ errors.first('duration_unit') }}</span>
                 <span v-if="formData.quantity_prescribed" class="form-text text-success"
@@ -293,7 +293,7 @@ export default {
     },
     drugOptions: {
       get() {
-        return this.items.map(item => ({
+        return this.items.map((item) => ({
           name: item?.drug?.name,
           id: item?.drug?.id,
           strength: item?.strength,
@@ -491,7 +491,7 @@ export default {
     },
 
     submitDrugOrder() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           if (this.switchPosition && this.switchSpot && !this.formData.drug_group) {
             return this.$notify({
@@ -627,7 +627,7 @@ export default {
 
     getInventoryId() {
       const type = this.getDrugType(this.insuranceName);
-      return this.inventories.find(inventory =>
+      return this.inventories.find((inventory) =>
         inventory.name.toLowerCase().includes(type.toLowerCase())
       )?.id;
     },

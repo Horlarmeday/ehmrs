@@ -169,7 +169,7 @@ export default {
         ceporex: '',
       };
       const urineSwabAntibiotics = Object.keys(antibiotics)
-        .map(key => this.urineSwab[key])
+        .map((key) => this.urineSwab[key])
         .filter(Boolean);
       return (
         (this.section !== 'ValidationSection' && this.section !== 'ApprovalSection') ||
@@ -193,7 +193,7 @@ export default {
       this.debounceInput(this);
     },
 
-    debounceInput: debounce(vm => {
+    debounceInput: debounce((vm) => {
       vm.$emit('emitResult', vm.urineSwab, vm.testId);
     }, 500),
 

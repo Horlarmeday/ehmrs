@@ -106,7 +106,7 @@ export default {
         if (!val) return;
         if (Object.entries(val)?.length) {
           const bilirubinData = JSON.parse(JSON.stringify(val));
-          Object.keys(this.bilirubin).forEach(key => {
+          Object.keys(this.bilirubin).forEach((key) => {
             this.bilirubin[key] = bilirubinData[key] || '';
           });
         }
@@ -118,7 +118,7 @@ export default {
       this.debounceInput(this);
     },
 
-    debounceInput: debounce(vm => {
+    debounceInput: debounce((vm) => {
       vm.$emit('emitResult', vm.bilirubin, vm.testId);
     }, 500),
   },

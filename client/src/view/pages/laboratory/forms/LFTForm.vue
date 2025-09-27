@@ -72,7 +72,7 @@ export default {
         if (!val) return;
         if (Object.entries(val)?.length) {
           const lftData = JSON.parse(JSON.stringify(val));
-          Object.keys(this.lft).forEach(key => {
+          Object.keys(this.lft).forEach((key) => {
             this.lft[key] = lftData[key] || '';
           });
         }
@@ -84,7 +84,7 @@ export default {
       this.debounceInput(this);
     },
 
-    debounceInput: debounce(vm => {
+    debounceInput: debounce((vm) => {
       vm.$emit('emitResult', vm.lft, vm.testId);
     }, 500),
   },

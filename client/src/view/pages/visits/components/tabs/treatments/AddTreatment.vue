@@ -1,3 +1,4 @@
+<!-- eslint-disable no-unused-vars -->
 <template>
   <div>
     <div class="mt-3">
@@ -131,7 +132,7 @@ export default {
     },
 
     treatments() {
-      return this.orders.map(order => ({
+      return this.orders.map((order) => ({
         drug_name: order.drug.name,
         drug_id: order.id,
         drug_type: order.drug_type,
@@ -181,7 +182,7 @@ export default {
     },
 
     initValues() {
-      this.treatments.forEach(treatment => {
+      this.treatments.forEach((treatment) => {
         treatment.dosage_administered = '';
         treatment.remarks = '';
       });
@@ -207,12 +208,29 @@ export default {
       this.addSpinner(submitButton);
 
       const treatments = this.treatments
-        .filter(treatment => treatment.dosage_administered)
-        .map(({ // eslint-disable-next-line no-unused-vars
-          drug_name, strength, dosage_form, drug_type, quantity, route, dosage_completed, ...rest }) => ({
-          ...rest,
-          source: this.source,
-        }));
+        .filter((treatment) => treatment.dosage_administered)
+        .map(
+          ({
+            // eslint-disable-next-line no-unused-vars
+            drug_name,
+            // eslint-disable-next-line no-unused-vars
+            strength,
+            // eslint-disable-next-line no-unused-vars
+            dosage_form,
+            // eslint-disable-next-line no-unused-vars
+            drug_type,
+            // eslint-disable-next-line no-unused-vars
+            quantity,
+            // eslint-disable-next-line no-unused-vars
+            route,
+            // eslint-disable-next-line no-unused-vars
+            dosage_completed,
+            ...rest
+          }) => ({
+            ...rest,
+            source: this.source,
+          })
+        );
 
       this.$store
         .dispatch('order/orderTreatment', { data: treatments, id: this.$route.params.id })
@@ -221,7 +239,7 @@ export default {
     },
 
     delay(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
+      return new Promise((resolve) => setTimeout(resolve, ms));
     },
 
     displayPrompt(drugId) {

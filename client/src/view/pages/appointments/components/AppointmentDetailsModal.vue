@@ -156,9 +156,7 @@
 
       <!-- Action Buttons -->
       <div class="text-center mt-4">
-        <b-button variant="secondary" @click="handleClose" class="mr-2">
-          Close
-        </b-button>
+        <b-button variant="secondary" @click="handleClose" class="mr-2"> Close </b-button>
         <b-button variant="primary" @click="editAppointment" v-if="canEdit">
           <i class="fas fa-edit mr-1"></i>
           Edit Appointment

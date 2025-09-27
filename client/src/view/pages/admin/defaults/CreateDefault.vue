@@ -11,9 +11,9 @@
           <label class="col-lg-2 col-form-label">Type:</label>
           <div class="col-lg-6">
             <select class="form-control" v-model="type">
-              <option :value="type.code" v-for="(type, i) in defaultTypes" :key="i">{{
-                type.name
-              }}</option>
+              <option :value="type.code" v-for="(type, i) in defaultTypes" :key="i">
+                {{ type.name }}
+              </option>
             </select>
           </div>
         </div>

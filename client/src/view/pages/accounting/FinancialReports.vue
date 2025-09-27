@@ -127,9 +127,7 @@
             <div class="metric-content">
               <h3 class="metric-value">{{ reportData.collectionRate }}%</h3>
               <p class="metric-label">Collection Rate</p>
-              <small class="metric-change">
-                Payment efficiency
-              </small>
+              <small class="metric-change"> Payment efficiency </small>
             </div>
           </div>
         </div>
@@ -373,14 +371,10 @@
       </b-form>
 
       <template #modal-footer>
-        <b-button variant="secondary" @click="showExportModal = false">
-          Cancel
-        </b-button>
+        <b-button variant="secondary" @click="showExportModal = false"> Cancel </b-button>
         <b-button variant="primary" @click="performExport" :disabled="exporting">
           <span v-if="exporting"> <i class="fas fa-spinner fa-spin mr-2"></i>Exporting... </span>
-          <span v-else>
-            Export Report
-          </span>
+          <span v-else> Export Report </span>
         </b-button>
       </template>
     </b-modal>
@@ -568,7 +562,7 @@ export default {
             y: {
               beginAtZero: true,
               ticks: {
-                callback: value => this.formatCurrency(value),
+                callback: (value) => this.formatCurrency(value),
               },
             },
           },
@@ -627,7 +621,7 @@ export default {
             y: {
               beginAtZero: true,
               ticks: {
-                callback: value => this.formatCurrency(value),
+                callback: (value) => this.formatCurrency(value),
               },
             },
           },
@@ -672,8 +666,8 @@ export default {
 
       const chartData = this.reportData.revenueTrend || [];
 
-      this.charts.revenueTrend.data.labels = chartData.map(item => item.date);
-      this.charts.revenueTrend.data.datasets[0].data = chartData.map(item => item.revenue);
+      this.charts.revenueTrend.data.labels = chartData.map((item) => item.date);
+      this.charts.revenueTrend.data.datasets[0].data = chartData.map((item) => item.revenue);
       this.charts.revenueTrend.update();
     },
 
@@ -682,8 +676,8 @@ export default {
 
       const chartData = this.reportData.paymentMethods || [];
 
-      this.charts.paymentMethods.data.labels = chartData.map(item => item.method);
-      this.charts.paymentMethods.data.datasets[0].data = chartData.map(item => item.amount);
+      this.charts.paymentMethods.data.labels = chartData.map((item) => item.method);
+      this.charts.paymentMethods.data.datasets[0].data = chartData.map((item) => item.amount);
       this.charts.paymentMethods.update();
     },
 
@@ -692,8 +686,8 @@ export default {
 
       const chartData = this.reportData.departmentRevenue || [];
 
-      this.charts.departmentRevenue.data.labels = chartData.map(item => item.department);
-      this.charts.departmentRevenue.data.datasets[0].data = chartData.map(item => item.revenue);
+      this.charts.departmentRevenue.data.labels = chartData.map((item) => item.department);
+      this.charts.departmentRevenue.data.datasets[0].data = chartData.map((item) => item.revenue);
       this.charts.departmentRevenue.update();
     },
 
@@ -702,8 +696,8 @@ export default {
 
       const chartData = this.reportData.paymentStatus || [];
 
-      this.charts.paymentStatus.data.labels = chartData.map(item => item.status);
-      this.charts.paymentStatus.data.datasets[0].data = chartData.map(item => item.count);
+      this.charts.paymentStatus.data.labels = chartData.map((item) => item.status);
+      this.charts.paymentStatus.data.datasets[0].data = chartData.map((item) => item.count);
       this.charts.paymentStatus.update();
     },
 

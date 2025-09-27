@@ -146,7 +146,8 @@
           <div class="card-body">
             <div class="d-flex align-items-center">
               <div class="flex-grow-1">
-                <h3 class="text-dark font-weight-bold mb-1">{{ statistics.totalValue || 0 }}</h3>
+                <h3 class="text-dark font-weight-bold mb-1">₦
+                  {{ statistics.totalValue || 0 }}</h3>
                 <p class="text-muted mb-0">Total Value</p>
               </div>
               <div class="stat-icon">
@@ -409,7 +410,7 @@ export default {
       showQuickActions: false,
       loading: false,
       user: parseJwt(localStorage.getItem('user_token')),
-      ALLOWED_ROLES: ['Super Admin', 'General Store Manager', 'General Store Staff'],
+      ALLOWED_ROLES: ['Super Admin', 'Store Admin', 'General Store Staff'],
       statistics: {
         totalItems: 0,
         lowStockItems: 0,
@@ -423,8 +424,6 @@ export default {
         totalDispensaries: 0,
         activeDispensaries: 0,
       },
-      recentMovements: [],
-      lowStockItems: [],
     };
   },
   computed: {
@@ -435,6 +434,15 @@ export default {
     storeError() {
       return this.$store.state.generalStore.error;
     },
+    recentMovements() {
+      return this.$store.state.generalStore.movements;
+    },
+    lowStockItems() {
+      return this.$store.state.generalStore.lowStockItems;
+    },
+    dashboardStats() {
+      return this.$store.state.generalStore.dashboardStats;
+    },
   },
   async created() {
     await this.loadDashboardData();
@@ -443,25 +451,23 @@ export default {
     async loadDashboardData() {
       this.loading = true;
       try {
-        // Load all necessary data in parallel
+        // Load dashboard statistics in a single optimized call
+        await this.$store.dispatch('generalStore/fetchDashboardStats');
+        // Only fetch data needed for display (not statistics)
         await Promise.all([
-          this.$store.dispatch('generalStore/fetchItems', { limit: 1 }),
-          this.$store.dispatch('generalStore/fetchLowStockItems'),
-          this.$store.dispatch('generalStore/fetchRequests', { status: 'PENDING' }),
-          this.$store.dispatch('generalStore/fetchMovements', { limit: 5 }),
-          this.$store.dispatch('generalStore/fetchCategories', { limit: 1 }),
-          this.$store.dispatch('generalStore/fetchSubcategories', { limit: 1 }),
-          this.$store.dispatch('generalStore/fetchDispensaries', { limit: 1 }),
+          this.$store.dispatch('generalStore/fetchMovements', { limit: 5 }), // For recent movements display
+          this.$store.dispatch('generalStore/fetchLowStockItems'), // For low stock alerts display
         ]);
 
-        // Update statistics
+        // Update statistics from the optimized dashboard stats
         this.updateStatistics();
-
-        // Get recent movements and low stock items
-        this.recentMovements = this.$store.state.generalStore.movements;
-        this.lowStockItems = this.$store.state.generalStore.lowStockItems;
       } catch (error) {
-        this.$toast.error('Failed to load dashboard data');
+        this.$notify({
+          group: 'foo',
+          title: 'Error',
+          text: error.message || 'Failed to load dashboard data',
+          type: 'error',
+        });
       } finally {
         this.loading = false;
       }
@@ -470,18 +476,26 @@ export default {
     updateStatistics() {
       const state = this.$store.state.generalStore;
 
+      // Use dashboard stats for most statistics, fallback to calculated values if needed
       this.statistics = {
-        totalItems: state.itemsTotal,
-        lowStockItems: state.lowStockItems.length,
-        pendingRequests: state.requests.filter(r => r.status === 'PENDING').length,
-        totalValue: this.calculateTotalValue(state.items),
-        totalCategories: state.categoriesTotal,
-        totalSubcategories: state.subcategoriesTotal,
-        approvedRequests: state.requests.filter(r => r.status === 'APPROVED').length,
-        totalMovements: state.movementsTotal,
-        todayMovements: this.getTodayMovements(state.movements),
-        totalDispensaries: state.dispensariesTotal,
-        activeDispensaries: state.dispensaries.filter(d => d.is_active).length,
+        totalItems: this.dashboardStats?.totalItems || state.itemsTotal || 0,
+        lowStockItems: this.dashboardStats?.lowStockItems || state.lowStockItems.length || 0,
+        pendingRequests:
+          this.dashboardStats?.pendingRequests ||
+          state.requests.filter((r) => r.status === 'PENDING').length ||
+          0,
+        totalValue: this.dashboardStats?.totalValue || this.calculateTotalValue(state.items) || 0,
+        totalCategories: this.dashboardStats?.totalCategories || state.categoriesTotal || 0,
+        totalSubcategories:
+          this.dashboardStats?.totalSubcategories || state.subcategoriesTotal || 0,
+        approvedRequests: this.dashboardStats?.totalRequests
+          ? this.dashboardStats.totalRequests - this.dashboardStats.pendingRequests
+          : state.requests.filter((r) => r.status === 'APPROVED').length || 0,
+        totalMovements: this.dashboardStats?.totalMovements || state.movementsTotal || 0,
+        todayMovements:
+          this.dashboardStats?.todayMovements || this.getTodayMovements(state.movements) || 0,
+        totalDispensaries: state.dispensariesTotal || 0,
+        activeDispensaries: state.dispensaries.filter((d) => d.is_active).length || 0,
       };
     },
 
@@ -493,7 +507,7 @@ export default {
 
     getTodayMovements(movements) {
       const today = new Date().toDateString();
-      return movements.filter(movement => {
+      return movements.filter((movement) => {
         return new Date(movement.created_at).toDateString() === today;
       }).length;
     },

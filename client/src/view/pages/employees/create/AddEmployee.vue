@@ -21,7 +21,7 @@
                 ref="video"
                 id="video"
                 v-show="!image && !photoSaved"
-                style="height:1px;width:120px;margin-bottom:20px;"
+                style="height: 1px; width: 120px; margin-bottom: 20px"
                 autoplay
               ></video>
               <canvas ref="canvas" id="canvas" width="250" height="187" v-show="image"> </canvas>
@@ -29,7 +29,7 @@
                 id="snap"
                 v-if="!image && !photoSaved && !videoShowing"
                 class="btn btn-success btn-sm mt-4"
-                style="display: block;"
+                style="display: block"
                 v-on:click="startCamera()"
               >
                 Take Photo
@@ -38,7 +38,7 @@
                 id="snap"
                 v-if="!image && !photoSaved && videoShowing"
                 class="btn btn-success btn-sm"
-                style="display: block;"
+                style="display: block"
                 v-on:click="capture()"
               >
                 Snap Photo
@@ -209,7 +209,8 @@
                     v-for="department in departments"
                     :key="department.id"
                     :value="{ id: department.id, text: department.department }"
-                    >{{ department.department }}
+                  >
+                    {{ department.department }}
                   </option>
                 </select>
                 <span class="text-danger text-sm">{{ errors.first('department') }}</span>
@@ -228,7 +229,8 @@
                     v-for="role in roles"
                     :key="role.id"
                     :value="{ id: role.id, text: role.role }"
-                    >{{ role.role }}
+                  >
+                    {{ role.role }}
                   </option>
                 </select>
                 <span class="text-danger text-sm">{{ errors.first('role') }}</span>
@@ -242,7 +244,8 @@
                     v-for="sub in sub_roles"
                     :key="sub.id"
                     :value="{ id: sub.id, text: sub.sub }"
-                    >{{ sub.sub }}
+                  >
+                    {{ sub.sub }}
                   </option>
                 </select>
               </div>
@@ -507,7 +510,7 @@ export default {
       this.video = this.$refs.video;
       this.video.style = 'display:block;width:250px;margin-bottom:20px;';
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+        navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
           this.video.srcObject = stream;
           this.video.play();
         });
@@ -518,7 +521,7 @@ export default {
       const stream = videoElem.srcObject;
       const tracks = stream.getTracks();
 
-      tracks.forEach(function(track) {
+      tracks.forEach(function (track) {
         track.stop();
       });
 
@@ -614,7 +617,7 @@ export default {
 
     addEmployee() {
       // if (!this.image) return this.notifyPhoto();
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           // set spinner to submit button
           const submitButton = this.$refs['kt-submit'];
@@ -647,7 +650,7 @@ export default {
           };
           this.$store
             .dispatch('employee/addEmployee', data)
-            .then(response => this.initializeRequest(submitButton, response))
+            .then((response) => this.initializeRequest(submitButton, response))
             .catch(() => this.removeSpinner(submitButton));
         }
       });

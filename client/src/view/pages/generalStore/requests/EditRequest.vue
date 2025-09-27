@@ -85,11 +85,7 @@
                           </select>
                         </td>
                         <td>
-                          <input
-                            v-model="item.notes"
-                            type="text"
-                            class="form-control"
-                          />
+                          <input v-model="item.notes" type="text" class="form-control" />
                         </td>
                         <td>
                           <button
@@ -268,13 +264,13 @@ export default {
   },
   computed: {
     ...mapState('generalStore', {
-      items: state => state.items,
-      currentRequest: state => state.currentRequest,
-      generalError: state => state.error,
-      generalLoading: state => state.loading,
+      items: (state) => state.items,
+      currentRequest: (state) => state.currentRequest,
+      generalError: (state) => state.error,
+      generalLoading: (state) => state.loading,
     }),
     ...mapState('model', {
-      departments: state => state.departments,
+      departments: (state) => state.departments,
     }),
     isLoading() {
       return this.generalLoading;
@@ -297,7 +293,7 @@ export default {
       this.form = {
         items:
           req.items && Array.isArray(req.items) && req.items.length
-            ? req.items.map(i => ({
+            ? req.items.map((i) => ({
                 item_id: i.item_id || i.id || '',
                 quantity: i.quantity || 1,
                 priority: i.priority || 'medium',

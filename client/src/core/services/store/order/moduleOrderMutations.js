@@ -56,7 +56,7 @@ export default {
   },
 
   UPDATE_TEST_ORDER(state, test) {
-    const testIndex = state.lab_orders.findIndex(p => p.id === test.id);
+    const testIndex = state.lab_orders.findIndex((p) => p.id === test.id);
     Object.assign(state.lab_orders[testIndex], test);
   },
 
@@ -137,7 +137,7 @@ export default {
   },
 
   UPDATE_INVESTIGATION_ORDER(state, investigation) {
-    const investigationIndex = state.radiology_orders.findIndex(p => p.id === investigation.id);
+    const investigationIndex = state.radiology_orders.findIndex((p) => p.id === investigation.id);
     Object.assign(state.radiology_orders[investigationIndex], investigation);
   },
 
@@ -176,7 +176,7 @@ export default {
   },
 
   UPDATE_DRUG_TEMP_PRESCRIPTION(state, drug) {
-    const drugIndex = state.drug_prescriptions.findIndex(p => p.id === drug.id);
+    const drugIndex = state.drug_prescriptions.findIndex((p) => p.id === drug.id);
     Object.assign(state.drug_prescriptions[drugIndex], drug);
   },
 
@@ -201,7 +201,7 @@ export default {
   },
 
   UPDATE_ADD_ITEM_ORDER(state, drug) {
-    const drugIndex = state.additional_items_orders.findIndex(p => p.id === drug.id);
+    const drugIndex = state.additional_items_orders.findIndex((p) => p.id === drug.id);
     Object.assign(state.additional_items_orders[drugIndex], drug);
   },
 
@@ -214,7 +214,7 @@ export default {
   },
 
   UPDATE_DRUG_ORDER(state, drug) {
-    const drugIndex = state.drug_orders.findIndex(p => p.id === drug.id);
+    const drugIndex = state.drug_orders.findIndex((p) => p.id === drug.id);
     Object.assign(state.drug_orders[drugIndex], drug);
   },
 
@@ -309,7 +309,7 @@ export default {
   },
 
   UPDATE_SERVICE_ORDER(state, service) {
-    const serviceIndex = state.service_orders.findIndex(p => p.id === service.id);
+    const serviceIndex = state.service_orders.findIndex((p) => p.id === service.id);
     Object.assign(state.service_orders[serviceIndex], service);
   },
 

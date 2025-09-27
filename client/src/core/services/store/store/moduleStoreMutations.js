@@ -23,7 +23,7 @@ export default {
   },
 
   UPDATE_PHARM_ITEM(state, item) {
-    const itemIndex = state.items.findIndex(p => p.id === item.id);
+    const itemIndex = state.items.findIndex((p) => p.id === item.id);
     Object.assign(state.items[itemIndex], item);
   },
 
@@ -102,7 +102,7 @@ export default {
   },
 
   UPDATE_VENDOR(state, vendor) {
-    const vendorIndex = state.vendors.findIndex(p => p.id === vendor.id);
+    const vendorIndex = state.vendors.findIndex((p) => p.id === vendor.id);
     Object.assign(state.vendors[vendorIndex], vendor);
   },
 
@@ -130,7 +130,7 @@ export default {
   },
 
   UPDATE_LAB_ITEM(state, item) {
-    const itemIndex = state.labItems.findIndex(p => p.id === item.id);
+    const itemIndex = state.labItems.findIndex((p) => p.id === item.id);
     Object.assign(state.labItems[itemIndex], item);
   },
 };

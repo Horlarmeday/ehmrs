@@ -22,7 +22,7 @@
               label="name"
               :options="services"
               :reduce="
-                services => ({
+                (services) => ({
                   id: services.id,
                   price: services.price,
                   name: services.name,
@@ -123,7 +123,7 @@ export default {
       this.addSpinner(submitButton);
       let services;
       if (Array.isArray(this.service_id)) {
-        services = this.service_id.map(service => ({
+        services = this.service_id.map((service) => ({
           service_id: service.id,
           service_type: 'Cash',
           is_urgent: false,
@@ -155,7 +155,7 @@ export default {
     },
   },
   created() {
-    this.$store.dispatch('visit/fetchVisit', this.$route.params.id).then(response => {
+    this.$store.dispatch('visit/fetchVisit', this.$route.params.id).then((response) => {
       const res = response.data.data;
       this.$store.dispatch('patient/setCurrentPatient', {
         ...res.insurance,

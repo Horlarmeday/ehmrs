@@ -15,9 +15,7 @@
           </span>
         </b-button>
         <b-button :disabled="disableBilling" @click="showBillAlert" variant="outline-secondary">
-          <span class="pl-3 pr-3">
-            Bill Items
-          </span>
+          <span class="pl-3 pr-3"> Bill Items </span>
         </b-button>
         <b-button @click="showMakePaymentModal" variant="outline-secondary">Make Payment</b-button>
       </b-button-group>
@@ -55,7 +53,7 @@ export default {
   },
   methods: {
     billItems() {
-      const selectedItems = this.selectedItems.map(item => ({
+      const selectedItems = this.selectedItems.map((item) => ({
         id: item.id,
         billing_status: this.BILLED,
       }));
@@ -138,7 +136,7 @@ export default {
           confirmButton: 'btn btn-success',
           cancelButton: 'btn btn-default',
         },
-      }).then(function(result) {
+      }).then(function (result) {
         if (result.value) {
           self.billItems();
         }

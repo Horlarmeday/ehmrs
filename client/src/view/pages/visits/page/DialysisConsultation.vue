@@ -381,7 +381,7 @@
           <!-- Treatment Progress -->
           <div v-if="dialysisInfo.status === 'IN_PROGRESS'" class="mt-4">
             <h6 class="font-weight-bold mb-3">Treatment Progress</h6>
-            <div class="progress mb-3" style="height: 25px;">
+            <div class="progress mb-3" style="height: 25px">
               <div
                 class="progress-bar bg-success"
                 :style="{ width: treatmentProgress + '%' }"
@@ -597,9 +597,9 @@
                   class="form-control"
                   v-model="assessmentForm.machine_type"
                 >
-                  <option v-for="machine in machines" :value="machine" :key="machine">{{
-                    machine
-                  }}</option>
+                  <option v-for="machine in machines" :value="machine" :key="machine">
+                    {{ machine }}
+                  </option>
                 </select>
                 <!--                <input-->
                 <!--                  type="text"-->
@@ -1073,7 +1073,7 @@
                 <div
                   class="vital-main"
                   @click="toggleVitalExpansion(vital.id)"
-                  style="cursor: pointer;"
+                  style="cursor: pointer"
                 >
                   <div class="vital-time">
                     <i class="fas fa-clock text-primary mr-2"></i>
@@ -1357,7 +1357,7 @@
                   label="name"
                   :options="itemsOptions"
                   :reduce="
-                    items => ({
+                    (items) => ({
                       name: items.name,
                       drug_id: items.id,
                       drug_type: items?.drug_type,
@@ -1474,7 +1474,7 @@
                 label="name"
                 :options="servicesOptions"
                 :reduce="
-                  services => ({
+                  (services) => ({
                     id: services.id,
                     price: services.price,
                     name: services.name,
@@ -1723,7 +1723,7 @@ export default {
     // Items options from store
     itemsOptions() {
       return (
-        this.$store.state.inventory.items?.map(item => ({
+        this.$store.state.inventory.items?.map((item) => ({
           name: item?.drug?.name,
           id: item?.drug?.id,
           price: item.selling_price,
@@ -1768,7 +1768,7 @@ export default {
         if (newVitals && newVitals.length > 0) {
           // Initialize expandedVitals state for each vital
           this.expandedVitals = {};
-          newVitals.forEach(vital => {
+          newVitals.forEach((vital) => {
             this.expandedVitals[vital.id] = false;
           });
         }
@@ -1786,7 +1786,7 @@ export default {
       // Reset expanded vitals when switching to vitals tab
       if (tab === 'vitals' && this.vitalsHistory.length > 0) {
         this.expandedVitals = {};
-        this.vitalsHistory.forEach(vital => {
+        this.vitalsHistory.forEach((vital) => {
           this.expandedVitals[vital.id] = false;
         });
       }
@@ -1818,7 +1818,7 @@ export default {
           this.vitalsHistory = comprehensiveData.vitals;
           // Initialize expandedVitals state for each vital
           this.expandedVitals = {};
-          this.vitalsHistory.forEach(vital => {
+          this.vitalsHistory.forEach((vital) => {
             this.expandedVitals[vital.id] = false;
           });
         }
@@ -2205,7 +2205,7 @@ export default {
     // },
 
     onDiagnosisSelect(diagnosis) {
-      if (diagnosis && !this.assessmentForm.diagnoses?.find(d => d.id === diagnosis.id)) {
+      if (diagnosis && !this.assessmentForm.diagnoses?.find((d) => d.id === diagnosis.id)) {
         this.assessmentForm.diagnoses.push({
           id: diagnosis.id,
           code: diagnosis.code,
@@ -2437,7 +2437,7 @@ export default {
 
     getInventoryId() {
       // For dialysis, use general store or create dialysis-specific inventory
-      const generalInventory = this.inventories.find(inventory =>
+      const generalInventory = this.inventories.find((inventory) =>
         inventory.name.toLowerCase().includes('cash')
       );
       return generalInventory?.id || this.inventories[0]?.id;
@@ -2458,13 +2458,14 @@ export default {
 
       // Check quantity validation
       const invalidItems = this.itemsForm.items.filter(
-        item => item.item.quantity_remaining === 0 || +item.quantity > +item.item.quantity_remaining
+        (item) =>
+          item.item.quantity_remaining === 0 || +item.quantity > +item.item.quantity_remaining
       );
 
       if (invalidItems?.length) {
         this.itemsForm.showError = true;
         this.itemsForm.errorMessage = `The following items are currently low in quantity in the dispensary`;
-        this.itemsForm.errorList = invalidItems.map(item => {
+        this.itemsForm.errorList = invalidItems.map((item) => {
           return `${item.item.name}; Quantity remaining: ${item.item.quantity_remaining}`;
         });
         return;
@@ -2555,7 +2556,7 @@ export default {
         this.isSaving = true;
         const visitId = this.$route.params.id;
 
-        const services = this.servicesForm.selectedServices.map(service => ({
+        const services = this.servicesForm.selectedServices.map((service) => ({
           service_id: service.id,
           service_type: 'Cash',
           is_urgent: false,

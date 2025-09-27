@@ -136,7 +136,7 @@
                 v-model="filters.doctor_id"
                 :options="doctors"
                 label="fullname"
-                :reduce="doctor => doctor.id"
+                :reduce="(doctor) => doctor.id"
                 placeholder="All Doctors"
                 clearable
                 @input="applyFilters"
@@ -442,18 +442,18 @@ export default {
 
       // Filter by doctor
       if (this.filters.doctor_id) {
-        filtered = filtered.filter(apt => apt.doctor_id === this.filters.doctor_id);
+        filtered = filtered.filter((apt) => apt.doctor_id === this.filters.doctor_id);
       }
 
       // Filter by status
       if (this.filters.status !== 'all') {
-        filtered = filtered.filter(apt => apt.status === this.filters.status);
+        filtered = filtered.filter((apt) => apt.status === this.filters.status);
       }
 
       // Filter by time range
       if (this.filters.timeRange !== 'all') {
         const now = new Date();
-        filtered = filtered.filter(apt => {
+        filtered = filtered.filter((apt) => {
           const appointmentTime = new Date(`${apt.appointment_date}T${apt.appointment_time}`);
           const diffMinutes = (now - appointmentTime) / (1000 * 60);
 
@@ -473,7 +473,7 @@ export default {
       // Show only overdue
       if (this.showOnlyOverdue) {
         const now = new Date();
-        filtered = filtered.filter(apt => {
+        filtered = filtered.filter((apt) => {
           const appointmentTime = new Date(`${apt.appointment_date}T${apt.appointment_time}`);
           const diffMinutes = (now - appointmentTime) / (1000 * 60);
           return diffMinutes > 15;
@@ -612,7 +612,7 @@ export default {
     },
 
     selectAll() {
-      this.selectedAppointments = this.filteredQueue.map(apt => apt.id);
+      this.selectedAppointments = this.filteredQueue.map((apt) => apt.id);
     },
 
     clearSelection() {
@@ -646,7 +646,7 @@ export default {
 
       this.submitting = true;
       try {
-        const promises = this.selectedAppointments.map(id => this.markNoShow(id));
+        const promises = this.selectedAppointments.map((id) => this.markNoShow(id));
         await Promise.all(promises);
 
         this.$bvToast.toast(`Marked ${this.selectedAppointments.length} patient(s) as no show`, {
@@ -784,7 +784,7 @@ export default {
       if (!patient || !patient.fullname) return 'NA';
       return patient.fullname
         .split(' ')
-        .map(name => name.charAt(0))
+        .map((name) => name.charAt(0))
         .join('')
         .toUpperCase();
     },

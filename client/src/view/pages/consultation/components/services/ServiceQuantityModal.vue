@@ -93,7 +93,7 @@ export default {
     },
 
     insertQuantity() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const submitButton = this.$refs['kt_quantity_submit'];
           this.addSpinner(submitButton);

@@ -71,9 +71,7 @@
                 >
                   {{ history?.receiver?.firstname }} {{ history?.receiver?.lastname }}
                 </span>
-                <span v-else class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  -
-                </span>
+                <span v-else class="text-dark-75 font-weight-bolder d-block font-size-lg"> - </span>
               </td>
               <td>
                 <span

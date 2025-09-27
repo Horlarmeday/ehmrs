@@ -5,11 +5,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/surgeries/create`, payload)
-        .then(response => {
+        .then((response) => {
           commit('REQUEST_SURGERY', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -23,11 +23,11 @@ export default {
             visitId: payload.visitId,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_SURGERY', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -43,13 +43,13 @@ export default {
             search: payload.search,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_SURGERIES', response.data.data.docs);
           commit('SET_SURGERIES_TOTAL', response.data.data.total);
           commit('SET_SURGERIES_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -59,11 +59,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/surgeries/operation-notes/${payload.id}`, payload.data)
-        .then(response => {
+        .then((response) => {
           commit('CREATE_OPERATION_NOTE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -73,11 +73,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/surgeries/operation-notes/${payload.id}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_OPERATION_NOTES', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });

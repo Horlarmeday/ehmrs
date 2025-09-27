@@ -99,7 +99,7 @@ export default {
     },
 
     disableBilling() {
-      return this.items.every(drug => drug.billing_status === 'Billed');
+      return this.items.every((drug) => drug.billing_status === 'Billed');
     },
   },
   created() {
@@ -117,13 +117,13 @@ export default {
     },
 
     isSelected(item) {
-      return this.selectedItems.some(d => d.id === item.id);
+      return this.selectedItems.some((d) => d.id === item.id);
     },
 
     toggleItem(item) {
       if (this.isSelected(item)) {
         // If the item is already selected, remove it from selectedItems
-        const itemIndex = this.selectedItems.findIndex(d => d.id === item.id);
+        const itemIndex = this.selectedItems.findIndex((d) => d.id === item.id);
         this.selectedItems.splice(itemIndex, 1);
       } else {
         // If the item is not selected, add it to selectedItems

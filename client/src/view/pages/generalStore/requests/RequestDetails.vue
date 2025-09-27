@@ -716,18 +716,20 @@ export default {
 
     async printRequest() {
       try {
-        const requestData = [{
-          id: this.request.id,
-          request_number: this.request.request_number,
-          department: this.request.department,
-          requester_name: this.request.requester_name,
-          purpose: this.request.purpose,
-          status: this.request.status,
-          priority: this.request.priority,
-          notes: this.request.notes,
-          created_at: this.request.created_at,
-          items_count: this.request.items?.length || 0,
-        }];
+        const requestData = [
+          {
+            id: this.request.id,
+            request_number: this.request.request_number,
+            department: this.request.department,
+            requester_name: this.request.requester_name,
+            purpose: this.request.purpose,
+            status: this.request.status,
+            priority: this.request.priority,
+            notes: this.request.notes,
+            created_at: this.request.created_at,
+            items_count: this.request.items?.length || 0,
+          },
+        ];
 
         const reportConfig = {
           title: `Request Details - ${this.request.request_number}`,
@@ -744,24 +746,28 @@ export default {
 
     async exportRequest() {
       try {
-        const requestData = [{
-          id: this.request.id,
-          request_number: this.request.request_number,
-          department: this.request.department,
-          requester_name: this.request.requester_name,
-          purpose: this.request.purpose,
-          status: this.request.status,
-          priority: this.request.priority,
-          notes: this.request.notes,
-          created_at: this.request.created_at,
-          items_count: this.request.items?.length || 0,
-        }];
+        const requestData = [
+          {
+            id: this.request.id,
+            request_number: this.request.request_number,
+            department: this.request.department,
+            requester_name: this.request.requester_name,
+            purpose: this.request.purpose,
+            status: this.request.status,
+            priority: this.request.priority,
+            notes: this.request.notes,
+            created_at: this.request.created_at,
+            items_count: this.request.items?.length || 0,
+          },
+        ];
 
-        const reportName = `Request_${this.request.request_number}_${new Date().toISOString().split('T')[0]}`;
+        const reportName = `Request_${this.request.request_number}_${
+          new Date().toISOString().split('T')[0]
+        }`;
         await this.$exportData(requestData, reportName, 'xlsx', {
           formatters: {
             created_at: (value) => new Date(value).toLocaleDateString(),
-          }
+          },
         });
       } catch (error) {
         this.$logError('Failed to export request details', error, { requestId: this.request.id });
@@ -777,17 +783,18 @@ export default {
           purpose: this.request.purpose,
           priority: this.request.priority,
           notes: this.request.notes,
-          items: this.request.items?.map(item => ({
-            item_id: item.item_id,
-            quantity: item.quantity,
-            unit_price: item.unit_price,
-            notes: item.notes,
-          })) || [],
+          items:
+            this.request.items?.map((item) => ({
+              item_id: item.item_id,
+              quantity: item.quantity,
+              unit_price: item.unit_price,
+              notes: item.notes,
+            })) || [],
         };
 
         // Store in session storage for the create request page
         sessionStorage.setItem('copiedRequest', JSON.stringify(requestData));
-        
+
         // Navigate to create request page
         this.$router.push('/general-store/requests/create?copied=true');
         this.$toast.success('Request data copied successfully');

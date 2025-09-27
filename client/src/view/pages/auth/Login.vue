@@ -4,9 +4,7 @@
     <div
       class="position-absolute top-0 right-0 text-right mt-5 mb-15 mb-lg-0 flex-column-auto justify-content-center py-5 px-10"
     >
-      <span class="font-weight-bold font-size-3 text-dark-60">
-        Don't have an account yet?
-      </span>
+      <span class="font-weight-bold font-size-3 text-dark-60"> Don't have an account yet? </span>
       <router-link class="font-weight-bold font-size-3 ml-2" :to="{ name: 'register' }">
         Sign Up!
       </router-link>
@@ -17,9 +15,7 @@
     <div class="login-form login-signin">
       <div class="text-center mb-10 mb-lg-20">
         <h3 class="font-size-h1">Sign In</h3>
-        <p class="text-muted font-weight-semi-bold">
-          Enter your username and password
-        </p>
+        <p class="text-muted font-weight-semi-bold">Enter your username and password</p>
       </div>
 
       <!--begin::Form-->
@@ -170,7 +166,7 @@ export default {
   },
   computed: {
     ...mapState({
-      errors: state => state.auth.errors,
+      errors: (state) => state.auth.errors,
     }),
   },
 };

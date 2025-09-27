@@ -104,7 +104,7 @@ export default {
     },
 
     createDepartment() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             department_id: this.department_id,

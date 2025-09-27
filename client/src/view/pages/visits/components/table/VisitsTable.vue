@@ -9,7 +9,7 @@
             </th>
             <th style="min-width: 280px">Patient Name</th>
             <th style="min-width: 100px">Category</th>
-            <th style="min-width: 100px">Professional</th>
+            <!--            <th style="min-width: 100px">Professional</th>-->
             <th v-if="$route.name !== antenatalRoute" style="min-width: 100px">Gender</th>
             <th style="min-width: 100px">Status</th>
             <th style="min-width: 150px">Date</th>
@@ -53,11 +53,11 @@
                 {{ queue.category }}
               </span>
             </td>
-            <td>
-              <span class="text-dark-75 font-weight-bolder d-block font-size-md">
-                {{ queue.professional }}
-              </span>
-            </td>
+            <!--            <td>-->
+            <!--              <span class="text-dark-75 font-weight-bolder d-block font-size-md">-->
+            <!--                {{ queue.professional }}-->
+            <!--              </span>-->
+            <!--            </td>-->
             <td v-if="$route.name !== antenatalRoute">
               <span class="text-dark-75 font-weight-bolder d-block font-size-md">
                 {{ queue.patient.gender }}
@@ -145,6 +145,8 @@ export default {
         }
       } else if (url.includes('{immunizationId}')) {
         url = url.replaceAll('{immunizationId}', queue?.immunization_id);
+      } else if (queue?.category === 'Dialysis') {
+        url = `/visit/dialysis-consultation/${queue.id}`;
       }
       return url;
     },

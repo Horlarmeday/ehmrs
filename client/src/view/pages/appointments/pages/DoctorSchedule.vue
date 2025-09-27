@@ -28,7 +28,7 @@
                 v-model="selectedDoctorId"
                 :options="doctors"
                 label="fullname"
-                :reduce="doctor => doctor.id"
+                :reduce="(doctor) => doctor.id"
                 placeholder="Choose a doctor to view schedule"
                 :loading="loadingDoctors"
                 @search="searchDoctors"
@@ -432,7 +432,7 @@ export default {
     ...mapState('appointments', ['error']),
 
     selectedDoctor() {
-      return this.doctors.find(d => d.id === this.selectedDoctorId);
+      return this.doctors.find((d) => d.id === this.selectedDoctorId);
     },
 
     scheduleDates() {
@@ -481,10 +481,10 @@ export default {
     workingHoursSummary() {
       const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-      return days.map(dayName => {
+      return days.map((dayName) => {
         // Mock working hours - this would come from API
         const isWorkingDay = !['Saturday', 'Sunday'].includes(dayName);
-        const appointmentCount = this.scheduleAppointments.filter(apt => {
+        const appointmentCount = this.scheduleAppointments.filter((apt) => {
           const appointmentDay = new Date(apt.appointment_date).toLocaleDateString('en-US', {
             weekday: 'long',
           });
@@ -504,42 +504,42 @@ export default {
     peakHours() {
       // Calculate peak hours from appointments
       const hourCounts = {};
-      this.scheduleAppointments.forEach(apt => {
+      this.scheduleAppointments.forEach((apt) => {
         const hour = parseInt(apt.appointment_time.split(':')[0]);
         hourCounts[hour] = (hourCounts[hour] || 0) + 1;
       });
 
       const maxCount = Math.max(...Object.values(hourCounts), 0);
-      const peakHour = Object.keys(hourCounts).find(hour => hourCounts[hour] === maxCount);
+      const peakHour = Object.keys(hourCounts).find((hour) => hourCounts[hour] === maxCount);
 
       return peakHour ? this.formatHour(parseInt(peakHour)) : 'N/A';
     },
 
     busiestDay() {
       const dayCounts = {};
-      this.scheduleAppointments.forEach(apt => {
+      this.scheduleAppointments.forEach((apt) => {
         const day = new Date(apt.appointment_date).toLocaleDateString('en-US', { weekday: 'long' });
         dayCounts[day] = (dayCounts[day] || 0) + 1;
       });
 
       const maxCount = Math.max(...Object.values(dayCounts), 0);
-      return Object.keys(dayCounts).find(day => dayCounts[day] === maxCount) || 'N/A';
+      return Object.keys(dayCounts).find((day) => dayCounts[day] === maxCount) || 'N/A';
     },
 
     mostCommonType() {
       const typeCounts = {};
-      this.scheduleAppointments.forEach(apt => {
+      this.scheduleAppointments.forEach((apt) => {
         typeCounts[apt.appointment_type] = (typeCounts[apt.appointment_type] || 0) + 1;
       });
 
       const maxCount = Math.max(...Object.values(typeCounts), 0);
-      const mostCommon = Object.keys(typeCounts).find(type => typeCounts[type] === maxCount);
+      const mostCommon = Object.keys(typeCounts).find((type) => typeCounts[type] === maxCount);
 
       return mostCommon ? this.getTypeText(mostCommon) : 'N/A';
     },
 
     noShowRate() {
-      const noShows = this.scheduleAppointments.filter(apt => apt.status === 'No Show').length;
+      const noShows = this.scheduleAppointments.filter((apt) => apt.status === 'No Show').length;
       const total = this.scheduleAppointments.length;
       return total > 0 ? Math.round((noShows / total) * 100) : 0;
     },
@@ -642,7 +642,7 @@ export default {
     },
 
     getAppointmentsForSlot(date, hour) {
-      return this.scheduleAppointments.filter(apt => {
+      return this.scheduleAppointments.filter((apt) => {
         if (apt.appointment_date !== date) return false;
         const appointmentHour = parseInt(apt.appointment_time.split(':')[0]);
         return appointmentHour === hour;
@@ -660,7 +660,7 @@ export default {
     },
 
     isSlotBlocked(date, hour) {
-      return this.blockedSlots.some(block => block.date === date && block.hour === hour);
+      return this.blockedSlots.some((block) => block.date === date && block.hour === hour);
     },
 
     isWorkingHour(date, hour) {

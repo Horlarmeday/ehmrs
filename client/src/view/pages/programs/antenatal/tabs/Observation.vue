@@ -145,7 +145,7 @@ export default {
       this.emitDiagnosis = true;
       this.$validator
         .validateAll()
-        .then(result => {
+        .then((result) => {
           if (result) {
             this.removeEmptyDiagnosis(this.diagnosis);
             if (this.checkDiagnosisNotSelected(this.diagnosis)) return this.errorMessage();
@@ -175,7 +175,7 @@ export default {
               .catch(() => this.removeSpinner(submitButton));
           }
         })
-        .catch(e => notifyError(e));
+        .catch((e) => notifyError(e));
     },
 
     initValues() {

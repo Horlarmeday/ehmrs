@@ -361,9 +361,7 @@
         </div>
       </b-form>
       <template #modal-footer>
-        <b-button variant="secondary" @click="showModal = false">
-          Cancel
-        </b-button>
+        <b-button variant="secondary" @click="showModal = false"> Cancel </b-button>
         <b-button variant="primary" @click="saveClaim" :disabled="saving">
           <span v-if="saving"> <i class="fas fa-spinner fa-spin mr-2"></i>Saving... </span>
           <span v-else>
@@ -434,9 +432,7 @@
       </div>
 
       <template #modal-footer>
-        <b-button variant="secondary" @click="showActionModal = false">
-          Cancel
-        </b-button>
+        <b-button variant="secondary" @click="showActionModal = false"> Cancel </b-button>
         <b-button :variant="actionModalVariant" @click="executeClaimAction" :disabled="executing">
           <span v-if="executing"> <i class="fas fa-spinner fa-spin mr-2"></i>Processing... </span>
           <span v-else>
@@ -592,7 +588,7 @@ export default {
     },
 
     editClaim(id) {
-      const claim = this.hmoClaims.find(c => c.id === id);
+      const claim = this.hmoClaims.find((c) => c.id === id);
       if (claim) {
         this.claimForm = { ...claim };
         this.isEditing = true;
@@ -766,7 +762,7 @@ export default {
       this.loadClaims();
     },
 
-    debounceSearch: debounce(function() {
+    debounceSearch: debounce(function () {
       this.loadClaims();
     }, 500),
 

@@ -3,9 +3,7 @@
     <div class="card" v-for="(test, i) in results" :key="test.prescribed_test_id">
       <div class="card-header">
         <div class="card-title" v-b-toggle="`collapse-${i}`">
-          <span class="mr-3 text-black-50">
-            Test.:
-          </span>
+          <span class="mr-3 text-black-50"> Test.: </span>
           <span class="mr-5 text-dark">
             <span
               :title="`${test.test_type}`"
@@ -139,7 +137,7 @@ export default {
   },
   data() {
     return {
-      results: this.tests.map(test => ({
+      results: this.tests.map((test) => ({
         prescribed_test_id: test.id,
         test_prescription_id: this.$route.params.id,
         name: test.test.name,

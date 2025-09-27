@@ -7,12 +7,10 @@
           v-model="service_id"
           label="name"
           @search="searchServices"
-          :reduce="surgeries => surgeries.id"
+          :reduce="(surgeries) => surgeries.id"
           :options="services"
         >
-          <template slot="no-options">
-            type to search for surgeries..
-          </template>
+          <template slot="no-options"> type to search for surgeries.. </template>
         </v-select>
       </div>
     </div>

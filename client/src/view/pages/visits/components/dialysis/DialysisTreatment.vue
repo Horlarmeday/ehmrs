@@ -139,7 +139,7 @@
                   v-model="formData.patient_id"
                   :options="availablePatients"
                   label="name"
-                  :reduce="patient => patient.id"
+                  :reduce="(patient) => patient.id"
                   placeholder="Select patient..."
                   class="form-control"
                   required
@@ -317,7 +317,7 @@
                   v-model="formData.started_by"
                   :options="availableStaff"
                   label="name"
-                  :reduce="staff => staff.id"
+                  :reduce="(staff) => staff.id"
                   placeholder="Select staff..."
                   class="form-control"
                   required

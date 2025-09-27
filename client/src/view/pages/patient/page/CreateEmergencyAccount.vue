@@ -137,7 +137,7 @@
                   v-validate="'required'"
                   data-vv-validate-on="blur"
                 >
-                  <option value="Married">Married </option>
+                  <option value="Married">Married</option>
                   <option value="Single">Single</option>
                   <option value="Widow">Widow</option>
                   <option value="Widower">Widower</option>
@@ -361,7 +361,7 @@ export default {
     },
 
     addPatient() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           // set spinner to submit button
           const submitButton = this.$refs['kt-submit'];
@@ -385,12 +385,12 @@ export default {
           };
           this.$store
             .dispatch('patient/createEmergencyPatient', data)
-            .then(response => {
+            .then((response) => {
               this.removeSpinner(submitButton);
               this.handleSuccess(response);
               this.initValues();
             })
-            .catch(err => {
+            .catch((err) => {
               this.removeSpinner(submitButton);
               this.handleError(err);
             });

@@ -62,8 +62,9 @@
                   :value="dosageForm.id"
                   v-for="dosageForm in dosageForms"
                   :key="dosageForm.id"
-                  >{{ dosageForm.name }}</option
                 >
+                  {{ dosageForm.name }}
+                </option>
               </select>
               <span class="text-danger text-sm">{{ errors.first('dosage_form') }}</span>
             </div>
@@ -88,17 +89,18 @@
                   :value="measurement.id"
                   v-for="measurement in measurements"
                   :key="measurement.id"
-                  >{{ measurement.name }}</option
                 >
+                  {{ measurement.name }}
+                </option>
               </select>
               <span class="text-danger text-sm">{{ errors.first('strength') }}</span>
             </div>
             <div class="col-lg-3">
               <label>Route of Administration <span class="text-danger">*</span></label>
               <select class="form-control form-control-sm" v-model="item.route_id" name="route">
-                <option :value="route.id" v-for="route in routes" :key="route.id">{{
-                  route.name
-                }}</option>
+                <option :value="route.id" v-for="route in routes" :key="route.id">
+                  {{ route.name }}
+                </option>
               </select>
             </div>
             <div class="col-lg-3">
@@ -117,7 +119,7 @@
                 name="unit"
                 v-model="item.unit"
                 label="name"
-                :reduce="units => units.id"
+                :reduce="(units) => units.id"
                 :options="units"
               />
             </div>
@@ -169,9 +171,9 @@
                 v-model="item.vendor_id"
                 name="vendor"
               >
-                <option :value="vendor.id" v-for="vendor in vendors" :key="vendor.id">{{
-                  vendor.name
-                }}</option>
+                <option :value="vendor.id" v-for="vendor in vendors" :key="vendor.id">
+                  {{ vendor.name }}
+                </option>
               </select>
               <span class="text-danger text-sm">{{ errors.first('vendor') }}</span>
             </div>
@@ -248,7 +250,7 @@ export default {
         .dispatch('store/fetchSelectedPharmacyItems', {
           itemIds: this.$route.query.itemIds,
         })
-        .then(response => (this.pharmItems = JSON.parse(JSON.stringify(response.data.data))));
+        .then((response) => (this.pharmItems = JSON.parse(JSON.stringify(response.data.data))));
     },
 
     fetchVendors() {

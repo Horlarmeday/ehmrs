@@ -50,7 +50,7 @@
                 <label
                   v-if="
                     allowedRole.includes(currentUser.role) ||
-                      allowedSubRole.includes(currentUser.sub_role)
+                    allowedSubRole.includes(currentUser.sub_role)
                   "
                   class="checkbox checkbox-md checkbox-inline"
                 >

@@ -38,7 +38,9 @@ export class LabOrderService {
    * @memberOf LabOrderService
    */
   static async prescribeTestService(body) {
-    return prescribeTest(body);
+    const { patient_id } = body;
+    const prescription = await this.getTestPrescription(patient_id, body);
+    return prescribeTest({...body, test_prescription_id: prescription.id });
   }
 
   /**
@@ -185,12 +187,12 @@ export class LabOrderService {
 
   private static testPrescriptionData(body: PrescribedTestBody, patient_id: number) {
     return {
-      source: body.tests[0].source,
+      source: body.tests?.[0]?.source || 'Consultation',
       requester: body.staff_id,
       visit_id: body.visit_id,
       patient_id,
       date_requested: Date.now(),
-      ...(body.tests[0]?.ante_natal_id && { ante_natal_id: body.tests[0]?.ante_natal_id }),
+      ...(body.tests?.[0]?.ante_natal_id && { ante_natal_id: body.tests?.[0]?.ante_natal_id }),
     };
   }
 }

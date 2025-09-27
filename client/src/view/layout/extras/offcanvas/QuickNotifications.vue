@@ -1,9 +1,7 @@
 <template>
   <div class="topbar-item">
     <div id="kt_quick_notifications_toggle">
-      <div class="btn btn-icon btn-sm btn-primary font-weight-bolder p-0">
-        3
-      </div>
+      <div class="btn btn-icon btn-sm btn-primary font-weight-bolder p-0">3</div>
     </div>
 
     <!-- begin::Notifications Panel-->

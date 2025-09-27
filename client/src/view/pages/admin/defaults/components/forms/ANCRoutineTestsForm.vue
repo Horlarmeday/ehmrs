@@ -13,7 +13,7 @@
             v-model="item.test"
             label="name"
             :reduce="
-              tests => ({
+              (tests) => ({
                 id: tests.id,
                 name: tests.name,
                 price: tests.price,

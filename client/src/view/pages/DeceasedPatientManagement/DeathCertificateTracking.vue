@@ -148,15 +148,13 @@
               <div
                 v-if="
                   tracking &&
-                    tracking.breakdown &&
-                    Object.keys(tracking.breakdown.by_status).length > 0
+                  tracking.breakdown &&
+                  Object.keys(tracking.breakdown.by_status).length > 0
                 "
               >
                 <canvas ref="statusChart" height="300"></canvas>
               </div>
-              <div v-else class="text-center text-muted py-4">
-                No data available
-              </div>
+              <div v-else class="text-center text-muted py-4">No data available</div>
             </b-card-body>
           </b-card>
         </b-col>
@@ -169,15 +167,13 @@
               <div
                 v-if="
                   tracking &&
-                    tracking.breakdown &&
-                    Object.keys(tracking.breakdown.by_department).length > 0
+                  tracking.breakdown &&
+                  Object.keys(tracking.breakdown.by_department).length > 0
                 "
               >
                 <canvas ref="departmentChart" height="300"></canvas>
               </div>
-              <div v-else class="text-center text-muted py-4">
-                No data available
-              </div>
+              <div v-else class="text-center text-muted py-4">No data available</div>
             </b-card-body>
           </b-card>
         </b-col>
@@ -194,15 +190,13 @@
               <div
                 v-if="
                   tracking &&
-                    tracking.breakdown &&
-                    Object.keys(tracking.breakdown.by_month).length > 0
+                  tracking.breakdown &&
+                  Object.keys(tracking.breakdown.by_month).length > 0
                 "
               >
                 <canvas ref="monthlyChart" height="300"></canvas>
               </div>
-              <div v-else class="text-center text-muted py-4">
-                No data available
-              </div>
+              <div v-else class="text-center text-muted py-4">No data available</div>
             </b-card-body>
           </b-card>
         </b-col>
@@ -282,9 +276,7 @@
               class="mt-3"
             ></b-pagination>
           </div>
-          <div v-else class="text-center text-muted py-4">
-            No certificates found
-          </div>
+          <div v-else class="text-center text-muted py-4">No certificates found</div>
         </b-card-body>
       </b-card>
     </div>
@@ -351,7 +343,7 @@ export default {
 
       // Filter by status
       if (this.filters.status !== 'all') {
-        filtered = filtered.filter(cert => cert.certificate_status === this.filters.status);
+        filtered = filtered.filter((cert) => cert.certificate_status === this.filters.status);
       }
 
       return filtered;
@@ -412,7 +404,7 @@ export default {
       if (!this.tracking) return;
 
       // Destroy existing charts
-      Object.values(this.charts).forEach(chart => {
+      Object.values(this.charts).forEach((chart) => {
         if (chart) chart.destroy();
       });
 
@@ -496,7 +488,7 @@ export default {
       if (!this.tracking || !this.tracking.breakdown || !this.tracking.breakdown.by_month) return;
       const data = this.tracking.breakdown.by_month;
       const labels = Object.keys(data).sort();
-      const values = labels.map(label => data[label]);
+      const values = labels.map((label) => data[label]);
 
       this.charts.monthly = new Chart(ctx, {
         type: 'line',
@@ -562,7 +554,7 @@ export default {
 
   beforeDestroy() {
     // Clean up charts
-    Object.values(this.charts).forEach(chart => {
+    Object.values(this.charts).forEach((chart) => {
       if (chart) chart.destroy();
     });
   },

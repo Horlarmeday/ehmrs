@@ -71,9 +71,7 @@
           </span>
           <span class="navi-text">Privacy</span>
           <span class="navi-link-badge">
-            <span class="label label-light-danger label-rounded font-weight-bold">
-              5
-            </span>
+            <span class="label label-light-danger label-rounded font-weight-bold"> 5 </span>
           </span>
         </a>
       </b-dropdown-text>

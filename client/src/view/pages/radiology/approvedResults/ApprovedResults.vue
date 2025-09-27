@@ -70,9 +70,7 @@
                     <router-link
                       v-b-tooltip.hover
                       title="View"
-                      :to="
-                        `/radiology/results-update/${result.id}?patient=${result.patient.fullname}`
-                      "
+                      :to="`/radiology/results-update/${result.id}?patient=${result.patient.fullname}`"
                       class="btn btn-icon btn-light btn-hover-primary btn-sm"
                     >
                       <ArrowRightIcon />

@@ -138,7 +138,7 @@
                   v-model="filters.doctor_id"
                   :options="doctors"
                   label="fullname"
-                  :reduce="doctor => doctor.id"
+                  :reduce="(doctor) => doctor.id"
                   placeholder="Select Doctor"
                   @search="searchDoctors"
                   @input="applyFilters"
@@ -501,7 +501,7 @@ export default {
     ...mapGetters('appointments', ['filteredAppointments', 'appointmentStats']),
 
     hasActiveFilters() {
-      return Object.values(this.filters).some(value => value !== '') || this.searchTerm !== '';
+      return Object.values(this.filters).some((value) => value !== '') || this.searchTerm !== '';
     },
 
     statusFilterOptions() {
@@ -568,7 +568,7 @@ export default {
       };
 
       // Remove empty values
-      Object.keys(params).forEach(key => {
+      Object.keys(params).forEach((key) => {
         if (params[key] === '' || params[key] === null || params[key] === undefined) {
           delete params[key];
         }
@@ -701,7 +701,7 @@ export default {
         input: 'textarea',
         inputPlaceholder: 'Cancellation reason (optional)',
         showLoaderOnConfirm: true,
-        preConfirm: async reason => {
+        preConfirm: async (reason) => {
           try {
             await this.$store.dispatch('appointments/cancelAppointment', {
               id: appointment.id,
@@ -713,7 +713,7 @@ export default {
             return false;
           }
         },
-      }).then(result => {
+      }).then((result) => {
         if (result.isConfirmed) {
           this.$bvToast.toast('Appointment cancelled successfully', {
             title: 'Success',
@@ -764,7 +764,7 @@ export default {
             return false;
           }
         },
-      }).then(result => {
+      }).then((result) => {
         if (result.isConfirmed) {
           this.$bvToast.toast('Appointment marked as no show', {
             title: 'Success',
@@ -781,7 +781,7 @@ export default {
       if (!patient || !patient.fullname) return 'NA';
       return patient.fullname
         .split(' ')
-        .map(name => name.charAt(0))
+        .map((name) => name.charAt(0))
         .join('')
         .toUpperCase();
     },
@@ -922,7 +922,7 @@ export default {
     this.searchTerm = query.search || '';
 
     // Apply filters from query
-    Object.keys(this.filters).forEach(key => {
+    Object.keys(this.filters).forEach((key) => {
       if (query[key]) {
         this.filters[key] = query[key];
       }

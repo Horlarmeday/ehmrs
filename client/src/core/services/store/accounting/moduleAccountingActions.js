@@ -1722,7 +1722,7 @@ export default {
     const csvRows = [headers.join(',')];
 
     for (const row of data) {
-      const values = headers.map(header => {
+      const values = headers.map((header) => {
         const value = row[header];
         return typeof value === 'string' ? `"${value.replace(/"/g, '""')}"` : value;
       });

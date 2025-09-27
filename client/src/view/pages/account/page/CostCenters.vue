@@ -5,9 +5,7 @@
         <span class="card-label font-weight-bolder text-dark">Cost Centers</span>
       </h3>
       <div class="card-toolbar">
-        <button class="btn btn-primary" @click="openDialog()">
-          Add Cost Center
-        </button>
+        <button class="btn btn-primary" @click="openDialog()">Add Cost Center</button>
       </div>
     </div>
     <div class="card-body">

@@ -137,31 +137,20 @@ export const updateSubcategorySchema = Joi.object({
 
 // Item validations
 export const createItemSchema = Joi.object({
-  item_code: Joi.string()
-    .required()
-    .min(3)
-    .max(20)
-    .pattern(/^[A-Z0-9-]+$/)
-    .messages({
-      'string.empty': 'Item code is required',
-      'string.min': 'Item code must be at least 3 characters long',
-      'string.max': 'Item code cannot exceed 20 characters',
-      'string.pattern.base': 'Item code must contain only uppercase letters, numbers, and hyphens',
-    }),
   name: Joi.string()
     .required()
     .min(2)
-    .max(200)
+    .max(100)
     .messages({
       'string.empty': 'Item name is required',
       'string.min': 'Item name must be at least 2 characters long',
-      'string.max': 'Item name cannot exceed 200 characters',
+      'string.max': 'Item name cannot exceed 100 characters',
     }),
   description: Joi.string()
     .optional()
-    .max(1000)
+    .max(500)
     .messages({
-      'string.max': 'Description cannot exceed 1000 characters',
+      'string.max': 'Description cannot exceed 500 characters',
     }),
   category_id: Joi.number()
     .required()
@@ -172,12 +161,11 @@ export const createItemSchema = Joi.object({
       'any.required': 'Category ID is required',
     }),
   subcategory_id: Joi.number()
-    .required()
+    .optional()
     .positive()
     .messages({
       'number.base': 'Subcategory ID must be a valid number',
       'number.positive': 'Subcategory ID must be a positive number',
-      'any.required': 'Subcategory ID is required',
     }),
   unit_id: Joi.number()
     .required()
@@ -189,21 +177,31 @@ export const createItemSchema = Joi.object({
     }),
   manufacturer: Joi.string()
     .optional()
-    .max(200)
+    .max(100)
     .messages({
-      'string.max': 'Manufacturer name cannot exceed 200 characters',
+      'string.max': 'Manufacturer name cannot exceed 100 characters',
     }),
   model_number: Joi.string()
     .optional()
-    .max(100)
+    .max(50)
     .messages({
-      'string.max': 'Model number cannot exceed 100 characters',
+      'string.max': 'Model number cannot exceed 50 characters',
     }),
   specifications: Joi.string()
     .optional()
     .max(2000)
     .messages({
       'string.max': 'Specifications cannot exceed 2000 characters',
+    }),
+  initial_stock: Joi.number()
+    .required()
+    .min(0)
+    .max(999999)
+    .messages({
+      'number.base': 'Initial stock must be a valid number',
+      'number.min': 'Initial stock cannot be negative',
+      'number.max': 'Initial stock cannot exceed 999,999',
+      'any.required': 'Initial stock is required',
     }),
   minimum_stock: Joi.number()
     .required()
@@ -216,14 +214,13 @@ export const createItemSchema = Joi.object({
       'any.required': 'Minimum stock is required',
     }),
   maximum_stock: Joi.number()
-    .required()
+    .optional()
     .min(1)
     .max(999999)
     .messages({
       'number.base': 'Maximum stock must be a valid number',
       'number.min': 'Maximum stock must be at least 1',
       'number.max': 'Maximum stock cannot exceed 999,999',
-      'any.required': 'Maximum stock is required',
     }),
   unit_cost: Joi.number()
     .required()
@@ -238,12 +235,9 @@ export const createItemSchema = Joi.object({
       'any.required': 'Unit cost is required',
     }),
   location: Joi.string()
-    .required()
-    .min(2)
+    .optional()
     .max(100)
     .messages({
-      'string.empty': 'Location is required',
-      'string.min': 'Location must be at least 2 characters long',
       'string.max': 'Location cannot exceed 100 characters',
     }),
   shelf_number: Joi.string()
@@ -259,20 +253,14 @@ export const createItemSchema = Joi.object({
       'date.greater': 'Expiry date must be in the future',
     }),
   is_expirable: Joi.boolean()
-    .required()
-    .messages({
-      'any.required': 'Expirable flag is required',
-    }),
+    .optional()
+    .default(false),
   is_serialized: Joi.boolean()
-    .required()
-    .messages({
-      'any.required': 'Serialized flag is required',
-    }),
+    .optional()
+    .default(false),
   is_lot_tracked: Joi.boolean()
-    .required()
-    .messages({
-      'any.required': 'Lot tracked flag is required',
-    }),
+    .optional()
+    .default(false),
   supplier_id: Joi.number()
     .optional()
     .positive()
@@ -283,29 +271,19 @@ export const createItemSchema = Joi.object({
 });
 
 export const updateItemSchema = Joi.object({
-  item_code: Joi.string()
-    .optional()
-    .min(3)
-    .max(20)
-    .pattern(/^[A-Z0-9-]+$/)
-    .messages({
-      'string.min': 'Item code must be at least 3 characters long',
-      'string.max': 'Item code cannot exceed 20 characters',
-      'string.pattern.base': 'Item code must contain only uppercase letters, numbers, and hyphens',
-    }),
   name: Joi.string()
     .optional()
     .min(2)
-    .max(200)
+    .max(100)
     .messages({
       'string.min': 'Item name must be at least 2 characters long',
-      'string.max': 'Item name cannot exceed 200 characters',
+      'string.max': 'Item name cannot exceed 100 characters',
     }),
   description: Joi.string()
     .optional()
-    .max(1000)
+    .max(500)
     .messages({
-      'string.max': 'Description cannot exceed 1000 characters',
+      'string.max': 'Description cannot exceed 500 characters',
     }),
   category_id: Joi.number()
     .optional()
@@ -330,15 +308,15 @@ export const updateItemSchema = Joi.object({
     }),
   manufacturer: Joi.string()
     .optional()
-    .max(200)
+    .max(100)
     .messages({
-      'string.max': 'Manufacturer name cannot exceed 200 characters',
+      'string.max': 'Manufacturer name cannot exceed 100 characters',
     }),
   model_number: Joi.string()
     .optional()
-    .max(100)
+    .max(50)
     .messages({
-      'string.max': 'Model number cannot exceed 100 characters',
+      'string.max': 'Model number cannot exceed 50 characters',
     }),
   specifications: Joi.string()
     .optional()
@@ -377,10 +355,8 @@ export const updateItemSchema = Joi.object({
     }),
   location: Joi.string()
     .optional()
-    .min(2)
     .max(100)
     .messages({
-      'string.min': 'Location must be at least 2 characters long',
       'string.max': 'Location cannot exceed 100 characters',
     }),
   shelf_number: Joi.string()

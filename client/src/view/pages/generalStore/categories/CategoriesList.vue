@@ -511,7 +511,7 @@ export default {
       return this.categories;
     },
     parentCategories() {
-      return this.categories.filter(cat => !cat.parent_id);
+      return this.categories.filter((cat) => !cat.parent_id);
     },
     // Add filters computed property to match template usage
     filters() {
@@ -590,7 +590,7 @@ export default {
     },
 
     getParentCategoryName(parentId) {
-      const category = this.categories.find(c => c.id === parentId);
+      const category = this.categories.find((c) => c.id === parentId);
       return category ? category.name : 'Unknown';
     },
 

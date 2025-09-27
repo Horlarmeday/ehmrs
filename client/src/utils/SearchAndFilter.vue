@@ -32,26 +32,26 @@
         <label>Dosage Forms</label>
         <select @change="onFilterByDrugDosageForm" v-model="dosage_form" class="form-control">
           <option disabled>Select</option>
-          <option :value="dosageForm.id" v-for="(dosageForm, i) in dosageForms" :key="i">{{
-            dosageForm.name
-          }}</option>
+          <option :value="dosageForm.id" v-for="(dosageForm, i) in dosageForms" :key="i">
+            {{ dosageForm.name }}
+          </option>
         </select>
       </div>
       <div class="col-lg-4">
         <label>Sort</label>
         <select @change="onSort" v-model="sort" class="form-control w-400px">
-          <option :value="option.value" v-for="(option, i) in options" :key="i">{{
-            option.text
-          }}</option>
+          <option :value="option.value" v-for="(option, i) in options" :key="i">
+            {{ option.text }}
+          </option>
         </select>
       </div>
       <div class="col-lg-4">
         <label>Vendors</label>
         <select @change="onFilterByVendor" v-model="vendor" class="form-control w-400px">
           <option value="">Select</option>
-          <option :value="option.id" v-for="(option, i) in vendors" :key="i">{{
-            option.name
-          }}</option>
+          <option :value="option.id" v-for="(option, i) in vendors" :key="i">
+            {{ option.name }}
+          </option>
         </select>
       </div>
     </div>

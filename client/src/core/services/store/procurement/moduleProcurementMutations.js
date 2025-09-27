@@ -3,7 +3,7 @@ export const SET_PROCUREMENT_ORDERS = (state, orders) => {
 };
 
 export const SET_PROCUREMENT_ORDER = (state, order) => {
-  const index = state.orders.findIndex(o => o.id === order.id);
+  const index = state.orders.findIndex((o) => o.id === order.id);
   if (index !== -1) {
     state.orders.splice(index, 1, order);
   } else {
@@ -12,7 +12,7 @@ export const SET_PROCUREMENT_ORDER = (state, order) => {
 };
 
 export const UPDATE_PROCUREMENT_ORDER = (state, order) => {
-  const index = state.orders.findIndex(o => o.id === order.id);
+  const index = state.orders.findIndex((o) => o.id === order.id);
   if (index !== -1) {
     state.orders.splice(index, 1, order);
   }
@@ -38,7 +38,7 @@ export const SET_PROCUREMENT_REPORTS = (state, reports) => {
   state.reports = reports;
 };
 
-export const CLEAR_PROCUREMENT_DATA = state => {
+export const CLEAR_PROCUREMENT_DATA = (state) => {
   state.orders = [];
   state.currentOrder = null;
   state.statistics = {};

@@ -131,9 +131,7 @@
             <div class="col-md-3">
               <label>&nbsp;</label>
               <div class="d-flex gap-2">
-                <b-button variant="outline-secondary" @click="clearFilters">
-                  Clear
-                </b-button>
+                <b-button variant="outline-secondary" @click="clearFilters"> Clear </b-button>
                 <b-button variant="primary" @click="loadEntries">
                   <i class="fas fa-search mr-2"></i>Search
                 </b-button>
@@ -463,9 +461,7 @@
       </b-form>
 
       <template #modal-footer>
-        <b-button variant="secondary" @click="showEntryModal = false">
-          Cancel
-        </b-button>
+        <b-button variant="secondary" @click="showEntryModal = false"> Cancel </b-button>
         <b-button variant="primary" @click="saveEntry" :disabled="saving || !isBalanced">
           <span v-if="saving"> <i class="fas fa-spinner fa-spin mr-2"></i>Saving... </span>
           <span v-else>
@@ -611,14 +607,14 @@ export default {
       try {
         // Load accounts
         const accounts = await this.$store.dispatch('accounting/fetchChartOfAccounts', {});
-        this.accountOptions = accounts.map(account => ({
+        this.accountOptions = accounts.map((account) => ({
           value: account.id,
           text: `${account.code} - ${account.name}`,
         }));
 
         // Load cost centers
         const costCenters = await this.$store.dispatch('accounting/fetchCostCenters', {});
-        this.costCenterOptions = costCenters.map(center => ({
+        this.costCenterOptions = costCenters.map((center) => ({
           value: center.id,
           text: center.name,
         }));
@@ -657,7 +653,7 @@ export default {
     },
 
     autoBalance() {
-      const lines = this.entryForm.lines.filter(line => line.account_id);
+      const lines = this.entryForm.lines.filter((line) => line.account_id);
       if (lines.length < 2) return;
 
       const totalDebits = lines.reduce((sum, line) => sum + (line.debit || 0), 0);
@@ -893,7 +889,7 @@ export default {
       this.loadEntries();
     },
 
-    debounceSearch: debounce(function() {
+    debounceSearch: debounce(function () {
       this.loadEntries();
     }, 500),
 

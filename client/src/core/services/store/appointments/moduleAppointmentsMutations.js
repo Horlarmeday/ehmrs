@@ -9,14 +9,14 @@ export default {
   },
 
   UPDATE_APPOINTMENT(state, updatedAppointment) {
-    const index = state.appointments.findIndex(apt => apt.id === updatedAppointment.id);
+    const index = state.appointments.findIndex((apt) => apt.id === updatedAppointment.id);
     if (index !== -1) {
       Object.assign(state.appointments[index], updatedAppointment);
     }
   },
 
   DELETE_APPOINTMENT(state, appointmentId) {
-    state.appointments = state.appointments.filter(apt => apt.id !== appointmentId);
+    state.appointments = state.appointments.filter((apt) => apt.id !== appointmentId);
   },
 
   SET_APPOINTMENT(state, appointment) {
@@ -74,19 +74,19 @@ export default {
 
   UPDATE_APPOINTMENT_STATUS(state, { appointmentId, status }) {
     // Update in main appointments list
-    const mainIndex = state.appointments.findIndex(apt => apt.id === appointmentId);
+    const mainIndex = state.appointments.findIndex((apt) => apt.id === appointmentId);
     if (mainIndex !== -1) {
       state.appointments[mainIndex].status = status;
     }
 
     // Update in check-in queue
-    const queueIndex = state.checkInQueue.findIndex(apt => apt.id === appointmentId);
+    const queueIndex = state.checkInQueue.findIndex((apt) => apt.id === appointmentId);
     if (queueIndex !== -1) {
       state.checkInQueue[queueIndex].status = status;
     }
 
     // Update in today's appointments
-    const todayIndex = state.todaysAppointments.findIndex(apt => apt.id === appointmentId);
+    const todayIndex = state.todaysAppointments.findIndex((apt) => apt.id === appointmentId);
     if (todayIndex !== -1) {
       state.todaysAppointments[todayIndex].status = status;
     }

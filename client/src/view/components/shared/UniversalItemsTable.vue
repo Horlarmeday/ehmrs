@@ -196,7 +196,7 @@ export default {
     storeType: {
       type: String,
       default: 'general_store',
-      validator: value => ['pharmacy', 'general_store', 'laboratory'].includes(value),
+      validator: (value) => ['pharmacy', 'general_store', 'laboratory'].includes(value),
     },
     showStock: {
       type: Boolean,

@@ -36,9 +36,9 @@
               <i class="fas fa-clock mr-2"></i>Scheduled
             </button>
           </div>
-          <button class="btn btn-success btn-sm font-weight-bold ml-3" @click="openCreateModal">
-            <i class="fas fa-plus mr-2"></i>New Dialysis Visit
-          </button>
+          <!--          <button class="btn btn-success btn-sm font-weight-bold ml-3" @click="openCreateModal">-->
+          <!--            <i class="fas fa-plus mr-2"></i>New Dialysis Visit-->
+          <!--          </button>-->
         </div>
       </div>
     </div>
@@ -299,7 +299,7 @@
                   v-model="formData.patient_id"
                   :options="storePatients"
                   label="fullname"
-                  :reduce="patient => patient.id"
+                  :reduce="(patient) => patient.id"
                   placeholder="Select patient..."
                   required
                 />
@@ -414,19 +414,19 @@ export default {
     // Filter visits based on current view
     filteredVisits() {
       if (this.visitFilter === 'all') return this.visits;
-      return this.visits.filter(visit => visit.status === this.visitFilter);
+      return this.visits.filter((visit) => visit.status === this.visitFilter);
     },
     // Today's visits
     todayVisits() {
       const today = new Date().toISOString().split('T')[0];
-      return this.visits.filter(visit => {
+      return this.visits.filter((visit) => {
         const visitDate = visit.date_visit_start || visit.visit_date;
         return new Date(visitDate).toISOString().split('T')[0] === today;
       });
     },
     // Scheduled visits (actually ongoing visits that are "scheduled" for today)
     scheduledVisits() {
-      return this.visits.filter(visit => visit.status === 'Ongoing');
+      return this.visits.filter((visit) => visit.status === 'Ongoing');
     },
     // Get patients from store
     storePatients() {
@@ -638,8 +638,8 @@ export default {
       this.stats = {
         totalVisits: this.visits.length,
         todayVisits: this.todayVisits.length,
-        scheduledVisits: this.visits.filter(v => v.status === 'Ongoing').length,
-        activeTreatments: this.visits.filter(v => v.status === 'Ongoing').length,
+        scheduledVisits: this.visits.filter((v) => v.status === 'Ongoing').length,
+        activeTreatments: this.visits.filter((v) => v.status === 'Ongoing').length,
       };
     },
 

@@ -5,10 +5,16 @@ export function validateVisit(visit: any) {
     patient_id: Joi.number().required(),
     category: Joi.string().required(),
     department: Joi.string().required(),
-    professional: Joi.string().required(),
+    professional: Joi.string()
+      .optional()
+      .allow(''),
     date_of_visit: Joi.date().required(),
     type: Joi.string().required(),
     service_id: Joi.alternatives()
+      .try(Joi.number(), Joi.array().items(Joi.number()))
+      .allow('')
+      .optional(),
+    test_id: Joi.alternatives()
       .try(Joi.number(), Joi.array().items(Joi.number()))
       .allow('')
       .optional(),

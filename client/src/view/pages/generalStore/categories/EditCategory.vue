@@ -6,9 +6,7 @@
         <i class="flaticon2-edit text-warning mr-2"></i>
         Edit Category: {{ category?.name }}
       </h3>
-      <p class="text-muted mb-0">
-        Update category information and settings
-      </p>
+      <p class="text-muted mb-0">Update category information and settings</p>
     </div>
 
     <!-- Main Form -->
@@ -219,9 +217,7 @@
                   <span v-if="form.parent_id" class="badge badge-light-info mr-2">
                     Subcategory of {{ getParentCategoryName(form.parent_id) }}
                   </span>
-                  <span v-else class="badge badge-success">
-                    Root Category
-                  </span>
+                  <span v-else class="badge badge-success"> Root Category </span>
                 </div>
 
                 <div class="preview-stats mt-3">
@@ -262,9 +258,7 @@
                       class="custom-control-input"
                       id="is_active"
                     />
-                    <label class="custom-control-label" for="is_active">
-                      Category is active
-                    </label>
+                    <label class="custom-control-label" for="is_active"> Category is active </label>
                   </div>
                   <small class="form-text text-muted">
                     Inactive categories won't be visible to users
@@ -435,7 +429,7 @@ export default {
         // Load parent categories (excluding current category and its descendants)
         await this.$store.dispatch('generalStore/fetchCategories', { parent_id: null });
         this.parentCategories = this.$store.state.generalStore.categories.filter(
-          cat => cat.id !== this.category.id && !this.isDescendant(cat.id)
+          (cat) => cat.id !== this.category.id && !this.isDescendant(cat.id)
         );
       } catch (error) {
         console.error('Error loading form data:', error);
@@ -477,7 +471,7 @@ export default {
     },
 
     getParentCategoryName(parentId) {
-      const category = this.parentCategories.find(c => c.id === parentId);
+      const category = this.parentCategories.find((c) => c.id === parentId);
       return category ? category.name : 'Unknown';
     },
 
@@ -546,7 +540,7 @@ export default {
         if (categoryData.sort_order) categoryData.sort_order = parseInt(categoryData.sort_order);
 
         // Remove empty optional fields
-        Object.keys(categoryData).forEach(key => {
+        Object.keys(categoryData).forEach((key) => {
           if (categoryData[key] === '' || categoryData[key] === null) {
             delete categoryData[key];
           }

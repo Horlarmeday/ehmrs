@@ -20,6 +20,10 @@ import {
   InsuranceClaim,
   POSTerminalTransaction,
   ClinicalPaymentItem,
+  DrugPrescription,
+  TestPrescription,
+  InvestigationPrescription,
+  Service,
 } from '../../../database/models';
 import {
   PaymentType,
@@ -1606,7 +1610,11 @@ export class PaymentProcessingService {
           const prescribedOrderStatus = 'Paid';
 
           switch (item.item_type) {
-            case BillItemTypeEnum.DRUG:
+            case BillItemTypeEnum.DRUG: {
+              const prescribedDrug = await PrescribedDrug.findOne({
+                where: { id: item.item_id },
+                transaction,
+              });
               await PrescribedDrug.update(
                 { payment_status: prescribedOrderStatus },
                 {
@@ -1614,9 +1622,23 @@ export class PaymentProcessingService {
                   transaction,
                 }
               );
+              await DrugPrescription.update(
+                { has_paid: true },
+                {
+                  where: {
+                    id: prescribedDrug.drug_prescription_id,
+                  },
+                  transaction,
+                }
+              );
               break;
+            }
+            case BillItemTypeEnum.TEST: {
+              const prescribedTest = await PrescribedTest.findOne({
+                where: { id: item.item_id },
+                transaction,
+              });
 
-            case BillItemTypeEnum.TEST:
               await PrescribedTest.update(
                 { payment_status: prescribedOrderStatus },
                 {
@@ -1624,9 +1646,22 @@ export class PaymentProcessingService {
                   transaction,
                 }
               );
+              await TestPrescription.update(
+                { has_paid: true },
+                {
+                  where: {
+                    id: prescribedTest.test_prescription_id,
+                  },
+                  transaction,
+                }
+              );
               break;
-
-            case BillItemTypeEnum.INVESTIGATION:
+            }
+            case BillItemTypeEnum.INVESTIGATION: {
+              const prescribedInvestigation = await PrescribedInvestigation.findOne({
+                where: { id: item.item_id },
+                transaction,
+              });
               await PrescribedInvestigation.update(
                 { payment_status: prescribedOrderStatus },
                 {
@@ -1634,23 +1669,44 @@ export class PaymentProcessingService {
                   transaction,
                 }
               );
+              await InvestigationPrescription.update(
+                { has_paid: true },
+                {
+                  where: { id: prescribedInvestigation.investigation_prescription_id },
+                  transaction,
+                }
+              );
               break;
-
-            case BillItemTypeEnum.SERVICE:
+            }
+            case BillItemTypeEnum.SERVICE: {
               // Handle prescribed services if they exist
               await PrescribedService.update(
                 { payment_status: prescribedOrderStatus },
                 { where: { id: item.item_id }, transaction }
               );
               break;
-
-            case BillItemTypeEnum.ADDITIONAL_ITEM:
+            }
+            case BillItemTypeEnum.ADDITIONAL_ITEM: {
+              const prescribedDrug = await PrescribedDrug.findOne({
+                where: { id: item.item_id },
+                transaction,
+              });
               // Handle prescribed additional items if they exist
               await PrescribedAdditionalItem.update(
                 { payment_status: prescribedOrderStatus },
                 { where: { id: item.item_id }, transaction }
               );
+              await DrugPrescription.update(
+                { has_paid: true },
+                {
+                  where: {
+                    id: prescribedDrug.drug_prescription_id,
+                  },
+                  transaction,
+                }
+              );
               break;
+            }
 
             default:
               // Log unknown item type for debugging

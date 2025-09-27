@@ -304,9 +304,9 @@
                 <b-button
                   v-if="
                     !error &&
-                      !filters.search &&
-                      filters.account_type === '' &&
-                      filters.is_active === ''
+                    !filters.search &&
+                    filters.account_type === '' &&
+                    filters.is_active === ''
                   "
                   variant="primary"
                   @click="showCreateModal"
@@ -608,7 +608,7 @@ export default {
     },
 
     // Search and Filtering
-    debouncedSearch: debounce(function() {
+    debouncedSearch: debounce(function () {
       this.currentPage = 1;
       this.applyFilters();
     }, 300),
@@ -703,8 +703,8 @@ export default {
     setupIntersectionObserver() {
       // Lazy load table rows when they come into view
       this.intersectionObserver = new IntersectionObserver(
-        entries => {
-          entries.forEach(entry => {
+        (entries) => {
+          entries.forEach((entry) => {
             if (entry.isIntersecting) {
               entry.target.classList.add('visible');
             }
@@ -725,8 +725,8 @@ export default {
     setupPerformanceMonitoring() {
       // Monitor performance metrics
       if ('performance' in window) {
-        this.performanceObserver = new PerformanceObserver(list => {
-          list.getEntries().forEach(entry => {
+        this.performanceObserver = new PerformanceObserver((list) => {
+          list.getEntries().forEach((entry) => {
             if (entry.entryType === 'measure') {
               console.log(`Performance: ${entry.name} took ${entry.entryType}ms`);
             }
@@ -789,7 +789,7 @@ export default {
     // Selection
     toggleSelectAll() {
       if (this.selectAll) {
-        this.selectedItems = this.bankAccounts.map(account => account.id);
+        this.selectedItems = this.bankAccounts.map((account) => account.id);
       } else {
         this.selectedItems = [];
       }
@@ -885,7 +885,7 @@ export default {
 
       try {
         await Promise.all(
-          this.selectedItems.map(id =>
+          this.selectedItems.map((id) =>
             this.$store.dispatch('accounting/toggleBankAccountStatus', id)
           )
         );
@@ -912,7 +912,7 @@ export default {
 
       try {
         await Promise.all(
-          this.selectedItems.map(id => this.$store.dispatch('accounting/deleteBankAccount', id))
+          this.selectedItems.map((id) => this.$store.dispatch('accounting/deleteBankAccount', id))
         );
         this.selectedItems = [];
         this.selectAll = false;
@@ -966,7 +966,9 @@ export default {
       let dataToExport = [];
 
       if (this.exportScope === 'selected') {
-        dataToExport = this.bankAccounts.filter(account => this.selectedItems.includes(account.id));
+        dataToExport = this.bankAccounts.filter((account) =>
+          this.selectedItems.includes(account.id)
+        );
       } else if (this.exportScope === 'filtered') {
         dataToExport = this.bankAccounts;
       } else {
@@ -974,7 +976,7 @@ export default {
         dataToExport = this.bankAccounts;
       }
 
-      return dataToExport.map(account => ({
+      return dataToExport.map((account) => ({
         'Bank Name': account.bank_name,
         'Account Number': account.account_number,
         'Account Name': account.account_name,
@@ -1000,7 +1002,7 @@ export default {
       const headers = Object.keys(data[0] || {});
       const csvContent = [
         headers.join(','),
-        ...data.map(row => headers.map(header => JSON.stringify(row[header] || '')).join(',')),
+        ...data.map((row) => headers.map((header) => JSON.stringify(row[header] || '')).join(',')),
       ].join('\n');
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });

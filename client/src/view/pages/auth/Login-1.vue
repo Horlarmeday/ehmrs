@@ -177,9 +177,7 @@
               <i class="fas fa-paper-plane"></i>
               Send Reset Link
             </button>
-            <button type="button" class="btn-cancel" @click="showForm('signin')">
-              Cancel
-            </button>
+            <button type="button" class="btn-cancel" @click="showForm('signin')">Cancel</button>
           </div>
         </form>
       </div>
@@ -457,8 +455,8 @@
   background: #f8f9fa;
 
   // Special padding for password field to accommodate toggle button
-  &[type="password"],
-  &[type="text"] {
+  &[type='password'],
+  &[type='text'] {
     padding-right: 3.5rem;
   }
 
@@ -866,7 +864,7 @@ export default {
     },
 
     onSubmitLogin() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           let username = this.form.username;
           let password = this.form.password;
@@ -909,11 +907,11 @@ export default {
       this.loading = true;
       this.$store
         .dispatch('settings/fetchSettings')
-        .then(response => {
+        .then((response) => {
           localStorage.setItem('settings', JSON.stringify(response.data.data));
           this.loading = false;
         })
-        .catch(e => {
+        .catch((e) => {
           this.loading = false;
           console.error(e);
         });

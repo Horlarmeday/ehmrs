@@ -100,16 +100,8 @@ export default {
       try {
         await this.fetchEncounterDetails({
           staffId: this.$route.params.staffId,
-          start:
-            this.$route.query.startDate ||
-            dayjs()
-              .startOf('month')
-              .format('YYYY-MM-DD'),
-          end:
-            this.$route.query.endDate ||
-            dayjs()
-              .endOf('month')
-              .format('YYYY-MM-DD'),
+          start: this.$route.query.startDate || dayjs().startOf('month').format('YYYY-MM-DD'),
+          end: this.$route.query.endDate || dayjs().endOf('month').format('YYYY-MM-DD'),
         });
       } catch (error) {
         console.error('Error fetching encounter details:', error);

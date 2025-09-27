@@ -6,9 +6,7 @@
     </div>
     <datepicker v-model="end" input-class="form-control" placeholder="End"></datepicker>
     <div class="input-group-append">
-      <button ref="dateSpin" type="button" class="btn btn-primary" @click="onFilter">
-        Filter
-      </button>
+      <button ref="dateSpin" type="button" class="btn btn-primary" @click="onFilter">Filter</button>
     </div>
   </div>
 </template>

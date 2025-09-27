@@ -219,7 +219,7 @@ export default {
     },
 
     createDelivery() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const date = `${dayjs(this.date_of_delivery).format('YYYY-MM-DD')} ${
             this.time_of_delivery

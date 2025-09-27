@@ -15,7 +15,7 @@
               label="name"
               @search="searchWards"
               :reduce="
-                wards => ({
+                (wards) => ({
                   id: wards.id,
                   name: wards.name,
                   beds: wards.beds,
@@ -24,9 +24,7 @@
               @input="getBeds"
               :options="wards"
             >
-              <template slot="no-options">
-                type to search for ward..
-              </template>
+              <template slot="no-options"> type to search for ward.. </template>
             </v-select>
           </div>
         </div>
@@ -194,7 +192,7 @@ export default {
     },
 
     fetchVisit() {
-      this.$store.dispatch('visit/fetchVisit', this.$route.params.id).then(response => {
+      this.$store.dispatch('visit/fetchVisit', this.$route.params.id).then((response) => {
         const res = response.data.data;
         this.$store.dispatch('patient/setCurrentPatient', {
           ...res.insurance,

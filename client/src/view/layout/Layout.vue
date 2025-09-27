@@ -13,7 +13,7 @@
         <!-- end:: Header -->
 
         <!-- begin:: Content -->
-        <div id="kt_content" class="content  d-flex flex-column flex-column-fluid">
+        <div id="kt_content" class="content d-flex flex-column flex-column-fluid">
           <!-- begin:: Content Head -->
           <!--          <KTSubheader-->
           <!--            v-if="subheaderDisplay && displaySubheaderOnDashboard"-->

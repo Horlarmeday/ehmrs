@@ -199,18 +199,18 @@ export default {
 
       if (this.searchQuery) {
         filtered = filtered.filter(
-          sub =>
+          (sub) =>
             sub.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
             sub.description?.toLowerCase().includes(this.searchQuery.toLowerCase())
         );
       }
 
       if (this.selectedCategory) {
-        filtered = filtered.filter(sub => sub.category_id === this.selectedCategory);
+        filtered = filtered.filter((sub) => sub.category_id === this.selectedCategory);
       }
 
       if (this.selectedStatus) {
-        filtered = filtered.filter(sub => sub.status === this.selectedStatus);
+        filtered = filtered.filter((sub) => sub.status === this.selectedStatus);
       }
 
       return filtered;

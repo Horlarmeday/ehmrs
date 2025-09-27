@@ -6,7 +6,7 @@ export default {
 
   SET_ACTIVE_ALERTS(state, alerts) {
     state.activeAlerts = alerts;
-    state.unreadCount = alerts.filter(alert => !alert.acknowledged_at).length;
+    state.unreadCount = alerts.filter((alert) => !alert.acknowledged_at).length;
   },
 
   SET_CRITICAL_ALERTS(state, alerts) {
@@ -46,12 +46,12 @@ export default {
   },
 
   UPDATE_ALERT(state, updatedAlert) {
-    const alertIndex = state.alerts.findIndex(alert => alert.id === updatedAlert.id);
+    const alertIndex = state.alerts.findIndex((alert) => alert.id === updatedAlert.id);
     if (alertIndex !== -1) {
       state.alerts.splice(alertIndex, 1, updatedAlert);
     }
 
-    const activeIndex = state.activeAlerts.findIndex(alert => alert.id === updatedAlert.id);
+    const activeIndex = state.activeAlerts.findIndex((alert) => alert.id === updatedAlert.id);
     if (activeIndex !== -1) {
       if (updatedAlert.status === 'active') {
         state.activeAlerts.splice(activeIndex, 1, updatedAlert);
@@ -60,7 +60,7 @@ export default {
       }
     }
 
-    const criticalIndex = state.criticalAlerts.findIndex(alert => alert.id === updatedAlert.id);
+    const criticalIndex = state.criticalAlerts.findIndex((alert) => alert.id === updatedAlert.id);
     if (criticalIndex !== -1) {
       if (updatedAlert.severity === 'critical' && updatedAlert.status === 'active') {
         state.criticalAlerts.splice(criticalIndex, 1, updatedAlert);
@@ -70,16 +70,16 @@ export default {
     }
 
     // Update unread count
-    state.unreadCount = state.activeAlerts.filter(alert => !alert.acknowledged_at).length;
+    state.unreadCount = state.activeAlerts.filter((alert) => !alert.acknowledged_at).length;
     state.lastUpdate = new Date();
   },
 
   REMOVE_ALERT(state, alertId) {
-    state.alerts = state.alerts.filter(alert => alert.id !== alertId);
-    state.activeAlerts = state.activeAlerts.filter(alert => alert.id !== alertId);
-    state.criticalAlerts = state.criticalAlerts.filter(alert => alert.id !== alertId);
-    state.popupQueue = state.popupQueue.filter(alert => alert.id !== alertId);
-    state.unreadCount = state.activeAlerts.filter(alert => !alert.acknowledged_at).length;
+    state.alerts = state.alerts.filter((alert) => alert.id !== alertId);
+    state.activeAlerts = state.activeAlerts.filter((alert) => alert.id !== alertId);
+    state.criticalAlerts = state.criticalAlerts.filter((alert) => alert.id !== alertId);
+    state.popupQueue = state.popupQueue.filter((alert) => alert.id !== alertId);
+    state.unreadCount = state.activeAlerts.filter((alert) => !alert.acknowledged_at).length;
     state.totalCount = Math.max(0, state.totalCount - 1);
     state.lastUpdate = new Date();
   },
@@ -135,7 +135,7 @@ export default {
   },
 
   REMOVE_FROM_POPUP_QUEUE(state, alertId) {
-    state.popupQueue = state.popupQueue.filter(alert => alert.id !== alertId);
+    state.popupQueue = state.popupQueue.filter((alert) => alert.id !== alertId);
   },
 
   CLEAR_POPUP_QUEUE(state) {
@@ -176,45 +176,45 @@ export default {
   ACKNOWLEDGE_MULTIPLE_ALERTS(state, alertIds) {
     const acknowledgedAt = new Date();
 
-    state.alerts = state.alerts.map(alert =>
+    state.alerts = state.alerts.map((alert) =>
       alertIds.includes(alert.id)
         ? { ...alert, acknowledged_at: acknowledgedAt, acknowledged_by: 'current_user' }
         : alert
     );
 
-    state.activeAlerts = state.activeAlerts.map(alert =>
+    state.activeAlerts = state.activeAlerts.map((alert) =>
       alertIds.includes(alert.id)
         ? { ...alert, acknowledged_at: acknowledgedAt, acknowledged_by: 'current_user' }
         : alert
     );
 
-    state.criticalAlerts = state.criticalAlerts.map(alert =>
+    state.criticalAlerts = state.criticalAlerts.map((alert) =>
       alertIds.includes(alert.id)
         ? { ...alert, acknowledged_at: acknowledgedAt, acknowledged_by: 'current_user' }
         : alert
     );
 
     // Update unread count
-    state.unreadCount = state.activeAlerts.filter(alert => !alert.acknowledged_at).length;
+    state.unreadCount = state.activeAlerts.filter((alert) => !alert.acknowledged_at).length;
     state.lastUpdate = new Date();
   },
 
   RESOLVE_MULTIPLE_ALERTS(state, alertIds) {
     const resolvedAt = new Date();
 
-    state.alerts = state.alerts.map(alert =>
+    state.alerts = state.alerts.map((alert) =>
       alertIds.includes(alert.id)
         ? { ...alert, status: 'resolved', resolved_at: resolvedAt, resolved_by: 'current_user' }
         : alert
     );
 
     // Remove from active and critical arrays
-    state.activeAlerts = state.activeAlerts.filter(alert => !alertIds.includes(alert.id));
-    state.criticalAlerts = state.criticalAlerts.filter(alert => !alertIds.includes(alert.id));
-    state.popupQueue = state.popupQueue.filter(alert => !alertIds.includes(alert.id));
+    state.activeAlerts = state.activeAlerts.filter((alert) => !alertIds.includes(alert.id));
+    state.criticalAlerts = state.criticalAlerts.filter((alert) => !alertIds.includes(alert.id));
+    state.popupQueue = state.popupQueue.filter((alert) => !alertIds.includes(alert.id));
 
     // Update unread count
-    state.unreadCount = state.activeAlerts.filter(alert => !alert.acknowledged_at).length;
+    state.unreadCount = state.activeAlerts.filter((alert) => !alert.acknowledged_at).length;
     state.lastUpdate = new Date();
   },
 };

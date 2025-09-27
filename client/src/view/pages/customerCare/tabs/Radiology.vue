@@ -99,7 +99,7 @@ export default {
     },
     approvedInvestigationsCount() {
       const approvedInvestigations = this.prescription?.investigations?.filter(
-        investigation => investigation.status === this.APPROVED
+        (investigation) => investigation.status === this.APPROVED
       );
       return approvedInvestigations?.length;
     },

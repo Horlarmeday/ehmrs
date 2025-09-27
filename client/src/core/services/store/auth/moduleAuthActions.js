@@ -10,7 +10,7 @@ export default {
         data: staff,
         method: 'POST',
       })
-        .then(response => {
+        .then((response) => {
           const token = response.data.data;
           localStorage.setItem('user_token', token);
 
@@ -18,7 +18,7 @@ export default {
           commit('auth_success', token);
           resolve(response);
         })
-        .catch(err => {
+        .catch((err) => {
           commit('auth_error');
           localStorage.removeItem('user_token');
           reject(err);
@@ -34,7 +34,7 @@ export default {
         data: user,
         method: 'POST',
       })
-        .then(response => {
+        .then((response) => {
           const token = response.data.token;
           const user = response.data.data;
           localStorage.setItem('user_token', token);
@@ -42,7 +42,7 @@ export default {
           commit('auth_success', token, user);
           resolve(response);
         })
-        .catch(err => {
+        .catch((err) => {
           commit('auth_error', err);
           localStorage.removeItem('user_token');
           reject(err);
@@ -58,12 +58,12 @@ export default {
         data: phone,
         method: 'POST',
       })
-        .then(response => {
+        .then((response) => {
           const user = response.data.data;
           commit('auth_success', user);
           resolve(response);
         })
-        .catch(err => {
+        .catch((err) => {
           commit('auth_error', err);
           reject(err);
         });

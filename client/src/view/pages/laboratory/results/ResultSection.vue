@@ -145,9 +145,9 @@ export default {
   },
   data() {
     return {
-      tests: this.prescriptions.map(pres => ({
+      tests: this.prescriptions.map((pres) => ({
         sample: pres.sample,
-        tests: pres?.data.map(test => ({
+        tests: pres?.data.map((test) => ({
           prescribed_test_id: test.id,
           test_prescription_id: this.$route.params.id,
           name: test.test.name,
@@ -196,8 +196,8 @@ export default {
       const results = this.tests
         // eslint-disable-next-line no-unused-vars
         .map(({ sample, ...tests }) => tests)
-        .flatMap(r => r.tests)
-        .filter(test => test.status !== this.ACCEPTED)
+        .flatMap((r) => r.tests)
+        .filter((test) => test.status !== this.ACCEPTED)
         // eslint-disable-next-line no-unused-vars
         .map(({ result_unit, payment_status, test_type, is_urgent, ...rest }) => rest);
 

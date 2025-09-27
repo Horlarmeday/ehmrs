@@ -13,7 +13,7 @@ export default {
 
       axios
         .post('/appointments/create', appointmentData)
-        .then(response => {
+        .then((response) => {
           const appointment = response.data.data;
           commit('ADD_APPOINTMENT', appointment);
           commit('SET_SUBMITTING', false);
@@ -29,7 +29,7 @@ export default {
 
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           commit('SET_SUBMITTING', false);
           commit('SET_ERROR', error.response?.data?.message || 'Failed to create appointment');
           if (error.response?.data?.errors) {
@@ -56,7 +56,7 @@ export default {
 
       axios
         .get('/appointments/get', { params: queryParams })
-        .then(response => {
+        .then((response) => {
           commit('SET_APPOINTMENTS', response.data.data.docs);
           commit('SET_APPOINTMENTS_TOTAL', response.data.data.total);
           commit('SET_APPOINTMENTS_PAGES', response.data.data.pages);
@@ -64,7 +64,7 @@ export default {
           commit('SET_LOADING', false);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           commit('SET_LOADING', false);
           commit('SET_ERROR', error.response?.data?.message || 'Failed to fetch appointments');
           reject(error);
@@ -77,11 +77,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/appointments/${appointmentId}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_APPOINTMENT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to fetch appointment');
           reject(error);
         });
@@ -96,13 +96,13 @@ export default {
 
       axios
         .put(`/appointments/${id}`, data)
-        .then(response => {
+        .then((response) => {
           const updatedAppointment = response.data.data;
           commit('UPDATE_APPOINTMENT', updatedAppointment);
           commit('SET_SUBMITTING', false);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           commit('SET_SUBMITTING', false);
           commit('SET_ERROR', error.response?.data?.message || 'Failed to update appointment');
           if (error.response?.data?.errors) {
@@ -120,14 +120,14 @@ export default {
 
       axios
         .put(`/appointments/${id}/cancel`, { cancellation_reason: reason })
-        .then(response => {
+        .then((response) => {
           const cancelledAppointment = response.data.data;
           commit('UPDATE_APPOINTMENT', cancelledAppointment);
           commit('UPDATE_APPOINTMENT_STATUS', { appointmentId: id, status: 'Cancelled' });
           commit('SET_SUBMITTING', false);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           commit('SET_SUBMITTING', false);
           commit('SET_ERROR', error.response?.data?.message || 'Failed to cancel appointment');
           reject(error);
@@ -140,13 +140,13 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/appointments/${appointmentId}/confirm`)
-        .then(response => {
+        .then((response) => {
           const confirmedAppointment = response.data.data;
           commit('UPDATE_APPOINTMENT', confirmedAppointment);
           commit('UPDATE_APPOINTMENT_STATUS', { appointmentId, status: 'Confirmed' });
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to confirm appointment');
           reject(error);
         });
@@ -164,14 +164,14 @@ export default {
           appointment_time,
           rescheduling_reason: reason,
         })
-        .then(response => {
+        .then((response) => {
           const rescheduledAppointment = response.data.data;
           commit('UPDATE_APPOINTMENT', rescheduledAppointment);
           commit('UPDATE_APPOINTMENT_STATUS', { appointmentId: id, status: 'Rescheduled' });
           commit('SET_SUBMITTING', false);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           commit('SET_SUBMITTING', false);
           commit('SET_ERROR', error.response?.data?.message || 'Failed to reschedule appointment');
           reject(error);
@@ -190,7 +190,7 @@ export default {
 
       axios
         .post(`/appointments/${appointmentId}/check-in`, checkInData)
-        .then(response => {
+        .then((response) => {
           const { appointment, visit } = response.data.data;
           commit('UPDATE_APPOINTMENT', appointment);
           commit('UPDATE_APPOINTMENT_STATUS', { appointmentId, status: 'Completed' });
@@ -201,7 +201,7 @@ export default {
 
           resolve({ appointment, visit });
         })
-        .catch(error => {
+        .catch((error) => {
           commit('SET_SUBMITTING', false);
           commit('SET_ERROR', error.response?.data?.message || 'Failed to check-in appointment');
           reject(error);
@@ -216,11 +216,11 @@ export default {
 
       axios
         .post('/appointments/check-in/bulk', { appointment_ids: appointmentIds })
-        .then(response => {
+        .then((response) => {
           const { successful } = response.data.data;
 
           // Update successful check-ins
-          successful.forEach(result => {
+          successful.forEach((result) => {
             commit('UPDATE_APPOINTMENT', result.appointment);
             commit('UPDATE_APPOINTMENT_STATUS', {
               appointmentId: result.appointment.id,
@@ -233,7 +233,7 @@ export default {
 
           resolve(response.data.data);
         })
-        .catch(error => {
+        .catch((error) => {
           commit('SET_SUBMITTING', false);
           commit('SET_ERROR', error.response?.data?.message || 'Failed to bulk check-in');
           reject(error);
@@ -246,10 +246,10 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/appointments/${appointmentId}/validate-check-in`)
-        .then(response => {
+        .then((response) => {
           resolve(response.data.data);
         })
-        .catch(error => {
+        .catch((error) => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to validate check-in');
           reject(error);
         });
@@ -263,11 +263,11 @@ export default {
 
       axios
         .get('/appointments/check-in-queue/get', { params })
-        .then(response => {
+        .then((response) => {
           commit('SET_CHECK_IN_QUEUE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to fetch check-in queue');
           reject(error);
         });
@@ -279,11 +279,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/appointments/today/get', { params: filters })
-        .then(response => {
+        .then((response) => {
           commit('SET_TODAYS_APPOINTMENTS', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           commit(
             'SET_ERROR',
             error.response?.data?.message || "Failed to fetch today's appointments"
@@ -298,13 +298,13 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/appointments/${appointmentId}/no-show`)
-        .then(response => {
+        .then((response) => {
           const noShowAppointment = response.data.data;
           commit('UPDATE_APPOINTMENT', noShowAppointment);
           commit('UPDATE_APPOINTMENT_STATUS', { appointmentId, status: 'No Show' });
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to mark as no-show');
           reject(error);
         });
@@ -322,11 +322,11 @@ export default {
         .get('/appointments/available-slots/get', {
           params: { doctor_id, date, duration_minutes },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_AVAILABLE_SLOTS', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to fetch available slots');
           reject(error);
         });
@@ -338,11 +338,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/appointments/doctor/${doctorId}/schedule`, { params: { date } })
-        .then(response => {
+        .then((response) => {
           commit('SET_DOCTOR_SCHEDULE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to fetch doctor schedule');
           reject(error);
         });
@@ -354,10 +354,10 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/appointments/doctor/${doctorId}/schedule-overview`, { params: { date } })
-        .then(response => {
+        .then((response) => {
           resolve(response.data.data);
         })
-        .catch(error => {
+        .catch((error) => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to fetch schedule overview');
           reject(error);
         });

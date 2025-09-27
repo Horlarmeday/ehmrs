@@ -89,7 +89,7 @@ export default {
       this.initValues();
     },
     createDosageForm() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             dosage_form_id: this.dosage_form_id,

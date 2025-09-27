@@ -92,7 +92,7 @@ export default {
       this.debounceInput(this);
     },
 
-    debounceInput: debounce(vm => {
+    debounceInput: debounce((vm) => {
       vm.$emit('emitResult', vm.urinalysis, vm.testId);
     }, 500),
   },

@@ -13,9 +13,7 @@
                 <router-link to="/employee/create" class="h4 text-dark text-hover-primary mb-5">
                   Create Employee
                 </router-link>
-                <p class="text-dark-50">
-                  Click here to create an employee account
-                </p>
+                <p class="text-dark-50">Click here to create an employee account</p>
               </div>
               <div class="ml-6 ml-lg-0 ml-xxl-6 flex-shrink-0">
                 <router-link
@@ -45,9 +43,7 @@
                 >
                   Find Employee
                 </router-link>
-                <p class="text-dark-50">
-                  Click here to view all created employees
-                </p>
+                <p class="text-dark-50">Click here to view all created employees</p>
               </div>
               <div class="ml-6 ml-lg-0 ml-xxl-6 flex-shrink-0">
                 <router-link

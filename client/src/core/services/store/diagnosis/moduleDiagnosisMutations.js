@@ -19,7 +19,7 @@ export default {
   },
 
   UPDATE_ICPC2DISEASE(state, disease) {
-    const diseaseIndex = state.icpc2Diseases.findIndex(p => p.id === disease.id);
+    const diseaseIndex = state.icpc2Diseases.findIndex((p) => p.id === disease.id);
     Object.assign(state.icpc2Diseases[diseaseIndex], disease);
   },
 
@@ -43,7 +43,7 @@ export default {
   },
 
   UPDATE_ICD10DISEASE(state, disease) {
-    const diseaseIndex = state.icd10Diseases.findIndex(p => p.id === disease.id);
+    const diseaseIndex = state.icd10Diseases.findIndex((p) => p.id === disease.id);
     Object.assign(state.icd10Diseases[diseaseIndex], disease);
   },
 };

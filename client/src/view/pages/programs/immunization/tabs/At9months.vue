@@ -83,7 +83,7 @@ export default {
     },
 
     updateAt9Months() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             data: {

@@ -17,9 +17,7 @@
           <code>Preview</code> button to preview the changes.
         </p>
         <p>
-          <span class="label label-inline label-pill label-info label-rounded mr-2">
-            INFO:
-          </span>
+          <span class="label label-inline label-pill label-info label-rounded mr-2"> INFO: </span>
           Some pages from the <code>html</code> version might not exist in the <code>vue</code>. But
           the CSS styles from <code>html</code> version already integrated into the
           <code>vue</code>. All the components from the <code>html</code> version are static and
@@ -104,30 +102,20 @@
           <b-tabs class="hide-tabs" v-model="tabIndex">
             <b-tab active>
               <div class="form-group row">
-                <label class="col-lg-3 col-form-label">
-                  Page Loader:
-                </label>
+                <label class="col-lg-3 col-form-label"> Page Loader: </label>
                 <div class="col-lg-9 col-xl-4">
                   <select class="form-control" v-model="config.loader.type">
-                    <option value="false">
-                      Disabled
-                    </option>
-                    <option value="spinner-logo" selected="selected">
-                      Spinner &amp; Logo
-                    </option>
+                    <option value="false">Disabled</option>
+                    <option value="spinner-logo" selected="selected">Spinner &amp; Logo</option>
                   </select>
-                  <div class="form-text text-muted">
-                    Select page loading indicator.
-                  </div>
+                  <div class="form-text text-muted">Select page loading indicator.</div>
                 </div>
               </div>
             </b-tab>
 
             <b-tab>
               <div class="form-group row">
-                <label class="col-lg-3 col-form-label">
-                  Desktop Fixed Header:
-                </label>
+                <label class="col-lg-3 col-form-label"> Desktop Fixed Header: </label>
                 <div class="col-lg-9 col-xl-4">
                   <span class="switch switch-icon">
                     <label>
@@ -140,15 +128,11 @@
                       <span></span>
                     </label>
                   </span>
-                  <div class="form-text text-muted">
-                    Enable fixed header for desktop mode
-                  </div>
+                  <div class="form-text text-muted">Enable fixed header for desktop mode</div>
                 </div>
               </div>
               <div class="form-group row">
-                <label class="col-lg-3 col-form-label">
-                  Mobile Fixed Header:
-                </label>
+                <label class="col-lg-3 col-form-label"> Mobile Fixed Header: </label>
                 <div class="col-lg-9 col-xl-4">
                   <span class="switch switch-icon">
                     <label>
@@ -161,24 +145,18 @@
                       <span></span>
                     </label>
                   </span>
-                  <div class="form-text text-muted">
-                    Enable fixed header for mobile mode
-                  </div>
+                  <div class="form-text text-muted">Enable fixed header for mobile mode</div>
                 </div>
               </div>
 
               <div class="form-group row">
-                <label class="col-lg-3 col-form-label">
-                  Header Width:
-                </label>
+                <label class="col-lg-3 col-form-label"> Header Width: </label>
                 <div class="col-lg-9 col-xl-4">
                   <select class="form-control" v-model="config.header.self.width">
                     <option value="fluid" selected="">Fluid</option>
                     <option value="fixed">Fixed</option>
                   </select>
-                  <div class="form-text text-muted">
-                    Select header width type.
-                  </div>
+                  <div class="form-text text-muted">Select header width type.</div>
                 </div>
               </div>
             </b-tab>
@@ -191,9 +169,7 @@
                     <option value="fluid">Fluid</option>
                     <option value="fixed" selected="">Fixed</option>
                   </select>
-                  <div class="form-text text-muted">
-                    Select layout width type.
-                  </div>
+                  <div class="form-text text-muted">Select layout width type.</div>
                 </div>
               </div>
             </b-tab>
@@ -226,9 +202,7 @@
                     <option value="fluid" selected="">Fluid</option>
                     <option value="fixed">Fixed</option>
                   </select>
-                  <div class="form-text text-muted">
-                    Select layout width type.
-                  </div>
+                  <div class="form-text text-muted">Select layout width type.</div>
                 </div>
               </div>
             </b-tab>
@@ -312,7 +286,7 @@ export default {
 
     this.$nextTick(() => {
       const hljs = this.$el.querySelectorAll('.hljs');
-      hljs.forEach(hl => {
+      hljs.forEach((hl) => {
         hl.classList.remove('hljs');
         hl.classList.add(`language-${hl.classList[1]}`);
       });

@@ -15,7 +15,7 @@
             v-model="item.drug"
             label="name"
             :reduce="
-              drugs => ({
+              (drugs) => ({
                 name: drugs.name,
                 drug_id: drugs.drug_id,
                 unit_id: drugs.unit_id,
@@ -67,9 +67,9 @@
             class="form-control form-control-sm"
             name="frequency"
           >
-            <option :value="freq.label" v-for="(freq, i) in frequencies" :key="i">{{
-              freq.label
-            }}</option>
+            <option :value="freq.label" v-for="(freq, i) in frequencies" :key="i">
+              {{ freq.label }}
+            </option>
           </select>
         </div>
         <div class="d-flex flex-column flex-root">
@@ -169,7 +169,7 @@ export default {
       return this.$store.state.store.items;
     },
     drugOptions() {
-      return this.drugs.map(item => ({
+      return this.drugs.map((item) => ({
         name: item?.drug?.name,
         id: item?.id,
         drug_id: item?.drug?.id,
@@ -275,7 +275,7 @@ export default {
     },
 
     submitForm() {
-      this.$validator.validateAll(this.items).then(result => {
+      this.$validator.validateAll(this.items).then((result) => {
         if (result) {
           const submitButton = this.$refs['kt-ancRoutineDrugsSubmit'];
           this.addSpinner(submitButton);

@@ -9,7 +9,7 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/patients/create', patient)
-        .then(response => {
+        .then((response) => {
           commit(
             'ADD_PATIENT',
             Object.assign(patient, {
@@ -18,7 +18,7 @@ export default {
           );
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -28,11 +28,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/patients/health-insurance/${payload.patient_id}`, payload.data)
-        .then(response => {
+        .then((response) => {
           commit('ADD_PATIENT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -42,7 +42,7 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/patients/create/emergency', patient)
-        .then(response => {
+        .then((response) => {
           commit(
             'ADD_PATIENT',
             Object.assign(patient, {
@@ -51,7 +51,7 @@ export default {
           );
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -72,13 +72,13 @@ export default {
             sortBy: payload.sortBy,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_PATIENTS', response.data.data.docs);
           commit('SET_PATIENTS_TOTAL', response.data.data.total);
           commit('SET_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -88,11 +88,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/patients/get/${patientId}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_PATIENT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -102,11 +102,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/patients/profile/get/${patientId}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_PATIENT_PROFILE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -120,11 +120,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/patients/update/${payload.id}`, payload.data)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_PATIENT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -134,11 +134,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/patients/update-insurance/${payload.id}`, payload.data)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_PATIENT_INSURANCE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -148,11 +148,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/patients/toggle-insurance/${payload.id}`, payload.data)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_PATIENT_INSURANCE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -165,11 +165,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/patients/create/dependant/${payload.patient_id}`, payload.data)
-        .then(response => {
+        .then((response) => {
           commit('ADD_DEPENDANT', response.data.data.id);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -179,11 +179,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/patients/convert-dependant/${patientId}`)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_PATIENT_INSURANCE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -205,13 +205,13 @@ export default {
             end: payload.end,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_DEPENDANTS', response.data.data.docs);
           commit('SET_DEPENDANTS_TOTAL', response.data.data.total);
           commit('SET_DEPENDANTS_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -221,11 +221,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/patients/update/dependant`, dependant)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_DEPENDANT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -235,11 +235,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/patients/dependant/get/${dependantId}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_DEPENDANT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -255,7 +255,7 @@ export default {
             responseType: 'arraybuffer', // Important to receive binary data
           }
         )
-        .then(response => {
+        .then((response) => {
           const contentType = response.headers['content-type'].split(';')[0];
           const blob = new Blob([response.data], {
             type: contentType,
@@ -273,7 +273,7 @@ export default {
           commit('DOWNLOAD_HOSPITAL_CARD', []);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -285,7 +285,7 @@ export default {
         .get(`/patients/download-hospital-card/${payload.id}`, {
           responseType: 'arraybuffer', // 👈 Keep this
         })
-        .then(response => {
+        .then((response) => {
           const contentType = response.headers['content-type'].split(';')[0];
           const blob = new Blob([response.data], { type: contentType });
           const blobUrl = window.URL.createObjectURL(blob);
@@ -305,7 +305,7 @@ export default {
           commit('DOWNLOAD_HOSPITAL_CARD', []);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -318,11 +318,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/patients/mark-deceased/${payload.id}`, payload.data)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_PATIENT_PROFILE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -332,11 +332,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/patients/revive/${payload.id}`, payload.data)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_PATIENT_PROFILE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -346,13 +346,13 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/patients/deceased', { params: payload })
-        .then(response => {
+        .then((response) => {
           commit('SET_PATIENTS', response.data.data.rows);
           commit('SET_PATIENTS_TOTAL', response.data.data.count);
           commit('SET_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -362,11 +362,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/patients/death-certificate/${patientId}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_PATIENT_PROFILE', null);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -379,12 +379,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/patients/deceased', { params })
-        .then(response => {
+        .then((response) => {
           commit('SET_PATIENTS', response.data.data.docs);
           commit('SET_PATIENTS_TOTAL', response.data.data.total);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -397,11 +397,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/patients/death-statistics', { params })
-        .then(response => {
+        .then((response) => {
           commit('SET_DEATH_STATISTICS', response.data.data);
           resolve(response.data.data);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -414,11 +414,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/patients/mortality-reports', { params })
-        .then(response => {
+        .then((response) => {
           commit('SET_MORTALITY_REPORTS', response.data.data);
           resolve(response.data.data);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -431,11 +431,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/patients/death-certificate-tracking', { params })
-        .then(response => {
+        .then((response) => {
           commit('SET_DEATH_CERTIFICATE_TRACKING', response.data.data);
           resolve(response.data.data);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -448,11 +448,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/patients/verify-certificate/${certificateId}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_CERTIFICATE_VERIFICATION', response.data.data);
           resolve(response.data.data);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -462,11 +462,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/patients/certificate-status/${certificateId}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_CERTIFICATE_VERIFICATION', response.data.data);
           resolve(response.data.data);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -476,11 +476,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/patients/all-signatures')
-        .then(response => {
+        .then((response) => {
           commit('SET_ALL_SIGNATURES', response.data.data);
           resolve(response.data.data);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -491,11 +491,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/patients/generate-missing-certificates')
-        .then(response => {
+        .then((response) => {
           commit('SET_MISSING_DEATH_CERTIFICATE_NUMBERS', response.data.data);
           resolve(response.data.data);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -507,7 +507,7 @@ export default {
         .get(`/patients/death-certificate-pdf/${payload.id}?digital_signature=true`, {
           responseType: 'arraybuffer', // 👈 Keep this
         })
-        .then(response => {
+        .then((response) => {
           const contentType = response.headers['content-type'].split(';')[0];
           const blob = new Blob([response.data], { type: contentType });
           const blobUrl = window.URL.createObjectURL(blob);
@@ -527,7 +527,7 @@ export default {
           commit('SET_DEATH_CERTIFICATE', []);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });

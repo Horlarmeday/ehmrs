@@ -70,7 +70,7 @@
                       <td>
                         {{
                           prescription.prescribed_drugs?.[0]?.routes_of_administration?.name ||
-                            'N/A'
+                          'N/A'
                         }}
                       </td>
                       <td>{{ prescription.prescribed_drugs?.[0]?.duration || 'N/A' }}</td>
@@ -231,9 +231,7 @@
     </div>
 
     <template #modal-footer>
-      <b-button variant="secondary" @click="$emit('close')">
-        Close
-      </b-button>
+      <b-button variant="secondary" @click="$emit('close')"> Close </b-button>
     </template>
   </b-modal>
 </template>

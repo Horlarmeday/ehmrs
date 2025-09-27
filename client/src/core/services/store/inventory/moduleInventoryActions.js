@@ -1,16 +1,16 @@
 import axios from '../../../../axios';
-import { createCachedAction, invalidateCache } from '../generalStore/cacheHelpers.js';
+// Cache helpers removed - using standard actions
 
 // Create original actions for caching
 const originalFetchInventories = ({ commit }) => {
   return new Promise((resolve, reject) => {
     axios
       .get(`/inventory/get`)
-      .then(response => {
+      .then((response) => {
         commit('SET_INVENTORIES', response.data.data);
         resolve(response);
       })
-      .catch(error => {
+      .catch((error) => {
         reject(error);
       });
   });
@@ -27,13 +27,13 @@ const originalFetchInventoryItems = ({ commit }, payload) => {
           filter: payload?.filter,
         },
       })
-      .then(response => {
+      .then((response) => {
         commit('SET_ITEMS', response.data.data.docs);
         commit('SET_ITEMS_TOTAL', response.data.data.total);
         commit('SET_NUMB_PAGES', response.data.data.pages);
         resolve(response);
       })
-      .catch(error => {
+      .catch((error) => {
         reject(error);
       });
   });
@@ -44,58 +44,49 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/inventory/create`, inventory)
-        .then(response => {
+        .then((response) => {
           commit('ADD_INVENTORY', response.data.data);
-          // Invalidate inventories cache
-          invalidateCache('inventories');
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
   },
 
-  // Cached version of fetchInventories
-  fetchInventories: createCachedAction(
-    originalFetchInventories,
-    'inventories',
-    (state) => state.inventories
-  ),
+  // Standard version of fetchInventories
+  fetchInventories({ commit }) {
+    return originalFetchInventories({ commit });
+  },
 
   updateInventory({ commit }, inventory) {
     return new Promise((resolve, reject) => {
       axios
         .post(`/inventory/update`, inventory)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_INVENTORY', response.data.data);
-          // Invalidate related caches
-          invalidateCache('inventories');
-          invalidateCache('inventory_items');
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
   },
 
-  // Cached version of fetchInventoryItems
-  fetchInventoryItems: createCachedAction(
-    originalFetchInventoryItems,
-    'inventory_items',
-    (state) => state.items
-  ),
+  // Standard version of fetchInventoryItems
+  fetchInventoryItems({ commit }, payload) {
+    return originalFetchInventoryItems({ commit }, payload);
+  },
 
   fetchInventoryItem({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
         .get(`/inventory/get/items/${payload.id}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_ITEM', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -111,13 +102,13 @@ export default {
             filter: payload.filter,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_ITEM_HISTORY', response.data.data.docs);
           commit('SET_ITEM_HISTORY_TOTAL', response.data.data.total);
           commit('SET_ITEM_HISTORY_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -127,13 +118,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/inventory/item/update/`, inventory)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_ITEM', response.data.data);
-          // Invalidate inventory items cache
-          invalidateCache('inventory_items');
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -143,11 +132,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/inventory/request-return`, items)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_ITEM', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -157,11 +146,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/inventory/request-return/update`, items)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_ITEM', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -177,13 +166,13 @@ export default {
             search: payload.search,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_RETURN_REQUESTS', response.data.data.docs);
           commit('SET_RETURN_REQUESTS_TOTAL', response.data.data.total);
           commit('SET_RETURN_REQUESTS_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });

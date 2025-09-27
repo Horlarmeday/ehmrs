@@ -132,7 +132,7 @@ export default {
   created() {
     this.loading = true;
     this.getActiveTab();
-    this.$store.dispatch('visit/fetchVisit', this.$route.params.id).then(response => {
+    this.$store.dispatch('visit/fetchVisit', this.$route.params.id).then((response) => {
       const res = response.data.data;
       this.$store.dispatch('patient/setCurrentPatient', { ...res.insurance, ...res.patient });
     });

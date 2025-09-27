@@ -51,6 +51,7 @@ import { AccountCodeConflictResolutionService } from './services/accountCodeConf
 import { logger } from '../../core/helpers/logger';
 import { paginate } from '../../core/helpers/helper';
 import sequelizeConnection from '../../database/config/data-source';
+import dayjs from 'dayjs';
 
 export class AccountingRepository {
   // ===== PHASE 1: CORE FINANCIAL FOUNDATION METHODS =====
@@ -2198,7 +2199,7 @@ export class AccountingRepository {
 
   // Clinical Bills
   static async createClinicalBill(billData: ClinicalBillData): Promise<ClinicalBill> {
-    return await ClinicalBill.create(billData as any);
+    return ClinicalBill.create(billData as any);
   }
 
   static async createClinicalBillItems(items: ClinicalBillItemData[]): Promise<ClinicalBillItem[]> {
@@ -2814,23 +2815,30 @@ export class AccountingRepository {
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const day = String(today.getDate()).padStart(2, '0');
+    const startOfToday = dayjs()
+      .startOf('day')
+      .toDate();
+    const endOfToday = dayjs()
+      .endOf('day')
+      .toDate();
 
     const prefix = `BILL-${year}${month}${day}`;
+    let clinicalBill: ClinicalBill;
+    let billNumber: string;
 
-    const lastBill = await ClinicalBill.findOne({
-      where: {
-        bill_number: { [Op.like]: `${prefix}-%` },
-      },
-      order: [['bill_number', 'DESC']],
-    });
+    do {
+      const clinicalBillCount = await ClinicalBill.count({
+        where: {
+          createdAt: {
+            [Op.between]: [startOfToday, endOfToday],
+          },
+        },
+      });
+      billNumber = `${prefix}-${String(clinicalBillCount + 1).padStart(4, '0')}`;
+      clinicalBill = await ClinicalBill.findOne({ where: { bill_number: billNumber } });
+    } while (clinicalBill);
 
-    let sequence = 1;
-    if (lastBill) {
-      const lastSequence = parseInt(lastBill.bill_number.split('-')[4] || '0');
-      sequence = lastSequence + 1;
-    }
-
-    return `${prefix}-${String(sequence).padStart(4, '0')}`;
+    return billNumber;
   }
 
   static async generatePaymentReference(): Promise<string> {

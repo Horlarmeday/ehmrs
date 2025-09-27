@@ -30,6 +30,7 @@ import {
   PaymentProcessingStatus,
 } from './enums';
 import { PatientDeposit } from '../../database/models/patientDeposit';
+import { ClinicalBill, ClinicalBillItem } from '../../database/models';
 
 export class AccountingService {
   // Patient Deposits
@@ -455,8 +456,7 @@ export class AccountingService {
   // Clinical Bills
   static async createClinicalBill(
     billingRequest: BillingRequestData,
-    transaction?: Transaction
-  ): Promise<any> {
+  ): Promise<{ bill: ClinicalBill; items: ClinicalBillItem[] }> {
     try {
       // Generate bill number
       const billNumber = await AccountingRepository.generateBillNumber();
@@ -465,29 +465,31 @@ export class AccountingService {
       let totalAmount = 0;
       const billItems: ClinicalBillItemData[] = [];
 
-      for (const item of billingRequest.items) {
-        // Get item pricing from appropriate source (Drug, Test, Investigation, Service)
-        const unitPrice = await AccountingService.getItemUnitPrice(item.item_type, item.item_id);
-        const totalPrice = unitPrice * item.quantity;
-        const discountAmount = ((item.discount_percentage || 0) * totalPrice) / 100;
-        const finalPrice = totalPrice - discountAmount;
+      if (billingRequest?.items?.length) {
+        for (const item of billingRequest.items) {
+          // Get item pricing from appropriate source (Drug, Test, Investigation, Service)
+          const unitPrice = await AccountingService.getItemUnitPrice(item.item_type, item.item_id);
+          const totalPrice = unitPrice * item.quantity;
+          const discountAmount = ((item.discount_percentage || 0) * totalPrice) / 100;
+          const finalPrice = totalPrice - discountAmount;
 
-        totalAmount += finalPrice;
+          totalAmount += finalPrice;
 
-        billItems.push({
-          bill_id: 0, // Will be set after bill creation
-          item_type: item.item_type,
-          item_id: item.item_id,
-          item_name: await AccountingService.getItemName(item.item_type, item.item_id),
-          item_code: await AccountingService.getItemCode(item.item_type, item.item_id),
-          quantity: item.quantity,
-          unit_price: unitPrice,
-          total_price: totalPrice,
-          discount_percentage: item.discount_percentage || 0,
-          discount_amount: discountAmount,
-          final_price: finalPrice,
-          notes: item.notes,
-        });
+          billItems.push({
+            bill_id: 0, // Will be set after bill creation
+            item_type: item.item_type,
+            item_id: item.item_id,
+            item_name: await AccountingService.getItemName(item.item_type, item.item_id),
+            item_code: await AccountingService.getItemCode(item.item_type, item.item_id),
+            quantity: item.quantity,
+            unit_price: unitPrice,
+            total_price: totalPrice,
+            discount_percentage: item.discount_percentage || 0,
+            discount_amount: discountAmount,
+            final_price: finalPrice,
+            notes: item.notes,
+          });
+        }
       }
 
       // Calculate HMO and patient co-pay amounts
@@ -522,7 +524,7 @@ export class AccountingService {
         patient_co_pay_amount: patientCoPayAmount,
         hmo_billed_amount: hmoBilledAmount,
         payment_status: PaymentStatus.PENDING,
-        billing_status: BillingStatus.DRAFT,
+        billing_status: BillingStatus.PENDING,
         payment_collection_method: collectionMethod as PaymentCollectionMethod,
         payment_collection_point: collectionPoint,
         due_date: billingRequest.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
@@ -534,14 +536,17 @@ export class AccountingService {
       const bill = await AccountingRepository.createClinicalBill(billData);
 
       // Create bill items
-      for (const item of billItems) {
-        item.bill_id = bill.id;
+      if (billItems?.length) {
+        for (const item of billItems) {
+          item.bill_id = bill.id;
+        }
+        await AccountingRepository.createClinicalBillItems(billItems);
       }
-      await AccountingRepository.createClinicalBillItems(billItems);
 
       // Return complete bill with items
       return await AccountingRepository.getClinicalBillWithItems(bill.id);
     } catch (error) {
+      console.error(error);
       throw new BadException('Failed to create clinical bill', 500, error.message);
     }
   }
@@ -721,7 +726,7 @@ export class AccountingService {
       const { ClinicalPaymentItem } = await import('../../database/models');
       const paymentItems = await ClinicalPaymentItem.findAll({
         where: { payment_id: paymentId },
-        order: [['created_at', 'ASC']],
+        order: [['createdAt', 'ASC']],
       });
 
       // Get patient information

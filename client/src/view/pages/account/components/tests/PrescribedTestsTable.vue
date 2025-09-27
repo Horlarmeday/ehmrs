@@ -89,7 +89,7 @@ export default {
     },
 
     disableBilling() {
-      return this.tests.every(test => test.billing_status === 'Billed');
+      return this.tests.every((test) => test.billing_status === 'Billed');
     },
   },
   created() {
@@ -139,13 +139,13 @@ export default {
     },
 
     isSelected(test) {
-      return this.selectedTests.some(d => d.id === test.id);
+      return this.selectedTests.some((d) => d.id === test.id);
     },
 
     toggleItem(test) {
       if (this.isSelected(test)) {
         // If the item is already selected, remove it from selectedItems
-        const itemIndex = this.selectedTests.findIndex(d => d.id === test.id);
+        const itemIndex = this.selectedTests.findIndex((d) => d.id === test.id);
         this.selectedTests.splice(itemIndex, 1);
       } else {
         // If the item is not selected, add it to selectedItems

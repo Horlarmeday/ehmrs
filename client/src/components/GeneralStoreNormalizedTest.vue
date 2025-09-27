@@ -1,7 +1,7 @@
 <template>
   <div class="normalized-test-container p-4">
     <h2 class="mb-4">General Store Normalized State Test</h2>
-    
+
     <!-- Cache Status Section -->
     <div class="card mb-4">
       <div class="card-header">
@@ -94,23 +94,23 @@
         <div class="row">
           <div class="col-md-6">
             <h6>Global Search</h6>
-            <input 
-              v-model="globalSearchTerm" 
+            <input
+              v-model="globalSearchTerm"
               @input="updateGlobalSearch"
-              class="form-control mb-3" 
+              class="form-control mb-3"
               placeholder="Search across all entities..."
-            >
+            />
           </div>
           <div class="col-md-6">
             <h6>Entity Filters</h6>
             <div v-for="entityType in entityTypes" :key="entityType" class="mb-2">
               <label class="form-label">{{ entityType }} filter:</label>
-              <input 
+              <input
                 :value="getActiveFilters(entityType).search || ''"
                 @input="updateEntityFilter(entityType, 'search', $event.target.value)"
-                class="form-control form-control-sm" 
+                class="form-control form-control-sm"
                 :placeholder="`Filter ${entityType}...`"
-              >
+              />
             </div>
           </div>
         </div>
@@ -128,11 +128,10 @@
             <h6>{{ entityType }}</h6>
             <div class="pagination-info">
               <p class="mb-1">
-                <strong>Page:</strong> {{ getPagination(entityType).currentPage }} / {{ getPagination(entityType).totalPages }}
+                <strong>Page:</strong> {{ getPagination(entityType).currentPage }} /
+                {{ getPagination(entityType).totalPages }}
               </p>
-              <p class="mb-1">
-                <strong>Items:</strong> {{ getPagination(entityType).totalItems }}
-              </p>
+              <p class="mb-1"><strong>Items:</strong> {{ getPagination(entityType).totalItems }}</p>
               <p class="mb-0">
                 <strong>Per Page:</strong> {{ getPagination(entityType).itemsPerPage }}
               </p>
@@ -202,9 +201,7 @@
           <div class="col-md-3">
             <h6>My Requests</h6>
             <p class="text-info">{{ getMyRequests.length }} requests</p>
-            <button @click="fetchMyRequests" class="btn btn-sm btn-outline-info">
-              Refresh
-            </button>
+            <button @click="fetchMyRequests" class="btn btn-sm btn-outline-info">Refresh</button>
           </div>
           <div class="col-md-3">
             <h6>Pending Approval</h6>
@@ -238,7 +235,10 @@
           </div>
           <div class="col-md-3">
             <h6>Test Data Fetch</h6>
-            <button @click="testFetchCategories" class="btn btn-outline-primary btn-sm mb-2 d-block">
+            <button
+              @click="testFetchCategories"
+              class="btn btn-outline-primary btn-sm mb-2 d-block"
+            >
               Fetch Categories
             </button>
             <button @click="testFetchItems" class="btn btn-outline-primary btn-sm mb-2 d-block">
@@ -307,8 +307,15 @@ export default {
   data() {
     return {
       globalSearchTerm: '',
-      entityTypes: ['categories', 'subcategories', 'items', 'movements', 'requests', 'dispensaries'],
-      paginatedEntities: ['categories', 'subcategories', 'items', 'movements', 'requests']
+      entityTypes: [
+        'categories',
+        'subcategories',
+        'items',
+        'movements',
+        'requests',
+        'dispensaries',
+      ],
+      paginatedEntities: ['categories', 'subcategories', 'items', 'movements', 'requests'],
     };
   },
   computed: {
@@ -322,16 +329,16 @@ export default {
       'loadingStates',
       'errorStates',
       'cacheMetadata',
-      'uiState'
+      'uiState',
     ]),
     ...mapGetters('generalStore', [
       // Cache getters
       'isCacheValid',
       'getCacheTimestamp',
-      
+
       // Entity getters
       'getAllCategories',
-      'getAllSubcategories', 
+      'getAllSubcategories',
       'getAllItems',
       'getAllMovements',
       'getAllRequests',
@@ -340,81 +347,81 @@ export default {
       'getSubcategoryById',
       'getItemById',
       'getRequestById',
-      
+
       // Filtered data getters
       'getFilteredCategories',
       'getFilteredSubcategories',
       'getFilteredItems',
       'getFilteredMovements',
       'getFilteredRequests',
-      
+
       // Specialized collections
       'getLowStockItems',
       'getExpiringItems',
       'getMyRequests',
       'getPendingApprovalRequests',
-      
+
       // Current selections
       'getCurrentCategory',
       'getCurrentSubcategory',
       'getCurrentItem',
       'getCurrentRequest',
       'getSelectedItems',
-      
+
       // Loading states
       'isLoading',
       'isAnyLoading',
-      
+
       // Error states
       'getError',
       'hasError',
       'hasAnyErrors',
       'getAllErrors',
-      
+
       // Pagination
       'getPagination',
-      
+
       // Filters
       'getActiveFilters',
-      
+
       // Dashboard
       'getDashboardStats',
-      
+
       // Stats
-      'getEntityStats'
+      'getEntityStats',
     ]),
-    
+
     debugStateStructure() {
       return {
         entitiesCount: Object.keys(this.entities || {}).length,
         relationshipsCount: Object.keys(this.relationships || {}).length,
         currentSelectionsCount: Object.keys(this.currentSelections || {}).length,
-        specializedCollectionsCount: Object.keys(this.specializedCollections || {}).length
+        specializedCollectionsCount: Object.keys(this.specializedCollections || {}).length,
       };
     },
-    
+
     totalEntitiesCount() {
       return this.entityTypes.reduce((total, type) => {
         return total + this.getEntityCount(type);
       }, 0);
     },
-    
+
     cacheHitRate() {
-      const validCaches = this.entityTypes.filter(type => this.isCacheValid(type)).length;
+      const validCaches = this.entityTypes.filter((type) => this.isCacheValid(type)).length;
       return Math.round((validCaches / this.entityTypes.length) * 100);
     },
-    
+
     activeFiltersCount() {
       return this.entityTypes.reduce((total, type) => {
         const filters = this.getActiveFilters(type);
         return total + Object.keys(filters).length;
       }, 0);
     },
-    
+
     estimatedMemoryUsage() {
       // Rough estimation based on entity counts
       return Math.round(this.totalEntitiesCount * 0.5); // 0.5KB per entity estimate
-    }
+    },
   },
   methods: {
     ...mapActions('generalStore', [
@@ -437,9 +444,9 @@ export default {
       'refreshData',
       'invalidateCache',
       'clearError',
-      'clearAllErrors'
+      'clearAllErrors',
     ]),
-    
+
     getEntityCount(entityType) {
       switch (entityType) {
         case 'categories':
@@ -458,23 +465,23 @@ export default {
           return 0;
       }
     },
-    
+
     getCacheStatusClass(entityType) {
       return this.isCacheValid(entityType) ? 'text-success' : 'text-warning';
     },
-    
+
     getLoadingClass(entityType, operation) {
       return this.isLoading(entityType, operation) ? 'text-primary' : 'text-muted';
     },
-    
+
     updateGlobalSearch() {
       this.setGlobalSearch(this.globalSearchTerm);
     },
-    
+
     updateEntityFilter(entityType, filterKey, value) {
       this.setFilter({ entityType, filterKey, value });
     },
-    
+
     async refreshAllData() {
       try {
         await this.refreshData({ force: true });
@@ -483,23 +490,23 @@ export default {
         this.$toast.error('Failed to refresh data: ' + error.message);
       }
     },
-    
+
     invalidateAllCaches() {
-      this.entityTypes.forEach(type => {
+      this.entityTypes.forEach((type) => {
         this.invalidateCache(type);
       });
       this.$toast.info('All caches invalidated');
     },
-    
+
     clearAllFilters() {
-      this.entityTypes.forEach(type => {
+      this.entityTypes.forEach((type) => {
         this.clearFilters(type);
       });
       this.globalSearchTerm = '';
       this.setGlobalSearch('');
       this.$toast.info('All filters cleared');
     },
-    
+
     async testFetchCategories() {
       try {
         await this.fetchCategories({ force: true });
@@ -508,7 +515,7 @@ export default {
         this.$toast.error('Failed to fetch categories: ' + error.message);
       }
     },
-    
+
     async testFetchItems() {
       try {
         await this.fetchItems({ force: true });
@@ -517,7 +524,7 @@ export default {
         this.$toast.error('Failed to fetch items: ' + error.message);
       }
     },
-    
+
     async testFetchRequests() {
       try {
         await this.fetchRequests({ force: true });
@@ -526,7 +533,7 @@ export default {
         this.$toast.error('Failed to fetch requests: ' + error.message);
       }
     },
-    
+
     selectRandomItems() {
       const items = this.getAllItems;
       if (items.length > 0) {
@@ -542,12 +549,12 @@ export default {
         this.$toast.warning('No items available to select');
       }
     },
-    
+
     clearSelections() {
       this.selectItems([]);
       this.$toast.info('Selections cleared');
     },
-    
+
     selectFirstCategory() {
       const categories = this.getAllCategories;
       if (categories.length > 0) {
@@ -556,14 +563,14 @@ export default {
       } else {
         this.$toast.warning('No categories available');
       }
-    }
+    },
   },
-  
+
   mounted() {
     // Initialize with some test data
     this.testFetchCategories();
     this.testFetchItems();
-  }
+  },
 };
 </script>
 
@@ -608,11 +615,25 @@ pre {
   font-size: 0.75rem;
 }
 
-.text-primary { color: #007bff !important; }
-.text-success { color: #28a745 !important; }
-.text-warning { color: #ffc107 !important; }
-.text-danger { color: #dc3545 !important; }
-.text-info { color: #17a2b8 !important; }
-.text-secondary { color: #6c757d !important; }
-.text-muted { color: #6c757d !important; }
+.text-primary {
+  color: #007bff !important;
+}
+.text-success {
+  color: #28a745 !important;
+}
+.text-warning {
+  color: #ffc107 !important;
+}
+.text-danger {
+  color: #dc3545 !important;
+}
+.text-info {
+  color: #17a2b8 !important;
+}
+.text-secondary {
+  color: #6c757d !important;
+}
+.text-muted {
+  color: #6c757d !important;
+}
 </style>

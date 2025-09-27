@@ -32,9 +32,7 @@
               type="checkbox"
               id="debugMode"
             />
-            <label class="form-check-label" for="debugMode">
-              Debug Mode
-            </label>
+            <label class="form-check-label" for="debugMode"> Debug Mode </label>
           </div>
         </div>
 
@@ -71,9 +69,7 @@
               <span class="log-message">{{ log.message }}</span>
             </div>
           </div>
-          <button @click="clearLogs" class="btn btn-sm btn-outline-danger">
-            Clear Logs
-          </button>
+          <button @click="clearLogs" class="btn btn-sm btn-outline-danger">Clear Logs</button>
         </div>
 
         <!-- Store State -->
@@ -99,15 +95,9 @@
         <div class="debug-section">
           <h6>Actions</h6>
           <div class="debug-actions">
-            <button @click="exportLogs" class="btn btn-sm btn-outline-primary">
-              Export Logs
-            </button>
-            <button @click="testLogging" class="btn btn-sm btn-outline-info">
-              Test Logging
-            </button>
-            <button @click="clearStore" class="btn btn-sm btn-outline-warning">
-              Clear Store
-            </button>
+            <button @click="exportLogs" class="btn btn-sm btn-outline-primary">Export Logs</button>
+            <button @click="testLogging" class="btn btn-sm btn-outline-info">Test Logging</button>
+            <button @click="clearStore" class="btn btn-sm btn-outline-warning">Clear Store</button>
           </div>
         </div>
       </div>
@@ -186,7 +176,7 @@ export default {
         trace: console.trace,
       };
 
-      ['error', 'warn', 'info', 'debug', 'trace'].forEach(level => {
+      ['error', 'warn', 'info', 'debug', 'trace'].forEach((level) => {
         console[level] = (...args) => {
           originalConsole[level](...args);
           this.addToLogHistory(level, args.join(' '));
@@ -251,7 +241,7 @@ export default {
     },
 
     exportLogs() {
-      const logs = this.logHistory.map(log => ({
+      const logs = this.logHistory.map((log) => ({
         timestamp: new Date(log.timestamp).toISOString(),
         level: log.level,
         message: log.message,

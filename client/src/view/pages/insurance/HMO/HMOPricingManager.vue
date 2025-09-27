@@ -260,7 +260,7 @@ export default {
               limit: 100,
             });
             const drugs = response.data.data.docs;
-            this.availableItems = drugs.map(drug => ({
+            this.availableItems = drugs.map((drug) => ({
               id: drug.id,
               name: drug.name,
               code: drug.code,
@@ -273,7 +273,7 @@ export default {
               limit: 100,
             });
             const tests = response.data.data.docs;
-            this.availableItems = tests.map(test => ({
+            this.availableItems = tests.map((test) => ({
               id: test.id,
               name: test.name,
               code: test.code,
@@ -286,7 +286,7 @@ export default {
               limit: 100,
             });
             const services = response.data.data.docs;
-            this.availableItems = services.map(service => ({
+            this.availableItems = services.map((service) => ({
               id: service.id,
               name: service.name,
               code: service.code,
@@ -299,7 +299,7 @@ export default {
               limit: 100,
             });
             const investigations = response.data.data.docs;
-            this.availableItems = investigations.map(investigation => ({
+            this.availableItems = investigations.map((investigation) => ({
               id: investigation.id,
               name: investigation.name,
               code: investigation.code,
@@ -371,7 +371,7 @@ export default {
             });
             if (response && response.data && response.data.data && response.data.data.docs) {
               const drugs = response.data.data.docs;
-              vm.availableItems = drugs.map(drug => ({
+              vm.availableItems = drugs.map((drug) => ({
                 id: drug.id,
                 name: drug.name,
                 code: drug.code,
@@ -386,7 +386,7 @@ export default {
             });
             if (response && response.data && response.data.data && response.data.data.docs) {
               const tests = response.data.data.docs;
-              vm.availableItems = tests.map(test => ({
+              vm.availableItems = tests.map((test) => ({
                 id: test.id,
                 name: test.name,
                 code: test.code,
@@ -401,7 +401,7 @@ export default {
             });
             if (response && response.data && response.data.data && response.data.data.docs) {
               const services = response.data.data.docs;
-              vm.availableItems = services.map(service => ({
+              vm.availableItems = services.map((service) => ({
                 id: service.id,
                 name: service.name,
                 code: service.code,
@@ -416,7 +416,7 @@ export default {
             });
             if (response && response.data && response.data.data && response.data.data.docs) {
               const investigations = response.data.data.docs;
-              vm.availableItems = investigations.map(investigation => ({
+              vm.availableItems = investigations.map((investigation) => ({
                 id: investigation.id,
                 name: investigation.name,
                 code: investigation.code,

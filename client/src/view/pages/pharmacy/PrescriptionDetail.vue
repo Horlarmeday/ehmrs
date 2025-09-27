@@ -104,19 +104,19 @@ export default {
     },
 
     totalDrugsPrice() {
-      const totalPrice = this.prescription.drugs?.map(pres => pres.total_price);
+      const totalPrice = this.prescription.drugs?.map((pres) => pres.total_price);
       return totalPrice.reduce((acc, cur) => acc + +cur, 0);
     },
 
     totalItemsPrice() {
-      const totalPrice = this.prescription.items?.map(pres => pres.total_price);
+      const totalPrice = this.prescription.items?.map((pres) => pres.total_price);
       return totalPrice.reduce((acc, cur) => acc + +cur, 0);
     },
 
     nhisMappedTotalPrice() {
       return this.prescription.drugs
-        ?.filter(drug => drug?.drug_type === 'NHIS')
-        .map(pres => pres.total_price);
+        ?.filter((drug) => drug?.drug_type === 'NHIS')
+        .map((pres) => pres.total_price);
     },
 
     nhis90PercentDrugsPrice() {
@@ -144,7 +144,7 @@ export default {
   },
   watch: {
     prescription(val) {
-      this.prescriptions = val.drugs.map(drug => ({
+      this.prescriptions = val.drugs.map((drug) => ({
         id: drug.id,
         drug_name: drug.drug.name,
         drug_type: drug.drug_type,
@@ -179,7 +179,7 @@ export default {
           drug.quantity_returned === drug.quantity_to_dispense,
       }));
 
-      this.items = val.items.map(item => ({
+      this.items = val.items.map((item) => ({
         id: item.id,
         item_name: item.drug.name,
         drug_type: item.drug_type,

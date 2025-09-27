@@ -184,7 +184,7 @@ export default {
     },
 
     createPostnatal() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             blood_pressure: this.blood_pressure,

@@ -117,13 +117,8 @@ export default {
   },
   data: () => ({
     dateRange: [
-      dayjs()
-        .subtract(6, 'month')
-        .startOf('month')
-        .toDate(),
-      dayjs()
-        .endOf('month')
-        .toDate(),
+      dayjs().subtract(6, 'month').startOf('month').toDate(),
+      dayjs().endOf('month').toDate(),
     ],
     revenueExpensesOptions: {
       chart: {
@@ -142,7 +137,7 @@ export default {
       },
       yaxis: {
         labels: {
-          formatter: value =>
+          formatter: (value) =>
             new Intl.NumberFormat('en-US', {
               style: 'currency',
               currency: 'NGN',
@@ -151,7 +146,7 @@ export default {
       },
       tooltip: {
         y: {
-          formatter: value =>
+          formatter: (value) =>
             new Intl.NumberFormat('en-US', {
               style: 'currency',
               currency: 'NGN',
@@ -203,7 +198,7 @@ export default {
       },
       yaxis: {
         labels: {
-          formatter: value =>
+          formatter: (value) =>
             new Intl.NumberFormat('en-US', {
               style: 'currency',
               currency: 'NGN',
@@ -212,7 +207,7 @@ export default {
       },
       tooltip: {
         y: {
-          formatter: value =>
+          formatter: (value) =>
             new Intl.NumberFormat('en-US', {
               style: 'currency',
               currency: 'NGN',
@@ -243,7 +238,7 @@ export default {
       },
       yaxis: {
         labels: {
-          formatter: value =>
+          formatter: (value) =>
             new Intl.NumberFormat('en-US', {
               style: 'currency',
               currency: 'NGN',
@@ -252,7 +247,7 @@ export default {
       },
       tooltip: {
         y: {
-          formatter: value =>
+          formatter: (value) =>
             new Intl.NumberFormat('en-US', {
               style: 'currency',
               currency: 'NGN',
@@ -305,17 +300,17 @@ export default {
       ];
 
       // Update Account Type Chart
-      this.accountTypeOptions.labels = this.trendAnalysis.accountTypes.map(type => type.name);
-      this.accountTypeSeries = this.trendAnalysis.accountTypes.map(type => type.value);
+      this.accountTypeOptions.labels = this.trendAnalysis.accountTypes.map((type) => type.name);
+      this.accountTypeSeries = this.trendAnalysis.accountTypes.map((type) => type.value);
 
       // Update Cost Center Chart
       this.costCenterOptions.xaxis.categories = this.trendAnalysis.costCenters.map(
-        center => center.name
+        (center) => center.name
       );
       this.costCenterSeries = [
         {
           name: 'Expenses by Cost Center',
-          data: this.trendAnalysis.costCenters.map(center => center.value),
+          data: this.trendAnalysis.costCenters.map((center) => center.value),
         },
       ];
 

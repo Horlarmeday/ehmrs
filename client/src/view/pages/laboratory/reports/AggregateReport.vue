@@ -1,9 +1,7 @@
 <template>
   <div class="card card-custom gutter-b example example-compact">
     <div class="card-header" style="min-height: 50px !important">
-      <h3 class="card-title">
-        Aggregate Reports
-      </h3>
+      <h3 class="card-title">Aggregate Reports</h3>
     </div>
     <div class="card-body" style="padding: 1rem 2.25rem">
       <div class="">

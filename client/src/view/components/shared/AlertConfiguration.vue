@@ -427,9 +427,7 @@
                 <option :value="240">4 hours</option>
                 <option :value="1440">1 day</option>
               </select>
-              <small class="form-text text-muted">
-                Default duration when snoozing alerts
-              </small>
+              <small class="form-text text-muted"> Default duration when snoozing alerts </small>
             </div>
           </div>
         </div>
@@ -527,9 +525,7 @@
           Reset to Defaults
         </button>
         <div>
-          <button type="button" class="btn btn-light mr-2" @click="cancel()">
-            Cancel
-          </button>
+          <button type="button" class="btn btn-light mr-2" @click="cancel()">Cancel</button>
           <button
             type="button"
             class="btn btn-primary"

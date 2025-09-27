@@ -11,13 +11,13 @@ export default {
       performanceTimers: {},
     };
   },
-  
+
   methods: {
     // Start performance timer
     startTimer(operation) {
       this.performanceTimers[operation] = Date.now();
     },
-    
+
     // End performance timer and log
     endTimer(operation, context = {}) {
       if (this.performanceTimers[operation]) {
@@ -28,7 +28,7 @@ export default {
       }
       return 0;
     },
-    
+
     // Log API call with performance tracking
     async logApiCall(operation, apiCall, context = {}) {
       this.startTimer(operation);
@@ -41,145 +41,142 @@ export default {
         throw error;
       }
     },
-    
+
     // Log user interaction
     logUserInteraction(action, element = null, context = {}) {
       this.$logUserAction(action, {
         element: element,
-        ...context
+        ...context,
       });
     },
-    
+
     // Log form submission
     logFormSubmission(formName, success = true, context = {}) {
       this.$logUserAction(`Form ${success ? 'submitted' : 'failed'}: ${formName}`, {
         success,
-        ...context
+        ...context,
       });
     },
-    
+
     // Log data loading
     logDataLoading(operation, success = true, context = {}) {
       this.$logInfo(`Data ${success ? 'loaded' : 'failed to load'}: ${operation}`, {
         success,
-        ...context
+        ...context,
       });
     },
-    
+
     // Log navigation
     logNavigation(from, to, context = {}) {
       this.$logUserAction('Navigation', {
         from,
         to,
-        ...context
+        ...context,
       });
     },
-    
+
     // Log filter changes
     logFilterChange(filterName, value, context = {}) {
       this.$logUserAction('Filter changed', {
         filter: filterName,
         value,
-        ...context
+        ...context,
       });
     },
-    
+
     // Log pagination changes
     logPaginationChange(page, limit, context = {}) {
       this.$logUserAction('Pagination changed', {
         page,
         limit,
-        ...context
+        ...context,
       });
     },
-    
+
     // Log search
     logSearch(query, resultsCount, context = {}) {
       this.$logUserAction('Search performed', {
         query,
         resultsCount,
-        ...context
+        ...context,
       });
     },
-    
+
     // Log CRUD operations
     logCreate(entity, data, success = true, context = {}) {
       this.$logUserAction(`Create ${entity}`, {
         success,
         data: success ? data : null,
-        ...context
+        ...context,
       });
     },
-    
+
     logUpdate(entity, id, data, success = true, context = {}) {
       this.$logUserAction(`Update ${entity}`, {
         id,
         success,
         data: success ? data : null,
-        ...context
+        ...context,
       });
     },
-    
+
     logDelete(entity, id, success = true, context = {}) {
       this.$logUserAction(`Delete ${entity}`, {
         id,
         success,
-        ...context
+        ...context,
       });
     },
-    
+
     // Log errors with context
     logError(message, error, context = {}) {
       this.$logError(message, {
         error: error.message,
         stack: error.stack,
-        ...context
+        ...context,
       });
     },
-    
+
     // Log warnings with context
     logWarning(message, context = {}) {
       this.$logWarn(message, context);
     },
-    
+
     // Log info with context
     logInfo(message, context = {}) {
       this.$logInfo(message, context);
     },
-    
+
     // Log debug with context
     logDebug(message, context = {}) {
       this.$logDebug(message, context);
     },
-    
+
     // Set debug mode
     setDebugMode(enabled) {
       loggingService.setDebugMode(enabled);
     },
-    
+
     // Set log level
     setLogLevel(level) {
       loggingService.setLogLevel(level);
     },
-    
+
     // Check if debug is enabled
     isDebugEnabled() {
       return loggingService.isDebugEnabled();
     },
-    
+
     // Clear logs
     clearLogs() {
       loggingService.clearLogs();
     },
   },
-  
+
   // Cleanup performance timers on destroy
   beforeDestroy() {
-    Object.keys(this.performanceTimers).forEach(operation => {
+    Object.keys(this.performanceTimers).forEach((operation) => {
       this.endTimer(operation, { cleanup: true });
     });
   },
 };
-
-
-

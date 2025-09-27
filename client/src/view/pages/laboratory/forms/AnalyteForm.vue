@@ -78,7 +78,7 @@ export default {
         if (!val) return;
         if (Object.entries(val)?.length) {
           const analyteData = JSON.parse(JSON.stringify(val));
-          Object.keys(this.analyte).forEach(key => {
+          Object.keys(this.analyte).forEach((key) => {
             this.analyte[key] = analyteData[key] || '';
           });
         }
@@ -90,7 +90,7 @@ export default {
       this.debounceInput(this);
     },
 
-    debounceInput: debounce(vm => {
+    debounceInput: debounce((vm) => {
       vm.$emit('emitResult', vm.analyte, vm.testId);
     }, 500),
   },

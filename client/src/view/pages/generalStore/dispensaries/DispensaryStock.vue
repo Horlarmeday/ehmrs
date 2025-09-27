@@ -100,7 +100,7 @@
                       <select
                         v-model="filter"
                         class="form-control form-control-sm"
-                        style="width: 150px;"
+                        style="width: 150px"
                       >
                         <option value="">All Items</option>
                         <option value="low_stock">Low Stock</option>
@@ -110,7 +110,7 @@
                     </div>
 
                     <!-- Search -->
-                    <div class="input-group" style="width: 200px;">
+                    <div class="input-group" style="width: 200px">
                       <input
                         type="text"
                         v-model="searchTerm"
@@ -284,8 +284,8 @@ export default {
       return {
         totalItems: items.length,
         totalValue: items.reduce((sum, item) => sum + item.quantity * item.unit_price, 0),
-        lowStockItems: items.filter(item => this.isLowStock(item)).length,
-        expiringItems: items.filter(item => this.isExpiringSoon(item)).length,
+        lowStockItems: items.filter((item) => this.isLowStock(item)).length,
+        expiringItems: items.filter((item) => this.isExpiringSoon(item)).length,
       };
     },
     filteredStockItems() {
@@ -295,13 +295,13 @@ export default {
       if (this.filter) {
         switch (this.filter) {
           case 'low_stock':
-            filtered = filtered.filter(item => this.isLowStock(item));
+            filtered = filtered.filter((item) => this.isLowStock(item));
             break;
           case 'expiring':
-            filtered = filtered.filter(item => this.isExpiringSoon(item));
+            filtered = filtered.filter((item) => this.isExpiringSoon(item));
             break;
           case 'out_of_stock':
-            filtered = filtered.filter(item => item.quantity <= 0);
+            filtered = filtered.filter((item) => item.quantity <= 0);
             break;
         }
       }
@@ -310,7 +310,7 @@ export default {
       if (this.searchTerm) {
         const term = this.searchTerm.toLowerCase();
         filtered = filtered.filter(
-          item =>
+          (item) =>
             item.name.toLowerCase().includes(term) ||
             item.item_code.toLowerCase().includes(term) ||
             (item.generic_name && item.generic_name.toLowerCase().includes(term))

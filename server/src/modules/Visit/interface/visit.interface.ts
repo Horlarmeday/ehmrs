@@ -11,6 +11,7 @@ export class CreateVisit {
   date_of_visit?: Date;
   service_id?: number | number[];
   staff_id: number;
+  test_id?: number | number[];
 
   // Emergency-specific fields
   emergency_priority?: string;

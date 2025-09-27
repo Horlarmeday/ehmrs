@@ -49,7 +49,7 @@
     <div class="d-flex align-items-center py-3">
       <select
         class="form-control form-control-sm text-primary font-weight-bold mr-4 border-0 bg-light-primary"
-        style="width: 75px;"
+        style="width: 75px"
         @change="onChangePageCount"
         v-model="pageCount"
       >

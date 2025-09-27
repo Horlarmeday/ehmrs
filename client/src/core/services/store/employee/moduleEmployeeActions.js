@@ -8,11 +8,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/staffs/create', employee)
-        .then(response => {
+        .then((response) => {
           commit('ADD_EMPLOYEE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -31,13 +31,13 @@ export default {
             filter: payload.filter,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_EMPLOYEES', response.data.data.docs);
           commit('SET_EMPLOYEES_TOTAL', response.data.data.total);
           commit('SET_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -47,11 +47,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/staffs/${employeeId}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_EMPLOYEE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -61,11 +61,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/staffs`, employee)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_EMPLOYEE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -75,11 +75,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/staffs/reset-password/${employeeId}`)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_EMPLOYEE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });

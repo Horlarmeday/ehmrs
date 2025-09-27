@@ -198,7 +198,7 @@ export default {
           ?.toLowerCase()} it!`,
         cancelButtonText: 'No, cancel!',
         reverseButtons: true,
-      }).then(function(result) {
+      }).then(function (result) {
         if (result.value) {
           self.changeDrugNhisStatus({ nhis_status, itemId });
         }

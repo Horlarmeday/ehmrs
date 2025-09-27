@@ -83,7 +83,7 @@ export default {
     emitGlucoseResult() {
       this.debounceInput(this);
     },
-    debounceInput: debounce(function(vm) {
+    debounceInput: debounce(function (vm) {
       vm.$emit('emitResult', vm.glucose, vm.testId);
     }, 500),
   },

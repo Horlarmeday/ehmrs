@@ -130,7 +130,7 @@
                 ref="dependant_video"
                 id="dependant_video"
                 v-show="!dependant_image"
-                style="height:1px;width:120px;margin-bottom:20px;"
+                style="height: 1px; width: 120px; margin-bottom: 20px"
                 autoplay
               ></video>
               <canvas
@@ -145,7 +145,7 @@
                 id="snap"
                 v-if="!dependant_image && !dphotoSaved && !dvideoShowing"
                 class="btn btn-success btn-sm mt-4"
-                style="display: block;"
+                style="display: block"
                 v-on:click="startDependantCamera()"
               >
                 Take Photo
@@ -154,7 +154,7 @@
                 id="snap"
                 v-if="!dependant_image && !dphotoSaved && dvideoShowing"
                 class="btn btn-success btn-sm"
-                style="display: block;"
+                style="display: block"
                 v-on:click="captureDependant()"
               >
                 Snap Photo
@@ -350,7 +350,7 @@ export default {
       const stream = videoElem.srcObject;
       const tracks = stream.getTracks();
 
-      tracks.forEach(function(track) {
+      tracks.forEach(function (track) {
         track.stop();
       });
 
@@ -372,7 +372,7 @@ export default {
       this.dependantvideo = this.$refs.dependant_video;
       this.dependantvideo.style = 'display:block;width:250px;margin-bottom:20px;';
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+        navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
           this.dependantvideo.srcObject = stream;
           this.dependantvideo.play();
         });
@@ -430,7 +430,7 @@ export default {
 
     saveDependant() {
       if (!this.dependant_image) return this.notifyPhoto();
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const submitButton = this.$refs['kt-add_dependant_submit'];
           this.addSpinner(submitButton);

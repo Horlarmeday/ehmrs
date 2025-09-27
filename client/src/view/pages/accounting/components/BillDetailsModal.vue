@@ -272,9 +272,7 @@
         </div>
 
         <div>
-          <b-button variant="secondary" @click="showModal = false">
-            Close
-          </b-button>
+          <b-button variant="secondary" @click="showModal = false"> Close </b-button>
           <b-button
             v-if="isEditing"
             variant="primary"
@@ -368,7 +366,7 @@ export default {
     initializeForm() {
       this.editForm = {
         billing_status: this.bill.billing_status,
-        items: this.bill.billItems?.map(item => ({ ...item })) || [],
+        items: this.bill.billItems?.map((item) => ({ ...item })) || [],
         total_discount: this.bill.total_discount || 0,
         tax_amount: this.bill.tax_amount || 0,
         final_amount: this.bill.final_amount,
@@ -399,7 +397,7 @@ export default {
 
     onItemChange(index) {
       const item = this.editForm.items[index];
-      const selectedItem = this.itemOptions[item.item_type]?.find(opt => opt.id === item.item_id);
+      const selectedItem = this.itemOptions[item.item_type]?.find((opt) => opt.id === item.item_id);
 
       if (selectedItem) {
         item.unit_price = selectedItem.price || 0;

@@ -47,9 +47,9 @@ export default {
     },
 
     getRecommendedDischarges() {
-      this.$store.dispatch('admission/fetchRecommendedDischarges').then(response => {
+      this.$store.dispatch('admission/fetchRecommendedDischarges').then((response) => {
         const discharges = response.data.data;
-        const recommendedDischarges = discharges.filter(discharge => {
+        const recommendedDischarges = discharges.filter((discharge) => {
           return (
             discharge.ward.occupant_type === this.CHILDREN ||
             discharge.ward.occupant_type === this.ALL

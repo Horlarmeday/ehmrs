@@ -74,7 +74,7 @@ export default {
     },
 
     createVisit() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             patient_id: this.patient.id,

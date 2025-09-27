@@ -135,7 +135,7 @@ export default {
         if (!val) return;
         if (Object.entries(val)?.length) {
           const ogttData = JSON.parse(JSON.stringify(val));
-          Object.keys(this.ogtt).forEach(key => {
+          Object.keys(this.ogtt).forEach((key) => {
             this.ogtt[key] = ogttData[key] || '';
           });
         }
@@ -155,7 +155,7 @@ export default {
         urine_protein_others_mins: '',
       };
       const ogttUrine = Object.keys(urine)
-        .map(key => this.ogtt[key])
+        .map((key) => this.ogtt[key])
         .filter(Boolean);
       return (
         (this.section !== 'ValidationSection' && this.section !== 'ApprovalSection') ||
@@ -179,7 +179,7 @@ export default {
       this.debounceInput(this);
     },
 
-    debounceInput: debounce(vm => {
+    debounceInput: debounce((vm) => {
       vm.$emit('emitResult', vm.ogtt, vm.testId);
     }, 500),
 

@@ -128,7 +128,7 @@ export default {
 
   created() {
     this.getActiveTab();
-    this.fetchOneSurgeryRequest().then(response => {
+    this.fetchOneSurgeryRequest().then((response) => {
       const res = response.data.data;
       this.$store.dispatch('patient/setCurrentPatient', { ...res.insurance, ...res.patient });
     });

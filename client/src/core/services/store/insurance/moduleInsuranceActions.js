@@ -8,7 +8,7 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/insurances/create', insurance)
-        .then(response => {
+        .then((response) => {
           commit(
             'ADD_INSURANCE',
             Object.assign(insurance, {
@@ -18,7 +18,7 @@ export default {
           );
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -33,13 +33,13 @@ export default {
             search: payload.search,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_INSURANCES', response.data.data.docs);
           commit('SET_INSURANCES_TOTAL', response.data.data.total);
           commit('SET_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -49,11 +49,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/insurances/update`, insurance)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_INSURANCE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -63,11 +63,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/insurances/health-insurances/get/${patientId}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_PATIENT_INSURANCES', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -77,11 +77,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/insurances/health-insurance/default/${payload.id}`, payload.data)
-        .then(response => {
+        .then((response) => {
           commit('SET_PATIENT_INSURANCE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -91,11 +91,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/insurances/health-insurances/get/default`, { params: { patientId } })
-        .then(response => {
+        .then((response) => {
           commit('SET_PATIENT_INSURANCE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -108,11 +108,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/insurances/create/hmo`, hmo)
-        .then(response => {
+        .then((response) => {
           commit('ADD_HMO', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -129,13 +129,13 @@ export default {
             filter: payload.filter,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_HMOS', response.data.data.docs);
           commit('SET_HMOS_TOTAL', response.data.data.total);
           commit('SET_HMO_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -145,11 +145,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/insurances/update/hmo`, hmo)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_HMO', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });

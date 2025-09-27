@@ -131,7 +131,7 @@ export default {
         });
       }
 
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           // set spinner to submit button
           const submitButton = this.$refs['kt_return_submit'];
@@ -151,7 +151,7 @@ export default {
           this.$store
             .dispatch('inventory/createInventoryItemsReturnRequest', itemsToReturn)
             .then(() => this.endRequest(submitButton))
-            .catch(err => {
+            .catch((err) => {
               this.removeSpinner(submitButton);
               this.error = err?.message;
             });

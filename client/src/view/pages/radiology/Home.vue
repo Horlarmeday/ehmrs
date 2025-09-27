@@ -42,6 +42,11 @@ export default {
     return {
       cards: [
         {
+          name: 'Radiology Orders',
+          desc: 'Click here to view all radiology orders',
+          link: '/radiology/requested-investigations',
+        },
+        {
           name: 'Imaging',
           link: '/radiology/imaging',
           desc: 'Click here to view imaging type',
@@ -65,7 +70,7 @@ export default {
   watch: {
     currentUser: {
       handler(val) {
-        this.items.filter(tab => {
+        this.items.filter((tab) => {
           if (val.role !== 'Super Admin' && tab.name === 'Results Update') {
             tab.showComponent = false;
           }

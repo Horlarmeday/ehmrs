@@ -109,7 +109,7 @@ export default {
   methods: {
     selectTest(value, i) {
       const button = this.$refs['selected'][i];
-      const found = this.selectedTests.find(test => test.test_id === value.id);
+      const found = this.selectedTests.find((test) => test.test_id === value.id);
       if (found) {
         this.$store.dispatch('order/removeSelectedTest', this.mapSelectedTest(value));
         this.$store.dispatch('order/removeSelectedButton', value.id);
@@ -164,7 +164,7 @@ export default {
     submitLabTest() {
       const submitButton = this.$refs['kt-orderTest-submit'];
       this.addSpinner(submitButton);
-      const tests = this.selectedTests.map(test => {
+      const tests = this.selectedTests.map((test) => {
         delete test.name;
         return test;
       });

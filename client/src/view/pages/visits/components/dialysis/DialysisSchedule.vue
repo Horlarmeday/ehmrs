@@ -96,7 +96,7 @@
                   v-model="formData.patient_id"
                   :options="availablePatients"
                   label="name"
-                  :reduce="patient => patient.id"
+                  :reduce="(patient) => patient.id"
                   placeholder="Select patient..."
                   class="form-control"
                   required
@@ -187,7 +187,7 @@
                   v-model="formData.doctor_id"
                   :options="availableDoctors"
                   label="name"
-                  :reduce="doctor => doctor.id"
+                  :reduce="(doctor) => doctor.id"
                   placeholder="Select doctor..."
                   class="form-control"
                   required
@@ -206,7 +206,7 @@
                 v-model="formData.nurse_id"
                 :options="availableStaff"
                 label="name"
-                :reduce="staff => staff.id"
+                :reduce="(staff) => staff.id"
                 placeholder="Select nurse..."
                 class="form-control"
               />
@@ -304,7 +304,7 @@ export default {
       return 'Schedule Appointment';
     },
     availableTimeSlots() {
-      return this.timeSlots.map(slot => ({
+      return this.timeSlots.map((slot) => ({
         ...slot,
         available: !this.hasAppointment(slot.time),
       }));
@@ -313,13 +313,13 @@ export default {
   methods: {
     hasAppointment(time) {
       return this.appointments.some(
-        app => app.time_slot === time && app.appointment_date === this.selectedDate
+        (app) => app.time_slot === time && app.appointment_date === this.selectedDate
       );
     },
 
     getAppointment(time) {
       return this.appointments.find(
-        app => app.time_slot === time && app.appointment_date === this.selectedDate
+        (app) => app.time_slot === time && app.appointment_date === this.selectedDate
       );
     },
 

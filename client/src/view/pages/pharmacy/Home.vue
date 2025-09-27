@@ -41,6 +41,11 @@ export default {
     return {
       routes: [
         {
+          name: 'Prescriptions',
+          desc: 'Click here to view all pharmacy orders',
+          link: '/pharmacy/prescriptions',
+        },
+        {
           name: 'Generic Drugs',
           desc: 'Click here to view all generic drugs',
           link: '/pharmacy/generic-drugs',

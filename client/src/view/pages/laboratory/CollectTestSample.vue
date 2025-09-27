@@ -43,8 +43,8 @@ export default {
     },
 
     hasPendingPayment() {
-      const tests = this.sample?.tests.map(test => test.data.map(t => t.payment_status)).flat();
-      return tests.every(test => test === 'Pending');
+      const tests = this.sample?.tests.map((test) => test.data.map((t) => t.payment_status)).flat();
+      return tests.every((test) => test === 'Pending');
     },
   },
 };

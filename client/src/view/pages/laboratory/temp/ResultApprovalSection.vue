@@ -9,9 +9,7 @@
             <span class="mr-5 text-dark">{{ accession_number }}{{ `-${i + 1}` }}</span>
             <span class="vertical-line"></span>
 
-            <span class="mr-3 text-black-50">
-              Test.:
-            </span>
+            <span class="mr-3 text-black-50"> Test.: </span>
             <span class="mr-5 text-dark">
               <span
                 :title="`${test.test_type}`"
@@ -140,14 +138,14 @@ export default {
   },
   computed: {
     shouldDisable() {
-      return this.results.every(result => !result.result);
+      return this.results.every((result) => !result.result);
     },
   },
   data() {
     return {
       results: this.tests
-        .filter(test => test?.result?.status === 'Accepted')
-        .map(test => ({
+        .filter((test) => test?.result?.status === 'Accepted')
+        .map((test) => ({
           prescribed_test_id: test.id,
           test_prescription_id: this.$route.params.id,
           name: test.test.name,
@@ -234,7 +232,7 @@ export default {
     },
 
     testResultData(data, testId) {
-      const test = this.tests.find(test => test.prescribed_test_id === testId);
+      const test = this.tests.find((test) => test.prescribed_test_id === testId);
       this.$set(test, 'result', data);
     },
 

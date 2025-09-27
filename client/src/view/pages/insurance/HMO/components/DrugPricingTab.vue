@@ -165,7 +165,7 @@ export default {
     },
 
     getInsuranceName(id) {
-      const insurance = this.hmoProviders.find(p => p.id === id);
+      const insurance = this.hmoProviders.find((p) => p.id === id);
       return insurance ? insurance.name : 'Unknown';
     },
 

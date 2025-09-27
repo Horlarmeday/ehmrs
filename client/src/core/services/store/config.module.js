@@ -21,7 +21,7 @@ export default {
      * @param state
      * @returns {function(path, defaultValue): *}
      */
-    layoutConfig: state => (path, defaultValue) => {
+    layoutConfig: (state) => (path, defaultValue) => {
       return objectPath.get(state.config, path, defaultValue);
     },
   },

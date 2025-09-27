@@ -170,7 +170,7 @@ export default {
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Yes, Send!',
-      }).then(function(result) {
+      }).then(function (result) {
         if (result.value) {
           self.sendForReview();
         }
@@ -179,7 +179,7 @@ export default {
   },
   created() {
     this.getActiveTab();
-    this.$store.dispatch('visit/fetchVisit', this.$route.params.id).then(response => {
+    this.$store.dispatch('visit/fetchVisit', this.$route.params.id).then((response) => {
       const res = response.data.data;
       this.$store.dispatch('patient/setCurrentPatient', { ...res.insurance, ...res.patient });
     });

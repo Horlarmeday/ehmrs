@@ -16,9 +16,7 @@
                 >
                   Store Items
                 </router-link>
-                <p class="text-dark-50">
-                  Click here to view all laboratory store items
-                </p>
+                <p class="text-dark-50">Click here to view all laboratory store items</p>
               </div>
               <div class="ml-6 ml-lg-0 ml-xxl-6 flex-shrink-0">
                 <router-link
@@ -47,9 +45,7 @@
                 >
                   Reports
                 </router-link>
-                <p class="text-dark-50">
-                  Click here to generate store reports
-                </p>
+                <p class="text-dark-50">Click here to generate store reports</p>
               </div>
               <div class="ml-6 ml-lg-0 ml-xxl-6 flex-shrink-0">
                 <router-link
@@ -78,9 +74,7 @@
                 >
                   Trends
                 </router-link>
-                <p class="text-dark-50">
-                  Click here to view the store behaviour trends
-                </p>
+                <p class="text-dark-50">Click here to view the store behaviour trends</p>
               </div>
               <div class="ml-6 ml-lg-0 ml-xxl-6 flex-shrink-0">
                 <router-link

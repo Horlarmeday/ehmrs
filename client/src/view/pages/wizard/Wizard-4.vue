@@ -13,61 +13,37 @@
           <div class="wizard-steps">
             <div class="wizard-step" data-wizard-type="step" data-wizard-state="current">
               <div class="wizard-wrapper">
-                <div class="wizard-number">
-                  1
-                </div>
+                <div class="wizard-number">1</div>
                 <div class="wizard-label">
-                  <div class="wizard-title">
-                    Add Account
-                  </div>
-                  <div class="wizard-desc">
-                    Create Custom Account
-                  </div>
+                  <div class="wizard-title">Add Account</div>
+                  <div class="wizard-desc">Create Custom Account</div>
                 </div>
               </div>
             </div>
             <div class="wizard-step" data-wizard-type="step">
               <div class="wizard-wrapper">
-                <div class="wizard-number">
-                  2
-                </div>
+                <div class="wizard-number">2</div>
                 <div class="wizard-label">
-                  <div class="wizard-title">
-                    Your Address
-                  </div>
-                  <div class="wizard-desc">
-                    Setup Your Address
-                  </div>
+                  <div class="wizard-title">Your Address</div>
+                  <div class="wizard-desc">Setup Your Address</div>
                 </div>
               </div>
             </div>
             <div class="wizard-step" data-wizard-type="step">
               <div class="wizard-wrapper">
-                <div class="wizard-number">
-                  3
-                </div>
+                <div class="wizard-number">3</div>
                 <div class="wizard-label">
-                  <div class="wizard-title">
-                    Make Payment
-                  </div>
-                  <div class="wizard-desc">
-                    Add Payment Options
-                  </div>
+                  <div class="wizard-title">Make Payment</div>
+                  <div class="wizard-desc">Add Payment Options</div>
                 </div>
               </div>
             </div>
             <div class="wizard-step" data-wizard-type="step">
               <div class="wizard-wrapper">
-                <div class="wizard-number">
-                  4
-                </div>
+                <div class="wizard-number">4</div>
                 <div class="wizard-label">
-                  <div class="wizard-title">
-                    Completed
-                  </div>
-                  <div class="wizard-desc">
-                    Review and Submit
-                  </div>
+                  <div class="wizard-title">Completed</div>
+                  <div class="wizard-desc">Review and Submit</div>
                 </div>
               </div>
             </div>
@@ -84,9 +60,7 @@
                 <form class="form mt-0 mt-lg-10" id="kt_form">
                   <!--begin: Wizard Step 1-->
                   <div class="pb-5" data-wizard-type="step-content" data-wizard-state="current">
-                    <div class="mb-10 font-weight-bold text-dark">
-                      Enter your Account Details
-                    </div>
+                    <div class="mb-10 font-weight-bold text-dark">Enter your Account Details</div>
                     <div class="form-group">
                       <label>First Name</label>
                       <input
@@ -142,9 +116,7 @@
 
                   <!--begin: Wizard Step 2-->
                   <div class="pb-5" data-wizard-type="step-content">
-                    <div class="mb-10 font-weight-bold text-dark">
-                      Setup Your Address
-                    </div>
+                    <div class="mb-10 font-weight-bold text-dark">Setup Your Address</div>
                     <div class="form-group">
                       <label>Address Line 1</label>
                       <input
@@ -475,9 +447,7 @@
 
                   <!--begin: Wizard Step 3-->
                   <div class="pb-5" data-wizard-type="step-content">
-                    <div class="mb-10 font-weight-bold text-dark">
-                      Enter your Payment Details
-                    </div>
+                    <div class="mb-10 font-weight-bold text-dark">Enter your Payment Details</div>
                     <div class="row">
                       <div class="col-xl-6">
                         <div class="form-group">
@@ -562,9 +532,7 @@
                       Review your Details and Submit
                     </div>
                     <div class="border-bottom mb-5 pb-5">
-                      <div class="font-weight-bold mb-3">
-                        Your Account Details:
-                      </div>
+                      <div class="font-weight-bold mb-3">Your Account Details:</div>
                       <div class="line-height-md">
                         John Wick
                         <br />
@@ -573,9 +541,7 @@
                       </div>
                     </div>
                     <div class="border-bottom mb-5 pb-5">
-                      <div class="font-weight-bold mb-3">
-                        Your Address Details:
-                      </div>
+                      <div class="font-weight-bold mb-3">Your Address Details:</div>
                       <div class="line-height-md">
                         Address Line 1
                         <br />
@@ -584,9 +550,7 @@
                       </div>
                     </div>
                     <div class="mb-5">
-                      <div class="font-weight-bold mb-3">
-                        Payment Details:
-                      </div>
+                      <div class="font-weight-bold mb-3">Payment Details:</div>
                       <div class="line-height-md">
                         Card Number: xxxx xxxx xxxx 1111
                         <br />
@@ -662,20 +626,20 @@ export default {
     });
 
     // Validation before going to next page
-    wizard.on('beforeNext', function(/*wizardObj*/) {
+    wizard.on('beforeNext', function (/*wizardObj*/) {
       // validate the form and use below function to stop the wizard's step
       // wizardObj.stop();
     });
 
     // Change event
-    wizard.on('change', function(/*wizardObj*/) {
+    wizard.on('change', function (/*wizardObj*/) {
       setTimeout(() => {
         KTUtil.scrollTop();
       }, 500);
     });
   },
   methods: {
-    submit: function(e) {
+    submit: function (e) {
       e.preventDefault();
       Swal.fire({
         title: '',

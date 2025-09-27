@@ -305,7 +305,7 @@ export default {
         lymphocytes: '',
       };
       const fbcDifferential = Object.keys(differential)
-        .map(key => this.fbc[key])
+        .map((key) => this.fbc[key])
         .filter(Boolean);
       return (
         (this.section !== 'ValidationSection' && this.section !== 'ApprovalSection') ||
@@ -322,7 +322,7 @@ export default {
         anisocytosis: '',
       };
       const fbcMorphology = Object.keys(morphology)
-        .map(key => this.fbc[key])
+        .map((key) => this.fbc[key])
         .filter(Boolean);
       return (
         (this.section !== 'ValidationSection' && this.section !== 'ApprovalSection') ||
@@ -346,7 +346,7 @@ export default {
       this.debounceInput(this);
     },
 
-    debounceInput: debounce(vm => {
+    debounceInput: debounce((vm) => {
       vm.$emit('emitResult', vm.fbc, vm.testId);
     }, 500),
 

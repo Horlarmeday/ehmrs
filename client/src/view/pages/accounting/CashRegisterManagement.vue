@@ -191,14 +191,12 @@
                 v-model="registerForm.assigned_staff_id"
                 :options="staffOptions"
                 label="text"
-                :reduce="staff => staff.value"
+                :reduce="(staff) => staff.value"
                 placeholder="Search for staff member..."
                 @search="searchStaff"
                 required
               >
-                <template #no-options>
-                  Type to search for staff members...
-                </template>
+                <template #no-options> Type to search for staff members... </template>
               </v-select>
               <small class="form-text text-muted">
                 <i class="fas fa-search mr-1"></i>Type to search by name, employee ID, or department
@@ -441,7 +439,7 @@ export default {
           itemsPerPage: 200,
         });
 
-        this.staffOptions = (response.data.data.docs || []).map(staff => ({
+        this.staffOptions = (response.data.data.docs || []).map((staff) => ({
           value: staff.id,
           text: `${staff.firstname} ${staff.lastname}`,
         }));
@@ -464,8 +462,8 @@ export default {
           currentPage: 1,
           itemsPerPage: 200,
         })
-        .then(response => {
-          vm.staffOptions = (response.data.data.docs || []).map(staff => ({
+        .then((response) => {
+          vm.staffOptions = (response.data.data.docs || []).map((staff) => ({
             value: staff.id,
             text: `${staff.firstname} ${staff.lastname}`,
           }));

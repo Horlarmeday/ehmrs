@@ -8,7 +8,7 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/pharmacy/generic-drugs/create', drug)
-        .then(response => {
+        .then((response) => {
           commit(
             'ADD_GENERIC_DRUG',
             Object.assign(drug, {
@@ -19,7 +19,7 @@ export default {
           );
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -35,13 +35,13 @@ export default {
             search: payload.search,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_GENERIC_DRUGS', response.data.data.docs);
           commit('SET_GENERIC_DRUGS_TOTAL', response.data.data.total);
           commit('SET_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -51,11 +51,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/pharmacy/generic-drugs/update`, drug)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_GENERIC_DRUG', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -68,7 +68,7 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/pharmacy/dosage-forms/create', dosageForm)
-        .then(response => {
+        .then((response) => {
           commit(
             'ADD_DOSAGE_FORM',
             Object.assign(dosageForm, {
@@ -78,7 +78,7 @@ export default {
           );
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -87,11 +87,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/pharmacy/dosage-forms/get')
-        .then(response => {
+        .then((response) => {
           commit('SET_DOSAGE_FORMS', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -101,11 +101,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/pharmacy/dosage-forms/update`, dosageForm)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_DOSAGE_FORM', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -118,7 +118,7 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/pharmacy/measurements/create', measurement)
-        .then(response => {
+        .then((response) => {
           commit(
             'ADD_MEASUREMENT',
             Object.assign(measurement, {
@@ -129,7 +129,7 @@ export default {
           );
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -139,11 +139,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/pharmacy/measurements/get')
-        .then(response => {
+        .then((response) => {
           commit('SET_MEASUREMENTS', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -153,11 +153,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/pharmacy/measurements/update`, measurement)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_MEASUREMENT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -170,7 +170,7 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/pharmacy/routes-of-administration/create', route)
-        .then(response => {
+        .then((response) => {
           commit(
             'ADD_ROUTE',
             Object.assign(route, {
@@ -181,7 +181,7 @@ export default {
           );
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -191,11 +191,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/pharmacy/routes-of-administration/get')
-        .then(response => {
+        .then((response) => {
           commit('SET_ROUTES', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -205,11 +205,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/pharmacy/routes-of-administration/update`, route)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_ROUTE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -219,12 +219,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/pharmacy/routes-and-measurement', dosage_form_id)
-        .then(response => {
+        .then((response) => {
           commit('SET_ROUTES', response.data.data.routesOfAdministrations);
           commit('SET_MEASUREMENTS', response.data.data.dosageMeasurements);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -247,13 +247,13 @@ export default {
             period: payload.period,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_PRESCRIPTIONS', response.data.data.docs);
           commit('SET_PRESCRIPTIONS_TOTAL', response.data.data.total);
           commit('SET_PRESCRIPTIONS_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -263,11 +263,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/pharmacy/prescriptions/get/${prescriptionId}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_PRESCRIPTION', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -277,11 +277,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/pharmacy/dispense-drug/${payload.id}`, payload.data)
-        .then(response => {
+        .then((response) => {
           commit('DISPENSE_DRUG', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -291,11 +291,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/pharmacy/return-drug/${payload.id}`, payload.data)
-        .then(response => {
+        .then((response) => {
           commit('DISPENSE_DRUG', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -311,13 +311,13 @@ export default {
             visitId: payload.visitId,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_PRESCRIPTIONS_HISTORY', response.data.data.docs);
           commit('SET_HISTORY_TOTAL', response.data.data.total);
           commit('SET_HISTORY_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });

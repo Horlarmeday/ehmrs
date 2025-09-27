@@ -5,7 +5,7 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/radiology/imaging/create', imaging)
-        .then(response => {
+        .then((response) => {
           commit(
             'ADD_IMAGING',
             Object.assign(imaging, {
@@ -15,7 +15,7 @@ export default {
           );
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -30,13 +30,13 @@ export default {
             search: payload.search,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_IMAGINGS', response.data.data.docs);
           commit('SET_IMAGINGS_TOTAL', response.data.data.total);
           commit('SET_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -45,11 +45,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .patch(`/radiology/imaging/update`, imaging)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_IMAGING', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -59,11 +59,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/radiology/investigations/create', investigation)
-        .then(response => {
+        .then((response) => {
           commit('ADD_INVESTIGATION', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -79,13 +79,13 @@ export default {
             filter: payload.filter,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_INVESTIGATIONS', response.data.data.docs);
           commit('SET_INVESTIGATIONS_TOTAL', response.data.data.total);
           commit('SET_INVESTIGATION_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -94,11 +94,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .patch(`/radiology/investigations/update`, investigation)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_INVESTIGATION', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -120,13 +120,13 @@ export default {
             end: payload.end,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_REQUESTED_INVESTIGATIONS', response.data.data.docs);
           commit('SET_REQUESTED_INVESTIGATIONS_TOTAL', response.data.data.total);
           commit('SET_REQUESTED_INVESTIGATIONS_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -136,11 +136,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/radiology/requested-investigations/get/${payload.id}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_REQUESTED_INVESTIGATION', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -150,11 +150,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/radiology/upload-images', images)
-        .then(response => {
+        .then((response) => {
           commit('UPLOAD_RESULT_IMAGES', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -164,11 +164,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/radiology/requested-investigations/add-result`, { results: payload })
-        .then(response => {
+        .then((response) => {
           commit('SET_INVESTIGATION_RESULT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -189,13 +189,13 @@ export default {
             end: payload.end,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_INVESTIGATIONS_APPROVAL', response.data.data.docs);
           commit('SET_INVESTIGATIONS_APPROVAL_TOTAL', response.data.data.total);
           commit('SET_INVESTIGATIONS_APPROVAL_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -205,11 +205,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/radiology/requested-investigations/approve/`, { results: payload })
-        .then(response => {
+        .then((response) => {
           commit('SET_INVESTIGATION_RESULT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -230,13 +230,13 @@ export default {
             end: payload.end,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_INVESTIGATIONS_RESULTS', response.data.data.docs);
           commit('SET_INVESTIGATIONS_RESULTS_TOTAL', response.data.data.total);
           commit('SET_INVESTIGATIONS_RESULTS_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -246,11 +246,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/radiology/investigations-results/get/${payload.id}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_INVESTIGATION_RESULT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -263,11 +263,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/radiology/investigation-prescription/get/${payload.id}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_INVESTIGATION_PRESCRIPTION', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -279,11 +279,11 @@ export default {
         .patch(`/radiology/investigation-results/bulk-update/${payload.id}`, {
           selectedInvestigations: payload.selectedInvestigations,
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_UPDATED_INVESTIGATIONS_RESULTS', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });

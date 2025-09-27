@@ -516,7 +516,7 @@ export default {
     },
 
     accountUpdate() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           if (isContainEmptyValues(this.pregnancies)) return this.displayPrompt();
           this.finishAccountUpdate();
@@ -546,7 +546,7 @@ export default {
         family_history: this.family_history,
         for_whom: this.for_whom,
         blood_transfusion_history: this.blood_transfusion,
-        ...(this.pregnancies.some(preg => preg.year) && { pregnancies: this.pregnancies }),
+        ...(this.pregnancies.some((preg) => preg.year) && { pregnancies: this.pregnancies }),
       };
       // set spinner to submit button
       const submitButton = this.$refs['kt_antenatal_submit'];

@@ -108,8 +108,8 @@ export default {
 
             const results = this.$export.exportReport(data, reportName, formats, options);
 
-            const successCount = results.filter(r => r.success).length;
-            const failCount = results.filter(r => !r.success).length;
+            const successCount = results.filter((r) => r.success).length;
+            const failCount = results.filter((r) => !r.success).length;
 
             if (successCount > 0) {
               this.$toast.success(`Exported ${successCount} format(s) successfully`);
@@ -151,5 +151,3 @@ export default {
     });
   },
 };
-
-

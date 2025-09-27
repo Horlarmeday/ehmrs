@@ -1,7 +1,7 @@
 <template>
-    <keep-alive>
-      <router-view></router-view>
-    </keep-alive>
+  <keep-alive>
+    <router-view></router-view>
+  </keep-alive>
 </template>
 
 <style lang="scss">
@@ -53,10 +53,10 @@ export default {
       return process.env.NODE_ENV === 'development';
     },
   },
-  created: function() {
-    axios.interceptors.response.use(undefined, function(err) {
+  created: function () {
+    axios.interceptors.response.use(undefined, function (err) {
       // eslint-disable-next-line no-unused-vars
-      return new Promise(function(resolve, reject) {
+      return new Promise(function (resolve, reject) {
         if (err.status === 401 && err.config && !err.config.__isRetryRequest) {
           this.$store.dispatch('auth/logout');
           window.location.reload();

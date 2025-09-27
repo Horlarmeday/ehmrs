@@ -65,9 +65,7 @@
                   <div v-if="errors.adjustment_type" class="invalid-feedback d-block">
                     {{ errors.adjustment_type }}
                   </div>
-                  <small class="form-text text-muted">
-                    Reason for the stock adjustment
-                  </small>
+                  <small class="form-text text-muted"> Reason for the stock adjustment </small>
                 </div>
 
                 <div class="col-md-6 mb-3">
@@ -84,9 +82,7 @@
                   <div v-if="errors.current_stock" class="invalid-feedback d-block">
                     {{ errors.current_stock }}
                   </div>
-                  <small class="form-text text-muted">
-                    Actual physical stock count
-                  </small>
+                  <small class="form-text text-muted"> Actual physical stock count </small>
                 </div>
 
                 <div class="col-md-6 mb-3">
@@ -139,9 +135,7 @@
                   <div v-if="errors.unit_cost" class="invalid-feedback d-block">
                     {{ errors.unit_cost }}
                   </div>
-                  <small class="form-text text-muted">
-                    Cost per unit for value calculation
-                  </small>
+                  <small class="form-text text-muted"> Cost per unit for value calculation </small>
                 </div>
 
                 <div class="col-md-6 mb-3">
@@ -155,9 +149,7 @@
                   <div v-if="errors.location" class="invalid-feedback d-block">
                     {{ errors.location }}
                   </div>
-                  <small class="form-text text-muted">
-                    Location where adjustment occurred
-                  </small>
+                  <small class="form-text text-muted"> Location where adjustment occurred </small>
                 </div>
 
                 <div class="col-md-6 mb-3">
@@ -518,7 +510,7 @@ export default {
 
     handleItemChange() {
       if (this.form.item_id) {
-        this.selectedItem = this.availableItems.find(item => item.id === this.form.item_id);
+        this.selectedItem = this.availableItems.find((item) => item.id === this.form.item_id);
         if (this.selectedItem) {
           this.form.unit_cost = this.selectedItem.unit_cost || '';
           this.form.location = this.selectedItem.location || '';
@@ -701,7 +693,7 @@ export default {
           adjustmentData.unit_cost = parseFloat(adjustmentData.unit_cost);
 
         // Remove empty optional fields
-        Object.keys(adjustmentData).forEach(key => {
+        Object.keys(adjustmentData).forEach((key) => {
           if (adjustmentData[key] === '' || adjustmentData[key] === null) {
             delete adjustmentData[key];
           }

@@ -45,7 +45,7 @@ export default {
 
       commit('SET_ACTIVE_ALERTS', alerts);
 
-      const criticalAlerts = alerts.filter(alert => alert.severity === 'critical');
+      const criticalAlerts = alerts.filter((alert) => alert.severity === 'critical');
       commit('SET_CRITICAL_ALERTS', criticalAlerts);
 
       return alerts;

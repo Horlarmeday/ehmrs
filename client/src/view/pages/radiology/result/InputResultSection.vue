@@ -66,7 +66,7 @@ export default {
   },
   data() {
     return {
-      investigations: this.tests.map(test => {
+      investigations: this.tests.map((test) => {
         return {
           result: test?.result?.result || '',
           patient_id: this.patient_id,
@@ -100,7 +100,7 @@ export default {
 
     addResult() {
       const investigations = this.investigations
-        .filter(investigation => investigation.status !== this.ACCEPTED)
+        .filter((investigation) => investigation.status !== this.ACCEPTED)
         // eslint-disable-next-line no-unused-vars
         .map(({ payment_status, ...rest }) => rest);
 

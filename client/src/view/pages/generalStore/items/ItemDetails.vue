@@ -442,8 +442,6 @@ export default {
       showRequestModal: false,
       user: parseJwt(localStorage.getItem('user_token')),
       ALLOWED_ROLES: ['Super Admin', 'General Store Manager', 'General Store Staff'],
-      item: null,
-      itemMovements: []
     };
   },
   computed: {
@@ -453,7 +451,13 @@ export default {
     },
     storeError() {
       return this.$store.state.generalStore.error;
-    }
+    },
+    itemMovements() {
+      return this.$store.state.generalStore.itemMovements;
+    },
+    item() {
+      return this.$store.state.generalStore.currentItem;
+    },
   },
   async created() {
     await this.loadItemDetails();
@@ -464,14 +468,11 @@ export default {
       try {
         const itemId = this.$route.params.id;
         await this.$store.dispatch('generalStore/fetchItemById', itemId);
-        await this.$store.dispatch('generalStore/fetchItemMovements', { item_id: itemId, limit: 5 });
+        await this.$store.dispatch('generalStore/fetchItemMovements', { itemId: itemId, limit: 5 });
         
-        this.item = this.$store.state.generalStore.currentItem;
-        this.itemMovements = this.$store.state.generalStore.itemMovements;
-        
-        if (!this.item) {
-          this.$router.push('/general-store/items');
-        }
+        // if (!this.item) {
+        //   this.$router.push('/general-store/items');
+        // }
       } catch (error) {
         this.$toast.error('Failed to load item details');
       } finally {

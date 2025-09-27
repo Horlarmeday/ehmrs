@@ -177,12 +177,8 @@ export default {
     todayDate() {
       if (this.currentUser.department === this.MEDICAL_PRACTITIONER) {
         return {
-          startDate: dayjs()
-            .startOf('day')
-            .format('YYYY-MM-DD'),
-          endDate: dayjs()
-            .endOf('day')
-            .format('YYYY-MM-DD'),
+          startDate: dayjs().startOf('day').format('YYYY-MM-DD'),
+          endDate: dayjs().endOf('day').format('YYYY-MM-DD'),
         };
       }
       return null;

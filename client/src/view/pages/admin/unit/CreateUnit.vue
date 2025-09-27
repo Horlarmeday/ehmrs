@@ -90,7 +90,7 @@ export default {
       this.initValues();
     },
     createUnit() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             unit_id: this.unit_id,

@@ -86,7 +86,7 @@ export default {
     return filteredItems;
   },
 
-  // Filtered collections for test component compatibility
+  // Filtered collections for component compatibility
   filteredCategories: (state) => {
     let filteredCategories = state.categories;
 
@@ -148,13 +148,11 @@ export default {
     return state.movements.filter((movement) => movement.item_id === itemId);
   },
 
-  getRecentMovements:
-    (state) =>
-    (limit = 10) => {
-      return state.movements
-        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-        .slice(0, limit);
-    },
+  getRecentMovements: (state) => (limit = 10) => {
+    return state.movements
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .slice(0, limit);
+  },
 
   // Requests getters
   getRequestById: (state) => (id) => {
@@ -177,14 +175,6 @@ export default {
     return state.requests.filter((request) => request.status === 'rejected').length;
   },
 
-  getMyRequestsCount: (state) => {
-    return state.myRequests.length;
-  },
-
-  getPendingApprovalRequestsCount: (state) => {
-    return state.pendingApprovalRequests.length;
-  },
-
   // Dispensaries getters
   getDispensaryById: (state) => (id) => {
     return state.dispensaries.find((dispensary) => dispensary.id === id);
@@ -198,7 +188,7 @@ export default {
     return state.dispensaries.filter((dispensary) => dispensary.type === type);
   },
 
-  // Loading states getters
+  // Loading state getters
   isLoading: (state) => (operation) => {
     return state.loadingStates[operation] || false;
   },
@@ -207,34 +197,9 @@ export default {
     return Object.values(state.loadingStates).some((loading) => loading);
   },
 
-  getLoadingOperations: (state) => {
-    return Object.keys(state.loadingStates).filter((operation) => state.loadingStates[operation]);
-  },
-
   // General loading state
   isGeneralLoading: (state) => {
     return state.loading;
-  },
-
-  // Specific loading state getters for test component compatibility
-  isCategoriesLoading: (state) => {
-    return state.loadingStates.categories || false;
-  },
-
-  isSubcategoriesLoading: (state) => {
-    return state.loadingStates.subcategories || false;
-  },
-
-  isItemsLoading: (state) => {
-    return state.loadingStates.items || false;
-  },
-
-  isMovementsLoading: (state) => {
-    return state.loadingStates.movements || false;
-  },
-
-  isRequestsLoading: (state) => {
-    return state.loadingStates.requests || false;
   },
 
   // Error state getters
@@ -302,28 +267,7 @@ export default {
     return state.filters.status;
   },
 
-  // Dashboard getters
-  getDashboardStats: (state) => {
-    return state.dashboardStats;
-  },
-
-  getTotalItemsCount: (state) => {
-    return state.dashboardStats?.totalItems || 0;
-  },
-
-  getTotalCategoriesCount: (state) => {
-    return state.dashboardStats?.totalCategories || 0;
-  },
-
-  getTotalMovementsCount: (state) => {
-    return state.dashboardStats?.totalMovements || 0;
-  },
-
-  getTotalRequestsCount: (state) => {
-    return state.dashboardStats?.totalRequests || 0;
-  },
-
-  // Total count getters for test component compatibility
+  // Total count getters for component compatibility
   totalCategories: (state) => {
     return state.categories.length;
   },
@@ -344,67 +288,7 @@ export default {
     return state.requests.length;
   },
 
-  // Reports getters
-  getStockReport: (state) => {
-    return state.stockReport;
-  },
-
-  getMovementReport: (state) => {
-    return state.movementReport;
-  },
-
-  getUsageReport: (state) => {
-    return state.usageReport;
-  },
-
-  getCostReport: (state) => {
-    return state.costReport;
-  },
-
-  getRecentReports: (state) => {
-    return state.recentReports;
-  },
-
-  getRecentReportsCount: (state) => {
-    return state.recentReports.length;
-  },
-
-  // Settings getters
-  getSettings: (state) => {
-    return state.settings;
-  },
-
-  getSetting: (state) => (key) => {
-    return state.settings[key];
-  },
-
-  getNotificationSettings: (state) => {
-    return state.settings.notifications || {};
-  },
-
-  getDisplaySettings: (state) => {
-    return state.settings.display || {};
-  },
-
-  // Derived calculation getters for test component compatibility
-  averageItemsPerCategory: (state) => {
-    if (state.categories.length === 0) return 0;
-    return Math.round((state.items.length / state.categories.length) * 100) / 100;
-  },
-
-  averageSubcategoriesPerCategory: (state) => {
-    if (state.categories.length === 0) return 0;
-    return Math.round((state.subcategories.length / state.categories.length) * 100) / 100;
-  },
-
-  totalStockValue: (state) => {
-    return state.items.reduce((total, item) => {
-      const quantity = item.current_stock || 0;
-      const price = item.unit_price || 0;
-      return total + quantity * price;
-    }, 0);
-  },
-
+  // Basic calculation getters
   lowStockItemsCount: (state) => {
     return state.items.filter((item) => {
       const currentStock = item.current_stock || 0;
@@ -427,14 +311,5 @@ export default {
 
   rejectedRequestsCount: (state) => {
     return state.requests.filter((request) => request.status === 'rejected').length;
-  },
-
-  // Utility getters
-  isEmpty: (state) => (collection) => {
-    return !state[collection] || state[collection].length === 0;
-  },
-
-  getCollectionCount: (state) => (collection) => {
-    return state[collection] ? state[collection].length : 0;
   },
 };

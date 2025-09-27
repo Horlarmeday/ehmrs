@@ -169,7 +169,7 @@ export default {
     },
 
     updateTestResultsStatus() {
-      const selectedTestsIds = this.selectedTests.map(test => test.id);
+      const selectedTestsIds = this.selectedTests.map((test) => test.id);
       this.$store
         .dispatch('laboratory/changeBulkTestResultsStatus', {
           selectedTests: selectedTestsIds,
@@ -192,7 +192,7 @@ export default {
           confirmButton: 'btn btn-primary',
           cancelButton: 'btn btn-default',
         },
-      }).then(function(result) {
+      }).then(function (result) {
         if (result.value) {
           self.updateTestResultsStatus();
         }

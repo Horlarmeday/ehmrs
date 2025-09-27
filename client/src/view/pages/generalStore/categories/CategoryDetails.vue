@@ -91,9 +91,7 @@
                     <span v-if="category.parent_id" class="badge badge-light-info">
                       Subcategory
                     </span>
-                    <span v-else class="badge badge-light-success">
-                      Root Category
-                    </span>
+                    <span v-else class="badge badge-light-success"> Root Category </span>
                   </p>
                 </div>
 
@@ -572,7 +570,7 @@ export default {
   },
   computed: {
     activeItemsCount() {
-      return this.categoryItems.filter(item => item.status === 'ACTIVE').length;
+      return this.categoryItems.filter((item) => item.status === 'ACTIVE').length;
     },
     totalCategoryValue() {
       return this.categoryItems.reduce((total, item) => {
@@ -694,19 +692,21 @@ export default {
 
     async printCategory() {
       try {
-        const categoryData = [{
-          id: this.category.id,
-          name: this.category.name,
-          code: this.category.code,
-          description: this.category.description,
-          parent_category: this.category.parent?.name || 'Root Category',
-          subcategories_count: this.subcategories.length,
-          items_count: this.categoryItems.length,
-          is_active: this.category.is_active,
-          icon_class: this.category.icon_class,
-          color_theme: this.category.color_theme,
-          created_at: this.category.created_at,
-        }];
+        const categoryData = [
+          {
+            id: this.category.id,
+            name: this.category.name,
+            code: this.category.code,
+            description: this.category.description,
+            parent_category: this.category.parent?.name || 'Root Category',
+            subcategories_count: this.subcategories.length,
+            items_count: this.categoryItems.length,
+            is_active: this.category.is_active,
+            icon_class: this.category.icon_class,
+            color_theme: this.category.color_theme,
+            created_at: this.category.created_at,
+          },
+        ];
 
         const reportConfig = {
           title: `Category Details - ${this.category.name}`,
@@ -723,28 +723,34 @@ export default {
 
     async exportCategory() {
       try {
-        const categoryData = [{
-          id: this.category.id,
-          name: this.category.name,
-          code: this.category.code,
-          description: this.category.description,
-          parent_category: this.category.parent?.name || 'Root Category',
-          subcategories_count: this.subcategories.length,
-          items_count: this.categoryItems.length,
-          is_active: this.category.is_active,
-          icon_class: this.category.icon_class,
-          color_theme: this.category.color_theme,
-          created_at: this.category.created_at,
-        }];
+        const categoryData = [
+          {
+            id: this.category.id,
+            name: this.category.name,
+            code: this.category.code,
+            description: this.category.description,
+            parent_category: this.category.parent?.name || 'Root Category',
+            subcategories_count: this.subcategories.length,
+            items_count: this.categoryItems.length,
+            is_active: this.category.is_active,
+            icon_class: this.category.icon_class,
+            color_theme: this.category.color_theme,
+            created_at: this.category.created_at,
+          },
+        ];
 
-        const reportName = `Category_${this.category.code || this.category.name}_${new Date().toISOString().split('T')[0]}`;
+        const reportName = `Category_${this.category.code || this.category.name}_${
+          new Date().toISOString().split('T')[0]
+        }`;
         await this.$exportData(categoryData, reportName, 'xlsx', {
           formatters: {
             created_at: (value) => new Date(value).toLocaleDateString(),
-          }
+          },
         });
       } catch (error) {
-        this.$logError('Failed to export category details', error, { categoryId: this.category.id });
+        this.$logError('Failed to export category details', error, {
+          categoryId: this.category.id,
+        });
         this.$toast.error('Failed to export category details');
       }
     },

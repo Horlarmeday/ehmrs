@@ -83,7 +83,7 @@ export default {
     },
 
     exportData() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             dataType: this.dataType,

@@ -22,23 +22,23 @@ class PrintService {
    */
   printElement(element, options = {}) {
     const config = { ...this.defaultOptions, ...options };
-    
+
     if (!element) {
       throw new Error('Element is required for printing');
     }
 
     // Create a new window for printing
     const printWindow = window.open('', '_blank');
-    
+
     // Get the element's HTML content
     const elementHTML = element.outerHTML;
-    
+
     // Create the print document
     const printDocument = printWindow.document;
     printDocument.open();
     printDocument.write(this.createPrintDocument(elementHTML, config));
     printDocument.close();
-    
+
     // Wait for content to load, then print
     printWindow.onload = () => {
       printWindow.focus();
@@ -52,7 +52,7 @@ class PrintService {
    */
   printTable(data, options = {}) {
     const config = { ...this.defaultOptions, ...options };
-    
+
     if (!Array.isArray(data) || data.length === 0) {
       throw new Error('Data must be a non-empty array');
     }
@@ -64,7 +64,7 @@ class PrintService {
     });
 
     const headers = Object.keys(data[0]);
-    const rows = data.map(row => headers.map(header => row[header]));
+    const rows = data.map((row) => headers.map((header) => row[header]));
 
     // Add title
     if (config.title) {
@@ -104,13 +104,9 @@ class PrintService {
         const pageCount = doc.internal.getNumberOfPages();
         const pageSize = doc.internal.pageSize;
         const pageHeight = pageSize.height || pageSize.getHeight();
-        
+
         doc.setFontSize(8);
-        doc.text(
-          `Page ${data.pageNumber} of ${pageCount}`,
-          pageSize.width - 20,
-          pageHeight - 10
-        );
+        doc.text(`Page ${data.pageNumber} of ${pageCount}`, pageSize.width - 20, pageHeight - 10);
       },
     });
 
@@ -136,10 +132,10 @@ class PrintService {
 
     // Add header
     this.addReportHeader(doc, config);
-    
+
     // Add content
     this.addReportContent(doc, data, config);
-    
+
     // Add footer
     this.addReportFooter(doc, config);
 
@@ -153,7 +149,7 @@ class PrintService {
    */
   printChart(chartElement, options = {}) {
     const config = { ...this.defaultOptions, ...options };
-    
+
     if (!chartElement) {
       throw new Error('Chart element is required for printing');
     }
@@ -165,7 +161,7 @@ class PrintService {
     }
 
     const imgData = canvas.toDataURL('image/png');
-    
+
     const doc = new jsPDF({
       orientation: config.orientation,
       unit: config.unit,
@@ -180,9 +176,9 @@ class PrintService {
     }
 
     // Add chart image
-    const imgWidth = doc.internal.pageSize.width - (config.margin * 2);
+    const imgWidth = doc.internal.pageSize.width - config.margin * 2;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    
+
     doc.addImage(imgData, 'PNG', config.margin, config.title ? 30 : 20, imgWidth, imgHeight);
 
     // Open print dialog
@@ -195,7 +191,7 @@ class PrintService {
    */
   printMultiplePages(pages, options = {}) {
     const config = { ...this.defaultOptions, ...options };
-    
+
     if (!Array.isArray(pages) || pages.length === 0) {
       throw new Error('Pages must be a non-empty array');
     }
@@ -210,7 +206,7 @@ class PrintService {
       if (index > 0) {
         doc.addPage();
       }
-      
+
       this.addPageContent(doc, page, config);
     });
 
@@ -224,19 +220,19 @@ class PrintService {
    */
   printWithCSS(element, css = '', options = {}) {
     const config = { ...this.defaultOptions, ...options };
-    
+
     if (!element) {
       throw new Error('Element is required for printing');
     }
 
     const printWindow = window.open('', '_blank');
     const elementHTML = element.outerHTML;
-    
+
     const printDocument = printWindow.document;
     printDocument.open();
     printDocument.write(this.createPrintDocumentWithCSS(elementHTML, css, config));
     printDocument.close();
-    
+
     printWindow.onload = () => {
       printWindow.focus();
       printWindow.print();
@@ -372,7 +368,7 @@ class PrintService {
     if (Array.isArray(data)) {
       // Table data
       const headers = Object.keys(data[0]);
-      const rows = data.map(row => headers.map(header => row[header]));
+      const rows = data.map((row) => headers.map((header) => row[header]));
 
       doc.autoTable({
         head: [headers],
@@ -396,7 +392,7 @@ class PrintService {
       // Text content
       doc.setFontSize(config.fontSize);
       doc.setFont(config.fontFamily, 'normal');
-      const lines = doc.splitTextToSize(data, doc.internal.pageSize.width - (config.margin * 2));
+      const lines = doc.splitTextToSize(data, doc.internal.pageSize.width - config.margin * 2);
       doc.text(lines, config.margin, config.title ? 50 : 30);
     }
   }
@@ -408,7 +404,7 @@ class PrintService {
     const pageCount = doc.internal.getNumberOfPages();
     const pageSize = doc.internal.pageSize;
     const pageHeight = pageSize.height || pageSize.getHeight();
-    
+
     doc.setFontSize(8);
     doc.text(
       `Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${pageCount}`,
@@ -435,7 +431,7 @@ class PrintService {
       if (Array.isArray(page.content)) {
         // Table content
         const headers = Object.keys(page.content[0]);
-        const rows = page.content.map(row => headers.map(header => row[header]));
+        const rows = page.content.map((row) => headers.map((header) => row[header]));
 
         doc.autoTable({
           head: [headers],
@@ -459,7 +455,10 @@ class PrintService {
         // Text content
         doc.setFontSize(config.fontSize);
         doc.setFont(config.fontFamily, 'normal');
-        const lines = doc.splitTextToSize(page.content, doc.internal.pageSize.width - (config.margin * 2));
+        const lines = doc.splitTextToSize(
+          page.content,
+          doc.internal.pageSize.width - config.margin * 2
+        );
         doc.text(lines, config.margin, page.title ? 30 : 20);
       }
     }
@@ -486,6 +485,3 @@ const printService = new PrintService();
 // Export both the class and the instance
 export { PrintService };
 export default printService;
-
-
-

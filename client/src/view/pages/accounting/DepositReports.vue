@@ -59,12 +59,8 @@
             <div class="col-md-3">
               <label>&nbsp;</label>
               <div class="d-flex gap-2">
-                <b-button variant="outline-secondary" @click="clearFilters">
-                  Clear All
-                </b-button>
-                <b-button variant="primary" @click="loadReport">
-                  Generate Report
-                </b-button>
+                <b-button variant="outline-secondary" @click="clearFilters"> Clear All </b-button>
+                <b-button variant="primary" @click="loadReport"> Generate Report </b-button>
               </div>
             </div>
           </div>
@@ -321,10 +317,10 @@ export default {
           this.reportData = {
             totalDeposits: deposits.reduce((sum, d) => sum + (d.amount || 0), 0),
             activeDeposits: deposits
-              .filter(d => d.status === 'ACTIVE')
+              .filter((d) => d.status === 'ACTIVE')
               .reduce((sum, d) => sum + (d.amount || 0), 0),
             usedDeposits: deposits
-              .filter(d => d.status === 'USED')
+              .filter((d) => d.status === 'USED')
               .reduce((sum, d) => sum + (d.amount || 0), 0),
             utilizationRate: this.calculateUtilizationRate(deposits),
             deposits: deposits,
@@ -347,7 +343,7 @@ export default {
 
       const totalAmount = deposits.reduce((sum, d) => sum + (d.amount || 0), 0);
       const usedAmount = deposits
-        .filter(d => d.status === 'USED')
+        .filter((d) => d.status === 'USED')
         .reduce((sum, d) => sum + (d.amount || 0), 0);
 
       return totalAmount > 0 ? Math.round((usedAmount / totalAmount) * 100) : 0;

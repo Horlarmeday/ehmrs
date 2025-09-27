@@ -216,7 +216,7 @@ export default {
   watch: {
     selectedItems: {
       handler(items) {
-        this.form.selectedItems = items.map(item => item.id);
+        this.form.selectedItems = items.map((item) => item.id);
         this.form.totalAmount = items.reduce((sum, item) => sum + item.amount, 0);
       },
       deep: true,
@@ -231,7 +231,7 @@ export default {
       }).format(value || 0);
     },
     addItem(item) {
-      if (!this.selectedItems.find(i => i.id === item.id)) {
+      if (!this.selectedItems.find((i) => i.id === item.id)) {
         this.selectedItems.push(item);
       }
       this.showItemSelector = false;

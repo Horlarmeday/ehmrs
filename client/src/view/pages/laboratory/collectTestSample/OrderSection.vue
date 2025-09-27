@@ -26,11 +26,17 @@
       <div class="form-group row">
         <label class="col-2 col-form-label">Received By</label>
         <div class="col-3">
-          <select v-model="receiver" class="form-control-sm form-control">
-            <option v-for="(staff, i) in staffs" :value="staff.id" :key="i">{{
-              staff.fullname
-            }}</option>
-          </select>
+          <input
+            class="form-control form-control-sm"
+            type="text"
+            :value="receiver.fullname"
+            disabled
+          />
+          <!--          <select v-model="receiver" class="form-control-sm form-control">-->
+          <!--            <option v-for="(staff, i) in staffs" :value="staff.id" :key="i">-->
+          <!--              {{ staff.fullname }}-->
+          <!--            </option>-->
+          <!--          </select>-->
         </div>
       </div>
     </div>
@@ -49,11 +55,13 @@
 </template>
 
 <script>
+import { parseJwt } from '@/common/common';
+
 export default {
   name: 'OrderSection',
   data: () => ({
     accession_number: '',
-    receiver: '',
+    receiver: parseJwt(localStorage.getItem('user_token')),
     isDisabled: false,
   }),
   props: {
@@ -69,7 +77,7 @@ export default {
   },
   methods: {
     generateAccessionNumber() {
-      this.$store.dispatch('laboratory/generateAccessionNumber').then(response => {
+      this.$store.dispatch('laboratory/generateAccessionNumber').then((response) => {
         this.accession_number = response.data.data;
       });
     },
@@ -108,7 +116,7 @@ export default {
       this.$store
         .dispatch('laboratory/collectSamples', {
           accession_number: this.accession_number,
-          staff_id: this.receiver,
+          staff_id: this.receiver.sub,
           id: this.$route.params.id,
         })
         .then(() => {

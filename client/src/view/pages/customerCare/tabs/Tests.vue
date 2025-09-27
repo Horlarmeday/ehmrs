@@ -95,7 +95,9 @@ export default {
       return this.$store.state.laboratory.testPrescription;
     },
     approvedTestsCount() {
-      const approvedTest = this.prescription?.tests?.filter(test => test.status === this.APPROVED);
+      const approvedTest = this.prescription?.tests?.filter(
+        (test) => test.status === this.APPROVED
+      );
       return approvedTest?.length;
     },
   },

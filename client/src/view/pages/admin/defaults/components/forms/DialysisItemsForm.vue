@@ -24,7 +24,7 @@
                 v-model="item.drug"
                 label="name"
                 :reduce="
-                  drugs => ({
+                  (drugs) => ({
                     name: drugs.name,
                     drug_id: drugs.drug_id,
                     unit_id: drugs.unit_id,
@@ -122,7 +122,7 @@
                 v-model="item.drug"
                 label="name"
                 :reduce="
-                  drugs => ({
+                  (drugs) => ({
                     name: drugs.name,
                     drug_id: drugs.drug_id,
                     unit_id: drugs.unit_id,
@@ -220,8 +220,8 @@ export default {
     },
     drugOptions() {
       return this.storeItems
-        .filter(item => item?.drug_form === 'Drug')
-        .map(item => ({
+        .filter((item) => item?.drug_form === 'Drug')
+        .map((item) => ({
           name: item?.drug?.name,
           id: item?.id,
           drug_id: item?.drug?.id,
@@ -238,8 +238,8 @@ export default {
     },
     consumableOptions() {
       return this.storeItems
-        .filter(item => item?.drug_form === 'Consumable')
-        .map(item => ({
+        .filter((item) => item?.drug_form === 'Consumable')
+        .map((item) => ({
           name: item?.drug?.name,
           id: item?.id,
           drug_id: item?.drug?.id,

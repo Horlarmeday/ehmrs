@@ -320,10 +320,10 @@ export default {
       return this.$store.state.generalStore.loading;
     },
     activeItemsCount() {
-      return this.items.filter(item => item.status === 'active').length;
+      return this.items.filter((item) => item.status === 'active').length;
     },
     lowStockItemsCount() {
-      return this.items.filter(item => item.current_stock <= item.min_stock).length;
+      return this.items.filter((item) => item.current_stock <= item.min_stock).length;
     },
     totalValue() {
       return this.items.reduce((total, item) => {
@@ -367,7 +367,9 @@ export default {
         });
         this.recentActivity = this.$store.state.generalStore.auditLogs || [];
       } catch (error) {
-        this.$logError('Failed to load recent activity', error, { subcategoryId: this.subcategory.id });
+        this.$logError('Failed to load recent activity', error, {
+          subcategoryId: this.subcategory.id,
+        });
         this.recentActivity = [];
       }
     },
@@ -389,25 +391,31 @@ export default {
     },
     async exportSubcategoryData() {
       try {
-        const subcategoryData = [{
-          id: this.subcategory.id,
-          name: this.subcategory.name,
-          code: this.subcategory.code,
-          description: this.subcategory.description,
-          category_name: this.subcategory.category?.name || 'N/A',
-          items_count: this.subcategory.items_count || 0,
-          is_active: this.subcategory.is_active,
-          created_at: this.subcategory.created_at,
-        }];
+        const subcategoryData = [
+          {
+            id: this.subcategory.id,
+            name: this.subcategory.name,
+            code: this.subcategory.code,
+            description: this.subcategory.description,
+            category_name: this.subcategory.category?.name || 'N/A',
+            items_count: this.subcategory.items_count || 0,
+            is_active: this.subcategory.is_active,
+            created_at: this.subcategory.created_at,
+          },
+        ];
 
-        const reportName = `Subcategory_${this.subcategory.code || this.subcategory.name}_${new Date().toISOString().split('T')[0]}`;
+        const reportName = `Subcategory_${this.subcategory.code || this.subcategory.name}_${
+          new Date().toISOString().split('T')[0]
+        }`;
         await this.$exportData(subcategoryData, reportName, 'xlsx', {
           formatters: {
             created_at: (value) => new Date(value).toLocaleDateString(),
-          }
+          },
         });
       } catch (error) {
-        this.$logError('Failed to export subcategory data', error, { subcategoryId: this.subcategory.id });
+        this.$logError('Failed to export subcategory data', error, {
+          subcategoryId: this.subcategory.id,
+        });
         this.$toast.error('Failed to export subcategory data');
       }
     },

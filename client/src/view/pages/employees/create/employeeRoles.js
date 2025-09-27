@@ -521,10 +521,10 @@ const sub_roles = [
 ];
 
 function getRolesById(id) {
-  return roles.filter(role => role.dept_id === id);
+  return roles.filter((role) => role.dept_id === id);
 }
 function getSubRoleById(id) {
-  return sub_roles.filter(sub => sub.role_id === id);
+  return sub_roles.filter((sub) => sub.role_id === id);
 }
 
 export { departments, getRolesById, getSubRoleById, roles, sub_roles };

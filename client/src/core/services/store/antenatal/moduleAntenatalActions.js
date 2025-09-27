@@ -5,11 +5,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/antenatal/create`, payload)
-        .then(response => {
+        .then((response) => {
           commit('ENROL_ANTENATAL_PATIENT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -25,13 +25,13 @@ export default {
             search: payload.search,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_ANTENATAL_ACCOUNTS', response.data.data.docs);
           commit('SET_ANTENATAL_ACCOUNTS_TOTAL', response.data.data.total);
           commit('SET_ANTENATAL_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -41,11 +41,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/antenatal/get/${antenatalId}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_ONE_ANTENATAL_ACCOUNT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -55,11 +55,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/antenatal/update-account/${payload.id}`, payload.data)
-        .then(response => {
+        .then((response) => {
           commit('SET_ONE_ANTENATAL_ACCOUNT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -69,11 +69,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/antenatal/previous-pregnancies/${antenatalId}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_PREVIOUS_PREGNANCIES', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -87,11 +87,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/antenatal/triage/${payload.id}`, payload.data)
-        .then(response => {
+        .then((response) => {
           commit('CREATE_ANTENATAL_TRIAGE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -107,13 +107,13 @@ export default {
             filter: payload.filter,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_ANTENATAL_TRIAGES', response.data.data.docs);
           commit('SET_ANTENATAL_TRIAGE_TOTAL', response.data.data.total);
           commit('SET_ANTENATAL_TRIAGE_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -126,11 +126,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/antenatal/clinical-notes/${payload.id}`, payload.data)
-        .then(response => {
+        .then((response) => {
           commit('CREATE_CLINICAL_NOTE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -146,13 +146,13 @@ export default {
             filter: payload.filter,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_CLINICAL_NOTES', response.data.data.docs);
           commit('SET_CLINICAL_NOTES_TOTAL', response.data.data.total);
           commit('SET_CLINICAL_NOTES_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -162,11 +162,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/antenatal/clinical-notes/${payload.id}`, payload.data)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_CLINICAL_NOTE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -179,11 +179,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/antenatal/observations/${payload.id}`, payload.data)
-        .then(response => {
+        .then((response) => {
           commit('CREATE_OBSERVATION', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -199,13 +199,13 @@ export default {
             filter: payload.filter,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_OBSERVATIONS', response.data.data.docs);
           commit('SET_OBSERVATIONS_TOTAL', response.data.data.total);
           commit('SET_OBSERVATIONS_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -215,11 +215,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/antenatal/observations/${payload.id}`, payload.data)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_OBSERVATION', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -237,13 +237,13 @@ export default {
             pageLimit: payload.itemsPerPage,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_VISITS_SUMMARY', response.data.data.docs);
           commit('SET_VISITS_SUMMARY_TOTAL', response.data.data.total);
           commit('SET_VISITS_SUMMARY_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });

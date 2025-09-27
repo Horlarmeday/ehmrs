@@ -56,7 +56,7 @@
 
     <b-tabs class="hide-tabs" v-model="tabIndex">
       <b-tab active class="p-8">
-        <perfect-scrollbar class="scroll pr-7 mr-n7" style="max-height: 40vh; position: relative;">
+        <perfect-scrollbar class="scroll pr-7 mr-n7" style="max-height: 40vh; position: relative">
           <template v-for="(item, i) in list1">
             <!--begin::Item-->
             <div class="d-flex align-items-center mb-6" v-bind:key="i">
@@ -90,7 +90,7 @@
       <b-tab>
         <perfect-scrollbar
           class="navi navi-hover scroll my-4"
-          style="max-height: 40vh; position: relative;"
+          style="max-height: 40vh; position: relative"
         >
           <template v-for="(item, i) in list2">
             <a href="#" class="navi-item" v-bind:key="i">

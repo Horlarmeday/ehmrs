@@ -25,7 +25,7 @@
             <span
               v-if="
                 allowedUsers.includes(currentUser.role) ||
-                  allowedSubRole.includes(currentUser.sub_role)
+                allowedSubRole.includes(currentUser.sub_role)
               "
               class="opacity-70"
               >₦{{ item?.acquired_price?.toLocaleString() }}</span

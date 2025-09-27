@@ -13,7 +13,7 @@
         <i :class="iconClass" class="mr-2"></i>
         {{ buttonText }}
       </template>
-      
+
       <b-dropdown-item
         v-for="format in availableFormats"
         :key="format"
@@ -23,9 +23,9 @@
         <i :class="getFormatIcon(format)" class="mr-2"></i>
         Export as {{ format.toUpperCase() }}
       </b-dropdown-item>
-      
+
       <b-dropdown-divider v-if="showAdvancedOptions"></b-dropdown-divider>
-      
+
       <b-dropdown-item
         v-if="showAdvancedOptions"
         @click="showAdvancedExport = true"
@@ -35,7 +35,7 @@
         Advanced Export
       </b-dropdown-item>
     </b-dropdown>
-    
+
     <!-- Advanced Export Modal -->
     <b-modal
       v-model="showAdvancedExport"
@@ -57,23 +57,19 @@
               ></b-form-checkbox-group>
             </div>
           </div>
-          
+
           <div class="col-md-6">
             <label class="font-weight-bold">Export Options</label>
             <div class="form-group">
-              <b-form-checkbox v-model="includeMetadata">
-                Include metadata
-              </b-form-checkbox>
+              <b-form-checkbox v-model="includeMetadata"> Include metadata </b-form-checkbox>
               <b-form-checkbox v-model="includeFilters">
                 Include filter information
               </b-form-checkbox>
-              <b-form-checkbox v-model="formatDates">
-                Format dates
-              </b-form-checkbox>
+              <b-form-checkbox v-model="formatDates"> Format dates </b-form-checkbox>
             </div>
           </div>
         </div>
-        
+
         <div class="row">
           <div class="col-md-6">
             <label class="font-weight-bold">Filename</label>
@@ -82,7 +78,7 @@
               placeholder="Enter custom filename"
             ></b-form-input>
           </div>
-          
+
           <div class="col-md-6">
             <label class="font-weight-bold">Date Range</label>
             <b-form-input
@@ -91,7 +87,7 @@
             ></b-form-input>
           </div>
         </div>
-        
+
         <div class="row" v-if="hasData">
           <div class="col-12">
             <div class="export-preview">
@@ -99,7 +95,7 @@
               <p class="text-muted">
                 <strong>{{ data.length }}</strong> records will be exported
               </p>
-              <div class="table-responsive" style="max-height: 200px;">
+              <div class="table-responsive" style="max-height: 200px">
                 <table class="table table-sm table-striped">
                   <thead>
                     <tr>
@@ -179,7 +175,7 @@ export default {
       default: () => ({}),
     },
   },
-  
+
   data() {
     return {
       showAdvancedExport: false,
@@ -191,61 +187,59 @@ export default {
       dateRange: '',
     };
   },
-  
+
   computed: {
     hasData() {
       return Array.isArray(this.data) && this.data.length > 0;
     },
-    
+
     availableFormats() {
-      return this.formats.filter(format => 
-        this.$getSupportedFormats().includes(format)
-      );
+      return this.formats.filter((format) => this.$getSupportedFormats().includes(format));
     },
-    
+
     formatOptions() {
-      return this.availableFormats.map(format => ({
+      return this.availableFormats.map((format) => ({
         value: format,
         text: format.toUpperCase(),
       }));
     },
-    
+
     isValidExportData() {
       return this.hasData && this.selectedFormats.length > 0;
     },
-    
+
     previewHeaders() {
       if (!this.hasData) return [];
       return Object.keys(this.data[0]).slice(0, 5); // Show first 5 columns
     },
-    
+
     previewData() {
       if (!this.hasData) return [];
       return this.data.slice(0, 3); // Show first 3 rows
     },
-    
+
     iconClass() {
       return this.icon;
     },
   },
-  
+
   methods: {
     handleExport() {
       if (this.split) return; // Let dropdown handle it
-      
+
       // Default export to first available format
       if (this.availableFormats.length > 0) {
         this.exportToFormat(this.availableFormats[0]);
       }
     },
-    
+
     async exportToFormat(format) {
       try {
         const filename = this.getFilename(format);
         const options = this.getExportOptions(format);
-        
+
         await this.$exportData(this.data, filename, format, options);
-        
+
         this.$logUserAction('Export completed', {
           reportName: this.reportName,
           format,
@@ -258,23 +252,23 @@ export default {
         });
       }
     },
-    
+
     async handleAdvancedExport() {
       try {
         const results = [];
-        
+
         // eslint-disable-next-line no-unused-vars
         for (const format of this.selectedFormats) {
           const filename = this.getFilename(format);
           const options = this.getAdvancedExportOptions(format);
-          
+
           await this.$exportData(this.data, filename, format, options);
           results.push({ format, success: true });
         }
-        
+
         this.$toast.success(`Exported ${results.length} format(s) successfully`);
         this.showAdvancedExport = false;
-        
+
         this.$logUserAction('Advanced export completed', {
           reportName: this.reportName,
           formats: this.selectedFormats,
@@ -287,26 +281,26 @@ export default {
         });
       }
     },
-    
+
     getFilename(format) {
       const timestamp = new Date().toISOString().split('T')[0];
       const baseName = this.customFilename || this.reportName;
       return `${baseName}_${timestamp}.${format}`;
     },
-    
+
     getExportOptions(format) {
       const options = {};
-      
+
       if (this.formatDates) {
         options.formatters = this.formatters;
       }
-      
+
       return options;
     },
-    
+
     getAdvancedExportOptions(format) {
       const options = this.getExportOptions(format);
-      
+
       if (this.includeMetadata) {
         options.metadata = {
           reportName: this.reportName,
@@ -315,18 +309,18 @@ export default {
           generatedBy: 'EHMRS System',
         };
       }
-      
+
       if (this.includeFilters && Object.keys(this.filters).length > 0) {
         options.filters = this.filters;
       }
-      
+
       if (this.dateRange) {
         options.dateRange = this.dateRange;
       }
-      
+
       return options;
     },
-    
+
     getFormatIcon(format) {
       const icons = {
         csv: 'fas fa-file-csv',
@@ -336,7 +330,7 @@ export default {
       };
       return icons[format] || 'fas fa-file';
     },
-    
+
     formatPreviewValue(value) {
       if (value === null || value === undefined) return '';
       if (typeof value === 'object') return JSON.stringify(value);
@@ -386,6 +380,3 @@ export default {
   color: #6c757d;
 }
 </style>
-
-
-

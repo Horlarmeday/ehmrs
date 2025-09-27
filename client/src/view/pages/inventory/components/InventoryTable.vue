@@ -31,7 +31,7 @@
             <th
               v-if="
                 allowedRoles.includes(currentUser.role) ||
-                  allowedSubRoles.includes(currentUser.sub_role)
+                allowedSubRoles.includes(currentUser.sub_role)
               "
               class="pr-0 text-right"
               style="min-width: 70px"
@@ -95,7 +95,7 @@
               <a
                 v-if="
                   allowedRoles.includes(currentUser.role) ||
-                    allowedSubRoles.includes(currentUser.sub_role)
+                  allowedSubRoles.includes(currentUser.sub_role)
                 "
                 href="#"
                 class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"

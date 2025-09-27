@@ -1,7 +1,7 @@
 <template>
   <div id="observations">
     <div class="d-flex flex-column-fluid">
-      <div class=" container ">
+      <div class="container">
         <div class="d-flex flex-row">
           <sidebar :list="list" @changeTab="changeTab" />
           <component :is="activeTab" />

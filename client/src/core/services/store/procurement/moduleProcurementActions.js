@@ -45,7 +45,7 @@ export const getProcurementOrders = async ({ commit }, params = {}) => {
       }
 
       // Transform the orders to match client expectations
-      const transformedOrders = orders.map(order => ({
+      const transformedOrders = orders.map((order) => ({
         ...order,
         order_number: order.po_number, // Map po_number to order_number
         vendor_name: order.vendor?.name || order.Vendor?.name || 'Unknown Vendor',

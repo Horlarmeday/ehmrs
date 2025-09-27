@@ -1,7 +1,7 @@
 <template>
   <div class="getters-test">
     <h3>General Store Getters Test</h3>
-    
+
     <!-- Test filtered categories -->
     <div class="test-section">
       <h4>Filtered Categories ({{ filteredCategories.length }})</h4>
@@ -32,7 +32,9 @@
     <!-- Test entity getters -->
     <div class="test-section">
       <h4>Entity Getters</h4>
-      <p>Get Category by ID (1): {{ getCategoryById(1) ? getCategoryById(1).name : 'Not found' }}</p>
+      <p>
+        Get Category by ID (1): {{ getCategoryById(1) ? getCategoryById(1).name : 'Not found' }}
+      </p>
       <p>Get Item by ID (1): {{ getItemById(1) ? getItemById(1).name : 'Not found' }}</p>
     </div>
   </div>
@@ -47,7 +49,7 @@ export default {
     ...mapState('generalStore', ['categories', 'items']),
     ...mapGetters('generalStore', [
       'filteredCategories',
-      'filteredSubcategories', 
+      'filteredSubcategories',
       'filteredItems',
       'isCategoriesLoading',
       'isSubcategoriesLoading',
@@ -66,14 +68,14 @@ export default {
       'getSubcategoryById',
       'getItemById',
       'getMovementById',
-      'getRequestById'
-    ])
+      'getRequestById',
+    ]),
   },
   mounted() {
     console.log('GeneralStore Getters Test Component Mounted');
     console.log('Available getters:', this.$store.getters);
     console.log('GeneralStore state:', this.$store.state.generalStore);
-  }
+  },
 };
 </script>
 

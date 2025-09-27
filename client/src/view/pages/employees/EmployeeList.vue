@@ -4,9 +4,7 @@
     <div class="card card-custom gutter-b example example-compact">
       <edit-employee :displayPrompt="displayPrompt" @closeModal="hideModal" :data="staffToEdit" />
       <div class="card-header" style="min-height: 50px !important">
-        <h3 class="card-title">
-          Find Employee Record
-        </h3>
+        <h3 class="card-title">Find Employee Record</h3>
       </div>
       <!--begin::Form-->
       <div class="card-body" style="padding: 1rem 2.25rem">

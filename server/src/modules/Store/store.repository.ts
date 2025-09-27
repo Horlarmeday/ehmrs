@@ -94,6 +94,7 @@ export async function createStoreItem(data) {
 export async function findPharmacyStoreItems(selectedItemsId: number[]) {
   return PharmacyStore.findAll({
     where: { id: selectedItemsId },
+    order: [['updatedAt', 'DESC']],
     include: [
       {
         model: Drug,
@@ -167,7 +168,7 @@ export async function searchPharmacyStoreItems(currentPage = 1, pageLimit = 10, 
   return PharmacyStore.paginate({
     page: +currentPage,
     paginate: +pageLimit,
-    order: [['createdAt', 'DESC']],
+    order: [['updatedAt', 'DESC']],
     include: [
       {
         model: Drug,

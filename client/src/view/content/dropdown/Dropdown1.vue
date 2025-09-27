@@ -11,18 +11,14 @@
     <!--begin::Navigation-->
     <div class="navi navi-hover min-w-md-250px">
       <b-dropdown-text tag="div" class="navi-header pb-1">
-        <span class="text-primary text-uppercase font-weight-bold">
-          Add new:
-        </span>
+        <span class="text-primary text-uppercase font-weight-bold"> Add new: </span>
       </b-dropdown-text>
       <b-dropdown-text tag="div" class="navi-item">
         <a href="#" class="navi-link">
           <span class="navi-icon">
             <i class="flaticon2-graph-1"></i>
           </span>
-          <span class="navi-text">
-            Order
-          </span>
+          <span class="navi-text"> Order </span>
         </a>
       </b-dropdown-text>
       <b-dropdown-text tag="div" class="navi-item">
@@ -30,9 +26,7 @@
           <span class="navi-icon">
             <i class="flaticon2-calendar-4"></i>
           </span>
-          <span class="navi-text">
-            Event
-          </span>
+          <span class="navi-text"> Event </span>
         </a>
       </b-dropdown-text>
       <b-dropdown-text tag="div" class="navi-item">
@@ -40,9 +34,7 @@
           <span class="navi-icon">
             <i class="flaticon2-layers-1"></i>
           </span>
-          <span class="navi-text">
-            Report
-          </span>
+          <span class="navi-text"> Report </span>
         </a>
       </b-dropdown-text>
       <b-dropdown-text tag="div" class="navi-item">
@@ -50,9 +42,7 @@
           <span class="navi-icon">
             <i class="flaticon2-calendar-4"></i>
           </span>
-          <span class="navi-text">
-            Post
-          </span>
+          <span class="navi-text"> Post </span>
         </a>
       </b-dropdown-text>
       <b-dropdown-text tag="div" class="navi-item">
@@ -60,9 +50,7 @@
           <span class="navi-icon">
             <i class="flaticon2-file-1"></i>
           </span>
-          <span class="navi-text">
-            File
-          </span>
+          <span class="navi-text"> File </span>
         </a>
       </b-dropdown-text>
     </div>

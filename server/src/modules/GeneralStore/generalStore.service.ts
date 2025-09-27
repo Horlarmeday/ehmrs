@@ -172,28 +172,31 @@ export class GeneralStoreService {
   // Item Management
   static async createItem(itemData: CreateItemDto, staffId: number) {
     try {
-      // Validate category and subcategory exist
+      // Validate category exists
       const category = await GeneralStoreRepository.getCategoryById(itemData.category_id);
       if (!category) {
         throw new BadException('Error', 400, 'Category not found');
       }
 
-      const subcategory = await GeneralStoreRepository.getSubcategoryById(itemData.subcategory_id);
-      if (!subcategory) {
-        throw new BadException('Error', 400, 'Subcategory not found');
+      // Validate subcategory exists and belongs to category if provided
+      if (itemData.subcategory_id) {
+        const subcategory = await GeneralStoreRepository.getSubcategoryById(itemData.subcategory_id);
+        if (!subcategory) {
+          throw new BadException('Error', 400, 'Subcategory not found');
+        }
+
+        // Validate subcategory belongs to category
+        if (subcategory.category_id !== itemData.category_id) {
+          throw new BadException(
+            'Error',
+            400,
+            'Subcategory does not belong to the specified category'
+          );
+        }
       }
 
-      // Validate subcategory belongs to category
-      if (subcategory.category_id !== itemData.category_id) {
-        throw new BadException(
-          'Error',
-          400,
-          'Subcategory does not belong to the specified category'
-        );
-      }
-
-      // Validate minimum stock is less than maximum stock
-      if (itemData.minimum_stock >= itemData.maximum_stock) {
+      // Validate minimum stock is less than maximum stock if both provided
+      if (itemData.maximum_stock && itemData.minimum_stock >= itemData.maximum_stock) {
         throw new BadException('Error', 400, 'Minimum stock must be less than maximum stock');
       }
 

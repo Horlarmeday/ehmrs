@@ -589,7 +589,7 @@ export default {
 
     async exportStockReport() {
       try {
-        const stockData = this.lowStockItems.map(item => ({
+        const stockData = this.lowStockItems.map((item) => ({
           id: item.id,
           name: item.name,
           item_code: item.item_code,
@@ -614,8 +614,8 @@ export default {
             maximum_stock: (value) => Number(value || 0),
             unit_cost: (value) => Number(value || 0).toFixed(2),
             total_value: (value) => Number(value || 0).toFixed(2),
-            last_movement: (value) => value ? new Date(value).toLocaleDateString() : 'Never',
-          }
+            last_movement: (value) => (value ? new Date(value).toLocaleDateString() : 'Never'),
+          },
         });
       } catch (error) {
         this.$logError('Failed to export stock report', error);

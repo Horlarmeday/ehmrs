@@ -3,9 +3,7 @@
     <!--begin::Card-->
     <div class="card card-custom gutter-b example example-compact">
       <div class="card-header" style="min-height: 50px !important">
-        <h3 class="card-title">
-          Find Patient Record
-        </h3>
+        <h3 class="card-title">Find Patient Record</h3>
       </div>
       <!--begin::Form-->
       <div class="card-body" style="padding: 1rem 2.25rem">
@@ -13,12 +11,12 @@
           <div class="col-lg-6">
             <div class="form-group">
               <label>Enter Patient Name</label>
-              <div class="input-group input-group-solid">
+              <div class="input-group input-group-solid" ref="spinCircle">
                 <input
                   type="text"
                   class="form-control"
                   v-model="patient_name"
-                  @keypress.enter="searchByName"
+                  @keyup="onHandleSearch"
                 />
                 <div class="input-group-append">
                   <button type="button" class="btn btn-primary" @click="searchByName">
@@ -82,7 +80,7 @@
                 <th style="min-width: 100px">Status</th>
                 <th style="min-width: 100px">Medical Status</th>
                 <th style="min-width: 160px">Registered By</th>
-                <th class="pr-0 " style="min-width: 70px">Action</th>
+                <th class="pr-0" style="min-width: 70px">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -202,9 +200,7 @@
           @changepagecount="handlePageCount"
         />
       </div>
-      <p v-if="queriedItems === 0" class="card-body pt-0 pb-3 text-center">
-        No Results
-      </p>
+      <p v-if="queriedItems === 0" class="card-body pt-0 pb-3 text-center">No Results</p>
       <!--end::Body-->
     </div>
     <create-visit :displayPrompt="displayPrompt" @closeModal="hideModal" :patient="patient" />
@@ -216,7 +212,14 @@
 import Pagination from '@/utils/Pagination.vue';
 import DateFilter from '@/utils/DateFilter.vue';
 import CreateVisit from '../../visits/create/CreateVisit-Deprecated.vue';
-import { getPatientDotStatus, parseJwt, setUrlQueryParams } from '@/common/common';
+import {
+  addSpinner,
+  debounce,
+  getPatientDotStatus,
+  parseJwt,
+  removeSpinner,
+  setUrlQueryParams,
+} from '@/common/common';
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
 import dayjs from 'dayjs';
 // import DishIcon from '@/assets/icons/DishIcon.vue';
@@ -302,6 +305,31 @@ export default {
         end: this.$route.query.endDate,
       });
     },
+
+    onHandleSearch() {
+      this.currentPage = 1;
+      const spinDiv = this.$refs['spinCircle'];
+      addSpinner(spinDiv);
+
+      setUrlQueryParams({
+        currentPage: this.currentPage,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.patient_name,
+      });
+      this.debounceSearch(this.patient_name, this, spinDiv);
+    },
+
+    debounceSearch: debounce((search, vm, spinDiv) => {
+      vm.fetchPatients({
+        currentPage: vm.$route.query.currentPage,
+        itemsPerPage: vm.$route.query.itemsPerPage,
+        search: vm.$route.query.search || search,
+        start: vm.$route.query.startDate,
+        end: vm.$route.query.endDate,
+      })
+        .then(() => removeSpinner(spinDiv))
+        .catch(() => removeSpinner(spinDiv));
+    }, 500),
 
     searchByName() {
       if (!this.patient_name) return this.notifyEmptyField();

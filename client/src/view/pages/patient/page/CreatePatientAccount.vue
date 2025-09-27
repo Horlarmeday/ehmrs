@@ -411,7 +411,7 @@ export default {
       phone: '',
       date_of_birth: '',
       marital_status: '',
-      country: '',
+      country: 'Nigeria',
       state: '',
       lga: '',
       address: '',

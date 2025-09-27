@@ -3,7 +3,7 @@ export const SET_EMERGENCY_VISITS = (state, visits) => {
 };
 
 export const SET_EMERGENCY_VISIT = (state, visit) => {
-  const index = state.visits.findIndex(v => v.id === visit.id);
+  const index = state.visits.findIndex((v) => v.id === visit.id);
   if (index !== -1) {
     state.visits.splice(index, 1, visit);
   } else {
@@ -12,7 +12,7 @@ export const SET_EMERGENCY_VISIT = (state, visit) => {
 };
 
 export const UPDATE_EMERGENCY_VISIT = (state, visit) => {
-  const index = state.visits.findIndex(v => v.id === visit.id);
+  const index = state.visits.findIndex((v) => v.id === visit.id);
   if (index !== -1) {
     state.visits.splice(index, 1, visit);
   }
@@ -23,7 +23,7 @@ export const SET_EMERGENCY_TRIAGE_LIST = (state, triageList) => {
 };
 
 export const SET_EMERGENCY_TRIAGE = (state, triage) => {
-  const index = state.triageList.findIndex(t => t.id === triage.id);
+  const index = state.triageList.findIndex((t) => t.id === triage.id);
   if (index !== -1) {
     state.triageList.splice(index, 1, triage);
   } else {
@@ -32,7 +32,7 @@ export const SET_EMERGENCY_TRIAGE = (state, triage) => {
 };
 
 export const UPDATE_EMERGENCY_TRIAGE = (state, triage) => {
-  const index = state.triageList.findIndex(t => t.id === triage.id);
+  const index = state.triageList.findIndex((t) => t.id === triage.id);
   if (index !== -1) {
     state.triageList.splice(index, 1, triage);
   }
@@ -43,7 +43,7 @@ export const SET_EMERGENCY_BEDS = (state, beds) => {
 };
 
 export const SET_EMERGENCY_BED = (state, bed) => {
-  const index = state.beds.findIndex(b => b.id === bed.id);
+  const index = state.beds.findIndex((b) => b.id === bed.id);
   if (index !== -1) {
     state.beds.splice(index, 1, bed);
   } else {
@@ -52,7 +52,7 @@ export const SET_EMERGENCY_BED = (state, bed) => {
 };
 
 export const UPDATE_EMERGENCY_BED = (state, bed) => {
-  const index = state.beds.findIndex(b => b.id === bed.id);
+  const index = state.beds.findIndex((b) => b.id === bed.id);
   if (index !== -1) {
     state.beds.splice(index, 1, bed);
   }
@@ -63,7 +63,7 @@ export const SET_EMERGENCY_PROCEDURES = (state, procedures) => {
 };
 
 export const SET_EMERGENCY_PROCEDURE = (state, procedure) => {
-  const index = state.procedures.findIndex(p => p.id === procedure.id);
+  const index = state.procedures.findIndex((p) => p.id === procedure.id);
   if (index !== -1) {
     state.procedures.splice(index, 1, procedure);
   } else {
@@ -72,7 +72,7 @@ export const SET_EMERGENCY_PROCEDURE = (state, procedure) => {
 };
 
 export const UPDATE_EMERGENCY_PROCEDURE = (state, procedure) => {
-  const index = state.procedures.findIndex(p => p.id === procedure.id);
+  const index = state.procedures.findIndex((p) => p.id === procedure.id);
   if (index !== -1) {
     state.procedures.splice(index, 1, procedure);
   }
@@ -90,7 +90,7 @@ export const SET_ERROR = (state, error) => {
   state.error = error;
 };
 
-export const CLEAR_EMERGENCY_DATA = state => {
+export const CLEAR_EMERGENCY_DATA = (state) => {
   state.visits = [];
   state.triageList = [];
   state.beds = [];

@@ -19,7 +19,7 @@ export default {
   },
 
   UPDATE_DEPARTMENT(state, department) {
-    const departmentIndex = state.departments.findIndex(p => p.id === department.id);
+    const departmentIndex = state.departments.findIndex((p) => p.id === department.id);
     Object.assign(state.departments[departmentIndex], department);
   },
 
@@ -44,7 +44,7 @@ export default {
   },
 
   UPDATE_UNIT(state, unit) {
-    const unitIndex = state.units.findIndex(d => d.id === unit.id);
+    const unitIndex = state.units.findIndex((d) => d.id === unit.id);
     Object.assign(state.units[unitIndex], unit);
   },
 
@@ -73,7 +73,7 @@ export default {
   },
 
   UPDATE_WARD(state, ward) {
-    const wardIndex = state.wards.findIndex(d => d.id === ward.id);
+    const wardIndex = state.wards.findIndex((d) => d.id === ward.id);
     Object.assign(state.wards[wardIndex], ward);
   },
 
@@ -90,7 +90,7 @@ export default {
   },
 
   UPDATE_BED(state, bed) {
-    const bedIndex = state.beds.findIndex(d => d.id === bed.id);
+    const bedIndex = state.beds.findIndex((d) => d.id === bed.id);
     Object.assign(state.beds[bedIndex], bed);
   },
 
@@ -115,7 +115,7 @@ export default {
   },
 
   UPDATE_SERVICE(state, service) {
-    const serviceIndex = state.services.findIndex(d => d.id === service.id);
+    const serviceIndex = state.services.findIndex((d) => d.id === service.id);
     Object.assign(state.services[serviceIndex], service);
   },
 

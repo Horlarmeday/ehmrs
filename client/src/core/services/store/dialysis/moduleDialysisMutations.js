@@ -3,7 +3,7 @@ export const SET_DIALYSIS_VISITS = (state, visits) => {
 };
 
 export const SET_DIALYSIS_VISIT = (state, visit) => {
-  const index = state.visits.findIndex(v => v.id === visit.id);
+  const index = state.visits.findIndex((v) => v.id === visit.id);
   if (index !== -1) {
     state.visits.splice(index, 1, visit);
   } else {
@@ -12,14 +12,14 @@ export const SET_DIALYSIS_VISIT = (state, visit) => {
 };
 
 export const UPDATE_DIALYSIS_VISIT = (state, { id, data }) => {
-  const index = state.visits.findIndex(v => v.id === id);
+  const index = state.visits.findIndex((v) => v.id === id);
   if (index !== -1) {
     state.visits.splice(index, 1, data);
   }
 };
 
 export const SET_DIALYSIS_TREATMENT = (state, treatment) => {
-  const index = state.treatments.findIndex(t => t.id === treatment.id);
+  const index = state.treatments.findIndex((t) => t.id === treatment.id);
   if (index !== -1) {
     state.treatments.splice(index, 1, treatment);
   } else {
@@ -28,7 +28,7 @@ export const SET_DIALYSIS_TREATMENT = (state, treatment) => {
 };
 
 export const UPDATE_DIALYSIS_TREATMENT = (state, treatment) => {
-  const index = state.treatments.findIndex(t => t.id === treatment.id);
+  const index = state.treatments.findIndex((t) => t.id === treatment.id);
   if (index !== -1) {
     state.treatments.splice(index, 1, treatment);
   }
@@ -77,7 +77,7 @@ export const ADD_DIALYSIS_VITALS = (state, vitals) => {
 };
 
 export const UPDATE_DIALYSIS_VITALS = (state, { id, data }) => {
-  const index = state.vitals.findIndex(v => v.id === id);
+  const index = state.vitals.findIndex((v) => v.id === id);
   if (index !== -1) {
     state.vitals.splice(index, 1, data);
   }
@@ -96,7 +96,7 @@ export const ADD_DIALYSIS_NOTES = (state, notes) => {
 };
 
 export const UPDATE_DIALYSIS_NOTES = (state, { id, data }) => {
-  const index = state.notes.findIndex(n => n.id === id);
+  const index = state.notes.findIndex((n) => n.id === id);
   if (index !== -1) {
     state.notes.splice(index, 1, data);
   }

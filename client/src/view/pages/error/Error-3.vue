@@ -8,12 +8,8 @@
     >
       <!-- begin:: Content -->
       <div class="px-10 px-md-30 py-10 py-md-0 d-flex flex-column justify-content-md-center">
-        <h1 class="error-title text-stroke text-transparent">
-          404
-        </h1>
-        <p class="display-4 font-weight-boldest text-white mb-12">
-          How did you get here
-        </p>
+        <h1 class="error-title text-stroke text-transparent">404</h1>
+        <p class="display-4 font-weight-boldest text-white mb-12">How did you get here</p>
         <p class="font-size-h1 font-weight-boldest text-dark-75">
           Sorry we can't seem to find the page you're looking for.
         </p>

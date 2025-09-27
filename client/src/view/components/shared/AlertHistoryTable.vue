@@ -474,7 +474,7 @@
 
           <select
             class="form-control form-control-sm ml-2"
-            style="width: auto; display: inline-block;"
+            style="width: auto; display: inline-block"
             v-model="itemsPerPage"
             @change="changeItemsPerPage"
           >
@@ -573,28 +573,28 @@ export default {
       // Date range filter
       if (this.filters.dateFrom) {
         filtered = filtered.filter(
-          alert => new Date(alert.created_at) >= new Date(this.filters.dateFrom)
+          (alert) => new Date(alert.created_at) >= new Date(this.filters.dateFrom)
         );
       }
       if (this.filters.dateTo) {
         filtered = filtered.filter(
-          alert => new Date(alert.created_at) <= new Date(this.filters.dateTo + 'T23:59:59')
+          (alert) => new Date(alert.created_at) <= new Date(this.filters.dateTo + 'T23:59:59')
         );
       }
 
       // Severity filter
       if (this.filters.severity) {
-        filtered = filtered.filter(alert => alert.severity === this.filters.severity);
+        filtered = filtered.filter((alert) => alert.severity === this.filters.severity);
       }
 
       // Category filter
       if (this.filters.category) {
-        filtered = filtered.filter(alert => alert.category === this.filters.category);
+        filtered = filtered.filter((alert) => alert.category === this.filters.category);
       }
 
       // Status filter
       if (this.filters.status) {
-        filtered = filtered.filter(alert => {
+        filtered = filtered.filter((alert) => {
           if (this.filters.status === 'acknowledged') {
             return alert.acknowledged_at && !alert.resolved_at;
           } else if (this.filters.status === 'snoozed') {
@@ -608,7 +608,7 @@ export default {
       if (this.filters.search) {
         const searchTerm = this.filters.search.toLowerCase();
         filtered = filtered.filter(
-          alert =>
+          (alert) =>
             alert.title.toLowerCase().includes(searchTerm) ||
             alert.message.toLowerCase().includes(searchTerm) ||
             (alert.item_name && alert.item_name.toLowerCase().includes(searchTerm)) ||
@@ -673,7 +673,7 @@ export default {
     },
 
     hasActiveFilters() {
-      return Object.values(this.filters).some(filter => filter !== '');
+      return Object.values(this.filters).some((filter) => filter !== '');
     },
 
     allSelected: {
@@ -795,7 +795,7 @@ export default {
       if (this.allSelected) {
         this.selectedAlerts = [];
       } else {
-        this.selectedAlerts = this.paginatedAlerts.map(alert => alert.id);
+        this.selectedAlerts = this.paginatedAlerts.map((alert) => alert.id);
       }
     },
 
@@ -816,7 +816,7 @@ export default {
         });
 
         // Update local data
-        const alert = this.alerts.find(a => a.id === alertId);
+        const alert = this.alerts.find((a) => a.id === alertId);
         if (alert) {
           alert.acknowledged_at = new Date().toISOString();
           alert.acknowledged_by = 'current_user';
@@ -837,7 +837,7 @@ export default {
         });
 
         // Update local data
-        const alert = this.alerts.find(a => a.id === alertId);
+        const alert = this.alerts.find((a) => a.id === alertId);
         if (alert) {
           alert.status = 'resolved';
           alert.resolved_at = new Date().toISOString();
@@ -859,7 +859,7 @@ export default {
         });
 
         // Update local data
-        this.alerts.forEach(alert => {
+        this.alerts.forEach((alert) => {
           if (this.selectedAlerts.includes(alert.id)) {
             alert.acknowledged_at = new Date().toISOString();
             alert.acknowledged_by = 'current_user';
@@ -885,7 +885,7 @@ export default {
         });
 
         // Update local data
-        this.alerts.forEach(alert => {
+        this.alerts.forEach((alert) => {
           if (this.selectedAlerts.includes(alert.id)) {
             alert.status = 'resolved';
             alert.resolved_at = new Date().toISOString();
@@ -904,7 +904,7 @@ export default {
 
     // Export methods
     exportData(format) {
-      const data = this.filteredAlerts.map(alert => ({
+      const data = this.filteredAlerts.map((alert) => ({
         id: alert.id,
         created_at: alert.created_at,
         severity: alert.severity,
@@ -938,7 +938,7 @@ export default {
       const headers = Object.keys(data[0] || {});
       const csvContent = [
         headers.join(','),
-        ...data.map(row => headers.map(header => JSON.stringify(row[header] || '')).join(',')),
+        ...data.map((row) => headers.map((header) => JSON.stringify(row[header] || '')).join(',')),
       ].join('\n');
 
       this.downloadFile(csvContent, `${filename}.csv`, 'text/csv');

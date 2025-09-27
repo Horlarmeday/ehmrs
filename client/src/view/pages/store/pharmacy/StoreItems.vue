@@ -53,7 +53,7 @@
     />
 
     <!--begin::Body-->
-    <div class="card-body ">
+    <div class="card-body">
       <button-group
         @openDispenseModal="openDispenseModal"
         @openReorderModal="openReorderModal"
@@ -519,7 +519,7 @@ export default {
     },
 
     gotoUpdateItem() {
-      const itemsIds = this.selectedItems.map(item => item.id);
+      const itemsIds = this.selectedItems.map((item) => item.id);
       this.$router.push(`/store/pharmacy/update-items?itemIds=${itemsIds}`);
     },
 
@@ -561,8 +561,7 @@ export default {
       const self = this;
       Swal.fire({
         title: 'Are you sure?',
-        html:
-          'You want to <b>reset</b> the quantities of all items in this store, this action cannot reversed!',
+        html: 'You want to <b>reset</b> the quantities of all items in this store, this action cannot reversed!',
         icon: 'danger',
         showCancelButton: true,
         confirmButtonText: 'Yes, Reset!',

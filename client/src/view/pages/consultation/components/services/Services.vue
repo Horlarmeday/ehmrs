@@ -90,7 +90,7 @@ export default {
   methods: {
     selectService(value, i) {
       const button = this.$refs['selected'][i];
-      const found = this.selectedServices.find(service => service.service_id === value.id);
+      const found = this.selectedServices.find((service) => service.service_id === value.id);
       if (found) {
         this.$store.dispatch('order/removeSelectedService', this.mapSelectedService(value));
         this.$store.dispatch('order/removeSelectedServiceButton', value.id);
@@ -144,7 +144,7 @@ export default {
     submitService() {
       const submitButton = this.$refs['kt-orderService-submit'];
       this.addSpinner(submitButton);
-      const services = this.selectedServices.map(service => {
+      const services = this.selectedServices.map((service) => {
         delete service.name;
         return service;
       });

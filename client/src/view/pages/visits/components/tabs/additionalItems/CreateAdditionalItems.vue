@@ -24,7 +24,7 @@
               label="name"
               :options="drugOptions"
               :reduce="
-                items => ({
+                (items) => ({
                   name: items.name,
                   drug_id: items.id,
                   drug_type: items?.drug_type,
@@ -66,7 +66,7 @@
 
       <div class="mb-3">
         <button
-          class="btn btn-primary float-right  mb-lg-5"
+          class="btn btn-primary float-right mb-lg-5"
           @click="submitItems"
           :disabled="isDisabled || !additionalItems.length"
           ref="kt_addItems_submit"
@@ -135,7 +135,7 @@ export default {
     },
     drugOptions: {
       get() {
-        return this.items.map(item => ({
+        return this.items.map((item) => ({
           name: item?.drug?.name,
           id: item?.drug?.id,
           price: item.selling_price,
@@ -208,7 +208,7 @@ export default {
 
     getInventoryId() {
       const type = this.getItemType(this.insuranceName);
-      return this.inventories.find(inventory =>
+      return this.inventories.find((inventory) =>
         inventory.name.toLowerCase().includes(type.toLowerCase())
       )?.id;
     },
@@ -250,13 +250,14 @@ export default {
       }
 
       const invalidItems = this.additionalItems.filter(
-        item => item.item.quantity_remaining === 0 || +item.quantity > +item.item.quantity_remaining
+        (item) =>
+          item.item.quantity_remaining === 0 || +item.quantity > +item.item.quantity_remaining
       );
 
       if (invalidItems?.length) {
         this.showError = true;
         this.errorMessage = `The following drugs are currently low in quantity in the dispensary`;
-        this.errorList = invalidItems.map(item => {
+        this.errorList = invalidItems.map((item) => {
           return `${item.item.name}; Quantity remaining: ${item.item.quantity_remaining}`;
         });
         return;

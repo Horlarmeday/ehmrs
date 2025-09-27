@@ -156,7 +156,7 @@ export default {
     availableItems: {
       immediate: true,
       handler(items) {
-        this.form.selectedItems = items.map(item => ({ id: item.id, price: item.price }));
+        this.form.selectedItems = items.map((item) => ({ id: item.id, price: item.price }));
         this.form.totalAmount = items.reduce((sum, item) => sum + +item.price, 0);
       },
       deep: true,
@@ -187,7 +187,7 @@ export default {
     },
 
     async handleSubmit() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             id: this.$route.params.id,

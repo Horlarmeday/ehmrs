@@ -197,7 +197,7 @@ export default {
     },
   },
   methods: {
-    debounceSearch: debounce(function() {
+    debounceSearch: debounce(function () {
       this.applyFilters();
     }, 500),
 

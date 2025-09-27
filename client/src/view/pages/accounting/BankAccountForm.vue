@@ -320,7 +320,7 @@ export default {
     },
     validationErrors() {
       const errors = [];
-      Object.keys(this.validation).forEach(field => {
+      Object.keys(this.validation).forEach((field) => {
         if (this.validation[field]?.error) {
           errors.push(this.validation[field].error);
         }
@@ -338,7 +338,7 @@ export default {
         'is_active',
       ];
 
-      return requiredFields.every(field => {
+      return requiredFields.every((field) => {
         const value = this.form[field];
         const validation = this.validation[field];
 
@@ -413,7 +413,7 @@ export default {
       }
 
       // Reset validation
-      Object.keys(this.validation).forEach(field => {
+      Object.keys(this.validation).forEach((field) => {
         this.validation[field] = { valid: null, error: '' };
       });
 
@@ -426,7 +426,7 @@ export default {
         'current_balance',
         'is_active',
       ];
-      requiredFields.forEach(field => {
+      requiredFields.forEach((field) => {
         if (!this.validation[field]) {
           this.validation[field] = { valid: null, error: '' };
         }
@@ -535,7 +535,7 @@ export default {
         'is_active',
       ];
 
-      requiredFields.forEach(field => {
+      requiredFields.forEach((field) => {
         if (!this.validateField(field)) {
           allValid = false;
         }

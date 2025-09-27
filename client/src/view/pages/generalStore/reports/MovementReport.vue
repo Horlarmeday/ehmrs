@@ -453,9 +453,6 @@ export default {
         sortOrder: 'DESC',
         reference: '',
       },
-      items: [],
-      users: [],
-      reportData: null,
     };
   },
   async created() {
@@ -463,20 +460,27 @@ export default {
     this.initializeFilters();
     this.generateReport();
   },
+  computed: {
+    storeLoading() {
+      return this.$store.state.generalStore.loading;
+    },
+    reportData() {
+      return this.$store.state.generalStore.movementReport;
+    },
+    users() {
+      return this.$store.state.employee.employees;
+    },
+    items() {
+      return this.$store.state.generalStore.items;
+    },
+  },
   methods: {
     async loadFormData() {
       try {
         // Load items
         await this.$store.dispatch('generalStore/fetchItems', { status: 'ACTIVE' });
-        this.items = this.$store.state.generalStore.items;
-
         // Load users from staff data
-        await this.$store.dispatch('generalStore/fetchStaff');
-        this.users = this.$store.state.generalStore.staff || [
-          { id: 1, name: 'John Doe' },
-          { id: 2, name: 'Jane Smith' },
-          { id: 3, name: 'Bob Johnson' },
-        ];
+        await this.$store.dispatch('employee/fetchEmployees');
       } catch (error) {
         this.$toast.error('Failed to load form data');
       }
@@ -502,15 +506,13 @@ export default {
         };
 
         // Remove empty filters
-        Object.keys(params).forEach(key => {
+        Object.keys(params).forEach((key) => {
           if (params[key] === '' || params[key] === null) {
             delete params[key];
           }
         });
 
         await this.$store.dispatch('generalStore/generateMovementReport', params);
-        this.reportData = this.$store.state.generalStore.movementReport;
-
         this.$toast.success('Movement report generated successfully');
       } catch (error) {
         this.$toast.error('Failed to generate report. Please try again.');
@@ -657,7 +659,7 @@ export default {
             unit_price: (value) => Number(value || 0).toFixed(2),
             total_price: (value) => Number(value || 0).toFixed(2),
             created_at: (value) => new Date(value).toLocaleDateString(),
-          }
+          },
         });
       } catch (error) {
         this.$logError('Failed to export movement report', error);
@@ -697,10 +699,14 @@ export default {
           const blob = new Blob([JSON.stringify(reportData, null, 2)], {
             type: 'application/json',
           });
-          const file = new File([blob], `movement_report_${new Date().toISOString().split('T')[0]}.json`, {
-            type: 'application/json',
-          });
-          
+          const file = new File(
+            [blob],
+            `movement_report_${new Date().toISOString().split('T')[0]}.json`,
+            {
+              type: 'application/json',
+            }
+          );
+
           await navigator.share({
             title: 'Movement Report',
             text: 'Movement report data from EHMRS',

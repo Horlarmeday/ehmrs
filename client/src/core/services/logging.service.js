@@ -15,7 +15,7 @@ class LoggingService {
       warn: 1,
       info: 2,
       debug: 3,
-      trace: 4
+      trace: 4,
     };
 
     // Performance optimization
@@ -74,7 +74,7 @@ class LoggingService {
   shouldFilter(message) {
     if (typeof message !== 'string') return false;
 
-    return Array.from(this.errorFilters).some(filter =>
+    return Array.from(this.errorFilters).some((filter) =>
       message.toLowerCase().includes(filter.toLowerCase())
     );
   }
@@ -275,7 +275,6 @@ class LoggingService {
     //   // if (performanceMonitoringService) {
     //   //   performanceMonitoringService.recordLog(level, message.length);
     //   // }
-
     //   // // Only send errors to error reporting service
     //   // if (level === 'error' && errorReportingService) {
     //   //   errorReportingService.reportError(new Error(message), {
@@ -283,7 +282,6 @@ class LoggingService {
     //   //     context,
     //   //     source: 'logging-service',
     //   //   });
-
     //   //   // Record error metrics
     //   //   if (performanceMonitoringService) {
     //   //     performanceMonitoringService.recordError('logging-service', message);

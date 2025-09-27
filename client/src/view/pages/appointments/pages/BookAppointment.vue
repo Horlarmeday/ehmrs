@@ -158,7 +158,7 @@
                       v-model="appointmentData.doctor_id"
                       :options="doctors"
                       label="fullname"
-                      :reduce="doctor => doctor.id"
+                      :reduce="(doctor) => doctor.id"
                       placeholder="Select Doctor"
                       :loading="loadingDoctors"
                       @search="searchDoctors"
@@ -636,7 +636,7 @@ export default {
       this.submitting = true;
       try {
         // Get selected doctor data
-        const selectedDoctor = this.doctors.find(d => d.id === this.appointmentData.doctor_id);
+        const selectedDoctor = this.doctors.find((d) => d.id === this.appointmentData.doctor_id);
 
         const formData = {
           ...this.appointmentData,
@@ -692,12 +692,12 @@ export default {
     },
 
     getSelectedDoctorName() {
-      const doctor = this.doctors.find(d => d.id === this.appointmentData.doctor_id);
+      const doctor = this.doctors.find((d) => d.id === this.appointmentData.doctor_id);
       return doctor ? doctor.fullname : 'N/A';
     },
 
     getTypeText(type) {
-      const option = this.appointmentTypeOptions.find(opt => opt.value === type);
+      const option = this.appointmentTypeOptions.find((opt) => opt.value === type);
       return option ? option.text : type;
     },
 

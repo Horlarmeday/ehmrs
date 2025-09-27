@@ -152,7 +152,8 @@ const router = new Router({
             {
               path: 'deceased-management',
               name: 'DeceasedPatientManagement',
-              component: () => import('@/view/pages/DeceasedPatientManagement/DeceasedPatientManagement.vue'),
+              component: () =>
+                import('@/view/pages/DeceasedPatientManagement/DeceasedPatientManagement.vue'),
               meta: {
                 requiresAuth: true,
                 title: 'Deceased Patient Management',
@@ -161,7 +162,8 @@ const router = new Router({
             {
               path: 'death-statistics',
               name: 'DeathStatistics',
-              component: () => import('@/view/pages/DeceasedPatientManagement/DeathStatisticsDashboard.vue'),
+              component: () =>
+                import('@/view/pages/DeceasedPatientManagement/DeathStatisticsDashboard.vue'),
               meta: {
                 requiresAuth: true,
                 title: 'Death Statistics Dashboard',
@@ -170,7 +172,8 @@ const router = new Router({
             {
               path: 'mortality-reports',
               name: 'MortalityReports',
-              component: () => import('@/view/pages/DeceasedPatientManagement/MortalityReports.vue'),
+              component: () =>
+                import('@/view/pages/DeceasedPatientManagement/MortalityReports.vue'),
               meta: {
                 requiresAuth: true,
                 title: 'Mortality Reports',
@@ -179,7 +182,8 @@ const router = new Router({
             {
               path: 'death-certificate-tracking',
               name: 'DeathCertificateTracking',
-              component: () => import('@/view/pages/DeceasedPatientManagement/DeathCertificateTracking.vue'),
+              component: () =>
+                import('@/view/pages/DeceasedPatientManagement/DeathCertificateTracking.vue'),
               meta: {
                 requiresAuth: true,
                 title: 'Death Certificate Tracking',
@@ -188,7 +192,8 @@ const router = new Router({
             {
               path: 'deceased-patients-list',
               name: 'DeceasedPatientsList',
-              component: () => import('@/view/pages/DeceasedPatientManagement/DeceasedPatientsList.vue'),
+              component: () =>
+                import('@/view/pages/DeceasedPatientManagement/DeceasedPatientsList.vue'),
               meta: {
                 requiresAuth: true,
                 title: 'Deceased Patients List',
@@ -197,7 +202,8 @@ const router = new Router({
             {
               path: 'certificate-verification',
               name: 'CertificateVerification',
-              component: () => import('@/view/pages/DeceasedPatientManagement/CertificateVerification.vue'),
+              component: () =>
+                import('@/view/pages/DeceasedPatientManagement/CertificateVerification.vue'),
               meta: {
                 requiresAuth: true,
                 title: 'Certificate Verification',
@@ -286,7 +292,7 @@ const router = new Router({
             {
               path: 'beds',
               name: 'bed',
-              component: () => import('@/view/pages/admin/bed/Beds.vue'),
+              component: () => import('@/view/pages/admin/bed/BedList.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -2265,7 +2271,7 @@ router.beforeEach((to, from, next) => {
   // reset config to initial state
   store.dispatch(RESET_LAYOUT_CONFIG);
 
-  if (to.matched.some(record => record.meta.requiresAuth)) {
+  if (to.matched.some((record) => record.meta.requiresAuth)) {
     if (authStore.state.token) {
       next();
       return;

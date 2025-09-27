@@ -8,7 +8,7 @@
           label="name"
           @search="searchWards"
           :reduce="
-            wards => ({
+            (wards) => ({
               id: wards.id,
               name: wards.name,
               beds: wards.beds,
@@ -17,9 +17,7 @@
           @input="getBeds"
           :options="wards"
         >
-          <template slot="no-options">
-            type to search for ward..
-          </template>
+          <template slot="no-options"> type to search for ward.. </template>
         </v-select>
       </div>
     </div>

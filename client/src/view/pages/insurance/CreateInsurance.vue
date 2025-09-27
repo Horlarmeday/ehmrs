@@ -104,7 +104,7 @@ export default {
     },
 
     createInsurance() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             insurance_id: this.insurance_id,

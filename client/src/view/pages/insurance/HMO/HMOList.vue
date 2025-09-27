@@ -200,7 +200,7 @@ export default {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
       })
-      .catch(err => this.handleError(err));
+      .catch((err) => this.handleError(err));
   },
 };
 </script>

@@ -157,7 +157,7 @@
                 v-model="diag.diagnosis"
                 label="diagnosis"
                 :reduce="
-                  diagnoses => ({
+                  (diagnoses) => ({
                     id: diagnoses.id,
                     diagnosis: diagnoses.diagnosis,
                     type: diagnosisType,
@@ -165,7 +165,7 @@
                 "
                 :options="diagnoses"
               >
-                <template #search="{attributes, events}">
+                <template #search="{ attributes, events }">
                   <input
                     class="vs__search"
                     :required="!diag.diagnosis"
@@ -321,7 +321,7 @@ export default {
     createExamination() {
       this.removeEmptyDiagnosis();
       if (this.checkDiagnosisNotSelected()) return this.errorMessage();
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             examination_note: this.formData.examination_note,

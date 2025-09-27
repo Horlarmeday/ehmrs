@@ -94,7 +94,7 @@ export default {
           confirmButton: 'btn btn-danger',
           cancelButton: 'btn btn-default',
         },
-      }).then(function(result) {
+      }).then(function (result) {
         if (result.value) {
           self.deletePrescribedService(service);
         }

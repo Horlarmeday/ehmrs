@@ -299,6 +299,7 @@ export const getRequestedInvestigations = async ({
 }) => {
   const { limit, offset } = calcLimitAndOffset(+currentPage, +pageLimit);
   const query = {
+    has_paid: true,
     [Op.or]: [{ status: Status.PENDING }, { status: Status.PARTIAL_RESULT }],
     ...(period && getPeriodQuery(period, 'date_requested')),
     ...(start && end && dateIntervalQuery('date_requested', start, end)),

@@ -25,7 +25,7 @@
             name="insurance_id"
             v-model="insurance_id"
             @search="searchInsurance"
-            :reduce="insurances => insurances.id"
+            :reduce="(insurances) => insurances.id"
             label="name"
             :options="insurances"
           >
@@ -144,7 +144,7 @@ export default {
       this.initValues();
     },
     createHMO() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             insurance_id: this.insurance_id,

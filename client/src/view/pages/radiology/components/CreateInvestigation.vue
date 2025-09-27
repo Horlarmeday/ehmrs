@@ -82,7 +82,7 @@
             name="imaging_id"
             v-model="imaging_id"
             @search="searchImaging"
-            :reduce="imagings => imagings.id"
+            :reduce="(imagings) => imagings.id"
             label="name"
             :options="imagings"
           >
@@ -223,7 +223,7 @@ export default {
       this.initValues();
     },
     createInvestigation() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             imaging_id: this.imaging_id,

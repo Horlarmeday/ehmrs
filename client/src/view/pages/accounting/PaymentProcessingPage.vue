@@ -23,9 +23,9 @@
               <span class="value">
                 {{
                   bill?.patient?.fullname ||
-                    (bill?.patient?.firstname && bill?.patient?.lastname
-                      ? `${bill.patient.firstname} ${bill.patient.lastname}`
-                      : 'N/A')
+                  (bill?.patient?.firstname && bill?.patient?.lastname
+                    ? `${bill.patient.firstname} ${bill.patient.lastname}`
+                    : 'N/A')
                 }}
               </span>
             </div>
@@ -69,9 +69,7 @@
             </span>
             <span v-else> <i class="fas fa-credit-card mr-2"></i>Complete Payment </span>
           </b-button>
-          <b-button variant="outline-secondary" @click="goBack">
-            Cancel
-          </b-button>
+          <b-button variant="outline-secondary" @click="goBack"> Cancel </b-button>
           <b-button
             variant="outline-info"
             @click="refreshPaymentStatus"
@@ -86,7 +84,7 @@
       <!-- Warning for Already Paid Items -->
       <div v-if="paidItemsCount > 0" class="alert alert-info mt-3">
         <div class="d-flex align-items-center">
-          <i class="fas fa-info-circle mr-3 text-info" style="font-size: 1.5rem;"></i>
+          <i class="fas fa-info-circle mr-3 text-info" style="font-size: 1.5rem"></i>
           <div>
             <strong>Payment Status Information:</strong>
             <div class="mt-1">
@@ -936,7 +934,7 @@
     <!-- Loading Overlay -->
     <div v-if="processing" class="loading-overlay">
       <div class="loading-content">
-        <b-spinner variant="primary" style="width: 3rem; height: 3rem;"></b-spinner>
+        <b-spinner variant="primary" style="width: 3rem; height: 3rem"></b-spinner>
         <h5 class="mt-3">Processing Payment...</h5>
         <p class="text-muted">Please wait while we complete your payment</p>
       </div>
@@ -955,13 +953,11 @@
     >
       <div class="text-center">
         <div class="success-icon mb-4">
-          <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+          <i class="fas fa-check-circle text-success" style="font-size: 4rem"></i>
         </div>
 
         <h4 class="text-success mb-3">Payment Processed Successfully!</h4>
-        <p class="text-muted mb-4">
-          Your payment has been processed and recorded in the system.
-        </p>
+        <p class="text-muted mb-4">Your payment has been processed and recorded in the system.</p>
 
         <div class="receipt-options">
           <h6 class="mb-3">What would you like to do next?</h6>
@@ -1167,7 +1163,7 @@ export default {
     },
 
     posTerminalOptions() {
-      return this.posTerminals.map(terminal => ({
+      return this.posTerminals.map((terminal) => ({
         value: terminal.id,
         text: `${terminal.terminal_id} - ${terminal.location}`,
         description: `Bank: ${terminal.bank_account?.bank_name || 'Unknown'}`,
@@ -1175,7 +1171,7 @@ export default {
     },
 
     bankAccountOptions() {
-      return this.bankAccounts.map(account => ({
+      return this.bankAccounts.map((account) => ({
         value: account.id,
         text: `${account.bank_name} - ${account.account_number}`,
         description: `Account: ${account.account_name}`,
@@ -1184,8 +1180,8 @@ export default {
 
     cashRegisterOptions() {
       return this.cashRegisters
-        .filter(register => register.status === 'OPEN' && register.is_active)
-        .map(register => ({
+        .filter((register) => register.status === 'OPEN' && register.is_active)
+        .map((register) => ({
           value: register.id,
           text: `${register.register_code} - ${register.register_name}`,
           description: `Location: ${register.location || 'N/A'}`,
@@ -1194,7 +1190,9 @@ export default {
 
     selectedCashRegister() {
       if (!this.paymentForm.cash_register_id) return null;
-      return this.cashRegisters.find(register => register.id === this.paymentForm.cash_register_id);
+      return this.cashRegisters.find(
+        (register) => register.id === this.paymentForm.cash_register_id
+      );
     },
 
     // Payment calculation helpers
@@ -1211,19 +1209,19 @@ export default {
 
     selectedBankAccount() {
       if (!this.paymentForm.bank_account_id) return null;
-      return this.bankAccounts.find(account => account.id === this.paymentForm.bank_account_id);
+      return this.bankAccounts.find((account) => account.id === this.paymentForm.bank_account_id);
     },
 
     selectedPOSTerminal() {
       if (!this.paymentForm.pos_terminal_id) return null;
-      return this.posTerminals.find(terminal => terminal.id === this.paymentForm.pos_terminal_id);
+      return this.posTerminals.find((terminal) => terminal.id === this.paymentForm.pos_terminal_id);
     },
 
     patientInsuranceInfo() {
       if (!this.paymentForm.insurance_provider) return null;
 
       const provider = this.insuranceProviders.find(
-        p => p.value === this.paymentForm.insurance_provider
+        (p) => p.value === this.paymentForm.insurance_provider
       );
       if (!provider) return null;
 
@@ -1240,7 +1238,7 @@ export default {
       if (!this.bill || !this.bill.items) return 0;
 
       const allItems = this.bill.items;
-      return allItems.filter(item => {
+      return allItems.filter((item) => {
         const isPaid =
           item.payment_status === 'PAID' ||
           item.payment_status === 'FULLY_PAID' ||
@@ -1304,7 +1302,7 @@ export default {
           console.log('Loaded all bill items:', allBillItems);
 
           // Filter out already paid items first
-          const unpaidItems = allBillItems.filter(item => {
+          const unpaidItems = allBillItems.filter((item) => {
             // Check if item is already fully paid
             const isPaid =
               item.payment_status === 'PAID' ||
@@ -1320,16 +1318,16 @@ export default {
 
           // Parse selected items from query params
           if (selectedItems) {
-            const itemIds = selectedItems.split(',').map(id => parseInt(id.trim()));
+            const itemIds = selectedItems.split(',').map((id) => parseInt(id.trim()));
             console.log('Parsed selected item IDs:', itemIds);
 
             // Filter selected items to only include unpaid items
-            const validSelectedItems = itemIds.filter(id =>
-              unpaidItems.some(item => item.id === id)
+            const validSelectedItems = itemIds.filter((id) =>
+              unpaidItems.some((item) => item.id === id)
             );
 
             if (validSelectedItems.length !== itemIds.length) {
-              const removedItems = itemIds.filter(id => !validSelectedItems.includes(id));
+              const removedItems = itemIds.filter((id) => !validSelectedItems.includes(id));
               console.warn('Removed already paid items from selection:', removedItems);
 
               // Show warning to user about removed items
@@ -1346,14 +1344,14 @@ export default {
             }
 
             this.selectedItems = validSelectedItems;
-            this.selectedItemsData = unpaidItems.filter(item =>
+            this.selectedItemsData = unpaidItems.filter((item) =>
               validSelectedItems.includes(item.id)
             );
             console.log('Filtered selected items data (unpaid only):', this.selectedItemsData);
           } else {
             // If no selected items in query, show all unpaid items
             this.selectedItemsData = unpaidItems;
-            this.selectedItems = unpaidItems.map(item => item.id);
+            this.selectedItems = unpaidItems.map((item) => item.id);
             console.log('No selected items in query, showing all unpaid items');
           }
 
@@ -1522,13 +1520,13 @@ export default {
         // Format insurance providers for select
         this.insuranceProviders = [
           { value: '', text: 'Select Insurance Provider' },
-          ...insurances.map(insurance => ({
+          ...insurances.map((insurance) => ({
             value: insurance.id.toString(),
             text: insurance.name,
             description: insurance.description,
             type: 'insurance',
           })),
-          ...hmos.map(hmo => ({
+          ...hmos.map((hmo) => ({
             value: hmo.id.toString(),
             text: hmo.name,
             description: hmo.insurance?.name || '',
@@ -1557,11 +1555,11 @@ export default {
         if (patientInsurances.length > 0) {
           // Auto-populate insurance fields if patient has insurance
           const defaultInsurance =
-            patientInsurances.find(pi => pi.is_default) || patientInsurances[0];
+            patientInsurances.find((pi) => pi.is_default) || patientInsurances[0];
           if (defaultInsurance) {
             // Find the provider in our list and set it
             const provider = this.insuranceProviders.find(
-              p =>
+              (p) =>
                 p.value === defaultInsurance.insurance_id?.toString() ||
                 p.value === defaultInsurance.hmo_id?.toString()
             );
@@ -1709,8 +1707,10 @@ export default {
     updatePaymentMethodsFromAPI(apiData) {
       // Update payment methods availability based on API response
       if (apiData.payment_methods) {
-        this.paymentMethods.forEach(method => {
-          const apiMethod = apiData.payment_methods.find(m => m.value === method.id.toUpperCase());
+        this.paymentMethods.forEach((method) => {
+          const apiMethod = apiData.payment_methods.find(
+            (m) => m.value === method.id.toUpperCase()
+          );
           if (apiMethod) {
             method.available = apiMethod.available;
             method.requires_additional_info = apiMethod.requires_additional_info;
@@ -1819,10 +1819,10 @@ export default {
     previousStep() {
       if (this.currentStep === 'confirmation') {
         this.currentStep = 'payment-details';
-        this.completedSteps = this.completedSteps.filter(step => step !== 'confirmation');
+        this.completedSteps = this.completedSteps.filter((step) => step !== 'confirmation');
       } else if (this.currentStep === 'payment-details') {
         this.currentStep = 'payment-method';
-        this.completedSteps = this.completedSteps.filter(step => step !== 'payment-details');
+        this.completedSteps = this.completedSteps.filter((step) => step !== 'payment-details');
       }
     },
 
@@ -1956,7 +1956,7 @@ export default {
         }
 
         // Double-check that no paid items are being processed
-        const paidItems = this.selectedItemsData.filter(item => {
+        const paidItems = this.selectedItemsData.filter((item) => {
           const isPaid =
             item.payment_status === 'PAID' ||
             item.payment_status === 'FULLY_PAID' ||
@@ -1968,7 +1968,7 @@ export default {
         if (paidItems.length > 0) {
           throw new Error(
             `Cannot process payment for already paid items: ${paidItems
-              .map(item => item.id)
+              .map((item) => item.id)
               .join(', ')}`
           );
         }

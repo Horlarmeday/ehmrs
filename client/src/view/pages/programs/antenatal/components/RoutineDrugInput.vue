@@ -131,7 +131,7 @@ export default {
     routineDrugs: {
       handler(val) {
         const drugs = JSON.parse(JSON.stringify(val));
-        this.weeksDrugs = drugs.map(drug => ({ ...drug, is_selected: true }));
+        this.weeksDrugs = drugs.map((drug) => ({ ...drug, is_selected: true }));
       },
     },
   },
@@ -161,16 +161,16 @@ export default {
     },
 
     isSelected(drug) {
-      return this.weeksDrugs.some(t => t.id === drug.id);
+      return this.weeksDrugs.some((t) => t.id === drug.id);
     },
 
     toggleDrug(drug, event) {
-      const index = this.weeksDrugs.findIndex(t => t.id === drug.id);
+      const index = this.weeksDrugs.findIndex((t) => t.id === drug.id);
       this.weeksDrugs[index].is_selected = !!event.target.checked;
     },
 
     getDrugIndex(drug) {
-      return this.weeksDrugs.findIndex(routineDrug => routineDrug.id === drug.id);
+      return this.weeksDrugs.findIndex((routineDrug) => routineDrug.id === drug.id);
     },
 
     calculateDosageQuantity(drug) {
@@ -220,7 +220,7 @@ export default {
 
     getInventoryId() {
       const type = this.getDrugType(this.insuranceName);
-      return this.inventories.find(inventory =>
+      return this.inventories.find((inventory) =>
         inventory.name.toLowerCase().includes(type.toLowerCase())
       )?.id;
     },
@@ -228,13 +228,13 @@ export default {
     submitDrugs() {
       this.error = null;
       const selectedDrugs = this.weeksDrugs
-        .filter(drug => drug.is_selected)
+        .filter((drug) => drug.is_selected)
         .map(({ group, is_selected, duration_unit, ...rest }) => ({
           ...rest,
           duration_unit: duration_unit?.label,
         }));
       const emptyQuantity = selectedDrugs.some(
-        drug => !drug.quantity_to_dispense || !drug.duration_unit || !drug.duration
+        (drug) => !drug.quantity_to_dispense || !drug.duration_unit || !drug.duration
       );
       if (emptyQuantity) {
         this.error = 'You need to fill all selected inputs';
@@ -255,7 +255,7 @@ export default {
           id: this.$route.params.id,
         })
         .then(() => this.endRequest(submitButton))
-        .catch(err => {
+        .catch((err) => {
           this.removeSpinner(submitButton);
           this.error = err?.message;
         });

@@ -13,7 +13,7 @@
         <i :class="iconClass" class="mr-2"></i>
         {{ buttonText }}
       </template>
-      
+
       <b-dropdown-item
         v-for="option in printOptions"
         :key="option.value"
@@ -23,9 +23,9 @@
         <i :class="option.icon" class="mr-2"></i>
         {{ option.text }}
       </b-dropdown-item>
-      
+
       <b-dropdown-divider v-if="showAdvancedOptions"></b-dropdown-divider>
-      
+
       <b-dropdown-item
         v-if="showAdvancedOptions"
         @click="showAdvancedPrint = true"
@@ -35,7 +35,7 @@
         Print Options
       </b-dropdown-item>
     </b-dropdown>
-    
+
     <!-- Advanced Print Modal -->
     <b-modal
       v-model="showAdvancedPrint"
@@ -56,7 +56,7 @@
               ></b-form-radio-group>
             </div>
           </div>
-          
+
           <div class="col-md-6">
             <label class="font-weight-bold">Page Orientation</label>
             <div class="form-group">
@@ -68,28 +68,25 @@
             </div>
           </div>
         </div>
-        
+
         <div class="row">
           <div class="col-md-6">
             <label class="font-weight-bold">Page Size</label>
             <b-form-select v-model="pageSize" :options="pageSizeOptions"></b-form-select>
           </div>
-          
+
           <div class="col-md-6">
             <label class="font-weight-bold">Font Size</label>
             <b-form-select v-model="fontSize" :options="fontSizeOptions"></b-form-select>
           </div>
         </div>
-        
+
         <div class="row">
           <div class="col-md-6">
             <label class="font-weight-bold">Title</label>
-            <b-form-input
-              v-model="customTitle"
-              placeholder="Enter print title"
-            ></b-form-input>
+            <b-form-input v-model="customTitle" placeholder="Enter print title"></b-form-input>
           </div>
-          
+
           <div class="col-md-6">
             <label class="font-weight-bold">Subtitle</label>
             <b-form-input
@@ -98,43 +95,29 @@
             ></b-form-input>
           </div>
         </div>
-        
+
         <div class="row">
           <div class="col-md-6">
             <label class="font-weight-bold">Footer</label>
-            <b-form-input
-              v-model="customFooter"
-              placeholder="Enter print footer"
-            ></b-form-input>
+            <b-form-input v-model="customFooter" placeholder="Enter print footer"></b-form-input>
           </div>
-          
+
           <div class="col-md-6">
             <label class="font-weight-bold">Margins (mm)</label>
-            <b-form-input
-              v-model="margin"
-              type="number"
-              min="5"
-              max="50"
-            ></b-form-input>
+            <b-form-input v-model="margin" type="number" min="5" max="50"></b-form-input>
           </div>
         </div>
-        
+
         <div class="row">
           <div class="col-12">
             <div class="form-group">
-              <b-form-checkbox v-model="includeDate">
-                Include generation date
-              </b-form-checkbox>
-              <b-form-checkbox v-model="includePageNumbers">
-                Include page numbers
-              </b-form-checkbox>
-              <b-form-checkbox v-model="includeHeader">
-                Include header
-              </b-form-checkbox>
+              <b-form-checkbox v-model="includeDate"> Include generation date </b-form-checkbox>
+              <b-form-checkbox v-model="includePageNumbers"> Include page numbers </b-form-checkbox>
+              <b-form-checkbox v-model="includeHeader"> Include header </b-form-checkbox>
             </div>
           </div>
         </div>
-        
+
         <div class="row" v-if="printType === 'table' && hasData">
           <div class="col-12">
             <div class="print-preview">
@@ -142,7 +125,7 @@
               <p class="text-muted">
                 <strong>{{ data.length }}</strong> records will be printed
               </p>
-              <div class="table-responsive" style="max-height: 200px;">
+              <div class="table-responsive" style="max-height: 200px">
                 <table class="table table-sm table-striped">
                   <thead>
                     <tr>
@@ -217,7 +200,7 @@ export default {
       default: '',
     },
   },
-  
+
   data() {
     return {
       showAdvancedPrint: false,
@@ -234,12 +217,12 @@ export default {
       includeHeader: true,
     };
   },
-  
+
   computed: {
     hasData() {
       return Array.isArray(this.data) && this.data.length > 0;
     },
-    
+
     printOptions() {
       const options = [
         {
@@ -253,7 +236,7 @@ export default {
           icon: 'fas fa-file-alt',
         },
       ];
-      
+
       if (this.hasData) {
         options.push({
           value: 'table',
@@ -266,10 +249,10 @@ export default {
           icon: 'fas fa-chart-bar',
         });
       }
-      
+
       return options;
     },
-    
+
     printTypeOptions() {
       return [
         { value: 'element', text: 'Print Element' },
@@ -278,14 +261,14 @@ export default {
         { value: 'page', text: 'Print Page' },
       ];
     },
-    
+
     orientationOptions() {
       return [
         { value: 'portrait', text: 'Portrait' },
         { value: 'landscape', text: 'Landscape' },
       ];
     },
-    
+
     pageSizeOptions() {
       return [
         { value: 'a4', text: 'A4' },
@@ -294,7 +277,7 @@ export default {
         { value: 'legal', text: 'Legal' },
       ];
     },
-    
+
     fontSizeOptions() {
       return [
         { value: 8, text: '8px' },
@@ -304,34 +287,34 @@ export default {
         { value: 16, text: '16px' },
       ];
     },
-    
+
     iconClass() {
       return this.icon;
     },
-    
+
     previewHeaders() {
       if (!this.hasData) return [];
       return Object.keys(this.data[0]).slice(0, 5); // Show first 5 columns
     },
-    
+
     previewData() {
       if (!this.hasData) return [];
       return this.data.slice(0, 3); // Show first 3 rows
     },
   },
-  
+
   methods: {
     handlePrint() {
       if (this.split) return; // Let dropdown handle it
-      
+
       // Default print
       this.printWithOption('element');
     },
-    
+
     async printWithOption(option) {
       try {
         const options = this.getPrintOptions();
-        
+
         switch (option) {
           case 'element':
             await this.printElement(options);
@@ -348,17 +331,17 @@ export default {
           default:
             throw new Error(`Unknown print option: ${option}`);
         }
-        
+
         this.$logUserAction('Print completed', { option, recordCount: this.data.length });
       } catch (error) {
         this.$logError('Print failed', error, { option });
       }
     },
-    
+
     async handleAdvancedPrint() {
       try {
         const options = this.getAdvancedPrintOptions();
-        
+
         switch (this.printType) {
           case 'element':
             await this.printElement(options);
@@ -373,53 +356,53 @@ export default {
             await this.printPage();
             break;
         }
-        
+
         this.showAdvancedPrint = false;
-        this.$logUserAction('Advanced print completed', { 
+        this.$logUserAction('Advanced print completed', {
           printType: this.printType,
-          recordCount: this.data.length 
+          recordCount: this.data.length,
         });
       } catch (error) {
         this.$logError('Advanced print failed', error, { printType: this.printType });
       }
     },
-    
+
     async printElement(options) {
       const element = this.getElement();
       if (!element) {
         throw new Error('Element not found for printing');
       }
-      
+
       await this.$printElement(element, options);
     },
-    
+
     async printTable(options) {
       if (!this.hasData) {
         throw new Error('No data available for printing');
       }
-      
+
       await this.$printTable(this.data, options);
     },
-    
+
     async printReport(options) {
       if (!this.hasData) {
         throw new Error('No data available for printing');
       }
-      
+
       await this.$printReport(this.data, options);
     },
-    
+
     async printPage() {
       this.$printCurrentPage();
     },
-    
+
     getElement() {
       if (typeof this.element === 'string') {
         return document.querySelector(this.element);
       }
       return this.element || document.body;
     },
-    
+
     getPrintOptions() {
       return {
         title: this.title || this.$route?.meta?.title || 'Document',
@@ -430,11 +413,14 @@ export default {
         margin: this.margin,
       };
     },
-    
+
     getAdvancedPrintOptions() {
       return {
         title: this.customTitle || this.title || this.$route?.meta?.title || 'Document',
-        subtitle: this.customSubtitle || this.subtitle || (this.includeDate ? new Date().toLocaleDateString() : ''),
+        subtitle:
+          this.customSubtitle ||
+          this.subtitle ||
+          (this.includeDate ? new Date().toLocaleDateString() : ''),
         footer: this.customFooter || (this.includePageNumbers ? 'Generated by EHMRS System' : ''),
         orientation: this.orientation,
         format: this.pageSize,
@@ -444,7 +430,7 @@ export default {
         includePageNumbers: this.includePageNumbers,
       };
     },
-    
+
     formatPreviewValue(value) {
       if (value === null || value === undefined) return '';
       if (typeof value === 'object') return JSON.stringify(value);
@@ -494,6 +480,3 @@ export default {
   color: #6c757d;
 }
 </style>
-
-
-

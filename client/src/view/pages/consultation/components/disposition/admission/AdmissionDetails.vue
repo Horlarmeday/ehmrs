@@ -22,7 +22,7 @@
             </span>
           </td>
           <td>
-            <span style="width: 108px;">
+            <span style="width: 108px">
               <span
                 :class="getDischargeStatus(admission.should_discharge)"
                 class="label label-dot mr-2"
@@ -94,12 +94,11 @@ export default {
       const self = this;
       Swal.fire({
         title: 'Are you sure?',
-        text:
-          'Note that this action will not discharge the patient, but only place the patient up for it. The rest is up to the nurses',
+        text: 'Note that this action will not discharge the patient, but only place the patient up for it. The rest is up to the nurses',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Yes, Discharge!',
-      }).then(function(result) {
+      }).then(function (result) {
         if (result.value) {
           self.dischargePatient(admissionId);
         }

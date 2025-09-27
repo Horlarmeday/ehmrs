@@ -42,11 +42,9 @@
           <b-button
             variant="outline-primary"
             @click="selectAllItems"
-            :title="
-              `Select all unpaid items (${
-                billItems.filter(item => !isItemPaid(item)).length
-              } available)`
-            "
+            :title="`Select all unpaid items (${
+              billItems.filter((item) => !isItemPaid(item)).length
+            } available)`"
           >
             <i class="fas fa-check-square mr-2"></i>
             Select All Unpaid
@@ -354,8 +352,8 @@
                       <span class="text-dark-50 font-size-sm">Name:</span>
                       <span class="value">{{
                         bill.patient?.fullname ||
-                          bill.patient?.firstname + ' ' + bill.patient?.lastname ||
-                          'N/A'
+                        bill.patient?.firstname + ' ' + bill.patient?.lastname ||
+                        'N/A'
                       }}</span>
                     </div>
                     <div class="info-row">
@@ -640,7 +638,7 @@ export default {
       bill: null,
       billItems: [],
       selectedItems: [],
-      viewMode: 'grid',
+      viewMode: 'list',
       showAdvancedFilters: false,
       currentPage: 1,
       itemsPerPage: 12,
@@ -691,10 +689,10 @@ export default {
       return this.bill.final_amount - (this.bill.paid_amount || 0);
     },
     paidItemsCount() {
-      return this.billItems.filter(item => item.payment_status === 'PAID').length;
+      return this.billItems.filter((item) => item.payment_status === 'PAID').length;
     },
     pendingItemsCount() {
-      return this.billItems.filter(item => item.payment_status === 'PENDING').length;
+      return this.billItems.filter((item) => item.payment_status === 'PENDING').length;
     },
     paymentProgress() {
       if (this.billItems.length === 0) return 0;
@@ -704,7 +702,7 @@ export default {
       return this.selectedItems.length > 0;
     },
     isAllSelected() {
-      const unpaidItems = this.billItems.filter(item => !this.isItemPaid(item));
+      const unpaidItems = this.billItems.filter((item) => !this.isItemPaid(item));
       return unpaidItems.length > 0 && this.selectedItems.length === unpaidItems.length;
     },
     filteredItems() {
@@ -712,24 +710,24 @@ export default {
 
       // Apply filters
       if (this.filters.itemType) {
-        items = items.filter(item => item.item_type === this.filters.itemType);
+        items = items.filter((item) => item.item_type === this.filters.itemType);
       }
       if (this.filters.paymentStatus) {
-        items = items.filter(item => item.payment_status === this.filters.paymentStatus);
+        items = items.filter((item) => item.payment_status === this.filters.paymentStatus);
       }
       if (this.filters.searchTerm) {
         const term = this.filters.searchTerm.toLowerCase();
         items = items.filter(
-          item =>
+          (item) =>
             (item.name && item.name.toLowerCase().includes(term)) ||
             (item.description && item.description.toLowerCase().includes(term))
         );
       }
       if (this.filters.amountRange) {
-        const parts = this.filters.amountRange.split('-').map(s => parseFloat(s.trim()));
+        const parts = this.filters.amountRange.split('-').map((s) => parseFloat(s.trim()));
         if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
           items = items.filter(
-            item => item.total_price >= parts[0] && item.total_price <= parts[1]
+            (item) => item.total_price >= parts[0] && item.total_price <= parts[1]
           );
         }
       }
@@ -762,7 +760,7 @@ export default {
 
     // Bill Summary Computed Properties
     selectedBillItems() {
-      return this.billItems.filter(item => this.selectedItems.includes(item.id));
+      return this.billItems.filter((item) => this.selectedItems.includes(item.id));
     },
 
     subtotal() {
@@ -821,7 +819,7 @@ export default {
 
     toggleItemSelection(itemId) {
       // Check if item is already paid
-      const item = this.billItems.find(item => item.id === itemId);
+      const item = this.billItems.find((item) => item.id === itemId);
       if (item && this.isItemPaid(item)) {
         this.$bvToast.toast('Cannot select already paid items', {
           title: 'Item Already Paid',
@@ -842,8 +840,8 @@ export default {
     selectAllItems() {
       // Only select unpaid items
       this.selectedItems = this.billItems
-        .filter(item => !this.isItemPaid(item))
-        .map(item => item.id);
+        .filter((item) => !this.isItemPaid(item))
+        .map((item) => item.id);
 
       if (this.selectedItems.length === 0) {
         this.$bvToast.toast('No unpaid items available for selection', {
@@ -912,7 +910,7 @@ export default {
       this.currentPage = 1;
     },
 
-    debounceSearch: debounce(function() {
+    debounceSearch: debounce(function () {
       this.applyFilters();
     }, 500),
 

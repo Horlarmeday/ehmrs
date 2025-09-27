@@ -353,8 +353,8 @@ export default {
 
     async acknowledgeAllVisible() {
       const unreadAlertIds = this.displayedAlerts
-        .filter(alert => !alert.acknowledged_at)
-        .map(alert => alert.id);
+        .filter((alert) => !alert.acknowledged_at)
+        .map((alert) => alert.id);
 
       if (unreadAlertIds.length === 0) return;
 

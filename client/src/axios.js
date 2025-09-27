@@ -6,7 +6,7 @@ import { notifyError, notifyGeneralError, notifySuccess } from './common/common'
 
 const calculatePercentage = (loaded, total) => Math.floor((loaded * 1.0) / total);
 
-axios.defaults.onDownloadProgress = e => {
+axios.defaults.onDownloadProgress = (e) => {
   const percentage = calculatePercentage(e.loaded, e.total);
   NProgress.set(percentage);
 };
@@ -20,7 +20,7 @@ if (token) {
   axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 }
 
-NProgress.setColor = color => {
+NProgress.setColor = (color) => {
   const style = document.createElement('style');
   style.textContent = `
   #nprogress .bar {
@@ -34,23 +34,23 @@ NProgress.setColor = color => {
 };
 
 axios.interceptors.request.use(
-  config => {
+  (config) => {
     // Dynamically set Authorization header on each request
     const token = localStorage.getItem('user_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
     NProgress.setColor('black');
     NProgress.start();
     return config;
   },
-  error => {
+  (error) => {
     return Promise.reject(error);
   }
 );
 axios.interceptors.response.use(
-  response => {
+  (response) => {
     switch (response.status) {
       case 201:
         notifySuccess(response);
@@ -67,7 +67,7 @@ axios.interceptors.response.use(
     }, 30000);
     return response;
   },
-  error => {
+  (error) => {
     console.log(error.response, 'error');
     NProgress.done(true);
     let res = error.response;

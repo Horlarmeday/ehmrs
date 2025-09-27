@@ -11,7 +11,7 @@ export default {
   },
 
   UPDATE_INVENTORY(state, inventory) {
-    const inventoryIndex = state.inventories.findIndex(p => p.id === inventory.id);
+    const inventoryIndex = state.inventories.findIndex((p) => p.id === inventory.id);
     Object.assign(state.inventories[inventoryIndex], inventory);
   },
 

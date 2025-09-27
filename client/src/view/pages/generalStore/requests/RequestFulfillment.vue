@@ -6,9 +6,7 @@
         <i class="flaticon2-box text-info mr-2"></i>
         Fulfill Request
       </h3>
-      <p class="text-muted mb-0">
-        Process and fulfill the approved request
-      </p>
+      <p class="text-muted mb-0">Process and fulfill the approved request</p>
     </div>
 
     <!-- Request Summary -->
@@ -196,9 +194,7 @@
               <div v-if="errors.fulfillment_type" class="invalid-feedback d-block">
                 {{ errors.fulfillment_type }}
               </div>
-              <small class="form-text text-muted">
-                Choose how to fulfill this request
-              </small>
+              <small class="form-text text-muted"> Choose how to fulfill this request </small>
             </div>
 
             <div class="col-md-6 mb-3">
@@ -229,9 +225,7 @@
               <div v-if="errors.fulfillment_notes" class="invalid-feedback d-block">
                 {{ errors.fulfillment_notes }}
               </div>
-              <small class="form-text text-muted">
-                Any notes about the fulfillment process
-              </small>
+              <small class="form-text text-muted"> Any notes about the fulfillment process </small>
             </div>
 
             <div class="col-12 mb-3">
@@ -245,9 +239,7 @@
               <div v-if="errors.special_instructions" class="invalid-feedback d-block">
                 {{ errors.special_instructions }}
               </div>
-              <small class="form-text text-muted">
-                Special delivery or pickup instructions
-              </small>
+              <small class="form-text text-muted"> Special delivery or pickup instructions </small>
             </div>
 
             <div class="col-12 mb-3">
@@ -266,9 +258,7 @@
               <div v-if="errors.delivery_method" class="invalid-feedback d-block">
                 {{ errors.delivery_method }}
               </div>
-              <small class="form-text text-muted">
-                How the items will be delivered
-              </small>
+              <small class="form-text text-muted"> How the items will be delivered </small>
             </div>
 
             <div class="col-12 mb-3">
@@ -580,7 +570,7 @@ export default {
         };
 
         // Remove empty optional fields
-        Object.keys(fulfillmentData).forEach(key => {
+        Object.keys(fulfillmentData).forEach((key) => {
           if (fulfillmentData[key] === '' || fulfillmentData[key] === null) {
             delete fulfillmentData[key];
           }

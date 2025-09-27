@@ -12,9 +12,9 @@
             <label class="col-lg-2 col-form-label">Form:</label>
             <div class="col-lg-6">
               <select @change="selectResultForm" class="form-control" v-model="form">
-                <option :value="form.code" v-for="(form, i) in forms" :key="i">{{
-                  form.name
-                }}</option>
+                <option :value="form.code" v-for="(form, i) in forms" :key="i">
+                  {{ form.name }}
+                </option>
               </select>
             </div>
           </div>

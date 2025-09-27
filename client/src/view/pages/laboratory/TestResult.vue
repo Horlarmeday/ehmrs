@@ -38,7 +38,7 @@ export default {
     tests() {
       const lab_test_id = this.$route.query.lab_test;
       if (!lab_test_id) return this.result.tests;
-      return this.result.tests.filter(test => test.id === +lab_test_id);
+      return this.result.tests.filter((test) => test.id === +lab_test_id);
     },
     accessionNumberKey() {
       return this.result.accession_number + Date.now();

@@ -262,7 +262,7 @@
             </h5>
           </div>
           <div class="card-body">
-            <div class="chart-container" style="height: 400px;">
+            <div class="chart-container" style="height: 400px">
               <canvas ref="usageChart"></canvas>
             </div>
           </div>
@@ -385,7 +385,7 @@
                           >
                         </td>
                         <td>
-                          <div class="progress" style="height: 20px;">
+                          <div class="progress" style="height: 20px">
                             <div
                               class="progress-bar bg-success"
                               :style="{ width: dept.percentage + '%' }"
@@ -401,7 +401,7 @@
                 </div>
               </div>
               <div class="col-lg-4">
-                <div class="dept-chart-container" style="height: 300px;">
+                <div class="dept-chart-container" style="height: 300px">
                   <canvas ref="deptChart"></canvas>
                 </div>
               </div>
@@ -420,7 +420,7 @@
             </h5>
           </div>
           <div class="card-body">
-            <div class="seasonal-chart-container" style="height: 400px;">
+            <div class="seasonal-chart-container" style="height: 400px">
               <canvas ref="seasonalChart"></canvas>
             </div>
           </div>
@@ -593,7 +593,7 @@ export default {
         const params = { ...this.filters };
 
         // Remove empty values
-        Object.keys(params).forEach(key => {
+        Object.keys(params).forEach((key) => {
           if (params[key] === '' || params[key] === null || params[key] === undefined) {
             delete params[key];
           }
@@ -722,10 +722,10 @@ export default {
       this.charts.deptChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-          labels: deptData.map(d => d.name),
+          labels: deptData.map((d) => d.name),
           datasets: [
             {
-              data: deptData.map(d => d.total_value),
+              data: deptData.map((d) => d.total_value),
               backgroundColor: [
                 '#3699FF',
                 '#1BC5BD',
@@ -877,7 +877,7 @@ export default {
 
   beforeDestroy() {
     // Clean up charts
-    Object.values(this.charts).forEach(chart => {
+    Object.values(this.charts).forEach((chart) => {
       if (chart) {
         chart.destroy();
       }

@@ -421,7 +421,7 @@ export default {
     },
     handleItemChange() {
       if (this.form.item_id) {
-        this.selectedItem = this.items.find(item => item.id === this.form.item_id) || {};
+        this.selectedItem = this.items.find((item) => item.id === this.form.item_id) || {};
         this.form.unit = this.selectedItem.unit || '';
         this.form.unit_price = this.selectedItem.unit_price || '';
       } else {
@@ -434,9 +434,7 @@ export default {
       // Auto-generate reference number if not provided
       if (this.form.reference_type && !this.form.reference_number) {
         const prefix = this.form.reference_type.toUpperCase().replace('_', '');
-        const timestamp = Date.now()
-          .toString()
-          .slice(-6);
+        const timestamp = Date.now().toString().slice(-6);
         this.form.reference_number = `${prefix}-${timestamp}`;
       }
     },

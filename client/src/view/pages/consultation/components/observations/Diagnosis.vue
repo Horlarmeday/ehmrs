@@ -23,7 +23,7 @@
           v-model="diag.diagnosis"
           label="diagnosis"
           :reduce="
-            diagnoses => ({
+            (diagnoses) => ({
               id: diagnoses.id,
               diagnosis: diagnoses.diagnosis,
               type: diagnosisType,
@@ -31,7 +31,7 @@
           "
           :options="diagnoses"
         >
-          <template #search="{attributes, events}">
+          <template #search="{ attributes, events }">
             <input
               class="vs__search"
               :required="!diag.diagnosis"

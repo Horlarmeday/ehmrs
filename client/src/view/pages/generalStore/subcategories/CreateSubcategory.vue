@@ -264,7 +264,7 @@ export default {
           name: this.form.name,
           category_id: this.form.category_id,
           description: this.form.description,
-          is_active: this.form.status === 'active'
+          is_active: this.form.status === 'active',
         };
 
         await this.$store.dispatch('generalStore/createSubcategory', subcategoryData);

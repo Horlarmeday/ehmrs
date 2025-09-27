@@ -190,9 +190,7 @@
                 @blur="validateField('daily_transaction_limit')"
                 @input="validateField('daily_transaction_limit')"
               ></b-form-input>
-              <small class="form-text text-muted">
-                Maximum number of transactions per day
-              </small>
+              <small class="form-text text-muted"> Maximum number of transactions per day </small>
             </b-form-group>
           </div>
 
@@ -400,7 +398,7 @@ export default {
     },
     validationErrors() {
       const errors = [];
-      Object.keys(this.validation).forEach(field => {
+      Object.keys(this.validation).forEach((field) => {
         if (this.validation[field]?.error) {
           errors.push(this.validation[field].error);
         }
@@ -417,7 +415,7 @@ export default {
         'is_active',
       ];
 
-      return requiredFields.every(field => {
+      return requiredFields.every((field) => {
         const value = this.form[field];
         const validation = this.validation[field];
 
@@ -504,7 +502,7 @@ export default {
         'is_active',
       ];
 
-      requiredFields.forEach(field => {
+      requiredFields.forEach((field) => {
         if (!this.validation[field]) {
           this.validation[field] = { valid: null, error: '' };
         }
@@ -634,7 +632,7 @@ export default {
         'is_active',
       ];
 
-      requiredFields.forEach(field => {
+      requiredFields.forEach((field) => {
         if (!this.validateField(field)) {
           allValid = false;
         }

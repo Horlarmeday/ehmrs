@@ -26,9 +26,9 @@
             v-model="accepted_drug_type"
             class="form-control-sm form-control"
           >
-            <option :value="type" v-for="(type, i) in acceptedDrugTypes" :key="i">{{
-              type
-            }}</option>
+            <option :value="type" v-for="(type, i) in acceptedDrugTypes" :key="i">
+              {{ type }}
+            </option>
           </select>
         </div>
       </div>
@@ -136,7 +136,7 @@ export default {
       this.initValues();
     },
     createInventory() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             inventory_id: this.id,

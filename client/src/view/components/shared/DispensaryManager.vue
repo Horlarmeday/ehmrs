@@ -304,7 +304,7 @@ export default {
     storeType: {
       type: String,
       required: true,
-      validator: value => ['pharmacy', 'general_store', 'laboratory'].includes(value),
+      validator: (value) => ['pharmacy', 'general_store', 'laboratory'].includes(value),
     },
     dispensaries: {
       type: Array,
@@ -317,7 +317,7 @@ export default {
   },
   computed: {
     activeDispensaries() {
-      return this.dispensaries.filter(d => d.is_active);
+      return this.dispensaries.filter((d) => d.is_active);
     },
     totalStockItems() {
       return this.dispensaries.reduce((total, d) => total + (d.total_items || 0), 0);

@@ -14,9 +14,7 @@
               placeholder="Search entries..."
             />
           </div>
-          <button class="btn btn-primary" @click="openDialog()">
-            New Entry
-          </button>
+          <button class="btn btn-primary" @click="openDialog()">New Entry</button>
         </div>
       </div>
     </div>
@@ -126,7 +124,7 @@ export default {
       if (!this.search) return this.journalEntries;
       const search = this.search.toLowerCase();
       return this.journalEntries.filter(
-        entry =>
+        (entry) =>
           entry.reference.toLowerCase().includes(search) ||
           entry.description.toLowerCase().includes(search) ||
           entry.status.toLowerCase().includes(search)

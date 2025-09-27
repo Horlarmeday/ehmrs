@@ -154,15 +154,13 @@
               <div
                 v-if="
                   statistics &&
-                    statistics.breakdown &&
-                    Object.keys(statistics.breakdown.by_month).length > 0
+                  statistics.breakdown &&
+                  Object.keys(statistics.breakdown.by_month).length > 0
                 "
               >
                 <canvas ref="monthlyChart" height="300"></canvas>
               </div>
-              <div v-else class="text-center text-muted py-4">
-                No data available
-              </div>
+              <div v-else class="text-center text-muted py-4">No data available</div>
             </b-card-body>
           </b-card>
         </b-col>
@@ -175,15 +173,13 @@
               <div
                 v-if="
                   statistics &&
-                    statistics.breakdown &&
-                    Object.keys(statistics.breakdown.by_department).length > 0
+                  statistics.breakdown &&
+                  Object.keys(statistics.breakdown.by_department).length > 0
                 "
               >
                 <canvas ref="departmentChart" height="300"></canvas>
               </div>
-              <div v-else class="text-center text-muted py-4">
-                No data available
-              </div>
+              <div v-else class="text-center text-muted py-4">No data available</div>
             </b-card-body>
           </b-card>
         </b-col>
@@ -200,15 +196,13 @@
               <div
                 v-if="
                   statistics &&
-                    statistics.breakdown &&
-                    Object.keys(statistics.breakdown.by_cause).length > 0
+                  statistics.breakdown &&
+                  Object.keys(statistics.breakdown.by_cause).length > 0
                 "
               >
                 <canvas ref="causeChart" height="300"></canvas>
               </div>
-              <div v-else class="text-center text-muted py-4">
-                No data available
-              </div>
+              <div v-else class="text-center text-muted py-4">No data available</div>
             </b-card-body>
           </b-card>
         </b-col>
@@ -221,15 +215,13 @@
               <div
                 v-if="
                   statistics &&
-                    statistics.breakdown &&
-                    Object.keys(statistics.breakdown.by_age_group).length > 0
+                  statistics.breakdown &&
+                  Object.keys(statistics.breakdown.by_age_group).length > 0
                 "
               >
                 <canvas ref="ageGroupChart" height="300"></canvas>
               </div>
-              <div v-else class="text-center text-muted py-4">
-                No data available
-              </div>
+              <div v-else class="text-center text-muted py-4">No data available</div>
             </b-card-body>
           </b-card>
         </b-col>
@@ -270,9 +262,7 @@
               class="mt-3"
             ></b-pagination>
           </div>
-          <div v-else class="text-center text-muted py-4">
-            No recent deaths found
-          </div>
+          <div v-else class="text-center text-muted py-4">No recent deaths found</div>
         </b-card-body>
       </b-card>
     </div>
@@ -367,7 +357,7 @@ export default {
       if (!this.statistics) return;
 
       // Destroy existing charts
-      Object.values(this.charts).forEach(chart => {
+      Object.values(this.charts).forEach((chart) => {
         if (chart) chart.destroy();
       });
 
@@ -392,7 +382,7 @@ export default {
         return;
       const data = this.statistics.breakdown.by_month;
       const labels = Object.keys(data).sort();
-      const values = labels.map(label => data[label]);
+      const values = labels.map((label) => data[label]);
 
       this.charts.monthly = new Chart(ctx, {
         type: 'line',
@@ -533,7 +523,7 @@ export default {
 
   beforeDestroy() {
     // Clean up charts
-    Object.values(this.charts).forEach(chart => {
+    Object.values(this.charts).forEach((chart) => {
       if (chart) chart.destroy();
     });
   },

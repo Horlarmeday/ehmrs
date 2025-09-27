@@ -472,7 +472,7 @@ export default {
           };
           this.$store
             .dispatch('patient/updatePatient', { data, id: this.$route.params.id })
-            .then(response => this.endRequest(response, submitButton))
+            .then((response) => this.endRequest(response, submitButton))
             .catch(() => {
               this.removeSpinner(submitButton);
             });

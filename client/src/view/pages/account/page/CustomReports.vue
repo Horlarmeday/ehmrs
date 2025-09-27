@@ -148,14 +148,7 @@ export default {
     reportForm: {
       name: '',
       type: 'financial',
-      dateRange: [
-        dayjs()
-          .startOf('month')
-          .toDate(),
-        dayjs()
-          .endOf('month')
-          .toDate(),
-      ],
+      dateRange: [dayjs().startOf('month').toDate(), dayjs().endOf('month').toDate()],
       parameters: [],
     },
   }),
@@ -184,14 +177,7 @@ export default {
       this.reportForm = {
         name: '',
         type: 'financial',
-        dateRange: [
-          dayjs()
-            .startOf('month')
-            .toDate(),
-          dayjs()
-            .endOf('month')
-            .toDate(),
-        ],
+        dateRange: [dayjs().startOf('month').toDate(), dayjs().endOf('month').toDate()],
         parameters: [],
       };
     },

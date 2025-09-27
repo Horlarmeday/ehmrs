@@ -201,14 +201,7 @@ export default {
   },
   data: () => ({
     selectedStatement: 'income',
-    dateRange: [
-      dayjs()
-        .startOf('month')
-        .toDate(),
-      dayjs()
-        .endOf('month')
-        .toDate(),
-    ],
+    dateRange: [dayjs().startOf('month').toDate(), dayjs().endOf('month').toDate()],
   }),
   computed: {
     ...mapGetters('account', ['financialStatements', 'loading']),

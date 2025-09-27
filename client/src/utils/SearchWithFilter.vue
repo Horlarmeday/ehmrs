@@ -14,7 +14,7 @@
           />
         </div>
       </div>
-      <div class="col-lg-3  mb-lg-0 mb-6">
+      <div class="col-lg-3 mb-lg-0 mb-6">
         <label>{{ label }}:</label>
         <select
           class="form-control datatable-input"
@@ -22,9 +22,9 @@
           v-model="id"
           @change="onFilter"
         >
-          <option :selected="selected" :value="d.id" v-for="(d, index) in data" :key="index">{{
-            d.name
-          }}</option>
+          <option :selected="selected" :value="d.id" v-for="(d, index) in data" :key="index">
+            {{ d.name }}
+          </option>
         </select>
       </div>
     </div>

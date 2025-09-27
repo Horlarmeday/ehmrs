@@ -91,12 +91,12 @@ export default {
     },
 
     routineDrugs() {
-      const drugs = this.defaults?.find(def => def.type === this.defaultData)?.data;
+      const drugs = this.defaults?.find((def) => def.type === this.defaultData)?.data;
       if (drugs) {
         const insurance = this.getInsuranceName() || 'Cash';
         return drugs
-          .filter(drug => drug.drug.drug_type === insurance)
-          .map(drug => ({
+          .filter((drug) => drug.drug.drug_type === insurance)
+          .map((drug) => ({
             id: randomId(),
             drug_name: drug.drug?.name,
             dosage_form_id: drug.drug.dosage_form?.id,
@@ -132,19 +132,19 @@ export default {
     },
 
     oneWeekDrugs() {
-      return this.routineDrugs?.filter(drug => drug?.group === this.ONE_WEEK) || [];
+      return this.routineDrugs?.filter((drug) => drug?.group === this.ONE_WEEK) || [];
     },
 
     twoWeeksDrugs() {
-      return this.routineDrugs?.filter(drug => drug?.group === this.TWO_WEEKS) || [];
+      return this.routineDrugs?.filter((drug) => drug?.group === this.TWO_WEEKS) || [];
     },
 
     threeWeeksDrugs() {
-      return this.routineDrugs?.filter(drug => drug?.group === this.THREE_WEEKS) || [];
+      return this.routineDrugs?.filter((drug) => drug?.group === this.THREE_WEEKS) || [];
     },
 
     fourWeeksDrugs() {
-      return this.routineDrugs?.filter(drug => drug?.group === this.FOUR_WEEKS) || [];
+      return this.routineDrugs?.filter((drug) => drug?.group === this.FOUR_WEEKS) || [];
     },
   },
   watch: {
@@ -158,7 +158,7 @@ export default {
       if (!localStorage.getItem('defaults')) {
         this.$store
           .dispatch('model/fetchDefaults')
-          .then(res => localStorage.setItem('defaults', JSON.stringify(res.data.data)));
+          .then((res) => localStorage.setItem('defaults', JSON.stringify(res.data.data)));
       }
     },
 
@@ -198,7 +198,7 @@ export default {
 
     getInventoryId() {
       const type = this.getDrugType(this.insuranceName);
-      return this.inventories.find(inventory =>
+      return this.inventories.find((inventory) =>
         inventory.name.toLowerCase().includes(type.toLowerCase())
       )?.id;
     },

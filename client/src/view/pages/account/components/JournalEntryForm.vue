@@ -29,9 +29,7 @@
         <div class="card-header">
           <h3 class="card-title">Entry Lines</h3>
           <div class="card-toolbar">
-            <button type="button" class="btn btn-sm btn-primary" @click="addLine">
-              Add Line
-            </button>
+            <button type="button" class="btn btn-sm btn-primary" @click="addLine">Add Line</button>
           </div>
         </div>
         <div class="card-body">

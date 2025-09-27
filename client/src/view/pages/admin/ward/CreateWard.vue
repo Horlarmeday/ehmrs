@@ -26,12 +26,10 @@
             name="service"
             label="name"
             @search="searchServices"
-            :reduce="service => service.id"
+            :reduce="(service) => service.id"
             :options="services"
           >
-            <template #no-options>
-              Type to search for services...
-            </template>
+            <template #no-options> Type to search for services... </template>
           </v-select>
           <span class="text-danger text-sm">{{ errors.first('service') }}</span>
         </div>
@@ -123,7 +121,7 @@ export default {
         const { id, name, service_id, occupant_type } = JSON.parse(JSON.stringify(this.data));
         this.ward_id = id;
         this.name = name;
-        this.selectedService = this.services.find(service => service.id === service_id);
+        this.selectedService = this.services.find((service) => service.id === service_id);
         this.occupant_type = occupant_type;
       }
     },
@@ -162,7 +160,7 @@ export default {
     }, 500),
 
     createWard() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             ward_id: this.ward_id,

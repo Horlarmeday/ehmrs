@@ -18,20 +18,21 @@ export const createCachedAction = (originalAction, cacheKey, stateSelector, ttl 
     const { commit, state } = context;
     const now = Date.now();
     const cacheTimestamp = cacheTimestamps.get(cacheKey);
-    
+
     // Check if cache is valid
-    if (cacheTimestamp && (now - cacheTimestamp) < ttl) {
+    if (cacheTimestamp && now - cacheTimestamp < ttl) {
       const cachedData = cache.get(cacheKey);
       if (cachedData && stateSelector(state)?.length > 0) {
         console.log(`[Cache] Using cached data for ${cacheKey}`);
         return Promise.resolve({ data: { data: cachedData } });
       }
     }
-    
+
     // Cache miss or expired - fetch fresh data
     console.log(`[Cache] Fetching fresh data for ${cacheKey}`);
-    return originalAction.call(this, context, payload)
-      .then(response => {
+    return originalAction
+      .call(this, context, payload)
+      .then((response) => {
         // Store in cache
         const dataToCache = response.data?.data;
         if (dataToCache) {
@@ -41,7 +42,7 @@ export const createCachedAction = (originalAction, cacheKey, stateSelector, ttl 
         }
         return response;
       })
-      .catch(error => {
+      .catch((error) => {
         console.error(`[Cache] Error fetching ${cacheKey}:`, error);
         throw error;
       });
@@ -77,6 +78,6 @@ export const getCacheStats = () => {
   return {
     size: cache.size,
     keys: Array.from(cache.keys()),
-    timestamps: Object.fromEntries(cacheTimestamps)
+    timestamps: Object.fromEntries(cacheTimestamps),
   };
 };

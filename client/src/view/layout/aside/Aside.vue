@@ -16,7 +16,7 @@
         v-bind:class="asideMenuClass"
       >
         <!-- example static menu here -->
-        <perfect-scrollbar class="aside-menu scroll" style="max-height: 90vh; position: relative;">
+        <perfect-scrollbar class="aside-menu scroll" style="max-height: 90vh; position: relative">
           <KTMenu></KTMenu>
         </perfect-scrollbar>
       </div>

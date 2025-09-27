@@ -206,7 +206,7 @@ export default {
     },
 
     createVitals() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             temperature: this.temperature,
@@ -297,7 +297,7 @@ export default {
     },
   },
   created() {
-    this.$store.dispatch('visit/fetchVisit', this.$route.params.id).then(response => {
+    this.$store.dispatch('visit/fetchVisit', this.$route.params.id).then((response) => {
       const res = response.data.data;
       this.height = res?.triage?.height;
       this.date_of_birth = dayjs().diff(res.patient.date_of_birth, 'weeks');

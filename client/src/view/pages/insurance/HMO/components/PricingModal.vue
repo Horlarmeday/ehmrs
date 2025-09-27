@@ -24,7 +24,7 @@
                 @search="searchAvailableItems"
                 v-model="formData[getItemIdField()]"
                 label="name"
-                :reduce="items => items.id"
+                :reduce="(items) => items.id"
                 :options="availableItems"
                 :placeholder="`Search ${getItemLabel().toLowerCase()}...`"
                 :loading="isSearchingItems"
@@ -53,13 +53,13 @@
                 @search="searchHMOs"
                 v-model="formData.hmo_id"
                 label="name"
-                :reduce="hmos => hmos.id"
+                :reduce="(hmos) => hmos.id"
                 :options="hmoProviders"
                 placeholder="Search insurance provider..."
                 :loading="isSearchingHMOs"
                 :clearable="false"
               >
-                <template #option="{ name, insurance}">
+                <template #option="{ name, insurance }">
                   <span>{{ name }} {{ `(${insurance?.name})` }} </span>
                 </template>
               </v-select>
@@ -387,7 +387,7 @@ export default {
 
       // Clear all item ID fields except the one for current tab
       const allItemIds = ['drug_id', 'test_id', 'service_id', 'investigation_id'];
-      allItemIds.forEach(id => {
+      allItemIds.forEach((id) => {
         if (id !== payload[itemIdField]) {
           delete payload[id];
         }
@@ -399,7 +399,7 @@ export default {
 
     searchHMOs(query, loading) {
       this.isSearchingHMOs = true;
-      this.$emit('searchHMOs', query, isLoading => {
+      this.$emit('searchHMOs', query, (isLoading) => {
         this.isSearchingHMOs = isLoading;
         if (loading) loading(isLoading);
       });
@@ -418,7 +418,7 @@ export default {
 
     searchAvailableItems(query, loading) {
       this.isSearchingItems = true;
-      this.$emit('searchAvailableItems', query, isLoading => {
+      this.$emit('searchAvailableItems', query, (isLoading) => {
         this.isSearchingItems = isLoading;
         if (loading) loading(isLoading);
       });

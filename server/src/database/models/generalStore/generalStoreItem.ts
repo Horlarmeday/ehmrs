@@ -116,7 +116,7 @@ export class GeneralStoreItem extends Model {
   @ForeignKey(() => GeneralStoreSubcategory)
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
+    allowNull: true,
     references: { model: 'General_Store_Subcategories', key: 'id' },
     onUpdate: 'CASCADE',
     onDelete: 'RESTRICT',
@@ -225,12 +225,7 @@ export class GeneralStoreItem extends Model {
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'Location is required',
-      },
-    },
+    allowNull: true,
   })
   location: string;
 

@@ -23,7 +23,6 @@ export default {
 
     // Logging mixin methods disabled to prevent Vue method conflicts
     Vue.mixin({
-
       // Log component lifecycle
       created() {
         if (this.$log.isDebugEnabled()) {
@@ -60,7 +59,7 @@ export default {
         info: info,
         route: vm?.$route?.path,
       });
-      
+
       // Also report to error reporting service
       errorReportingService.reportComponentError(err, {
         component: vm?.$options?.name || 'Unknown',
@@ -79,9 +78,13 @@ export default {
         trace: trace,
         route: vm?.$route?.path,
       });
-      
+
       // Also report to error reporting service for severe warnings
-      if (msg.includes('Unknown custom element') || msg.includes('Property') || msg.includes('Method')) {
+      if (
+        msg.includes('Unknown custom element') ||
+        msg.includes('Property') ||
+        msg.includes('Method')
+      ) {
         errorReportingService.reportError(new Error(msg), {
           type: 'vue_warning',
           component: vm?.$options?.name || 'Unknown',
@@ -93,5 +96,3 @@ export default {
     };
   },
 };
-
-

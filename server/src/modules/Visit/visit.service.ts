@@ -23,7 +23,7 @@ import { VisitCategory, VisitStatus } from '../../database/models/visit';
 import { getOneAntenatalAccount } from '../Antenatal/antenatal.repository';
 import { AccountStatus } from '../../database/models/antenatal';
 import { BadException } from '../../common/util/api-error';
-import { insertSingleOrMultipleServices, StatusCodes } from '../../core/helpers/helper';
+import { insertPrescribedTests, insertSingleOrMultipleServices, StatusCodes } from '../../core/helpers/helper';
 import { Op } from 'sequelize';
 import {
   ANTENATAL_ACCOUNT_REQUIRED,
@@ -50,7 +50,7 @@ class VisitService {
    * @memberOf VisitService
    */
   static async createVisitService(body: CreateVisit): Promise<Visit> {
-    const { patient_id, ante_natal_id, category, service_id, staff_id, immunization_id } = body;
+    const { patient_id, ante_natal_id, category, service_id, staff_id, immunization_id, test_id } = body;
 
     // Set defaults for appointment check-ins
     if (!body.date_of_visit) {
@@ -118,6 +118,14 @@ class VisitService {
       patient_id,
       staff_id,
       visit: createdVisit,
+      ante_natal_id: body?.ante_natal_id,
+    });
+
+    await insertPrescribedTests({
+      test_id,
+      visit_id: createdVisit.id,
+      patient_id,
+      staff_id,
       ante_natal_id: body?.ante_natal_id,
     });
 
@@ -364,8 +372,8 @@ class VisitService {
     const visit = await getOneVisitQuery({
       category,
       status: VisitStatus.ONGOING,
-      professional,
       patient_id,
+      ...(professional && { professional }),
     });
     if (!visit) {
       const newVisit = await VisitService.createVisitService(body);

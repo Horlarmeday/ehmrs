@@ -123,21 +123,21 @@ export default {
     clickAction: {
       type: String,
       default: 'dropdown', // 'dropdown', 'sidebar', 'modal'
-      validator: value => ['dropdown', 'sidebar', 'modal'].includes(value),
+      validator: (value) => ['dropdown', 'sidebar', 'modal'].includes(value),
     },
 
     // Badge appearance
     size: {
       type: String,
       default: 'normal',
-      validator: value => ['small', 'normal', 'large'].includes(value),
+      validator: (value) => ['small', 'normal', 'large'].includes(value),
     },
 
     // Badge positioning (for absolute positioning)
     position: {
       type: String,
       default: 'relative',
-      validator: value => ['relative', 'absolute'].includes(value),
+      validator: (value) => ['relative', 'absolute'].includes(value),
     },
 
     // Show only unread alerts
@@ -305,8 +305,8 @@ export default {
 
     async acknowledgeAll() {
       const unreadAlertIds = this.activeAlerts
-        .filter(alert => !alert.acknowledged_at)
-        .map(alert => alert.id);
+        .filter((alert) => !alert.acknowledged_at)
+        .map((alert) => alert.id);
 
       if (unreadAlertIds.length === 0) return;
 

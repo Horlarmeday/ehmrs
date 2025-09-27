@@ -88,7 +88,7 @@ export default {
     },
 
     addAuthCode() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           // set spinner to submit button
           const submitButton = this.$refs['kt_updateAuthCode_submit'];
@@ -100,7 +100,7 @@ export default {
           };
           this.$store
             .dispatch(this.dispatchType, { data })
-            .then(response => this.endRequest(submitButton, response))
+            .then((response) => this.endRequest(submitButton, response))
             .catch(() => this.removeSpinner(submitButton));
         }
       });

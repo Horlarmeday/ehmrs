@@ -142,7 +142,7 @@ export default {
   watch: {
     admission: {
       handler() {
-        this.routes.filter(tab => {
+        this.routes.filter((tab) => {
           if (
             tab.name === this.POST_NATAL ||
             tab.name === this.DELIVERY ||
@@ -164,7 +164,7 @@ export default {
   created() {
     this.$store
       .dispatch('admission/fetchAdmission', { admissionId: this.$route.params.id })
-      .then(response => {
+      .then((response) => {
         const res = response.data.data;
         this.$store.dispatch('patient/setCurrentPatient', { ...res.insurance, ...res.patient });
       });

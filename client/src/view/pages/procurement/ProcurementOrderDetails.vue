@@ -294,9 +294,7 @@
                       <span class="text-dark-75 font-weight-bolder">Sent</span>
                       <span class="text-muted font-size-sm">{{ formatDate(order.sent_date) }}</span>
                     </div>
-                    <div class="text-muted font-size-sm">
-                      Order sent to vendor
-                    </div>
+                    <div class="text-muted font-size-sm">Order sent to vendor</div>
                   </div>
                 </div>
 
@@ -311,9 +309,7 @@
                         formatDate(order.received_date)
                       }}</span>
                     </div>
-                    <div class="text-muted font-size-sm">
-                      Items received and processed
-                    </div>
+                    <div class="text-muted font-size-sm">Items received and processed</div>
                   </div>
                 </div>
 
@@ -383,7 +379,7 @@ export default {
     hasReceivedItems() {
       return (
         this.order?.status === 'RECEIVED' &&
-        this.order?.ProcurementOrderItems?.some(item => item.quantity_received > 0)
+        this.order?.ProcurementOrderItems?.some((item) => item.quantity_received > 0)
       );
     },
   },

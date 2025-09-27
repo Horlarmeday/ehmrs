@@ -418,7 +418,7 @@ export default {
     },
     formatReferenceType(type) {
       if (!type) return 'Not specified';
-      return type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+      return type.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase());
     },
     getStatusClass(status) {
       const classes = {
@@ -431,11 +431,11 @@ export default {
     },
     formatLocation(location) {
       if (!location) return 'Not specified';
-      return location.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+      return location.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase());
     },
     formatReason(reason) {
       if (!reason) return 'Not specified';
-      return reason.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+      return reason.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase());
     },
     getQuantityClass(type) {
       if (type === 'out') return 'text-danger';
@@ -500,57 +500,66 @@ export default {
 
     async showApprovalModal() {
       return new Promise((resolve) => {
-        this.$bvModal.msgBoxPrompt('Enter approval notes (optional):', {
-          title: `Approve Movement #${this.movement.reference_number}`,
-          size: 'md',
-          okTitle: 'Approve',
-          cancelTitle: 'Cancel',
-          okVariant: 'success',
-          cancelVariant: 'secondary',
-          hideHeaderClose: false,
-          centered: true,
-        }).then((value) => {
-          resolve(value || '');
-        }).catch(() => {
-          resolve(null);
-        });
+        this.$bvModal
+          .msgBoxPrompt('Enter approval notes (optional):', {
+            title: `Approve Movement #${this.movement.reference_number}`,
+            size: 'md',
+            okTitle: 'Approve',
+            cancelTitle: 'Cancel',
+            okVariant: 'success',
+            cancelVariant: 'secondary',
+            hideHeaderClose: false,
+            centered: true,
+          })
+          .then((value) => {
+            resolve(value || '');
+          })
+          .catch(() => {
+            resolve(null);
+          });
       });
     },
 
     async showRejectionModal() {
       return new Promise((resolve) => {
-        this.$bvModal.msgBoxPrompt('Enter rejection reason:', {
-          title: `Reject Movement #${this.movement.reference_number}`,
-          size: 'md',
-          okTitle: 'Reject',
-          cancelTitle: 'Cancel',
-          okVariant: 'danger',
-          cancelVariant: 'secondary',
-          hideHeaderClose: false,
-          centered: true,
-          placeholder: 'Please provide a reason for rejection...',
-        }).then((reason) => {
-          if (reason) {
-            this.$bvModal.msgBoxPrompt('Enter additional notes (optional):', {
-              title: 'Additional Notes',
-              size: 'md',
-              okTitle: 'Confirm Rejection',
-              cancelTitle: 'Cancel',
-              okVariant: 'danger',
-              cancelVariant: 'secondary',
-              hideHeaderClose: false,
-              centered: true,
-            }).then((notes) => {
-              resolve({ reason, notes: notes || '' });
-            }).catch(() => {
+        this.$bvModal
+          .msgBoxPrompt('Enter rejection reason:', {
+            title: `Reject Movement #${this.movement.reference_number}`,
+            size: 'md',
+            okTitle: 'Reject',
+            cancelTitle: 'Cancel',
+            okVariant: 'danger',
+            cancelVariant: 'secondary',
+            hideHeaderClose: false,
+            centered: true,
+            placeholder: 'Please provide a reason for rejection...',
+          })
+          .then((reason) => {
+            if (reason) {
+              this.$bvModal
+                .msgBoxPrompt('Enter additional notes (optional):', {
+                  title: 'Additional Notes',
+                  size: 'md',
+                  okTitle: 'Confirm Rejection',
+                  cancelTitle: 'Cancel',
+                  okVariant: 'danger',
+                  cancelVariant: 'secondary',
+                  hideHeaderClose: false,
+                  centered: true,
+                })
+                .then((notes) => {
+                  resolve({ reason, notes: notes || '' });
+                })
+                .catch(() => {
+                  resolve(null);
+                });
+            } else {
               resolve(null);
-            });
-          } else {
+            }
+          })
+          .catch(() => {
             resolve(null);
-          }
-        }).catch(() => {
-          resolve(null);
-        });
+          });
       });
     },
     printMovementDetails() {
@@ -558,29 +567,33 @@ export default {
     },
     async exportMovementData() {
       try {
-        const movementData = [{
-          id: this.movement.id,
-          reference_number: this.movement.reference_number,
-          movement_type: this.movement.movement_type,
-          quantity: this.movement.quantity,
-          unit_price: this.movement.unit_price,
-          total_price: this.movement.total_price,
-          item_name: this.movement.item?.name || 'N/A',
-          item_code: this.movement.item?.item_code || 'N/A',
-          notes: this.movement.notes,
-          status: this.movement.status,
-          created_at: this.movement.created_at,
-          created_by: this.movement.created_by,
-        }];
+        const movementData = [
+          {
+            id: this.movement.id,
+            reference_number: this.movement.reference_number,
+            movement_type: this.movement.movement_type,
+            quantity: this.movement.quantity,
+            unit_price: this.movement.unit_price,
+            total_price: this.movement.total_price,
+            item_name: this.movement.item?.name || 'N/A',
+            item_code: this.movement.item?.item_code || 'N/A',
+            notes: this.movement.notes,
+            status: this.movement.status,
+            created_at: this.movement.created_at,
+            created_by: this.movement.created_by,
+          },
+        ];
 
-        const reportName = `Movement_${this.movement.reference_number}_${new Date().toISOString().split('T')[0]}`;
+        const reportName = `Movement_${this.movement.reference_number}_${
+          new Date().toISOString().split('T')[0]
+        }`;
         await this.$exportData(movementData, reportName, 'xlsx', {
           formatters: {
             quantity: (value) => Number(value || 0),
             unit_price: (value) => Number(value || 0).toFixed(2),
             total_price: (value) => Number(value || 0).toFixed(2),
             created_at: (value) => new Date(value).toLocaleDateString(),
-          }
+          },
         });
       } catch (error) {
         this.$logError('Failed to export movement data', error, { movementId: this.movement.id });

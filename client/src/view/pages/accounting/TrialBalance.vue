@@ -574,7 +574,7 @@ export default {
       return this.$store.getters['accounting/getTrialBalanceSummary'] || {};
     },
     selectedPeriod() {
-      return this.periodOptions.find(p => p.value === this.filters.period);
+      return this.periodOptions.find((p) => p.value === this.filters.period);
     },
     totalDebits() {
       return this.trialBalance.reduce((sum, account) => sum + (account.debits || 0), 0);
@@ -590,8 +590,9 @@ export default {
       return ((this.totalDebits / this.totalCredits) * 100).toFixed(2);
     },
     balancedAccountsPercentage() {
-      const balanced = this.trialBalance.filter(account => Math.abs(account.closing_balance) < 0.01)
-        .length;
+      const balanced = this.trialBalance.filter(
+        (account) => Math.abs(account.closing_balance) < 0.01
+      ).length;
       return this.trialBalance.length > 0
         ? ((balanced / this.trialBalance.length) * 100).toFixed(2)
         : 0;
@@ -601,7 +602,7 @@ export default {
     },
     accountTypeSummary() {
       const summary = {};
-      this.trialBalance.forEach(account => {
+      this.trialBalance.forEach((account) => {
         if (!summary[account.type]) {
           summary[account.type] = {
             type: account.type,
@@ -746,7 +747,7 @@ export default {
             y: {
               beginAtZero: true,
               ticks: {
-                callback: value => this.formatCurrency(value),
+                callback: (value) => this.formatCurrency(value),
               },
             },
           },
@@ -765,9 +766,9 @@ export default {
 
       const accountTypeData = chartData.accountTypeDistribution || [];
 
-      this.charts.accountType.data.labels = accountTypeData.map(item => item.type);
+      this.charts.accountType.data.labels = accountTypeData.map((item) => item.type);
       this.charts.accountType.data.datasets[0].data = accountTypeData.map(
-        item => item.totalClosingBalance
+        (item) => item.totalClosingBalance
       );
 
       this.charts.accountType.update();
@@ -779,9 +780,9 @@ export default {
 
       const balanceTrendData = chartData.balanceTrend || [];
 
-      this.charts.balanceTrend.data.labels = balanceTrendData.map(item => item.type);
+      this.charts.balanceTrend.data.labels = balanceTrendData.map((item) => item.type);
       this.charts.balanceTrend.data.datasets[0].data = balanceTrendData.map(
-        item => item.closingTotal
+        (item) => item.closingTotal
       );
 
       this.charts.balanceTrend.update();
@@ -856,7 +857,7 @@ export default {
       this.loadTrialBalance();
     },
 
-    debounceSearch: debounce(function() {
+    debounceSearch: debounce(function () {
       this.loadTrialBalance();
     }, 500),
 
@@ -874,7 +875,7 @@ export default {
           search: this.filters.search,
         };
 
-        this.$store.dispatch('accounting/exportTrialBalance', params).then(result => {
+        this.$store.dispatch('accounting/exportTrialBalance', params).then((result) => {
           if (result.success) {
             this.$bvToast.toast('Trial balance exported successfully', {
               title: 'Success',

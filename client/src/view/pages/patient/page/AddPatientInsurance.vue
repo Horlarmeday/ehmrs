@@ -16,7 +16,7 @@
         </div>
         <b-collapse id="accordion-1" visible accordion="my-accordion" role="tabpanel">
           <div class="card-body">
-            <h6 class=" mt-4 text-primary">Health insurance</h6>
+            <h6 class="mt-4 text-primary">Health insurance</h6>
             <div class="form-group row">
               <div class="col-lg-4">
                 <label>Insurance Type <span class="text-danger">*</span></label>
@@ -28,9 +28,9 @@
                   v-model="insurance_id"
                   @change="getHMOs"
                 >
-                  <option :value="insurance.id" v-for="(insurance, i) in insurances" :key="i">{{
-                    insurance.name
-                  }}</option>
+                  <option :value="insurance.id" v-for="(insurance, i) in insurances" :key="i">
+                    {{ insurance.name }}
+                  </option>
                 </select>
                 <span class="text-danger text-sm">{{ errors.first('insurance_id') }}</span>
               </div>
@@ -42,7 +42,7 @@
                   name="hmo_id"
                   v-model="hmo_id"
                   label="name"
-                  :reduce="hmos => hmos.id"
+                  :reduce="(hmos) => hmos.id"
                   :options="hmos"
                 ></v-select>
                 <span class="text-danger text-sm">{{ errors.first('hmo_id') }}</span>
@@ -82,7 +82,7 @@
                   v-validate="'required'"
                   data-vv-validate-on="blur"
                 >
-                  <option value="Social">Social </option>
+                  <option value="Social">Social</option>
                   <option value="Gold">Gold</option>
                   <option value="Bronze">Bronze</option>
                   <option value="Silver">Silver</option>
@@ -114,7 +114,7 @@
                 ref="dependant_video"
                 id="dependant_video"
                 v-show="!dependant_image"
-                style="height:1px;width:120px;margin-bottom:20px;"
+                style="height: 1px; width: 120px; margin-bottom: 20px"
                 autoplay
               ></video>
               <canvas
@@ -129,7 +129,7 @@
                 id="snap"
                 v-if="!dependant_image && !dphotoSaved && !dvideoShowing"
                 class="btn btn-success btn-sm mt-4"
-                style="display: block;"
+                style="display: block"
                 v-on:click="startDependantCamera()"
               >
                 Take Photo
@@ -138,7 +138,7 @@
                 id="snap"
                 v-if="!dependant_image && !dphotoSaved && dvideoShowing"
                 class="btn btn-success btn-sm"
-                style="display: block;"
+                style="display: block"
                 v-on:click="captureDependant()"
               >
                 Snap Photo
@@ -461,7 +461,7 @@ export default {
       const stream = videoElem.srcObject;
       const tracks = stream.getTracks();
 
-      tracks.forEach(function(track) {
+      tracks.forEach(function (track) {
         track.stop();
       });
 
@@ -483,7 +483,7 @@ export default {
       this.dependantvideo = this.$refs.dependant_video;
       this.dependantvideo.style = 'display:block;width:250px;margin-bottom:20px;';
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+        navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
           this.dependantvideo.srcObject = stream;
           this.dependantvideo.play();
         });
@@ -614,7 +614,7 @@ export default {
     },
 
     addPatient() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           if (this.dependant_firstname) return this.displayErrorPrompt();
           if (this.dependants.length === 0) return this.displayPrompt();

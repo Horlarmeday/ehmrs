@@ -6,422 +6,372 @@
         <i class="flaticon2-plus text-primary mr-2"></i>
         Create New Item
       </h3>
-      <p class="text-muted mb-0">
-        Add a new item to the general store inventory
-      </p>
+      <p class="text-muted mb-0">Add a new item to the general store inventory</p>
     </div>
 
     <!-- Main Form -->
     <form @submit.prevent="handleSubmit" class="item-form">
-      <div class="row">
-        <!-- Basic Information -->
-        <div class="col-lg-8">
-          <div class="card card-custom mb-4">
-            <div class="card-header">
-              <h5 class="card-title mb-0">
-                <i class="flaticon2-box text-primary mr-2"></i>
-                Basic Information
-              </h5>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label class="form-label required">Item Code</label>
-                  <div class="input-group">
-                    <div class="input-group-prepend">
-                      <span class="input-group-text">GS-</span>
-                    </div>
-                    <input
-                      v-model="form.item_code"
-                      type="text"
-                      class="form-control"
-                      :class="{ 'is-invalid': errors.item_code }"
-                      required
-                    />
-                  </div>
-                  <div v-if="errors.item_code" class="invalid-feedback d-block">
-                    {{ errors.item_code }}
-                  </div>
-                  <small class="form-text text-muted">
-                    Unique identifier for the item (e.g., GS-001, GS-002)
-                  </small>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                  <label class="form-label required">Item Name</label>
-                  <input
-                    v-model="form.name"
-                    type="text"
-                    class="form-control"
-                    :class="{ 'is-invalid': errors.name }"
-                    required
-                  />
-                  <div v-if="errors.name" class="invalid-feedback d-block">
-                    {{ errors.name }}
-                  </div>
-                </div>
-
-                <div class="col-12 mb-3">
-                  <label class="form-label">Description</label>
-                  <textarea
-                    v-model="form.description"
-                    class="form-control"
-                    :class="{ 'is-invalid': errors.description }"
-                    rows="3"
-                  ></textarea>
-                  <div v-if="errors.description" class="invalid-feedback d-block">
-                    {{ errors.description }}
-                  </div>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                  <label class="form-label required">Category</label>
-                  <select
-                    v-model="form.category_id"
-                    class="form-control"
-                    :class="{ 'is-invalid': errors.category_id }"
-                    @change="handleCategoryChange"
-                    required
-                  >
-                    <option value="">Select Category</option>
-                    <option v-for="category in categories" :key="category.id" :value="category.id">
-                      {{ category.name }}
-                    </option>
-                  </select>
-                  <div v-if="errors.category_id" class="invalid-feedback d-block">
-                    {{ errors.category_id }}
-                  </div>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                  <label class="form-label required">Subcategory</label>
-                  <select
-                    v-model="form.subcategory_id"
-                    class="form-control"
-                    :class="{ 'is-invalid': errors.subcategory_id }"
-                    required
-                    :disabled="!form.category_id"
-                  >
-                    <option value="">Select Subcategory</option>
-                    <option
-                      v-for="subcategory in filteredSubcategories"
-                      :key="subcategory.id"
-                      :value="subcategory.id"
-                    >
-                      {{ subcategory.name }}
-                    </option>
-                  </select>
-                  <div v-if="errors.subcategory_id" class="invalid-feedback d-block">
-                    {{ errors.subcategory_id }}
-                  </div>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                  <label class="form-label required">Unit</label>
-                  <select
-                    v-model="form.unit_id"
-                    class="form-control"
-                    :class="{ 'is-invalid': errors.unit_id }"
-                    required
-                  >
-                    <option value="">Select Unit</option>
-                    <option v-for="unit in units" :key="unit.id" :value="unit.id">
-                      {{ unit.name }}
-                    </option>
-                  </select>
-                  <div v-if="errors.unit_id" class="invalid-feedback d-block">
-                    {{ errors.unit_id }}
-                  </div>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                  <label class="form-label required">Supplier</label>
-                  <select
-                    v-model="form.supplier_id"
-                    class="form-control"
-                    :class="{ 'is-invalid': errors.supplier_id }"
-                    required
-                  >
-                    <option value="">Select Supplier</option>
-                    <option v-for="supplier in suppliers" :key="supplier.id" :value="supplier.id">
-                      {{ supplier.name }}
-                    </option>
-                  </select>
-                  <div v-if="errors.supplier_id" class="invalid-feedback d-block">
-                    {{ errors.supplier_id }}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Technical Details -->
-          <div class="card card-custom mb-4">
-            <div class="card-header">
-              <h5 class="card-title mb-0">
-                <i class="flaticon2-settings text-primary mr-2"></i>
-                Technical Details
-              </h5>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Manufacturer</label>
-                  <input
-                    v-model="form.manufacturer"
-                    type="text"
-                    class="form-control"
-                    :class="{ 'is-invalid': errors.manufacturer }"
-                  />
-                  <div v-if="errors.manufacturer" class="invalid-feedback d-block">
-                    {{ errors.manufacturer }}
-                  </div>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Model Number</label>
-                  <input
-                    v-model="form.model_number"
-                    type="text"
-                    class="form-control"
-                    :class="{ 'is-invalid': errors.model_number }"
-                  />
-                  <div v-if="errors.model_number" class="invalid-feedback d-block">
-                    {{ errors.model_number }}
-                  </div>
-                </div>
-
-                <div class="col-12 mb-3">
-                  <label class="form-label">Specifications</label>
-                  <textarea
-                    v-model="form.specifications"
-                    class="form-control"
-                    :class="{ 'is-invalid': errors.specifications }"
-                    rows="3"
-                  ></textarea>
-                  <div v-if="errors.specifications" class="invalid-feedback d-block">
-                    {{ errors.specifications }}
-                  </div>
-                  <small class="form-text text-muted">
-                    Technical specifications in JSON format (e.g., {"color": "blue", "size":
-                    "large"})
-                  </small>
-                </div>
-              </div>
-            </div>
-          </div>
+      <div class="card card-custom mb-4">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="flaticon2-box text-primary mr-2"></i>
+            Item Details
+          </h5>
         </div>
-
-        <!-- Stock & Cost Information -->
-        <div class="col-lg-4">
-          <div class="card card-custom mb-4">
-            <div class="card-header">
-              <h5 class="card-title mb-0">
-                <i class="flaticon2-graph text-primary mr-2"></i>
-                Stock & Cost
-              </h5>
-            </div>
-            <div class="card-body">
-              <div class="mb-3">
-                <label class="form-label required">Unit Cost</label>
-                <div class="input-group">
-                  <div class="input-group-prepend">
-                    <span class="input-group-text">$</span>
-                  </div>
-                  <input
-                    v-model="form.unit_cost"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    class="form-control"
-                    :class="{ 'is-invalid': errors.unit_cost }"
-                    required
-                  />
-                </div>
-                <div v-if="errors.unit_cost" class="invalid-feedback d-block">
-                  {{ errors.unit_cost }}
-                </div>
+        <div class="card-body">
+          <h6 class="text-muted mb-3">Basic Information</h6>
+          <div class="row">
+            <div class="col-md-8 mb-3">
+              <label class="form-label required">Item Name</label>
+              <input
+                v-model="form.name"
+                type="text"
+                class="form-control"
+                :class="{ 'is-invalid': errors.name }"
+                required
+              />
+              <div v-if="errors.name" class="invalid-feedback d-block">
+                {{ errors.name }}
               </div>
+            </div>
 
-              <div class="mb-3">
-                <label class="form-label required">Minimum Stock</label>
+            <div class="col-md-4 mb-3">
+              <label class="form-label required">Category</label>
+              <select
+                v-model="form.category_id"
+                class="form-control"
+                :class="{ 'is-invalid': errors.category_id }"
+                @change="handleCategoryChange"
+                required
+              >
+                <option value="">Select Category</option>
+                <option v-for="category in categories" :key="category.id" :value="category.id">
+                  {{ category.name }}
+                </option>
+              </select>
+              <div v-if="errors.category_id" class="invalid-feedback d-block">
+                {{ errors.category_id }}
+              </div>
+            </div>
+
+            <div class="col-12 mb-3">
+              <label class="form-label">Description</label>
+              <textarea
+                v-model="form.description"
+                class="form-control"
+                :class="{ 'is-invalid': errors.description }"
+                rows="2"
+              ></textarea>
+              <div v-if="errors.description" class="invalid-feedback d-block">
+                {{ errors.description }}
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Subcategory</label>
+              <select
+                v-model="form.subcategory_id"
+                class="form-control"
+                :class="{ 'is-invalid': errors.subcategory_id }"
+                :disabled="!form.category_id"
+              >
+                <option value="">Select Subcategory (Optional)</option>
+                <option
+                  v-for="subcategory in filteredSubcategories"
+                  :key="subcategory.id"
+                  :value="subcategory.id"
+                >
+                  {{ subcategory.name }}
+                </option>
+              </select>
+              <div v-if="errors.subcategory_id" class="invalid-feedback d-block">
+                {{ errors.subcategory_id }}
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label class="form-label required">Unit</label>
+              <select
+                v-model="form.unit_id"
+                class="form-control"
+                :class="{ 'is-invalid': errors.unit_id }"
+                required
+              >
+                <option value="">Select Unit</option>
+                <option v-for="unit in units" :key="unit.id" :value="unit.id">
+                  {{ unit.name }}
+                </option>
+              </select>
+              <div v-if="errors.unit_id" class="invalid-feedback d-block">
+                {{ errors.unit_id }}
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label class="form-label required">Supplier</label>
+              <select
+                v-model="form.supplier_id"
+                class="form-control"
+                :class="{ 'is-invalid': errors.supplier_id }"
+                required
+              >
+                <option value="">Select Supplier</option>
+                <option v-for="supplier in suppliers" :key="supplier.id" :value="supplier.id">
+                  {{ supplier.name }}
+                </option>
+              </select>
+              <div v-if="errors.supplier_id" class="invalid-feedback d-block">
+                {{ errors.supplier_id }}
+              </div>
+            </div>
+          </div>
+
+          <hr />
+          <h6 class="text-muted mb-3">Stock & Cost</h6>
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label required">Initial Stock</label>
+              <input
+                v-model="form.initial_stock"
+                type="number"
+                min="0"
+                class="form-control"
+                :class="{ 'is-invalid': errors.initial_stock }"
+                required
+              />
+              <div v-if="errors.initial_stock" class="invalid-feedback d-block">
+                {{ errors.initial_stock }}
+              </div>
+              <small class="form-text text-muted">
+                Starting quantity
+              </small>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label class="form-label required">Unit Cost</label>
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">$</span>
+                </div>
                 <input
-                  v-model="form.minimum_stock"
+                  v-model="form.unit_cost"
                   type="number"
+                  step="0.01"
                   min="0"
                   class="form-control"
-                  :class="{ 'is-invalid': errors.minimum_stock }"
+                  :class="{ 'is-invalid': errors.unit_cost }"
                   required
                 />
-                <div v-if="errors.minimum_stock" class="invalid-feedback d-block">
-                  {{ errors.minimum_stock }}
-                </div>
-                <small class="form-text text-muted">
-                  Reorder level - alerts when stock falls below this
-                </small>
               </div>
-
-              <div class="mb-3">
-                <label class="form-label">Maximum Stock</label>
-                <input
-                  v-model="form.maximum_stock"
-                  type="number"
-                  min="0"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.maximum_stock }"
-                />
-                <div v-if="errors.maximum_stock" class="invalid-feedback d-block">
-                  {{ errors.maximum_stock }}
-                </div>
-                <small class="form-text text-muted">
-                  Maximum stock level (optional)
-                </small>
+              <div v-if="errors.unit_cost" class="invalid-feedback d-block">
+                {{ errors.unit_cost }}
               </div>
+            </div>
 
-              <div class="mb-3">
-                <label class="form-label">Initial Stock</label>
-                <input
-                  v-model="form.initial_stock"
-                  type="number"
-                  min="0"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.initial_stock }"
-                />
-                <div v-if="errors.initial_stock" class="invalid-feedback d-block">
-                  {{ errors.initial_stock }}
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Total Value</label>
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">$</span>
                 </div>
-                <small class="form-text text-muted">
-                  Starting stock quantity (optional)
-                </small>
+                <input
+                  :value="calculatedTotalValue"
+                  type="text"
+                  class="form-control"
+                  readonly
+                />
+              </div>
+              <small class="form-text text-muted">
+                Calculated: Initial Stock × Unit Cost
+              </small>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label class="form-label required">Minimum Stock</label>
+              <input
+                v-model="form.minimum_stock"
+                type="number"
+                min="0"
+                class="form-control"
+                :class="{ 'is-invalid': errors.minimum_stock }"
+                required
+              />
+              <div v-if="errors.minimum_stock" class="invalid-feedback d-block">
+                {{ errors.minimum_stock }}
+              </div>
+              <small class="form-text text-muted">
+                Reorder level
+              </small>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Maximum Stock</label>
+              <input
+                v-model="form.maximum_stock"
+                type="number"
+                min="0"
+                class="form-control"
+                :class="{ 'is-invalid': errors.maximum_stock }"
+              />
+              <div v-if="errors.maximum_stock" class="invalid-feedback d-block">
+                {{ errors.maximum_stock }}
+              </div>
+              <small class="form-text text-muted">Optional</small>
+            </div>
+          </div>
+
+          <hr />
+          <h6 class="text-muted mb-3">Storage & Tracking</h6>
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Storage Location</label>
+              <input
+                v-model="form.location"
+                type="text"
+                class="form-control"
+                :class="{ 'is-invalid': errors.location }"
+              />
+              <div v-if="errors.location" class="invalid-feedback d-block">
+                {{ errors.location }}
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Shelf Number</label>
+              <input
+                v-model="form.shelf_number"
+                type="text"
+                class="form-control"
+                :class="{ 'is-invalid': errors.shelf_number }"
+              />
+              <div v-if="errors.shelf_number" class="invalid-feedback d-block">
+                {{ errors.shelf_number }}
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Expiry Date</label>
+              <input
+                v-model="form.expiry_date"
+                type="date"
+                class="form-control"
+                :class="{ 'is-invalid': errors.expiry_date }"
+                :min="today"
+              />
+              <div v-if="errors.expiry_date" class="invalid-feedback d-block">
+                {{ errors.expiry_date }}
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <div class="custom-control custom-checkbox">
+                <input
+                  v-model="form.is_expirable"
+                  type="checkbox"
+                  class="custom-control-input"
+                  id="is_expirable"
+                />
+                <label class="custom-control-label" for="is_expirable"> Item expires </label>
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <div class="custom-control custom-checkbox">
+                <input
+                  v-model="form.is_serialized"
+                  type="checkbox"
+                  class="custom-control-input"
+                  id="is_serialized"
+                />
+                <label class="custom-control-label" for="is_serialized"> Serialized item </label>
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <div class="custom-control custom-checkbox">
+                <input
+                  v-model="form.is_lot_tracked"
+                  type="checkbox"
+                  class="custom-control-input"
+                  id="is_lot_tracked"
+                />
+                <label class="custom-control-label" for="is_lot_tracked"> Lot tracked </label>
               </div>
             </div>
           </div>
 
-          <!-- Storage & Tracking -->
-          <div class="card card-custom mb-4">
-            <div class="card-header">
-              <h5 class="card-title mb-0">
-                <i class="flaticon2-location text-primary mr-2"></i>
-                Storage & Tracking
-              </h5>
+          <hr />
+          <h6 class="text-muted mb-3">Technical Details</h6>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Manufacturer</label>
+              <input
+                v-model="form.manufacturer"
+                type="text"
+                class="form-control"
+                :class="{ 'is-invalid': errors.manufacturer }"
+              />
+              <div v-if="errors.manufacturer" class="invalid-feedback d-block">
+                {{ errors.manufacturer }}
+              </div>
             </div>
-            <div class="card-body">
-              <div class="mb-3">
-                <label class="form-label">Storage Location</label>
-                <input
-                  v-model="form.location"
-                  type="text"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.location }"
-                />
-                <div v-if="errors.location" class="invalid-feedback d-block">
-                  {{ errors.location }}
-                </div>
-              </div>
 
-              <div class="mb-3">
-                <label class="form-label">Shelf Number</label>
-                <input
-                  v-model="form.shelf_number"
-                  type="text"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.shelf_number }"
-                />
-                <div v-if="errors.shelf_number" class="invalid-feedback d-block">
-                  {{ errors.shelf_number }}
-                </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Model Number</label>
+              <input
+                v-model="form.model_number"
+                type="text"
+                class="form-control"
+                :class="{ 'is-invalid': errors.model_number }"
+              />
+              <div v-if="errors.model_number" class="invalid-feedback d-block">
+                {{ errors.model_number }}
               </div>
+            </div>
 
-              <div class="mb-3">
-                <label class="form-label">Expiry Date</label>
-                <input
-                  v-model="form.expiry_date"
-                  type="date"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.expiry_date }"
-                  :min="today"
-                />
-                <div v-if="errors.expiry_date" class="invalid-feedback d-block">
-                  {{ errors.expiry_date }}
-                </div>
+            <div class="col-12 mb-3">
+              <label class="form-label">Specifications</label>
+              <textarea
+                v-model="form.specifications"
+                class="form-control"
+                :class="{ 'is-invalid': errors.specifications }"
+                rows="2"
+              ></textarea>
+              <div v-if="errors.specifications" class="invalid-feedback d-block">
+                {{ errors.specifications }}
               </div>
-
-              <div class="mb-3">
-                <div class="custom-control custom-checkbox">
-                  <input
-                    v-model="form.is_expirable"
-                    type="checkbox"
-                    class="custom-control-input"
-                    id="is_expirable"
-                  />
-                  <label class="custom-control-label" for="is_expirable">
-                    Item expires
-                  </label>
-                </div>
-              </div>
-
-              <div class="mb-3">
-                <div class="custom-control custom-checkbox">
-                  <input
-                    v-model="form.is_serialized"
-                    type="checkbox"
-                    class="custom-control-input"
-                    id="is_serialized"
-                  />
-                  <label class="custom-control-label" for="is_serialized">
-                    Serialized item
-                  </label>
-                </div>
-              </div>
-
-              <div class="mb-3">
-                <div class="custom-control custom-checkbox">
-                  <input
-                    v-model="form.is_lot_tracked"
-                    type="checkbox"
-                    class="custom-control-input"
-                    id="is_lot_tracked"
-                  />
-                  <label class="custom-control-label" for="is_lot_tracked">
-                    Lot tracked
-                  </label>
-                </div>
-              </div>
+              <small class="form-text text-muted">
+                Technical specifications in JSON format (e.g., {"color": "blue", "size": "large"})
+              </small>
             </div>
           </div>
         </div>
-      </div>
+        <div class="card-footer">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="form-status">
+              <span v-if="loading" class="text-info">
+                <i class="flaticon2-refresh fa-spin mr-1"></i>
+                Creating item...
+              </span>
+              <span v-else-if="success" class="text-success">
+                <i class="flaticon2-check mr-1"></i>
+                Item created successfully!
+              </span>
+            </div>
 
-      <!-- Form Actions -->
-      <div class="form-actions">
-        <div class="card card-custom">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-              <div class="form-status">
-                <span v-if="loading" class="text-info">
-                  <i class="flaticon2-refresh fa-spin mr-1"></i>
-                  Creating item...
-                </span>
-                <span v-else-if="success" class="text-success">
-                  <i class="flaticon2-check mr-1"></i>
-                  Item created successfully!
-                </span>
-              </div>
-
-              <div class="action-buttons">
-                <button
-                  type="button"
-                  @click="$router.push('/general-store')"
-                  class="btn btn-light btn-lg mr-3"
-                >
-                  <i class="flaticon2-close mr-2"></i>
-                  Cancel
-                </button>
-                <button type="submit" class="btn btn-primary btn-lg" :disabled="loading">
-                  <i class="flaticon2-plus mr-2"></i>
-                  {{ loading ? 'Creating...' : 'Create Item' }}
-                </button>
-              </div>
+            <div class="action-buttons">
+              <button
+                type="button"
+                @click="$router.push('/general-store')"
+                class="btn btn-light btn-lg mr-3"
+              >
+                <i class="flaticon2-close mr-2"></i>
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-primary btn-lg" :disabled="loading">
+                <i class="flaticon2-plus mr-2"></i>
+                {{ loading ? 'Creating...' : 'Create Item' }}
+              </button>
             </div>
           </div>
         </div>
@@ -446,7 +396,6 @@ export default {
       success: false,
       errors: {},
       form: {
-        item_code: '',
         name: '',
         description: '',
         category_id: '',
@@ -456,10 +405,10 @@ export default {
         manufacturer: '',
         model_number: '',
         specifications: '',
+        initial_stock: '',
         unit_cost: '',
         minimum_stock: '',
         maximum_stock: '',
-        initial_stock: '',
         location: '',
         shelf_number: '',
         expiry_date: '',
@@ -467,19 +416,32 @@ export default {
         is_serialized: false,
         is_lot_tracked: false,
       },
-      categories: [],
-      subcategories: [],
-      units: [],
-      suppliers: [],
     };
   },
   computed: {
     today() {
       return new Date().toISOString().split('T')[0];
     },
+    calculatedTotalValue() {
+      const initialStock = parseFloat(this.form.initial_stock) || 0;
+      const unitCost = parseFloat(this.form.unit_cost) || 0;
+      return (initialStock * unitCost).toFixed(2);
+    },
     filteredSubcategories() {
       if (!this.form.category_id) return [];
-      return this.subcategories.filter(sub => sub.category_id === this.form.category_id);
+      return this.subcategories.filter((sub) => sub.category_id === this.form.category_id);
+    },
+    units() {
+      return this.$store.state.model.units;
+    },
+    suppliers() {
+      return this.$store.state.store.vendors;
+    },
+    categories() {
+      return this.$store.state.generalStore.categories;
+    },
+    subcategories() {
+      return this.$store.state.generalStore.subcategories;
     },
   },
   async created() {
@@ -491,14 +453,17 @@ export default {
         // Load categories, units, and suppliers
         await Promise.all([
           this.$store.dispatch('generalStore/fetchCategories'),
+          this.$store.dispatch('generalStore/fetchSubcategories'),
           this.loadUnits(),
           this.loadSuppliers(),
         ]);
-
-        this.categories = this.$store.state.generalStore.categories;
-        this.subcategories = this.$store.state.generalStore.subcategories;
       } catch (error) {
-        this.$toast.error('Failed to load form data');
+        this.$notify({
+          group: 'foo',
+          title: 'Error',
+          text: error.message || 'Failed to load form data',
+          type: 'error',
+        });
       }
     },
 
@@ -508,10 +473,11 @@ export default {
           currentPage: 1,
           itemsPerPage: 100,
         });
-        this.units = this.$store.state.model.units;
       } catch (error) {
         this.$notify({
-          message: 'Failed to load units',
+          group: 'foo',
+          title: 'Error',
+          text: error.message || 'Failed to load units',
           type: 'error',
         });
       }
@@ -523,7 +489,6 @@ export default {
           currentPage: 1,
           itemsPerPage: 100,
         });
-        this.suppliers = this.$store.state.store.vendors;
       } catch (error) {
         this.$notify({
           message: 'Failed to load suppliers',
@@ -537,18 +502,8 @@ export default {
     },
 
     validateForm() {
-      this.errors = {};
 
       // Required field validations
-      if (!this.form.item_code) {
-        this.errors.item_code = 'Item code is required';
-      } else if (this.form.item_code.length < 3) {
-        this.errors.item_code = 'Item code must be at least 3 characters';
-      } else if (!/^[A-Z0-9-_]+$/i.test(this.form.item_code)) {
-        this.errors.item_code =
-          'Item code can only contain letters, numbers, hyphens, and underscores';
-      }
-
       if (!this.form.name) {
         this.errors.name = 'Item name is required';
       } else if (this.form.name.length < 2) {
@@ -561,10 +516,6 @@ export default {
         this.errors.category_id = 'Category is required';
       }
 
-      if (!this.form.subcategory_id) {
-        this.errors.subcategory_id = 'Subcategory is required';
-      }
-
       if (!this.form.unit_id) {
         this.errors.unit_id = 'Unit is required';
       }
@@ -574,6 +525,12 @@ export default {
       }
 
       // Numeric validations
+      if (!this.form.initial_stock && this.form.initial_stock !== 0) {
+        this.errors.initial_stock = 'Initial stock is required';
+      } else if (isNaN(this.form.initial_stock) || parseInt(this.form.initial_stock) < 0) {
+        this.errors.initial_stock = 'Initial stock must be a non-negative number';
+      }
+
       if (!this.form.unit_cost) {
         this.errors.unit_cost = 'Unit cost is required';
       } else if (isNaN(this.form.unit_cost) || parseFloat(this.form.unit_cost) <= 0) {
@@ -594,13 +551,6 @@ export default {
         } else if (parseInt(this.form.maximum_stock) <= parseInt(this.form.minimum_stock)) {
           this.errors.maximum_stock = 'Maximum stock must be greater than minimum stock';
         }
-      }
-
-      if (
-        this.form.initial_stock &&
-        (isNaN(this.form.initial_stock) || parseInt(this.form.initial_stock) < 0)
-      ) {
-        this.errors.initial_stock = 'Initial stock must be a non-negative number';
       }
 
       // Optional field validations
@@ -653,13 +603,13 @@ export default {
         const itemData = { ...this.form };
 
         // Convert string numbers to actual numbers
+        if (itemData.initial_stock) itemData.initial_stock = parseInt(itemData.initial_stock);
         if (itemData.unit_cost) itemData.unit_cost = parseFloat(itemData.unit_cost);
         if (itemData.minimum_stock) itemData.minimum_stock = parseInt(itemData.minimum_stock);
         if (itemData.maximum_stock) itemData.maximum_stock = parseInt(itemData.maximum_stock);
-        if (itemData.initial_stock) itemData.initial_stock = parseInt(itemData.initial_stock);
 
         // Remove empty optional fields
-        Object.keys(itemData).forEach(key => {
+        Object.keys(itemData).forEach((key) => {
           if (itemData[key] === '' || itemData[key] === null) {
             delete itemData[key];
           }
@@ -669,11 +619,8 @@ export default {
 
         this.success = true;
         this.$emit('item-created');
-
-        // Reset form after successful creation
-        setTimeout(() => {
-          this.resetForm();
-        }, 2000);
+        this.resetForm();
+        this.$router.push('/general-store/items');
       } catch (error) {
         console.error('Error creating item:', error);
         this.$toast.error('Failed to create item. Please try again.');
@@ -684,7 +631,6 @@ export default {
 
     resetForm() {
       this.form = {
-        item_code: '',
         name: '',
         description: '',
         category_id: '',
@@ -694,10 +640,10 @@ export default {
         manufacturer: '',
         model_number: '',
         specifications: '',
+        initial_stock: '',
         unit_cost: '',
         minimum_stock: '',
         maximum_stock: '',
-        initial_stock: '',
         location: '',
         shelf_number: '',
         expiry_date: '',

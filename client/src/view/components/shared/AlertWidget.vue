@@ -208,12 +208,12 @@ export default {
     mode: {
       type: String,
       default: 'compact',
-      validator: value => ['compact', 'list', 'chart', 'trend'].includes(value),
+      validator: (value) => ['compact', 'list', 'chart', 'trend'].includes(value),
     },
     size: {
       type: String,
       default: 'medium',
-      validator: value => ['small', 'medium', 'large'].includes(value),
+      validator: (value) => ['small', 'medium', 'large'].includes(value),
     },
     maxItems: {
       type: Number,
@@ -254,9 +254,7 @@ export default {
   },
   data() {
     return {
-      widgetId: `widget-${Math.random()
-        .toString(36)
-        .substr(2, 9)}`,
+      widgetId: `widget-${Math.random().toString(36).substr(2, 9)}`,
       acknowledgingIds: [],
       refreshTimer: null,
       chartInstance: null,
@@ -276,8 +274,9 @@ export default {
 
     widgetTitle() {
       if (this.filterSeverity) {
-        return `${this.filterSeverity.charAt(0).toUpperCase() +
-          this.filterSeverity.slice(1)} Alerts`;
+        return `${
+          this.filterSeverity.charAt(0).toUpperCase() + this.filterSeverity.slice(1)
+        } Alerts`;
       }
       if (this.filterCategory) {
         return `${this.formatCategory(this.filterCategory)} Alerts`;
@@ -296,15 +295,15 @@ export default {
       let filtered = [...this.activeAlerts];
 
       if (this.filterSeverity) {
-        filtered = filtered.filter(alert => alert.severity === this.filterSeverity);
+        filtered = filtered.filter((alert) => alert.severity === this.filterSeverity);
       }
 
       if (this.filterCategory) {
-        filtered = filtered.filter(alert => alert.category === this.filterCategory);
+        filtered = filtered.filter((alert) => alert.category === this.filterCategory);
       }
 
       if (this.storeType) {
-        filtered = filtered.filter(alert => alert.store_type === this.storeType);
+        filtered = filtered.filter((alert) => alert.store_type === this.storeType);
       }
 
       return filtered.sort((a, b) => {
@@ -334,15 +333,15 @@ export default {
     },
 
     criticalCount() {
-      return this.filteredAlerts.filter(alert => alert.severity === 'critical').length;
+      return this.filteredAlerts.filter((alert) => alert.severity === 'critical').length;
     },
 
     warningCount() {
-      return this.filteredAlerts.filter(alert => alert.severity === 'warning').length;
+      return this.filteredAlerts.filter((alert) => alert.severity === 'warning').length;
     },
 
     infoCount() {
-      return this.filteredAlerts.filter(alert => alert.severity === 'info').length;
+      return this.filteredAlerts.filter((alert) => alert.severity === 'info').length;
     },
 
     badgeCount() {
@@ -465,7 +464,7 @@ export default {
             },
             tooltip: {
               callbacks: {
-                label: function(context) {
+                label: function (context) {
                   const label = context.label || '';
                   const value = context.parsed;
                   const total = context.dataset.data.reduce((a, b) => a + b, 0);
@@ -511,7 +510,7 @@ export default {
 
         last7Days.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
 
-        const dayAlerts = this.activeAlerts.filter(alert => {
+        const dayAlerts = this.activeAlerts.filter((alert) => {
           const alertDate = new Date(alert.created_at).toISOString().split('T')[0];
           return alertDate === dateKey;
         });

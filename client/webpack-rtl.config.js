@@ -23,7 +23,7 @@ const entries = {
   await del.sync(distPath + '/css', { force: true });
 })();
 
-const mainConfig = function() {
+const mainConfig = function () {
   return {
     mode: 'development',
     stats: 'errors-only',
@@ -42,7 +42,7 @@ const mainConfig = function() {
       // webpack log message
       new WebpackMessages({
         name: themeName,
-        logger: str => console.log(`>> ${str}`),
+        logger: (str) => console.log(`>> ${str}`),
       }),
       // create css file
       new MiniCssExtractPlugin({
@@ -52,7 +52,7 @@ const mainConfig = function() {
         filename: '[name].rtl.css',
       }),
       {
-        apply: compiler => {
+        apply: (compiler) => {
           // hook name
           compiler.hooks.afterEmit.tap('AfterEmitPlugin', () => {
             (async () => {
@@ -82,6 +82,6 @@ const mainConfig = function() {
   };
 };
 
-module.exports = function() {
+module.exports = function () {
   return [mainConfig()];
 };

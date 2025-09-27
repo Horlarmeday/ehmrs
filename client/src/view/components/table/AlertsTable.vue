@@ -80,7 +80,7 @@ export default {
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Yes, Disable!',
-      }).then(function(result) {
+      }).then(function (result) {
         if (result.value) {
           self.disableAlert(alert);
         }

@@ -86,7 +86,7 @@ export default {
     },
 
     changePassword() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             oldPassword: this.oldPassword,

@@ -251,25 +251,25 @@ export class GeneralStoreRepository {
   // Item Management
   static async createItem(itemData: any, staffId: number): Promise<GeneralStoreItem> {
     try {
-      // Check if item code already exists
-      const existingItem = await GeneralStoreItem.findOne({
-        where: { item_code: itemData.item_code },
-      });
-
-      if (existingItem) {
-        throw new BadException('Error', 400, 'Item code already exists');
-      }
-
-      // Generate item code if not provided
-      if (!itemData.item_code) {
-        itemData.item_code = await this.generateItemCode(itemData.category_id);
-      }
-
-      const item = await GeneralStoreItem.create({
+      // Generate unique item code with GS- prefix
+      const itemCode = await this.generateItemCode();
+      
+      // Set default values
+      const itemCreateData = {
         ...itemData,
+        item_code: itemCode,
+        current_stock: itemData.initial_stock || 0,
+        reserved_stock: 0,
+        total_value: (itemData.initial_stock || 0) * (itemData.unit_cost || 0),
+        maximum_stock: itemData.maximum_stock || 1000,
+        is_expirable: itemData.is_expirable || false,
+        is_serialized: itemData.is_serialized || false,
+        is_lot_tracked: itemData.is_lot_tracked || false,
         created_by: staffId,
         updated_by: staffId,
-      });
+      };
+
+      const item = await GeneralStoreItem.create(itemCreateData);
 
       // Update total value
       item.updateTotalValue();
@@ -814,24 +814,6 @@ export class GeneralStoreRepository {
   }
 
   // Utility Methods
-  private static async generateItemCode(categoryId: number): Promise<string> {
-    try {
-      const category = await GeneralStoreCategory.findByPk(categoryId);
-      if (!category) {
-        throw new BadException('Error', 400, 'Category not found');
-      }
-
-      const prefix = category.name.substring(0, 2).toUpperCase();
-      const count = await GeneralStoreItem.count({
-        where: { category_id: categoryId },
-      });
-
-      return `${prefix}-${(count + 1).toString().padStart(4, '0')}`;
-    } catch (error) {
-      if (error instanceof BadException) throw error;
-      throw new BadException('Error', 500, `Failed to generate item code: ${error.message}`);
-    }
-  }
 
   private static async generateRequestNumber(): Promise<string> {
     try {
@@ -942,7 +924,7 @@ export class GeneralStoreRepository {
       const result = await GeneralStoreItem.findAll({
         attributes: [
           [
-            sequelizeConnection.fn('SUM', sequelizeConnection.col('current_stock * unit_cost')),
+            sequelizeConnection.fn('SUM', sequelizeConnection.literal('current_stock * unit_cost')),
             'totalValue',
           ],
         ],
@@ -1052,6 +1034,50 @@ export class GeneralStoreRepository {
       return updatedSettings;
     } catch (error) {
       throw new BadException('Error', 500, `Failed to update settings: ${error.message}`);
+    }
+  }
+
+  // Helper method to generate unique item code with GS- prefix
+  static async generateItemCode(): Promise<string> {
+    try {
+      const today = new Date();
+      const dateString = today.toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD format
+      
+      // Find the highest sequence number for today
+      const todayPrefix = `GS-${dateString}-`;
+      const existingItems = await GeneralStoreItem.findAll({
+        where: {
+          item_code: {
+            [Op.like]: `${todayPrefix}%`,
+          },
+        },
+        order: [['item_code', 'DESC']],
+        limit: 1,
+      });
+
+      let sequence = 1;
+      if (existingItems.length > 0) {
+        const lastItemCode = existingItems[0].item_code;
+        const lastSequence = parseInt(lastItemCode.split('-')[2]) || 0;
+        sequence = lastSequence + 1;
+      }
+
+      // Format: GS-YYYYMMDD-XXX (3-digit sequence)
+      const itemCode = `${todayPrefix}${sequence.toString().padStart(3, '0')}`;
+      
+      // Double-check uniqueness (in case of race conditions)
+      const existingItem = await GeneralStoreItem.findOne({
+        where: { item_code: itemCode },
+      });
+
+      if (existingItem) {
+        // If somehow the code exists, try again with a higher sequence
+        return await this.generateItemCode();
+      }
+
+      return itemCode;
+    } catch (error) {
+      throw new BadException('Error', 500, `Failed to generate item code: ${error.message}`);
     }
   }
 }

@@ -5,11 +5,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/alerts/create`, payload)
-        .then(response => {
+        .then((response) => {
           commit('ADD_ALERT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -25,13 +25,13 @@ export default {
             visit_id: payload.id,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_ALERTS', response.data.data.docs);
           commit('SET_ALERTS_TOTAL', response.data.data.total);
           commit('SET_ALERTS_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -41,11 +41,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/alerts/update/${payload.id}`, payload)
-        .then(response => {
+        .then((response) => {
           commit('ADD_ALERT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });

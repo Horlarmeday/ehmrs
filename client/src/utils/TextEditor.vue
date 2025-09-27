@@ -1,5 +1,5 @@
 <template>
-  <div style="border: 1px solid #ccc;">
+  <div style="border: 1px solid #ccc">
     <Toolbar
       style="border-bottom: 1px solid #ccc"
       :editor="editor"
@@ -7,7 +7,7 @@
       :mode="mode"
     />
     <Editor
-      style="height: 500px; overflow-y: hidden;"
+      style="height: 500px; overflow-y: hidden"
       ref="editor"
       :defaultConfig="editorConfig"
       :mode="mode"
@@ -65,12 +65,12 @@ export default {
               // insert image
               store
                 .dispatch('radiology/uploadResultImages', formData)
-                .then(response => {
+                .then((response) => {
                   const host = window.location.origin;
                   const url = `${host}/${response.data.data}`;
                   insertFn(url, 'image');
                 })
-                .catch(error => {
+                .catch((error) => {
                   console.error(`Image upload failed, ${error}`);
                 });
             },

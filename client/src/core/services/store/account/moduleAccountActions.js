@@ -6,11 +6,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/accounts/payments/create/${id}`, rest)
-        .then(response => {
+        .then((response) => {
           commit('ADD_PAYMENT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -25,13 +25,13 @@ export default {
             pageLimit: payload.itemsPerPage,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_PAYMENTS', response.data.data.docs);
           commit('SET_PAYMENTS_TOTAL', response.data.data.total);
           commit('SET_PAYMENTS_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -44,7 +44,7 @@ export default {
         .get('/accounts/cost-centers', {
           params: { currentPage, itemsPerPage, search },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_COST_CENTERS', {
             data: response.data.data,
             total: response.data.total,
@@ -53,7 +53,7 @@ export default {
           resolve(response);
           commit('SET_LOADING', false);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -63,11 +63,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/departments')
-        .then(response => {
+        .then((response) => {
           commit('SET_DEPARTMENTS', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -77,11 +77,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/accounts/cost-centers', costCenter)
-        .then(response => {
+        .then((response) => {
           dispatch('fetchCostCenters', { currentPage: 1 });
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -91,11 +91,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/accounts/cost-centers/${id}`, data)
-        .then(response => {
+        .then((response) => {
           dispatch('fetchCostCenters', { currentPage: 1 });
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -105,11 +105,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .delete(`/accounts/cost-centers/${id}`)
-        .then(response => {
+        .then((response) => {
           dispatch('fetchCostCenters', { currentPage: 1 });
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -120,12 +120,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/accounts/trial-balance')
-        .then(response => {
+        .then((response) => {
           commit('SET_TRIAL_BALANCE', response.data);
           resolve(response);
           commit('SET_LOADING', false);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -136,12 +136,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/accounts/financial-statements', params)
-        .then(response => {
+        .then((response) => {
           commit('SET_FINANCIAL_STATEMENTS', response.data);
           resolve(response);
           commit('SET_LOADING', false);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -164,7 +164,7 @@ export default {
             responseType: 'blob',
           }
         )
-        .then(response => {
+        .then((response) => {
           commit('SET_LOADING', false);
           resolve(response);
           const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -177,7 +177,7 @@ export default {
 
           return response;
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -190,12 +190,12 @@ export default {
         .get('/accounts/trend-analysis', {
           params: { startDate, endDate },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_TREND_ANALYSIS', response.data);
           resolve(response);
           commit('SET_LOADING', false);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -206,12 +206,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/accounts/saved-reports')
-        .then(response => {
+        .then((response) => {
           commit('SET_SAVED_REPORTS', response.data);
           resolve(response);
           commit('SET_LOADING', false);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -221,11 +221,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/accounts/reports', reportData)
-        .then(response => {
+        .then((response) => {
           dispatch('fetchSavedReports');
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -235,11 +235,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/accounts/reports/${reportData.id}`, reportData)
-        .then(response => {
+        .then((response) => {
           dispatch('fetchSavedReports');
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -249,11 +249,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .delete(`/accounts/reports/${reportId}`)
-        .then(response => {
+        .then((response) => {
           dispatch('fetchSavedReports');
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -265,11 +265,11 @@ export default {
         .post(`/accounts/reports/${report.id}/generate`, {
           dateRange: report.dateRange,
         })
-        .then(response => {
+        .then((response) => {
           resolve(response.data);
           dispatch('fetchSavedReports');
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -281,12 +281,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/accounts/chart-of-accounts')
-        .then(response => {
+        .then((response) => {
           commit('SET_ACCOUNTS', response.data.data);
           resolve(response);
           commit('SET_LOADING', false);
         })
-        .catch(error => {
+        .catch((error) => {
           commit('SET_ERROR', error.message);
           reject(error);
         });
@@ -298,10 +298,10 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/accounts/chart-of-accounts', account)
-        .then(response => {
+        .then((response) => {
           resolve(response.data);
         })
-        .catch(error => {
+        .catch((error) => {
           commit('SET_ERROR', error.message);
           reject(error);
         })
@@ -316,10 +316,10 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/accounts/chart-of-accounts/${id}`, account)
-        .then(response => {
+        .then((response) => {
           resolve(response.data);
         })
-        .catch(error => {
+        .catch((error) => {
           commit('SET_ERROR', error.message);
           reject(error);
         })
@@ -334,10 +334,10 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .delete(`/accounts/chart-of-accounts/${id}`)
-        .then(response => {
+        .then((response) => {
           resolve(response.data);
         })
-        .catch(error => {
+        .catch((error) => {
           commit('SET_ERROR', error.message);
           reject(error);
         })
@@ -353,12 +353,12 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/accounts/journal-entries')
-        .then(response => {
+        .then((response) => {
           commit('SET_JOURNAL_ENTRIES', response.data.data);
           resolve(response);
           commit('SET_LOADING', false);
         })
-        .catch(error => {
+        .catch((error) => {
           commit('SET_ERROR', error.message);
           reject(error);
         });
@@ -370,10 +370,10 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/accounts/journal-entries', entry)
-        .then(response => {
+        .then((response) => {
           resolve(response.data);
         })
-        .catch(error => {
+        .catch((error) => {
           commit('SET_ERROR', error.message);
           reject(error);
         })
@@ -388,10 +388,10 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/accounts/journal-entries/${id}`, entry)
-        .then(response => {
+        .then((response) => {
           resolve(response.data);
         })
-        .catch(error => {
+        .catch((error) => {
           commit('SET_ERROR', error.message);
           reject(error);
         })
@@ -406,10 +406,10 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .delete(`/accounts/journal-entries/${id}`)
-        .then(response => {
+        .then((response) => {
           resolve(response.data);
         })
-        .catch(error => {
+        .catch((error) => {
           commit('SET_ERROR', error.message);
           reject(error);
         })
@@ -431,7 +431,7 @@ export default {
             responseType: 'arraybuffer', // Important to receive binary data
           }
         )
-        .then(response => {
+        .then((response) => {
           const contentType = response.headers['content-type'].split(';')[0];
           const blob = new Blob([response.data], {
             type: contentType,
@@ -450,7 +450,7 @@ export default {
           commit('DOWNLOAD_RECEIPT', []);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           console.log(error, 'error');
           reject(error);
         });
@@ -782,7 +782,7 @@ export default {
           payment_status: 'PENDING,PARTIAL',
         },
       });
-      return response.data.data.map(bill => ({
+      return response.data.data.map((bill) => ({
         ...bill,
         balance: bill.final_amount - (bill.paid_amount || 0),
       }));

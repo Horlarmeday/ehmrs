@@ -1,201 +1,201 @@
 export default {
   // Alert filtering getters
-  alertsByStatus: state => status => {
-    return state.alerts.filter(alert => alert.status === status);
+  alertsByStatus: (state) => (status) => {
+    return state.alerts.filter((alert) => alert.status === status);
   },
 
-  alertsBySeverity: state => severity => {
-    return state.alerts.filter(alert => alert.severity === severity);
+  alertsBySeverity: (state) => (severity) => {
+    return state.alerts.filter((alert) => alert.severity === severity);
   },
 
-  alertsByCategory: state => category => {
-    return state.alerts.filter(alert => alert.category === category);
+  alertsByCategory: (state) => (category) => {
+    return state.alerts.filter((alert) => alert.category === category);
   },
 
-  alertsByStoreType: state => storeType => {
-    return state.alerts.filter(alert => alert.store_type === storeType);
+  alertsByStoreType: (state) => (storeType) => {
+    return state.alerts.filter((alert) => alert.store_type === storeType);
   },
 
   // Active alerts getters
-  unacknowledgedAlerts: state => {
-    return state.activeAlerts.filter(alert => !alert.acknowledged_at);
+  unacknowledgedAlerts: (state) => {
+    return state.activeAlerts.filter((alert) => !alert.acknowledged_at);
   },
 
-  acknowledgedAlerts: state => {
-    return state.activeAlerts.filter(alert => alert.acknowledged_at && !alert.resolved_at);
+  acknowledgedAlerts: (state) => {
+    return state.activeAlerts.filter((alert) => alert.acknowledged_at && !alert.resolved_at);
   },
 
-  overdueAlerts: state => {
+  overdueAlerts: (state) => {
     const now = new Date();
     const overdueThreshold = 24 * 60 * 60 * 1000; // 24 hours
 
-    return state.activeAlerts.filter(alert => {
+    return state.activeAlerts.filter((alert) => {
       const createdAt = new Date(alert.created_at);
       return now - createdAt > overdueThreshold && !alert.acknowledged_at;
     });
   },
 
-  escalatedAlerts: state => {
-    return state.activeAlerts.filter(alert => alert.escalation_level > 0);
+  escalatedAlerts: (state) => {
+    return state.activeAlerts.filter((alert) => alert.escalation_level > 0);
   },
 
-  snoozedAlerts: state => {
+  snoozedAlerts: (state) => {
     const now = new Date();
     return state.activeAlerts.filter(
-      alert => alert.snoozed_until && new Date(alert.snoozed_until) > now
+      (alert) => alert.snoozed_until && new Date(alert.snoozed_until) > now
     );
   },
 
   // Count getters
-  criticalAlertsCount: state => {
+  criticalAlertsCount: (state) => {
     return state.criticalAlerts.length;
   },
 
-  warningAlertsCount: state => {
-    return state.alerts.filter(alert => alert.severity === 'warning' && alert.status === 'active')
+  warningAlertsCount: (state) => {
+    return state.alerts.filter((alert) => alert.severity === 'warning' && alert.status === 'active')
       .length;
   },
 
-  infoAlertsCount: state => {
-    return state.alerts.filter(alert => alert.severity === 'info' && alert.status === 'active')
+  infoAlertsCount: (state) => {
+    return state.alerts.filter((alert) => alert.severity === 'info' && alert.status === 'active')
       .length;
   },
 
-  totalActiveAlertsCount: state => {
+  totalActiveAlertsCount: (state) => {
     return state.activeAlerts.length;
   },
 
-  unreadAlertsCount: state => {
+  unreadAlertsCount: (state) => {
     return state.unreadCount;
   },
 
   // Category-specific getters
-  expiryAlerts: state => {
-    return state.activeAlerts.filter(alert => alert.category === 'expiry');
+  expiryAlerts: (state) => {
+    return state.activeAlerts.filter((alert) => alert.category === 'expiry');
   },
 
-  stockLevelAlerts: state => {
-    return state.activeAlerts.filter(alert => alert.category === 'stock_level');
+  stockLevelAlerts: (state) => {
+    return state.activeAlerts.filter((alert) => alert.category === 'stock_level');
   },
 
-  procurementAlerts: state => {
-    return state.activeAlerts.filter(alert => alert.category === 'procurement');
+  procurementAlerts: (state) => {
+    return state.activeAlerts.filter((alert) => alert.category === 'procurement');
   },
 
-  financialAlerts: state => {
-    return state.activeAlerts.filter(alert => alert.category === 'financial');
+  financialAlerts: (state) => {
+    return state.activeAlerts.filter((alert) => alert.category === 'financial');
   },
 
   // Store-specific getters
-  pharmacyAlerts: state => {
-    return state.activeAlerts.filter(alert => alert.store_type === 'pharmacy');
+  pharmacyAlerts: (state) => {
+    return state.activeAlerts.filter((alert) => alert.store_type === 'pharmacy');
   },
 
-  generalStoreAlerts: state => {
-    return state.activeAlerts.filter(alert => alert.store_type === 'general_store');
+  generalStoreAlerts: (state) => {
+    return state.activeAlerts.filter((alert) => alert.store_type === 'general_store');
   },
 
   // Priority getters
-  highPriorityAlerts: state => {
+  highPriorityAlerts: (state) => {
     return state.activeAlerts.filter(
-      alert =>
+      (alert) =>
         alert.severity === 'critical' ||
         (alert.severity === 'warning' && alert.escalation_level > 0)
     );
   },
 
-  todaysAlerts: state => {
+  todaysAlerts: (state) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    return state.alerts.filter(alert => {
+    return state.alerts.filter((alert) => {
       const alertDate = new Date(alert.created_at);
       alertDate.setHours(0, 0, 0, 0);
       return alertDate.getTime() === today.getTime();
     });
   },
 
-  thisWeeksAlerts: state => {
+  thisWeeksAlerts: (state) => {
     const now = new Date();
     const weekStart = new Date(now.setDate(now.getDate() - now.getDay()));
     weekStart.setHours(0, 0, 0, 0);
 
-    return state.alerts.filter(alert => {
+    return state.alerts.filter((alert) => {
       const alertDate = new Date(alert.created_at);
       return alertDate >= weekStart;
     });
   },
 
   // Configuration getters
-  isSoundEnabled: state => {
+  isSoundEnabled: (state) => {
     return state.configuration.sound_enabled;
   },
 
-  isPopupEnabled: state => {
+  isPopupEnabled: (state) => {
     return state.configuration.popup_enabled;
   },
 
-  isBannerEnabled: state => {
+  isBannerEnabled: (state) => {
     return state.configuration.banner_enabled;
   },
 
-  alertThresholds: state => {
+  alertThresholds: (state) => {
     return state.configuration.thresholds;
   },
 
   // UI state getters
-  hasCriticalAlerts: state => {
+  hasCriticalAlerts: (state) => {
     return state.criticalAlerts.length > 0;
   },
 
-  hasUnreadAlerts: state => {
+  hasUnreadAlerts: (state) => {
     return state.unreadCount > 0;
   },
 
-  hasActivePopupQueue: state => {
+  hasActivePopupQueue: (state) => {
     return state.popupQueue.length > 0;
   },
 
-  nextPopupAlert: state => {
+  nextPopupAlert: (state) => {
     return state.popupQueue.length > 0 ? state.popupQueue[0] : null;
   },
 
-  isLoading: state => {
+  isLoading: (state) => {
     return state.loading;
   },
 
-  hasError: state => {
+  hasError: (state) => {
     return state.error !== null;
   },
 
-  currentError: state => {
+  currentError: (state) => {
     return state.error;
   },
 
-  isWebSocketConnected: state => {
+  isWebSocketConnected: (state) => {
     return state.websocketConnected;
   },
 
-  lastUpdateTime: state => {
+  lastUpdateTime: (state) => {
     return state.lastUpdate;
   },
 
   // Pagination getters
-  currentPageAlerts: state => {
+  currentPageAlerts: (state) => {
     const start = (state.currentPage - 1) * state.itemsPerPage;
     const end = start + state.itemsPerPage;
     return state.alerts.slice(start, end);
   },
 
-  hasNextPage: state => {
+  hasNextPage: (state) => {
     return state.currentPage < state.totalPages;
   },
 
-  hasPrevPage: state => {
+  hasPrevPage: (state) => {
     return state.currentPage > 1;
   },
 
-  paginationInfo: state => {
+  paginationInfo: (state) => {
     const start = (state.currentPage - 1) * state.itemsPerPage + 1;
     const end = Math.min(start + state.itemsPerPage - 1, state.totalCount);
 
@@ -209,7 +209,7 @@ export default {
   },
 
   // Filter getters
-  activeFilters: state => {
+  activeFilters: (state) => {
     return (
       Object.entries(state.filters)
         // eslint-disable-next-line no-unused-vars
@@ -218,8 +218,8 @@ export default {
     );
   },
 
-  hasActiveFilters: state => {
-    return Object.values(state.filters).some(value => value !== null && value !== undefined);
+  hasActiveFilters: (state) => {
+    return Object.values(state.filters).some((value) => value !== null && value !== undefined);
   },
 
   // Summary statistics getters
@@ -237,14 +237,16 @@ export default {
     };
   },
 
-  alertsByTimeRange: state => (hours = 24) => {
-    const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000);
-    return state.alerts.filter(alert => new Date(alert.created_at) >= cutoff);
-  },
+  alertsByTimeRange:
+    (state) =>
+    (hours = 24) => {
+      const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000);
+      return state.alerts.filter((alert) => new Date(alert.created_at) >= cutoff);
+    },
 
   // Performance getters
-  averageResolutionTime: state => {
-    const resolvedAlerts = state.alerts.filter(alert => alert.resolved_at);
+  averageResolutionTime: (state) => {
+    const resolvedAlerts = state.alerts.filter((alert) => alert.resolved_at);
 
     if (resolvedAlerts.length === 0) return 0;
 
@@ -257,20 +259,22 @@ export default {
     return totalTime / resolvedAlerts.length;
   },
 
-  alertTrends: state => (days = 7) => {
-    const trends = {};
-    const now = new Date();
+  alertTrends:
+    (state) =>
+    (days = 7) => {
+      const trends = {};
+      const now = new Date();
 
-    for (let i = 0; i < days; i++) {
-      const date = new Date(now - i * 24 * 60 * 60 * 1000);
-      const dateKey = date.toISOString().split('T')[0];
+      for (let i = 0; i < days; i++) {
+        const date = new Date(now - i * 24 * 60 * 60 * 1000);
+        const dateKey = date.toISOString().split('T')[0];
 
-      trends[dateKey] = state.alerts.filter(alert => {
-        const alertDate = new Date(alert.created_at).toISOString().split('T')[0];
-        return alertDate === dateKey;
-      }).length;
-    }
+        trends[dateKey] = state.alerts.filter((alert) => {
+          const alertDate = new Date(alert.created_at).toISOString().split('T')[0];
+          return alertDate === dateKey;
+        }).length;
+      }
 
-    return trends;
-  },
+      return trends;
+    },
 };

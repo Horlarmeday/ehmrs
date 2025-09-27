@@ -13,7 +13,7 @@
             v-model="item.drug"
             label="name"
             :reduce="
-              drugs => ({
+              (drugs) => ({
                 name: drugs.name,
                 drug_id: drugs.id,
               })

@@ -336,9 +336,7 @@
           <div class="text-center py-4">
             <i class="fas fa-history fa-3x text-muted mb-3"></i>
             <h6 class="text-muted">No Recent Transactions</h6>
-            <p class="text-muted">
-              Transaction history will be displayed here when available
-            </p>
+            <p class="text-muted">Transaction history will be displayed here when available</p>
           </div>
         </div>
       </div>

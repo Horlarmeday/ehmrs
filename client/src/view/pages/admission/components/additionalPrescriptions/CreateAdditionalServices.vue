@@ -24,7 +24,7 @@
               label="name"
               :options="serviceOptions"
               :reduce="
-                items => ({
+                (items) => ({
                   name: items.name,
                   id: items.id,
                   price: items.price,
@@ -63,7 +63,7 @@
 
       <div class="mb-3">
         <button
-          class="btn btn-primary float-right  mb-lg-5"
+          class="btn btn-primary float-right mb-lg-5"
           @click="submitServices"
           :disabled="isDisabled || !additionalServices.length"
           ref="kt_addServices_submit"
@@ -126,7 +126,7 @@ export default {
     },
     serviceOptions: {
       get() {
-        return this.services.map(service => ({
+        return this.services.map((service) => ({
           name: service?.name,
           id: service?.id,
           price: service.price,

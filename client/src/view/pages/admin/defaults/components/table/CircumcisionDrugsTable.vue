@@ -10,7 +10,7 @@
             <th style="min-width: 150px">Strength</th>
             <th style="min-width: 160px">Frequency</th>
             <th style="min-width: 160px">Price</th>
-            <th class="pr-0 " style="min-width: 150px">action</th>
+            <th class="pr-0" style="min-width: 150px">action</th>
           </tr>
         </thead>
         <tbody>
@@ -76,7 +76,7 @@ export default {
     fetchDefaults() {
       this.$store
         .dispatch('model/fetchDefaults')
-        .then(res => localStorage.setItem('defaults', JSON.stringify(res.data.data)));
+        .then((res) => localStorage.setItem('defaults', JSON.stringify(res.data.data)));
     },
   },
   components: { DeleteIcon },
@@ -88,7 +88,7 @@ export default {
       return JSON.parse(localStorage.getItem('defaults'));
     },
     routineDrugs() {
-      return this.defaults.find(def => def.id?.toString() === this.$route.params.id)?.data;
+      return this.defaults.find((def) => def.id?.toString() === this.$route.params.id)?.data;
     },
   },
 };

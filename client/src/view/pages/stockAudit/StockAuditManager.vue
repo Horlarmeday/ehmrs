@@ -377,7 +377,7 @@
                   v-model="formData.auditor_id"
                   :options="availableAuditors"
                   label="name"
-                  :reduce="auditor => auditor.id"
+                  :reduce="(auditor) => auditor.id"
                   placeholder="Select auditor..."
                   class="form-control"
                   required

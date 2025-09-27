@@ -83,7 +83,7 @@ export default {
   components: { CreateBed },
   data() {
     return {
-      active: 'activ',
+      active: 'active',
       isActive: false,
       displayPrompt: false,
       showBeds: false,

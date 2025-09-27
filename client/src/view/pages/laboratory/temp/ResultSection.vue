@@ -9,9 +9,7 @@
             <span class="mr-5 text-dark">{{ accession_number }}{{ `-${i + 1}` }}</span>
             <span class="vertical-line"></span>
 
-            <span class="mr-3 text-black-50">
-              Test.:
-            </span>
+            <span class="mr-3 text-black-50"> Test.: </span>
             <span class="mr-5 text-dark">
               <span
                 :title="`${test.test_type}`"
@@ -76,7 +74,7 @@
                 </div>
                 <div class="col-lg-2">
                   <label>Referral Reason</label>
-                  <div style="display: flex;">
+                  <div style="display: flex">
                     <input
                       v-b-tooltip.hover
                       title="Enable if result is referred"
@@ -120,9 +118,9 @@
             v-model="tester_id"
             class="form-control-sm form-control"
           >
-            <option v-for="(staff, i) in staffs" :value="staff.id" :key="i">{{
-              staff.fullname
-            }}</option>
+            <option v-for="(staff, i) in staffs" :value="staff.id" :key="i">
+              {{ staff.fullname }}
+            </option>
           </select>
           <span class="text-danger text-sm">{{ errors.first('tester_id') }}</span>
         </div>
@@ -174,7 +172,7 @@ export default {
   },
   data() {
     return {
-      tests: this.prescriptions.map(test => ({
+      tests: this.prescriptions.map((test) => ({
         prescribed_test_id: test.id,
         test_prescription_id: this.$route.params.id,
         name: test.test.name,
@@ -226,7 +224,7 @@ export default {
 
     addResult() {
       const results = this.tests
-        .filter(test => Object.values(test.result)?.length > 0)
+        .filter((test) => Object.values(test.result)?.length > 0)
         .map(
           ({
             result_unit,
@@ -249,7 +247,7 @@ export default {
         });
       }
 
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const submitButton = this.$refs['kt-addResult-submit'];
           this.addSpinner(submitButton);
@@ -263,7 +261,7 @@ export default {
     },
 
     testResultData(data, testId) {
-      const test = this.tests.find(test => test.prescribed_test_id === testId);
+      const test = this.tests.find((test) => test.prescribed_test_id === testId);
       this.$set(test, 'result', data);
     },
 

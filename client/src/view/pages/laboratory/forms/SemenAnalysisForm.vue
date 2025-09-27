@@ -247,7 +247,7 @@ export default {
         time_received: '',
       };
       const semenAnalysisKeys = Object.keys(semenAnalysis)
-        .map(key => this.semenAnalysis[key])
+        .map((key) => this.semenAnalysis[key])
         .filter(Boolean);
       return (
         (this.section !== 'ValidationSection' && this.section !== 'ApprovalSection') ||
@@ -263,7 +263,7 @@ export default {
         percentage_motility: '',
       };
       const semenPercentageMortility = Object.keys(percentageMortility)
-        .map(key => this.semenAnalysis[key])
+        .map((key) => this.semenAnalysis[key])
         .filter(Boolean);
       return (
         (this.section !== 'ValidationSection' && this.section !== 'ApprovalSection') ||
@@ -281,7 +281,7 @@ export default {
         epithelial_cells: '',
       };
       const semenMicroscopy = Object.keys(microscopy)
-        .map(key => this.semenAnalysis[key])
+        .map((key) => this.semenAnalysis[key])
         .filter(Boolean);
       return (
         (this.section !== 'ValidationSection' && this.section !== 'ApprovalSection') ||
@@ -298,7 +298,7 @@ export default {
         others: '',
       };
       const semenMorphology = Object.keys(morphology)
-        .map(key => this.semenAnalysis[key])
+        .map((key) => this.semenAnalysis[key])
         .filter(Boolean);
       return (
         (this.section !== 'ValidationSection' && this.section !== 'ApprovalSection') ||
@@ -322,7 +322,7 @@ export default {
         ph: '',
       };
       const semenMethodOfProduction = Object.keys(methodOfProduction)
-        .map(key => this.semenAnalysis[key])
+        .map((key) => this.semenAnalysis[key])
         .filter(Boolean);
       return (
         (this.section !== 'ValidationSection' && this.section !== 'ApprovalSection') ||
@@ -349,7 +349,7 @@ export default {
         ceporex: '',
       };
       const semenAntibiotics = Object.keys(antibiotics)
-        .map(key => this.semenAnalysis[key])
+        .map((key) => this.semenAnalysis[key])
         .filter(Boolean);
       return (
         (this.section !== 'ValidationSection' && this.section !== 'ApprovalSection') ||
@@ -362,7 +362,7 @@ export default {
       this.debounceInput(this);
     },
 
-    debounceInput: debounce(vm => {
+    debounceInput: debounce((vm) => {
       vm.$emit('emitResult', vm.semenAnalysis, vm.testId);
     }, 500),
   },

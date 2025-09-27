@@ -48,7 +48,7 @@
             </div>
             <div class="form-group row align-items-center">
               <label
-                class="col-xl-3 col-lg-3 col-form-label font-weight-bold text-left  text-lg-right"
+                class="col-xl-3 col-lg-3 col-form-label font-weight-bold text-left text-lg-right"
                 >Address</label
               >
               <div class="col-lg-9 col-xl-6">
@@ -61,7 +61,7 @@
             </div>
             <div class="form-group row align-items-center">
               <label
-                class="col-xl-3 col-lg-3 col-form-label font-weight-bold text-left  text-lg-right"
+                class="col-xl-3 col-lg-3 col-form-label font-weight-bold text-left text-lg-right"
                 >Email</label
               >
               <div class="col-lg-9 col-xl-6">
@@ -74,7 +74,7 @@
             </div>
             <div class="form-group row align-items-center">
               <label
-                class="col-xl-3 col-lg-3 col-form-label font-weight-bold text-left  text-lg-right"
+                class="col-xl-3 col-lg-3 col-form-label font-weight-bold text-left text-lg-right"
                 >Phone</label
               >
               <div class="col-lg-9 col-xl-6">
@@ -147,7 +147,7 @@
             </div>
             <div class="form-group row align-items-center">
               <label
-                class="col-xl-3 col-lg-3 col-form-label font-weight-bold text-left  text-lg-right"
+                class="col-xl-3 col-lg-3 col-form-label font-weight-bold text-left text-lg-right"
                 >Hospital ID Prefix</label
               >
               <div class="col-lg-9 col-xl-6">
@@ -160,7 +160,7 @@
             </div>
             <div class="form-group row align-items-center">
               <label
-                class="col-xl-3 col-lg-3 col-form-label font-weight-bold text-left  text-lg-right"
+                class="col-xl-3 col-lg-3 col-form-label font-weight-bold text-left text-lg-right"
                 >NHIS Daily Quota</label
               >
               <div class="col-lg-9 col-xl-6">
@@ -203,8 +203,8 @@ export default {
     fetchSettings() {
       this.$store
         .dispatch('settings/fetchSettings')
-        .then(response => localStorage.setItem('settings', response.data.data))
-        .catch(e => console.error(e));
+        .then((response) => localStorage.setItem('settings', response.data.data))
+        .catch((e) => console.error(e));
     },
 
     addSpinner(submitButton) {
@@ -241,7 +241,7 @@ export default {
 
       this.$store
         .dispatch('settings/updateSettings', hasImage ? formData : this.settings)
-        .then(response => {
+        .then((response) => {
           this.removeSpinner(submitButton);
           localStorage.setItem('settings', JSON.stringify(response.data.data));
         })

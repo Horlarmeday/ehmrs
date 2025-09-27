@@ -1,5 +1,5 @@
 export const SET_DRUG_PRICING = (state, pricing) => {
-  const index = state.drugPricing.findIndex(p => p.id === pricing.id);
+  const index = state.drugPricing.findIndex((p) => p.id === pricing.id);
   if (index !== -1) {
     state.drugPricing.splice(index, 1, pricing);
   } else {
@@ -12,7 +12,7 @@ export const SET_DRUG_PRICING_LIST = (state, pricingList) => {
 };
 
 export const SET_TEST_PRICING = (state, pricing) => {
-  const index = state.testPricing.findIndex(p => p.id === pricing.id);
+  const index = state.testPricing.findIndex((p) => p.id === pricing.id);
   if (index !== -1) {
     state.testPricing.splice(index, 1, pricing);
   } else {
@@ -25,7 +25,7 @@ export const SET_TEST_PRICING_LIST = (state, pricingList) => {
 };
 
 export const SET_SERVICE_PRICING = (state, pricing) => {
-  const index = state.servicePricing.findIndex(p => p.id === pricing.id);
+  const index = state.servicePricing.findIndex((p) => p.id === pricing.id);
   if (index !== -1) {
     state.servicePricing.splice(index, 1, pricing);
   } else {
@@ -38,7 +38,7 @@ export const SET_SERVICE_PRICING_LIST = (state, pricingList) => {
 };
 
 export const SET_INVESTIGATION_PRICING = (state, pricing) => {
-  const index = state.investigationPricing.findIndex(p => p.id === pricing.id);
+  const index = state.investigationPricing.findIndex((p) => p.id === pricing.id);
   if (index !== -1) {
     state.investigationPricing.splice(index, 1, pricing);
   } else {
@@ -109,28 +109,28 @@ export const SET_INVESTIGATION_PRICING_ITEM = (state, pricing) => {
 
 // Update pricing mutations
 export const UPDATE_DRUG_PRICING = (state, { id, data }) => {
-  const index = state.drugPricing.findIndex(p => p.id === id);
+  const index = state.drugPricing.findIndex((p) => p.id === id);
   if (index !== -1) {
     state.drugPricing.splice(index, 1, data);
   }
 };
 
 export const UPDATE_TEST_PRICING = (state, { id, data }) => {
-  const index = state.testPricing.findIndex(p => p.id === id);
+  const index = state.testPricing.findIndex((p) => p.id === id);
   if (index !== -1) {
     state.testPricing.splice(index, 1, data);
   }
 };
 
 export const UPDATE_SERVICE_PRICING = (state, { id, data }) => {
-  const index = state.servicePricing.findIndex(p => p.id === id);
+  const index = state.servicePricing.findIndex((p) => p.id === id);
   if (index !== -1) {
     state.servicePricing.splice(index, 1, data);
   }
 };
 
 export const UPDATE_INVESTIGATION_PRICING = (state, { id, data }) => {
-  const index = state.investigationPricing.findIndex(p => p.id === id);
+  const index = state.investigationPricing.findIndex((p) => p.id === id);
   if (index !== -1) {
     state.investigationPricing.splice(index, 1, data);
   }
@@ -138,19 +138,19 @@ export const UPDATE_INVESTIGATION_PRICING = (state, { id, data }) => {
 
 // Delete pricing mutations
 export const DELETE_DRUG_PRICING = (state, id) => {
-  state.drugPricing = state.drugPricing.filter(p => p.id !== id);
+  state.drugPricing = state.drugPricing.filter((p) => p.id !== id);
 };
 
 export const DELETE_TEST_PRICING = (state, id) => {
-  state.testPricing = state.testPricing.filter(p => p.id !== id);
+  state.testPricing = state.testPricing.filter((p) => p.id !== id);
 };
 
 export const DELETE_SERVICE_PRICING = (state, id) => {
-  state.servicePricing = state.servicePricing.filter(p => p.id !== id);
+  state.servicePricing = state.servicePricing.filter((p) => p.id !== id);
 };
 
 export const DELETE_INVESTIGATION_PRICING = (state, id) => {
-  state.investigationPricing = state.investigationPricing.filter(p => p.id !== id);
+  state.investigationPricing = state.investigationPricing.filter((p) => p.id !== id);
 };
 
 // Pagination mutations
@@ -170,7 +170,7 @@ export const SET_INVESTIGATION_PRICING_PAGINATION = (state, pagination) => {
   state.investigationPricingPagination = pagination;
 };
 
-export const CLEAR_PRICING_DATA = state => {
+export const CLEAR_PRICING_DATA = (state) => {
   state.drugPricing = [];
   state.testPricing = [];
   state.servicePricing = [];

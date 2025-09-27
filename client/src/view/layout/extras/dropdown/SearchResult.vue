@@ -1,14 +1,12 @@
 <template>
   <perfect-scrollbar
     class="quick-search-wrapper scroll"
-    style="max-height: 40vh; position: relative;"
+    style="max-height: 40vh; position: relative"
     v-bind:options="{ suppressScrollX: true }"
   >
     <div class="quick-search-result">
       <!--begin::Message-->
-      <div v-if="!data" class="text-muted d-none">
-        No record found
-      </div>
+      <div v-if="!data" class="text-muted d-none">No record found</div>
       <!--end::Message-->
 
       <template v-for="(item, i) in data">

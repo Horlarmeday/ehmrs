@@ -6,9 +6,7 @@
         <i class="flaticon2-check text-success mr-2"></i>
         Approve Request
       </h3>
-      <p class="text-muted mb-0">
-        Review and approve the request for fulfillment
-      </p>
+      <p class="text-muted mb-0">Review and approve the request for fulfillment</p>
     </div>
 
     <!-- Request Summary -->
@@ -195,9 +193,7 @@
               <div v-if="errors.approval_decision" class="invalid-feedback d-block">
                 {{ errors.approval_decision }}
               </div>
-              <small class="form-text text-muted">
-                Choose the appropriate approval action
-              </small>
+              <small class="form-text text-muted"> Choose the appropriate approval action </small>
             </div>
 
             <div class="col-md-6 mb-3">
@@ -487,7 +483,7 @@ export default {
         };
 
         // Remove empty optional fields
-        Object.keys(approvalData).forEach(key => {
+        Object.keys(approvalData).forEach((key) => {
           if (approvalData[key] === '' || approvalData[key] === null) {
             delete approvalData[key];
           }

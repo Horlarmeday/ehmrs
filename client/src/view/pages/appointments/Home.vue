@@ -339,8 +339,8 @@ export default {
     stats() {
       return {
         todayTotal: this.todaysAppointments.length,
-        completed: this.todaysAppointments.filter(apt => apt.status === 'Completed').length,
-        pending: this.todaysAppointments.filter(apt =>
+        completed: this.todaysAppointments.filter((apt) => apt.status === 'Completed').length,
+        pending: this.todaysAppointments.filter((apt) =>
           ['Scheduled', 'Confirmed'].includes(apt.status)
         ).length,
       };
@@ -435,7 +435,7 @@ export default {
       if (!patient || !patient.fullname) return 'NA';
       return patient.fullname
         .split(' ')
-        .map(name => name.charAt(0))
+        .map((name) => name.charAt(0))
         .join('')
         .toUpperCase();
     },

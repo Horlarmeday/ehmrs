@@ -63,29 +63,28 @@ export interface UpdateSubcategoryDto {
 }
 
 export interface CreateItemDto {
-  item_code: string;
   name: string;
   description?: string;
   category_id: number;
-  subcategory_id: number;
+  subcategory_id?: number;
   unit_id: number;
   manufacturer?: string;
   model_number?: string;
   specifications?: string;
+  initial_stock: number;
   minimum_stock: number;
-  maximum_stock: number;
+  maximum_stock?: number;
   unit_cost: number;
-  location: string;
+  location?: string;
   shelf_number?: string;
   expiry_date?: Date;
-  is_expirable: boolean;
-  is_serialized: boolean;
-  is_lot_tracked: boolean;
+  is_expirable?: boolean;
+  is_serialized?: boolean;
+  is_lot_tracked?: boolean;
   supplier_id?: number;
 }
 
 export interface UpdateItemDto {
-  item_code?: string;
   name?: string;
   description?: string;
   category_id?: number;

@@ -47,7 +47,7 @@ export default {
       if (!event.target.value) {
         return (this.routes = items);
       }
-      this.routes = this.routes.filter(item =>
+      this.routes = this.routes.filter((item) =>
         item.name.toLowerCase().includes(event.target.value.toLowerCase())
       );
     },

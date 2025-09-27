@@ -62,9 +62,9 @@
             v-model="item.vendor_id"
             name="vendor"
           >
-            <option :value="vendor.id" v-for="vendor in vendors" :key="vendor.id">{{
-              vendor.name
-            }}</option>
+            <option :value="vendor.id" v-for="vendor in vendors" :key="vendor.id">
+              {{ vendor.name }}
+            </option>
           </select>
         </div>
         <div class="pt-lg-5">
@@ -204,7 +204,7 @@ export default {
       this.$store
         .dispatch('store/reorderPharmacyItems', itemsToReorder)
         .then(() => this.endRequest(submitButton))
-        .catch(err => {
+        .catch((err) => {
           this.removeSpinner(submitButton);
           this.error = err?.message;
         });

@@ -198,6 +198,10 @@ export async function getTests({ currentPage = 1, pageLimit = 20, filter = null,
   });
 }
 
+export const getOneTest = async (id: number) => {
+  return Test.findByPk(id);
+};
+
 /** ***********************
  * TEST TARIFFS
  ********************** */
@@ -276,6 +280,7 @@ export const getSamplesToCollect = async ({
   const { limit, offset } = calcLimitAndOffset(+currentPage, +pageLimit);
   const query = {
     status: TestStatus.PENDING,
+    has_paid: true,
     ...(period && getPeriodQuery(period, 'date_requested')),
     ...(start && end && dateIntervalQuery('date_requested', start, end)),
   };

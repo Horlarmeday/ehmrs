@@ -4,9 +4,7 @@
     <div class="card card-custom gutter-b example example-compact">
       <create-unit :displayPrompt="displayPrompt" @closeModal="hideModal" :data="unitToEdit" />
       <div class="card-header" style="min-height: 50px !important">
-        <h3 class="card-title">
-          Units
-        </h3>
+        <h3 class="card-title">Units</h3>
       </div>
       <!--begin::Header-->
       <div class="card-header border-0">
@@ -30,7 +28,7 @@
               <tr class="text-uppercase">
                 <th class="pl-5" style="min-width: 150px">Name</th>
                 <th style="min-width: 160px">Date</th>
-                <th class="pr-0 " style="min-width: 150px">action</th>
+                <th class="pr-0" style="min-width: 150px">action</th>
               </tr>
             </thead>
             <tbody>

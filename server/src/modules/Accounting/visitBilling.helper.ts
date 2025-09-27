@@ -68,11 +68,13 @@ export class VisitBillingHelper {
           patient_insurance_id: patientInsurance?.id,
         };
 
-        bill = await AccountingService.createClinicalBill(billingRequest);
+        const { bill: clinicalBill } = await AccountingService.createClinicalBill(billingRequest);
+        bill = clinicalBill;
       }
 
       return bill;
     } catch (error) {
+      console.error(error);
       throw new BadException(
         `Failed to get or create bill for visit: ${error.message}`,
         500,

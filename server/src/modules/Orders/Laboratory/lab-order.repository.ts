@@ -10,41 +10,49 @@ import {
 import sequelize, { WhereOptions } from 'sequelize';
 import { staffAttributes } from '../../Antenatal/antenatal.repository';
 import { BadException } from '../../../common/util/api-error';
-import { StatusCodes } from '../../../core/helpers/helper';
+import { isToday, StatusCodes } from '../../../core/helpers/helper';
 import { ERROR_UPDATING_TEST } from './messages/response-messages';
 import { VisitBillingHelper } from '../../Accounting/visitBilling.helper';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
-
+import { PrescriptionType } from '../../../database/models/prescribedTest';
+import { NHISApprovalStatus } from '../../../core/helpers/general';
+import { TestType } from '../../../database/models/test';
+import { createTestPrescription, getLastTestPrescription, getTestPrescription } from '../../Laboratory/laboratory.repository';
+import { PrescribedTestBody } from './interface/prescribed-test.body';
 /**
  * prescribe a test for patient
  * @param data
  * @returns {object} prescribed test data
  */
 export async function prescribeTest(data) {
-  const { test_id, requester, price, patient_id, visit_id, ante_natal_id } = data;
+  const { test_id, requester, patient_id, visit_id, ante_natal_id, test_prescription_id } = data;
+      // Get patient and insurance for billing calculation
+  const [patient, patientInsurance, test] = await Promise.all([
+    Patient.findByPk(patient_id),
+    getPatientInsuranceQuery({
+      patient_id,
+      is_default: true,
+    }),
+    Test.findByPk(test_id),
+  ]);
 
   const prescribedTest = await PrescribedTest.create({
     test_id,
     requester,
-    price,
+    price: test.price,
     patient_id,
     date_requested: Date.now(),
     visit_id,
     ante_natal_id,
+    patient_insurance_id: patientInsurance?.id,
+    test_group: TestType.SECONDARY,
+    test_type: PrescriptionType.CASH,
+    test_prescription_id,
+    sample_id: test.sample_id,
   });
-
-  const test = await Test.findByPk(test_id);
 
   // 🆕 NEW: Auto-create bill for this prescription
   try {
-    // Get patient and insurance for billing calculation
-    const [patient, patientInsurance] = await Promise.all([
-      Patient.findByPk(patient_id),
-      getPatientInsuranceQuery({
-        patient_id,
-        is_default: true,
-      }),
-    ]);
 
     if (patient) {
       // Add this prescription to the visit bill

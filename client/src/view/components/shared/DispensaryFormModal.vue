@@ -126,9 +126,7 @@
 
     <template #modal-footer="{ ok, cancel }">
       <div class="w-100 d-flex justify-content-between">
-        <button type="button" class="btn btn-light" @click="cancel()">
-          Cancel
-        </button>
+        <button type="button" class="btn btn-light" @click="cancel()">Cancel</button>
         <button type="button" class="btn btn-primary" :disabled="!canSave || loading" @click="ok()">
           <span v-if="loading" class="spinner-border spinner-border-sm mr-2"></span>
           {{ isEdit ? 'Update Dispensary' : 'Create Dispensary' }}

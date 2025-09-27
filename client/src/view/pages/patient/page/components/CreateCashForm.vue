@@ -6,7 +6,7 @@
         ref="video"
         id="video"
         v-show="!image && !photoSaved"
-        style="height:1px;width:120px;margin-bottom:20px;"
+        style="height: 1px; width: 120px; margin-bottom: 20px"
         autoplay
       ></video>
       <canvas ref="canvas" id="canvas" width="250" height="187" v-show="image"> </canvas>
@@ -14,7 +14,7 @@
         id="snap"
         v-if="!image && !photoSaved && !videoShowing"
         class="btn btn-success btn-sm mt-4"
-        style="display: block;"
+        style="display: block"
         v-on:click="startCamera()"
       >
         Take Photo
@@ -23,7 +23,7 @@
         id="snap"
         v-if="!image && !photoSaved && videoShowing"
         class="btn btn-success btn-sm"
-        style="display: block;"
+        style="display: block"
         v-on:click="capture()"
       >
         Snap Photo
@@ -164,7 +164,7 @@
           v-validate="'required'"
           data-vv-validate-on="blur"
         >
-          <option value="Married">Married </option>
+          <option value="Married">Married</option>
           <option value="Single">Single</option>
           <option value="Widow">Widow</option>
           <option value="Widower">Widower</option>
@@ -188,7 +188,8 @@
             v-for="country in countries"
             :key="country.id"
             :value="{ id: country.id, text: country.name }"
-            >{{ country.name }}
+          >
+            {{ country.name }}
           </option>
         </select>
         <span class="text-danger text-sm">{{ errors.first('country') }}</span>
@@ -207,7 +208,8 @@
             v-for="state in states"
             :key="state.id"
             :value="{ id: state.id, text: state.name }"
-            >{{ state.name }}
+          >
+            {{ state.name }}
           </option>
         </select>
         <span class="text-danger text-sm">{{ errors.first('state') }}</span>
@@ -221,8 +223,8 @@
           v-validate="'required'"
           data-vv-validate-on="blur"
         >
-          <option v-for="city in cities" :key="city.id" :value="{ id: city.id, text: city.name }"
-            >{{ city.name }}
+          <option v-for="city in cities" :key="city.id" :value="{ id: city.id, text: city.name }">
+            {{ city.name }}
           </option>
         </select>
         <span class="text-danger text-sm">{{ errors.first('lga') }}</span>
@@ -413,7 +415,7 @@ export default {
       this.video = this.$refs.video;
       this.video.style = 'display:block;width:250px;margin-bottom:20px;';
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+        navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
           this.video.srcObject = stream;
           this.video.play();
         });
@@ -424,7 +426,7 @@ export default {
       const stream = videoElem.srcObject;
       const tracks = stream.getTracks();
 
-      tracks.forEach(function(track) {
+      tracks.forEach(function (track) {
         track.stop();
       });
 

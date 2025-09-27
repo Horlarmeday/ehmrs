@@ -212,7 +212,7 @@ export default {
     },
 
     createObservation() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             temperature: this.temperature,
@@ -291,7 +291,7 @@ export default {
     },
 
     fetchOneTriage(patientId) {
-      this.$store.dispatch('triage/fetchOneTriage', { patientId }).then(response => {
+      this.$store.dispatch('triage/fetchOneTriage', { patientId }).then((response) => {
         const res = response.data.data;
         this.height = res?.height;
       });
@@ -300,7 +300,7 @@ export default {
     fetchAdmission() {
       this.$store
         .dispatch('admission/fetchAdmission', { admissionId: this.$route.params.id })
-        .then(response => {
+        .then((response) => {
           const res = response.data.data;
           this.date_of_birth = dayjs().diff(res.patient.date_of_birth, 'weeks');
           this.fetchOneTriage(res.patient_id);

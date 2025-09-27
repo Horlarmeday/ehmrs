@@ -23,43 +23,38 @@ export default {
   movements: [],
   movementsTotal: 0,
   movementsPages: 0,
-  itemMovements: [],
 
   // Requests
   requests: [],
   requestsTotal: 0,
   requestsPages: 0,
   currentRequest: null,
-  myRequests: [],
-  pendingApprovalRequests: [],
 
   // Dispensaries
   dispensaries: [],
   dispensariesTotal: 0,
   dispensariesPages: 0,
   currentDispensary: null,
-  dispensaryStock: [],
-  dispensaryMetrics: null,
-
-  // Reports
-  stockReport: null,
-  movementReport: null,
-  usageReport: null,
-  costReport: null,
-  recentReports: [],
-
-  // Dashboard
-  dashboardStats: null,
-
-  // Settings
-  settings: null,
 
   // UI State
   loading: false,
   error: null,
   errorDetails: null,
 
-  // Standardized pagination state for all entities
+  // Dashboard State
+  dashboardStats: null,
+  recentReports: [],
+
+  // Reports State
+  stockReport: null,
+  movementReport: null,
+  usageReport: null,
+  costReport: null,
+
+  // Item Movements
+  itemMovements: [],
+
+  // Basic pagination state
   pagination: {
     currentPage: 1,
     pageLimit: 20,
@@ -69,13 +64,12 @@ export default {
     hasPrevPage: false,
   },
 
-  // Standardized filters
+  // Basic filters
   filters: {
     search: '',
     category_id: null,
     subcategory_id: null,
     status: null,
-    dateRange: null,
     start_date: null,
     end_date: null,
   },
@@ -88,24 +82,5 @@ export default {
     movements: false,
     requests: false,
     dispensaries: false,
-    reports: false,
-    dashboard: false,
   },
-
-  // Cache management
-  cache: {
-    timestamps: {},
-    ttl: {
-      categories: 5 * 60 * 1000, // 5 minutes
-      subcategories: 5 * 60 * 1000, // 5 minutes
-      items: 2 * 60 * 1000, // 2 minutes
-      movements: 1 * 60 * 1000, // 1 minute
-      requests: 30 * 1000, // 30 seconds
-      dispensaries: 5 * 60 * 1000, // 5 minutes
-      dashboard: 1 * 60 * 1000, // 1 minute
-    },
-  },
-
-  // In-flight requests tracking
-  inFlightRequests: {},
 };

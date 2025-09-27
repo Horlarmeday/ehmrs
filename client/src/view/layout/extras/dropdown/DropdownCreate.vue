@@ -9,9 +9,7 @@
   >
     <template v-slot:button-content>
       <div class="topbar-item mr-4" data-toggle="dropdown" data-offset="10px,0px">
-        <div class="btn font-weight-bolder btn-sm btn-light-success px-5">
-          Create
-        </div>
+        <div class="btn font-weight-bolder btn-sm btn-light-success px-5">Create</div>
       </div>
     </template>
     <!--begin::Navigation-->
@@ -48,9 +46,7 @@
           <span class="navi-icon">
             <i class="flaticon2-layers-1"></i>
           </span>
-          <span class="navi-text">
-            Report
-          </span>
+          <span class="navi-text"> Report </span>
         </a>
       </b-dropdown-text>
       <b-dropdown-text tag="div" class="navi-item">

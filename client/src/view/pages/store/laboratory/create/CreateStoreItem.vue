@@ -148,7 +148,7 @@
                 name="unit"
                 v-model="unit"
                 label="name"
-                :reduce="units => units.id"
+                :reduce="(units) => units.id"
                 :options="units"
               ></v-select>
               <span class="text-danger text-sm">{{ errors.first('unit') }}</span>
@@ -267,7 +267,7 @@ export default {
     },
 
     createLabItem() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           // set spinner to submit button
           const submitButton = this.$refs['kt_lab_item_submit'];

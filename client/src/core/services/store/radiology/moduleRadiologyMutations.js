@@ -23,7 +23,7 @@ export default {
   },
 
   UPDATE_IMAGING(state, imaging) {
-    const imagingIndex = state.imagings.findIndex(p => p.id === imaging.id);
+    const imagingIndex = state.imagings.findIndex((p) => p.id === imaging.id);
     Object.assign(state.imagings[imagingIndex], imaging);
   },
 
@@ -51,7 +51,7 @@ export default {
   },
 
   UPDATE_INVESTIGATION(state, investigation) {
-    const investigationIndex = state.investigations.findIndex(p => p.id === investigation.id);
+    const investigationIndex = state.investigations.findIndex((p) => p.id === investigation.id);
     Object.assign(state.investigations[investigationIndex], investigation);
   },
 

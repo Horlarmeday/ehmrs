@@ -228,7 +228,7 @@ export default {
 
       if (this.searchQuery) {
         filtered = filtered.filter(
-          movement =>
+          (movement) =>
             movement.item_name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
             movement.reference_number.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
             movement.staff_name.toLowerCase().includes(this.searchQuery.toLowerCase())
@@ -236,22 +236,22 @@ export default {
       }
 
       if (this.typeFilter) {
-        filtered = filtered.filter(movement => movement.type === this.typeFilter);
+        filtered = filtered.filter((movement) => movement.type === this.typeFilter);
       }
 
       if (this.itemFilter) {
-        filtered = filtered.filter(movement => movement.item_id === this.itemFilter);
+        filtered = filtered.filter((movement) => movement.item_id === this.itemFilter);
       }
 
       if (this.dateFrom) {
         filtered = filtered.filter(
-          movement => new Date(movement.created_at) >= new Date(this.dateFrom)
+          (movement) => new Date(movement.created_at) >= new Date(this.dateFrom)
         );
       }
 
       if (this.dateTo) {
         filtered = filtered.filter(
-          movement => new Date(movement.created_at) <= new Date(this.dateTo)
+          (movement) => new Date(movement.created_at) <= new Date(this.dateTo)
         );
       }
 
@@ -399,41 +399,47 @@ export default {
 
     async showApprovalModal(movement) {
       return new Promise((resolve) => {
-        this.$bvModal.msgBoxPrompt('Please provide approval notes:', {
-          title: `Approve Movement ${movement.reference_number}`,
-          size: 'md',
-          buttonSize: 'sm',
-          okVariant: 'success',
-          okTitle: 'Approve',
-          cancelTitle: 'Cancel',
-          hideHeaderClose: false,
-          centered: true,
-          placeholder: 'Please provide a reason for approval...',
-        }).then((value) => {
-          resolve(value);
-        }).catch(() => {
-          resolve(null);
-        });
+        this.$bvModal
+          .msgBoxPrompt('Please provide approval notes:', {
+            title: `Approve Movement ${movement.reference_number}`,
+            size: 'md',
+            buttonSize: 'sm',
+            okVariant: 'success',
+            okTitle: 'Approve',
+            cancelTitle: 'Cancel',
+            hideHeaderClose: false,
+            centered: true,
+            placeholder: 'Please provide a reason for approval...',
+          })
+          .then((value) => {
+            resolve(value);
+          })
+          .catch(() => {
+            resolve(null);
+          });
       });
     },
 
     async showRejectionModal(movement) {
       return new Promise((resolve) => {
-        this.$bvModal.msgBoxPrompt('Please provide rejection reason:', {
-          title: `Reject Movement ${movement.reference_number}`,
-          size: 'md',
-          buttonSize: 'sm',
-          okVariant: 'danger',
-          okTitle: 'Reject',
-          cancelTitle: 'Cancel',
-          hideHeaderClose: false,
-          centered: true,
-          placeholder: 'Please provide a reason for rejection...',
-        }).then((value) => {
-          resolve(value);
-        }).catch(() => {
-          resolve(null);
-        });
+        this.$bvModal
+          .msgBoxPrompt('Please provide rejection reason:', {
+            title: `Reject Movement ${movement.reference_number}`,
+            size: 'md',
+            buttonSize: 'sm',
+            okVariant: 'danger',
+            okTitle: 'Reject',
+            cancelTitle: 'Cancel',
+            hideHeaderClose: false,
+            centered: true,
+            placeholder: 'Please provide a reason for rejection...',
+          })
+          .then((value) => {
+            resolve(value);
+          })
+          .catch(() => {
+            resolve(null);
+          });
       });
     },
   },

@@ -6,9 +6,7 @@
         <i class="flaticon2-plus text-primary mr-2"></i>
         Create New Request
       </h3>
-      <p class="text-muted mb-0">
-        Submit a request for items needed by your department
-      </p>
+      <p class="text-muted mb-0">Submit a request for items needed by your department</p>
     </div>
 
     <!-- Main Form -->
@@ -78,9 +76,7 @@
                   <div v-if="errors.required_date" class="invalid-feedback d-block">
                     {{ errors.required_date }}
                   </div>
-                  <small class="form-text text-muted">
-                    When do you need these items?
-                  </small>
+                  <small class="form-text text-muted"> When do you need these items? </small>
                 </div>
 
                 <div class="col-md-6 mb-3">
@@ -499,9 +495,7 @@ export default {
       const year = now.getFullYear();
       const month = String(now.getMonth() + 1).padStart(2, '0');
       const day = String(now.getDate()).padStart(2, '0');
-      const timestamp = Date.now()
-        .toString()
-        .slice(-4);
+      const timestamp = Date.now().toString().slice(-4);
       return `REQ-${year}${month}${day}-${timestamp}`;
     },
 
@@ -525,7 +519,7 @@ export default {
     handleItemChange(index) {
       const item = this.form.items[index];
       if (item.item_id) {
-        const selectedItem = this.availableItems.find(avail => avail.id === item.item_id);
+        const selectedItem = this.availableItems.find((avail) => avail.id === item.item_id);
         if (selectedItem) {
           item.unit_cost = selectedItem.unit_cost || 0;
           this.calculateItemCost(index);
@@ -640,7 +634,7 @@ export default {
         };
 
         // Convert string numbers to actual numbers
-        requestData.items.forEach(item => {
+        requestData.items.forEach((item) => {
           item.quantity_requested = parseInt(item.quantity_requested);
           item.unit_cost = parseFloat(item.unit_cost);
           item.total_cost = parseFloat(item.total_cost);

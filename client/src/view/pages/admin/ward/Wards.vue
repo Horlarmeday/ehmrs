@@ -4,9 +4,7 @@
     <div class="card card-custom gutter-b example example-compact">
       <create-ward :displayPrompt="displayPrompt" @closeModal="hideModal" :data="wardToEdit" />
       <div class="card-header" style="min-height: 50px !important">
-        <h3 class="card-title">
-          Ward List
-        </h3>
+        <h3 class="card-title">Ward List</h3>
       </div>
       <!--begin::Header-->
       <div class="card-header border-0">
@@ -31,7 +29,7 @@
                 <th class="pl-5" style="min-width: 150px">Name</th>
                 <th class="pl-5" style="min-width: 150px">Occupant Type</th>
                 <th style="min-width: 160px">Date</th>
-                <th class="pr-0 " style="min-width: 150px">action</th>
+                <th class="pr-0" style="min-width: 150px">action</th>
               </tr>
             </thead>
             <tbody>

@@ -62,7 +62,7 @@ export default {
   },
 
   UPDATE_CLINICAL_NOTE(state, note) {
-    const noteIndex = state.clinicalNotes.findIndex(n => n.id === note.id);
+    const noteIndex = state.clinicalNotes.findIndex((n) => n.id === note.id);
     Object.assign(state.clinicalNotes[noteIndex], note);
   },
 
@@ -86,7 +86,7 @@ export default {
   },
 
   UPDATE_OBSERVATION(state, observation) {
-    const observationIndex = state.observations.findIndex(n => n.id === observation.id);
+    const observationIndex = state.observations.findIndex((n) => n.id === observation.id);
     Object.assign(state.observations[observationIndex], observation);
   },
 

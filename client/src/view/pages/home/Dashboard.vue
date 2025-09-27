@@ -169,7 +169,7 @@ export default {
       const parsedToken = parseJwt(token);
       console.log(parsedToken);
       const department = departments.find(
-        department => department.department === parsedToken.department
+        (department) => department.department === parsedToken.department
       );
       if (department) {
         switch (department.department) {
@@ -238,6 +238,8 @@ export default {
         case SubRoles.VIP_PRIVATE:
           return (this.dashboardComponent = VIPWard);
         case SubRoles.DIALYSIS:
+          return (this.dashboardComponent = GOPD);
+        default:
           return (this.dashboardComponent = GOPD);
       }
     },

@@ -3,7 +3,7 @@ export const SET_STOCK_AUDITS = (state, audits) => {
 };
 
 export const SET_STOCK_AUDIT = (state, audit) => {
-  const index = state.audits.findIndex(a => a.id === audit.id);
+  const index = state.audits.findIndex((a) => a.id === audit.id);
   if (index !== -1) {
     state.audits.splice(index, 1, audit);
   } else {
@@ -12,7 +12,7 @@ export const SET_STOCK_AUDIT = (state, audit) => {
 };
 
 export const UPDATE_STOCK_AUDIT = (state, audit) => {
-  const index = state.audits.findIndex(a => a.id === audit.id);
+  const index = state.audits.findIndex((a) => a.id === audit.id);
   if (index !== -1) {
     state.audits.splice(index, 1, audit);
   }
@@ -26,7 +26,7 @@ export const SET_ERROR = (state, error) => {
   state.error = error;
 };
 
-export const CLEAR_STOCK_AUDIT_DATA = state => {
+export const CLEAR_STOCK_AUDIT_DATA = (state) => {
   state.audits = [];
   state.error = null;
 };

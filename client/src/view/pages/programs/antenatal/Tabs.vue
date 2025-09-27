@@ -129,7 +129,7 @@
             <li
               v-if="
                 doctorAllowedTabs.includes(currentUser.department) ||
-                  subRolesAllowedTabs.includes(currentUser.sub_role)
+                subRolesAllowedTabs.includes(currentUser.sub_role)
               "
               class="nav-item"
             >
@@ -340,7 +340,7 @@ export default {
     fetchAntenatalRecord() {
       this.$store
         .dispatch('antenatal/fetchOneAntenatalAccount', this.$route.query.antenatal)
-        .then(response => {
+        .then((response) => {
           const res = response.data.data;
           this.$store.dispatch('insurance/fetchPatientDefaultInsurance', res.patient_id);
           this.$store.dispatch('patient/setCurrentPatient', { ...res.insurance, ...res.patient });

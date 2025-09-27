@@ -8,7 +8,7 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/settings/departments/create', department)
-        .then(response => {
+        .then((response) => {
           commit(
             'ADD_DEPARTMENT',
             Object.assign(department, {
@@ -18,7 +18,7 @@ export default {
           );
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -33,13 +33,13 @@ export default {
             search: payload.search,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_DEPARTMENTS', response.data.data.docs);
           commit('SET_DEPARTMENTS_TOTAL', response.data.data.total);
           commit('SET_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -49,11 +49,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/settings/departments/update`, department)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_DEPARTMENT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -66,7 +66,7 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/settings/units/create`, unit)
-        .then(response => {
+        .then((response) => {
           commit(
             'ADD_UNIT',
             Object.assign(unit, {
@@ -76,7 +76,7 @@ export default {
           );
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -92,13 +92,13 @@ export default {
             search: payload.search,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_UNITS', response.data.data.docs);
           commit('SET_UNITS_TOTAL', response.data.data.total);
           commit('SET_UNIT_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -108,11 +108,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/settings/units/update`, unit)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_UNIT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -125,7 +125,7 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/settings/wards/create`, ward)
-        .then(response => {
+        .then((response) => {
           commit(
             'ADD_WARD',
             Object.assign(ward, {
@@ -135,7 +135,7 @@ export default {
           );
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -151,13 +151,13 @@ export default {
             search: payload.search,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_WARDS', response.data.data.docs);
           commit('SET_WARDS_TOTAL', response.data.data.total);
           commit('SET_WARD_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -167,11 +167,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/settings/wards/update`, ward)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_WARD', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -185,11 +185,11 @@ export default {
             search: payload?.search,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_WARDS_AND_BEDS', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -202,7 +202,7 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/settings/beds/create`, bed)
-        .then(response => {
+        .then((response) => {
           commit(
             'ADD_BED',
             Object.assign(bed, {
@@ -212,7 +212,7 @@ export default {
           );
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -222,11 +222,25 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/settings/ward/beds', ward_id)
-        .then(response => {
+        .then((response) => {
           commit('SET_BEDS', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchAllBeds({ commit }) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/settings/beds/get')
+        .then((response) => {
+          commit('SET_BEDS', response.data.data);
+          resolve(response);
+        })
+        .catch((error) => {
           reject(error);
         });
     });
@@ -236,11 +250,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/settings/beds/update`, bed)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_BED', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -253,11 +267,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/settings/services/create`, service)
-        .then(response => {
+        .then((response) => {
           commit('ADD_SERVICE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -273,13 +287,13 @@ export default {
             search: payload.search,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_SERVICES', response.data.data.docs);
           commit('SET_SERVICES_TOTAL', response.data.data.total);
           commit('SET_SERVICE_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -288,11 +302,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/settings/services/update`, service)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_SERVICE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -305,11 +319,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/settings/defaults/create', adminDefault)
-        .then(response => {
+        .then((response) => {
           commit('ADD_ADMIN_DEFAULT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -319,11 +333,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/settings/defaults/get')
-        .then(response => {
+        .then((response) => {
           commit('SET_ADMIN_DEFAULTS', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -333,11 +347,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/settings/defaults/${defaultId}/get`)
-        .then(response => {
+        .then((response) => {
           commit('SET_ADMIN_DEFAULT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -347,11 +361,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .delete('/settings/defaults/delete', { data: adminDefault })
-        .then(response => {
+        .then((response) => {
           commit('ADD_ADMIN_DEFAULT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -373,13 +387,13 @@ export default {
             end: payload.end,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_ENCOUNTERS', response.data.data.docs);
           commit('SET_ENCOUNTERS_TOTAL', response.data.data.total);
           commit('SET_ENCOUNTERS_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -389,11 +403,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/settings/encounter/${encounterId}/get`)
-        .then(response => {
+        .then((response) => {
           commit('SET_ENCOUNTER', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -407,11 +421,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/patients/merge-patient-accounts`, payload)
-        .then(response => {
+        .then((response) => {
           commit('SET_MERGE_ACCOUNTS', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });

@@ -1,7 +1,11 @@
 <template>
   <div
     class="card card-custom bgi-no-repeat gutter-b card-stretch"
-    style="background-position: right top; background-size: 30% auto; background-image: url(media/svg/shapes/abstract-4.svg)"
+    style="
+      background-position: right top;
+      background-size: 30% auto;
+      background-image: url(media/svg/shapes/abstract-4.svg);
+    "
   >
     <!--begin::Body-->
     <div class="card-body">

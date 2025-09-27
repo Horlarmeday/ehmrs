@@ -60,12 +60,12 @@ export default {
       this.resetTimer();
     },
     setupActivityListeners() {
-      ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(eventName => {
+      ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach((eventName) => {
         document.addEventListener(eventName, this.resetTimer, true);
       });
     },
     removeActivityListeners() {
-      ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(eventName => {
+      ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach((eventName) => {
         document.removeEventListener(eventName, this.resetTimer, true);
       });
     },

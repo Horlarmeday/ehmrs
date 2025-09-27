@@ -10,7 +10,7 @@
             >
               <div
                 class="symbol-label"
-                style="background-image:url('/media/users/blank.png')"
+                style="background-image: url('/media/users/blank.png')"
               ></div>
               <i class="symbol-badge bg-success"></i>
             </div>
@@ -18,9 +18,7 @@
               <a href="#" class="font-weight-bold font-size-h5 text-dark-75 text-hover-primary">
                 James Jones
               </a>
-              <div class="text-muted">
-                Application Developer
-              </div>
+              <div class="text-muted">Application Developer</div>
               <div class="mt-2">
                 <a
                   href="#"

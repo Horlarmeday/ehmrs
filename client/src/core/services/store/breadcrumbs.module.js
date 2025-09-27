@@ -48,7 +48,7 @@ export default {
      */
     [ADD_BREADCRUMB](state, payload) {
       if (typeof payload === 'object') {
-        payload.forEach(item => state.commit(APPEND_BREADCRUM, item));
+        payload.forEach((item) => state.commit(APPEND_BREADCRUM, item));
       } else {
         state.commit(APPEND_BREADCRUM, payload);
       }

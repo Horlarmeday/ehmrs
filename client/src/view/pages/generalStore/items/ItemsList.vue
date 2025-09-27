@@ -271,7 +271,7 @@
                   </td>
                   <td>
                     <span class="font-weight-bold text-success"
-                      >${{ formatCurrency(item.unit_cost) }}</span
+                      >₦{{ formatCurrency(item.unit_cost) }}</span
                     >
                   </td>
                   <td>
@@ -282,7 +282,7 @@
                   <td>
                     <div class="btn-group">
                       <button @click="viewItem(item)" class="btn btn-sm btn-outline-primary">
-                        <i class="flaticon2-eye"></i>
+                        <i class="flaticon-eye"></i>
                       </button>
                       <button
                         v-if="ALLOWED_ROLES.includes(user.role)"
@@ -406,7 +406,7 @@ export default {
       loading: false,
       showCreateModal: false,
       user: parseJwt(localStorage.getItem('user_token')),
-      ALLOWED_ROLES: ['Super Admin', 'General Store Manager', 'General Store Staff'],
+      ALLOWED_ROLES: ['Super Admin', 'Store Admin', 'General Store Staff'],
       filters: {
         search: '',
         category_id: '',
@@ -455,7 +455,7 @@ export default {
     },
     filteredSubcategories() {
       if (!this.filters.category_id) return this.subcategories;
-      return this.subcategories.filter(sub => sub.category_id === this.filters.category_id);
+      return this.subcategories.filter((sub) => sub.category_id === this.filters.category_id);
     },
   },
   async created() {
@@ -547,12 +547,12 @@ export default {
     },
 
     getCategoryName(categoryId) {
-      const category = this.categories.find(c => c.id === categoryId);
+      const category = this.categories.find((c) => c.id === categoryId);
       return category ? category.name : 'Unknown';
     },
 
     getSubcategoryName(subcategoryId) {
-      const subcategory = this.subcategories.find(s => s.id === subcategoryId);
+      const subcategory = this.subcategories.find((s) => s.id === subcategoryId);
       return subcategory ? subcategory.name : 'Unknown';
     },
 
@@ -624,7 +624,7 @@ export default {
             unit_price: (value) => Number(value || 0).toFixed(2),
             total_value: (value) => Number(value || 0).toFixed(2),
             created_at: (value) => new Date(value).toLocaleDateString(),
-          }
+          },
         });
       } catch (error) {
         this.$logError('Failed to export items data', error);

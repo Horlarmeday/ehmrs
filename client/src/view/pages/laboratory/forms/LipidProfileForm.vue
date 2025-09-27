@@ -75,7 +75,7 @@ export default {
       this.debounceInput(this);
     },
 
-    debounceInput: debounce(vm => {
+    debounceInput: debounce((vm) => {
       vm.$emit('emitResult', vm.lipidProfile, vm.testId);
     }, 500),
   },

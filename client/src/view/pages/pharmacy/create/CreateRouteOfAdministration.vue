@@ -26,9 +26,9 @@
             data-vv-validate-on="blur"
             name="dosage_form"
           >
-            <option :value="dosage.id" v-for="dosage in dosageForms" :key="dosage.id">{{
-              dosage.name
-            }}</option>
+            <option :value="dosage.id" v-for="dosage in dosageForms" :key="dosage.id">
+              {{ dosage.name }}
+            </option>
           </select>
           <span class="text-danger text-sm">{{ errors.first('dosage_form') }}</span>
         </div>
@@ -114,7 +114,7 @@ export default {
       this.initValues();
     },
     createRoute() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             route_id: this.route_id,

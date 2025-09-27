@@ -125,7 +125,7 @@ export default {
     this.$nextTick(() => {
       KTLayoutExamples.init([this.$el]);
       const hljs = this.$el.querySelectorAll('.hljs');
-      hljs.forEach(hl => {
+      hljs.forEach((hl) => {
         hl.classList.add(`language-${hl.classList[1]}`);
         hl.classList.remove('hljs');
       });
@@ -167,7 +167,7 @@ export default {
      */
     hasSingleCodeType() {
       let exist = 0;
-      ['html', 'js', 'scss'].forEach(type => {
+      ['html', 'js', 'scss'].forEach((type) => {
         if (this.$slots.hasOwnProperty(type)) {
           exist++;
         }

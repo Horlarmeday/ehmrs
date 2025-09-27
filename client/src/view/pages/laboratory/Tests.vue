@@ -180,7 +180,7 @@ export default {
       });
     },
     resultForm(test) {
-      return resultFormList.find(form => form.code === test.result_form)?.name;
+      return resultFormList.find((form) => form.code === test.result_form)?.name;
     },
   },
   created() {

@@ -145,7 +145,7 @@ export default {
         ceporex: '',
       };
       const stoolAntibiotics = Object.keys(antibiotics)
-        .map(key => this.stoolAnalysis[key])
+        .map((key) => this.stoolAnalysis[key])
         .filter(Boolean);
       return (
         (this.section !== 'ValidationSection' && this.section !== 'ApprovalSection') ||
@@ -180,7 +180,7 @@ export default {
       this.debounceInput(this);
     },
 
-    debounceInput: debounce(vm => {
+    debounceInput: debounce((vm) => {
       vm.$emit('emitResult', vm.stoolAnalysis, vm.testId);
     }, 500),
 

@@ -583,12 +583,12 @@
                             <span class="text-muted font-weight-bold mr-2">
                               {{ ((statusData.count / reportData.totalOrders) * 100).toFixed(1) }}%
                             </span>
-                            <div class="progress" style="width: 60px; height: 6px;">
+                            <div class="progress" style="width: 60px; height: 6px">
                               <div
                                 class="progress-bar bg-primary"
-                                :style="
-                                  `width: ${(statusData.count / reportData.totalOrders) * 100}%`
-                                "
+                                :style="`width: ${
+                                  (statusData.count / reportData.totalOrders) * 100
+                                }%`"
                               ></div>
                             </div>
                           </div>
@@ -625,7 +625,7 @@
                   v-model="formData.vendor_id"
                   :options="availableVendors"
                   label="name"
-                  :reduce="vendor => vendor.id"
+                  :reduce="(vendor) => vendor.id"
                   placeholder="Select vendor..."
                   required
                   :loading="loadingVendors"
@@ -671,13 +671,13 @@
               <table class="table table-bordered">
                 <thead>
                   <tr>
-                    <th style="min-width: 280px; width: 30%;">Item</th>
-                    <th style="min-width: 100px; width: 12%;">Item Type</th>
-                    <th style="min-width: 100px; width: 12%;">Unit</th>
-                    <th style="min-width: 80px; width: 10%;">Quantity</th>
-                    <th style="min-width: 100px; width: 12%;">Unit Price</th>
-                    <th style="min-width: 100px; width: 12%;">Total</th>
-                    <th style="min-width: 80px; width: 12%;">Actions</th>
+                    <th style="min-width: 280px; width: 30%">Item</th>
+                    <th style="min-width: 100px; width: 12%">Item Type</th>
+                    <th style="min-width: 100px; width: 12%">Unit</th>
+                    <th style="min-width: 80px; width: 10%">Quantity</th>
+                    <th style="min-width: 100px; width: 12%">Unit Price</th>
+                    <th style="min-width: 100px; width: 12%">Total</th>
+                    <th style="min-width: 80px; width: 12%">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -689,7 +689,7 @@
                         label="name"
                         name="item_id"
                         :reduce="
-                          drugs => ({
+                          (drugs) => ({
                             id: drugs.id,
                             name: drugs.name,
                             drug_id: drugs.drug_id,
@@ -893,7 +893,7 @@
                           min="0"
                           step="1"
                           class="form-control"
-                          style="width: 80px;"
+                          style="width: 80px"
                           required
                         />
                       </td>
@@ -915,7 +915,7 @@
                           min="0"
                           step="0.01"
                           class="form-control"
-                          style="width: 100px;"
+                          style="width: 100px"
                         />
                       </td>
                     </tr>
@@ -1013,7 +1013,7 @@ export default {
       return this.$store.state.store.items;
     },
     itemOptions() {
-      return this.availableItems.map(item => ({
+      return this.availableItems.map((item) => ({
         name: item?.drug?.name,
         id: item?.id,
         drug_id: item?.drug_id,
@@ -1119,7 +1119,7 @@ export default {
 
     onItemSelected(index) {
       const item = this.formData.items[index];
-      const selectedItem = this.itemOptions.find(i => i.id === item.item_id?.id);
+      const selectedItem = this.itemOptions.find((i) => i.id === item.item_id?.id);
       if (selectedItem) {
         // Pre-fill unit price and unit_id if available
         item.unit_price = selectedItem.price || 0;
@@ -1146,7 +1146,7 @@ export default {
       try {
         const payload = {
           ...this.formData,
-          items: this.formData.items.map(item => ({
+          items: this.formData.items.map((item) => ({
             item_type: item.item_type,
             quantity: item.quantity,
             unit_price: item.unit_price,
@@ -1317,7 +1317,7 @@ export default {
         this.receiveFormData = {
           received_date: new Date().toISOString().split('T')[0],
           received_by: this.$store.state.auth.user?.id,
-          received_items: fullOrder.ProcurementOrderItems.map(item => ({
+          received_items: fullOrder.ProcurementOrderItems.map((item) => ({
             order_item_id: item.id,
             item_name: item.Drug?.name || 'Unknown Item',
             item_strength: item.Drug?.strength,
@@ -1356,7 +1356,7 @@ export default {
         const payload = {
           received_by: this.receiveFormData.received_by,
           received_date: new Date(this.receiveFormData.received_date).toISOString(),
-          received_items: this.receiveFormData.received_items.map(item => ({
+          received_items: this.receiveFormData.received_items.map((item) => ({
             order_item_id: item.order_item_id,
             quantity_received: parseInt(item.quantity_received) || 0,
             unit_price: parseFloat(item.unit_price) || 0,
@@ -1442,8 +1442,7 @@ export default {
       this.$notify({
         group: 'foo',
         title: 'Info',
-        text:
-          'Vendor creation modal can be added here. For now, vendors are managed through the main store module.',
+        text: 'Vendor creation modal can be added here. For now, vendors are managed through the main store module.',
         type: 'info',
       });
     },
@@ -1470,7 +1469,7 @@ export default {
 
     loadReportData() {
       // Calculate report data from current orders
-      const filteredOrders = this.orders.filter(order => {
+      const filteredOrders = this.orders.filter((order) => {
         let matchesFilter = true;
 
         if (this.reportFilters.dateFrom) {
@@ -1498,7 +1497,7 @@ export default {
       );
 
       // Calculate unique vendors
-      const uniqueVendors = [...new Set(filteredOrders.map(order => order.vendor_id))];
+      const uniqueVendors = [...new Set(filteredOrders.map((order) => order.vendor_id))];
       this.reportData.totalVendors = uniqueVendors.length;
 
       // Calculate average
@@ -1556,7 +1555,7 @@ export default {
     // Check if we should open receive modal from query param
     if (this.$route.query.receiveOrder) {
       const orderId = parseInt(this.$route.query.receiveOrder);
-      const order = this.orders.find(o => o.id === orderId);
+      const order = this.orders.find((o) => o.id === orderId);
       if (order && order.status === 'SENT') {
         await this.receiveOrder(order);
       }

@@ -14,7 +14,7 @@
     <!--end::Header-->
 
     <div class="scroll scroll-push">
-      <perfect-scrollbar class="scroll" style="max-height: 30vh; position: relative;">
+      <perfect-scrollbar class="scroll" style="max-height: 30vh; position: relative">
         <!--begin::Item-->
         <template v-for="(item, i) in list">
           <div class="d-flex align-items-center justify-content-between p-8" v-bind:key="i">
@@ -62,9 +62,7 @@
         <span class="font-weight-bolder text-primary text-right">$5640.00</span>
       </div>
       <div class="text-right">
-        <button type="button" class="btn btn-primary text-weight-bold">
-          Place Order
-        </button>
+        <button type="button" class="btn btn-primary text-weight-bold">Place Order</button>
       </div>
     </div>
     <!--end::Summary-->

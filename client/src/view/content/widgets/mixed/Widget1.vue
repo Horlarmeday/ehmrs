@@ -3,9 +3,7 @@
   <div class="card card-custom bg-gray-100 card-stretch gutter-b">
     <!--begin::Header-->
     <div class="card-header border-0 bg-primary py-5">
-      <h3 class="card-title font-weight-bolder text-white">
-        Sales Stat
-      </h3>
+      <h3 class="card-title font-weight-bolder text-white">Sales Stat</h3>
       <div class="card-toolbar">
         <Dropdown1></Dropdown1>
       </div>
@@ -29,17 +27,13 @@
             <span class="svg-icon svg-icon-3x svg-icon-info d-block my-2">
               <inline-svg src="media/svg/icons/Media/Equalizer.svg" />
             </span>
-            <a href="#" class="text-info font-weight-bold font-size-h6">
-              Weekly Sales
-            </a>
+            <a href="#" class="text-info font-weight-bold font-size-h6"> Weekly Sales </a>
           </div>
           <div class="col bg-white px-6 py-8 rounded-xl mb-7">
             <span class="svg-icon svg-icon-3x svg-icon-warning d-block my-2">
               <inline-svg src="media/svg/icons/Communication/Add-user.svg" />
             </span>
-            <a href="#" class="text-warning font-weight-bold font-size-h6 mt-2">
-              New Users
-            </a>
+            <a href="#" class="text-warning font-weight-bold font-size-h6 mt-2"> New Users </a>
           </div>
         </div>
         <!--end::Row-->
@@ -49,17 +43,13 @@
             <span class="svg-icon svg-icon-3x svg-icon-danger d-block my-2">
               <inline-svg src="media/svg/icons/Design/Layers.svg" />
             </span>
-            <a href="#" class="text-danger font-weight-bold font-size-h6 mt-2">
-              Item Orders
-            </a>
+            <a href="#" class="text-danger font-weight-bold font-size-h6 mt-2"> Item Orders </a>
           </div>
           <div class="col bg-white px-6 py-8 rounded-xl">
             <span class="svg-icon svg-icon-3x svg-icon-success d-block my-2">
               <inline-svg src="media/svg/icons/Communication/Urgent-mail.svg" />
             </span>
-            <a href="#" class="text-success font-weight-bold font-size-h6 mt-2">
-              Bug Reports
-            </a>
+            <a href="#" class="text-success font-weight-bold font-size-h6 mt-2"> Bug Reports </a>
           </div>
         </div>
         <!--end::Row-->
@@ -203,7 +193,7 @@ export default {
           fontFamily: this.layoutConfig('font-family'),
         },
         y: {
-          formatter: function(val) {
+          formatter: function (val) {
             return '$' + val + ' thousands';
           },
         },

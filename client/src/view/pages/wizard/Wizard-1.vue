@@ -57,9 +57,7 @@
             <form class="form" id="kt_form">
               <!--begin: Wizard Step 1-->
               <div class="pb-5" data-wizard-type="step-content" data-wizard-state="current">
-                <h3 class="mb-10 font-weight-bold text-dark">
-                  Setup Your Current Location
-                </h3>
+                <h3 class="mb-10 font-weight-bold text-dark">Setup Your Current Location</h3>
                 <div class="form-group">
                   <label>Address Line 1</label>
                   <input
@@ -390,9 +388,7 @@
 
               <!--begin: Wizard Step 2-->
               <div class="pb-5" data-wizard-type="step-content">
-                <h4 class="mb-10 font-weight-bold text-dark">
-                  Enter the Details of your Delivery
-                </h4>
+                <h4 class="mb-10 font-weight-bold text-dark">Enter the Details of your Delivery</h4>
                 <div class="form-group">
                   <label>Package Details</label>
                   <input
@@ -468,9 +464,7 @@
 
               <!--begin: Wizard Step 3-->
               <div class="pb-5" data-wizard-type="step-content">
-                <h4 class="mb-10 font-weight-bold text-dark">
-                  Select your Services
-                </h4>
+                <h4 class="mb-10 font-weight-bold text-dark">Select your Services</h4>
                 <div class="form-group">
                   <label>Delivery Type</label>
                   <select name="delivery" class="form-control form-control-solid form-control-lg">
@@ -507,9 +501,7 @@
 
               <!--begin: Wizard Step 4-->
               <div class="pb-5" data-wizard-type="step-content">
-                <h4 class="mb-10 font-weight-bold text-dark">
-                  Setup Your Delivery Location
-                </h4>
+                <h4 class="mb-10 font-weight-bold text-dark">Setup Your Delivery Location</h4>
                 <div class="form-group">
                   <label>Address Line 1</label>
                   <input
@@ -840,13 +832,9 @@
 
               <!--begin: Wizard Step 5-->
               <div class="pb-5" data-wizard-type="step-content">
-                <h4 class="mb-10 font-weight-bold text-dark">
-                  Review your Details and Submit
-                </h4>
+                <h4 class="mb-10 font-weight-bold text-dark">Review your Details and Submit</h4>
                 <div class="border-bottom mb-5 pb-5">
-                  <div class="font-weight-bold mb-3">
-                    Current Address:
-                  </div>
+                  <div class="font-weight-bold mb-3">Current Address:</div>
                   <div class="line-height-md">
                     Address Line 1
                     <br />
@@ -855,9 +843,7 @@
                   </div>
                 </div>
                 <div class="border-bottom mb-5 pb-5">
-                  <div class="font-weight-bold mb-3">
-                    Delivery Details:
-                  </div>
+                  <div class="font-weight-bold mb-3">Delivery Details:</div>
                   <div class="line-height-md">
                     Package: Complete Workstation (Monitor, Computer, Keyboard & Mouse)
                     <br />
@@ -866,9 +852,7 @@
                   </div>
                 </div>
                 <div class="border-bottom mb-5 pb-5">
-                  <div class="font-weight-bold mb-3">
-                    Delivery Service Type:
-                  </div>
+                  <div class="font-weight-bold mb-3">Delivery Service Type:</div>
                   <div class="line-height-md">
                     Overnight Delivery with Regular Packaging
                     <br />
@@ -876,9 +860,7 @@
                   </div>
                 </div>
                 <div class="mb-5">
-                  <div class="font-weight-bold mb-3">
-                    Delivery Address:
-                  </div>
+                  <div class="font-weight-bold mb-3">Delivery Address:</div>
                   <div class="line-height-md">
                     Address Line 1
                     <br />
@@ -949,20 +931,20 @@ export default {
     });
 
     // Validation before going to next page
-    wizard.on('beforeNext', function(/*wizardObj*/) {
+    wizard.on('beforeNext', function (/*wizardObj*/) {
       // validate the form and use below function to stop the wizard's step
       // wizardObj.stop();
     });
 
     // Change event
-    wizard.on('change', function(/*wizardObj*/) {
+    wizard.on('change', function (/*wizardObj*/) {
       setTimeout(() => {
         KTUtil.scrollTop();
       }, 500);
     });
   },
   methods: {
-    submit: function(e) {
+    submit: function (e) {
       e.preventDefault();
       Swal.fire({
         title: '',

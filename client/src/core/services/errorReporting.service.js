@@ -12,7 +12,7 @@ class ErrorReportingService {
     this.reportingEndpoint = process.env.VUE_APP_ERROR_REPORTING_ENDPOINT || '/api/errors';
     this.userContext = null;
     this.sessionId = this.generateSessionId();
-    
+
     // Error filtering and rate limiting
     this.errorFilters = new Set([
       'ResizeObserver loop limit exceeded',
@@ -31,7 +31,7 @@ class ErrorReportingService {
     this.rateLimits = new Map();
     this.maxErrorsPerMinute = 5;
     this.filteringEnabled = true;
-    
+
     // Bind methods to preserve context
     this.reportError = this.reportError.bind(this);
     this.reportApiError = this.reportApiError.bind(this);
@@ -69,30 +69,32 @@ class ErrorReportingService {
    */
   shouldFilterError(error, context = {}) {
     const errorMessage = error.message || error.toString();
-    
+
     // Check against predefined filters
     for (const filter of this.errorFilters) {
       if (errorMessage.includes(filter)) {
         return true;
       }
     }
-    
+
     // Filter low-severity validation errors
     if (context.type === 'validation_error' && context.severity === 'low') {
       return true;
     }
-    
+
     // Filter network errors in development
-    if (process.env.NODE_ENV === 'development' && 
-        (errorMessage.includes('fetch') || errorMessage.includes('network'))) {
+    if (
+      process.env.NODE_ENV === 'development' &&
+      (errorMessage.includes('fetch') || errorMessage.includes('network'))
+    ) {
       return true;
     }
-    
+
     // Filter duplicate component errors
     if (context.type === 'component_error' && this.isDuplicateError(error)) {
       return true;
     }
-    
+
     return false;
   }
 
@@ -103,25 +105,25 @@ class ErrorReportingService {
     const errorKey = this.getErrorKey(error);
     const now = Date.now();
     const minute = Math.floor(now / 60000);
-    
+
     // Initialize rate limit tracking for this error
     if (!this.rateLimits.has(errorKey)) {
       this.rateLimits.set(errorKey, { minute, count: 0 });
     }
-    
+
     const rateLimit = this.rateLimits.get(errorKey);
-    
+
     // Reset count if we're in a new minute
     if (rateLimit.minute !== minute) {
       rateLimit.minute = minute;
       rateLimit.count = 0;
     }
-    
+
     // Check if we've exceeded the rate limit
     if (rateLimit.count >= this.maxErrorsPerMinute) {
       return true;
     }
-    
+
     // Increment count
     rateLimit.count++;
     return false;
@@ -133,7 +135,7 @@ class ErrorReportingService {
   isDuplicateError(error) {
     const errorKey = this.getErrorKey(error);
     const now = Date.now();
-    
+
     if (this.errorCounts.has(errorKey)) {
       const lastSeen = this.errorCounts.get(errorKey);
       // Consider it duplicate if seen within last 5 seconds
@@ -141,7 +143,7 @@ class ErrorReportingService {
         return true;
       }
     }
-    
+
     this.errorCounts.set(errorKey, now);
     return false;
   }
@@ -208,13 +210,13 @@ class ErrorReportingService {
       loggingService.debug('Error filtered', { error: error.message, context });
       return;
     }
-    
+
     // Apply rate limiting
     if (this.isRateLimited(error)) {
       loggingService.debug('Error rate limited', { error: error.message });
       return;
     }
-    
+
     const errorReport = this.createErrorReport(error, context);
     this.queueError(errorReport);
     this.logError(error, context);
@@ -308,24 +310,24 @@ class ErrorReportingService {
     if (error.name === 'ChunkLoadError' || error.message.includes('Loading chunk')) {
       return 'critical';
     }
-    
+
     // API errors
     if (context.type === 'api_error') {
       if (error.response?.status >= 500) return 'high';
       if (error.response?.status >= 400) return 'medium';
       return 'low';
     }
-    
+
     // Component errors
     if (context.type === 'component_error') {
       return 'medium';
     }
-    
+
     // Validation errors
     if (context.type === 'validation_error') {
       return 'low';
     }
-    
+
     // Default to medium
     return 'medium';
   }
@@ -352,7 +354,9 @@ class ErrorReportingService {
     if (navigation) {
       return {
         loadTime: Math.round(navigation.loadEventEnd - navigation.loadEventStart),
-        domContentLoaded: Math.round(navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart),
+        domContentLoaded: Math.round(
+          navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart
+        ),
         firstPaint: this.getFirstPaint(),
       };
     }
@@ -364,7 +368,7 @@ class ErrorReportingService {
    */
   getFirstPaint() {
     const paintEntries = performance.getEntriesByType('paint');
-    const firstPaint = paintEntries.find(entry => entry.name === 'first-paint');
+    const firstPaint = paintEntries.find((entry) => entry.name === 'first-paint');
     return firstPaint ? Math.round(firstPaint.startTime) : null;
   }
 
@@ -373,12 +377,12 @@ class ErrorReportingService {
    */
   queueError(errorReport) {
     this.errorQueue.push(errorReport);
-    
+
     // Remove old errors if queue is too large
     if (this.errorQueue.length > this.maxQueueSize) {
       this.errorQueue.shift();
     }
-    
+
     // Report immediately for critical errors
     if (errorReport.severity === 'critical') {
       this.sendErrorReport(errorReport);
@@ -450,10 +454,10 @@ class ErrorReportingService {
       recent: this.errorQueue.slice(-10),
     };
 
-    this.errorQueue.forEach(error => {
+    this.errorQueue.forEach((error) => {
       // Count by severity
       stats.bySeverity[error.severity] = (stats.bySeverity[error.severity] || 0) + 1;
-      
+
       // Count by type
       const type = error.context.type || 'unknown';
       stats.byType[type] = (stats.byType[type] || 0) + 1;
@@ -497,6 +501,3 @@ const errorReportingService = new ErrorReportingService();
 // Export both the class and the instance
 export { ErrorReportingService };
 export default errorReportingService;
-
-
-

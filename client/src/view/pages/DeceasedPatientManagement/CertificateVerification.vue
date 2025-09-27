@@ -30,8 +30,8 @@
                 @keyup.enter="verifyCertificateAction"
               ></b-form-input>
               <b-input-group-append>
-                <b-button 
-                  variant="primary" 
+                <b-button
+                  variant="primary"
                   @click="verifyCertificateAction"
                   :disabled="!certificateId || loading"
                 >
@@ -43,8 +43,8 @@
           </b-col>
           <b-col md="4">
             <label>Quick Status Check</label>
-            <b-button 
-              variant="outline-info" 
+            <b-button
+              variant="outline-info"
               @click="checkStatus"
               :disabled="!certificateId || loading"
               block
@@ -75,7 +75,7 @@
         <b-card-header>
           <div class="d-flex justify-content-between align-items-center">
             <h6 class="mb-0">Verification Results</h6>
-            <b-badge 
+            <b-badge
               :variant="getStatusVariant(verificationResult.verificationStatus)"
               class="text-uppercase"
             >
@@ -170,8 +170,8 @@
 
           <!-- Actions -->
           <div class="text-right">
-            <b-button 
-              variant="outline-primary" 
+            <b-button
+              variant="outline-primary"
               @click="downloadCertificate"
               :disabled="!verificationResult.signatureValid"
               class="mr-2"
@@ -179,10 +179,7 @@
               <i class="fas fa-download mr-1"></i>
               Download Certificate
             </b-button>
-            <b-button 
-              variant="outline-info" 
-              @click="printVerification"
-            >
+            <b-button variant="outline-info" @click="printVerification">
               <i class="fas fa-print mr-1"></i>
               Print Verification
             </b-button>
@@ -260,7 +257,7 @@ export default {
   },
   methods: {
     ...mapActions('patient', ['verifyCertificate', 'getCertificateStatus', 'getAllSignatures']),
-    
+
     async verifyCertificateAction() {
       if (!this.certificateId.trim()) {
         this.error = 'Please enter a certificate ID';
@@ -389,7 +386,7 @@ export default {
 }
 
 .card {
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border: none;
 }
 
@@ -417,7 +414,9 @@ code {
 }
 
 @media print {
-  .btn, .input-group, .pagination {
+  .btn,
+  .input-group,
+  .pagination {
     display: none !important;
   }
 }

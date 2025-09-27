@@ -22,9 +22,9 @@
           class="form-control-sm form-control"
           @change="getBeds"
         >
-          <option :value="{ id: ward.id, beds: ward.beds }" v-for="(ward, i) in wards" :key="i">{{
-            ward.name
-          }}</option>
+          <option :value="{ id: ward.id, beds: ward.beds }" v-for="(ward, i) in wards" :key="i">
+            {{ ward.name }}
+          </option>
         </select>
         <span class="text-danger text-sm">{{ errors.first('ward') }}</span>
       </div>
@@ -111,7 +111,7 @@ export default {
     },
 
     changeWard() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             ward_id: this.ward.id,

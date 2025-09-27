@@ -70,9 +70,9 @@ export default {
 
     routineTests: {
       get() {
-        const tests = this.defaults?.find(def => def.type === this.defaultData)?.data;
+        const tests = this.defaults?.find((def) => def.type === this.defaultData)?.data;
         if (tests) {
-          return tests.map(test => ({
+          return tests.map((test) => ({
             test_id: test.test.id,
             is_urgent: false,
             test_type: this.switchPosition && this.switchSpot ? 'NHIS' : 'CASH',
@@ -114,16 +114,16 @@ export default {
       if (!localStorage.getItem('defaults')) {
         this.$store
           .dispatch('model/fetchDefaults')
-          .then(res => localStorage.setItem('defaults', JSON.stringify(res.data.data)));
+          .then((res) => localStorage.setItem('defaults', JSON.stringify(res.data.data)));
       }
     },
 
     isSelected(test) {
-      return this.routineTests.some(t => t.test_id === test.test_id);
+      return this.routineTests.some((t) => t.test_id === test.test_id);
     },
 
     toggleTest(test) {
-      const index = this.routineTests.findIndex(t => t.test_id === test.test_id);
+      const index = this.routineTests.findIndex((t) => t.test_id === test.test_id);
       if (index !== -1) {
         this.routineTests.splice(index, 1); // Remove test
       } else {
@@ -134,7 +134,7 @@ export default {
     submitTests() {
       const submitButton = this.$refs['kt-routineTests-submit'];
       this.addSpinner(submitButton);
-      const tests = this.routineTests.map(test => {
+      const tests = this.routineTests.map((test) => {
         delete test.name;
         return test;
       });

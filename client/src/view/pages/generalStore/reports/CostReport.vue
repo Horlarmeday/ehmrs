@@ -339,7 +339,7 @@ export default {
       try {
         const params = { ...this.filters };
 
-        Object.keys(params).forEach(key => {
+        Object.keys(params).forEach((key) => {
           if (params[key] === '' || params[key] === null || params[key] === undefined) {
             delete params[key];
           }

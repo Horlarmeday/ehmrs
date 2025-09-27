@@ -104,7 +104,7 @@
       </div>
 
       <!-- Stock Items Table -->
-      <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+      <div class="table-responsive" style="max-height: 400px; overflow-y: auto">
         <table class="table table-bordered table-hover">
           <thead class="thead-light">
             <tr>
@@ -211,8 +211,8 @@ export default {
       return {
         totalItems: items.length,
         totalValue: items.reduce((sum, item) => sum + item.quantity * item.unit_price, 0),
-        lowStock: items.filter(item => this.isLowStock(item)).length,
-        outOfStock: items.filter(item => item.quantity <= 0).length,
+        lowStock: items.filter((item) => this.isLowStock(item)).length,
+        outOfStock: items.filter((item) => item.quantity <= 0).length,
       };
     },
     filteredStockItems() {
@@ -222,13 +222,13 @@ export default {
       if (this.filter) {
         switch (this.filter) {
           case 'low_stock':
-            filtered = filtered.filter(item => this.isLowStock(item));
+            filtered = filtered.filter((item) => this.isLowStock(item));
             break;
           case 'out_of_stock':
-            filtered = filtered.filter(item => item.quantity <= 0);
+            filtered = filtered.filter((item) => item.quantity <= 0);
             break;
           case 'expiring':
-            filtered = filtered.filter(item => this.isExpiringSoon(item));
+            filtered = filtered.filter((item) => this.isExpiringSoon(item));
             break;
         }
       }
@@ -237,7 +237,7 @@ export default {
       if (this.searchTerm) {
         const term = this.searchTerm.toLowerCase();
         filtered = filtered.filter(
-          item =>
+          (item) =>
             item.name.toLowerCase().includes(term) ||
             item.item_code.toLowerCase().includes(term) ||
             (item.generic_name && item.generic_name.toLowerCase().includes(term))

@@ -14,9 +14,7 @@
               placeholder="Search accounts..."
             />
           </div>
-          <button class="btn btn-primary" @click="openDialog()">
-            Add Account
-          </button>
+          <button class="btn btn-primary" @click="openDialog()">Add Account</button>
         </div>
       </div>
     </div>
@@ -129,7 +127,7 @@ export default {
       if (!this.search) return this.accounts;
       const search = this.search.toLowerCase();
       return this.accounts.filter(
-        account =>
+        (account) =>
           account.code.toLowerCase().includes(search) ||
           account.name.toLowerCase().includes(search) ||
           account.type.toLowerCase().includes(search)

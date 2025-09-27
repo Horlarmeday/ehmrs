@@ -143,7 +143,7 @@ export default {
           type: 'error',
         });
       }
-      const items = this.items.map(item => ({
+      const items = this.items.map((item) => ({
         ...item,
         input_total: this.input_total,
         output_total: this.output_total,

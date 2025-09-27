@@ -54,9 +54,9 @@
           <router-link
             v-b-tooltip:hover
             :title="route.desc"
-            :to="
-              `${route.link}${$route.params.id}${route.query ? `?patient=${patient.fullname}` : ''}`
-            "
+            :to="`${route.link}${$route.params.id}${
+              route.query ? `?patient=${patient.fullname}` : ''
+            }`"
             class="btn btn-icon pulse mr-5"
             :class="`btn-light-${route.status} pulse-${route.status}`"
           >
@@ -294,7 +294,7 @@ export default {
   },
 
   watch: {
-    patient: function(val) {
+    patient: function (val) {
       if (val && val.patient_type !== this.DEPENDANT) {
         this.routes.push({
           icon: 'flaticon-security',
@@ -351,7 +351,7 @@ export default {
         confirmButtonText: 'Yes, Change!',
         cancelButtonText: 'No, cancel!',
         showLoaderOnConfirm: true,
-      }).then(function(result) {
+      }).then(function (result) {
         if (result.value) {
           self.flipSwitch(event);
         } else {
@@ -477,7 +477,7 @@ export default {
             cause_of_death: causeOfDeath,
           };
         },
-      }).then(result => {
+      }).then((result) => {
         if (result.value) {
           self.markPatientAsDeceased(result.value);
         }
@@ -510,7 +510,7 @@ export default {
 
           return { revival_reason: revivalReason };
         },
-      }).then(result => {
+      }).then((result) => {
         if (result.value) {
           self.revivePatient(result.value);
         }

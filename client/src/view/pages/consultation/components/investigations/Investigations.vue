@@ -91,7 +91,7 @@ export default {
     selectInvestigation(value, i) {
       const button = this.$refs['selectedRadiology'][i];
       const found = this.selectedInvestigations.find(
-        investigation => investigation.investigation_id === value.id
+        (investigation) => investigation.investigation_id === value.id
       );
       if (found) {
         this.$store.dispatch(

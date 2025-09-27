@@ -208,9 +208,7 @@
                   <span v-if="form.parent_id" class="badge badge-light-info mr-2">
                     Subcategory of {{ getParentCategoryName(form.parent_id) }}
                   </span>
-                  <span v-else class="badge badge-success">
-                    Root Category
-                  </span>
+                  <span v-else class="badge badge-success"> Root Category </span>
                 </div>
 
                 <div class="preview-stats mt-3">
@@ -252,9 +250,7 @@
                       id="is_active"
                       checked
                     />
-                    <label class="custom-control-label" for="is_active">
-                      Category is active
-                    </label>
+                    <label class="custom-control-label" for="is_active"> Category is active </label>
                   </div>
                   <small class="form-text text-muted">
                     Inactive categories won't be visible to users
@@ -441,7 +437,7 @@ export default {
     },
 
     getParentCategoryName(parentId) {
-      const category = this.parentCategories.find(c => c.id === parentId);
+      const category = this.parentCategories.find((c) => c.id === parentId);
       return category ? category.name : 'Unknown';
     },
 
@@ -505,7 +501,7 @@ export default {
         if (categoryData.sort_order) categoryData.sort_order = parseInt(categoryData.sort_order);
 
         // Remove empty optional fields
-        Object.keys(categoryData).forEach(key => {
+        Object.keys(categoryData).forEach((key) => {
           if (categoryData[key] === '' || categoryData[key] === null) {
             delete categoryData[key];
           }

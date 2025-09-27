@@ -99,7 +99,7 @@
                 v-model="form.doctor_id"
                 :options="doctors"
                 label="fullname"
-                :reduce="doctor => doctor.id"
+                :reduce="(doctor) => doctor.id"
                 placeholder="Select Doctor"
                 :loading="loadingDoctors"
                 :disabled="submitting"
@@ -183,7 +183,7 @@
                 v-model="form.department"
                 :options="departments"
                 label="name"
-                :reduce="dept => dept.name"
+                :reduce="(dept) => dept.name"
                 placeholder="Select Department"
                 :loading="loadingDepartments"
                 :disabled="submitting"
@@ -314,9 +314,7 @@
                   <option value="">Select Status</option>
                 </template>
               </b-form-select>
-              <small class="form-text text-muted">
-                Default: Scheduled
-              </small>
+              <small class="form-text text-muted"> Default: Scheduled </small>
             </b-form-group>
           </div>
         </div>
@@ -526,7 +524,7 @@ export default {
 
     validationErrors() {
       const errors = [];
-      Object.keys(this.validation).forEach(field => {
+      Object.keys(this.validation).forEach((field) => {
         if (this.validation[field]?.error) {
           errors.push(this.validation[field].error);
         }
@@ -544,7 +542,7 @@ export default {
         'reason_for_visit',
       ];
 
-      return requiredFields.every(field => {
+      return requiredFields.every((field) => {
         const value = this.form[field];
         const validation = this.validation[field];
 
@@ -646,7 +644,7 @@ export default {
       }
 
       // Reset validation
-      Object.keys(this.validation).forEach(field => {
+      Object.keys(this.validation).forEach((field) => {
         this.validation[field] = { valid: null, error: '' };
       });
     },
@@ -727,7 +725,7 @@ export default {
         'reason_for_visit',
       ];
 
-      requiredFields.forEach(field => {
+      requiredFields.forEach((field) => {
         if (!this.validateField(field)) {
           allValid = false;
         }
@@ -849,7 +847,7 @@ export default {
     searchDepartments(search) {
       // Simple local search for departments
       if (search.length > 0) {
-        const filtered = this.departments.filter(dept =>
+        const filtered = this.departments.filter((dept) =>
           dept.name.toLowerCase().includes(search.toLowerCase())
         );
         this.departments = filtered;

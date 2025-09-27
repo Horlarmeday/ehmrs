@@ -134,7 +134,7 @@ export default {
     },
 
     unsuccessfulRequests(errors, successRequestIds) {
-      this.lists = errors.map(reason => reason);
+      this.lists = errors.map((reason) => reason);
       const updatedRequests = this.selectedRequests.filter(
         ({ id }) => !successRequestIds.includes(id)
       );
@@ -181,7 +181,7 @@ export default {
       const requests = this.selectedRequests.map(({ id, status }) => ({ id, status }));
       this.$store
         .dispatch('request/updateRequests', { requests })
-        .then(response => this.endRequest(submitButton, response))
+        .then((response) => this.endRequest(submitButton, response))
         .catch(() => this.removeSpinner(submitButton));
     },
   },
