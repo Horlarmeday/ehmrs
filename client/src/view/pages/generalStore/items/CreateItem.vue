@@ -142,9 +142,7 @@
               <div v-if="errors.initial_stock" class="invalid-feedback d-block">
                 {{ errors.initial_stock }}
               </div>
-              <small class="form-text text-muted">
-                Starting quantity
-              </small>
+              <small class="form-text text-muted"> Starting quantity </small>
             </div>
 
             <div class="col-md-4 mb-3">
@@ -174,16 +172,9 @@
                 <div class="input-group-prepend">
                   <span class="input-group-text">$</span>
                 </div>
-                <input
-                  :value="calculatedTotalValue"
-                  type="text"
-                  class="form-control"
-                  readonly
-                />
+                <input :value="calculatedTotalValue" type="text" class="form-control" readonly />
               </div>
-              <small class="form-text text-muted">
-                Calculated: Initial Stock × Unit Cost
-              </small>
+              <small class="form-text text-muted"> Calculated: Initial Stock × Unit Cost </small>
             </div>
 
             <div class="col-md-4 mb-3">
@@ -199,9 +190,7 @@
               <div v-if="errors.minimum_stock" class="invalid-feedback d-block">
                 {{ errors.minimum_stock }}
               </div>
-              <small class="form-text text-muted">
-                Reorder level
-              </small>
+              <small class="form-text text-muted"> Reorder level </small>
             </div>
 
             <div class="col-md-4 mb-3">
@@ -502,7 +491,6 @@ export default {
     },
 
     validateForm() {
-
       // Required field validations
       if (!this.form.name) {
         this.errors.name = 'Item name is required';

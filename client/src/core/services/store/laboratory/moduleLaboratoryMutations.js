@@ -7,6 +7,11 @@ export default {
     state.tests = tests;
   },
 
+  MERGE_TESTS(state, { searchResults, selectedIds = [] }) {
+    const { mergeSearchResultsWithSelected } = require('@/common/common');
+    state.tests = mergeSearchResultsWithSelected(state.tests, searchResults, selectedIds, 'id');
+  },
+
   SET_TESTS_TOTAL(state, total) {
     state.total = total;
   },

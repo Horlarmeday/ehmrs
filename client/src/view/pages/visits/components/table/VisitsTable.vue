@@ -104,14 +104,15 @@
 <script>
 import Pagination from '@/utils/Pagination.vue';
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
-import { getPatientDotStatus } from '@/common/common';
+import { getPatientDotStatus, parseJwt } from '@/common/common';
 
 export default {
   data: () => ({
-    currentUser: '',
     doctor: 'General Practitioner',
     antenatalRoute: 'ante-natal-visits',
     activeVisitRoute: 'active-visits',
+    ALLOWED_DEPARTMENTS: ['Administrator', 'Nursing'],
+    currentUser: parseJwt(localStorage.getItem('user_token')),
   }),
 
   components: { ArrowRightIcon, Pagination },
@@ -145,7 +146,10 @@ export default {
         }
       } else if (url.includes('{immunizationId}')) {
         url = url.replaceAll('{immunizationId}', queue?.immunization_id);
-      } else if (queue?.category === 'Dialysis') {
+      } else if (
+        queue?.category === 'Dialysis' &&
+        this.ALLOWED_DEPARTMENTS.includes(this.currentUser.department)
+      ) {
         url = `/visit/dialysis-consultation/${queue.id}`;
       }
       return url;

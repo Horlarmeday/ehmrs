@@ -116,7 +116,7 @@ export default {
     end: null,
     currentUser: parseJwt(localStorage.getItem('user_token')),
     NURSE: 'Nurse',
-    CUSTOMER_CARE: 'Customer Care',
+    notAllowedDepartments: ['Reception', 'Customer Care', 'Records'],
   }),
   computed: {
     admissions() {
@@ -139,7 +139,7 @@ export default {
     getPatientDotStatus,
     getRouteLink(admission) {
       if (this.currentUser.role === this.NURSE) return `/admission/operations/${admission.id}`;
-      if (this.currentUser.role === this.CUSTOMER_CARE) return `#`;
+      if (this.notAllowedDepartments.includes(this.currentUser.department)) return `#`;
       return `/consultation/${admission.visit_id}`;
     },
 

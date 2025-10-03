@@ -36,6 +36,7 @@ export function validateDispenseDrug(drug) {
     prescription_id: Joi.number(),
     additional_item_id: Joi.number(),
     quantity_to_dispense: Joi.number().required(),
+    collected_by: Joi.string().required(),
   }).xor('prescription_id', 'additional_item_id');
   return schema.validate(drug);
 }

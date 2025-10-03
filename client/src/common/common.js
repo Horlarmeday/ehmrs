@@ -185,3 +185,57 @@ export const getTestTypeToFetch = (insuranceName, isSwitchOn = true) => {
   };
   return insuranceMapping[insuranceName] || null;
 };
+
+/**
+ * Merge search results with existing options while preserving selected items
+ * @param {Array} existingOptions - Current options array
+ * @param {Array} searchResults - New search results
+ * @param {Array} selectedIds - Array of selected item IDs
+ * @param {string} idKey - The key to use for comparison (default: 'id')
+ * @returns {Array} - Merged options with selected items preserved
+ */
+export const mergeSearchResultsWithSelected = (
+  existingOptions,
+  searchResults,
+  selectedIds = [],
+  idKey = 'id'
+) => {
+  if (!Array.isArray(existingOptions) || !Array.isArray(searchResults)) {
+    return searchResults || existingOptions || [];
+  }
+
+  // If no search results, return existing options
+  if (searchResults.length === 0) {
+    return existingOptions;
+  }
+
+  // Create a map of existing options
+  const existingMap = new Map();
+  existingOptions.forEach((item) => {
+    if (item && item[idKey] !== undefined) {
+      existingMap.set(item[idKey], item);
+    }
+  });
+
+  // Add search results
+  searchResults.forEach((item) => {
+    if (item && item[idKey] !== undefined) {
+      existingMap.set(item[idKey], item);
+    }
+  });
+
+  // Ensure selected items are included even if not in search results
+  if (Array.isArray(selectedIds) && selectedIds.length > 0) {
+    selectedIds.forEach((selectedId) => {
+      if (selectedId !== undefined && !existingMap.has(selectedId)) {
+        // Find the selected item in the original existing options
+        const selectedItem = existingOptions.find((item) => item && item[idKey] === selectedId);
+        if (selectedItem) {
+          existingMap.set(selectedId, selectedItem);
+        }
+      }
+    });
+  }
+
+  return Array.from(existingMap.values());
+};

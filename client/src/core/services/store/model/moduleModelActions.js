@@ -288,7 +288,15 @@ export default {
           },
         })
         .then((response) => {
-          commit('SET_SERVICES', response.data.data.docs);
+          // Use merge mutation for search operations, replace for initial load
+          if (payload.search && payload.search.length > 0) {
+            commit('MERGE_SERVICES', {
+              searchResults: response.data.data.docs,
+              selectedIds: payload.selectedIds || [],
+            });
+          } else {
+            commit('SET_SERVICES', response.data.data.docs);
+          }
           commit('SET_SERVICES_TOTAL', response.data.data.total);
           commit('SET_SERVICE_NUMB_PAGES', response.data.data.pages);
           resolve(response);

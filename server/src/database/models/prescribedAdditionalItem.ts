@@ -333,6 +333,12 @@ export class PrescribedAdditionalItem extends Model {
   nhis_status: NHISApprovalStatus;
 
   @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  collected_by: string;
+
+  @Column({
     type: DataType.TEXT,
   })
   reason_for_return: string;

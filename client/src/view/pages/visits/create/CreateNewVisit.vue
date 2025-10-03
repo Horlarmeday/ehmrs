@@ -510,6 +510,7 @@ export default {
           currentPage: 1,
           itemsPerPage: vm.itemsPerPage,
           search,
+          selectedIds: vm.service_id || [], // Pass selected service IDs
         })
         .then(() => loading(false))
         .catch(() => loading(false));
@@ -565,6 +566,7 @@ export default {
           currentPage: 1,
           itemsPerPage: 100,
           search,
+          selectedIds: vm.test_id || [], // Pass selected test IDs
           ...(testType && { filter: testType }),
         })
         .then(() => loading(false))

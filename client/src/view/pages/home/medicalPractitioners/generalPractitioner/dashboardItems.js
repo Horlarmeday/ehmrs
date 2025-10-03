@@ -9,11 +9,11 @@ export default [
     icon: 'fas fa-bed',
     name: 'In-Patients',
   },
-  {
-    url: '/visit/dialysis',
-    icon: 'fas fa-diagnoses',
-    name: 'Dialysis Visits',
-  },
+  // {
+  //   url: '/visit/dialysis',
+  //   icon: 'fas fa-diagnoses',
+  //   name: 'Dialysis Visits',
+  // },
   // {
   //   url: '/visit/ante-natal',
   //   icon: 'fas fa-ankh',

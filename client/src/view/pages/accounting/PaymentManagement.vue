@@ -185,9 +185,19 @@
                       <i class="fas fa-eye"></i>
                     </b-button>
                     <b-button
-                      variant="outline-success"
+                      variant="outline-info"
                       size="sm"
                       @click="printReceipt(payment)"
+                      title="Print Receipt"
+                      :disabled="printingReceipts.has(payment.id)"
+                    >
+                      <i v-if="printingReceipts.has(payment.id)" class="fas fa-spinner fa-spin"></i>
+                      <i v-else class="fas fa-print"></i>
+                    </b-button>
+                    <b-button
+                      variant="outline-success"
+                      size="sm"
+                      @click="downloadReceipt(payment)"
                       title="Download Receipt"
                       :disabled="downloadingReceipts.has(payment.id)"
                     >
@@ -252,6 +262,9 @@ export default {
       // Receipt download tracking
       downloadingReceipts: new Set(),
 
+      // Receipt print tracking
+      printingReceipts: new Set(),
+
       // Selection tracking
       selectedPayments: new Set(),
 
@@ -309,6 +322,9 @@ export default {
     },
     isAnyReceiptDownloading() {
       return this.downloadingReceipts.size > 0;
+    },
+    isAnyReceiptPrinting() {
+      return this.printingReceipts.size > 0;
     },
     selectAll: {
       get() {
@@ -474,7 +490,7 @@ export default {
 
         // Download receipts sequentially to avoid overwhelming the server
         for (const payment of payments) {
-          await this.printReceipt(payment);
+          await this.downloadReceipt(payment);
           // Small delay between downloads
           await new Promise((resolve) => setTimeout(resolve, 500));
         }
@@ -519,18 +535,10 @@ export default {
       // This is handled by the computed property
     },
 
-    async printReceipt(payment) {
+    async downloadReceipt(payment) {
       try {
         // Track this receipt as being downloaded
         this.downloadingReceipts.add(payment.id);
-
-        // Show loading state
-        this.$bvToast.toast('Generating receipt...', {
-          title: 'Processing',
-          variant: 'info',
-          solid: true,
-        });
-
         // Download receipt using the accounting store action
         const result = await this.$store.dispatch('accounting/downloadPaymentReceipt', payment.id);
 
@@ -553,6 +561,35 @@ export default {
       } finally {
         // Remove from downloading set
         this.downloadingReceipts.delete(payment.id);
+      }
+    },
+
+    async printReceipt(payment) {
+      try {
+        // Track this receipt as being printed
+        this.printingReceipts.add(payment.id);
+        // Print receipt using the accounting store action
+        const result = await this.$store.dispatch('accounting/printPaymentReceipt', payment.id);
+
+        if (result.success) {
+          this.$bvToast.toast('Receipt opened for printing', {
+            title: 'Success',
+            variant: 'success',
+            solid: true,
+          });
+        } else {
+          throw new Error(result.error || 'Failed to print receipt');
+        }
+      } catch (error) {
+        console.error('Receipt print error:', error);
+        this.$bvToast.toast(`Failed to print receipt: ${error.message}`, {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+      } finally {
+        // Remove from printing set
+        this.printingReceipts.delete(payment.id);
       }
     },
 
@@ -687,11 +724,13 @@ export default {
 
 .action-buttons {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.25rem;
+  flex-wrap: wrap;
 }
 
 .action-buttons .btn {
   padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
 }
 
 .no-results {
@@ -782,6 +821,15 @@ export default {
   .filters-section .col-md-3,
   .filters-section .col-md-6 {
     padding: 0.5rem;
+  }
+
+  .action-buttons {
+    gap: 0.125rem;
+  }
+
+  .action-buttons .btn {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.8rem;
   }
 }
 </style>

@@ -1655,6 +1655,35 @@ export default {
     }
   },
 
+  async printPaymentReceipt(_, paymentId) {
+    try {
+      const response = await axios.get(`/accounting/payments/${paymentId}/receipt/download`, {
+        responseType: 'arraybuffer',
+      });
+
+      // Create blob for printing
+      const contentType = response.headers['content-type'];
+      const blob = new Blob([response.data], { type: contentType });
+      const blobUrl = window.URL.createObjectURL(blob);
+      // Open in a new tab or iframe for printing
+      const printWindow = window.open(blobUrl, '_blank');
+      if (!printWindow) {
+        throw new Error('Popup blocked. Please allow popups for this site.');
+      }
+
+      // Give the browser a moment to load the PDF, then trigger print
+      printWindow.onload = () => {
+        printWindow.focus();
+        printWindow.print();
+      };
+
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to print payment receipt:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
   async validatePaymentData(_, paymentData) {
     try {
       const response = await axios.post('/accounting/payments/validate', paymentData);

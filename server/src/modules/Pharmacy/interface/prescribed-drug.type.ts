@@ -4,6 +4,7 @@ export type DispenseDrugType = {
   staff_id: number;
   drug_prescription_id: number;
   additional_item_id?: number;
+  collected_by: string;
 };
 
 export type ReturnDrugType = {

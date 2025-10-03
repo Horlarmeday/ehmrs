@@ -106,6 +106,16 @@ export default {
     state.services = services;
   },
 
+  MERGE_SERVICES(state, { searchResults, selectedIds = [] }) {
+    const { mergeSearchResultsWithSelected } = require('@/common/common');
+    state.services = mergeSearchResultsWithSelected(
+      state.services,
+      searchResults,
+      selectedIds,
+      'id'
+    );
+  },
+
   SET_SERVICES_TOTAL(state, total) {
     state.serviceTotal = total;
   },

@@ -944,9 +944,17 @@ const router = new Router({
               },
             },
             {
-              path: 'prescriptions/:id',
+              path: 'prescriptions/:id/dispense',
               name: 'drug-prescription',
               component: () => import('@/view/pages/pharmacy/PrescriptionDetail.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'prescriptions/:id',
+              name: 'drug-prescription-update',
+              component: () => import('@/view/pages/pharmacy/PrescriptionDetailUpdate.vue'),
               meta: {
                 requiresAuth: true,
               },

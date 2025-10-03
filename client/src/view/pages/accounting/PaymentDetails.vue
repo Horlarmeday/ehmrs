@@ -165,12 +165,31 @@ export default {
       this.$router.go(-1);
     },
 
-    printReceipt() {
-      this.$bvToast.toast('Receipt printing coming soon', {
-        title: 'Info',
-        variant: 'info',
-        solid: true,
-      });
+    async printReceipt() {
+      try {
+        // Print receipt using the accounting store action
+        const result = await this.$store.dispatch(
+          'accounting/printPaymentReceipt',
+          this.$route.params.id
+        );
+
+        if (result.success) {
+          this.$bvToast.toast('Receipt opened for printing', {
+            title: 'Success',
+            variant: 'success',
+            solid: true,
+          });
+        } else {
+          throw new Error(result.error || 'Failed to print receipt');
+        }
+      } catch (error) {
+        console.error('Receipt print error:', error);
+        this.$bvToast.toast(`Failed to print receipt: ${error.message}`, {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+      }
     },
 
     formatCurrency(amount) {

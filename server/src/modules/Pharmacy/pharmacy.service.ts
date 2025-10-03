@@ -274,7 +274,7 @@ class PharmacyService {
   static async dispenseDrug(
     body: DispenseDrugType
   ): Promise<PrescribedDrug | PrescribedAdditionalItem> {
-    const { prescription_id, additional_item_id } = body;
+    const { prescription_id, additional_item_id, collected_by } = body;
 
     const fetchPrescribedDrug = prescription_id
       ? getOnePrescribedDrugWithoutJoins({ id: prescription_id })
@@ -289,7 +289,7 @@ class PharmacyService {
       throw new BadException('NOT_FOUND', StatusCodes.NOT_FOUND, INVENTORY_ITEM_NOT_FOUND);
     }
     this.dispenseDrugValidations(body, prescribedDrug, inventoryItem);
-    return dispenseDrug(inventoryItem, prescribedDrug, body);
+    return dispenseDrug(inventoryItem, prescribedDrug, { ...body, collected_by });
   }
 
   /**

@@ -234,6 +234,12 @@ export class PrescribedDrug extends Model {
   payment_status: PaymentStatus;
 
   @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  collected_by: string;
+
+  @Column({
     type: DataType.ENUM(BillingStatus.BILLED, BillingStatus.UNBILLED),
     allowNull: false,
     defaultValue: BillingStatus.UNBILLED,

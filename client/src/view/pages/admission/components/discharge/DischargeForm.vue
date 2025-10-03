@@ -78,8 +78,8 @@
 export default {
   data: () => ({
     discharge_type: '',
-    date_discharged: '',
-    time_discharged: '',
+    date_discharged: new Date(),
+    time_discharged: new Date().getHours() + ':' + new Date().getMinutes(),
     conditions_of_patient: '',
     transfer_location: '',
     dischargeTypes: ['', 'Absconded', 'Death', 'Discharge', 'Lama', 'Refer', 'Transfer'],

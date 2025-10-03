@@ -146,8 +146,7 @@
           <div class="card-body">
             <div class="d-flex align-items-center">
               <div class="flex-grow-1">
-                <h3 class="text-dark font-weight-bold mb-1">₦
-                  {{ statistics.totalValue || 0 }}</h3>
+                <h3 class="text-dark font-weight-bold mb-1">₦ {{ statistics.totalValue || 0 }}</h3>
                 <p class="text-muted mb-0">Total Value</p>
               </div>
               <div class="stat-icon">

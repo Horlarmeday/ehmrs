@@ -148,11 +148,13 @@ export default {
     return state.movements.filter((movement) => movement.item_id === itemId);
   },
 
-  getRecentMovements: (state) => (limit = 10) => {
-    return state.movements
-      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-      .slice(0, limit);
-  },
+  getRecentMovements:
+    (state) =>
+    (limit = 10) => {
+      return state.movements
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, limit);
+    },
 
   // Requests getters
   getRequestById: (state) => (id) => {

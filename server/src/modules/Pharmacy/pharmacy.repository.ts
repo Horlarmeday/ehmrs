@@ -604,7 +604,7 @@ export const dispenseDrug = async (
   data: DispenseDrugType
 ) => {
   return await sequelizeConnection.transaction(async t => {
-    const { quantity_to_dispense, staff_id, drug_prescription_id } = data;
+    const { quantity_to_dispense, staff_id, drug_prescription_id, collected_by } = data;
     inventoryItem.quantity_consumed += +quantity_to_dispense;
     inventoryItem.quantity_remaining -= +quantity_to_dispense;
     const item = await inventoryItem.save({ transaction: t });
@@ -629,7 +629,8 @@ export const dispenseDrug = async (
 
     prescribedDrug.dispense_status = getDispenseStatus(+quantity_to_dispense, prescribedDrug);
     prescribedDrug.quantity_dispensed += +quantity_to_dispense;
-    prescribedDrug.dispensed_by = data.staff_id;
+    prescribedDrug.dispensed_by = staff_id;
+    prescribedDrug.collected_by = collected_by;
     prescribedDrug.date_dispensed = new Date();
     const drug = await prescribedDrug.save({ transaction: t });
 

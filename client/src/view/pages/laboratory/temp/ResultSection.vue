@@ -117,6 +117,7 @@
             name="tester_id"
             v-model="tester_id"
             class="form-control-sm form-control"
+            disabled
           >
             <option v-for="(staff, i) in staffs" :value="staff.id" :key="i">
               {{ staff.fullname }}
@@ -142,7 +143,7 @@
 <script>
 /* eslint-disable no-unused-vars */
 import DefaultSkeleton from '@/utils/DefaultSkeleton.vue';
-import { getLabelDotStatus } from '@/common/common';
+import { getLabelDotStatus, parseJwt } from '@/common/common';
 import ResultForm from '@/view/pages/laboratory/temp/ResultForm.vue';
 
 export default {
@@ -191,7 +192,8 @@ export default {
         result_form: test?.test?.result_form,
         test_status: test?.status,
       })),
-      tester_id: this.prescriptions[0]?.tester_id || '',
+      tester_id:
+        this.prescriptions[0]?.tester_id || parseJwt(localStorage.getItem('user_token'))?.sub,
       accession_numb: this.accession_number,
       isDisabled: false,
       ACCEPTED: 'Accepted',
@@ -200,6 +202,7 @@ export default {
       DISABLED: 'disabledCard',
       RESULT_SECTION: 'ResultSection',
       APPROVED: 'Approved',
+      currentUser: parseJwt(localStorage.getItem('user_token')),
     };
   },
   methods: {
