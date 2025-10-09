@@ -144,3 +144,6 @@ export { DialysisTreatment } from './dialysisTreatment';
 export { DialysisAssessment } from './dialysisAssessment';
 export { DialysisVitals } from './dialysisVitals';
 export { DialysisNotes } from './dialysisNotes';
+
+export { LabFormTemplate } from './labFormTemplate';
+export { LabFormTemplateVersion } from './labFormTemplateVersion';

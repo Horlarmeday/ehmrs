@@ -19,6 +19,7 @@ import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { PrescribedTest } from './prescribedTest';
 import { TestPrescription } from './testPrescription';
 import { Staff } from './staff';
+import { LabFormTemplate } from './labFormTemplate';
 
 export enum ResultStatus {
   PENDING = 'Pending',
@@ -73,6 +74,13 @@ export class TestResult extends Model {
     },
   })
   patient_id: number;
+
+  @ForeignKey(() => LabFormTemplate)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+  })
+  form_template_id: number;
 
   @ForeignKey(() => Staff)
   @Column({
@@ -136,6 +144,9 @@ export class TestResult extends Model {
 
   @BelongsTo(() => Staff)
   staff: Staff;
+
+  @BelongsTo(() => LabFormTemplate)
+  formTemplate: LabFormTemplate;
 
   static async paginate(param: {
     paginate: number;

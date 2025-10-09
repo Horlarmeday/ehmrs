@@ -7,7 +7,7 @@
         <patient-section :patient="sample.patient" :insurance="sample.insurance" />
 
         <section-title text="Approve Result" />
-        <result-approval-section
+        <enhanced-result-approval-section
           :tests="sample.tests"
           :accession_number="sample.accession_number"
           :patient_id="sample.patient.id"
@@ -24,11 +24,18 @@
 import SectionTitle from '@/utils/SectionTitle.vue';
 import PatientSection from '@/utils/PatientSection.vue';
 import PageTitle from '@/utils/PageTitle.vue';
-import ResultApprovalSection from './temp/ResultApprovalSection.vue';
+import EnhancedResultApprovalSection from './resultsUpdate/EnhancedResultApprovalSection.vue';
 import TestSkeleton from '@/view/pages/laboratory/components/skeleton/TestSkeleton.vue';
+
 export default {
   name: 'ResultApproval',
-  components: { TestSkeleton, ResultApprovalSection, PageTitle, PatientSection, SectionTitle },
+  components: {
+    TestSkeleton,
+    EnhancedResultApprovalSection,
+    PageTitle,
+    PatientSection,
+    SectionTitle,
+  },
   computed: {
     sample() {
       return this.$store.state.laboratory.sampleCollected;

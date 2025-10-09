@@ -17,9 +17,9 @@
               </th>
               <th style="min-width: 100px">Patient ID</th>
               <th style="min-width: 200px">Patient Name</th>
-              <th style="min-width: 70px">Pending Tests</th>
-              <th style="min-width: 70px">Result Added Tests</th>
-              <th style="min-width: 70px">Verified Tests</th>
+              <th style="min-width: 70px">Pending</th>
+              <th style="min-width: 70px">Result Added</th>
+              <th style="min-width: 70px">Verified</th>
               <th style="min-width: 70px">Total</th>
               <th style="min-width: 80px">Status</th>
               <th style="min-width: 100px">Date Collected</th>

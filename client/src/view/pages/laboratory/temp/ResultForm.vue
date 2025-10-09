@@ -1,6 +1,15 @@
 <template>
   <div>
+    <DynamicFormRenderer
+      v-if="formSchema"
+      :form-schema="formSchema"
+      :result="result"
+      :test-id="testId"
+      :section="section"
+      @emitResult="emitResult"
+    />
     <component
+      v-else
       :section="section"
       :testId="testId"
       :is="activeForm"
@@ -10,6 +19,7 @@
   </div>
 </template>
 <script>
+import DynamicFormRenderer from '@/components/laboratory/dynamic-form/DynamicFormRenderer.vue';
 import UrineSwabForm from '@/view/pages/laboratory/forms/UrineSwabForm.vue';
 import UrinalysisForm from '@/view/pages/laboratory/forms/UrinalysisForm.vue';
 import StoolAnalysisForm from '@/view/pages/laboratory/forms/StoolAnalysisForm.vue';
@@ -29,13 +39,21 @@ import HormonalAssayForm from '@/view/pages/laboratory/forms/HormonalAssayForm.v
 import DefaultResultForm from '@/view/pages/laboratory/forms/DefaultResultForm.vue';
 
 export default {
+  components: {
+    DynamicFormRenderer,
+  },
   data: () => ({
     activeForm: '',
+    formSchema: null,
   }),
   props: {
     resultForm: {
       type: String,
-      required: true,
+      required: false,
+    },
+    formTemplateId: {
+      type: Number,
+      required: false,
     },
     result: {
       type: Object,
@@ -54,11 +72,43 @@ export default {
     emitResult(data, testId) {
       this.$emit('emitTestResult', data, testId);
     },
+
+    async loadFormTemplate() {
+      if (!this.formTemplateId) {
+        this.formSchema = null;
+        return;
+      }
+
+      try {
+        const response = await this.$store.dispatch(
+          'laboratory/fetchFormTemplateById',
+          this.formTemplateId
+        );
+        if (response.data && response.data.data) {
+          this.formSchema = response.data.data.schema_json;
+        }
+      } catch (error) {
+        this.formSchema = null;
+      }
+    },
   },
   watch: {
+    formTemplateId: {
+      immediate: true,
+      async handler(value) {
+        if (value) {
+          console.log(this.formTemplateId, 'this.formTemplateId', value);
+          await this.loadFormTemplate();
+        }
+      },
+    },
     resultForm: {
       immediate: true,
       handler(value) {
+        if (this.formTemplateId) {
+          return;
+        }
+
         switch (value) {
           case 'UrineSwabForm':
             return (this.activeForm = UrineSwabForm);

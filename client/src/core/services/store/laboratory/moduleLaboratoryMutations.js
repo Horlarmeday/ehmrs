@@ -189,4 +189,41 @@ export default {
 
   // eslint-disable-next-line no-unused-vars
   SET_UPDATED_TESTS_RESULTS(state, tests) {},
+
+  /**
+   * FORM TEMPLATES
+   */
+  SET_FORM_TEMPLATES(state, templates) {
+    state.formTemplates = templates;
+  },
+
+  SET_FORM_TEMPLATE(state, template) {
+    state.formTemplate = template;
+  },
+
+  SET_FORM_TEMPLATES_TOTAL(state, total) {
+    state.formTemplatesTotal = total;
+  },
+
+  SET_FORM_TEMPLATES_PAGES(state, pages) {
+    state.formTemplatesPages = pages;
+  },
+
+  ADD_FORM_TEMPLATE(state, template) {
+    state.formTemplates.unshift(template);
+  },
+
+  UPDATE_FORM_TEMPLATE(state, template) {
+    const index = state.formTemplates.findIndex((t) => t.id === template.id);
+    if (index !== -1) {
+      Object.assign(state.formTemplates[index], template);
+    }
+  },
+
+  REMOVE_FORM_TEMPLATE(state, id) {
+    const index = state.formTemplates.findIndex((t) => t.id === id);
+    if (index !== -1) {
+      state.formTemplates.splice(index, 1);
+    }
+  },
 };

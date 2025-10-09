@@ -88,11 +88,9 @@
         <div class="col-lg-6">
           <label>Result Unit:</label>
           <input
-            v-validate="'required'"
-            data-vv-validate-on="blur"
             type="text"
             class="form-control form-control-sm"
-            placeholder="e.g mg/dL"
+            placeholder="e.g mg/dL (Optional)"
             v-model="result_unit"
             name="result_unit"
           />
@@ -103,11 +101,9 @@
         <div class="col-lg-6">
           <label>Result Valid Range:</label>
           <input
-            v-validate="'required'"
-            data-vv-validate-on="blur"
             type="text"
             class="form-control form-control-sm"
-            placeholder="e.g 0.7 - 1.2"
+            placeholder="e.g 0.7 - 1.2 (Optional)"
             v-model="valid_range"
             name="valid_range"
           />
@@ -116,7 +112,28 @@
       </div>
       <div class="form-group row">
         <div class="col-lg-12">
-          <label>Result Form:</label>
+          <label>Result Form Template:</label>
+          <select
+            class="form-control form-control-sm"
+            v-model="form_template_id"
+            v-validate="'required'"
+            data-vv-validate-on="blur"
+            name="form_template"
+          >
+            <option value="">Select a form template</option>
+            <option :value="template.id" v-for="template in formTemplates" :key="template.id">
+              {{ template.name }}
+            </option>
+          </select>
+          <span class="text-danger text-sm">{{ errors.first('form_template') }}</span>
+          <small class="form-text text-muted">
+            Select the form template for collecting test results
+          </small>
+        </div>
+      </div>
+      <div class="form-group row" v-if="showLegacyFormField">
+        <div class="col-lg-12">
+          <label>Legacy Result Form (Deprecated):</label>
           <div class="radio-inline mt-3">
             <label class="radio radio-lg" v-for="(form, i) in forms" :key="i">
               <input type="radio" v-model="result_form" :value="form.code" />
@@ -124,7 +141,10 @@
               {{ form.name }}
             </label>
           </div>
-          <span class="text-danger text-sm">{{ errors.first('type') }}</span>
+          <small class="form-text text-muted text-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            Legacy forms are deprecated. Please use form templates instead.
+          </small>
         </div>
       </div>
     </div>
@@ -166,8 +186,10 @@ export default {
       valid_range: '',
       result_unit: '',
       result_form: 'DefaultResultForm',
+      form_template_id: '',
       isDisabled: false,
       forms: resultFormList,
+      showLegacyFormField: false,
     };
   },
   computed: {
@@ -184,6 +206,9 @@ export default {
     },
     samples() {
       return this.$store.state.laboratory.samples;
+    },
+    formTemplates() {
+      return this.$store.state.laboratory.formTemplates;
     },
   },
   watch: {
@@ -206,6 +231,7 @@ export default {
           pssh_price,
           retainership_price,
           result_form,
+          form_template_id,
         } = JSON.parse(JSON.stringify(this.data));
         this.test_id = id;
         this.name = name;
@@ -219,6 +245,7 @@ export default {
         this.pssh_price = pssh_price;
         this.retainership_price = retainership_price;
         this.result_form = result_form;
+        this.form_template_id = form_template_id || '';
       }
     },
   },
@@ -252,6 +279,7 @@ export default {
             result_unit: this.result_unit,
             valid_range: this.valid_range,
             result_form: this.result_form,
+            form_template_id: this.form_template_id || null,
           };
           // set spinner to submit button
           const submitButton = this.$refs['kt_test_submit'];
@@ -284,6 +312,7 @@ export default {
       this.valid_range = '';
       this.result_unit = '';
       this.result_form = '';
+      this.form_template_id = '';
     },
   },
   created() {
@@ -291,6 +320,7 @@ export default {
       currentPage: 1,
       itemsPerPage: 20,
     });
+    this.$store.dispatch('laboratory/fetchActiveFormTemplates');
   },
 };
 </script>

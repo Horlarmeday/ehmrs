@@ -300,6 +300,7 @@ export default {
           search,
           selectedIds: vm.test_id || [],
           ...(testType && { filter: testType }),
+          vSelect: true,
         })
         .then(() => loading(false))
         .catch(() => loading(false));

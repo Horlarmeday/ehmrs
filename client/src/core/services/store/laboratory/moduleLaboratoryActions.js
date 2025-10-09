@@ -39,7 +39,7 @@ export default {
         })
         .then((response) => {
           // Use merge mutation for search operations, replace for initial load
-          if (payload.search && payload.search.length > 0) {
+          if (payload.search && payload.search.length > 0 && payload?.vSelect) {
             commit('MERGE_TESTS', {
               searchResults: response.data.data.docs,
               selectedIds: payload.selectedIds || [],
@@ -507,5 +507,116 @@ export default {
 
   removeAllSelectedTests({ commit }) {
     commit('EMPTY_SELECTED_TESTS', []);
+  },
+
+  /**
+   * FORM TEMPLATES
+   */
+  fetchActiveFormTemplates({ commit }) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/form-templates/active/get')
+        .then((response) => {
+          commit('SET_FORM_TEMPLATES', response.data.data);
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchFormTemplates({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/form-templates/get', {
+          params: {
+            currentPage: payload.currentPage,
+            pageLimit: payload.pageLimit,
+            search: payload.search,
+            category: payload.category,
+            isActive: payload.isActive,
+          },
+        })
+        .then((response) => {
+          commit('SET_FORM_TEMPLATES', response.data.data.docs);
+          commit('SET_FORM_TEMPLATES_TOTAL', response.data.data.total);
+          commit('SET_FORM_TEMPLATES_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchFormTemplateById({ commit }, id) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/form-templates/get/${id}`)
+        .then((response) => {
+          commit('SET_FORM_TEMPLATE', response.data.data);
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+
+  createFormTemplate({ commit }, data) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post('/form-templates/create', data)
+        .then((response) => {
+          commit('ADD_FORM_TEMPLATE', response.data.data);
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+
+  updateFormTemplate({ commit }, data) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put('/form-templates/update', data)
+        .then((response) => {
+          commit('UPDATE_FORM_TEMPLATE', response.data.data);
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+
+  deleteFormTemplate({ commit }, id) {
+    return new Promise((resolve, reject) => {
+      axios
+        .delete(`/form-templates/delete/${id}`)
+        .then((response) => {
+          commit('REMOVE_FORM_TEMPLATE', id);
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+
+  cloneFormTemplate({ commit }, data) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post('/form-templates/clone', data)
+        .then((response) => {
+          commit('ADD_FORM_TEMPLATE', response.data.data);
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
   },
 };

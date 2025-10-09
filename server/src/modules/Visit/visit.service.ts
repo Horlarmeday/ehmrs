@@ -23,7 +23,11 @@ import { VisitCategory, VisitStatus } from '../../database/models/visit';
 import { getOneAntenatalAccount } from '../Antenatal/antenatal.repository';
 import { AccountStatus } from '../../database/models/antenatal';
 import { BadException } from '../../common/util/api-error';
-import { insertPrescribedTests, insertSingleOrMultipleServices, StatusCodes } from '../../core/helpers/helper';
+import {
+  insertPrescribedTests,
+  insertSingleOrMultipleServices,
+  StatusCodes,
+} from '../../core/helpers/helper';
 import { Op } from 'sequelize';
 import {
   ANTENATAL_ACCOUNT_REQUIRED,
@@ -50,7 +54,15 @@ class VisitService {
    * @memberOf VisitService
    */
   static async createVisitService(body: CreateVisit): Promise<Visit> {
-    const { patient_id, ante_natal_id, category, service_id, staff_id, immunization_id, test_id } = body;
+    const {
+      patient_id,
+      ante_natal_id,
+      category,
+      service_id,
+      staff_id,
+      immunization_id,
+      test_id,
+    } = body;
 
     // Set defaults for appointment check-ins
     if (!body.date_of_visit) {
@@ -484,6 +496,14 @@ class VisitService {
 
     if (visit.status === VisitStatus.ENDED) {
       throw new BadException('INVALID', StatusCodes.BAD_REQUEST, 'Visit is already ended');
+    }
+
+    if (visit.category === VisitCategory.IPD) {
+      throw new BadException(
+        'INVALID',
+        StatusCodes.BAD_REQUEST,
+        'You cannot end an inpatient visit, only discharged'
+      );
     }
 
     // End the visit using the repository function

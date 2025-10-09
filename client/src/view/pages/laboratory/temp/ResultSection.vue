@@ -70,6 +70,7 @@
                     :result="test.result"
                     :test-id="test.prescribed_test_id"
                     :section="RESULT_SECTION"
+                    :form-template-id="test.form_template_id"
                   />
                 </div>
                 <div class="col-lg-2">
@@ -191,6 +192,7 @@ export default {
         is_urgent: test?.is_urgent,
         result_form: test?.test?.result_form,
         test_status: test?.status,
+        form_template_id: test?.test?.form_template_id,
       })),
       tester_id:
         this.prescriptions[0]?.tester_id || parseJwt(localStorage.getItem('user_token'))?.sub,

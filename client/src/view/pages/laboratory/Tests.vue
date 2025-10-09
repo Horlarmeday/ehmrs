@@ -56,7 +56,7 @@
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ resultForm(test) }}
+                  {{ test?.formTemplate?.name || 'No Result Form' }}
                 </span>
               </td>
               <td>
@@ -163,6 +163,7 @@ export default {
           currentPage: 1,
           itemsPerPage: vm.itemsPerPage,
           search,
+          vSelect: false,
         })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));

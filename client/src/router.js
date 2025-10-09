@@ -1026,7 +1026,15 @@ const router = new Router({
             {
               path: 'add-test-result/:id',
               name: 'add-test-result',
-              component: () => import('@/view/pages/laboratory/AddTestResult.vue'),
+              component: () => import('@/view/pages/laboratory/AddTestResultEnhanced.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'add-test-result-enhanced/:id',
+              name: 'add-test-result-enhanced',
+              component: () => import('@/view/pages/laboratory/AddTestResultEnhanced.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1091,6 +1099,38 @@ const router = new Router({
               path: 'forms',
               name: 'result-forms',
               component: () => import('@/view/pages/laboratory/ResultFormsList.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'form-templates',
+              name: 'form-templates',
+              component: () => import('@/view/pages/laboratory/FormTemplates.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'form-templates/builder',
+              name: 'form-builder',
+              component: () => import('@/view/pages/laboratory/FormBuilder.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'form-templates/:id/edit',
+              name: 'form-builder-edit',
+              component: () => import('@/view/pages/laboratory/FormBuilder.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'form-templates/:id/preview',
+              name: 'form-template-preview',
+              component: () => import('@/view/pages/laboratory/FormTemplatePreview.vue'),
               meta: {
                 requiresAuth: true,
               },

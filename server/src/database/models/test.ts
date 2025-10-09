@@ -9,6 +9,7 @@ import {
 } from 'sequelize-typescript';
 import { Sample } from './sample';
 import { Staff } from './staff';
+import { LabFormTemplate } from './labFormTemplate';
 import {
   FindAttributeOptions,
   GroupOption,
@@ -136,12 +137,8 @@ export class Test extends Model {
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'unit of test result is required',
-      },
-    },
+    allowNull: true,
+    defaultValue: 'mg/dL',
   })
   result_unit: string;
 
@@ -155,6 +152,12 @@ export class Test extends Model {
     defaultValue: ResultForm.DEFAULT_RESULT_FORM,
   })
   result_form: string;
+
+  @ForeignKey(() => LabFormTemplate)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  form_template_id: number;
 
   @Column({
     type: DataType.INTEGER,
@@ -177,6 +180,9 @@ export class Test extends Model {
 
   @BelongsTo(() => Sample)
   sample: Sample;
+
+  @BelongsTo(() => LabFormTemplate)
+  formTemplate: LabFormTemplate;
 
   static async paginate(param: {
     paginate: number;

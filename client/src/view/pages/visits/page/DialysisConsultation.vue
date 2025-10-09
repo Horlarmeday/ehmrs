@@ -67,6 +67,7 @@
             >
               <i class="fas fa-concierge-bell mr-2"></i>Services
             </button>
+            <end-visit-button button-class="btn-light-primary" :visit-id="$route.params.id" />
           </div>
         </div>
       </div>
@@ -1548,10 +1549,18 @@ import ErrorBanner from '@/view/components/util/ErrorBanner.vue';
 import AdditionalItemsTable from '@/view/components/table/AdditionalItemsTable.vue';
 import ServicesTable from '@/view/components/table/ServicesTable.vue';
 import Pagination from '@/utils/Pagination.vue';
+import EndVisitButton from '@/view/pages/consultation/components/endVisit/EndVisitButton.vue';
 
 export default {
   name: 'DialysisConsultation',
-  components: { vSelect, ErrorBanner, AdditionalItemsTable, ServicesTable, Pagination },
+  components: {
+    EndVisitButton,
+    vSelect,
+    ErrorBanner,
+    AdditionalItemsTable,
+    ServicesTable,
+    Pagination,
+  },
   data() {
     return {
       activeTab: 'overview',

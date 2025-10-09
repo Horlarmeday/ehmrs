@@ -7,7 +7,7 @@
         <patient-section :patient="sample.patient" :insurance="sample?.insurance" />
 
         <section-title text="Validate Result" />
-        <result-validation-section
+        <enhanced-result-validation-section
           :tests="sample.tests"
           :accession_number="sample.accession_number"
           :patient_id="sample.patient.id"
@@ -22,12 +22,19 @@
 <script>
 import SectionTitle from '../../../utils/SectionTitle.vue';
 import PatientSection from '../../../utils/PatientSection.vue';
-import ResultValidationSection from './temp/ResultValidationSection';
+import EnhancedResultValidationSection from './resultsUpdate/EnhancedResultValidationSection.vue';
 import PageTitle from '@/utils/PageTitle.vue';
 import TestSkeleton from '@/view/pages/laboratory/components/skeleton/TestSkeleton.vue';
+
 export default {
   name: 'ValidateResult',
-  components: { TestSkeleton, PageTitle, PatientSection, ResultValidationSection, SectionTitle },
+  components: {
+    TestSkeleton,
+    PageTitle,
+    PatientSection,
+    EnhancedResultValidationSection,
+    SectionTitle,
+  },
   computed: {
     sample() {
       return this.$store.state.laboratory.sampleCollected;

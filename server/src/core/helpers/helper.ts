@@ -5,6 +5,7 @@ import fs from 'fs';
 import { BadException } from '../../common/util/api-error';
 import { DEVELOPMENT } from '../constants';
 import {
+  ClinicalBill,
   Patient,
   PatientInsurance,
   PrescribedTest,
@@ -210,6 +211,39 @@ export const generateLabAccessionNumber = async () => {
   return accessionNumber;
 };
 
+export const generateUniqueAccessionNumber = async () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  const startOfToday = dayjs()
+    .startOf('day')
+    .toDate();
+  const endOfToday = dayjs()
+    .endOf('day')
+    .toDate();
+
+  const prefix = `LAB-${year}${month}${day}`;
+  let testPrescription: TestPrescription;
+  let accessionNumber: string;
+
+  do {
+    const testPrescriptionCount = await TestPrescription.count({
+      where: {
+        createdAt: {
+          [Op.between]: [startOfToday, endOfToday],
+        },
+      },
+    });
+    accessionNumber = `${prefix}${String(testPrescriptionCount + 1).padStart(2, '0')}`;
+    testPrescription = await TestPrescription.findOne({
+      where: { accession_number: accessionNumber },
+    });
+  } while (testPrescription);
+
+  return accessionNumber;
+};
+
 export const isToday = (specificDateTime: Date) => {
   return dayjs(specificDateTime).isSame(dayjs(), 'day');
 };
@@ -320,11 +354,23 @@ export const insertSingleOrMultipleServices = async ({
   return;
 };
 
-export const insertPrescribedTests = async ({ test_id, visit_id, patient_id, staff_id, ante_natal_id }) => {
+export const insertPrescribedTests = async ({
+  test_id,
+  visit_id,
+  patient_id,
+  staff_id,
+  ante_natal_id,
+}) => {
   if (!test_id) return;
   await Promise.all(
     test_id?.map(async id => {
-      await LabOrderService.prescribeTestService({ test_id: id, visit_id, patient_id, requester: staff_id, ante_natal_id });
+      await LabOrderService.prescribeTestService({
+        test_id: id,
+        visit_id,
+        patient_id,
+        requester: staff_id,
+        ante_natal_id,
+      });
     })
   );
 };

@@ -84,6 +84,7 @@ export default {
           currentPage: 1,
           itemsPerPage: vm.itemsPerPage,
           search,
+          vSelect: true,
         })
         .then(() => loading(false))
         .catch(() => loading(false));

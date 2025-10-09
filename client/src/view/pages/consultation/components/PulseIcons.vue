@@ -22,11 +22,8 @@
         <span class="pulse-ring"></span>
       </a>
     </span>
-    <span>
-      <button class="btn btn-danger btn-sm" @click="handleEndVisit" :disabled="!visit || !visit.id">
-        <i class="fas fa-times-circle"></i>
-        End Visit
-      </button>
+    <span v-if="visit.category !== 'Inpatient'">
+      <end-visit-button button-class="btn-danger" :visit-id="visit.id" />
     </span>
   </div>
 </template>
@@ -35,9 +32,10 @@ import AdmissionHistoryModal from '@/view/pages/consultation/components/disposit
 import AlertsModal from '@/view/pages/consultation/components/alerts/AlertsModal.vue';
 import { mapActions } from 'vuex';
 import Swal from 'sweetalert2';
+import EndVisitButton from '@/view/pages/consultation/components/endVisit/EndVisitButton.vue';
 
 export default {
-  components: { AlertsModal, AdmissionHistoryModal },
+  components: { EndVisitButton, AlertsModal, AdmissionHistoryModal },
   data: () => ({
     displayPrompt: false,
     ADMISSION_DETAILS: 'Admission Details',

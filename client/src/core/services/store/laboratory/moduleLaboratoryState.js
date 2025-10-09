@@ -65,4 +65,12 @@ export default {
   testPrescription: null,
 
   selectedTests: [],
+
+  /**
+   * FORM TEMPLATES
+   */
+  formTemplates: [],
+  formTemplate: null,
+  formTemplatesTotal: 0,
+  formTemplatesPages: 0,
 };

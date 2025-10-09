@@ -1,6 +1,7 @@
 export class Result {
   prescribed_test_id: number;
   test_prescription_id: string;
+  form_template_id: number;
   name: string;
   patient_id: number;
   disabledReferral: boolean;

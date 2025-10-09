@@ -73,6 +73,12 @@ export default {
           desc: 'Click here to change laboratory result status',
           showComponent: true,
         },
+        {
+          name: 'Results Form Templates',
+          link: '/laboratory/form-templates',
+          desc: 'Click here to create and view result form templates',
+          showComponent: true,
+        },
       ],
     };
   },

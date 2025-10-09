@@ -7,7 +7,7 @@
         <patient-section :patient="result.patient" :insurance="result?.insurance" />
 
         <section-title :text="`Accession Number: ${result.accession_number}`" />
-        <test-result-section
+        <enhanced-test-result-section
           :tests="tests"
           :accession_number="result.accession_number"
           :result_notes="result.result_notes"
@@ -25,12 +25,18 @@
 import SectionTitle from '../../../utils/SectionTitle.vue';
 import PatientSection from '../../../utils/PatientSection.vue';
 import PageTitle from '@/utils/PageTitle.vue';
-import TestResultSection from '@/view/pages/laboratory/temp/TestResultSection.vue';
+import EnhancedTestResultSection from './resultsUpdate/EnhancedTestResultSection.vue';
 import TestSkeleton from '@/view/pages/laboratory/components/skeleton/TestSkeleton.vue';
 
 export default {
   name: 'TestResult',
-  components: { TestSkeleton, TestResultSection, PageTitle, PatientSection, SectionTitle },
+  components: {
+    TestSkeleton,
+    EnhancedTestResultSection,
+    PageTitle,
+    PatientSection,
+    SectionTitle,
+  },
   computed: {
     result() {
       return this.$store.state.laboratory.result;

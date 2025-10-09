@@ -17,42 +17,29 @@ const visitHandler = async (visit: Visit) => {
 
 export const endVisits = async () => {
   const message = taggedMessaged('EndVisits');
-  const sevenDaysAgo = dayjs()
+  const fiveDaysAgo = dayjs()
     .subtract(5, 'days')
     .toDate();
 
-  const [
-    todayUntakenVisits,
-    antenatalVisits,
-    fiveDaysAgoVisits,
-    immunizationVisits,
-  ] = await Promise.all([
+  const [todayUntakenVisits, dialysisVisits, fiveDaysAgoVisits] = await Promise.all([
     Visit.findAll({
       where: { ...todayQuery('createdAt'), status: VisitStatus.ONGOING, is_taken: false },
     }),
     Visit.findAll({
-      where: { category: VisitCategory.ANC, status: VisitStatus.ONGOING },
+      where: { category: VisitCategory.DIALYSIS, status: VisitStatus.ONGOING },
     }),
     Visit.findAll({
       where: {
-        ...dateQuery('createdAt', sevenDaysAgo),
+        ...dateQuery('createdAt', fiveDaysAgo),
         status: VisitStatus.ONGOING,
         category: {
           [Op.notIn]: [VisitCategory.IPD, VisitCategory.EMERGENCY],
         },
       },
     }),
-    Visit.findAll({
-      where: { category: VisitCategory.IMMUNIZATION, status: VisitStatus.ONGOING },
-    }),
   ]);
 
-  const visits = [
-    ...antenatalVisits,
-    ...todayUntakenVisits,
-    ...fiveDaysAgoVisits,
-    ...immunizationVisits,
-  ];
+  const visits = [...dialysisVisits, ...todayUntakenVisits, ...fiveDaysAgoVisits];
 
   try {
     if (visits?.length) {

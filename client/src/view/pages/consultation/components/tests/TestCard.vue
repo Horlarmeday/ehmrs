@@ -96,6 +96,7 @@ export default {
           itemsPerPage: 100,
           search,
           ...(testType && { filter: testType }),
+          vSelect: false,
         })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));

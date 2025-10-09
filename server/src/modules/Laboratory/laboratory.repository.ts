@@ -8,6 +8,7 @@ import {
 
 import {
   Insurance,
+  LabFormTemplate,
   Patient,
   PatientInsurance,
   PrescribedTest,
@@ -139,6 +140,7 @@ export async function createTest(data) {
     pssh_price,
     retainership_price,
     result_form,
+    form_template_id,
   } = data;
   const count = await getNumberOfRecords(Test);
 
@@ -158,6 +160,7 @@ export async function createTest(data) {
     is_available_for_nhis: !!nhis_price,
     is_available_for_phis: !!phis_price,
     is_available_for_pssh: !!pssh_price,
+    form_template_id,
   });
 }
 
@@ -195,6 +198,12 @@ export async function getTests({ currentPage = 1, pageLimit = 20, filter = null,
         },
       }),
     },
+    include: [
+      {
+        model: LabFormTemplate,
+        attributes: ['id', 'name'],
+      },
+    ],
   });
 }
 
@@ -566,7 +575,10 @@ export const getOneCollectedSample = async (testPrescriptionId: number | string)
           'tester_id',
         ],
         include: [
-          { model: Test, attributes: ['name', 'result_unit', 'valid_range', 'result_form'] },
+          {
+            model: Test,
+            attributes: ['name', 'result_unit', 'valid_range', 'result_form', 'form_template_id'],
+          },
           { model: Sample, attributes: ['name'] },
           {
             model: TestResult,
@@ -799,7 +811,10 @@ export const getOneTestResult = async (testPrescriptionId: number) => {
           'test_conducted_date',
         ],
         include: [
-          { model: Test, attributes: ['name', 'result_unit', 'valid_range', 'result_form'] },
+          {
+            model: Test,
+            attributes: ['name', 'result_unit', 'valid_range', 'result_form', 'form_template_id'],
+          },
           { model: Sample, attributes: ['name'] },
           {
             model: TestResult,

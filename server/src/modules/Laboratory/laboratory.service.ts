@@ -25,7 +25,11 @@ import {
 } from './laboratory.repository';
 import { TestTariffDto } from './dto/test-tariff.dto';
 import { ResultStatus, TestStatus } from '../../database/models/prescribedTest';
-import { generateLabAccessionNumber, StatusCodes } from '../../core/helpers/helper';
+import {
+  generateLabAccessionNumber,
+  generateUniqueAccessionNumber,
+  StatusCodes,
+} from '../../core/helpers/helper';
 import { isEmpty } from 'lodash';
 import {
   LaboratoryResultApprovalDto,
@@ -191,13 +195,14 @@ class LaboratoryService {
    * @memberOf LaboratoryService
    */
   static async generateLabAccessionNumber() {
-    let testPrescription: TestPrescription;
-    let accessionNumber: string;
-    do {
-      accessionNumber = await generateLabAccessionNumber();
-      testPrescription = await getTestPrescription({ accession_number: accessionNumber });
-    } while (testPrescription);
-    return accessionNumber;
+    return generateUniqueAccessionNumber();
+    // let testPrescription: TestPrescription;
+    // let accessionNumber: string;
+    // do {
+    //   accessionNumber = await generateLabAccessionNumber();
+    //   testPrescription = await getTestPrescription({ accession_number: accessionNumber });
+    // } while (testPrescription);
+    // return accessionNumber;
   }
 
   /**
@@ -472,6 +477,7 @@ class LaboratoryService {
         ...result,
         staff_id,
         tester_id,
+        form_template_id: result.form_template_id,
         testStatus: this.getTestStatus(result),
         date_created: Date.now(),
         is_abnormal: this.getTestAbnormalState(result.result, result.valid_range),

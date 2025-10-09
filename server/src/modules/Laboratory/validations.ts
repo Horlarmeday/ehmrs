@@ -11,7 +11,10 @@ export function validateTest(test) {
   const schema = Joi.object({
     name: Joi.string().required(),
     price: Joi.number().required(),
-    result_form: Joi.string().required(),
+    result_form: Joi.string()
+      .optional()
+      .allow(''),
+    form_template_id: Joi.number().required(),
     nhis_price: Joi.number()
       .optional()
       .allow(''),
@@ -25,8 +28,12 @@ export function validateTest(test) {
       .optional()
       .allow(''),
     sample_id: Joi.number().required(),
-    result_unit: Joi.string().required(),
-    valid_range: Joi.string().required(),
+    result_unit: Joi.string()
+      .optional()
+      .allow(''),
+    valid_range: Joi.string()
+      .optional()
+      .allow(''),
   });
   return schema.validate(test);
 }
@@ -75,6 +82,7 @@ export function validateAddTestResult(result) {
         Joi.object({
           prescribed_test_id: Joi.number().required(),
           test_prescription_id: Joi.number().required(),
+          form_template_id: Joi.number().required(),
           patient_id: Joi.number().required(),
           disabledReferral: Joi.boolean().required(),
           name: Joi.string().required(),

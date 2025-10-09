@@ -11,13 +11,8 @@
           <div class="col-lg-6">
             <div class="form-group">
               <label>Enter Text</label>
-              <div class="input-group input-group-solid">
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model="search"
-                  @keypress.enter="searchTestResults"
-                />
+              <div class="input-group input-group-solid" ref="spinCircleTest">
+                <input type="text" class="form-control" v-model="search" @keyup="onHandleSearch" />
                 <div class="input-group-append">
                   <button type="button" class="btn btn-primary" @click="searchTestResults">
                     Search
@@ -116,7 +111,7 @@
 <script>
 import DateFilter from '@/utils/DateFilter.vue';
 import Pagination from '@/utils/Pagination.vue';
-import { setUrlQueryParams } from '@/common/common';
+import { addSpinner, debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
 import dayjs from 'dayjs';
 export default {
@@ -166,10 +161,37 @@ export default {
       });
     },
 
+    onHandleSearch() {
+      const spinDiv = this.$refs['spinCircleTest'];
+      addSpinner(spinDiv);
+
+      setUrlQueryParams({
+        currentPage: this.currentPage || 1,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.search,
+      });
+      this.debounceSearch(this.search, this, spinDiv);
+    },
+
+    debounceSearch: debounce((search, vm, spinDiv) => {
+      vm.fetchTestResults({
+        currentPage: 1,
+        itemsPerPage: vm.itemsPerPage,
+        search: vm.$route.query.search || search,
+        start: vm.$route.query.startDate,
+        end: vm.$route.query.endDate,
+      })
+        .then(() => removeSpinner(spinDiv))
+        .catch(() => removeSpinner(spinDiv));
+    }, 500),
+
     handlePageChange() {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || null,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
       });
       this.fetchTestResults({
         currentPage: this.$route.query.currentPage,
@@ -226,6 +248,15 @@ export default {
         end: this.$route.query.endDate,
       });
     },
+  },
+  created() {
+    this.fetchTestResults({
+      currentPage: this.$route.query.currentPage || this.currentPage,
+      itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+      start: this.$route.query.startDate || null,
+      end: this.$route.query.endDate || null,
+      search: this.$route.query.search || null,
+    });
   },
 };
 </script>
