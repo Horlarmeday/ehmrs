@@ -9,7 +9,7 @@ import {
   updatePrescribedTest,
 } from './lab-order.repository';
 import { PrescribedTestBody } from './interface/prescribed-test.body';
-import { PrescribedService, PrescribedTest } from '../../../database/models';
+import { PrescribedService, PrescribedTest, Test } from '../../../database/models';
 import PatientService from '../../Patient/patient.service';
 import {
   createTestPrescription,
@@ -38,9 +38,28 @@ export class LabOrderService {
    * @memberOf LabOrderService
    */
   static async prescribeTestService(body) {
-    const { patient_id } = body;
+    const { patient_id, test_id, visit_id } = body;
+
+    // Check for existing pending test
+    const existingTest = await PrescribedTest.findOne({
+      where: {
+        test_id,
+        visit_id,
+        payment_status: PaymentStatus.PENDING,
+      },
+    });
+
+    if (existingTest) {
+      const test = await Test.findByPk(test_id);
+      throw new BadException(
+        'Duplicate Test',
+        StatusCodes.BAD_REQUEST,
+        `Test "${test?.name}" has already been prescribed for this visit with pending payment`
+      );
+    }
+
     const prescription = await this.getTestPrescription(patient_id, body);
-    return prescribeTest({...body, test_prescription_id: prescription.id });
+    return prescribeTest({ ...body, test_prescription_id: prescription.id });
   }
 
   /**
@@ -62,6 +81,38 @@ export class LabOrderService {
         is_default: true,
       }),
     ]);
+
+    // Check for duplicate tests with pending payment
+    const existingTests = await PrescribedTest.findAll({
+      where: {
+        visit_id,
+        payment_status: PaymentStatus.PENDING,
+      },
+      attributes: ['test_id'],
+    });
+
+    const existingTestIds = existingTests.map(t => t.test_id);
+
+    // Filter out duplicates
+    const duplicateTestIds = tests
+      .filter(test => existingTestIds.includes(test.test_id))
+      .map(t => t.test_id);
+
+    if (duplicateTestIds.length > 0) {
+      // Get test names for error message
+      const duplicateTests = await Test.findAll({
+        where: { id: duplicateTestIds },
+        attributes: ['name'],
+      });
+
+      const testNames = duplicateTests.map(t => t.name).join(', ');
+
+      throw new BadException(
+        'Duplicate Tests',
+        StatusCodes.BAD_REQUEST,
+        `The following tests already have pending payment for this visit: ${testNames}`
+      );
+    }
 
     const bulkTests = await Promise.all(
       tests.map(async test => ({

@@ -142,13 +142,41 @@
               :reduce="(services) => services.id"
               placeholder="Search and select services..."
               class="form-control-lg"
-            />
+            >
+              <template #option="{ price, name }">
+                <span>{{ name }} - </span>
+                <strong> {{ price || '' }}</strong>
+              </template>
+            </v-select>
             <small class="form-text text-muted">Select one or more services for this visit</small>
           </div>
         </div>
 
         <!-- Laboratory Tests for specific categories -->
         <div v-if="category === 'Dialysis' || category === 'Outpatient'" class="row">
+          <!-- Combo Tests Selection -->
+          <div class="col-lg-12 mb-4">
+            <label class="font-weight-bold text-dark">
+              <i class="fas fa-layer-group mr-1 text-primary"></i>
+              Combo Tests (Quick Selection)
+            </label>
+            <v-select
+              multiple
+              name="comboTest"
+              v-model="combo_test_id"
+              label="name"
+              :options="comboTests"
+              :reduce="(combo) => combo.id"
+              placeholder="Select combo tests for quick ordering..."
+              class="form-control-lg"
+              @input="onComboTestSelect"
+            />
+            <small class="form-text text-muted"
+              >Combo tests will automatically add individual tests below</small
+            >
+          </div>
+
+          <!-- Individual Laboratory Tests -->
           <div class="col-lg-12 mb-4">
             <label class="font-weight-bold text-dark">
               <i class="fas fa-flask mr-1 text-primary"></i>
@@ -164,7 +192,12 @@
               :reduce="(tests) => tests.id"
               placeholder="Search and select laboratory tests..."
               class="form-control-lg"
-            />
+            >
+              <template #option="{ price, name }">
+                <span>{{ name }} - </span>
+                <strong> {{ price || '' }}</strong>
+              </template>
+            </v-select>
             <small class="form-text text-muted">Select laboratory tests to be performed</small>
           </div>
         </div>
@@ -362,6 +395,7 @@ export default {
       dialysisPriority: 'Routine',
       dialysisType: '',
       test_id: '',
+      combo_test_id: [],
       submitting: false,
     };
   },
@@ -372,6 +406,10 @@ export default {
 
     tests() {
       return this.$store.state.laboratory.tests;
+    },
+
+    comboTests() {
+      return this.$store.state.laboratory.comboTests;
     },
 
     categories() {
@@ -549,6 +587,48 @@ export default {
       this.initialAssessment = '';
       this.dialysisNotes = '';
       this.dialysisPriority = 'Routine';
+      this.combo_test_id = [];
+      this.test_id = '';
+    },
+
+    async onComboTestSelect(selectedComboIds) {
+      if (!selectedComboIds || selectedComboIds.length === 0) return;
+
+      try {
+        // Ensure test_id is an array
+        if (!Array.isArray(this.test_id)) {
+          this.test_id = this.test_id ? [this.test_id] : [];
+        }
+
+        // Fetch each combo test and expand to individual tests
+        for (const comboId of selectedComboIds) {
+          const response = await this.$store.dispatch('laboratory/fetchOneComboTest', comboId);
+          const comboTest = response.data.data;
+
+          // Map combo test items to test IDs and add to test_id array
+          if (comboTest && comboTest.comboTestItems) {
+            comboTest.comboTestItems.forEach((item) => {
+              if (item.test && !this.test_id.includes(item.test.id)) {
+                this.test_id.push(item.test.id);
+              }
+            });
+          }
+        }
+
+        this.$notify({
+          group: 'foo',
+          title: 'Combo Tests Expanded',
+          text: 'Individual tests from combo have been added to your selection',
+          type: 'success',
+        });
+      } catch (error) {
+        this.$notify({
+          group: 'foo',
+          title: 'Error',
+          text: 'Failed to expand combo tests',
+          type: 'error',
+        });
+      }
     },
 
     searchTests(search, loading) {
@@ -586,10 +666,17 @@ export default {
         itemsPerPage: 100,
       });
     },
+    fetchComboTests() {
+      this.$store.dispatch('laboratory/fetchComboTests', {
+        currentPage: 1,
+        itemsPerPage: 100,
+      });
+    },
   },
   created() {
     this.fetchTests();
     this.fetchServices();
+    this.fetchComboTests();
     this.$store.dispatch('patient/fetchPatientProfile', this.$route.params.id).then((response) => {
       const res = response.data.data;
       this.gender = res.gender;

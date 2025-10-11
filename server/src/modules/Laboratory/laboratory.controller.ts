@@ -3,6 +3,7 @@ import {
   validateAddTestResult,
   validateApproveTestResults,
   validateChangeTestResultStatus,
+  validateCreateComboTest,
   validateTest,
   validateTestResults,
   validateTestSample,
@@ -645,84 +646,143 @@ class LaboratoryController {
   }
 
   /** ***********************
-   * NHIS TESTS - DEPRECATED
+   * COMBO TESTS
    ********************** */
 
-  // /**
-  //  * create a test
-  //  *
-  //  * @static
-  //  * @param {object} req express request object
-  //  * @param {object} res express response object
-  //  * @param {object} next next middleware
-  //  * @returns {json} json object with status, test data
-  //  */
-  // static async createNhisTest(req, res, next) {
-  //   const { error } = validateNhisTest(req.body);
-  //   if (error)
-  //     return errorResponse({
-  //       res,
-  //       message: error.details[0].message,
-  //       httpCode: StatusCodes.BAD_REQUEST,
-  //     });
-  //
-  //   try {
-  //     const test = await LaboratoryService.createNhisTestService({
-  //       ...req.body,
-  //       staff_id: req.user.sub,
-  //     });
-  //
-  //     return successResponse({
-  //       res,
-  //       data: test,
-  //       httpCode: StatusCodes.CREATED,
-  //       message: DATA_SAVED,
-  //     });
-  //   } catch (e) {
-  //     return next(e);
-  //   }
-  // }
-  //
-  // /**
-  //  * update a NHIS test
-  //  *
-  //  * @static
-  //  * @param {object} req express request object
-  //  * @param {object} res express response object
-  //  * @param {object} next next middleware
-  //  * @returns {json} json object with status, NHIS test data
-  //  */
-  // static async updateNhisTest(req: Request, res: Response, next: NextFunction) {
-  //   const { test_id } = req.body;
-  //   if (!test_id)
-  //     return errorResponse({ res, message: TEST_REQUIRED, httpCode: StatusCodes.BAD_REQUEST });
-  //
-  //   try {
-  //     const test = await LaboratoryService.updateNhisTestService(req.body);
-  //
-  //     return successResponse({ res, httpCode: StatusCodes.OK, message: DATA_UPDATED, data: test });
-  //   } catch (e) {
-  //     return next(e);
-  //   }
-  // }
-  //
-  // /**
-  //  * get NHIS tests
-  //  *
-  //  * @static
-  //  * @param {object} req express request object
-  //  * @param {object} res express response object
-  //  * @param {object} next next middleware
-  //  * @returns {json} json object with NHIS tests data
-  //  */
-  // static async getNhisTests(req: Request, res: Response, next: NextFunction) {
-  //   try {
-  //     const tests = await LaboratoryService.getNhisTests(req.query);
-  //
-  //     return successResponse({ res, httpCode: StatusCodes.OK, message: SUCCESS, data: tests });
-  //   } catch (e) {
-  //     return next(e);
-  //   }
-  // }
+  /**
+   * create a combo test
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, combo test data
+   */
+  static async createComboTest(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
+    const { error } = validateCreateComboTest(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+
+    const { name, test_ids } = req.body;
+    try {
+      const comboTest = await LaboratoryService.createComboTest({
+        name,
+        test_ids,
+        staff_id: req.user.sub,
+      });
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_SAVED,
+        data: comboTest,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get combo tests
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with combo tests data
+   */
+  static async getComboTests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const comboTests = await LaboratoryService.getComboTests(req.query);
+
+      return successResponse({ res, message: SUCCESS, httpCode: StatusCodes.OK, data: comboTests });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get one combo test
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with combo test data
+   */
+  static async getOneComboTest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const comboTest = await LaboratoryService.getOneComboTest(+req.params.id);
+
+      return successResponse({ res, message: SUCCESS, httpCode: StatusCodes.OK, data: comboTest });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * update a combo test
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, combo test data
+   */
+  static async updateComboTest(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.body;
+    if (!id) {
+      return errorResponse({
+        res,
+        httpCode: StatusCodes.BAD_REQUEST,
+        message: 'Combo test ID is required',
+      });
+    }
+
+    try {
+      const comboTest = await LaboratoryService.updateComboTest(req.body);
+
+      return successResponse({
+        res,
+        data: comboTest,
+        message: DATA_UPDATED,
+        httpCode: StatusCodes.OK,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * delete a combo test
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status message
+   */
+  static async deleteComboTest(req: Request, res: Response, next: NextFunction) {
+    try {
+      await LaboratoryService.deleteComboTest(+req.params.id);
+
+      return successResponse({
+        res,
+        message: 'Combo test deleted successfully',
+        httpCode: StatusCodes.OK,
+        data: null,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
 }
 export default LaboratoryController;

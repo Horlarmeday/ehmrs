@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import { req } from '@sentry/node/build/types/proxy/helpers';
 
 export function validateTestSample(sample) {
   const schema = Joi.object({
@@ -177,3 +178,11 @@ export function validateChangeTestResultStatus(req) {
   });
   return schema.validate(req);
 }
+
+export const validateCreateComboTest = body => {
+  const schema = Joi.object({
+    name: Joi.string().required(),
+    test_ids: Joi.array().items(Joi.number().required()),
+  });
+  return schema.validate(body);
+};

@@ -22,6 +22,11 @@ import {
   updateTestPrescription,
   updateTestSample,
   validateTestResults,
+  createComboTest,
+  getComboTests,
+  getOneComboTest,
+  updateComboTest,
+  deleteComboTest,
 } from './laboratory.repository';
 import { TestTariffDto } from './dto/test-tariff.dto';
 import { ResultStatus, TestStatus } from '../../database/models/prescribedTest';
@@ -43,6 +48,8 @@ import { BadException } from '../../common/util/api-error';
 import { ACCESSION_NUMB_EXIST } from './messages/response-messages';
 import forms from '../../core/helpers/testResultForms';
 import { PatientInfo, TestResult } from '../../core/helpers/downloadTestResult';
+import FormTemplateService from '../FormTemplate/formTemplate.service';
+import { FormSchema, FormField } from '../../database/models/labFormTemplate';
 
 class LaboratoryService {
   /** ***********************
@@ -286,6 +293,137 @@ class LaboratoryService {
   }
 
   /**
+   * Select appropriate reference range based on patient demographics
+   * @param field - Form field with reference ranges
+   * @param patientAge - Patient age in years
+   * @param patientSex - Patient sex
+   */
+  private static selectReferenceRange(
+    field: FormField,
+    patientAge: number,
+    patientSex: string
+  ): string {
+    const ranges = field.referenceRanges;
+    if (!ranges) return '-';
+
+    // If normal range exists, use it (general range for all ages/sexes)
+    if (ranges.normal?.min !== undefined && ranges.normal?.max !== undefined) {
+      return `${ranges.normal.min} - ${ranges.normal.max}`;
+    }
+
+    // Age-dependent ranges
+    const isChild = patientAge < 18;
+    const isMale = patientSex?.toLowerCase() === 'male';
+
+    let selectedRange = null;
+
+    if (isChild && ranges.child) {
+      selectedRange = ranges.child;
+    } else if (!isChild && isMale && ranges.adultMale) {
+      selectedRange = ranges.adultMale;
+    } else if (!isChild && !isMale && ranges.adultFemale) {
+      selectedRange = ranges.adultFemale;
+    }
+
+    // Format range if found
+    if (selectedRange && selectedRange.min !== undefined && selectedRange.max !== undefined) {
+      return `${selectedRange.min} - ${selectedRange.max}`;
+    }
+
+    return '-';
+  }
+
+  /**
+   * Extract fields from template schema for PDF generation
+   * @param schema - Form template schema
+   * @param result - Test result data
+   * @param patientAge - Patient age in years
+   * @param patientSex - Patient sex
+   */
+  private static extractFieldsFromTemplate(
+    schema: FormSchema,
+    result: any,
+    patientAge: number,
+    patientSex: string
+  ): {
+    name: string;
+    model: string;
+    range: string;
+    unit?: string;
+    rows: string[];
+    headers: string[];
+    align: string[];
+  }[] {
+    const extractedFields: any[] = [];
+
+    // Iterate through all sections and fields
+    schema.sections?.forEach(section => {
+      section.fields?.forEach((field: FormField) => {
+        // Skip if field has no result value
+        if (
+          !result.result ||
+          result.result[field.id] === undefined ||
+          result.result[field.id] === null
+        ) {
+          return;
+        }
+
+        const value = result.result[field.id]?.toString() || '-';
+        const range = this.selectReferenceRange(field, patientAge, patientSex);
+        const unit = field.unit || '';
+
+        // Build the field data structure compatible with PDF generation
+        const fieldData = {
+          name: field.label,
+          model: value,
+          range: range !== '-' ? `${range}${unit ? ' ' + unit : ''}` : '-',
+          unit,
+          headers: ['Test', 'Result', 'Range'],
+          align: ['left', 'right', 'left'],
+          rows: [field.label, value, range !== '-' ? `${range}${unit ? ' ' + unit : ''}` : '-'],
+        };
+
+        extractedFields.push(fieldData);
+      });
+    });
+
+    return extractedFields;
+  }
+
+  /**
+   * Download test result using form template
+   * @param test - Test with form_template_id
+   * @param result - Test result data
+   * @param patientAge - Patient age in years
+   * @param patientSex - Patient sex
+   */
+  private static async downloadTestResultFromTemplate(
+    test: any,
+    result: any,
+    patientAge: number,
+    patientSex: string
+  ) {
+    try {
+      // Fetch the form template
+      const template = await FormTemplateService.getTemplate(test.form_template_id);
+
+      if (!template || !template.schema_json) {
+        // Fallback to legacy system if template not found
+        console.warn(`Template ${test.form_template_id} not found, falling back to legacy form`);
+        return null;
+      }
+
+      const schema = template.schema_json as FormSchema;
+
+      // Extract fields from template and return
+      return this.extractFieldsFromTemplate(schema, result, patientAge, patientSex);
+    } catch (error) {
+      console.error('Error processing template-based test result:', error);
+      return null;
+    }
+  }
+
+  /**
    * Download test result
    * @param prescriptionId
    */
@@ -309,24 +447,49 @@ class LaboratoryService {
       sample_receiver: sample_receiver.fullname,
     };
 
-    const testResults = tests.reduce((acc, { test, result }) => {
-      const form = forms[test.result_form];
+    const testResults = await tests.reduce(async (accPromise, { test, result }) => {
+      const acc = await accPromise;
       const testName = test.name;
+      let results: any[] = [];
 
-      const results = form
-        .map(item => {
-          return this.getTestResultForm(test.result_form, test, item, result, patientInfo.sex);
-        })
-        .filter(
-          item =>
-            item?.model ||
-            item?.oModel ||
-            item?.hModel ||
-            item?.totalModel ||
-            item?.directModel ||
-            item?.glucoseModel ||
-            item?.proteinModel
+      // Check if test uses new form template system
+      if (test.form_template_id) {
+        // Use template-based PDF generation
+        const templateResults = await this.downloadTestResultFromTemplate(
+          test,
+          result,
+          patientInfo.age,
+          patientInfo.sex
         );
+
+        if (templateResults && templateResults.length) {
+          results = templateResults;
+        } else {
+          // Fallback to legacy if template processing fails
+          console.warn(
+            `Failed to process template for test ${testName}, attempting legacy fallback`
+          );
+        }
+      }
+
+      // If no template results or fallback needed, use legacy system
+      if (!results.length && test.result_form && forms[test.result_form]) {
+        const form = forms[test.result_form];
+        results = form
+          .map(item => {
+            return this.getTestResultForm(test.result_form, test, item, result, patientInfo.sex);
+          })
+          .filter(
+            item =>
+              item?.model ||
+              item?.oModel ||
+              item?.hModel ||
+              item?.totalModel ||
+              item?.directModel ||
+              item?.glucoseModel ||
+              item?.proteinModel
+          );
+      }
 
       if (results?.length) {
         acc[testName] = acc[testName] || { test: testName, results: [] };
@@ -334,7 +497,7 @@ class LaboratoryService {
       }
 
       return acc;
-    }, {});
+    }, Promise.resolve({}));
 
     return { patientInfo, testResults: Object.values(testResults) };
   }
@@ -570,6 +733,61 @@ class LaboratoryService {
 
     // Check if the number is within the range
     return +result >= minValue && +result <= maxValue;
+  }
+
+  /** ***********************
+   * COMBO TESTS
+   ********************** */
+
+  /**
+   * Create a combo test
+   * @param body
+   * @memberOf LaboratoryService
+   */
+  static async createComboTest(body: { name: string; staff_id: number; test_ids: number[] }) {
+    return createComboTest(body);
+  }
+
+  /**
+   * Get combo tests
+   * @param body
+   * @memberOf LaboratoryService
+   */
+  static async getComboTests(body) {
+    const { currentPage, pageLimit, search } = body;
+
+    if (Object.values(body).length) {
+      return getComboTests({ currentPage, pageLimit, search });
+    }
+
+    return getComboTests({});
+  }
+
+  /**
+   * Get one combo test
+   * @param id
+   * @memberOf LaboratoryService
+   */
+  static async getOneComboTest(id: number) {
+    return getOneComboTest(id);
+  }
+
+  /**
+   * Update a combo test
+   * @param body
+   * @memberOf LaboratoryService
+   */
+  static async updateComboTest(body: { id: number; name?: string; test_ids?: number[] }) {
+    return updateComboTest(body);
+  }
+
+  /**
+   * Delete a combo test
+   * @param id
+   * @memberOf LaboratoryService
+   */
+  static async deleteComboTest(id: number) {
+    return deleteComboTest(id);
   }
 }
 export default LaboratoryService;

@@ -147,3 +147,7 @@ export { DialysisNotes } from './dialysisNotes';
 
 export { LabFormTemplate } from './labFormTemplate';
 export { LabFormTemplateVersion } from './labFormTemplateVersion';
+
+// Combo Test Models
+export { ComboTest } from './comboTest';
+export { ComboTestItem } from './comboTestItem';

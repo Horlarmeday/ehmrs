@@ -3,37 +3,11 @@ export enum JobName {
   SEND_FORGOT_PASSWORD = 'Send generated password',
   UPLOAD_IMAGE = 'Upload to image to cloudinary',
   EMPTY_HOSPITAL_NUMBER = 'Check empty hospital number',
-  PATIENT_HEALTH_INSURANCE = 'Create patient health insurance',
-  PRINCIPAL_RELATIONSHIP = 'Update dependant relationship to principal',
   ASSIGN_ANTENATAL_NUMBER = 'Assign antenatal number',
   ASSIGN_IMMUNIZATION_NUMBER = 'Assign immunization number',
   SEND_PATIENT_SMS = 'Registration SMS',
   END_VISIT = 'End visit',
   CLOSE_ANTENATAL_ACCOUNT = 'Close antenatal account',
-  MIGRATE_PATIENTS_DATA = 'Migrate patient account data',
-  MIGRATE_DEPENDANTS_DATA = 'Migrate dependant account data',
-  MIGRATE_STAFFS_DATA = 'Migrate staffs account data',
-  MIGRATE_HMO_DATA = 'Migrate hmos data',
-  CREATE_PATIENT_INSURANCE_ACCOUNT = 'Create patient insurance account',
-  MIGRATE_WARDS = 'Migrate Wards',
-  MIGRATE_BEDS = 'Migrate Beds',
-  MIGRATE_ANTENATAL_ACCOUNTS = 'Migrate antenatal accounts',
-  MIGRATE_VISITS = 'Migrate visits',
-  MIGRATE_ADMIN_UTILS = 'Migrate admin utils',
-  MIGRATE_TRIAGES = 'Migrate triages',
-  MIGRATE_DRUGS = 'Migrate drugs',
-  MIGRATE_INVESTIGATIONS = 'Migrate investigations',
-  MIGRATE_ADMISSIONS = 'Migrate admissions',
-  MIGRATE_PRESCRIBED_INVESTIGATIONS = 'Migrate prescribed investigations',
-  MIGRATE_PRESCRIBED_SERVICES = 'Migrate prescribed services',
-  MIGRATE_PRESCRIBED_TESTS = 'Migrate prescribed tests',
-  MIGRATE_PRESCRIBED_DRUGS = 'Migrate prescribed drugs',
-  MIGRATE_TESTS = 'Migrate tests',
-  DISPENSE_TO_INVENTORIES = 'Dispense to inventories',
-  MIGRATE_ADDITIONAL_ITEMS = 'Migrate additional items',
-  MIGRATE_PHARMACY_STORE_ITEMS = 'Migrate pharmacy store items',
-  MIGRATE_PATIENT_HISTORY = 'Migrate patient history',
-  MIGRATE_PATIENT_DIAGNOSES = 'Migrate patient diagnoses',
   // Inventory Alert Jobs
   INVENTORY_STOCK_LEVEL_CHECK = 'Inventory stock level check',
   INVENTORY_EXPIRY_CHECK = 'Inventory expiry check',
@@ -44,7 +18,6 @@ export enum JobName {
 export const CronTimer = {
   [JobName.EMPTY_HOSPITAL_NUMBER]:
     process.env.NODE_ENV === 'development' ? '0 2 * * *' : '*/5 * * * *', // every 5 minutes
-  [JobName.CLOSE_ANTENATAL_ACCOUNT]: '0 1 * * *', // every 1am
   [JobName.END_VISIT]: '0 0 * * *', // 12am
   // Inventory Alert Jobs
   [JobName.INVENTORY_STOCK_LEVEL_CHECK]: '*/15 * * * *', // every 15 minutes
@@ -53,34 +26,4 @@ export const CronTimer = {
   [JobName.INVENTORY_ALERT_AUTO_RESOLVE]: '0 1 * * *', // daily at 1 AM
 };
 
-export const ImmediateJob = {
-  // [JobName.EMPTY_HOSPITAL_NUMBER]: JobName.EMPTY_HOSPITAL_NUMBER,
-  // [JobName.PATIENT_HEALTH_INSURANCE]: JobName.PATIENT_HEALTH_INSURANCE,
-  // [JobName.PRINCIPAL_RELATIONSHIP]: JobName.PRINCIPAL_RELATIONSHIP,
-  // [JobName.MIGRATE_STAFFS_DATA]: JobName.MIGRATE_STAFFS_DATA,
-  //[JobName.MIGRATE_PATIENTS_DATA]: JobName.MIGRATE_PATIENTS_DATA,
-  // [JobName.MIGRATE_DEPENDANTS_DATA]: JobName.MIGRATE_DEPENDANTS_DATA,
-  // [JobName.MIGRATE_HMO_DATA]: JobName.MIGRATE_HMO_DATA,
-  // [JobName.EMPTY_HOSPITAL_NUMBER]: JobName.EMPTY_HOSPITAL_NUMBER,
-  // [JobName.CREATE_PATIENT_INSURANCE_ACCOUNT]: JobName.CREATE_PATIENT_INSURANCE_ACCOUNT,
-  // [JobName.MIGRATE_WARDS]: JobName.MIGRATE_WARDS,
-  // [JobName.MIGRATE_BEDS]: JobName.MIGRATE_BEDS,
-  // [JobName.MIGRATE_ANTENATAL_ACCOUNTS]: JobName.MIGRATE_ANTENATAL_ACCOUNTS,
-  // [JobName.MIGRATE_ADMIN_UTILS]: JobName.MIGRATE_ADMIN_UTILS,
-  // [JobName.MIGRATE_TRIAGES]: JobName.MIGRATE_TRIAGES,
-  // [JobName.MIGRATE_DRUGS]: JobName.MIGRATE_DRUGS,
-  // [JobName.MIGRATE_INVESTIGATIONS]: JobName.MIGRATE_INVESTIGATIONS,
-  // [JobName.MIGRATE_VISITS]: JobName.MIGRATE_VISITS,
-  // [JobName.MIGRATE_ADMISSIONS]: JobName.MIGRATE_ADMISSIONS,
-  // [JobName.MIGRATE_PRESCRIBED_INVESTIGATIONS]: JobName.MIGRATE_PRESCRIBED_INVESTIGATIONS,
-  // [JobName.MIGRATE_PRESCRIBED_SERVICES]: JobName.MIGRATE_PRESCRIBED_SERVICES,
-  // [JobName.MIGRATE_TESTS]: JobName.MIGRATE_TESTS,
-  // [JobName.MIGRATE_PRESCRIBED_TESTS]: JobName.MIGRATE_PRESCRIBED_TESTS,
-  // [JobName.MIGRATE_PRESCRIBED_DRUGS]: JobName.MIGRATE_PRESCRIBED_DRUGS,
-  //  [JobName.MIGRATE_ADDITIONAL_ITEMS]: JobName.MIGRATE_ADDITIONAL_ITEMS,
-  // [JobName.MIGRATE_PHARMACY_STORE_ITEMS]: JobName.MIGRATE_PHARMACY_STORE_ITEMS,
-  // [JobName.DISPENSE_TO_INVENTORIES]: JobName.DISPENSE_TO_INVENTORIES,
-  // [JobName.MIGRATE_PATIENT_HISTORY]: JobName.MIGRATE_PATIENT_HISTORY,
-  //[JobName.MIGRATE_PATIENT_HISTORY]: JobName.MIGRATE_PATIENT_HISTORY,
-  // [JobName.MIGRATE_PATIENT_DIAGNOSES]: JobName.MIGRATE_PATIENT_DIAGNOSES,
-};
+export const ImmediateJob = {};

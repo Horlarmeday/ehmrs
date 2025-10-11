@@ -73,4 +73,12 @@ export default {
   formTemplate: null,
   formTemplatesTotal: 0,
   formTemplatesPages: 0,
+
+  /**
+   * COMBO TESTS
+   */
+  comboTests: [],
+  comboTest: null,
+  totalComboTests: 0,
+  totalComboTestsPages: 0,
 };

@@ -79,6 +79,12 @@ export default {
           desc: 'Click here to create and view result form templates',
           showComponent: true,
         },
+        {
+          name: 'Combo Tests',
+          link: '/laboratory/combo-tests',
+          desc: 'Click here to create and view combo tests',
+          showComponent: true,
+        },
       ],
     };
   },

@@ -90,6 +90,30 @@
               <tests-accordion :filter="filter" />
             </div>
 
+            <!-- Combo Tests Selection Form -->
+            <div class="form-group row mb-4">
+              <label class="col-lg-3 col-form-label font-weight-bold text-dark">
+                <i class="fas fa-layer-group mr-1 text-primary"></i>
+                Combo Tests:
+              </label>
+              <div class="col-lg-9">
+                <v-select
+                  multiple
+                  name="comboTest"
+                  v-model="combo_test_id"
+                  label="name"
+                  :options="comboTests"
+                  :reduce="(combo) => combo.id"
+                  placeholder="Select combo tests for quick ordering..."
+                  class="form-control-lg"
+                  @input="onComboTestSelect"
+                />
+                <small class="form-text text-muted"
+                  >Combo tests will automatically add individual tests below</small
+                >
+              </div>
+            </div>
+
             <!-- Tests Selection Form -->
             <div class="form-group row">
               <label class="col-lg-3 col-form-label font-weight-bold text-dark">
@@ -154,6 +178,7 @@ export default {
     return {
       service_id: '',
       test_id: [],
+      combo_test_id: [],
       selectedServices: [],
       IMMUNIZATION: 'Immunization',
       isDisabled: false,
@@ -168,6 +193,10 @@ export default {
 
     tests() {
       return this.$store.state.laboratory.tests;
+    },
+
+    comboTests() {
+      return this.$store.state.laboratory.comboTests;
     },
 
     visit() {
@@ -342,6 +371,40 @@ export default {
 
     initTestValues() {
       this.test_id = [];
+      this.combo_test_id = [];
+    },
+
+    async onComboTestSelect(selectedComboIds) {
+      if (!selectedComboIds || selectedComboIds.length === 0) return;
+
+      try {
+        // Fetch each combo test and expand to individual tests
+        for (const comboId of selectedComboIds) {
+          const response = await this.$store.dispatch('laboratory/fetchOneComboTest', comboId);
+          const comboTest = response.data.data;
+
+          // Map combo test items to test IDs and add to test_id array
+          if (comboTest && comboTest.comboTestItems) {
+            comboTest.comboTestItems.forEach((item) => {
+              if (item.test && !this.test_id.includes(item.test.id)) {
+                this.test_id.push(item.test.id);
+              }
+            });
+          }
+        }
+
+        this.$bvToast.toast('Individual tests from combo have been added to your selection', {
+          title: 'Combo Tests Expanded',
+          variant: 'success',
+          solid: true,
+        });
+      } catch (error) {
+        this.$bvToast.toast('Failed to expand combo tests', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+      }
     },
 
     submitTests() {
@@ -399,10 +462,18 @@ export default {
         itemsPerPage: 100,
       });
     },
+
+    fetchComboTests() {
+      this.$store.dispatch('laboratory/fetchComboTests', {
+        currentPage: 1,
+        itemsPerPage: 100,
+      });
+    },
   },
   created() {
     this.fetchTests();
     this.fetchServices();
+    this.fetchComboTests();
     this.$store.dispatch('visit/fetchVisit', this.$route.params.id).then((response) => {
       const res = response.data.data;
       this.$store.dispatch('patient/setCurrentPatient', {

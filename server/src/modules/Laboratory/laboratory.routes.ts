@@ -34,4 +34,11 @@ router.put('/test-results/bulk-update/:id', verify, LaboratoryController.changeT
 // NHIS tests deprecated
 router.post('/tests/tariff/create', verify, LaboratoryController.createTestTariff);
 
+// combo tests
+router.post('/combo-tests/create', verify, LaboratoryController.createComboTest);
+router.get('/combo-tests/get', verify, LaboratoryController.getComboTests);
+router.get('/combo-tests/get/:id', verify, LaboratoryController.getOneComboTest);
+router.put('/combo-tests/update', verify, LaboratoryController.updateComboTest);
+router.delete('/combo-tests/delete/:id', verify, LaboratoryController.deleteComboTest);
+
 export default router;

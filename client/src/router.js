@@ -1000,6 +1000,14 @@ const router = new Router({
               },
             },
             {
+              path: 'combo-tests',
+              name: 'combo-tests',
+              component: () => import('@/view/pages/laboratory/combo-tests/ComboTestList.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
               path: 'samples-to-collect',
               name: 'samples-to-collect',
               component: () => import('@/view/pages/laboratory/SamplesToCollect.vue'),

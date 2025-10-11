@@ -226,4 +226,41 @@ export default {
       state.formTemplates.splice(index, 1);
     }
   },
+
+  /**
+   * COMBO TESTS
+   */
+  SET_COMBO_TESTS(state, comboTests) {
+    state.comboTests = comboTests;
+  },
+
+  SET_COMBO_TEST(state, comboTest) {
+    state.comboTest = comboTest;
+  },
+
+  SET_COMBO_TESTS_TOTAL(state, total) {
+    state.totalComboTests = total;
+  },
+
+  SET_COMBO_TESTS_PAGES(state, pages) {
+    state.totalComboTestsPages = pages;
+  },
+
+  ADD_COMBO_TEST(state, comboTest) {
+    state.comboTests.unshift(comboTest);
+  },
+
+  UPDATE_COMBO_TEST(state, comboTest) {
+    const index = state.comboTests.findIndex((t) => t.id === comboTest.id);
+    if (index !== -1) {
+      Object.assign(state.comboTests[index], comboTest);
+    }
+  },
+
+  REMOVE_COMBO_TEST(state, id) {
+    const index = state.comboTests.findIndex((t) => t.id === id);
+    if (index !== -1) {
+      state.comboTests.splice(index, 1);
+    }
+  },
 };

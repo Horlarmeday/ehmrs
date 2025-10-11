@@ -18,6 +18,8 @@ import {
   TestPrescription,
   TestResult,
   TestTariff,
+  ComboTest,
+  ComboTestItem,
 } from '../../database/models';
 import {
   calcLimitAndOffset,
@@ -1106,3 +1108,152 @@ const statusToUpdate = (test: Partial<Result & { staff_id: number; date_created:
 //     order: [['createdAt', 'DESC']],
 //   });
 // }
+
+/** ***********************
+ * COMBO TESTS
+ ********************** */
+
+/**
+ * create a combo test
+ * @param data
+ */
+export const createComboTest = async (data: {
+  name: string;
+  staff_id: number;
+  test_ids: number[];
+}) => {
+  return sequelizeConnection.transaction(async t => {
+    const comboTest = await ComboTest.create(
+      {
+        name: data.name,
+        staff_id: data.staff_id,
+      },
+      { transaction: t }
+    );
+
+    const comboTestItems = data.test_ids.map(test_id => ({
+      combo_test_id: comboTest.id,
+      test_id,
+    }));
+
+    await ComboTestItem.bulkCreate(comboTestItems, { transaction: t });
+
+    return getOneComboTest(comboTest.id);
+  });
+};
+
+/**
+ * get combo tests
+ *
+ * @function
+ * @returns {json} json object with combo tests data
+ * @param currentPage
+ * @param pageLimit
+ * @param search
+ */
+export const getComboTests = async ({ currentPage = 1, pageLimit = 20, search = null }) => {
+  return ComboTest.paginate({
+    page: +currentPage,
+    paginate: +pageLimit,
+    order: [['name', 'ASC']],
+    where: {
+      ...(search && {
+        name: {
+          [Op.like]: `%${search}%`,
+        },
+      }),
+    },
+    include: [
+      {
+        model: ComboTestItem,
+        as: 'comboTestItems',
+        include: [
+          {
+            model: Test,
+            attributes: ['id', 'name', 'price', 'sample_id'],
+          },
+        ],
+      },
+      {
+        model: Staff,
+        attributes: ['id', 'firstname', 'lastname'],
+      },
+    ],
+  });
+};
+
+/**
+ * get one combo test with items
+ * @param id
+ * @returns {Promise<ComboTest>}
+ */
+export const getOneComboTest = async (id: number) => {
+  return ComboTest.findByPk(id, {
+    include: [
+      {
+        model: ComboTestItem,
+        as: 'comboTestItems',
+        include: [
+          {
+            model: Test,
+            attributes: [
+              'id',
+              'name',
+              'price',
+              'sample_id',
+              'nhis_price',
+              'phis_price',
+              'retainership_price',
+            ],
+          },
+        ],
+      },
+      {
+        model: Staff,
+        attributes: ['id', 'firstname', 'lastname'],
+      },
+    ],
+  });
+};
+
+/**
+ * update combo test
+ * @param data
+ * @returns {Promise<ComboTest>}
+ */
+export const updateComboTest = async (data: { id: number; name?: string; test_ids?: number[] }) => {
+  return sequelizeConnection.transaction(async t => {
+    const comboTest = await ComboTest.findByPk(data.id);
+
+    if (!comboTest) {
+      throw new BadException('NOT_FOUND', StatusCodes.NOT_FOUND, 'Combo test not found');
+    }
+
+    if (data.name) {
+      await comboTest.update({ name: data.name }, { transaction: t });
+    }
+
+    if (data.test_ids) {
+      // Delete existing items
+      await ComboTestItem.destroy({ where: { combo_test_id: data.id }, transaction: t });
+
+      // Create new items
+      const comboTestItems = data.test_ids.map(test_id => ({
+        combo_test_id: data.id,
+        test_id,
+      }));
+      await ComboTestItem.bulkCreate(comboTestItems, { transaction: t });
+    }
+
+    return getOneComboTest(data.id);
+  });
+};
+
+/**
+ * delete combo test
+ * @param id
+ * @returns {Promise<number>}
+ */
+export const deleteComboTest = async (id: number) => {
+  return ComboTest.destroy({ where: { id } });
+};

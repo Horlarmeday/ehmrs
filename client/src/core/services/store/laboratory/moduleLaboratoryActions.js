@@ -619,4 +619,85 @@ export default {
         });
     });
   },
+
+  /**
+   * COMBO TESTS
+   */
+  fetchComboTests({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/laboratory/combo-tests/get', {
+          params: {
+            currentPage: payload.currentPage,
+            pageLimit: payload.itemsPerPage,
+            search: payload.search,
+          },
+        })
+        .then((response) => {
+          commit('SET_COMBO_TESTS', response.data.data.docs);
+          commit('SET_COMBO_TESTS_TOTAL', response.data.data.total);
+          commit('SET_COMBO_TESTS_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchOneComboTest({ commit }, id) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/laboratory/combo-tests/get/${id}`)
+        .then((response) => {
+          commit('SET_COMBO_TEST', response.data.data);
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+
+  createComboTest({ commit }, data) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post('/laboratory/combo-tests/create', data)
+        .then((response) => {
+          commit('ADD_COMBO_TEST', response.data.data);
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+
+  updateComboTest({ commit }, data) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put('/laboratory/combo-tests/update', data)
+        .then((response) => {
+          commit('UPDATE_COMBO_TEST', response.data.data);
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+
+  deleteComboTest({ commit }, id) {
+    return new Promise((resolve, reject) => {
+      axios
+        .delete(`/laboratory/combo-tests/delete/${id}`)
+        .then((response) => {
+          commit('REMOVE_COMBO_TEST', id);
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
 };

@@ -1,0 +1,78 @@
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  ForeignKey,
+  HasMany,
+  Model,
+  PrimaryKey,
+  Table,
+} from 'sequelize-typescript';
+import { Staff } from './staff';
+import { ComboTestItem } from './comboTestItem';
+import {
+  FindAttributeOptions,
+  GroupOption,
+  Includeable,
+  Order,
+  WhereOptions,
+} from 'sequelize/types/model';
+import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
+
+@Table({ timestamps: true, tableName: 'Combo_Tests' })
+export class ComboTest extends Model {
+  @PrimaryKey
+  @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
+  id: number;
+
+  @Column({
+    type: DataType.STRING(255),
+    allowNull: false,
+    unique: true,
+    validate: {
+      notEmpty: {
+        msg: 'name is required',
+      },
+    },
+  })
+  name: string;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: true,
+  })
+  is_active: boolean;
+
+  @ForeignKey(() => Staff)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'staff id is required',
+      },
+    },
+  })
+  staff_id: number;
+
+  @BelongsTo(() => Staff)
+  staff: Staff;
+
+  @HasMany(() => ComboTestItem)
+  comboTestItems: ComboTestItem[];
+
+  static async paginate(param: {
+    paginate: number;
+    attributes?: FindAttributeOptions;
+    where?: WhereOptions<any>;
+    page?: number;
+    order?: Order;
+    group?: GroupOption;
+    include?: Includeable | Includeable[];
+  }) {
+    const { limit, offset } = calcLimitAndOffset(param.page, param.paginate);
+    const options = Object.assign({ limit, offset }, param);
+    const data = await this.findAndCountAll(options);
+    return paginate(data, param.page, limit);
+  }
+}
