@@ -255,8 +255,7 @@ export const depositFilterSchema = Joi.object({
 });
 
 export const billFilterSchema = Joi.object({
-  patient_id: Joi.number()
-    .positive()
+  patient_search: Joi.string()
     .optional()
     .allow(''),
   visit_id: Joi.number()

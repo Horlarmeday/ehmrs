@@ -44,14 +44,6 @@
             <td>{{ bill.createdByStaff?.firstname }} {{ bill.createdByStaff?.lastname }}</td>
             <td>
               <div class="action-buttons">
-                <!-- <b-button
-                  variant="outline-primary"
-                  size="sm"
-                  @click="$emit('view-bill', bill)"
-                  title="View Bill Details"
-                >
-                  <i class="fas fa-eye"></i>
-                </b-button> -->
                 <b-button
                   variant="outline-info"
                   size="sm"
@@ -59,32 +51,6 @@
                   title="Manage Items"
                 >
                   <i class="fas fa-list-alt"></i>
-                </b-button>
-                <!--                <b-button-->
-                <!--                  variant="outline-warning"-->
-                <!--                  size="sm"-->
-                <!--                  @click="$emit('edit-bill', bill)"-->
-                <!--                  title="Edit Bill"-->
-                <!--                  v-if="bill.billing_status === 'DRAFT'"-->
-                <!--                >-->
-                <!--                  <i class="fas fa-edit"></i>-->
-                <!--                </b-button>-->
-                <!--                <b-button-->
-                <!--                  variant="outline-success"-->
-                <!--                  size="sm"-->
-                <!--                  @click="$emit('process-payment', bill)"-->
-                <!--                  title="Process Payment"-->
-                <!--                  v-if="bill.payment_status !== 'PAID'"-->
-                <!--                >-->
-                <!--                  <i class="fas fa-credit-card"></i>-->
-                <!--                </b-button>-->
-                <b-button
-                  variant="outline-info"
-                  size="sm"
-                  @click="$emit('print-bill', bill)"
-                  title="Print Bill"
-                >
-                  <i class="fas fa-print"></i>
                 </b-button>
               </div>
             </td>

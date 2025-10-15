@@ -139,4 +139,106 @@ export default {
 
   // eslint-disable-next-line no-unused-vars
   SET_UPDATED_INVESTIGATIONS_RESULTS(state, investigations) {},
+
+  /***
+   * INVESTIGATION IMAGES (Phase 5)
+   */
+  SET_INVESTIGATION_IMAGES(state, images) {
+    state.investigationImages = images;
+  },
+
+  SET_CURRENT_INVESTIGATION_IMAGES(state, images) {
+    state.currentInvestigationImages = images;
+  },
+
+  ADD_INVESTIGATION_IMAGE(state, image) {
+    state.currentInvestigationImages.unshift(image);
+    state.investigationImages.unshift(image);
+  },
+
+  REMOVE_INVESTIGATION_IMAGE(state, imageId) {
+    const currentIndex = state.currentInvestigationImages.findIndex((img) => img.id === imageId);
+    if (currentIndex !== -1) {
+      state.currentInvestigationImages.splice(currentIndex, 1);
+    }
+    const allIndex = state.investigationImages.findIndex((img) => img.id === imageId);
+    if (allIndex !== -1) {
+      state.investigationImages.splice(allIndex, 1);
+    }
+  },
+
+  UPDATE_IMAGE_ORDER(state, { imageId, displayOrder }) {
+    const currentImage = state.currentInvestigationImages.find((img) => img.id === imageId);
+    if (currentImage) {
+      currentImage.display_order = displayOrder;
+    }
+    const allImage = state.investigationImages.find((img) => img.id === imageId);
+    if (allImage) {
+      allImage.display_order = displayOrder;
+    }
+  },
+
+  SET_PRIMARY_IMAGE(state, imageId) {
+    // Reset all images to not primary
+    state.currentInvestigationImages.forEach((img) => {
+      img.is_primary = false;
+    });
+    state.investigationImages.forEach((img) => {
+      img.is_primary = false;
+    });
+
+    // Set the specified image as primary
+    const currentImage = state.currentInvestigationImages.find((img) => img.id === imageId);
+    if (currentImage) {
+      currentImage.is_primary = true;
+    }
+    const allImage = state.investigationImages.find((img) => img.id === imageId);
+    if (allImage) {
+      allImage.is_primary = true;
+    }
+  },
+
+  UPDATE_INVESTIGATION_IMAGE(state, updatedImage) {
+    const currentIndex = state.currentInvestigationImages.findIndex(
+      (img) => img.id === updatedImage.id
+    );
+    if (currentIndex !== -1) {
+      Object.assign(state.currentInvestigationImages[currentIndex], updatedImage);
+    }
+    const allIndex = state.investigationImages.findIndex((img) => img.id === updatedImage.id);
+    if (allIndex !== -1) {
+      Object.assign(state.investigationImages[allIndex], updatedImage);
+    }
+  },
+
+  SET_DICOM_METADATA(state, metadata) {
+    state.dicomMetadata = metadata;
+  },
+
+  SET_UPLOAD_PROGRESS(state, { fileId, progress }) {
+    state.uploadProgress = {
+      ...state.uploadProgress,
+      [fileId]: progress,
+    };
+  },
+
+  CLEAR_UPLOAD_PROGRESS(state) {
+    state.uploadProgress = {};
+  },
+
+  SET_IMAGE_UPLOAD_ERROR(state, error) {
+    state.imageUploadErrors.push(error);
+  },
+
+  CLEAR_IMAGE_UPLOAD_ERRORS(state) {
+    state.imageUploadErrors = [];
+  },
+
+  CLEAR_INVESTIGATION_IMAGES(state) {
+    state.investigationImages = [];
+    state.currentInvestigationImages = [];
+    state.dicomMetadata = null;
+    state.uploadProgress = {};
+    state.imageUploadErrors = [];
+  },
 };

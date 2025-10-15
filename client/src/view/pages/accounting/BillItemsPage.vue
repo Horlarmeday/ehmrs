@@ -303,7 +303,7 @@
                       <!-- Selection Checkbox -->
                       <div class="selection-checkbox">
                         <b-form-checkbox
-                          :value="selectedItems.includes(item.id)"
+                          :checked="selectedItems.includes(item.id)"
                           :disabled="isItemPaid(item)"
                           @change="toggleItemSelection(item.id)"
                           @click.stop
@@ -465,10 +465,14 @@
                 <thead class="thead-light">
                   <tr>
                     <th width="50">
-                      <b-form-checkbox
-                        :value="isAllSelected"
+                      <label class="checkbox checkbox-md checkbox-inline">
+                        <input type="checkbox" :checked="isAllSelected" @change="toggleAllItems" />
+                        <span></span>
+                      </label>
+                      <!-- <b-form-checkbox
+                        :checked="isAllSelected"
                         @change="toggleAllItems"
-                      ></b-form-checkbox>
+                      ></b-form-checkbox> -->
                     </th>
                     <th>Item</th>
                     <th>Type</th>
@@ -489,12 +493,21 @@
                       'table-muted': isItemPaid(item),
                     }"
                   >
-                    <td>
-                      <b-form-checkbox
-                        :value="selectedItems.includes(item.id)"
+                    <td class="pointer">
+                      <label class="checkbox checkbox-md checkbox-inline">
+                        <input
+                          type="checkbox"
+                          :checked="selectedItems.includes(item.id)"
+                          :disabled="isItemPaid(item)"
+                          @change="toggleItemSelection(item.id)"
+                        />
+                        <span></span>
+                      </label>
+                      <!-- <b-form-checkbox
+                        :checked="selectedItems.includes(item.id)"
                         :disabled="isItemPaid(item)"
                         @change="toggleItemSelection(item.id)"
-                      ></b-form-checkbox>
+                      ></b-form-checkbox> -->
                     </td>
                     <td>
                       <div class="item-info">
@@ -1421,6 +1434,23 @@ function debounce(func, wait) {
   position: absolute;
   top: 0.5rem;
   left: 0.5rem;
+  cursor: pointer;
+}
+
+.selection-checkbox .custom-control-label {
+  cursor: pointer;
+}
+
+.selection-checkbox .custom-checkbox input[type='checkbox'] {
+  cursor: pointer;
+}
+
+.selection-checkbox .custom-checkbox input[type='checkbox']:disabled {
+  cursor: not-allowed;
+}
+
+.selection-checkbox .custom-checkbox input[type='checkbox']:disabled ~ .custom-control-label {
+  cursor: not-allowed;
 }
 
 /* Item Content */
@@ -1589,6 +1619,20 @@ function debounce(func, wait) {
 /* List View */
 .items-list .table {
   margin-bottom: 0;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+/* Checkbox cursor styles */
+.custom-control-input,
+.custom-control-label {
+  cursor: pointer !important;
+}
+
+.custom-control-input:disabled ~ .custom-control-label {
+  cursor: not-allowed !important;
 }
 
 .items-list .table-muted {

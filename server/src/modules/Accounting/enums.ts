@@ -229,3 +229,11 @@ export enum CashMovementType {
   TRANSFER_IN = 'TRANSFER_IN',
   TRANSFER_OUT = 'TRANSFER_OUT',
 }
+
+export enum CashRegisterStatus {
+  OPEN = 'OPEN',
+  CLOSED = 'CLOSED',
+  MAINTENANCE = 'MAINTENANCE',
+  SUSPENDED = 'SUSPENDED',
+  COMPLETED = 'COMPLETED',
+}

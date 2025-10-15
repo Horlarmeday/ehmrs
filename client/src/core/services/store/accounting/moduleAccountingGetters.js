@@ -70,6 +70,8 @@ export default {
 
   // Clinical Bills getters
   getClinicalBills: (state) => state.clinicalBills || [],
+  getClinicalBillsTotal: (state) => state.clinicalBillsTotal || 0,
+  getClinicalBillsPages: (state) => state.clinicalBillsPages || 0,
 
   // Clinical Payments getters
   getClinicalPayments: (state) => state.clinicalPayments || [],

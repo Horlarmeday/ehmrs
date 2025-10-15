@@ -45,4 +45,13 @@ export default {
   investigationPrescription: null,
 
   selectedInvestigations: [],
+
+  /**
+   * INVESTIGATION IMAGES (Phase 5)
+   */
+  investigationImages: [],
+  currentInvestigationImages: [],
+  dicomMetadata: null,
+  uploadProgress: {},
+  imageUploadErrors: [],
 };

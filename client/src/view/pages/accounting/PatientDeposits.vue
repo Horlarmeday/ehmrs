@@ -83,13 +83,7 @@
         <div class="card-body">
           <h6 class="card-title"><i class="fas fa-bolt mr-2"></i>Quick Deposit Actions</h6>
           <div class="d-flex gap-2 flex-wrap">
-            <b-button variant="outline-primary" @click="viewAllDeposits">
-              <i class="fas fa-list mr-2"></i>View All Deposits
-            </b-button>
-            <b-button variant="outline-success" @click="showCreateDepositModal">
-              <i class="fas fa-plus mr-2"></i>Create Deposit
-            </b-button>
-            <b-button variant="outline-warning" @click="viewDepositReports">
+            <b-button variant="outline-warning mr-2" @click="viewDepositReports">
               <i class="fas fa-chart-bar mr-2"></i>Deposit Reports
             </b-button>
             <b-button variant="outline-info" @click="viewReconciliation">
@@ -201,7 +195,8 @@
                 <tr>
                   <th>Reference #</th>
                   <th>Patient</th>
-                  <th>Amount</th>
+                  <th>Initial Amount</th>
+                  <th>Current Balance</th>
                   <th>Type</th>
                   <th>Status</th>
                   <th>Created Date</th>
@@ -240,7 +235,10 @@
                     </div>
                   </td>
                   <td>
-                    <span class="amount">{{ formatCurrency(deposit.amount) }}</span>
+                    <span class="amount">{{ formatCurrency(deposit.initial_amount) }}</span>
+                  </td>
+                  <td>
+                    <span class="amount">{{ formatCurrency(deposit.current_balance) }}</span>
                   </td>
                   <td>
                     <b-badge :variant="getDepositTypeVariant(deposit.deposit_type)">
@@ -269,9 +267,6 @@
                       >
                         <i class="fas fa-edit"></i>
                       </b-button>
-                      <b-button variant="outline-info" size="sm" @click="viewUsage(deposit.id)">
-                        <i class="fas fa-history"></i>
-                      </b-button>
                       <b-button
                         v-if="deposit.status === 'ACTIVE'"
                         variant="outline-success"
@@ -289,13 +284,14 @@
 
           <!-- Pagination -->
           <div class="pagination-section">
-            <b-pagination
-              v-model="currentPage"
-              :total-rows="totalRows"
+            <Pagination
+              :total-pages="pages"
+              :total="queriedItems"
               :per-page="perPage"
-              @change="onPageChange"
-              align="center"
-            ></b-pagination>
+              :current-page="currentPage"
+              @pagechanged="onPageChange"
+              @changepagecount="handlePageCount"
+            />
           </div>
         </div>
       </div>
@@ -758,9 +754,13 @@
 
 <script>
 import { debounce } from 'lodash';
+import Pagination from '@/utils/Pagination.vue';
 
 export default {
   name: 'PatientDeposits',
+  components: {
+    Pagination,
+  },
   data() {
     return {
       // Loading states
@@ -778,7 +778,7 @@ export default {
 
       // Pagination
       currentPage: 1,
-      perPage: 10,
+      itemsPerPage: 10,
 
       // Modal and forms
       showDepositModal: false,
@@ -897,8 +897,14 @@ export default {
     deposits() {
       return this.$store.getters['accounting/getDeposits'] || [];
     },
-    totalRows() {
+    queriedItems() {
       return this.$store.getters['accounting/getDepositsTotal'] || 0;
+    },
+    pages() {
+      return this.$store.getters['accounting/getDepositsPages'] || 0;
+    },
+    perPage() {
+      return this.deposits.length;
     },
     summaryData() {
       return this.$store.getters['accounting/getDepositsSummary'] || {};
@@ -939,12 +945,17 @@ export default {
     document.removeEventListener('click', this.handleClickOutside);
   },
   methods: {
+    handlePageCount(count) {
+      this.itemsPerPage = count;
+      this.loadDeposits();
+    },
+
     async loadDeposits() {
       try {
         // Map client filters to server-expected parameters
         const serverParams = {
           page: this.currentPage,
-          limit: this.perPage,
+          limit: this.itemsPerPage,
         };
 
         // Only include valid server parameters
@@ -1090,8 +1101,6 @@ export default {
         this.showPatientResults = false;
         return;
       }
-
-      console.log('searchPatients', this.patientSearchQuery);
 
       this.debounceSearchPatients(this.patientSearchQuery, this);
     },
@@ -1455,8 +1464,6 @@ export default {
         this.showBillResults = false;
         return;
       }
-
-      console.log('searchBills', this.billSearchQuery);
 
       this.debounceSearchBills(this.billSearchQuery, this);
     },

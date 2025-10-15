@@ -691,9 +691,6 @@ export class AccountingController {
       const validatedQuery = AccountingController.validateRequest(req.query, billFilterSchema);
 
       const filters: BillSearchFilters = {
-        patient_id: validatedQuery.patient_id
-          ? parseInt(validatedQuery.patient_id as string)
-          : undefined,
         visit_id: validatedQuery.visit_id ? parseInt(validatedQuery.visit_id as string) : undefined,
         billing_mode: validatedQuery.billing_mode as any,
         payment_status: validatedQuery.payment_status as any,
@@ -710,6 +707,9 @@ export class AccountingController {
           : undefined,
         page: validatedQuery.page ? parseInt(validatedQuery.page as string) : 1,
         limit: validatedQuery.limit ? parseInt(validatedQuery.limit as string) : 20,
+        patient_search: validatedQuery.patient_search
+          ? (validatedQuery.patient_search as string)
+          : undefined,
       };
 
       const result = await AccountingService.getClinicalBills(filters);

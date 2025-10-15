@@ -93,13 +93,13 @@
 
           <!-- Pagination -->
           <div class="pagination-section">
-            <b-pagination
-              v-model="currentPage"
-              :total-rows="totalRows"
+            <pagination
               :per-page="perPage"
-              @change="onPageChange"
-              align="center"
-            ></b-pagination>
+              :current-page="currentPage"
+              :total="totalRows"
+              :total-pages="pages"
+              @pagechanged="onPageChange"
+            />
           </div>
         </div>
       </div>
@@ -120,228 +120,6 @@
       @update:show="showPaymentModal = $event"
       @payment-processed="onPaymentProcessed"
     />
-
-    <!-- Create Bill Modal -->
-    <!--    <b-modal-->
-    <!--      v-model="showCreateBillModal"-->
-    <!--      title="Create New Bill"-->
-    <!--      size="xl"-->
-    <!--      @ok="createBill"-->
-    <!--      @hidden="resetCreateBillForm"-->
-    <!--    >-->
-    <!--      <b-form>-->
-    <!--        &lt;!&ndash; Patient and Visit Selection &ndash;&gt;-->
-    <!--        <div class="row">-->
-    <!--          <div class="col-md-6">-->
-    <!--            <b-form-group label="Patient" label-for="patient-select" required>-->
-    <!--              <b-form-select-->
-    <!--                id="patient-select"-->
-    <!--                v-model="createBillForm.patient_id"-->
-    <!--                :options="patientOptions"-->
-    <!--                required-->
-    <!--                @change="onPatientChange"-->
-    <!--              ></b-form-select>-->
-    <!--            </b-form-group>-->
-    <!--          </div>-->
-    <!--          <div class="col-md-6">-->
-    <!--            <b-form-group label="Visit" label-for="visit-select" required>-->
-    <!--              <b-form-select-->
-    <!--                id="visit-select"-->
-    <!--                v-model="createBillForm.visit_id"-->
-    <!--                :options="visitOptions"-->
-    <!--                required-->
-    <!--                @change="onVisitChange"-->
-    <!--              ></b-form-select>-->
-    <!--            </b-form-group>-->
-    <!--          </div>-->
-    <!--        </div>-->
-
-    <!--        &lt;!&ndash; Billing Details &ndash;&gt;-->
-    <!--        <div class="row">-->
-    <!--          <div class="col-md-4">-->
-    <!--            <b-form-group label="Billing Mode" label-for="billing-mode" required>-->
-    <!--              <b-form-select-->
-    <!--                id="billing-mode"-->
-    <!--                v-model="createBillForm.billing_mode"-->
-    <!--                :options="billingModeOptions"-->
-    <!--                required-->
-    <!--              ></b-form-select>-->
-    <!--            </b-form-group>-->
-    <!--          </div>-->
-    <!--          <div class="col-md-4">-->
-    <!--            <b-form-group label="Payment Collection Method" label-for="payment-method" required>-->
-    <!--              <b-form-select-->
-    <!--                id="payment-method"-->
-    <!--                v-model="createBillForm.payment_collection_method"-->
-    <!--                :options="paymentCollectionOptions"-->
-    <!--                required-->
-    <!--              ></b-form-select>-->
-    <!--            </b-form-group>-->
-    <!--          </div>-->
-    <!--          <div class="col-md-4">-->
-    <!--            <b-form-group label="Payment Collection Point" label-for="collection-point" required>-->
-    <!--              <b-form-select-->
-    <!--                id="collection-point"-->
-    <!--                v-model="createBillForm.payment_collection_point"-->
-    <!--                :options="billingPointOptions"-->
-    <!--                required-->
-    <!--              ></b-form-select>-->
-    <!--            </b-form-group>-->
-    <!--          </div>-->
-    <!--        </div>-->
-
-    <!--        &lt;!&ndash; Bill Items Section &ndash;&gt;-->
-    <!--        <div class="bill-items-section">-->
-    <!--          <div class="d-flex justify-content-between align-items-center mb-3">-->
-    <!--            <h6>Bill Items</h6>-->
-    <!--            <b-button variant="outline-primary" size="sm" @click="addBillItem">-->
-    <!--              <i class="fas fa-plus mr-2"></i>Add Item-->
-    <!--            </b-button>-->
-    <!--          </div>-->
-
-    <!--          <div v-for="(item, index) in createBillForm.items" :key="index" class="bill-item-row">-->
-    <!--            <div class="row">-->
-    <!--              <div class="col-md-3">-->
-    <!--                <b-form-group label="Item Type">-->
-    <!--                  <b-form-select-->
-    <!--                    v-model="item.item_type"-->
-    <!--                    :options="itemTypeOptions"-->
-    <!--                    @change="onItemTypeChange(index)"-->
-    <!--                  ></b-form-select>-->
-    <!--                </b-form-group>-->
-    <!--              </div>-->
-    <!--              <div class="col-md-3">-->
-    <!--                <b-form-group label="Item">-->
-    <!--                  <b-form-select-->
-    <!--                    v-model="item.item_id"-->
-    <!--                    :options="getItemOptions(item.item_type)"-->
-    <!--                    @change="onItemChange(index)"-->
-    <!--                  ></b-form-select>-->
-    <!--                </b-form-group>-->
-    <!--              </div>-->
-    <!--              <div class="col-md-2">-->
-    <!--                <b-form-group label="Quantity">-->
-    <!--                  <b-form-input-->
-    <!--                    v-model.number="item.quantity"-->
-    <!--                    type="number"-->
-    <!--                    min="1"-->
-    <!--                    @input="calculateItemTotal(index)"-->
-    <!--                  ></b-form-input>-->
-    <!--                </b-form-group>-->
-    <!--              </div>-->
-    <!--              <div class="col-md-2">-->
-    <!--                <b-form-group label="Unit Price">-->
-    <!--                  <b-form-input-->
-    <!--                    v-model.number="item.unit_price"-->
-    <!--                    type="number"-->
-    <!--                    step="0.01"-->
-    <!--                    @input="calculateItemTotal(index)"-->
-    <!--                  ></b-form-input>-->
-    <!--                </b-form-group>-->
-    <!--              </div>-->
-    <!--              <div class="col-md-2">-->
-    <!--                <b-form-group label="Total">-->
-    <!--                  <b-form-input-->
-    <!--                    v-model="item.total_price"-->
-    <!--                    readonly-->
-    <!--                    class="text-right"-->
-    <!--                  ></b-form-input>-->
-    <!--                </b-form-group>-->
-    <!--              </div>-->
-    <!--            </div>-->
-    <!--            <div class="row">-->
-    <!--              <div class="col-md-8">-->
-    <!--                <b-form-group label="Notes">-->
-    <!--                  <b-form-input-->
-    <!--                    v-model="item.notes"-->
-    <!--                    placeholder="Item description or notes..."-->
-    <!--                  ></b-form-input>-->
-    <!--                </b-form-group>-->
-    <!--              </div>-->
-    <!--              <div class="col-md-4">-->
-    <!--                <div class="d-flex gap-2 mt-4">-->
-    <!--                  <b-button variant="outline-danger" size="sm" @click="removeBillItem(index)">-->
-    <!--                    <i class="fas fa-trash"></i>-->
-    <!--                  </b-button>-->
-    <!--                </div>-->
-    <!--              </div>-->
-    <!--            </div>-->
-    <!--          </div>-->
-    <!--        </div>-->
-
-    <!--        &lt;!&ndash; Bill Summary &ndash;&gt;-->
-    <!--        <div class="bill-summary">-->
-    <!--          <div class="row">-->
-    <!--            <div class="col-md-6 offset-md-6">-->
-    <!--              <table class="table table-borderless">-->
-    <!--                <tr>-->
-    <!--                  <td>Subtotal:</td>-->
-    <!--                  <td class="text-right">{{ formatCurrency(billSubtotal) }}</td>-->
-    <!--                </tr>-->
-    <!--                <tr>-->
-    <!--                  <td>Discount:</td>-->
-    <!--                  <td class="text-right">-->
-    <!--                    <b-form-input-->
-    <!--                      v-model.number="createBillForm.total_discount"-->
-    <!--                      type="number"-->
-    <!--                      step="0.01"-->
-    <!--                      min="0"-->
-    <!--                      @input="calculateBillTotal"-->
-    <!--                    ></b-form-input>-->
-    <!--                  </td>-->
-    <!--                </tr>-->
-    <!--                <tr>-->
-    <!--                  <td>Tax:</td>-->
-    <!--                  <td class="text-right">-->
-    <!--                    <b-form-input-->
-    <!--                      v-model.number="createBillForm.tax_amount"-->
-    <!--                      type="number"-->
-    <!--                      step="0.01"-->
-    <!--                      min="0"-->
-    <!--                      @input="calculateBillTotal"-->
-    <!--                    ></b-form-input>-->
-    <!--                  </td>-->
-    <!--                </tr>-->
-    <!--                <tr class="border-top">-->
-    <!--                  <td><strong>Total:</strong></td>-->
-    <!--                  <td class="text-right">-->
-    <!--                    <strong>{{ formatCurrency(createBillForm.final_amount) }}</strong>-->
-    <!--                  </td>-->
-    <!--                </tr>-->
-    <!--              </table>-->
-    <!--            </div>-->
-    <!--          </div>-->
-    <!--        </div>-->
-
-    <!--        &lt;!&ndash; Additional Fields &ndash;&gt;-->
-    <!--        <div class="row">-->
-    <!--          <div class="col-md-6">-->
-    <!--            <b-form-group label="Due Date" required>-->
-    <!--              <b-form-input v-model="createBillForm.due_date" type="date" required></b-form-input>-->
-    <!--            </b-form-group>-->
-    <!--          </div>-->
-    <!--          <div class="col-md-6">-->
-    <!--            <b-form-group label="Notes">-->
-    <!--              <b-form-textarea-->
-    <!--                v-model="createBillForm.notes"-->
-    <!--                rows="3"-->
-    <!--                placeholder="Additional notes for this bill..."-->
-    <!--              ></b-form-textarea>-->
-    <!--            </b-form-group>-->
-    <!--          </div>-->
-    <!--        </div>-->
-    <!--      </b-form>-->
-
-    <!--      <template #modal-footer>-->
-    <!--        <b-button variant="secondary" @click="showCreateBillModal = false">-->
-    <!--          Cancel-->
-    <!--        </b-button>-->
-    <!--        <b-button variant="primary" @click="createBill" :disabled="creating">-->
-    <!--          <span v-if="creating"> <i class="fas fa-spinner fa-spin mr-2"></i>Creating... </span>-->
-    <!--          <span v-else> <i class="fas fa-save mr-2"></i>Create Bill </span>-->
-    <!--        </b-button>-->
-    <!--      </template>-->
-    <!--    </b-modal>-->
   </div>
 </template>
 
@@ -350,10 +128,12 @@ import BillTable from './components/BillTable.vue';
 import BillFilters from './components/BillFilters.vue';
 import BillDetailsModal from './components/BillDetailsModal.vue';
 import PaymentProcessingModal from './components/PaymentProcessingModal.vue';
+import Pagination from '@/utils/Pagination.vue';
 
 export default {
   name: 'BillManagement',
   components: {
+    Pagination,
     BillTable,
     BillFilters,
     BillDetailsModal,
@@ -377,7 +157,6 @@ export default {
 
       // Bills data
       currentPage: 1,
-      perPage: 10,
 
       // Modal states
       showCreateBillModal: false,
@@ -453,6 +232,12 @@ export default {
     totalRows() {
       return this.$store.getters['accounting/getClinicalBillsTotal'] || 0;
     },
+    pages() {
+      return this.$store.getters['accounting/getClinicalBillsPages'] || 0;
+    },
+    perPage() {
+      return this.bills.length;
+    },
     isLoading() {
       return this.$store.getters['accounting/loading'];
     },
@@ -479,8 +264,7 @@ export default {
         // Map frontend filters to backend expectations
         const params = {
           page: this.currentPage,
-          limit: this.perPage,
-          patient_id: this.filters.patient_id,
+          limit: this.perPage || 10,
           billing_status: this.filters.billing_status || undefined,
           payment_status: this.filters.payment_status || undefined,
           start_date: this.filters.start_date || undefined,
@@ -488,6 +272,7 @@ export default {
           min_amount: this.filters.min_amount || undefined,
           max_amount: this.filters.max_amount || undefined,
           billing_mode: this.filters.billing_mode || undefined,
+          patient_search: this.filters.patient_search || undefined,
         };
 
         // Remove undefined values
@@ -513,9 +298,7 @@ export default {
       const mappedFilters = {};
 
       if (newFilters.patientName) {
-        // We need to search for patient ID based on name
-        // For now, we'll skip patient filtering until we implement patient search
-        console.log('Patient name filtering not yet implemented');
+        mappedFilters.patient_search = newFilters.patientName;
       }
 
       if (newFilters.billingStatus) {
@@ -883,10 +666,6 @@ export default {
       this.loadBills();
     },
 
-    debounceSearch: debounce(function () {
-      this.loadBills();
-    }, 500),
-
     onPageChange(page) {
       this.currentPage = page;
       this.loadBills();
@@ -902,19 +681,6 @@ export default {
     },
   },
 };
-
-// Debounce utility function
-function debounce(func, wait) {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-}
 </script>
 
 <style scoped>

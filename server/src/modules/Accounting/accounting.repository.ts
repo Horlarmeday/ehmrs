@@ -37,7 +37,7 @@ import { JournalEntryLine } from '../../database/models/journalEntryLine';
 import { CostCenter } from '../../database/models/costCenter';
 import { FinancialPeriod } from '../../database/models/financialPeriod';
 import { HMOClaim } from '../../database/models/hmoClaim';
-import { DepositStatus, FinancialPeriodStatus, HMOClaimStatus } from './enums';
+import { DepositStatus, FinancialPeriodStatus, HMOClaimStatus, BillingStatus } from './enums';
 import {
   ChartOfAccountFilters,
   JournalEntryFilters,
@@ -2054,16 +2054,16 @@ export class AccountingRepository {
       }
     }
 
-    return PatientDeposit.findAndCountAll({
+    return await PatientDeposit.paginate({
       where,
       include: [
         { model: Patient, as: 'patient', attributes: patientAttributes },
         { model: Staff, as: 'createdByStaff', attributes: staffAttributes },
       ],
       order: [['createdAt', 'DESC']],
-      limit,
-      offset: (page - 1) * limit,
-    }).then(result => paginate(result, page, limit));
+      paginate: limit,
+      page,
+    })
   }
 
   static async updatePatientDeposit(
@@ -2256,13 +2256,10 @@ export class AccountingRepository {
     return { items: rows, total: count };
   }
 
-  static async getClinicalBills(
-    filters: BillSearchFilters
-  ): Promise<{ bills: ClinicalBill[]; total: number }> {
+  static async getClinicalBills(filters: BillSearchFilters) {
     const where: any = {};
     const { page = 1, limit = 20 } = filters;
 
-    if (filters.patient_id) where.patient_id = filters.patient_id;
     if (filters.visit_id) where.visit_id = filters.visit_id;
     if (filters.billing_mode) where.billing_mode = filters.billing_mode;
     if (filters.payment_status) where.payment_status = filters.payment_status;
@@ -2273,7 +2270,31 @@ export class AccountingRepository {
     if (filters.start_date) where.createdAt = { [Op.gte]: filters.start_date };
     if (filters.end_date) where.createdAt = { ...where.createdAt, [Op.lte]: filters.end_date };
 
-    const { count, rows } = await ClinicalBill.findAndCountAll({
+    // Handle patient search by name, phone, or hospital ID
+    if (filters.patient_search) {
+      const patientSearchTerm = `%${filters.patient_search}%`;
+      const matchingPatients = await Patient.findAll({
+        where: {
+          [Op.or]: [
+            { hospital_id: { [Op.like]: patientSearchTerm } },
+            { firstname: { [Op.like]: patientSearchTerm } },
+            { lastname: { [Op.like]: patientSearchTerm } },
+            { phone: { [Op.like]: patientSearchTerm } },
+          ],
+        },
+        attributes: ['id'],
+      });
+
+      if (matchingPatients.length > 0) {
+        const patientIds = matchingPatients.map(p => p.id);
+        where.patient_id = { [Op.in]: patientIds };
+      } else {
+        // If no patients found, return empty result
+        where.patient_id = -1; // This will ensure no results
+      }
+    }
+
+    const bills = await ClinicalBill.paginate({
       where,
       include: [
         { model: Patient, as: 'patient', attributes: patientAttributes },
@@ -2281,11 +2302,11 @@ export class AccountingRepository {
         { model: Staff, as: 'createdByStaff', attributes: staffAttributes },
       ],
       order: [['createdAt', 'DESC']],
-      limit,
-      offset: (page - 1) * limit,
+      page,
+      paginate: limit,
     });
 
-    return { bills: rows, total: count };
+    return bills;
   }
 
   static async updateClinicalBill(
@@ -2815,30 +2836,30 @@ export class AccountingRepository {
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const day = String(today.getDate()).padStart(2, '0');
-    const startOfToday = dayjs()
-      .startOf('day')
-      .toDate();
-    const endOfToday = dayjs()
-      .endOf('day')
-      .toDate();
-
     const prefix = `BILL-${year}${month}${day}`;
-    let clinicalBill: ClinicalBill;
-    let billNumber: string;
 
-    do {
-      const clinicalBillCount = await ClinicalBill.count({
+    // Use a transaction with locking
+    return await sequelizeConnection.transaction(async transaction => {
+      // Get the latest bill number for today with a lock
+      const latestBill = await ClinicalBill.findOne({
         where: {
-          createdAt: {
-            [Op.between]: [startOfToday, endOfToday],
+          bill_number: {
+            [Op.like]: `${prefix}-%`,
           },
         },
+        order: [['bill_number', 'DESC']],
+        lock: transaction.LOCK.UPDATE, // Locks the row
+        transaction,
       });
-      billNumber = `${prefix}-${String(clinicalBillCount + 1).padStart(4, '0')}`;
-      clinicalBill = await ClinicalBill.findOne({ where: { bill_number: billNumber } });
-    } while (clinicalBill);
 
-    return billNumber;
+      let sequence = 1;
+      if (latestBill && latestBill.bill_number) {
+        const parts = latestBill.bill_number.split('-');
+        sequence = parseInt(parts[parts.length - 1], 10) + 1;
+      }
+
+      return `${prefix}-${String(sequence).padStart(4, '0')}`;
+    });
   }
 
   static async generatePaymentReference(): Promise<string> {
@@ -4031,6 +4052,229 @@ export class AccountingRepository {
     }
 
     return recommendations;
+  }
+
+  // ===== AGGREGATION METHODS FOR ACCOUNTING SUMMARY =====
+
+  /**
+   * Get bill statistics for a given period
+   * @param startDate - Start date of the period
+   * @param endDate - End date of the period
+   * @returns Object with total count, total amount, and status breakdown
+   */
+  static async getBillStatistics(startDate?: Date, endDate?: Date) {
+    const where: any = {};
+
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) where.createdAt[Op.gte] = startDate;
+      if (endDate) where.createdAt[Op.lte] = endDate;
+    }
+
+    // Get total count and sum using aggregation
+    const aggregations = await ClinicalBill.findOne({
+      where,
+      attributes: [
+        [Sequelize.fn('COUNT', Sequelize.col('id')), 'total_count'],
+        [
+          Sequelize.fn('COALESCE', Sequelize.fn('SUM', Sequelize.col('final_amount')), 0),
+          'total_amount',
+        ],
+      ],
+      raw: true,
+    });
+
+    // Get status breakdown
+    const statusBreakdown = await ClinicalBill.findAll({
+      where,
+      attributes: ['payment_status', [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']],
+      group: ['payment_status'],
+      raw: true,
+    });
+
+    // Get billing status breakdown
+    const billingStatusBreakdown = await ClinicalBill.findAll({
+      where,
+      attributes: ['billing_status', [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']],
+      group: ['billing_status'],
+      raw: true,
+    });
+
+    return {
+      total_count: parseInt(String(aggregations?.['total_count'] || 0)) || 0,
+      total_amount: parseFloat(String(aggregations?.['total_amount'] || 0)) || 0,
+      payment_status_breakdown: statusBreakdown,
+      billing_status_breakdown: billingStatusBreakdown,
+    };
+  }
+
+  /**
+   * Get payment statistics for a given period
+   * @param startDate - Start date of the period
+   * @param endDate - End date of the period
+   * @returns Object with total count and total amount
+   */
+  static async getPaymentStatistics(startDate?: Date, endDate?: Date) {
+    const where: any = {};
+
+    if (startDate || endDate) {
+      where.processed_at = {};
+      if (startDate) where.processed_at[Op.gte] = startDate;
+      if (endDate) where.processed_at[Op.lte] = endDate;
+    }
+
+    const aggregations = await ClinicalPayment.findOne({
+      where,
+      attributes: [
+        [Sequelize.fn('COUNT', Sequelize.col('id')), 'total_count'],
+        [Sequelize.fn('COALESCE', Sequelize.fn('SUM', Sequelize.col('amount')), 0), 'total_amount'],
+      ],
+      raw: true,
+    });
+
+    return {
+      total_count: parseInt(String(aggregations?.['total_count'] || 0)) || 0,
+      total_amount: parseFloat(String(aggregations?.['total_amount'] || 0)) || 0,
+    };
+  }
+
+  /**
+   * Get deposit statistics
+   * @param statusFilter - Optional status filter (e.g., 'ACTIVE')
+   * @returns Object with total count, total amount, and status breakdown
+   */
+  static async getDepositStatistics(statusFilter?: string) {
+    const where: any = {};
+
+    if (statusFilter) {
+      where.status = statusFilter;
+    }
+
+    const aggregations = await PatientDeposit.findOne({
+      where,
+      attributes: [
+        [Sequelize.fn('COUNT', Sequelize.col('id')), 'total_count'],
+        [Sequelize.fn('COALESCE', Sequelize.fn('SUM', Sequelize.col('amount')), 0), 'total_amount'],
+      ],
+      raw: true,
+    });
+
+    // Get status breakdown for all deposits
+    const statusBreakdown = await PatientDeposit.findAll({
+      attributes: ['status', [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']],
+      group: ['status'],
+      raw: true,
+    });
+
+    return {
+      total_count: parseInt(String(aggregations?.['total_count'] || 0)) || 0,
+      total_amount: parseFloat(String(aggregations?.['total_amount'] || 0)) || 0,
+      status_breakdown: statusBreakdown,
+    };
+  }
+
+  /**
+   * Get recent bills with pagination
+   * @param limit - Number of bills to retrieve
+   * @returns Array of recent bills
+   */
+  static async getRecentBills(limit = 5) {
+    return await ClinicalBill.findAll({
+      limit,
+      order: [['createdAt', 'DESC']],
+      include: [
+        {
+          model: Patient,
+          as: 'patient',
+          attributes: patientAttributes,
+        },
+        {
+          model: Visit,
+          as: 'visit',
+          attributes: visitAttributes,
+        },
+      ],
+    });
+  }
+
+  /**
+   * Get recent payments with pagination
+   * @param limit - Number of payments to retrieve
+   * @returns Array of recent payments
+   */
+  static async getRecentPayments(limit = 5) {
+    return await ClinicalPayment.findAll({
+      limit,
+      order: [['processed_at', 'DESC']],
+      include: [
+        {
+          model: Patient,
+          as: 'patient',
+          attributes: patientAttributes,
+        },
+        {
+          model: ClinicalBill,
+          as: 'bill',
+          attributes: ['id', 'bill_number', 'final_amount', 'payment_status'],
+        },
+      ],
+    });
+  }
+
+  /**
+   * Get payment status counts for bills
+   * @returns Object with counts for each payment status
+   */
+  static async getPaymentStatusCounts() {
+    const statusCounts = await ClinicalBill.findAll({
+      attributes: ['payment_status', [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']],
+      group: ['payment_status'],
+      raw: true,
+    });
+
+    const result: any = {
+      pending: 0,
+      partial: 0,
+      paid: 0,
+      cancelled: 0,
+    };
+
+    statusCounts.forEach((status: any) => {
+      const statusKey = status.payment_status?.toLowerCase();
+      if (statusKey && result.hasOwnProperty(statusKey)) {
+        result[statusKey] = parseInt(status.count);
+      }
+    });
+
+    return result;
+  }
+
+  /**
+   * Get billing status counts for bills
+   * @returns Object with counts for each billing status
+   */
+  static async getBillingStatusCounts() {
+    const statusCounts = await ClinicalBill.findAll({
+      attributes: ['billing_status', [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']],
+      group: ['billing_status'],
+      raw: true,
+    });
+
+    const result: any = {
+      draft: 0,
+      pending: 0,
+      approved: 0,
+      rejected: 0,
+    };
+
+    statusCounts.forEach((status: any) => {
+      const statusKey = status.billing_status?.toLowerCase();
+      if (statusKey && result.hasOwnProperty(statusKey)) {
+        result[statusKey] = parseInt(status.count);
+      }
+    });
+
+    return result;
   }
 }
 

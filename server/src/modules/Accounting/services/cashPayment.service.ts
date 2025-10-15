@@ -1,15 +1,21 @@
 import { Op, Transaction } from 'sequelize';
 import { BadException } from '../../../common/util/api-error';
 import {
-  CashRegister,
   CashMovement,
-  ClinicalPayment,
-  Staff,
+  CashRegister,
   ChartOfAccount,
+  ClinicalPayment,
   JournalEntry,
   JournalEntryLine,
+  Staff,
 } from '../../../database/models';
-import { PaymentType, PaymentStatus, JournalEntryStatus, CashMovementType } from '../enums';
+import {
+  CashMovementType,
+  CashRegisterStatus,
+  JournalEntryStatus,
+  PaymentStatus,
+  PaymentType,
+} from '../enums';
 import { logger } from '../../../core/helpers/logger';
 import dayjs from 'dayjs';
 
@@ -161,7 +167,6 @@ export class CashPaymentService {
           total_change_given: 0,
           total_payments_processed: 0,
           transaction_count: 0,
-          status: 'CLOSED',
           is_active: true,
           is_in_use: false,
         },
@@ -257,8 +262,8 @@ export class CashPaymentService {
     // Calculate summary
     const summary = {
       total_registers: count,
-      open_registers: rows.filter(r => r.status === 'OPEN').length,
-      closed_registers: rows.filter(r => r.status === 'CLOSED').length,
+      open_registers: rows.filter(r => r.status === CashRegisterStatus.OPEN).length,
+      closed_registers: rows.filter(r => r.status === CashRegisterStatus.CLOSED).length,
       total_balance: rows.reduce((sum, r) => sum + parseFloat(r.current_balance.toString()), 0),
       total_transactions: rows.reduce((sum, r) => sum + r.transaction_count, 0),
     };
@@ -457,7 +462,7 @@ export class CashPaymentService {
     const register = await this.getCashRegisterById(movementData.register_id, transaction);
 
     // Validate register status
-    if (register.status !== 'OPEN') {
+    if (register.status !== CashRegisterStatus.OPEN) {
       throw new BadException('Register Not Open', 400, 'Cash register must be open to add cash');
     }
 
@@ -512,7 +517,7 @@ export class CashPaymentService {
     const register = await this.getCashRegisterById(movementData.register_id, transaction);
 
     // Validate register status
-    if (register.status !== 'OPEN') {
+    if (register.status !== CashRegisterStatus.OPEN) {
       throw new BadException('Register Not Open', 400, 'Cash register must be open to remove cash');
     }
 
@@ -573,7 +578,7 @@ export class CashPaymentService {
     const register = await this.getCashRegisterById(paymentData.register_id, transaction);
 
     // Validate register status
-    if (register.status !== 'OPEN') {
+    if (register.status !== CashRegisterStatus.OPEN) {
       throw new BadException(
         'Register Not Open',
         400,

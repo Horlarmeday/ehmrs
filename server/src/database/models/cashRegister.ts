@@ -11,6 +11,7 @@ import {
 } from 'sequelize-typescript';
 import { Staff } from './staff';
 import { CashMovement } from './cashMovement';
+import { CashRegisterStatus } from '../../modules/Accounting/enums';
 
 @Table({ timestamps: true, tableName: 'Cash_Register' })
 export class CashRegister extends Model {
@@ -142,12 +143,12 @@ export class CashRegister extends Model {
   last_reconciled_at: Date;
 
   @Column({
-    type: DataType.ENUM('OPEN', 'CLOSED', 'SUSPENDED', 'MAINTENANCE'),
+    type: DataType.ENUM(...Object.values(CashRegisterStatus)),
     allowNull: false,
-    defaultValue: 'CLOSED',
+    defaultValue: CashRegisterStatus.OPEN,
     comment: 'Current status of the cash register',
   })
-  status: string;
+  status: CashRegisterStatus;
 
   @Column({
     type: DataType.BOOLEAN,

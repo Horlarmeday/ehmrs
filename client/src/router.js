@@ -2066,6 +2066,14 @@ const router = new Router({
             requiresAuth: true,
           },
         },
+        {
+          path: '/accounting/patient-financial-lookup',
+          name: 'patient-financial-lookup',
+          component: () => import('@/view/pages/accounting/PatientFinancialLookup.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
         // =============================================================================
         // PHASE 1: CORE FINANCIAL FOUNDATION ROUTES
         // =============================================================================

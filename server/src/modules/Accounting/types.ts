@@ -220,7 +220,7 @@ export interface BankTransferPaymentData {
 
 // Search and Filter Types
 export interface BillSearchFilters {
-  patient_id?: number;
+  patient_search?: string;
   visit_id?: number;
   billing_mode?: BillingMode;
   payment_status?: PaymentStatus;

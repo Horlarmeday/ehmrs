@@ -44,11 +44,11 @@ export const downloadTestResult = (
 
   generateHeader(doc);
   generatePatientInformation(doc, patientInfo);
-  generateSampleCollectorAndTester(
-    doc,
-    patientInfo?.sample_receiver || 'N/A',
-    patientInfo?.tester || 'N/A'
-  );
+  // generateSampleCollectorAndTester(
+  //   doc,
+  //   patientInfo?.sample_receiver || 'N/A',
+  //   patientInfo?.tester || 'N/A'
+  // );
 
   let currentY = doc.y; // Starting Y position after patient information
   const tableWidth = 465;
@@ -72,9 +72,7 @@ export const downloadTestResult = (
 
 function generateHeader(doc: PDFDocument) {
   const filePath =
-    process.env.NODE_ENV === 'production'
-      ? `ehmrs-api/public/Caroline.png`
-      : 'src/public/Caroline.png';
+    process.env.NODE_ENV === 'production' ? `ehmrs/public/Caroline.png` : 'src/public/Caroline.png';
   doc
     .image(filePath, 50, 45, { width: 50 })
     .fillColor('#444444')

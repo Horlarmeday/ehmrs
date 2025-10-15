@@ -3,6 +3,7 @@ import {
   Column,
   DataType,
   ForeignKey,
+  HasMany,
   Model,
   PrimaryKey,
   Table,
@@ -20,6 +21,7 @@ import { Staff } from './staff';
 import { PrescribedInvestigation } from './prescribedInvestigation';
 import { InvestigationPrescription } from './investigationPrescription';
 import { ResultStatus } from './testResult';
+import { InvestigationResultImage } from './investigationResultImage';
 
 @Table({ timestamps: true, tableName: 'Investigation_Results' })
 export class InvestigationResult extends Model {
@@ -119,6 +121,9 @@ export class InvestigationResult extends Model {
 
   @BelongsTo(() => Staff)
   staff: Staff;
+
+  @HasMany(() => InvestigationResultImage)
+  images: InvestigationResultImage[];
 
   static async paginate(param: {
     paginate: number;

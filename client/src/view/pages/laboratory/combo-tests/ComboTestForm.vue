@@ -90,20 +90,24 @@
           </div>
         </div>
 
-        <!-- Total Price Display -->
-        <div v-if="totalPrice > 0" class="form-group row">
-          <label class="col-lg-3 col-form-label font-weight-bold text-dark">
-            <i class="fas fa-calculator mr-1 text-primary"></i>
-            Total Price:
-          </label>
-          <div class="col-lg-9">
-            <div class="alert alert-light-success d-flex align-items-center">
-              <div class="alert-text font-weight-bold" style="font-size: 1.2rem">
-                ₦{{ totalPrice }}
+        <div class="form-group row">
+          <!-- Total Price Display -->
+          <div v-if="totalPrice > 0" class="form-group row">
+            <label class="col-lg-3 col-form-label font-weight-bold text-dark">
+              <i class="fas fa-calculator mr-1 text-primary"></i>
+              Total Price:
+            </label>
+            <div class="col-lg-9">
+              <div class="alert alert-light-success d-flex align-items-center">
+                <div class="alert-text font-weight-bold" style="font-size: 1.2rem">
+                  ₦{{ totalPrice }}
+                </div>
               </div>
             </div>
           </div>
         </div>
+
+
 
         <!-- Status Toggle (Edit Mode Only) -->
         <div v-if="editMode" class="form-group row">

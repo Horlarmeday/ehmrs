@@ -324,20 +324,18 @@ export const insertSingleOrMultipleServices = async ({
 }: SingleOrMultipleServices) => {
   if (service_id || (typeof service_id !== 'number' && service_id?.length)) {
     if (Array.isArray(service_id)) {
-      await Promise.all(
-        service_id.map(async id => {
-          const service = await getOneService({ id });
-          await prescribeService({
-            service_id: id,
-            service_type: 'Cash',
-            price: service.price,
-            patient_id,
-            requester: staff_id,
-            ante_natal_id: ante_natal_id || null,
-            visit_id: visit.id,
-          });
-        })
-      );
+      for (const id of service_id) {
+        const service = await getOneService({ id });
+        await prescribeService({
+          service_id: id,
+          service_type: 'Cash',
+          price: service.price,
+          patient_id,
+          requester: staff_id,
+          ante_natal_id: ante_natal_id || null,
+          visit_id: visit.id,
+        });
+      }
     } else {
       const service = await getOneService({ id: service_id });
       await prescribeService({
@@ -362,17 +360,15 @@ export const insertPrescribedTests = async ({
   ante_natal_id,
 }) => {
   if (!test_id) return;
-  await Promise.all(
-    test_id?.map(async id => {
-      await LabOrderService.prescribeTestService({
-        test_id: id,
-        visit_id,
-        patient_id,
-        requester: staff_id,
-        ante_natal_id,
-      });
-    })
-  );
+  for (const id of test_id) {
+    await LabOrderService.prescribeTestService({
+      test_id: id,
+      visit_id,
+      patient_id,
+      requester: staff_id,
+      ante_natal_id,
+    });
+  }
 };
 
 export const groupDataByField = ({

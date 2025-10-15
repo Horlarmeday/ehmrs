@@ -22,6 +22,14 @@ import {
   PaymentCollectionMethod,
   BillingMode,
 } from '../../modules/Accounting/enums';
+import {
+  FindAttributeOptions,
+  GroupOption,
+  Includeable,
+  Order,
+  WhereOptions,
+} from 'sequelize/lib/model';
+import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 
 @Table({ timestamps: true, tableName: 'clinical_bills' })
 export class ClinicalBill extends Model {
@@ -229,4 +237,19 @@ export class ClinicalBill extends Model {
 
   @BelongsTo(() => FinancialPeriod, { foreignKey: 'period_id' })
   financialPeriod: FinancialPeriod;
+
+  static async paginate(param: {
+    paginate: number;
+    attributes?: FindAttributeOptions;
+    where?: WhereOptions;
+    page?: number;
+    order?: Order;
+    group?: GroupOption;
+    include?: Includeable | Includeable[];
+  }) {
+    const { limit, offset } = calcLimitAndOffset(param.page, param.paginate);
+    const options = Object.assign({ limit, offset }, param);
+    const data = await this.findAndCountAll(options);
+    return paginate(data, param.page, limit);
+  }
 }

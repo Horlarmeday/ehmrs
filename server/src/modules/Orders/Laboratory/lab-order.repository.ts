@@ -17,7 +17,11 @@ import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
 import { PrescriptionType } from '../../../database/models/prescribedTest';
 import { NHISApprovalStatus } from '../../../core/helpers/general';
 import { TestType } from '../../../database/models/test';
-import { createTestPrescription, getLastTestPrescription, getTestPrescription } from '../../Laboratory/laboratory.repository';
+import {
+  createTestPrescription,
+  getLastTestPrescription,
+  getTestPrescription,
+} from '../../Laboratory/laboratory.repository';
 import { PrescribedTestBody } from './interface/prescribed-test.body';
 /**
  * prescribe a test for patient
@@ -26,7 +30,7 @@ import { PrescribedTestBody } from './interface/prescribed-test.body';
  */
 export async function prescribeTest(data) {
   const { test_id, requester, patient_id, visit_id, ante_natal_id, test_prescription_id } = data;
-      // Get patient and insurance for billing calculation
+  // Get patient and insurance for billing calculation
   const [patient, patientInsurance, test] = await Promise.all([
     Patient.findByPk(patient_id),
     getPatientInsuranceQuery({
@@ -53,7 +57,6 @@ export async function prescribeTest(data) {
 
   // 🆕 NEW: Auto-create bill for this prescription
   try {
-
     if (patient) {
       // Add this prescription to the visit bill
       await VisitBillingHelper.addPrescribedTestToBill(

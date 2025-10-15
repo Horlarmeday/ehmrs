@@ -34,7 +34,8 @@ import Antenatal from './nurse/antenatal/Dashboard.vue';
 import HealthInsurance from './nhis/Dashboard.vue';
 import CustomerCare from './reception/Dashboard.vue';
 import Theater from './nurse/theater/Dashboard.vue';
-import FinancialOfficer from '../accounting/AccountingDashboard.vue';
+import FinanceAdminDashboard from '../accounting/AccountingDashboard.vue';
+import FinanceOfficerDashboard from '../accounting/FinanceOfficerDashboard.vue';
 import HODNurse from './nurse/hod/Dashboard.vue';
 import HODLaboratory from './laboratory/hod/Dashboard.vue';
 import Emergency from './nurse/emergency/Dashboard.vue';
@@ -103,6 +104,7 @@ const ROLES = {
   EMERGENCY: 'Emergency',
   ENDOCRINOLOGIST: 'Endocrinologist',
   FINANCE_OFFICER: 'Finance Officer',
+  FINANCE_ADMIN: 'Finance Admin',
   GENERAL_MEDICINE: 'General Medicine',
   GENERAL_PRACTITIONER: 'General Practitioner',
   GERIATRICS: 'Geriatrics',
@@ -298,9 +300,11 @@ export default {
     getAccountsDashboard(role) {
       switch (role) {
         case ROLES.FINANCE_OFFICER:
-          return (this.dashboardComponent = FinancialOfficer);
+          return (this.dashboardComponent = FinanceOfficerDashboard);
+        case ROLES.FINANCE_ADMIN:
+          return (this.dashboardComponent = FinanceAdminDashboard);
         default:
-          return (this.dashboardComponent = FinancialOfficer);
+          return (this.dashboardComponent = FinanceOfficerDashboard);
       }
     },
 

@@ -1,4 +1,5 @@
 import { Transaction } from 'sequelize';
+import dayjs from 'dayjs';
 import AccountingRepository from './accounting.repository';
 import { ComprehensiveChartOfAccountsService } from './services/comprehensiveChartOfAccounts.service';
 import { PatientDepositService } from './services/patientDeposit.service';
@@ -579,9 +580,9 @@ export class AccountingService {
 
   static async getClinicalBills(
     filters: BillSearchFilters
-  ): Promise<{ bills: any[]; total: number }> {
+  ) {
     try {
-      return await AccountingRepository.getClinicalBills(filters);
+      return AccountingRepository.getClinicalBills(filters);
     } catch (error) {
       throw new BadException('Failed to retrieve clinical bills', 500, error.message);
     }
@@ -1162,115 +1163,98 @@ export class AccountingService {
   }
 
   // Dashboard and Summary Methods
+  /**
+   * Get comprehensive accounting summary with optimized database-level aggregations
+   * @returns Summary statistics including revenue, bills, payments, and deposits
+   */
   static async getAccountingSummary(): Promise<any> {
     try {
-      const [bills, payments, deposits] = await Promise.all([
-        AccountingRepository.getClinicalBills({}),
-        AccountingRepository.getClinicalPayments({}),
-        AccountingRepository.getPatientDeposits({}),
+      // Define date ranges using dayjs for clean date manipulation
+      const now = dayjs();
+      const thirtyDaysAgo = now.subtract(30, 'day').toDate();
+      const sixtyDaysAgo = now.subtract(60, 'day').toDate();
+
+      // Execute all queries in parallel for optimal performance
+      const [
+        allBillsStats,
+        currentPeriodBillsStats,
+        previousPeriodBillsStats,
+        currentPeriodPaymentsStats,
+        allDepositsStats,
+        activeDepositsStats,
+        paymentStatusBreakdown,
+        billingStatusBreakdown,
+        recentBills,
+        recentPayments,
+      ] = await Promise.all([
+        // All bills (for totals)
+        AccountingRepository.getBillStatistics(),
+        // Current period bills (last 30 days)
+        AccountingRepository.getBillStatistics(thirtyDaysAgo, now.toDate()),
+        // Previous period bills (30-60 days ago)
+        AccountingRepository.getBillStatistics(sixtyDaysAgo, thirtyDaysAgo),
+        // Current period payments (last 30 days)
+        AccountingRepository.getPaymentStatistics(thirtyDaysAgo, now.toDate()),
+        // All deposits (for total amount)
+        AccountingRepository.getDepositStatistics(),
+        // Active deposits only
+        AccountingRepository.getDepositStatistics(DepositStatus.ACTIVE),
+        // Payment status counts
+        AccountingRepository.getPaymentStatusCounts(),
+        // Billing status counts
+        AccountingRepository.getBillingStatusCounts(),
+        // Recent bills (last 5)
+        AccountingRepository.getRecentBills(5),
+        // Recent payments (last 5)
+        AccountingRepository.getRecentPayments(5),
       ]);
 
-      // Calculate current period metrics (last 30 days)
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-      const currentPeriodBills =
-        bills.bills?.filter(bill => new Date(bill.createdAt) >= thirtyDaysAgo) || [];
-
-      const currentPeriodPayments =
-        payments.docs?.filter(payment => new Date(payment.processed_at) >= thirtyDaysAgo) || [];
-
-      // Current period calculations
-      const currentPeriodRevenue = currentPeriodBills.reduce(
-        (sum, bill) => sum + (+bill.final_amount || 0),
-        0
-      );
-      const currentPeriodPaymentsAmount = currentPeriodPayments.reduce(
-        (sum, payment) => sum + (+payment.amount || 0),
-        0
-      );
-
-      // Previous period calculations (30-60 days ago)
-      const sixtyDaysAgo = new Date();
-      sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
-
-      const previousPeriodBills =
-        bills.bills?.filter(
-          bill =>
-            new Date(bill.createdAt) >= sixtyDaysAgo && new Date(bill.createdAt) < thirtyDaysAgo
-        ) || [];
-
-      const previousPeriodRevenue = previousPeriodBills.reduce(
-        (sum, bill) => sum + (bill.final_amount || 0),
-        0
-      );
-
-      // Calculate changes
+      // Calculate changes between periods
       const revenueChange =
-        previousPeriodRevenue > 0
-          ? ((currentPeriodRevenue - previousPeriodRevenue) / previousPeriodRevenue) * 100
-          : 0;
-
-      const billsChange =
-        previousPeriodBills.length > 0
-          ? ((currentPeriodBills.length - previousPeriodBills.length) /
-              previousPeriodBills.length) *
+        previousPeriodBillsStats.total_amount > 0
+          ? ((currentPeriodBillsStats.total_amount - previousPeriodBillsStats.total_amount) /
+              previousPeriodBillsStats.total_amount) *
             100
           : 0;
 
-      // Overall metrics
-      const totalBills = bills.bills?.length || 0;
-      const totalRevenue =
-        bills.bills?.reduce((sum, bill) => sum + (+bill.final_amount || 0), 0) || 0;
-      const pendingPayments =
-        bills.bills?.filter(bill => bill.payment_status === PaymentStatus.PENDING).length || 0;
-      const totalDeposits =
-        deposits.docs?.reduce((sum, deposit) => sum + (+deposit.amount || 0), 0) || 0;
-      const activeDeposits =
-        deposits.docs?.filter(deposit => deposit.status === DepositStatus.ACTIVE).length || 0;
+      const billsChange =
+        previousPeriodBillsStats.total_count > 0
+          ? ((currentPeriodBillsStats.total_count - previousPeriodBillsStats.total_count) /
+              previousPeriodBillsStats.total_count) *
+            100
+          : 0;
 
-      // Payment status breakdown
-      const paymentStatusBreakdown = {
-        pending:
-          bills.bills?.filter(bill => bill.payment_status === PaymentStatus.PENDING).length || 0,
-        partial:
-          bills.bills?.filter(bill => bill.payment_status === PaymentStatus.PARTIAL).length || 0,
-        paid: bills.bills?.filter(bill => bill.payment_status === PaymentStatus.PAID).length || 0,
-        cancelled:
-          bills.bills?.filter(bill => bill.payment_status === PaymentStatus.CANCELLED).length || 0,
-      };
+      // Calculate collection rate (payments / revenue in current period)
+      const collectionRate =
+        currentPeriodBillsStats.total_amount > 0
+          ? (currentPeriodPaymentsStats.total_amount / currentPeriodBillsStats.total_amount) * 100
+          : 0;
 
-      // Billing status breakdown
-      const billingStatusBreakdown = {
-        draft: bills.bills?.filter(bill => bill.billing_status === BillingStatus.DRAFT).length || 0,
-        pending:
-          bills.bills?.filter(bill => bill.billing_status === BillingStatus.PENDING).length || 0,
-        approved:
-          bills.bills?.filter(bill => bill.billing_status === BillingStatus.APPROVED).length || 0,
-        rejected:
-          bills.bills?.filter(bill => bill.billing_status === BillingStatus.REJECTED).length || 0,
-      };
+      // Calculate average bill amount
+      const averageBillAmount =
+        allBillsStats.total_count > 0
+          ? allBillsStats.total_amount / allBillsStats.total_count
+          : 0;
 
-      // Recent activity (last 5 items)
-      const recentBills = bills.bills?.slice(0, 5) || [];
-      const recentPayments = payments.docs?.slice(0, 5) || [];
+      // Get pending payments count from payment status breakdown
+      const pendingPayments = paymentStatusBreakdown.pending || 0;
 
       return {
         // Current metrics
-        totalBills,
-        totalRevenue,
+        totalBills: allBillsStats.total_count,
+        totalRevenue: allBillsStats.total_amount,
         pendingPayments,
-        totalDeposits,
+        totalDeposits: allDepositsStats.total_amount,
 
-        // Change indicators
+        // Change indicators (rounded to 2 decimal places)
         billsChange: Math.round(billsChange * 100) / 100,
         revenueChange: Math.round(revenueChange * 100) / 100,
         pendingCount: pendingPayments,
-        activeDeposits,
+        activeDeposits: activeDepositsStats.total_count,
 
         // Current period metrics
-        currentPeriodRevenue,
-        currentPeriodPayments: currentPeriodPaymentsAmount,
+        currentPeriodRevenue: currentPeriodBillsStats.total_amount,
+        currentPeriodPayments: currentPeriodPaymentsStats.total_amount,
 
         // Breakdowns
         paymentStatusBreakdown,
@@ -1281,8 +1265,8 @@ export class AccountingService {
         recentPayments,
 
         // Additional metrics
-        averageBillAmount: totalBills > 0 ? totalRevenue / totalBills : 0,
-        collectionRate: totalRevenue > 0 ? (currentPeriodPaymentsAmount / totalRevenue) * 100 : 0,
+        averageBillAmount: Math.round(averageBillAmount * 100) / 100,
+        collectionRate: Math.round(collectionRate * 100) / 100,
       };
     } catch (error) {
       throw new BadException(`Failed to get accounting summary: ${error.message}`, 500);

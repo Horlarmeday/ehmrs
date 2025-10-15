@@ -186,7 +186,7 @@
     </div>
 
     <!-- Debug Toggle Button (Always visible for troubleshooting) -->
-    <div class="text-center mb-3">
+    <!-- <div class="text-center mb-3">
       <b-button
         variant="outline-info"
         size="sm"
@@ -200,7 +200,7 @@
         <i class="fas fa-info-circle mr-1"></i>
         Use this to troubleshoot payment data issues
       </small>
-    </div>
+    </div> -->
 
     <!-- Step 1: Payment Method Selection -->
     <div v-if="currentStep === 'payment-method'" class="step-content">
@@ -895,10 +895,9 @@
                   <strong>Location:</strong> {{ selectedCashRegister.location || 'N/A' }}
                 </div>
                 <div class="col-md-6">
-                  <strong>Current Balance:</strong> ₦{{
-                    formatCurrency(selectedCashRegister.current_balance)
-                  }}<br />
-                  <strong>Status:</strong>
+                  <strong class="mr-2">Current Balance:</strong
+                  >{{ formatCurrency(selectedCashRegister.current_balance) }}<br />
+                  <strong class="mr-2">Status:</strong>
                   <b-badge variant="success">{{ selectedCashRegister.status }}</b-badge>
                 </div>
               </div>

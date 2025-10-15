@@ -263,6 +263,19 @@
               <i class="fas fa-arrow-right"></i>
             </div>
           </div>
+
+          <div class="nav-item-large" @click="navigateToPage('patient-financial-lookup')">
+            <div class="nav-icon-large bg-info">
+              <i class="fas fa-user-circle"></i>
+            </div>
+            <div class="nav-content">
+              <h5>Patient Financial Lookup</h5>
+              <p>View complete financial records for any patient</p>
+            </div>
+            <div class="nav-arrow">
+              <i class="fas fa-arrow-right"></i>
+            </div>
+          </div>
         </div>
 
         <!-- Core Accounting Row -->
@@ -556,6 +569,7 @@ export default {
         bills: '/accounting/bills',
         payments: '/accounting/payments',
         deposits: '/accounting/deposits',
+        'patient-financial-lookup': '/accounting/patient-financial-lookup',
         'chart-of-accounts': '/accounting/chart-of-accounts',
         'journal-entries': '/accounting/journal-entries',
         'cost-centers': '/accounting/cost-centers',
@@ -906,7 +920,13 @@ export default {
   gap: 1.5rem;
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1400px) {
+  .nav-row {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1200px) and (max-width: 1399px) {
   .nav-row {
     grid-template-columns: repeat(3, 1fr);
   }

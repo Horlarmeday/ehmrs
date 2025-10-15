@@ -19,9 +19,6 @@
         >
           <i class="fas fa-edit mr-2"></i>Edit
         </b-button>
-        <b-button variant="outline-info" @click="viewUsageHistory">
-          <i class="fas fa-history mr-2"></i>Usage History
-        </b-button>
         <b-button variant="outline-success" @click="useDeposit" v-if="deposit?.status === 'ACTIVE'">
           <i class="fas fa-credit-card mr-2"></i>Use Deposit
         </b-button>
@@ -67,7 +64,7 @@
               </div>
               <div class="summary-content">
                 <h4 class="summary-value">
-                  {{ formatCurrency(deposit.amount - (deposit.used_amount || 0)) }}
+                  {{ formatCurrency(deposit.current_balance) }}
                 </h4>
                 <p class="summary-label">Available Balance</p>
               </div>
@@ -80,7 +77,7 @@
                 <i class="fas fa-credit-card"></i>
               </div>
               <div class="summary-content">
-                <h4 class="summary-value">{{ formatCurrency(deposit.used_amount || 0) }}</h4>
+                <h4 class="summary-value">{{ formatCurrency(usedAmount || 0) }}</h4>
                 <p class="summary-label">Used Amount</p>
               </div>
             </div>
@@ -100,174 +97,351 @@
         </div>
       </div>
 
-      <!-- Main Details -->
-      <div class="row">
-        <div class="col-lg-8">
-          <div class="card">
-            <div class="card-header">
-              <h5 class="mb-0">
-                <i class="fas fa-info-circle mr-2"></i>
-                Deposit Information
-              </h5>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="detail-item">
-                    <label class="detail-label">Reference Number:</label>
-                    <span class="detail-value">{{ deposit.reference_number }}</span>
-                  </div>
-                  <div class="detail-item">
-                    <label class="detail-label">Patient:</label>
-                    <span class="detail-value">
-                      {{ deposit.patient?.firstname }} {{ deposit.patient?.lastname }}
-                      <small class="text-muted d-block">{{ deposit.patient?.hospital_id }}</small>
-                    </span>
-                  </div>
-                  <div class="detail-item">
-                    <label class="detail-label">Payment Method:</label>
-                    <span class="detail-value">
-                      <b-badge :variant="getDepositTypeVariant(deposit.deposit_type)">
-                        {{ deposit.deposit_type }}
-                      </b-badge>
-                    </span>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="detail-item">
-                    <label class="detail-label">Amount:</label>
-                    <span class="detail-value text-success font-weight-bold">
-                      {{ formatCurrency(deposit.amount) }}
-                    </span>
-                  </div>
-                  <div class="detail-item">
-                    <label class="detail-label">Created Date:</label>
-                    <span class="detail-value">{{ formatDate(deposit.createdAt) }}</span>
-                  </div>
-                  <div class="detail-item">
-                    <label class="detail-label">Status:</label>
-                    <span class="detail-value">
-                      <b-badge :variant="getDepositStatusVariant(deposit.status)">
-                        {{ deposit.status }}
-                      </b-badge>
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="row mt-3">
-                <div class="col-12">
-                  <div class="detail-item">
-                    <label class="detail-label">Description:</label>
-                    <span class="detail-value">{{
-                      deposit.description || 'No description provided'
-                    }}</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Payment Method Specific Details -->
-              <div v-if="deposit.bank_account_id" class="row mt-3">
-                <div class="col-12">
-                  <div class="detail-item">
-                    <label class="detail-label">Bank Account:</label>
-                    <span class="detail-value"
-                      >{{ deposit.bank_account?.account_name }} ({{
-                        deposit.bank_account?.account_number
-                      }})</span
-                    >
-                  </div>
-                </div>
-              </div>
-
-              <div v-if="deposit.pos_terminal_id" class="row mt-3">
-                <div class="col-12">
-                  <div class="detail-item">
-                    <label class="detail-label">POS Terminal:</label>
-                    <span class="detail-value"
-                      >{{ deposit.pos_terminal?.terminal_id }} ({{
-                        deposit.pos_terminal?.terminal_type
-                      }})</span
-                    >
-                  </div>
-                </div>
-              </div>
-
-              <div v-if="deposit.payment_reference" class="row mt-3">
-                <div class="col-12">
-                  <div class="detail-item">
-                    <label class="detail-label">Payment Reference:</label>
-                    <span class="detail-value">{{ deposit.payment_reference }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+      <!-- Tabs Navigation -->
+      <div class="card">
+        <div class="card-header">
+          <b-nav tabs card-header>
+            <b-nav-item :active="activeTab === 'overview'" @click="activeTab = 'overview'">
+              <i class="fas fa-info-circle mr-2"></i>Overview
+            </b-nav-item>
+            <b-nav-item :active="activeTab === 'transactions'" @click="activeTab = 'transactions'">
+              <i class="fas fa-exchange-alt mr-2"></i>Transaction History
+              <b-badge v-if="transactions.length > 0" variant="secondary" class="ml-2">
+                {{ transactions.length }}
+              </b-badge>
+            </b-nav-item>
+            <b-nav-item :active="activeTab === 'journal'" @click="activeTab = 'journal'">
+              <i class="fas fa-book mr-2"></i>Journal Entries
+              <b-badge v-if="journalEntries.length > 0" variant="secondary" class="ml-2">
+                {{ journalEntries.length }}
+              </b-badge>
+            </b-nav-item>
+            <b-nav-item :active="activeTab === 'audit'" @click="activeTab = 'audit'">
+              <i class="fas fa-history mr-2"></i>Audit Trail
+            </b-nav-item>
+          </b-nav>
         </div>
 
-        <div class="col-lg-4">
-          <!-- Quick Actions -->
-          <div class="card mb-3">
-            <div class="card-header">
-              <h6 class="mb-0">
-                <i class="fas fa-bolt mr-2"></i>
-                Quick Actions
-              </h6>
-            </div>
-            <div class="card-body">
-              <div class="d-grid gap-2">
-                <b-button
-                  variant="success"
-                  @click="useDeposit"
-                  v-if="deposit.status === 'ACTIVE'"
-                  :disabled="deposit.amount - (deposit.used_amount || 0) <= 0"
-                >
-                  <i class="fas fa-credit-card mr-2"></i>
-                  Use Deposit
-                </b-button>
-                <b-button variant="info" @click="viewUsageHistory">
-                  <i class="fas fa-history mr-2"></i>
-                  View Usage History
-                </b-button>
-                <b-button variant="warning" @click="editDeposit" v-if="deposit.status === 'ACTIVE'">
-                  <i class="fas fa-edit mr-2"></i>
-                  Edit Deposit
-                </b-button>
-                <b-button variant="outline-secondary" @click="printDeposit">
-                  <i class="fas fa-print mr-2"></i>
-                  Print Details
-                </b-button>
+        <div class="card-body">
+          <!-- Overview Tab -->
+          <div v-show="activeTab === 'overview'">
+            <div class="row">
+              <div class="col-lg-8">
+                <div class="card">
+                  <div class="card-header">
+                    <h5 class="mb-0">
+                      <i class="fas fa-info-circle mr-2"></i>
+                      Deposit Information
+                    </h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="detail-item">
+                          <label class="detail-label">Reference Number:</label>
+                          <span class="detail-value">{{ deposit.reference_number }}</span>
+                        </div>
+                        <div class="detail-item">
+                          <label class="detail-label">Patient:</label>
+                          <span class="detail-value">
+                            {{ deposit.patient?.firstname }} {{ deposit.patient?.lastname }}
+                            <small class="text-muted d-block">
+                              {{ deposit.patient?.hospital_id }}
+                            </small>
+                          </span>
+                        </div>
+                        <div class="detail-item">
+                          <label class="detail-label">Payment Method:</label>
+                          <span class="detail-value">
+                            <b-badge :variant="getDepositTypeVariant(deposit.deposit_type)">
+                              {{ deposit.deposit_type }}
+                            </b-badge>
+                          </span>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="detail-item">
+                          <label class="detail-label">Amount:</label>
+                          <span class="detail-value text-success font-weight-bold">
+                            {{ formatCurrency(deposit.amount) }}
+                          </span>
+                        </div>
+                        <div class="detail-item">
+                          <label class="detail-label">Created Date:</label>
+                          <span class="detail-value">{{ formatDate(deposit.createdAt) }}</span>
+                        </div>
+                        <div class="detail-item">
+                          <label class="detail-label">Status:</label>
+                          <span class="detail-value">
+                            <b-badge :variant="getDepositStatusVariant(deposit.status)">
+                              {{ deposit.status }}
+                            </b-badge>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row mt-3">
+                      <div class="col-12">
+                        <div class="detail-item">
+                          <label class="detail-label">Description:</label>
+                          <span class="detail-value">{{
+                            deposit.description || 'No description provided'
+                          }}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Payment Method Specific Details -->
+                    <div v-if="deposit.bank_account_id" class="row mt-3">
+                      <div class="col-12">
+                        <div class="detail-item">
+                          <label class="detail-label">Bank Account:</label>
+                          <span class="detail-value"
+                            >{{ deposit.bank_account?.account_name }} ({{
+                              deposit.bank_account?.account_number
+                            }})</span
+                          >
+                        </div>
+                      </div>
+                    </div>
+
+                    <div v-if="deposit.pos_terminal_id" class="row mt-3">
+                      <div class="col-12">
+                        <div class="detail-item">
+                          <label class="detail-label">POS Terminal:</label>
+                          <span class="detail-value"
+                            >{{ deposit.pos_terminal?.terminal_id }} ({{
+                              deposit.pos_terminal?.terminal_type
+                            }})</span
+                          >
+                        </div>
+                      </div>
+                    </div>
+
+                    <div v-if="deposit.payment_reference" class="row mt-3">
+                      <div class="col-12">
+                        <div class="detail-item">
+                          <label class="detail-label">Payment Reference:</label>
+                          <span class="detail-value">{{ deposit.payment_reference }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-lg-4">
+                <!-- Recent Activity -->
+                <div class="card">
+                  <div class="card-header">
+                    <h6 class="mb-0">
+                      <i class="fas fa-clock mr-2"></i>
+                      Recent Activity
+                    </h6>
+                  </div>
+                  <div class="card-body">
+                    <div v-if="recentActivity.length > 0">
+                      <div
+                        v-for="activity in recentActivity.slice(0, 5)"
+                        :key="activity.id"
+                        class="activity-item"
+                      >
+                        <div class="activity-icon">
+                          <i :class="getActivityIcon(activity.type)"></i>
+                        </div>
+                        <div class="activity-content">
+                          <div class="activity-text">{{ activity.description }}</div>
+                          <small class="activity-time">{{ formatDate(activity.created_at) }}</small>
+                        </div>
+                      </div>
+                    </div>
+                    <div v-else class="text-center text-muted">
+                      <i class="fas fa-info-circle fa-2x mb-2"></i>
+                      <p class="mb-0">No recent activity</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Recent Activity -->
-          <div class="card">
-            <div class="card-header">
-              <h6 class="mb-0">
-                <i class="fas fa-clock mr-2"></i>
-                Recent Activity
-              </h6>
-            </div>
-            <div class="card-body">
-              <div v-if="recentActivity.length > 0">
-                <div
-                  v-for="activity in recentActivity.slice(0, 5)"
-                  :key="activity.id"
-                  class="activity-item"
-                >
-                  <div class="activity-icon">
-                    <i :class="getActivityIcon(activity.type)"></i>
-                  </div>
-                  <div class="activity-content">
-                    <div class="activity-text">{{ activity.description }}</div>
-                    <small class="activity-time">{{ formatDate(activity.created_at) }}</small>
+          <!-- Transaction History Tab -->
+          <div v-show="activeTab === 'transactions'">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">
+                  <i class="fas fa-exchange-alt mr-2"></i>
+                  Transaction History
+                </h5>
+              </div>
+              <div class="card-body">
+                <div v-if="transactions.length > 0">
+                  <div class="table-responsive">
+                    <table class="table table-hover">
+                      <thead class="thead-light">
+                        <tr>
+                          <th>Transaction Type</th>
+                          <th>Amount</th>
+                          <th>Previous Balance</th>
+                          <th>New Balance</th>
+                          <th>Description</th>
+                          <th>Bill Reference</th>
+                          <th>Created Date</th>
+                          <th>Created By</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="transaction in transactions" :key="transaction.id">
+                          <td>
+                            <b-badge
+                              :variant="
+                                getTransactionTypeBadgeVariant(transaction.transaction_type)
+                              "
+                            >
+                              {{ formatTransactionType(transaction.transaction_type) }}
+                            </b-badge>
+                          </td>
+                          <td
+                            class="font-weight-bold"
+                            :class="getAmountClass(transaction.transaction_type)"
+                          >
+                            {{ formatCurrency(transaction.amount) }}
+                          </td>
+                          <td>{{ formatCurrency(transaction.previous_balance) }}</td>
+                          <td class="font-weight-bold">
+                            {{ formatCurrency(transaction.new_balance) }}
+                          </td>
+                          <td>{{ transaction.description || '-' }}</td>
+                          <td>
+                            <b-link
+                              v-if="transaction.bill_id"
+                              @click="viewBill(transaction.bill_id)"
+                              class="text-primary"
+                            >
+                              {{ transaction.bill?.bill_number || `Bill #${transaction.bill_id}` }}
+                            </b-link>
+                            <span v-else class="text-muted">-</span>
+                          </td>
+                          <td>{{ formatDate(transaction.createdAt) }}</td>
+                          <td>
+                            {{ transaction.createdByStaff?.firstname }}
+                            {{ transaction.createdByStaff?.lastname }}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
+                <div v-else class="text-center text-muted py-5">
+                  <i class="fas fa-exchange-alt fa-3x mb-3"></i>
+                  <h5>No Transactions Found</h5>
+                  <p>This deposit has no transaction history yet.</p>
+                </div>
               </div>
-              <div v-else class="text-center text-muted">
-                <i class="fas fa-info-circle fa-2x mb-2"></i>
-                <p class="mb-0">No recent activity</p>
+            </div>
+          </div>
+
+          <!-- Journal Entries Tab -->
+          <div v-show="activeTab === 'journal'">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">
+                  <i class="fas fa-book mr-2"></i>
+                  Journal Entries
+                </h5>
+              </div>
+              <div class="card-body">
+                <div v-if="journalEntries.length > 0">
+                  <div class="table-responsive">
+                    <table class="table table-hover">
+                      <thead class="thead-light">
+                        <tr>
+                          <th>Entry Number</th>
+                          <th>Date</th>
+                          <th>Description</th>
+                          <th>Debit Account</th>
+                          <th>Debit Amount</th>
+                          <th>Credit Account</th>
+                          <th>Credit Amount</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <template v-for="entry in journalEntries">
+                          <tr v-for="(line, index) in entry.lines" :key="`${entry.id}-${index}`">
+                            <td v-if="index === 0" :rowspan="entry.lines.length">
+                              <b-link @click="viewJournalEntry(entry.id)" class="text-primary">
+                                {{ formatJournalEntryReference(entry) }}
+                              </b-link>
+                            </td>
+                            <td v-if="index === 0" :rowspan="entry.lines.length">
+                              {{ formatDate(entry.transaction_date) }}
+                            </td>
+                            <td v-if="index === 0" :rowspan="entry.lines.length">
+                              {{ entry.description }}
+                            </td>
+                            <td>
+                              <span v-if="line.debit > 0">
+                                {{ getAccountDisplay(line.account) }}
+                              </span>
+                              <span v-else class="text-muted">-</span>
+                            </td>
+                            <td class="text-right">
+                              <span v-if="line.debit > 0" class="text-danger font-weight-bold">
+                                {{ formatCurrency(line.debit) }}
+                              </span>
+                              <span v-else class="text-muted">-</span>
+                            </td>
+                            <td>
+                              <span v-if="line.credit > 0">
+                                {{ getAccountDisplay(line.account) }}
+                              </span>
+                              <span v-else class="text-muted">-</span>
+                            </td>
+                            <td class="text-right">
+                              <span v-if="line.credit > 0" class="text-success font-weight-bold">
+                                {{ formatCurrency(line.credit) }}
+                              </span>
+                              <span v-else class="text-muted">-</span>
+                            </td>
+                            <td v-if="index === 0" :rowspan="entry.lines.length">
+                              <b-badge :variant="getJournalEntryStatusVariant(entry.status)">
+                                {{ entry.status }}
+                              </b-badge>
+                            </td>
+                          </tr>
+                        </template>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div v-else class="text-center text-muted py-5">
+                  <i class="fas fa-book fa-3x mb-3"></i>
+                  <h5>No Journal Entries Found</h5>
+                  <p>This deposit has no associated journal entries yet.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Audit Trail Tab -->
+          <div v-show="activeTab === 'audit'">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">
+                  <i class="fas fa-history mr-2"></i>
+                  Audit Trail
+                </h5>
+              </div>
+              <div class="card-body">
+                <div class="text-center text-muted py-5">
+                  <i class="fas fa-history fa-3x mb-3"></i>
+                  <h5>Audit Trail Coming Soon</h5>
+                  <p>
+                    Comprehensive audit trail functionality will be available in a future update.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -352,44 +526,6 @@
         </b-button>
       </template>
     </b-modal>
-
-    <!-- Usage History Modal -->
-    <b-modal
-      v-model="showUsageHistoryModal"
-      title="Deposit Usage History"
-      size="lg"
-      @hidden="resetUsageHistory"
-    >
-      <div v-if="usageHistory.length > 0">
-        <div class="table-responsive">
-          <table class="table table-sm">
-            <thead class="thead-light">
-              <tr>
-                <th>Date</th>
-                <th>Amount Used</th>
-                <th>Purpose</th>
-                <th>Bill #</th>
-                <th>Processed By</th>
-                <th>Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="usage in usageHistory" :key="usage.id">
-                <td>{{ formatDate(usage.created_at) }}</td>
-                <td>{{ formatCurrency(usage.amount) }}</td>
-                <td>{{ usage.purpose }}</td>
-                <td>{{ usage.bill?.bill_number || 'N/A' }}</td>
-                <td>{{ usage.processedBy?.firstname }} {{ usage.processedBy?.lastname }}</td>
-                <td>{{ usage.notes || '-' }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div v-else class="text-center">
-        <p>No usage history found for this deposit.</p>
-      </div>
-    </b-modal>
   </div>
 </template>
 
@@ -402,19 +538,19 @@ export default {
       error: null,
       deposit: null,
       recentActivity: [],
-      usageHistory: [],
+      transactions: [],
+      journalEntries: [],
+      activeTab: 'overview',
 
       // Usage modal
       showUseDepositModal: false,
       processingUsage: false,
+      usedAmount: 0,
       usageForm: {
         amount: 0,
         purpose: '',
         notes: '',
       },
-
-      // Usage history modal
-      showUsageHistoryModal: false,
     };
   },
   async mounted() {
@@ -430,9 +566,21 @@ export default {
         const result = await this.$store.dispatch('accounting/getPatientDepositById', depositId);
 
         if (result.success) {
-          this.deposit = result.data;
-          await this.loadUsageHistory();
-          await this.loadRecentActivity();
+          this.deposit = result.data.deposit;
+          this.transactions = result.data.transactions || [];
+          this.journalEntries = result.data.journalEntries || [];
+          this.usedAmount = this.transactions.reduce(
+            (acc, transaction) => acc + +transaction.amount,
+            0
+          );
+
+          // Generate recent activity from transactions
+          this.recentActivity = this.transactions.slice(0, 5).map((transaction) => ({
+            id: transaction.id,
+            type: transaction.transaction_type,
+            description: transaction.description || `${transaction.transaction_type} transaction`,
+            created_at: transaction.createdAt,
+          }));
         } else {
           this.error = result.error || 'Failed to load deposit details';
         }
@@ -442,40 +590,6 @@ export default {
       } finally {
         this.loading = false;
       }
-    },
-
-    async loadUsageHistory() {
-      try {
-        this.usageHistory = await this.$store.dispatch(
-          'accounting/getDepositUsageHistory',
-          this.deposit.id
-        );
-      } catch (error) {
-        console.error('Failed to load usage history:', error);
-      }
-    },
-
-    async loadRecentActivity() {
-      // This would typically come from an API endpoint
-      // For now, we'll create mock activity based on deposit data
-      this.recentActivity = [
-        {
-          id: 1,
-          type: 'CREATED',
-          description: 'Deposit created',
-          created_at: this.deposit.createdAt,
-        },
-        ...(this.usageHistory.length > 0
-          ? [
-              {
-                id: 2,
-                type: 'USED',
-                description: `Deposit used for payment`,
-                created_at: this.usageHistory[0]?.created_at,
-              },
-            ]
-          : []),
-      ];
     },
 
     // Modal actions
@@ -518,16 +632,22 @@ export default {
       }
     },
 
-    viewUsageHistory() {
-      this.showUsageHistoryModal = true;
-    },
-
     editDeposit() {
       this.$router.push({ name: 'patient-deposits', query: { edit: this.deposit.id } });
     },
 
     printDeposit() {
       window.print();
+    },
+
+    // Navigation methods
+    viewBill(billId) {
+      this.$router.push({ name: 'clinical-bill-details', params: { id: billId } });
+    },
+
+    viewJournalEntry(entryId) {
+      // Navigate to journal entry details if route exists
+      this.$router.push({ name: 'journal-entry-details', params: { id: entryId } });
     },
 
     // Form resets
@@ -537,10 +657,6 @@ export default {
         purpose: '',
         notes: '',
       };
-    },
-
-    resetUsageHistory() {
-      this.usageHistory = [];
     },
 
     // Utility methods
@@ -595,6 +711,60 @@ export default {
         EXPIRED: 'fas fa-clock text-danger',
       };
       return icons[type] || 'fas fa-info-circle text-secondary';
+    },
+
+    // New utility methods for transaction history
+    formatTransactionType(type) {
+      const types = {
+        CREATED: 'Created',
+        USED: 'Used',
+        REFUNDED: 'Refunded',
+        ADJUSTED: 'Adjusted',
+        EXPIRED: 'Expired',
+      };
+      return types[type] || type;
+    },
+
+    getTransactionTypeBadgeVariant(type) {
+      const variants = {
+        CREATED: 'success',
+        USED: 'info',
+        REFUNDED: 'warning',
+        ADJUSTED: 'secondary',
+        EXPIRED: 'danger',
+      };
+      return variants[type] || 'secondary';
+    },
+
+    getAmountClass(type) {
+      const classes = {
+        CREATED: 'text-success',
+        USED: 'text-danger',
+        REFUNDED: 'text-warning',
+        ADJUSTED: 'text-info',
+        EXPIRED: 'text-danger',
+      };
+      return classes[type] || 'text-dark';
+    },
+
+    // New utility methods for journal entries
+    formatJournalEntryReference(entry) {
+      return entry.reference || `JE-${entry.id}`;
+    },
+
+    getAccountDisplay(account) {
+      if (!account) return 'Unknown Account';
+      return `${account.code} - ${account.name}`;
+    },
+
+    getJournalEntryStatusVariant(status) {
+      const variants = {
+        DRAFT: 'secondary',
+        POSTED: 'success',
+        CANCELLED: 'danger',
+        PENDING: 'warning',
+      };
+      return variants[status] || 'secondary';
     },
   },
 };

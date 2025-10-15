@@ -961,8 +961,8 @@ export default {
     try {
       const response = await axios.get('/accounting/deposits', { params });
       commit('SET_DEPOSITS', response.data.data.docs);
-      commit('SET_DEPOSITS_TOTAL', response.data.total);
-      commit('SET_DEPOSITS_PAGES', response.data.pages || 0);
+      commit('SET_DEPOSITS_TOTAL', response.data.data.total);
+      commit('SET_DEPOSITS_PAGES', response.data.data.pages || 0);
       return response.data.data;
     } catch (error) {
       commit('SET_ERROR', error.message);
@@ -1323,9 +1323,9 @@ export default {
 
     try {
       const response = await axios.get('/accounting/bills', { params });
-      commit('SET_CLINICAL_BILLS', response.data.data.bills);
-      commit('SET_CLINICAL_BILLS_TOTAL', response.data.total);
-      commit('SET_CLINICAL_BILLS_PAGES', response.data.pages || 0);
+      commit('SET_CLINICAL_BILLS', response.data.data.docs);
+      commit('SET_CLINICAL_BILLS_TOTAL', response.data.data.total);
+      commit('SET_CLINICAL_BILLS_PAGES', response.data.data.pages || 0);
       return response.data.data;
     } catch (error) {
       commit('SET_ERROR', error.message);
@@ -1886,6 +1886,144 @@ export default {
       throw error;
     } finally {
       commit('SET_LOADING', false);
+    }
+  },
+
+  // =============================================================================
+  // PATIENT FINANCIAL LOOKUP ACTIONS
+  // =============================================================================
+
+  /**
+   * Get all bills for a specific patient
+   * @param {number} patientId - The patient ID
+   * @returns {Promise<Object>} Bills data
+   */
+  async getPatientBills(_, patientId) {
+    try {
+      const response = await axios.get(`/accounting/bills/patient/${patientId}`);
+      return { success: true, data: response.data || [] };
+    } catch (error) {
+      console.error('Failed to get patient bills:', error);
+      return { success: false, error: error.message, data: [] };
+    }
+  },
+
+  /**
+   * Get all payments for a specific patient
+   * @param {number} patientId - The patient ID
+   * @returns {Promise<Object>} Payments data
+   */
+  async getPatientPayments(_, patientId) {
+    try {
+      // Use the general payments endpoint with patient_id filter
+      const response = await axios.get('/accounting/payments', {
+        params: { patient_id: patientId, limit: 100 }, // High limit to get all
+      });
+      return { success: true, data: response.data.data?.docs || response.data.data || [] };
+    } catch (error) {
+      console.error('Failed to get patient payments:', error);
+      return { success: false, error: error.message, data: [] };
+    }
+  },
+
+  /**
+   * Get deposit transaction history for a specific patient
+   * @param {number} patientId - The patient ID
+   * @returns {Promise<Object>} Deposit history data
+   */
+  async getPatientDepositHistory(_, patientId) {
+    try {
+      const response = await axios.get(`/accounting/deposits/patient/${patientId}/history`);
+      return { success: true, data: response.data.data || [] };
+    } catch (error) {
+      console.error('Failed to get patient deposit history:', error);
+      return { success: false, error: error.message, data: [] };
+    }
+  },
+
+  /**
+   * Get comprehensive financial summary for a patient
+   * Fetches bills, payments, deposits, and history in parallel
+   * @param {number} patientId - The patient ID
+   * @returns {Promise<Object>} Complete financial summary
+   */
+  async getPatientFinancialSummary({ dispatch }, patientId) {
+    try {
+      // Fetch all data in parallel for better performance
+      const [billsResult, paymentsResult, depositsResult, historyResult] = await Promise.all([
+        dispatch('getPatientBills', patientId),
+        dispatch('getPatientPayments', patientId),
+        dispatch('getPatientDepositByPatientId', patientId),
+        dispatch('getPatientDepositHistory', patientId),
+      ]);
+
+      console.log({
+        billsResult,
+        paymentsResult,
+        depositsResult,
+        historyResult,
+      })
+
+      const bills = billsResult.data || [];
+      const payments = paymentsResult.data || [];
+      const deposits = depositsResult.data || [];
+      const history = historyResult.data || [];
+
+      // Calculate summary statistics
+      const totalBills = bills.length;
+      const totalBillsAmount = bills.reduce((sum, bill) => sum + (parseFloat(bill.final_amount) || 0), 0);
+
+      const totalPayments = payments.length;
+      const totalPaymentsAmount = payments.reduce((sum, payment) => sum + (parseFloat(payment.amount) || 0), 0);
+
+      const activeDeposits = Array.isArray(deposits)
+        ? deposits.filter(d => d.status === 'ACTIVE')
+        : (deposits && deposits.status === 'ACTIVE' ? [deposits] : []);
+      const totalDeposits = activeDeposits.length;
+      const totalDepositsAmount = activeDeposits.reduce((sum, deposit) => sum + (parseFloat(deposit.amount) || 0), 0);
+
+      // Calculate outstanding balance (bills - payments)
+      const outstandingBalance = totalBillsAmount - totalPaymentsAmount;
+
+      return {
+        success: true,
+        data: {
+          bills,
+          payments,
+          deposits: Array.isArray(deposits) ? deposits : (deposits ? [deposits] : []),
+          history,
+          summary: {
+            totalBills,
+            totalBillsAmount,
+            totalPayments,
+            totalPaymentsAmount,
+            totalDeposits,
+            totalDepositsAmount,
+            outstandingBalance,
+          },
+        },
+      };
+    } catch (error) {
+      console.error('Failed to get patient financial summary:', error);
+      return {
+        success: false,
+        error: error.message,
+        data: {
+          bills: [],
+          payments: [],
+          deposits: [],
+          history: [],
+          summary: {
+            totalBills: 0,
+            totalBillsAmount: 0,
+            totalPayments: 0,
+            totalPaymentsAmount: 0,
+            totalDeposits: 0,
+            totalDepositsAmount: 0,
+            outstandingBalance: 0,
+          },
+        },
+      };
     }
   },
 };

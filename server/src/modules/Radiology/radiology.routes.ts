@@ -3,6 +3,7 @@ import verify from '../../core/middleware/verify';
 import { RadiologyController } from './radiology.controller';
 import { upload } from '../../core/helpers/multer';
 import LaboratoryController from '../Laboratory/laboratory.controller';
+import investigationImagesRoutes from './investigation-images.routes';
 
 const router = Router();
 router.post('/imaging/create', verify, RadiologyController.createImaging);
@@ -47,5 +48,8 @@ router.get(
   verify,
   RadiologyController.getOneInvestigationPrescription
 );
+
+// Investigation images routes
+router.use('/investigation-images', investigationImagesRoutes);
 
 export default router;

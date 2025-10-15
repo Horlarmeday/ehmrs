@@ -87,6 +87,7 @@
     "cloudinary": "^1.34.0",
     "cors": "^2.8.5",
     "dayjs": "^1.11.10",
+    "dicom-parser": "^1.8.21",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-rate-limit": "^5.0.0",
@@ -105,6 +106,7 @@
     "rxjs": "^7.3.0",
     "sequelize": "^6.29.0",
     "sequelize-typescript": "^2.1.5",
+    "sharp": "^0.34.4",
     "uuid": "^3.3.3",
     "winston": "^3.2.1",
     "xlsx": "file:vendor/xlsx-0.20.0.tgz"
