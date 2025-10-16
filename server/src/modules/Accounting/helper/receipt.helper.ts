@@ -25,11 +25,13 @@ export interface PrintClinicalReceiptType {
 }
 
 const formatCurrency = (value: number) => {
-  const formatted = new Intl.NumberFormat('en-NG', {
-    style: 'currency',
-    currency: 'NGN',
-  }).format(value || 0);
-  return formatted.replace(/NGN\s?/, '₦');
+  // Format number with commas and 2 decimal places, then add NGN prefix
+  // This avoids the problematic ₦ symbol entirely
+  const number = (value || 0).toLocaleString('en-NG', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  return `N${number}`;
 };
 
 const formatDate = (date: Date) => {
@@ -79,7 +81,7 @@ export const printClinicalReceiptPDF = async ({ receiptData, res }: PrintClinica
   // Logo (same path logic as existing helper)
   const logoPath =
     process.env.NODE_ENV === 'production'
-      ? `ehmrs-api/public/Caroline.png`
+      ? `server/public/Caroline.png`
       : 'src/public/Caroline.png';
 
   if (fs.existsSync(logoPath)) {

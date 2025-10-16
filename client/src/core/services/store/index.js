@@ -16,6 +16,7 @@ import order from './order/moduleOrder';
 import inventory from './inventory/moduleInventory';
 import radiology from './radiology/moduleRadiology';
 import diagnosis from './diagnosis/moduleDiagnosis';
+import doctorReport from './doctorReport/index';
 import admission from './admission/moduleAdmission';
 import request from './request/moduleRequest';
 import antenatal from './antenatal/moduleAntenatal';
@@ -56,6 +57,7 @@ export default new Vuex.Store({
     inventory,
     radiology,
     diagnosis,
+    doctorReport,
     admission,
     request,
     antenatal,

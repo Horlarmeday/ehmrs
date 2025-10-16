@@ -45,11 +45,17 @@
                 >
               </td>
               <td>
-                <a
-                  href="#"
-                  class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg"
-                  >{{ measurement.dosage_form.name }}</a
-                >
+                <span v-if="measurement.dosage_forms && measurement.dosage_forms.length">
+                  <span
+                    v-for="(form, index) in measurement.dosage_forms"
+                    :key="form.id"
+                    class="text-dark-75 font-weight-bolder"
+                  >
+                    {{ form.name
+                    }}<span v-if="index < measurement.dosage_forms.length - 1">, </span>
+                  </span>
+                </span>
+                <span v-else class="text-muted">No dosage forms</span>
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">

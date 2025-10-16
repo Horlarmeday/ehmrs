@@ -16,10 +16,7 @@
           <div class="card-body border">
             <div class="mt-3" v-if="clinicalFinding">
               <b-tabs content-class="mt-3">
-                <b-tab title="Diagnoses" active>
-                  <diagnoses-table :diagnoses="clinicalFinding.diagnoses" />
-                </b-tab>
-                <b-tab title="Observations">
+                <b-tab title="Observations" active>
                   <antenatal-observations-table
                     v-if="visit?.category === ANTENATAL"
                     :observations="clinicalFinding.findings"
@@ -27,6 +24,9 @@
                   <observations-table v-else :observations="clinicalFinding.findings" />
                 </b-tab>
               </b-tabs>
+              <b-tab title="Diagnoses">
+                <diagnoses-table :diagnoses="clinicalFinding.diagnoses" />
+              </b-tab>
             </div>
           </div>
         </b-collapse>

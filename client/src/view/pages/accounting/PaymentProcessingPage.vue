@@ -1182,7 +1182,9 @@ export default {
         .filter((register) => register.status === 'OPEN' && register.is_active)
         .map((register) => ({
           value: register.id,
-          text: `${register.register_code} - ${register.register_name}`,
+          text: `${register.register_code} - ${register?.assignedStaff?.fullname || 'N/A'} (${
+            register.register_name
+          })`,
           description: `Location: ${register.location || 'N/A'}`,
         }));
     },
@@ -2066,12 +2068,6 @@ export default {
 
         // Reload bill data to get updated payment status
         await this.initializePage();
-
-        this.$bvToast.toast('Payment status refreshed successfully', {
-          title: 'Success',
-          variant: 'success',
-          solid: true,
-        });
       } catch (error) {
         console.error('Failed to refresh payment status:', error);
         this.$bvToast.toast(`Failed to refresh payment status: ${error.message}`, {
@@ -2096,20 +2092,10 @@ export default {
       try {
         this.isDownloadingReceipt = true;
 
-        const result = await this.$store.dispatch(
+        await this.$store.dispatch(
           'accounting/downloadPaymentReceipt',
           this.lastProcessedPaymentId
         );
-
-        if (result.success) {
-          this.$bvToast.toast('Receipt downloaded successfully', {
-            title: 'Success',
-            variant: 'success',
-            solid: true,
-          });
-        } else {
-          throw new Error(result.error || 'Failed to download receipt');
-        }
       } catch (error) {
         console.error('Receipt download error:', error);
         this.$bvToast.toast(`Failed to download receipt: ${error.message}`, {
@@ -2133,10 +2119,18 @@ export default {
       });
     },
 
-    printReceipt() {
-      // For now, just download the receipt
-      // In the future, this could open a print dialog
-      this.downloadReceipt();
+    async printReceipt() {
+      try {
+        // Print receipt using the accounting store action
+        await this.$store.dispatch('accounting/printPaymentReceipt', this.lastProcessedPaymentId);
+      } catch (error) {
+        console.error('Receipt print error:', error);
+        this.$bvToast.toast(`Failed to print receipt: ${error.message}`, {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+      }
     },
   },
 };

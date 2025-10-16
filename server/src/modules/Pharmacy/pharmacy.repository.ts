@@ -11,7 +11,6 @@ import {
   StatusCodes,
 } from '../../core/helpers/helper';
 import { getModelById, getPeriodQuery } from '../../core/helpers/general';
-
 import {
   DosageForm,
   Drug,
@@ -29,6 +28,7 @@ import {
   RoutesOfAdministration,
   Staff,
   Unit,
+  MeasurementDosageForm,
 } from '../../database/models';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { DispenseStatus } from '../../database/models/prescribedDrug';
@@ -207,18 +207,34 @@ export async function getDosageForms() {
  * @returns {object} measurement data
  */
 export async function createMeasurement(data) {
-  const { name, staff_id, dosage_form_id } = data;
+  const { name, staff_id, dosage_form_ids, dosage_form_id } = data;
+
+  // Support both single and multiple dosage forms
+  const formIds = dosage_form_ids || (dosage_form_id ? [dosage_form_id] : []);
 
   const measurement = await Measurement.create({
     name,
     staff_id,
-    dosage_form_id,
   });
-  return includeOneModel({
-    model: Measurement,
-    modelToInclude: DosageForm,
-    id: measurement.id,
-    includeAs: 'dosage_form',
+
+  if (formIds.length > 0) {
+    const associations = formIds.map(id => ({
+      measurement_id: measurement.id,
+      dosage_form_id: id,
+    }));
+    await MeasurementDosageForm.bulkCreate(associations);
+  }
+
+  return Measurement.findByPk(measurement.id, {
+    include: [
+      {
+        model: DosageForm,
+        as: 'dosage_forms',
+        through: { attributes: [] },
+        attributes: ['id', 'name'],
+      },
+      { model: Staff, as: 'staff', attributes: ['id', 'firstname', 'lastname'] },
+    ],
   });
 }
 
@@ -228,9 +244,38 @@ export async function createMeasurement(data) {
  * @returns {object} measurement data
  */
 export async function updateMeasurement(data) {
-  const { measurement_id } = data;
+  const { measurement_id, name, dosage_form_ids, dosage_form_id } = data;
   const measurement = await getModelById(Measurement, measurement_id);
-  return measurement.update(data);
+
+  if (name) {
+    await measurement.update({ name });
+  }
+
+  const formIds = dosage_form_ids || (dosage_form_id ? [dosage_form_id] : null);
+  if (formIds) {
+    // Remove existing associations
+    await MeasurementDosageForm.destroy({ where: { measurement_id } });
+    // Create new associations
+    if (formIds.length > 0) {
+      const associations = formIds.map(id => ({
+        measurement_id,
+        dosage_form_id: id,
+      }));
+      await MeasurementDosageForm.bulkCreate(associations);
+    }
+  }
+
+  return Measurement.findByPk(measurement_id, {
+    include: [
+      {
+        model: DosageForm,
+        as: 'dosage_forms',
+        through: { attributes: [] },
+        attributes: ['id', 'name'],
+      },
+      { model: Staff, as: 'staff', attributes: ['id', 'firstname', 'lastname'] },
+    ],
+  });
 }
 
 /**
@@ -242,7 +287,15 @@ export async function updateMeasurement(data) {
 export async function getMeasurements() {
   return Measurement.findAll({
     order: [['createdAt', 'DESC']],
-    include: [{ model: DosageForm, as: 'dosage_form', attributes: ['name'] }],
+    include: [
+      {
+        model: DosageForm,
+        as: 'dosage_forms',
+        through: { attributes: [] },
+        attributes: ['id', 'name'],
+      },
+      { model: Staff, as: 'staff', attributes: ['id', 'firstname', 'lastname'] },
+    ],
   });
 }
 
@@ -254,9 +307,15 @@ export async function getMeasurements() {
  */
 export async function getDosageFormMeasurements(dosage_form_id) {
   return Measurement.findAll({
-    where: {
-      dosage_form_id,
-    },
+    include: [
+      {
+        model: DosageForm,
+        as: 'dosage_forms',
+        where: { id: dosage_form_id },
+        through: { attributes: [] },
+        attributes: ['id', 'name'],
+      },
+    ],
     order: [['createdAt', 'DESC']],
   });
 }
@@ -271,18 +330,25 @@ export async function getDosageFormMeasurements(dosage_form_id) {
  * @returns {object} route of administration data
  */
 export async function createRouteOfAdministration(data) {
-  const { name, staff_id, dosage_form_id } = data;
+  const { name, staff_id, dosage_form_ids, dosage_form_id } = data;
+
+  // Support both new array format and old single ID format for backward compatibility
+  const dosageFormIds = dosage_form_ids || (dosage_form_id ? [dosage_form_id] : []);
 
   const route = await RoutesOfAdministration.create({
     name,
     staff_id,
-    dosage_form_id,
   });
-  return includeOneModel({
-    model: RoutesOfAdministration,
-    modelToInclude: DosageForm,
-    id: route.id,
-    includeAs: 'dosage_form',
+
+  // Create associations in the junction table
+  if (dosageFormIds.length > 0) {
+    await route.$set('dosage_forms', dosageFormIds);
+  }
+
+  // Return route with dosage forms included
+  return RoutesOfAdministration.findOne({
+    where: { id: route.id },
+    include: [{ model: DosageForm, as: 'dosage_forms', attributes: ['id', 'name'] }],
   });
 }
 
@@ -292,9 +358,31 @@ export async function createRouteOfAdministration(data) {
  * @returns {object} route of administration data
  */
 export async function updateRouteOfAdministration(data) {
-  const { route_id } = data;
-  const route = await getModelById(RoutesOfAdministration, route_id);
-  return route.update(data);
+  const { route_id, dosage_form_ids, dosage_form_id, name } = data;
+
+  return await sequelizeConnection.transaction(async t => {
+    const route = await getModelById(RoutesOfAdministration, route_id);
+
+    // Update basic fields
+    if (name) {
+      await route.update({ name }, { transaction: t });
+    }
+
+    // Support both new array format and old single ID format for backward compatibility
+    const dosageFormIds = dosage_form_ids || (dosage_form_id ? [dosage_form_id] : null);
+
+    // Update dosage form associations if provided
+    if (dosageFormIds && dosageFormIds.length > 0) {
+      await route.$set('dosage_forms', dosageFormIds, { transaction: t });
+    }
+
+    // Return updated route with dosage forms included
+    return RoutesOfAdministration.findOne({
+      where: { id: route.id },
+      include: [{ model: DosageForm, as: 'dosage_forms', attributes: ['id', 'name'] }],
+      transaction: t,
+    });
+  });
 }
 
 /**
@@ -306,7 +394,7 @@ export async function updateRouteOfAdministration(data) {
 export async function getRoutesOfAdministration() {
   return RoutesOfAdministration.findAll({
     order: [['createdAt', 'DESC']],
-    include: [{ model: DosageForm, as: 'dosage_form', attributes: ['name'] }],
+    include: [{ model: DosageForm, as: 'dosage_forms', attributes: ['id', 'name'] }],
   });
 }
 
@@ -318,9 +406,15 @@ export async function getRoutesOfAdministration() {
  */
 export async function getDosageFormRoutes(dosage_form_id: number) {
   return RoutesOfAdministration.findAll({
-    where: {
-      dosage_form_id,
-    },
+    include: [
+      {
+        model: DosageForm,
+        as: 'dosage_forms',
+        where: { id: dosage_form_id },
+        attributes: ['id', 'name'],
+        through: { attributes: [] }, // Exclude junction table attributes
+      },
+    ],
     order: [['createdAt', 'DESC']],
   });
 }

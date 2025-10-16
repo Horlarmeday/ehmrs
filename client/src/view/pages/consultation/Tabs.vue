@@ -46,10 +46,12 @@ import Disposition from '@/view/pages/consultation/tabs/Disposition.vue';
 import PulseIcons from '@/view/pages/consultation/components/PulseIcons.vue';
 import PageSkeleton from './components/skeleton/PageSkeleton.vue';
 import History from '@/view/pages/consultation/tabs/History.vue';
+import DoctorReport from '@/view/pages/consultation/tabs/DoctorReport.vue';
 import Surgery from '@/view/pages/consultation/tabs/Surgery.vue';
 import WardRound from '@/view/pages/consultation/tabs/WardRound.vue';
 import TriageCard from '@/view/components/util/TriageCard.vue';
 import AdditionalItems from '@/view/pages/visits/components/tabs/additionalItems/AdditionalItems.vue';
+import { parseJwt } from '@/common/common';
 
 const ComponentMapping = {
   observations: Observations,
@@ -59,6 +61,7 @@ const ComponentMapping = {
   services: ServicesOrder,
   disposition: Disposition,
   history: History,
+  doctorReport: DoctorReport,
   surgery: Surgery,
   wardRound: WardRound,
   additionalItems: AdditionalItems,
@@ -72,6 +75,7 @@ export default {
       tabIndex: 0,
       activeComponent: '',
       loading: false,
+      user: parseJwt(localStorage.getItem('user_token')),
       tabs: [
         {
           name: 'Past History',
@@ -114,6 +118,11 @@ export default {
           showComponent: true,
         },
         {
+          name: 'Report',
+          component: 'doctorReport',
+          showComponent: true,
+        },
+        {
           name: 'Surgery',
           component: 'surgery',
           showComponent: true,
@@ -142,6 +151,11 @@ export default {
     },
   },
   methods: {
+    isDoctorRole() {
+      const doctorRoles = ['Doctor', 'Consultant', 'Specialist'];
+      return doctorRoles.includes(this.user?.role);
+    },
+
     /**
      * Set current active on click
      * @param event

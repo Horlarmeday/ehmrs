@@ -18,7 +18,19 @@ export function validateDosageForm(dosage) {
 export function validateMeasurement(measurement) {
   const schema = Joi.object({
     name: Joi.string().required(),
-    dosage_form_id: Joi.number().required(),
+    dosage_form_id: Joi.number().optional(), // Backward compatibility
+    dosage_form_ids: Joi.array()
+      .items(Joi.number())
+      .min(1)
+      .optional(),
+  }).custom((value, helpers) => {
+    // Ensure at least one of dosage_form_id or dosage_form_ids is provided
+    if (!value.dosage_form_id && (!value.dosage_form_ids || value.dosage_form_ids.length === 0)) {
+      return helpers.error('any.required', {
+        message: 'Either dosage_form_id or dosage_form_ids is required',
+      });
+    }
+    return value;
   });
   return schema.validate(measurement);
 }
@@ -26,7 +38,20 @@ export function validateMeasurement(measurement) {
 export function validateRouteOfAdministration(route) {
   const schema = Joi.object({
     name: Joi.string().required(),
-    dosage_form_id: Joi.number().required(),
+    // Support both new array format and old single ID format for backward compatibility
+    dosage_form_ids: Joi.array()
+      .items(Joi.number())
+      .min(1)
+      .optional(),
+    dosage_form_id: Joi.number().optional(),
+  }).custom((value, helpers) => {
+    // Ensure at least one of dosage_form_ids or dosage_form_id is provided
+    if (!value.dosage_form_ids && !value.dosage_form_id) {
+      return helpers.error('any.required', {
+        message: 'Either dosage_form_ids or dosage_form_id is required',
+      });
+    }
+    return value;
   });
   return schema.validate(route);
 }

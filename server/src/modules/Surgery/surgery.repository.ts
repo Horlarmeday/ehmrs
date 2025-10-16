@@ -12,6 +12,7 @@ import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import sequelizeConnection from '../../database/config/data-source';
 import { ServiceType } from '../../database/models/prescribedService';
 import { BadException } from '../../common/util/api-error';
+import { prescribeService } from '../Orders/Service/service-order.repository';
 
 /**
  * request surgery
@@ -24,20 +25,15 @@ export const requestSurgery = async (data): Promise<SurgeryRequest> => {
     if (!service) throw new BadException('Error', 400, 'Cannot find service');
 
     const surgeryRequest = await SurgeryRequest.create({ ...data }, { transaction: t });
-
-    await PrescribedService.create(
-      {
-        service_id: service.id,
-        surgery_id: surgeryRequest.id,
-        price: service.price,
-        service_type: ServiceType.CASH,
-        requester: data.staff_id,
-        visit_id: data.visit_id,
-        patient_id: data.patient_id,
-        date_requested: Date.now(),
-      },
-      { transaction: t }
-    );
+    await prescribeService({
+      service_id: service.id,
+      surgery_id: surgeryRequest.id,
+      price: service.price,
+      service_type: ServiceType.CASH,
+      requester: data.staff_id,
+      visit_id: data.visit_id,
+      patient_id: data.patient_id,
+    });
     return surgeryRequest;
   });
 };

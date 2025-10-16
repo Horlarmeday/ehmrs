@@ -72,17 +72,19 @@ export const downloadTestResult = (
 
 function generateHeader(doc: PDFDocument) {
   const filePath =
-    process.env.NODE_ENV === 'production' ? `ehmrs/public/Caroline.png` : 'src/public/Caroline.png';
+    process.env.NODE_ENV === 'production'
+      ? `server/public/Caroline.png`
+      : 'src/public/Caroline.png';
   doc
     .image(filePath, 50, 45, { width: 50 })
     .fillColor('#444444')
     .fontSize(15)
     .text('Heritage Kidney and Medical Care', 110, 62)
     .fontSize(11)
-    .text('kaura District, Opp. Suncity', 200, 55, { align: 'right' })
+    .text('Kaura District, Opp. Suncity', 200, 55, { align: 'right' })
     .text('Abuja,', 200, 70, { align: 'right' })
     .text('Federal Capital Territory, Nigeria.', 200, 85, { align: 'right' })
-    .text('pssh@gmail.com', 200, 100, { align: 'right' })
+    .text('support@heritagekidney.com', 200, 100, { align: 'right' })
     .text('08134848878', 200, 115, { align: 'right' })
     .moveDown(1.5);
 }

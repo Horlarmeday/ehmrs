@@ -1,5 +1,6 @@
 import {
   BelongsTo,
+  BelongsToMany,
   Column,
   DataType,
   ForeignKey,
@@ -9,6 +10,7 @@ import {
 } from 'sequelize-typescript';
 import { Staff } from './staff';
 import { DosageForm } from './dosageForm';
+import { RouteDosageForm } from './routeDosageForm';
 import {
   FindAttributeOptions,
   GroupOption,
@@ -35,18 +37,6 @@ export class RoutesOfAdministration extends Model {
   })
   name: string;
 
-  @ForeignKey(() => DosageForm)
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'dosage form id is required',
-      },
-    },
-  })
-  dosage_form_id: number;
-
   @ForeignKey(() => Staff)
   @Column({
     type: DataType.INTEGER,
@@ -56,8 +46,11 @@ export class RoutesOfAdministration extends Model {
   @BelongsTo(() => Staff)
   staff: Staff;
 
-  @BelongsTo(() => DosageForm)
-  dosage_form: DosageForm;
+  @BelongsToMany(
+    () => DosageForm,
+    () => RouteDosageForm
+  )
+  dosage_forms: DosageForm[];
 
   static async paginate(param: {
     paginate: number;

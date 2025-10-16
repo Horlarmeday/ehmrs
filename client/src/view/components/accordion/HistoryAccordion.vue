@@ -99,6 +99,9 @@
                       <b-tab v-if="summary.category === INPATIENT" title="Ward Rounds">
                         <ward-rounds-table :ward-rounds="summary.wardRounds" />
                       </b-tab>
+                      <b-tab title="Doctor Reports">
+                        <doctor-reports-table :reports="summary.doctorReports" />
+                      </b-tab>
                     </b-tabs>
                   </div>
                 </b-collapse>
@@ -155,6 +158,7 @@ import DialysisVitalsTable from '@/view/components/table/DialysisVitalsTable.vue
 import DialysisTreatmentTable from '@/view/components/table/DialysisTreatmentTable.vue';
 import DialysisAssessmentTable from '@/view/components/table/DialysisAssessmentTable.vue';
 import DialysisNotesTable from '@/view/components/table/DialysisNotesTable.vue';
+import DoctorReportsTable from '@/view/components/table/DoctorReportsTable.vue';
 
 export default {
   props: {
@@ -209,6 +213,7 @@ export default {
     DialysisTreatmentTable,
     DialysisAssessmentTable,
     DialysisNotesTable,
+    DoctorReportsTable,
   },
   methods: {
     onFetchMore() {

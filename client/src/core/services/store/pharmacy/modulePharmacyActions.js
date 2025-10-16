@@ -123,7 +123,7 @@ export default {
             'ADD_MEASUREMENT',
             Object.assign(measurement, {
               id: response.data.data.id,
-              dosage_form: response.data.data.dosage_form,
+              dosage_forms: response.data.data.dosage_forms,
               createdAt: response.data.data.createdAt,
             })
           );
@@ -175,7 +175,7 @@ export default {
             'ADD_ROUTE',
             Object.assign(route, {
               id: response.data.data.id,
-              dosage_form: response.data.data.dosage_form,
+              dosage_forms: response.data.data.dosage_forms, // Changed from dosage_form to dosage_forms array
               createdAt: response.data.data.createdAt,
             })
           );

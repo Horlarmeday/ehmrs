@@ -37,14 +37,13 @@ export type PrintReceiptType = {
 };
 
 const formatCurrency = (value: number) => {
-  // Use NGN symbol explicitly to avoid encoding issues
-  const formatted = new Intl.NumberFormat('en-NG', {
-    style: 'currency',
-    currency: 'NGN',
-  }).format(value || 0);
-
-  // Replace the problematic symbol with the correct Naira symbol
-  return formatted.replace(/NGN\s?/, '₦');
+  // Format number with commas and 2 decimal places, then add NGN prefix
+  // This avoids the problematic ₦ symbol entirely
+  const number = (value || 0).toLocaleString('en-NG', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  return `N${number}`;
 };
 
 export const printReceiptPDF = async ({
@@ -83,7 +82,7 @@ export const printReceiptPDF = async ({
   // Logo
   const logoPath =
     process.env.NODE_ENV === 'production'
-      ? `ehmrs-api/public/Caroline.png`
+      ? `server/public/Caroline.png`
       : 'src/public/Caroline.png';
 
   if (fs.existsSync(logoPath)) {

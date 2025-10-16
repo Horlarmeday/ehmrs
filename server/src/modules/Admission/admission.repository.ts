@@ -54,7 +54,10 @@ import { DischargeStatus } from '../../database/models/admission';
 import { DischargeType } from '../../database/models/discharge';
 import { getPrescriptionTests } from '../Orders/Laboratory/lab-order.repository';
 import { getPrescriptionInvestigations } from '../Orders/Radiology/radiology-order.repository';
-import { getPrescriptionServices } from '../Orders/Service/service-order.repository';
+import {
+  getPrescriptionServices,
+  prescribeService,
+} from '../Orders/Service/service-order.repository';
 import { getPatientDiagnoses } from '../Consultation/consultation.repository';
 import { AccountStatus } from '../../database/models/antenatal';
 import { CreatePostNatal } from '../Antenatal/types/antenatal.types';
@@ -114,20 +117,16 @@ export const admitPatient = async (data: AdmissionBodyType) => {
       !patient.has_insurance ||
       !EXCLUDED_INSURANCE.includes(insurance?.insurance?.name) ||
       patient.admitted_days_in_year > 21
-    )
-      await PrescribedService.create(
-        {
-          service_id: ward.service.id,
-          price: ward.service.price,
-          service_type: ServiceType.CASH,
-          requester: admitted_by.sub,
-          visit_id,
-          patient_id,
-          date_requested: Date.now(),
-        },
-        { transaction: t }
-      );
-
+    ) {
+      prescribeService({
+        service_id: ward.service.id,
+        price: ward.service.price,
+        service_type: ServiceType.CASH,
+        requester: admitted_by.sub,
+        visit_id,
+        patient_id,
+      });
+    }
     await Patient.update(
       { patient_status: PatientStatus.INPATIENT },
       { where: { id: patient_id }, transaction: t }

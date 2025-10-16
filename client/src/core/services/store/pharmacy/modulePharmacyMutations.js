@@ -108,6 +108,8 @@ export default {
   },
 
   DISPENSE_DRUG(state, prescription) {
+    // Mutation for dispensed drug - currently no state updates needed
+    // State is managed through refetching the prescription
     console.log(prescription);
   },
 

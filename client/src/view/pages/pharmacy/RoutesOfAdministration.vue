@@ -41,11 +41,15 @@
                 >
               </td>
               <td>
-                <a
-                  href="#"
-                  class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg"
-                  >{{ route.dosage_form.name }}</a
-                >
+                <div class="d-flex flex-wrap">
+                  <span
+                    v-for="dosageForm in route.dosage_forms"
+                    :key="dosageForm.id"
+                    class="badge badge-light-primary font-weight-bold mr-2 mb-1"
+                  >
+                    {{ dosageForm.name }}
+                  </span>
+                </div>
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">

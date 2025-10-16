@@ -182,7 +182,7 @@ function generateHeader(
   // Hospital Logo with enhanced fallback
   const logoPath =
     process.env.NODE_ENV === 'production'
-      ? `ehmrs-api/public/Caroline.png`
+      ? `server/public/Caroline.png`
       : 'src/public/Caroline.png';
 
   if (fs.existsSync(logoPath)) {

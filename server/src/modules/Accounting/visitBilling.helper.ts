@@ -22,7 +22,13 @@ import { HMOPricingService } from '../HMOPricing/hmoPricing.service';
 import { BadException } from '../../common/util/api-error';
 import dayjs from 'dayjs';
 import { BillingStatus } from '../../database/models/prescribedDrug';
-import { BillingMode, BillItemTypeEnum, PaymentCollectionMethod } from './enums';
+import {
+  BillingMode,
+  BillItemPaymentStatus,
+  BillItemTypeEnum,
+  PaymentCollectionMethod,
+  PaymentStatus,
+} from './enums';
 import { FinancialPeriodValidationService } from './services/financialPeriodValidation.service';
 
 /**
@@ -424,12 +430,17 @@ export class VisitBillingHelper {
       }, 0);
       const finalAmount = totalAmount - totalDiscount;
 
+      const allItemsPending = billItems.every(
+        item => item.payment_status === BillItemPaymentStatus.PENDING
+      );
+
       // Update bill totals
       await ClinicalBill.update(
         {
           total_amount: totalAmount,
           total_discount: totalDiscount,
           final_amount: finalAmount,
+          payment_status: allItemsPending ? PaymentStatus.PENDING : PaymentStatus.PARTIAL,
         },
         {
           where: { id: billId },

@@ -3,7 +3,7 @@
     <div class="d-flex flex-column-fluid">
       <div class="container">
         <div class="d-flex flex-row">
-          <sidebar :list="list" @changeTab="changeTab" />
+          <!-- <sidebar :list="list" @changeTab="changeTab" /> -->
           <component :is="activeTab" />
         </div>
       </div>

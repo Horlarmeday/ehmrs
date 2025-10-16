@@ -399,6 +399,7 @@ export default {
       itemsPerPage: 50,
     });
     this.searchGenericDrugs('');
+    this.$store.dispatch('pharmacy/fetchMeasurements');
   },
   methods: {
     initValues() {

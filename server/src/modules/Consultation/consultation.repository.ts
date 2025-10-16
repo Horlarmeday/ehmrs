@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { BadException } from '../../common/util/api-error';
 import { getPrescriptionsByVisit, paginate, StatusCodes } from '../../core/helpers/helper';
-import { Complaint, Diagnosis, History, Staff, Visit } from '../../database/models';
+import { Complaint, Diagnosis, DoctorReport, History, Staff, Visit } from '../../database/models';
 import { WhereOptions } from 'sequelize';
 import { getPrescriptionTests } from '../Orders/Laboratory/lab-order.repository';
 import {
@@ -197,6 +197,20 @@ export const getClinicalNotes = async (visitIds: number[], categories: VisitCate
 };
 
 /**
+ * get doctor reports
+ *
+ * @function
+ * @param visitIds
+ */
+export const getDoctorReports = async (visitIds: number[]) => {
+  return DoctorReport.findAll({
+    where: { visit_id: visitIds },
+    include: [{ model: Staff, attributes: staffAttributes }],
+    order: [['createdAt', 'DESC']],
+  });
+};
+
+/**
  * get visit triages
  *
  * @function
@@ -251,6 +265,7 @@ export const getVisitPrescriptions = async (
     services,
     notes,
     wardRounds,
+    doctorReports,
     // Dialysis data
     dialysisVitals,
     dialysisTreatments,
@@ -267,6 +282,7 @@ export const getVisitPrescriptions = async (
     getPrescriptionServices({ visit_id: visitIds }),
     getClinicalNotes(visitIds, categories),
     getVisitsWardRounds(visitIds, categories),
+    getDoctorReports(visitIds),
     // Dialysis data
     getDialysisVitals(visitIds),
     getDialysisTreatments(visitIds),
@@ -287,6 +303,7 @@ export const getVisitPrescriptions = async (
     services: getPrescriptionsByVisit(services.map(prescription => prescription.toJSON())),
     notes: getPrescriptionsByVisit(notes.map(prescription => prescription.toJSON())),
     wardRounds: getPrescriptionsByVisit(wardRounds.map(prescription => prescription.toJSON())),
+    doctorReports: getPrescriptionsByVisit(doctorReports.map(report => report.toJSON())),
     dialysisVitals: getPrescriptionsByVisit(dialysisVitals.map(record => record.toJSON())),
     dialysisTreatments: getPrescriptionsByVisit(dialysisTreatments.map(record => record.toJSON())),
     dialysisAssessments: getPrescriptionsByVisit(
@@ -306,6 +323,7 @@ export const getVisitPrescriptions = async (
     services: data.services[id] || [],
     notes: data.notes[id] || [],
     wardRounds: data.wardRounds[id] || [],
+    doctorReports: data.doctorReports[id] || [],
     dialysisVitals: data.dialysisVitals[id] || [],
     dialysisTreatments: data.dialysisTreatments[id] || [],
     dialysisAssessments: data.dialysisAssessments[id] || [],

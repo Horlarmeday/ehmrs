@@ -1,6 +1,5 @@
 import {
   BelongsTo,
-  BelongsToMany,
   Column,
   DataType,
   ForeignKey,
@@ -8,9 +7,9 @@ import {
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
+import { Visit } from './visit';
+import { Patient } from './patient';
 import { Staff } from './staff';
-import { RoutesOfAdministration } from './routesOfAdministration';
-import { Measurement } from './measurement';
 import {
   FindAttributeOptions,
   GroupOption,
@@ -19,46 +18,48 @@ import {
   WhereOptions,
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
-import { RouteDosageForm } from './routeDosageForm';
-import { MeasurementDosageForm } from './measurementDosageForm';
 
-@Table({ timestamps: true, tableName: 'Dosage_Forms' })
-export class DosageForm extends Model {
+@Table({ timestamps: true })
+export class DoctorReport extends Model {
   @PrimaryKey
   @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: true })
   id: number;
 
+  @ForeignKey(() => Visit)
   @Column({
-    type: DataType.STRING,
+    type: DataType.INTEGER,
     allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'name is required',
-      },
-    },
   })
-  name: string;
+  visit_id: number;
+
+  @ForeignKey(() => Patient)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  patient_id: number;
 
   @ForeignKey(() => Staff)
   @Column({
     type: DataType.INTEGER,
+    allowNull: false,
   })
   staff_id: number;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: false,
+  })
+  report_content: string;
 
   @BelongsTo(() => Staff)
   staff: Staff;
 
-  @BelongsToMany(
-    () => RoutesOfAdministration,
-    () => RouteDosageForm
-  )
-  routes: RoutesOfAdministration[];
+  @BelongsTo(() => Visit)
+  visit: Visit;
 
-  @BelongsToMany(
-    () => Measurement,
-    () => MeasurementDosageForm
-  )
-  measurements: Measurement[];
+  @BelongsTo(() => Patient)
+  patient: Patient;
 
   static async paginate(param: {
     paginate: number;

@@ -19,25 +19,25 @@
       <div class="form-group row">
         <label class="col-lg-3 col-form-label">Dosage Forms:</label>
         <div class="col-lg-8">
-          <select
-            v-model="dosage_form_id"
-            class="form-control form-control-sm"
-            v-validate="'required'"
-            data-vv-validate-on="blur"
-            name="dosage_form"
-          >
-            <option :value="dosage.id" v-for="dosage in dosageForms" :key="dosage.id">
-              {{ dosage.name }}
-            </option>
-          </select>
-          <span class="text-danger text-sm">{{ errors.first('dosage_form') }}</span>
+          <v-select
+            v-model="dosage_form_ids"
+            :options="dosageForms"
+            :reduce="(dosage) => dosage.id"
+            label="name"
+            multiple
+            placeholder="Select dosage forms"
+            class="form-control-sm"
+          />
+          <span class="text-danger text-sm" v-if="showDosageError">
+            At least one dosage form is required
+          </span>
         </div>
       </div>
     </div>
     <button
       class="mt-3 btn btn-primary"
       @click="createMeasurement"
-      :disabled="isDisabled"
+      :disabled="isDisabled || !validateForm"
       ref="kt_measurement_submit"
     >
       Submit
@@ -46,7 +46,12 @@
 </template>
 
 <script>
+import vSelect from 'vue-select';
+
 export default {
+  components: {
+    vSelect,
+  },
   props: {
     displayPrompt: {
       type: Boolean,
@@ -60,9 +65,10 @@ export default {
   data() {
     return {
       name: '',
-      dosage_form_id: '',
+      dosage_form_ids: [],
       measurement_id: '',
       isDisabled: false,
+      showDosageError: false,
     };
   },
   created() {
@@ -70,7 +76,7 @@ export default {
   },
   computed: {
     validateForm() {
-      return !this.errors.any() && this.name !== '';
+      return !this.errors.any() && this.name !== '' && this.dosage_form_ids.length > 0;
     },
     activePrompt: {
       get() {
@@ -91,11 +97,15 @@ export default {
         this.initValues();
         this.$validator.reset();
       } else {
-        const { id, name, dosage_form_id } = JSON.parse(JSON.stringify(this.data));
+        const { id, name, dosage_forms } = JSON.parse(JSON.stringify(this.data));
         this.measurement_id = id;
         this.name = name;
-        this.dosage_form_id = dosage_form_id;
+        // Extract IDs from dosage_forms array
+        this.dosage_form_ids = dosage_forms?.map((df) => df.id) || [];
       }
+    },
+    dosage_form_ids(val) {
+      this.showDosageError = val.length === 0;
     },
   },
   methods: {
@@ -115,11 +125,11 @@ export default {
     },
     createMeasurement() {
       this.$validator.validateAll().then((result) => {
-        if (result) {
+        if (result && this.dosage_form_ids.length > 0) {
           const obj = {
             measurement_id: this.measurement_id,
             name: this.name,
-            dosage_form_id: this.dosage_form_id,
+            dosage_form_ids: this.dosage_form_ids,
           };
           // set spinner to submit button
           const submitButton = this.$refs['kt_measurement_submit'];
@@ -137,13 +147,16 @@ export default {
               .then(() => this.initializeRequest(submitButton))
               .catch(() => this.removeSpinner(submitButton));
           }
+        } else {
+          this.showDosageError = this.dosage_form_ids.length === 0;
         }
       });
     },
     initValues() {
       this.name = '';
-      this.dosage_form_id = '';
+      this.dosage_form_ids = [];
       this.measurement_id = '';
+      this.showDosageError = false;
     },
   },
 };

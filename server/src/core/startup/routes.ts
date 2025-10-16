@@ -22,6 +22,7 @@ import serviceOrderRoutes from '../../modules/Orders/Service/service-order.route
 import inventoryRoutes from '../../modules/Inventory/inventory.routes';
 import radiologyRoutes from '../../modules/Radiology/radiology.routes';
 import diagnosisRoutes from '../../modules/Diagnosis/diagnosis.routes';
+import doctorReportRoutes from '../../modules/DoctorReport/doctorReport.routes';
 import admissionRoutes from '../../modules/Admission/admission.routes';
 import requestRoutes from '../../modules/Request/request.routes';
 import antenatalRoutes from '../../modules/Antenatal/antenatal.routes';
@@ -55,6 +56,7 @@ export default (server: express.Application) => {
   server.use('/api/inventory', inventoryRoutes);
   server.use('/api/radiology', radiologyRoutes);
   server.use('/api/diagnosis', diagnosisRoutes);
+  server.use('/api/doctor-reports', doctorReportRoutes);
   server.use('/api/admission', admissionRoutes);
   server.use('/api/requests', requestRoutes);
   server.use('/api/antenatal', antenatalRoutes);
