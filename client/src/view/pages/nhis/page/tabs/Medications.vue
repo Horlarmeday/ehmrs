@@ -97,7 +97,7 @@
               </td>
               <td class="pr-0 text-right">
                 <div v-if="!isDrugProcessed(drug)">
-                  <button
+                  <!-- <button
                     :disabled="drug.nhis_status === APPROVED || drug.nhis_status === DECLINED"
                     title="Change Drug Group"
                     v-b-tooltip.hover
@@ -106,7 +106,7 @@
                     @click="openDrugGroupModal(drug)"
                   >
                     <open-icon />
-                  </button>
+                  </button> -->
                   <button
                     :disabled="disableAddAuthCode(drug)"
                     title="Add Authorization Code"
@@ -175,11 +175,11 @@ import AuthCodeModal from '@/view/pages/nhis/components/AuthCodeModal.vue';
 import DrugPopover from '@/view/components/popover/DrugPopover.vue';
 import { getItemType, parseJwt } from '@/common/common';
 import ChangeDrugGroup from '@/view/pages/nhis/components/ChangeDrugGroup.vue';
-import OpenIcon from '@/assets/icons/OpenIcon.vue';
+// import OpenIcon from '@/assets/icons/OpenIcon.vue';
 
 export default {
   components: {
-    OpenIcon,
+    // OpenIcon,
     ChangeDrugGroup,
     DrugPopover,
     AuthCodeModal,
@@ -278,7 +278,7 @@ export default {
           ?.toLowerCase()} it!`,
         cancelButtonText: 'No, cancel!',
         reverseButtons: true,
-      }).then(function(result) {
+      }).then(function (result) {
         if (result.value) {
           self.changeDrugNhisStatus({ nhis_status, drug });
         }
