@@ -139,7 +139,15 @@
           <span class="btn-text">DISPENSE ITEM</span>
         </button>
 
-        <button class="action-btn secondary" :disabled="item.disabledReturn" @click="handleReturn">
+        <button
+          v-if="
+            allowedSubRoles.includes(currentUser.sub_role) ||
+            allowedRoles.includes(currentUser.role)
+          "
+          class="action-btn secondary"
+          :disabled="item.disabledReturn"
+          @click="handleReturn"
+        >
           <span class="btn-icon">🔄</span>
           <span class="btn-text">RETURN UNUSED</span>
         </button>
@@ -221,6 +229,7 @@
 
 <script>
 import StatusBadgeUpdate from './StatusBadgeUpdate.vue';
+import { parseJwt } from '@/common/common';
 
 export default {
   name: 'AdditionalItemCardUpdate',
@@ -245,6 +254,9 @@ export default {
       returnQuantity: 1,
       returnReason: '',
       PENDING: 'Pending',
+      allowedSubRoles: ['HOD'],
+      allowedRoles: ['Super Admin'],
+      currentUser: parseJwt(localStorage.getItem('user_token')),
     };
   },
   computed: {

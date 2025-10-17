@@ -174,13 +174,17 @@
           @click="handleDispense"
         >
           <span class="btn-icon">💊</span>
-          <span class="btn-text">DISPENSE MORE</span>
+          <span class="btn-text">DISPENSE</span>
         </button>
 
         <button
           class="action-btn secondary"
           :disabled="prescription.disabledReturn"
           @click="handleReturn"
+          v-if="
+            allowedSubRoles.includes(currentUser.sub_role) ||
+            allowedRoles.includes(currentUser.role)
+          "
         >
           <span class="btn-icon">🔄</span>
           <span class="btn-text">RETURN UNUSED</span>
@@ -265,6 +269,7 @@
 
 <script>
 import StatusBadgeUpdate from './StatusBadgeUpdate.vue';
+import { parseJwt } from '@/common/common';
 
 export default {
   name: 'DrugDispenseCardUpdate',
@@ -285,10 +290,13 @@ export default {
     return {
       showDispenseForm: false,
       showReturnForm: false,
-      dispenseQuantity: 1,
-      returnQuantity: 1,
+      dispenseQuantity: this.prescription.quantity_remaining_to_dispense,
+      returnQuantity: this.prescription.quantity_remaining_to_return,
       returnReason: '',
       PENDING: 'Pending',
+      allowedSubRoles: ['HOD'],
+      allowedRoles: ['Super Admin'],
+      currentUser: parseJwt(localStorage.getItem('user_token')),
     };
   },
   computed: {
@@ -383,13 +391,13 @@ export default {
     handleDispense() {
       if (this.prescription.shouldDisableDispense) return;
       this.showDispenseForm = true;
-      this.dispenseQuantity = Math.min(1, this.prescription.quantity_remaining_to_dispense);
+      this.dispenseQuantity = this.prescription.quantity_remaining_to_dispense;
     },
 
     handleReturn() {
       if (this.prescription.disabledReturn) return;
       this.showReturnForm = true;
-      this.returnQuantity = Math.min(1, this.prescription.quantity_remaining_to_return);
+      this.returnQuantity = this.prescription.quantity_remaining_to_return;
     },
 
     confirmDispense() {
