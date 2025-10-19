@@ -1,5 +1,5 @@
 <template>
-  <div class="additional-item-card-update">
+  <div class="additional-item-card-update" :class="{ 'is-expanded': isExpanded }">
     <!-- Item Header -->
     <div class="item-header">
       <div class="item-title-section">
@@ -21,136 +21,187 @@
           class="payment-badge"
         />
       </div>
+      <button
+        class="expand-toggle-btn"
+        @click="isExpanded = !isExpanded"
+        v-b-tooltip.hover
+        :title="isExpanded ? 'Collapse details' : 'Expand details'"
+      >
+        <span class="toggle-icon">{{ isExpanded ? '▼' : '▶' }}</span>
+      </button>
     </div>
 
-    <!-- Progress Bar -->
-    <div class="progress-section">
-      <div class="progress-header">
-        <span class="progress-label">📈 PROGRESS</span>
-        <span class="progress-percentage">{{ progressPercentage }}% Complete</span>
-      </div>
-      <div class="progress-bar-container">
-        <div class="progress-bar" :style="{ width: progressPercentage + '%' }">
-          <div class="progress-bar-fill"></div>
-        </div>
-        <div class="progress-text">{{ dispensedText }}</div>
-      </div>
-    </div>
-
-    <!-- Item Information Grid -->
-    <div class="item-info-grid">
-      <div class="info-card">
-        <div class="info-icon">📦</div>
-        <div class="info-content">
-          <div class="info-label">PRESCRIBED</div>
-          <div class="info-value">{{ item.quantity_to_dispense }}</div>
-          <div class="info-unit">{{ item.unit }}</div>
+    <!-- Compact Metrics (Always Visible) -->
+    <div class="compact-metrics">
+      <div class="metric-compact">
+        <div class="metric-icon-compact">📦</div>
+        <div class="metric-content-compact">
+          <div class="metric-label-compact">PRESCRIBED</div>
+          <div class="metric-value-compact">{{ item.quantity_to_dispense }}</div>
         </div>
       </div>
-
-      <div class="info-card">
-        <div class="info-icon">✅</div>
-        <div class="info-content">
-          <div class="info-label">DISPENSED</div>
-          <div class="info-value">{{ dispensedQuantity }}</div>
-          <div class="info-unit">{{ item.unit }}</div>
+      <div class="metric-compact">
+        <div class="metric-icon-compact">✅</div>
+        <div class="metric-content-compact">
+          <div class="metric-label-compact">DISPENSED</div>
+          <div class="metric-value-compact">{{ dispensedQuantity }}</div>
         </div>
       </div>
-
-      <div class="info-card">
-        <div class="info-icon">💰</div>
-        <div class="info-content">
-          <div class="info-label">UNIT PRICE</div>
-          <div class="info-value">₦{{ unitPrice }}</div>
-          <div class="info-unit">per {{ item.unit }}</div>
+      <div class="metric-compact">
+        <div class="metric-icon-compact">💰</div>
+        <div class="metric-content-compact">
+          <div class="metric-label-compact">UNIT PRICE</div>
+          <div class="metric-value-compact">₦{{ unitPrice }}</div>
         </div>
       </div>
-
-      <div class="info-card">
-        <div class="info-icon">💎</div>
-        <div class="info-content">
-          <div class="info-label">TOTAL</div>
-          <div class="info-value">₦{{ item.total_price }}</div>
-          <div class="info-unit">total cost</div>
+      <div class="metric-compact">
+        <div class="metric-icon-compact">🏷️</div>
+        <div class="metric-content-compact">
+          <div class="metric-label-compact">ITEM TYPE</div>
+          <div class="metric-value-compact">{{ item.drug_type }}</div>
         </div>
       </div>
     </div>
 
-    <!-- Item Details -->
-    <div class="item-details-section">
-      <div class="detail-card">
-        <div class="detail-icon">🏷️</div>
-        <div class="detail-content">
-          <div class="detail-label">ITEM TYPE</div>
-          <div class="detail-value">{{ item.drug_type }}</div>
-          <div class="detail-description">category</div>
-        </div>
-      </div>
-
-      <div class="detail-card">
-        <div class="detail-icon">📅</div>
-        <div class="detail-content">
-          <div class="detail-label">PRESCRIBED</div>
-          <div class="detail-value">{{ formatDate(item.date_prescribed) }}</div>
-          <div class="detail-description">date ordered</div>
-        </div>
-      </div>
-
-      <div class="detail-card">
-        <div class="detail-icon">📅</div>
-        <div class="detail-content">
-          <div class="detail-label">DISPENSED</div>
-          <div class="detail-value">{{ formatDateDispensed(item.date_dispensed) }}</div>
-          <div class="detail-description">date dispensed</div>
-        </div>
-      </div>
-
-      <div class="detail-card">
-        <div class="detail-icon">👨‍⚕️</div>
-        <div class="detail-content">
-          <div class="detail-label">PRESCRIBER</div>
-          <div class="detail-value">{{ item.staff?.fullname || 'Unknown' }}</div>
-          <div class="detail-description">ordered by</div>
-        </div>
-      </div>
-
-      <div class="detail-card">
-        <div class="detail-icon">👨‍⚕️</div>
-        <div class="detail-content">
-          <div class="detail-label">DISPENSER</div>
-          <div class="detail-value">{{ item.dispenser?.fullname || 'Not assigned' }}</div>
-          <div class="detail-description">dispensed by</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Action Buttons -->
-    <div class="action-section" :class="{ disabled: item.payment_status === PENDING }">
-      <div class="action-header">
-        <span class="action-title">🎯 QUICK ACTIONS</span>
-      </div>
-      <div class="action-buttons">
-        <button
-          class="action-btn primary"
-          :disabled="item.shouldDisableDispense"
-          @click="handleDispense"
+    <!-- Primary Action Button (Always Visible) -->
+    <div class="primary-action-section">
+      <button
+        class="primary-action-btn"
+        :disabled="item.shouldDisableDispense"
+        @click="handleDispense"
+      >
+        <span class="btn-icon">📦</span>
+        <span class="btn-text">DISPENSE ITEM</span>
+        <span class="btn-badge" v-if="item.quantity_remaining_to_dispense > 0"
+          >{{ item.quantity_remaining_to_dispense }} {{ item.unit }}</span
         >
-          <span class="btn-icon">📦</span>
-          <span class="btn-text">DISPENSE ITEM</span>
-        </button>
+      </button>
+    </div>
 
-        <button
-          v-if="
-            allowedSubRoles.includes(currentUser.sub_role) ||
-            allowedRoles.includes(currentUser.role)
-          "
-          class="action-btn secondary"
-          :disabled="item.disabledReturn"
-          @click="handleReturn"
-        >
-          <span class="btn-icon">🔄</span>
-          <span class="btn-text">RETURN UNUSED</span>
-        </button>
+    <!-- Expandable Content -->
+    <div v-show="isExpanded" class="expandable-content">
+      <!-- Progress Bar -->
+      <div class="progress-section">
+        <div class="progress-header">
+          <span class="progress-label">📈 PROGRESS</span>
+          <span class="progress-percentage">{{ progressPercentage }}% Complete</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar" :style="{ width: progressPercentage + '%' }">
+            <div class="progress-bar-fill"></div>
+          </div>
+          <div class="progress-text">{{ dispensedText }}</div>
+        </div>
+      </div>
+
+      <!-- Item Information Grid -->
+      <div class="item-info-grid">
+        <div class="info-card">
+          <div class="info-icon">📦</div>
+          <div class="info-content">
+            <div class="info-label">PRESCRIBED</div>
+            <div class="info-value">{{ item.quantity_to_dispense }}</div>
+            <div class="info-unit">{{ item.unit }}</div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-icon">✅</div>
+          <div class="info-content">
+            <div class="info-label">DISPENSED</div>
+            <div class="info-value">{{ dispensedQuantity }}</div>
+            <div class="info-unit">{{ item.unit }}</div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-icon">💰</div>
+          <div class="info-content">
+            <div class="info-label">UNIT PRICE</div>
+            <div class="info-value">₦{{ unitPrice }}</div>
+            <div class="info-unit">per {{ item.unit }}</div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-icon">💎</div>
+          <div class="info-content">
+            <div class="info-label">TOTAL</div>
+            <div class="info-value">₦{{ item.total_price }}</div>
+            <div class="info-unit">total cost</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item Details -->
+      <div class="item-details-section">
+        <div class="detail-card">
+          <div class="detail-icon">🏷️</div>
+          <div class="detail-content">
+            <div class="detail-label">ITEM TYPE</div>
+            <div class="detail-value">{{ item.drug_type }}</div>
+            <div class="detail-description">category</div>
+          </div>
+        </div>
+
+        <div class="detail-card">
+          <div class="detail-icon">📅</div>
+          <div class="detail-content">
+            <div class="detail-label">PRESCRIBED</div>
+            <div class="detail-value">{{ formatDate(item.date_prescribed) }}</div>
+            <div class="detail-description">date ordered</div>
+          </div>
+        </div>
+
+        <div class="detail-card">
+          <div class="detail-icon">📅</div>
+          <div class="detail-content">
+            <div class="detail-label">DISPENSED</div>
+            <div class="detail-value">{{ formatDateDispensed(item.date_dispensed) }}</div>
+            <div class="detail-description">date dispensed</div>
+          </div>
+        </div>
+
+        <div class="detail-card">
+          <div class="detail-icon">👨‍⚕️</div>
+          <div class="detail-content">
+            <div class="detail-label">PRESCRIBER</div>
+            <div class="detail-value">{{ item.staff?.fullname || 'Unknown' }}</div>
+            <div class="detail-description">ordered by</div>
+          </div>
+        </div>
+
+        <div class="detail-card">
+          <div class="detail-icon">👨‍⚕️</div>
+          <div class="detail-content">
+            <div class="detail-label">DISPENSER</div>
+            <div class="detail-value">{{ item.dispenser?.fullname || 'Not assigned' }}</div>
+            <div class="detail-description">dispensed by</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Action Buttons -->
+      <div
+        v-if="
+          allowedSubRoles.includes(currentUser.sub_role) || allowedRoles.includes(currentUser.role)
+        "
+        class="action-section"
+        :class="{ disabled: item.payment_status === PENDING }"
+      >
+        <div class="action-header">
+          <span class="action-title">🎯 ADDITIONAL ACTIONS</span>
+        </div>
+        <div class="action-buttons">
+          <button
+            class="action-btn secondary"
+            :disabled="item.disabledReturn"
+            @click="handleReturn"
+          >
+            <span class="btn-icon">🔄</span>
+            <span class="btn-text">RETURN UNUSED</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -248,10 +299,11 @@ export default {
   },
   data() {
     return {
+      isExpanded: false,
       showDispenseForm: false,
       showReturnForm: false,
-      dispenseQuantity: 1,
-      returnQuantity: 1,
+      dispenseQuantity: this.item.quantity_remaining_to_dispense,
+      returnQuantity: this.item.quantity_remaining_to_return,
       returnReason: '',
       PENDING: 'Pending',
       allowedSubRoles: ['HOD'],
@@ -354,13 +406,13 @@ export default {
     handleDispense() {
       if (this.item.shouldDisableDispense) return;
       this.showDispenseForm = true;
-      this.dispenseQuantity = Math.min(1, this.item.quantity_remaining_to_dispense);
+      this.dispenseQuantity = this.item.quantity_remaining_to_dispense;
     },
 
     handleReturn() {
       if (this.item.disabledReturn) return;
       this.showReturnForm = true;
-      this.returnQuantity = Math.min(1, this.item.quantity_remaining_to_return);
+      this.returnQuantity = this.item.quantity_remaining_to_return;
     },
 
     confirmDispense() {
@@ -412,8 +464,11 @@ export default {
 }
 
 .additional-item-card-update:hover {
-  transform: translateY(-2px);
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.additional-item-card-update.is-expanded:hover {
+  transform: translateY(-2px);
 }
 
 /* Item Header */
@@ -454,6 +509,185 @@ export default {
 
 .payment-badge {
   margin-top: 0.25rem;
+}
+
+/* Expand Toggle Button */
+.expand-toggle-btn {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.expand-toggle-btn:hover {
+  background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+  border-color: #9ca3af;
+  transform: scale(1.05);
+}
+
+.expand-toggle-btn:active {
+  transform: scale(0.95);
+}
+
+.toggle-icon {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  transition: transform 0.3s ease;
+}
+
+/* Compact Metrics */
+.compact-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  border-radius: 0.75rem;
+  border: 1px solid #cbd5e1;
+  align-items: center;
+}
+
+.metric-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: white;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.metric-compact:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.metric-icon-compact {
+  font-size: 1.25rem;
+  width: 2rem;
+  height: 2rem;
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.metric-content-compact {
+  flex: 1;
+  min-width: 0;
+}
+
+.metric-label-compact {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.125rem;
+}
+
+.metric-value-compact {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: #1f2937;
+  line-height: 1;
+}
+
+/* Primary Action Section */
+.primary-action-section {
+  margin-bottom: 1.5rem;
+}
+
+.primary-action-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white;
+  box-shadow: 0 6px 20px 0 rgba(139, 92, 246, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.primary-action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.primary-action-btn:hover::before {
+  left: 100%;
+}
+
+.primary-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: 0 4px 14px 0 rgba(139, 92, 246, 0.2);
+}
+
+.primary-action-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px 0 rgba(139, 92, 246, 0.4);
+}
+
+.primary-action-btn:active:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px 0 rgba(139, 92, 246, 0.3);
+}
+
+.primary-action-btn .btn-icon {
+  font-size: 1.25rem;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.primary-action-btn .btn-text {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.primary-action-btn .btn-badge {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Expandable Content */
+.expandable-content {
+  overflow: hidden;
+  transition: all 0.3s ease;
 }
 
 /* Progress Section */
@@ -916,6 +1150,24 @@ export default {
     gap: 1rem;
   }
 
+  .compact-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .primary-action-btn {
+    padding: 0.875rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .primary-action-btn .btn-text {
+    font-size: 0.875rem;
+  }
+
+  .primary-action-btn .btn-badge {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+  }
+
   .item-info-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -939,6 +1191,25 @@ export default {
 }
 
 @media (max-width: 480px) {
+  .compact-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .primary-action-btn {
+    padding: 0.75rem 0.875rem;
+    font-size: 0.875rem;
+    gap: 0.5rem;
+  }
+
+  .primary-action-btn .btn-text {
+    font-size: 0.875rem;
+  }
+
+  .primary-action-btn .btn-badge {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+  }
+
   .item-info-grid {
     grid-template-columns: 1fr;
   }
