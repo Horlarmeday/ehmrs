@@ -40,7 +40,10 @@
             <td>{{ test.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
             <td>
               <span
-                v-if="allowedRoles.includes(currentUser.role) || currentUser.sub === test.requester"
+                v-if="
+                  allowedDepartments.includes(currentUser.department) ||
+                  currentUser.sub === test.requester
+                "
               >
                 <router-link
                   :to="`/radiology/investigations-results/${test.investigation_prescription_id}`"
@@ -73,7 +76,7 @@ import { getLabelDotStatus } from '@/common/common';
 export default {
   data: () => ({
     currentUser: parseJwt(localStorage.getItem('user_token')),
-    allowedRoles: ['General Practitioner', 'Super Admin'],
+    allowedDepartments: ['Medical Practitioners', 'Administrator'],
     loading: false,
     UNBILLED: 'Unbilled',
     PENDING: 'Pending',
@@ -106,7 +109,7 @@ export default {
           confirmButton: 'btn btn-danger',
           cancelButton: 'btn btn-default',
         },
-      }).then(function(result) {
+      }).then(function (result) {
         if (result.value) {
           self.deletePrescribedInvestigation(item);
         }
