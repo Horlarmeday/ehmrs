@@ -10,10 +10,10 @@ export const JobSchedule = {
     agendaSchedule('in 15 seconds', JobName.SEND_FORGOT_PASSWORD, { message, phone }),
 
   assignHospitalNumber: (id: number) =>
-    agendaSchedule('in 5 seconds', JobName.ASSIGN_HOSPITAL_NUMBER, { id }),
+    agendaSchedule('in 2 seconds', JobName.ASSIGN_HOSPITAL_NUMBER, { id }),
 
   assignAntenatalNumber: (id: number, patient_id: number) =>
-    agendaSchedule('in 5 seconds', JobName.ASSIGN_ANTENATAL_NUMBER, { id, patient_id }),
+    agendaSchedule('in 3 seconds', JobName.ASSIGN_ANTENATAL_NUMBER, { id, patient_id }),
 
   sendPatientSMS: (message: string, user: Patient) =>
     agendaSchedule('in 30 seconds', JobName.SEND_PATIENT_SMS, { message, user }),

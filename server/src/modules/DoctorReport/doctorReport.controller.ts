@@ -166,6 +166,32 @@ class DoctorReportController {
       return next(e);
     }
   }
+
+  /**
+   * Get a doctor report by Patients
+   * @param req - express request
+   * @param res - express response
+   * @param next - next middleware
+   * @returns {Promise<SuccessResponse | void>}
+   */
+  static async getDoctorReports(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    try {
+      const reports = await DoctorReportService.getDoctorReportsByPatient(req.query);
+
+      return successResponse({
+        res,
+        message: SUCCESS,
+        data: reports,
+        httpCode: StatusCodes.OK,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
 }
 
 export default DoctorReportController;

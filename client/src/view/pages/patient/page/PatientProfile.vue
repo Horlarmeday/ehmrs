@@ -168,6 +168,10 @@
             <triages-table />
           </b-tab>
 
+          <b-tab title="Doctor Reports" lazy>
+            <doctor-reports-table />
+          </b-tab>
+
           <b-tab title="Programs" lazy><b-alert show>I'm lazy mounted!</b-alert></b-tab>
 
           <!-- Death Information Tab (only for deceased patients) -->
@@ -252,6 +256,7 @@ import TreatmentsTable from './components/tables/TreatmentsTable.vue';
 import TriagesTable from './components/tables/TriagesTable.vue';
 import HistoriesTable from './components/tables/HistoriesTable.vue';
 import DiagnosesTable from './components/tables/DiagnosesTable.vue';
+import DoctorReportsTable from './components/tables/DoctorReportsTable.vue';
 import { parseJwt } from '@/common/common';
 export default {
   components: {
@@ -266,6 +271,7 @@ export default {
     PaymentsTable,
     PersonalInformation,
     TestsTable,
+    DoctorReportsTable,
   },
   data: () => ({
     routes: [
@@ -296,12 +302,20 @@ export default {
   watch: {
     patient: function (val) {
       if (val && val.patient_type !== this.DEPENDANT) {
-        this.routes.push({
-          icon: 'flaticon-security',
-          desc: 'Add Insurance',
-          link: '/patient/health-insurance/',
-          status: 'danger',
-        });
+        this.routes.push(
+          {
+            icon: 'flaticon-security',
+            desc: 'Add Insurance',
+            link: '/patient/health-insurance/',
+            status: 'danger',
+          },
+          {
+            icon: 'flaticon2-avatar',
+            desc: 'Dependants',
+            link: '/patient/dependants/',
+            status: 'warning',
+          }
+        );
       }
 
       // if (val && val.patient_type === this.DEPENDANT) {
@@ -315,12 +329,6 @@ export default {
 
       if (val && val.has_insurance && val.patient_type !== this.DEPENDANT) {
         this.routes.push(
-          {
-            icon: 'flaticon2-avatar',
-            desc: 'Dependants',
-            link: '/patient/dependants/',
-            status: 'warning',
-          },
           {
             icon: 'flaticon2-setup',
             desc: 'Change Insurance',

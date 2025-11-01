@@ -7,6 +7,9 @@ const router = Router();
 // Create a new doctor report
 router.post('/', verify, DoctorReportController.createDoctorReport);
 
+// Get all doctor report by Patient
+router.get('/', verify, DoctorReportController.getDoctorReports);
+
 // Get a doctor report by ID
 router.get('/:id', verify, DoctorReportController.getDoctorReport);
 

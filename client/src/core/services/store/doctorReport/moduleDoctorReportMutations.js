@@ -29,4 +29,16 @@ export default {
   REMOVE_REPORT(state, reportId) {
     state.reports = state.reports.filter((report) => report.id !== reportId);
   },
+
+  SET_DOCTOR_REPORTS(state, reports) {
+    state.doctorReports = reports;
+  },
+
+  SET_DOCTOR_REPORTS_TOTAL(state, total) {
+    state.doctorReportTotal = total;
+  },
+
+  SET_DOCTOR_REPORTS_PAGES(state, pages) {
+    state.doctorReportPages = pages;
+  },
 };

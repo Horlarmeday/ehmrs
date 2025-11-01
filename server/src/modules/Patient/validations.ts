@@ -27,7 +27,9 @@ export function validateCreatePatientAccount(patient) {
     country: Joi.string().required(),
     state: Joi.string().required(),
     lga: Joi.string().required(),
-    photo: Joi.string().optional().allow(''),
+    photo: Joi.string()
+      .optional()
+      .allow(''),
     religion: Joi.string().required(),
     marital_status: Joi.string().required(),
     date_of_birth: Joi.date().required(),
@@ -65,7 +67,9 @@ export function validatePatientHealthInsurance(patient) {
           gender: Joi.string().required(),
           date_of_birth: Joi.date().required(),
           relationship_to_principal: Joi.string().required(),
-          photo: Joi.string().optional().allow(''),
+          photo: Joi.string()
+            .optional()
+            .allow(''),
           insurance_id: Joi.number().required(),
           hmo_id: Joi.number().required(),
           enrollee_code: Joi.string().required(),
@@ -132,8 +136,12 @@ export function validateDependant(dependant) {
     lastname: Joi.string().required(),
     date_of_birth: Joi.date().required(),
     relationship_to_principal: Joi.string().required(),
-    photo: Joi.string().optional().allow(''),
-    enrollee_code: Joi.string().required(),
+    photo: Joi.string()
+      .optional()
+      .allow(''),
+    enrollee_code: Joi.string()
+      .optional()
+      .allow(''),
     address: Joi.string().required(),
     phone: Joi.string().required(),
     country: Joi.string().required(),
@@ -189,8 +197,12 @@ export function validatePatientAccountsMerge(patient) {
 export function validateMarkPatientAsDeceased(data) {
   const schema = Joi.object({
     date_of_death: Joi.date().required(),
-    cause_of_death: Joi.string().optional().allow(''),
-    death_certificate_number: Joi.string().optional().allow(''),
+    cause_of_death: Joi.string()
+      .optional()
+      .allow(''),
+    death_certificate_number: Joi.string()
+      .optional()
+      .allow(''),
   });
   return schema.validate(data);
 }
@@ -204,8 +216,12 @@ export function validateRevivePatient(data) {
 
 export function validateTransferDependants(data) {
   const schema = Joi.object({
-    deceased_principal_id: Joi.number().integer().required(),
-    new_principal_id: Joi.number().integer().required(),
+    deceased_principal_id: Joi.number()
+      .integer()
+      .required(),
+    new_principal_id: Joi.number()
+      .integer()
+      .required(),
   });
   return schema.validate(data);
 }

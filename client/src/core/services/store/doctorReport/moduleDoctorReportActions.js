@@ -93,4 +93,34 @@ export default {
       commit('SET_LOADING', false);
     }
   },
+
+  /**
+   * Fetch all doctor reports for a visit
+   * @param {Object} context - Vuex context
+   * @param payload
+   */
+  async fetchDoctorReports({ commit }, payload) {
+    commit('SET_LOADING', true);
+    commit('SET_ERROR', null);
+
+    try {
+      const response = await axios.get(`/doctor-reports`, {
+        params: {
+          currentPage: payload.currentPage,
+          pageLimit: payload.itemsPerPage,
+          filter: payload.filter,
+        },
+      });
+      commit('SET_DOCTOR_REPORTS', response.data.data.docs);
+      commit('SET_DOCTOR_REPORTS_TOTAL', response.data.data.total);
+      commit('SET_DOCTOR_REPORTS_PAGES', response.data.data.pages);
+      return response.data;
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Failed to fetch doctor reports';
+      commit('SET_ERROR', errorMessage);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
 };

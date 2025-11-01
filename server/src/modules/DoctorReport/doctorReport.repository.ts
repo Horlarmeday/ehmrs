@@ -1,5 +1,6 @@
 import { DoctorReport, Staff } from '../../database/models';
 import { WhereOptions } from 'sequelize';
+import { patientAttributes, staffAttributes } from '../../core/helpers/helper';
 
 /**
  * Create a doctor report
@@ -76,5 +77,28 @@ export async function updateDoctorReport(
 export async function deleteDoctorReport(id: number): Promise<number> {
   return DoctorReport.destroy({
     where: { id },
+  });
+}
+
+/**
+ * Get all doctor reports for a patient
+ * @returns {Promise<DoctorReport[]>} array of reports
+ * @param filter
+ * @param page
+ * @param pageLimit
+ */
+export async function getDoctorReportsByPatient(page = 1, pageLimit = 20, filter = null) {
+  return DoctorReport.paginate({
+    page,
+    paginate: pageLimit,
+    where: { ...(filter && JSON.parse(filter)) },
+    include: [
+      {
+        model: Staff,
+        as: 'staff',
+        attributes: staffAttributes,
+      },
+    ],
+    order: [['createdAt', 'DESC']],
   });
 }

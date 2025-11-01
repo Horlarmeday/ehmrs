@@ -143,7 +143,10 @@ class PatientService {
     if (dependant) throw new BadException('INVALID', StatusCodes.BAD_REQUEST, DEPENDANT_EXIST);
 
     // Save photo to disk
-    const fileName = await processSnappedPhoto(body.photo, body.firstname);
+    let fileName;
+    if (body?.photo) {
+      fileName = await processSnappedPhoto(body.photo, body.firstname);
+    }
 
     const patient = await createDependant({ ...body, photo: fileName });
     JobSchedule.assignHospitalNumber(patient.id);

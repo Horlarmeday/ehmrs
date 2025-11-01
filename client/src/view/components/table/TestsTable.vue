@@ -42,7 +42,10 @@
             <td>{{ test.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
             <td>
               <span
-                v-if="allowedRoles.includes(currentUser.role) || currentUser.sub === test.requester"
+                v-if="
+                  allowedDepartment.includes(currentUser.department) ||
+                  currentUser.sub === test.requester
+                "
               >
                 <a
                   v-if="test.billing_status === UNBILLED && test.payment_status === PENDING"
@@ -78,7 +81,7 @@ export default {
   name: 'TestsTable',
   data: () => ({
     currentUser: parseJwt(localStorage.getItem('user_token')),
-    allowedRoles: ['General Practitioner', 'Super Admin'],
+    allowedDepartment: ['Medical Practitioners', 'Administration', 'Records'],
     ACCEPTED: 'Accepted',
     UNBILLED: 'Unbilled',
     PENDING: 'Pending',

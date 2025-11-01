@@ -343,8 +343,11 @@ export async function createDependant(data) {
     relationship_to_principal,
     enrollee_code,
   } = data;
-  const patientInsurance = await PatientInsurance.findOne({ where: { patient_id } });
-  if (!patientInsurance) throw new BadException('Error', 400, PATIENT_HAS_NO_INSURANCE);
+  const [principal, patientInsurance] = await Promise.all([
+    Patient.findOne({ where: { id: patient_id } }),
+    PatientInsurance.findOne({ where: { patient_id } }),
+  ]);
+  // if (!patientInsurance) throw new BadException('Error', 400, PATIENT_HAS_NO_INSURANCE);
 
   const dependant = await Patient.create({
     firstname: firstname.replace(/ +(?= )/g, '').trim(),
@@ -356,25 +359,28 @@ export async function createDependant(data) {
     photo,
     relationship,
     staff_id,
-    lga,
-    country,
-    state,
+    lga: lga || principal.lga,
+    country: country || principal.country,
+    state: state || principal.state,
     principal_id: patient_id,
     patient_type: PatientType.DEPENDANT,
-    has_insurance: true,
+    has_insurance: !!patientInsurance,
     relationship_to_principal,
   });
 
-  await PatientInsurance.create({
-    insurance_id: patientInsurance.insurance_id,
-    hmo_id: patientInsurance.hmo_id,
-    plan: patientInsurance.plan,
-    staff_id,
-    enrollee_code,
-    organization: patientInsurance.organization,
-    patient_id: dependant.id,
-    is_default: true,
-  });
+  if (patientInsurance) {
+    await PatientInsurance.create({
+      insurance_id: patientInsurance.insurance_id,
+      hmo_id: patientInsurance.hmo_id,
+      plan: patientInsurance.plan,
+      staff_id,
+      enrollee_code,
+      organization: patientInsurance.organization,
+      patient_id: dependant.id,
+      is_default: true,
+    });
+  }
+
   return dependant;
 }
 

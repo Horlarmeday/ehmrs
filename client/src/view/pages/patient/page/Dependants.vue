@@ -118,7 +118,7 @@
             <accordion-icon />
           </div>
         </div>
-        <b-collapse id="accordion-3" visible accordion="my-accordion" role="tabpanel">
+        <b-collapse id="accordion-3" visible accordion="my-accordion-1" role="tabpanel">
           <div class="card-body">
             <div class="pt-6">
               <img
@@ -309,6 +309,7 @@
 <script>
 import AccordionIcon from '@/assets/icons/AccordionIcon.vue';
 import Datepicker from 'vuejs-datepicker';
+import { isEmpty } from '@/common/common';
 export default {
   components: { AccordionIcon, Datepicker },
   computed: {
@@ -429,7 +430,7 @@ export default {
     },
 
     saveDependant() {
-      if (!this.dependant_image) return this.notifyPhoto();
+      // if (!this.dependant_image) return this.notifyPhoto();
       this.$validator.validateAll().then((result) => {
         if (result) {
           const submitButton = this.$refs['kt-add_dependant_submit'];
@@ -443,7 +444,9 @@ export default {
 
     endRequest(submitButton) {
       this.removeSpinner(submitButton);
-      if (this.dependantvideo) this.stopStreamedVideo(this.dependantvideo);
+      if (!isEmpty(this.dependantvideo)) {
+        this.stopStreamedVideo(this.dependantvideo);
+      }
       this.initDependant();
       this.fetchPatient();
     },

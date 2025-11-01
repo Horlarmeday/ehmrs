@@ -6,6 +6,7 @@ import {
   getDoctorReportsByVisit,
   updateDoctorReport,
   deleteDoctorReport,
+  getDoctorReportsByPatient,
 } from './doctorReport.repository';
 import { DoctorReport } from '../../database/models';
 
@@ -153,6 +154,28 @@ class DoctorReportService {
     const deleted = await deleteDoctorReport(id);
 
     return deleted > 0;
+  }
+
+  /**
+   * get doctor's report
+   *
+   * @static
+   * @returns {json} json object with doctor's report data
+   * @param body
+   * @memberOf DoctorReportService
+   */
+  static async getDoctorReportsByPatient(body) {
+    const { currentPage, pageLimit, filter } = body;
+
+    if (filter) {
+      return getDoctorReportsByPatient(+currentPage, +pageLimit, filter);
+    }
+
+    if (Object.values(body).length) {
+      return getDoctorReportsByPatient(+currentPage, +pageLimit);
+    }
+
+    return getDoctorReportsByPatient();
   }
 }
 
