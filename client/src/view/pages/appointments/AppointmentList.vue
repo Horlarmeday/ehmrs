@@ -63,21 +63,8 @@
             </div>
           </div>
 
-          <!-- Date Filter -->
-          <div class="col-lg-3 col-md-6">
-            <div class="form-group">
-              <label>Appointment Date</label>
-              <b-form-input
-                type="date"
-                v-model="filters.appointment_date"
-                @change="applyFilters"
-                class="form-control"
-              />
-            </div>
-          </div>
-
           <!-- Status Filter -->
-          <div class="col-lg-3 col-md-6">
+          <div class="col-lg-4 col-md-6">
             <div class="form-group">
               <label>Status</label>
               <b-form-select
@@ -87,14 +74,14 @@
                 class="form-control"
               >
                 <template #first>
-                  <option value="">All Statuses</option>
+                  <option value="all">All Statuses</option>
                 </template>
               </b-form-select>
             </div>
           </div>
 
           <!-- Type Filter -->
-          <div class="col-lg-2 col-md-6">
+          <div class="col-lg-4 col-md-6">
             <div class="form-group">
               <label>Type</label>
               <b-form-select
@@ -104,7 +91,7 @@
                 class="form-control"
               >
                 <template #first>
-                  <option value="">All Types</option>
+                  <option value="all">All Types</option>
                 </template>
               </b-form-select>
             </div>
@@ -150,23 +137,7 @@
               </div>
             </div>
 
-            <div class="col-lg-3 col-md-6">
-              <div class="form-group">
-                <label>Priority</label>
-                <b-form-select
-                  v-model="filters.priority"
-                  :options="priorityFilterOptions"
-                  @change="applyFilters"
-                  class="form-control"
-                >
-                  <template #first>
-                    <option value="">All Priorities</option>
-                  </template>
-                </b-form-select>
-              </div>
-            </div>
-
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-4 col-md-6">
               <div class="form-group">
                 <label>Date Range From</label>
                 <b-form-input
@@ -178,7 +149,7 @@
               </div>
             </div>
 
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-4 col-md-6">
               <div class="form-group">
                 <label>Date Range To</label>
                 <b-form-input
@@ -203,18 +174,6 @@
           Appointments List
           <span class="badge badge-primary badge-pill ml-2">{{ total }}</span>
         </h3>
-        <div class="card-toolbar">
-          <div class="btn-group mr-3" role="group">
-            <b-dropdown variant="outline-primary" size="sm" text="Actions" right>
-              <b-dropdown-item @click="exportAppointments">
-                <i class="fas fa-download mr-2"></i>Export
-              </b-dropdown-item>
-              <b-dropdown-item @click="refreshAppointments">
-                <i class="fas fa-sync mr-2"></i>Refresh
-              </b-dropdown-item>
-            </b-dropdown>
-          </div>
-        </div>
       </div>
 
       <!-- Loading State -->
@@ -253,7 +212,7 @@
                 <th style="min-width: 120px">Doctor</th>
                 <th style="min-width: 100px">Date & Time</th>
                 <th style="min-width: 120px">Type</th>
-                <th style="min-width: 200px">Reason</th>
+                <!-- <th style="min-width: 200px">Reason</th> -->
                 <th style="min-width: 100px">Status</th>
                 <th style="min-width: 80px">Priority</th>
                 <th style="min-width: 120px" class="text-center">Actions</th>
@@ -310,7 +269,7 @@
                 </td>
 
                 <!-- Reason -->
-                <td>
+                <!-- <td>
                   <div class="text-dark-75">
                     {{ truncateText(appointment.reason_for_visit, 50) }}
                   </div>
@@ -327,7 +286,7 @@
                       Read more
                     </b-button>
                   </div>
-                </td>
+                </td> -->
 
                 <!-- Status -->
                 <td>
@@ -367,6 +326,8 @@
                       toggle-class="btn-sm"
                       no-caret
                       right
+                      boundary="viewport"
+                      offset="0"
                     >
                       <template v-slot:button-content>
                         <i class="fas fa-ellipsis-v"></i>
@@ -465,11 +426,7 @@ import AppointmentModal from './components/AppointmentModal.vue';
 import AppointmentDetailsModal from './components/AppointmentDetailsModal.vue';
 import { setUrlQueryParams } from '@/common/common';
 import Swal from 'sweetalert2';
-import {
-  APPOINTMENT_TYPES,
-  APPOINTMENT_PRIORITIES,
-  APPOINTMENT_STATUSES,
-} from '@/view/pages/appointments/constants.js';
+import { APPOINTMENT_TYPES, APPOINTMENT_STATUSES } from '@/view/pages/appointments/constants.js';
 
 export default {
   name: 'AppointmentList',
@@ -489,11 +446,9 @@ export default {
       currentPage: 1,
       itemsPerPage: 10,
       filters: {
-        appointment_date: '',
-        status: '',
-        type: '',
+        status: 'all',
+        type: 'all',
         doctor_id: '',
-        priority: '',
         start: '',
         end: '',
       },
@@ -515,13 +470,6 @@ export default {
 
     typeFilterOptions() {
       return APPOINTMENT_TYPES;
-    },
-
-    priorityFilterOptions() {
-      return APPOINTMENT_PRIORITIES.map((p) => ({
-        value: p.value,
-        text: p.text.replace(' Priority', ''),
-      }));
     },
   },
   methods: {
@@ -568,13 +516,11 @@ export default {
     clearFilters() {
       this.searchTerm = '';
       this.filters = {
-        appointment_date: '',
         status: '',
-        type: '', // Use 'type' instead of 'appointment_type'
+        type: '',
         doctor_id: '',
-        priority: '',
-        start: '', // Use 'start' instead of 'date_from'
-        end: '', // Use 'end' instead of 'date_to'
+        start: '',
+        end: '',
       };
       this.currentPage = 1;
       this.applyFiltersAndSearch();
@@ -860,7 +806,7 @@ export default {
             const response = await this.$store.dispatch('employee/fetchEmployees', {
               currentPage: 1,
               itemsPerPage: 50,
-              filter: { department: 'Medical Practioners' },
+              filter: { department: 'Medical Practitioners' },
               search,
             });
             this.doctors = response.data.data.docs || [];
@@ -870,6 +816,22 @@ export default {
             loading(false);
           }
         }, 300);
+      }
+    },
+
+    async loadDoctors() {
+      this.loadingDoctors = true;
+      try {
+        const res = await this.$store.dispatch('employee/fetchEmployees', {
+          currentPage: 1,
+          itemsPerPage: 100,
+          filter: { department: 'Medical Practitioners' },
+        });
+        this.doctors = res.data.data.docs || [];
+      } catch (e) {
+        /* no-op */
+      } finally {
+        this.loadingDoctors = false;
       }
     },
 
@@ -905,7 +867,7 @@ export default {
     // Initialize from query parameters
     const query = this.$route.query;
     this.currentPage = parseInt(query.currentPage) || 1;
-    this.itemsPerPage = parseInt(query.itemsPerPage) || 10;
+    this.itemsPerPage = parseInt(query.pageLimit) || 10;
     this.searchTerm = query.search || '';
 
     // Apply filters from query
@@ -917,6 +879,7 @@ export default {
 
     // Load appointments
     this.applyFiltersAndSearch();
+    this.loadDoctors();
   },
 
   beforeDestroy() {
@@ -964,6 +927,43 @@ export default {
   border: 1px solid #ced4da;
   border-radius: 0.375rem;
   min-height: 38px;
+}
+
+/* Dropdown positioning fixes */
+.table-responsive {
+  position: relative;
+  overflow: visible;
+}
+
+/* Ensure dropdown doesn't cause layout shifts */
+.table-responsive .dropdown-menu {
+  position: absolute !important;
+  z-index: 1050;
+  min-width: 160px;
+}
+
+/* Fix for single record dropdown positioning */
+.table-responsive .table tbody tr:last-child .dropdown-menu {
+  right: 0;
+  left: auto;
+  transform: translateX(0);
+}
+
+/* Ensure table doesn't expand when dropdown opens */
+.table-responsive .table {
+  table-layout: auto;
+}
+
+/* Actions column should have proper width */
+.table-responsive .table th:last-child,
+.table-responsive .table td:last-child {
+  min-width: 120px;
+}
+
+/* Ensure dropdown button doesn't cause overflow */
+.btn-group {
+  display: inline-flex;
+  align-items: center;
 }
 
 @media (max-width: 768px) {

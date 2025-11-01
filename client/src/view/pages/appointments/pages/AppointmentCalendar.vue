@@ -340,6 +340,7 @@
 import { mapState, mapActions } from 'vuex';
 import AppointmentDetailsModal from '../components/AppointmentDetailsModal.vue';
 import AppointmentModal from '../components/AppointmentModal.vue';
+import dayjs from 'dayjs';
 
 export default {
   name: 'AppointmentCalendar',
@@ -352,7 +353,7 @@ export default {
       loading: false,
       currentView: 'month',
       currentDate: new Date(),
-      selectedDay: new Date().toISOString().split('T')[0],
+      selectedDay: dayjs().format('YYYY-MM-DD'),
       filterDoctor: '',
       filterStatus: '',
       selectedAppointment: null,
@@ -407,11 +408,12 @@ export default {
       for (let week = 0; week < 6; week++) {
         const days = [];
         for (let day = 0; day < 7; day++) {
+          const fullDate = this.toYmdLocal(currentDate);
           days.push({
             date: currentDate.getDate(),
-            fullDate: currentDate.toISOString().split('T')[0],
+            fullDate,
             isCurrentMonth: currentDate.getMonth() === month,
-            isToday: this.isToday({ fullDate: currentDate.toISOString().split('T')[0] }),
+            isToday: this.isToday({ fullDate }),
           });
           currentDate.setDate(currentDate.getDate() + 1);
         }
@@ -431,9 +433,9 @@ export default {
 
         days.push({
           date: date.getDate(),
-          dayName: date.toLocaleDateString('en-US', { weekday: 'short' }),
-          fullDate: date.toISOString().split('T')[0],
-          monthName: date.toLocaleDateString('en-US', { month: 'short' }),
+          dayName: date.toLocaleDateString('en-NG', { weekday: 'short' }),
+          fullDate: this.toYmdLocal(date),
+          monthName: date.toLocaleDateString('en-NG', { month: 'short' }),
         });
       }
 
@@ -481,10 +483,15 @@ export default {
   methods: {
     ...mapActions('appointments', ['fetchAppointments', 'checkInAppointment']),
 
+    // Ensure local YYYY-MM-DD formatting (avoid UTC shift)
+    toYmdLocal(date) {
+      return dayjs(date).format('YYYY-MM-DD');
+    },
+
     setView(view) {
       this.currentView = view;
       if (view === 'day' && !this.selectedDay) {
-        this.selectedDay = new Date().toISOString().split('T')[0];
+        this.selectedDay = dayjs().format('YYYY-MM-DD');
       }
     },
 
@@ -500,7 +507,7 @@ export default {
           break;
         case 'day':
           newDate.setDate(newDate.getDate() - 1);
-          this.selectedDay = newDate.toISOString().split('T')[0];
+          this.selectedDay = this.toYmdLocal(newDate);
           break;
       }
 
@@ -520,7 +527,7 @@ export default {
           break;
         case 'day':
           newDate.setDate(newDate.getDate() + 1);
-          this.selectedDay = newDate.toISOString().split('T')[0];
+          this.selectedDay = this.toYmdLocal(newDate);
           break;
       }
 
@@ -565,8 +572,8 @@ export default {
       }
 
       const params = {
-        start: startDate.toISOString().split('T')[0],
-        end: endDate.toISOString().split('T')[0],
+        start: this.toYmdLocal(startDate),
+        end: this.toYmdLocal(endDate),
         currentPage: 1,
         pageLimit: 500, // Get all appointments for the period
       };
@@ -635,7 +642,7 @@ export default {
     },
 
     isToday(day) {
-      const today = new Date().toISOString().split('T')[0];
+      const today = dayjs().format('YYYY-MM-DD');
       return day.fullDate === today;
     },
 
@@ -744,7 +751,7 @@ export default {
         const response = await this.$store.dispatch('employee/fetchEmployees', {
           currentPage: 1,
           itemsPerPage: 100,
-          filter: { department: 'Medical Practioners' },
+          filter: { department: 'Medical Practitioners' },
         });
         this.doctors = response.data.data.docs || [];
       } catch (error) {

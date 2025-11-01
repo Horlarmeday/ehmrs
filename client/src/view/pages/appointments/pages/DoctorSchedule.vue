@@ -191,7 +191,7 @@
             <i class="fas fa-calendar-week mr-2"></i>
             {{ selectedDoctor?.fullname }} - Schedule Grid
           </h3>
-          <div class="card-toolbar">
+          <!-- <div class="card-toolbar">
             <b-dropdown variant="outline-primary" size="sm" text="Actions" right>
               <b-dropdown-item @click="blockTimeSlot">
                 <i class="fas fa-ban mr-2"></i>Block Time Slot
@@ -207,7 +207,7 @@
                 <i class="fas fa-chart-line mr-2"></i>Schedule Analytics
               </b-dropdown-item>
             </b-dropdown>
-          </div>
+          </div> -->
         </div>
 
         <div class="card-body p-0">
@@ -268,7 +268,7 @@
                         {{ appointment.patient?.fullname || 'Unknown' }}
                       </div>
                       <div class="appointment-type">
-                        {{ getTypeShort(appointment.appointment_type) }}
+                        {{ getTypeShort(appointment.type) }}
                       </div>
                     </div>
 
@@ -386,17 +386,10 @@
 import { mapState } from 'vuex';
 import vSelect from 'vue-select';
 import AppointmentDetailsModal from '../components/AppointmentDetailsModal.vue';
+import ScheduleTemplateModal from '../components/ScheduleTemplateModal.vue';
+import TimeBlockModal from '../components/TimeBlockModal.vue';
 
-// Mock components for schedule management - these would be implemented separately
-const ScheduleTemplateModal = {
-  template: '<div></div>',
-  props: ['show', 'doctor'],
-};
-
-const TimeBlockModal = {
-  template: '<div></div>',
-  props: ['show', 'doctor', 'selectedDate', 'selectedHour'],
-};
+// Real components imported above
 
 export default {
   name: 'DoctorSchedule',
@@ -570,6 +563,8 @@ export default {
         const response = await this.$store.dispatch('appointments/fetchAppointments', params);
         this.scheduleAppointments = response.data.data.rows || [];
 
+        console.log(this.scheduleAppointments, 'scheduleAppointments');
+
         // Load blocked slots if in availability mode
         if (this.viewMode === 'availability') {
           await this.loadBlockedSlots();
@@ -587,9 +582,18 @@ export default {
     },
 
     async loadBlockedSlots() {
-      // This would load blocked time slots from the API
-      // Mock implementation for now
-      this.blockedSlots = [];
+      try {
+        if (!this.selectedDoctorId || !this.startDate || !this.endDate) return;
+        const res = await this.$store.dispatch('appointments/fetchBlockedSlots', {
+          doctor_id: this.selectedDoctorId,
+          start: this.startDate,
+          end: this.endDate,
+        });
+        const data = res?.data?.data || {};
+        this.blockedSlots = data.timeBlocks || [];
+      } catch (e) {
+        this.blockedSlots = [];
+      }
     },
 
     async refreshSchedules() {
@@ -607,7 +611,7 @@ export default {
         const response = await this.$store.dispatch('employee/fetchEmployees', {
           currentPage: 1,
           itemsPerPage: 100,
-          filter: { department: 'Medical Practioners' },
+          filter: { department: 'Medical Practitioners' },
         });
         this.doctors = response.data.data.docs || [];
       } catch (error) {
@@ -628,7 +632,7 @@ export default {
             const response = await this.$store.dispatch('employee/fetchEmployees', {
               currentPage: 1,
               itemsPerPage: 50,
-              filter: { department: 'Medical Practioners' },
+              filter: { department: 'Medical Practitioners' },
               search,
             });
             this.doctors = response.data.data.docs || [];

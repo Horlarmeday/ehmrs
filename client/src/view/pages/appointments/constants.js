@@ -1,12 +1,10 @@
 export const APPOINTMENT_TYPES = [
-  { value: 'CONSULTATION', text: 'Consultation' },
-  { value: 'FOLLOW_UP', text: 'Follow-up' },
-  { value: 'PROCEDURE', text: 'Procedure' },
-  { value: 'VACCINATION', text: 'Vaccination' },
-  { value: 'DIALYSIS', text: 'Dialysis' },
-  { value: 'ANTENATAL', text: 'Antenatal Care' },
-  { value: 'SURGERY', text: 'Surgery' },
-  { value: 'EMERGENCY', text: 'Emergency' },
+  { value: 'Consultation', text: 'Consultation' },
+  { value: 'Follow Up', text: 'Follow-up' },
+  { value: 'Procedure', text: 'Procedure' },
+  { value: 'Vaccination', text: 'Vaccination' },
+  { value: 'Dialysis', text: 'Dialysis' },
+  { value: 'Antenatal', text: 'Antenatal Care' },
 ];
 
 export const APPOINTMENT_PRIORITIES = [

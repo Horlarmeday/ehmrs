@@ -130,11 +130,6 @@ export default {
     state.recurringAppointments = appointments;
   },
 
-  // UI state mutations
-  SET_SHOW_PATIENT_MODAL(state, show) {
-    state.showPatientModal = show;
-  },
-
   SET_SHOW_APPOINTMENT_FORM(state, show) {
     state.showAppointmentForm = show;
   },
@@ -165,5 +160,9 @@ export default {
 
   SET_ITEMS_PER_PAGE(state, count) {
     state.itemsPerPage = count;
+  },
+
+  SET_DASHBOARD_STATISTICS(state, statistics) {
+    state.dashboardStatistics = statistics;
   },
 };

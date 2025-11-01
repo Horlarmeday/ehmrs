@@ -13,60 +13,100 @@
       </div>
     </div>
 
-    <!-- Wizard Progress -->
-    <div class="card card-custom gutter-b">
-      <div class="card-body">
-        <div class="wizard" id="appointment-wizard">
-          <div class="wizard-nav">
-            <div class="wizard-steps">
-              <div
-                class="wizard-step"
-                :class="{ current: currentStep === 1, done: currentStep > 1 }"
-                data-wizard-type="step"
-                data-wizard-state="current"
-              >
-                <div class="wizard-number">1</div>
-                <div class="wizard-label">
-                  <div class="wizard-title">Patient Selection</div>
-                  <div class="wizard-desc">Choose or search patient</div>
-                </div>
+    <!-- Wizard Progress - Modern Card-Based Design -->
+    <div class="wizard-progress-container mb-4">
+      <div class="row">
+        <div class="col-12">
+          <div class="wizard-steps-cards">
+            <!-- Step 1: Patient Selection -->
+            <div
+              class="wizard-step-card"
+              :class="{
+                active: currentStep === 1,
+                completed: currentStep > 1,
+                clickable: currentStep > 1,
+              }"
+              @click="goToStep(1)"
+            >
+              <div class="step-card-icon">
+                <i class="fas fa-user" v-if="currentStep <= 1"></i>
+                <i class="fas fa-check-circle" v-else></i>
               </div>
+              <div class="step-card-content">
+                <div class="step-card-title">Patient Selection</div>
+                <div class="step-card-desc">Choose or search patient</div>
+              </div>
+              <div class="step-card-number">1</div>
+            </div>
 
-              <div
-                class="wizard-step"
-                :class="{ current: currentStep === 2, done: currentStep > 2 }"
-                data-wizard-type="step"
-              >
-                <div class="wizard-number">2</div>
-                <div class="wizard-label">
-                  <div class="wizard-title">Doctor & Schedule</div>
-                  <div class="wizard-desc">Select doctor and time</div>
-                </div>
-              </div>
+            <!-- Connector Line -->
+            <div class="step-connector" :class="{ completed: currentStep > 1 }"></div>
 
-              <div
-                class="wizard-step"
-                :class="{ current: currentStep === 3, done: currentStep > 3 }"
-                data-wizard-type="step"
-              >
-                <div class="wizard-number">3</div>
-                <div class="wizard-label">
-                  <div class="wizard-title">Appointment Details</div>
-                  <div class="wizard-desc">Type, reason, and notes</div>
-                </div>
+            <!-- Step 2: Doctor & Schedule -->
+            <div
+              class="wizard-step-card"
+              :class="{
+                active: currentStep === 2,
+                completed: currentStep > 2,
+                clickable: currentStep > 2,
+              }"
+              @click="goToStep(2)"
+            >
+              <div class="step-card-icon">
+                <i class="fas fa-calendar-check" v-if="currentStep <= 2"></i>
+                <i class="fas fa-check-circle" v-else></i>
               </div>
+              <div class="step-card-content">
+                <div class="step-card-title">Doctor & Schedule</div>
+                <div class="step-card-desc">Select doctor and time</div>
+              </div>
+              <div class="step-card-number">2</div>
+            </div>
 
-              <div
-                class="wizard-step"
-                :class="{ current: currentStep === 4, done: currentStep > 4 }"
-                data-wizard-type="step"
-              >
-                <div class="wizard-number">4</div>
-                <div class="wizard-label">
-                  <div class="wizard-title">Confirmation</div>
-                  <div class="wizard-desc">Review and confirm</div>
-                </div>
+            <!-- Connector Line -->
+            <div class="step-connector" :class="{ completed: currentStep > 2 }"></div>
+
+            <!-- Step 3: Appointment Details -->
+            <div
+              class="wizard-step-card"
+              :class="{
+                active: currentStep === 3,
+                completed: currentStep > 3,
+                clickable: currentStep > 3,
+              }"
+              @click="goToStep(3)"
+            >
+              <div class="step-card-icon">
+                <i class="fas fa-clipboard-list" v-if="currentStep <= 3"></i>
+                <i class="fas fa-check-circle" v-else></i>
               </div>
+              <div class="step-card-content">
+                <div class="step-card-title">Appointment Details</div>
+                <div class="step-card-desc">Type, reason, and notes</div>
+              </div>
+              <div class="step-card-number">3</div>
+            </div>
+
+            <!-- Connector Line -->
+            <div class="step-connector" :class="{ completed: currentStep > 3 }"></div>
+
+            <!-- Step 4: Confirmation -->
+            <div
+              class="wizard-step-card"
+              :class="{
+                active: currentStep === 4,
+                completed: false,
+                clickable: currentStep > 4,
+              }"
+            >
+              <div class="step-card-icon">
+                <i class="fas fa-check-circle"></i>
+              </div>
+              <div class="step-card-content">
+                <div class="step-card-title">Confirmation</div>
+                <div class="step-card-desc">Review and confirm</div>
+              </div>
+              <div class="step-card-number">4</div>
             </div>
           </div>
         </div>
@@ -80,16 +120,21 @@
           <div class="card-body">
             <!-- Step 1: Patient Selection -->
             <div v-if="currentStep === 1" class="step-content">
-              <div class="text-center mb-5">
-                <i class="fas fa-user-search fa-3x text-primary mb-3"></i>
-                <h4>Select Patient</h4>
-                <p class="text-muted">Search and select the patient for this appointment</p>
+              <div class="step-header text-center mb-5">
+                <div class="step-icon-wrapper mb-3">
+                  <i class="fas fa-user-search fa-3x text-primary"></i>
+                </div>
+                <h4 class="font-weight-bold mb-2">Select Patient</h4>
+                <p class="text-muted mb-0">Search and select the patient for this appointment</p>
               </div>
 
               <div class="row justify-content-center">
                 <div class="col-lg-8">
                   <!-- Selected Patient Display -->
-                  <div v-if="selectedPatient" class="card border-primary mb-4">
+                  <div
+                    v-if="selectedPatient"
+                    class="card border-primary mb-4 selected-patient-card"
+                  >
                     <div class="card-header bg-light-primary">
                       <h6 class="mb-0"><i class="fas fa-user mr-2"></i>Selected Patient</h6>
                     </div>
@@ -108,7 +153,7 @@
                           </p>
                         </div>
                       </div>
-                      <div class="text-right">
+                      <div class="text-right mt-3">
                         <b-button variant="outline-secondary" @click="clearPatient">
                           <i class="fas fa-times mr-1"></i>Change Patient
                         </b-button>
@@ -118,18 +163,37 @@
 
                   <!-- Patient Search -->
                   <div v-else>
-                    <b-button
-                      variant="primary"
-                      size="lg"
-                      @click="showPatientSearch"
-                      class="btn-block mb-3"
-                    >
-                      <i class="fas fa-search mr-2"></i>
-                      Search Patient
-                    </b-button>
+                    <div class="form-group">
+                      <label class="font-weight-bold"
+                        >Patient <span class="text-danger">*</span></label
+                      >
+                      <v-select
+                        v-model="appointmentData.patient_id"
+                        :options="patients"
+                        label="fullname"
+                        :reduce="(patient) => patient.id"
+                        placeholder="Search and select patient..."
+                        :loading="loadingPatients"
+                        :disabled="submitting"
+                        @search="searchPatients"
+                        @input="onPatientInput"
+                        :clearable="true"
+                      >
+                        <template #option="option">
+                          <div class="d-flex flex-column">
+                            <div class="patient-name font-weight-bold">{{ option.fullname }}</div>
+                            <small class="text-muted">
+                              ID: {{ option.hospital_id || 'N/A' }} · {{ option.phone || 'N/A' }}
+                            </small>
+                          </div>
+                        </template>
+                        <template #no-options>
+                          <div class="text-muted">Type to search for patients...</div>
+                        </template>
+                      </v-select>
+                    </div>
 
-                    <div class="text-center">
-                      <p class="text-muted mb-3">or</p>
+                    <div class="text-center mt-3">
                       <router-link to="/patient/create" class="btn btn-outline-primary">
                         <i class="fas fa-user-plus mr-2"></i>Create New Patient
                       </router-link>
@@ -141,10 +205,12 @@
 
             <!-- Step 2: Doctor & Schedule -->
             <div v-if="currentStep === 2" class="step-content">
-              <div class="text-center mb-5">
-                <i class="fas fa-calendar-check fa-3x text-primary mb-3"></i>
-                <h4>Select Doctor & Schedule</h4>
-                <p class="text-muted">Choose the doctor and appointment time</p>
+              <div class="step-header text-center mb-5">
+                <div class="step-icon-wrapper mb-3">
+                  <i class="fas fa-calendar-check fa-3x text-primary"></i>
+                </div>
+                <h4 class="font-weight-bold mb-2">Select Doctor & Schedule</h4>
+                <p class="text-muted mb-0">Choose the doctor and appointment time</p>
               </div>
 
               <div class="row">
@@ -213,10 +279,14 @@
 
             <!-- Step 3: Appointment Details -->
             <div v-if="currentStep === 3" class="step-content">
-              <div class="text-center mb-5">
-                <i class="fas fa-clipboard-list fa-3x text-primary mb-3"></i>
-                <h4>Appointment Details</h4>
-                <p class="text-muted">Provide appointment type, reason, and additional details</p>
+              <div class="step-header text-center mb-5">
+                <div class="step-icon-wrapper mb-3">
+                  <i class="fas fa-clipboard-list fa-3x text-primary"></i>
+                </div>
+                <h4 class="font-weight-bold mb-2">Appointment Details</h4>
+                <p class="text-muted mb-0">
+                  Provide appointment type, reason, and additional details
+                </p>
               </div>
 
               <div class="row justify-content-center">
@@ -275,10 +345,21 @@
                     <div class="col-md-6">
                       <div class="form-group">
                         <label class="font-weight-bold">Department</label>
-                        <b-form-input
-                          v-model="appointmentData.department"
-                          placeholder="Enter department"
-                        />
+                        <b-form-group label-for="department">
+                          <v-select
+                            v-model="appointmentData.department"
+                            :options="departments"
+                            label="name"
+                            :reduce="(dept) => dept.name"
+                            placeholder="Select Department"
+                            :loading="loadingDepartments"
+                            :disabled="submitting"
+                          >
+                            <template #no-options>
+                              <div class="text-muted">Type to search for departments...</div>
+                            </template>
+                          </v-select>
+                        </b-form-group>
                       </div>
                     </div>
                   </div>
@@ -310,10 +391,12 @@
 
             <!-- Step 4: Confirmation -->
             <div v-if="currentStep === 4" class="step-content">
-              <div class="text-center mb-5">
-                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
-                <h4>Confirm Appointment</h4>
-                <p class="text-muted">Review the appointment details before booking</p>
+              <div class="step-header text-center mb-5">
+                <div class="step-icon-wrapper mb-3">
+                  <i class="fas fa-check-circle fa-3x text-success"></i>
+                </div>
+                <h4 class="font-weight-bold mb-2">Confirm Appointment</h4>
+                <p class="text-muted mb-0">Review the appointment details before booking</p>
               </div>
 
               <div class="row justify-content-center">
@@ -336,7 +419,7 @@
                           <h6 class="text-primary mt-4">Appointment Details</h6>
                           <p>
                             <strong>Type:</strong>
-                            {{ getTypeText(appointmentData.appointment_type) }}
+                            {{ getTypeText(appointmentData.type) }}
                           </p>
                           <p>
                             <strong>Priority:</strong> {{ appointmentData.priority || 'Normal' }}
@@ -405,23 +488,25 @@
         </div>
       </div>
     </div>
-
-    <!-- Patient Search Modal -->
-    <PatientSearchModal @patient-selected="onPatientSelected" />
   </div>
 </template>
 
 <script>
 import { mapActions } from 'vuex';
 import vSelect from 'vue-select';
-import PatientSearchModal from '../components/PatientSearchModal.vue';
 import TimeSlotPicker from '../../../components/appointments/TimeSlotPicker.vue';
+import {
+  APPOINTMENT_TYPES,
+  APPOINTMENT_PRIORITIES,
+  APPOINTMENT_DURATIONS,
+} from '@/view/pages/appointments/constants.js';
+import { parseJwt } from '@/common/common';
+import { departments as employeeDepartments } from '@/view/pages/employees/create/employeeRoles.js';
 
 export default {
   name: 'BookAppointment',
   components: {
     vSelect,
-    PatientSearchModal,
     TimeSlotPicker,
   },
   data() {
@@ -430,14 +515,18 @@ export default {
       submitting: false,
       loadingDoctors: false,
       loadingSlots: false,
+      loadingPatients: false,
+      loadingDepartments: false,
       selectedPatient: null,
       selectedTimeSlot: null,
       doctors: [],
+      departments: [],
+      patients: [],
       availableSlots: [],
       appointmentData: {
         patient_id: '',
         doctor_id: '',
-        type: 'CONSULTATION', // Use 'type' instead of 'appointment_type' for consistency
+        type: 'Consultation', // Use 'type' instead of 'appointment_type' for consistency
         priority: 'NORMAL',
         department: '',
         appointment_date: '',
@@ -448,6 +537,7 @@ export default {
         professional: '', // Will be auto-populated from doctor data
       },
       searchTimeout: null,
+      currentUser: parseJwt(localStorage.getItem('user_token')),
     };
   },
   computed: {
@@ -457,41 +547,20 @@ export default {
 
     maxDate() {
       const maxDate = new Date();
-      maxDate.setMonth(maxDate.getMonth() + 3);
+      maxDate.setMonth(maxDate.getMonth() + 6);
       return maxDate.toISOString().split('T')[0];
     },
 
     appointmentTypeOptions() {
-      return [
-        { value: 'CONSULTATION', text: 'Consultation' },
-        { value: 'FOLLOW_UP', text: 'Follow-up' },
-        { value: 'PROCEDURE', text: 'Procedure' },
-        { value: 'VACCINATION', text: 'Vaccination' },
-        { value: 'DIALYSIS', text: 'Dialysis' },
-        { value: 'ANTENATAL', text: 'Antenatal Care' },
-        { value: 'SURGERY', text: 'Surgery Consultation' },
-        { value: 'EMERGENCY', text: 'Emergency' },
-      ];
+      return APPOINTMENT_TYPES;
     },
 
     priorityOptions() {
-      return [
-        { value: 'LOW', text: 'Low Priority' },
-        { value: 'NORMAL', text: 'Normal Priority' },
-        { value: 'HIGH', text: 'High Priority' },
-        { value: 'URGENT', text: 'Urgent' },
-      ];
+      return APPOINTMENT_PRIORITIES;
     },
 
     durationOptions() {
-      return [
-        { value: 15, text: '15 minutes' },
-        { value: 30, text: '30 minutes' },
-        { value: 45, text: '45 minutes' },
-        { value: 60, text: '1 hour' },
-        { value: 90, text: '1.5 hours' },
-        { value: 120, text: '2 hours' },
-      ];
+      return APPOINTMENT_DURATIONS;
     },
 
     canProceedToNextStep() {
@@ -513,25 +582,52 @@ export default {
   },
   methods: {
     ...mapActions('appointments', {
-      openPatientModal: 'openPatientModal',
-      closePatientModal: 'closePatientModal',
       fetchAvailableSlots: 'fetchAvailableSlots',
       createAppointment: 'createAppointment',
     }),
 
-    showPatientSearch() {
-      this.openPatientModal();
-    },
-
-    onPatientSelected(patient) {
-      this.selectedPatient = patient;
-      this.appointmentData.patient_id = patient.id;
-      this.closePatientModal();
-    },
-
     clearPatient() {
       this.selectedPatient = null;
       this.appointmentData.patient_id = '';
+    },
+
+    async searchPatients(search, loading) {
+      if (!search || search.length <= 2) return;
+      loading(true);
+      if (this.searchTimeout) clearTimeout(this.searchTimeout);
+      this.searchTimeout = setTimeout(async () => {
+        this.loadingPatients = true;
+        try {
+          const response = await this.$store.dispatch('patient/fetchPatients', {
+            currentPage: 1,
+            itemsPerPage: 50,
+            search: search.trim(),
+          });
+          this.patients = response.data?.data?.docs || [];
+          if (this.selectedPatient) {
+            const exists = this.patients.some((p) => p.id === this.selectedPatient.id);
+            if (!exists) this.patients = [this.selectedPatient, ...this.patients];
+          }
+        } catch (error) {
+          // Handle error silently or show toast if needed
+        } finally {
+          this.loadingPatients = false;
+          loading(false);
+        }
+      }, 300);
+    },
+
+    onPatientInput(value) {
+      if (!value) {
+        this.selectedPatient = null;
+        this.appointmentData.patient_id = '';
+      } else {
+        const found = this.patients.find((p) => p.id === value);
+        if (found) {
+          this.selectedPatient = found;
+          this.appointmentData.patient_id = found.id;
+        }
+      }
     },
 
     async loadDoctors() {
@@ -540,7 +636,7 @@ export default {
         const response = await this.$store.dispatch('employee/fetchEmployees', {
           currentPage: 1,
           itemsPerPage: 100,
-          filter: { department: 'Medical Practioners' },
+          filter: { department: 'Medical Practitioners' },
         });
         this.doctors = response.data.data.docs || [];
       } catch (error) {
@@ -550,28 +646,41 @@ export default {
       }
     },
 
-    searchDoctors(search, loading) {
-      if (search.length > 2) {
-        loading(true);
-        if (this.searchTimeout) {
-          clearTimeout(this.searchTimeout);
-        }
-        this.searchTimeout = setTimeout(async () => {
-          try {
-            const response = await this.$store.dispatch('employee/fetchEmployees', {
-              currentPage: 1,
-              itemsPerPage: 50,
-              filter: { department: 'Medical Practioners' },
-              search,
-            });
-            this.doctors = response.data.data.docs || [];
-          } catch (error) {
-            console.error('Failed to search doctors:', error);
-          } finally {
-            loading(false);
-          }
-        }, 300);
+    async loadDepartments() {
+      this.loadingDepartments = true;
+      try {
+        this.departments = (employeeDepartments || []).map((d) => ({
+          id: d.id,
+          name: d.department,
+        }));
+      } catch (e) {
+        this.departments = [];
+      } finally {
+        this.loadingDepartments = false;
       }
+    },
+
+    searchDoctors(search, loading) {
+      if (!search || search.length <= 2) return;
+      loading(true);
+      if (this.searchTimeout) {
+        clearTimeout(this.searchTimeout);
+      }
+      this.searchTimeout = setTimeout(async () => {
+        try {
+          const response = await this.$store.dispatch('employee/fetchEmployees', {
+            currentPage: 1,
+            itemsPerPage: 50,
+            filter: { department: 'Medical Practitioners' },
+            search,
+          });
+          this.doctors = response.data?.data?.docs || [];
+        } catch (error) {
+          console.error('Failed to search doctors:', error);
+        } finally {
+          loading(false);
+        }
+      }, 300);
     },
 
     onDoctorChange() {
@@ -630,24 +739,41 @@ export default {
       }
     },
 
+    goToStep(step) {
+      // Only allow going back to completed steps
+      if (step < this.currentStep) {
+        this.currentStep = step;
+      }
+    },
+
     async confirmAppointment() {
       this.submitting = true;
       try {
-        // Get selected doctor data
         const selectedDoctor = this.doctors.find((d) => d.id === this.appointmentData.doctor_id);
 
-        const formData = {
-          ...this.appointmentData,
-          patient_id: this.selectedPatient.id,
-          status: 'Scheduled',
-          // Auto-populate missing fields
-          professional: selectedDoctor?.role || 'Doctor',
+        // Shared fields used by both create and update (matching AppointmentModal structure)
+        const basePayload = {
+          doctor_id: this.appointmentData.doctor_id,
+          appointment_date: this.appointmentData.appointment_date,
+          appointment_time: this.appointmentData.appointment_time,
+          duration_minutes: this.appointmentData.duration_minutes,
+          type: this.appointmentData.type,
           department:
             this.appointmentData.department || selectedDoctor?.department || 'General Medicine',
-          scheduled_by: this.$store.state.auth.user?.id || 1, // Use current user ID
+          professional: selectedDoctor?.role || 'Doctor',
+          priority: this.appointmentData.priority,
+          notes: this.appointmentData.notes?.trim() || '',
+          reason_for_visit: this.appointmentData.reason_for_visit.trim(),
         };
 
-        await this.createAppointment(formData);
+        // Create extends base with required creation-only fields
+        const createPayload = {
+          ...basePayload,
+          patient_id: this.selectedPatient.id,
+          scheduled_by: this.currentUser.sub,
+        };
+
+        await this.createAppointment(createPayload);
 
         this.$bvToast.toast('Appointment booked successfully', {
           title: 'Success',
@@ -722,7 +848,7 @@ export default {
       this.appointmentData = {
         patient_id: '',
         doctor_id: '',
-        type: 'CONSULTATION',
+        type: 'Consultation',
         priority: 'NORMAL',
         department: '',
         appointment_date: '',
@@ -737,6 +863,8 @@ export default {
 
   async created() {
     // Defer loading doctors; they will load on search or when needed
+    this.loadDoctors();
+    this.loadDepartments();
   },
 
   beforeDestroy() {
@@ -748,18 +876,198 @@ export default {
 </script>
 
 <style scoped>
-.wizard-step {
+.book-appointment {
+  padding: 0;
+}
+
+/* Modern Wizard Steps - Card Based Design */
+.wizard-progress-container {
+  margin-bottom: 2rem;
+}
+
+.wizard-steps-cards {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.wizard-step-card {
+  flex: 1;
+  min-width: 200px;
+  background: #ffffff;
+  border: 2px solid #e4e6ef;
+  border-radius: 12px;
+  padding: 1.5rem 1.25rem;
+  position: relative;
+  transition: all 0.3s ease;
+  cursor: default;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.wizard-step-card.clickable {
+  cursor: pointer;
+}
+
+.wizard-step-card.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.wizard-step-card.active {
+  border-color: #3699ff;
+  background: linear-gradient(135deg, #ffffff 0%, #f7f9fc 100%);
+  box-shadow: 0 4px 16px rgba(54, 153, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.wizard-step-card.completed {
+  border-color: #1bc5bd;
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%);
+}
+
+.wizard-step-card.completed .step-card-icon {
+  color: #1bc5bd;
+}
+
+.step-card-icon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+  color: #b5b5c3;
   transition: all 0.3s ease;
 }
 
-.wizard-step.current .wizard-number,
-.wizard-step.done .wizard-number {
-  background-color: #3699ff;
+.wizard-step-card.active .step-card-icon {
+  color: #3699ff;
+  transform: scale(1.1);
+}
+
+.step-card-content {
+  flex: 1;
+}
+
+.step-card-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #3f4254;
+  margin-bottom: 0.25rem;
+  transition: all 0.3s ease;
+}
+
+.wizard-step-card.active .step-card-title {
+  color: #3699ff;
+  font-weight: 700;
+}
+
+.step-card-desc {
+  font-size: 0.8rem;
+  color: #b5b5c3;
+  transition: all 0.3s ease;
+}
+
+.wizard-step-card.active .step-card-desc {
+  color: #7e8299;
+}
+
+.step-card-number {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e4e6ef;
+  color: #7e8299;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.wizard-step-card.active .step-card-number {
+  background: #3699ff;
+  color: white;
+  transform: scale(1.1);
+}
+
+.wizard-step-card.completed .step-card-number {
+  background: #1bc5bd;
   color: white;
 }
 
-.wizard-step.done .wizard-number {
-  background-color: #1bc5bd;
+.step-connector {
+  flex: 0 0 40px;
+  height: 2px;
+  background: #e4e6ef;
+  position: relative;
+  transition: all 0.3s ease;
+  margin: 0 0.5rem;
+}
+
+.step-connector.completed {
+  background: #1bc5bd;
+}
+
+.step-connector::after {
+  content: '';
+  position: absolute;
+  right: -4px;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e4e6ef;
+  transition: all 0.3s ease;
+}
+
+.step-connector.completed::after {
+  background: #1bc5bd;
+}
+
+/* Step Content */
+.step-content {
+  min-height: 400px;
+  padding: 2rem 0;
+}
+
+.step-header {
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #f4f6f9;
+  margin-bottom: 2rem;
+}
+
+.step-icon-wrapper {
+  display: inline-block;
+  padding: 1rem;
+  background: linear-gradient(135deg, #f7f9fc 0%, #ffffff 100%);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.selected-patient-card {
+  border: 2px solid #3699ff;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.selected-patient-card:hover {
+  box-shadow: 0 4px 12px rgba(54, 153, 255, 0.15);
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  margin-bottom: 0.5rem;
+  display: block;
 }
 
 .time-slots-grid .time-slot {
@@ -777,21 +1085,84 @@ export default {
   color: white;
 }
 
-.step-content {
-  min-height: 400px;
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .wizard-steps-cards {
+    gap: 0.25rem;
+  }
+
+  .wizard-step-card {
+    min-width: 160px;
+    padding: 1.25rem 1rem;
+  }
+
+  .step-card-icon {
+    font-size: 1.5rem;
+  }
+
+  .step-connector {
+    flex: 0 0 20px;
+  }
+}
+
+@media (max-width: 992px) {
+  .wizard-steps-cards {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .wizard-step-card {
+    width: 100%;
+    max-width: 400px;
+    flex-direction: row;
+    text-align: left;
+    padding: 1rem 1.5rem;
+  }
+
+  .step-card-icon {
+    margin-right: 1rem;
+    margin-bottom: 0;
+    font-size: 1.75rem;
+  }
+
+  .step-card-content {
+    flex: 1;
+  }
+
+  .step-card-number {
+    position: static;
+    margin-left: auto;
+  }
+
+  .step-connector {
+    flex: 0 0 2px;
+    width: 2px;
+    height: 30px;
+    margin: 0 auto;
+  }
+
+  .step-connector::after {
+    right: -3px;
+    top: auto;
+    bottom: -4px;
+  }
 }
 
 @media (max-width: 768px) {
-  .wizard-steps {
-    flex-direction: column;
+  .wizard-step-card {
+    padding: 0.875rem 1rem;
   }
 
-  .wizard-step {
-    margin-bottom: 1rem;
+  .step-card-title {
+    font-size: 0.875rem;
   }
 
-  .time-slots-grid .col-6 {
-    margin-bottom: 0.5rem;
+  .step-card-desc {
+    font-size: 0.75rem;
+  }
+
+  .step-card-icon {
+    font-size: 1.5rem;
   }
 }
 </style>

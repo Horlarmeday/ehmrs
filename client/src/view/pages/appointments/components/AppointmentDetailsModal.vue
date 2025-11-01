@@ -59,11 +59,8 @@
                   <p><strong>Duration:</strong> {{ appointment.duration_minutes || 30 }} minutes</p>
                   <p>
                     <strong>Type:</strong>
-                    <span
-                      class="badge badge-pill ml-1"
-                      :class="getTypeClass(appointment.appointment_type)"
-                    >
-                      {{ getTypeText(appointment.appointment_type) }}
+                    <span class="badge badge-pill ml-1" :class="getTypeClass(appointment.type)">
+                      {{ getTypeText(appointment.type) }}
                     </span>
                   </p>
                 </div>

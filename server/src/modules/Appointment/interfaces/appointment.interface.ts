@@ -31,11 +31,11 @@ export interface UpdateAppointment {
 export interface AppointmentFilters {
   patient_id?: number;
   doctor_id?: number;
-  status?: AppointmentStatus;
+  status?: string;
   appointment_date?: Date;
   start_date?: Date;
   end_date?: Date;
-  type?: AppointmentType;
+  type?: string;
   department?: string;
 }
 
@@ -92,4 +92,11 @@ export interface AppointmentConflict {
     patient_name: string;
   }[];
   suggested_slots?: AppointmentSlot[];
+}
+
+// Standard paginated result returned from repository/service
+export interface PaginatedResult<T> {
+  docs: T[];
+  total: number;
+  pages: number;
 }

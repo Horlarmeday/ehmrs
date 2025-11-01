@@ -53,7 +53,13 @@ export async function getAppointments(query: any) {
 
   // Date range filter
   if (start && end) {
-    where.appointment_date = dateIntervalQuery('', start, end);
+    const startDate = dayjs(start)
+      .startOf('day')
+      .toDate();
+    const endDate = dayjs(end)
+      .endOf('day')
+      .toDate();
+    where.appointment_date = { [Op.between]: [startDate, endDate] };
   } else if (filter === 'today') {
     const today = dayjs()
       .startOf('day')
@@ -71,7 +77,7 @@ export async function getAppointments(query: any) {
       { '$patient.firstname$': { [Op.like]: `%${search}%` } },
       { '$patient.lastname$': { [Op.like]: `%${search}%` } },
       { '$patient.phone$': { [Op.like]: `%${search}%` } },
-      { '$patient.hospital_id': { [Op.like]: `%${search}%` } },
+      { '$patient.hospital_id$': { [Op.like]: `%${search}%` } },
       { '$doctor.firstname$': { [Op.like]: `%${search}%` } },
       { '$doctor.lastname$': { [Op.like]: `%${search}%` } },
       { reason_for_visit: { [Op.like]: `%${search}%` } },
@@ -226,10 +232,11 @@ export async function getAppointmentsByDate(
  */
 export async function getAppointmentsByDoctor(
   doctorId: number,
-  date?: Date
+  start?: Date,
+  end?: Date
 ): Promise<Appointment[]> {
   const where: WhereOptions = { doctor_id: doctorId };
-  if (date) where.appointment_date = date;
+  if (start && end) where.appointment_date = { [Op.between]: [start, end] };
 
   return Appointment.findAll({
     where,

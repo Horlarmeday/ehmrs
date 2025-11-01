@@ -28,7 +28,10 @@ export class AppointmentCheckInService {
       dialysis_type?: string;
       dialysis_notes?: string;
       dialysis_priority?: string;
+      // scheduled_time is internal-only, derived from controller normalization
       scheduled_time?: string;
+      // accept check_in_time only via controller normalization (not from client directly)
+      check_in_time?: string;
     } = {},
     staffId: number
   ): Promise<{ appointment: Appointment; visit: Visit }> {
@@ -78,6 +81,9 @@ export class AppointmentCheckInService {
       const visitData: CreateVisit = {
         patient_id: appointment.patient_id,
         category: visitCategory,
+        // Required Visit fields sourced from appointment
+        department: appointment.department,
+        type: appointment.type,
         service_id: checkInData.service_id || undefined,
         staff_id: staffId,
         professional: appointment.professional,
@@ -96,6 +102,7 @@ export class AppointmentCheckInService {
         dialysis_type: checkInData.dialysis_type,
         dialysis_notes: checkInData.dialysis_notes,
         dialysis_priority: checkInData.dialysis_priority,
+        // Only use scheduled_time normalized from controller; ignore raw check_in_time here
         scheduled_time: checkInData.scheduled_time,
       };
 

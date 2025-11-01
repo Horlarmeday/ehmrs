@@ -46,20 +46,41 @@ export default {
       commit('SET_LOADING', true);
       commit('CLEAR_ERROR');
 
+      // Normalize filters: prefer new names and map legacy names to new
+      const { filters } = state;
+      const normalizedType =
+        params.type || params.appointment_type || filters.type || filters.appointment_type || '';
+
+      // Build query params per frontend-backend consistency rules
       const queryParams = {
         currentPage: params.currentPage || state.currentPage,
         pageLimit: params.pageLimit || state.itemsPerPage,
-        search: params.search || state.searchTerm,
-        ...state.filters,
-        ...params,
+        search: params.search || state.searchTerm || undefined,
+        status: (params.status ?? filters.status) || undefined,
+        doctor_id: (params.doctor_id ?? filters.doctor_id) || undefined,
+        department: (params.department ?? filters.department) || undefined,
+        appointment_date: (params.appointment_date ?? filters.appointment_date) || undefined,
+        // New param names
+        start: params.start || undefined,
+        end: params.end || undefined,
+        type: normalizedType || undefined,
       };
 
       axios
         .get('/appointments/get', { params: queryParams })
         .then((response) => {
-          commit('SET_APPOINTMENTS', response.data.data.docs);
-          commit('SET_APPOINTMENTS_TOTAL', response.data.data.total);
-          commit('SET_APPOINTMENTS_PAGES', response.data.data.pages);
+          const data = response.data?.data || {};
+          // Standard structure: rows/count/pages/currentPage/pageLimit
+          const rows = data.rows || [];
+          const count = typeof data.count === 'number' ? data.count : 0;
+          const pages =
+            typeof data.pages === 'number'
+              ? data.pages
+              : Math.ceil(count / (queryParams.pageLimit || 1));
+
+          commit('SET_APPOINTMENTS', rows);
+          commit('SET_APPOINTMENTS_TOTAL', count);
+          commit('SET_APPOINTMENTS_PAGES', pages);
           commit('SET_CURRENT_PAGE', queryParams.currentPage);
           commit('SET_LOADING', false);
           resolve(response);
@@ -100,6 +121,7 @@ export default {
           const updatedAppointment = response.data.data;
           commit('UPDATE_APPOINTMENT', updatedAppointment);
           commit('SET_SUBMITTING', false);
+          console.log('update response', response);
           resolve(response);
         })
         .catch((error) => {
@@ -293,6 +315,30 @@ export default {
     });
   },
 
+  // Fetch dashboard statistics
+  fetchDashboardStatistics({ commit }) {
+    return new Promise((resolve, reject) => {
+      commit('SET_LOADING', true);
+      commit('CLEAR_ERROR');
+
+      axios
+        .get('/appointments/dashboard/statistics')
+        .then((response) => {
+          commit('SET_DASHBOARD_STATISTICS', response.data.data);
+          commit('SET_LOADING', false);
+          resolve(response);
+        })
+        .catch((error) => {
+          commit('SET_LOADING', false);
+          commit(
+            'SET_ERROR',
+            error.response?.data?.message || 'Failed to fetch dashboard statistics'
+          );
+          reject(error);
+        });
+    });
+  },
+
   // Mark appointment as no-show
   markNoShow({ commit }, appointmentId) {
     return new Promise((resolve, reject) => {
@@ -344,6 +390,99 @@ export default {
         })
         .catch((error) => {
           commit('SET_ERROR', error.response?.data?.message || 'Failed to fetch doctor schedule');
+          reject(error);
+        });
+    });
+  },
+
+  // Create or update schedule template
+  createScheduleTemplate({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      commit('SET_SUBMITTING', true);
+      commit('CLEAR_ERROR');
+
+      axios
+        .post('/appointments/schedule-template/create', payload)
+        .then((response) => {
+          commit('SET_SUBMITTING', false);
+          resolve(response);
+        })
+        .catch((error) => {
+          commit('SET_SUBMITTING', false);
+          commit('SET_ERROR', error.response?.data?.message || 'Failed to save schedule template');
+          if (error.response?.data?.errors) {
+            commit('SET_VALIDATION_ERRORS', error.response.data.errors);
+          }
+          reject(error);
+        });
+    });
+  },
+
+  // Apply schedule template
+  applyScheduleTemplate({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      commit('SET_SUBMITTING', true);
+      commit('CLEAR_ERROR');
+
+      axios
+        .post('/appointments/schedule-template/apply', payload)
+        .then((response) => {
+          commit('SET_SUBMITTING', false);
+          resolve(response);
+        })
+        .catch((error) => {
+          commit('SET_SUBMITTING', false);
+          commit('SET_ERROR', error.response?.data?.message || 'Failed to apply schedule template');
+          if (error.response?.data?.errors) {
+            commit('SET_VALIDATION_ERRORS', error.response.data.errors);
+          }
+          reject(error);
+        });
+    });
+  },
+
+  // Create time block with optional weekly recurrence
+  createTimeBlock({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      commit('SET_SUBMITTING', true);
+      commit('CLEAR_ERROR');
+
+      axios
+        .post('/appointments/time-block/create', payload)
+        .then((response) => {
+          const block = response.data?.data;
+          if (block) {
+            commit('ADD_TIME_BLOCK', block);
+          }
+          commit('SET_SUBMITTING', false);
+          resolve(response);
+        })
+        .catch((error) => {
+          commit('SET_SUBMITTING', false);
+          commit('SET_ERROR', error.response?.data?.message || 'Failed to create time block');
+          if (error.response?.data?.errors) {
+            commit('SET_VALIDATION_ERRORS', error.response.data.errors);
+          }
+          reject(error);
+        });
+    });
+  },
+
+  // Fetch blocked slots for doctor and date range (if API returns), otherwise noop
+  fetchBlockedSlots({ commit }, { doctor_id, start, end }) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/appointments/doctor/${doctor_id}/schedule`, { params: { start, end } })
+        .then((response) => {
+          const data = response.data?.data || {};
+          if (data.timeBlocks) {
+            commit('SET_TIME_BLOCKS', data.timeBlocks);
+          }
+          resolve(response);
+        })
+        .catch((error) => {
+          // Do not hard fail UI on missing blocks; just store error
+          commit('SET_ERROR', error.response?.data?.message || 'Failed to fetch blocked slots');
           reject(error);
         });
     });
@@ -404,13 +543,6 @@ export default {
   },
 
   // UI state actions
-  openPatientModal({ commit }) {
-    commit('SET_SHOW_PATIENT_MODAL', true);
-  },
-
-  closePatientModal({ commit }) {
-    commit('SET_SHOW_PATIENT_MODAL', false);
-  },
 
   showAppointmentForm({ commit }) {
     commit('SET_SHOW_APPOINTMENT_FORM', true);

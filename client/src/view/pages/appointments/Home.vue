@@ -329,11 +329,16 @@ export default {
   },
   computed: {
     ...mapState('auth', ['user']),
-    ...mapState('appointments', ['todaysAppointments', 'error']),
+    ...mapState('appointments', ['todaysAppointments', 'error', 'dashboardStatistics']),
     ...mapGetters('appointments', ['appointmentStats']),
 
     canBookAppointments() {
-      return this.user && ['Reception', 'Medical Records'].includes(this.currentUser.role);
+      return (
+        this.currentUser &&
+        ['Reception', 'Receptionist', 'Medical Records', 'Super Admin'].includes(
+          this.currentUser.role
+        )
+      );
     },
 
     stats() {
@@ -353,38 +358,38 @@ export default {
     },
 
     weeklyStats() {
-      // Mock data - should be computed from actual appointments
       return {
-        total: 75,
-        completion: 85,
+        total: this.dashboardStatistics.weekly.total || 0,
+        completion: this.dashboardStatistics.weekly.completion_rate || 0,
       };
     },
 
     monthlyStats() {
-      // Mock data - should be computed from actual appointments
       return {
-        total: 320,
-        completion: 88,
+        total: this.dashboardStatistics.monthly.total || 0,
+        completion: this.dashboardStatistics.monthly.completion_rate || 0,
       };
     },
 
     noShowRate() {
-      // Mock data - should be computed from actual appointments
-      return 12;
+      return this.dashboardStatistics.no_show_rate || 0;
     },
 
     avgWaitTime() {
-      // Mock data - should be computed from actual wait times
-      return 18;
+      return this.dashboardStatistics.avg_wait_time || 0;
     },
   },
   methods: {
-    ...mapActions('appointments', ['fetchTodaysAppointments', 'checkInAppointment']),
+    ...mapActions('appointments', [
+      'fetchTodaysAppointments',
+      'checkInAppointment',
+      'fetchDashboardStatistics',
+    ]),
 
     async refreshDashboard() {
       this.loading = true;
       try {
-        await this.loadTodaysAppointments();
+        await Promise.all([this.loadTodaysAppointments(), this.fetchDashboardStatistics()]);
         this.lastUpdated = dayjs().format('h:mm A');
       } catch (error) {
         this.$bvToast.toast('Failed to refresh dashboard', {
@@ -475,6 +480,7 @@ export default {
     // Set up auto-refresh every 30 seconds
     this.refreshInterval = setInterval(() => {
       this.loadTodaysAppointments();
+      this.fetchDashboardStatistics();
     }, 30000);
   },
 

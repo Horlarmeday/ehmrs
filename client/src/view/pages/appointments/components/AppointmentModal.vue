@@ -332,6 +332,13 @@
 import { mapActions } from 'vuex';
 import vSelect from 'vue-select';
 import { departments as employeeDepartments } from '@/view/pages/employees/create/employeeRoles.js';
+import {
+  APPOINTMENT_TYPES,
+  APPOINTMENT_PRIORITIES,
+  APPOINTMENT_STATUSES,
+  APPOINTMENT_DURATIONS,
+} from '@/view/pages/appointments/constants.js';
+import { parseJwt } from '@/common/common';
 
 export default {
   name: 'AppointmentModal',
@@ -354,7 +361,7 @@ export default {
       form: {
         patient_id: '',
         doctor_id: '',
-        type: 'CONSULTATION',
+        type: 'Consultation',
         priority: 'NORMAL',
         department: '',
         appointment_date: '',
@@ -378,6 +385,7 @@ export default {
         notes: { valid: null, error: '' },
       },
       searchTimeout: null,
+      currentUser: parseJwt(localStorage.getItem('user_token')),
     };
   },
   computed: {
@@ -393,41 +401,18 @@ export default {
       return !!this.appointment;
     },
     appointmentTypeOptions() {
-      return [
-        { value: 'CONSULTATION', text: 'Consultation' },
-        { value: 'FOLLOW_UP', text: 'Follow-up' },
-        { value: 'PROCEDURE', text: 'Procedure' },
-        { value: 'VACCINATION', text: 'Vaccination' },
-        { value: 'DIALYSIS', text: 'Dialysis' },
-        { value: 'ANTENATAL', text: 'Antenatal Care' },
-        { value: 'SURGERY', text: 'Surgery Consultation' },
-        { value: 'EMERGENCY', text: 'Emergency' },
-      ];
+      return APPOINTMENT_TYPES;
     },
     priorityOptions() {
-      return [
-        { value: 'LOW', text: 'Low Priority' },
-        { value: 'NORMAL', text: 'Normal Priority' },
-        { value: 'HIGH', text: 'High Priority' },
-        { value: 'URGENT', text: 'Urgent' },
-      ];
+      return APPOINTMENT_PRIORITIES;
     },
     statusOptions() {
-      return [
-        { value: 'Scheduled', text: 'Scheduled' },
-        { value: 'Confirmed', text: 'Confirmed' },
-        { value: 'Rescheduled', text: 'Rescheduled' },
-      ];
+      // Limit to statuses applicable for manual selection during scheduling
+      const allowed = new Set(['Scheduled', 'Confirmed', 'Rescheduled']);
+      return APPOINTMENT_STATUSES.filter((s) => allowed.has(s.value));
     },
     durationOptions() {
-      return [
-        { value: 15, text: '15 minutes' },
-        { value: 30, text: '30 minutes' },
-        { value: 45, text: '45 minutes' },
-        { value: 60, text: '1 hour' },
-        { value: 90, text: '1.5 hours' },
-        { value: 120, text: '2 hours' },
-      ];
+      return APPOINTMENT_DURATIONS;
     },
     minDate() {
       return new Date().toISOString().split('T')[0];
@@ -475,6 +460,9 @@ export default {
         this.initializeForm();
         this.loadDoctors();
         this.loadDepartments();
+      } else {
+        // Always reset form when modal closes to ensure clean state for next use
+        this.initializeForm();
       }
     },
     appointment: {
@@ -501,7 +489,7 @@ export default {
         this.form = {
           patient_id: this.appointment.patient_id || '',
           doctor_id: this.appointment.doctor_id || '',
-          type: this.appointment.type || 'CONSULTATION',
+          type: this.appointment.type || 'Consultation',
           priority: this.appointment.priority || 'NORMAL',
           department: this.appointment.department || '',
           appointment_date: this.appointment.appointment_date || '',
@@ -521,7 +509,7 @@ export default {
         this.form = {
           patient_id: '',
           doctor_id: '',
-          type: 'CONSULTATION',
+          type: 'Consultation',
           priority: 'NORMAL',
           department: '',
           appointment_date: '',
@@ -724,27 +712,42 @@ export default {
       try {
         this.submitting = true;
         const selectedDoctor = this.doctors.find((d) => d.id === this.form.doctor_id);
-        const payload = {
-          ...this.form,
-          patient_id: this.selectedPatient.id,
-          professional: selectedDoctor?.role || 'Doctor',
+
+        // Shared fields used by both create and update
+        const basePayload = {
+          doctor_id: this.form.doctor_id,
+          appointment_date: this.form.appointment_date,
+          appointment_time: this.form.appointment_time,
+          duration_minutes: this.form.duration_minutes,
+          type: this.form.type,
           department: this.form.department || selectedDoctor?.department || 'General Medicine',
-          scheduled_by: this.$store.state.auth.user?.id || 1,
+          professional: selectedDoctor?.role || 'Doctor',
+          priority: this.form.priority,
           notes: this.form.notes?.trim() || '',
           reason_for_visit: this.form.reason_for_visit.trim(),
         };
+
         let response;
         if (this.isEditing) {
-          response = await this.updateAppointment({ id: this.appointment.id, data: payload });
+          // Update expects only the base fields
+          response = await this.updateAppointment({ id: this.appointment.id, data: basePayload });
+          console.log('update response', response);
         } else {
-          response = await this.createAppointment(payload);
+          // Create extends base with required creation-only fields
+          const createPayload = {
+            ...basePayload,
+            patient_id: this.selectedPatient.id,
+            scheduled_by: this.currentUser.sub,
+          };
+          response = await this.createAppointment(createPayload);
         }
+        console.log(response);
         if (response && response.data) {
           this.$emit('saved', response.data.data);
-          this.$bvToast.toast(
-            `Appointment ${this.isEditing ? 'updated' : 'created'} successfully`,
-            { title: 'Success', variant: 'success', solid: true }
-          );
+
+          this.initializeForm();
+
+          this.submitting = false;
           this.handleClose();
         }
       } catch (error) {
@@ -758,7 +761,9 @@ export default {
       }
     },
     handleClose() {
-      if (!this.submitting) this.$emit('closeModal');
+      if (!this.submitting) {
+        this.$emit('closeModal');
+      }
     },
   },
   beforeDestroy() {

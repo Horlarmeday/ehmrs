@@ -1,6 +1,7 @@
 import AppointmentService from './appointment.service';
 import AppointmentCheckInService from './services/appointmentCheckIn.service';
 import ScheduleManagementService from './services/scheduleManagement.service';
+import { AppointmentStatisticsService } from './services/appointmentStatistics.service';
 import {
   validateCreateAppointment,
   validateUpdateAppointment,
@@ -9,6 +10,8 @@ import {
   validateRescheduleAppointment,
   validateConfirmAppointment,
   validateAvailabilityQuery,
+  // add minimal check-in body validation
+  validateCheckInBody,
 } from './validations';
 import { SuccessResponse, successResponse } from '../../common/responses/success-responses';
 import { StatusCodes } from '../../core/helpers/helper';
@@ -17,6 +20,9 @@ import { errorResponse } from '../../common/responses/error-responses';
 import { DATA_SAVED, DATA_UPDATED } from '../AdminSettings/messages/response-messages';
 import { NextFunction, Request, Response } from 'express';
 import { isEmpty } from 'lodash';
+import { Appointment } from '../../database/models';
+import { PaginatedResult } from './interfaces/appointment.interface';
+import dayjs from 'dayjs';
 
 class AppointmentController {
   /**
@@ -79,34 +85,34 @@ class AppointmentController {
         pageSize: Number(req.query.pageLimit || req.query.pageSize || req.query.itemsPerPage) || 10,
         // Handle search parameter
         search: req.query.search as string,
-        // Handle sort parameters
-        sortBy: req.query.sortBy as string,
-        sortOrder: (req.query.sortOrder as 'ASC' | 'DESC') || 'DESC',
         // Handle filters
         filters: {
           // Handle date parameter mapping
-          start_date:
-            req.query.start || req.query.date_from
-              ? new Date((req.query.start as string) || (req.query.date_from as string))
-              : undefined,
-          end_date:
-            req.query.end || req.query.date_to
-              ? new Date((req.query.end as string) || (req.query.date_to as string))
-              : undefined,
+          start_date: req.query.start ? new Date(req.query.start as string) : undefined,
+          end_date: req.query.end ? new Date(req.query.end as string) : undefined,
           // Handle other filter parameters
           patient_id: req.query.patient_id ? Number(req.query.patient_id) : undefined,
           doctor_id: req.query.doctor_id ? Number(req.query.doctor_id) : undefined,
-          status: req.query.status as any,
-          type: (req.query.type || req.query.appointment_type) as any,
-          department: req.query.department as string,
+          status:
+            req.query.status === 'all' ? undefined : ((req.query.status as unknown) as string),
+          type: req.query.type === 'all' ? undefined : ((req.query.type as unknown) as string),
         },
       };
 
       const appointments = await AppointmentService.getAppointmentsService(queryParams);
 
+      // Repository/service returns paginated results; map to standard response shape
+      const { docs, total, pages } = (appointments as unknown) as PaginatedResult<Appointment>;
+
       return successResponse({
         res,
-        data: appointments,
+        data: {
+          rows: docs,
+          count: total,
+          pages,
+          currentPage: queryParams.page,
+          pageLimit: queryParams.pageSize,
+        },
         message: SUCCESS,
         httpCode: StatusCodes.OK,
       });
@@ -370,7 +376,12 @@ class AppointmentController {
     res: Response,
     next: NextFunction
   ): Promise<SuccessResponse | void> {
-    const { error } = validateAvailabilityQuery(req.query);
+    const availabilityQuery = {
+      doctor_id: Number(req.query.doctor_id),
+      date: req.query.date as string,
+      duration_minutes: req.query.duration_minutes ? Number(req.query.duration_minutes) : undefined,
+    };
+    const { error } = validateAvailabilityQuery(availabilityQuery);
     if (error) {
       return errorResponse({
         res,
@@ -412,12 +423,15 @@ class AppointmentController {
     next: NextFunction
   ): Promise<SuccessResponse | void> {
     try {
-      const { date } = req.query;
+      const { start, end } = req.query;
+      const startDate = dayjs(start as string).toDate();
+      const endDate = dayjs(end as string).toDate();
       const doctorId = Number(req.params.doctorId);
 
       const schedule = await AppointmentService.getDoctorScheduleService(
         doctorId,
-        new Date(date as string)
+        dayjs(startDate).toDate(),
+        dayjs(endDate).toDate()
       );
 
       return successResponse({
@@ -512,7 +526,23 @@ class AppointmentController {
     try {
       const appointmentId = Number(req.params.id);
       const staffId = req.user.sub;
-      const checkInData = req.body || {};
+      const incoming = req.body || {};
+
+      // Validate body: only allow check_in_time (optional); disallow scheduled_time and others
+      const { error } = validateCheckInBody(incoming);
+      if (error) {
+        return errorResponse({
+          res,
+          message: error.details[0].message,
+          httpCode: StatusCodes.BAD_REQUEST,
+        });
+      }
+
+      // Normalize: map check_in_time -> scheduled_time for internal service usage
+      const checkInData =
+        typeof incoming.check_in_time === 'string' && incoming.check_in_time.trim()
+          ? { scheduled_time: incoming.check_in_time }
+          : {};
 
       const result = await AppointmentCheckInService.checkInAppointment(
         appointmentId,
@@ -845,6 +875,33 @@ class AppointmentController {
         httpCode: StatusCodes.OK,
         message: `Found ${notifications.length} waitlist entries to notify`,
         data: notifications,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * Get dashboard statistics
+   * @static
+   * @param {Request} req - express request object
+   * @param {Response} res - express response object
+   * @param {NextFunction} next - next middleware
+   * @returns {Promise<SuccessResponse | void>} json object with dashboard statistics
+   */
+  static async getDashboardStatistics(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    try {
+      const statistics = await AppointmentStatisticsService.getDashboardStatistics();
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data: statistics,
       });
     } catch (e) {
       return next(e);

@@ -36,6 +36,7 @@ import { getPatientById } from '../Patient/patient.repository';
 import { getStaffById } from '../Staff/staff.repository';
 import { Status } from '../../database/models/patient';
 import { Gender } from '../../database/models/staff';
+import dayjs from 'dayjs';
 
 class AppointmentService {
   /**
@@ -63,9 +64,13 @@ class AppointmentService {
     }
     if (patient.patient_status === 'Deceased') {
       throw new BadException(
-        'INVALID', 
-        StatusCodes.BAD_REQUEST, 
-        `Cannot create appointment for deceased patient ${patient.fullname}. Patient died on ${patient.date_of_death ? new Date(patient.date_of_death).toLocaleDateString() : 'unknown date'}.`
+        'INVALID',
+        StatusCodes.BAD_REQUEST,
+        `Cannot create appointment for deceased patient ${patient.fullname}. Patient died on ${
+          patient.date_of_death
+            ? new Date(patient.date_of_death).toLocaleDateString()
+            : 'unknown date'
+        }.`
       );
     }
 
@@ -144,8 +149,6 @@ class AppointmentService {
       start: params.filters?.start_date,
       end: params.filters?.end_date,
       // Sort
-      sortBy: params.sortBy,
-      sortOrder: params.sortOrder,
     };
 
     return await getAppointments(repositoryParams);
@@ -215,12 +218,13 @@ class AppointmentService {
       }
     }
 
-    const [affectedCount, updatedAppointments] = await updateAppointment(id, body);
+    const [affectedCount] = await updateAppointment(id, body);
     if (affectedCount === 0) {
       throw new BadException('NOT_FOUND', StatusCodes.NOT_FOUND, 'Appointment not found');
     }
 
-    return updatedAppointments[0];
+    const updatedAppointment = await getAppointmentById(id);
+    return updatedAppointment;
   }
 
   /**
@@ -249,7 +253,7 @@ class AppointmentService {
       );
     }
 
-    const [affectedCount, cancelledAppointments] = await cancelAppointment(
+    const [affectedCount] = await cancelAppointment(
       id,
       data.cancelled_by,
       data.cancellation_reason
@@ -259,7 +263,7 @@ class AppointmentService {
       throw new BadException('NOT_FOUND', StatusCodes.NOT_FOUND, 'Appointment not found');
     }
 
-    return cancelledAppointments[0];
+    return this.getAppointmentByIdService(id);
   }
 
   /**
@@ -308,7 +312,7 @@ class AppointmentService {
       );
     }
 
-    const [affectedCount, rescheduledAppointments] = await rescheduleAppointment(
+    const [affectedCount] = await rescheduleAppointment(
       id,
       data.appointment_date,
       data.appointment_time,
@@ -320,7 +324,7 @@ class AppointmentService {
       throw new BadException('NOT_FOUND', StatusCodes.NOT_FOUND, 'Appointment not found');
     }
 
-    return rescheduledAppointments[0];
+    return this.getAppointmentByIdService(id);
   }
 
   /**
@@ -349,13 +353,13 @@ class AppointmentService {
       );
     }
 
-    const [affectedCount, confirmedAppointments] = await confirmAppointment(id, data.confirmed_by);
+    const [affectedCount] = await confirmAppointment(id, data.confirmed_by);
 
     if (affectedCount === 0) {
       throw new BadException('NOT_FOUND', StatusCodes.NOT_FOUND, 'Appointment not found');
     }
 
-    return confirmedAppointments[0];
+    return this.getAppointmentByIdService(id);
   }
 
   /**
@@ -377,13 +381,13 @@ class AppointmentService {
       );
     }
 
-    const [affectedCount, noShowAppointments] = await markAppointmentNoShow(id);
+    const [affectedCount] = await markAppointmentNoShow(id);
 
     if (affectedCount === 0) {
       throw new BadException('NOT_FOUND', StatusCodes.NOT_FOUND, 'Appointment not found');
     }
 
-    return noShowAppointments[0];
+    return this.getAppointmentByIdService(id);
   }
 
   /**
@@ -400,16 +404,18 @@ class AppointmentService {
   /**
    * Get available time slots for a doctor on a specific date
    * @param doctorId - doctor ID
-   * @param date - appointment date
+   * @param start
    * @param durationMinutes - appointment duration
+   * @param end
    * @returns {Promise<AppointmentSlot[]>} available time slots
    */
   static async getAvailableSlotsService(
     doctorId: number,
-    date: Date,
-    durationMinutes = 30
+    start: Date,
+    durationMinutes = 30,
+    end?: Date
   ): Promise<AppointmentSlot[]> {
-    const existingAppointments = await getDoctorAvailability(doctorId, date);
+    const existingAppointments = await getDoctorAvailability(doctorId, start);
     const slots: AppointmentSlot[] = [];
 
     // Define working hours (8 AM to 6 PM with 1-hour lunch break from 1-2 PM)
@@ -437,7 +443,7 @@ class AppointmentService {
       }
 
       const slot: AppointmentSlot = {
-        date: date.toISOString().split('T')[0],
+        date: dayjs(start).format('YYYY-MM-DD'),
         time: timeString,
         available: true,
       };
@@ -471,15 +477,15 @@ class AppointmentService {
    */
   static async getDoctorScheduleService(
     doctorId: number,
-    date: Date,
+    startDate: Date,
     endDate?: Date
   ): Promise<DoctorAvailability> {
-    const appointments = await getAppointmentsByDoctor(doctorId, date);
-    const availableSlots = await this.getAvailableSlotsService(doctorId, date);
+    // const appointments = await getAppointmentsByDoctor(doctorId, startDate, endDate);
+    const availableSlots = await this.getAvailableSlotsService(doctorId, startDate);
 
     return {
       doctor_id: doctorId,
-      date: date.toISOString().split('T')[0],
+      date: dayjs(startDate).format('YYYY-MM-DD'),
       slots: availableSlots,
       working_hours: {
         start: '08:00',
@@ -556,7 +562,7 @@ class AppointmentService {
       throw new BadException('NOT_FOUND', StatusCodes.NOT_FOUND, 'Appointment not found');
     }
 
-    return completedAppointments[0];
+    return this.getAppointmentByIdService(id);
   }
 
   /**

@@ -31,7 +31,6 @@ export default {
   recurringAppointments: [],
 
   // UI state
-  showPatientModal: false,
   showAppointmentForm: false,
   showTimeSlotPicker: false,
 
@@ -48,4 +47,25 @@ export default {
   // Pagination
   itemsPerPage: 20,
   searchTerm: '',
+
+  // Dashboard statistics
+  dashboardStatistics: {
+    today: {
+      total: 0,
+      completed: 0,
+      pending: 0,
+    },
+    weekly: {
+      total: 0,
+      completed: 0,
+      completion_rate: 0,
+    },
+    monthly: {
+      total: 0,
+      completed: 0,
+      completion_rate: 0,
+    },
+    no_show_rate: 0,
+    avg_wait_time: 0,
+  },
 };

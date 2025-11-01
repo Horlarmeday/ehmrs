@@ -24,6 +24,7 @@ router.get('/conflicts/check', verify, AppointmentController.checkConflicts);
 // Daily operations
 router.get('/today/get', verify, AppointmentController.getTodaysAppointments);
 router.get('/check-in-queue/get', verify, AppointmentController.getCheckInQueue);
+router.get('/dashboard/statistics', verify, AppointmentController.getDashboardStatistics);
 
 // Check-in operations
 router.post('/:id/check-in', verify, AppointmentController.checkInAppointment);
