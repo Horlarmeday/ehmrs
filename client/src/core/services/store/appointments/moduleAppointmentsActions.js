@@ -404,11 +404,11 @@ export default {
   },
 
   // UI state actions
-  showPatientModal({ commit }) {
+  openPatientModal({ commit }) {
     commit('SET_SHOW_PATIENT_MODAL', true);
   },
 
-  hidePatientModal({ commit }) {
+  closePatientModal({ commit }) {
     commit('SET_SHOW_PATIENT_MODAL', false);
   },
 

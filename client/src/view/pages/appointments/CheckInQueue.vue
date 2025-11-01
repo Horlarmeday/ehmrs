@@ -372,7 +372,7 @@
     />
 
     <!-- Appointment Form Modal -->
-    <AppointmentForm
+    <AppointmentModal
       :displayPrompt="showForm"
       :appointment="selectedAppointment"
       @closeModal="hideAppointmentForm"
@@ -385,7 +385,7 @@
 import { mapState, mapGetters, mapActions } from 'vuex';
 import vSelect from 'vue-select';
 import AppointmentDetailsModal from './components/AppointmentDetailsModal.vue';
-import AppointmentForm from './components/AppointmentForm.vue';
+import AppointmentModal from './components/AppointmentModal.vue';
 import Swal from 'sweetalert2';
 
 export default {
@@ -393,7 +393,7 @@ export default {
   components: {
     vSelect,
     AppointmentDetailsModal,
-    AppointmentForm,
+    AppointmentModal,
   },
   data() {
     return {
@@ -856,7 +856,7 @@ export default {
             const response = await this.$store.dispatch('employee/fetchEmployees', {
               currentPage: 1,
               itemsPerPage: 50,
-              filter: 'doctor',
+              filter: { department: 'Medical Practioners' },
               search,
             });
             this.doctors = response.data.data.docs || [];
@@ -879,7 +879,7 @@ export default {
       const response = await this.$store.dispatch('employee/fetchEmployees', {
         currentPage: 1,
         itemsPerPage: 100,
-        filter: 'doctor',
+        filter: { department: 'Medical Practioners' },
       });
       this.doctors = response.data.data.docs || [];
     } catch (error) {

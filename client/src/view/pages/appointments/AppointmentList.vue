@@ -441,7 +441,7 @@
     </div>
 
     <!-- Appointment Form Modal -->
-    <AppointmentForm
+    <AppointmentModal
       :displayPrompt="showForm"
       :appointment="selectedAppointment"
       @closeModal="hideAppointmentForm"
@@ -461,17 +461,22 @@
 import { mapState, mapGetters, mapActions } from 'vuex';
 import vSelect from 'vue-select';
 import Pagination from '@/utils/Pagination.vue';
-import AppointmentForm from './components/AppointmentForm.vue';
+import AppointmentModal from './components/AppointmentModal.vue';
 import AppointmentDetailsModal from './components/AppointmentDetailsModal.vue';
 import { setUrlQueryParams } from '@/common/common';
 import Swal from 'sweetalert2';
+import {
+  APPOINTMENT_TYPES,
+  APPOINTMENT_PRIORITIES,
+  APPOINTMENT_STATUSES,
+} from '@/view/pages/appointments/constants.js';
 
 export default {
   name: 'AppointmentList',
   components: {
     vSelect,
     Pagination,
-    AppointmentForm,
+    AppointmentModal,
     AppointmentDetailsModal,
   },
   data() {
@@ -505,36 +510,18 @@ export default {
     },
 
     statusFilterOptions() {
-      return [
-        { value: 'Scheduled', text: 'Scheduled' },
-        { value: 'Confirmed', text: 'Confirmed' },
-        { value: 'Completed', text: 'Completed' },
-        { value: 'Cancelled', text: 'Cancelled' },
-        { value: 'No Show', text: 'No Show' },
-        { value: 'Rescheduled', text: 'Rescheduled' },
-      ];
+      return APPOINTMENT_STATUSES;
     },
 
     typeFilterOptions() {
-      return [
-        { value: 'CONSULTATION', text: 'Consultation' },
-        { value: 'FOLLOW_UP', text: 'Follow-up' },
-        { value: 'PROCEDURE', text: 'Procedure' },
-        { value: 'VACCINATION', text: 'Vaccination' },
-        { value: 'DIALYSIS', text: 'Dialysis' },
-        { value: 'ANTENATAL', text: 'Antenatal Care' },
-        { value: 'SURGERY', text: 'Surgery' },
-        { value: 'EMERGENCY', text: 'Emergency' },
-      ];
+      return APPOINTMENT_TYPES;
     },
 
     priorityFilterOptions() {
-      return [
-        { value: 'LOW', text: 'Low' },
-        { value: 'NORMAL', text: 'Normal' },
-        { value: 'HIGH', text: 'High' },
-        { value: 'URGENT', text: 'Urgent' },
-      ];
+      return APPOINTMENT_PRIORITIES.map((p) => ({
+        value: p.value,
+        text: p.text.replace(' Priority', ''),
+      }));
     },
   },
   methods: {
@@ -873,7 +860,7 @@ export default {
             const response = await this.$store.dispatch('employee/fetchEmployees', {
               currentPage: 1,
               itemsPerPage: 50,
-              filter: 'doctor',
+              filter: { department: 'Medical Practioners' },
               search,
             });
             this.doctors = response.data.data.docs || [];

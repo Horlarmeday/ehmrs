@@ -607,7 +607,7 @@ export default {
         const response = await this.$store.dispatch('employee/fetchEmployees', {
           currentPage: 1,
           itemsPerPage: 100,
-          filter: 'doctor',
+          filter: { department: 'Medical Practioners' },
         });
         this.doctors = response.data.data.docs || [];
       } catch (error) {
@@ -628,7 +628,7 @@ export default {
             const response = await this.$store.dispatch('employee/fetchEmployees', {
               currentPage: 1,
               itemsPerPage: 50,
-              filter: 'doctor',
+              filter: { department: 'Medical Practioners' },
               search,
             });
             this.doctors = response.data.data.docs || [];

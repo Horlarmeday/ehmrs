@@ -327,7 +327,7 @@
     />
 
     <!-- Appointment Form Modal -->
-    <AppointmentForm
+    <AppointmentModal
       :displayPrompt="showForm"
       :appointment="selectedAppointment"
       @closeModal="hideAppointmentForm"
@@ -339,13 +339,13 @@
 <script>
 import { mapState, mapActions } from 'vuex';
 import AppointmentDetailsModal from '../components/AppointmentDetailsModal.vue';
-import AppointmentForm from '../components/AppointmentForm.vue';
+import AppointmentModal from '../components/AppointmentModal.vue';
 
 export default {
   name: 'AppointmentCalendar',
   components: {
     AppointmentDetailsModal,
-    AppointmentForm,
+    AppointmentModal,
   },
   data() {
     return {
@@ -744,7 +744,7 @@ export default {
         const response = await this.$store.dispatch('employee/fetchEmployees', {
           currentPage: 1,
           itemsPerPage: 100,
-          filter: 'doctor',
+          filter: { department: 'Medical Practioners' },
         });
         this.doctors = response.data.data.docs || [];
       } catch (error) {

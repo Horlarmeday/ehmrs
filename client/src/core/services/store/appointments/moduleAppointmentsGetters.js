@@ -36,9 +36,9 @@ export default {
   recurringAppointments: (state) => state.recurringAppointments,
 
   // UI state getters
-  showPatientModal: (state) => state.showPatientModal,
-  showAppointmentForm: (state) => state.showAppointmentForm,
-  showTimeSlotPicker: (state) => state.showTimeSlotPicker,
+  isPatientModalVisible: (state) => state.showPatientModal,
+  isAppointmentFormVisible: (state) => state.showAppointmentForm,
+  isTimeSlotPickerVisible: (state) => state.showTimeSlotPicker,
 
   // Filter getters
   filters: (state) => state.filters,

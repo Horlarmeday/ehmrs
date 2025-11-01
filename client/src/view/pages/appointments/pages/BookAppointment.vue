@@ -412,7 +412,7 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex';
+import { mapActions } from 'vuex';
 import vSelect from 'vue-select';
 import PatientSearchModal from '../components/PatientSearchModal.vue';
 import TimeSlotPicker from '../../../components/appointments/TimeSlotPicker.vue';
@@ -451,8 +451,6 @@ export default {
     };
   },
   computed: {
-    ...mapState('appointments', ['showPatientModal']),
-
     minDate() {
       return new Date().toISOString().split('T')[0];
     },
@@ -514,21 +512,21 @@ export default {
     },
   },
   methods: {
-    ...mapActions('appointments', [
-      'showPatientModal',
-      'hidePatientModal',
-      'fetchAvailableSlots',
-      'createAppointment',
-    ]),
+    ...mapActions('appointments', {
+      openPatientModal: 'openPatientModal',
+      closePatientModal: 'closePatientModal',
+      fetchAvailableSlots: 'fetchAvailableSlots',
+      createAppointment: 'createAppointment',
+    }),
 
     showPatientSearch() {
-      this.showPatientModal();
+      this.openPatientModal();
     },
 
     onPatientSelected(patient) {
       this.selectedPatient = patient;
       this.appointmentData.patient_id = patient.id;
-      this.hidePatientModal();
+      this.closePatientModal();
     },
 
     clearPatient() {
@@ -542,7 +540,7 @@ export default {
         const response = await this.$store.dispatch('employee/fetchEmployees', {
           currentPage: 1,
           itemsPerPage: 100,
-          filter: 'doctor',
+          filter: { department: 'Medical Practioners' },
         });
         this.doctors = response.data.data.docs || [];
       } catch (error) {
@@ -563,7 +561,7 @@ export default {
             const response = await this.$store.dispatch('employee/fetchEmployees', {
               currentPage: 1,
               itemsPerPage: 50,
-              filter: 'doctor',
+              filter: { department: 'Medical Practioners' },
               search,
             });
             this.doctors = response.data.data.docs || [];
@@ -738,7 +736,7 @@ export default {
   },
 
   async created() {
-    await this.loadDoctors();
+    // Defer loading doctors; they will load on search or when needed
   },
 
   beforeDestroy() {

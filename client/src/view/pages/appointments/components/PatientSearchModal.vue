@@ -1,188 +1,170 @@
 <template>
-  <div
-    class="modal fade"
+  <b-modal
     id="patientSearchModal"
-    tabindex="-1"
-    role="dialog"
-    ref="patientSearchModal"
+    title="Search Patient"
+    size="lg"
+    hide-footer
+    v-model="modalVisible"
   >
-    <div class="modal-dialog modal-lg" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Search Patient</h5>
-          <button
-            type="button"
-            class="close"
-            data-dismiss="modal"
-            aria-label="Close"
-            @click="closeModal"
-          >
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <!-- Search Form -->
-          <div class="form-group mb-4">
-            <label>Search Patient</label>
-            <div class="input-group">
-              <input
-                type="text"
-                class="form-control"
-                v-model="searchTerm"
-                @input="searchPatients"
-                @keypress.enter="searchPatients"
-                placeholder="Enter patient name, hospital ID, or phone number"
-              />
-              <div class="input-group-append">
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  @click="searchPatients"
-                  :disabled="loading"
-                >
-                  <i class="fas fa-search" v-if="!loading"></i>
-                  <i class="fas fa-spinner fa-spin" v-else></i>
-                  Search
-                </button>
-              </div>
-            </div>
-            <small class="form-text text-muted">
-              Search by name, hospital ID, or phone number
-            </small>
-          </div>
-
-          <!-- Loading State -->
-          <div v-if="loading" class="text-center py-4">
-            <div class="spinner-border text-primary" role="status">
-              <span class="sr-only">Loading...</span>
-            </div>
-            <p class="mt-2 text-muted">Searching patients...</p>
-          </div>
-
-          <!-- No Results -->
-          <div v-else-if="searchPerformed && patients.length === 0" class="text-center py-4">
-            <i class="fas fa-search text-muted fa-3x mb-3"></i>
-            <h6 class="text-muted">No patients found</h6>
-            <p class="text-muted mb-0">Try adjusting your search terms</p>
-          </div>
-
-          <!-- Search Results -->
-          <div v-else-if="patients.length > 0">
-            <h6 class="mb-3">Search Results ({{ patients.length }})</h6>
-            <div class="table-responsive">
-              <table class="table table-hover">
-                <thead class="thead-light">
-                  <tr>
-                    <th>Hospital ID</th>
-                    <th>Name</th>
-                    <th>Gender</th>
-                    <th>Age</th>
-                    <th>Phone</th>
-                    <th>Insurance</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="patient in patients"
-                    :key="patient.id"
-                    class="cursor-pointer"
-                    @dblclick="selectPatient(patient)"
-                  >
-                    <td>
-                      <span
-                        v-b-tooltip.hover
-                        :title="patient?.insurances?.[0]?.insurance?.name || 'No Insurance'"
-                        class="label label-dot label-sm mr-2"
-                        :class="getPatientDotStatus(patient?.insurances?.[0]?.insurance?.name)"
-                      ></span>
-                      <strong>{{ patient.hospital_id || 'N/A' }}</strong>
-                    </td>
-                    <td>
-                      <div>
-                        <strong>{{ patient.fullname }}</strong>
-                        <br />
-                        <small class="text-muted">{{ patient.email || 'No email' }}</small>
-                      </div>
-                    </td>
-                    <td>{{ patient.gender }}</td>
-                    <td>
-                      <span v-if="patient.date_of_birth">
-                        {{ patient.date_of_birth | dayjs('from', 'now', true) }}
-                      </span>
-                      <span v-else class="text-muted">N/A</span>
-                    </td>
-                    <td>{{ patient.phone || 'N/A' }}</td>
-                    <td>
-                      <span
-                        v-if="patient?.insurances?.[0]?.insurance?.name"
-                        class="badge badge-info badge-sm"
-                      >
-                        {{ patient.insurances[0].insurance.name }}
-                      </span>
-                      <span v-else class="text-muted">None</span>
-                    </td>
-                    <td>
-                      <button
-                        type="button"
-                        class="btn btn-sm btn-primary"
-                        @click="selectPatient(patient)"
-                      >
-                        Select
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <!-- Pagination -->
-            <div v-if="totalPages > 1" class="d-flex justify-content-center">
-              <nav aria-label="Patient search pagination">
-                <ul class="pagination pagination-sm">
-                  <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                    <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">
-                      Previous
-                    </a>
-                  </li>
-                  <li
-                    v-for="page in visiblePages"
-                    :key="page"
-                    class="page-item"
-                    :class="{ active: page === currentPage }"
-                  >
-                    <a class="page-link" href="#" @click.prevent="changePage(page)">
-                      {{ page }}
-                    </a>
-                  </li>
-                  <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                    <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">
-                      Next
-                    </a>
-                  </li>
-                </ul>
-              </nav>
-            </div>
-          </div>
-
-          <!-- Initial State -->
-          <div v-else class="text-center py-5">
-            <i class="fas fa-user-search text-muted fa-3x mb-3"></i>
-            <h6 class="text-muted">Search for a patient</h6>
-            <p class="text-muted mb-0">Enter patient details in the search box above</p>
+    <div class="modal-body">
+      <!-- Search Form -->
+      <div class="form-group mb-4">
+        <label>Search Patient</label>
+        <div class="input-group">
+          <input
+            type="text"
+            class="form-control"
+            v-model="searchTerm"
+            @input="searchPatients"
+            @keypress.enter="searchPatients"
+            placeholder="Enter patient name, hospital ID, or phone number"
+          />
+          <div class="input-group-append">
+            <button
+              type="button"
+              class="btn btn-primary"
+              @click="searchPatients"
+              :disabled="loading"
+            >
+              <i class="fas fa-search" v-if="!loading"></i>
+              <i class="fas fa-spinner fa-spin" v-else></i>
+              Search
+            </button>
           </div>
         </div>
+        <small class="form-text text-muted"> Search by name, hospital ID, or phone number </small>
+      </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" @click="closeModal">Cancel</button>
-          <router-link to="/patient/create" class="btn btn-success">
-            <i class="fas fa-user-plus mr-1"></i>
-            Create New Patient
-          </router-link>
+      <!-- Loading State -->
+      <div v-if="loading" class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+        <p class="mt-2 text-muted">Searching patients...</p>
+      </div>
+
+      <!-- No Results -->
+      <div v-else-if="searchPerformed && patients.length === 0" class="text-center py-4">
+        <i class="fas fa-search text-muted fa-3x mb-3"></i>
+        <h6 class="text-muted">No patients found</h6>
+        <p class="text-muted mb-0">Try adjusting your search terms</p>
+      </div>
+
+      <!-- Search Results -->
+      <div v-else-if="patients.length > 0">
+        <h6 class="mb-3">Search Results ({{ patients.length }})</h6>
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead class="thead-light">
+              <tr>
+                <th>Hospital ID</th>
+                <th>Name</th>
+                <th>Gender</th>
+                <th>Age</th>
+                <th>Phone</th>
+                <th>Insurance</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="patient in patients"
+                :key="patient.id"
+                class="cursor-pointer"
+                @dblclick="selectPatient(patient)"
+              >
+                <td>
+                  <span
+                    v-b-tooltip.hover
+                    :title="patient?.insurances?.[0]?.insurance?.name || 'No Insurance'"
+                    class="label label-dot label-sm mr-2"
+                    :class="getPatientDotStatus(patient?.insurances?.[0]?.insurance?.name)"
+                  ></span>
+                  <strong>{{ patient.hospital_id || 'N/A' }}</strong>
+                </td>
+                <td>
+                  <div>
+                    <strong>{{ patient.fullname }}</strong>
+                    <br />
+                    <small class="text-muted">{{ patient.email || 'No email' }}</small>
+                  </div>
+                </td>
+                <td>{{ patient.gender }}</td>
+                <td>
+                  <span v-if="patient.date_of_birth">
+                    {{ patient.date_of_birth | dayjs('from', 'now', true) }}
+                  </span>
+                  <span v-else class="text-muted">N/A</span>
+                </td>
+                <td>{{ patient.phone || 'N/A' }}</td>
+                <td>
+                  <span
+                    v-if="patient?.insurances?.[0]?.insurance?.name"
+                    class="badge badge-info badge-sm"
+                  >
+                    {{ patient.insurances[0].insurance.name }}
+                  </span>
+                  <span v-else class="text-muted">None</span>
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-primary"
+                    @click="selectPatient(patient)"
+                  >
+                    Select
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div v-if="totalPages > 1" class="d-flex justify-content-center">
+          <nav aria-label="Patient search pagination">
+            <ul class="pagination pagination-sm">
+              <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">
+                  Previous
+                </a>
+              </li>
+              <li
+                v-for="page in visiblePages"
+                :key="page"
+                class="page-item"
+                :class="{ active: page === currentPage }"
+              >
+                <a class="page-link" href="#" @click.prevent="changePage(page)">
+                  {{ page }}
+                </a>
+              </li>
+              <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">
+                  Next
+                </a>
+              </li>
+            </ul>
+          </nav>
         </div>
       </div>
+
+      <!-- Initial State -->
+      <div v-else class="text-center py-5">
+        <i class="fas fa-user-search text-muted fa-3x mb-3"></i>
+        <h6 class="text-muted">Search for a patient</h6>
+        <p class="text-muted mb-0">Enter patient details in the search box above</p>
+      </div>
     </div>
-  </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" @click="closeModal">Cancel</button>
+      <router-link to="/patient/create" class="btn btn-success">
+        <i class="fas fa-user-plus mr-1"></i>
+        Create New Patient
+      </router-link>
+    </div>
+  </b-modal>
 </template>
 
 <script>
@@ -203,7 +185,19 @@ export default {
     };
   },
   computed: {
-    ...mapState('appointments', ['showPatientModal']),
+    ...mapState('appointments', { patientModalVisible: 'showPatientModal' }),
+
+    modalVisible: {
+      get() {
+        return this.patientModalVisible;
+      },
+      set(val) {
+        if (!val) {
+          this.closePatientModal();
+          this.resetModal();
+        }
+      },
+    },
 
     visiblePages() {
       const pages = [];
@@ -216,27 +210,12 @@ export default {
       return pages;
     },
   },
-  watch: {
-    showPatientModal(show) {
-      if (show) {
-        this.openModal();
-      } else {
-        this.closeModal();
-      }
-    },
-  },
+  watch: {},
   methods: {
-    ...mapActions('appointments', ['hidePatientModal']),
-
-    openModal() {
-      this.$nextTick(() => {
-        this.$refs.patientSearchModal.modal('show');
-      });
-    },
+    ...mapActions('appointments', ['closePatientModal']),
 
     closeModal() {
-      this.$refs.patientSearchModal.modal('hide');
-      this.hidePatientModal();
+      this.closePatientModal();
       this.resetModal();
     },
 
@@ -313,19 +292,10 @@ export default {
     },
   },
 
-  // Setup modal events
-  mounted() {
-    this.$refs.patientSearchModal.on('hidden.bs.modal', () => {
-      this.hidePatientModal();
-      this.resetModal();
-    });
-  },
-
   beforeDestroy() {
     if (this.searchTimeout) {
       clearTimeout(this.searchTimeout);
     }
-    this.$refs.patientSearchModal.modal('hide');
   },
 };
 </script>
