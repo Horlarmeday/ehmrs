@@ -67,6 +67,7 @@ export { RoutesOfAdministration } from './routesOfAdministration';
 export { RouteDosageForm } from './routeDosageForm';
 export { ReturnItem } from './returnItem';
 export { Request } from './request';
+export { Report } from './report';
 export { Sample } from './sample';
 export { Service } from './service';
 export { ServiceTariff } from './serviceTariff';

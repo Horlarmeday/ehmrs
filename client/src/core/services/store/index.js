@@ -34,6 +34,7 @@ import emergency from './emergency/index';
 import generalStore from './generalStore/index';
 import inventoryAlerts from './inventoryAlerts/index';
 import appointments from './appointments/moduleAppointments';
+import reports from './reports/index';
 import htmlClass from './htmlclass.module';
 import config from './config.module';
 import breadcrumbs from './breadcrumbs.module';
@@ -75,6 +76,7 @@ export default new Vuex.Store({
     generalStore,
     inventoryAlerts,
     appointments,
+    reports,
     htmlClass,
     config,
     breadcrumbs,

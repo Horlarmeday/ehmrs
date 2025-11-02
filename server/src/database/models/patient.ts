@@ -310,6 +310,12 @@ export class Patient extends Model {
   })
   revived_at?: Date;
 
+  @Column({
+    type: DataType.DATEONLY,
+    allowNull: true,
+  })
+  created_date?: Date;
+
   @ForeignKey(() => Staff)
   @Column({
     type: DataType.INTEGER,
@@ -354,6 +360,7 @@ export class Patient extends Model {
     const middlename = instance.middlename;
     const lastname = instance.lastname;
     instance.complete_name = `${firstname} ${middlename ? middlename + ' ' : ''}${lastname}`;
+    delete instance.created_date;
   }
 
   @BeforeUpdate
@@ -363,6 +370,7 @@ export class Patient extends Model {
     const middlename = instance.middlename;
     const lastname = instance.lastname;
     instance.complete_name = `${firstname} ${middlename ? middlename + ' ' : ''}${lastname}`;
+    delete instance.created_date;
   }
 
   static async paginate(param: {

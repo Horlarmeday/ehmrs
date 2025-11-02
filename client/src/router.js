@@ -580,6 +580,43 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            // MEDICAL RECORDS REPORTS
+            {
+              path: '/medical-records/home',
+              name: 'medical-records-reports-home',
+              component: () => import('@/view/pages/medicalRecords/Home.vue'),
+              meta: {
+                requiresAuth: true,
+                title: 'Medical Records Reports Home',
+              },
+            },
+            {
+              path: '/medical-records/reports',
+              name: 'medical-records-reports',
+              component: () => import('@/view/pages/medicalRecords/reports/ReportsDashboard.vue'),
+              meta: {
+                requiresAuth: true,
+                title: 'Medical Records Reports',
+              },
+            },
+            {
+              path: '/medical-records/reports/saved',
+              name: 'medical-records-saved-reports',
+              component: () => import('@/view/pages/medicalRecords/reports/SavedReports.vue'),
+              meta: {
+                requiresAuth: true,
+                title: 'Saved Reports',
+              },
+            },
+            {
+              path: '/medical-records/reports/:reportType',
+              name: 'medical-records-report-details',
+              component: () => import('@/view/pages/medicalRecords/reports/ReportDetails.vue'),
+              meta: {
+                requiresAuth: true,
+                title: 'Report Details',
+              },
+            },
             // MEDICAL RECORDS
             {
               path: 'active',

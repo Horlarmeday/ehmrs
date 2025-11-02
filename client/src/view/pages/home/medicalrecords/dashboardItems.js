@@ -45,8 +45,8 @@ export default [
   //   name: 'Reports',
   // },
   {
-    url: '/statistics/active',
+    url: '/medical-records/home',
     icon: 'flaticon-statistics',
-    name: 'Statistics',
+    name: 'Reports',
   },
 ];

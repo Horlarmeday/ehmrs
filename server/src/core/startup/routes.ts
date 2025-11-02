@@ -40,6 +40,7 @@ import emergencyRoutes from '../../modules/Emergency/emergency.routes';
 import appointmentRoutes from '../../modules/Appointment/appointment.routes';
 import inventoryAlertRoutes from '../../modules/InventoryAlerts/inventoryAlert.routes';
 import formTemplateRoutes from '../../modules/FormTemplate/formTemplate.routes';
+import reportsRoutes from '../../modules/Reports/reports.routes';
 
 export default (server: express.Application) => {
   server.use('/api/staffs', staffRoutes);
@@ -78,6 +79,7 @@ export default (server: express.Application) => {
   server.use('/api/appointments', appointmentRoutes);
   server.use('/api/inventory-alerts', inventoryAlertRoutes);
   server.use('/api/form-templates', formTemplateRoutes);
+  server.use('/api/reports', reportsRoutes);
 
   if (process.env.SENTRY_DSN) {
     Sentry.setupExpressErrorHandler(server);

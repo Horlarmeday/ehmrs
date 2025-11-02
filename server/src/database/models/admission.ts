@@ -106,6 +106,12 @@ export class Admission extends Model {
   comment: string;
 
   @Column({
+    type: DataType.DATEONLY,
+    allowNull: true,
+  })
+  admitted_date: Date;
+
+  @Column({
     type: DataType.BOOLEAN,
     defaultValue: false,
   })

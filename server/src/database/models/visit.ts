@@ -166,6 +166,12 @@ export class Visit extends Model {
   })
   is_from_appointment: boolean;
 
+  @Column({
+    type: DataType.DATEONLY,
+    allowNull: false,
+  })
+  visit_date: Date;
+
   @BelongsTo(() => Staff)
   staff: Staff;
 
