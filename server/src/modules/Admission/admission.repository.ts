@@ -99,7 +99,7 @@ export const admitPatient = async (data: AdmissionBodyType) => {
     }
   }
 
-  return sequelizeConnection.transaction(async (t: Transaction) => {
+  const result = await sequelizeConnection.transaction(async (t: Transaction) => {
     const admission = await Admission.create(
       {
         ...data,
@@ -113,20 +113,6 @@ export const admitPatient = async (data: AdmissionBodyType) => {
 
     await Bed.update({ status: BedStatus.TAKEN }, { where: { id: bedId }, transaction: t });
 
-    if (
-      !patient.has_insurance ||
-      !EXCLUDED_INSURANCE.includes(insurance?.insurance?.name) ||
-      patient.admitted_days_in_year > 21
-    ) {
-      prescribeService({
-        service_id: ward.service.id,
-        price: ward.service.price,
-        service_type: ServiceType.CASH,
-        requester: admitted_by.sub,
-        visit_id,
-        patient_id,
-      });
-    }
     await Patient.update(
       { patient_status: PatientStatus.INPATIENT },
       { where: { id: patient_id }, transaction: t }
@@ -155,8 +141,31 @@ export const admitPatient = async (data: AdmissionBodyType) => {
       });
     }
 
-    return getOneAdmission({ id: admission.id });
+    return admission;
   });
+
+  // Prescribe ward service AFTER transaction completes to avoid lock timeout
+  // This doesn't need to be atomic with admission
+  if (
+    !patient.has_insurance ||
+    !EXCLUDED_INSURANCE.includes(insurance?.insurance?.name) ||
+    patient.admitted_days_in_year > 21
+  ) {
+    // Don't await - let it run asynchronously, billing errors shouldn't fail admission
+    prescribeService({
+      service_id: ward.service.id,
+      price: ward.service.price,
+      service_type: ServiceType.CASH,
+      requester: admitted_by.sub,
+      visit_id,
+      patient_id,
+    }).catch(error => {
+      // Log error but don't fail the admission
+      console.error('Failed to prescribe ward service:', error);
+    });
+  }
+
+  return getOneAdmission({ id: result.id });
 };
 
 /**

@@ -244,6 +244,7 @@ export default {
 
     endRequest(button) {
       this.removeSpinner(button);
+      this.$router.push(`/laboratory/result-validation/${this.$route.params.id}`);
     },
 
     toggleCheck(event, index) {

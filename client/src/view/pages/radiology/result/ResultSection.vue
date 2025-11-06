@@ -225,10 +225,7 @@ export default {
   methods: {
     async loadResultImages(index, resultId) {
       try {
-        const response = await this.$store.dispatch(
-          'radiology/fetchInvestigationImages',
-          resultId
-        );
+        const response = await this.$store.dispatch('radiology/fetchInvestigationImages', resultId);
         if (response.data.success) {
           this.$set(this.results[index], 'images', response.data.data);
         }

@@ -11,3 +11,6 @@ ALTER TABLE visits
 ALTER TABLE admissions
     ADD COLUMN admitted_date DATE
         GENERATED ALWAYS AS (DATE(date_admitted)) STORED;
+
+ALTER TABLE clinical_bills ADD COLUMN auto_deposit_attempted BOOLEAN DEFAULT FALSE;
+ALTER TABLE histories ADD COLUMN general_diagnosis TEXT DEFAULT NULL;

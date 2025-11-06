@@ -168,7 +168,6 @@ export class Visit extends Model {
 
   @Column({
     type: DataType.DATEONLY,
-    allowNull: false,
   })
   visit_date: Date;
 

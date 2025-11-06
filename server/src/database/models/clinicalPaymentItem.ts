@@ -16,6 +16,7 @@ export enum PaymentItemStatus {
   PENDING = 'PENDING',
   PARTIAL = 'PARTIAL',
   PAID = 'PAID',
+  CLEARED = 'CLEARED',
 }
 
 @Table({

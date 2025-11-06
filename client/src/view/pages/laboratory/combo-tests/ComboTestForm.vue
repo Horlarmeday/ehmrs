@@ -107,8 +107,6 @@
           </div>
         </div>
 
-
-
         <!-- Status Toggle (Edit Mode Only) -->
         <div v-if="editMode" class="form-group row">
           <label class="col-lg-3 col-form-label font-weight-bold text-dark">

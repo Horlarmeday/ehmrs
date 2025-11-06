@@ -26,8 +26,12 @@
           <i class="fas fa-folder-open"></i> Browse Files
         </b-button>
         <div class="upload-info mt-3">
-          <small class="text-muted d-block">Supported formats: DICOM (.dcm), JPEG, PNG, GIF, TIFF</small>
-          <small class="text-muted d-block">Maximum file size: {{ formatFileSize(maxFileSize) }}</small>
+          <small class="text-muted d-block"
+            >Supported formats: DICOM (.dcm), JPEG, PNG, GIF, TIFF</small
+          >
+          <small class="text-muted d-block"
+            >Maximum file size: {{ formatFileSize(maxFileSize) }}</small
+          >
           <small v-if="multiple" class="text-muted d-block">Maximum files: {{ maxFiles }}</small>
         </div>
       </div>
@@ -95,15 +99,17 @@
 
     <!-- Upload Progress -->
     <div v-if="uploading && uploadingFiles.length > 0" class="upload-progress mt-3">
-      <h6 class="mb-3">
-        <i class="fas fa-sync fa-spin"></i> Uploading Files...
-      </h6>
+      <h6 class="mb-3"><i class="fas fa-sync fa-spin"></i> Uploading Files...</h6>
       <div v-for="(file, index) in uploadingFiles" :key="index" class="progress-item mb-2">
         <div class="d-flex justify-content-between mb-1">
           <small>{{ file.name }}</small>
           <small>{{ file.progress }}%</small>
         </div>
-        <b-progress :value="file.progress" :variant="file.error ? 'danger' : 'primary'" height="8px"></b-progress>
+        <b-progress
+          :value="file.progress"
+          :variant="file.error ? 'danger' : 'primary'"
+          height="8px"
+        ></b-progress>
         <small v-if="file.error" class="text-danger">
           <i class="fas fa-exclamation-circle"></i> {{ file.error }}
         </small>
@@ -112,9 +118,16 @@
 
     <!-- Upload Results -->
     <div v-if="uploadComplete && uploadResults" class="upload-results mt-3">
-      <b-alert :variant="uploadResults.hasErrors ? 'warning' : 'success'" show dismissible @dismissed="clearResults">
+      <b-alert
+        :variant="uploadResults.hasErrors ? 'warning' : 'success'"
+        show
+        dismissible
+        @dismissed="clearResults"
+      >
         <h6 class="alert-heading">
-          <i :class="uploadResults.hasErrors ? 'fas fa-exclamation-triangle' : 'fas fa-check-circle'"></i>
+          <i
+            :class="uploadResults.hasErrors ? 'fas fa-exclamation-triangle' : 'fas fa-check-circle'"
+          ></i>
           Upload {{ uploadResults.hasErrors ? 'Completed with Errors' : 'Successful' }}
         </h6>
 
@@ -128,9 +141,15 @@
         </div>
 
         <div v-if="uploadResults.failed && uploadResults.failed.length > 0">
-          <strong class="text-danger">Failed to upload {{ uploadResults.failed.length }} file(s):</strong>
+          <strong class="text-danger"
+            >Failed to upload {{ uploadResults.failed.length }} file(s):</strong
+          >
           <ul class="mb-0 mt-1">
-            <li v-for="(file, index) in uploadResults.failed" :key="'failed-' + index" class="text-danger">
+            <li
+              v-for="(file, index) in uploadResults.failed"
+              :key="'failed-' + index"
+              class="text-danger"
+            >
               {{ file.originalName }} - {{ file.error }}
             </li>
           </ul>
@@ -139,7 +158,11 @@
         <div v-if="uploadResults.warnings && uploadResults.warnings.length > 0" class="mt-2">
           <strong class="text-warning">Warnings:</strong>
           <ul class="mb-0 mt-1">
-            <li v-for="(warning, index) in uploadResults.warnings" :key="'warning-' + index" class="text-warning">
+            <li
+              v-for="(warning, index) in uploadResults.warnings"
+              :key="'warning-' + index"
+              class="text-warning"
+            >
               {{ warning }}
             </li>
           </ul>
@@ -409,11 +432,14 @@ export default {
           this.$emit('upload-complete', this.uploadResults);
 
           // Show toast
-          this.$bvToast.toast(`Successfully uploaded ${this.uploadResults.successful.length} file(s)`, {
-            title: 'Upload Complete',
-            variant: 'success',
-            solid: true,
-          });
+          this.$bvToast.toast(
+            `Successfully uploaded ${this.uploadResults.successful.length} file(s)`,
+            {
+              title: 'Upload Complete',
+              variant: 'success',
+              solid: true,
+            }
+          );
 
           // Clear selected files
           this.clearFiles();
@@ -427,14 +453,17 @@ export default {
         console.error('Upload error:', error);
 
         // Check if it's a network error and retry is possible
-        const isNetworkError = !error.response || error.code === 'ECONNABORTED' || error.code === 'ERR_NETWORK';
+        const isNetworkError =
+          !error.response || error.code === 'ECONNABORTED' || error.code === 'ERR_NETWORK';
 
         if (isNetworkError && this.retryCount < this.maxRetries) {
           this.retryCount++;
           const retryDelay = 1000 * this.retryCount; // Exponential backoff: 1s, 2s
 
           this.$bvToast.toast(
-            `Network error detected. Retrying upload in ${retryDelay / 1000} second(s)... (Attempt ${this.retryCount} of ${this.maxRetries})`,
+            `Network error detected. Retrying upload in ${
+              retryDelay / 1000
+            } second(s)... (Attempt ${this.retryCount} of ${this.maxRetries})`,
             {
               title: 'Retrying Upload',
               variant: 'warning',
@@ -486,15 +515,12 @@ export default {
           hasErrors: true,
         };
 
-        this.$bvToast.toast(
-          errorDetails ? `${errorMessage}: ${errorDetails}` : errorMessage,
-          {
-            title: 'Upload Error',
-            variant: 'danger',
-            solid: true,
-            autoHideDelay: 5000,
-          }
-        );
+        this.$bvToast.toast(errorDetails ? `${errorMessage}: ${errorDetails}` : errorMessage, {
+          title: 'Upload Error',
+          variant: 'danger',
+          solid: true,
+          autoHideDelay: 5000,
+        });
 
         this.uploadComplete = true;
         this.retryCount = 0; // Reset retry count

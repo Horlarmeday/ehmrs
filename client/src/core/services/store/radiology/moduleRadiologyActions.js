@@ -146,7 +146,10 @@ export default {
                 try {
                   await dispatch('fetchInvestigationImages', investigation.result.id);
                 } catch (error) {
-                  console.error(`Failed to fetch images for result ${investigation.result.id}:`, error);
+                  console.error(
+                    `Failed to fetch images for result ${investigation.result.id}:`,
+                    error
+                  );
                 }
               }
             }

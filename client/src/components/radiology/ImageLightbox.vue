@@ -20,7 +20,11 @@
             <b-button variant="outline-light" @click="previousImage" :disabled="currentIndex === 0">
               <i class="fas fa-chevron-left"></i> Previous
             </b-button>
-            <b-button variant="outline-light" @click="nextImage" :disabled="currentIndex === images.length - 1">
+            <b-button
+              variant="outline-light"
+              @click="nextImage"
+              :disabled="currentIndex === images.length - 1"
+            >
               Next <i class="fas fa-chevron-right"></i>
             </b-button>
           </b-button-group>
@@ -40,7 +44,9 @@
           :key="currentImage.id"
           :image-id="currentImage.file_path || currentImage.imageUrl"
           :images="images.map((img) => img.file_path || img.imageUrl)"
-          :metadata="currentImage.dicom_metadata ? parseDicomMetadata(currentImage.dicom_metadata) : {}"
+          :metadata="
+            currentImage.dicom_metadata ? parseDicomMetadata(currentImage.dicom_metadata) : {}
+          "
           viewport-height="75vh"
           :enable-tools="true"
         />
@@ -150,7 +156,11 @@ export default {
     },
     currentImageTitle() {
       if (this.currentImage) {
-        return this.currentImage.file_name || this.currentImage.description || `Image ${this.currentIndex + 1}`;
+        return (
+          this.currentImage.file_name ||
+          this.currentImage.description ||
+          `Image ${this.currentIndex + 1}`
+        );
       }
       return '';
     },

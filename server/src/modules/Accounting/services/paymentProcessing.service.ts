@@ -384,6 +384,7 @@ export class PaymentProcessingService {
         paymentResult.payment.id,
         selectedItems,
         paymentData.amount,
+        paymentData.payment_method,
         transaction
       );
 
@@ -418,11 +419,16 @@ export class PaymentProcessingService {
     paymentId: number,
     selectedItems: any[],
     totalPaymentAmount: number,
+    paymentMethod: PaymentMethod,
     transaction: Transaction
   ): Promise<void> {
     try {
       // Calculate how much each item should receive from this payment
-      const itemAmounts = this.calculateItemPaymentAmounts(selectedItems, totalPaymentAmount);
+      const itemAmounts = this.calculateItemPaymentAmounts(
+        selectedItems,
+        totalPaymentAmount,
+        paymentMethod
+      );
 
       // Create payment-item records
       const paymentItemRecords = itemAmounts.map(item => ({
@@ -442,6 +448,7 @@ export class PaymentProcessingService {
           paymentId,
           itemCount: paymentItemRecords.length,
           totalAmount: totalPaymentAmount,
+          paymentMethod,
         }
       );
     } catch (error) {
@@ -455,7 +462,8 @@ export class PaymentProcessingService {
    */
   private static calculateItemPaymentAmounts(
     selectedItems: any[],
-    totalPaymentAmount: number
+    totalPaymentAmount: number,
+    paymentMethod: PaymentMethod
   ): Array<{
     billItemId: number;
     amountToPay: number;
@@ -469,6 +477,11 @@ export class PaymentProcessingService {
       0
     );
 
+    // Determine status based on payment method
+    const isInsurancePayment = paymentMethod === PaymentMethod.INSURANCE;
+    const fullPaymentStatus = isInsurancePayment ? 'CLEARED' : 'PAID';
+    const partialPaymentStatus = 'PARTIAL'; // PARTIAL is same for all payment methods
+
     // If payment covers all items fully
     if (totalPaymentAmount >= totalItemsCost) {
       return selectedItems.map(item => {
@@ -477,7 +490,7 @@ export class PaymentProcessingService {
         return {
           billItemId: item.id,
           amountToPay: itemCost,
-          status: 'PAID',
+          status: fullPaymentStatus, // CLEARED for insurance, PAID for others
           percentage: 100.0,
         };
       });
@@ -492,7 +505,7 @@ export class PaymentProcessingService {
       return {
         billItemId: item.id,
         amountToPay: Math.round(amountToPay * 100) / 100, // Round to 2 decimal places
-        status: 'PARTIAL',
+        status: partialPaymentStatus, // PARTIAL for all payment methods
         percentage: Math.round(paymentRatio * 10000) / 100, // Round to 2 decimal places
       };
     });
@@ -734,6 +747,7 @@ export class PaymentProcessingService {
         notes: paymentData.notes,
         payment_reference: paymentData.payment_reference, // Pass the generated payment reference
         period_id: paymentData.period_id, // Pass the financial period ID
+        visit_id: paymentData.visit_id,
       },
       staffId,
       transaction
@@ -1550,11 +1564,16 @@ export class PaymentProcessingService {
     paymentResult: PaymentResult,
     transaction?: Transaction
   ) {
-    // Update selected items to paid status
+    // Determine payment status based on payment method
+    const isInsurancePayment = paymentResult.method === 'INSURANCE';
+    const itemPaymentStatus = isInsurancePayment ? 'CLEARED' : 'PAID';
+    const billPaymentStatus = isInsurancePayment ? PaymentStatus.CLEARED : PaymentStatus.PAID;
+
+    // Update selected items to appropriate status
     for (const item of selectedItems) {
       await item.update(
         {
-          payment_status: 'PAID',
+          payment_status: itemPaymentStatus,
           paid_amount: item.total_price || item.unit_price,
           paid_at: new Date(),
         },
@@ -1562,29 +1581,38 @@ export class PaymentProcessingService {
       );
     }
 
-    // Update prescribed order payment statuses based on item_type
-    await this.updatePrescribedOrderPaymentStatuses(selectedItems, transaction);
+    // Update prescribed order payment statuses based on item_type and payment method
+    await this.updatePrescribedOrderPaymentStatuses(
+      selectedItems,
+      paymentResult.method,
+      transaction
+    );
 
-    // Check if all bill items are paid
+    // Check if all bill items are paid or cleared
     const allBillItems = await ClinicalBillItem.findAll({
       where: { bill_id: bill.id },
       transaction,
     });
 
-    const allItemsPaid = allBillItems.every(item => item.payment_status === 'PAID');
+    const allItemsPaidOrCleared = allBillItems.every(
+      item => item.payment_status === 'PAID' || item.payment_status === 'CLEARED'
+    );
 
-    if (allItemsPaid) {
-      // Update bill status to fully paid
+    if (allItemsPaidOrCleared) {
+      // Check if any items are CLEARED (insurance)
+      const hasInsuranceItems = allBillItems.some(item => item.payment_status === 'CLEARED');
+
+      // Update bill status
       await bill.update(
         {
-          payment_status: PaymentStatus.PAID,
-          status: BillingStatus.APPROVED,
-          paid_at: new Date(),
+          payment_status: hasInsuranceItems ? PaymentStatus.CLEARED : billPaymentStatus,
+          status: BillingStatus.APPROVED, // APPROVED allows service delivery
+          paid_at: hasInsuranceItems ? null : new Date(), // No paid_at for cleared items
         },
         { transaction }
       );
     } else {
-      // Update bill status to partially paid
+      // Update bill status to partially paid/cleared
       await bill.update(
         {
           payment_status: PaymentStatus.PARTIAL,
@@ -1596,18 +1624,21 @@ export class PaymentProcessingService {
   }
 
   /**
-   * Update prescribed order payment statuses when bill items are paid
+   * Update prescribed order payment statuses when bill items are paid or cleared
    */
   private static async updatePrescribedOrderPaymentStatuses(
     selectedItems: ClinicalBillItem[],
+    paymentMethod: string,
     transaction?: Transaction
   ): Promise<void> {
     for (const item of selectedItems) {
       if (item.item_type && item.item_id) {
         try {
           // Map accounting payment status to prescribed order payment status
-          // Accounting: 'PAID' → Prescribed: 'Paid'
-          const prescribedOrderStatus = 'Paid';
+          // Insurance: CLEARED → 'Cleared' (service authorized but not financially settled)
+          // Other payments: PAID → 'Paid' (fully paid)
+          const isInsurancePayment = paymentMethod === 'INSURANCE';
+          const prescribedOrderStatus = isInsurancePayment ? 'Cleared' : 'Paid';
 
           switch (item.item_type) {
             case BillItemTypeEnum.DRUG: {

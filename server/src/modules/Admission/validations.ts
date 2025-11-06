@@ -115,7 +115,7 @@ export function validateChangeWard(ward) {
 export function validateDischargePatient(discharge) {
   const schema = Joi.object({
     discharge_type: Joi.string().required(),
-    date_discharged: Joi.date().required(),
+    date_discharged: Joi.date().optional(),
     conditions_of_patient: Joi.string().required(),
     transfer_location: Joi.string()
       .optional()

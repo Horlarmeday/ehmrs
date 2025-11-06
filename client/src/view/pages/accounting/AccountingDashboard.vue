@@ -278,6 +278,60 @@
           </div>
         </div>
 
+        <!-- Billing Configuration Row -->
+        <div class="nav-row">
+          <div class="nav-item-large" @click="navigateToPage('services')">
+            <div class="nav-icon-large bg-info">
+              <i class="fas fa-concierge-bell"></i>
+            </div>
+            <div class="nav-content">
+              <h5>Services</h5>
+              <p>Manage service pricing and billing</p>
+            </div>
+            <div class="nav-arrow">
+              <i class="fas fa-arrow-right"></i>
+            </div>
+          </div>
+
+          <div class="nav-item-large" @click="navigateToPage('tests')">
+            <div class="nav-icon-large bg-success">
+              <i class="fas fa-flask"></i>
+            </div>
+            <div class="nav-content">
+              <h5>Laboratory Tests</h5>
+              <p>Manage test pricing and billing</p>
+            </div>
+            <div class="nav-arrow">
+              <i class="fas fa-arrow-right"></i>
+            </div>
+          </div>
+
+          <div class="nav-item-large" @click="navigateToPage('inventory-items')">
+            <div class="nav-icon-large bg-primary">
+              <i class="fas fa-pills"></i>
+            </div>
+            <div class="nav-content">
+              <h5>Inventory Items (Drugs)</h5>
+              <p>View drug inventory and pricing</p>
+            </div>
+            <div class="nav-arrow">
+              <i class="fas fa-arrow-right"></i>
+            </div>
+          </div>
+          <div class="nav-item-large" @click="navigateToPage('admitted-patients')">
+            <div class="nav-icon-large bg-danger">
+              <i class="fas fa-hospital-user"></i>
+            </div>
+            <div class="nav-content">
+              <h5>Admitted Patients</h5>
+              <p>View financial records for currently admitted patients</p>
+            </div>
+            <div class="nav-arrow">
+              <i class="fas fa-arrow-right"></i>
+            </div>
+          </div>
+        </div>
+
         <!-- Core Accounting Row -->
         <div class="nav-row">
           <div class="nav-item-large" @click="navigateToPage('chart-of-accounts')">
@@ -570,6 +624,7 @@ export default {
         payments: '/accounting/payments',
         deposits: '/accounting/deposits',
         'patient-financial-lookup': '/accounting/patient-financial-lookup',
+        'admitted-patients': '/accounting/admitted-patients',
         'chart-of-accounts': '/accounting/chart-of-accounts',
         'journal-entries': '/accounting/journal-entries',
         'cost-centers': '/accounting/cost-centers',
@@ -584,6 +639,11 @@ export default {
         'cash-registers': '/accounting/cash-registers',
         'create-bank-account': '/accounting/bank-accounts/new',
         'create-pos-terminal': '/accounting/pos-terminals/new',
+
+        // Billing configuration routes
+        services: '/accounting/services',
+        tests: '/accounting/tests',
+        'inventory-items': '/accounting/inventory-items',
       };
 
       // Try route name first

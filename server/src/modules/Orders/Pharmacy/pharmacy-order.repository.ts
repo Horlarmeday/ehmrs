@@ -39,6 +39,7 @@ import sequelizeConnection from '../../../database/config/data-source';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
 import { logger } from '../../../core/helpers/logger';
 import { ClinicalBill } from '../../../database/models/clinicalBill';
+import { AutoDepositPaymentService } from '../../Accounting/services/autoDepositPayment.service';
 
 type PrescribeDrugType = PrescribedDrugBody & {
   drug_prescription_id: number;
@@ -144,13 +145,19 @@ export async function prescribeDrug(data: PrescribeDrugType): Promise<Prescribed
 
     if (patient) {
       // Add this prescription to the visit bill
-      await VisitBillingHelper.addPrescribedDrugToBill(
+      const billItem = await VisitBillingHelper.addPrescribedDrugToBill(
         visit_id,
         prescribedDrug,
         examiner,
         patient,
         originalDrug,
         patientInsurance
+      );
+      // Attempt automatic deposit payment if patient and staff info provided
+      await AutoDepositPaymentService.attemptAutoDepositPayment(
+        billItem.bill_id,
+        patient.id,
+        examiner
       );
     }
   } catch (billingError) {
@@ -176,26 +183,50 @@ export const prescribeBulkDrugs = async (
 ): Promise<PrescribedDrug[]> => {
   return sequelizeConnection.transaction(async (t: Transaction) => {
     const drugs = await PrescribedDrug.bulkCreate(data, { transaction: t });
+    const { visit_id, patient_id, examiner } = drugs?.[0];
+
+    let billId = null;
 
     // 🆕 NEW: Auto-create bills for each prescribed drug
     try {
+      const [patient, patientInsurance, originalDrugs] = await Promise.all([
+        Patient.findByPk(patient_id),
+        getPatientInsuranceQuery({ patient_id, is_default: true }),
+        Drug.findAll({ where: { id: data.map(d => d.drug_id) } })
+      ]);
+
+      if (!patient) {
+        throw new Error(`Patient not found: ${patient_id}`);
+      }
+
+      const drugMap = new Map(originalDrugs.map(d => [d.id, d]));
+
       for (const drug of drugs) {
-        // Get patient insurance for billing calculation
-        const patientInsurance = await getPatientInsuranceQuery({
-          patient_id: patient.id,
-          is_default: true,
-        });
-
-        const originalDrug = await Drug.findByPk(drug.drug_id, { transaction: t });
-
+        // Get patient and insurance for billing calculation
+        const originalDrug = drugMap.get(drug.drug_id);
+        if (!originalDrug) {
+          logger.warn(`Original drug not found for drug_id: ${drug.drug_id}`);
+        }
         // Add this prescription to the visit bill
-        VisitBillingHelper.addPrescribedDrugToBill(
-          drug.visit_id,
+        const billItem = await VisitBillingHelper.addPrescribedDrugToBill(
+          visit_id,
           drug,
           drug.examiner,
           patient,
           originalDrug,
           patientInsurance
+        );
+        // Capture the bill_id (same for all)
+        if (billItem?.bill_id && !billId) {
+          billId = billItem.bill_id;
+        }  
+      }
+      // Step 4: Trigger auto-payment once (if bill was created)
+      if (billId) {
+        await AutoDepositPaymentService.attemptAutoDepositPayment(
+          billId,
+          patient_id,
+          examiner
         );
       }
     } catch (billingError) {
@@ -233,10 +264,12 @@ export const prescribeBulkDrugs = async (
           { transaction: t }
         );
 
+        let billId = null;
+
         try {
           for (const item of items) {
             const originalDrug = await Drug.findByPk(item.drug_id);
-            VisitBillingHelper.addPrescribedAdditionalItemToBill(
+            const billItem = await VisitBillingHelper.addPrescribedAdditionalItemToBill(
               item.visit_id,
               item,
               item.examiner,
@@ -244,14 +277,26 @@ export const prescribeBulkDrugs = async (
               originalDrug,
               patientInsurance
             );
+            // Capture the bill_id (same for all)
+            if (billItem?.bill_id && !billId) {
+              billId = billItem.bill_id;
+            }  
+          }
+          // Step 4: Trigger auto-payment once (if bill was created)
+          if (billId) {
+            await AutoDepositPaymentService.attemptAutoDepositPayment(
+              billId,
+              patient_id,
+              examiner
+            );
           }
         } catch (error) {
           logger.error('Billing creation failed for additional items:', error);
           // You might want to add proper logging here
         }
       }
-    } catch (error) {
-      logger.error('Billing creation failed for additional items:', error);
+    } catch (billingError) {
+      logger.error('Billing creation failed for additional items:', billingError);
       // You might want to add proper logging here
     }
 
@@ -415,13 +460,19 @@ export const prescribeAdditionalItem = async (
     const originalDrug = await Drug.findByPk(drug_id);
 
     if (patient) {
-      await VisitBillingHelper.addPrescribedAdditionalItemToBill(
+      const billItem = await VisitBillingHelper.addPrescribedAdditionalItemToBill(
         visit_id,
         item,
         examiner,
         patient,
         originalDrug,
         patientInsurance
+      );
+      // Attempt automatic deposit payment if patient and staff info provided
+      await AutoDepositPaymentService.attemptAutoDepositPayment(
+        billItem.bill_id,
+        patient.id,
+        examiner
       );
     }
   } catch (error) {
@@ -439,6 +490,8 @@ export const prescribeAdditionalItem = async (
 export const bulkCreateAdditionalItems = async (data): Promise<PrescribedAdditionalItem[]> => {
   const items = await PrescribedAdditionalItem.bulkCreate(data);
 
+  let billId = null;
+
   try {
     const [patient, patientInsurance] = await Promise.all([
       Patient.findByPk(items[0].patient_id),
@@ -449,13 +502,25 @@ export const bulkCreateAdditionalItems = async (data): Promise<PrescribedAdditio
     ]);
     for (const item of items) {
       const originalDrug = await Drug.findByPk(item.drug_id);
-      await VisitBillingHelper.addPrescribedAdditionalItemToBill(
+      const billItem = await VisitBillingHelper.addPrescribedAdditionalItemToBill(
         item.visit_id,
         item,
         item.examiner,
         patient,
         originalDrug,
         patientInsurance
+      );
+      // Capture the bill_id (same for all)
+      if (billItem?.bill_id && !billId) {
+        billId = billItem.bill_id;
+      }  
+    }
+    // Step 4: Trigger auto-payment once (if bill was created)
+    if (billId) {
+      await AutoDepositPaymentService.attemptAutoDepositPayment(
+        billId,
+        items[0]?.patient_id,
+        items[0]?.examiner
       );
     }
   } catch (error) {

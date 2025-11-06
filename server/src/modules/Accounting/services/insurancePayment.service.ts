@@ -3,6 +3,8 @@ import { BadException } from '../../../common/util/api-error';
 import {
   Insurance,
   ClinicalPayment,
+  ClinicalBill,
+  ClinicalBillItem,
   Staff,
   ChartOfAccount,
   JournalEntry,
@@ -10,7 +12,16 @@ import {
   FinancialPeriod,
   PatientInsurance,
   InsuranceClaim,
+  PrescribedDrug,
+  PrescribedTest,
+  PrescribedInvestigation,
+  PrescribedService,
+  PrescribedAdditionalItem,
+  DrugPrescription,
+  TestPrescription,
+  InvestigationPrescription,
 } from '../../../database/models';
+import { PaymentItemStatus } from '../../../database/models/clinicalPaymentItem';
 import { PaymentType, PaymentStatus, JournalEntryStatus, FinancialPeriodStatus } from '../enums';
 import { logger } from '../../../core/helpers/logger';
 
@@ -214,7 +225,7 @@ export class InsurancePaymentService {
         notes: paymentData.notes,
         insurance_provider: paymentData.insurance_provider,
         insurance_claim_number: claimReference,
-        status: PaymentStatus.PENDING, // Start as pending until claim is processed
+        status: PaymentStatus.CLEARED, // CLEARED status: services authorized but not financially settled
         processed_by: staffId,
         processed_at: new Date(),
         period_id: paymentData.period_id, // Use the financial period ID
@@ -613,16 +624,16 @@ export class InsurancePaymentService {
         transaction,
       });
 
-      const patientReceivablesAccount = await ChartOfAccount.findOne({
-        where: { code: '1300' }, // Patient Receivables account
+      const cashRegisterAccount = await ChartOfAccount.findOne({
+        where: { code: '1004' }, // Cash Register account (for collected co-payment)
         transaction,
       });
 
-      if (!insuranceReceivablesAccount || !serviceRevenueAccount || !patientReceivablesAccount) {
+      if (!insuranceReceivablesAccount || !serviceRevenueAccount || !cashRegisterAccount) {
         throw new BadException(
           'Required Chart of Accounts Missing',
           500,
-          'Insurance Receivables, Service Revenue, or Patient Receivables accounts not found'
+          'Insurance Receivables, Service Revenue, or Cash Register accounts not found'
         );
       }
 
@@ -631,8 +642,9 @@ export class InsurancePaymentService {
         {
           entry_date: new Date(),
           reference: payment.payment_reference,
-          description: `Insurance payment received: ${payment.notes || 'Patient insurance claim'}`,
-          entry_type: 'INSURANCE_PAYMENT',
+          description: `Insurance claim cleared for service delivery: ${payment.notes ||
+            'Patient insurance claim'}`,
+          entry_type: 'INSURANCE_CLAIM_CLEARED', // Changed from INSURANCE_PAYMENT to reflect cleared status
           status: JournalEntryStatus.POSTED,
           created_by: staffId,
           period_id: payment.period_id,
@@ -644,32 +656,42 @@ export class InsurancePaymentService {
       );
 
       // Create journal entry lines
-      const journalEntryLines = [
-        {
+      // DR: Insurance Receivables (amount insurance will pay)
+      // DR: Cash Register (co-payment collected upfront)
+      // CR: Service Revenue (total service value)
+      const journalEntryLines = [];
+
+      // Insurance receivable line (always present)
+      journalEntryLines.push({
+        journal_entry_id: journalEntry.id,
+        account_id: insuranceReceivablesAccount.id,
+        debit: insuranceCoverage,
+        credit: 0,
+        description: `Insurance receivable for claim ${payment.insurance_claim_number} - CLEARED for service delivery`,
+        cost_center_id: null,
+      });
+
+      // Co-payment line (only if co-payment was collected)
+      if (patientResponsibility > 0) {
+        journalEntryLines.push({
           journal_entry_id: journalEntry.id,
-          account_id: insuranceReceivablesAccount.id,
-          debit: insuranceCoverage,
-          credit: 0,
-          description: `Insurance receivable for claim ${payment.insurance_claim_number}`,
-          cost_center_id: null,
-        },
-        {
-          journal_entry_id: journalEntry.id,
-          account_id: patientReceivablesAccount.id,
+          account_id: cashRegisterAccount.id,
           debit: patientResponsibility,
           credit: 0,
-          description: `Patient responsibility for claim ${payment.insurance_claim_number}`,
+          description: `Co-payment collected from patient for claim ${payment.insurance_claim_number}`,
           cost_center_id: null,
-        },
-        {
-          journal_entry_id: journalEntry.id,
-          account_id: serviceRevenueAccount.id,
-          debit: 0,
-          credit: totalAmount,
-          description: `Revenue from insurance claim ${payment.insurance_claim_number}`,
-          cost_center_id: null,
-        },
-      ];
+        });
+      }
+
+      // Revenue line (always present)
+      journalEntryLines.push({
+        journal_entry_id: journalEntry.id,
+        account_id: serviceRevenueAccount.id,
+        debit: 0,
+        credit: totalAmount,
+        description: `Revenue from insurance claim ${payment.insurance_claim_number} - CLEARED status`,
+        cost_center_id: null,
+      });
 
       await JournalEntryLine.bulkCreate(journalEntryLines, { transaction });
 
@@ -825,6 +847,344 @@ export class InsurancePaymentService {
     const settlementDate = new Date(claimDate);
     settlementDate.setDate(settlementDate.getDate() + 30);
     return settlementDate;
+  }
+
+  /**
+   * Handle insurance claim paid status
+   * This method is called automatically when an insurance claim status changes to PAID
+   * It updates all related records from CLEARED to PAID status
+   */
+  static async handleInsuranceClaimPaidStatus(
+    claimId: number,
+    staffId: number,
+    transaction?: Transaction
+  ): Promise<{
+    payment: ClinicalPayment;
+    bill: ClinicalBill;
+    updatedItems: number;
+    updatedOrders: number;
+  }> {
+    try {
+      // Get the insurance claim
+      const claim = await InsuranceClaim.findByPk(claimId, { transaction });
+      if (!claim) {
+        throw new BadException(
+          'Insurance Claim Not Found',
+          404,
+          'The specified insurance claim could not be found'
+        );
+      }
+
+      // Get the associated payment
+      const payment = await ClinicalPayment.findByPk(claim.payment_id, { transaction });
+      if (!payment) {
+        throw new BadException(
+          'Payment Not Found',
+          404,
+          'The payment associated with this claim could not be found'
+        );
+      }
+
+      // Verify payment method is insurance
+      if (payment.payment_method !== 'INSURANCE') {
+        throw new BadException(
+          'Invalid Payment Method',
+          400,
+          'Payment is not an insurance payment'
+        );
+      }
+
+      // Verify payment status is CLEARED
+      if (payment.status !== PaymentStatus.CLEARED) {
+        logger.warn(
+          `Payment ${payment.id} status is ${payment.status}, expected CLEARED. Skipping status update.`,
+          { paymentId: payment.id, claimId }
+        );
+        throw new BadException(
+          'Invalid Payment Status',
+          400,
+          `Payment status is ${payment.status}, expected CLEARED`
+        );
+      }
+
+      // Update payment status to PAID
+      await payment.update(
+        {
+          status: PaymentStatus.PAID,
+          notes: payment.notes
+            ? `${payment.notes}\n\nInsurance claim paid: ${new Date().toISOString()}`
+            : `Insurance claim paid: ${new Date().toISOString()}`,
+        },
+        { transaction }
+      );
+
+      // Get the bill
+      const bill = await ClinicalBill.findByPk(payment.bill_id, {
+        include: [{ model: ClinicalBillItem, as: 'billItems' }],
+        transaction,
+      });
+
+      if (!bill) {
+        throw new BadException('Bill Not Found', 404, 'The bill could not be found');
+      }
+
+      // Update bill items from CLEARED to PAID
+      let updatedItems = 0;
+      for (const item of bill.billItems) {
+        if (item.payment_status === 'CLEARED') {
+          await item.update(
+            {
+              payment_status: 'PAID',
+              paid_at: new Date(),
+            },
+            { transaction }
+          );
+          updatedItems++;
+        }
+      }
+
+      // Update payment item records from CLEARED to PAID
+      const { ClinicalPaymentItem } = await import('../../../database/models');
+      await ClinicalPaymentItem.update(
+        {
+          payment_status: PaymentItemStatus.PAID,
+        },
+        {
+          where: {
+            payment_id: payment.id,
+            payment_status: PaymentItemStatus.CLEARED,
+          },
+          transaction,
+        }
+      );
+
+      // Update prescribed order statuses from Cleared to Paid
+      let updatedOrders = 0;
+
+      for (const item of bill.billItems) {
+        if (item.item_type && item.item_id) {
+          try {
+            switch (item.item_type) {
+              case 'DRUG': {
+                const prescribedDrug = await PrescribedDrug.findOne({
+                  where: { id: item.item_id },
+                  transaction,
+                });
+                if (prescribedDrug && prescribedDrug.payment_status === 'Cleared') {
+                  await PrescribedDrug.update(
+                    { payment_status: 'Paid' },
+                    { where: { id: item.item_id }, transaction }
+                  );
+                  await DrugPrescription.update(
+                    { has_paid: true },
+                    { where: { id: prescribedDrug.drug_prescription_id }, transaction }
+                  );
+                  updatedOrders++;
+                }
+                break;
+              }
+              case 'TEST': {
+                const prescribedTest = await PrescribedTest.findOne({
+                  where: { id: item.item_id },
+                  transaction,
+                });
+                if (prescribedTest && prescribedTest.payment_status === 'Cleared') {
+                  await PrescribedTest.update(
+                    { payment_status: 'Paid' },
+                    { where: { id: item.item_id }, transaction }
+                  );
+                  await TestPrescription.update(
+                    { has_paid: true },
+                    { where: { id: prescribedTest.test_prescription_id }, transaction }
+                  );
+                  updatedOrders++;
+                }
+                break;
+              }
+              case 'INVESTIGATION': {
+                const prescribedInvestigation = await PrescribedInvestigation.findOne({
+                  where: { id: item.item_id },
+                  transaction,
+                });
+                if (prescribedInvestigation && prescribedInvestigation.payment_status === 'Cleared') {
+                  await PrescribedInvestigation.update(
+                    { payment_status: 'Paid' },
+                    { where: { id: item.item_id }, transaction }
+                  );
+                  await InvestigationPrescription.update(
+                    { has_paid: true },
+                    { where: { id: prescribedInvestigation.investigation_prescription_id }, transaction }
+                  );
+                  updatedOrders++;
+                }
+                break;
+              }
+              case 'SERVICE': {
+                const result = await PrescribedService.update(
+                  { payment_status: 'Paid' },
+                  { where: { id: item.item_id, payment_status: 'Cleared' }, transaction }
+                );
+                if (result[0] > 0) updatedOrders++;
+                break;
+              }
+              case 'ADDITIONAL_ITEM': {
+                const prescribedDrug = await PrescribedDrug.findOne({
+                  where: { id: item.item_id },
+                  transaction,
+                });
+                const result = await PrescribedAdditionalItem.update(
+                  { payment_status: 'Paid' },
+                  { where: { id: item.item_id, payment_status: 'Cleared' }, transaction }
+                );
+                if (prescribedDrug) {
+                  await DrugPrescription.update(
+                    { has_paid: true },
+                    { where: { id: prescribedDrug.drug_prescription_id }, transaction }
+                  );
+                }
+                if (result[0] > 0) updatedOrders++;
+                break;
+              }
+            }
+          } catch (error) {
+            logger.error(
+              `Failed to update payment status for ${item.item_type} ID ${item.item_id}:`,
+              error
+            );
+          }
+        }
+      }
+
+      // Update bill status to PAID if all items are now paid
+      const allItemsPaid = bill.billItems.every(
+        item => item.payment_status === 'PAID' || item.payment_status === 'CLEARED'
+      );
+
+      if (allItemsPaid) {
+        await bill.update(
+          {
+            payment_status: PaymentStatus.PAID,
+            paid_at: new Date(),
+          },
+          { transaction }
+        );
+      }
+
+      // Create settlement journal entries
+      await this.createInsuranceSettlementJournalEntries(
+        payment,
+        claim.claim_amount,
+        staffId,
+        transaction
+      );
+
+      logger.info(`Insurance claim paid status processed: ${claim.claim_reference}`, {
+        claimId,
+        paymentId: payment.id,
+        billId: bill.id,
+        updatedItems,
+        updatedOrders,
+        staffId,
+      });
+
+      return {
+        payment,
+        bill,
+        updatedItems,
+        updatedOrders,
+      };
+    } catch (error) {
+      logger.error('Failed to handle insurance claim paid status:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create journal entries for insurance settlement
+   */
+  private static async createInsuranceSettlementJournalEntries(
+    payment: ClinicalPayment,
+    settledAmount: number,
+    staffId: number,
+    transaction?: Transaction
+  ): Promise<void> {
+    try {
+      // Get chart of accounts
+      const bankAccountGL = await ChartOfAccount.findOne({
+        where: { code: '1002' }, // Bank Account
+        transaction,
+      });
+
+      const insuranceReceivablesAccount = await ChartOfAccount.findOne({
+        where: { code: '1101' }, // Insurance Receivables
+        transaction,
+      });
+
+      if (!bankAccountGL || !insuranceReceivablesAccount) {
+        throw new BadException(
+          'Required Chart of Accounts Missing',
+          500,
+          'Bank Account or Insurance Receivables accounts not found'
+        );
+      }
+
+      // Create settlement journal entry
+      const journalEntry = await JournalEntry.create(
+        {
+          entry_date: new Date(),
+          reference: `SETTLE-${payment.payment_reference}`,
+          description: `Insurance claim settlement for claim ${payment.insurance_claim_number}`,
+          entry_type: 'INSURANCE_SETTLEMENT',
+          status: JournalEntryStatus.POSTED,
+          created_by: staffId,
+          period_id: payment.period_id,
+          patient_id: payment.patient_id,
+          visit_id: payment.visit_id,
+          transaction_date: new Date(),
+        },
+        { transaction }
+      );
+
+      // Create settlement journal entry lines
+      // DR: Bank Account (cash received from insurance)
+      // CR: Insurance Receivables (clearing the receivable)
+      const journalEntryLines = [
+        {
+          journal_entry_id: journalEntry.id,
+          account_id: bankAccountGL.id,
+          debit: settledAmount,
+          credit: 0,
+          description: `Insurance settlement received for claim ${payment.insurance_claim_number}`,
+          cost_center_id: null,
+        },
+        {
+          journal_entry_id: journalEntry.id,
+          account_id: insuranceReceivablesAccount.id,
+          debit: 0,
+          credit: settledAmount,
+          description: `Settlement of insurance receivable for claim ${payment.insurance_claim_number}`,
+          cost_center_id: null,
+        },
+      ];
+
+      await JournalEntryLine.bulkCreate(journalEntryLines, { transaction });
+
+      logger.info(
+        `Settlement journal entries created for insurance payment: ${payment.payment_reference}`,
+        {
+          paymentId: payment.id,
+          journalEntryId: journalEntry.id,
+          amount: settledAmount,
+        }
+      );
+    } catch (error) {
+      logger.error('Failed to create settlement journal entries:', error);
+      throw new BadException(
+        'Journal Entry Creation Failed',
+        500,
+        'Failed to create settlement accounting entries'
+      );
+    }
   }
 
   /**

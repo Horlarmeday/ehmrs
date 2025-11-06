@@ -1,16 +1,13 @@
 import { Router } from 'express';
 import verify from '../../../core/middleware/verify';
 import LabOrderController from './lab-order.controller';
-import patientMustBeDiagnosed from '../../../core/middleware/patientMustBeDiagnosed';
 import { createEncounter } from '../../../core/middleware/createEncounter';
-import { PharmacyOrderController } from '../Pharmacy/pharmacy-order.controller';
 import checkPatientNotDeceased from '../../../core/middleware/checkPatientNotDeceased';
 
 const router = Router();
 router.post(
   '/create/:id',
   verify,
-  patientMustBeDiagnosed,
   checkPatientNotDeceased,
   createEncounter,
   LabOrderController.orderLabTest

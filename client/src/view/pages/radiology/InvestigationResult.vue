@@ -115,7 +115,11 @@
 
           <!-- Patient Information Section -->
           <section-title text="Patient Information" icon="fas fa-user-injured" />
-          <patient-section v-if="result.patient" :patient="result.patient" :insurance="result.insurance" />
+          <patient-section
+            v-if="result.patient"
+            :patient="result.patient"
+            :insurance="result.insurance"
+          />
 
           <!-- Summary Cards -->
           <b-row class="mb-5">
@@ -161,8 +165,20 @@
             <!-- Critical Findings -->
             <b-col md="3">
               <div class="summary-card">
-                <div :class="hasCriticalFindings ? 'summary-icon bg-light-danger' : 'summary-icon bg-light-secondary'">
-                  <i :class="hasCriticalFindings ? 'fas fa-exclamation-triangle fa-2x text-danger' : 'fas fa-check-circle fa-2x text-secondary'"></i>
+                <div
+                  :class="
+                    hasCriticalFindings
+                      ? 'summary-icon bg-light-danger'
+                      : 'summary-icon bg-light-secondary'
+                  "
+                >
+                  <i
+                    :class="
+                      hasCriticalFindings
+                        ? 'fas fa-exclamation-triangle fa-2x text-danger'
+                        : 'fas fa-check-circle fa-2x text-secondary'
+                    "
+                  ></i>
                 </div>
                 <div class="summary-content">
                   <h3 class="mb-0">{{ criticalFindingsCount }}</h3>
@@ -179,8 +195,8 @@
               <div class="flex-grow-1">
                 <h5 class="mb-1">⚠️ CRITICAL FINDINGS PRESENT</h5>
                 <p class="mb-0">
-                  This result contains <strong>{{ criticalFindingsCount }}</strong> critical finding(s) that require
-                  immediate clinical attention.
+                  This result contains <strong>{{ criticalFindingsCount }}</strong> critical
+                  finding(s) that require immediate clinical attention.
                 </p>
               </div>
             </div>
@@ -199,7 +215,10 @@
           </div>
         </div>
         <div class="card-body">
-          <result-section v-if="result.results && result.results.length > 0" :results="result.results" />
+          <result-section
+            v-if="result.results && result.results.length > 0"
+            :results="result.results"
+          />
           <div v-else class="empty-state text-center py-5">
             <i class="fas fa-clipboard fa-3x text-muted mb-3"></i>
             <h5 class="text-muted">No results available</h5>
@@ -295,7 +314,9 @@ export default {
     async loadResult() {
       try {
         this.isLoading = true;
-        await this.$store.dispatch('radiology/fetchOneInvestigationResult', { id: this.$route.params.id });
+        await this.$store.dispatch('radiology/fetchOneInvestigationResult', {
+          id: this.$route.params.id,
+        });
 
         // Check for previous results
         if (this.result?.patient?.id) {
@@ -315,7 +336,9 @@ export default {
 
     async checkPreviousResults() {
       try {
-        const response = await this.$http.get(`/radiology/patient-results/${this.result.patient.id}`);
+        const response = await this.$http.get(
+          `/radiology/patient-results/${this.result.patient.id}`
+        );
         this.hasPreviousResults = response.data.data && response.data.data.length > 1; // More than current
       } catch (error) {
         console.error('Error checking previous results:', error);
@@ -358,7 +381,9 @@ export default {
 
     compareResults() {
       if (this.result?.patient?.id) {
-        this.$router.push(`/radiology/compare-results/${this.result.patient.id}/${this.$route.params.id}`);
+        this.$router.push(
+          `/radiology/compare-results/${this.result.patient.id}/${this.$route.params.id}`
+        );
       }
     },
 
@@ -386,9 +411,12 @@ export default {
       });
 
       try {
-        const response = await this.$http.get(`/radiology/results/${this.$route.params.id}/download-images`, {
-          responseType: 'blob',
-        });
+        const response = await this.$http.get(
+          `/radiology/results/${this.$route.params.id}/download-images`,
+          {
+            responseType: 'blob',
+          }
+        );
 
         const url = window.URL.createObjectURL(new Blob([response.data]));
         const link = document.createElement('a');

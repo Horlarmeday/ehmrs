@@ -5,6 +5,7 @@ export enum PaymentStatus {
   PENDING = 'PENDING',
   PARTIAL = 'PARTIAL',
   PAID = 'PAID',
+  CLEARED = 'CLEARED', // For insurance claims: cleared for service delivery but not financially settled
   CANCELLED = 'CANCELLED',
   FAILED = 'FAILED',
   REFUNDED = 'REFUNDED',
@@ -196,6 +197,7 @@ export enum BillItemPaymentStatus {
   PAID = 'PAID',
   PARTIAL = 'PARTIAL',
   PENDING = 'PENDING',
+  CLEARED = 'CLEARED', // For insurance claims: cleared for service delivery but not financially settled
 }
 
 export enum BillItemTypeEnum {

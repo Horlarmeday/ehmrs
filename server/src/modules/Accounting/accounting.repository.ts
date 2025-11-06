@@ -16,6 +16,11 @@ import {
   InsuranceClaim,
   POSTerminalTransaction,
   CashTransaction,
+  PrescribedDrug,
+  PrescribedTest,
+  PrescribedInvestigation,
+  PrescribedService,
+  PrescribedAdditionalItem,
 } from '../../database/models';
 import {
   PatientDepositData,
@@ -2941,6 +2946,147 @@ export class AccountingRepository {
     }
   }
 
+  /**
+   * Enrich bill items with prescription status data
+   * Fetches related prescription records based on item_type and adds status fields
+   */
+  private static async enrichBillItemsWithPrescriptionStatus(bills: any[]): Promise<any[]> {
+    if (!bills || bills.length === 0) {
+      return bills;
+    }
+
+    // Convert bills to plain objects first
+    const plainBills = bills.map((bill) => {
+      const plainBill = bill.get ? bill.get({ plain: true }) : bill;
+      if (plainBill.billItems) {
+        plainBill.billItems = plainBill.billItems.map((item: any) =>
+          item.get ? item.get({ plain: true }) : item
+        );
+      }
+      return plainBill;
+    });
+
+    // Collect all item IDs grouped by type
+    const drugIds: number[] = [];
+    const testIds: number[] = [];
+    const investigationIds: number[] = [];
+    const serviceIds: number[] = [];
+    const additionalItemIds: number[] = [];
+
+    plainBills.forEach((bill) => {
+      if (bill.billItems && bill.billItems.length > 0) {
+        bill.billItems.forEach((item: any) => {
+          switch (item.item_type) {
+            case 'DRUG':
+              drugIds.push(item.item_id);
+              break;
+            case 'TEST':
+              testIds.push(item.item_id);
+              break;
+            case 'INVESTIGATION':
+              investigationIds.push(item.item_id);
+              break;
+            case 'SERVICE':
+              serviceIds.push(item.item_id);
+              break;
+            case 'ADDITIONAL_ITEM':
+              additionalItemIds.push(item.item_id);
+              break;
+          }
+        });
+      }
+    });
+
+    // Fetch all prescription records in parallel
+    const [drugs, tests, investigations, services, additionalItems] = await Promise.all([
+      drugIds.length > 0
+        ? PrescribedDrug.findAll({
+            where: { id: { [Op.in]: drugIds } },
+            attributes: ['id', 'dispense_status'],
+          })
+        : Promise.resolve([]),
+      testIds.length > 0
+        ? PrescribedTest.findAll({
+            where: { id: { [Op.in]: testIds } },
+            attributes: ['id', 'status', 'result_status'],
+          })
+        : Promise.resolve([]),
+      investigationIds.length > 0
+        ? PrescribedInvestigation.findAll({
+            where: { id: { [Op.in]: investigationIds } },
+            attributes: ['id', 'status'],
+          })
+        : Promise.resolve([]),
+      serviceIds.length > 0
+        ? PrescribedService.findAll({
+            where: { id: { [Op.in]: serviceIds } },
+            attributes: ['id', 'payment_status'],
+          })
+        : Promise.resolve([]),
+      additionalItemIds.length > 0
+        ? PrescribedAdditionalItem.findAll({
+            where: { id: { [Op.in]: additionalItemIds } },
+            attributes: ['id', 'dispense_status'],
+          })
+        : Promise.resolve([]),
+    ]);
+
+    // Create lookup maps for fast access
+    const drugMap = new Map(drugs.map((d) => [d.id, d]));
+    const testMap = new Map(tests.map((t) => [t.id, t]));
+    const investigationMap = new Map(investigations.map((i) => [i.id, i]));
+    const serviceMap = new Map(services.map((s) => [s.id, s]));
+    const additionalItemMap = new Map(additionalItems.map((a) => [a.id, a]));
+
+    // Enrich bill items with status data on plain objects
+    plainBills.forEach((bill) => {
+      if (bill.billItems && bill.billItems.length > 0) {
+        bill.billItems.forEach((item: any) => {
+          switch (item.item_type) {
+            case 'DRUG': {
+              const drug = drugMap.get(item.item_id);
+              if (drug) {
+                item.prescription_status = drug.dispense_status;
+              }
+              break;
+            }
+            case 'TEST': {
+              const test = testMap.get(item.item_id);
+              if (test) {
+                item.prescription_status = test.status;
+                item.result_status = test.result_status;
+              }
+              break;
+            }
+            case 'INVESTIGATION': {
+              const investigation = investigationMap.get(item.item_id);
+              if (investigation) {
+                item.prescription_status = investigation.status;
+              }
+              break;
+            }
+            case 'SERVICE': {
+              const service = serviceMap.get(item.item_id);
+              if (service) {
+                item.prescription_status = service.payment_status;
+              }
+              break;
+            }
+            case 'ADDITIONAL_ITEM': {
+              const additionalItem = additionalItemMap.get(item.item_id);
+              if (additionalItem) {
+                item.prescription_status = additionalItem.dispense_status;
+              }
+              break;
+            }
+          }
+        });
+      }
+    });
+
+    return plainBills;
+  }
+
   static async getPatientClinicalBills(patientId: number): Promise<any[]> {
     try {
       const bills = await ClinicalBill.findAll({
@@ -2950,13 +3096,15 @@ export class AccountingRepository {
           {
             model: ClinicalBillItem,
             as: 'billItems',
-            attributes: ['id', 'item_name', 'quantity', 'unit_price', 'total_price'],
+            attributes: ['id', 'item_name', 'quantity', 'unit_price', 'total_price', 'item_type', 'item_id'],
           },
         ],
         order: [['createdAt', 'DESC']],
       });
 
-      return bills;
+      // Enrich bills with prescription status data
+      const enrichedBills = await this.enrichBillItemsWithPrescriptionStatus(bills);
+      return enrichedBills;
     } catch (error) {
       throw new BadException(
         'Patient Bills Retrieval Error',

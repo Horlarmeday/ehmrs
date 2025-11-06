@@ -79,6 +79,7 @@ export async function createObservation(data) {
     cns,
     respiratory,
     additional_complaint,
+    general_diagnosis,
   } = data || {};
 
   return History.create({
@@ -90,6 +91,7 @@ export async function createObservation(data) {
     cvs,
     mss,
     abdomen,
+    general_diagnosis,
     visit_id,
     staff_id,
     patient_id,

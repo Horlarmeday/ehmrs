@@ -161,9 +161,9 @@
                       </div>
                       <div class="col-md-6">
                         <div class="detail-item">
-                          <label class="detail-label">Amount:</label>
+                          <label class="detail-label">Current Balance:</label>
                           <span class="detail-value text-success font-weight-bold">
-                            {{ formatCurrency(deposit.amount) }}
+                            {{ formatCurrency(deposit.current_balance) }}
                           </span>
                         </div>
                         <div class="detail-item">

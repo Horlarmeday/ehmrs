@@ -66,6 +66,11 @@ export class History extends Model {
   })
   abdomen: string;
 
+  @Column({
+    type: DataType.TEXT,
+  })
+  general_diagnosis: string;
+
   @ForeignKey(() => Visit)
   @Column({
     type: DataType.INTEGER,

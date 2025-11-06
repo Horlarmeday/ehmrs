@@ -10,6 +10,12 @@
             </td>
           </tr>
           <tr>
+            <th scope="row">General Diagnosis</th>
+            <td>
+              <span>{{ history.general_diagnosis || '-' }}</span>
+            </td>
+          </tr>
+          <tr>
             <th scope="row">Respiratory</th>
             <td>
               <span>{{ history.respiratory || '-' }}</span>

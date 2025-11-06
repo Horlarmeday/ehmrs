@@ -39,7 +39,11 @@
     </div>
 
     <!-- Grid View -->
-    <div v-else-if="viewMode === 'grid'" class="gallery-grid" :class="{ 'reorder-mode': reorderMode }">
+    <div
+      v-else-if="viewMode === 'grid'"
+      class="gallery-grid"
+      :class="{ 'reorder-mode': reorderMode }"
+    >
       <draggable
         v-model="localImages"
         :disabled="!reorderMode"
@@ -55,7 +59,11 @@
           <b-card
             :class="[
               'image-card',
-              { selected: selectedImageId === image.id, primary: image.is_primary, draggable: reorderMode },
+              {
+                selected: selectedImageId === image.id,
+                primary: image.is_primary,
+                draggable: reorderMode,
+              },
             ]"
             @click="selectImage(image)"
           >
@@ -90,7 +98,12 @@
               <!-- Overlay Actions -->
               <div class="image-overlay">
                 <b-button-group size="sm">
-                  <b-button variant="light" @click.stop="viewImage(image)" v-b-tooltip.hover title="View">
+                  <b-button
+                    variant="light"
+                    @click.stop="viewImage(image)"
+                    v-b-tooltip.hover
+                    title="View"
+                  >
                     <i class="fas fa-eye"></i>
                   </b-button>
                   <b-button
@@ -127,7 +140,10 @@
             <!-- Image Info -->
             <b-card-body class="p-2">
               <div class="image-info">
-                <div class="image-name text-truncate" :title="image.file_name || `Image ${index + 1}`">
+                <div
+                  class="image-name text-truncate"
+                  :title="image.file_name || `Image ${index + 1}`"
+                >
                   {{ image.file_name || `Image ${index + 1}` }}
                 </div>
                 <div class="image-meta">
@@ -140,10 +156,12 @@
                 </div>
                 <div v-if="showDicomInfo && image.dicom_metadata" class="dicom-info mt-1">
                   <small class="text-muted d-block">
-                    <strong>Modality:</strong> {{ parseDicomMetadata(image.dicom_metadata).modality || 'N/A' }}
+                    <strong>Modality:</strong>
+                    {{ parseDicomMetadata(image.dicom_metadata).modality || 'N/A' }}
                   </small>
                   <small class="text-muted d-block">
-                    <strong>Series:</strong> {{ parseDicomMetadata(image.dicom_metadata).seriesDescription || 'N/A' }}
+                    <strong>Series:</strong>
+                    {{ parseDicomMetadata(image.dicom_metadata).seriesDescription || 'N/A' }}
                   </small>
                 </div>
               </div>
@@ -191,14 +209,23 @@
               </b-badge>
             </div>
             <div class="text-muted small mt-1">
-              <span class="mr-3"><i class="fas fa-hdd"></i> {{ formatFileSize(image.file_size) }}</span>
-              <span v-if="image.created_at"><i class="fas fa-clock"></i> {{ formatDate(image.created_at) }}</span>
+              <span class="mr-3"
+                ><i class="fas fa-hdd"></i> {{ formatFileSize(image.file_size) }}</span
+              >
+              <span v-if="image.created_at"
+                ><i class="fas fa-clock"></i> {{ formatDate(image.created_at) }}</span
+              >
             </div>
           </div>
 
           <div class="list-actions">
             <b-button-group size="sm">
-              <b-button variant="outline-primary" @click.stop="viewImage(image)" v-b-tooltip.hover title="View">
+              <b-button
+                variant="outline-primary"
+                @click.stop="viewImage(image)"
+                v-b-tooltip.hover
+                title="View"
+              >
                 <i class="fas fa-eye"></i>
               </b-button>
               <b-button
@@ -247,8 +274,8 @@
         <strong>{{ imageToDelete.file_name || 'Unnamed Image' }}</strong>
       </p>
       <p v-if="imageToDelete && imageToDelete.is_primary" class="text-warning mt-2 mb-0">
-        <i class="fas fa-exclamation-triangle"></i> This is the primary image. Another image will be automatically set
-        as primary.
+        <i class="fas fa-exclamation-triangle"></i> This is the primary image. Another image will be
+        automatically set as primary.
       </p>
     </b-modal>
   </div>
@@ -374,13 +401,17 @@ export default {
       const sizes = ['Bytes', 'KB', 'MB', 'GB'];
       if (bytes === 0) return '0 Bytes';
       const i = Math.floor(Math.log(bytes) / Math.log(1024));
-      return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+      return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + ' ' + sizes[i];
     },
 
     formatDate(dateString) {
       if (!dateString) return 'N/A';
       const date = new Date(dateString);
-      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return (
+        date.toLocaleDateString() +
+        ' ' +
+        date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      );
     },
 
     parseDicomMetadata(metadata) {

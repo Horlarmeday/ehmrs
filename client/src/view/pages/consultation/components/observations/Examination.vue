@@ -29,7 +29,7 @@
             />
           </div>
         </div>
-        <h5 class="text-center mb-4">Physical Examination</h5>
+        <h5 class="text-center mb-4">General Physical Examination</h5>
         <div class="form-group row">
           <label class="col-2 col-form-label">General Examination</label>
           <div class="col-9">
@@ -45,7 +45,7 @@
             <span class="text-danger text-sm">{{ errors.first('general_examination') }}</span>
           </div>
         </div>
-        <h5 class="text-center mb-4">Systemic Examination</h5>
+        <!-- <h5 class="text-center mb-4">Systemic Examination</h5>
         <div class="form-group row">
           <label class="col-lg-2 col-form-label">Respiratory:</label>
           <div class="col-4">
@@ -116,7 +116,7 @@
               rows="2"
             />
           </div>
-        </div>
+        </div> -->
         <div class="form-group row">
           <label class="col-2 col-form-label">Treatment Plan</label>
           <div class="col-9">
@@ -130,6 +130,18 @@
               data-vv-validate-on="blur"
             />
             <span class="text-danger text-sm">{{ errors.first('treatment_plan') }}</span>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-2 col-form-label">General Diagnosis</label>
+          <div class="col-9">
+            <textarea
+              v-model="formData.general_diagnosis"
+              class="form-control form-control-sm"
+              cols="30"
+              rows="2"
+              name="general_diagnosis"
+            />
           </div>
         </div>
         <hr />
@@ -255,6 +267,7 @@ export default {
         respiratory: '',
         abdomen: '',
         examination_note: '',
+        general_diagnosis: '',
       },
       diagnosisType: 'ICD10',
       isDisabled: false,
@@ -320,7 +333,7 @@ export default {
 
     createExamination() {
       this.removeEmptyDiagnosis();
-      if (this.checkDiagnosisNotSelected()) return this.errorMessage();
+      // if (this.checkDiagnosisNotSelected()) return this.errorMessage();
       this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
@@ -342,6 +355,7 @@ export default {
             cns: this.formData.cns,
             respiratory: this.formData.respiratory,
             additional_complaint: this.formData.additional_complaint,
+            general_diagnosis: this.formData.general_diagnosis,
           };
           const submitButton = this.$refs['kt_observation_submit'];
           this.addSpinner(submitButton);
@@ -407,6 +421,7 @@ export default {
       this.formData.cns = '';
       this.formData.respiratory = '';
       this.formData.additional_complaint = '';
+      this.formData.general_diagnosis = '';
     },
 
     searchDiagnosis(search, loading) {

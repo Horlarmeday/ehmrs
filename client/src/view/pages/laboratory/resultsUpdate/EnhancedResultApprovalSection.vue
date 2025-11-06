@@ -217,6 +217,7 @@ export default {
 
     endRequest(button) {
       this.removeSpinner(button);
+      this.$router.push(`/laboratory/test-result/${this.$route.params.id}`);
     },
 
     notifyToast(text) {

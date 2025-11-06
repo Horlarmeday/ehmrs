@@ -23,10 +23,10 @@
                   />
                   <observations-table v-else :observations="clinicalFinding.findings" />
                 </b-tab>
+                <b-tab title="Diagnoses">
+                  <diagnoses-table :diagnoses="clinicalFinding.diagnoses" />
+                </b-tab>
               </b-tabs>
-              <b-tab title="Diagnoses">
-                <diagnoses-table :diagnoses="clinicalFinding.diagnoses" />
-              </b-tab>
             </div>
           </div>
         </b-collapse>

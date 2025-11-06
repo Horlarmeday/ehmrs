@@ -23,6 +23,8 @@ import {
   getTestPrescription,
 } from '../../Laboratory/laboratory.repository';
 import { PrescribedTestBody } from './interface/prescribed-test.body';
+import { AutoDepositPaymentService } from '../../Accounting/services/autoDepositPayment.service';
+import { logger } from '../../../core/helpers/logger';
 /**
  * prescribe a test for patient
  * @param data
@@ -59,7 +61,7 @@ export async function prescribeTest(data) {
   try {
     if (patient) {
       // Add this prescription to the visit bill
-      await VisitBillingHelper.addPrescribedTestToBill(
+      const billItem = await VisitBillingHelper.addPrescribedTestToBill(
         visit_id,
         prescribedTest,
         requester,
@@ -67,10 +69,17 @@ export async function prescribeTest(data) {
         test,
         patientInsurance
       );
+
+      // Attempt automatic deposit payment if patient and staff info provided
+      await AutoDepositPaymentService.attemptAutoDepositPayment(
+        billItem.bill_id,
+        patient.id,
+        requester
+      );
     }
   } catch (billingError) {
     // Log billing error but don't fail the prescription
-    console.error('Billing creation failed for test:', billingError);
+    logger.error('Billing creation failed for test:', billingError);
     // You might want to add proper logging here
   }
 
@@ -84,39 +93,57 @@ export async function prescribeTest(data) {
  */
 export async function orderBulkTest(data) {
   const tests = await PrescribedTest.bulkCreate(data);
+  const { visit_id, patient_id, requester } = tests?.[0];
 
-  // 🆕 NEW: Auto-create bills for each prescribed test
+  let billId = null;
+
   try {
+    const [patient, patientInsurance, originalTests] = await Promise.all([
+      Patient.findByPk(patient_id),
+      getPatientInsuranceQuery({ patient_id, is_default: true }),
+      Test.findAll({ where: { id: data.map(t => t.test_id) } })
+    ]);
+
+    if (!patient) {
+      throw new Error(`Patient not found: ${patient_id}`);
+    }
+
+    const testMap = new Map(originalTests.map(t => [t.id, t]));
+
     for (const test of tests) {
       // Get patient and insurance for billing calculation
-      const [patient, patientInsurance] = await Promise.all([
-        Patient.findByPk(test.patient_id),
-        getPatientInsuranceQuery({
-          patient_id: test.patient_id,
-          is_default: true,
-        }),
-      ]);
-      const originalTest = await Test.findByPk(test.test_id);
-      if (patient) {
+      const originalTest = testMap.get(test.test_id);
+      if (!originalTest) {
+        logger.warn(`Original test not found for test_id: ${test.test_id}`);
+      }
         // Add this prescription to the visit bill
-        await VisitBillingHelper.addPrescribedTestToBill(
-          test.visit_id,
+        const billItem = await VisitBillingHelper.addPrescribedTestToBill(
+          visit_id,
           test,
           test.requester,
           patient,
           originalTest,
           patientInsurance
         );
-      }
+      // Capture the bill_id (same for all)
+      if (billItem?.bill_id && !billId) {
+        billId = billItem.bill_id;
+      }  
     }
+      // Step 4: Trigger auto-payment once (if bill was created)
+      if (billId) {
+        await AutoDepositPaymentService.attemptAutoDepositPayment(
+          billId,
+          patient_id,
+          requester
+        );
+      }
   } catch (billingError) {
     // Log billing error but don't fail the prescription
-    console.error('Billing creation failed for tests:', billingError);
+    logger.error('Billing creation failed for tests:', billingError);
     // You might want to add proper logging here
   }
-
-  const testIds = tests.map(({ id }) => id);
-  return getPrescriptionTests({ id: testIds });
+  return getPrescriptionTests({ id: tests.map(t => t.id) });
 }
 
 export const updatePrescribedTest = async (data: Partial<PrescribedTest>) => {

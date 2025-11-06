@@ -1,6 +1,6 @@
 import { PrescribedService, Patient, ClinicalBill } from '../../../database/models';
 import { PrescribeServiceBody } from './types/service-order.types';
-import { WhereOptions } from 'sequelize';
+import { WhereOptions, Transaction } from 'sequelize';
 import { Service, Staff } from '../../../database/models';
 import { staffAttributes } from '../../Antenatal/antenatal.repository';
 import { StatusCodes } from '../../../core/helpers/helper';
@@ -8,6 +8,8 @@ import { BadException } from '../../../common/util/api-error';
 import { ERROR_UPDATING_SERVICE } from './messages/response-messages';
 import { VisitBillingHelper } from '../../Accounting/visitBilling.helper';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
+import { AutoDepositPaymentService } from '../../Accounting/services/autoDepositPayment.service';
+import { logger } from '../../../core/helpers/logger';
 
 /**
  * prescribe multiple services for patient
@@ -16,6 +18,7 @@ import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
  */
 export const orderBulkService = async data => {
   const services = await PrescribedService.bulkCreate(data);
+  let billId = null;
 
   // 🆕 NEW: Auto-create bills for each prescribed service
   try {
@@ -33,7 +36,7 @@ export const orderBulkService = async data => {
 
       if (patient) {
         // Add this prescription to the visit bill
-        await VisitBillingHelper.addPrescribedServiceToBill(
+        const billItem = await VisitBillingHelper.addPrescribedServiceToBill(
           service.visit_id,
           service,
           service.requester,
@@ -41,11 +44,23 @@ export const orderBulkService = async data => {
           originalService,
           patientInsurance
         );
+        // Capture the bill_id (same for all)
+        if (billItem?.bill_id && !billId) {
+          billId = billItem.bill_id;
+        }  
       }
+    }
+    // Step 4: Trigger auto-payment once (if bill was created)
+    if (billId) {
+      await AutoDepositPaymentService.attemptAutoDepositPayment(
+        billId,
+        services[0]?.patient_id,
+        services[0]?.requester
+      );
     }
   } catch (billingError) {
     // Log billing error but don't fail the prescription
-    console.error('Billing creation failed for services:', billingError);
+    logger.error('Billing creation failed for services:', { error: billingError.message, stack: billingError.stack });
     // You might want to add proper logging here
   }
 
@@ -55,9 +70,13 @@ export const orderBulkService = async data => {
 /**
  * prescribe a service for patient
  * @param data
+ * @param transaction - optional transaction for atomic operations
  * @returns {Promise<PrescribedService>} prescribed service data
  */
-export const prescribeService = async (data: PrescribeServiceBody): Promise<PrescribedService> => {
+export const prescribeService = async (
+  data: PrescribeServiceBody,
+  transaction?: Transaction
+): Promise<PrescribedService> => {
   const {
     service_id,
     requester,
@@ -69,17 +88,20 @@ export const prescribeService = async (data: PrescribeServiceBody): Promise<Pres
     surgery_id,
   } = data || {};
 
-  const prescribedService = await PrescribedService.create({
-    service_id,
-    service_type,
-    requester,
-    price,
-    patient_id,
-    date_requested: Date.now(),
-    visit_id,
-    surgery_id,
-    ante_natal_id,
-  });
+  const prescribedService = await PrescribedService.create(
+    {
+      service_id,
+      service_type,
+      requester,
+      price,
+      patient_id,
+      date_requested: Date.now(),
+      visit_id,
+      surgery_id,
+      ante_natal_id,
+    },
+    transaction ? { transaction } : undefined
+  );
 
   // 🆕 NEW: Auto-create bill for this prescription
   try {
@@ -94,7 +116,7 @@ export const prescribeService = async (data: PrescribeServiceBody): Promise<Pres
     const originalService = await Service.findByPk(service_id);
     if (patient) {
       // Add this prescription to the visit bill
-      await VisitBillingHelper.addPrescribedServiceToBill(
+      const billItem = await VisitBillingHelper.addPrescribedServiceToBill(
         visit_id,
         prescribedService,
         requester,
@@ -102,10 +124,16 @@ export const prescribeService = async (data: PrescribeServiceBody): Promise<Pres
         originalService,
         patientInsurance
       );
+      // Capture the bill_id (same for all)
+     await AutoDepositPaymentService.attemptAutoDepositPayment(
+      billItem.bill_id,
+      patient.id,
+      requester
+     );
     }
   } catch (billingError) {
     // Log billing error but don't fail the prescription
-    console.error('Billing creation failed for service:', billingError);
+    logger.error('Billing creation failed for service:', { error: billingError.message, stack: billingError.stack });
     // You might want to add proper logging here
   }
 

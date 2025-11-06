@@ -32,7 +32,10 @@ export const genericTemplate = {
       title: 'COMPARISON',
       placeholder: 'Previous studies for comparison...',
       required: false,
-      hints: ['No prior studies available for comparison', 'Compared with previous study dated [date]'],
+      hints: [
+        'No prior studies available for comparison',
+        'Compared with previous study dated [date]',
+      ],
     },
     {
       id: 'findings',
@@ -60,7 +63,11 @@ export const genericTemplate = {
     },
   ],
   commonFindings: {
-    normal: ['Normal study.', 'No significant abnormality detected.', 'Within normal limits for age and gender.'],
+    normal: [
+      'Normal study.',
+      'No significant abnormality detected.',
+      'Within normal limits for age and gender.',
+    ],
     abnormal: [
       'Abnormal finding requiring clinical correlation',
       'Findings consistent with [diagnosis]',

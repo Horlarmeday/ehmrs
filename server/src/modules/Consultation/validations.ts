@@ -36,6 +36,9 @@ export function validateObservation(observation) {
     additional_complaint: Joi.string()
       .optional()
       .allow(''),
+    general_diagnosis: Joi.string()
+      .optional()
+      .allow(''),
     // complaints: Joi.array()
     //   .items(
     //     Joi.object({
@@ -59,7 +62,8 @@ export function validateObservation(observation) {
             .optional(),
         })
       )
-      .required(),
+      .optional()
+      .allow(''),
   });
   return schema.validate(observation);
 }

@@ -151,7 +151,11 @@ export const ultrasoundTemplate = {
     },
   ],
   commonFindings: {
-    normal: ['Normal ultrasound study.', 'No significant abnormality detected.', 'Within normal limits.'],
+    normal: [
+      'Normal ultrasound study.',
+      'No significant abnormality detected.',
+      'Within normal limits.',
+    ],
     abdomen: [
       'Normal liver',
       'Fatty liver',

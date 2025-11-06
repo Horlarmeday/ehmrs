@@ -173,7 +173,10 @@ export function formatReportToHTML(report) {
         if (subsection.content) {
           html += `<div class="subsection">`;
           html += `<h4 class="subsection-title">${subsection.title}</h4>`;
-          html += `<div class="subsection-content">${subsection.content.replace(/\n/g, '<br>')}</div>`;
+          html += `<div class="subsection-content">${subsection.content.replace(
+            /\n/g,
+            '<br>'
+          )}</div>`;
           html += `</div>`;
         }
       });
@@ -204,10 +207,7 @@ export function parseReportText(reportText, templateId = 'generic') {
     const match = reportText.match(regex);
 
     if (match) {
-      const content = match[0]
-        .replace(section.title, '')
-        .replace(/={3,}/g, '')
-        .trim();
+      const content = match[0].replace(section.title, '').replace(/={3,}/g, '').trim();
       report.sections[section.id].content = content;
     }
   });

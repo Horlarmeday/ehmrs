@@ -7,6 +7,7 @@
             <th scope="col">Complaint Note</th>
             <th scope="col">History Note</th>
             <th scope="col">Examination</th>
+            <th scope="col">Diagnosis</th>
             <th scope="col">Added By</th>
             <th scope="col">Date Added</th>
             <th scope="col"></th>
@@ -20,6 +21,7 @@
             <td>{{ history.complaint_note || '-' }}</td>
             <td>{{ history.history_note || '-' }}</td>
             <td>{{ history.examination_note || '-' }}</td>
+            <td>{{ history.general_diagnosis || '-' }}</td>
             <td>{{ history?.staff?.fullname || '-' }}</td>
             <td>{{ history.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
             <td>

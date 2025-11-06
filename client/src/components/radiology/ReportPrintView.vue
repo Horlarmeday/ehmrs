@@ -87,7 +87,10 @@
     <div v-if="hasImages" class="section images-summary-section no-print">
       <h4 class="section-title">Attached Images</h4>
       <p>{{ imageCount }} image(s) attached to this report</p>
-      <p class="text-muted small">Note: Images are not included in the printed version. Please use the digital report for full image access.</p>
+      <p class="text-muted small">
+        Note: Images are not included in the printed version. Please use the digital report for full
+        image access.
+      </p>
     </div>
 
     <!-- Critical Findings Alert -->
@@ -122,7 +125,9 @@
     <!-- Footer -->
     <div class="report-footer">
       <div class="footer-content">
-        <p class="footer-text">This is an official medical report. Unauthorized reproduction is prohibited.</p>
+        <p class="footer-text">
+          This is an official medical report. Unauthorized reproduction is prohibited.
+        </p>
         <p class="footer-meta">
           <span>Printed on: {{ formatDate(new Date()) }}</span>
           <span class="ml-4">Page 1 of 1</span>

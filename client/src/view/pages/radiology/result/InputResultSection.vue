@@ -485,10 +485,7 @@ export default {
 
     async deleteImage(index, image) {
       try {
-        const response = await this.$store.dispatch(
-          'radiology/deleteInvestigationImage',
-          image.id
-        );
+        const response = await this.$store.dispatch('radiology/deleteInvestigationImage', image.id);
         if (response.data.success) {
           const imageIndex = this.investigations[index].images.findIndex(
             (img) => img.id === image.id

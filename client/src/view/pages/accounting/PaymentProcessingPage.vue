@@ -564,30 +564,56 @@
                     id="insurance-provider"
                     v-model="paymentForm.insurance_provider"
                     :options="insuranceProviders"
+                    :disabled="insuranceProviders.length === 0"
                     required
+                    readonly
                   >
                     <template #first>
-                      <option value="">Select Insurance Provider</option>
+                      <option value="" v-if="insuranceProviders.length === 0">
+                        No Insurance Registered
+                      </option>
                     </template>
                   </b-form-select>
-                  <small class="text-muted">Select the insurance provider or HMO</small>
+                  <small class="text-muted">
+                    Patient's default insurance (automatically selected)
+                  </small>
                 </b-form-group>
               </div>
               <div class="col-md-6">
-                <b-form-group label="Policy Number" label-for="policy-number">
+                <b-form-group label="Policy/Enrollee Number" label-for="policy-number">
                   <b-form-input
                     id="policy-number"
                     v-model="paymentForm.policy_number"
                     placeholder="Insurance policy number"
-                    required
+                    readonly
+                    class="bg-light"
                   ></b-form-input>
-                  <small class="text-muted">Patient's insurance policy number</small>
+                  <small class="text-muted">
+                    Patient's insurance enrollee code (auto-populated)
+                  </small>
                 </b-form-group>
               </div>
             </div>
-            <div class="row mt-3">
+
+            <!-- Co-Payment Collection Section -->
+            <div class="row mt-4">
+              <div class="col-12">
+                <h6 class="text-primary mb-3">
+                  <i class="fas fa-money-bill mr-2"></i>Co-Payment Collection
+                </h6>
+                <div class="alert alert-info-light">
+                  <i class="fas fa-info-circle mr-2"></i>
+                  <small>
+                    Co-payment must be collected before submitting insurance claim. Enter the amount
+                    the patient will pay directly (if required by insurance plan).
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
               <div class="col-md-6">
-                <b-form-group label="Co-pay Amount" label-for="copay-amount">
+                <b-form-group label="Co-pay Amount (Required)" label-for="copay-amount">
                   <b-form-input
                     id="copay-amount"
                     v-model.number="paymentForm.copay_amount"
@@ -596,20 +622,66 @@
                     min="0"
                     :max="selectedItemsTotal"
                     @input="calculateInsuranceAmount"
+                    placeholder="0.00"
                   ></b-form-input>
-                  <small class="text-muted">Patient's co-payment amount (if any)</small>
+                  <small class="text-muted">
+                    Patient's co-payment amount to be collected now (Max:
+                    {{ formatCurrency(selectedItemsTotal) }})
+                  </small>
+                  <div
+                    v-if="paymentForm.copay_amount > selectedItemsTotal"
+                    class="text-danger small"
+                  >
+                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                    Co-payment cannot exceed total amount
+                  </div>
                 </b-form-group>
               </div>
               <div class="col-md-6">
-                <b-form-group label="Insurance Covers" label-for="insurance-covers">
+                <b-form-group label="Insurance Coverage Amount" label-for="insurance-covers">
                   <b-form-input
                     id="insurance-covers"
-                    v-model="paymentForm.insurance_covers"
+                    :value="formatCurrency(paymentForm.insurance_covers || 0)"
                     readonly
                     class="bg-light"
                   ></b-form-input>
-                  <small class="text-muted">Amount covered by insurance</small>
+                  <small class="text-muted">
+                    Amount to be claimed from insurance (automatically calculated)
+                  </small>
                 </b-form-group>
+              </div>
+            </div>
+
+            <!-- Payment Breakdown Visual -->
+            <div v-if="paymentForm.copay_amount > 0 || selectedItemsTotal > 0" class="row mt-3">
+              <div class="col-12">
+                <div class="payment-breakdown-card">
+                  <h6 class="mb-3"><i class="fas fa-chart-pie mr-2"></i>Payment Breakdown</h6>
+                  <div class="breakdown-items">
+                    <div class="breakdown-item">
+                      <span class="">Total Bill Amount:</span>
+                      <span class="value total">{{ formatCurrency(selectedItemsTotal) }}</span>
+                    </div>
+                    <div class="breakdown-item copay">
+                      <span class=""> <i class="fas fa-user mr-1"></i>Patient Co-payment: </span>
+                      <span class="value">{{ formatCurrency(paymentForm.copay_amount || 0) }}</span>
+                    </div>
+                    <div class="breakdown-item insurance">
+                      <span class="">
+                        <i class="fas fa-shield-alt mr-1"></i>Insurance Coverage:
+                      </span>
+                      <span class="value">
+                        {{ formatCurrency(paymentForm.insurance_covers || 0) }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="breakdown-footer">
+                    <small class="text-muted">
+                      <i class="fas fa-info-circle mr-1"></i>
+                      Co-payment must be collected before claim submission
+                    </small>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -1499,102 +1571,86 @@ export default {
       try {
         this.isLoadingInsurance = true;
 
-        // Use existing insurance module to get providers
-        await Promise.all([
-          this.$store.dispatch('insurance/fetchInsurances', {
-            currentPage: 1,
-            itemsPerPage: 100,
-            search: '',
-          }),
-          this.$store.dispatch('insurance/fetchHMOs', {
-            currentPage: 1,
-            itemsPerPage: 100,
-            search: '',
-            filter: '',
-          }),
-        ]);
+        if (!this.bill?.patient_id) {
+          throw new Error('Patient ID is required to load insurance information');
+        }
 
-        // Get data from store
-        const insurances = this.$store.getters['insurance/getInsurances'] || [];
-        const hmos = this.$store.getters['insurance/getHMOs'] || [];
+        // Fetch patient's default insurance
+        const response = await this.$store.dispatch(
+          'accounting/getPatientDefaultInsurance',
+          this.bill.patient_id
+        );
 
-        // Format insurance providers for select
-        this.insuranceProviders = [
-          { value: '', text: 'Select Insurance Provider' },
-          ...insurances.map((insurance) => ({
-            value: insurance.id.toString(),
-            text: insurance.name,
-            description: insurance.description,
-            type: 'insurance',
-          })),
-          ...hmos.map((hmo) => ({
-            value: hmo.id.toString(),
-            text: hmo.name,
-            description: hmo.insurance?.name || '',
-            type: 'hmo',
-          })),
-        ];
-      } catch (error) {
-        console.error('Error loading insurance providers:', error);
-        // If API fails, show empty list with error message
-        this.insuranceProviders = [{ value: '', text: 'Failed to load insurance providers' }];
-      } finally {
-        this.isLoadingInsurance = false;
-      }
-    },
+        if (response && response.success && response.data) {
+          const insurance = response.data;
 
-    async loadPatientInsuranceInfo() {
-      try {
-        if (!this.bill?.patient_id) return;
+          // Auto-populate insurance providers list with patient's default insurance only
+          this.insuranceProviders = [
+            {
+              value: insurance.id.toString(),
+              text: `${insurance.insurance?.name || 'N/A'} - ${insurance.hmo?.name || 'N/A'}`,
+              insurance_id: insurance.insurance_id,
+              hmo_id: insurance.hmo_id,
+              insurance_name: insurance.insurance?.name || '',
+              hmo_name: insurance.hmo?.name || '',
+              enrollee_code: insurance.enrollee_code || '',
+              plan: insurance.plan || '',
+              organization: insurance.organization || '',
+            },
+          ];
 
-        this.isLoadingInsurance = true;
+          // Auto-populate the form with patient's default insurance
+          this.paymentForm.insurance_provider = insurance.id.toString();
+          this.paymentForm.policy_number = insurance.enrollee_code || '';
 
-        // Use existing insurance module to get patient insurance
-        await this.$store.dispatch('insurance/fetchPatientInsurances', this.bill.patient_id);
-        const patientInsurances = this.$store.getters['insurance/getPatientInsurances'] || [];
+          // Store additional insurance details for later use
+          this.patientInsuranceInfo = {
+            provider_name: insurance.insurance?.name || 'N/A',
+            hmo_name: insurance.hmo?.name || 'N/A',
+            policy_number: insurance.enrollee_code || '',
+            plan: insurance.plan || 'N/A',
+            organization: insurance.organization || 'N/A',
+            status: 'Active',
+          };
 
-        if (patientInsurances.length > 0) {
-          // Auto-populate insurance fields if patient has insurance
-          const defaultInsurance =
-            patientInsurances.find((pi) => pi.is_default) || patientInsurances[0];
-          if (defaultInsurance) {
-            // Find the provider in our list and set it
-            const provider = this.insuranceProviders.find(
-              (p) =>
-                p.value === defaultInsurance.insurance_id?.toString() ||
-                p.value === defaultInsurance.hmo_id?.toString()
-            );
-            if (provider) {
-              this.paymentForm.insurance_provider = provider.value;
-
-              // Set other insurance details
-              this.paymentForm.policy_number = defaultInsurance.enrollee_code || '';
-              this.paymentForm.copay_amount = defaultInsurance.co_pay_amount || 0;
-              this.calculateInsuranceAmount();
-
-              // Show success message
-              this.$bvToast.toast(`Auto-populated insurance: ${provider.text}`, {
-                title: 'Insurance Found',
-                variant: 'success',
-                solid: true,
-              });
+          this.$bvToast.toast(
+            `Patient's default insurance auto-populated: ${insurance.insurance?.name || 'N/A'} - ${
+              insurance.hmo?.name || 'N/A'
+            }`,
+            {
+              title: 'Insurance Loaded',
+              variant: 'success',
+              solid: true,
             }
-          }
+          );
         } else {
-          // No insurance found for patient
-          this.$bvToast.toast('No insurance found for this patient', {
-            title: 'Insurance Info',
-            variant: 'info',
-            solid: true,
-          });
+          // Patient has no default insurance
+          this.insuranceProviders = [];
+          this.patientInsuranceInfo = null;
+
+          this.$bvToast.toast(
+            'This patient has no default insurance registered. Please register patient insurance first.',
+            {
+              title: 'No Insurance Found',
+              variant: 'warning',
+              solid: true,
+              autoHideDelay: 5000,
+            }
+          );
         }
       } catch (error) {
-        console.error('Error loading patient insurance information:', error);
-        this.$bvToast.toast('Failed to load patient insurance information', {
-          title: 'Error',
-          variant: 'danger',
-          solid: true,
-        });
+        console.error('Error loading patient insurance:', error);
+        this.insuranceProviders = [];
+        this.patientInsuranceInfo = null;
+
+        this.$bvToast.toast(
+          `Failed to load patient insurance: ${error.message || 'Unknown error'}`,
+          {
+            title: 'Error',
+            variant: 'danger',
+            solid: true,
+          }
+        );
       } finally {
         this.isLoadingInsurance = false;
       }
@@ -1764,6 +1820,20 @@ export default {
           case 'insurance':
             if (!this.paymentForm.insurance_provider) {
               errors.push('Insurance provider selection is required');
+            }
+            if (!this.paymentForm.policy_number) {
+              errors.push('Policy/Enrollee number is required for insurance claims');
+            }
+            if (this.paymentForm.copay_amount < 0) {
+              errors.push('Co-payment amount cannot be negative');
+            }
+            if (this.paymentForm.copay_amount > this.selectedItemsTotal) {
+              errors.push('Co-payment amount cannot exceed total bill amount');
+            }
+            if (this.insuranceProviders.length === 0) {
+              errors.push(
+                'Patient has no insurance registered. Please register patient insurance before proceeding.'
+              );
             }
             break;
           case 'deposit':
@@ -2141,6 +2211,81 @@ export default {
   padding: 2rem;
   background: #f8f9fa;
   min-height: 100vh;
+}
+
+/* Insurance Copayment Styles */
+.alert-info-light {
+  background-color: #e7f3ff;
+  border-color: #b3d7ff;
+  color: #004085;
+}
+
+.payment-breakdown-card {
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.breakdown-items {
+  border-top: 1px solid #e9ecef;
+  padding-top: 1rem;
+}
+
+.breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px dashed #e9ecef;
+}
+
+.breakdown-item:last-child {
+  border-bottom: none;
+}
+
+.breakdown-item .label {
+  font-size: 0.95rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.breakdown-item .value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.breakdown-item .value.total {
+  color: #007bff;
+  font-size: 1.2rem;
+}
+
+.breakdown-item.copay .value {
+  color: #dc3545;
+}
+
+.breakdown-item.insurance .value {
+  color: #28a745;
+}
+
+.breakdown-footer {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 2px solid #e9ecef;
+  text-align: center;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+}
+
+.alert-success-light {
+  background-color: #e8f5e9;
+  border-color: #c8e6c9;
+  color: #2e7d32;
 }
 
 .page-header {

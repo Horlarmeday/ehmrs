@@ -1026,7 +1026,9 @@ export default {
     isItemPaid(item) {
       // Check if item is already fully paid
       return (
-        item.payment_status === 'PAID' || (item.paid_amount && item.paid_amount >= item.total_price)
+        item.payment_status === 'PAID' ||
+        item.payment_status === 'CLEARED' ||
+        (item.paid_amount && item.paid_amount >= item.total_price)
       );
     },
   },

@@ -59,7 +59,9 @@
               <i class="fas fa-calendar-day"></i>
             </div>
             <div class="metric-content">
-              <h3 class="metric-value">{{ formatCurrency(dashboardData?.todayCollections || 0) }}</h3>
+              <h3 class="metric-value">
+                {{ formatCurrency(dashboardData?.todayCollections || 0) }}
+              </h3>
               <p class="metric-label">Today's Collections</p>
               <small class="metric-change text-white">
                 <i
@@ -79,12 +81,16 @@
               <i class="fas fa-calendar-week"></i>
             </div>
             <div class="metric-content">
-              <h3 class="metric-value">{{ formatCurrency(dashboardData?.weeklyCollections || 0) }}</h3>
+              <h3 class="metric-value">
+                {{ formatCurrency(dashboardData?.weeklyCollections || 0) }}
+              </h3>
               <p class="metric-label">This Week</p>
               <small class="metric-change text-white">
                 <i
                   :class="
-                    (dashboardData?.weeklyChange || 0) >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'
+                    (dashboardData?.weeklyChange || 0) >= 0
+                      ? 'fas fa-arrow-up'
+                      : 'fas fa-arrow-down'
                   "
                 ></i>
                 {{ Math.abs(dashboardData?.weeklyChange || 0) }}% from last week
@@ -99,7 +105,9 @@
               <i class="fas fa-calendar-alt"></i>
             </div>
             <div class="metric-content">
-              <h3 class="metric-value">{{ formatCurrency(dashboardData?.monthlyCollections || 0) }}</h3>
+              <h3 class="metric-value">
+                {{ formatCurrency(dashboardData?.monthlyCollections || 0) }}
+              </h3>
               <p class="metric-label">This Month</p>
               <small class="metric-change text-white">
                 <i
@@ -308,6 +316,67 @@
       </div>
     </div>
 
+    <!-- Billing Configuration Section -->
+    <div class="billing-configuration-section">
+      <div class="section-header">
+        <h4><i class="fas fa-cog text-primary mr-2"></i>Billing Configuration</h4>
+        <p class="text-muted">View pricing information for services, tests, and inventory</p>
+      </div>
+
+      <div class="operations-grid">
+        <div class="operation-card" @click="navigateToPage('services')">
+          <div class="operation-icon bg-info">
+            <i class="fas fa-concierge-bell"></i>
+          </div>
+          <div class="operation-content">
+            <h5>Services</h5>
+            <p>View service pricing and billing</p>
+          </div>
+          <div class="operation-arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <div class="operation-card" @click="navigateToPage('tests')">
+          <div class="operation-icon bg-success">
+            <i class="fas fa-flask"></i>
+          </div>
+          <div class="operation-content">
+            <h5>Laboratory Tests</h5>
+            <p>View test pricing and billing</p>
+          </div>
+          <div class="operation-arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <div class="operation-card" @click="navigateToPage('inventory-items')">
+          <div class="operation-icon bg-primary">
+            <i class="fas fa-pills"></i>
+          </div>
+          <div class="operation-content">
+            <h5>Inventory Items (Drugs)</h5>
+            <p>View drug inventory and pricing</p>
+          </div>
+          <div class="operation-arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+        <div class="operation-card" @click="navigateToPage('admitted-patients')">
+          <div class="operation-icon bg-primary">
+            <i class="fas fa-hospital-user"></i>
+          </div>
+          <div class="operation-content">
+            <h5>Admitted Patients</h5>
+            <p>View financial records for currently admitted patients</p>
+          </div>
+          <div class="operation-arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Basic Reports Section -->
     <div class="reports-section mt-4">
       <div class="section-header">
@@ -447,6 +516,12 @@ export default {
         'cash-registers': '/accounting/cash-registers',
         'pos-terminals': '/accounting/pos-terminals',
         'financial-reports': '/accounting/reports',
+
+        // Billing configuration routes
+        services: '/accounting/services',
+        tests: '/accounting/tests',
+        'inventory-items': '/accounting/inventory-items',
+        'admitted-patients': '/accounting/admitted-patients',
       };
 
       if (pageRoutes[page]) {
@@ -754,6 +829,11 @@ export default {
   margin-bottom: 2rem;
 }
 
+/* Billing Configuration Section */
+.billing-configuration-section {
+  margin-bottom: 2rem;
+}
+
 .operations-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -933,4 +1013,3 @@ export default {
   }
 }
 </style>
-

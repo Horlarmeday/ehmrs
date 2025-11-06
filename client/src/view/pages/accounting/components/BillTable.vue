@@ -8,7 +8,7 @@
             <th>Patient</th>
             <th>Visit Date</th>
             <th>Total Amount</th>
-            <th>Billing Status</th>
+            <!-- <th>Billing Status</th> -->
             <th>Payment Status</th>
             <th>Created By</th>
             <th>Actions</th>
@@ -31,11 +31,11 @@
             <td>
               <span class="amount">{{ formatCurrency(bill.final_amount) }}</span>
             </td>
-            <td>
+            <!-- <td>
               <b-badge :variant="getBillingStatusVariant(bill.billing_status)">
                 {{ bill.billing_status }}
               </b-badge>
-            </td>
+            </td> -->
             <td>
               <b-badge :variant="getPaymentStatusVariant(bill.payment_status)">
                 {{ bill.payment_status }}

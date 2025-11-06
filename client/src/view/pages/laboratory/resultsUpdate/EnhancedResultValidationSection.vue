@@ -220,6 +220,7 @@ export default {
 
     endRequest(button) {
       this.removeSpinner(button);
+      this.$router.push(`/laboratory/result-approval/${this.$route.params.id}`);
     },
 
     validateTests() {

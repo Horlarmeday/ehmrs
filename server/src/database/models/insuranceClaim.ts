@@ -6,10 +6,12 @@ import {
   Model,
   PrimaryKey,
   Table,
+  AfterUpdate,
 } from 'sequelize-typescript';
 import { ClinicalPayment } from './clinicalPayment';
 import { Staff } from './staff';
 import { HMOClaimStatus } from '../../modules/Accounting/enums';
+import { logger } from '../../core/helpers/logger';
 
 @Table({ timestamps: true, tableName: 'insurance_claims' })
 export class InsuranceClaim extends Model {
@@ -291,4 +293,60 @@ export class InsuranceClaim extends Model {
 
   @BelongsTo(() => Staff, { foreignKey: 'submitted_by' })
   submittedByStaff: Staff;
+
+  /**
+   * Sequelize hook: After Update
+   * Automatically triggers status update when insurance claim is paid
+   */
+  @AfterUpdate
+  static async handleClaimStatusChange(instance: InsuranceClaim) {
+    try {
+      // Check if claim_status changed to PAID
+      const changedFields = instance.changed() as string[];
+      if (changedFields && changedFields.includes('claim_status')) {
+        const previousStatus = instance.previous('claim_status');
+        const newStatus = instance.claim_status;
+
+        // Only trigger if status changed to PAID from CLEARED or another status
+        if (newStatus === 'PAID' && previousStatus !== 'PAID') {
+          logger.info(`Insurance claim status changed to PAID, triggering automatic settlement`, {
+            claimId: instance.id,
+            claimReference: instance.claim_reference,
+            previousStatus,
+            newStatus,
+          });
+
+          // Dynamically import the service to avoid circular dependencies
+          const { InsurancePaymentService } = await import(
+            '../../modules/Accounting/services/insurancePayment.service'
+          );
+
+          // Call the handler to update all related statuses
+          // Use the submitted_by or approved_by as the staff ID for audit
+          const staffId = instance.approved_by || instance.submitted_by;
+
+          await InsurancePaymentService.handleInsuranceClaimPaidStatus(
+            instance.id,
+            staffId,
+            // Don't pass transaction here as this is a hook - let the method create its own
+            undefined
+          );
+
+          logger.info(`Insurance claim settlement completed successfully`, {
+            claimId: instance.id,
+            claimReference: instance.claim_reference,
+          });
+        }
+      }
+    } catch (error) {
+      logger.error('Failed to handle insurance claim status change:', {
+        error: error.message,
+        claimId: instance.id,
+        claim_status: instance.claim_status,
+      });
+      // Don't throw error - we don't want to block the update operation
+      // The status change is still saved, just the cascade updates failed
+      // This can be retried manually if needed
+    }
+  }
 }

@@ -129,7 +129,11 @@ Contrast: [Yes/No] - [If yes, type and dose]`,
     },
   ],
   commonFindings: {
-    normal: ['Normal MRI study.', 'No significant abnormality detected.', 'Study within normal limits.'],
+    normal: [
+      'Normal MRI study.',
+      'No significant abnormality detected.',
+      'Study within normal limits.',
+    ],
     brain: [
       'Normal brain MRI',
       'Acute infarct',

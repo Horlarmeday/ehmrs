@@ -33,12 +33,7 @@
               >
                 <i class="fas fa-history"></i>
               </b-button>
-              <b-button
-                variant="outline-info"
-                @click="printPage"
-                v-b-tooltip.hover
-                title="Print"
-              >
+              <b-button variant="outline-info" @click="printPage" v-b-tooltip.hover title="Print">
                 <i class="fas fa-print"></i>
               </b-button>
             </b-button-group>
@@ -91,7 +86,8 @@
               <div class="flex-grow-1">
                 <h5 class="mb-1">Pending Investigations</h5>
                 <p class="mb-0">
-                  You have <strong>{{ pendingInvestigations.length }}</strong> investigation(s) waiting for results.
+                  You have <strong>{{ pendingInvestigations.length }}</strong> investigation(s)
+                  waiting for results.
                 </p>
               </div>
             </div>
@@ -104,22 +100,25 @@
               <div class="flex-grow-1">
                 <h5 class="mb-1">Accepted Results</h5>
                 <p class="mb-0">
-                  <strong>{{ acceptedInvestigations.length }}</strong> investigation result(s) have already been
-                  accepted and cannot be modified.
+                  <strong>{{ acceptedInvestigations.length }}</strong> investigation result(s) have
+                  already been accepted and cannot be modified.
                 </p>
               </div>
             </div>
           </div>
 
           <!-- Payment Pending Notice -->
-          <div v-if="paymentPendingInvestigations.length > 0" class="alert alert-light-warning mb-5">
+          <div
+            v-if="paymentPendingInvestigations.length > 0"
+            class="alert alert-light-warning mb-5"
+          >
             <div class="d-flex align-items-center">
               <i class="fas fa-exclamation-triangle fa-2x text-warning mr-3"></i>
               <div class="flex-grow-1">
                 <h5 class="mb-1">Payment Required</h5>
                 <p class="mb-0">
-                  <strong>{{ paymentPendingInvestigations.length }}</strong> investigation(s) require payment
-                  before results can be entered.
+                  <strong>{{ paymentPendingInvestigations.length }}</strong> investigation(s)
+                  require payment before results can be entered.
                 </p>
               </div>
             </div>
@@ -242,7 +241,8 @@ export default {
     pendingInvestigations() {
       if (!this.investigation?.investigations) return [];
       return this.investigation.investigations.filter(
-        (inv) => (!inv.result || inv.result.status !== 'Accepted') && inv.payment_status !== 'Pending'
+        (inv) =>
+          (!inv.result || inv.result.status !== 'Accepted') && inv.payment_status !== 'Pending'
       );
     },
     acceptedInvestigations() {

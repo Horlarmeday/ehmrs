@@ -212,4 +212,9 @@ export default {
   realTimeMonitoring: null,
 
   // ===== END PHASE 6 STATE =====
+
+  // ===== PATIENT INSURANCE STATE =====
+
+  // Patient default insurance
+  patientDefaultInsurance: null,
 };

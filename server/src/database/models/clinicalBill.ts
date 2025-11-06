@@ -191,6 +191,13 @@ export class ClinicalBill extends Model {
   })
   notes: string;
 
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  })
+  auto_deposit_attempted: boolean;
+
   @ForeignKey(() => Staff)
   @Column({
     type: DataType.INTEGER,

@@ -1942,6 +1942,36 @@ export default {
   },
 
   /**
+   * Get patient's default insurance information
+   * @param {Object} context - Vuex action context
+   * @param {number} patientId - The patient ID
+   * @returns {Promise<Object>} Patient default insurance data
+   */
+  async getPatientDefaultInsurance({ commit }, patientId) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/insurances/health-insurances/get/default', {
+        params: { patientId },
+      });
+
+      if (response.data && response.data.data) {
+        commit('SET_PATIENT_DEFAULT_INSURANCE', response.data.data);
+        return { success: true, data: response.data.data };
+      }
+
+      return { success: false, error: 'No default insurance found for patient', data: null };
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch patient default insurance:', error);
+      return { success: false, error: error.message || 'Failed to fetch insurance', data: null };
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  /**
    * Get comprehensive financial summary for a patient
    * Fetches bills, payments, deposits, and history in parallel
    * @param {number} patientId - The patient ID
@@ -1962,7 +1992,7 @@ export default {
         paymentsResult,
         depositsResult,
         historyResult,
-      })
+      });
 
       const bills = billsResult.data || [];
       const payments = paymentsResult.data || [];
@@ -1971,16 +2001,27 @@ export default {
 
       // Calculate summary statistics
       const totalBills = bills.length;
-      const totalBillsAmount = bills.reduce((sum, bill) => sum + (parseFloat(bill.final_amount) || 0), 0);
+      const totalBillsAmount = bills.reduce(
+        (sum, bill) => sum + (parseFloat(bill.final_amount) || 0),
+        0
+      );
 
       const totalPayments = payments.length;
-      const totalPaymentsAmount = payments.reduce((sum, payment) => sum + (parseFloat(payment.amount) || 0), 0);
+      const totalPaymentsAmount = payments.reduce(
+        (sum, payment) => sum + (parseFloat(payment.amount) || 0),
+        0
+      );
 
       const activeDeposits = Array.isArray(deposits)
-        ? deposits.filter(d => d.status === 'ACTIVE')
-        : (deposits && deposits.status === 'ACTIVE' ? [deposits] : []);
+        ? deposits.filter((d) => d.status === 'ACTIVE')
+        : deposits && deposits.status === 'ACTIVE'
+        ? [deposits]
+        : [];
       const totalDeposits = activeDeposits.length;
-      const totalDepositsAmount = activeDeposits.reduce((sum, deposit) => sum + (parseFloat(deposit.amount) || 0), 0);
+      const totalDepositsAmount = activeDeposits.reduce(
+        (sum, deposit) => sum + (parseFloat(deposit.amount) || 0),
+        0
+      );
 
       // Calculate outstanding balance (bills - payments)
       const outstandingBalance = totalBillsAmount - totalPaymentsAmount;
@@ -1990,7 +2031,7 @@ export default {
         data: {
           bills,
           payments,
-          deposits: Array.isArray(deposits) ? deposits : (deposits ? [deposits] : []),
+          deposits: Array.isArray(deposits) ? deposits : deposits ? [deposits] : [],
           history,
           summary: {
             totalBills,

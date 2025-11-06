@@ -37,7 +37,10 @@
         </div>
 
         <!-- No Results Message -->
-        <div v-if="showAutocomplete && searchResults.length === 0 && searchQuery.length >= 2" class="no-results">
+        <div
+          v-if="showAutocomplete && searchResults.length === 0 && searchQuery.length >= 2"
+          class="no-results"
+        >
           <small class="text-muted">No patients found</small>
         </div>
       </div>
@@ -52,7 +55,9 @@
             <i class="fas fa-user-circle"></i>
           </div>
           <div class="patient-details">
-            <h4 class="patient-name">{{ selectedPatient.firstname }} {{ selectedPatient.lastname }}</h4>
+            <h4 class="patient-name">
+              {{ selectedPatient.firstname }} {{ selectedPatient.lastname }}
+            </h4>
             <div class="patient-meta-info">
               <span class="meta-item">
                 <i class="fas fa-id-card"></i>
@@ -82,7 +87,9 @@
               <div class="stat-content">
                 <h6 class="stat-label">Total Bills</h6>
                 <h3 class="stat-value">{{ financialSummary.summary.totalBills }}</h3>
-                <p class="stat-amount">₦{{ formatCurrency(financialSummary.summary.totalBillsAmount) }}</p>
+                <p class="stat-amount">
+                  ₦{{ formatCurrency(financialSummary.summary.totalBillsAmount) }}
+                </p>
               </div>
             </div>
           </b-col>
@@ -95,7 +102,9 @@
               <div class="stat-content">
                 <h6 class="stat-label">Total Payments</h6>
                 <h3 class="stat-value">{{ financialSummary.summary.totalPayments }}</h3>
-                <p class="stat-amount">₦{{ formatCurrency(financialSummary.summary.totalPaymentsAmount) }}</p>
+                <p class="stat-amount">
+                  ₦{{ formatCurrency(financialSummary.summary.totalPaymentsAmount) }}
+                </p>
               </div>
             </div>
           </b-col>
@@ -108,13 +117,18 @@
               <div class="stat-content">
                 <h6 class="stat-label">Active Deposits</h6>
                 <h3 class="stat-value">{{ financialSummary.summary.totalDeposits }}</h3>
-                <p class="stat-amount">₦{{ formatCurrency(financialSummary.summary.totalDepositsAmount) }}</p>
+                <p class="stat-amount">
+                  ₦{{ formatCurrency(financialSummary.summary.totalDepositsAmount) }}
+                </p>
               </div>
             </div>
           </b-col>
 
           <b-col md="3" sm="6" class="mb-3">
-            <div class="stat-card balance-card" :class="{'negative-balance': financialSummary.summary.outstandingBalance > 0}">
+            <div
+              class="stat-card balance-card"
+              :class="{ 'negative-balance': financialSummary.summary.outstandingBalance > 0 }"
+            >
               <div class="stat-icon">
                 <i class="fas fa-balance-scale"></i>
               </div>
@@ -123,7 +137,9 @@
                 <h3 class="stat-value">
                   {{ financialSummary.summary.outstandingBalance > 0 ? 'Owes' : 'Paid' }}
                 </h3>
-                <p class="stat-amount">₦{{ formatCurrency(Math.abs(financialSummary.summary.outstandingBalance)) }}</p>
+                <p class="stat-amount">
+                  ₦{{ formatCurrency(Math.abs(financialSummary.summary.outstandingBalance)) }}
+                </p>
               </div>
             </div>
           </b-col>
@@ -135,13 +151,42 @@
         <b-tabs content-class="mt-3" v-model="activeTab">
           <!-- Bills Tab -->
           <b-tab title="Bills" active>
-            <div class="tab-header mb-3">
-              <h5>Clinical Bills ({{ financialSummary.bills?.length }})</h5>
+            <div class="tab-header mb-3 d-flex justify-content-between align-items-start flex-wrap">
+              <div>
+                <h5>Clinical Bills ({{ filteredBills.length }})</h5>
+                <small v-if="dateFilters.bills.active" class="text-muted">
+                  Filtered: {{ formatDate(dateFilters.bills.start) }} -
+                  {{ formatDate(dateFilters.bills.end) }}
+                  <b-button size="sm" variant="link" @click="clearBillsDateFilter" class="p-0 ml-2">
+                    <i class="fas fa-times"></i> Clear
+                  </b-button>
+                </small>
+              </div>
+              <div class="d-flex gap-2">
+                <b-dropdown
+                  text="Export"
+                  variant="outline-success"
+                  size="sm"
+                  :disabled="exporting || filteredBills.length === 0"
+                  class="mr-2"
+                >
+                  <b-dropdown-item @click="exportBills('xlsx')">
+                    <i class="fas fa-file-excel mr-2"></i>Excel (.xlsx)
+                  </b-dropdown-item>
+                  <b-dropdown-item @click="exportBills('csv')">
+                    <i class="fas fa-file-csv mr-2"></i>CSV (.csv)
+                  </b-dropdown-item>
+                </b-dropdown>
+              </div>
             </div>
-            <div v-if="financialSummary.bills.length > 0" class="table-responsive">
+
+            <DateFilter label="Bills" @filterbydate="handleBillsDateFilter" class="mb-3" />
+
+            <div v-if="filteredBills.length > 0" class="table-responsive">
               <table class="table table-hover">
                 <thead>
                   <tr>
+                    <th style="width: 50px"></th>
                     <th>Bill ID</th>
                     <th>Date</th>
                     <th>Service</th>
@@ -150,38 +195,167 @@
                     <th>Actions</th>
                   </tr>
                 </thead>
+                <!-- eslint-disable -->
                 <tbody>
-                  <tr v-for="bill in financialSummary.bills" :key="bill.id">
-                    <td><strong>{{ bill.bill_number }}</strong></td>
-                    <td>{{ formatDate(bill.createdAt) }}</td>
-                    <td>{{ bill.notes || 'Clinical Service' }}</td>
-                    <td><strong>₦{{ formatCurrency(bill.final_amount) }}</strong></td>
-                    <td>
-                      <span class="badge" :class="getBillStatusClass(bill.payment_status)">
-                        {{ bill.payment_status }}
-                      </span>
-                    </td>
-                    <td>
-                      <b-button size="sm" variant="outline-primary" @click="viewBillDetails(bill)">
-                        <i class="fas fa-eye"></i> View
-                      </b-button>
-                    </td>
-                  </tr>
+                  <template v-for="bill in filteredBills">
+                    <tr
+                      :key="`bill-row-${bill.id}`"
+                      class="expandable-row"
+                      @click="toggleBillExpansion(bill.id)"
+                    >
+                      <td class="expansion-cell">
+                        <i
+                          class="fas expansion-icon"
+                          :class="isBillExpanded(bill.id) ? 'fa-chevron-down' : 'fa-chevron-right'"
+                        ></i>
+                      </td>
+                      <td>
+                        <strong>{{ bill.bill_number }}</strong>
+                      </td>
+                      <td>{{ formatDate(bill.createdAt) }}</td>
+                      <td>{{ bill.notes || 'Clinical Service' }}</td>
+                      <td>
+                        <strong>₦{{ formatCurrency(bill.final_amount) }}</strong>
+                      </td>
+                      <td>
+                        <span class="badge" :class="getBillStatusClass(bill.payment_status)">
+                          {{ bill.payment_status }}
+                        </span>
+                      </td>
+                      <td @click.stop>
+                        <b-button
+                          size="sm"
+                          variant="outline-primary"
+                          @click="viewBillDetails(bill)"
+                        >
+                          <i class="fas fa-eye"></i> View
+                        </b-button>
+                      </td>
+                    </tr>
+                    <tr
+                      v-if="isBillExpanded(bill.id)"
+                      :key="`bill-expanded-${bill.id}`"
+                      class="expanded-row"
+                    >
+                      <td colspan="7" class="expanded-content">
+                        <div class="bill-items-container">
+                          <h6 class="bill-items-title">
+                            <i class="fas fa-list mr-2"></i>Bill Items
+                          </h6>
+                          <div
+                            v-if="bill.billItems && bill.billItems.length > 0"
+                            class="bill-items-table-wrapper"
+                          >
+                            <table class="bill-items-table">
+                              <thead>
+                                <tr>
+                                  <th>Item Name</th>
+                                  <th>Type</th>
+                                  <th>Status</th>
+                                  <th>Quantity</th>
+                                  <th>Unit Price</th>
+                                  <th>Total Price</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr v-for="item in bill.billItems" :key="item.id">
+                                  <td>{{ item.item_name }}</td>
+                                  <td>
+                                    <b-badge :variant="getBillItemTypeVariant(item.item_type)">{{
+                                      item.item_type
+                                    }}</b-badge>
+                                  </td>
+                                  <td>
+                                    <div class="status-badges">
+                                      <b-badge
+                                        v-if="item.prescription_status"
+                                        :variant="getPrescriptionStatusVariant(item.prescription_status)"
+                                        class="mr-1"
+                                      >
+                                        {{ formatPrescriptionStatus(item.prescription_status) }}
+                                      </b-badge>
+                                      <b-badge
+                                        v-if="item.result_status"
+                                        :variant="getPrescriptionStatusVariant(item.result_status)"
+                                        class="result-status-badge"
+                                      >
+                                        Test Result: {{ formatPrescriptionStatus(item.result_status) }}
+                                      </b-badge>
+                                      <span v-if="!item.prescription_status && !item.result_status" class="text-muted">
+                                        N/A
+                                      </span>
+                                    </div>
+                                  </td>
+                                  <td>{{ item.quantity }}</td>
+                                  <td>₦{{ formatCurrency(item.unit_price) }}</td>
+                                  <td>
+                                    <strong>₦{{ formatCurrency(item.total_price) }}</strong>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                          <div v-else class="no-items-message">
+                            <i class="fas fa-inbox text-muted mr-2"></i>
+                            <span class="text-muted">No items found for this bill</span>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  </template>
                 </tbody>
+                <!-- eslint-enable -->
               </table>
             </div>
             <div v-else class="text-center py-5">
               <i class="fas fa-file-invoice fa-3x text-muted mb-3"></i>
-              <p class="text-muted">No bills found for this patient</p>
+              <p class="text-muted">
+                No bills found{{
+                  dateFilters.bills.active ? ' for selected date range' : ' for this patient'
+                }}
+              </p>
             </div>
           </b-tab>
 
           <!-- Payments Tab -->
           <b-tab title="Payments">
-            <div class="tab-header mb-3">
-              <h5>Payment History ({{ financialSummary.payments.length }})</h5>
+            <div class="tab-header mb-3 d-flex justify-content-between align-items-start flex-wrap">
+              <div>
+                <h5>Payment History ({{ filteredPayments.length }})</h5>
+                <small v-if="dateFilters.payments.active" class="text-muted">
+                  Filtered: {{ formatDate(dateFilters.payments.start) }} -
+                  {{ formatDate(dateFilters.payments.end) }}
+                  <b-button
+                    size="sm"
+                    variant="link"
+                    @click="clearPaymentsDateFilter"
+                    class="p-0 ml-2"
+                  >
+                    <i class="fas fa-times"></i> Clear
+                  </b-button>
+                </small>
+              </div>
+              <div class="d-flex gap-2">
+                <b-dropdown
+                  text="Export"
+                  variant="outline-success"
+                  size="sm"
+                  :disabled="exporting || filteredPayments.length === 0"
+                  class="mr-2"
+                >
+                  <b-dropdown-item @click="exportPayments('xlsx')">
+                    <i class="fas fa-file-excel mr-2"></i>Excel (.xlsx)
+                  </b-dropdown-item>
+                  <b-dropdown-item @click="exportPayments('csv')">
+                    <i class="fas fa-file-csv mr-2"></i>CSV (.csv)
+                  </b-dropdown-item>
+                </b-dropdown>
+              </div>
             </div>
-            <div v-if="financialSummary.payments.length > 0" class="table-responsive">
+
+            <DateFilter label="Payments" @filterbydate="handlePaymentsDateFilter" class="mb-3" />
+
+            <div v-if="filteredPayments.length > 0" class="table-responsive">
               <table class="table table-hover">
                 <thead>
                   <tr>
@@ -195,17 +369,25 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="payment in financialSummary.payments" :key="payment.id">
-                    <td><strong>{{ payment.payment_reference }}</strong></td>
+                  <tr v-for="payment in filteredPayments" :key="payment.id">
+                    <td>
+                      <strong>{{ payment.payment_reference }}</strong>
+                    </td>
                     <td>{{ formatDate(payment.processed_at) }}</td>
                     <td>{{ payment?.bill?.bill_number || 'N/A' }}</td>
-                    <td><strong>₦{{ formatCurrency(payment.amount) }}</strong></td>
+                    <td>
+                      <strong>₦{{ formatCurrency(payment.amount) }}</strong>
+                    </td>
                     <td>{{ payment.payment_method }}</td>
                     <td>
                       <span class="badge badge-success">{{ payment.status || 'COMPLETED' }}</span>
                     </td>
                     <td>
-                      <b-button size="sm" variant="outline-primary" @click="viewPaymentDetails(payment)">
+                      <b-button
+                        size="sm"
+                        variant="outline-primary"
+                        @click="viewPaymentDetails(payment)"
+                      >
                         <i class="fas fa-eye"></i> View
                       </b-button>
                     </td>
@@ -215,7 +397,11 @@
             </div>
             <div v-else class="text-center py-5">
               <i class="fas fa-money-bill-wave fa-3x text-muted mb-3"></i>
-              <p class="text-muted">No payments found for this patient</p>
+              <p class="text-muted">
+                No payments found{{
+                  dateFilters.payments.active ? ' for selected date range' : ' for this patient'
+                }}
+              </p>
             </div>
           </b-tab>
 
@@ -239,22 +425,29 @@
                 </thead>
                 <tbody>
                   <tr v-for="deposit in financialSummary.deposits" :key="deposit.id">
-                    <td><strong>#{{ deposit.id }}</strong></td>
-                    <td>{{ formatDate(deposit.createdAt) }}</td>
-                    <td><strong>₦{{ formatCurrency(deposit.amount) }}</strong></td>
-                    <td>₦{{ formatCurrency(deposit.used_amount || 0) }}</td>
                     <td>
-                      <strong class="text-success">
-                        ₦{{ formatCurrency((deposit.amount || 0) - (deposit.used_amount || 0)) }}
-                      </strong>
+                      <strong>#{{ deposit.id }}</strong>
                     </td>
+                    <td>{{ formatDate(deposit.createdAt) }}</td>
                     <td>
-                      <span class="badge" :class="deposit.status === 'ACTIVE' ? 'badge-success' : 'badge-secondary'">
+                      <strong>₦{{ formatCurrency(deposit.amount) }}</strong>
+                    </td>
+                    <td>₦{{ formatCurrency(deposit.amount - deposit.current_balance) }}</td>
+                    <td>₦{{ formatCurrency(deposit.current_balance) }}</td>
+                    <td>
+                      <span
+                        class="badge"
+                        :class="deposit.status === 'ACTIVE' ? 'badge-success' : 'badge-secondary'"
+                      >
                         {{ deposit.status }}
                       </span>
                     </td>
                     <td>
-                      <b-button size="sm" variant="outline-primary" @click="viewDepositDetails(deposit)">
+                      <b-button
+                        size="sm"
+                        variant="outline-primary"
+                        @click="viewDepositDetails(deposit)"
+                      >
                         <i class="fas fa-eye"></i> View
                       </b-button>
                     </td>
@@ -317,9 +510,15 @@
 
 <script>
 import { mapActions } from 'vuex';
+import DateFilter from '@/utils/DateFilter.vue';
+import exportService from '@/core/services/export.service';
 
 export default {
   name: 'PatientFinancialLookup',
+
+  components: {
+    DateFilter,
+  },
 
   data() {
     return {
@@ -330,6 +529,20 @@ export default {
       loading: false,
       searchTimeout: null,
       activeTab: 0,
+      expandedBills: new Set(), // Track expanded bill IDs
+      dateFilters: {
+        bills: {
+          start: null,
+          end: null,
+          active: false,
+        },
+        payments: {
+          start: null,
+          end: null,
+          active: false,
+        },
+      },
+      exporting: false,
 
       financialSummary: {
         bills: [],
@@ -354,7 +567,7 @@ export default {
       const transactions = [];
 
       // Add bills
-      this.financialSummary.bills.forEach(bill => {
+      this.financialSummary.bills.forEach((bill) => {
         transactions.push({
           id: bill.id,
           type: 'bill',
@@ -367,7 +580,7 @@ export default {
       });
 
       // Add payments
-      this.financialSummary.payments.forEach(payment => {
+      this.financialSummary.payments.forEach((payment) => {
         transactions.push({
           id: payment.id,
           type: 'payment',
@@ -380,7 +593,7 @@ export default {
       });
 
       // Add deposit history
-      this.financialSummary.history.forEach(history => {
+      this.financialSummary.history.forEach((history) => {
         transactions.push({
           id: history.id,
           type: 'deposit',
@@ -394,6 +607,36 @@ export default {
 
       // Sort by date (most recent first)
       return transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+    },
+
+    filteredBills() {
+      if (!this.dateFilters.bills.active) {
+        return this.financialSummary.bills;
+      }
+
+      const start = new Date(this.dateFilters.bills.start);
+      const end = new Date(this.dateFilters.bills.end);
+      end.setHours(23, 59, 59, 999); // Include full end date
+
+      return this.financialSummary.bills.filter((bill) => {
+        const billDate = new Date(bill.createdAt);
+        return billDate >= start && billDate <= end;
+      });
+    },
+
+    filteredPayments() {
+      if (!this.dateFilters.payments.active) {
+        return this.financialSummary.payments;
+      }
+
+      const start = new Date(this.dateFilters.payments.start);
+      const end = new Date(this.dateFilters.payments.end);
+      end.setHours(23, 59, 59, 999);
+
+      return this.financialSummary.payments.filter((payment) => {
+        const paymentDate = new Date(payment.processed_at || payment.createdAt);
+        return paymentDate >= start && paymentDate <= end;
+      });
     },
   },
 
@@ -448,6 +691,29 @@ export default {
       await this.loadPatientFinancialData(patient.id);
     },
 
+    async loadPatientById(patientId) {
+      try {
+        this.loading = true;
+
+        const response = await this.$store.dispatch('patient/fetchPatient', patientId);
+
+        if (response.data.data) {
+          const patient = response.data.data;
+          await this.selectPatient(patient);
+        } else {
+          throw new Error('Patient not found');
+        }
+      } catch (error) {
+        this.$bvToast.toast('Failed to load patient information', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+      } finally {
+        this.loading = false;
+      }
+    },
+
     async loadPatientFinancialData(patientId) {
       this.loading = true;
 
@@ -495,6 +761,69 @@ export default {
       return statusMap[status] || 'badge-secondary';
     },
 
+    getBillItemTypeVariant(type) {
+      const variants = {
+        DRUG: 'primary',
+        TEST: 'info',
+        INVESTIGATION: 'warning',
+        SERVICE: 'success',
+        ADDITIONAL_ITEM: 'secondary',
+      };
+      return variants[type] || 'secondary';
+    },
+
+    getPrescriptionStatusVariant(status) {
+      if (!status) return 'secondary';
+
+      const statusUpper = status.toString().toUpperCase();
+
+      // Completed/Success statuses
+      if (
+        statusUpper.includes('DISPENSED') ||
+        statusUpper.includes('COMPLETED') ||
+        statusUpper.includes('APPROVED') ||
+        statusUpper.includes('VERIFIED') ||
+        statusUpper.includes('ACCEPTED') ||
+        statusUpper.includes('PAID') ||
+        statusUpper.includes('CLEARED')
+      ) {
+        return 'success';
+      }
+
+      // Warning/In-progress statuses
+      if (
+        statusUpper.includes('PARTIAL') ||
+        statusUpper.includes('RESULT_ADDED') ||
+        statusUpper.includes('SAMPLE_COLLECTED')
+      ) {
+        return 'warning';
+      }
+
+      // Danger/Problem statuses
+      if (
+        statusUpper.includes('RETURNED') ||
+        statusUpper.includes('REJECTED') ||
+        statusUpper.includes('DECLINED') ||
+        statusUpper.includes('CANCELLED')
+      ) {
+        return 'danger';
+      }
+
+      // Pending/Default statuses
+      return 'info';
+    },
+
+    formatPrescriptionStatus(status) {
+      if (!status) return 'N/A';
+
+      // Convert status to readable format
+      return status
+        .toString()
+        .replace(/_/g, ' ')
+        .toLowerCase()
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+    },
+
     getTransactionTypeClass(type) {
       const typeMap = {
         bill: 'marker-bill',
@@ -526,9 +855,201 @@ export default {
     viewDepositDetails(deposit) {
       this.$router.push(`/accounting/deposits/${deposit.id}`);
     },
+
+    toggleBillExpansion(billId) {
+      if (this.expandedBills.has(billId)) {
+        this.expandedBills.delete(billId);
+      } else {
+        this.expandedBills.add(billId);
+      }
+      // Force reactivity update
+      this.expandedBills = new Set(this.expandedBills);
+    },
+
+    isBillExpanded(billId) {
+      return this.expandedBills.has(billId);
+    },
+
+    handleBillsDateFilter(start, end) {
+      this.dateFilters.bills = {
+        start,
+        end,
+        active: true,
+      };
+    },
+
+    handlePaymentsDateFilter(start, end) {
+      this.dateFilters.payments = {
+        start,
+        end,
+        active: true,
+      };
+    },
+
+    clearBillsDateFilter() {
+      this.dateFilters.bills = {
+        start: null,
+        end: null,
+        active: false,
+      };
+    },
+
+    clearPaymentsDateFilter() {
+      this.dateFilters.payments = {
+        start: null,
+        end: null,
+        active: false,
+      };
+    },
+
+    async exportBills(format) {
+      try {
+        this.exporting = true;
+
+        // Prepare bills data with items as separate rows
+        const exportData = [];
+
+        this.filteredBills.forEach((bill) => {
+          if (bill.billItems && bill.billItems.length > 0) {
+            // Add each bill item as a separate row
+            bill.billItems.forEach((item) => {
+              exportData.push({
+                'Bill Number': bill.bill_number,
+                'Bill Date': this.formatDate(bill.createdAt),
+                'Patient Name': `${this.selectedPatient.firstname} ${this.selectedPatient.lastname}`,
+                'Hospital ID': this.selectedPatient.hospital_id,
+                'Item Name': item.item_name,
+                Quantity: item.quantity,
+                'Unit Price': item.unit_price,
+                'Item Total': item.total_price,
+                'Bill Total': bill.final_amount,
+                'Payment Status': bill.payment_status,
+                Notes: bill.notes || '',
+              });
+            });
+          } else {
+            // Bill without items
+            exportData.push({
+              'Bill Number': bill.bill_number,
+              'Bill Date': this.formatDate(bill.createdAt),
+              'Patient Name': `${this.selectedPatient.firstname} ${this.selectedPatient.lastname}`,
+              'Hospital ID': this.selectedPatient.hospital_id,
+              'Item Name': 'N/A',
+              Quantity: 0,
+              'Unit Price': 0,
+              'Item Total': 0,
+              'Bill Total': bill.final_amount,
+              'Payment Status': bill.payment_status,
+              Notes: bill.notes || '',
+            });
+          }
+        });
+
+        if (exportData.length === 0) {
+          this.$bvToast.toast('No bills data to export', {
+            title: 'Export Failed',
+            variant: 'warning',
+            solid: true,
+          });
+          return;
+        }
+
+        const timestamp = new Date().toISOString().split('T')[0];
+        const filename = `bills_${this.selectedPatient.hospital_id}_${timestamp}.${format}`;
+
+        if (format === 'csv') {
+          exportService.exportToCSV(exportData, filename);
+        } else {
+          exportService.exportToExcel(exportData, filename);
+        }
+
+        this.$bvToast.toast(`Bills exported successfully as ${format.toUpperCase()}`, {
+          title: 'Export Successful',
+          variant: 'success',
+          solid: true,
+        });
+      } catch (error) {
+        console.error('Export failed:', error);
+        this.$bvToast.toast('Failed to export bills data', {
+          title: 'Export Error',
+          variant: 'danger',
+          solid: true,
+        });
+      } finally {
+        this.exporting = false;
+      }
+    },
+
+    async exportPayments(format) {
+      try {
+        this.exporting = true;
+
+        const exportData = this.filteredPayments.map((payment) => ({
+          'Receipt Number': payment.payment_reference,
+          'Payment Date': this.formatDate(payment.processed_at),
+          'Patient Name': `${this.selectedPatient.firstname} ${this.selectedPatient.lastname}`,
+          'Hospital ID': this.selectedPatient.hospital_id,
+          'Bill Number': payment.bill?.bill_number || 'N/A',
+          Amount: payment.amount,
+          'Payment Method': payment.payment_method,
+          Status: payment.status || 'COMPLETED',
+          'Processed By': payment.processed_by || '',
+        }));
+
+        if (exportData.length === 0) {
+          this.$bvToast.toast('No payments data to export', {
+            title: 'Export Failed',
+            variant: 'warning',
+            solid: true,
+          });
+          return;
+        }
+
+        const timestamp = new Date().toISOString().split('T')[0];
+        const filename = `payments_${this.selectedPatient.hospital_id}_${timestamp}.${format}`;
+
+        if (format === 'csv') {
+          exportService.exportToCSV(exportData, filename);
+        } else {
+          exportService.exportToExcel(exportData, filename);
+        }
+
+        this.$bvToast.toast(`Payments exported successfully as ${format.toUpperCase()}`, {
+          title: 'Export Successful',
+          variant: 'success',
+          solid: true,
+        });
+      } catch (error) {
+        console.error('Export failed:', error);
+        this.$bvToast.toast('Failed to export payments data', {
+          title: 'Export Error',
+          variant: 'danger',
+          solid: true,
+        });
+      } finally {
+        this.exporting = false;
+      }
+    },
+  },
+
+  watch: {
+    '$route.query.patientId': {
+      handler(newPatientId) {
+        if (newPatientId && newPatientId !== this.selectedPatient?.id) {
+          this.loadPatientById(newPatientId);
+        }
+      },
+      immediate: false,
+    },
   },
 
   mounted() {
+    const patientId = this.$route.query.patientId;
+
+    if (patientId) {
+      this.loadPatientById(patientId);
+    }
+
     document.addEventListener('click', (e) => {
       if (!this.$el.contains(e.target)) {
         this.showAutocomplete = false;
@@ -900,10 +1421,205 @@ export default {
   height: 3rem;
 }
 
+/* Expandable Bill Rows */
+.expandable-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.expandable-row:hover {
+  background-color: #f1f3f5 !important;
+}
+
+.expansion-cell {
+  text-align: center;
+  vertical-align: middle;
+  padding: 12px 8px !important;
+}
+
+.expansion-icon {
+  color: #6c757d;
+  transition: transform 0.2s ease, color 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.expandable-row:hover .expansion-icon {
+  color: #007bff;
+}
+
+.expanded-row {
+  background-color: #f8f9fa;
+}
+
+.expanded-row:hover {
+  background-color: #f8f9fa !important;
+}
+
+.expanded-content {
+  padding: 0 !important;
+}
+
+.bill-items-container {
+  padding: 20px 30px 20px 60px;
+  background: linear-gradient(to right, #f8f9fa 0%, #ffffff 100%);
+  border-left: 4px solid #007bff;
+}
+
+.bill-items-title {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 15px;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.bill-items-table-wrapper {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.bill-items-table {
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+}
+
+.bill-items-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bill-items-table thead th {
+  color: rgb(58, 58, 58);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  padding: 12px 15px;
+  border: none;
+  letter-spacing: 0.5px;
+}
+
+.bill-items-table tbody tr {
+  border-bottom: 1px solid #e9ecef;
+  transition: background-color 0.15s ease;
+}
+
+.bill-items-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.bill-items-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.bill-items-table tbody td {
+  padding: 12px 15px;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+.bill-items-table tbody td:first-child {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.bill-items-table tbody td:last-child {
+  color: #007bff;
+  font-weight: 600;
+}
+
+/* Status Badges Styling */
+.status-badges {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.status-badges .badge {
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.result-status-badge {
+  margin-left: 4px;
+}
+
+.status-badges .text-muted {
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+.no-items-message {
+  padding: 30px;
+  text-align: center;
+  background: white;
+  border-radius: 8px;
+  border: 2px dashed #dee2e6;
+}
+
+.no-items-message i {
+  font-size: 2rem;
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* Export and Filter Section */
+.tab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.tab-header.flex-wrap {
+  gap: 0.75rem;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+/* Date filter active indicator */
+.tab-header small {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.tab-header small .btn-link {
+  font-size: 0.8rem;
+  color: #dc3545;
+  text-decoration: none;
+}
+
+.tab-header small .btn-link:hover {
+  color: #c82333;
+  text-decoration: underline;
+}
+
+/* Dropdown export button */
+.dropdown-toggle::after {
+  margin-left: 0.5rem;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .patient-financial-lookup {
     padding: 10px;
+  }
+
+  .tab-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+
+  .tab-header .d-flex {
+    margin-top: 0.5rem;
   }
 
   .patient-header {
@@ -922,6 +1638,16 @@ export default {
 
   .table-responsive {
     font-size: 0.85rem;
+  }
+
+  .bill-items-container {
+    padding: 15px 20px 15px 40px;
+  }
+
+  .bill-items-table thead th,
+  .bill-items-table tbody td {
+    padding: 8px 10px;
+    font-size: 0.8rem;
   }
 }
 </style>

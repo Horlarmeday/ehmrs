@@ -32,6 +32,8 @@ import {
 import { isEmpty } from 'lodash';
 import { VisitBillingHelper } from '../../Accounting/visitBilling.helper';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
+import { AutoDepositPaymentService } from '../../Accounting/services/autoDepositPayment.service';
+import { logger } from '../../../core/helpers/logger';
 
 /**
  * prescribe an investigation for patient
@@ -75,7 +77,7 @@ export const prescribeInvestigation = async data => {
 
     if (patient) {
       // Add this prescription to the visit bill
-      await VisitBillingHelper.addPrescribedInvestigationToBill(
+      const billItem = await VisitBillingHelper.addPrescribedInvestigationToBill(
         visit_id,
         prescribedInvestigation,
         requester,
@@ -83,10 +85,15 @@ export const prescribeInvestigation = async data => {
         investigation,
         patientInsurance
       );
+      await AutoDepositPaymentService.attemptAutoDepositPayment(
+        billItem.bill_id,
+        patient.id,
+        requester
+      );
     }
   } catch (billingError) {
     // Log billing error but don't fail the prescription
-    console.error('Billing creation failed for investigation:', billingError);
+    logger.error('Billing creation failed for investigation:', billingError);
     // You might want to add proper logging here
   }
 
@@ -131,6 +138,7 @@ export const orderBulkInvestigation = async ({
 
   // 🆕 NEW: Auto-create bills for each prescribed investigation
   try {
+    let billId = null;
     for (const investigation of result) {
       // Get patient insurance for billing calculation
       const patientInsurance = await getPatientInsuranceQuery({
@@ -141,7 +149,7 @@ export const orderBulkInvestigation = async ({
       const originalInvestigation = await Investigation.findByPk(investigation.investigation_id);
 
       // Add this prescription to the visit bill
-      await VisitBillingHelper.addPrescribedInvestigationToBill(
+      const billItem = await VisitBillingHelper.addPrescribedInvestigationToBill(
         investigation.visit_id,
         investigation,
         investigation.requester,
@@ -149,10 +157,22 @@ export const orderBulkInvestigation = async ({
         originalInvestigation,
         patientInsurance
       );
+      // Capture the bill_id (same for all)
+      if (billItem?.bill_id && !billId) {
+        billId = billItem.bill_id;
+      }  
+    }
+    // Step 4: Trigger auto-payment once (if bill was created)
+    if (billId) {
+      await AutoDepositPaymentService.attemptAutoDepositPayment(
+        billId,
+        result[0]?.patient_id,
+        result[0]?.requester
+      );
     }
   } catch (billingError) {
     // Log billing error but don't fail the prescription
-    console.error('Billing creation failed for investigations:', billingError);
+    logger.error('Billing creation failed for investigations:', billingError);
     // You might want to add proper logging here
   }
 
@@ -286,10 +306,11 @@ const insertHSGAdditionalItems = async ({
     ]);
 
     if (patient) {
+      let billId = null;
       for (const drug of createdDrugs) {
         const originalDrug = await Drug.findByPk(drug.drug_id);
 
-        VisitBillingHelper.addPrescribedDrugToBill(
+        const billItem = await VisitBillingHelper.addPrescribedDrugToBill(
           drug.visit_id,
           drug,
           drug.examiner,
@@ -297,11 +318,15 @@ const insertHSGAdditionalItems = async ({
           originalDrug,
           patientInsurance
         );
+        // Capture the bill_id (same for all)
+        if (billItem?.bill_id && !billId) {
+          billId = billItem.bill_id;
+        }  
       }
 
       for (const consumable of createdConsumables) {
         const originalDrug = await Drug.findByPk(consumable?.drug_id);
-        VisitBillingHelper.addPrescribedAdditionalItemToBill(
+        const billItem = await VisitBillingHelper.addPrescribedAdditionalItemToBill(
           consumable.visit_id,
           consumable,
           consumable.examiner,
@@ -309,10 +334,22 @@ const insertHSGAdditionalItems = async ({
           originalDrug,
           patientInsurance
         );
+        // Capture the bill_id (same for all)
+        if (billItem?.bill_id && !billId) {
+          billId = billItem.bill_id;
+        }  
+      }
+       // Step 4: Trigger auto-payment once (if bill was created)
+      if (billId) {
+        await AutoDepositPaymentService.attemptAutoDepositPayment(
+          billId,
+          createdDrugs[0]?.patient_id,
+          createdDrugs[0]?.examiner
+        );
       }
     }
-  } catch (error) {
-    console.error('Billing creation failed for drugs:', error);
+  } catch (billingError) {
+    logger.error('Billing creation failed for drugs:', billingError);
     // You might want to add proper logging here
   }
 

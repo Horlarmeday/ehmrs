@@ -286,4 +286,13 @@ export default {
   },
 
   // ===== END PHASE 6 MUTATIONS =====
+
+  // ===== PATIENT INSURANCE MUTATIONS =====
+
+  SET_PATIENT_DEFAULT_INSURANCE(state, insurance) {
+    state.patientDefaultInsurance = insurance;
+  },
+  CLEAR_PATIENT_DEFAULT_INSURANCE(state) {
+    state.patientDefaultInsurance = null;
+  },
 };

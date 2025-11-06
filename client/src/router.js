@@ -2111,6 +2111,14 @@ const router = new Router({
             requiresAuth: true,
           },
         },
+        {
+          path: '/accounting/admitted-patients',
+          name: 'accounting-admitted-patients',
+          component: () => import('@/view/pages/accounting/AccountingAdmittedPatients.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
         // =============================================================================
         // PHASE 1: CORE FINANCIAL FOUNDATION ROUTES
         // =============================================================================
@@ -2250,6 +2258,31 @@ const router = new Router({
           path: '/accounting/cash-registers/:id',
           name: 'cash-register-details',
           component: () => import('@/view/pages/accounting/CashRegisterManagement.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        // Services, Tests, and Inventory Management
+        {
+          path: '/accounting/services',
+          name: 'accounting-services',
+          component: () => import('@/view/pages/accounting/AccountingServices.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/tests',
+          name: 'accounting-tests',
+          component: () => import('@/view/pages/accounting/AccountingTests.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/inventory-items',
+          name: 'accounting-inventory-items',
+          component: () => import('@/view/pages/accounting/AccountingInventoryItems.vue'),
           meta: {
             requiresAuth: true,
           },

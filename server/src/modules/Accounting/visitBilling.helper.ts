@@ -140,7 +140,7 @@ export class VisitBillingHelper {
         billing_status: BillingStatus.BILLED,
       });
 
-      // Update bill totals
+      // Update bill totals and attempt auto-deposit payment
       await VisitBillingHelper.updateBillTotals(bill.id);
 
       return billItem;
@@ -205,7 +205,7 @@ export class VisitBillingHelper {
         billing_status: BillingStatus.BILLED,
       });
 
-      // Update bill totals
+      // Update bill totals and attempt auto-deposit payment
       await VisitBillingHelper.updateBillTotals(bill.id);
 
       return billItem;
@@ -269,7 +269,7 @@ export class VisitBillingHelper {
         billing_status: BillingStatus.BILLED,
       });
 
-      // Update bill totals
+      // Update bill totals and attempt auto-deposit payment
       await VisitBillingHelper.updateBillTotals(bill.id);
 
       return billItem;
@@ -333,7 +333,7 @@ export class VisitBillingHelper {
         billing_status: BillingStatus.BILLED,
       });
 
-      // Update bill totals
+      // Update bill totals and attempt auto-deposit payment
       await VisitBillingHelper.updateBillTotals(bill.id);
 
       return billItem;
@@ -399,7 +399,7 @@ export class VisitBillingHelper {
         billing_status: BillingStatus.BILLED,
       });
 
-      // Update bill totals
+      // Update bill totals and attempt auto-deposit payment
       await VisitBillingHelper.updateBillTotals(bill.id);
 
       return billItem;
@@ -441,6 +441,7 @@ export class VisitBillingHelper {
           total_discount: totalDiscount,
           final_amount: finalAmount,
           payment_status: allItemsPending ? PaymentStatus.PENDING : PaymentStatus.PARTIAL,
+          auto_deposit_attempted: false,
         },
         {
           where: { id: billId },

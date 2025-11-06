@@ -42,8 +42,10 @@
           <td>{{ admission.createdAt | dayjs('ddd, MMM Do YYYY, h:mma') }}</td>
           <td>
             <a
-              v-if="doctorAllowedTabs.includes(currentUser.role) && !admission.should_discharge"
-              @click="showDischargeAlert(admission.id)"
+              v-if="
+                doctorAllowedTabs.includes(currentUser.department) && !admission.should_discharge
+              "
+              @click="showDischargePatientAlert(admission.id)"
               v-b-tooltip.hover
               title="Discharge patient"
               href="#"
@@ -70,23 +72,24 @@ export default {
   },
   data: () => ({
     currentUser: parseJwt(localStorage.getItem('user_token')),
-    doctorAllowedTabs: ['Super Admin', 'General Practitioner'],
+    doctorAllowedTabs: ['Administration', 'Medical Practitioners'],
   }),
   methods: {
     handleSuccess() {
       Swal.fire({
         title: 'Success!',
-        html: 'Patient up for discharge!',
+        html: 'Patient has been discharge!',
         icon: 'success',
         confirmButtonClass: 'btn btn-primary',
         heightAuto: false,
       });
       this.$store.dispatch('admission/fetchAdmission', { visitId: this.$route.params.id });
+      this.$router.push(`/`);
     },
 
-    dischargePatient(admissionId) {
+    dischargePatient(admissionId, data) {
       this.$store
-        .dispatch('admission/recommendForDischarge', { should_discharge: true, admissionId })
+        .dispatch('admission/dischargePatient', { id: admissionId, data })
         .then(() => this.handleSuccess());
     },
 
@@ -100,7 +103,60 @@ export default {
         confirmButtonText: 'Yes, Discharge!',
       }).then(function (result) {
         if (result.value) {
-          self.dischargePatient(admissionId);
+          self.showDischargePatientAlert(admissionId);
+        }
+      });
+    },
+
+    showDischargePatientAlert(admissionId) {
+      const self = this;
+      Swal.fire({
+        title: 'Discharge Patient',
+        html: `
+          <div class="form-group">
+            <label>Discharge Type:</label>
+            <select name="discharge_type" id="discharge_type" class="form-control" required>
+              <option value="discharge">Discharge</option>
+              <option value="death">Death</option>
+              <option value="transfer">Transfer</option>
+              <option value="lama">Lama</option>
+              <option value="refer">Refer</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Conditions of Patient:</label>
+            <textarea name="conditions_of_patient" id="conditions_of_patient" class="form-control" required></textarea>
+          </div>
+          <div class="form-group">
+            <label>Transfer Location:</label>
+            <input type="text" id="transfer_location" class="form-control" required>
+          </div>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Discharge Patient',
+        cancelButtonText: 'Cancel',
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+          const dischargeType = document.getElementById('discharge_type').value;
+          const conditionsOfPatient = document.getElementById('conditions_of_patient').value;
+          const transferLocation = document.getElementById('transfer_location').value;
+
+          if (!dischargeType) {
+            Swal.showValidationMessage('Discharge type is required');
+            return false;
+          }
+
+          return {
+            discharge_type: dischargeType,
+            date_discharged: new Date(),
+            conditions_of_patient: conditionsOfPatient,
+            transfer_location: transferLocation,
+          };
+        },
+      }).then((result) => {
+        if (result.value) {
+          self.dischargePatient(admissionId, result.value);
         }
       });
     },

@@ -346,6 +346,7 @@ export class AdmissionService {
       visit_id: admission.visit_id,
       ward_id: admission.ward_id,
       discharged_by: staffId,
+      date_discharged: body.date_discharged || new Date(),
     };
     return dischargePatient(data);
   }

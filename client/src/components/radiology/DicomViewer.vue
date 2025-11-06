@@ -70,22 +70,42 @@
 
       <b-button-group size="sm" class="ml-2">
         <!-- Rotate Left -->
-        <b-button variant="outline-secondary" @click="rotateLeft" v-b-tooltip.hover title="Rotate Left (R)">
+        <b-button
+          variant="outline-secondary"
+          @click="rotateLeft"
+          v-b-tooltip.hover
+          title="Rotate Left (R)"
+        >
           <i class="fas fa-undo"></i>
         </b-button>
 
         <!-- Rotate Right -->
-        <b-button variant="outline-secondary" @click="rotateRight" v-b-tooltip.hover title="Rotate Right (Shift+R)">
+        <b-button
+          variant="outline-secondary"
+          @click="rotateRight"
+          v-b-tooltip.hover
+          title="Rotate Right (Shift+R)"
+        >
           <i class="fas fa-redo"></i>
         </b-button>
 
         <!-- Flip Horizontal -->
-        <b-button variant="outline-secondary" @click="flipHorizontal" v-b-tooltip.hover title="Flip Horizontal (H)">
+        <b-button
+          variant="outline-secondary"
+          @click="flipHorizontal"
+          v-b-tooltip.hover
+          title="Flip Horizontal (H)"
+        >
           <i class="fas fa-arrows-alt-h"></i>
         </b-button>
 
         <!-- Flip Vertical -->
-        <b-button variant="outline-secondary" @click="flipVertical" v-b-tooltip.hover title="Flip Vertical (V)">
+        <b-button
+          variant="outline-secondary"
+          @click="flipVertical"
+          v-b-tooltip.hover
+          title="Flip Vertical (V)"
+        >
           <i class="fas fa-arrows-alt-v"></i>
         </b-button>
 
@@ -114,18 +134,37 @@
       </b-dropdown>
 
       <!-- Reset View -->
-      <b-button size="sm" variant="outline-danger" class="ml-2" @click="resetView" v-b-tooltip.hover title="Reset (Esc)">
+      <b-button
+        size="sm"
+        variant="outline-danger"
+        class="ml-2"
+        @click="resetView"
+        v-b-tooltip.hover
+        title="Reset (Esc)"
+      >
         <i class="fas fa-sync-alt"></i> Reset
       </b-button>
 
       <!-- Fit to Window -->
-      <b-button size="sm" variant="outline-info" class="ml-2" @click="fitToWindow" v-b-tooltip.hover title="Fit to Window (F)">
+      <b-button
+        size="sm"
+        variant="outline-info"
+        class="ml-2"
+        @click="fitToWindow"
+        v-b-tooltip.hover
+        title="Fit to Window (F)"
+      >
         <i class="fas fa-expand"></i> Fit
       </b-button>
 
       <!-- Series Navigation (if multiple images) -->
       <div v-if="hasMultipleImages" class="ml-auto d-flex align-items-center">
-        <b-button size="sm" variant="outline-secondary" @click="previousImage" :disabled="currentImageIndex === 0">
+        <b-button
+          size="sm"
+          variant="outline-secondary"
+          @click="previousImage"
+          :disabled="currentImageIndex === 0"
+        >
           <i class="fas fa-chevron-left"></i>
         </b-button>
         <span class="mx-2">{{ currentImageIndex + 1 }} / {{ images.length }}</span>
@@ -142,7 +181,12 @@
 
     <!-- Viewport Container -->
     <div class="viewport-container" :style="{ height: viewportHeight }">
-      <div ref="viewport" class="cornerstone-viewport" @wheel="onMouseWheel" @contextmenu.prevent></div>
+      <div
+        ref="viewport"
+        class="cornerstone-viewport"
+        @wheel="onMouseWheel"
+        @contextmenu.prevent
+      ></div>
 
       <!-- Image Info Overlay -->
       <div v-if="imageMetadata && showInfo" class="image-info-overlay">
@@ -171,12 +215,8 @@
 
       <!-- Pixel Probe -->
       <div v-if="pixelProbe" class="pixel-probe-overlay">
-        <div>
-          <strong>Position:</strong> ({{ pixelProbe.x }}, {{ pixelProbe.y }})
-        </div>
-        <div>
-          <strong>Value:</strong> {{ pixelProbe.value }}
-        </div>
+        <div><strong>Position:</strong> ({{ pixelProbe.x }}, {{ pixelProbe.y }})</div>
+        <div><strong>Value:</strong> {{ pixelProbe.value }}</div>
         <div v-if="pixelProbe.modalityValue !== pixelProbe.value">
           <strong>HU:</strong> {{ Math.round(pixelProbe.modalityValue) }}
         </div>
@@ -185,7 +225,9 @@
 
     <!-- Bottom Info Bar -->
     <div v-if="!error" class="info-bar">
-      <b-form-checkbox v-model="showInfo" size="sm" switch class="mr-3"> Show Image Info </b-form-checkbox>
+      <b-form-checkbox v-model="showInfo" size="sm" switch class="mr-3">
+        Show Image Info
+      </b-form-checkbox>
       <span v-if="imageMetadata && imageMetadata.rows && imageMetadata.columns" class="mr-3">
         <i class="fas fa-image"></i> {{ imageMetadata.columns }} × {{ imageMetadata.rows }}
       </span>

@@ -105,10 +105,32 @@
     }
 }
 
-// Open state
+// Modal Open State
+// Note: We use Bootstrap Vue's default overflow behavior to ensure
+// proper modal positioning and backdrop rendering. The padding-right
+// fix prevents content shift when scrollbar is hidden.
 .modal-open {
-    overflow: auto !important;
-    padding: 0 !important;
+    overflow: hidden;
+    padding-right: 0 !important;
+}
+
+// Ensure modals display correctly with flex body layout
+body.modal-open {
+    position: relative;
+    overflow: hidden !important;
+}
+
+// Fix modal dialog width shrinking issue with flex body layout
+// This ensures modals maintain proper Bootstrap widths despite body using display: flex
+.modal-dialog {
+    // Prevent flex shrinking
+    flex-shrink: 0;
+    width: 100%;
+    
+    // Ensure proper max-widths are applied (Bootstrap defaults)
+    &:not(.modal-sm):not(.modal-lg):not(.modal-xl) {
+        max-width: 500px; // Bootstrap default for regular modals
+    }
 }
 
 // Responsive breakpoints
