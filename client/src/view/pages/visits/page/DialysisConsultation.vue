@@ -67,6 +67,13 @@
             >
               <i class="fas fa-concierge-bell mr-2"></i>Services
             </button>
+            <button
+              class="btn btn-light-primary btn-sm font-weight-bold"
+              :class="{ active: activeTab === 'tests' }"
+              @click="setActiveTab('tests')"
+            >
+              <i class="fas fa-flask mr-2"></i>Tests
+            </button>
             <end-visit-button button-class="btn-light-primary" :visit-id="$route.params.id" />
           </div>
         </div>
@@ -1538,16 +1545,113 @@
         </div>
       </div>
     </div>
+
+    <!-- Tests Tab -->
+    <div v-show="activeTab === 'tests'">
+      <div class="card card-custom">
+        <div class="card-header border-0 py-4">
+          <h4 class="card-title font-weight-bolder text-dark">
+            <i class="fas fa-flask text-primary mr-2"></i>
+            Laboratory Tests
+          </h4>
+        </div>
+        <div class="card-body">
+          <!-- Combo Tests Selection Form -->
+          <div class="form-group row mb-4">
+            <label class="col-lg-3 col-form-label font-weight-bold text-dark">
+              <i class="fas fa-layer-group mr-1 text-primary"></i>
+              Combo Tests:
+            </label>
+            <div class="col-lg-9">
+              <v-select
+                multiple
+                name="comboTest"
+                v-model="testsForm.combo_test_id"
+                label="name"
+                :options="comboTests"
+                :reduce="(combo) => combo.id"
+                placeholder="Select combo tests for quick ordering..."
+                class="form-control-lg"
+                @input="onComboTestSelect"
+              />
+              <small class="form-text text-muted">
+                Combo tests will automatically add individual tests below
+              </small>
+            </div>
+          </div>
+
+          <!-- Tests Selection Form -->
+          <div class="form-group row">
+            <label class="col-lg-3 col-form-label font-weight-bold text-dark">
+              <i class="fas fa-flask mr-1 text-primary"></i>
+              Select Test(s):
+            </label>
+            <div class="col-lg-9">
+              <v-select
+                multiple
+                name="test"
+                @search="searchTests"
+                v-model="testsForm.test_id"
+                label="name"
+                :options="tests"
+                :reduce="(tests) => tests.id"
+                placeholder="Search and select laboratory tests..."
+                class="form-control-lg"
+              >
+                <template #option="{ price, name }">
+                  <span>{{ name }} - </span>
+                  <strong>{{ price || '' }}</strong>
+                </template>
+              </v-select>
+              <small class="form-text text-muted">
+                Select one or more laboratory tests for this visit
+              </small>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="text-right mt-4">
+            <button
+              class="btn btn-primary"
+              @click="submitTests"
+              :disabled="isSaving || isTestDisabled || !testsForm.test_id.length"
+            >
+              <i class="fas fa-spinner fa-spin mr-2" v-if="isSaving"></i>
+              <i class="fas fa-save mr-2" v-else></i>
+              {{ isSaving ? 'Saving...' : 'Submit Tests' }}
+            </button>
+          </div>
+
+          <!-- Ordered Tests Display -->
+          <div v-if="orderedTests.length > 0" class="mt-5">
+            <h5 class="font-weight-bold mb-3">
+              <i class="fas fa-list-alt text-primary mr-2"></i>
+              Ordered Tests
+            </h5>
+            <tests-table :tests="orderedTests" />
+            <pagination
+              v-if="orderedTests?.length"
+              :total-pages="testsPages"
+              :total="totalOrderedTests"
+              :per-page="testsPerPage"
+              :current-page="testsCurrentPage"
+              @pagechanged="onTestsPageChange"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import dayjs from 'dayjs';
 import vSelect from 'vue-select';
-import { debounce, parseJwt } from '@/common/common';
+import { debounce, parseJwt, getTestTypeToFetch } from '@/common/common';
 import ErrorBanner from '@/view/components/util/ErrorBanner.vue';
 import AdditionalItemsTable from '@/view/components/table/AdditionalItemsTable.vue';
 import ServicesTable from '@/view/components/table/ServicesTable.vue';
+import TestsTable from '@/view/components/table/TestsTable.vue';
 import Pagination from '@/utils/Pagination.vue';
 import EndVisitButton from '@/view/pages/consultation/components/endVisit/EndVisitButton.vue';
 
@@ -1559,6 +1663,7 @@ export default {
     ErrorBanner,
     AdditionalItemsTable,
     ServicesTable,
+    TestsTable,
     Pagination,
   },
   data() {
@@ -1709,13 +1814,25 @@ export default {
         isMultiple: true,
       },
 
-      // Ordered items and services display
+      // Tests form data
+      testsForm: {
+        test_id: [],
+        combo_test_id: [],
+      },
+
+      // Ordered items, services, and tests display
       orderedItems: [],
       orderedServices: [],
+      orderedTests: [],
       itemsCurrentPage: 1,
       servicesCurrentPage: 1,
+      testsCurrentPage: 1,
       itemsPerPage: 10,
       servicesPerPage: 10,
+      testsPerPage: 10,
+
+      // Test submission state
+      isTestDisabled: false,
     };
   },
 
@@ -1768,6 +1885,38 @@ export default {
     },
     servicesPages() {
       return this.$store.state.order.servicePages;
+    },
+
+    // Tests options from store
+    tests() {
+      return this.$store.state.laboratory.tests || [];
+    },
+
+    // Combo tests options
+    comboTests() {
+      return this.$store.state.laboratory.comboTests || [];
+    },
+
+    // Pagination for ordered tests
+    totalOrderedTests() {
+      return this.$store.state.order.total || 0;
+    },
+    testsPages() {
+      return this.$store.state.order.pages;
+    },
+
+    // Insurance information for test type handling
+    insuranceName() {
+      return this.patientInfo?.insurance_name;
+    },
+
+    isSwitchOn() {
+      return this.patientInfo?.has_insurance;
+    },
+
+    // Filter for accordion components
+    filter() {
+      return { visit_id: this.$route.params.id };
     },
   },
 
@@ -2646,14 +2795,190 @@ export default {
       this.servicesCurrentPage = page;
       this.fetchOrderedServices();
     },
+
+    // Test search with debouncing
+    searchTests(search, loading) {
+      if (search.length > 2) {
+        loading(true);
+        this.debounceTestSearch(loading, search, this);
+      }
+    },
+
+    debounceTestSearch: debounce((loading, search, vm) => {
+      const testType = getTestTypeToFetch(vm.insuranceName, vm.isSwitchOn);
+      vm.$store
+        .dispatch('laboratory/fetchTests', {
+          currentPage: 1,
+          itemsPerPage: 50,
+          search,
+          selectedIds: vm.testsForm.test_id || [],
+          ...(testType && { filter: testType }),
+          vSelect: true,
+        })
+        .then(() => loading(false))
+        .catch(() => loading(false));
+    }, 500),
+
+    // Combo test handling
+    async onComboTestSelect(selectedComboIds) {
+      if (!selectedComboIds || selectedComboIds.length === 0) return;
+
+      try {
+        for (const comboId of selectedComboIds) {
+          const response = await this.$store.dispatch('laboratory/fetchOneComboTest', comboId);
+          const comboTest = response.data.data;
+
+          if (comboTest && comboTest.comboTestItems) {
+            comboTest.comboTestItems.forEach((item) => {
+              if (item.test && !this.testsForm.test_id.includes(item.test.id)) {
+                this.testsForm.test_id.push(item.test.id);
+              }
+            });
+          }
+        }
+
+        this.$notify({
+          group: 'foo',
+          title: 'Combo Tests Expanded',
+          text: 'Individual tests from combo have been added to your selection',
+          type: 'success',
+        });
+      } catch (error) {
+        this.$notify({
+          group: 'foo',
+          title: 'Error',
+          text: 'Failed to expand combo tests',
+          type: 'error',
+        });
+      }
+    },
+
+    // Test submission logic
+    mapSelectedTest(test) {
+      return {
+        test_id: test.id,
+        is_urgent: false,
+        test_type: this.getTestType(this.insuranceName),
+        price: test.price,
+        name: test.name,
+        sample_id: test.sample_id,
+        source: 'Consultation',
+        ...(this.visitInfo?.ante_natal_id && { ante_natal_id: this.visitInfo.ante_natal_id }),
+        ...(this.visitInfo?.surgery_id && { surgery_id: this.visitInfo.surgery_id }),
+      };
+    },
+
+    getTestType(insuranceName) {
+      const insuranceMapping = {
+        FHSS: 'NHIS',
+        NHIS: 'NHIS',
+        PHIS: 'Private',
+        Retainership: 'Cash',
+      };
+      return insuranceMapping[insuranceName] || 'Cash';
+    },
+
+    async submitTests() {
+      if (!this.testsForm.test_id || this.testsForm.test_id.length === 0) {
+        this.$notify({
+          group: 'foo',
+          title: 'Validation Error',
+          text: 'Please select at least one test',
+          type: 'warning',
+        });
+        return;
+      }
+
+      try {
+        this.isTestDisabled = true;
+        this.isSaving = true;
+        const visitId = this.$route.params.id;
+
+        const tests = this.testsForm.test_id
+          .map((testId) => {
+            const test = this.tests.find((t) => t.id === testId);
+            if (!test) return null;
+            const mappedTest = this.mapSelectedTest(test);
+            delete mappedTest.name;
+            return mappedTest;
+          })
+          .filter(Boolean);
+
+        await this.$store.dispatch('order/orderLabTest', {
+          tests,
+          id: visitId,
+        });
+
+        this.$notify({
+          group: 'foo',
+          title: 'Tests Ordered',
+          text: 'Laboratory tests have been ordered successfully.',
+          type: 'success',
+        });
+
+        // Reset form
+        this.testsForm.test_id = [];
+        this.testsForm.combo_test_id = [];
+
+        // Refresh ordered tests display
+        this.fetchOrderedTests();
+      } catch (error) {
+        console.error('Failed to submit tests:', error);
+        this.$notify({
+          group: 'foo',
+          title: 'Error',
+          text: 'Failed to submit tests: ' + error.message,
+          type: 'error',
+        });
+      } finally {
+        this.isTestDisabled = false;
+        this.isSaving = false;
+      }
+    },
+
+    // Ordered tests display methods
+    async fetchOrderedTests() {
+      try {
+        const visitId = this.$route.params.id;
+        const filter = { visit_id: visitId };
+
+        await this.$store.dispatch('order/fetchPrescribedTests', {
+          currentPage: this.testsCurrentPage,
+          itemsPerPage: this.testsPerPage,
+          filter,
+        });
+
+        this.orderedTests = this.$store.state.order.lab_orders || [];
+      } catch (error) {
+        console.error('Failed to fetch ordered tests:', error);
+      }
+    },
+
+    onTestsPageChange(page) {
+      this.testsCurrentPage = page;
+      this.fetchOrderedTests();
+    },
   },
 
   created() {
     this.loadConsultationData();
     // Initialize inventories for items
     this.$store.dispatch('inventory/fetchInventories');
+
     // Initialize services
     this.$store.dispatch('model/fetchServices', {
+      currentPage: 1,
+      itemsPerPage: 50,
+    });
+
+    // Initialize tests
+    this.$store.dispatch('laboratory/fetchTests', {
+      currentPage: 1,
+      itemsPerPage: 50,
+    });
+
+    // Initialize combo tests
+    this.$store.dispatch('laboratory/fetchComboTests', {
       currentPage: 1,
       itemsPerPage: 50,
     });
@@ -2663,9 +2988,11 @@ export default {
       itemsPerPage: 50,
       inventory: 1,
     });
-    // Fetch ordered items and services
+
+    // Fetch ordered items, services, and tests
     this.fetchOrderedItems();
     this.fetchOrderedServices();
+    this.fetchOrderedTests();
   },
 
   beforeDestroy() {

@@ -108,6 +108,7 @@ export default {
             start: payload.start,
             end: payload.end,
             filter: payload?.filter,
+            ...(payload.category && payload.category !== 'All' && { category: payload.category }),
           },
         })
         .then((response) => {

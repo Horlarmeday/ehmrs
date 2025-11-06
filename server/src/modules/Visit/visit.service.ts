@@ -311,7 +311,7 @@ class VisitService {
   static async getProfessionalAssignedVisits(
     body
   ): Promise<{ total: any; docs: Visit[]; pages: number; perPage: number; currentPage: number }> {
-    const { currentPage, pageLimit, search, role, start, end, filter } = body || {};
+    const { currentPage, pageLimit, search, role, start, end, filter, category } = body || {};
 
     if (start && end) {
       return getProfessionalAssignedVisits({
@@ -322,6 +322,7 @@ class VisitService {
         search,
         role,
         filter,
+        category,
       });
     }
 
@@ -332,10 +333,11 @@ class VisitService {
         search,
         role,
         filter,
+        category,
       });
     }
 
-    return getProfessionalAssignedVisits({ search, role, filter });
+    return getProfessionalAssignedVisits({ search, role, filter, category });
   }
 
   /**

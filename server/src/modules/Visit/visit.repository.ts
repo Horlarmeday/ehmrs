@@ -494,7 +494,7 @@ export async function getCategoryVisits({
     paginate: +pageLimit,
     order: [['date_visit_start', 'DESC']],
     where: {
-      // category,
+      ...(category && category !== 'All' && { category }),
       status: VisitStatus.ONGOING,
       ...(filter && JSON.parse(filter)),
     },
@@ -545,6 +545,7 @@ export const getProfessionalAssignedVisits = async ({
   start = null,
   end = null,
   filter = null,
+  category = null,
 }): Promise<{
   total: any;
   docs: Visit[];
@@ -560,17 +561,7 @@ export const getProfessionalAssignedVisits = async ({
       status: VisitStatus.ONGOING,
       // professional: role,
       ...(filter && JSON.parse(filter)),
-      [Op.or]: [
-        {
-          category: VisitCategory.OPD,
-        },
-        {
-          category: VisitCategory.EMERGENCY,
-        },
-        {
-          category: VisitCategory.DIALYSIS,
-        },
-      ],
+      ...(category && category !== 'All' && { category }),
       ...(start && end && dateIntervalQuery('updatedAt', start, end)),
     },
     include: [

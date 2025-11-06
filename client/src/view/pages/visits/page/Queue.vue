@@ -43,13 +43,13 @@ export default {
     newFilter() {
       return {
         //has_done_vitals: this.currentUser.department === this.MEDICAL_PRACTITIONER,
-        ...(this.currentUser.role === this.MEDICAL_PRACTITIONER && { is_taken: false }),
+        ...(this.currentUser.department === this.MEDICAL_PRACTITIONER && { is_taken: false }),
       };
     },
     ongoingFilter() {
       return {
         // has_done_vitals: this.currentUser.department === this.MEDICAL_PRACTITIONER,
-        ...(this.currentUser.role === this.MEDICAL_PRACTITIONER && { is_taken: true }),
+        ...(this.currentUser.department === this.MEDICAL_PRACTITIONER && { is_taken: true }),
       };
     },
   },
