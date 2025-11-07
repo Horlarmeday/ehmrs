@@ -75,13 +75,13 @@
                     >{{ formData.quantity_remaining }} {{ formData.unit_name }}</span
                   >
                 </span>
-                <!--                <span v-if="formData.price" class="form-text text-success"-->
-                <!--                  >Price: <span class="font-weight-boldest">₦{{ formData.price }}</span></span-->
-                <!--                >-->
+                <span v-if="formData.price" class="form-text text-success">
+                  Price: <span class="font-weight-boldest">₦{{ formData.price }}</span>
+                </span>
               </div>
             </div>
             <div class="form-group row">
-              <label class="col-lg-3 col-form-label">Dosage:</label>
+              <label class="col-lg-3 col-form-label">Dose Form:</label>
               <div class="col-lg-9">
                 <input
                   readonly
@@ -90,6 +90,32 @@
                   v-model="formData.dosage_form.name"
                 />
                 <span class="form-text text-danger">{{ errors.first('dosage_form') }}</span>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-lg-3 col-form-label">Strength:</label>
+              <div class="col-lg-9">
+                <input
+                  type="number"
+                  class="form-control form-control-sm"
+                  v-model="formData.prescribed_strength"
+                  @input="calculateDosageQuantity"
+                />
+                <span class="form-text text-danger">{{ errors.first('prescribed_strength') }}</span>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-lg-3 col-form-label">Start Date:</label>
+              <div class="col-lg-9">
+                <datepicker
+                  name="start_date"
+                  v-validate="'required'"
+                  data-vv-validate-on="blur"
+                  v-model="formData.start_date"
+                  input-class="form-control form-control-sm"
+                  placeholder="Starting Date"
+                />
+                <span class="form-text text-danger">{{ errors.first('start_date') }}</span>
               </div>
             </div>
             <div class="form-group row">
@@ -109,32 +135,7 @@
                 <span class="form-text text-danger">{{ errors.first('route') }}</span>
               </div>
             </div>
-            <div class="form-group row">
-              <label class="col-lg-3 col-form-label">Start Date:</label>
-              <div class="col-lg-9">
-                <datepicker
-                  name="start_date"
-                  v-validate="'required'"
-                  data-vv-validate-on="blur"
-                  v-model="formData.start_date"
-                  input-class="form-control form-control-sm"
-                  placeholder="Starting Date"
-                />
-                <span class="form-text text-danger">{{ errors.first('start_date') }}</span>
-              </div>
-            </div>
-            <div class="form-group row">
-              <label class="col-lg-3 col-form-label">Strength:</label>
-              <div class="col-lg-9">
-                <input
-                  type="number"
-                  class="form-control form-control-sm"
-                  v-model="formData.prescribed_strength"
-                  @input="calculateDosageQuantity"
-                />
-                <span class="form-text text-danger">{{ errors.first('prescribed_strength') }}</span>
-              </div>
-            </div>
+
             <div class="form-group row">
               <label class="col-lg-3 col-form-label">Frequency:</label>
               <div class="col-lg-9">
@@ -208,12 +209,12 @@
                 <span class="form-text text-danger">{{
                   errors.first('quantity_to_dispense')
                 }}</span>
-                <!--                <span v-if="formData.total_price" class="form-text text-success">-->
-                <!--                  Total price-->
-                <!--                  <span class="text-success"-->
-                <!--                    ><span class="font-weight-boldest">₦{{ formData.total_price }}</span></span-->
-                <!--                  >-->
-                <!--                </span>-->
+                <span v-if="formData.total_price" class="form-text text-success">
+                  Total price
+                  <span class="text-success">
+                    <span class="font-weight-boldest">₦{{ formData.total_price }}</span>
+                  </span>
+                </span>
               </div>
             </div>
             <div v-if="switchPosition && switchSpot" class="form-group row">
@@ -450,17 +451,27 @@ export default {
     },
 
     setDrugInfo() {
-      this.formData.strength = this.formData.drug.strength;
-      this.formData.drug_id = this.formData.drug.drug_id;
-      this.formData.price = this.formData.drug.price;
-      this.formData.unit_name = this.formData.drug.unit_name;
-      this.formData.drug_name = this.formData.drug.name;
-      this.formData.strength_name = this.formData.strength.name;
-      this.formData.strength_input = this.formData.drug.strength_input;
-      this.formData.quantity_remaining = this.formData.drug.quantity_remaining;
-      this.formData.dosage_form = this.formData.drug.dosage_form;
+      if (!this.formData.drug) {
+        return;
+      }
+      const selectedDrug = this.formData.drug;
+      this.formData.strength = selectedDrug.strength;
+      this.formData.drug_id = selectedDrug.drug_id;
+      this.formData.price = selectedDrug.price;
+      this.formData.unit_name = selectedDrug.unit_name;
+      this.formData.drug_name = selectedDrug.name;
+      this.formData.strength_name = selectedDrug.strength?.name;
+      this.formData.strength_input = selectedDrug.strength_input;
+      this.formData.quantity_remaining = selectedDrug.quantity_remaining;
+      this.formData.dosage_form = selectedDrug.dosage_form;
       this.getRoutes();
       this.removeValues();
+      const defaultStrength = Number(selectedDrug.strength_input);
+      if (!Number.isNaN(defaultStrength) && defaultStrength > 0) {
+        this.formData.prescribed_strength = defaultStrength;
+      } else {
+        this.formData.prescribed_strength = selectedDrug.strength_input || '';
+      }
     },
 
     getTotalPrice() {
@@ -478,15 +489,38 @@ export default {
     },
 
     calculateDosageQuantity() {
-      if (this.formData.frequency.label === 'Stat' || this.formData.dosage_form.name === 'Cream') {
+      const frequency = this.formData.frequency;
+      const durationUnit = this.formData.duration_unit;
+      const dosageFormName = this.formData.dosage_form?.name;
+      const strengthInput = Number(this.formData.strength_input);
+      const prescribedStrength = Number(this.formData.prescribed_strength);
+      const duration = Number(this.formData.duration);
+
+      if (frequency && frequency.label === 'Stat') {
         this.formData.quantity_prescribed = 1;
-      } else {
-        this.formData.quantity_prescribed = Math.ceil(
-          (this.formData.prescribed_strength / Number(this.formData.strength_input)) *
-            this.formData.frequency.val *
-            this.formData.duration *
-            this.formData.duration_unit.val
+      } else if (dosageFormName === 'Cream') {
+        this.formData.quantity_prescribed = 1;
+      } else if (
+        frequency &&
+        durationUnit &&
+        !Number.isNaN(strengthInput) &&
+        strengthInput > 0 &&
+        !Number.isNaN(prescribedStrength) &&
+        prescribedStrength > 0 &&
+        duration > 0
+      ) {
+        const calculatedQuantity = Math.ceil(
+          (prescribedStrength / strengthInput) * frequency.val * duration * durationUnit.val
         );
+        this.formData.quantity_prescribed = calculatedQuantity;
+      } else {
+        this.formData.quantity_prescribed = null;
+      }
+
+      if (this.formData.quantity_prescribed && this.formData.quantity_prescribed > 0) {
+        this.formData.quantity_to_dispense = this.formData.quantity_prescribed;
+      } else {
+        this.formData.quantity_to_dispense = '';
       }
     },
 

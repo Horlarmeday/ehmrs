@@ -423,15 +423,25 @@ export default {
     },
 
     setDrugInfo() {
-      this.strength = this.drug.strength;
-      this.drug_id = this.drug.drug_id;
-      this.price = this.drug.price;
-      this.unit_name = this.drug.unit_name;
-      this.strength_input = this.drug.strength_input;
-      this.quantity_remaining = this.drug.quantity_remaining;
-      this.dosage_form = this.drug.dosage_form;
+      if (!this.drug) {
+        return;
+      }
+      const selectedDrug = this.drug;
+      this.strength = selectedDrug.strength;
+      this.drug_id = selectedDrug.drug_id;
+      this.price = selectedDrug.price;
+      this.unit_name = selectedDrug.unit_name;
+      this.strength_input = selectedDrug.strength_input;
+      this.quantity_remaining = selectedDrug.quantity_remaining;
+      this.dosage_form = selectedDrug.dosage_form;
       this.getRoutes();
       this.removeValues();
+      const defaultStrength = Number(selectedDrug.strength_input);
+      if (!Number.isNaN(defaultStrength) && defaultStrength > 0) {
+        this.prescribed_strength = defaultStrength;
+      } else {
+        this.prescribed_strength = selectedDrug.strength_input || '';
+      }
     },
 
     getTotalPrice() {
@@ -446,15 +456,38 @@ export default {
     },
 
     calculateDosageQuantity() {
-      if (this.frequency.label === 'Stat' || this.dosage_form.name === 'Cream') {
+      const frequency = this.frequency;
+      const durationUnit = this.duration_unit;
+      const dosageFormName = this.dosage_form?.name;
+      const strengthInput = Number(this.strength_input);
+      const prescribedStrength = Number(this.prescribed_strength);
+      const duration = Number(this.duration);
+
+      if (frequency && frequency.label === 'Stat') {
         this.quantity_prescribed = 1;
-      } else {
-        this.quantity_prescribed = Math.ceil(
-          (this.prescribed_strength / Number(this.strength_input)) *
-            this.frequency.val *
-            this.duration *
-            this.duration_unit.val
+      } else if (dosageFormName === 'Cream') {
+        this.quantity_prescribed = 1;
+      } else if (
+        frequency &&
+        durationUnit &&
+        !Number.isNaN(strengthInput) &&
+        strengthInput > 0 &&
+        !Number.isNaN(prescribedStrength) &&
+        prescribedStrength > 0 &&
+        duration > 0
+      ) {
+        const calculatedQuantity = Math.ceil(
+          (prescribedStrength / strengthInput) * frequency.val * duration * durationUnit.val
         );
+        this.quantity_prescribed = calculatedQuantity;
+      } else {
+        this.quantity_prescribed = null;
+      }
+
+      if (this.quantity_prescribed && this.quantity_prescribed > 0) {
+        this.quantity_to_dispense = this.quantity_prescribed;
+      } else {
+        this.quantity_to_dispense = '';
       }
     },
 
