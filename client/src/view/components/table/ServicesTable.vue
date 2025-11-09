@@ -63,7 +63,7 @@ export default {
   name: 'ServicesTable',
   data: () => ({
     currentUser: parseJwt(localStorage.getItem('user_token')),
-    allowedDepartments: ['Administration', 'Reception', 'Medical Practitioner', 'Records'],
+    allowedDepartments: ['Administration', 'Reception', 'Medical Practitioners', 'Records'],
     loading: false,
     UNBILLED: 'Unbilled',
     PENDING: 'Pending',

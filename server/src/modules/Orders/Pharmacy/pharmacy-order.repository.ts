@@ -181,127 +181,116 @@ export const prescribeBulkDrugs = async (
   injections: PrescribedDrugBody[],
   patient: Patient
 ): Promise<PrescribedDrug[]> => {
-  return sequelizeConnection.transaction(async (t: Transaction) => {
-    const drugs = await PrescribedDrug.bulkCreate(data, { transaction: t });
-    const { visit_id, patient_id, examiner } = drugs?.[0];
+  const drugs = await PrescribedDrug.bulkCreate(data);
+  const { visit_id, patient_id, examiner } = drugs?.[0];
 
-    let billId = null;
+  let billId = null;
 
-    // 🆕 NEW: Auto-create bills for each prescribed drug
-    try {
-      const [patient, patientInsurance, originalDrugs] = await Promise.all([
-        Patient.findByPk(patient_id),
-        getPatientInsuranceQuery({ patient_id, is_default: true }),
-        Drug.findAll({ where: { id: data.map(d => d.drug_id) } })
-      ]);
+  // 🆕 NEW: Auto-create bills for each prescribed drug
+  try {
+    const [patient, patientInsurance, originalDrugs] = await Promise.all([
+      Patient.findByPk(patient_id),
+      getPatientInsuranceQuery({ patient_id, is_default: true }),
+      Drug.findAll({ where: { id: data.map(d => d.drug_id) } }),
+    ]);
 
-      if (!patient) {
-        throw new Error(`Patient not found: ${patient_id}`);
-      }
-
-      const drugMap = new Map(originalDrugs.map(d => [d.id, d]));
-
-      for (const drug of drugs) {
-        // Get patient and insurance for billing calculation
-        const originalDrug = drugMap.get(drug.drug_id);
-        if (!originalDrug) {
-          logger.warn(`Original drug not found for drug_id: ${drug.drug_id}`);
-        }
-        // Add this prescription to the visit bill
-        const billItem = await VisitBillingHelper.addPrescribedDrugToBill(
-          visit_id,
-          drug,
-          drug.examiner,
-          patient,
-          originalDrug,
-          patientInsurance
-        );
-        // Capture the bill_id (same for all)
-        if (billItem?.bill_id && !billId) {
-          billId = billItem.bill_id;
-        }  
-      }
-      // Step 4: Trigger auto-payment once (if bill was created)
-      if (billId) {
-        await AutoDepositPaymentService.attemptAutoDepositPayment(
-          billId,
-          patient_id,
-          examiner
-        );
-      }
-    } catch (billingError) {
-      // Log billing error but don't fail the prescription
-      logger.error('Billing creation failed for prescriptions:', billingError);
-      // You might want to add proper logging here
+    if (!patient) {
+      throw new Error(`Patient not found: ${patient_id}`);
     }
 
-    try {
-      if (injections?.length) {
-        const injectionDefaults = await getOneDefault({ type: DefaultType.INJECTION_ITEMS });
-        if (!injectionDefaults) throw new BadException('Error', 400, INJECTION_SYRINGES_NOT_FOUND);
+    const drugMap = new Map(originalDrugs.map(d => [d.id, d]));
 
-        const prescribedInjections = drugs.filter(drug =>
-          injections.some(injection => drug.dosage_form_id === injection.dosage_form_id)
-        );
-
-        const patientInsurance = await getPatientInsuranceQuery({ patient_id: patient.id });
-
-        const additionalItems = await Promise.all(
-          prescribedInjections.map(async injection => {
-            return bulkSyringeNeedlePrescriptions({
-              prescription: injection,
-              patient,
-              injectionItems: injectionDefaults?.data,
-              patient_insurance_id: injection?.patient_insurance_id,
-              insurance: patientInsurance,
-            });
-          })
-        );
-
-        const itemBodies = flattenArray(additionalItems);
-        const items = await PrescribedAdditionalItem.bulkCreate(
-          (itemBodies as unknown) as readonly Optional<any, string>[],
-          { transaction: t }
-        );
-
-        let billId = null;
-
-        try {
-          for (const item of items) {
-            const originalDrug = await Drug.findByPk(item.drug_id);
-            const billItem = await VisitBillingHelper.addPrescribedAdditionalItemToBill(
-              item.visit_id,
-              item,
-              item.examiner,
-              patient,
-              originalDrug,
-              patientInsurance
-            );
-            // Capture the bill_id (same for all)
-            if (billItem?.bill_id && !billId) {
-              billId = billItem.bill_id;
-            }  
-          }
-          // Step 4: Trigger auto-payment once (if bill was created)
-          if (billId) {
-            await AutoDepositPaymentService.attemptAutoDepositPayment(
-              billId,
-              patient_id,
-              examiner
-            );
-          }
-        } catch (error) {
-          logger.error('Billing creation failed for additional items:', error);
-          // You might want to add proper logging here
-        }
+    for (const drug of drugs) {
+      // Get patient and insurance for billing calculation
+      const originalDrug = drugMap.get(drug.drug_id);
+      if (!originalDrug) {
+        logger.warn(`Original drug not found for drug_id: ${drug.drug_id}`);
       }
-    } catch (billingError) {
-      logger.error('Billing creation failed for additional items:', billingError);
-      // You might want to add proper logging here
+      // Add this prescription to the visit bill
+      const billItem = await VisitBillingHelper.addPrescribedDrugToBill(
+        visit_id,
+        drug,
+        drug.examiner,
+        patient,
+        originalDrug,
+        patientInsurance
+      );
+      // Capture the bill_id (same for all)
+      if (billItem?.bill_id && !billId) {
+        billId = billItem.bill_id;
+      }
     }
+    // Step 4: Trigger auto-payment once (if bill was created)
+    if (billId) {
+      await AutoDepositPaymentService.attemptAutoDepositPayment(billId, patient_id, examiner);
+    }
+  } catch (billingError) {
+    // Log billing error but don't fail the prescription
+    logger.error('Billing creation failed for prescriptions:', billingError);
+    // You might want to add proper logging here
+  }
 
-    return drugs;
-  });
+  try {
+    if (injections?.length) {
+      const injectionDefaults = await getOneDefault({ type: DefaultType.INJECTION_ITEMS });
+      if (!injectionDefaults) throw new BadException('Error', 400, INJECTION_SYRINGES_NOT_FOUND);
+
+      const prescribedInjections = drugs.filter(drug =>
+        injections.some(injection => drug.dosage_form_id === injection.dosage_form_id)
+      );
+
+      const patientInsurance = await getPatientInsuranceQuery({ patient_id: patient.id });
+
+      const additionalItems = await Promise.all(
+        prescribedInjections.map(async injection => {
+          return bulkSyringeNeedlePrescriptions({
+            prescription: injection,
+            patient,
+            injectionItems: injectionDefaults?.data,
+            patient_insurance_id: injection?.patient_insurance_id,
+            insurance: patientInsurance,
+          });
+        })
+      );
+
+      const itemBodies = flattenArray(additionalItems);
+      const items = await PrescribedAdditionalItem.bulkCreate(
+        (itemBodies as unknown) as readonly Optional<any, string>[]
+      );
+
+      let billId = null;
+
+      try {
+        for (const item of items) {
+          const originalDrug = await Drug.findByPk(item.drug_id);
+          const billItem = await VisitBillingHelper.addPrescribedAdditionalItemToBill(
+            item.visit_id,
+            item,
+            item.examiner,
+            patient,
+            originalDrug,
+            patientInsurance
+          );
+          // Capture the bill_id (same for all)
+          if (billItem?.bill_id && !billId) {
+            billId = billItem.bill_id;
+          }
+        }
+        // Step 4: Trigger auto-payment once (if bill was created)
+        if (billId) {
+          await AutoDepositPaymentService.attemptAutoDepositPayment(billId, patient_id, examiner);
+        }
+      } catch (error) {
+        logger.error('Billing creation failed for additional items:', error);
+        // You might want to add proper logging here
+      }
+    }
+  } catch (billingError) {
+    logger.error('Billing creation failed for additional items:', billingError);
+    // You might want to add proper logging here
+  }
+
+  return drugs;
 };
 
 /**
@@ -513,7 +502,7 @@ export const bulkCreateAdditionalItems = async (data): Promise<PrescribedAdditio
       // Capture the bill_id (same for all)
       if (billItem?.bill_id && !billId) {
         billId = billItem.bill_id;
-      }  
+      }
     }
     // Step 4: Trigger auto-payment once (if bill was created)
     if (billId) {

@@ -57,7 +57,7 @@
                   href="#"
                   :class="loading && 'disabled'"
                   @click="showDeleteAlert(drug)"
-                  v-if="drug.billing_status === UNBILLED && drug.payment_status === PENDING"
+                  v-if="drug.payment_status === PENDING"
                 >
                   <i class="flaticon-delete mr-2 text-danger"></i>
                 </a>

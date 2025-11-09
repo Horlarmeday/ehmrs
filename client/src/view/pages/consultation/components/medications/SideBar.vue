@@ -90,6 +90,43 @@
                 <span class="form-text text-danger">{{ errors.first('dosage_form') }}</span>
               </div>
             </div>
+
+            <!-- Entry Mode Toggle Button -->
+            <div class="form-group row">
+              <label class="col-lg-3 col-form-label">Entry Mode:</label>
+              <div class="col-lg-9">
+                <button @click="toggleEntryMode" type="button" class="btn btn-sm btn-light-primary">
+                  <i class="fas" :class="useQuickEntry ? 'fa-list' : 'fa-bolt'"></i>
+                  {{ useQuickEntry ? 'Switch to Detailed Entry' : 'Switch to Quick Entry' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Quick Entry Textarea - SHOWN BY DEFAULT -->
+            <div v-if="useQuickEntry" class="form-group row">
+              <label class="col-lg-3 col-form-label">Prescription:</label>
+              <div class="col-lg-9">
+                <textarea
+                  v-model="quickPrescriptionText"
+                  @input="parseQuickPrescription"
+                  placeholder="e.g., 250mg TDS x 5 days"
+                  class="form-control form-control-sm"
+                  rows="2"
+                />
+                <span v-if="parseError" class="form-text text-danger">
+                  <i class="fas fa-exclamation-circle"></i> {{ parseError }}
+                </span>
+                <span v-if="parseSuccess" class="form-text text-success">
+                  <i class="fas fa-check-circle"></i> Parsed successfully
+                </span>
+                <span class="form-text text-muted">
+                  Format: [strength] [frequency] x [duration]
+                  <br />
+                  Examples: 250mg TDS x 5 days, 500mg BD x 7/7, 1g QDS for 2 weeks
+                </span>
+              </div>
+            </div>
+
             <div class="form-group row">
               <label class="col-lg-3 col-form-label">Route:</label>
               <div class="col-lg-9">
@@ -133,7 +170,8 @@
                 <span class="form-text text-danger">{{ errors.first('prescribed_strength') }}</span>
               </div>
             </div>
-            <div class="form-group row">
+            <!-- Frequency field - HIDDEN IN QUICK ENTRY MODE -->
+            <div v-if="!useQuickEntry" class="form-group row">
               <label class="col-lg-3 col-form-label">Frequency:</label>
               <div class="col-lg-9">
                 <select
@@ -151,7 +189,9 @@
                 <span class="form-text text-danger">{{ errors.first('frequency') }}</span>
               </div>
             </div>
-            <div class="form-group row">
+
+            <!-- Duration field - HIDDEN IN QUICK ENTRY MODE -->
+            <div v-if="!useQuickEntry" class="form-group row">
               <label class="col-lg-3 col-form-label">Duration:</label>
               <div class="col-lg-9">
                 <input
@@ -166,7 +206,9 @@
                 <span class="form-text text-danger">{{ errors.first('duration') }}</span>
               </div>
             </div>
-            <div class="form-group row">
+
+            <!-- Unit field - HIDDEN IN QUICK ENTRY MODE -->
+            <div v-if="!useQuickEntry" class="form-group row">
               <label class="col-lg-3 col-form-label">Unit:</label>
               <div class="col-lg-9">
                 <select
@@ -273,6 +315,7 @@ import { debounce, parseJwt } from '@/common/common';
 import KTUtil from '@/assets/js/components/util';
 import SwitchBox from '@/utils/SwitchBox.vue';
 import RoutineDrugs from '@/view/pages/programs/antenatal/components/RoutineDrugs.vue';
+import { parsePrescription } from '@/utils/prescriptionParser';
 
 export default {
   name: 'MedicationSideBar',
@@ -344,6 +387,12 @@ export default {
   },
 
   data: () => ({
+    // Quick Entry is DEFAULT MODE
+    useQuickEntry: true,
+    quickPrescriptionText: '',
+    parseError: null,
+    parseSuccess: false,
+
     nhisPriceQuotaExceeded: false,
     quotaPrice: 13500, // todo: select this from settings
     switchSpot: true,
@@ -389,6 +438,46 @@ export default {
     displayPrompt: false,
   }),
   methods: {
+    toggleEntryMode() {
+      this.useQuickEntry = !this.useQuickEntry;
+      this.parseError = null;
+      this.parseSuccess = false;
+
+      // Clear quick entry text when switching to detailed mode
+      if (!this.useQuickEntry) {
+        this.quickPrescriptionText = '';
+      }
+    },
+
+    parseQuickPrescription() {
+      // Don't parse if empty
+      if (!this.quickPrescriptionText || this.quickPrescriptionText.trim().length === 0) {
+        this.parseError = null;
+        this.parseSuccess = false;
+        return;
+      }
+
+      const result = parsePrescription(this.quickPrescriptionText);
+
+      if (result.error) {
+        this.parseError = result.error;
+        this.parseSuccess = false;
+        return;
+      }
+
+      // Auto-fill form fields with parsed data (using flat properties)
+      this.prescribed_strength = result.strength;
+      this.frequency = result.frequency; // { val, label }
+      this.duration = result.duration;
+      this.duration_unit = result.durationUnit; // { val, label }
+
+      this.parseError = null;
+      this.parseSuccess = true;
+
+      // Trigger dosage quantity calculation
+      this.calculateDosageQuantity();
+    },
+
     getInventories() {
       this.$store.dispatch('inventory/fetchInventories');
     },

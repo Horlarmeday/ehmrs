@@ -42,9 +42,7 @@
           <td>{{ admission.createdAt | dayjs('ddd, MMM Do YYYY, h:mma') }}</td>
           <td>
             <a
-              v-if="
-                doctorAllowedTabs.includes(currentUser.department) && !admission.should_discharge
-              "
+              v-if="doctorAllowedTabs.includes(currentUser.department)"
               @click="showDischargePatientAlert(admission.id)"
               v-b-tooltip.hover
               title="Discharge patient"
@@ -72,7 +70,16 @@ export default {
   },
   data: () => ({
     currentUser: parseJwt(localStorage.getItem('user_token')),
-    doctorAllowedTabs: ['Administration', 'Medical Practitioners'],
+    doctorAllowedTabs: [
+      'Administration',
+      'Medical Practitioners',
+      'Surgery Unit',
+      'Medicine Unit',
+      'Pediatrics Unit',
+      'Family Medicine Unit',
+      'Obstetrics & Gynaecology Unit',
+      'Physiotherapy Unit',
+    ],
   }),
   methods: {
     handleSuccess() {

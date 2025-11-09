@@ -40,7 +40,10 @@
             <td>{{ test.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
             <td>
               <span
-                v-if="allowedRoles.includes(currentUser.role) || currentUser.sub === test.requester"
+                v-if="
+                  allowedDepartments.includes(currentUser.department) ||
+                  currentUser.sub === test.requester
+                "
               >
                 <router-link
                   :to="`/radiology/investigations-results/${test.investigation_prescription_id}`"
@@ -53,7 +56,7 @@
                   href="#"
                   :class="loading && 'disabled'"
                   @click="showDeleteAlert(test)"
-                  v-if="test.billing_status === UNBILLED && test.payment_status === PENDING"
+                  v-if="test.payment_status === PENDING"
                 >
                   <i class="flaticon-delete text-danger"></i>
                 </a>
@@ -73,7 +76,17 @@ import { getLabelDotStatus } from '@/common/common';
 export default {
   data: () => ({
     currentUser: parseJwt(localStorage.getItem('user_token')),
-    allowedRoles: ['General Practitioner', 'Super Admin'],
+    allowedDepartments: [
+      'Administration',
+      'Medical Practitioners',
+      'Surgery Unit',
+      'Medicine Unit',
+      'Pediatrics Unit',
+      'Family Medicine Unit',
+      'Obstetrics & Gynaecology Unit',
+      'Physiotherapy Unit',
+      'Nursing',
+    ],
     loading: false,
     UNBILLED: 'Unbilled',
     PENDING: 'Pending',

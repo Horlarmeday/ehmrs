@@ -35,6 +35,17 @@
       <div class="card-body pt-4 p-0">
         <div class="form">
           <div class="card-body">
+
+            <!-- Entry Mode Toggle Button -->
+            <div class="form-group row">
+              <label class="col-lg-3 col-form-label">Mode:</label>
+              <div class="col-lg-9">
+                <button @click="toggleEntryMode" type="button" class="btn btn-sm btn-light-primary">
+                  <i class="fas" :class="useQuickEntry ? 'fa-list' : 'fa-bolt'"></i>
+                  {{ useQuickEntry ? 'Switch to Detailed Entry' : 'Switch to Quick Entry' }}
+                </button>
+              </div>
+            </div>
             <div class="form-group row">
               <label class="col-lg-3 col-form-label">Drug:</label>
               <div class="col-lg-9">
@@ -136,7 +147,33 @@
               </div>
             </div>
 
-            <div class="form-group row">
+            <!-- Quick Entry Textarea - SHOWN BY DEFAULT -->
+            <div v-if="useQuickEntry" class="form-group row">
+              <label class="col-lg-3 col-form-label">Prescription:</label>
+              <div class="col-lg-9">
+                <textarea
+                  v-model="quickPrescriptionText"
+                  @input="parseQuickPrescription"
+                  placeholder="e.g., 250mg TDS x 5 days"
+                  class="form-control form-control-sm"
+                  rows="2"
+                />
+                <span v-if="parseError" class="form-text text-danger">
+                  <i class="fas fa-exclamation-circle"></i> {{ parseError }}
+                </span>
+                <span v-if="parseSuccess" class="form-text text-success">
+                  <i class="fas fa-check-circle"></i> Parsed successfully
+                </span>
+                <span class="form-text text-muted">
+                  Format: [strength] [frequency] x [duration]
+                  <br />
+                  Examples: 250mg TDS x 5 days, 500mg BD x 7/7, 1g QDS for 2 weeks
+                </span>
+              </div>
+            </div>
+
+            <!-- Frequency field - HIDDEN IN QUICK ENTRY MODE -->
+            <div v-if="!useQuickEntry" class="form-group row">
               <label class="col-lg-3 col-form-label">Frequency:</label>
               <div class="col-lg-9">
                 <select
@@ -154,7 +191,9 @@
                 <span class="form-text text-danger">{{ errors.first('frequency') }}</span>
               </div>
             </div>
-            <div class="form-group row">
+
+            <!-- Duration field - HIDDEN IN QUICK ENTRY MODE -->
+            <div v-if="!useQuickEntry" class="form-group row">
               <label class="col-lg-3 col-form-label">Duration:</label>
               <div class="col-lg-9">
                 <input
@@ -169,7 +208,9 @@
                 <span class="form-text text-danger">{{ errors.first('duration') }}</span>
               </div>
             </div>
-            <div class="form-group row">
+
+            <!-- Unit field - HIDDEN IN QUICK ENTRY MODE -->
+            <div v-if="!useQuickEntry" class="form-group row">
               <label class="col-lg-3 col-form-label">Unit:</label>
               <div class="col-lg-9">
                 <select
@@ -255,7 +296,7 @@
               </div>
               <button
                 @click="submitDrugOrder"
-                :disabled="formData.quantity_remaining <= 0"
+                :disabled="formData.quantity_remaining <= 0 || disableAddbutton"
                 ref="kt-drugOrder-submit"
                 class="btn btn-primary btn-md float-right mb-3"
               >
@@ -275,6 +316,7 @@ import vSelect from 'vue-select';
 import { debounce, parseJwt } from '@/common/common';
 import SwitchBox from '@/utils/SwitchBox.vue';
 import RoutineDrugs from '@/view/pages/programs/antenatal/components/RoutineDrugs.vue';
+import { parsePrescription } from '@/utils/prescriptionParser';
 
 export default {
   name: 'BulkMedicationSideBar',
@@ -291,6 +333,9 @@ export default {
     },
     inventories() {
       return this.$store.state.inventory.inventories;
+    },
+    disableAddbutton() {
+      return !this.formData.quantity_prescribed || !this.formData.route;
     },
     drugOptions: {
       get() {
@@ -356,6 +401,12 @@ export default {
   },
 
   data: () => ({
+    // Quick Entry is DEFAULT MODE
+    useQuickEntry: true,
+    quickPrescriptionText: '',
+    parseError: null,
+    parseSuccess: false,
+
     formData: {
       nhisPriceQuotaExceeded: false,
       quotaPrice: 13500, // todo: select this from settings
@@ -407,14 +458,71 @@ export default {
   }),
   methods: {
     saveToLocalStorage() {
-      localStorage.setItem('medication', JSON.stringify(this.formData));
+      const dataToSave = {
+        formData: this.formData,
+        useQuickEntry: this.useQuickEntry,
+        quickPrescriptionText: this.quickPrescriptionText,
+      };
+      localStorage.setItem('medication', JSON.stringify(dataToSave));
     },
 
     loadFromLocalStorage() {
-      const formData = JSON.parse(localStorage.getItem('medication'));
-      if (formData) {
-        this.formData = formData;
+      const savedData = JSON.parse(localStorage.getItem('medication'));
+      if (savedData) {
+        // Handle old format (just formData) and new format (object with formData)
+        if (savedData.formData) {
+          this.formData = savedData.formData;
+          this.useQuickEntry =
+            savedData.useQuickEntry !== undefined ? savedData.useQuickEntry : true;
+          this.quickPrescriptionText = savedData.quickPrescriptionText || '';
+        } else {
+          // Old format compatibility
+          this.formData = savedData;
+        }
       }
+    },
+
+    toggleEntryMode() {
+      this.useQuickEntry = !this.useQuickEntry;
+      this.parseError = null;
+      this.parseSuccess = false;
+
+      // Clear quick entry text when switching to detailed mode
+      if (!this.useQuickEntry) {
+        this.quickPrescriptionText = '';
+      }
+    },
+
+    parseQuickPrescription() {
+      // Don't parse if empty
+      if (!this.quickPrescriptionText || this.quickPrescriptionText.trim().length === 0) {
+        this.parseError = null;
+        this.parseSuccess = false;
+        return;
+      }
+
+      const result = parsePrescription(this.quickPrescriptionText);
+
+      if (result.error) {
+        this.parseError = result.error;
+        this.parseSuccess = false;
+        return;
+      }
+
+      // Auto-fill form fields with parsed data
+      this.formData.prescribed_strength = result.strength;
+      this.formData.frequency = result.frequency; // { val, label }
+      this.formData.duration = result.duration;
+      this.formData.duration_unit = result.durationUnit; // { val, label }
+
+      this.parseError = null;
+      this.parseSuccess = true;
+
+      // Trigger dosage quantity calculation
+      this.calculateDosageQuantity();
+
+      this.formData.quantity_to_dispense = Math.floor(Math.abs(this.formData.quantity_to_dispense));
+      this.formData.total_price = this.formData.price * this.formData.quantity_to_dispense;
     },
 
     getInventories() {
@@ -448,6 +556,7 @@ export default {
       this.formData.drug_group = null;
       this.formData.inventory_id = null;
       this.formData.nhisPriceQuotaExceeded = false;
+      this.quickPrescriptionText = '';
     },
 
     setDrugInfo() {
@@ -638,6 +747,7 @@ export default {
       this.formData.drug_group = null;
       this.formData.inventory_id = null;
       this.formData.nhisPriceQuotaExceeded = false;
+      this.quickPrescriptionText = '';
     },
 
     onSearch(search, loading) {

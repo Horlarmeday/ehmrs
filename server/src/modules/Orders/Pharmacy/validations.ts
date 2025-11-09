@@ -52,10 +52,13 @@ export function validateDrugPrescription(drug: any) {
     dosage_form_name: Joi.string().required(),
     strength_id: Joi.number().required(),
     inventory_id: Joi.number().required(),
-    prescribed_strength: Joi.string()
+    prescribed_strength: Joi.alternatives()
+      .try(Joi.string(), Joi.number())
       .allow('')
       .optional(),
-    duration: Joi.string().required(),
+    duration: Joi.alternatives()
+      .try(Joi.string(), Joi.number())
+      .required(),
     duration_unit: Joi.string().required(),
     notes: Joi.string()
       .optional()
@@ -108,10 +111,13 @@ export function validateBulkDrugsPrescription(drug: any) {
         dosage_form_name: Joi.string().required(),
         strength_id: Joi.number().required(),
         inventory_id: Joi.number().required(),
-        prescribed_strength: Joi.string()
+        prescribed_strength: Joi.alternatives()
+          .try(Joi.string(), Joi.number())
           .allow('')
           .optional(),
-        duration: Joi.string().required(),
+        duration: Joi.alternatives()
+          .try(Joi.string(), Joi.number())
+          .required(),
         duration_unit: Joi.string().required(),
         notes: Joi.string()
           .optional()

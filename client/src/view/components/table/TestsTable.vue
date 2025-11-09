@@ -81,7 +81,13 @@ export default {
   name: 'TestsTable',
   data: () => ({
     currentUser: parseJwt(localStorage.getItem('user_token')),
-    allowedDepartment: ['Medical Practitioners', 'Administration', 'Records', 'Reception'],
+    allowedDepartment: [
+      'Medical Practitioners',
+      'Administration',
+      'Records',
+      'Reception',
+      'Nursing',
+    ],
     ACCEPTED: 'Accepted',
     UNBILLED: 'Unbilled',
     PENDING: 'Pending',
