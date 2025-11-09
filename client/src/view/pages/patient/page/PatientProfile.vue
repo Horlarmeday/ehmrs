@@ -172,7 +172,21 @@
             <doctor-reports-table />
           </b-tab>
 
-          <b-tab title="Programs" lazy><b-alert show>I'm lazy mounted!</b-alert></b-tab>
+          <b-tab title="Dialysis Treatments" lazy>
+            <dialysis-treatments-table />
+          </b-tab>
+
+          <b-tab title="Dialysis Assessments" lazy>
+            <dialysis-assessments-table />
+          </b-tab>
+
+          <b-tab title="Dialysis Vitals" lazy>
+            <patient-dialysis-vitals-table />
+          </b-tab>
+
+          <b-tab title="Dialysis Notes" lazy>
+            <patient-dialysis-notes-table />
+          </b-tab>
 
           <!-- Death Information Tab (only for deceased patients) -->
           <b-tab v-if="patient.patient_status === 'Deceased'" title="Death Information" lazy>
@@ -257,6 +271,10 @@ import TriagesTable from './components/tables/TriagesTable.vue';
 import HistoriesTable from './components/tables/HistoriesTable.vue';
 import DiagnosesTable from './components/tables/DiagnosesTable.vue';
 import DoctorReportsTable from './components/tables/DoctorReportsTable.vue';
+import DialysisTreatmentsTable from './components/tables/DialysisTreatmentsTable.vue';
+import DialysisAssessmentsTable from './components/tables/DialysisAssessmentsTable.vue';
+import PatientDialysisVitalsTable from './components/tables/PatientDialysisVitalsTable.vue';
+import PatientDialysisNotesTable from './components/tables/PatientDialysisNotesTable.vue';
 import { parseJwt } from '@/common/common';
 export default {
   components: {
@@ -272,6 +290,10 @@ export default {
     PersonalInformation,
     TestsTable,
     DoctorReportsTable,
+    DialysisTreatmentsTable,
+    DialysisAssessmentsTable,
+    PatientDialysisVitalsTable,
+    PatientDialysisNotesTable,
   },
   data: () => ({
     routes: [

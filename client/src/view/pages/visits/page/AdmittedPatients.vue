@@ -22,6 +22,7 @@
               </th>
               <th style="min-width: 250px">Patient Name</th>
               <th style="min-width: 150px">Ward</th>
+              <th style="min-width: 150px">Bed</th>
               <th style="min-width: 150px">Admitted By</th>
               <th style="min-width: 150px">Date</th>
               <th class="text-right pr-0" style="min-width: 130px">Action</th>
@@ -63,6 +64,11 @@
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
                   {{ admission.ward.name }}
+                </span>
+              </td>
+              <td>
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{ admission.bed.code }}
                 </span>
               </td>
               <td>

@@ -39,12 +39,12 @@
             <td>{{ service?.examiner?.fullname }}</td>
             <td>{{ service.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
             <td>
-              <span v-if="allowedRoles.includes(currentUser.role)">
+              <span v-if="allowedDepartments.includes(currentUser.department)">
                 <a
                   href="#"
                   :class="loading && 'disabled'"
                   @click="showDeleteAlert(service)"
-                  v-if="service.billing_status === UNBILLED && service.payment_status === PENDING"
+                  v-if="service.payment_status === PENDING"
                   ><i class="flaticon-delete text-danger"></i
                 ></a>
               </span>
@@ -63,7 +63,7 @@ export default {
   name: 'ServicesTable',
   data: () => ({
     currentUser: parseJwt(localStorage.getItem('user_token')),
-    allowedRoles: ['General Practitioner', 'Super Admin'],
+    allowedDepartments: ['Administration', 'Reception', 'Medical Practitioner', 'Records'],
     loading: false,
     UNBILLED: 'Unbilled',
     PENDING: 'Pending',

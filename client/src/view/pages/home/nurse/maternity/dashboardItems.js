@@ -1,5 +1,10 @@
 export default [
   {
+    url: '/visit/vitals',
+    icon: 'flaticon2-user-1',
+    name: 'Visits',
+  },
+  {
     url: '/visit/maternity',
     icon: 'fas fa-female',
     name: 'Maternity Visits',
@@ -13,6 +18,11 @@ export default [
     url: '/admission/discharge-patients',
     icon: 'fas far fa-smile',
     name: 'Discharge Records',
+  },
+  {
+    url: '/patient/find-patient',
+    icon: 'flaticon-search',
+    name: 'Find Patient Record',
   },
   {
     url: '/reports/active',

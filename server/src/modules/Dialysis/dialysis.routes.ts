@@ -72,6 +72,16 @@ router.get('/icd10/search', DialysisController.searchICD10Diagnoses);
  */
 router.get('/statistics', DialysisController.getDialysisStatistics);
 router.get('/patients/:patientId/history', DialysisController.getPatientDialysisHistory);
+router.get(
+  '/patients/:patientId/dialysis-treatments',
+  DialysisController.getPatientDialysisTreatments
+);
+router.get(
+  '/patients/:patientId/dialysis-assessments',
+  DialysisController.getPatientDialysisAssessments
+);
+router.get('/patients/:patientId/dialysis-vitals', DialysisController.getPatientDialysisVitals);
+router.get('/patients/:patientId/dialysis-notes', DialysisController.getPatientDialysisNotes);
 router.get('/doctors/:doctorId/schedule', DialysisController.getDoctorDialysisSchedule);
 router.get('/nurses/:nurseId/schedule', DialysisController.getNurseDialysisSchedule);
 router.get('/reports/export/:id', DialysisController.exportDialysisReport);

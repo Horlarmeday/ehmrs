@@ -1,5 +1,10 @@
 export default [
   {
+    url: '/visit/vitals',
+    icon: 'flaticon2-user-1',
+    name: 'Visits',
+  },
+  {
     url: '/visit/admitted-patients?occupantType=Female',
     icon: 'fas fa-bed',
     name: 'Admitted Patients',
@@ -8,6 +13,11 @@ export default [
     url: '/admission/discharge-patients',
     icon: 'fas far fa-smile',
     name: 'Discharge Records',
+  },
+  {
+    url: '/patient/find-patient',
+    icon: 'flaticon-search',
+    name: 'Find Patient Record',
   },
   {
     url: '/reports/active',

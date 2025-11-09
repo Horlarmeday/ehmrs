@@ -80,12 +80,12 @@ export default {
         desc: 'Nursing notes',
         showComponent: true,
       },
-      {
-        name: 'Discharge Patient',
-        link: '/admission/discharge/',
-        desc: 'Discharge patient from ward',
-        showComponent: true,
-      },
+      // {
+      //   name: 'Discharge Patient',
+      //   link: '/admission/discharge/',
+      //   desc: 'Discharge patient from ward',
+      //   showComponent: true,
+      // },
       {
         name: 'Move Patient',
         link: '/admission/change-ward/',

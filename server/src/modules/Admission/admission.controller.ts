@@ -342,7 +342,13 @@ export class AdmissionController {
     next: NextFunction
   ): Promise<SuccessResponse | void> {
     try {
-      const ioCharts = await AdmissionService.getIOCharts(+req.params.id);
+      const hoursParam = Array.isArray(req.query.hours) ? req.query.hours[0] : req.query.hours;
+      const parsedHours = hoursParam ? Number(hoursParam) : undefined;
+      const hours =
+        typeof parsedHours === 'number' && Number.isFinite(parsedHours) && parsedHours > 0
+          ? parsedHours
+          : undefined;
+      const ioCharts = await AdmissionService.getIOCharts(+req.params.id, hours);
 
       return successResponse({ res, message: SUCCESS, data: ioCharts, httpCode: 200 });
     } catch (e) {

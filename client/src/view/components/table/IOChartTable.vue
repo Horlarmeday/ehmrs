@@ -32,6 +32,15 @@
           </td>
         </tr>
       </tbody>
+      <tfoot v-if="charts?.length && totals">
+        <tr class="text-uppercase font-weight-bold">
+          <td colspan="2">Summed Totals</td>
+          <td>{{ totals.input }}</td>
+          <td colspan="2"></td>
+          <td>{{ totals.output }}</td>
+          <td colspan="3"></td>
+        </tr>
+      </tfoot>
     </table>
   </div>
 </template>
@@ -43,6 +52,10 @@ export default {
       type: Array,
       required: true,
       default: () => [],
+    },
+    totals: {
+      type: Object,
+      default: null,
     },
   },
 };

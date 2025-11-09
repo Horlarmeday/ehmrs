@@ -34,6 +34,13 @@ export const UPDATE_DIALYSIS_TREATMENT = (state, treatment) => {
   }
 };
 
+export const SET_PATIENT_DIALYSIS_TREATMENTS = (state, payload) => {
+  state.patientTreatments = {
+    ...state.patientTreatments,
+    ...payload,
+  };
+};
+
 export const SET_DIALYSIS_STATISTICS = (state, statistics) => {
   state.statistics = statistics;
 };
@@ -64,6 +71,13 @@ export const UPDATE_DIALYSIS_ASSESSMENT = (state, { id, data }) => {
   }
 };
 
+export const SET_PATIENT_DIALYSIS_ASSESSMENTS = (state, payload) => {
+  state.patientAssessments = {
+    ...state.patientAssessments,
+    ...payload,
+  };
+};
+
 // ========================================
 // DIALYSIS VITALS MUTATIONS
 // ========================================
@@ -83,6 +97,13 @@ export const UPDATE_DIALYSIS_VITALS = (state, { id, data }) => {
   }
 };
 
+export const SET_PATIENT_DIALYSIS_VITALS = (state, payload) => {
+  state.patientVitals = {
+    ...state.patientVitals,
+    ...payload,
+  };
+};
+
 // ========================================
 // DIALYSIS NOTES MUTATIONS
 // ========================================
@@ -100,6 +121,13 @@ export const UPDATE_DIALYSIS_NOTES = (state, { id, data }) => {
   if (index !== -1) {
     state.notes.splice(index, 1, data);
   }
+};
+
+export const SET_PATIENT_DIALYSIS_NOTES = (state, payload) => {
+  state.patientNotes = {
+    ...state.patientNotes,
+    ...payload,
+  };
 };
 
 // ========================================

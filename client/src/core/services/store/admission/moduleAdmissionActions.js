@@ -211,7 +211,11 @@ export default {
   fetchIOCharts({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
-        .get(`/admission/iocharts/${payload.id}`)
+        .get(`/admission/iocharts/${payload.id}`, {
+          params: {
+            ...(payload.hours ? { hours: payload.hours } : {}),
+          },
+        })
         .then((response) => {
           commit('SET_IO_CHARTS', response.data.data);
           resolve(response);

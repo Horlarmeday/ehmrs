@@ -1,17 +1,15 @@
-import {
-  DialysisVisit,
-  DialysisTreatment,
-  Patient,
-  Staff,
-  Visit,
-  Drug,
-} from '../../database/models';
+import { DialysisVisit, DialysisTreatment, Patient, Staff, Visit } from '../../database/models';
 import { BadException } from '../../common/util/api-error';
 import { Op } from 'sequelize';
 import { DialysisAssessment } from '../../database/models/dialysisAssessment';
 import { DialysisVitals } from '../../database/models/dialysisVitals';
 import { DialysisNotes } from '../../database/models/dialysisNotes';
-import { patientAttributes, staffAttributes, visitAttributes } from '../../core/helpers/helper';
+import {
+  StatusCodes,
+  patientAttributes,
+  staffAttributes,
+  visitAttributes,
+} from '../../core/helpers/helper';
 import { TreatmentStatus } from '../../database/models/dialysisTreatment';
 
 export interface DialysisVisitData {
@@ -62,6 +60,20 @@ export interface DialysisStatistics {
   total_revenue: number;
   average_duration: number;
   patient_satisfaction: number;
+}
+
+export interface PatientDialysisPaginationQuery {
+  patientId: number;
+  currentPage?: number;
+  pageLimit?: number;
+}
+
+export interface PaginatedDialysisResource<T> {
+  docs: T[];
+  total: number;
+  pages: number;
+  currentPage: number;
+  pageLimit: number;
 }
 
 export class DialysisService {
@@ -945,6 +957,227 @@ export class DialysisService {
       notes,
       treatments,
     };
+  }
+
+  private static async ensurePatientExists(patientId: number): Promise<void> {
+    const patient = await Patient.findByPk(patientId);
+
+    if (!patient) {
+      throw new BadException('NOT_FOUND', StatusCodes.NOT_FOUND, 'Patient not found');
+    }
+  }
+
+  private static mapPaginatedResult<T>(result: {
+    docs: T[];
+    total: number;
+    pages: number;
+    currentPage: number;
+    perPage: number;
+  }): PaginatedDialysisResource<T> {
+    return {
+      docs: result.docs,
+      total: result.total,
+      pages: result.pages,
+      currentPage: result.currentPage,
+      pageLimit: result.perPage,
+    };
+  }
+
+  /**
+   * Get patient dialysis treatments with pagination
+   */
+  static async getPatientDialysisTreatments({
+    patientId,
+    currentPage = 1,
+    pageLimit = 10,
+  }: PatientDialysisPaginationQuery): Promise<PaginatedDialysisResource<DialysisTreatment>> {
+    await this.ensurePatientExists(patientId);
+
+    const result = await DialysisTreatment.paginate({
+      paginate: pageLimit,
+      page: currentPage,
+      order: [['actual_start_date', 'DESC']],
+      include: [
+        {
+          model: DialysisVisit,
+          attributes: ['id', 'dialysis_type', 'status', 'scheduled_date', 'scheduled_time'],
+          where: { patient_id: patientId },
+          required: true,
+          include: [
+            {
+              model: Visit,
+              attributes: visitAttributes,
+            },
+            {
+              model: Staff,
+              as: 'doctor',
+              attributes: staffAttributes,
+            },
+            {
+              model: Staff,
+              as: 'nurse',
+              attributes: staffAttributes,
+            },
+          ],
+        },
+        {
+          model: Staff,
+          as: 'nurse',
+          attributes: staffAttributes,
+        },
+      ],
+    });
+
+    return result as unknown as PaginatedDialysisResource<DialysisTreatment>;
+  }
+
+  /**
+   * Get patient dialysis assessments with pagination
+   */
+  static async getPatientDialysisAssessments({
+    patientId,
+    currentPage = 1,
+    pageLimit = 10,
+  }: PatientDialysisPaginationQuery): Promise<PaginatedDialysisResource<DialysisAssessment>> {
+    await this.ensurePatientExists(patientId);
+
+    const result = await DialysisAssessment.paginate({
+      paginate: pageLimit,
+      page: currentPage,
+      order: [['assessment_date', 'DESC']],
+      include: [
+        {
+          model: DialysisVisit,
+          attributes: ['id', 'dialysis_type', 'status', 'scheduled_date', 'scheduled_time'],
+          where: { patient_id: patientId },
+          required: true,
+          include: [
+            {
+              model: Visit,
+              attributes: visitAttributes,
+            },
+            {
+              model: Staff,
+              as: 'doctor',
+              attributes: staffAttributes,
+            },
+            {
+              model: Staff,
+              as: 'nurse',
+              attributes: staffAttributes,
+            },
+          ],
+        },
+        {
+          model: Visit,
+          attributes: visitAttributes,
+        },
+      ],
+    });
+
+    return result as unknown as PaginatedDialysisResource<DialysisAssessment>;
+  }
+
+  /**
+   * Get patient dialysis vitals with pagination
+   */
+  static async getPatientDialysisVitals({
+    patientId,
+    currentPage = 1,
+    pageLimit = 10,
+  }: PatientDialysisPaginationQuery): Promise<PaginatedDialysisResource<DialysisVitals>> {
+    await this.ensurePatientExists(patientId);
+
+    const result = await DialysisVitals.paginate({
+      paginate: pageLimit,
+      page: currentPage,
+      order: [['recorded_at', 'DESC']],
+      include: [
+        {
+          model: DialysisVisit,
+          attributes: ['id', 'dialysis_type', 'status', 'scheduled_date', 'scheduled_time'],
+          where: { patient_id: patientId },
+          required: true,
+          include: [
+            {
+              model: Visit,
+              attributes: visitAttributes,
+            },
+            {
+              model: Staff,
+              as: 'doctor',
+              attributes: staffAttributes,
+            },
+            {
+              model: Staff,
+              as: 'nurse',
+              attributes: staffAttributes,
+            },
+          ],
+        },
+        {
+          model: Staff,
+          attributes: staffAttributes,
+        },
+        {
+          model: Visit,
+          attributes: visitAttributes,
+        },
+      ],
+    });
+
+    return result as unknown as PaginatedDialysisResource<DialysisVitals>;
+  }
+
+  /**
+   * Get patient dialysis notes with pagination
+   */
+  static async getPatientDialysisNotes({
+    patientId,
+    currentPage = 1,
+    pageLimit = 10,
+  }: PatientDialysisPaginationQuery): Promise<PaginatedDialysisResource<DialysisNotes>> {
+    await this.ensurePatientExists(patientId);
+
+    const result = await DialysisNotes.paginate({
+      paginate: pageLimit,
+      page: currentPage,
+      order: [['created_at', 'DESC']],
+      include: [
+        {
+          model: DialysisVisit,
+          attributes: ['id', 'dialysis_type', 'status', 'scheduled_date', 'scheduled_time'],
+          where: { patient_id: patientId },
+          required: true,
+          include: [
+            {
+              model: Visit,
+              attributes: visitAttributes,
+            },
+            {
+              model: Staff,
+              as: 'doctor',
+              attributes: staffAttributes,
+            },
+            {
+              model: Staff,
+              as: 'nurse',
+              attributes: staffAttributes,
+            },
+          ],
+        },
+        {
+          model: Staff,
+          attributes: staffAttributes,
+        },
+        {
+          model: Visit,
+          attributes: visitAttributes,
+        },
+      ],
+    });
+
+    return result as unknown as PaginatedDialysisResource<DialysisNotes>;
   }
 
   // ========================================

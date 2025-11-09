@@ -4,15 +4,25 @@ export default [
     icon: 'flaticon2-user-1',
     name: 'Visits',
   },
-  // {
-  //   url: '/visit/dialysis-management',
-  //   icon: 'flaticon2-user-1',
-  //   name: 'Dialysis',
-  // },
+  {
+    url: '/visit/admitted-patients',
+    icon: 'fas fa-bed',
+    name: 'Admitted Patients',
+  },
+  {
+    url: '/admission/discharge-patients',
+    icon: 'fas far fa-smile',
+    name: 'Discharge Records',
+  },
   {
     url: '/visit/treatments',
     icon: 'fas fa-user-injured',
     name: 'Treatment Records',
+  },
+  {
+    url: '/patient/find-patient',
+    icon: 'flaticon-search',
+    name: 'Find Patient Record',
   },
   {
     url: '/reports/active',

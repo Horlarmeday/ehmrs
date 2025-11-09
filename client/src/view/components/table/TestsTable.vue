@@ -48,7 +48,7 @@
                 "
               >
                 <a
-                  v-if="test.billing_status === UNBILLED && test.payment_status === PENDING"
+                  v-if="test.payment_status === PENDING"
                   @click="showDeleteAlert(test)"
                   href="#"
                   :class="loading && 'disabled'"
@@ -81,7 +81,7 @@ export default {
   name: 'TestsTable',
   data: () => ({
     currentUser: parseJwt(localStorage.getItem('user_token')),
-    allowedDepartment: ['Medical Practitioners', 'Administration', 'Records'],
+    allowedDepartment: ['Medical Practitioners', 'Administration', 'Records', 'Reception'],
     ACCEPTED: 'Accepted',
     UNBILLED: 'Unbilled',
     PENDING: 'Pending',

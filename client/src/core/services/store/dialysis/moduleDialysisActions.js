@@ -422,6 +422,111 @@ export const getComprehensiveDialysisVisit = async ({ commit }, visitId) => {
 };
 
 // ========================================
+// PATIENT-LEVEL DATA ACTIONS
+// ========================================
+
+const handleDialysisPatientFetch = async ({
+  endpoint,
+  commit,
+  mutation,
+  patientId,
+  currentPage,
+  pageLimit,
+  errorMessage,
+}) => {
+  if (!patientId) {
+    throw new Error('patientId is required');
+  }
+
+  try {
+    commit('SET_LOADING', true);
+    commit('SET_ERROR', null);
+
+    const response = await axios.get(endpoint, {
+      params: {
+        currentPage,
+        pageLimit,
+      },
+    });
+
+    const { status, data, message } = response.data || {};
+
+    if (status === 'success' && data) {
+      commit(mutation, data);
+      return data;
+    }
+
+    throw new Error(message || errorMessage);
+  } catch (error) {
+    const fallbackMessage = error.response?.data?.message || error.message || errorMessage;
+    commit('SET_ERROR', fallbackMessage);
+    throw new Error(fallbackMessage);
+  } finally {
+    commit('SET_LOADING', false);
+  }
+};
+
+export const fetchPatientDialysisTreatments = async (
+  { commit },
+  { patientId, currentPage = 1, pageLimit = 10 }
+) => {
+  return handleDialysisPatientFetch({
+    endpoint: `/dialysis/patients/${patientId}/dialysis-treatments`,
+    commit,
+    mutation: 'SET_PATIENT_DIALYSIS_TREATMENTS',
+    patientId,
+    currentPage,
+    pageLimit,
+    errorMessage: 'Failed to fetch patient dialysis treatments',
+  });
+};
+
+export const fetchPatientDialysisAssessments = async (
+  { commit },
+  { patientId, currentPage = 1, pageLimit = 10 }
+) => {
+  return handleDialysisPatientFetch({
+    endpoint: `/dialysis/patients/${patientId}/dialysis-assessments`,
+    commit,
+    mutation: 'SET_PATIENT_DIALYSIS_ASSESSMENTS',
+    patientId,
+    currentPage,
+    pageLimit,
+    errorMessage: 'Failed to fetch patient dialysis assessments',
+  });
+};
+
+export const fetchPatientDialysisVitals = async (
+  { commit },
+  { patientId, currentPage = 1, pageLimit = 10 }
+) => {
+  return handleDialysisPatientFetch({
+    endpoint: `/dialysis/patients/${patientId}/dialysis-vitals`,
+    commit,
+    mutation: 'SET_PATIENT_DIALYSIS_VITALS',
+    patientId,
+    currentPage,
+    pageLimit,
+    errorMessage: 'Failed to fetch patient dialysis vitals',
+  });
+};
+
+export const fetchPatientDialysisNotes = async (
+  { commit },
+  { patientId, currentPage = 1, pageLimit = 10 }
+) => {
+  return handleDialysisPatientFetch({
+    endpoint: `/dialysis/patients/${patientId}/dialysis-notes`,
+    commit,
+    mutation: 'SET_PATIENT_DIALYSIS_NOTES',
+    patientId,
+    currentPage,
+    pageLimit,
+    errorMessage: 'Failed to fetch patient dialysis notes',
+  });
+};
+
+// ========================================
 // ICD10 DIAGNOSIS ACTIONS
 // ========================================
 

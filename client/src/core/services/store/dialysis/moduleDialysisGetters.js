@@ -41,3 +41,11 @@ export const getVisitsByPatient = (state) => (patientId) => {
 export const getVisitsByDoctor = (state) => (doctorId) => {
   return state.visits.filter((visit) => visit.doctor_id === doctorId);
 };
+
+export const getPatientDialysisTreatments = (state) => state.patientTreatments;
+
+export const getPatientDialysisAssessments = (state) => state.patientAssessments;
+
+export const getPatientDialysisVitals = (state) => state.patientVitals;
+
+export const getPatientDialysisNotes = (state) => state.patientNotes;

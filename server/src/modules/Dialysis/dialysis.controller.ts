@@ -1,6 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import { DialysisService } from './dialysis.service';
 import { BadException } from '../../common/util/api-error';
+import { successResponse } from '../../common/responses/success-responses';
+import { StatusCodes } from '../../core/helpers/helper';
+import { SUCCESS } from '../../core/constants';
 
 export class DialysisController {
   /**
@@ -285,6 +288,141 @@ export class DialysisController {
         message: 'Internal server error',
         error: error.message,
       });
+    }
+  }
+
+  /**
+   * Get patient dialysis treatments
+   * GET /api/dialysis/patients/:patientId/dialysis-treatments
+   */
+  static async getPatientDialysisTreatments(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const patientId = Number.parseInt(req.params.patientId, 10);
+
+      if (Number.isNaN(patientId)) {
+        throw new BadException('INVALID', StatusCodes.BAD_REQUEST, 'Patient ID must be a number');
+      }
+
+
+      const data = await DialysisService.getPatientDialysisTreatments({
+        patientId,
+        currentPage: parseInt(req.query.currentPage as string),
+        pageLimit: parseInt(req.query.pageLimit as string),
+      });
+
+      successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get patient dialysis assessments
+   * GET /api/dialysis/patients/:patientId/dialysis-assessments
+   */
+  static async getPatientDialysisAssessments(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const patientId = Number.parseInt(req.params.patientId, 10);
+
+      if (Number.isNaN(patientId)) {
+        throw new BadException('INVALID', StatusCodes.BAD_REQUEST, 'Patient ID must be a number');
+      }
+
+
+      const data = await DialysisService.getPatientDialysisAssessments({
+        patientId,
+        currentPage: parseInt(req.query.currentPage as string),
+        pageLimit: parseInt(req.query.pageLimit as string),
+      });
+
+      successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get patient dialysis vitals
+   * GET /api/dialysis/patients/:patientId/dialysis-vitals
+   */
+  static async getPatientDialysisVitals(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const patientId = Number.parseInt(req.params.patientId, 10);
+
+      if (Number.isNaN(patientId)) {
+        throw new BadException('INVALID', StatusCodes.BAD_REQUEST, 'Patient ID must be a number');
+      }
+
+
+      const data = await DialysisService.getPatientDialysisVitals({
+        patientId,
+        currentPage: parseInt(req.query.currentPage as string),
+        pageLimit: parseInt(req.query.pageLimit as string),
+      });
+
+      successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get patient dialysis notes
+   * GET /api/dialysis/patients/:patientId/dialysis-notes
+   */
+  static async getPatientDialysisNotes(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const patientId = Number.parseInt(req.params.patientId, 10);
+
+      if (Number.isNaN(patientId)) {
+        throw new BadException('INVALID', StatusCodes.BAD_REQUEST, 'Patient ID must be a number');
+      }
+      
+      const data = await DialysisService.getPatientDialysisNotes({
+        patientId,
+        currentPage: parseInt(req.query.currentPage as string),
+        pageLimit: parseInt(req.query.pageLimit as string),
+      });
+
+      successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+        data,
+      });
+    } catch (error) {
+      next(error);
     }
   }
 

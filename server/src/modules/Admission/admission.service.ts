@@ -282,8 +282,11 @@ export class AdmissionService {
    * @memberOf AdmissionService
    * @param admissionId
    */
-  static async getIOCharts(admissionId: number): Promise<IOChart[]> {
-    return getIOCharts({ admission_id: admissionId });
+  static async getIOCharts(admissionId: number, hours?: number): Promise<IOChart[]> {
+    const allowedHours = new Set([24, 48, 72, 96, 120]);
+    const normalizedHours = hours && allowedHours.has(hours) ? hours : undefined;
+
+    return getIOCharts({ admission_id: admissionId }, normalizedHours);
   }
 
   /**

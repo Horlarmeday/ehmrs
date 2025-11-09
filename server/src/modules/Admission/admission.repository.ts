@@ -322,6 +322,7 @@ export const getAdmittedPatients = async ({
         // },
       },
       { model: Staff, as: 'examiner', attributes: staffAttributes },
+      { model: Bed, attributes: ['code', 'bed_type'] },
       {
         model: Patient,
         attributes: patientAttributes,
@@ -697,9 +698,17 @@ export const createIOChart = async (data: { [p: string]: any }[]) => {
  * get a patient IO Chart
  * @param query
  */
-export const getIOCharts = async (query: WhereOptions<IOChart>) => {
+export const getIOCharts = async (query: WhereOptions<IOChart>, hours?: number) => {
+  const where: WhereOptions<IOChart> = { ...query };
+
+  if (hours && Number.isFinite(hours) && hours > 0) {
+    (where as any).createdAt = {
+      [Op.gte]: dayjs().subtract(hours, 'hour').toDate(),
+    };
+  }
+
   return IOChart.findAll({
-    where: { ...query },
+    where,
     order: [['createdAt', 'DESC']],
     include: [{ model: Staff, attributes: staffAttributes }],
   });
