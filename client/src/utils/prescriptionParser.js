@@ -1,7 +1,7 @@
 /**
  * Prescription Parser Utility
  * Parses semi-structured medical prescription text into structured data
- * 
+ *
  * Supported formats:
  * - 250mg TDS x 5 days
  * - 250mg TDS x 5/7
@@ -14,32 +14,32 @@
  * Frequency mappings with their values and labels
  */
 const FREQUENCY_MAP = {
-  'stat': { val: 1, label: 'Stat' },
-  'od': { val: 1, label: 'OD' },
-  'bd': { val: 2, label: 'BD' },
-  'tds': { val: 3, label: 'TDS' },
-  'qds': { val: 4, label: 'QDS' },
-  'q4h': { val: 6, label: 'Q4H' },
-  'q2h': { val: 12, label: 'Q2H' },
-  'q1h': { val: 24, label: 'Q1H' },
+  stat: { val: 1, label: 'Stat' },
+  od: { val: 1, label: 'OD' },
+  bd: { val: 2, label: 'BD' },
+  tds: { val: 3, label: 'TDS' },
+  qds: { val: 4, label: 'QDS' },
+  q4h: { val: 6, label: 'Q4H' },
+  q2h: { val: 12, label: 'Q2H' },
+  q1h: { val: 24, label: 'Q1H' },
 };
 
 /**
  * Duration unit mappings
  */
 const DURATION_UNIT_MAP = {
-  'day': { val: 1, label: 'Days' },
-  'days': { val: 1, label: 'Days' },
-  'week': { val: 7, label: 'Weeks' },
-  'weeks': { val: 7, label: 'Weeks' },
-  'month': { val: 30, label: 'Months' },
-  'months': { val: 30, label: 'Months' },
+  day: { val: 1, label: 'Days' },
+  days: { val: 1, label: 'Days' },
+  week: { val: 7, label: 'Weeks' },
+  weeks: { val: 7, label: 'Weeks' },
+  month: { val: 30, label: 'Months' },
+  months: { val: 30, label: 'Months' },
 };
 
 /**
  * Parse strength from prescription text
  * Extracts numeric value with unit (mg, g, mcg, ml, units)
- * 
+ *
  * @param {string} text - Prescription text
  * @returns {number|null} - Numeric strength value or null if not found
  */
@@ -62,7 +62,7 @@ export function parseStrength(text) {
 /**
  * Parse frequency from prescription text
  * Maps medical abbreviations to frequency objects
- * 
+ *
  * @param {string} text - Prescription text
  * @returns {Object|null} - Frequency object {val, label} or null if not found
  */
@@ -86,7 +86,7 @@ export function parseFrequency(text) {
 /**
  * Parse duration from prescription text
  * Supports both explicit format (5 days) and fraction format (5/7, 14/52)
- * 
+ *
  * @param {string} text - Prescription text
  * @returns {Object|null} - {value, unit} or null if not found
  */
@@ -148,7 +148,7 @@ export function parseDuration(text) {
 /**
  * Main prescription parser
  * Parses complete prescription text and extracts strength, frequency, and duration
- * 
+ *
  * @param {string} text - Full prescription text
  * @returns {Object} - Parsed result with strength, frequency, duration, durationUnit, or error
  */
@@ -181,15 +181,15 @@ export function parsePrescription(text) {
 
   // Validation and error messages
   const missing = [];
-  
+
   if (strength === null) {
     missing.push('strength (e.g., 250mg)');
   }
-  
+
   if (frequency === null) {
     missing.push('frequency (e.g., TDS, BD, OD)');
   }
-  
+
   if (durationResult === null) {
     missing.push('duration (e.g., 5 days, 7/7)');
   }
@@ -205,7 +205,7 @@ export function parsePrescription(text) {
 
 /**
  * Validate if a prescription text can be parsed successfully
- * 
+ *
  * @param {string} text - Prescription text to validate
  * @returns {boolean} - True if parseable, false otherwise
  */
@@ -216,7 +216,7 @@ export function isPrescriptionValid(text) {
 
 /**
  * Get suggested corrections for common mistakes
- * 
+ *
  * @param {string} text - Prescription text
  * @returns {string[]} - Array of suggestions
  */
@@ -255,4 +255,3 @@ export default {
   isPrescriptionValid,
   getSuggestions,
 };
-
