@@ -837,3 +837,62 @@ export const businessIntelligenceSchema = Joi.object({
     .valid('json', 'csv', 'pdf')
     .default('json'),
 });
+
+// =============================================================================
+// PATIENT FINANCIAL STATEMENT VALIDATION
+// =============================================================================
+
+export const financialStatementSchema = Joi.object({
+  startDate: Joi.date()
+    .optional()
+    .messages({
+      'date.base': 'Start date must be a valid date',
+    }),
+  endDate: Joi.date()
+    .optional()
+    .when('startDate', {
+      is: Joi.exist(),
+      then: Joi.date().min(Joi.ref('startDate')).messages({
+        'date.min': 'End date must be after start date',
+      }),
+    })
+    .messages({
+      'date.base': 'End date must be a valid date',
+    }),
+  format: Joi.string()
+    .valid('pdf', 'csv', 'xlsx')
+    .required()
+    .messages({
+      'any.required': 'Export format is required',
+      'any.only': 'Format must be one of: pdf, csv, xlsx',
+    }),
+  includeDeposits: Joi.boolean()
+    .default(false)
+    .messages({
+      'boolean.base': 'includeDeposits must be a boolean value',
+    }),
+  includeDetails: Joi.boolean()
+    .default(false)
+    .messages({
+      'boolean.base': 'includeDetails must be a boolean value',
+    }),
+}).custom((value, helpers) => {
+  // Validate date range is not more than 1 year
+  if (value.startDate && value.endDate) {
+    const start = new Date(value.startDate);
+    const end = new Date(value.endDate);
+    const diffInDays = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+    
+    if (diffInDays > 365) {
+      return helpers.error('any.custom', {
+        message: 'Date range cannot exceed 1 year',
+      });
+    }
+  }
+  
+  return value;
+});
+
+export function validateFinancialStatementRequest(data: any) {
+  return financialStatementSchema.validate(data, { abortEarly: false });
+}

@@ -477,7 +477,7 @@ export class VisitBillingHelper {
 
         if (!hmoPricing) {
           const unitPrice = prescribedDrug.total_price || 0;
-          const totalPrice = unitPrice * (prescribedDrug.quantity_to_dispense || 1);
+          const totalPrice = unitPrice;
 
           return {
             unitPrice,
@@ -496,7 +496,7 @@ export class VisitBillingHelper {
       } else {
         // Use regular pricing (cash patient)
         const unitPrice = prescribedDrug.total_price || 0;
-        const totalPrice = unitPrice * (prescribedDrug.quantity_to_dispense || 1);
+        const totalPrice = unitPrice;
 
         return {
           unitPrice,
@@ -508,7 +508,7 @@ export class VisitBillingHelper {
     } catch (error) {
       // Fallback to regular pricing if HMO pricing fails
       const unitPrice = prescribedDrug.original_total_price || 0;
-      const totalPrice = unitPrice * (prescribedDrug.quantity_to_dispense || 1);
+      const totalPrice = unitPrice;
 
       return {
         unitPrice,
@@ -732,7 +732,7 @@ export class VisitBillingHelper {
         // For additional items, we might not have HMO pricing, so use regular pricing
         // but mark as insurance billing mode
         const unitPrice = prescribedAdditionalItem.total_price || 0;
-        const totalPrice = unitPrice * (prescribedAdditionalItem.quantity_to_dispense || 1);
+        const totalPrice = unitPrice;
 
         // For insurance, typically patient pays a small co-pay
         const patientCoPay = totalPrice * 0.1; // 10% co-pay
@@ -747,7 +747,7 @@ export class VisitBillingHelper {
       } else {
         // Use regular pricing (cash patient)
         const unitPrice = prescribedAdditionalItem.total_price || 0;
-        const totalPrice = unitPrice * (prescribedAdditionalItem.quantity_to_dispense || 1);
+        const totalPrice = unitPrice;
 
         return {
           unitPrice,
@@ -759,7 +759,7 @@ export class VisitBillingHelper {
     } catch (error) {
       // Fallback to regular pricing
       const unitPrice = prescribedAdditionalItem.total_price || 0;
-      const totalPrice = unitPrice * (prescribedAdditionalItem.quantity_to_dispense || 1);
+      const totalPrice = unitPrice;
 
       return {
         unitPrice,

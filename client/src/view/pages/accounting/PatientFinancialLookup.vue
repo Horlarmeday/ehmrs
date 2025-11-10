@@ -48,6 +48,14 @@
 
     <!-- Selected Patient Section -->
     <div v-if="selectedPatient">
+      <!-- Action Buttons Bar -->
+      <div class="action-buttons-bar mb-3">
+        <b-button variant="primary" @click="openStatementModal" class="btn-generate-statement">
+          <i class="fas fa-file-invoice mr-2"></i>
+          Generate Financial Statement
+        </b-button>
+      </div>
+
       <!-- Patient Info Card -->
       <b-card class="patient-info-card mb-4">
         <div class="patient-header">
@@ -505,6 +513,100 @@
       </div>
       <p class="mt-3">Loading financial data...</p>
     </div>
+
+    <!-- Financial Statement Generation Modal -->
+    <b-modal
+      id="statement-modal"
+      v-model="showStatementModal"
+      title="Generate Financial Statement"
+      size="lg"
+      hide-footer
+    >
+      <div class="statement-options">
+        <!-- Date Range -->
+        <div class="form-section mb-4">
+          <h6 class="section-title">Statement Period</h6>
+          <b-row>
+            <b-col md="6">
+              <b-form-group label="Start Date" label-for="start-date">
+                <b-form-input
+                  id="start-date"
+                  v-model="statementOptions.startDate"
+                  type="date"
+                  :max="statementOptions.endDate || today"
+                ></b-form-input>
+              </b-form-group>
+            </b-col>
+            <b-col md="6">
+              <b-form-group label="End Date" label-for="end-date">
+                <b-form-input
+                  id="end-date"
+                  v-model="statementOptions.endDate"
+                  type="date"
+                  :min="statementOptions.startDate"
+                  :max="today"
+                ></b-form-input>
+              </b-form-group>
+            </b-col>
+          </b-row>
+          <small class="text-muted">
+            <i class="fas fa-info-circle mr-1"></i>
+            Default: Last 3 months (if dates not selected)
+          </small>
+        </div>
+
+        <!-- Export Format -->
+        <div class="form-section mb-4">
+          <h6 class="section-title">Export Format</h6>
+          <b-form-group>
+            <b-form-radio-group
+              v-model="statementOptions.format"
+              :options="formatOptions"
+              button-variant="outline-primary"
+              buttons
+              size="lg"
+              class="format-buttons"
+            ></b-form-radio-group>
+          </b-form-group>
+        </div>
+
+        <!-- Options -->
+        <div class="form-section mb-4">
+          <h6 class="section-title">Statement Options</h6>
+          <b-form-checkbox v-model="statementOptions.includeDetails" class="mb-2">
+            <strong>Include Detailed Bill Items</strong>
+            <br />
+            <small class="text-muted">Show individual items for each bill with quantities and prices</small>
+          </b-form-checkbox>
+          <b-form-checkbox v-model="statementOptions.includeDeposits">
+            <strong>Include Patient Deposits</strong>
+            <br />
+            <small class="text-muted">Show deposit transactions and history</small>
+          </b-form-checkbox>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="modal-actions">
+          <b-button variant="secondary" @click="closeStatementModal" :disabled="generatingStatement">
+            Cancel
+          </b-button>
+          <b-button
+            variant="primary"
+            @click="generateStatement"
+            :disabled="generatingStatement || !canGenerateStatement"
+          >
+            <span v-if="generatingStatement">
+              <b-spinner small></b-spinner>
+              Generating...
+            </span>
+            <span v-else>
+              <i class="fas fa-download mr-2"></i>
+              Generate Statement
+            </span>
+          </b-button>
+        </div>
+      </div>
+    </b-modal>
   </div>
 </template>
 
@@ -559,10 +661,34 @@ export default {
           outstandingBalance: 0,
         },
       },
+
+      // Statement generation
+      showStatementModal: false,
+      generatingStatement: false,
+      statementOptions: {
+        startDate: null,
+        endDate: null,
+        format: 'pdf',
+        includeDeposits: false,
+        includeDetails: true,
+      },
+      formatOptions: [
+        { text: 'PDF', value: 'pdf' },
+        { text: 'Excel', value: 'xlsx' },
+        { text: 'CSV', value: 'csv' },
+      ],
     };
   },
 
   computed: {
+    today() {
+      return new Date().toISOString().split('T')[0];
+    },
+
+    canGenerateStatement() {
+      return this.selectedPatient && this.statementOptions.format;
+    },
+
     allTransactions() {
       const transactions = [];
 
@@ -644,6 +770,7 @@ export default {
     ...mapActions({
       fetchPatients: 'patient/fetchPatients',
       getPatientFinancialSummary: 'accounting/getPatientFinancialSummary',
+      generatePatientFinancialStatement: 'accounting/generatePatientFinancialStatement',
     }),
 
     handleSearchInput() {
@@ -1028,6 +1155,68 @@ export default {
         });
       } finally {
         this.exporting = false;
+      }
+    },
+
+    // Financial Statement Methods
+    openStatementModal() {
+      // Set default dates (last 3 months)
+      const today = new Date();
+      const threeMonthsAgo = new Date(today);
+      threeMonthsAgo.setMonth(today.getMonth() - 3);
+
+      this.statementOptions = {
+        startDate: threeMonthsAgo.toISOString().split('T')[0],
+        endDate: today.toISOString().split('T')[0],
+        format: 'pdf',
+        includeDeposits: false,
+        includeDetails: true,
+      };
+
+      this.showStatementModal = true;
+    },
+
+    closeStatementModal() {
+      this.showStatementModal = false;
+      this.generatingStatement = false;
+    },
+
+    async generateStatement() {
+      if (!this.canGenerateStatement) {
+        return;
+      }
+
+      this.generatingStatement = true;
+
+      try {
+        await this.generatePatientFinancialStatement({
+          patientId: this.selectedPatient.id,
+          startDate: this.statementOptions.startDate,
+          endDate: this.statementOptions.endDate,
+          format: this.statementOptions.format,
+          includeDeposits: this.statementOptions.includeDeposits,
+          includeDetails: this.statementOptions.includeDetails,
+        });
+
+        this.$bvToast.toast(
+          `Financial statement generated successfully as ${this.statementOptions.format.toUpperCase()}`,
+          {
+            title: 'Success',
+            variant: 'success',
+            solid: true,
+          }
+        );
+
+        this.closeStatementModal();
+      } catch (error) {
+        console.error('Statement generation failed:', error);
+        this.$bvToast.toast(error.message || 'Failed to generate financial statement', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+      } finally {
+        this.generatingStatement = false;
       }
     },
   },
@@ -1607,10 +1796,80 @@ export default {
   margin-left: 0.5rem;
 }
 
+/* Action Buttons Bar */
+.action-buttons-bar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.btn-generate-statement {
+  font-weight: 600;
+  padding: 0.5rem 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.btn-generate-statement:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Statement Modal Styles */
+.statement-options {
+  padding: 1rem 0;
+}
+
+.form-section {
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.format-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.format-buttons .btn {
+  flex: 1;
+  font-weight: 600;
+  padding: 1rem;
+  transition: all 0.2s ease;
+}
+
+.format-buttons .btn:hover {
+  transform: translateY(-2px);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 1rem;
+}
+
+.modal-actions .btn {
+  min-width: 120px;
+  font-weight: 600;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .patient-financial-lookup {
     padding: 10px;
+  }
+
+  .action-buttons-bar {
+    justify-content: center;
   }
 
   .tab-header {
@@ -1648,6 +1907,18 @@ export default {
   .bill-items-table tbody td {
     padding: 8px 10px;
     font-size: 0.8rem;
+  }
+
+  .format-buttons {
+    flex-direction: column;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .modal-actions .btn {
+    width: 100%;
   }
 }
 </style>

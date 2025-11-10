@@ -420,24 +420,6 @@ export const getOneRequestedInvestigation = async (
           {
             model: InvestigationResult,
             attributes: ['result', 'image', 'comments', 'status', 'id'],
-            include: [
-              {
-                model: InvestigationResultImage,
-                attributes: [
-                  'id',
-                  'file_path',
-                  'original_filename',
-                  'file_type',
-                  'file_size',
-                  'is_primary',
-                  'display_order',
-                  'dicom_metadata',
-                  'thumbnail_path',
-                  'createdAt',
-                ],
-                order: [['display_order', 'ASC']],
-              },
-            ],
           },
         ],
       },
@@ -698,7 +680,7 @@ export const getInvestigationResult = async (investigationPrescriptionId: number
     where: {
       id: investigationPrescriptionId,
     },
-    attributes: [],
+    attributes: ['status'],
     include: [
       {
         model: Patient,
@@ -715,22 +697,6 @@ export const getInvestigationResult = async (investigationPrescriptionId: number
             model: PrescribedInvestigation,
             attributes: ['id'],
             include: [{ model: Investigation, attributes: ['name'] }],
-          },
-          {
-            model: InvestigationResultImage,
-            attributes: [
-              'id',
-              'file_path',
-              'original_filename',
-              'file_type',
-              'file_size',
-              'is_primary',
-              'display_order',
-              'dicom_metadata',
-              'thumbnail_path',
-              'createdAt',
-            ],
-            order: [['display_order', 'ASC']],
           },
         ],
       },

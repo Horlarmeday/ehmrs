@@ -1972,6 +1972,79 @@ export default {
   },
 
   /**
+   * Generate patient financial statement
+   * Downloads statement in specified format (PDF, CSV, or Excel)
+   * @param {Object} params - Statement parameters
+   * @param {number} params.patientId - Patient ID
+   * @param {string} params.startDate - Start date (YYYY-MM-DD)
+   * @param {string} params.endDate - End date (YYYY-MM-DD)
+   * @param {string} params.format - Export format (pdf, csv, xlsx)
+   * @param {boolean} params.includeDeposits - Include deposits in statement
+   * @param {boolean} params.includeDetails - Include detailed bill items
+   * @returns {Promise<void>} Downloads file directly to browser
+   */
+  async generatePatientFinancialStatement({ commit }, params) {
+    try {
+      commit('SET_LOADING', true);
+
+      const { patientId, startDate, endDate, format, includeDeposits, includeDetails } = params;
+
+      // Build query parameters
+      const queryParams = new URLSearchParams();
+      if (startDate) queryParams.append('startDate', startDate);
+      if (endDate) queryParams.append('endDate', endDate);
+      queryParams.append('format', format);
+      queryParams.append('includeDeposits', includeDeposits.toString());
+      queryParams.append('includeDetails', includeDetails.toString());
+
+      // Make request with blob response type
+      const response = await axios.get(
+        `/accounting/patients/${patientId}/financial-statement?${queryParams.toString()}`,
+        {
+          responseType: 'blob',
+        }
+      );
+
+      // Extract filename from Content-Disposition header
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = `patient_statement_${patientId}.${format}`;
+
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1].replace(/['"]/g, '');
+        }
+      }
+
+      // Create blob and download
+      const blob = new Blob([response.data], {
+        type: response.headers['content-type'],
+      });
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      return {
+        success: true,
+        message: 'Financial statement generated successfully',
+      };
+    } catch (error) {
+      commit('SET_ERROR', error.response?.data?.message || error.message);
+      throw new Error(error.response?.data?.message || 'Failed to generate financial statement');
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  /**
    * Get comprehensive financial summary for a patient
    * Fetches bills, payments, deposits, and history in parallel
    * @param {number} patientId - The patient ID

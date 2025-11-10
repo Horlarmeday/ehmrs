@@ -222,6 +222,12 @@ router.get('/billing-points', AccountingController.fetchBillingPoints);
 router.get('/bills/number/:billNumber', AccountingController.getClinicalBillByNumber);
 router.get('/bills/patient/:patientId', AccountingController.getPatientClinicalBills);
 
+// ===== PATIENT FINANCIAL STATEMENT =====
+router.get(
+  '/patients/:patientId/financial-statement',
+  AccountingController.generatePatientFinancialStatement
+);
+
 // HMO Claims
 router.get('/hmo-claims', AccountingController.getHMOClaims);
 router.get('/hmo-claims/:id', AccountingController.getHMOClaimById);

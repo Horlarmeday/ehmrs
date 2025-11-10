@@ -8,13 +8,16 @@
             <i class="fas fa-kidney text-primary mr-3"></i>
             Dialysis Consultation
           </span>
-          <span class="text-muted mt-2 font-weight-normal">
+          <router-link
+            :to="`/patient/profile/${patientInfo.id}`"
+            class="text-muted mt-2 font-weight-normal"
+          >
             Patient: {{ patientInfo.fullname || 'Loading...' }} | Visit ID: {{ $route.params.id }} |
             Status: {{ visitInfo.status || 'Loading...' }} | Active Tab: {{ activeTab }}
             <span v-if="isLoading" class="text-primary ml-2">
               <i class="fas fa-spinner fa-spin"></i> Loading...
             </span>
-          </span>
+          </router-link>
         </div>
         <div class="card-toolbar">
           <div class="btn-group" role="group">
@@ -73,6 +76,13 @@
               @click="setActiveTab('tests')"
             >
               <i class="fas fa-flask mr-2"></i>Tests
+            </button>
+            <button
+              class="btn btn-light-primary btn-sm font-weight-bold"
+              :class="{ active: activeTab === 'visitHistory' }"
+              @click="setActiveTab('visitHistory')"
+            >
+              <i class="fas fa-list mr-2"></i>Visit History
             </button>
             <end-visit-button button-class="btn-light-primary" :visit-id="$route.params.id" />
           </div>
@@ -1641,6 +1651,20 @@
         </div>
       </div>
     </div>
+    <!-- Visits History -->
+    <div v-show="activeTab === 'visitHistory'">
+      <div class="card card-custom">
+        <div class="card-header border-0 py-4">
+          <h4 class="card-title font-weight-bolder text-dark">
+            <i class="fas fa-flask text-primary mr-2"></i>
+            Past History
+          </h4>
+        </div>
+        <div class="card-body">
+          <history />
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -1654,6 +1678,7 @@ import ServicesTable from '@/view/components/table/ServicesTable.vue';
 import TestsTable from '@/view/components/table/TestsTable.vue';
 import Pagination from '@/utils/Pagination.vue';
 import EndVisitButton from '@/view/pages/consultation/components/endVisit/EndVisitButton.vue';
+import History from '@/view/pages/consultation/tabs/History.vue';
 
 export default {
   name: 'DialysisConsultation',
@@ -1665,6 +1690,7 @@ export default {
     ServicesTable,
     TestsTable,
     Pagination,
+    History,
   },
   data() {
     return {

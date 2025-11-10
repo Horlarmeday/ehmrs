@@ -372,6 +372,7 @@ export const updatePharmacyStoreItems = async (
           strength_input: field.strength_input,
           drug_form: field.drug_form,
           brand: field.brand,
+          selling_price: field.selling_price,
         };
 
         await InventoryItem.update(

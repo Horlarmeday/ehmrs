@@ -33,48 +33,6 @@
               >
                 <i class="fas fa-history"></i>
               </b-button>
-              <b-button
-                variant="outline-secondary"
-                @click="compareResults"
-                v-b-tooltip.hover
-                title="Compare Results"
-                :disabled="!hasPreviousResults"
-              >
-                <i class="fas fa-exchange-alt"></i>
-              </b-button>
-              <b-button
-                variant="outline-primary"
-                @click="printPage"
-                v-b-tooltip.hover
-                title="Print Report"
-              >
-                <i class="fas fa-print"></i>
-              </b-button>
-              <b-button
-                variant="outline-success"
-                @click="downloadPdf"
-                v-b-tooltip.hover
-                title="Download PDF"
-              >
-                <i class="fas fa-file-pdf"></i>
-              </b-button>
-              <b-button
-                v-if="hasImages"
-                variant="outline-info"
-                @click="downloadAllImages"
-                v-b-tooltip.hover
-                title="Download All Images"
-              >
-                <i class="fas fa-download"></i> Images
-              </b-button>
-              <b-button
-                variant="outline-warning"
-                @click="shareResult"
-                v-b-tooltip.hover
-                title="Share Result"
-              >
-                <i class="fas fa-share-alt"></i>
-              </b-button>
             </b-button-group>
           </div>
         </div>
@@ -101,7 +59,7 @@
               <b-col md="3">
                 <div class="metadata-item">
                   <small class="text-muted d-block">Approved Date</small>
-                  <strong>{{ formatDate(result.approved_at) }}</strong>
+                  <strong>{{ formatDate(result?.approved_at) }}</strong>
                 </div>
               </b-col>
               <b-col md="3">
@@ -120,87 +78,6 @@
             :patient="result.patient"
             :insurance="result.insurance"
           />
-
-          <!-- Summary Cards -->
-          <b-row class="mb-5">
-            <!-- Total Results -->
-            <b-col md="3">
-              <div class="summary-card">
-                <div class="summary-icon bg-light-primary">
-                  <i class="fas fa-vials fa-2x text-primary"></i>
-                </div>
-                <div class="summary-content">
-                  <h3 class="mb-0">{{ result.results?.length || 0 }}</h3>
-                  <p class="text-muted mb-0">Total Results</p>
-                </div>
-              </div>
-            </b-col>
-
-            <!-- Total Images -->
-            <b-col md="3">
-              <div class="summary-card">
-                <div class="summary-icon bg-light-info">
-                  <i class="fas fa-images fa-2x text-info"></i>
-                </div>
-                <div class="summary-content">
-                  <h3 class="mb-0">{{ totalImages }}</h3>
-                  <p class="text-muted mb-0">Total Images</p>
-                </div>
-              </div>
-            </b-col>
-
-            <!-- DICOM Images -->
-            <b-col md="3">
-              <div class="summary-card">
-                <div class="summary-icon bg-light-success">
-                  <i class="fas fa-file-medical fa-2x text-success"></i>
-                </div>
-                <div class="summary-content">
-                  <h3 class="mb-0">{{ dicomImageCount }}</h3>
-                  <p class="text-muted mb-0">DICOM Images</p>
-                </div>
-              </div>
-            </b-col>
-
-            <!-- Critical Findings -->
-            <b-col md="3">
-              <div class="summary-card">
-                <div
-                  :class="
-                    hasCriticalFindings
-                      ? 'summary-icon bg-light-danger'
-                      : 'summary-icon bg-light-secondary'
-                  "
-                >
-                  <i
-                    :class="
-                      hasCriticalFindings
-                        ? 'fas fa-exclamation-triangle fa-2x text-danger'
-                        : 'fas fa-check-circle fa-2x text-secondary'
-                    "
-                  ></i>
-                </div>
-                <div class="summary-content">
-                  <h3 class="mb-0">{{ criticalFindingsCount }}</h3>
-                  <p class="text-muted mb-0">Critical Findings</p>
-                </div>
-              </div>
-            </b-col>
-          </b-row>
-
-          <!-- Critical Findings Alert -->
-          <div v-if="hasCriticalFindings" class="alert alert-danger mb-5">
-            <div class="d-flex align-items-center">
-              <i class="fas fa-exclamation-triangle fa-3x mr-3"></i>
-              <div class="flex-grow-1">
-                <h5 class="mb-1">⚠️ CRITICAL FINDINGS PRESENT</h5>
-                <p class="mb-0">
-                  This result contains <strong>{{ criticalFindingsCount }}</strong> critical
-                  finding(s) that require immediate clinical attention.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -240,22 +117,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Share Modal -->
-    <b-modal v-model="showShareModal" title="Share Result" @ok="handleShare">
-      <b-form-group label="Share with (Email)" label-for="share-email">
-        <b-form-input
-          id="share-email"
-          v-model="shareEmail"
-          type="email"
-          placeholder="Enter email address"
-          required
-        ></b-form-input>
-      </b-form-group>
-      <b-form-group>
-        <b-form-checkbox v-model="shareIncludeImages">Include images</b-form-checkbox>
-      </b-form-group>
-    </b-modal>
   </div>
 </template>
 

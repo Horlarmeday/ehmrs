@@ -28,118 +28,17 @@
                     </small>
                   </div>
                 </div>
-
-                <!-- Action Buttons -->
-                <div class="result-actions">
-                  <b-button-group size="sm">
-                    <b-button
-                      variant="outline-primary"
-                      @click="toggleImages(index)"
-                      v-b-tooltip.hover
-                      title="Toggle Images"
-                    >
-                      <i :class="result.showImages ? 'fas fa-images' : 'far fa-images'"></i>
-                      Images ({{ result.images?.length || 0 }})
-                    </b-button>
-                    <b-button
-                      variant="outline-info"
-                      @click="printResult(result)"
-                      v-b-tooltip.hover
-                      title="Print Report"
-                    >
-                      <i class="fas fa-print"></i>
-                    </b-button>
-                    <b-button
-                      variant="outline-success"
-                      @click="downloadReport(result)"
-                      v-b-tooltip.hover
-                      title="Download PDF"
-                    >
-                      <i class="fas fa-file-pdf"></i>
-                    </b-button>
-                    <b-button
-                      v-if="result.images && result.images.length > 0"
-                      variant="outline-secondary"
-                      @click="downloadAllImages(result)"
-                      v-b-tooltip.hover
-                      title="Download All Images"
-                    >
-                      <i class="fas fa-download"></i>
-                    </b-button>
-                  </b-button-group>
-                </div>
               </div>
             </div>
           </div>
 
           <!-- Card Body -->
           <div class="card-body">
-            <!-- Images Section (Collapsible) -->
-            <b-collapse :visible="result.showImages" class="mb-4">
-              <div v-if="result.images && result.images.length > 0" class="images-container">
-                <div class="images-header mb-3">
-                  <h5 class="mb-0">
-                    <i class="fas fa-images text-primary"></i>
-                    Investigation Images ({{ result.images.length }})
-                  </h5>
-                </div>
-
-                <!-- Image Gallery -->
-                <ImageGallery
-                  :images="result.images"
-                  :allow-delete="false"
-                  :allow-reorder="false"
-                  :allow-set-primary="false"
-                  :allow-download="true"
-                  @view-image="viewImage"
-                  @download-image="downloadImage"
-                />
-              </div>
-              <div v-else class="no-images-notice">
-                <i class="fas fa-info-circle text-muted mr-2"></i>
-                <span class="text-muted">No images attached to this result</span>
-              </div>
-            </b-collapse>
-
             <!-- Report Content -->
             <div class="report-content">
-              <div class="report-body">
-                <div v-html="formatReportHtml(result.result)"></div>
+              <div>
+                <div v-html="result.result"></div>
               </div>
-            </div>
-
-            <!-- Reviewer Comments (if present) -->
-            <div v-if="result.reviewer_comments" class="reviewer-comments mt-4">
-              <div class="reviewer-comments-header">
-                <h6 class="mb-0">
-                  <i class="fas fa-comment-medical text-info"></i>
-                  Reviewer Comments
-                </h6>
-              </div>
-              <div class="reviewer-comments-body">
-                <p class="mb-0">{{ result.reviewer_comments }}</p>
-              </div>
-            </div>
-
-            <!-- Critical Finding Alert -->
-            <div v-if="result.has_critical_finding" class="alert alert-danger mt-4 mb-0">
-              <div class="d-flex align-items-center">
-                <i class="fas fa-exclamation-triangle fa-2x mr-3"></i>
-                <div>
-                  <h6 class="mb-1">⚠️ CRITICAL FINDING</h6>
-                  <p class="mb-0">
-                    This result contains critical findings requiring immediate clinical attention.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Technical Quality Badge -->
-            <div v-if="result.technical_quality" class="mt-3">
-              <b-badge :variant="getQualityVariant(result.technical_quality)" size="lg">
-                <i class="fas fa-star"></i>
-                Technical Quality: {{ capitalizeFirst(result.technical_quality) }}
-              </b-badge>
             </div>
           </div>
 
@@ -166,37 +65,13 @@
       <h5 class="text-muted">No Results Available</h5>
       <p class="text-muted">Investigation results will appear here once they are approved</p>
     </div>
-
-    <!-- Image Lightbox Modal -->
-    <b-modal
-      v-model="showLightbox"
-      size="xl"
-      :title="lightboxTitle"
-      hide-footer
-      body-class="p-0"
-      modal-class="image-lightbox-modal"
-    >
-      <DicomViewer
-        v-if="selectedImage"
-        :image-id="selectedImage.file_path || selectedImage.imageUrl"
-        :images="currentImages.map((img) => img.file_path || img.imageUrl)"
-        :metadata="selectedImage.dicom_metadata ? JSON.parse(selectedImage.dicom_metadata) : {}"
-        viewport-height="75vh"
-      />
-    </b-modal>
   </div>
 </template>
 
 <script>
-import ImageGallery from '@/components/radiology/ImageGallery.vue';
-import DicomViewer from '@/components/radiology/DicomViewer.vue';
-
 export default {
   name: 'ResultSectionEnhanced',
-  components: {
-    ImageGallery,
-    DicomViewer,
-  },
+  components: {},
   props: {
     results: {
       type: Array,

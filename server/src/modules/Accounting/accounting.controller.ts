@@ -8,6 +8,9 @@ import { FinancialReportingService } from './services/financialReporting.service
 import { OperationalReportingService } from './services/operationalReporting.service';
 import { BusinessIntelligenceService } from './services/businessIntelligence.service';
 import { PatientDepositService } from './services/patientDeposit.service';
+import { PatientFinancialStatementService } from './services/patientFinancialStatement.service';
+import { generateFinancialStatementPDF } from './helper/financialStatement.helper';
+import { exportDataToCSV, exportDataToExcel } from '../../core/helpers/fileExport';
 import Joi from 'joi';
 import {
   PatientDepositData,
@@ -37,6 +40,7 @@ import {
   bankReconciliationApprovalSchema,
   operationalReportSchema,
   businessIntelligenceSchema,
+  validateFinancialStatementRequest,
 } from './validations';
 import {
   createChartOfAccountSchema,
@@ -3614,6 +3618,100 @@ export class AccountingController {
         success: true,
         data: summary,
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Generate patient financial statement
+   * GET /api/accounting/patients/:patientId/financial-statement
+   */
+  static async generatePatientFinancialStatement(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { patientId } = req.params;
+      const { startDate, endDate, format, includeDeposits, includeDetails } = req.query;
+
+      // Validate request parameters
+      const { error, value } = validateFinancialStatementRequest({
+        startDate: startDate ? new Date(startDate as string) : undefined,
+        endDate: endDate ? new Date(endDate as string) : undefined,
+        format,
+        includeDeposits: includeDeposits === 'true',
+        includeDetails: includeDetails === 'true',
+      });
+
+      if (error) {
+        throw new BadException(
+          'VALIDATION_ERROR',
+          400,
+          error.details.map((d) => d.message).join(', ')
+        );
+      }
+
+      // Fetch patient financial statement data
+      const statementData = await PatientFinancialStatementService.getPatientFinancialStatement({
+        patientId: Number(patientId),
+        startDate: value.startDate,
+        endDate: value.endDate,
+        includeDeposits: value.includeDeposits,
+        includeDetails: value.includeDetails,
+      });
+
+      // Generate filename
+      const patientHospitalId = `${statementData.patient.hospital_id}_${statementData.patient.fullname}` || patientId;
+      const startDateStr = value.startDate
+        ? new Date(value.startDate).toISOString().split('T')[0]
+        : 'default';
+      const endDateStr = value.endDate
+        ? new Date(value.endDate).toISOString().split('T')[0]
+        : 'today';
+      const filename = `patient_statement_${patientHospitalId}_${startDateStr}_${endDateStr}.${value.format}`;
+
+      // Export based on format
+      switch (value.format) {
+        case 'pdf':
+          await generateFinancialStatementPDF({
+            data: statementData,
+            includeDetails: value.includeDetails,
+            res,
+            filename,
+          });
+          break;
+
+        case 'csv': {
+          const exportData = PatientFinancialStatementService.formatStatementForExport(
+            statementData,
+            value.includeDetails
+          );
+
+          // Set filename in response header
+          res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+
+          exportDataToCSV(res, exportData, [Object.keys(exportData[0] || {})]);
+          break;
+        }
+
+        case 'xlsx': {
+          const exportData = PatientFinancialStatementService.formatStatementForExport(
+            statementData,
+            value.includeDetails
+          );
+
+          // Set filename in response header
+          res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+
+          exportDataToExcel(res, exportData, [Object.keys(exportData[0] || {})]);
+          break;
+        }
+
+        default:
+          throw new BadException('INVALID_FORMAT', 400, 'Invalid export format');
+      }
     } catch (error) {
       next(error);
     }

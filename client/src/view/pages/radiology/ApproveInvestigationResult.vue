@@ -115,41 +115,6 @@
               </div>
             </div>
           </div>
-
-          <!-- Critical Findings Warning -->
-          <div v-if="hasCriticalFindings" class="alert alert-danger mb-5">
-            <div class="d-flex align-items-center">
-              <i class="fas fa-exclamation-triangle fa-3x text-danger mr-3"></i>
-              <div class="flex-grow-1">
-                <h5 class="mb-1">⚠️ CRITICAL FINDINGS ALERT</h5>
-                <p class="mb-2">
-                  One or more results contain <strong>CRITICAL FINDINGS</strong> that require
-                  immediate clinical attention.
-                </p>
-                <p class="mb-0 small">
-                  <i class="fas fa-info-circle"></i> Please ensure that the ordering physician has
-                  been notified and appropriate clinical follow-up has been arranged before
-                  approving.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Guidelines Card -->
-          <div class="card bg-light-primary mb-5">
-            <div class="card-body">
-              <h6 class="mb-3">
-                <i class="fas fa-clipboard-list text-primary"></i> Approval Guidelines
-              </h6>
-              <ul class="mb-0 pl-4">
-                <li>Review all images and findings carefully</li>
-                <li>Verify technical quality of images and report</li>
-                <li>Check for any critical or urgent findings</li>
-                <li>Add reviewer comments if needed</li>
-                <li>Ensure proper documentation and compliance</li>
-              </ul>
-            </div>
-          </div>
         </div>
       </div>
 
