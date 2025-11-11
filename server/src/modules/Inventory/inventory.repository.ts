@@ -436,7 +436,6 @@ export const updateReturnRequests = async (
         {
           where: {
             drug_id: inventoryItem.drug_id,
-            drug_type: inventoryItem.drug_type,
             drug_form: inventoryItem.drug_form,
           },
           transaction: t,

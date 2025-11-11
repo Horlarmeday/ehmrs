@@ -10,6 +10,11 @@ export default [
     name: 'Requests',
   },
   {
+    url: '/request/returns',
+    icon: 'flaticon2-open-text-book',
+    name: 'Returns',
+  },
+  {
     url: '/general-store',
     icon: 'fas fa-laptop-house',
     name: 'General Store',

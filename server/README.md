@@ -77,6 +77,21 @@ npm run migrations
 # start dev server
 npm run dev
 ```
+
+### QuickBooks Online Integration Configuration
+
+To enable the QuickBooks Online integration layer, add the following environment variables to your server runtime configuration:
+
+| Variable | Description |
+| --- | --- |
+| `QB_CLIENT_ID` | OAuth client ID from the Intuit Developer portal. |
+| `QB_CLIENT_SECRET` | OAuth client secret issued alongside the client ID. |
+| `QB_REDIRECT_URI` | HTTPS callback URL configured in the Intuit app settings (e.g. `https://your-api.com/api/integrations/quickbooks/callback`). |
+| `QB_ENV` | Target environment (`SANDBOX` or `PRODUCTION`). Defaults to `SANDBOX` when omitted. |
+| `QB_ENCRYPTION_KEY` | Base64-encoded 32-byte key used for AES-256-GCM encryption of QuickBooks tokens. Generate with `openssl rand -base64 32`. |
+| `QB_STATE_SECRET` | Base64-encoded secret (≥32 bytes) used to sign OAuth state payloads. Generate with `openssl rand -base64 48`. |
+
+All values must be present before attempting to initiate an OAuth connection from the accounting dashboards.
 #### test
 To run integration test, run below command
 ```bash

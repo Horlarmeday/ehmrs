@@ -5,6 +5,11 @@ export default [
     name: 'Investigations',
   },
   {
+    url: '/radiology/active-visits',
+    icon: 'flaticon-users-1',
+    name: 'Active Visits',
+  },
+  {
     url: '/radiology/investigations-approval',
     icon: 'flaticon-like',
     name: 'Verified Investigations',

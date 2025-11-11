@@ -21,12 +21,6 @@
         Accounting & Finance Dashboard
       </h1>
       <div class="header-actions">
-        <!-- <b-button variant="primary" @click="createNewBill">
-          <i class="fas fa-plus mr-2"></i>New Bill
-        </b-button>
-        <b-button variant="success" @click="processPayment">
-          <i class="fas fa-credit-card mr-2"></i>Process Payment
-        </b-button> -->
         <b-button variant="info" @click="recordDeposit">
           <i class="fas fa-piggy-bank mr-2"></i>Record Deposit
         </b-button>
@@ -38,6 +32,8 @@
         </b-button>
       </div>
     </div>
+
+    <QuickbooksIntegrationCard class="mb-4" />
 
     <!-- Loading State -->
     <div v-if="loading" class="loading-overlay">
@@ -505,8 +501,13 @@
 </template>
 
 <script>
+import QuickbooksIntegrationCard from '@/view/components/accounting/QuickbooksIntegrationCard.vue';
+
 export default {
   name: 'AccountingDashboard',
+  components: {
+    QuickbooksIntegrationCard,
+  },
   data() {
     return {
       loading: false,

@@ -51,6 +51,11 @@ export default {
         desc: 'Click here to generate store reports',
       },
       {
+        name: 'Returns',
+        link: '/request/returns',
+        desc: 'Click here to generate store reports',
+      },
+      {
         name: 'Trends',
         link: '/store/pharmacy/trends',
         desc: 'Click here to view the store behaviour trends',

@@ -41,6 +41,7 @@ import appointmentRoutes from '../../modules/Appointment/appointment.routes';
 import inventoryAlertRoutes from '../../modules/InventoryAlerts/inventoryAlert.routes';
 import formTemplateRoutes from '../../modules/FormTemplate/formTemplate.routes';
 import reportsRoutes from '../../modules/Reports/reports.routes';
+import quickbooksRoutes from '../../modules/Integrations/Quickbooks/quickbooks.routes';
 
 export default (server: express.Application) => {
   server.use('/api/staffs', staffRoutes);
@@ -80,6 +81,7 @@ export default (server: express.Application) => {
   server.use('/api/inventory-alerts', inventoryAlertRoutes);
   server.use('/api/form-templates', formTemplateRoutes);
   server.use('/api/reports', reportsRoutes);
+  server.use('/api/integrations/quickbooks', quickbooksRoutes);
 
   if (process.env.SENTRY_DSN) {
     Sentry.setupExpressErrorHandler(server);

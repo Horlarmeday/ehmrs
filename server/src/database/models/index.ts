@@ -72,6 +72,8 @@ export { Sample } from './sample';
 export { Service } from './service';
 export { ServiceTariff } from './serviceTariff';
 export { Staff } from './staff';
+export { QuickbooksConnection } from './quickbooksConnection';
+export { QuickbooksCredential } from './quickbooksCredential';
 export { SurgeryProcedure } from './surgeryProcedure';
 export { SurgeryRequest } from './surgeryRequest';
 export { SystemSettings } from './systemSettings';

@@ -103,7 +103,7 @@
                 <span class="form-text text-danger">{{ errors.first('dosage_form') }}</span>
               </div>
             </div>
-            <div class="form-group row">
+            <!-- <div class="form-group row">
               <label class="col-lg-3 col-form-label">Strength:</label>
               <div class="col-lg-9">
                 <input
@@ -114,7 +114,7 @@
                 />
                 <span class="form-text text-danger">{{ errors.first('prescribed_strength') }}</span>
               </div>
-            </div>
+            </div> -->
             <div class="form-group row">
               <label class="col-lg-3 col-form-label">Start Date:</label>
               <div class="col-lg-9">
@@ -300,7 +300,7 @@
                 ref="kt-drugOrder-submit"
                 class="btn btn-primary btn-md float-right mb-3"
               >
-                Add
+                Submit
               </button>
             </div>
           </div>
@@ -317,6 +317,7 @@ import { debounce, parseJwt } from '@/common/common';
 import SwitchBox from '@/utils/SwitchBox.vue';
 import RoutineDrugs from '@/view/pages/programs/antenatal/components/RoutineDrugs.vue';
 import { parsePrescription } from '@/utils/prescriptionParser';
+import KTUtil from '@/assets/js/components/util';
 
 export default {
   name: 'BulkMedicationSideBar',
@@ -646,9 +647,13 @@ export default {
           }
           const submitButton = this.$refs['kt-drugOrder-submit'];
           this.addSpinner(submitButton);
+          const payload = {
+            drugs: [this.drugData()],
+            id: this.$route.params.id,
+          };
 
           this.$store
-            .dispatch('order/addTempDrug', this.drugData())
+            .dispatch('order/bulkOrderDrug', payload)
             .then(() => this.endRequest(submitButton))
             .catch(() => this.removeSpinner(submitButton));
         }
@@ -712,13 +717,13 @@ export default {
       localStorage.removeItem('medication');
       this.removeSpinner(button);
       this.initValues();
-      // this.$store.dispatch('order/fetchPrescribedDrugs', {
-      //   fetchWithItems: true,
-      //   filter: { visit_id: this.$route.params.id },
-      // });
-      // setTimeout(() => {
-      //   KTUtil.scrollTop();
-      // }, 500);
+      this.$store.dispatch('order/fetchPrescribedDrugs', {
+        fetchWithItems: true,
+        filter: { visit_id: this.$route.params.id },
+      });
+      setTimeout(() => {
+        KTUtil.scrollTop();
+      }, 500);
     },
 
     initValues() {

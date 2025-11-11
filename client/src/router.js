@@ -1614,6 +1614,22 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            {
+              path: 'active-visits',
+              name: 'active-radiology-visits',
+              component: () => import('@/view/pages/radiology/activeInvestigations/ActiveVisits.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'active-investigations/:id',
+              name: 'active-radiology-investigations',
+              component: () => import('@/view/pages/radiology/activeInvestigations/AddActiveInvestigations.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
           ],
         },
         // INVENTORY REQUESTS

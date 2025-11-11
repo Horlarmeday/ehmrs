@@ -355,6 +355,8 @@ export const updatePharmacyStoreItems = async (
       return await sequelizeConnection.transaction(async t => {
         const item = await PharmacyStore.findByPk(field.id, { transaction: t });
 
+        console.log(field)
+
         await PharmacyStore.update({ ...field }, { where: { id: field.id }, transaction: t });
 
         await PharmacyStoreLog.create(

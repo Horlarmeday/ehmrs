@@ -115,13 +115,11 @@
             </div>
             <div class="col-lg-3">
               <label>Unit <span class="text-danger">*</span></label>
-              <v-select
-                name="unit"
-                v-model="item.unit"
-                label="name"
-                :reduce="(units) => units.id"
-                :options="units"
-              />
+              <select class="form-control form-control-sm" v-model="item.unit_id" name="unit">
+                <option :value="unit.id" v-for="unit in units" :key="unit.id">
+                  {{ unit.name }}
+                </option>
+              </select>
             </div>
             <div class="col-lg-3">
               <label>Unit Price <span class="text-danger">*</span></label>
@@ -195,11 +193,10 @@
 </template>
 <script>
 import AccordionIcon from '@/assets/icons/AccordionIcon.vue';
-import vSelect from 'vue-select';
 import Datepicker from 'vuejs-datepicker';
 import SectionTitle from '@/utils/SectionTitle.vue';
 export default {
-  components: { SectionTitle, AccordionIcon, vSelect, Datepicker },
+  components: { SectionTitle, AccordionIcon, Datepicker },
   data: () => ({
     pharmItems: [],
     isDisabled: false,

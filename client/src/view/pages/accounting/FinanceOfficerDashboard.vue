@@ -33,6 +33,8 @@
       </div>
     </div>
 
+    <QuickbooksIntegrationCard class="mb-4" />
+
     <!-- Loading State -->
     <div v-if="loading" class="loading-overlay">
       <div class="text-center">
@@ -420,8 +422,13 @@
 </template>
 
 <script>
+import QuickbooksIntegrationCard from '@/view/components/accounting/QuickbooksIntegrationCard.vue';
+
 export default {
   name: 'FinanceOfficerDashboard',
+  components: {
+    QuickbooksIntegrationCard,
+  },
   data() {
     return {
       loading: false,
