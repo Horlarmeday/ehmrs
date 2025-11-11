@@ -35,7 +35,7 @@ export const downloadTestResult = (
   res: Response
 ) => {
   const doc = new PDFDocument({});
-  const filename = `${patientInfo.patientName}_${patientInfo.accession_number}_lab_test_result.pdf`;
+  const filename = `${patientInfo.patientName}_${patientInfo.accession_number}_test_result.pdf`;
   // Stream the PDF output to a file (change 'lab_report.pdf' to your desired filename)
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
