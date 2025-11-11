@@ -1,5 +1,5 @@
 import axios from '../../../../axios';
-import { getExtensions } from '@/common/common';
+// import { getExtensions } from '@/common/common';
 
 export default {
   /**
@@ -306,17 +306,19 @@ export default {
         )
         .then((response) => {
           const contentType = response.headers['content-type'].split(';')[0];
+          const fileNameSplit = response.headers['content-disposition']?.split(';')[1];
+          const fileName = fileNameSplit?.split('=')[1];
           const blob = new Blob([response.data], {
             type: contentType,
           });
           const url = window.URL.createObjectURL(blob);
           // Create an anchor element with download attribute and trigger click event
           const a = document.createElement('a');
-          const extension = getExtensions();
+          //const extension = getExtensions();
           a.href = url;
-          a.download = `lab_result.${extension[contentType]}`;
+          a.download = fileName;
           a.click();
-
+          console.log(fileName, 'fileName');
           // Clean up resources
           window.URL.revokeObjectURL(url);
           commit('REMOVE_ALL_SELECTED_ITEMS', []);

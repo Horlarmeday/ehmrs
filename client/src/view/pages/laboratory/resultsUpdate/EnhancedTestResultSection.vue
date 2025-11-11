@@ -186,7 +186,7 @@ export default {
       test_approved_date: this.tests?.[0]?.test_approved_date,
       test_verified_date: this.tests?.[0]?.test_verified_date,
       test_conducted_date: this.tests?.[0]?.test_conducted_date,
-      allowedDepartments: ['Administrator', 'Laboratory'],
+      allowedDepartments: ['Administration', 'Laboratory'],
       currentUser: parseJwt(localStorage.getItem('user_token')),
       isDisabled: false,
     };
