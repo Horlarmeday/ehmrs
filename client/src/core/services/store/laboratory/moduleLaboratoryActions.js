@@ -318,7 +318,6 @@ export default {
           a.href = url;
           a.download = fileName;
           a.click();
-          console.log(fileName, 'fileName');
           // Clean up resources
           window.URL.revokeObjectURL(url);
           commit('REMOVE_ALL_SELECTED_ITEMS', []);
