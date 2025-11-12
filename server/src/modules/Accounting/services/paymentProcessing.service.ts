@@ -1718,7 +1718,7 @@ export class PaymentProcessingService {
               break;
             }
             case BillItemTypeEnum.ADDITIONAL_ITEM: {
-              const prescribedDrug = await PrescribedDrug.findOne({
+              const prescribedItem = await PrescribedAdditionalItem.findOne({
                 where: { id: item.item_id },
                 transaction,
               });
@@ -1731,7 +1731,7 @@ export class PaymentProcessingService {
                 { has_paid: true },
                 {
                   where: {
-                    id: prescribedDrug.drug_prescription_id,
+                    id: prescribedItem.drug_prescription_id,
                   },
                   transaction,
                 }
