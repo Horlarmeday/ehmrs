@@ -226,23 +226,20 @@ export const getOnePrescribedService = async (
  * @returns {number} prescribed service data
  * @param serviceId
  */
-export const deleteService = async (serviceId: number) => {
-  // Get the service before deletion to get visit_id
-  const service = await PrescribedService.findByPk(serviceId);
+export const deleteService = async (serviceId: number, transaction?: Transaction) => {
+  const service = await PrescribedService.findByPk(serviceId, { transaction });
   if (!service) return 0;
 
-  // Find the bill for this visit
   const bill = await ClinicalBill.findOne({
     where: { visit_id: service.visit_id },
+    transaction,
   });
 
-  // Delete the prescription
-  const deletedCount = await PrescribedService.destroy({ where: { id: serviceId } });
+  const deletedCount = await PrescribedService.destroy({ where: { id: serviceId }, transaction });
 
   if (deletedCount > 0 && bill) {
-    // Clean up billing
     try {
-      await VisitBillingHelper.removePrescribedServiceFromBill(serviceId, bill.id);
+      await VisitBillingHelper.removePrescribedServiceFromBill(serviceId, bill.id, transaction);
     } catch (billingError) {
       console.error('Failed to remove prescribed service from billing:', billingError);
     }

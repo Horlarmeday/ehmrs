@@ -53,6 +53,50 @@ export interface RefundDepositData {
 }
 
 export class PatientDepositService {
+  static async findActiveDepositForPatient(
+    patientId: number,
+    options: {
+      transaction?: Transaction;
+      lockForUpdate?: boolean;
+      includeAssociations?: boolean;
+      allowZeroBalance?: boolean;
+    } = {}
+  ): Promise<PatientDeposit | null> {
+    const { transaction, lockForUpdate = false, includeAssociations = false, allowZeroBalance = false } =
+      options;
+
+    const whereClause: any = {
+      patient_id: patientId,
+      status: DepositStatus.ACTIVE,
+    };
+
+    if (!allowZeroBalance) {
+      whereClause.current_balance = {
+        [Op.gt]: 0,
+      };
+    }
+
+    const queryOptions: any = {
+      where: whereClause,
+      order: [
+        ['current_balance', 'DESC'],
+        ['last_activity_date', 'DESC'],
+        ['id', 'DESC'],
+      ],
+      transaction,
+    };
+
+    if (includeAssociations) {
+      queryOptions.include = ['patient', 'bankAccount', 'createdByStaff', 'posTerminal'];
+    }
+
+    if (lockForUpdate && transaction) {
+      queryOptions.lock = transaction.LOCK.UPDATE;
+    }
+
+    return PatientDeposit.findOne(queryOptions);
+  }
+
   /**
    * Create a new patient deposit with full accounting workflow
    */
@@ -72,6 +116,20 @@ export class PatientDepositService {
           503,
           'No active financial period found. Please configure financial periods before processing transactions.'
         );
+      }
+
+      // Attempt to find an existing active deposit for the patient
+      const existingDeposit = await this.findActiveDepositForPatient(data.patient_id, {
+        transaction,
+        lockForUpdate: true,
+        includeAssociations: true,
+        allowZeroBalance: true,
+      });
+
+      if (existingDeposit) {
+        deposit = await this.topUpExistingDeposit(existingDeposit, data, currentPeriod.id, transaction);
+        await transaction.commit();
+        return deposit;
       }
 
       // Generate reference number
@@ -191,6 +249,119 @@ export class PatientDepositService {
 
       throw new BadException('Failed to create patient deposit', 500, error.message);
     }
+  }
+
+  private static async topUpExistingDeposit(
+    existingDeposit: PatientDeposit,
+    data: CreateDepositData,
+    currentPeriodId: number,
+    transaction: Transaction
+  ): Promise<PatientDeposit> {
+    const topUpAmount = Number(data.amount);
+    if (!Number.isFinite(topUpAmount) || topUpAmount <= 0) {
+      throw new BadException(
+        'Invalid Deposit Amount',
+        400,
+        'Top-up amount must be a positive numeric value'
+      );
+    }
+
+    if (existingDeposit.status !== DepositStatus.ACTIVE) {
+      throw new BadException(
+        'Deposit Status Invalid',
+        400,
+        `Cannot top up a deposit that is not active. Current status: ${existingDeposit.status}`
+      );
+    }
+
+    const previousBalance = Number(existingDeposit.current_balance) || 0;
+    const previousRefundable = Number(existingDeposit.refundable_amount) || 0;
+    const previousTotalAmount = Number(existingDeposit.amount) || 0;
+    const previousInitialAmount = Number(existingDeposit.initial_amount) || 0;
+
+    const newBalance = previousBalance + topUpAmount;
+    const newRefundableAmount = previousRefundable + topUpAmount;
+    const newTotalAmount = previousTotalAmount + topUpAmount;
+    const newInitialAmount = previousInitialAmount + topUpAmount;
+
+    const updatedDeposit = await existingDeposit.update(
+      {
+        amount: newTotalAmount,
+        initial_amount: newInitialAmount,
+        current_balance: newBalance,
+        refundable_amount: newRefundableAmount,
+        bank_account_id: data.bank_account_id ?? existingDeposit.bank_account_id,
+        pos_terminal_id: data.pos_terminal_id ?? existingDeposit.pos_terminal_id,
+        payment_method: data.payment_method ?? existingDeposit.payment_method,
+        payment_reference: data.payment_reference ?? existingDeposit.payment_reference,
+        description: data.description ?? existingDeposit.description,
+        deposit_type: data.deposit_type ?? existingDeposit.deposit_type,
+        last_activity_date: new Date(),
+        updated_by: data.created_by,
+        period_id: currentPeriodId,
+      },
+      { transaction }
+    );
+
+    await updatedDeposit.reload({
+      include: ['patient', 'bankAccount', 'createdByStaff', 'posTerminal'],
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+
+    const topUpReference = `TOP-${updatedDeposit.reference_number}-${Date.now()}`;
+    const journalEntry = await PatientDepositJournalEntryService.createDepositTopUpEntry(
+      updatedDeposit,
+      topUpAmount,
+      topUpReference,
+      transaction
+    );
+
+    await this.recordTopUpTransaction(
+      updatedDeposit,
+      topUpAmount,
+      previousBalance,
+      newBalance,
+      topUpReference,
+      journalEntry.id,
+      data.created_by,
+      currentPeriodId,
+      data.description,
+      transaction
+    );
+
+    if (data.bank_account_id) {
+      await PatientDepositService.updateBankAccountBalance(
+        data.bank_account_id,
+        topUpAmount,
+        'add',
+        transaction
+      );
+    }
+
+    if (updatedDeposit.deposit_type === DepositType.CARD && updatedDeposit.pos_terminal_id) {
+      // Note: POS terminal amounts are typically settled to bank accounts at end of day.
+      // The POS Terminal Receivables account tracks this until settlement.
+    }
+
+    await DepositAuditService.logBalanceChange(
+      updatedDeposit.id,
+      previousBalance,
+      newBalance,
+      topUpAmount,
+      'TOP_UP',
+      data.created_by,
+      data.description,
+      {
+        bank_account_id: data.bank_account_id ?? updatedDeposit.bank_account_id,
+        pos_terminal_id: data.pos_terminal_id ?? updatedDeposit.pos_terminal_id,
+        payment_method: data.payment_method ?? updatedDeposit.payment_method,
+        payment_reference: data.payment_reference ?? updatedDeposit.payment_reference,
+      },
+      transaction
+    );
+
+    return updatedDeposit;
   }
 
   /**
@@ -1149,6 +1320,7 @@ export class PatientDepositService {
         let calculatedBalance = 0;
         const transactionSummary = {
           created: 0,
+          topped_up: 0,
           used: 0,
           refunded: 0,
           adjusted: 0,
@@ -1160,6 +1332,10 @@ export class PatientDepositService {
             case DepositTransactionType.CREATED:
               calculatedBalance += transaction.amount;
               transactionSummary.created += transaction.amount;
+              break;
+            case DepositTransactionType.TOP_UP:
+              calculatedBalance += transaction.amount;
+              transactionSummary.topped_up += transaction.amount;
               break;
             case DepositTransactionType.USED:
               calculatedBalance -= transaction.amount;
@@ -1677,9 +1853,9 @@ export class PatientDepositService {
       let newBalance: number;
 
       if (data.adjustment_type === 'add') {
-        newBalance = deposit.current_balance + data.amount;
+        newBalance = Number(deposit.current_balance) + Number(data.amount);
       } else {
-        newBalance = deposit.current_balance - data.amount;
+        newBalance = Number(deposit.current_balance) - Number(data.amount);
       }
 
       // Update deposit
@@ -1708,7 +1884,7 @@ export class PatientDepositService {
           transaction_type: DepositTransactionType.ADJUSTED,
           amount: data.amount,
           previous_balance: previousBalance,
-          new_balance: newBalance,
+          new_balance: Number(newBalance),
           reference_number: `ADJ-${deposit.reference_number}`,
           description: `Deposit adjustment: ${data.reason}`,
           journal_entry_id: journalEntry.id,
@@ -1913,6 +2089,48 @@ export class PatientDepositService {
         error.message
       );
     }
+  }
+
+  private static async recordTopUpTransaction(
+    deposit: PatientDeposit,
+    amount: number,
+    previousBalance: number,
+    newBalance: number,
+    reference: string,
+    journalEntryId: number,
+    createdBy: number,
+    periodId: number,
+    description?: string,
+    transaction?: Transaction
+  ): Promise<void> {
+    await DepositTransaction.create(
+      {
+        deposit_id: deposit.id,
+        transaction_type: DepositTransactionType.TOP_UP,
+        amount,
+        previous_balance: previousBalance,
+        new_balance: newBalance,
+        reference_number: reference,
+        description:
+          description ||
+          `Deposit top-up of ${amount.toFixed(2)} applied to deposit ${deposit.reference_number}`,
+        journal_entry_id: journalEntryId,
+        created_by: createdBy,
+        period_id: periodId,
+      },
+      { transaction }
+    );
+
+    await DepositJournalEntry.create(
+      {
+        deposit_id: deposit.id,
+        journal_entry_id: journalEntryId,
+        entry_type: DepositJournalEntryType.DEPOSIT,
+        amount,
+        period_id: periodId,
+      },
+      { transaction }
+    );
   }
 
   /**

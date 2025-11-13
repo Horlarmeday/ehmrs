@@ -21,6 +21,7 @@ import {
   PrescribedInvestigation,
   PrescribedService,
   PrescribedAdditionalItem,
+  DepositTransaction,
 } from '../../database/models';
 import {
   PatientDepositData,
@@ -2153,6 +2154,44 @@ export class AccountingRepository {
       ],
       order: [['createdAt', 'DESC']],
     });
+  }
+
+  /**
+   * Get patient deposit with associations required for receipt generation
+   */
+  static async getPatientDepositReceiptData(depositId: number): Promise<{
+    deposit: PatientDeposit;
+    transactions: DepositTransaction[];
+  } | null> {
+    const deposit = await PatientDeposit.findByPk(depositId, {
+      include: [
+        { model: Patient, as: 'patient', attributes: patientAttributes },
+        { model: Staff, as: 'createdByStaff', attributes: staffAttributes },
+        { model: Staff, as: 'updatedByStaff', attributes: staffAttributes },
+        {
+          model: BankAccount,
+          as: 'bankAccount',
+          attributes: ['id', 'bank_name', 'account_name', 'account_number'],
+        },
+        {
+          model: POSTerminal,
+          as: 'posTerminal',
+          attributes: ['id', 'terminal_id', 'terminal_type', 'merchant_name'],
+        },
+      ],
+    });
+
+    if (!deposit) {
+      return null;
+    }
+
+    const transactions = await DepositTransaction.findAll({
+      where: { deposit_id: depositId },
+      include: [{ model: Staff, as: 'createdByStaff', attributes: staffAttributes }],
+      order: [['createdAt', 'ASC']],
+    });
+
+    return { deposit, transactions };
   }
 
   /**
@@ -4329,7 +4368,7 @@ export class AccountingRepository {
   static async getRecentBills(limit = 5) {
     return await ClinicalBill.findAll({
       limit,
-      order: [['createdAt', 'DESC']],
+      order: [['updatedAt', 'DESC']],
       include: [
         {
           model: Patient,

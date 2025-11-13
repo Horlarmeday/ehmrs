@@ -170,6 +170,18 @@
             Maximum: {{ item.quantity_remaining_to_dispense }} {{ item.unit }}
           </div>
         </div>
+        <div class="form-group">
+          <label class="form-label">Collected By</label>
+          <div class="input-group">
+            <input
+              required
+              type="text"
+              v-model="collectedBy"
+              class="form-input"
+              placeholder="Enter name"
+            />
+          </div>
+        </div>
         <div class="form-actions">
           <button class="btn-cancel" @click="showDispenseForm = false">Cancel</button>
           <button class="btn-confirm" @click="confirmDispense">Confirm Dispense</button>
@@ -245,6 +257,7 @@ export default {
       returnQuantity: 1,
       returnReason: '',
       PENDING: 'Pending',
+      collectedBy: '',
     };
   },
   computed: {
@@ -352,6 +365,14 @@ export default {
     },
 
     confirmDispense() {
+      if (this.collectedBy.trim() === '') {
+        this.$bvToast.toast('Please enter a name for the person who collected the drug', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+        return;
+      }
       if (
         this.dispenseQuantity > 0 &&
         this.dispenseQuantity <= this.item.quantity_remaining_to_dispense
@@ -361,6 +382,7 @@ export default {
           item: this.item,
           index: this.index,
           quantity: this.dispenseQuantity,
+          collectedBy: this.collectedBy,
         });
         this.showDispenseForm = false;
       }

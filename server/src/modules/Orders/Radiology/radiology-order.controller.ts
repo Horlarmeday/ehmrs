@@ -13,6 +13,7 @@ import { SUCCESS } from '../../../core/constants';
 import { isEmpty } from 'lodash';
 import { EMPTY_REQUEST_BODY } from './messages/response-messages';
 import { LabOrderService } from '../Laboratory/lab-order.service';
+import { IJwtPayload } from '../../../core/middleware/verify';
 
 export class RadiologyOrderController {
   /**
@@ -123,7 +124,7 @@ export class RadiologyOrderController {
    * @returns {SuccessResponse} json object with status, prescribed investigation data
    */
   static async deletePrescribedInvestigation(
-    req: Request & { user: { sub: number } },
+    req: Request & { user: IJwtPayload },
     res: Response,
     next: NextFunction
   ): Promise<SuccessResponse | void> {
@@ -136,7 +137,7 @@ export class RadiologyOrderController {
       });
 
     try {
-      const investigation = await RadiologyOrderService.deleteInvestigation(req.body);
+      const investigation = await RadiologyOrderService.deleteInvestigation(req.body, req.user);
 
       return successResponse({
         res,

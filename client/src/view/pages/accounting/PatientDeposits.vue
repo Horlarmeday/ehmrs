@@ -86,9 +86,196 @@
             <b-button variant="outline-warning mr-2" @click="viewDepositReports">
               <i class="fas fa-chart-bar mr-2"></i>Deposit Reports
             </b-button>
-            <b-button variant="outline-info" @click="viewReconciliation">
+            <b-button variant="outline-info mr-2" @click="viewReconciliation">
               <i class="fas fa-balance-scale mr-2"></i>Reconciliation
             </b-button>
+            <b-button
+              variant="outline-primary mr-2"
+              :disabled="consolidationLoading"
+              @click="openConsolidationModal('dryRun')"
+            >
+              <i class="fas fa-vial mr-2"></i>Dry-Run Consolidation
+            </b-button>
+            <b-button
+              variant="outline-danger"
+              :disabled="consolidationLoading"
+              @click="openConsolidationModal('execute')"
+            >
+              <i class="fas fa-sync-alt mr-2"></i>Execute Consolidation
+            </b-button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Consolidation Report -->
+    <div
+      class="consolidation-report-section mb-4"
+      v-if="consolidationReport.duplicatePatients?.length"
+    >
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h6 class="mb-0">
+            <i class="fas fa-file-medical mr-2"></i>Deposit Consolidation Health Report
+          </h6>
+          <b-button
+            size="sm"
+            variant="outline-secondary"
+            :disabled="consolidationLoading"
+            @click="loadConsolidationReport"
+          >
+            <i class="fas fa-sync-alt mr-1" :class="{ 'fa-spin': consolidationLoading }"></i>
+            Refresh
+          </b-button>
+        </div>
+        <div class="card-body">
+          <div class="row text-center mb-3">
+            <div class="col-md-3 col-sm-6 mb-3">
+              <div class="metric-value">{{ consolidationReport.duplicateCount }}</div>
+              <div class="metric-label">Patients With Duplicates</div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+              <div class="metric-value">{{ consolidationReport.activeDepositCount }}</div>
+              <div class="metric-label">Active Deposit Records</div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+              <div class="metric-value">{{ consolidationReport.uniqueActivePatientCount }}</div>
+              <div class="metric-label">Patients With Active Deposits</div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+              <div
+                class="metric-value"
+                :class="{
+                  'text-success': consolidationReport.isConstraintSatisfied,
+                  'text-danger': !consolidationReport.isConstraintSatisfied,
+                }"
+              >
+                <i
+                  class="fas mr-1"
+                  :class="{
+                    'fa-check-circle': consolidationReport.isConstraintSatisfied,
+                    'fa-exclamation-triangle': !consolidationReport.isConstraintSatisfied,
+                  }"
+                ></i>
+                {{ consolidationReport.isConstraintSatisfied ? 'Healthy' : 'Action Needed' }}
+              </div>
+              <div class="metric-label">Constraint Status</div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <div class="report-stat">
+                <strong>Total Current Balance:</strong>
+                {{ formatCurrency(consolidationReport.totalCurrentBalance) }}
+              </div>
+              <div class="report-stat">
+                <strong>Total Initial Amount:</strong>
+                {{ formatCurrency(consolidationReport.totalInitialAmount) }}
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <div class="report-stat">
+                <strong>Total Recorded Amount:</strong>
+                {{ formatCurrency(consolidationReport.totalAmount) }}
+              </div>
+              <div class="report-stat">
+                <strong>Total Refundable Amount:</strong>
+                {{ formatCurrency(consolidationReport.totalRefundableAmount) }}
+              </div>
+            </div>
+          </div>
+
+          <div v-if="consolidationReport.duplicatePatients?.length">
+            <h6 class="mt-4">Patients Requiring Consolidation Attention</h6>
+            <p class="text-muted">
+              These patient IDs have multiple active deposit records.
+              <span class="d-block">Run the consolidation to resolve.</span>
+            </p>
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>Patient ID</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="patientId in consolidationReport.duplicatePatients" :key="patientId">
+                    <td>
+                      <b-badge variant="warning">{{ patientId }}</b-badge>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div v-else class="alert alert-success mb-0">
+            <i class="fas fa-check-circle mr-2"></i>
+            No duplicate active deposits detected.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Consolidation Results -->
+    <div
+      class="consolidation-results-section mb-4"
+      v-if="consolidationResults && consolidationResults.length"
+    >
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 d-flex align-items-center">
+            <i class="fas fa-clipboard-check mr-2"></i>
+            Latest Consolidation Run
+          </h6>
+          <b-badge :variant="consolidationSummary?.status === 'CONSOLIDATED' ? 'success' : 'info'">
+            {{ consolidationSummary?.status || 'COMPLETED' }}
+          </b-badge>
+        </div>
+        <div class="card-body">
+          <p class="text-muted mb-3">
+            Showing results from the most recent consolidation action.
+            <span class="d-block">Dry-run results highlight what would change.</span>
+          </p>
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead class="thead-light">
+                <tr>
+                  <th>Patient ID</th>
+                  <th>Primary Deposit</th>
+                  <th>Consolidated Deposits</th>
+                  <th>Transferred Balance</th>
+                  <th>Status</th>
+                  <th>Message</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="result in consolidationResults" :key="`cons-${result.patientId}`">
+                  <td>{{ result.patientId }}</td>
+                  <td>{{ result.mergedDepositReference || '—' }}</td>
+                  <td>
+                    <span v-if="result.consolidatedDepositIds?.length">
+                      {{ result.consolidatedDepositIds.join(', ') }}
+                    </span>
+                    <span v-else>—</span>
+                  </td>
+                  <td>{{ formatCurrency(result.transferredBalance || 0) }}</td>
+                  <td>
+                    <b-badge
+                      :variant="
+                        result.status === 'CONSOLIDATED'
+                          ? 'success'
+                          : result.status === 'DRY_RUN'
+                          ? 'primary'
+                          : 'secondary'
+                      "
+                    >
+                      {{ result.status || 'N/A' }}
+                    </b-badge>
+                  </td>
+                  <td>{{ result.message || '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -267,13 +454,41 @@
                       >
                         <i class="fas fa-edit"></i>
                       </b-button>
-                      <b-button
+                      <!-- <b-button
                         v-if="deposit.status === 'ACTIVE'"
                         variant="outline-success"
                         size="sm"
                         @click="useDeposit(deposit.id)"
                       >
                         <i class="fas fa-credit-card"></i>
+                      </b-button> -->
+                      <b-button
+                        variant="outline-secondary"
+                        size="sm"
+                        :disabled="downloadingReceiptId === deposit.id"
+                        @click="downloadDepositReceipt(deposit.id)"
+                      >
+                        <i
+                          class="fas"
+                          :class="{
+                            'fa-spinner fa-spin': downloadingReceiptId === deposit.id,
+                            'fa-file-download': downloadingReceiptId !== deposit.id,
+                          }"
+                        ></i>
+                      </b-button>
+                      <b-button
+                        variant="outline-secondary"
+                        size="sm"
+                        :disabled="printingReceiptId === deposit.id"
+                        @click="printDepositReceipt(deposit.id)"
+                      >
+                        <i
+                          class="fas"
+                          :class="{
+                            'fa-spinner fa-spin': printingReceiptId === deposit.id,
+                            'fa-print': printingReceiptId !== deposit.id,
+                          }"
+                        ></i>
                       </b-button>
                     </div>
                   </td>
@@ -672,6 +887,80 @@
       </div>
     </b-modal>
 
+    <!-- Consolidation Modal -->
+    <b-modal
+      v-model="showConsolidationModal"
+      :title="consolidationModalTitle"
+      size="md"
+      @hidden="resetConsolidationForm"
+      :ok-disabled="consolidationSubmitting"
+      :ok-title="consolidationOkLabel"
+      @ok="handleConsolidationSubmit"
+    >
+      <b-form @submit.prevent="handleConsolidationSubmit">
+        <b-alert v-if="!consolidationForm.dryRun" show variant="danger" class="mb-3">
+          <i class="fas fa-exclamation-triangle mr-2"></i>
+          This will merge duplicate active deposits for the selected scope.
+          <span class="d-block">
+            Ensure you have completed a dry-run and reviewed the report before executing.
+          </span>
+        </b-alert>
+
+        <b-form-group
+          label="Patient ID (optional)"
+          label-for="consolidation-patient-id"
+          description="Provide a specific patient ID to consolidate only that patient. Leave blank to process all duplicates."
+        >
+          <b-form-input
+            id="consolidation-patient-id"
+            v-model.number="consolidationForm.patientId"
+            type="number"
+            min="1"
+            placeholder="Enter patient ID"
+          ></b-form-input>
+        </b-form-group>
+
+        <b-form-group>
+          <b-form-checkbox v-model="consolidationForm.dryRun">
+            Run as dry-run (no changes applied)
+          </b-form-checkbox>
+        </b-form-group>
+
+        <b-form-group
+          label="Notes"
+          label-for="consolidation-notes"
+          description="Optional contextual note for this consolidation run."
+        >
+          <b-form-textarea
+            id="consolidation-notes"
+            v-model="consolidationForm.notes"
+            rows="3"
+            placeholder="Document why this consolidation is being executed..."
+          ></b-form-textarea>
+        </b-form-group>
+      </b-form>
+      <template #modal-footer>
+        <b-button
+          variant="secondary"
+          @click="showConsolidationModal = false"
+          :disabled="consolidationSubmitting"
+        >
+          Cancel
+        </b-button>
+        <b-button
+          :variant="consolidationForm.dryRun ? 'primary' : 'danger'"
+          @click="handleConsolidationSubmit"
+          :disabled="consolidationSubmitting"
+        >
+          <span v-if="consolidationSubmitting">
+            <i class="fas fa-spinner fa-spin mr-2"></i>
+            Processing...
+          </span>
+          <span v-else>{{ consolidationOkLabel }}</span>
+        </b-button>
+      </template>
+    </b-modal>
+
     <!-- Export Modal -->
     <b-modal
       v-model="showExportModal"
@@ -805,6 +1094,16 @@ export default {
         bill_id: null, // Added bill_id property
       },
 
+      // Consolidation modal
+      showConsolidationModal: false,
+      consolidationMode: 'dryRun',
+      consolidationSubmitting: false,
+      consolidationForm: {
+        patientId: null,
+        dryRun: true,
+        notes: '',
+      },
+
       // Usage history modal
       showUsageHistoryModal: false,
       usageHistory: [],
@@ -815,6 +1114,9 @@ export default {
       filteredPatients: [],
       selectedPatient: null,
 
+      // Receipt download state
+      downloadingReceiptId: null,
+      printingReceiptId: null,
       // Bill search
       billSearchQuery: '',
       showBillResults: false,
@@ -929,12 +1231,33 @@ export default {
     error() {
       return this.$store.getters['accounting/error'];
     },
+    consolidationResults() {
+      return this.$store.getters['accounting/getDepositConsolidationResults'] || [];
+    },
+    consolidationSummary() {
+      return this.$store.getters['accounting/getDepositConsolidationSummary'];
+    },
+    consolidationReport() {
+      return this.$store.getters['accounting/getDepositConsolidationReport'];
+    },
+    consolidationLoading() {
+      return this.$store.getters['accounting/isDepositConsolidationLoading'];
+    },
+    consolidationModalTitle() {
+      return this.consolidationMode === 'dryRun'
+        ? 'Dry-Run Deposit Consolidation'
+        : 'Execute Deposit Consolidation';
+    },
+    consolidationOkLabel() {
+      return this.consolidationForm.dryRun ? 'Run Dry-Run' : 'Consolidate Deposits';
+    },
   },
   async mounted() {
     await this.loadDeposits();
     await this.loadSummary();
     await this.loadEnhancedMetrics();
     await this.loadOptions();
+    await this.loadConsolidationReport();
 
     // Add click outside listener to close patient results
     document.addEventListener('click', this.handleClickOutside);
@@ -1015,6 +1338,19 @@ export default {
         await Promise.all([this.loadBankAccountOptions(), this.loadPOSTerminalOptions()]);
       } catch (error) {
         console.error('Failed to load options:', error);
+      }
+    },
+
+    async loadConsolidationReport() {
+      try {
+        await this.$store.dispatch('accounting/fetchDepositConsolidationReport');
+      } catch (error) {
+        console.error('Failed to load consolidation report:', error);
+        this.$bvToast.toast('Unable to load deposit consolidation report', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
       }
     },
 
@@ -1132,6 +1468,16 @@ export default {
     showCreateDepositModal() {
       this.isEditing = false;
       this.showDepositModal = true;
+    },
+
+    openConsolidationModal(mode = 'dryRun') {
+      this.consolidationMode = mode;
+      this.consolidationForm = {
+        patientId: null,
+        dryRun: mode === 'dryRun',
+        notes: '',
+      };
+      this.showConsolidationModal = true;
     },
 
     editDeposit(depositId) {
@@ -1378,6 +1724,15 @@ export default {
       this.resetDepositForm();
     },
 
+    resetConsolidationForm() {
+      this.consolidationForm = {
+        patientId: null,
+        dryRun: true,
+        notes: '',
+      };
+      this.consolidationSubmitting = false;
+    },
+
     // Filter methods
     clearFilters() {
       this.filters = {
@@ -1405,6 +1760,67 @@ export default {
 
     onPatientChange() {
       // Could load patient-specific information here
+    },
+
+    async handleConsolidationSubmit() {
+      if (this.consolidationSubmitting) return;
+
+      try {
+        this.consolidationSubmitting = true;
+
+        const payload = {
+          dryRun: !!this.consolidationForm.dryRun,
+        };
+
+        const patientIdValue = this.consolidationForm.patientId;
+        if (
+          typeof patientIdValue === 'number' &&
+          Number.isFinite(patientIdValue) &&
+          patientIdValue > 0
+        ) {
+          payload.patientId = patientIdValue;
+        }
+
+        const response = await this.$store.dispatch('accounting/consolidateDeposits', payload);
+        const isSuccess = response?.success !== false;
+
+        if (!isSuccess) {
+          this.$bvToast.toast(response?.message || 'Failed to run consolidation', {
+            title: 'Error',
+            variant: 'danger',
+            solid: true,
+          });
+          return;
+        }
+
+        const toastMessage = payload.dryRun
+          ? 'Dry-run consolidation completed. Review the results below.'
+          : 'Deposit consolidation executed successfully.';
+
+        this.$bvToast.toast(toastMessage, {
+          title: payload.dryRun ? 'Dry-Run Complete' : 'Consolidation Complete',
+          variant: payload.dryRun ? 'primary' : 'success',
+          solid: true,
+        });
+
+        if (!payload.dryRun) {
+          await Promise.all([this.loadDeposits(), this.loadSummary()]);
+        }
+
+        await this.loadConsolidationReport();
+
+        this.showConsolidationModal = false;
+        this.resetConsolidationForm();
+      } catch (error) {
+        console.error('Failed to run deposit consolidation:', error);
+        this.$bvToast.toast(error.message || 'Failed to run deposit consolidation', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+      } finally {
+        this.consolidationSubmitting = false;
+      }
     },
 
     // Utility methods
@@ -1566,6 +1982,73 @@ export default {
         includeDetails: 'false',
       };
     },
+
+    async downloadDepositReceipt(depositId) {
+      if (this.downloadingReceiptId) {
+        return;
+      }
+
+      this.downloadingReceiptId = depositId;
+      try {
+        const result = await this.$store.dispatch('accounting/downloadDepositReceipt', depositId);
+
+        if (result.success) {
+          this.$bvToast.toast('Deposit receipt downloaded successfully', {
+            title: 'Success',
+            variant: 'success',
+            solid: true,
+          });
+        } else {
+          this.$bvToast.toast(result.error || 'Failed to download deposit receipt', {
+            title: 'Error',
+            variant: 'danger',
+            solid: true,
+          });
+        }
+      } catch (error) {
+        console.error('Failed to download deposit receipt:', error);
+        this.$bvToast.toast('Failed to download deposit receipt', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+      } finally {
+        this.downloadingReceiptId = null;
+      }
+    },
+
+    async printDepositReceipt(depositId) {
+      if (this.printingReceiptId) {
+        return;
+      }
+
+      this.printingReceiptId = depositId;
+      try {
+        const result = await this.$store.dispatch('accounting/printDepositReceipt', depositId);
+        if (result.success) {
+          this.$bvToast.toast('Deposit receipt printed successfully', {
+            title: 'Success',
+            variant: 'success',
+            solid: true,
+          });
+        } else {
+          this.$bvToast.toast(result.error || 'Failed to print deposit receipt', {
+            title: 'Error',
+            variant: 'danger',
+            solid: true,
+          });
+        }
+      } catch (error) {
+        console.error('Failed to print deposit receipt:', error);
+        this.$bvToast.toast('Failed to print deposit receipt', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+      } finally {
+        this.printingReceiptId = null;
+      }
+    },
   },
 };
 </script>
@@ -1702,6 +2185,32 @@ export default {
 .quick-actions-section .btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.consolidation-report-section .metric-value,
+.consolidation-results-section .metric-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.consolidation-report-section .metric-label {
+  font-size: 0.9rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.report-stat {
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+.consolidation-results-section .card-header {
+  border-bottom: 1px solid #e9ecef;
+}
+
+.consolidation-results-section table td {
+  vertical-align: middle;
 }
 
 .deposit-summary {

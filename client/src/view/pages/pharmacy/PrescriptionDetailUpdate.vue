@@ -588,6 +588,7 @@ export default {
       this.prescriptions =
         val.drugs?.map((drug) => ({
           id: drug.id,
+          createdAt: drug.createdAt,
           drug_name: drug.drug.name,
           drug_type: drug.drug_type,
           quantity_to_dispense: drug.quantity_to_dispense,
@@ -624,6 +625,7 @@ export default {
       this.items =
         val.items?.map((item) => ({
           id: item.id,
+          createdAt: item.createdAt,
           item_name: item.drug.name,
           drug_type: item.drug_type,
           quantity_to_dispense: item.quantity_to_dispense,

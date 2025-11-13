@@ -2,6 +2,19 @@ import { verify } from 'jsonwebtoken';
 import { NextFunction, Response, Request } from 'express';
 import { StatusCodes } from '../helpers/helper';
 
+export interface IJwtPayload {
+  sub: number;
+  role: string;
+  firstname: string;
+  lastname: string;
+  fullname: string;
+  sub_role: string;
+  username: string;
+  email: string;
+  photo: string;
+  department: string;
+}
+
 export default function(req: Request & { user: any }, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
   if (!authHeader)

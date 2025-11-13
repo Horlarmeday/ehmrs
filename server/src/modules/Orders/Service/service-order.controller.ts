@@ -14,6 +14,7 @@ import { isEmpty } from 'lodash';
 import { EMPTY_REQUEST_BODY } from './messages/response-messages';
 import { PrescribedBulkServiceBody } from './types/service-order.types';
 import PharmacyOrderService from '../Pharmacy/pharmacy-order.service';
+import { IJwtPayload } from '../../../core/middleware/verify';
 
 export class ServiceOrderController {
   /**
@@ -128,7 +129,7 @@ export class ServiceOrderController {
    * @returns {json} json object with status, prescribed services data
    */
   static async deletePrescribedService(
-    req: Request & { user: { sub: number } },
+    req: Request & { user: IJwtPayload },
     res: Response,
     next: NextFunction
   ): Promise<SuccessResponse | void> {
@@ -140,7 +141,7 @@ export class ServiceOrderController {
         httpCode: StatusCodes.BAD_REQUEST,
       });
     try {
-      const services = await ServiceOrderService.deletePrescribedService(req.body);
+      const services = await ServiceOrderService.deletePrescribedService(req.body, req.user);
 
       return successResponse({
         res,

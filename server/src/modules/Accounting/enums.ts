@@ -90,6 +90,7 @@ export enum DepositType {
 // Deposit Transaction Type Enums
 export enum DepositTransactionType {
   CREATED = 'CREATED',
+  TOP_UP = 'TOP_UP',
   USED = 'USED',
   REFUNDED = 'REFUNDED',
   ADJUSTED = 'ADJUSTED',

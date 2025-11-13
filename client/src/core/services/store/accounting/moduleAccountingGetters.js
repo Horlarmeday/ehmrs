@@ -91,6 +91,10 @@ export default {
   getDepositsTotal: (state) => state.depositsTotal,
   getDepositsPages: (state) => state.depositsPages,
   getDepositsSummary: (state) => state.depositsSummary,
+  getDepositConsolidationResults: (state) => state.depositConsolidationResults,
+  getDepositConsolidationSummary: (state) => state.depositConsolidationSummary,
+  getDepositConsolidationReport: (state) => state.depositConsolidationReport,
+  isDepositConsolidationLoading: (state) => state.depositConsolidationLoading,
 
   // Reports getters
   getFinancialReports: (state) => state.financialReports,

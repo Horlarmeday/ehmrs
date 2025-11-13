@@ -1,13 +1,10 @@
 import { Transaction } from 'sequelize';
 import { BadException } from '../../../common/util/api-error';
-import {
-  ClinicalBill,
-  ClinicalBillItem,
-  PatientDeposit,
-} from '../../../database/models';
-import { PaymentMethod, PaymentType, DepositStatus, BillItemPaymentStatus } from '../enums';
+import { ClinicalBill, ClinicalBillItem } from '../../../database/models';
+import { PaymentMethod, PaymentType, BillItemPaymentStatus } from '../enums';
 import { logger } from '../../../core/helpers/logger';
 import { PaymentProcessingService } from './paymentProcessing.service';
+import { PatientDepositService } from './patientDeposit.service';
 
 /**
  * Auto Deposit Payment Service
@@ -65,11 +62,7 @@ export class AutoDepositPaymentService {
       }
 
       // Get patient's active deposit balance
-      const patientDeposit = await PatientDeposit.findOne({
-        where: {
-          patient_id: patientId,
-          status: DepositStatus.ACTIVE,
-        },
+      const patientDeposit = await PatientDepositService.findActiveDepositForPatient(patientId, {
         transaction,
       });
 
@@ -182,6 +175,7 @@ export class AutoDepositPaymentService {
         remainingBillAmount: unpaidAmount - paymentAmount,
       });
     } catch (error) {
+      console.error(error);
       // Log error but don't fail the billing process
       logger.error(`Auto-deposit payment failed for bill ${billId}:`, {
         billId,
@@ -202,6 +196,7 @@ export class AutoDepositPaymentService {
           }
         );
       } catch (updateError) {
+        console.error(updateError);
         logger.error(`Failed to mark bill ${billId} as auto-deposit attempted:`, {
           billId,
           error: updateError.message,

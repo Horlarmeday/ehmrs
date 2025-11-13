@@ -10,6 +10,7 @@ import {
   Service,
   Drug,
 } from '../../database/models';
+import { Transaction } from 'sequelize';
 import {
   PrescribedDrug,
   PrescribedTest,
@@ -414,10 +415,11 @@ export class VisitBillingHelper {
   /**
    * Update bill totals based on all bill items
    */
-  private static async updateBillTotals(billId: number): Promise<void> {
+  private static async updateBillTotals(billId: number, transaction?: Transaction): Promise<void> {
     try {
       const billItems = await ClinicalBillItem.findAll({
         where: { bill_id: billId },
+        transaction,
       });
 
       const totalAmount = billItems.reduce(
@@ -445,6 +447,7 @@ export class VisitBillingHelper {
         },
         {
           where: { id: billId },
+          transaction,
         }
       );
     } catch (error) {
@@ -775,7 +778,8 @@ export class VisitBillingHelper {
    */
   static async removePrescribedDrugFromBill(
     prescribedDrugId: number,
-    billId: number
+    billId: number,
+    transaction?: Transaction
   ): Promise<void> {
     try {
       const deletedCount = await ClinicalBillItem.destroy({
@@ -784,10 +788,11 @@ export class VisitBillingHelper {
           item_type: BillItemTypeEnum.DRUG,
           item_id: prescribedDrugId,
         },
+        transaction,
       });
 
       if (deletedCount > 0) {
-        await VisitBillingHelper.updateBillTotals(billId);
+        await VisitBillingHelper.updateBillTotals(billId, transaction);
       }
     } catch (error) {
       throw new BadException(`Failed to remove prescribed drug from bill: ${error.message}`, 500);
@@ -799,7 +804,8 @@ export class VisitBillingHelper {
    */
   static async removePrescribedAdditionalItemFromBill(
     prescribedItemId: number,
-    billId: number
+    billId: number,
+    transaction?: Transaction
   ): Promise<void> {
     try {
       const deletedCount = await ClinicalBillItem.destroy({
@@ -808,10 +814,11 @@ export class VisitBillingHelper {
           item_type: BillItemTypeEnum.ADDITIONAL_ITEM,
           item_id: prescribedItemId,
         },
+        transaction,
       });
 
       if (deletedCount > 0) {
-        await VisitBillingHelper.updateBillTotals(billId);
+        await VisitBillingHelper.updateBillTotals(billId, transaction);
       }
     } catch (error) {
       throw new BadException(`Failed to remove additional item from bill: ${error.message}`, 500);
@@ -823,7 +830,8 @@ export class VisitBillingHelper {
    */
   static async removePrescribedTestFromBill(
     prescribedTestId: number,
-    billId: number
+    billId: number,
+    transaction?: Transaction
   ): Promise<void> {
     try {
       const deletedCount = await ClinicalBillItem.destroy({
@@ -832,10 +840,11 @@ export class VisitBillingHelper {
           item_type: BillItemTypeEnum.TEST,
           item_id: prescribedTestId,
         },
+        transaction,
       });
 
       if (deletedCount > 0) {
-        await VisitBillingHelper.updateBillTotals(billId);
+        await VisitBillingHelper.updateBillTotals(billId, transaction);
       }
     } catch (error) {
       throw new BadException(`Failed to remove prescribed test from bill: ${error.message}`, 500);
@@ -847,7 +856,8 @@ export class VisitBillingHelper {
    */
   static async removePrescribedInvestigationFromBill(
     prescribedInvestigationId: number,
-    billId: number
+    billId: number,
+    transaction?: Transaction
   ): Promise<void> {
     try {
       const deletedCount = await ClinicalBillItem.destroy({
@@ -856,10 +866,11 @@ export class VisitBillingHelper {
           item_type: BillItemTypeEnum.INVESTIGATION,
           item_id: prescribedInvestigationId,
         },
+        transaction,
       });
 
       if (deletedCount > 0) {
-        await VisitBillingHelper.updateBillTotals(billId);
+        await VisitBillingHelper.updateBillTotals(billId, transaction);
       }
     } catch (error) {
       throw new BadException(
@@ -874,7 +885,8 @@ export class VisitBillingHelper {
    */
   static async removePrescribedServiceFromBill(
     prescribedServiceId: number,
-    billId: number
+    billId: number,
+    transaction?: Transaction
   ): Promise<void> {
     try {
       const deletedCount = await ClinicalBillItem.destroy({
@@ -883,10 +895,11 @@ export class VisitBillingHelper {
           item_type: BillItemTypeEnum.SERVICE,
           item_id: prescribedServiceId,
         },
+        transaction,
       });
 
       if (deletedCount > 0) {
-        await VisitBillingHelper.updateBillTotals(billId);
+        await VisitBillingHelper.updateBillTotals(billId, transaction);
       }
     } catch (error) {
       throw new BadException(

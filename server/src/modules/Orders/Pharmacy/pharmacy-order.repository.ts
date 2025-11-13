@@ -880,23 +880,20 @@ export const getPatientTreatments = ({ currentPage = 1, pageLimit = 10, filter =
  * delete prescribed drug
  * @param drugId
  */
-export const deletePrescribedDrug = async (drugId: number) => {
-  // Get the drug before deletion to get visit_id
-  const drug = await PrescribedDrug.findByPk(drugId);
+export const deletePrescribedDrug = async (drugId: number, transaction?: Transaction) => {
+  const drug = await PrescribedDrug.findByPk(drugId, { transaction });
   if (!drug) return 0;
 
-  // Find the bill for this visit
   const bill = await ClinicalBill.findOne({
     where: { visit_id: drug.visit_id },
+    transaction,
   });
 
-  // Delete the prescription
-  const deletedCount = await PrescribedDrug.destroy({ where: { id: drugId } });
+  const deletedCount = await PrescribedDrug.destroy({ where: { id: drugId }, transaction });
 
   if (deletedCount > 0 && bill) {
-    // Clean up billing
     try {
-      await VisitBillingHelper.removePrescribedDrugFromBill(drugId, bill.id);
+      await VisitBillingHelper.removePrescribedDrugFromBill(drugId, bill.id, transaction);
     } catch (billingError) {
       logger.error('Failed to remove prescribed drug from billing:', billingError);
     }
@@ -909,23 +906,20 @@ export const deletePrescribedDrug = async (drugId: number) => {
  * delete prescribed additional item
  * @param itemId
  */
-export const deleteAdditionalItem = async (itemId: number) => {
-  // Get the item before deletion to get visit_id
-  const item = await PrescribedAdditionalItem.findByPk(itemId);
+export const deleteAdditionalItem = async (itemId: number, transaction?: Transaction) => {
+  const item = await PrescribedAdditionalItem.findByPk(itemId, { transaction });
   if (!item) return 0;
 
-  // Find the bill for this visit
   const bill = await ClinicalBill.findOne({
     where: { visit_id: item.visit_id },
+    transaction,
   });
 
-  // Delete the additional item
-  const deletedCount = await PrescribedAdditionalItem.destroy({ where: { id: itemId } });
+  const deletedCount = await PrescribedAdditionalItem.destroy({ where: { id: itemId }, transaction });
 
   if (deletedCount > 0 && bill) {
-    // Clean up billing
     try {
-      await VisitBillingHelper.removePrescribedAdditionalItemFromBill(itemId, bill.id);
+      await VisitBillingHelper.removePrescribedAdditionalItemFromBill(itemId, bill.id, transaction);
     } catch (billingError) {
       logger.error('Failed to remove additional item from billing:', billingError);
     }

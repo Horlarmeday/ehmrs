@@ -108,10 +108,30 @@ router.use(logFinancialPeriodViolations);
 
 // Patient Deposits Routes
 router.post('/deposits', AccountingController.createPatientDeposit);
+router.get('/deposits/summary', AccountingController.getPatientDepositSummary);
+router.get('/deposits/consolidation-report', AccountingController.getDepositConsolidationReport);
+
+// Deposit Management & Status Tracking
+router.get('/deposits/:id/status', AccountingController.getDepositStatus);
+router.get('/deposits/analytics', AccountingController.getDepositAnalytics);
+router.get('/deposits/reconcile', AccountingController.reconcileDepositBalances);
+
+// Comprehensive Audit Trail & Compliance
+router.get('/deposits/:id/audit-trail', AccountingController.getDepositAuditTrail);
+router.get('/deposits/audit-summary', AccountingController.getAuditSummary);
+
+// Enhanced Reconciliation & Reporting
+router.get('/deposits/reconciliation-report', AccountingController.generateReconciliationReport);
+
+
 router.get('/deposits/:id', AccountingController.getPatientDepositById);
 router.get('/deposits', AccountingController.getPatientDeposits);
 router.put('/deposits/:id', AccountingController.updatePatientDeposit);
-router.get('/deposits/summary', AccountingController.getPatientDepositSummary);
+router.post('/deposits/consolidate', AccountingController.consolidatePatientDeposits);
+router.get(
+  '/deposits/:depositId/receipt/download',
+  AccountingController.downloadPatientDepositReceipt
+);
 
 // Enhanced Deposit Operations with Full Accounting Integration
 router.post('/deposits/:id/use', AccountingController.usePatientDeposit);
@@ -132,18 +152,6 @@ router.get(
   '/deposits/patient/:patientId/refund-summary',
   AccountingController.getPatientRefundSummary
 );
-
-// Deposit Management & Status Tracking
-router.get('/deposits/:id/status', AccountingController.getDepositStatus);
-router.get('/deposits/analytics', AccountingController.getDepositAnalytics);
-router.get('/deposits/reconcile', AccountingController.reconcileDepositBalances);
-
-// Comprehensive Audit Trail & Compliance
-router.get('/deposits/:id/audit-trail', AccountingController.getDepositAuditTrail);
-router.get('/deposits/audit-summary', AccountingController.getAuditSummary);
-
-// Enhanced Reconciliation & Reporting
-router.get('/deposits/reconciliation-report', AccountingController.generateReconciliationReport);
 
 // ===== DEPOSIT REPORTING ROUTES =====
 router.get('/reports/deposits/summary', AccountingController.generateDepositSummaryReport);

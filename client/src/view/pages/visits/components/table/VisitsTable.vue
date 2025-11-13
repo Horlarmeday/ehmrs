@@ -111,8 +111,9 @@ export default {
     doctor: 'General Practitioner',
     antenatalRoute: 'ante-natal-visits',
     activeVisitRoute: 'active-visits',
-    ALLOWED_DEPARTMENTS: ['Administrator', 'Nursing'],
+    ALLOWED_DEPARTMENTS: ['Administration', 'Nursing'],
     currentUser: parseJwt(localStorage.getItem('user_token')),
+    dialysisCategories: ['Dialysis', 'Inpatient'],
   }),
 
   components: { ArrowRightIcon, Pagination },
@@ -147,7 +148,7 @@ export default {
       } else if (url.includes('{immunizationId}')) {
         url = url.replaceAll('{immunizationId}', queue?.immunization_id);
       } else if (
-        queue?.category === 'Dialysis' &&
+        this.dialysisCategories.includes(queue?.category) &&
         this.ALLOWED_DEPARTMENTS.includes(this.currentUser.department)
       ) {
         url = `/visit/dialysis-consultation/${queue.id}`;

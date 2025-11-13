@@ -772,23 +772,23 @@ export class PaymentProcessingService {
     transaction?: Transaction
   ): Promise<DepositPaymentResult> {
     // Validate deposit usage
-    const patientDeposit = await PatientDeposit.findOne({
-      where: {
-        patient_id: paymentData.patient_id,
-        status: DepositStatus.ACTIVE,
-      },
-      transaction,
-    });
+    const patientDeposit = await PatientDepositService.findActiveDepositForPatient(
+      paymentData.patient_id,
+      {
+        transaction,
+      }
+    );
 
     if (!patientDeposit) {
       throw new BadException('No Active Deposit Found', 400, 'No active patient deposit found');
     }
 
-    if (patientDeposit.amount < paymentData.deposit_usage) {
+    const availableBalance = Number(patientDeposit.current_balance) || 0;
+    if (availableBalance < paymentData.deposit_usage) {
       throw new BadException('Insufficient Deposit Balance', 400, 'Insufficient deposit balance');
     }
 
-    await PatientDepositService.useDeposit(
+    const updatedDeposit = await PatientDepositService.useDeposit(
       {
         deposit_id: patientDeposit.id,
         amount: paymentData.deposit_usage,
@@ -823,7 +823,7 @@ export class PaymentProcessingService {
       payment,
       method: 'DEPOSIT' as const,
       deposit_usage: paymentData.deposit_usage,
-      remaining_balance: patientDeposit.amount - paymentData.deposit_usage,
+      remaining_balance: Number(updatedDeposit.current_balance) || 0,
     };
   }
 

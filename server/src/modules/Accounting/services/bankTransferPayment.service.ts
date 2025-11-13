@@ -191,7 +191,7 @@ export class BankTransferPaymentService {
         transfer_fee: paymentData.transfer_fee || 0, // Default to 0 for Nigerian bank transfers
         transfer_currency: paymentData.transfer_currency || 'NGN', // Default to Nigerian Naira
         exchange_rate: paymentData.exchange_rate || 1, // Default to 1:1 for NGN
-        original_amount: paymentData.original_amount || paymentData.amount, // Use payment amount if not specified
+        original_amount: paymentData.amount, // Use payment amount if not specified
         original_currency: paymentData.original_currency || 'NGN', // Default to Nigerian Naira
         transfer_processor: paymentData.transfer_processor || null, // Optional for Nigerian context
         transfer_processor_reference: paymentData.transfer_processor_reference || null, // Optional for Nigerian context

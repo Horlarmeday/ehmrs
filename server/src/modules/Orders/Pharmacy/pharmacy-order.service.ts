@@ -8,8 +8,6 @@ import {
   getAdditionalItems,
   getAdditionalTreatments,
   getDrugsPrescribed,
-  getOneAdditionalItem,
-  getOnePrescribedDrugWithoutJoins,
   getPatientTreatments,
   getPrescribedAdditionalItems,
   getPrescribedDrugs,
@@ -30,6 +28,7 @@ import {
   PatientTreatment,
   PrescribedAdditionalItem,
   PrescribedDrug,
+  Staff,
   SystemSettings,
 } from '../../../database/models';
 import PatientService from '../../Patient/patient.service';
@@ -47,9 +46,11 @@ import { DefaultType } from '../../../database/models/default';
 import { BadException } from '../../../common/util/api-error';
 import {
   CANNOT_DELETE_DRUG,
+  CANNOT_DELETE_ADDITIONAL_ITEM,
   DRUG_QUANTITY_UNAVAILABLE,
   INJECTION_SYRINGES_NOT_FOUND,
   NHIS_DRUG_QUOTA,
+  UNSUPPORTED_PHARMACY_REVERSAL_PAYMENT,
 } from './messages/response-messages';
 import { getInventoryItemQuery } from '../../Inventory/inventory.repository';
 import { getVisitById } from '../../Visit/visit.repository';
@@ -61,6 +62,10 @@ import { gt, isEmpty, lt } from 'lodash';
 import { INVALID_QUANTITY } from '../../Inventory/messages/response-messages';
 import { Period } from './interface/prescribed-drug.interface';
 import { DischargeStatus } from '../../../database/models/admission';
+import sequelizeConnection from '../../../database/config/data-source';
+import { PaymentReversalService } from '../../Accounting/services/paymentReversal.service';
+import { BillItemTypeEnum, PaymentMethod } from '../../Accounting/enums';
+import { IJwtPayload } from '../../../core/middleware/verify';
 
 class PharmacyOrderService {
   /**
@@ -373,38 +378,126 @@ class PharmacyOrderService {
     return await Promise.all(body.map(async data => await updateAdditionalItem(data)));
   }
 
-  /**
-   * delete prescribed drug
-   *
-   * @static
-   * @returns {Promise<number>} json object with prescribed drug data
-   * @param body
-   * @memberOf PharmacyOrderService
-   */
-  static async deletePrescribedDrug(body): Promise<number> {
-    const allowedStatuses = [PaymentStatus.PAID, PaymentStatus.PERMITTED, PaymentStatus.CLEARED];
-    const drug = await getOnePrescribedDrugWithoutJoins({ id: body.drugId });
-    if (drug && allowedStatuses.includes(drug.payment_status))
-      throw new BadException('Error', StatusCodes.BAD_REQUEST, CANNOT_DELETE_DRUG);
+  static async deletePrescribedDrug(body, staff: IJwtPayload): Promise<number> {
+    const isAdmin = staff.role === 'Super Admin';
+    const transaction = await sequelizeConnection.transaction();
 
-    return deletePrescribedDrug(body.drugId);
+    try {
+      const drug = await PrescribedDrug.findByPk(body.drugId, { transaction });
+      if (!drug) {
+        await transaction.rollback();
+        return 0;
+      }
+
+      const summary = await PaymentReversalService.getBillItemPaymentSummary(
+        BillItemTypeEnum.DRUG,
+        body.drugId,
+        transaction
+      );
+      const billId = summary?.bill?.id;
+      const hasPayments = Boolean(summary && summary.paymentAllocations.length > 0);
+
+      if (hasPayments && summary) {
+        if (!isAdmin)
+          throw new BadException(
+            'Error',
+            StatusCodes.BAD_REQUEST,
+            'This item has been paid for, contact admin for help'
+          );
+        const unsupportedAllocation = summary.paymentAllocations.find(allocation => {
+          const method = allocation.payment.payment_method;
+          return method === PaymentMethod.INSURANCE || method === PaymentMethod.OTHER;
+        });
+
+        if (unsupportedAllocation) {
+          throw new BadException(
+            'Unsupported Payment Method',
+            StatusCodes.BAD_REQUEST,
+            UNSUPPORTED_PHARMACY_REVERSAL_PAYMENT
+          );
+        }
+
+        await PaymentReversalService.reverseAllocationsForSummary(summary, staff.sub, transaction);
+      } else {
+        const blockedStatuses = [PaymentStatus.PERMITTED, PaymentStatus.CLEARED];
+        if (blockedStatuses.includes(drug.payment_status)) {
+          throw new BadException('Error', StatusCodes.BAD_REQUEST, CANNOT_DELETE_DRUG);
+        }
+      }
+
+      const deletedCount = await deletePrescribedDrug(body.drugId, transaction);
+
+      if (billId) {
+        await PaymentReversalService.reconcileBillStatus(billId, transaction);
+      }
+
+      await transaction.commit();
+      return deletedCount;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
-  /**
-   * delete prescribed additional item
-   *
-   * @static
-   * @returns {Promise<number>} json object with prescribed drug data
-   * @param body
-   * @memberOf PharmacyOrderService
-   */
-  static async deleteAdditionalItem(body): Promise<number> {
-    const allowedStatuses = [PaymentStatus.PAID, PaymentStatus.PERMITTED, PaymentStatus.CLEARED];
-    const item = await getOneAdditionalItem({ id: body.itemId });
-    if (item && allowedStatuses.includes(item.payment_status))
-      throw new BadException('Error', StatusCodes.BAD_REQUEST, CANNOT_DELETE_DRUG);
+  static async deleteAdditionalItem(body, staff: IJwtPayload): Promise<number> {
+    const isAdmin = staff.role === 'Super Admin';
+    const transaction = await sequelizeConnection.transaction();
 
-    return deleteAdditionalItem(body.itemId);
+    try {
+      const item = await PrescribedAdditionalItem.findByPk(body.itemId, { transaction });
+      if (!item) {
+        await transaction.rollback();
+        return 0;
+      }
+
+      const summary = await PaymentReversalService.getBillItemPaymentSummary(
+        BillItemTypeEnum.ADDITIONAL_ITEM,
+        body.itemId,
+        transaction
+      );
+      const billId = summary?.bill?.id;
+      const hasPayments = Boolean(summary && summary.paymentAllocations.length > 0);
+
+      if (hasPayments && summary) {
+        if (!isAdmin)
+          throw new BadException(
+            'Error',
+            StatusCodes.BAD_REQUEST,
+            'This item has been paid for, contact admin for help'
+          );
+        const unsupportedAllocation = summary.paymentAllocations.find(allocation => {
+          const method = allocation.payment.payment_method;
+          return method === PaymentMethod.INSURANCE || method === PaymentMethod.OTHER;
+        });
+
+        if (unsupportedAllocation) {
+          throw new BadException(
+            'Unsupported Payment Method',
+            StatusCodes.BAD_REQUEST,
+            UNSUPPORTED_PHARMACY_REVERSAL_PAYMENT
+          );
+        }
+
+        await PaymentReversalService.reverseAllocationsForSummary(summary, staff.sub, transaction);
+      } else {
+        const blockedStatuses = [PaymentStatus.PERMITTED, PaymentStatus.CLEARED];
+        if (blockedStatuses.includes(item.payment_status)) {
+          throw new BadException('Error', StatusCodes.BAD_REQUEST, CANNOT_DELETE_ADDITIONAL_ITEM);
+        }
+      }
+
+      const deletedCount = await deleteAdditionalItem(body.itemId, transaction);
+
+      if (billId) {
+        await PaymentReversalService.reconcileBillStatus(billId, transaction);
+      }
+
+      await transaction.commit();
+      return deletedCount;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
   /**

@@ -20,6 +20,7 @@ import { SUCCESS } from '../../../core/constants';
 import { NextFunction, Request, Response } from 'express';
 import { isEmpty } from 'lodash';
 import { EMPTY_REQUEST_BODY } from './messages/response-messages';
+import { IJwtPayload } from '../../../core/middleware/verify';
 
 export class PharmacyOrderController {
   /**
@@ -400,7 +401,7 @@ export class PharmacyOrderController {
    * @returns {SuccessResponse} json object with status, prescribed drug data
    */
   static async deletePrescribedDrug(
-    req: Request & { user: { sub: number } },
+    req: Request & { user: IJwtPayload },
     res: Response,
     next: NextFunction
   ): Promise<SuccessResponse | void> {
@@ -412,7 +413,7 @@ export class PharmacyOrderController {
         httpCode: StatusCodes.BAD_REQUEST,
       });
     try {
-      const drug = await PharmacyOrderService.deletePrescribedDrug(req.body);
+      const drug = await PharmacyOrderService.deletePrescribedDrug(req.body, req.user);
 
       return successResponse({
         res,
@@ -435,7 +436,7 @@ export class PharmacyOrderController {
    * @returns {SuccessResponse} json object with status, additional item data
    */
   static async deleteAdditionalItem(
-    req: Request & { user: { sub: number } },
+    req: Request & { user: IJwtPayload },
     res: Response,
     next: NextFunction
   ): Promise<SuccessResponse | void> {
@@ -447,7 +448,7 @@ export class PharmacyOrderController {
         httpCode: StatusCodes.BAD_REQUEST,
       });
     try {
-      const item = await PharmacyOrderService.deleteAdditionalItem(req.body);
+      const item = await PharmacyOrderService.deleteAdditionalItem(req.body, req.user);
 
       return successResponse({
         res,

@@ -436,23 +436,27 @@ export const getOnePrescribedInvestigation = async (
  * delete prescribed investigation
  * @param investigationId
  */
-export const deletePrescribedInvestigation = async (investigationId: number) => {
-  // Get the investigation before deletion to get visit_id
-  const investigation = await PrescribedInvestigation.findByPk(investigationId);
+export const deletePrescribedInvestigation = async (
+  investigationId: number,
+  transaction?: Transaction
+) => {
+  const investigation = await PrescribedInvestigation.findByPk(investigationId, { transaction });
   if (!investigation) return 0;
 
-  // Find the bill for this visit
   const bill = await ClinicalBill.findOne({
     where: { visit_id: investigation.visit_id },
+    transaction,
   });
 
-  // Delete the prescription
-  const deletedCount = await PrescribedInvestigation.destroy({ where: { id: investigationId } });
+  const deletedCount = await PrescribedInvestigation.destroy({ where: { id: investigationId }, transaction });
 
   if (deletedCount > 0 && bill) {
-    // Clean up billing
     try {
-      await VisitBillingHelper.removePrescribedInvestigationFromBill(investigationId, bill.id);
+      await VisitBillingHelper.removePrescribedInvestigationFromBill(
+        investigationId,
+        bill.id,
+        transaction
+      );
     } catch (billingError) {
       console.error('Failed to remove prescribed investigation from billing:', billingError);
     }

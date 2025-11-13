@@ -261,11 +261,11 @@ export default {
 
     openDispenseModal(value) {
       this.mapDispenseItems();
-      if (this.itemsToDispense.length > 10) {
+      if (this.itemsToDispense.length > 30) {
         return this.$notify({
           group: 'foo',
           title: 'Error message',
-          text: 'You cannot dispense more than 10 items at a time',
+          text: 'You cannot dispense more than 30 items at a time',
           type: 'error',
         });
       }
@@ -274,11 +274,11 @@ export default {
 
     openReorderModal(value) {
       this.mapReorderItems();
-      if (this.itemsToReorder.length > 10) {
+      if (this.itemsToReorder.length > 70) {
         return this.$notify({
           group: 'foo',
           title: 'Error message',
-          text: 'You cannot reorder more than 10 items at a time',
+          text: 'You cannot reorder more than 70 items at a time',
           type: 'error',
         });
       }

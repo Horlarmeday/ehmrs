@@ -13,6 +13,7 @@ import { SUCCESS } from '../../../core/constants';
 import { isEmpty } from 'lodash';
 import { EMPTY_REQUEST_BODY } from './messages/response-messages';
 import { ServiceOrderService } from '../Service/service-order.service';
+import { IJwtPayload } from '../../../core/middleware/verify';
 
 class LabOrderController {
   /**
@@ -119,7 +120,7 @@ class LabOrderController {
    * @returns {SuccessResponse} json object with status, prescribed test data
    */
   static async deletePrescribedTest(
-    req: Request & { user: { sub: number } },
+    req: Request & { user: IJwtPayload },
     res: Response,
     next: NextFunction
   ): Promise<SuccessResponse | void> {
@@ -131,7 +132,7 @@ class LabOrderController {
         httpCode: StatusCodes.BAD_REQUEST,
       });
     try {
-      const test = await LabOrderService.deletePrescribedTest(req.body);
+      const test = await LabOrderService.deletePrescribedTest(req.body, req.user);
 
       return successResponse({
         res,

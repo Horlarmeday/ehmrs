@@ -87,10 +87,10 @@ export default {
   data() {
     return {
       search: this.$route.query.search || '',
-      sort: 'createdAt_desc',
+      sort: 'updatedAt_desc',
       options: [
-        { value: 'createdAt_asc', text: 'Date Created (Ascending)' },
-        { value: 'createdAt_desc', text: 'Date Created (Descending)' },
+        { value: 'updatedAt_asc', text: 'Date Created (Ascending)' },
+        { value: 'updatedAt_desc', text: 'Date Created (Descending)' },
         { value: 'date_received_asc', text: 'Date Received (Ascending)' },
         { value: 'date_received_desc', text: 'Date Received (Ascending)' },
         { value: 'drug_name_asc', text: 'Drug Name (A-Z)' },

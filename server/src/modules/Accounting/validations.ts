@@ -91,6 +91,13 @@ export const updateDepositSchema = Joi.object({
     .max(100),
 });
 
+export const consolidateDepositSchema = Joi.object({
+  patient_id: Joi.number()
+    .positive()
+    .optional(),
+  dry_run: Joi.boolean().optional(),
+});
+
 // Clinical Bill Validations
 export const createBillSchema = Joi.object({
   patient_id: Joi.number()

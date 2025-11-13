@@ -153,6 +153,10 @@ export default {
     usedCount: 0,
     expiredCount: 0,
   },
+  depositConsolidationResults: [],
+  depositConsolidationSummary: null,
+  depositConsolidationReport: null,
+  depositConsolidationLoading: false,
 
   // Financial reports data
   financialReports: {

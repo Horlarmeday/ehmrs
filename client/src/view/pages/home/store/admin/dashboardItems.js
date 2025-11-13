@@ -20,6 +20,11 @@ export default [
     name: 'General Store',
   },
   {
+    url: '/inventory/inventory-type',
+    icon: 'fas fa-laptop-house',
+    name: 'Dispensary',
+  },
+  {
     url: '/store/pharmacy/procurement',
     icon: 'flaticon2-list-1',
     name: 'Procurement',

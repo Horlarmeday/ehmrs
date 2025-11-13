@@ -7,7 +7,7 @@ import {
   Patient,
   ClinicalBill,
 } from '../../../database/models';
-import sequelize, { WhereOptions } from 'sequelize';
+import sequelize, { Transaction, WhereOptions } from 'sequelize';
 import { staffAttributes } from '../../Antenatal/antenatal.repository';
 import { BadException } from '../../../common/util/api-error';
 import { isToday, StatusCodes } from '../../../core/helpers/helper';
@@ -101,7 +101,7 @@ export async function orderBulkTest(data) {
     const [patient, patientInsurance, originalTests] = await Promise.all([
       Patient.findByPk(patient_id),
       getPatientInsuranceQuery({ patient_id, is_default: true }),
-      Test.findAll({ where: { id: data.map(t => t.test_id) } })
+      Test.findAll({ where: { id: data.map(t => t.test_id) } }),
     ]);
 
     if (!patient) {
@@ -116,28 +116,24 @@ export async function orderBulkTest(data) {
       if (!originalTest) {
         logger.warn(`Original test not found for test_id: ${test.test_id}`);
       }
-        // Add this prescription to the visit bill
-        const billItem = await VisitBillingHelper.addPrescribedTestToBill(
-          visit_id,
-          test,
-          test.requester,
-          patient,
-          originalTest,
-          patientInsurance
-        );
+      // Add this prescription to the visit bill
+      const billItem = await VisitBillingHelper.addPrescribedTestToBill(
+        visit_id,
+        test,
+        test.requester,
+        patient,
+        originalTest,
+        patientInsurance
+      );
       // Capture the bill_id (same for all)
       if (billItem?.bill_id && !billId) {
         billId = billItem.bill_id;
-      }  
-    }
-      // Step 4: Trigger auto-payment once (if bill was created)
-      if (billId) {
-        await AutoDepositPaymentService.attemptAutoDepositPayment(
-          billId,
-          patient_id,
-          requester
-        );
       }
+    }
+    // Step 4: Trigger auto-payment once (if bill was created)
+    if (billId) {
+      await AutoDepositPaymentService.attemptAutoDepositPayment(billId, patient_id, requester);
+    }
   } catch (billingError) {
     // Log billing error but don't fail the prescription
     logger.error('Billing creation failed for tests:', billingError);
@@ -215,23 +211,24 @@ export const getOnePrescribedTest = async (query: WhereOptions<PrescribedTest>) 
  * delete prescribed test
  * @param testId
  */
-export const deletePrescribedTest = async (testId: number) => {
+export const deletePrescribedTest = async (testId: number, transaction?: Transaction) => {
   // Get the test before deletion to get visit_id
-  const test = await PrescribedTest.findByPk(testId);
+  const test = await PrescribedTest.findByPk(testId, { transaction });
   if (!test) return 0;
 
   // Find the bill for this visit
   const bill = await ClinicalBill.findOne({
     where: { visit_id: test.visit_id },
+    transaction,
   });
 
   // Delete the prescription
-  const deletedCount = await PrescribedTest.destroy({ where: { id: testId } });
+  const deletedCount = await PrescribedTest.destroy({ where: { id: testId }, transaction });
 
   if (deletedCount > 0 && bill) {
     // Clean up billing
     try {
-      await VisitBillingHelper.removePrescribedTestFromBill(testId, bill.id);
+      await VisitBillingHelper.removePrescribedTestFromBill(testId, bill.id, transaction);
     } catch (billingError) {
       console.error('Failed to remove prescribed test from billing:', billingError);
     }

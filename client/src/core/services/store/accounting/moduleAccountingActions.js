@@ -992,6 +992,53 @@ export default {
     }
   },
 
+  async consolidateDeposits({ commit }, { patientId = null, dryRun = false } = {}) {
+    commit('SET_DEPOSIT_CONSOLIDATION_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const payload = {};
+      if (patientId !== null && patientId !== undefined && patientId !== '') {
+        payload.patient_id = patientId;
+      }
+      payload.dry_run = !!dryRun;
+
+      const response = await axios.post('/accounting/deposits/consolidate', payload);
+      const data = response?.data?.data || {};
+
+      commit('SET_DEPOSIT_CONSOLIDATION_RESULTS', {
+        results: data.results || [],
+        summary: data.summary || null,
+      });
+
+      return response.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      commit('SET_DEPOSIT_CONSOLIDATION_RESULTS', { results: [], summary: null });
+      console.error('Failed to consolidate deposits:', error);
+      return { success: false, error: error.message };
+    } finally {
+      commit('SET_DEPOSIT_CONSOLIDATION_LOADING', false);
+    }
+  },
+
+  async fetchDepositConsolidationReport({ commit }) {
+    commit('SET_DEPOSIT_CONSOLIDATION_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/accounting/deposits/consolidation-report');
+      commit('SET_DEPOSIT_CONSOLIDATION_REPORT', response?.data?.data || null);
+      return response.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch deposit consolidation report:', error);
+      throw error;
+    } finally {
+      commit('SET_DEPOSIT_CONSOLIDATION_LOADING', false);
+    }
+  },
+
   async createDeposit({ commit, dispatch }, depositData) {
     commit('SET_LOADING', true);
     commit('CLEAR_ERROR');
@@ -1417,6 +1464,63 @@ export default {
       return { success: true, data: response.data.data };
     } catch (error) {
       console.error('Failed to get patient deposit by ID:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  async downloadDepositReceipt(_, depositId) {
+    try {
+      const response = await axios.get(`/accounting/deposits/${depositId}/receipt/download`, {
+        responseType: 'arraybuffer',
+      });
+
+      const contentType = response.headers['content-type'] || 'application/pdf';
+      const blob = new Blob([response.data], { type: contentType });
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `deposit-receipt-${depositId}-${Date.now()}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to download deposit receipt:', error);
+      return {
+        success: false,
+        error: error.response?.data?.message || error.message,
+      };
+    }
+  },
+
+  async printDepositReceipt(_, depositId) {
+    try {
+      const response = await axios.get(`/accounting/deposits/${depositId}/receipt/download`, {
+        responseType: 'arraybuffer',
+      });
+
+      // Create blob for printing
+      const contentType = response.headers['content-type'];
+      const blob = new Blob([response.data], { type: contentType });
+      const blobUrl = window.URL.createObjectURL(blob);
+      // Open in a new tab or iframe for printing
+      const printWindow = window.open(blobUrl, '_blank');
+      if (!printWindow) {
+        throw new Error('Popup blocked. Please allow popups for this site.');
+      }
+
+      // Give the browser a moment to load the PDF, then trigger print
+      printWindow.onload = () => {
+        printWindow.focus();
+        printWindow.print();
+      };
+
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to print deposit receipt:', error);
       return { success: false, error: error.message };
     }
   },

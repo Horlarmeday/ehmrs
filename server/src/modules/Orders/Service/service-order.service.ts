@@ -1,6 +1,5 @@
 import {
   deleteService,
-  getOnePrescribedService,
   getPrescribedServices,
   getPrescriptionServices,
   orderBulkService,
@@ -9,7 +8,7 @@ import {
 } from './service-order.repository';
 import VisitService from '../../Visit/visit.service';
 import PatientService from '../../Patient/patient.service';
-import { PrescribedDrug, PrescribedService } from '../../../database/models';
+import { PrescribedService } from '../../../database/models';
 import { PrescribedBulkServiceBody } from './types/service-order.types';
 import { getServicePrice } from '../../AdminSettings/admin.repository';
 import { PrescriptionType } from '../../../database/models/prescribedTest';
@@ -18,8 +17,12 @@ import { ServiceType } from '../../../database/models/prescribedService';
 import { PaymentStatus } from '../../../database/models/prescribedDrug';
 import { BadException } from '../../../common/util/api-error';
 import { StatusCodes } from '../../../core/helpers/helper';
-import { CANNOT_DELETE_INVESTIGATION } from '../Radiology/messages/response-messages';
+import { CANNOT_DELETE_SERVICE, UNSUPPORTED_SERVICE_REVERSAL_PAYMENT } from './messages/response-messages';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
+import sequelizeConnection from '../../../database/config/data-source';
+import { PaymentReversalService } from '../../Accounting/services/paymentReversal.service';
+import { BillItemTypeEnum, PaymentMethod } from '../../Accounting/enums';
+import { IJwtPayload } from '../../../core/middleware/verify';
 
 export class ServiceOrderService {
   /**
@@ -138,15 +141,67 @@ export class ServiceOrderService {
    * @static
    * @returns {json} json object with prescribed service data
    * @param body
+   * @param staff
    * @memberOf ServiceOrderService
    */
-  static async deletePrescribedService(body) {
-    const allowedStatuses = [PaymentStatus.PAID, PaymentStatus.PERMITTED, PaymentStatus.CLEARED];
+  static async deletePrescribedService(body, staff: IJwtPayload) {
+    const isAdmin = staff.role === 'Super Admin';
+    const transaction = await sequelizeConnection.transaction();
 
-    const service = await getOnePrescribedService({ id: body.serviceId });
-    if (service && allowedStatuses.includes(service.payment_status))
-      throw new BadException('Error', StatusCodes.BAD_REQUEST, CANNOT_DELETE_INVESTIGATION);
+    try {
+      const service = await PrescribedService.findByPk(body.serviceId, { transaction });
+      if (!service) {
+        await transaction.rollback();
+        return 0;
+      }
 
-    return deleteService(body.serviceId);
+      const summary = await PaymentReversalService.getBillItemPaymentSummary(
+        BillItemTypeEnum.SERVICE,
+        body.serviceId,
+        transaction
+      );
+      const billId = summary?.bill?.id;
+      const hasPayments = Boolean(summary && summary.paymentAllocations.length > 0);
+
+      if (hasPayments && summary) {
+        if (!isAdmin)
+          throw new BadException(
+            'Error',
+            StatusCodes.BAD_REQUEST,
+            'This item has been paid for, contact admin for help'
+          );
+        const unsupportedAllocation = summary.paymentAllocations.find(allocation => {
+          const method = allocation.payment.payment_method;
+          return method === PaymentMethod.INSURANCE || method === PaymentMethod.OTHER;
+        });
+
+        if (unsupportedAllocation) {
+          throw new BadException(
+            'Unsupported Payment Method',
+            StatusCodes.BAD_REQUEST,
+            UNSUPPORTED_SERVICE_REVERSAL_PAYMENT
+          );
+        }
+
+        await PaymentReversalService.reverseAllocationsForSummary(summary, staff.sub, transaction);
+      } else {
+        const blockedStatuses = [PaymentStatus.PERMITTED, PaymentStatus.CLEARED];
+        if (blockedStatuses.includes(service.payment_status)) {
+          throw new BadException('Error', StatusCodes.BAD_REQUEST, CANNOT_DELETE_SERVICE);
+        }
+      }
+
+      const deletedCount = await deleteService(body.serviceId, transaction);
+
+      if (billId) {
+        await PaymentReversalService.reconcileBillStatus(billId, transaction);
+      }
+
+      await transaction.commit();
+      return deletedCount;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 }

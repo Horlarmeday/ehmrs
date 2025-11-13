@@ -6,6 +6,7 @@ import { PatientDepositService } from './services/patientDeposit.service';
 import { DepositAuditService } from './services/depositAudit.service';
 import { FinancialPeriodManagementService } from './services/financialPeriodManagement.service';
 import { FinancialPeriodValidationService } from './services/financialPeriodValidation.service';
+import { PatientDepositConsolidationService, ConsolidationResult } from './services/patientDepositConsolidation.service';
 import {
   PatientDepositData,
   ClinicalBillData,
@@ -29,6 +30,7 @@ import {
   BillingStatus,
   PaymentCollectionMethod,
   PaymentProcessingStatus,
+  DepositTransactionType,
 } from './enums';
 import { PatientDeposit } from '../../database/models/patientDeposit';
 import { ClinicalBill, ClinicalBillItem } from '../../database/models';
@@ -100,6 +102,87 @@ export class AccountingService {
       return await AccountingRepository.getPatientDepositSummary(patientId);
     } catch (error) {
       throw new BadException('Failed to retrieve deposit summary', 500, error.message);
+    }
+  }
+
+  /**
+   * Get patient deposit details required for receipt generation
+   */
+  static async getPatientDepositReceiptData(depositId: number): Promise<{
+    deposit: any;
+    patient: any;
+    createdBy?: any;
+    updatedBy?: any;
+    bankAccount?: any;
+    posTerminal?: any;
+    transactions: any[];
+    totals: {
+      totalAmount: number;
+      currentBalance: number;
+      totalUsed: number;
+      totalRefunded: number;
+      totalAdjusted: number;
+    };
+  }> {
+    try {
+      const result = await AccountingRepository.getPatientDepositReceiptData(depositId);
+
+      if (!result) {
+        throw new BadException('Patient deposit not found', 404);
+      }
+
+      const depositPlain = result.deposit.get({ plain: true }) as any;
+      const transactionPlain = result.transactions.map(transaction =>
+        transaction.get({ plain: true })
+      );
+
+      const toNumber = (value: any) => {
+        if (value === null || value === undefined) return 0;
+        if (typeof value === 'number') return value;
+        const parsed = parseFloat(value);
+        return Number.isNaN(parsed) ? 0 : parsed;
+      };
+
+      const totals = transactionPlain.reduce(
+        (acc, transaction) => {
+          const amount = toNumber(transaction.amount);
+          switch (transaction.transaction_type) {
+            case DepositTransactionType.USED:
+              acc.totalUsed += amount;
+              break;
+            case DepositTransactionType.REFUNDED:
+              acc.totalRefunded += amount;
+              break;
+            case DepositTransactionType.ADJUSTED:
+              acc.totalAdjusted += amount;
+              break;
+          }
+          return acc;
+        },
+        {
+          totalAmount: toNumber(depositPlain.initial_amount || depositPlain.amount),
+          currentBalance: toNumber(depositPlain.current_balance || depositPlain.amount),
+          totalUsed: 0,
+          totalRefunded: 0,
+          totalAdjusted: 0,
+        }
+      );
+
+      return {
+        deposit: depositPlain,
+        patient: depositPlain.patient,
+        createdBy: depositPlain.createdByStaff,
+        updatedBy: depositPlain.updatedByStaff,
+        bankAccount: depositPlain.bankAccount,
+        posTerminal: depositPlain.posTerminal,
+        transactions: transactionPlain,
+        totals,
+      };
+    } catch (error) {
+      if (error instanceof BadException) {
+        throw error;
+      }
+      throw new BadException('Failed to prepare deposit receipt data', 500, error.message);
     }
   }
 
@@ -177,6 +260,35 @@ export class AccountingService {
       return updatedDeposit;
     } catch (error) {
       throw new BadException('Failed to adjust patient deposit', 500, error.message);
+    }
+  }
+
+  static async consolidatePatientDeposits(
+    options: { patientId?: number; consolidatedBy: number; dryRun?: boolean }
+  ): Promise<ConsolidationResult[]> {
+    try {
+      return await PatientDepositConsolidationService.consolidateAllActiveDeposits(options);
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Failed to consolidate patient deposits', 500, error.message);
+    }
+  }
+
+  static async getDepositConsolidationReport(): Promise<{
+    duplicatePatients: number[];
+    duplicateCount: number;
+    activeDepositCount: number;
+    uniqueActivePatientCount: number;
+    totalCurrentBalance: number;
+    totalInitialAmount: number;
+    totalAmount: number;
+    totalRefundableAmount: number;
+    isConstraintSatisfied: boolean;
+  }> {
+    try {
+      return await PatientDepositConsolidationService.generateVerificationReport();
+    } catch (error) {
+      throw new BadException('Failed to generate consolidation report', 500, error.message);
     }
   }
 

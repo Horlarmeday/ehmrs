@@ -1,6 +1,5 @@
 import {
   deletePrescribedInvestigation,
-  getOnePrescribedInvestigation,
   getPrescribedInvestigations,
   getPrescriptionInvestigations,
   orderBulkInvestigation,
@@ -26,9 +25,16 @@ import { NHISApprovalStatus } from '../../../core/helpers/general';
 import { PrescriptionType } from '../../../database/models/prescribedTest';
 import { PaymentStatus } from '../../../database/models/prescribedDrug';
 import { BadException } from '../../../common/util/api-error';
-import { CANNOT_DELETE_INVESTIGATION } from './messages/response-messages';
+import {
+  CANNOT_DELETE_INVESTIGATION,
+  UNSUPPORTED_INVESTIGATION_REVERSAL_PAYMENT,
+} from './messages/response-messages';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
 import { getPrescriptionTests } from '../Laboratory/lab-order.repository';
+import sequelizeConnection from '../../../database/config/data-source';
+import { PaymentReversalService } from '../../Accounting/services/paymentReversal.service';
+import { BillItemTypeEnum, PaymentMethod } from '../../Accounting/enums';
+import { IJwtPayload } from '../../../core/middleware/verify';
 
 export class RadiologyOrderService {
   /**
@@ -112,13 +118,68 @@ export class RadiologyOrderService {
    * @param body
    * @memberOf RadiologyOrderService
    */
-  static async deleteInvestigation(body) {
-    const allowedStatuses = [PaymentStatus.PAID, PaymentStatus.PERMITTED, PaymentStatus.CLEARED];
-    const investigation = await getOnePrescribedInvestigation({ id: body.investigationId });
-    if (investigation && allowedStatuses.includes(investigation.payment_status))
-      throw new BadException('Error', StatusCodes.BAD_REQUEST, CANNOT_DELETE_INVESTIGATION);
+  static async deleteInvestigation(body, staff: IJwtPayload) {
+    const isAdmin = staff.role === 'Super Admin';
+    const transaction = await sequelizeConnection.transaction();
 
-    return deletePrescribedInvestigation(body.investigationId);
+    try {
+      const investigation = await PrescribedInvestigation.findByPk(body.investigationId, {
+        transaction,
+      });
+
+      if (!investigation) {
+        await transaction.rollback();
+        return 0;
+      }
+
+      const summary = await PaymentReversalService.getBillItemPaymentSummary(
+        BillItemTypeEnum.INVESTIGATION,
+        body.investigationId,
+        transaction
+      );
+      const billId = summary?.bill?.id;
+      const hasPayments = Boolean(summary && summary.paymentAllocations.length > 0);
+
+      if (hasPayments && summary) {
+        if (!isAdmin)
+          throw new BadException(
+            'Error',
+            StatusCodes.BAD_REQUEST,
+            'This item has been paid for, contact admin for help'
+          );
+        const unsupportedAllocation = summary.paymentAllocations.find(allocation => {
+          const method = allocation.payment.payment_method;
+          return method === PaymentMethod.INSURANCE || method === PaymentMethod.OTHER;
+        });
+
+        if (unsupportedAllocation) {
+          throw new BadException(
+            'Unsupported Payment Method',
+            StatusCodes.BAD_REQUEST,
+            UNSUPPORTED_INVESTIGATION_REVERSAL_PAYMENT
+          );
+        }
+
+        await PaymentReversalService.reverseAllocationsForSummary(summary, staff.sub, transaction);
+      } else {
+        const blockedStatuses = [PaymentStatus.PERMITTED, PaymentStatus.CLEARED];
+        if (blockedStatuses.includes(investigation.payment_status)) {
+          throw new BadException('Error', StatusCodes.BAD_REQUEST, CANNOT_DELETE_INVESTIGATION);
+        }
+      }
+
+      const deletedCount = await deletePrescribedInvestigation(body.investigationId, transaction);
+
+      if (billId) {
+        await PaymentReversalService.reconcileBillStatus(billId, transaction);
+      }
+
+      await transaction.commit();
+      return deletedCount;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
   /**

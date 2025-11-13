@@ -196,6 +196,16 @@ export default {
   SET_DEPOSITS_PAGES(state, pages) {
     state.depositsPages = pages;
   },
+  SET_DEPOSIT_CONSOLIDATION_LOADING(state, value) {
+    state.depositConsolidationLoading = value;
+  },
+  SET_DEPOSIT_CONSOLIDATION_RESULTS(state, { results = [], summary = null } = {}) {
+    state.depositConsolidationResults = results;
+    state.depositConsolidationSummary = summary;
+  },
+  SET_DEPOSIT_CONSOLIDATION_REPORT(state, report) {
+    state.depositConsolidationReport = report;
+  },
 
   // Financial reports mutations
   SET_FINANCIAL_REPORTS(state, data) {

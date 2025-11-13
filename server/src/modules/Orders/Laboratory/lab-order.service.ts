@@ -1,7 +1,6 @@
 /* eslint-disable camelcase,no-param-reassign */
 import {
   deletePrescribedTest,
-  getOnePrescribedTest,
   getPrescribedTests,
   getPrescriptionTests,
   orderBulkTest,
@@ -23,10 +22,17 @@ import { NHISApprovalStatus } from '../../../core/helpers/general';
 import { PrescriptionType } from '../../../database/models/prescribedTest';
 import { PaymentStatus } from '../../../database/models/prescribedDrug';
 import { BadException } from '../../../common/util/api-error';
-import { CANNOT_DELETE_TEST } from './messages/response-messages';
+import {
+  CANNOT_DELETE_TEST,
+  UNSUPPORTED_TEST_REVERSAL_PAYMENT,
+} from './messages/response-messages';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
 import { TestType } from '../../../database/models/test';
 import { getPrescriptionServices } from '../Service/service-order.repository';
+import { PaymentReversalService } from '../../Accounting/services/paymentReversal.service';
+import { PaymentMethod } from '../../Accounting/enums';
+import sequelizeConnection from '../../../database/config/data-source';
+import { IJwtPayload } from '../../../core/middleware/verify';
 
 export class LabOrderService {
   /**
@@ -176,15 +182,71 @@ export class LabOrderService {
    * @static
    * @returns {json} json object with prescribed test data
    * @param body
+   * @param staff
    * @memberOf LabOrderService
    */
-  static async deletePrescribedTest(body) {
-    const allowedStatuses = [PaymentStatus.PAID, PaymentStatus.PERMITTED, PaymentStatus.CLEARED];
-    const test = await getOnePrescribedTest({ id: body.testId });
-    if (test && allowedStatuses.includes(test.payment_status))
-      throw new BadException('Error', StatusCodes.BAD_REQUEST, CANNOT_DELETE_TEST);
+  static async deletePrescribedTest(body, staff: IJwtPayload) {
+    const isAdmin = staff.role === 'Super Admin';
+    const transaction = await sequelizeConnection.transaction();
 
-    return deletePrescribedTest(body.testId);
+    try {
+      const test = await PrescribedTest.findByPk(body.testId, { transaction });
+      if (!test) {
+        throw new BadException(
+          'Test Not Found',
+          StatusCodes.NOT_FOUND,
+          'Prescribed test does not exist'
+        );
+      }
+
+      const paymentSummary = await PaymentReversalService.getBillItemPaymentSummaryForTest(
+        body.testId,
+        transaction
+      );
+      const billId = paymentSummary?.bill?.id;
+      const hasPayments = Boolean(paymentSummary && paymentSummary.paymentAllocations.length > 0);
+
+      if (hasPayments && paymentSummary) {
+        if (!isAdmin)
+          throw new BadException(
+            'Error',
+            StatusCodes.BAD_REQUEST,
+            'This item has been paid for, contact admin for help'
+          );
+        const unsupportedAllocation = paymentSummary.paymentAllocations.find(allocation => {
+          const method = allocation.payment.payment_method;
+          return method === PaymentMethod.INSURANCE || method === PaymentMethod.OTHER;
+        });
+
+        if (unsupportedAllocation) {
+          throw new BadException(
+            'Unsupported Payment Method',
+            StatusCodes.BAD_REQUEST,
+            UNSUPPORTED_TEST_REVERSAL_PAYMENT
+          );
+        }
+
+        await PaymentReversalService.reverseAllocationsForSummary(
+          paymentSummary,
+          staff.sub,
+          transaction
+        );
+      } else if (test.payment_status === PaymentStatus.CLEARED) {
+        throw new BadException('Error', StatusCodes.BAD_REQUEST, CANNOT_DELETE_TEST);
+      }
+
+      const deletedCount = await deletePrescribedTest(body.testId, transaction);
+
+      if (billId) {
+        await PaymentReversalService.reconcileBillStatus(billId, transaction);
+      }
+
+      await transaction.commit();
+      return deletedCount;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
   /**

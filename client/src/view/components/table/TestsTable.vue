@@ -48,7 +48,7 @@
                 "
               >
                 <a
-                  v-if="test.payment_status === PENDING"
+                  class="mr-2"
                   @click="showDeleteAlert(test)"
                   href="#"
                   :class="loading && 'disabled'"

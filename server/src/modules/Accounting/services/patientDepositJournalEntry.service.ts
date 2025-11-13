@@ -33,6 +33,46 @@ export class PatientDepositJournalEntryService {
     deposit: PatientDeposit,
     transaction?: Transaction
   ): Promise<JournalEntry> {
+    const reference = `DEP-${deposit.reference_number}`;
+    const description = `Patient deposit received via ${deposit.deposit_type} - ${deposit.patient?.firstname ?? ''} ${deposit.patient?.lastname ?? ''}`.trim();
+    return this.createDepositFundingEntry(
+      deposit,
+      Number(deposit.amount),
+      reference,
+      description,
+      deposit.deposit_date,
+      transaction
+    );
+  }
+
+  /**
+   * Create journal entry for deposit top-up
+   */
+  static async createDepositTopUpEntry(
+    deposit: PatientDeposit,
+    amount: number,
+    reference: string,
+    transaction?: Transaction
+  ): Promise<JournalEntry> {
+    const description = `Patient deposit top-up via ${deposit.deposit_type} - ${deposit.patient?.firstname ?? ''} ${deposit.patient?.lastname ?? ''}`.trim();
+    return this.createDepositFundingEntry(
+      deposit,
+      amount,
+      reference,
+      description,
+      new Date(),
+      transaction
+    );
+  }
+
+  private static async createDepositFundingEntry(
+    deposit: PatientDeposit,
+    amount: number,
+    reference: string,
+    description: string,
+    transactionDate: Date,
+    transaction?: Transaction
+  ): Promise<JournalEntry> {
     try {
       // Get required accounts based on payment method
       let debitAccount;
@@ -67,9 +107,9 @@ export class PatientDepositJournalEntryService {
       // Create journal entry
       const journalEntry = await JournalEntry.create(
         {
-          reference: `DEP-${deposit.reference_number}`,
-          description: `Patient deposit received via ${deposit.deposit_type} - ${deposit.patient?.firstname} ${deposit.patient?.lastname}`,
-          transaction_date: deposit.deposit_date,
+          reference,
+          description,
+          transaction_date: transactionDate,
           patient_id: deposit.patient_id,
           status: JournalEntryStatus.POSTED,
         },
@@ -82,7 +122,7 @@ export class PatientDepositJournalEntryService {
         {
           journal_entry_id: journalEntry.id,
           account_id: debitAccount.id,
-          debit: deposit.amount,
+          debit: amount,
           credit: 0,
           description: debitDescription,
         },
@@ -91,7 +131,7 @@ export class PatientDepositJournalEntryService {
           journal_entry_id: journalEntry.id,
           account_id: patientDepositsPayable.id,
           debit: 0,
-          credit: deposit.amount,
+          credit: amount,
           description: 'Patient deposit liability created',
         },
       ];
@@ -100,7 +140,11 @@ export class PatientDepositJournalEntryService {
 
       return journalEntry;
     } catch (error) {
-      throw new BadException('Failed to create deposit creation journal entry', 500, error.message);
+      throw new BadException(
+        'Failed to create deposit funding journal entry',
+        500,
+        error.message
+      );
     }
   }
 

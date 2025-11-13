@@ -25,6 +25,7 @@ import { getActiveBillingPoints, getBillingPointById } from './billingPoints';
 import {
   createDepositSchema,
   updateDepositSchema,
+  consolidateDepositSchema,
   createBillSchema,
   updateBillSchema,
   createPaymentSchema,
@@ -180,6 +181,40 @@ export class AccountingController {
     }
   }
 
+  /**
+   * Download patient deposit receipt as PDF
+   */
+  static async downloadPatientDepositReceipt(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { depositId } = req.params;
+
+      if (!depositId || Number.isNaN(Number(depositId))) {
+        res.status(400).json({
+          success: false,
+          message: 'Valid deposit ID is required',
+        });
+        return;
+      }
+
+      const receiptData = await AccountingService.getPatientDepositReceiptData(
+        parseInt(depositId, 10)
+      );
+
+      const { printPatientDepositReceiptPDF } = await import('./helper/receipt.helper');
+
+      await printPatientDepositReceiptPDF({
+        receiptData,
+        res,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async getPatientDeposits(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       // Validate query parameters
@@ -212,6 +247,66 @@ export class AccountingController {
         success: true,
         message: 'Patient deposits retrieved successfully',
         data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async consolidatePatientDeposits(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const validatedBody = AccountingController.validateRequest(req.body, consolidateDepositSchema);
+
+      const rawPatientId = validatedBody.patient_id;
+      const normalizedPatientId =
+        typeof rawPatientId === 'number' && Number.isFinite(rawPatientId) && rawPatientId > 0
+          ? rawPatientId
+          : undefined;
+
+      const results = await AccountingService.consolidatePatientDeposits({
+        patientId: normalizedPatientId,
+        consolidatedBy: req.user.sub,
+        dryRun: validatedBody.dry_run ?? false,
+      });
+
+      res.status(200).json({
+        success: true,
+        message: validatedBody.dry_run
+          ? 'Dry-run consolidation report generated'
+          : 'Patient deposits consolidated successfully',
+        data: {
+          summary: {
+            processedPatients: results.length,
+            consolidatedPatients: results.filter(result => result.status === 'CONSOLIDATED').length,
+            transferredBalance: results.reduce(
+              (sum, result) => sum + (result.transferredBalance || 0),
+              0
+            ),
+          },
+          results,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getDepositConsolidationReport(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const report = await AccountingService.getDepositConsolidationReport();
+
+      res.status(200).json({
+        success: true,
+        message: 'Deposit consolidation verification report generated',
+        data: report,
       });
     } catch (error) {
       next(error);

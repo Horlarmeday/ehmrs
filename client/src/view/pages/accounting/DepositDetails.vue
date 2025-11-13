@@ -22,6 +22,34 @@
         <b-button variant="outline-success" @click="useDeposit" v-if="deposit?.status === 'ACTIVE'">
           <i class="fas fa-credit-card mr-2"></i>Use Deposit
         </b-button>
+        <b-button
+          variant="outline-secondary"
+          @click="downloadDepositReceipt"
+          :disabled="downloadingReceipt || !deposit"
+        >
+          <i
+            class="fas"
+            :class="{
+              'fa-spinner fa-spin': downloadingReceipt,
+              'fa-file-download': !downloadingReceipt,
+            }"
+          ></i>
+          <span class="ml-2">Download Receipt</span>
+        </b-button>
+        <b-button
+          variant="outline-secondary"
+          @click="printDepositReceipt"
+          :disabled="printingReceiptId || !deposit"
+        >
+          <i
+            class="fas"
+            :class="{
+              'fa-spinner fa-spin': printingReceiptId,
+              'fa-print': !printingReceiptId,
+            }"
+          ></i>
+          <span class="ml-2">Print Receipt</span>
+        </b-button>
       </div>
     </div>
 
@@ -541,11 +569,13 @@ export default {
       transactions: [],
       journalEntries: [],
       activeTab: 'overview',
+      printingReceiptId: null,
 
       // Usage modal
       showUseDepositModal: false,
       processingUsage: false,
       usedAmount: 0,
+      downloadingReceipt: false,
       usageForm: {
         amount: 0,
         purpose: '',
@@ -596,6 +626,43 @@ export default {
     useDeposit() {
       this.usageForm.amount = this.deposit.amount - (this.deposit.used_amount || 0);
       this.showUseDepositModal = true;
+    },
+
+    async downloadDepositReceipt() {
+      if (!this.deposit || this.downloadingReceipt) {
+        return;
+      }
+
+      this.downloadingReceipt = true;
+      try {
+        const result = await this.$store.dispatch(
+          'accounting/downloadDepositReceipt',
+          this.deposit.id
+        );
+
+        if (result.success) {
+          this.$bvToast.toast('Deposit receipt downloaded successfully', {
+            title: 'Success',
+            variant: 'success',
+            solid: true,
+          });
+        } else {
+          this.$bvToast.toast(result.error || 'Failed to download deposit receipt', {
+            title: 'Error',
+            variant: 'danger',
+            solid: true,
+          });
+        }
+      } catch (error) {
+        console.error('Failed to download deposit receipt:', error);
+        this.$bvToast.toast('Failed to download deposit receipt', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+      } finally {
+        this.downloadingReceipt = false;
+      }
     },
 
     async processDepositUsage() {
@@ -765,6 +832,39 @@ export default {
         PENDING: 'warning',
       };
       return variants[status] || 'secondary';
+    },
+
+    async printDepositReceipt(depositId) {
+      if (this.printingReceiptId) {
+        return;
+      }
+
+      this.printingReceiptId = depositId;
+      try {
+        const result = await this.$store.dispatch('accounting/printDepositReceipt', depositId);
+        if (result.success) {
+          this.$bvToast.toast('Deposit receipt printed successfully', {
+            title: 'Success',
+            variant: 'success',
+            solid: true,
+          });
+        } else {
+          this.$bvToast.toast(result.error || 'Failed to print deposit receipt', {
+            title: 'Error',
+            variant: 'danger',
+            solid: true,
+          });
+        }
+      } catch (error) {
+        console.error('Failed to print deposit receipt:', error);
+        this.$bvToast.toast('Failed to print deposit receipt', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+      } finally {
+        this.printingReceiptId = null;
+      }
     },
   },
 };

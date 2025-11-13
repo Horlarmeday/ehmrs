@@ -163,8 +163,9 @@ export class DepositTransaction extends Model {
     // Validate balance consistency based on transaction type
     switch (instance.transaction_type) {
       case DepositTransactionType.CREATED:
+      case DepositTransactionType.TOP_UP:
         if (instance.new_balance !== instance.previous_balance + instance.amount) {
-          throw new Error('Balance inconsistency for CREATED transaction');
+          throw new Error('Balance inconsistency for CREATED/TOP_UP transaction');
         }
         break;
       case DepositTransactionType.USED:

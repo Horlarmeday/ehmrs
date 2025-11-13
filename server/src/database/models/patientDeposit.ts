@@ -17,6 +17,7 @@ import { DepositType, DepositStatus } from '../../modules/Accounting/enums';
 import { FinancialPeriod } from './financialPeriod';
 import { FindAttributeOptions, GroupOption, Includeable, Order, WhereOptions } from 'sequelize';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
+import { Op, Transaction } from 'sequelize';
 
 @Table({ timestamps: true, tableName: 'patient_deposits' })
 export class PatientDeposit extends Model<PatientDeposit> {
@@ -193,7 +194,8 @@ export class PatientDeposit extends Model<PatientDeposit> {
 
   // Model hooks for validation and auto-population
   @BeforeCreate
-  static beforeCreatePatientDeposit(instance: any) {
+  static async beforeCreatePatientDeposit(instance: any, options: { transaction?: Transaction }) {
+    await PatientDeposit.validateSingleActiveDepositConstraint(instance, options?.transaction);
     // Set initial amount equal to amount on creation
     if (!instance.initial_amount) {
       instance.initial_amount = instance.amount;
@@ -219,7 +221,8 @@ export class PatientDeposit extends Model<PatientDeposit> {
   }
 
   @BeforeUpdate
-  static beforeUpdatePatientDeposit(instance: any) {
+  static async beforeUpdatePatientDeposit(instance: any, options: { transaction?: Transaction }) {
+    await PatientDeposit.validateSingleActiveDepositConstraint(instance, options?.transaction);
     // Update last activity date on any change
     instance.last_activity_date = new Date();
 
@@ -231,6 +234,32 @@ export class PatientDeposit extends Model<PatientDeposit> {
     // Validate that refundable_amount never exceeds current_balance
     if (instance.refundable_amount > instance.current_balance) {
       throw new Error('Refundable amount cannot exceed current balance');
+    }
+  }
+
+  private static async validateSingleActiveDepositConstraint(
+    instance: any,
+    transaction?: Transaction
+  ): Promise<void> {
+    if (instance.status !== DepositStatus.ACTIVE) {
+      return;
+    }
+
+    const existingActive = await PatientDeposit.findOne({
+      where: {
+        patient_id: instance.patient_id,
+        status: DepositStatus.ACTIVE,
+        id: {
+          [Op.ne]: instance.id ?? 0,
+        },
+      },
+      transaction,
+    });
+
+    if (existingActive) {
+      throw new Error(
+        `Patient ${instance.patient_id} already has an active deposit with ID ${existingActive.id}`
+      );
     }
   }
 }
