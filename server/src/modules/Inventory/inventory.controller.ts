@@ -3,7 +3,9 @@ import { successResponse } from '../../common/responses/success-responses';
 import { StatusCodes } from '../../core/helpers/helper';
 import { SUCCESS } from '../../core/constants';
 import {
+  validateBulkInventoryTransfer,
   validateCreateInventory,
+  validateInventoryTransfer,
   validateRequestDrugsToStore,
   validateUpdateReturnRequest,
 } from './validations';
@@ -262,6 +264,136 @@ class InventoryController {
       return successResponse({
         res,
         data: returnRequests,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get inventory summary statistics
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with inventory summary statistics
+   */
+  static async getInventorySummary(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const summary = await InventoryService.getInventorySummary(+id);
+
+      return successResponse({
+        res,
+        data: summary,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * transfer item between inventories
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with transfer result
+   */
+  static async transferItemBetweenInventories(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
+    const { error } = validateInventoryTransfer(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+
+    try {
+      const result = await InventoryService.transferItemBetweenInventories(req.body, req.user.sub);
+
+      return successResponse({
+        res,
+        data: result,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get pending prescriptions for an inventory item
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with pending prescriptions
+   */
+  static async getPendingPrescriptionsForItem(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const { currentPage, pageLimit } = req.query;
+      const prescriptions = await InventoryService.getPendingPrescriptionsForItem({
+        inventoryItemId: +id,
+        currentPage: currentPage ? +currentPage : 1,
+        pageLimit: pageLimit ? +pageLimit : 10,
+      });
+
+      return successResponse({
+        res,
+        data: prescriptions,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * bulk transfer items between inventories
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with bulk transfer result
+   */
+  static async bulkTransferItemsBetweenInventories(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
+    const { error } = validateBulkInventoryTransfer(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+
+    try {
+      const result = await InventoryService.bulkTransferItemsBetweenInventories(
+        req.body,
+        req.user.sub
+      );
+
+      return successResponse({
+        res,
+        data: result,
         httpCode: StatusCodes.OK,
         message: SUCCESS,
       });

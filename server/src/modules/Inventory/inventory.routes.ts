@@ -12,5 +12,9 @@ router.get('/request-return/get', verify, InventoryController.getInventoryReturn
 router.get('/get/items/:id', verify, InventoryController.getInventoryItem);
 router.get('/get/:id/items', verify, InventoryController.getInventoryItems);
 router.get('/get/:id/history', verify, InventoryController.getInventoryItemHistory);
+router.get('/get/:id/summary', verify, InventoryController.getInventorySummary);
+router.get('/get/items/:id/pending-prescriptions', verify, InventoryController.getPendingPrescriptionsForItem);
+router.post('/transfer', verify, InventoryController.transferItemBetweenInventories);
+router.post('/transfer/bulk', verify, InventoryController.bulkTransferItemsBetweenInventories);
 
 export default router;

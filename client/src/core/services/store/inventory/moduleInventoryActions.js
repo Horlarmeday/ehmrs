@@ -196,4 +196,84 @@ export default {
   removeAllSelectedItems({ commit }) {
     commit('REMOVE_ALL_SELECTED_ITEMS', []);
   },
+
+  /**
+   * INVENTORY SUMMARY
+   */
+  fetchInventorySummary({ commit }, inventoryId) {
+    return new Promise((resolve, reject) => {
+      commit('SET_LOADING_SUMMARY', true);
+      axios
+        .get(`/inventory/get/${inventoryId}/summary`)
+        .then((response) => {
+          commit('SET_SUMMARY', response.data.data);
+          commit('SET_LOADING_SUMMARY', false);
+          resolve(response);
+        })
+        .catch((error) => {
+          commit('SET_LOADING_SUMMARY', false);
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * PENDING PRESCRIPTIONS
+   */
+  fetchPendingPrescriptions({ commit }, { inventoryItemId, currentPage = 1, pageLimit = 10 }) {
+    return new Promise((resolve, reject) => {
+      commit('SET_LOADING_PENDING_PRESCRIPTIONS', true);
+      axios
+        .get(`/inventory/get/items/${inventoryItemId}/pending-prescriptions`, {
+          params: { currentPage, pageLimit },
+        })
+        .then((response) => {
+          commit('SET_PENDING_PRESCRIPTIONS', response.data.data);
+          commit('SET_LOADING_PENDING_PRESCRIPTIONS', false);
+          resolve(response);
+        })
+        .catch((error) => {
+          commit('SET_LOADING_PENDING_PRESCRIPTIONS', false);
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * TRANSFER ITEM BETWEEN INVENTORIES
+   */
+  transferItemBetweenInventories({ commit }, transferData) {
+    return new Promise((resolve, reject) => {
+      commit('SET_TRANSFER_LOADING', true);
+      axios
+        .post('/inventory/transfer', transferData)
+        .then((response) => {
+          commit('SET_TRANSFER_LOADING', false);
+          resolve(response);
+        })
+        .catch((error) => {
+          commit('SET_TRANSFER_LOADING', false);
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * BULK TRANSFER ITEMS BETWEEN INVENTORIES
+   */
+  bulkTransferItemsBetweenInventories({ commit }, transferData) {
+    return new Promise((resolve, reject) => {
+      commit('SET_TRANSFER_LOADING', true);
+      axios
+        .post('/inventory/transfer/bulk', transferData)
+        .then((response) => {
+          commit('SET_TRANSFER_LOADING', false);
+          resolve(response);
+        })
+        .catch((error) => {
+          commit('SET_TRANSFER_LOADING', false);
+          reject(error);
+        });
+    });
+  },
 };

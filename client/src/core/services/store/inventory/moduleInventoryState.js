@@ -16,4 +16,19 @@ export default {
   returnRequests: [],
   totalReturnRequests: 0,
   returnRequestsPages: 0,
+
+  summary: null,
+  loadingSummary: false,
+
+  pendingPrescriptions: {
+    prescribedDrugs: [],
+    prescribedAdditionalItems: [],
+    totalDrugs: 0,
+    totalAdditionalItems: 0,
+    drugsPages: 0,
+    additionalItemsPages: 0,
+  },
+  loadingPendingPrescriptions: false,
+
+  transferLoading: false,
 };

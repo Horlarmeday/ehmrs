@@ -147,30 +147,6 @@ Comprehensive plan to fix all issues in the generalStore categories and subcateg
 
 ---
 
-## Patient Deposit Receipt Implementation
-
-### Tasks
-- [x] update-plan-doc — Document plan scope and acceptance criteria for deposit receipt work in this file.
-- [x] backend-receipt-endpoint — Deliver backend PDF generation and download endpoint for patient deposit receipts.
-- [x] frontend-store-support — Provide Vuex action to request and download deposit receipt PDFs.
-- [x] frontend-ui-integration — Add receipt download triggers to patient deposit list and detail screens.
-- [x] testing-and-verification — Execute verification steps and capture outcomes in the review section.
-
-### Acceptance Criteria
-- Documentation here clearly states objectives, tasks, and success conditions for patient deposit receipts.
-- Backend exposes a secure PDF download that renders accurate deposit information.
-- Vuex store action handles deposit receipt downloads with error reporting.
-- UI buttons allow users to download deposit receipts from both list and details views.
-- Testing activities and results are recorded in the review section upon completion.
-
-### Review
-- **Summary:** Removed the deposit receipt “Recent Transactions” section to keep PDFs concise while retaining key financial metrics.
-- **Technical Decisions:** Trimmed presentation logic directly in `printPatientDepositReceiptPDF` and dropped the unused transaction label helper, ensuring no unused destructured data remains.
-- **Impact:** Backend PDF generation now omits verbose transaction listings; frontend download flows continue to function without change.
-- **Testing:** `npm run build` (fails: `yarn: command not found`); `npm run lint` is unavailable in server package. No additional automated verification executed due to missing scripts.
-- **Limitations:** Receipt still depends on aggregate totals derived server-side; detailed transaction insight now requires alternate reporting paths.
-- **Future Considerations:** If stakeholders need transaction context, expose it via optional paginated reports instead of inline PDF content.
-
 ## Review Section - API Optimization Implementation
 
 ### Completed Tasks Summary

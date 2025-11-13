@@ -43,3 +43,32 @@ export const validateUpdateReturnRequest = inventory => {
   );
   return schema.validate(inventory);
 };
+
+export const validateInventoryTransfer = inventory => {
+  const schema = Joi.object({
+    source_inventory_item_id: Joi.number().required(),
+    destination_inventory_id: Joi.number().required(),
+    quantity: Joi.number().min(1).required(),
+    reason: Joi.string().optional().allow(''),
+    notes: Joi.string().optional().allow(''),
+  });
+  return schema.validate(inventory);
+};
+
+export const validateBulkInventoryTransfer = inventory => {
+  const schema = Joi.object({
+    destination_inventory_id: Joi.number().required(),
+    items: Joi.array()
+      .items(
+        Joi.object({
+          source_inventory_item_id: Joi.number().required(),
+          quantity: Joi.number().min(1).required(),
+        })
+      )
+      .min(1)
+      .required(),
+    reason: Joi.string().optional().allow(''),
+    notes: Joi.string().optional().allow(''),
+  });
+  return schema.validate(inventory);
+};

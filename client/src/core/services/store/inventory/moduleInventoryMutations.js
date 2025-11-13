@@ -95,4 +95,38 @@ export default {
   SET_RETURN_REQUESTS_PAGES(state, pages) {
     state.returnRequestsPages = pages;
   },
+
+  /**
+   * INVENTORY SUMMARY
+   */
+  SET_SUMMARY(state, summary) {
+    state.summary = summary;
+  },
+
+  SET_LOADING_SUMMARY(state, loading) {
+    state.loadingSummary = loading;
+  },
+
+  /**
+   * PENDING PRESCRIPTIONS
+   */
+  SET_PENDING_PRESCRIPTIONS(state, data) {
+    state.pendingPrescriptions.prescribedDrugs = data.prescribedDrugs.rows || [];
+    state.pendingPrescriptions.prescribedAdditionalItems = data.prescribedAdditionalItems.rows || [];
+    state.pendingPrescriptions.totalDrugs = data.prescribedDrugs.count || 0;
+    state.pendingPrescriptions.totalAdditionalItems = data.prescribedAdditionalItems.count || 0;
+    state.pendingPrescriptions.drugsPages = data.prescribedDrugs.pages || 0;
+    state.pendingPrescriptions.additionalItemsPages = data.prescribedAdditionalItems.pages || 0;
+  },
+
+  SET_LOADING_PENDING_PRESCRIPTIONS(state, loading) {
+    state.loadingPendingPrescriptions = loading;
+  },
+
+  /**
+   * TRANSFER
+   */
+  SET_TRANSFER_LOADING(state, loading) {
+    state.transferLoading = loading;
+  },
 };

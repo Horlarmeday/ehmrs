@@ -10,6 +10,9 @@
         </div>
       </b-button>
       <b-button @click="openReturnModal" variant="outline-secondary">Return Items</b-button>
+      <b-button @click="openBulkTransferModal" variant="outline-primary">
+        <i class="flaticon2-arrow mr-2"></i>Bulk Transfer
+      </b-button>
     </b-button-group>
     <!--begin::Table-->
     <div class="table-responsive">
@@ -28,16 +31,7 @@
             <th class="pr-0" style="width: 150px">Dosage Form</th>
             <th class="pr-0" style="width: 150px">Strength</th>
             <th style="min-width: 150px">Expiration</th>
-            <th
-              v-if="
-                allowedRoles.includes(currentUser.role) ||
-                allowedSubRoles.includes(currentUser.sub_role)
-              "
-              class="pr-0 text-right"
-              style="min-width: 70px"
-            >
-              action
-            </th>
+            <th class="pr-0 text-right" style="min-width: 150px">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -92,17 +86,28 @@
               </span>
             </td>
             <td class="pr-0 text-right">
-              <a
-                v-if="
-                  allowedRoles.includes(currentUser.role) ||
-                  allowedSubRoles.includes(currentUser.sub_role)
-                "
-                href="#"
-                class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
-                @click.stop="deactivateItem(item)"
-              >
-                <send-icon />
-              </a>
+              <b-button-group>
+                <b-button
+                  variant="outline-primary"
+                  size="sm"
+                  @click.stop="transferItem(item)"
+                  title="Transfer to another inventory"
+                >
+                  <i class="flaticon2-arrow"></i>
+                </b-button>
+                <b-button
+                  v-if="
+                    allowedRoles.includes(currentUser.role) ||
+                    allowedSubRoles.includes(currentUser.sub_role)
+                  "
+                  variant="outline-danger"
+                  size="sm"
+                  @click.stop="deactivateItem(item)"
+                  title="Deactivate item"
+                >
+                  <send-icon />
+                </b-button>
+              </b-button-group>
             </td>
           </tr>
         </tbody>
@@ -176,6 +181,14 @@ export default {
 
     openReturnModal() {
       this.$emit('openReturnModal', true);
+    },
+
+    transferItem(item) {
+      this.$emit('transferItem', item);
+    },
+
+    openBulkTransferModal() {
+      this.$emit('openBulkTransferModal', true);
     },
   },
 };

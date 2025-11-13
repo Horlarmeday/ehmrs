@@ -7,14 +7,24 @@ import {
   getInventoryItemHistory,
   getInventoryItems,
   getInventoryReturnRequests,
+  getInventorySummary,
+  getPendingPrescriptionsForItem,
   receiveBulkItem,
+  transferItemBetweenInventories,
+  bulkTransferItemsBetweenInventories,
   requestReturnDrugsToStore,
   searchInventoryItems,
   updateInventoryItem,
   updateReturnRequests,
 } from './inventory.repository';
 import { Inventory, InventoryItem, ReturnItem } from '../../database/models';
-import { InventoryTypes, RequestReturnToStore, UpdateReturnRequest } from './types/inventory.types';
+import {
+  BulkInventoryTransferRequest,
+  InventoryTransferRequest,
+  InventoryTypes,
+  RequestReturnToStore,
+  UpdateReturnRequest,
+} from './types/inventory.types';
 import { GetInventoryItemsBody } from './types/inventory-item.types';
 import { BadException } from '../../common/util/api-error';
 
@@ -203,6 +213,52 @@ class InventoryService {
     }
 
     return getInventoryReturnRequests({});
+  }
+
+  /**
+   * get inventory summary statistics
+   * @param inventoryId
+   */
+  static async getInventorySummary(inventoryId: number) {
+    return getInventorySummary(inventoryId);
+  }
+
+  /**
+   * transfer item between inventories
+   * @param body
+   * @param staff_id
+   */
+  static async transferItemBetweenInventories(body: InventoryTransferRequest, staff_id: number) {
+    return transferItemBetweenInventories(body, staff_id);
+  }
+
+  /**
+   * bulk transfer items between inventories
+   * @param body
+   * @param staff_id
+   */
+  static async bulkTransferItemsBetweenInventories(
+    body: BulkInventoryTransferRequest,
+    staff_id: number
+  ) {
+    return bulkTransferItemsBetweenInventories(body, staff_id);
+  }
+
+  /**
+   * get pending prescriptions for an inventory item
+   * @param body
+   */
+  static async getPendingPrescriptionsForItem(body: {
+    inventoryItemId: number;
+    currentPage?: number;
+    pageLimit?: number;
+  }) {
+    const { inventoryItemId, currentPage, pageLimit } = body;
+    return getPendingPrescriptionsForItem({
+      inventoryItemId,
+      currentPage,
+      pageLimit,
+    });
   }
 }
 

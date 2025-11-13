@@ -22,3 +22,21 @@ export type UpdateReturnRequest = {
   quantity: number;
   status: string;
 };
+
+export type InventoryTransferRequest = {
+  source_inventory_item_id: number;
+  destination_inventory_id: number;
+  quantity: number;
+  reason?: string;
+  notes?: string;
+};
+
+export type BulkInventoryTransferRequest = {
+  destination_inventory_id: number;
+  items: Array<{
+    source_inventory_item_id: number;
+    quantity: number;
+  }>;
+  reason?: string;
+  notes?: string;
+};

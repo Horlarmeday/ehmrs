@@ -10,6 +10,9 @@
                 <inventory-item-detail />
               </b-tab>
               <!-- and will be un-mounted when hidden -->
+              <b-tab title="Pending Prescriptions" lazy>
+                <pending-prescriptions :inventory-item-id="+$route.params.id" />
+              </b-tab>
               <b-tab title="Dispenses" lazy>
                 <inventory-item-history
                   history_type="Dispensed"
@@ -42,9 +45,10 @@
 <script>
 import InventoryItemDetail from '@/view/pages/inventory/components/InventoryItemDetail.vue';
 import InventoryItemHistory from '@/view/pages/inventory/components/InventoryItemHistory.vue';
+import PendingPrescriptions from '@/view/pages/inventory/components/PendingPrescriptions.vue';
 
 export default {
-  components: { InventoryItemHistory, InventoryItemDetail },
+  components: { InventoryItemHistory, InventoryItemDetail, PendingPrescriptions },
 };
 </script>
 <style scoped></style>

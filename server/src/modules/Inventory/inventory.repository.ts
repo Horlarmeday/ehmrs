@@ -10,16 +10,30 @@ import {
   InventoryItemHistory,
   Staff,
   Patient,
+  PrescribedDrug,
+  PrescribedAdditionalItem,
   ReturnItem,
   PharmacyStore,
   PharmacyStoreHistory,
+  Visit,
 } from '../../database/models';
-import { RequestReturnToStore, UpdateReturnRequest } from './types/inventory.types';
-import { dateIntervalQuery, staffAttributes } from '../../core/helpers/helper';
+import {
+  BulkInventoryTransferRequest,
+  InventoryTransferRequest,
+  RequestReturnToStore,
+  UpdateReturnRequest,
+} from './types/inventory.types';
+import { calcLimitAndOffset, dateIntervalQuery, staffAttributes } from '../../core/helpers/helper';
 import sequelizeConnection from '../../database/config/data-source';
 import { HistoryType } from '../../database/models/inventoryItemHistory';
 import { getOnePharmacyStoreItem } from '../Store/store.repository';
 import { Status } from '../../database/models/returnItem';
+import { Status as InventoryItemStatus } from '../../database/models/inventoryItem';
+import { BadException } from '../../common/util/api-error';
+import { AcceptedDrugType } from '../../database/models/inventory';
+import { DrugType } from '../../database/models/pharmacyStore';
+import { DispenseStatus } from '../../database/models/prescribedAdditionalItem';
+import { DrugForm } from '../../database/models/drug';
 
 /**
  * receive product(s) into the inventory
@@ -459,4 +473,507 @@ export const updateReturnRequests = async (
       await ReturnItem.update({ status: Status.RETURNED }, { where: { id: item.id } });
     });
   }
+};
+
+/**
+ * get inventory summary statistics
+ *
+ * @function
+ * @returns {Promise<object>} json object with inventory summary statistics
+ * @param inventoryId
+ */
+export const getInventorySummary = async (inventoryId: number): Promise<{
+  total_items: number;
+  total_quantity_remaining: number;
+  low_stock_count: number;
+  critical_stock_count: number;
+  expiring_soon_count: number;
+  expired_count: number;
+  total_valuation: number;
+  drug_type_breakdown: Record<string, number>;
+}> => {
+  const items = await InventoryItem.findAll({
+    where: {
+      inventory_id: inventoryId,
+      status: InventoryItemStatus.ACTIVE,
+    },
+    include: [
+      {
+        model: Inventory,
+        as: 'inventory',
+        attributes: ['refill_level'],
+      },
+    ],
+  });
+
+  const today = new Date();
+  const sixMonthsFromNow = new Date();
+  sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
+
+  let totalQuantityRemaining = 0;
+  let lowStockCount = 0;
+  let criticalStockCount = 0;
+  let expiringSoonCount = 0;
+  let expiredCount = 0;
+  let totalValuation = 0;
+  const drugTypeBreakdown: Record<string, number> = {};
+
+  items.forEach(item => {
+    const quantityRemaining = item.quantity_remaining || 0;
+    const sellingPrice = parseFloat(item.selling_price?.toString() || '0');
+    
+    totalQuantityRemaining += quantityRemaining;
+    totalValuation += quantityRemaining * sellingPrice;
+
+    // Low stock check: use refill_level if set, otherwise default to 50
+    const lowStockThreshold = item.inventory?.refill_level || 50;
+    if (quantityRemaining < lowStockThreshold) {
+      lowStockCount++;
+    }
+
+    // Critical stock: less than 20
+    if (quantityRemaining < 20) {
+      criticalStockCount++;
+    }
+
+    // Expiry checks
+    if (item.expiration) {
+      const expirationDate = new Date(item.expiration);
+      if (expirationDate < today) {
+        expiredCount++;
+      } else if (expirationDate <= sixMonthsFromNow) {
+        expiringSoonCount++;
+      }
+    }
+
+    // Drug type breakdown
+    const drugType = item.drug_type || 'Unknown';
+    drugTypeBreakdown[drugType] = (drugTypeBreakdown[drugType] || 0) + 1;
+  });
+
+  return {
+    total_items: items.length,
+    total_quantity_remaining: totalQuantityRemaining,
+    low_stock_count: lowStockCount,
+    critical_stock_count: criticalStockCount,
+    expiring_soon_count: expiringSoonCount,
+    expired_count: expiredCount,
+    total_valuation: totalValuation,
+    drug_type_breakdown: drugTypeBreakdown,
+  };
+};
+
+/**
+ * transfer item from one inventory to another
+ * @param data
+ * @param staff_id
+ * @returns {Promise<{sourceItem: InventoryItem, destinationItem: InventoryItem}>} transfer result
+ */
+export const transferItemBetweenInventories = async (
+  data: InventoryTransferRequest,
+  staff_id: number
+): Promise<{ sourceItem: InventoryItem; destinationItem: InventoryItem }> => {
+  const {
+    source_inventory_item_id,
+    destination_inventory_id,
+    quantity,
+    reason,
+    notes,
+  } = data;
+
+  return await sequelizeConnection.transaction(async t => {
+    // Get source item with full details
+    const sourceItem = await InventoryItem.findByPk(source_inventory_item_id, {
+      include: [
+        {
+          model: Inventory,
+          as: 'inventory',
+          attributes: ['id', 'name', 'accepted_drug_type'],
+        },
+        {
+          model: Drug,
+          attributes: ['id', 'name'],
+        },
+        {
+          model: Unit,
+          attributes: ['id', 'name'],
+        },
+      ],
+      transaction: t,
+    });
+
+    if (!sourceItem) {
+      throw new BadException('NOT_FOUND', 404, 'Source inventory item not found');
+    }
+
+    // Validate quantity
+    if (quantity <= 0) {
+      throw new BadException('INVALID', 400, 'Transfer quantity must be greater than 0');
+    }
+
+    if (sourceItem.quantity_remaining < quantity) {
+      throw new BadException(
+        'INVALID',
+        400,
+        `Insufficient quantity. Available: ${sourceItem.quantity_remaining}, Requested: ${quantity}`
+      );
+    }
+
+    // Get destination inventory
+    const destinationInventory = await Inventory.findByPk(destination_inventory_id, {
+      transaction: t,
+    });
+
+    if (!destinationInventory) {
+      throw new BadException('NOT_FOUND', 404, 'Destination inventory not found');
+    }
+
+    // Validate destination accepts the drug type
+    const sourceDrugType = sourceItem.drug_type;
+    const destinationAcceptedType = destinationInventory.accepted_drug_type;
+
+    // Map DrugType enum values to AcceptedDrugType enum values
+    const drugTypeToAcceptedTypeMap: Record<DrugType, AcceptedDrugType> = {
+      [DrugType.CASH]: AcceptedDrugType.CASH,
+      [DrugType.NHIS]: AcceptedDrugType.NHIS,
+      [DrugType.PRIVATE]: AcceptedDrugType.PRIVATE,
+      [DrugType.RETAINERSHIP]: AcceptedDrugType.RETAINERSHIP,
+      [DrugType.PLASCHEMA]: AcceptedDrugType.PLASCHEMA,
+    };
+
+    const sourceAcceptedType = drugTypeToAcceptedTypeMap[sourceDrugType];
+
+    // Check compatibility
+    let isCompatible = false;
+    
+    if (destinationAcceptedType === AcceptedDrugType.ALL) {
+      isCompatible = true;
+    } else if (destinationAcceptedType === AcceptedDrugType.BOTH) {
+      // BOTH means accepts both Cash and NHIS
+      isCompatible =
+        sourceAcceptedType === AcceptedDrugType.CASH || sourceAcceptedType === AcceptedDrugType.NHIS;
+    } else {
+      // Exact match required
+      isCompatible = destinationAcceptedType === sourceAcceptedType;
+    }
+
+    if (!isCompatible) {
+      throw new BadException(
+        'INVALID',
+        400,
+        `Destination inventory does not accept ${sourceDrugType}. It accepts ${destinationAcceptedType}`
+      );
+    }
+
+    // Prevent transferring to same inventory
+    if (sourceItem.inventory_id === destination_inventory_id) {
+      throw new BadException('INVALID', 400, 'Cannot transfer to the same inventory');
+    }
+
+    // Find or create destination item
+    let destinationItem = await InventoryItem.findOne({
+      where: {
+        inventory_id: destination_inventory_id,
+        drug_id: sourceItem.drug_id,
+        drug_form: sourceItem.drug_form,
+        drug_type: sourceItem.drug_type,
+        dosage_form_id: sourceItem.dosage_form_id,
+        measurement_id: sourceItem.measurement_id,
+        strength_input: sourceItem.strength_input,
+        status: InventoryItemStatus.ACTIVE,
+      },
+      transaction: t,
+    });
+
+    if (destinationItem) {
+      // Update existing destination item
+      destinationItem.quantity_received += quantity;
+      destinationItem.quantity_remaining += quantity;
+      await destinationItem.save({ transaction: t });
+    } else {
+      // Create new destination item
+      destinationItem = await InventoryItem.create(
+        {
+          inventory_id: destination_inventory_id,
+          drug_id: sourceItem.drug_id,
+          quantity_received: quantity,
+          quantity_remaining: quantity,
+          unit_id: sourceItem.unit_id,
+          selling_price: sourceItem.selling_price,
+          acquired_price: sourceItem.acquired_price,
+          expiration: sourceItem.expiration,
+          dosage_form_id: sourceItem.dosage_form_id,
+          measurement_id: sourceItem.measurement_id,
+          strength_input: sourceItem.strength_input,
+          drug_form: sourceItem.drug_form,
+          drug_type: sourceItem.drug_type,
+          date_received: new Date(),
+          staff_id,
+          status: InventoryItemStatus.ACTIVE,
+        },
+        { transaction: t }
+      );
+    }
+
+    // Update source item
+    const newQuantityRemaining = sourceItem.quantity_remaining - quantity;
+    const newQuantityConsumed = (sourceItem.quantity_consumed || 0) + quantity;
+    
+    await InventoryItem.update(
+      {
+        quantity_remaining: newQuantityRemaining,
+        quantity_consumed: newQuantityConsumed,
+      },
+      {
+        where: { id: sourceItem.id },
+        transaction: t,
+      }
+    );
+    
+    sourceItem.quantity_remaining = newQuantityRemaining;
+    sourceItem.quantity_consumed = newQuantityConsumed;
+
+    // Create history entry for source inventory (SUPPLIED)
+    await InventoryItemHistory.create(
+      {
+        quantity_supplied: quantity,
+        quantity_remaining: newQuantityRemaining,
+        inventory_item_id: sourceItem.id,
+        inventory_id: sourceItem.inventory_id,
+        unit_id: sourceItem.unit_id,
+        staff_id,
+        history_date: new Date(),
+        history_type: HistoryType.SUPPLIED,
+        reason_for_return: reason || notes || 'Transfer to another inventory',
+      },
+      { transaction: t }
+    );
+
+    // Create history entry for destination inventory (SUPPLIED)
+    await InventoryItemHistory.create(
+      {
+        quantity_supplied: quantity,
+        quantity_remaining: destinationItem.quantity_remaining,
+        inventory_item_id: destinationItem.id,
+        inventory_id: destination_inventory_id,
+        unit_id: destinationItem.unit_id,
+        staff_id,
+        history_date: new Date(),
+        history_type: HistoryType.SUPPLIED,
+        reason_for_return: reason || notes || `Transfer from ${sourceItem.inventory?.name || 'inventory'}`,
+      },
+      { transaction: t }
+    );
+
+    // Reload items with associations
+    await sourceItem.reload({
+      include: [
+        {
+          model: Inventory,
+          as: 'inventory',
+          attributes: ['id', 'name'],
+        },
+        {
+          model: Drug,
+          attributes: ['id', 'name'],
+        },
+        {
+          model: Unit,
+          attributes: ['id', 'name'],
+        },
+      ],
+      transaction: t,
+    });
+
+    await destinationItem.reload({
+      include: [
+        {
+          model: Inventory,
+          as: 'inventory',
+          attributes: ['id', 'name'],
+        },
+        {
+          model: Drug,
+          attributes: ['id', 'name'],
+        },
+        {
+          model: Unit,
+          attributes: ['id', 'name'],
+        },
+      ],
+      transaction: t,
+    });
+
+    return { sourceItem, destinationItem };
+  });
+};
+
+/**
+ * transfer multiple items from one inventory to another in bulk
+ * @param data
+ * @param staff_id
+ * @returns {Promise<{successful: Array, failed: Array}>} bulk transfer result
+ */
+export const bulkTransferItemsBetweenInventories = async (
+  data: BulkInventoryTransferRequest,
+  staff_id: number
+): Promise<{
+  successful: Array<{ sourceItem: InventoryItem; destinationItem: InventoryItem }>;
+  failed: Array<{ item_id: number; error: string }>;
+}> => {
+  const { destination_inventory_id, items, reason, notes } = data;
+
+  // Get destination inventory once
+  const destinationInventory = await Inventory.findByPk(destination_inventory_id);
+  if (!destinationInventory) {
+    throw new BadException('NOT_FOUND', 404, 'Destination inventory not found');
+  }
+
+  const successful: Array<{ sourceItem: InventoryItem; destinationItem: InventoryItem }> = [];
+  const failed: Array<{ item_id: number; error: string }> = [];
+
+  // Process each item transfer
+  for (const transferItem of items) {
+    try {
+      const result = await transferItemBetweenInventories(
+        {
+          source_inventory_item_id: transferItem.source_inventory_item_id,
+          destination_inventory_id,
+          quantity: transferItem.quantity,
+          reason,
+          notes,
+        },
+        staff_id
+      );
+      successful.push(result);
+    } catch (error) {
+      failed.push({
+        item_id: transferItem.source_inventory_item_id,
+        error: error instanceof BadException ? error.message : 'Transfer failed',
+      });
+    }
+  }
+
+  return { successful, failed };
+};
+
+/**
+ * get pending prescriptions for an inventory item
+ *
+ * @function
+ * @returns {Promise<{prescribedDrugs: PrescribedDrug[], prescribedAdditionalItems: PrescribedAdditionalItem[]}>} json object with pending prescriptions
+ * @param inventoryItemId
+ * @param currentPage
+ * @param pageLimit
+ */
+export const getPendingPrescriptionsForItem = async ({
+  inventoryItemId,
+  currentPage = 1,
+  pageLimit = 10,
+}): Promise<{
+  prescribedDrugs: {
+    rows: PrescribedDrug[];
+    count: number;
+    pages: number;
+  };
+  prescribedAdditionalItems: {
+    rows: PrescribedAdditionalItem[];
+    count: number;
+    pages: number;
+  };
+}> => {
+  // Get the inventory item to find its inventory_id and drug_id
+  const inventoryItem = await InventoryItem.findByPk(inventoryItemId, {
+    attributes: ['id', 'inventory_id', 'drug_id'],
+    include: [
+      {
+        model: Drug,
+        attributes: ['id', 'type'],
+      },
+    ],
+  });
+
+  if (!inventoryItem) {
+    throw new BadException('NOT_FOUND', 404, 'Inventory item not found');
+  }
+
+  let prescribedDrugs: { docs: PrescribedDrug[]; total: number; pages: number, currentPage: number, perPage: number };
+  let prescribedAdditionalItems: { docs: PrescribedAdditionalItem[]; total: number; pages: number, currentPage: number, perPage: number };
+
+  if (inventoryItem.drug.type === DrugForm.DRUG) {
+      // Get pending prescribed drugs
+    prescribedDrugs = await PrescribedDrug.paginate({
+      paginate: pageLimit,
+      page: currentPage,
+      order: [['createdAt', 'DESC']],
+      where: {
+        drug_id: inventoryItem.drug_id,
+        dispense_status: DispenseStatus.PENDING,
+      },
+      include: [
+        {
+          model: Patient,
+          attributes: ['id', 'firstname', 'lastname', 'hospital_id'],
+        },
+        {
+          model: Visit,
+          attributes: ['id', 'date_visit_start', 'type', 'category'],
+        },
+        {
+          model: Drug,
+          attributes: ['id', 'name'],
+        },
+        {
+          model: Staff,
+          as: 'requester',
+          attributes: ['id', 'firstname', 'lastname'],
+        },
+      ],
+    });
+  } else {
+        // Get pending prescribed additional items
+    prescribedAdditionalItems = await PrescribedAdditionalItem.paginate({
+      paginate: pageLimit,
+      page: currentPage,
+      order: [['createdAt', 'DESC']],
+      where: {
+        drug_id: inventoryItem.drug_id,
+        dispense_status: DispenseStatus.PENDING,
+      },
+      include: [
+        {
+          model: Patient,
+          attributes: ['id', 'firstname', 'lastname', 'hospital_id'],
+        },
+        {
+          model: Visit,
+          attributes: ['id', 'date_visit_start', 'type', 'category'],
+        },
+        {
+          model: Drug,
+          attributes: ['id', 'name', 'type'],
+        },
+        {
+          model: Staff,
+          as: 'requester',
+          attributes: ['id', 'firstname', 'lastname'],
+        },
+      ],
+    });
+  }
+
+
+
+  return {
+    prescribedDrugs: {
+      rows: prescribedDrugs?.docs || [],
+      count: prescribedDrugs?.total || 0,
+      pages: prescribedDrugs?.pages || 0,
+    },
+    prescribedAdditionalItems: {
+      rows: prescribedAdditionalItems?.docs || [],
+      count: prescribedAdditionalItems?.total || 0,
+      pages: prescribedAdditionalItems?.pages || 0,
+    },
+  };
 };

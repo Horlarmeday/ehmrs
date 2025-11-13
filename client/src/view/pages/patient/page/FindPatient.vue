@@ -178,13 +178,13 @@
                   >
                     <arrow-right-icon />
                   </router-link>
-                  <!-- <a
+                  <a
                     v-if="deactivateUserAllowedRoles.includes(currentUser.role)"
                     @click.stop="showConfirmAlert(patient)"
                     href="#"
                     class="btn btn-icon btn-light btn-hover-primary btn-sm"
                     ><dish-icon
-                  /></a> -->
+                  /></a>
                 </td>
               </tr>
             </tbody>
@@ -222,7 +222,7 @@ import {
 } from '@/common/common';
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
 import dayjs from 'dayjs';
-// import DishIcon from '@/assets/icons/DishIcon.vue';
+import DishIcon from '@/assets/icons/DishIcon.vue';
 import Swal from 'sweetalert2';
 export default {
   data() {
@@ -244,7 +244,7 @@ export default {
     };
   },
   components: {
-    //DishIcon,
+    DishIcon,
     ArrowRightIcon,
     CreateVisit,
     Pagination,
