@@ -109,9 +109,10 @@ export default {
     allowedSubRole: ['HOD'],
   }),
 
-  computed: {
-    item() {
-      return this.$store.state.inventory.item;
+  props: {
+    item: {
+      type: Object,
+      required: true,
     },
   },
 
@@ -139,7 +140,6 @@ export default {
 
   created() {
     this.countToHundred();
-    this.$store.dispatch('inventory/fetchInventoryItem', { id: this.$route.params.id });
   },
 };
 </script>

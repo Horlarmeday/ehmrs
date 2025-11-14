@@ -4,6 +4,7 @@ import {
   validateBed,
   validateCreateDefault,
   validateDeleteDefaultData,
+  validateDeleteService,
   validateDepartment,
   validateService,
   validateUnit,
@@ -402,6 +403,34 @@ class AdminController {
       const service = await AdminService.updateHospitalService(req.body);
 
       return successResponse({ res, httpCode: 200, data: service, message: DATA_UPDATED });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * delete a service
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, service data
+   */
+  static async deleteService(req: Request, res: Response, next: NextFunction) {
+    const service_id = Number(req.params?.id ?? req.body?.service_id);
+    const { error } = validateDeleteService({ service_id });
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+
+    try {
+      const service = await AdminService.deleteHospitalService(service_id);
+
+      return successResponse({ res, httpCode: 200, data: service, message: DATA_DELETED });
     } catch (e) {
       return next(e);
     }

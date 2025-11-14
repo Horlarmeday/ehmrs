@@ -59,6 +59,23 @@ import {
   getConsultationSummary,
   getPatientDiagnoses,
 } from '../Consultation/consultation.repository';
+import { isEmpty } from 'lodash';
+
+type DispensedEntity = { dispense_status: DispenseStatus };
+
+const areEntitiesFullyDispensed = (entities?: DispensedEntity[]): boolean => {
+  if (!entities || entities.length === 0) {
+    return true;
+  }
+  return entities.every(entity => entity.dispense_status === DispenseStatus.DISPENSED);
+};
+
+export const isPrescriptionFullyDispensed = (
+  prescriptions?: DispensedEntity[],
+  additionalItems?: DispensedEntity[]
+): boolean => {
+  return areEntitiesFullyDispensed(prescriptions) && areEntitiesFullyDispensed(additionalItems);
+};
 
 async function includeOneModel({ model, modelToInclude, id, includeAs }) {
   return model.findOne({
@@ -733,18 +750,12 @@ export const dispenseDrug = async (
       getAdditionalItemsWithoutJoins({ drug_prescription_id }),
     ]);
 
-    const isDrugsAllDispensed = prescriptions?.every(
-      drug => drug.dispense_status === DispenseStatus.DISPENSED
-    );
-    const isAdditionalItemsAllDispensed = additionalItems?.every(
-      drug => drug.dispense_status === DispenseStatus.DISPENSED
-    );
+    const prescriptionComplete = isPrescriptionFullyDispensed(prescriptions, additionalItems);
+
     await DrugPrescription.update(
       {
         status:
-          isDrugsAllDispensed && isAdditionalItemsAllDispensed
-            ? DrugStatus.COMPLETE_DISPENSE
-            : DrugStatus.PARTIAL_DISPENSED,
+          prescriptionComplete ? DrugStatus.COMPLETE_DISPENSE : DrugStatus.PARTIAL_DISPENSED,
       },
       { where: { id: drug_prescription_id }, transaction: t }
     );

@@ -129,6 +129,11 @@ export default {
     Object.assign(state.services[serviceIndex], service);
   },
 
+  REMOVE_SERVICE(state, serviceId) {
+    state.services = state.services.filter((service) => service.id !== serviceId);
+    state.serviceTotal = Math.max(0, state.serviceTotal - 1);
+  },
+
   /**
    * DEFAULT
    */

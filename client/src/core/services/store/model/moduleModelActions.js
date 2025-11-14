@@ -320,6 +320,20 @@ export default {
     });
   },
 
+  deleteService({ commit }, serviceId) {
+    return new Promise((resolve, reject) => {
+      axios
+        .delete(`/settings/services/${serviceId}`)
+        .then((response) => {
+          commit('REMOVE_SERVICE', serviceId);
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+
   /**
    * DEFAULTS
    */

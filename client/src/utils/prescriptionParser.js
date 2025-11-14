@@ -48,7 +48,7 @@ export function parseStrength(text) {
 
   // Match numeric strength (supports decimals) followed by optional unit
   // Examples: 250mg, 2.5mg, 1g, 500mcg, 2ml
-  const strengthRegex = /(\d+\.?\d*)\s*(mg|g|mcg|µg|ml|units?)?/i;
+  const strengthRegex = /(\d+\.?\d*)\s*(mg|g|mcg|µg|ml|units?)/i;
   const match = text.match(strengthRegex);
 
   if (match && match[1]) {
@@ -170,36 +170,41 @@ export function parsePrescription(text) {
   const frequency = parseFrequency(trimmedText);
   const durationResult = parseDuration(trimmedText);
 
+  const hasStrength = typeof strength === 'number' && !Number.isNaN(strength);
+  const hasFrequency = Boolean(frequency);
+  const hasDurationValue = typeof durationResult?.value === 'number' && !Number.isNaN(durationResult.value);
+  const hasDurationUnit = Boolean(durationResult?.unit);
+  const hasDuration = hasDurationValue && hasDurationUnit;
+
   // Build result object
   const result = {
     strength,
     frequency,
-    duration: durationResult?.value || null,
-    durationUnit: durationResult?.unit || null,
+    duration: hasDurationValue ? durationResult.value : null,
+    durationUnit: hasDurationUnit ? durationResult.unit : null,
     error: null,
   };
 
   // Validation and error messages
   const missing = [];
 
-  if (strength === null) {
+  if (!hasStrength) {
     missing.push('strength (e.g., 250mg)');
   }
 
-  if (frequency === null) {
+  if (!hasFrequency) {
     missing.push('frequency (e.g., TDS, BD, OD)');
   }
 
-  if (durationResult === null) {
+  if (!hasDuration) {
     missing.push('duration (e.g., 5 days, 7/7)');
   }
 
   if (missing.length > 0) {
     result.error = `Could not parse: ${missing.join(', ')}. Example format: 250mg TDS x 5 days`;
-    return result;
   }
 
-  // All components successfully parsed
+  // All components parsed only when error remains null
   return result;
 }
 

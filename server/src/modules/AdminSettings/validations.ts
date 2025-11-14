@@ -47,6 +47,14 @@ export function validateService(service) {
   return schema.validate(service);
 }
 
+export function validateDeleteService(payload) {
+  const schema = Joi.object({
+    service_id: Joi.number().required(),
+  });
+
+  return schema.validate(payload);
+}
+
 export function validateCreateDefault(req) {
   const schema = Joi.object({
     type: Joi.string()

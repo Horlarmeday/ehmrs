@@ -67,6 +67,20 @@
                   >
                     <edit-icon />
                   </a>
+                  <button
+                    type="button"
+                    class="btn btn-icon btn-light btn-hover-danger btn-sm"
+                    :disabled="isDeleting(service.id)"
+                    @click.stop="confirmDelete(service)"
+                  >
+                    <span
+                      v-if="isDeleting(service.id)"
+                      class="spinner-border spinner-border-sm text-danger"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                    <delete-icon v-else />
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -93,6 +107,7 @@ import Pagination from '@/utils/Pagination.vue';
 import CreateService from './CreateService.vue';
 import EditIcon from '../../../../assets/icons/EditIcon.vue';
 import AddIcon from '../../../../assets/icons/AddIcon.vue';
+import DeleteIcon from '../../../../assets/icons/DeleteIcon.vue';
 import Search from '@/utils/Search.vue';
 import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
 export default {
@@ -103,6 +118,7 @@ export default {
       itemsPerPage: 10,
       displayPrompt: false,
       serviceToEdit: {},
+      deletingServiceId: null,
     };
   },
   components: {
@@ -111,6 +127,7 @@ export default {
     CreateService,
     EditIcon,
     AddIcon,
+    DeleteIcon,
   },
 
   computed: {
@@ -165,7 +182,7 @@ export default {
     }, 500),
 
     handlePageChange() {
-      this.$store.dispatch('model/fetchServices', {
+      return this.$store.dispatch('model/fetchServices', {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
       });
@@ -180,6 +197,50 @@ export default {
       this.$store.dispatch('model/fetchServices', {
         currentPage: this.currentPage,
         itemsPerPage: count,
+      });
+    },
+
+    isDeleting(serviceId) {
+      return this.deletingServiceId === serviceId;
+    },
+
+    async confirmDelete(service) {
+      const result = await this.$bvModal.msgBoxConfirm(
+        `Delete ${service.name}? This action cannot be undone.`,
+        {
+          title: 'Confirm Deletion',
+          size: 'sm',
+          okVariant: 'danger',
+          okTitle: 'Delete',
+          cancelTitle: 'Cancel',
+          footerClass: 'p-2',
+          hideHeaderClose: true,
+          centered: true,
+        }
+      );
+
+      if (!result) return;
+
+      this.deletingServiceId = service.id;
+      try {
+        await this.$store.dispatch('model/deleteService', service.id);
+        if (this.services.length === 0 && this.currentPage > 1) {
+          this.currentPage -= 1;
+        }
+        await this.handlePageChange();
+        this.showToast('Service deleted successfully', 'Success', 'success');
+      } catch (error) {
+        this.showToast(error.response?.data?.message || 'Failed to delete service', 'Error', 'danger');
+      } finally {
+        this.deletingServiceId = null;
+      }
+    },
+
+    showToast(message, title, variant) {
+      this.$bvToast.toast(message, {
+        title,
+        variant,
+        solid: true,
       });
     },
   },

@@ -33,6 +33,7 @@ router.put('/units/update', verify, AdminController.updateUnit);
 router.put('/wards/update', verify, AdminController.updateWard);
 router.put('/beds/update', verify, AdminController.updateBed);
 router.put('/services/update', verify, AdminController.updateService);
+router.delete('/services/:id', verify, AdminController.deleteService);
 router.delete('/defaults/delete', verify, AdminController.deleteDefaultData);
 
 export default router;

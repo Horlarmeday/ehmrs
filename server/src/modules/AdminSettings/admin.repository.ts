@@ -9,6 +9,7 @@ import {
   Encounter,
   Patient,
   PatientInsurance,
+  PrescribedService,
   Service,
   ServiceTariff,
   Staff,
@@ -18,6 +19,7 @@ import {
   Ward,
 } from '../../database/models';
 import {
+  StatusCodes,
   calcLimitAndOffset,
   canUsePriceTariff,
   dateIntervalQuery,
@@ -28,6 +30,7 @@ import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { staffAttributes } from '../Antenatal/antenatal.repository';
 import { BedStatus } from '../../database/models/bed';
 import dayjs from 'dayjs';
+import { BadException } from '../../common/util/api-error';
 
 /** ***********************
  * DEPARTMENT
@@ -404,6 +407,32 @@ export async function getServices(currentPage = 1, pageLimit = 20) {
     paginate: pageLimit,
     order: [['name', 'ASC']],
   });
+}
+
+/**
+ * delete a service
+ *
+ * @function
+ * @returns {Promise<Service>} deleted service data
+ * @param service_id
+ */
+export async function deleteService(service_id: number): Promise<Service> {
+  const service = await getModelById(Service, service_id);
+
+  const usageCount = await PrescribedService.count({
+    where: { service_id },
+  });
+
+  if (usageCount > 0) {
+    throw new BadException(
+      'INVALID',
+      StatusCodes.BAD_REQUEST,
+      'Service has been used in prescriptions and cannot be deleted'
+    );
+  }
+
+  await service.destroy();
+  return service;
 }
 
 /**

@@ -162,7 +162,7 @@
           <div class="col-lg-6">
             <h3 class="card-title mb-0">Inventory Items</h3>
           </div>
-          <div class="col-lg-6 text-right">
+          <!-- <div class="col-lg-6 text-right">
             <b-button-group class="mr-3">
               <b-button
                 :variant="filterType === 'low_stock' ? 'warning' : 'outline-warning'"
@@ -194,7 +194,7 @@
                 Clear
               </b-button>
             </b-button-group>
-          </div>
+          </div> -->
         </div>
       </div>
       <div class="card-body">

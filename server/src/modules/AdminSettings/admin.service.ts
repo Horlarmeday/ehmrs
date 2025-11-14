@@ -6,6 +6,7 @@ import {
   createUnit,
   createWard,
   deleteDefaultData,
+  deleteService,
   getBeds,
   getBedsInAWard,
   getDefaults,
@@ -29,7 +30,7 @@ import {
   updateUnit,
   updateWard,
 } from './admin.repository';
-import { Default, Department, Encounter, SystemSettings, Ward } from '../../database/models';
+import { Default, Department, Encounter, Service, SystemSettings, Ward } from '../../database/models';
 
 class AdminService {
   /** create a department
@@ -248,6 +249,18 @@ class AdminService {
    */
   static async updateHospitalService(body) {
     return updateService(body);
+  }
+
+  /**
+   * delete a service
+   *
+   * @static
+   * @returns {Promise<Service>} deleted service data
+   * @param serviceId
+   * @memberOf AdminService
+   */
+  static async deleteHospitalService(serviceId: number): Promise<Service> {
+    return deleteService(serviceId);
   }
 
   /**
