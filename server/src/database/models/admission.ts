@@ -141,6 +141,12 @@ export class Admission extends Model {
   })
   date_admitted: Date;
 
+  @Column({
+    type: DataType.DATEONLY,
+    allowNull: true,
+  })
+  last_charged_date: Date;
+
   @ForeignKey(() => PatientInsurance)
   @Column({
     type: DataType.INTEGER,

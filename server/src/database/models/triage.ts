@@ -65,11 +65,6 @@ export class Triage extends Model {
   bmi: number;
 
   @Column({
-    type: DataType.STRING,
-  })
-  rvs: string;
-
-  @Column({
     type: DataType.FLOAT,
   })
   pulse: number;
@@ -114,6 +109,16 @@ export class Triage extends Model {
     type: DataType.STRING,
   })
   muac: string;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  fbc: string;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  rbs: string;
 
   @ForeignKey(() => Staff)
   @Column({

@@ -55,33 +55,49 @@ export const createDepositSchema = Joi.object({
 });
 
 export const updateDepositSchema = Joi.object({
+  patient_id: Joi.number()
+  .required()
+  .positive(),
   amount: Joi.number()
     .positive()
     .precision(2)
-    .optional(),
+    .optional()
+    .default(0),
   deposit_type: Joi.string()
     .valid('CASH', 'BANK_TRANSFER', 'CARD', 'MOBILE_MONEY', 'INSURANCE', 'OTHER')
-    .optional(),
+    .optional()
+    .allow(null),
   description: Joi.string()
     .optional()
-    .max(500),
+    .max(500)
+    .allow(''),
   status: Joi.string()
     .valid('ACTIVE', 'USED', 'REFUNDED')
-    .optional(),
+    .optional()
+    .allow(null),
   bank_account_id: Joi.number()
     .positive()
-    .optional(),
+    .optional()
+    .allow(null),
   pos_terminal_id: Joi.number()
     .positive()
-    .optional(),
+    .optional()
+    .allow(null),
+  initial_amount: Joi.number()
+    .positive()
+    .precision(2)
+    .optional()
+    .allow(null),
   current_balance: Joi.number()
     .positive()
     .precision(2)
-    .optional(),
+    .optional()
+    .allow(null),
   refundable_amount: Joi.number()
     .positive()
     .precision(2)
-    .optional(),
+    .optional()
+    .allow(null),
   last_activity_date: Joi.date().optional(),
   payment_method: Joi.string()
     .valid('CASH', 'CARD', 'BANK_TRANSFER', 'MOBILE_MONEY', 'INSURANCE', 'OTHER')
@@ -248,6 +264,34 @@ export const depositFilterSchema = Joi.object({
     .positive()
     .precision(2)
     .optional(),
+  page: Joi.number()
+    .positive()
+    .integer()
+    .min(1)
+    .optional(),
+  limit: Joi.number()
+    .positive()
+    .integer()
+    .min(1)
+    .max(100)
+    .optional(),
+});
+
+export const depositTransactionFilterSchema = Joi.object({
+  transaction_type: Joi.string()
+    .valid('CREATED', 'TOP_UP')
+    .optional()
+    .allow(''),
+  deposit_type: Joi.string()
+    .valid('CASH', 'BANK_TRANSFER', 'CARD', 'MOBILE_MONEY', 'INSURANCE', 'OTHER')
+    .optional()
+    .allow(''),
+  start_date: Joi.date().optional(),
+  end_date: Joi.date().optional(),
+  search: Joi.string()
+    .optional()
+    .max(100)
+    .allow(''), // Search by patient name, hospital_id, or reference_number
   page: Joi.number()
     .positive()
     .integer()

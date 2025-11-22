@@ -13,16 +13,15 @@
           :lists="Object.values(pendingPrescriptions)"
         />
         <div class="form-group row">
-          <label class="col-lg-2 col-form-label">Height (m)</label>
+          <label class="col-lg-2 col-form-label">Height (cm)</label>
           <div class="col-lg-2">
             <input
-              v-validate="'required|between:0,2'"
+              v-validate="'required|between:30,250'"
               data-vv-validate-on="blur"
               name="height"
               @keyup="calculateBMI"
               v-model="height"
               type="number"
-              max="2"
               class="form-control form-control-sm"
             />
             <span class="text-danger text-sm">{{ errors.first('height') }}</span>
@@ -126,15 +125,6 @@
           <label class="col-lg-2 col-form-label">(>90)</label>
         </div>
         <div class="form-group row">
-          <label class="col-2 col-form-label">FBG/RBG</label>
-          <div class="col-6">
-            <select v-model="rvs" class="form-control form-control-sm">
-              <option :value="r" v-for="(r, i) in rvsOptions" :key="i">{{ r }}</option>
-            </select>
-          </div>
-          <label class="col-lg-2 col-form-label">(HIV)</label>
-        </div>
-        <div class="form-group row">
           <label class="col-2 col-form-label">MUAC</label>
           <div class="col-6">
             <select v-model="muac" class="form-control form-control-sm">
@@ -142,6 +132,18 @@
             </select>
           </div>
           <label class="col-lg-2 col-form-label">(Color)</label>
+        </div>
+        <div class="form-group row">
+          <label class="col-2 col-form-label">FBC</label>
+          <div class="col-6">
+            <input class="form-control form-control-sm" type="text" v-model="fbc" name="fbc" />
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-2 col-form-label">RBS</label>
+          <div class="col-6">
+            <input class="form-control form-control-sm" type="text" v-model="rbs" name="rbs" />
+          </div>
         </div>
         <div>
           <button
@@ -177,11 +179,11 @@ export default {
       height: '',
       weight: '',
       bmi: '',
-      rvs: '',
       muac: '',
+      fbc: '',
+      rbs: '',
       isDisabled: false,
       bmiCategory: '',
-      rvsOptions: ['-ve', '+ve', 'Not Done', 'Declined'],
       muacOptions: ['Green', 'Red', 'Yellow'],
       date_of_birth: '',
       errorMessage:
@@ -218,8 +220,9 @@ export default {
             height: this.height,
             weight: this.weight,
             bmi: this.bmi,
-            rvs: this.rvs,
             muac: this.muac,
+            fbc: this.fbc,
+            rbs: this.rbs,
             heart_rate: this.heart_rate,
           };
           // set spinner to submit button
@@ -238,7 +241,10 @@ export default {
     },
 
     calculateBMI() {
-      this.bmi = (this.weight / this.height ** 2).toFixed(1);
+      if (this.height && this.weight) {
+        const heightInMeters = this.height / 100;
+        this.bmi = (this.weight / heightInMeters ** 2).toFixed(1);
+      }
     },
 
     initValues() {
@@ -251,8 +257,9 @@ export default {
       this.height = '';
       this.weight = '';
       this.bmi = '';
-      this.rvs = '';
       this.muac = '';
+      this.fbc = '';
+      this.rbs = '';
       this.heart_rate = '';
       this.isDisabled = false;
     },

@@ -261,6 +261,16 @@ export interface DepositSearchFilters {
   limit?: number;
 }
 
+export interface DepositTransactionSearchFilters {
+  transaction_type?: 'CREATED' | 'TOP_UP';
+  deposit_type?: DepositType;
+  start_date?: Date;
+  end_date?: Date;
+  search?: string; // Search by patient firstname, lastname, hospital_id, or reference_number
+  page?: number;
+  limit?: number;
+}
+
 // Response Types
 export interface BillingSummary {
   total_bills: number;

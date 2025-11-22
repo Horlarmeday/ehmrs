@@ -9,6 +9,7 @@ export { assignImmunizationNumber } from './schedule/assignImmunizationNumber.jo
 export { updatePatientHealthInsurance } from './now/updatePatientHealthInsurance.job';
 export { closeAntenatalAccount } from './cron/closeAntenatalAccount.job';
 export { endVisits } from './cron/endVisits.job';
+export { chargeDailyHospitalization } from './cron/chargeDailyHospitalization.job';
 // Inventory Alert Jobs
 export { inventoryStockLevelCheck } from './schedule/inventoryStockLevelCheck.job';
 export { inventoryExpiryCheck } from './schedule/inventoryExpiryCheck.job';

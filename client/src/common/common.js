@@ -57,6 +57,7 @@ export const setUrlQueryParams = ({
   name,
   period,
   tabIndex,
+  category,
 }) => {
   router
     .push({
@@ -73,6 +74,7 @@ export const setUrlQueryParams = ({
         name,
         period,
         tabIndex,
+        category,
       },
     })
 

@@ -22,6 +22,7 @@ import {
   PrescribedService,
   PrescribedAdditionalItem,
   DepositTransaction,
+  ClinicalPaymentItem,
 } from '../../database/models';
 import {
   PatientDepositData,
@@ -31,6 +32,7 @@ import {
   BillSearchFilters,
   PaymentSearchFilters,
   DepositSearchFilters,
+  DepositTransactionSearchFilters,
   BillingSummary,
   PaymentSummary,
   DepositSummary,
@@ -55,7 +57,7 @@ import {
 import { BadException } from '../../common/util/api-error';
 import { AccountCodeConflictResolutionService } from './services/accountCodeConflictResolution.service';
 import { logger } from '../../core/helpers/logger';
-import { paginate } from '../../core/helpers/helper';
+import { paginate, calcLimitAndOffset } from '../../core/helpers/helper';
 import sequelizeConnection from '../../database/config/data-source';
 import dayjs from 'dayjs';
 
@@ -2195,6 +2197,364 @@ export class AccountingRepository {
   }
 
   /**
+   * Get deposit transactions with filtering and search
+   */
+  static async getDepositTransactions(
+    filters: DepositTransactionSearchFilters
+  ): Promise<{
+    docs: DepositTransaction[];
+    total: number;
+    pages: number;
+    perPage: number;
+    currentPage: number;
+  }> {
+    const where: any = {};
+    const { page = 1, limit = 20 } = filters;
+
+    // Filter by transaction_type - only CREATED or TOP_UP
+    if (filters.transaction_type) {
+      where.transaction_type = filters.transaction_type;
+    } else {
+      // Default: include both CREATED and TOP_UP
+      where.transaction_type = { [Op.in]: ['CREATED', 'TOP_UP'] };
+    }
+
+    // Filter by date range
+    if (filters.start_date || filters.end_date) {
+      where.createdAt = {};
+      if (filters.start_date) {
+        where.createdAt[Op.gte] = dayjs(filters.start_date).startOf('day').toDate();
+      }
+      if (filters.end_date) {
+        where.createdAt[Op.lte] = dayjs(filters.end_date).endOf('day').toDate();
+      }
+    }
+
+    // Handle search by patient name, hospital_id, or reference_number
+    if (filters.search) {
+      const searchTerm = `%${filters.search}%`;
+      
+      // First, find matching patients (by firstname, lastname, hospital_id)
+      const matchingPatients = await Patient.findAll({
+        where: {
+          [Op.or]: [
+            { firstname: { [Op.like]: searchTerm } },
+            { lastname: { [Op.like]: searchTerm } },
+            { hospital_id: { [Op.like]: searchTerm } },
+          ],
+        },
+        attributes: ['id'],
+      });
+
+      const patientIds = matchingPatients.map(p => p.id);
+
+      // Find matching PatientDeposits by patient IDs OR by reference_number
+      const depositWhere: any = {};
+      if (patientIds.length > 0) {
+        depositWhere[Op.or] = [
+          { patient_id: { [Op.in]: patientIds } },
+          { reference_number: { [Op.like]: searchTerm } },
+        ];
+      } else {
+        depositWhere.reference_number = { [Op.like]: searchTerm };
+      }
+
+      const matchingDeposits = await PatientDeposit.findAll({
+        where: depositWhere,
+        attributes: ['id'],
+      });
+
+      const depositIds = matchingDeposits.map(d => d.id);
+
+      // Filter DepositTransactions by deposit_id from matching deposits OR by reference_number directly
+      if (depositIds.length > 0) {
+        where[Op.or] = [
+          { deposit_id: { [Op.in]: depositIds } },
+          { reference_number: { [Op.like]: searchTerm } },
+        ];
+      } else {
+        // If no deposits found, search only by reference_number
+        where.reference_number = { [Op.like]: searchTerm };
+      }
+    }
+
+    // Filter by deposit_type if provided
+    if (filters.deposit_type) {
+      // We need to filter by deposit_type through the include
+      // This will be handled in the include where clause
+    }
+
+    // Build includes
+    const include: Includeable[] = [
+      {
+        model: PatientDeposit,
+        as: 'deposit',
+        required: true,
+        include: [
+          {
+            model: Patient,
+            as: 'patient',
+            attributes: patientAttributes,
+            required: false,
+          },
+          {
+            model: BankAccount,
+            as: 'bankAccount',
+            attributes: ['id', 'bank_name', 'account_name', 'account_number'],
+            required: false,
+          },
+          {
+            model: POSTerminal,
+            as: 'posTerminal',
+            attributes: ['id', 'terminal_id', 'terminal_type', 'merchant_name'],
+            required: false,
+          },
+        ],
+        ...(filters.deposit_type ? {
+          where: {
+            deposit_type: filters.deposit_type,
+          },
+        } : {}),
+      },
+      {
+        model: Staff,
+        as: 'createdByStaff',
+        attributes: staffAttributes,
+        required: false,
+      },
+    ];
+
+    return await DepositTransaction.paginate({
+      page,
+      paginate: limit,
+      where,
+      include,
+      order: [['createdAt', 'DESC']],
+    });
+  }
+
+  /**
+   * Get deposit transaction summary statistics
+   */
+  static async getDepositTransactionSummary(
+    filters: DepositTransactionSearchFilters
+  ): Promise<{
+    totalTransactions: number;
+    totalAmount: number;
+    createdCount: number;
+    createdAmount: number;
+    topUpCount: number;
+    topUpAmount: number;
+    todayCount: number;
+    todayAmount: number;
+  }> {
+    const where: any = {};
+
+    // Filter by transaction_type - only CREATED or TOP_UP
+    if (filters.transaction_type) {
+      where.transaction_type = filters.transaction_type;
+    } else {
+      // Default: include both CREATED and TOP_UP
+      where.transaction_type = { [Op.in]: ['CREATED', 'TOP_UP'] };
+    }
+
+    // Filter by date range
+    if (filters.start_date || filters.end_date) {
+      where.createdAt = {};
+      if (filters.start_date) {
+        where.createdAt[Op.gte] = dayjs(filters.start_date).startOf('day').toDate();
+      }
+      if (filters.end_date) {
+        where.createdAt[Op.lte] = dayjs(filters.end_date).endOf('day').toDate();
+      }
+    }
+
+    // Handle search and deposit_type filtering
+    let depositIds: number[] | null = null;
+
+    if (filters.search || filters.deposit_type) {
+      const depositWhere: any = {};
+      
+      // Apply deposit_type filter
+      if (filters.deposit_type) {
+        depositWhere.deposit_type = filters.deposit_type;
+      }
+
+      // Handle search by patient name, hospital_id, or reference_number
+      if (filters.search) {
+        const searchTerm = `%${filters.search}%`;
+        
+        // First, find matching patients (by firstname, lastname, hospital_id)
+        const matchingPatients = await Patient.findAll({
+          where: {
+            [Op.or]: [
+              { firstname: { [Op.like]: searchTerm } },
+              { lastname: { [Op.like]: searchTerm } },
+              { hospital_id: { [Op.like]: searchTerm } },
+            ],
+          },
+          attributes: ['id'],
+        });
+
+        const patientIds = matchingPatients.map(p => p.id);
+
+        // Build deposit search conditions
+        const depositSearchConditions: any[] = [];
+        if (patientIds.length > 0) {
+          depositSearchConditions.push({ patient_id: { [Op.in]: patientIds } });
+        }
+        depositSearchConditions.push({ reference_number: { [Op.like]: searchTerm } });
+
+        // Combine deposit_type and search conditions
+        if (filters.deposit_type) {
+          depositWhere[Op.and] = [
+            { deposit_type: filters.deposit_type },
+            { [Op.or]: depositSearchConditions },
+          ];
+        } else {
+          depositWhere[Op.or] = depositSearchConditions;
+        }
+
+        const matchingDeposits = await PatientDeposit.findAll({
+          where: depositWhere,
+          attributes: ['id'],
+        });
+
+        depositIds = matchingDeposits.map(d => d.id);
+
+        // Filter DepositTransactions by deposit_id from matching deposits OR by reference_number directly
+        if (depositIds.length > 0) {
+          where[Op.or] = [
+            { deposit_id: { [Op.in]: depositIds } },
+            { reference_number: { [Op.like]: searchTerm } },
+          ];
+        } else {
+          // If no deposits found, search only by reference_number
+          where.reference_number = { [Op.like]: searchTerm };
+        }
+      } else if (filters.deposit_type) {
+        // Only deposit_type filter, no search
+        const matchingDeposits = await PatientDeposit.findAll({
+          where: depositWhere,
+          attributes: ['id'],
+        });
+
+        depositIds = matchingDeposits.map(d => d.id);
+        
+        if (depositIds.length > 0) {
+          where.deposit_id = { [Op.in]: depositIds };
+        } else {
+          // No matching deposits, return empty results
+          where.deposit_id = -1; // This will ensure no results
+        }
+      }
+    }
+
+    // Get all transactions matching the filters (no pagination)
+    const allTransactions = await DepositTransaction.findAll({
+      where,
+      attributes: ['id', 'transaction_type', 'amount', 'createdAt'],
+    });
+
+    // Calculate today's date range
+    const today = dayjs().startOf('day').toDate();
+    const tomorrow = dayjs().endOf('day').toDate();
+
+    // Calculate statistics
+    const totalTransactions = allTransactions.length;
+    const totalAmount = allTransactions.reduce((sum, t) => sum + parseFloat(t.amount as any || 0), 0);
+
+    const createdTransactions = allTransactions.filter(t => t.transaction_type === 'CREATED');
+    const createdCount = createdTransactions.length;
+    const createdAmount = createdTransactions.reduce((sum, t) => sum + parseFloat(t.amount as any || 0), 0);
+
+    const topUpTransactions = allTransactions.filter(t => t.transaction_type === 'TOP_UP');
+    const topUpCount = topUpTransactions.length;
+    const topUpAmount = topUpTransactions.reduce((sum, t) => sum + parseFloat(t.amount as any || 0), 0);
+
+    const todayTransactions = allTransactions.filter(t => {
+      const createdAt = new Date(t.createdAt);
+      return createdAt >= today && createdAt < tomorrow;
+    });
+    const todayCount = todayTransactions.length;
+    const todayAmount = todayTransactions.reduce((sum, t) => sum + parseFloat(t.amount as any || 0), 0);
+
+    return {
+      totalTransactions,
+      totalAmount,
+      createdCount,
+      createdAmount,
+      topUpCount,
+      topUpAmount,
+      todayCount,
+      todayAmount,
+    };
+  }
+
+  /**
+   * Get deposit transaction receipt data
+   */
+  static async getDepositTransactionReceiptData(
+    transactionId: number
+  ): Promise<{
+    transaction: DepositTransaction;
+    deposit: PatientDeposit;
+    patient: Patient;
+    createdByStaff: Staff;
+    bankAccount?: BankAccount;
+    posTerminal?: POSTerminal;
+  } | null> {
+    const transaction = await DepositTransaction.findByPk(transactionId, {
+      include: [
+        {
+          model: PatientDeposit,
+          as: 'deposit',
+          required: true,
+          include: [
+            {
+              model: Patient,
+              as: 'patient',
+              attributes: patientAttributes,
+              required: true,
+            },
+            {
+              model: BankAccount,
+              as: 'bankAccount',
+              attributes: ['id', 'bank_name', 'account_name', 'account_number'],
+              required: false,
+            },
+            {
+              model: POSTerminal,
+              as: 'posTerminal',
+              attributes: ['id', 'terminal_id', 'terminal_type', 'merchant_name'],
+              required: false,
+            },
+          ],
+        },
+        {
+          model: Staff,
+          as: 'createdByStaff',
+          attributes: staffAttributes,
+          required: true,
+        },
+      ],
+    });
+
+    if (!transaction) {
+      return null;
+    }
+
+    return {
+      transaction,
+      deposit: (transaction as any).deposit,
+      patient: (transaction as any).deposit.patient,
+      createdByStaff: (transaction as any).createdByStaff,
+      bankAccount: (transaction as any).deposit.bankAccount,
+      posTerminal: (transaction as any).deposit.posTerminal,
+    };
+  }
+
+  /**
    * Get patient deposit summary with balance breakdown
    */
   static async getPatientDepositBalanceSummary(
@@ -2485,6 +2845,7 @@ export class AccountingRepository {
         required: false, // Allow LEFT JOIN for search flexibility
       },
       { model: Staff, as: 'processedByStaff', attributes: staffAttributes },
+      { model: ClinicalPaymentItem, as: 'paymentItems', attributes: ['id', 'amount_paid', 'bill_item_id', 'createdAt'], include: [{ model: ClinicalBillItem, as: 'billItem', attributes: ['id', 'item_name', 'quantity', 'unit_price', 'total_price', 'item_type', 'item_id', 'item_name'] }] },
     ];
 
     // Handle search across multiple fields
@@ -2553,15 +2914,6 @@ export class AccountingRepository {
         as: 'cashTransaction',
         required: false,
       });
-    }
-
-    // Debug: Log the final query structure
-    if (filters.search) {
-      console.log('=== SEARCH DEBUG INFO ===');
-      console.log('Search term:', filters.search);
-      console.log('Search where clause:', JSON.stringify(where, null, 2));
-      console.log('Search query includes:', JSON.stringify(includes, null, 2));
-      console.log('========================');
     }
 
     return ClinicalPayment.paginate({
@@ -3135,7 +3487,7 @@ export class AccountingRepository {
           {
             model: ClinicalBillItem,
             as: 'billItems',
-            attributes: ['id', 'item_name', 'quantity', 'unit_price', 'total_price', 'item_type', 'item_id'],
+            attributes: ['id', 'item_name', 'quantity', 'unit_price', 'total_price', 'item_type', 'item_id', 'createdAt'],
           },
         ],
         order: [['createdAt', 'DESC']],
@@ -3149,6 +3501,149 @@ export class AccountingRepository {
         'Patient Bills Retrieval Error',
         500,
         `Failed to get patient bills: ${error.message}`
+      );
+    }
+  }
+
+  /**
+   * Get all bill items for a patient with their payment information
+   * @param patientId - The patient ID
+   * @param currentPage - Current page number (default: 1)
+   * @param pageLimit - Items per page (default: 20)
+   * @returns Paginated array of bill items with aggregated payment data
+   */
+  static async getPatientBillItemsWithPayments(
+    patientId: number,
+    currentPage: number = 1,
+    pageLimit: number = 20
+  ): Promise<any> {
+    try {
+      // Get total count first
+      const totalCount = await ClinicalBillItem.count({
+        include: [
+          {
+            model: ClinicalBill,
+            as: 'bill',
+            where: { patient_id: patientId },
+            required: true,
+          },
+        ],
+      });
+
+      // Apply pagination
+      const { limit, offset } = calcLimitAndOffset(currentPage, pageLimit);
+
+      // Get paginated bill items for the patient's bills
+      const billItems = await ClinicalBillItem.findAll({
+        include: [
+          {
+            model: ClinicalBill,
+            as: 'bill',
+            where: { patient_id: patientId },
+            attributes: ['id', 'bill_number'],
+            required: true,
+          },
+        ],
+        attributes: [
+          'id',
+          'bill_id',
+          'item_name',
+          'item_type',
+          'item_code',
+          'quantity',
+          'unit_price',
+          'total_price',
+          'discount_percentage',
+          'discount_amount',
+          'final_price',
+          'payment_status',
+          'paid_at',
+          'notes',
+          'createdAt',
+        ],
+        order: [['createdAt', 'DESC']],
+        limit,
+        offset,
+        raw: false,
+      });
+
+      // Get all bill item IDs for the paginated items
+      const billItemIds = billItems.map((item) => item.id);
+
+      // Get all payment items for these bill items in one query
+      const paymentItems = await ClinicalPaymentItem.findAll({
+        where: {
+          bill_item_id: {
+            [Op.in]: billItemIds,
+          },
+        },
+        attributes: ['id', 'bill_item_id', 'amount_paid', 'createdAt'],
+        order: [['createdAt', 'ASC']],
+        raw: true,
+      });
+
+      // Group payment items by bill_item_id
+      const paymentItemsByBillItem: Record<number, any[]> = {};
+      paymentItems.forEach((paymentItem) => {
+        const billItemId = paymentItem.bill_item_id;
+        if (!paymentItemsByBillItem[billItemId]) {
+          paymentItemsByBillItem[billItemId] = [];
+        }
+        paymentItemsByBillItem[billItemId].push(paymentItem);
+      });
+
+      // Process each bill item to calculate amount_paid and determine paid_at
+      const processedItems = billItems.map((billItem) => {
+        const itemData = billItem.get({ plain: true });
+        const itemPaymentItems = paymentItemsByBillItem[itemData.id] || [];
+
+        // Calculate total amount paid
+        const amountPaid = itemPaymentItems.reduce(
+          (sum, payment) => sum + parseFloat(payment.amount_paid || '0'),
+          0
+        );
+
+        // Determine paid_at date
+        // Priority: 1. ClinicalBillItem.paid_at, 2. Earliest payment item createdAt, 3. null
+        let paidAt: Date | null = null;
+        if (itemData.paid_at) {
+          paidAt = new Date(itemData.paid_at);
+        } else if (itemPaymentItems.length > 0 && itemPaymentItems[0].createdAt) {
+          paidAt = new Date(itemPaymentItems[0].createdAt);
+        }
+
+        return {
+          id: itemData.id,
+          bill_id: itemData.bill_id,
+          item_name: itemData.item_name,
+          item_type: itemData.item_type,
+          item_code: itemData.item_code,
+          quantity: parseFloat(itemData.quantity || '0'),
+          unit_price: parseFloat(itemData.unit_price || '0'),
+          total_price: parseFloat(itemData.total_price || '0'),
+          discount_percentage: parseFloat(itemData.discount_percentage || '0'),
+          discount_amount: parseFloat(itemData.discount_amount || '0'),
+          final_price: parseFloat(itemData.final_price || '0'),
+          payment_status: itemData.payment_status,
+          amount_paid: amountPaid,
+          createdAt: itemData.createdAt,
+          paid_at: paidAt,
+          notes: itemData.notes,
+        };
+      });
+
+      return {
+        rows: processedItems,
+        count: totalCount,
+        pages: Math.ceil(totalCount / pageLimit),
+        currentPage,
+        pageLimit,
+      };
+    } catch (error) {
+      throw new BadException(
+        'Patient Bill Items Retrieval Error',
+        500,
+        `Failed to get patient bill items: ${error.message}`
       );
     }
   }

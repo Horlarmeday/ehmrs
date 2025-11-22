@@ -2,11 +2,10 @@ import Joi from 'joi';
 
 export function validateTriage(triage) {
   const schema = Joi.object({
-    rvs: Joi.string()
-      .optional()
-      .allow(''),
     height: Joi.number()
       .optional()
+      .min(30)
+      .max(250)
       .allow(''),
     weight: Joi.number().required(),
     bmi: Joi.number()
@@ -32,6 +31,12 @@ export function validateTriage(triage) {
       .optional()
       .allow(''),
     muac: Joi.string()
+      .optional()
+      .allow(''),
+    fbc: Joi.string()
+      .optional()
+      .allow(''),
+    rbs: Joi.string()
       .optional()
       .allow(''),
   });

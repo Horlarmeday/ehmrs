@@ -1,5 +1,10 @@
 <template>
-  <b-modal size="xl" v-model="activePrompt" hide-footer title="Bulk Transfer Items Between Inventories">
+  <b-modal
+    size="xl"
+    v-model="activePrompt"
+    hide-footer
+    title="Bulk Transfer Items Between Inventories"
+  >
     <div class="p-2">
       <div v-if="selectedItems.length === 0" class="text-center py-5">
         <i class="flaticon2-warning text-warning icon-4x"></i>
@@ -55,7 +60,9 @@
                   <td>{{ item.unit?.name }}</td>
                   <td>
                     <span v-if="item.isInvalid" class="badge badge-danger">Invalid</span>
-                    <span v-else-if="!item.quantity || item.quantity <= 0" class="badge badge-warning"
+                    <span
+                      v-else-if="!item.quantity || item.quantity <= 0"
+                      class="badge badge-warning"
                       >Not Set</span
                     >
                     <span v-else class="badge badge-success">Ready</span>
@@ -87,13 +94,15 @@
         </div>
 
         <div v-if="transferResult" class="mt-4">
-          <div v-if="transferResult.successful && transferResult.successful.length > 0" class="alert alert-success">
+          <div
+            v-if="transferResult.successful && transferResult.successful.length > 0"
+            class="alert alert-success"
+          >
             <h6>Successfully Transferred ({{ transferResult.successful.length }})</h6>
             <ul class="mb-0">
               <li v-for="(result, idx) in transferResult.successful" :key="idx">
-                {{ result.sourceItem.drug?.name }} - {{ result.sourceItem.quantity_remaining }} {{
-                  result.sourceItem.unit?.name
-                }}
+                {{ result.sourceItem.drug?.name }} - {{ result.sourceItem.quantity_remaining }}
+                {{ result.sourceItem.unit?.name }}
               </li>
             </ul>
           </div>
@@ -336,4 +345,3 @@ export default {
 </script>
 
 <style scoped></style>
-

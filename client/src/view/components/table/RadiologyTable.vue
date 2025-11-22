@@ -46,18 +46,14 @@
                 "
               >
                 <router-link
+                  class="mr-2"
                   :to="`/radiology/investigations-results/${test.investigation_prescription_id}`"
                   :class="test.status"
                   v-if="test.status === APPROVED && test.result_id"
                 >
                   <i class="flaticon-file-2 text-success mr-2"></i>
                 </router-link>
-                <a
-                  href="#"
-                  :class="loading && 'disabled'"
-                  @click="showDeleteAlert(test)"
-                  v-if="test.payment_status === PENDING"
-                >
+                <a href="#" :class="loading && 'disabled'" @click="showDeleteAlert(test)">
                   <i class="flaticon-delete text-danger"></i>
                 </a>
               </span>
@@ -86,6 +82,7 @@ export default {
       'Obstetrics & Gynaecology Unit',
       'Physiotherapy Unit',
       'Nursing',
+      'Records',
     ],
     loading: false,
     UNBILLED: 'Unbilled',

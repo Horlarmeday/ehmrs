@@ -4,9 +4,7 @@ const BASE_URL = '/integrations/quickbooks';
 
 function extractErrorMessage(error) {
   return (
-    error?.response?.data?.message ||
-    error?.message ||
-    'Unable to complete the QuickBooks request'
+    error?.response?.data?.message || error?.message || 'Unable to complete the QuickBooks request'
   );
 }
 
@@ -151,4 +149,3 @@ export default {
     commit('RESET_STATE');
   },
 };
-

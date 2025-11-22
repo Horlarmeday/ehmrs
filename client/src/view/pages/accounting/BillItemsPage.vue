@@ -480,6 +480,7 @@
                     <th>Unit Price</th>
                     <th>Total</th>
                     <th>Status</th>
+                    <th>Date</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -530,6 +531,7 @@
                         {{ item.payment_status }}
                       </b-badge>
                     </td>
+                    <td>{{ formatDate(item.createdAt) }}</td>
                     <td>
                       <div class="action-buttons">
                         <b-button
@@ -630,7 +632,7 @@
               </tr>
               <tr>
                 <td><strong>Date Added:</strong></td>
-                <td>{{ formatDate(selectedItem.created_at) }}</td>
+                <td>{{ formatDate(selectedItem.createdAt) }}</td>
               </tr>
             </table>
           </div>
@@ -641,6 +643,7 @@
 </template>
 
 <script>
+import dayjs from 'dayjs';
 export default {
   name: 'BillItemsPage',
   props: {
@@ -940,7 +943,7 @@ export default {
 
     formatDate(dateString) {
       if (!dateString) return 'N/A';
-      return new Date(dateString).toLocaleDateString('en-NG');
+      return dayjs(dateString).format('DD/MM/YYYY, h:mma');
     },
 
     getPaymentStatusVariant(status) {

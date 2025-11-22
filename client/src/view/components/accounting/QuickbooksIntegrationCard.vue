@@ -33,7 +33,10 @@
           <small class="text-muted" v-if="quickbooksStatus && quickbooksStatus.connectedAt">
             Connected on: {{ formatQuickbooksTimestamp(quickbooksStatus.connectedAt) }}
           </small>
-          <small class="text-muted d-block" v-if="quickbooksStatus && quickbooksStatus.lastSyncedAt">
+          <small
+            class="text-muted d-block"
+            v-if="quickbooksStatus && quickbooksStatus.lastSyncedAt"
+          >
             Last exported: {{ formatQuickbooksTimestamp(quickbooksStatus.lastSyncedAt) }}
           </small>
         </div>
@@ -42,7 +45,10 @@
             size="sm"
             variant="outline-primary"
             class="mr-2 mb-2"
-            :disabled="quickbooksLoading && (quickbooksLoading.saveCredentials || quickbooksLoading.loadCredentials)"
+            :disabled="
+              quickbooksLoading &&
+              (quickbooksLoading.saveCredentials || quickbooksLoading.loadCredentials)
+            "
             @click="openQuickbooksCredentialsModal"
           >
             Configure
@@ -62,7 +68,9 @@
             size="sm"
             variant="success"
             class="mr-2 mb-2"
-            :disabled="!quickbooksCredentialsConfigured || (quickbooksLoading && quickbooksLoading.authorize)"
+            :disabled="
+              !quickbooksCredentialsConfigured || (quickbooksLoading && quickbooksLoading.authorize)
+            "
             @click="connectQuickbooks"
           >
             <b-spinner small v-if="quickbooksLoading && quickbooksLoading.authorize" class="mr-1" />
@@ -76,7 +84,11 @@
             :disabled="quickbooksLoading && quickbooksLoading.disconnect"
             @click="disconnectQuickbooksAccount"
           >
-            <b-spinner small v-if="quickbooksLoading && quickbooksLoading.disconnect" class="mr-1" />
+            <b-spinner
+              small
+              v-if="quickbooksLoading && quickbooksLoading.disconnect"
+              class="mr-1"
+            />
             Disconnect
           </b-button>
           <b-button
@@ -489,4 +501,3 @@ export default {
   font-weight: 600;
 }
 </style>
-

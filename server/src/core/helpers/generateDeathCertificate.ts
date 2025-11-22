@@ -87,9 +87,9 @@ export async function generateDeathCertificate(
   generateMainContent(doc, patient, deathInfo, markedByStaff);
 
   // Digital Signature Section
-  if (certificateData.includeDigitalSignature && certificateData.privateKey) {
-    await generateDigitalSignature(doc, certificateData, markedByStaff);
-  }
+  // if (certificateData.includeDigitalSignature && certificateData.privateKey) {
+  //   await generateDigitalSignature(doc, certificateData, markedByStaff);
+  // }
 
   // Footer
   generateFooter(doc, hospitalInfo);
@@ -818,9 +818,9 @@ function generateFooter(doc: PDFDocumentType, hospitalInfo: HospitalInfo) {
   doc.restore();
 
   // Page indicator with security marking
-  doc
-    .fillColor(colors.text)
-    .fontSize(7)
-    .font('Helvetica-Bold')
-    .text('Page 1 of 1 • SECURE DOCUMENT', 480, footerY + 20);
+  // doc
+  //   .fillColor(colors.text)
+  //   .fontSize(7)
+  //   .font('Helvetica-Bold')
+  //   .text('Page 1 of 1 • SECURE DOCUMENT', 480, footerY + 20);
 }

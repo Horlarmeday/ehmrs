@@ -14,6 +14,8 @@ import { JournalEntry } from './journalEntry';
 import { Staff } from './staff';
 import { FinancialPeriod } from './financialPeriod';
 import { DepositTransactionType } from '../../modules/Accounting/enums';
+import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
+import { FindAttributeOptions, GroupOption, Includeable, Order, WhereOptions } from 'sequelize';
 
 @Table({ timestamps: true, tableName: 'deposit_transactions' })
 export class DepositTransaction extends Model {
@@ -187,5 +189,20 @@ export class DepositTransaction extends Model {
         }
         break;
     }
+  }
+
+  static async paginate(param: {
+    paginate: number;
+    attributes?: FindAttributeOptions;
+    where?: WhereOptions<any>;
+    page?: number;
+    order?: Order;
+    group?: GroupOption;
+    include?: Includeable | Includeable[];
+  }) {
+    const { limit, offset } = calcLimitAndOffset(param.page, param.paginate);
+    const options = Object.assign({ limit, offset }, param);
+    const data = await this.findAndCountAll(options);
+    return paginate(data, param.page, limit);
   }
 }

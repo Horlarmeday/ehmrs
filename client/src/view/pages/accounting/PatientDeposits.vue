@@ -1060,7 +1060,7 @@ export default {
       // Filters
       filters: {
         patientSearch: '',
-        status: '',
+        status: 'ACTIVE',
         type: '',
         dateRange: '',
       },
@@ -1082,6 +1082,7 @@ export default {
         pos_terminal_id: null,
         payment_reference: '',
       },
+      selectedDepositData: null, // Store deposit object for editing
 
       // Usage modal
       showUseDepositModal: false,
@@ -1250,6 +1251,33 @@ export default {
     },
     consolidationOkLabel() {
       return this.consolidationForm.dryRun ? 'Run Dry-Run' : 'Consolidate Deposits';
+    },
+  },
+  watch: {
+    showDepositModal(val) {
+      if (!val) return;
+      if (!this.selectedDepositData || Object.entries(this.selectedDepositData).length === 0) {
+        // Create mode - reset form
+        this.resetDepositForm();
+      } else {
+        // Edit mode - populate form from deposit object
+        const deposit = this.selectedDepositData;
+        this.depositForm = {
+          patient_id: deposit.patient_id,
+          payment_method: deposit.payment_method || deposit.deposit_type || 'CASH',
+          amount: deposit.initial_amount || deposit.amount || deposit.current_balance || 0,
+          description: deposit.description || '',
+          bank_account_id: deposit.bank_account_id || null,
+          pos_terminal_id: deposit.pos_terminal_id || null,
+          payment_reference: deposit.payment_reference || '',
+        };
+
+        // Load patient info for display
+        if (deposit.patient) {
+          this.selectedPatient = deposit.patient;
+          this.patientSearchQuery = `${deposit.patient.firstname} ${deposit.patient.lastname}`;
+        }
+      }
     },
   },
   async mounted() {
@@ -1467,6 +1495,7 @@ export default {
     // Modal actions
     showCreateDepositModal() {
       this.isEditing = false;
+      this.selectedDepositData = null;
       this.showDepositModal = true;
     },
 
@@ -1481,36 +1510,11 @@ export default {
     },
 
     editDeposit(depositId) {
-      this.isEditing = true;
-      this.loadDepositForEdit(depositId);
-      this.showDepositModal = true;
-    },
-
-    async loadDepositForEdit(depositId) {
-      try {
-        const result = await this.$store.dispatch('accounting/getPatientDepositById', depositId);
-        const deposit = result.success ? result.data : null;
-
-        if (deposit) {
-          this.depositForm = {
-            id: deposit.id, // Add missing ID for edit mode
-            patient_id: deposit.patient_id,
-            payment_method: deposit.payment_method || deposit.deposit_type || 'CASH',
-            amount: deposit.amount,
-            description: deposit.description,
-            bank_account_id: deposit.bank_account_id,
-            pos_terminal_id: deposit.pos_terminal_id,
-            payment_reference: deposit.payment_reference || '',
-          };
-
-          // Load patient info for display
-          if (deposit.patient) {
-            this.selectedPatient = deposit.patient;
-            this.patientSearchQuery = `${deposit.patient.firstname} ${deposit.patient.lastname}`;
-          }
-        }
-      } catch (error) {
-        console.error('Failed to load deposit for edit:', error);
+      const deposit = this.deposits.find((d) => d.id === depositId);
+      if (deposit) {
+        this.selectedDepositData = JSON.parse(JSON.stringify(deposit));
+        this.isEditing = true;
+        this.showDepositModal = true;
       }
     },
 
@@ -1568,7 +1572,7 @@ export default {
         let result;
         if (this.isEditing) {
           result = await this.$store.dispatch('accounting/updateDeposit', {
-            id: this.depositForm.id,
+            id: this.selectedDepositData.id,
             depositData: depositData,
           });
           if (result.success) {
@@ -1700,6 +1704,7 @@ export default {
         payment_reference: '',
       };
       this.isEditing = false;
+      this.selectedDepositData = null;
       this.clearSelectedPatient();
     },
 

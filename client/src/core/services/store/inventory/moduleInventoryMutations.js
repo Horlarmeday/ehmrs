@@ -112,7 +112,8 @@ export default {
    */
   SET_PENDING_PRESCRIPTIONS(state, data) {
     state.pendingPrescriptions.prescribedDrugs = data.prescribedDrugs.rows || [];
-    state.pendingPrescriptions.prescribedAdditionalItems = data.prescribedAdditionalItems.rows || [];
+    state.pendingPrescriptions.prescribedAdditionalItems =
+      data.prescribedAdditionalItems.rows || [];
     state.pendingPrescriptions.totalDrugs = data.prescribedDrugs.count || 0;
     state.pendingPrescriptions.totalAdditionalItems = data.prescribedAdditionalItems.count || 0;
     state.pendingPrescriptions.drugsPages = data.prescribedDrugs.pages || 0;

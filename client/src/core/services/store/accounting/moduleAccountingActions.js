@@ -992,6 +992,112 @@ export default {
     }
   },
 
+  // Deposit Transactions actions
+  async fetchDepositTransactions({ commit }, params = {}) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get('/accounting/deposit-transactions', { params });
+      commit('SET_DEPOSIT_TRANSACTIONS', response.data.data.docs);
+      commit('SET_DEPOSIT_TRANSACTIONS_TOTAL', response.data.data.total);
+      commit('SET_DEPOSIT_TRANSACTIONS_PAGES', response.data.data.pages || 0);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch deposit transactions:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async fetchDepositTransactionSummary({ commit }, params = {}) {
+    commit('CLEAR_ERROR');
+
+    try {
+      // Remove page and limit from params for summary
+      const summaryParams = { ...params };
+      delete summaryParams.page;
+      delete summaryParams.limit;
+
+      const response = await axios.get('/accounting/deposit-transactions/summary', {
+        params: summaryParams,
+      });
+      commit('SET_DEPOSIT_TRANSACTIONS_SUMMARY', response.data.data);
+      return response.data;
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch deposit transaction summary:', error);
+      throw error;
+    }
+  },
+
+  async downloadDepositTransactionReceipt({ commit }, transactionId) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get(
+        `/accounting/deposit-transactions/${transactionId}/receipt/download`,
+        {
+          responseType: 'blob',
+        }
+      );
+
+      // Create blob and download
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `deposit-transaction-receipt-${transactionId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      return { success: true };
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to download deposit transaction receipt:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async printDepositTransactionReceipt({ commit }, transactionId) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
+
+    try {
+      const response = await axios.get(
+        `/accounting/deposit-transactions/${transactionId}/receipt/print`,
+        {
+          responseType: 'blob',
+        }
+      );
+
+      // Create blob and open in new window for printing
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const printWindow = window.open(url, '_blank');
+      if (printWindow) {
+        printWindow.onload = () => {
+          printWindow.print();
+        };
+      }
+
+      return { success: true };
+    } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to print deposit transaction receipt:', error);
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
   async consolidateDeposits({ commit }, { patientId = null, dryRun = false } = {}) {
     commit('SET_DEPOSIT_CONSOLIDATION_LOADING', true);
     commit('CLEAR_ERROR');
@@ -2031,6 +2137,35 @@ export default {
   },
 
   /**
+   * Get all bill items with payment information for a specific patient
+   * @param {Object} context - Vuex context
+   * @param {Object} params - Parameters object
+   * @param {number} params.patientId - The patient ID
+   * @param {number} params.currentPage - Current page number (default: 1)
+   * @param {number} params.pageLimit - Items per page (default: 20)
+   * @returns {Promise<Object>} Bill items with payment data and pagination info
+   */
+  async getPatientBillItemsWithPayments(_, params) {
+    try {
+      const { patientId, currentPage = 1, pageLimit = 20 } = params;
+      const response = await axios.get(`/accounting/bills/patient/${patientId}/items`, {
+        params: { currentPage, pageLimit },
+      });
+      return {
+        success: true,
+        data: response.data.data || { rows: [], count: 0, pages: 0, currentPage: 1, pageLimit: 20 },
+      };
+    } catch (error) {
+      console.error('Failed to get patient bill items:', error);
+      return {
+        success: false,
+        error: error.message,
+        data: { rows: [], count: 0, pages: 0, currentPage: 1, pageLimit: 20 },
+      };
+    }
+  },
+
+  /**
    * Get deposit transaction history for a specific patient
    * @param {number} patientId - The patient ID
    * @returns {Promise<Object>} Deposit history data
@@ -2151,10 +2286,11 @@ export default {
   /**
    * Get comprehensive financial summary for a patient
    * Fetches bills, payments, deposits, and history in parallel
+   * @param {Object} context - Vuex context with dispatch and commit
    * @param {number} patientId - The patient ID
    * @returns {Promise<Object>} Complete financial summary
    */
-  async getPatientFinancialSummary({ dispatch }, patientId) {
+  async getPatientFinancialSummary({ dispatch, commit }, patientId) {
     try {
       // Fetch all data in parallel for better performance
       const [billsResult, paymentsResult, depositsResult, historyResult] = await Promise.all([
@@ -2196,30 +2332,35 @@ export default {
         : [];
       const totalDeposits = activeDeposits.length;
       const totalDepositsAmount = activeDeposits.reduce(
-        (sum, deposit) => sum + (parseFloat(deposit.amount) || 0),
+        (sum, deposit) => sum + (parseFloat(deposit.current_balance) || 0),
         0
       );
 
       // Calculate outstanding balance (bills - payments)
       const outstandingBalance = totalBillsAmount - totalPaymentsAmount;
 
+      const financialSummary = {
+        bills,
+        payments,
+        deposits: Array.isArray(deposits) ? deposits : deposits ? [deposits] : [],
+        history,
+        summary: {
+          totalBills,
+          totalBillsAmount,
+          totalPayments,
+          totalPaymentsAmount,
+          totalDeposits,
+          totalDepositsAmount,
+          outstandingBalance,
+        },
+      };
+
+      // Commit financial summary to state for persistence
+      commit('SET_PATIENT_FINANCIAL_LOOKUP', { financialSummary });
+
       return {
         success: true,
-        data: {
-          bills,
-          payments,
-          deposits: Array.isArray(deposits) ? deposits : deposits ? [deposits] : [],
-          history,
-          summary: {
-            totalBills,
-            totalBillsAmount,
-            totalPayments,
-            totalPaymentsAmount,
-            totalDeposits,
-            totalDepositsAmount,
-            outstandingBalance,
-          },
-        },
+        data: financialSummary,
       };
     } catch (error) {
       console.error('Failed to get patient financial summary:', error);

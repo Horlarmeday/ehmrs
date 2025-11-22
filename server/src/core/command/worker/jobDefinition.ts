@@ -9,6 +9,7 @@ import {
   assignImmunizationNumber,
   closeAntenatalAccount,
   endVisits,
+  chargeDailyHospitalization,
   inventoryStockLevelCheck,
   inventoryExpiryCheck,
   inventoryAlertEscalation,
@@ -26,6 +27,7 @@ const Jobs = {
   [JobName.ASSIGN_IMMUNIZATION_NUMBER]: assignImmunizationNumber,
   [JobName.CLOSE_ANTENATAL_ACCOUNT]: closeAntenatalAccount,
   [JobName.END_VISIT]: endVisits,
+  [JobName.CHARGE_DAILY_HOSPITALIZATION]: chargeDailyHospitalization,
   // Inventory Alert Jobs
   [JobName.INVENTORY_STOCK_LEVEL_CHECK]: inventoryStockLevelCheck,
   [JobName.INVENTORY_EXPIRY_CHECK]: inventoryExpiryCheck,

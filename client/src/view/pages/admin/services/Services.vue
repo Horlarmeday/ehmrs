@@ -230,7 +230,11 @@ export default {
         await this.handlePageChange();
         this.showToast('Service deleted successfully', 'Success', 'success');
       } catch (error) {
-        this.showToast(error.response?.data?.message || 'Failed to delete service', 'Error', 'danger');
+        this.showToast(
+          error.response?.data?.message || 'Failed to delete service',
+          'Error',
+          'danger'
+        );
       } finally {
         this.deletingServiceId = null;
       }

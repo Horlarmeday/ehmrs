@@ -158,6 +158,21 @@ export default {
   depositConsolidationReport: null,
   depositConsolidationLoading: false,
 
+  // Deposit Transactions data
+  depositTransactions: [],
+  depositTransactionsTotal: 0,
+  depositTransactionsPages: 0,
+  depositTransactionsSummary: {
+    totalTransactions: 0,
+    totalAmount: 0,
+    createdCount: 0,
+    createdAmount: 0,
+    topUpCount: 0,
+    topUpAmount: 0,
+    todayCount: 0,
+    todayAmount: 0,
+  },
+
   // Financial reports data
   financialReports: {
     totalRevenue: 0,
@@ -221,4 +236,13 @@ export default {
 
   // Patient default insurance
   patientDefaultInsurance: null,
+
+  // ===== PATIENT FINANCIAL LOOKUP STATE =====
+
+  // Patient financial lookup state for persistence
+  patientFinancialLookup: {
+    selectedPatient: null,
+    financialSummary: null,
+    searchQuery: '',
+  },
 };

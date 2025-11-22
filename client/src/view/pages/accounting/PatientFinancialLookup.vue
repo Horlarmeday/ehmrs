@@ -263,6 +263,7 @@
                                   <th>Quantity</th>
                                   <th>Unit Price</th>
                                   <th>Total Price</th>
+                                  <th>Date</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -299,6 +300,7 @@
                                   <td>
                                     <strong>₦{{ formatCurrency(item.total_price) }}</strong>
                                   </td>
+                                  <td>{{ formatDate(item.createdAt) }}</td>
                                 </tr>
                               </tbody>
                             </table>
@@ -329,7 +331,7 @@
           <b-tab title="Payments">
             <div class="tab-header mb-3 d-flex justify-content-between align-items-start flex-wrap">
               <div>
-                <h5>Payment History ({{ filteredPayments.length }})</h5>
+                <h5>Payment History ({{ groupedPayments.length }})</h5>
                 <small v-if="dateFilters.payments.active" class="text-muted">
                   Filtered: {{ formatDate(dateFilters.payments.start) }} -
                   {{ formatDate(dateFilters.payments.end) }}
@@ -363,10 +365,11 @@
 
             <DateFilter label="Payments" @filterbydate="handlePaymentsDateFilter" class="mb-3" />
 
-            <div v-if="filteredPayments.length > 0" class="table-responsive">
+            <div v-if="groupedPayments.length > 0" class="table-responsive">
               <table class="table table-hover">
                 <thead>
                   <tr>
+                    <th style="width: 50px"></th>
                     <th>Receipt No</th>
                     <th>Date</th>
                     <th>Bill Reference</th>
@@ -376,31 +379,99 @@
                     <th>Actions</th>
                   </tr>
                 </thead>
+                <!-- eslint-disable -->
                 <tbody>
-                  <tr v-for="payment in filteredPayments" :key="payment.id">
-                    <td>
-                      <strong>{{ payment.payment_reference }}</strong>
-                    </td>
-                    <td>{{ formatDate(payment.processed_at) }}</td>
-                    <td>{{ payment?.bill?.bill_number || 'N/A' }}</td>
-                    <td>
-                      <strong>₦{{ formatCurrency(payment.amount) }}</strong>
-                    </td>
-                    <td>{{ payment.payment_method }}</td>
-                    <td>
-                      <span class="badge badge-success">{{ payment.status || 'COMPLETED' }}</span>
-                    </td>
-                    <td>
-                      <b-button
-                        size="sm"
-                        variant="outline-primary"
-                        @click="viewPaymentDetails(payment)"
-                      >
-                        <i class="fas fa-eye"></i> View
-                      </b-button>
-                    </td>
-                  </tr>
+                  <template v-for="payment in groupedPayments">
+                    <tr
+                      :key="`payment-row-${payment.id || payment.payment_reference}`"
+                      class="expandable-row"
+                      @click="togglePaymentExpansion(payment.id || payment.payment_reference)"
+                    >
+                      <td class="expansion-cell">
+                        <i
+                          class="fas expansion-icon"
+                          :class="isPaymentExpanded(payment.id || payment.payment_reference) ? 'fa-chevron-down' : 'fa-chevron-right'"
+                        ></i>
+                      </td>
+                      <td>
+                        <strong>{{ payment.payment_reference }}</strong>
+                      </td>
+                      <td>{{ formatDate(payment.processed_at) }}</td>
+                      <td>{{ payment?.bill?.bill_number || 'N/A' }}</td>
+                      <td>
+                        <strong>₦{{ formatCurrency(payment.amount) }}</strong>
+                      </td>
+                      <td>{{ payment.payment_method }}</td>
+                      <td>
+                        <span class="badge badge-success">{{ payment.status || 'COMPLETED' }}</span>
+                      </td>
+                      <td @click.stop>
+                        <b-button
+                          size="sm"
+                          variant="outline-primary"
+                          @click="viewPaymentDetails(payment)"
+                        >
+                          <i class="fas fa-eye"></i> View
+                        </b-button>
+                      </td>
+                    </tr>
+                    <tr
+                      v-if="isPaymentExpanded(payment.id || payment.payment_reference)"
+                      :key="`payment-expanded-${payment.id || payment.payment_reference}`"
+                      class="expanded-row"
+                    >
+                      <td colspan="8" class="expanded-content">
+                        <div class="bill-items-container">
+                          <h6 class="bill-items-title">
+                            <i class="fas fa-list mr-2"></i>Payment Items
+                          </h6>
+                          <div
+                            v-if="payment.paymentItems && payment.paymentItems.length > 0"
+                            class="bill-items-table-wrapper"
+                          >
+                            <table class="bill-items-table">
+                              <thead>
+                                <tr>
+                                  <th>Item Name</th>
+                                  <th>Type</th>
+                                  <th>Quantity</th>
+                                  <th>Unit Price</th>
+                                  <th>Total Price</th>
+                                  <th>Amount Paid</th>
+                                  <th>Date</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr v-for="item in payment.paymentItems" :key="item.id">
+                                  <td>{{ item.billItem?.item_name || 'N/A' }}</td>
+                                  <td>
+                                    <b-badge :variant="getBillItemTypeVariant(item.billItem?.item_type)">{{
+                                      item.billItem?.item_type || 'N/A'
+                                    }}</b-badge>
+                                  </td>
+                                  <td>{{ item.billItem?.quantity || 'N/A' }}</td>
+                                  <td>₦{{ formatCurrency(item.billItem?.unit_price) }}</td>
+                                  <td>
+                                    <strong>₦{{ formatCurrency(item.billItem?.total_price) }}</strong>
+                                  </td>
+                                  <td>
+                                    <strong class="text-success">₦{{ formatCurrency(item.amount_paid) }}</strong>
+                                  </td>
+                                  <td>{{ formatDate(item.createdAt) }}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                          <div v-else class="no-items-message">
+                            <i class="fas fa-inbox text-muted mr-2"></i>
+                            <span class="text-muted">No payment items found for this payment</span>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  </template>
                 </tbody>
+                <!-- eslint-enable -->
               </table>
             </div>
             <div v-else class="text-center py-5">
@@ -466,6 +537,86 @@
             <div v-else class="text-center py-5">
               <i class="fas fa-piggy-bank fa-3x text-muted mb-3"></i>
               <p class="text-muted">No deposits found for this patient</p>
+            </div>
+          </b-tab>
+
+          <!-- Bill Items Tab -->
+          <b-tab title="Bill Items">
+            <div class="tab-header mb-3">
+              <h5>Bill Items ({{ billItemsTotal }})</h5>
+            </div>
+            <div v-if="loadingBillItems" class="text-center py-5">
+              <b-spinner></b-spinner>
+              <p class="mt-3 text-muted">Loading bill items...</p>
+            </div>
+            <div v-else-if="billItems.length > 0" class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Item Name</th>
+                    <th>Item Type</th>
+                    <th>Item Price</th>
+                    <th>Amount Paid</th>
+                    <th>Status</th>
+                    <th>Date Created</th>
+                    <th>Date Paid</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="item in billItems" :key="item.id">
+                    <td>
+                      <strong>{{ item.item_name }}</strong>
+                    </td>
+                    <td>
+                      <b-badge :variant="getBillItemTypeVariant(item.item_type)">
+                        {{ item.item_type }}
+                      </b-badge>
+                    </td>
+                    <td>
+                      <strong>₦{{ formatCurrency(item.total_price) }}</strong>
+                    </td>
+                    <td>
+                      <strong :class="item.amount_paid > 0 ? 'text-success' : 'text-muted'">
+                        ₦{{ formatCurrency(item.amount_paid) }}
+                      </strong>
+                    </td>
+                    <td>
+                      <span class="badge" :class="getBillStatusClass(item.payment_status)">
+                        {{ item.payment_status }}
+                      </span>
+                    </td>
+                    <td>{{ formatDate(item.createdAt) }}</td>
+                    <td>
+                      <span v-if="item.paid_at">{{ formatDate(item.paid_at) }}</span>
+                      <span v-else class="text-muted">N/A</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <!-- Pagination -->
+              <div v-if="billItemsPages > 1" class="pagination-section mt-4">
+                <b-pagination
+                  v-model="billItemsCurrentPage"
+                  :total-rows="billItemsTotal"
+                  :per-page="billItemsPageLimit"
+                  @change="onBillItemsPageChange"
+                  align="center"
+                  size="md"
+                ></b-pagination>
+                <div class="pagination-info text-center mt-2">
+                  <small class="text-muted">
+                    Showing {{ (billItemsCurrentPage - 1) * billItemsPageLimit + 1 }} to
+                    {{ Math.min(billItemsCurrentPage * billItemsPageLimit, billItemsTotal) }} of
+                    {{ billItemsTotal }} bill items
+                    <span v-if="billItemsPages > 1">(Page {{ billItemsCurrentPage }} of {{ billItemsPages }})</span>
+                  </small>
+                </div>
+              </div>
+            </div>
+            <div v-else class="text-center py-5">
+              <i class="fas fa-list fa-3x text-muted mb-3"></i>
+              <p class="text-muted">No bill items found for this patient</p>
             </div>
           </b-tab>
 
@@ -576,7 +727,9 @@
           <b-form-checkbox v-model="statementOptions.includeDetails" class="mb-2">
             <strong>Include Detailed Bill Items</strong>
             <br />
-            <small class="text-muted">Show individual items for each bill with quantities and prices</small>
+            <small class="text-muted"
+              >Show individual items for each bill with quantities and prices</small
+            >
           </b-form-checkbox>
           <b-form-checkbox v-model="statementOptions.includeDeposits">
             <strong>Include Patient Deposits</strong>
@@ -587,7 +740,11 @@
 
         <!-- Action Buttons -->
         <div class="modal-actions">
-          <b-button variant="secondary" @click="closeStatementModal" :disabled="generatingStatement">
+          <b-button
+            variant="secondary"
+            @click="closeStatementModal"
+            :disabled="generatingStatement"
+          >
             Cancel
           </b-button>
           <b-button
@@ -611,9 +768,10 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex';
+import { mapActions, mapGetters, mapMutations } from 'vuex';
 import DateFilter from '@/utils/DateFilter.vue';
 import exportService from '@/core/services/export.service';
+import dayjs from 'dayjs';
 
 export default {
   name: 'PatientFinancialLookup',
@@ -632,6 +790,7 @@ export default {
       searchTimeout: null,
       activeTab: 0,
       expandedBills: new Set(), // Track expanded bill IDs
+      expandedPayments: new Set(), // Track expanded payment IDs
       dateFilters: {
         bills: {
           start: null,
@@ -645,6 +804,12 @@ export default {
         },
       },
       exporting: false,
+      billItems: [],
+      loadingBillItems: false,
+      billItemsCurrentPage: 1,
+      billItemsPageLimit: 20,
+      billItemsTotal: 0,
+      billItemsPages: 0,
 
       financialSummary: {
         bills: [],
@@ -681,6 +846,8 @@ export default {
   },
 
   computed: {
+    ...mapGetters('accounting', ['getPatientFinancialLookup']),
+
     today() {
       return new Date().toISOString().split('T')[0];
     },
@@ -764,6 +931,35 @@ export default {
         return paymentDate >= start && paymentDate <= end;
       });
     },
+
+    groupedPayments() {
+      // Group payments by payment_reference and collect all paymentItems
+      const grouped = {};
+
+      this.filteredPayments.forEach((payment) => {
+        const key = payment.payment_reference || payment.id;
+
+        if (!grouped[key]) {
+          // First payment with this reference - create base payment object
+          grouped[key] = {
+            ...payment,
+            paymentItems: [],
+          };
+        }
+
+        // Collect paymentItems (handle both single object and array cases)
+        if (payment.paymentItems) {
+          if (Array.isArray(payment.paymentItems)) {
+            grouped[key].paymentItems.push(...payment.paymentItems);
+          } else {
+            // Single paymentItems object
+            grouped[key].paymentItems.push(payment.paymentItems);
+          }
+        }
+      });
+
+      return Object.values(grouped);
+    },
   },
 
   methods: {
@@ -771,7 +967,33 @@ export default {
       fetchPatients: 'patient/fetchPatients',
       getPatientFinancialSummary: 'accounting/getPatientFinancialSummary',
       generatePatientFinancialStatement: 'accounting/generatePatientFinancialStatement',
+      getPatientBillItemsWithPayments: 'accounting/getPatientBillItemsWithPayments',
     }),
+    ...mapMutations('accounting', [
+      'SET_PATIENT_FINANCIAL_LOOKUP',
+      'CLEAR_PATIENT_FINANCIAL_LOOKUP',
+    ]),
+
+    restoreStateFromVuex() {
+      const storedData = this.getPatientFinancialLookup;
+      if (storedData && storedData.selectedPatient) {
+        this.selectedPatient = storedData.selectedPatient;
+        this.searchQuery =
+          storedData.searchQuery ||
+          `${storedData.selectedPatient.firstname} ${storedData.selectedPatient.lastname} (${storedData.selectedPatient.hospital_id})`;
+        if (storedData.financialSummary) {
+          this.financialSummary = storedData.financialSummary;
+        }
+        // Update route query param to maintain URL state
+        if (this.$route.query.patientId !== String(storedData.selectedPatient.id)) {
+          this.$router.replace({
+            query: { ...this.$route.query, patientId: storedData.selectedPatient.id },
+          });
+        }
+        // Load bill items for restored patient
+        this.loadPatientBillItems(storedData.selectedPatient.id, this.billItemsCurrentPage);
+      }
+    },
 
     handleSearchInput() {
       clearTimeout(this.searchTimeout);
@@ -782,9 +1004,41 @@ export default {
         return;
       }
 
+      // Clear persisted state when user starts typing a new search
+      if (this.selectedPatient && !this.searchQuery.includes(this.selectedPatient.hospital_id)) {
+        // User is searching for a different patient
+        this.clearPersistedState();
+      }
+
       this.searchTimeout = setTimeout(() => {
         this.performSearch();
       }, 300);
+    },
+
+    clearPersistedState() {
+      this.CLEAR_PATIENT_FINANCIAL_LOOKUP();
+      this.selectedPatient = null;
+      this.financialSummary = {
+        bills: [],
+        payments: [],
+        deposits: [],
+        history: [],
+        summary: {
+          totalBills: 0,
+          totalBillsAmount: 0,
+          totalPayments: 0,
+          totalPaymentsAmount: 0,
+          totalDeposits: 0,
+          totalDepositsAmount: 0,
+          outstandingBalance: 0,
+        },
+      };
+      // Remove patientId from route query
+      const query = { ...this.$route.query };
+      delete query.patientId;
+      this.$router.replace({ query }).catch(() => {
+        // Ignore navigation duplicated errors
+      });
     },
 
     async performSearch() {
@@ -815,7 +1069,25 @@ export default {
       this.showAutocomplete = false;
       this.searchResults = [];
 
-      await this.loadPatientFinancialData(patient.id);
+      // Save selected patient to Vuex
+      this.SET_PATIENT_FINANCIAL_LOOKUP({
+        selectedPatient: patient,
+        searchQuery: this.searchQuery,
+      });
+
+      // Update route query param to maintain URL state
+      this.$router
+        .replace({
+          query: { ...this.$route.query, patientId: patient.id },
+        })
+        .catch(() => {
+          // Ignore navigation duplicated errors
+        });
+
+      await Promise.all([
+        this.loadPatientFinancialData(patient.id),
+        this.loadPatientBillItems(patient.id),
+      ]);
     },
 
     async loadPatientById(patientId) {
@@ -849,6 +1121,14 @@ export default {
 
         if (response.success) {
           this.financialSummary = response.data;
+          // Financial summary is already committed to Vuex by the action
+          // Just ensure the selected patient is also saved
+          if (this.selectedPatient) {
+            this.SET_PATIENT_FINANCIAL_LOOKUP({
+              selectedPatient: this.selectedPatient,
+              searchQuery: this.searchQuery,
+            });
+          }
         } else {
           throw new Error(response.error || 'Failed to load financial data');
         }
@@ -864,6 +1144,46 @@ export default {
       }
     },
 
+    async loadPatientBillItems(patientId, page = 1) {
+      this.loadingBillItems = true;
+
+      try {
+        const response = await this.getPatientBillItemsWithPayments({
+          patientId,
+          currentPage: page,
+          pageLimit: this.billItemsPageLimit,
+        });
+
+        if (response.success) {
+          const data = response.data || { rows: [], count: 0, pages: 0, currentPage: 1, pageLimit: 20 };
+          this.billItems = data.rows || [];
+          this.billItemsTotal = data.count || 0;
+          this.billItemsPages = data.pages || 0;
+          this.billItemsCurrentPage = data.currentPage || 1;
+        } else {
+          throw new Error(response.error || 'Failed to load bill items');
+        }
+      } catch (error) {
+        console.error('Failed to load bill items:', error);
+        this.$bvToast.toast('Failed to load patient bill items', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+        this.billItems = [];
+        this.billItemsTotal = 0;
+        this.billItemsPages = 0;
+      } finally {
+        this.loadingBillItems = false;
+      }
+    },
+
+    onBillItemsPageChange(page) {
+      if (this.selectedPatient) {
+        this.loadPatientBillItems(this.selectedPatient.id, page);
+      }
+    },
+
     formatCurrency(value) {
       if (!value && value !== 0) return '0.00';
       return parseFloat(value).toFixed(2);
@@ -871,11 +1191,7 @@ export default {
 
     formatDate(date) {
       if (!date) return 'N/A';
-      return new Date(date).toLocaleDateString('en-GB', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      });
+      return dayjs(date).format('DD/MM/YYYY, h:mma');
     },
 
     getBillStatusClass(status) {
@@ -997,6 +1313,20 @@ export default {
       return this.expandedBills.has(billId);
     },
 
+    togglePaymentExpansion(paymentId) {
+      if (this.expandedPayments.has(paymentId)) {
+        this.expandedPayments.delete(paymentId);
+      } else {
+        this.expandedPayments.add(paymentId);
+      }
+      // Force reactivity update
+      this.expandedPayments = new Set(this.expandedPayments);
+    },
+
+    isPaymentExpanded(paymentId) {
+      return this.expandedPayments.has(paymentId);
+    },
+
     handleBillsDateFilter(start, end) {
       this.dateFilters.bills = {
         start,
@@ -1111,17 +1441,52 @@ export default {
       try {
         this.exporting = true;
 
-        const exportData = this.filteredPayments.map((payment) => ({
-          'Receipt Number': payment.payment_reference,
-          'Payment Date': this.formatDate(payment.processed_at),
-          'Patient Name': `${this.selectedPatient.firstname} ${this.selectedPatient.lastname}`,
-          'Hospital ID': this.selectedPatient.hospital_id,
-          'Bill Number': payment.bill?.bill_number || 'N/A',
-          Amount: payment.amount,
-          'Payment Method': payment.payment_method,
-          Status: payment.status || 'COMPLETED',
-          'Processed By': payment.processed_by || '',
-        }));
+        // Prepare payments data with paymentItems as separate rows
+        const exportData = [];
+
+        this.groupedPayments.forEach((payment) => {
+          if (payment.paymentItems && payment.paymentItems.length > 0) {
+            // Add each payment item as a separate row
+            payment.paymentItems.forEach((item) => {
+              exportData.push({
+                'Receipt Number': payment.payment_reference,
+                'Payment Date': this.formatDate(payment.processed_at),
+                'Patient Name': `${this.selectedPatient.firstname} ${this.selectedPatient.lastname}`,
+                'Hospital ID': this.selectedPatient.hospital_id,
+                'Bill Number': payment.bill?.bill_number || 'N/A',
+                'Item Name': item.billItem?.item_name || 'N/A',
+                'Item Type': item.billItem?.item_type || 'N/A',
+                Quantity: item.billItem?.quantity || 0,
+                'Unit Price': item.billItem?.unit_price || 0,
+                'Total Price': item.billItem?.total_price || 0,
+                'Amount Paid': item.amount_paid,
+                'Payment Total': payment.amount,
+                'Payment Method': payment.payment_method,
+                Status: payment.status || 'COMPLETED',
+                'Processed By': payment.processed_by || '',
+              });
+            });
+          } else {
+            // Payment without items
+            exportData.push({
+              'Receipt Number': payment.payment_reference,
+              'Payment Date': this.formatDate(payment.processed_at),
+              'Patient Name': `${this.selectedPatient.firstname} ${this.selectedPatient.lastname}`,
+              'Hospital ID': this.selectedPatient.hospital_id,
+              'Bill Number': payment.bill?.bill_number || 'N/A',
+              'Item Name': 'N/A',
+              'Item Type': 'N/A',
+              Quantity: 0,
+              'Unit Price': 0,
+              'Total Price': 0,
+              'Amount Paid': payment.amount,
+              'Payment Total': payment.amount,
+              'Payment Method': payment.payment_method,
+              Status: payment.status || 'COMPLETED',
+              'Processed By': payment.processed_by || '',
+            });
+          }
+        });
 
         if (exportData.length === 0) {
           this.$bvToast.toast('No payments data to export', {
@@ -1233,10 +1598,12 @@ export default {
   },
 
   mounted() {
-    const patientId = this.$route.query.patientId;
+    // First, try to restore state from Vuex
+    this.restoreStateFromVuex();
 
-    if (patientId) {
-      this.loadPatientById(patientId);
+    // If no persisted state and route has patientId, load by ID
+    if (!this.selectedPatient && this.$route.query.patientId) {
+      this.loadPatientById(this.$route.query.patientId);
     }
 
     document.addEventListener('click', (e) => {

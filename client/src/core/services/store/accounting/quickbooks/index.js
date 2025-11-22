@@ -10,4 +10,3 @@ export default {
   actions,
   getters,
 };
-

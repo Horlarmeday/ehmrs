@@ -139,10 +139,10 @@
           <span class="btn-text">DISPENSE ITEM</span>
         </button>
 
-        <button class="action-btn secondary" :disabled="item.disabledReturn" @click="handleReturn">
+        <!-- <button class="action-btn secondary" :disabled="item.disabledReturn" @click="handleReturn">
           <span class="btn-icon">🔄</span>
           <span class="btn-text">RETURN UNUSED</span>
-        </button>
+        </button> -->
       </div>
     </div>
 

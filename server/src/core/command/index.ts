@@ -13,6 +13,8 @@ export enum JobName {
   INVENTORY_EXPIRY_CHECK = 'Inventory expiry check',
   INVENTORY_ALERT_ESCALATION = 'Inventory alert escalation',
   INVENTORY_ALERT_AUTO_RESOLVE = 'Inventory alert auto resolve',
+  // Admission Jobs
+  CHARGE_DAILY_HOSPITALIZATION = 'Charge daily hospitalization',
 }
 
 export const CronTimer = {
@@ -24,6 +26,7 @@ export const CronTimer = {
   [JobName.INVENTORY_EXPIRY_CHECK]: '0 */6 * * *', // every 6 hours
   [JobName.INVENTORY_ALERT_ESCALATION]: '*/30 * * * *', // every 30 minutes
   [JobName.INVENTORY_ALERT_AUTO_RESOLVE]: '0 1 * * *', // daily at 1 AM
+  [JobName.CHARGE_DAILY_HOSPITALIZATION]: '0 0 * * *', // daily at midnight
 };
 
 export const ImmediateJob = {};

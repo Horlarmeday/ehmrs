@@ -16,6 +16,7 @@ import {
   PatientInsurance,
   PostNatal,
   PrescribedService,
+  Service,
   Staff,
   Visit,
   Ward,
@@ -66,6 +67,8 @@ import { NO_AVAILABLE_BED } from './messages/response-messages';
 import { createDrugPrescription, getLastDrugPrescription } from '../Pharmacy/pharmacy.repository';
 import { DrugStatus } from '../../database/models/drugPrescription';
 import dayjs from 'dayjs';
+import VisitService from '../Visit/visit.service';
+import { getVisitById } from '../Visit/visit.repository';
 
 enum Ages {
   ALL_AGES = 'ALL_AGES',
@@ -79,12 +82,13 @@ enum Ages {
  */
 export const admitPatient = async (data: AdmissionBodyType) => {
   const { bed_id, admitted_by, patient_id, visit_id, ward_id, ante_natal_id } = data;
-  const [ward, insurance, patient, admissionItems, inventories] = await Promise.all([
+  const [ward, insurance, patient, admissionItems, inventories, visit] = await Promise.all([
     getWardWithService(ward_id),
     getPatientInsuranceQuery({ patient_id }),
     getPatientById(patient_id),
     getOneDefault({ type: DefaultType.ADMISSION_ITEMS }),
     getInventories(),
+    getVisitById(visit_id),
   ]);
 
   let bedId = bed_id;
@@ -99,6 +103,9 @@ export const admitPatient = async (data: AdmissionBodyType) => {
     }
   }
 
+  const admissionDate = new Date();
+  const admissionDateOnly = dayjs(admissionDate).format('YYYY-MM-DD');
+
   const result = await sequelizeConnection.transaction(async (t: Transaction) => {
     const admission = await Admission.create(
       {
@@ -107,6 +114,7 @@ export const admitPatient = async (data: AdmissionBodyType) => {
         admitted_by: admitted_by.sub,
         date_admitted: Date.now(),
         bed_id: bedId,
+        last_charged_date: admissionDateOnly, // Set to admission date (day 1 is charged on admission)
       },
       { transaction: t }
     );
@@ -165,7 +173,72 @@ export const admitPatient = async (data: AdmissionBodyType) => {
     });
   }
 
+  VisitService.createSpecializedRecords(visit, {
+    category: VisitCategory.DIALYSIS,
+    patient_id,
+    staff_id: admitted_by.sub,
+    professional: 'Nurse',
+    department: ward.name,
+    date_of_visit: new Date(),
+    emergency_priority: 'Low',
+    chief_complaint: 'Dialysis',
+    initial_assessment: 'Dialysis',
+    doctor_id: admitted_by.sub,
+  });
+
   return getOneAdmission({ id: result.id });
+};
+
+/**
+ * Charge a patient for a specific day of hospitalization
+ * @param admission - The admission record
+ * @param wardService - The ward service to charge
+ * @param targetDate - The date to charge for (YYYY-MM-DD format)
+ * @param requester - Staff ID who is requesting the charge
+ * @returns Promise<PrescribedService | null> - The created service or null if already charged
+ */
+export const chargePatientForDay = async (
+  admission: Admission,
+  wardService: Service,
+  targetDate: string,
+  requester: number
+): Promise<PrescribedService | null> => {
+  const { visit_id, patient_id } = admission;
+
+  // Note: Duplicate prevention is primarily handled by the cron job checking last_charged_date
+  // This function assumes it's being called for dates that haven't been charged yet
+
+  // Get patient and insurance for billing logic
+  const [patient, insurance] = await Promise.all([
+    getPatientById(patient_id),
+    getPatientInsuranceQuery({ patient_id, is_default: true }),
+  ]);
+
+  // Apply same exclusion logic as admitPatient
+  if (
+    patient.has_insurance &&
+    EXCLUDED_INSURANCE.includes(insurance?.insurance?.name) &&
+    patient.admitted_days_in_year <= 21
+  ) {
+    // Patient has excluded insurance and hasn't exceeded 21 days - skip charging
+    return null;
+  }
+
+  // Determine service type based on insurance
+  const serviceType = patient.has_insurance ? ServiceType.NHIS : ServiceType.CASH;
+
+  // Create the service prescription for this day
+  const prescribedService = await prescribeService({
+    service_id: wardService.id,
+    price: wardService.price,
+    service_type: serviceType,
+    requester,
+    visit_id,
+    patient_id,
+    ante_natal_id: admission.ante_natal_id || undefined,
+  });
+
+  return prescribedService;
 };
 
 /**

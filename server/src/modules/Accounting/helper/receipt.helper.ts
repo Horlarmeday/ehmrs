@@ -455,3 +455,201 @@ export const printPatientDepositReceiptPDF = async ({
 
   return doc.end();
 };
+
+export interface DepositTransactionReceiptData {
+  transaction: any;
+  deposit: any;
+  patient: any;
+  createdByStaff: any;
+  bankAccount?: any;
+  posTerminal?: any;
+}
+
+export interface PrintDepositTransactionReceiptType {
+  receiptData: DepositTransactionReceiptData;
+  res: Response;
+  print?: boolean;
+}
+
+export const printDepositTransactionReceiptPDF = async ({
+  receiptData,
+  res,
+  print = false,
+}: PrintDepositTransactionReceiptType) => {
+  const { transaction, deposit, patient, createdByStaff, bankAccount, posTerminal } = receiptData;
+
+  const RECEIPT_WIDTH = 226.77;
+  const RECEIPT_HEIGHT = 720;
+
+  const toNumber = (value: any) => {
+    if (value === null || value === undefined) return 0;
+    if (typeof value === 'number') return value;
+    const parsed = parseFloat(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  };
+
+  const patientName = patient
+    ? `${patient.firstname || ''} ${patient.lastname || ''}`.trim()
+    : 'N/A';
+  const patientPhone = patient?.phone || 'N/A';
+  const patientId = patient?.hospital_id || patient?.id || 'N/A';
+
+  const createdByName = createdByStaff
+    ? `${createdByStaff.firstname || ''} ${createdByStaff.lastname || ''}`.trim()
+    : 'System';
+
+  const referenceNumber = transaction?.reference_number || 'N/A';
+  const transactionType = transaction?.transaction_type || 'N/A';
+  const transactionAmount = toNumber(transaction?.amount || 0);
+  const previousBalance = toNumber(transaction?.previous_balance || 0);
+  const newBalance = toNumber(transaction?.new_balance || 0);
+  const depositType = deposit?.deposit_type || deposit?.payment_method || 'N/A';
+  const depositReference = deposit?.reference_number || 'N/A';
+  const transactionDate =
+    transaction?.createdAt || transaction?.created_at || new Date().toISOString();
+  const description = transaction?.description || '';
+
+  const paymentChannelLines: string[] = [];
+  if (bankAccount) {
+    const accountName = bankAccount.account_name || bankAccount.accountName;
+    const accountNumber = bankAccount.account_number || bankAccount.accountNumber;
+    const bankName = bankAccount.bank_name || bankAccount.bankName;
+    paymentChannelLines.push(`Bank: ${bankName || 'N/A'}`);
+    paymentChannelLines.push(`Account: ${accountName || 'N/A'} (${accountNumber || 'N/A'})`);
+  } else if (posTerminal) {
+    paymentChannelLines.push(`POS Terminal: ${posTerminal.terminal_id || 'N/A'}`);
+    paymentChannelLines.push(`Type: ${posTerminal.terminal_type || 'N/A'}`);
+    if (posTerminal.merchant_name) {
+      paymentChannelLines.push(`Provider: ${posTerminal.merchant_name}`);
+    }
+  } else {
+    paymentChannelLines.push('Channel: Cash');
+  }
+
+  const verificationData = `Transaction: ${referenceNumber}, Type: ${transactionType}, Patient: ${patientName}, Amount: ${formatCurrency(
+    transactionAmount
+  )}`;
+  const qrImage = await QRCode.toDataURL(verificationData);
+
+  const filename = `deposit-transaction-receipt-${referenceNumber}-${Date.now()}.pdf`;
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader(
+    'Content-Disposition',
+    `${print ? 'inline' : 'attachment'}; filename=${filename}`
+  );
+
+  const doc = new PDFDocument({
+    size: [RECEIPT_WIDTH, RECEIPT_HEIGHT],
+    margins: { top: 10, left: 10, right: 10, bottom: 10 },
+    font: 'Helvetica',
+  });
+
+  doc.pipe(res);
+
+  const logoPath =
+    process.env.NODE_ENV === 'production' ? `server/public/Caroline.png` : 'src/public/Caroline.png';
+
+  if (fs.existsSync(logoPath)) {
+    doc.image(logoPath, (RECEIPT_WIDTH - 60) / 2, 10, { width: 60 });
+  }
+
+  doc.moveDown(1);
+
+  doc
+    .fontSize(12)
+    .font('Helvetica-Bold')
+    .text('Heritage Kidney and Medical Care', { align: 'center' })
+    .moveDown(0.2)
+    .fontSize(8)
+    .font('Helvetica')
+    .text('kaura District, Opp. Suncity', { align: 'center' })
+    .moveDown(0.5);
+
+  doc
+    .fontSize(10)
+    .font('Helvetica-Bold')
+    .text('DEPOSIT TRANSACTION RECEIPT', { align: 'center', underline: true })
+    .moveDown(1);
+
+  doc
+    .fontSize(8)
+    .font('Helvetica-Bold')
+    .text(`Transaction Ref: ${referenceNumber}`, { align: 'left' })
+    .font('Helvetica')
+    .text(`Date: ${formatDate(transactionDate)}`)
+    .text(`Type: ${transactionType}`)
+    .text(`Processed By: ${createdByName || 'System'}`)
+    .moveDown(0.5);
+
+  doc
+    .fontSize(8)
+    .font('Helvetica-Bold')
+    .text('Patient Details', { align: 'left', underline: true })
+    .font('Helvetica')
+    .text(`Name: ${patientName}`)
+    .text(`Hospital ID: ${patientId}`)
+    .text(`Phone: ${patientPhone}`)
+    .moveDown(0.5);
+
+  doc
+    .fontSize(8)
+    .font('Helvetica-Bold')
+    .text('Transaction Details', { align: 'left', underline: true })
+    .font('Helvetica')
+    .text(`Deposit Ref: ${depositReference}`)
+    .text(`Deposit Type: ${depositType}`)
+    .text(`Previous Balance: ${formatCurrency(previousBalance)}`)
+    .text(`Transaction Amount: ${formatCurrency(transactionAmount)}`)
+    .text(`New Balance: ${formatCurrency(newBalance)}`);
+
+  if (description) {
+    doc.text(`Description: ${description}`);
+  }
+
+  doc.moveDown(0.5);
+
+  doc
+    .font('Helvetica-Bold')
+    .text('Payment Channel', { align: 'left', underline: true })
+    .font('Helvetica');
+
+  paymentChannelLines.forEach(line => {
+    doc.text(line);
+  });
+
+  doc.moveDown(0.5);
+
+  doc
+    .fontSize(10)
+    .font('Helvetica-Bold')
+    .text(`Transaction Amount: ${formatCurrency(transactionAmount)}`, { align: 'center' })
+    .moveDown(0.2)
+    .text(`New Balance: ${formatCurrency(newBalance)}`, { align: 'center' })
+    .moveDown(0.5);
+
+  doc.image(qrImage, (RECEIPT_WIDTH - 60) / 2, doc.y, { width: 60 });
+  doc.moveDown(1);
+
+  doc
+    .fontSize(7)
+    .font('Helvetica')
+    .text('Scan QR code to verify receipt', { align: 'center' })
+    .moveDown(0.2)
+    .font('Helvetica-Oblique');
+
+  doc
+    .moveDown(0.5)
+    .fontSize(9)
+    .font('Helvetica')
+    .text('Thank you for your patronage!', { align: 'center' })
+    .moveDown(0.2)
+    .text('Service To All', { align: 'center' });
+
+  doc
+    .moveDown(1)
+    .fontSize(7)
+    .font('Helvetica-Oblique')
+    .text('Powered by Prismaspark Dynamics Ltd.', { align: 'center' });
+
+  return doc.end();
+};

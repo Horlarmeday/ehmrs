@@ -118,10 +118,11 @@
                     title="Select all payments"
                   ></b-form-checkbox>
                 </th>
+                <th style="width: 50px"></th>
                 <th>Date</th>
                 <th>Reference</th>
                 <th>Patient</th>
-                <th>Bill #</th>
+                <th>Bill</th>
                 <th>Amount</th>
                 <th>Method</th>
                 <th>Status</th>
@@ -132,7 +133,7 @@
             <tbody>
               <!-- Loading State -->
               <tr v-if="isLoadingPayments">
-                <td colspan="10" class="text-center py-4">
+                <td colspan="11" class="text-center py-4">
                   <b-spinner variant="primary" label="Loading..."></b-spinner>
                   <p class="mt-2">Loading payments...</p>
                 </td>
@@ -140,7 +141,7 @@
 
               <!-- No Payments State -->
               <tr v-else-if="!hasPayments && !isLoadingPayments">
-                <td colspan="10" class="text-center py-4">
+                <td colspan="11" class="text-center py-4">
                   <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
                   <h5>No payments found</h5>
                   <p class="text-muted">There are no payments to display</p>
@@ -148,68 +149,136 @@
               </tr>
 
               <!-- Payments Data -->
-              <tr v-else v-for="payment in filteredPayments" :key="payment.id">
-                <td>
-                  <b-form-checkbox
-                    :value="payment.id"
-                    v-model="selectedPayments"
-                    @change="onPaymentSelectionChange"
-                  ></b-form-checkbox>
-                </td>
-                <td>{{ formatDate(payment.processed_at) }}</td>
-                <td>
-                  <strong>{{ payment.payment_reference }}</strong>
-                </td>
-                <td>{{ payment.patient?.fullname || 'N/A' }}</td>
-                <td>{{ payment.bill?.bill_number || 'N/A' }}</td>
-                <td>{{ formatCurrency(payment.amount) }}</td>
-                <td>
-                  <b-badge :variant="getPaymentMethodVariant(payment.payment_method)">
-                    {{ payment.payment_method }}
-                  </b-badge>
-                </td>
-                <td>
-                  <b-badge :variant="getStatusVariant(payment.status)">
-                    {{ payment.status }}
-                  </b-badge>
-                </td>
-                <td>{{ payment.processedByStaff?.fullname || 'N/A' }}</td>
-                <td>
-                  <div class="action-buttons">
-                    <b-button
-                      variant="outline-primary"
-                      size="sm"
-                      @click="viewPaymentDetails(payment)"
-                      title="View Details"
-                    >
-                      <i class="fas fa-eye"></i>
-                    </b-button>
-                    <b-button
-                      variant="outline-info"
-                      size="sm"
-                      @click="printReceipt(payment)"
-                      title="Print Receipt"
-                      :disabled="printingReceipts.has(payment.id)"
-                    >
-                      <i v-if="printingReceipts.has(payment.id)" class="fas fa-spinner fa-spin"></i>
-                      <i v-else class="fas fa-print"></i>
-                    </b-button>
-                    <b-button
-                      variant="outline-success"
-                      size="sm"
-                      @click="downloadReceipt(payment)"
-                      title="Download Receipt"
-                      :disabled="downloadingReceipts.has(payment.id)"
-                    >
-                      <i
-                        v-if="downloadingReceipts.has(payment.id)"
-                        class="fas fa-spinner fa-spin"
-                      ></i>
-                      <i v-else class="fas fa-download"></i>
-                    </b-button>
-                  </div>
-                </td>
-              </tr>
+              <!-- eslint-disable -->
+              <template v-else v-for="payment in groupedPayments">
+                <tr
+                  :key="payment.id || payment.payment_reference"
+                  class="expandable-row"
+                  @click="togglePaymentExpansion(payment.id || payment.payment_reference)"
+                >
+                  <td @click.stop>
+                    <b-form-checkbox
+                      :value="payment.id"
+                      v-model="selectedPayments"
+                      @change="onPaymentSelectionChange"
+                    ></b-form-checkbox>
+                  </td>
+                  <td class="expansion-cell">
+                    <i
+                      class="fas expansion-icon"
+                      :class="isPaymentExpanded(payment.id || payment.payment_reference) ? 'fa-chevron-down' : 'fa-chevron-right'"
+                    ></i>
+                  </td>
+                  <td>{{ formatDate(payment.processed_at) }}</td>
+                  <td>
+                    <strong>{{ payment.payment_reference }}</strong>
+                  </td>
+                  <td>{{ payment.patient?.fullname || 'N/A' }}</td>
+                  <td>{{ payment.bill?.bill_number || 'N/A' }}</td>
+                  <td>{{ formatCurrency(payment.amount) }}</td>
+                  <td>
+                    <b-badge :variant="getPaymentMethodVariant(payment.payment_method)">
+                      {{ payment.payment_method }}
+                    </b-badge>
+                  </td>
+                  <td>
+                    <b-badge :variant="getStatusVariant(payment.status)">
+                      {{ payment.status }}
+                    </b-badge>
+                  </td>
+                  <td>{{ payment.processedByStaff?.fullname || 'N/A' }}</td>
+                  <td @click.stop>
+                    <div class="action-buttons">
+                      <b-button
+                        variant="outline-primary"
+                        size="sm"
+                        @click="viewPaymentDetails(payment)"
+                        title="View Details"
+                      >
+                        <i class="fas fa-eye"></i>
+                      </b-button>
+                      <b-button
+                        variant="outline-info"
+                        size="sm"
+                        @click="printReceipt(payment)"
+                        title="Print Receipt"
+                        :disabled="printingReceipts.has(payment.id)"
+                      >
+                        <i v-if="printingReceipts.has(payment.id)" class="fas fa-spinner fa-spin"></i>
+                        <i v-else class="fas fa-print"></i>
+                      </b-button>
+                      <b-button
+                        variant="outline-success"
+                        size="sm"
+                        @click="downloadReceipt(payment)"
+                        title="Download Receipt"
+                        :disabled="downloadingReceipts.has(payment.id)"
+                      >
+                        <i
+                          v-if="downloadingReceipts.has(payment.id)"
+                          class="fas fa-spinner fa-spin"
+                        ></i>
+                        <i v-else class="fas fa-download"></i>
+                      </b-button>
+                    </div>
+                  </td>
+                </tr>
+                <tr
+                  v-if="isPaymentExpanded(payment.id || payment.payment_reference)"
+                  :key="`payment-expanded-${payment.id || payment.payment_reference}`"
+                  class="expanded-row"
+                >
+                  <td colspan="11" class="expanded-content">
+                    <div class="bill-items-container">
+                      <h6 class="bill-items-title">
+                        <i class="fas fa-list mr-2"></i>Payment Items
+                      </h6>
+                      <div
+                        v-if="payment.paymentItems && payment.paymentItems.length > 0"
+                        class="bill-items-table-wrapper"
+                      >
+                        <table class="bill-items-table">
+                          <thead>
+                            <tr>
+                              <th>Item Name</th>
+                              <th>Type</th>
+                              <th>Quantity</th>
+                              <th>Unit Price</th>
+                              <th>Total Price</th>
+                              <th>Amount Paid</th>
+                              <th>Date</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for="item in payment.paymentItems" :key="item.id">
+                              <td>{{ item.billItem?.item_name || 'N/A' }}</td>
+                              <td>
+                                <b-badge :variant="getBillItemTypeVariant(item.billItem?.item_type)">{{
+                                  item.billItem?.item_type || 'N/A'
+                                }}</b-badge>
+                              </td>
+                              <td>{{ item.billItem?.quantity || 'N/A' }}</td>
+                              <td>{{ formatCurrency(item.billItem?.unit_price) }}</td>
+                              <td>
+                                <strong>{{ formatCurrency(item.billItem?.total_price) }}</strong>
+                              </td>
+                              <td>
+                                <strong class="text-success">{{ formatCurrency(item.amount_paid) }}</strong>
+                              </td>
+                              <td>{{ formatDate(item.createdAt) }}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div v-else class="no-items-message">
+                        <i class="fas fa-inbox text-muted mr-2"></i>
+                        <span class="text-muted">No payment items found for this payment</span>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </template>
+              <!-- eslint-enable -->
             </tbody>
           </table>
         </div>
@@ -248,6 +317,7 @@
 
 <script>
 import { debounce } from 'lodash';
+import dayjs from 'dayjs';
 
 export default {
   name: 'PaymentManagement',
@@ -267,6 +337,9 @@ export default {
 
       // Selection tracking
       selectedPayments: new Set(),
+
+      // Expansion tracking
+      expandedPayments: new Set(), // Track expanded payment IDs
 
       // Filters
       filters: {
@@ -329,17 +402,46 @@ export default {
     selectAll: {
       get() {
         return (
-          this.filteredPayments.length > 0 &&
-          this.selectedPayments.size === this.filteredPayments.length
+          this.groupedPayments.length > 0 &&
+          this.selectedPayments.size === this.groupedPayments.length
         );
       },
       set(value) {
         if (value) {
-          this.selectedPayments = new Set(this.filteredPayments.map((p) => p.id));
+          this.selectedPayments = new Set(this.groupedPayments.map((p) => p.id));
         } else {
           this.selectedPayments.clear();
         }
       },
+    },
+
+    groupedPayments() {
+      // Group payments by payment_reference and collect all paymentItems
+      const grouped = {};
+
+      this.filteredPayments.forEach((payment) => {
+        const key = payment.payment_reference || payment.id;
+
+        if (!grouped[key]) {
+          // First payment with this reference - create base payment object
+          grouped[key] = {
+            ...payment,
+            paymentItems: [],
+          };
+        }
+
+        // Collect paymentItems (handle both single object and array cases)
+        if (payment.paymentItems) {
+          if (Array.isArray(payment.paymentItems)) {
+            grouped[key].paymentItems.push(...payment.paymentItems);
+          } else {
+            // Single paymentItems object
+            grouped[key].paymentItems.push(payment.paymentItems);
+          }
+        }
+      });
+
+      return Object.values(grouped);
     },
   },
   async mounted() {
@@ -608,7 +710,7 @@ export default {
 
     formatDate(dateString) {
       if (!dateString) return '';
-      return new Date(dateString).toLocaleDateString('en-NG');
+      return dayjs(dateString).format('DD/MM/YYYY');
     },
 
     getPaymentMethodVariant(method) {
@@ -658,6 +760,32 @@ export default {
       this.loadPayments().finally(() => {
         this.loadingFilters = false;
       });
+    },
+
+    // Payment expansion methods
+    togglePaymentExpansion(paymentId) {
+      if (this.expandedPayments.has(paymentId)) {
+        this.expandedPayments.delete(paymentId);
+      } else {
+        this.expandedPayments.add(paymentId);
+      }
+      // Force reactivity update
+      this.expandedPayments = new Set(this.expandedPayments);
+    },
+
+    isPaymentExpanded(paymentId) {
+      return this.expandedPayments.has(paymentId);
+    },
+
+    getBillItemTypeVariant(type) {
+      const variants = {
+        DRUG: 'primary',
+        TEST: 'info',
+        INVESTIGATION: 'warning',
+        SERVICE: 'success',
+        ADDITIONAL_ITEM: 'secondary',
+      };
+      return variants[type] || 'secondary';
     },
   },
 };
@@ -831,5 +959,128 @@ export default {
     padding: 0.2rem 0.4rem;
     font-size: 0.8rem;
   }
+}
+
+/* Expandable Payment Rows */
+.expandable-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.expandable-row:hover {
+  background-color: #f1f3f5 !important;
+}
+
+.expansion-cell {
+  text-align: center;
+  vertical-align: middle;
+  padding: 12px 8px !important;
+}
+
+.expansion-icon {
+  color: #6c757d;
+  transition: transform 0.2s ease, color 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.expandable-row:hover .expansion-icon {
+  color: #007bff;
+}
+
+.expanded-row {
+  background-color: #f8f9fa;
+}
+
+.expanded-row:hover {
+  background-color: #f8f9fa !important;
+}
+
+.expanded-content {
+  padding: 0 !important;
+}
+
+.bill-items-container {
+  padding: 20px 30px 20px 60px;
+  background: linear-gradient(to right, #f8f9fa 0%, #ffffff 100%);
+  border-left: 4px solid #007bff;
+}
+
+.bill-items-title {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 15px;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.bill-items-table-wrapper {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.bill-items-table {
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+}
+
+.bill-items-table thead {
+  background: linear-gradient(135deg, #ccd5fb 0%, #d2b2f1 100%);
+}
+
+.bill-items-table thead th {
+  color: rgb(58, 58, 58);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  padding: 12px 15px;
+  border: none;
+  letter-spacing: 0.5px;
+}
+
+.bill-items-table tbody tr {
+  border-bottom: 1px solid #e9ecef;
+  transition: background-color 0.15s ease;
+}
+
+.bill-items-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.bill-items-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.bill-items-table tbody td {
+  padding: 12px 15px;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+.bill-items-table tbody td:first-child {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.bill-items-table tbody td:last-child {
+  color: #007bff;
+  font-weight: 600;
+}
+
+.no-items-message {
+  padding: 30px;
+  text-align: center;
+  background: white;
+  border-radius: 8px;
+  border: 2px dashed #dee2e6;
+}
+
+.no-items-message i {
+  font-size: 2rem;
+  margin-bottom: 8px;
+  display: block;
 }
 </style>

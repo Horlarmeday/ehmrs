@@ -47,7 +47,7 @@ export const orderBulkService = async data => {
         // Capture the bill_id (same for all)
         if (billItem?.bill_id && !billId) {
           billId = billItem.bill_id;
-        }  
+        }
       }
     }
     // Step 4: Trigger auto-payment once (if bill was created)
@@ -60,7 +60,10 @@ export const orderBulkService = async data => {
     }
   } catch (billingError) {
     // Log billing error but don't fail the prescription
-    logger.error('Billing creation failed for services:', { error: billingError.message, stack: billingError.stack });
+    logger.error('Billing creation failed for services:', {
+      error: billingError.message,
+      stack: billingError.stack,
+    });
     // You might want to add proper logging here
   }
 
@@ -125,15 +128,18 @@ export const prescribeService = async (
         patientInsurance
       );
       // Capture the bill_id (same for all)
-     await AutoDepositPaymentService.attemptAutoDepositPayment(
-      billItem.bill_id,
-      patient.id,
-      requester
-     );
+      await AutoDepositPaymentService.attemptAutoDepositPayment(
+        billItem.bill_id,
+        patient.id,
+        requester
+      );
     }
   } catch (billingError) {
     // Log billing error but don't fail the prescription
-    logger.error('Billing creation failed for service:', { error: billingError.message, stack: billingError.stack });
+    logger.error('Billing creation failed for service:', {
+      error: billingError.message,
+      stack: billingError.stack,
+    });
     // You might want to add proper logging here
   }
 

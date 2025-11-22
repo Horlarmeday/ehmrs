@@ -1617,7 +1617,8 @@ const router = new Router({
             {
               path: 'active-visits',
               name: 'active-radiology-visits',
-              component: () => import('@/view/pages/radiology/activeInvestigations/ActiveVisits.vue'),
+              component: () =>
+                import('@/view/pages/radiology/activeInvestigations/ActiveVisits.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1625,7 +1626,8 @@ const router = new Router({
             {
               path: 'active-investigations/:id',
               name: 'active-radiology-investigations',
-              component: () => import('@/view/pages/radiology/activeInvestigations/AddActiveInvestigations.vue'),
+              component: () =>
+                import('@/view/pages/radiology/activeInvestigations/AddActiveInvestigations.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -2061,6 +2063,15 @@ const router = new Router({
           component: () => import('@/view/pages/accounting/PatientDeposits.vue'),
           meta: {
             requiresAuth: true,
+          },
+        },
+        {
+          path: '/accounting/deposit-transactions',
+          name: 'deposit-transactions',
+          component: () => import('@/view/pages/accounting/DepositTransactions.vue'),
+          meta: {
+            requiresAuth: true,
+            title: 'Deposit Transactions',
           },
         },
         {

@@ -177,14 +177,14 @@
           <span class="btn-text">DISPENSE MORE</span>
         </button>
 
-        <button
+        <!-- <button
           class="action-btn secondary"
           :disabled="prescription.disabledReturn"
           @click="handleReturn"
         >
           <span class="btn-icon">🔄</span>
           <span class="btn-text">RETURN UNUSED</span>
-        </button>
+        </button> -->
       </div>
     </div>
 

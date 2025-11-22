@@ -51,14 +51,12 @@
             </td>
             <td>
               <span
-                v-if="allowedRoles.includes(currentUser.role) || currentUser.sub === drug.examiner"
+                v-if="
+                  allowedDepartments.includes(currentUser.department) ||
+                  currentUser.sub === drug.examiner
+                "
               >
-                <a
-                  href="#"
-                  :class="loading && 'disabled'"
-                  @click="showDeleteAlert(drug)"
-                  v-if="drug.payment_status === PENDING"
-                >
+                <a href="#" :class="loading && 'disabled'" @click="showDeleteAlert(drug)">
                   <i class="flaticon-delete mr-2 text-danger"></i>
                 </a>
                 <a @click="viewModal(drug)" class="ml-3" href="#"
@@ -92,7 +90,16 @@ export default {
     item: {},
     loading: false,
     currentUser: parseJwt(localStorage.getItem('user_token')),
-    allowedRoles: ['General Practitioner', 'Super Admin'],
+    allowedDepartments: [
+      'Administration',
+      'Medical Practitioners',
+      'Surgery Unit',
+      'Medicine Unit',
+      'Pediatrics Unit',
+      'Family Medicine Unit',
+      'Obstetrics & Gynaecology Unit',
+      'Physiotherapy Unit',
+    ],
     PENDING: 'Pending',
     UNBILLED: 'Unbilled',
     displayPrompt: false,

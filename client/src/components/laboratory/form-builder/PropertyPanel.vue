@@ -370,10 +370,12 @@ export default {
           : this.adultFemaleRange;
 
       if (rangeData.min !== undefined || rangeData.max !== undefined) {
+        const format = (val) => (val != null && val !== '' ? val : '');
+
         this.$set(this.selectedField.referenceRanges, rangeType, {
           min: rangeData.min,
           max: rangeData.max,
-          display: `${rangeData.min || ''} - ${rangeData.max || ''}`,
+          display: `${format(rangeData.min)} - ${format(rangeData.max)}`,
         });
       }
 

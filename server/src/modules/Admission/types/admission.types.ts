@@ -28,8 +28,9 @@ export type ObservationBodyType = {
   height: number;
   weight: number;
   bmi: number;
-  rvs: string;
   muac: string;
+  fbc?: string;
+  rbs?: string;
   heart_rate: string;
   bmiCategory: string;
 };

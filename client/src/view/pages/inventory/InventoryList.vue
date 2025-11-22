@@ -76,7 +76,9 @@
           <div class="card-body">
             <div class="d-flex align-items-center">
               <div class="flex-grow-1">
-                <h3 class="text-dark font-weight-bold mb-1">{{ summary.critical_stock_count || 0 }}</h3>
+                <h3 class="text-dark font-weight-bold mb-1">
+                  {{ summary.critical_stock_count || 0 }}
+                </h3>
                 <p class="text-muted mb-0">Critical Stock</p>
               </div>
               <div class="stat-icon">
@@ -92,7 +94,9 @@
           <div class="card-body">
             <div class="d-flex align-items-center">
               <div class="flex-grow-1">
-                <h3 class="text-dark font-weight-bold mb-1">₦{{ formatCurrency(summary.total_valuation) }}</h3>
+                <h3 class="text-dark font-weight-bold mb-1">
+                  ₦{{ formatCurrency(summary.total_valuation) }}
+                </h3>
                 <p class="text-muted mb-0">Total Valuation</p>
               </div>
               <div class="stat-icon">
@@ -111,7 +115,9 @@
           <div class="card-body">
             <div class="d-flex align-items-center">
               <div class="flex-grow-1">
-                <h3 class="text-dark font-weight-bold mb-1">{{ summary.expiring_soon_count || 0 }}</h3>
+                <h3 class="text-dark font-weight-bold mb-1">
+                  {{ summary.expiring_soon_count || 0 }}
+                </h3>
                 <p class="text-muted mb-0">Expiring Soon</p>
               </div>
               <div class="stat-icon">
@@ -143,7 +149,9 @@
           <div class="card-body">
             <div class="d-flex align-items-center">
               <div class="flex-grow-1">
-                <h3 class="text-dark font-weight-bold mb-1">{{ summary.total_quantity_remaining || 0 }}</h3>
+                <h3 class="text-dark font-weight-bold mb-1">
+                  {{ summary.total_quantity_remaining || 0 }}
+                </h3>
                 <p class="text-muted mb-0">Total Quantity</p>
               </div>
               <div class="stat-icon">
@@ -293,10 +301,9 @@ export default {
           search: this.$route.query.search || null,
         }),
         this.$store.dispatch('inventory/fetchInventorySummary', this.$route.params.id),
-      ])
-        .finally(() => {
-          this.loading = false;
-        });
+      ]).finally(() => {
+        this.loading = false;
+      });
     },
 
     applyFilter(type) {

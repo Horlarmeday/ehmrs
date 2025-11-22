@@ -133,6 +133,18 @@ router.get(
   AccountingController.downloadPatientDepositReceipt
 );
 
+// Deposit Transactions Routes
+router.get('/deposit-transactions', AccountingController.getDepositTransactions);
+router.get('/deposit-transactions/summary', AccountingController.getDepositTransactionSummary);
+router.get(
+  '/deposit-transactions/:transactionId/receipt/download',
+  AccountingController.downloadDepositTransactionReceipt
+);
+router.get(
+  '/deposit-transactions/:transactionId/receipt/print',
+  AccountingController.printDepositTransactionReceipt
+);
+
 // Enhanced Deposit Operations with Full Accounting Integration
 router.post('/deposits/:id/use', AccountingController.usePatientDeposit);
 router.post('/deposits/:id/refund', AccountingController.refundPatientDeposit);
@@ -229,6 +241,7 @@ router.get('/billing-points', AccountingController.fetchBillingPoints);
 // ===== CLINICAL BILL SEARCH =====
 router.get('/bills/number/:billNumber', AccountingController.getClinicalBillByNumber);
 router.get('/bills/patient/:patientId', AccountingController.getPatientClinicalBills);
+router.get('/bills/patient/:patientId/items', AccountingController.getPatientBillItemsWithPayments);
 
 // ===== PATIENT FINANCIAL STATEMENT =====
 router.get(

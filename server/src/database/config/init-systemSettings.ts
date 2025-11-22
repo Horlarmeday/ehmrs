@@ -11,6 +11,7 @@ export const initSystemSettings = async () => {
       nhis_daily_quota_amount: 3000,
       system_color: 'Blue',
       patient_id_prefix: 'EHS',
+      allow_auto_debit: true,
     });
   }
 };

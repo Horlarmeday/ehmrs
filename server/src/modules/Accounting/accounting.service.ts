@@ -17,6 +17,7 @@ import {
   BillSearchFilters,
   PaymentSearchFilters,
   DepositSearchFilters,
+  DepositTransactionSearchFilters,
   BillingSummary,
   PaymentSummary,
   DepositSummary,
@@ -78,6 +79,54 @@ export class AccountingService {
       return await AccountingRepository.getPatientDeposits(filters);
     } catch (error) {
       throw new BadException('Failed to retrieve patient deposits', 500, error.message);
+    }
+  }
+
+  static async getDepositTransactions(
+    filters: DepositTransactionSearchFilters
+  ): Promise<{
+    docs: any[];
+    total: number;
+    pages: number;
+    perPage: number;
+    currentPage: number;
+  }> {
+    try {
+      return await AccountingRepository.getDepositTransactions(filters);
+    } catch (error) {
+      throw new BadException('Failed to retrieve deposit transactions', 500, error.message);
+    }
+  }
+
+  static async getDepositTransactionSummary(
+    filters: DepositTransactionSearchFilters
+  ): Promise<{
+    totalTransactions: number;
+    totalAmount: number;
+    createdCount: number;
+    createdAmount: number;
+    topUpCount: number;
+    topUpAmount: number;
+    todayCount: number;
+    todayAmount: number;
+  }> {
+    try {
+      return await AccountingRepository.getDepositTransactionSummary(filters);
+    } catch (error) {
+      throw new BadException('Failed to retrieve deposit transaction summary', 500, error.message);
+    }
+  }
+
+  static async getDepositTransactionReceiptData(transactionId: number): Promise<any> {
+    try {
+      const result = await AccountingRepository.getDepositTransactionReceiptData(transactionId);
+      if (!result) {
+        throw new BadException('Deposit transaction not found', 404);
+      }
+      return result;
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Failed to retrieve deposit transaction receipt data', 500, error.message);
     }
   }
 
@@ -1487,6 +1536,22 @@ export class AccountingService {
       return await AccountingRepository.getPatientClinicalBills(patientId);
     } catch (error) {
       throw new BadException(`Failed to get patient bills: ${error.message}`, 500);
+    }
+  }
+
+  static async getPatientBillItemsWithPayments(
+    patientId: number,
+    currentPage: number = 1,
+    pageLimit: number = 20
+  ): Promise<any> {
+    try {
+      return await AccountingRepository.getPatientBillItemsWithPayments(patientId, currentPage, pageLimit);
+    } catch (error) {
+      throw new BadException(
+        'Patient Bill Items Retrieval Error',
+        500,
+        `Failed to get patient bill items: ${error.message}`
+      );
     }
   }
 

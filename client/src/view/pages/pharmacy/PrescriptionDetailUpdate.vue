@@ -648,6 +648,22 @@ export default {
             item.quantity_dispensed === item.quantity_to_dispense ||
             item.quantity_returned === item.quantity_to_dispense,
         })) || [];
+
+      // Set active tab based on available data
+      const hasPrescriptions = this.prescriptions && this.prescriptions.length > 0;
+      const hasItems = this.items && this.items.length > 0;
+
+      if (!hasPrescriptions && hasItems) {
+        // No prescriptions but items exist → show items tab
+        this.activeTab = 'items';
+      } else if (hasPrescriptions && !hasItems) {
+        // Prescriptions exist but no items → show drugs tab
+        this.activeTab = 'drugs';
+      } else if (hasPrescriptions && hasItems) {
+        // Both exist → default to drugs tab (can be switched)
+        this.activeTab = 'drugs';
+      }
+      // If neither exists, keep current tab (or it will default to 'drugs')
     },
   },
   created() {

@@ -1,6 +1,6 @@
 import { Transaction } from 'sequelize';
 import { BadException } from '../../../common/util/api-error';
-import { ClinicalBill, ClinicalBillItem } from '../../../database/models';
+import { ClinicalBill, ClinicalBillItem, SystemSettings } from '../../../database/models';
 import { PaymentMethod, PaymentType, BillItemPaymentStatus } from '../enums';
 import { logger } from '../../../core/helpers/logger';
 import { PaymentProcessingService } from './paymentProcessing.service';
@@ -14,6 +14,28 @@ import { PatientDepositService } from './patientDeposit.service';
  * and automatically creates a payment (full or partial) using the deposit balance.
  */
 export class AutoDepositPaymentService {
+  /**
+   * Check if auto-debit is enabled in system settings
+   *
+   * @param transaction - Optional transaction for atomicity
+   * @returns true if auto-debit is enabled, false otherwise
+   */
+  private static async isAutoDebitEnabled(transaction?: Transaction): Promise<boolean> {
+    try {
+      const settings = await SystemSettings.findOne({ transaction });
+      if (!settings) {
+        logger.warn('System settings not found, defaulting to auto-debit enabled');
+        return true; // Default to enabled if settings not found
+      }
+      return settings.allow_auto_debit === true;
+    } catch (error) {
+      logger.error('Error checking auto-debit setting, defaulting to enabled:', {
+        error: error.message,
+      });
+      return true; // Default to enabled on error to maintain current behavior
+    }
+  }
+
   /**
    * Attempt automatic deposit payment for a bill
    *
@@ -32,6 +54,16 @@ export class AutoDepositPaymentService {
     transaction?: Transaction
   ): Promise<void> {
     try {
+      // Check if auto-debit is enabled in system settings
+      const isEnabled = await this.isAutoDebitEnabled(transaction);
+      if (!isEnabled) {
+        logger.info(`Auto-deposit payment skipped for bill ${billId} - auto-debit is disabled in system settings`, {
+          billId,
+          patientId,
+        });
+        return;
+      }
+
       // Retrieve bill with current payment status
       const bill = await ClinicalBill.findByPk(billId, {
         include: [

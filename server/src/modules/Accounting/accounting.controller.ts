@@ -19,6 +19,7 @@ import {
   BillSearchFilters,
   PaymentSearchFilters,
   DepositSearchFilters,
+  DepositTransactionSearchFilters,
 } from './types';
 import { BadException } from '../../common/util/api-error';
 import { getActiveBillingPoints, getBillingPointById } from './billingPoints';
@@ -30,6 +31,7 @@ import {
   updateBillSchema,
   createPaymentSchema,
   depositFilterSchema,
+  depositTransactionFilterSchema,
   billFilterSchema,
   paymentFilterSchema,
   paginationSchema,
@@ -253,6 +255,126 @@ export class AccountingController {
     }
   }
 
+  static async getDepositTransactions(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      // Validate query parameters
+      const validatedQuery = AccountingController.validateRequest(req.query, depositTransactionFilterSchema);
+
+      const filters: DepositTransactionSearchFilters = {
+        transaction_type: validatedQuery.transaction_type as 'CREATED' | 'TOP_UP' | undefined,
+        deposit_type: validatedQuery.deposit_type as any,
+        start_date: validatedQuery.start_date
+          ? new Date(validatedQuery.start_date as string)
+          : undefined,
+        end_date: validatedQuery.end_date ? new Date(validatedQuery.end_date as string) : undefined,
+        search: validatedQuery.search as string,
+        page: validatedQuery.page ? parseInt(validatedQuery.page as string) : 1,
+        limit: validatedQuery.limit ? parseInt(validatedQuery.limit as string) : 20,
+      };
+
+      const result = await AccountingService.getDepositTransactions(filters);
+
+      res.status(200).json({
+        success: true,
+        message: 'Deposit transactions retrieved successfully',
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getDepositTransactionSummary(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      // Validate query parameters (same schema as getDepositTransactions, but page/limit not needed)
+      const validatedQuery = AccountingController.validateRequest(req.query, depositTransactionFilterSchema);
+
+      const filters: DepositTransactionSearchFilters = {
+        transaction_type: validatedQuery.transaction_type as 'CREATED' | 'TOP_UP' | undefined,
+        deposit_type: validatedQuery.deposit_type as any,
+        start_date: validatedQuery.start_date
+          ? new Date(validatedQuery.start_date as string)
+          : undefined,
+        end_date: validatedQuery.end_date ? new Date(validatedQuery.end_date as string) : undefined,
+        search: validatedQuery.search as string,
+        // page and limit not needed for summary
+      };
+
+      const result = await AccountingService.getDepositTransactionSummary(filters);
+
+      res.status(200).json({
+        success: true,
+        message: 'Deposit transaction summary retrieved successfully',
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async downloadDepositTransactionReceipt(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { transactionId } = req.params;
+
+      if (!transactionId || Number.isNaN(Number(transactionId))) {
+        res.status(400).json({
+          success: false,
+          message: 'Valid transaction ID is required',
+        });
+        return;
+      }
+
+      const receiptData = await AccountingService.getDepositTransactionReceiptData(
+        parseInt(transactionId, 10)
+      );
+
+      const { printDepositTransactionReceiptPDF } = await import('./helper/receipt.helper');
+
+      await printDepositTransactionReceiptPDF({
+        receiptData,
+        res,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async printDepositTransactionReceipt(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { transactionId } = req.params;
+
+      if (!transactionId || Number.isNaN(Number(transactionId))) {
+        res.status(400).json({
+          success: false,
+          message: 'Valid transaction ID is required',
+        });
+        return;
+      }
+
+      const receiptData = await AccountingService.getDepositTransactionReceiptData(
+        parseInt(transactionId, 10)
+      );
+
+      const { printDepositTransactionReceiptPDF } = await import('./helper/receipt.helper');
+
+      await printDepositTransactionReceiptPDF({
+        receiptData,
+        res,
+        print: true,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async consolidatePatientDeposits(
     req: AuthenticatedRequest,
     res: Response,
@@ -327,6 +449,9 @@ export class AccountingController {
       const updateData = {
         ...validatedBody,
         updated_by: req.user.sub,
+        initial_amount: validatedBody.amount,
+        current_balance: validatedBody.amount,
+        refundable_amount: validatedBody.amount,
       };
 
       const deposit = await AccountingService.updatePatientDeposit(parseInt(id), updateData);
@@ -1358,6 +1483,44 @@ export class AccountingController {
       const { patientId } = req.params;
       const result = await AccountingService.getPatientClinicalBills(parseInt(patientId));
       res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getPatientBillItemsWithPayments(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { patientId } = req.params;
+      const currentPage = parseInt(req.query.currentPage as string) || parseInt(req.query.page as string) || 1;
+      const pageLimit = parseInt(req.query.pageLimit as string) || parseInt(req.query.itemsPerPage as string) || 20;
+
+      if (!patientId || Number.isNaN(Number(patientId))) {
+        throw new BadException('Validation Error', 400, 'Valid patient ID is required');
+      }
+
+      if (currentPage < 1) {
+        throw new BadException('Validation Error', 400, 'Current page must be greater than 0');
+      }
+
+      if (pageLimit < 1 || pageLimit > 100) {
+        throw new BadException('Validation Error', 400, 'Page limit must be between 1 and 100');
+      }
+
+      const result = await AccountingService.getPatientBillItemsWithPayments(
+        parseInt(patientId),
+        currentPage,
+        pageLimit
+      );
+
+      res.status(200).json({
+        success: true,
+        data: result,
+        message: 'Bill items retrieved successfully',
+      });
     } catch (error) {
       next(error);
     }

@@ -35,7 +35,6 @@
       <div class="card-body pt-4 p-0">
         <div class="form">
           <div class="card-body">
-
             <!-- Entry Mode Toggle Button -->
             <div class="form-group row">
               <label class="col-lg-3 col-form-label">Mode:</label>
@@ -295,7 +294,7 @@
                 <span class="font-size-sm font-weight-bold">Quantity is low in the dispensary</span>
               </div>
               <button
-                @click="submitDrugOrder"
+                @click="handleSubmitClick"
                 :disabled="formData.quantity_remaining <= 0 || disableAddbutton"
                 ref="kt-drugOrder-submit"
                 class="btn btn-primary btn-md float-right mb-3"
@@ -318,6 +317,7 @@ import SwitchBox from '@/utils/SwitchBox.vue';
 import RoutineDrugs from '@/view/pages/programs/antenatal/components/RoutineDrugs.vue';
 import { parsePrescription } from '@/utils/prescriptionParser';
 import KTUtil from '@/assets/js/components/util';
+import Swal from 'sweetalert2';
 
 export default {
   name: 'BulkMedicationSideBar',
@@ -634,30 +634,141 @@ export default {
       }
     },
 
-    submitDrugOrder() {
-      this.$validator.validateAll().then((result) => {
-        if (result) {
-          if (this.switchPosition && this.switchSpot && !this.formData.drug_group) {
-            return this.$notify({
-              group: 'foo',
-              title: 'Error message',
-              text: 'You need to select if drug is either primary or secondary',
-              type: 'error',
-            });
-          }
-          const submitButton = this.$refs['kt-drugOrder-submit'];
-          this.addSpinner(submitButton);
-          const payload = {
-            drugs: [this.drugData()],
-            id: this.$route.params.id,
-          };
+    getPrescriptionSummary() {
+      const route = this.routes.find((r) => r.id === this.formData.route);
+      const routeName = route ? route.name : 'N/A';
+      const startDate = this.formData.start_date
+        ? new Date(this.formData.start_date).toLocaleDateString('en-NG', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })
+        : 'N/A';
+      const frequencyLabel = this.formData.frequency?.label || 'N/A';
+      const durationUnitLabel = this.formData.duration_unit?.label || 'N/A';
+      const strengthDisplay = this.formData.prescribed_strength
+        ? `${this.formData.prescribed_strength}${
+            this.formData.strength_name ? ' ' + this.formData.strength_name : ''
+          }`
+        : 'N/A';
 
-          this.$store
-            .dispatch('order/bulkOrderDrug', payload)
-            .then(() => this.endRequest(submitButton))
-            .catch(() => this.removeSpinner(submitButton));
-        }
+      let summary = `
+        <div style="text-align: left; font-size: 14px;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 8px 0; font-weight: bold; width: 40%;">Drug Name:</td>
+              <td style="padding: 8px 0;">${this.formData.drug_name || 'N/A'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; font-weight: bold;">Dosage Form:</td>
+              <td style="padding: 8px 0;">${this.formData.dosage_form?.name || 'N/A'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; font-weight: bold;">Strength:</td>
+              <td style="padding: 8px 0;">${strengthDisplay}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; font-weight: bold;">Frequency:</td>
+              <td style="padding: 8px 0;">${frequencyLabel}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; font-weight: bold;">Duration:</td>
+              <td style="padding: 8px 0;">
+                ${this.formData.duration || 'N/A'} ${durationUnitLabel}
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; font-weight: bold;">Route:</td>
+              <td style="padding: 8px 0;">${routeName}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; font-weight: bold;">Start Date:</td>
+              <td style="padding: 8px 0;">${startDate}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; font-weight: bold;">Quantity to Dispense:</td>
+              <td style="padding: 8px 0;">
+                ${this.formData.quantity_to_dispense || 'N/A'} ${this.formData.unit_name || ''}
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; font-weight: bold;">Total Price:</td>
+              <td style="padding: 8px 0; color: #28a745; font-weight: bold;">
+                ₦${this.formData.total_price?.toLocaleString() || '0.00'}
+              </td>
+            </tr>
+      `;
+
+      if (this.formData.drug_group) {
+        summary += `
+            <tr>
+              <td style="padding: 8px 0; font-weight: bold;">Drug Group:</td>
+              <td style="padding: 8px 0;">${this.formData.drug_group}</td>
+            </tr>
+        `;
+      }
+
+      if (this.formData.notes) {
+        summary += `
+            <tr>
+              <td style="padding: 8px 0; font-weight: bold;">Notes:</td>
+              <td style="padding: 8px 0;">${this.formData.notes}</td>
+            </tr>
+        `;
+      }
+
+      summary += `
+          </table>
+        </div>
+      `;
+
+      return summary;
+    },
+
+    async handleSubmitClick() {
+      const validationResult = await this.$validator.validateAll();
+      if (!validationResult) {
+        return;
+      }
+
+      if (this.switchPosition && this.switchSpot && !this.formData.drug_group) {
+        return this.$notify({
+          group: 'foo',
+          title: 'Error message',
+          text: 'You need to select if drug is either primary or secondary',
+          type: 'error',
+        });
+      }
+
+      const result = await Swal.fire({
+        title: 'Confirm Prescription',
+        html: this.getPrescriptionSummary(),
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Confirm & Submit',
+        cancelButtonText: 'Cancel',
+        width: '600px',
       });
+
+      if (result.isConfirmed) {
+        this.submitDrugOrder();
+      }
+    },
+
+    submitDrugOrder() {
+      const submitButton = this.$refs['kt-drugOrder-submit'];
+      this.addSpinner(submitButton);
+      const payload = {
+        drugs: [this.drugData()],
+        id: this.$route.params.id,
+      };
+
+      this.$store
+        .dispatch('order/bulkOrderDrug', payload)
+        .then(() => this.endRequest(submitButton))
+        .catch(() => this.removeSpinner(submitButton));
     },
 
     getDrugType(insuranceName) {

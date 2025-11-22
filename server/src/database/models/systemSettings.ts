@@ -73,6 +73,13 @@ export class SystemSettings extends Model {
   })
   patient_id_prefix: string;
 
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
+  })
+  allow_auto_debit: boolean;
+
   static async paginate(param: {
     paginate: number;
     attributes?: FindAttributeOptions;

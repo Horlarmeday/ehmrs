@@ -172,7 +172,8 @@ export function parsePrescription(text) {
 
   const hasStrength = typeof strength === 'number' && !Number.isNaN(strength);
   const hasFrequency = Boolean(frequency);
-  const hasDurationValue = typeof durationResult?.value === 'number' && !Number.isNaN(durationResult.value);
+  const hasDurationValue =
+    typeof durationResult?.value === 'number' && !Number.isNaN(durationResult.value);
   const hasDurationUnit = Boolean(durationResult?.unit);
   const hasDuration = hasDurationValue && hasDurationUnit;
 

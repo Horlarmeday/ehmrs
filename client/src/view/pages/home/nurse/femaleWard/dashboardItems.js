@@ -1,9 +1,9 @@
 export default [
-  {
-    url: '/visit/vitals',
-    icon: 'flaticon2-user-1',
-    name: 'Visits',
-  },
+  // {
+  //   url: '/visit/vitals',
+  //   icon: 'flaticon2-user-1',
+  //   name: 'Visits',
+  // },
   {
     url: '/visit/admitted-patients?occupantType=Female',
     icon: 'fas fa-bed',

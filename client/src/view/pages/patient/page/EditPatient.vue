@@ -186,8 +186,12 @@
             >
               <option
                 v-for="state in states"
-                :key="state.id"
-                :value="{ id: state.id, text: state.name }"
+                :key="state.name || state.id"
+                :value="
+                  state.lga
+                    ? { name: state.name, lga: state.lga }
+                    : { id: state.id, text: state.name }
+                "
               >
                 {{ state.name }}
               </option>
@@ -198,10 +202,10 @@
             <select class="form-control form-control-sm" v-model="patient.lga" name="lga">
               <option
                 v-for="city in cities"
-                :key="city.id"
-                :value="{ id: city.id, text: city.name }"
+                :key="city.name || city.id"
+                :value="city.name || city.text"
               >
-                {{ city.name }}
+                {{ city.name || city.text }}
               </option>
             </select>
           </div>
@@ -333,7 +337,7 @@
 
 <script>
 import Datepicker from 'vuejs-datepicker';
-import { getCityById, getCountries, getStateById } from '@/assets/json';
+import { getCityById, getCountries, getStateById, getCountryStates } from '@/assets/json';
 
 export default {
   components: {
@@ -366,7 +370,95 @@ export default {
 
   watch: {
     patientP() {
+      if (!this.patientP) return;
+
       this.patient = JSON.parse(JSON.stringify(this.patientP));
+
+      // Set Nigeria (ID: 160) as default country if missing
+      if (!this.patient.country) {
+        const nigeria = this.countries.find((c) => c.id === 160);
+        if (nigeria) {
+          this.patient.country = { id: nigeria.id, text: nigeria.name };
+        }
+      }
+
+      // Normalize country value (convert string to object if needed)
+      this.patient.country =
+        this.normalizeLocationValue(this.patient.country, this.countries, 'id', 'name') ||
+        (this.countries.find((c) => c.id === 160) ? { id: 160, text: 'Nigeria' } : null);
+
+      // Load states if country is available
+      if (this.patient.country) {
+        const countryId =
+          typeof this.patient.country === 'object' ? this.patient.country.id : this.patient.country;
+
+        // If Nigeria (ID: 160), use getCountryStates (nested LGA structure)
+        // Otherwise, use getStateById (international structure)
+        if (countryId === 160 || countryId === '160') {
+          this.states = getCountryStates();
+        } else {
+          this.states = getStateById(countryId);
+        }
+
+        // Normalize state value based on data structure
+        if (this.patient.state) {
+          // For Nigeria structure, match by name and get the full object with LGA
+          if (countryId === 160 || countryId === '160') {
+            const stateName =
+              typeof this.patient.state === 'object'
+                ? this.patient.state.name || this.patient.state.text
+                : this.patient.state;
+            const matchedState = this.states.find((s) => s.name === stateName);
+            if (matchedState) {
+              this.patient.state = { name: matchedState.name, lga: matchedState.lga };
+              // Load cities from nested LGA
+              this.cities = matchedState.lga || [];
+              // Set LGA if it exists
+              if (this.patient.lga && this.cities.length > 0) {
+                // LGA is stored as a string name in database, so just set it
+                this.patient.lga =
+                  typeof this.patient.lga === 'object'
+                    ? this.patient.lga.name || this.patient.lga.text
+                    : this.patient.lga;
+              }
+            }
+          } else {
+            // For international structure, use normalizeLocationValue
+            this.patient.state = this.normalizeLocationValue(
+              this.patient.state,
+              this.states,
+              'id',
+              'name'
+            );
+
+            // Load cities if state is available
+            if (this.patient.state) {
+              const stateId =
+                typeof this.patient.state === 'object' ? this.patient.state.id : this.patient.state;
+              this.cities = getCityById(stateId) || [];
+
+              // Normalize lga value (convert string to object if needed)
+              if (this.patient.lga && this.cities.length > 0) {
+                this.patient.lga = this.normalizeLocationValue(
+                  this.patient.lga,
+                  this.cities,
+                  'id',
+                  'name'
+                );
+              }
+            }
+          }
+        }
+      }
+    },
+    'patient.state': {
+      handler() {
+        // Automatically load cities when state changes
+        this.$nextTick(() => {
+          this.getCities();
+        });
+      },
+      deep: true,
     },
   },
 
@@ -374,15 +466,96 @@ export default {
     this.countToHundred();
     this.fetchPatient();
     this.countries = getCountries();
+
+    // Load Nigeria states by default (like CreatePatientAccount)
+    this.states = getCountryStates();
+
     this.phoneValidation();
   },
   methods: {
     getStates() {
-      this.states = getStateById(this.country.id);
+      if (!this.patient || !this.patient.country) {
+        this.states = getCountryStates(); // Default to Nigeria states
+        return;
+      }
+
+      const countryId =
+        typeof this.patient.country === 'object' ? this.patient.country.id : this.patient.country;
+
+      // If Nigeria (ID: 160), use getCountryStates (nested LGA structure)
+      // Otherwise, use getStateById (international structure)
+      if (countryId === 160 || countryId === '160') {
+        this.states = getCountryStates();
+      } else {
+        this.states = getStateById(countryId);
+      }
+
+      // Clear cities and dependent fields when country changes
+      this.cities = [];
+      if (this.patient.state) {
+        this.patient.state = null;
+      }
+      if (this.patient.lga) {
+        this.patient.lga = null;
+      }
     },
 
     getCities() {
-      this.cities = getCityById(this.state.id);
+      if (!this.patient || !this.patient.state) {
+        this.cities = [];
+        return;
+      }
+
+      // Check if state has nested LGA (Nigeria structure from getCountryStates)
+      if (
+        typeof this.patient.state === 'object' &&
+        this.patient.state !== null &&
+        this.patient.state.lga
+      ) {
+        // Nigeria structure: state has lga array nested inside
+        this.cities = this.patient.state.lga || [];
+      } else {
+        // International structure: need to fetch cities by state ID
+        let stateId;
+        if (typeof this.patient.state === 'object' && this.patient.state !== null) {
+          stateId = this.patient.state.id;
+        } else {
+          stateId = this.patient.state;
+        }
+
+        if (!stateId) {
+          this.cities = [];
+          return;
+        }
+
+        this.cities = getCityById(stateId) || [];
+      }
+
+      // Clear lga when state changes
+      if (this.patient.lga) {
+        this.patient.lga = null;
+      }
+    },
+
+    normalizeLocationValue(value, sourceArray, idKey = 'id', nameKey = 'name') {
+      if (!value) return null;
+
+      // If already an object, return as is
+      if (typeof value === 'object' && value !== null && value.id !== undefined) {
+        return value;
+      }
+
+      // If it's a string/number, find matching item in source array
+      const match = sourceArray.find((item) => {
+        const itemId = item[idKey];
+        return itemId.toString() === value.toString() || item[nameKey] === value;
+      });
+
+      if (match) {
+        return { id: match[idKey], text: match[nameKey] };
+      }
+
+      return null;
     },
 
     fetchPatient() {
@@ -454,8 +627,9 @@ export default {
     endRequest(response, submitButton) {
       this.removeSpinner(submitButton);
       this.$router.push(`/patient/profile/${response.data.data.id}`);
-      this.stopStreamedVideo(this.video);
-      this.handleResponse(response);
+      if (this.video && this.video.srcObject) {
+        this.stopStreamedVideo(this.video);
+      }
     },
 
     updatePatient() {
@@ -466,10 +640,62 @@ export default {
           this.addSpinner(submitButton);
           this.isDisabled = true;
 
+          // Prepare patient data with extracted IDs/names from country/state/lga objects
+          const patientData = JSON.parse(JSON.stringify(this.patient));
+
+          // Extract country name (text) instead of ID
+          if (patientData.country) {
+            if (typeof patientData.country === 'object' && patientData.country !== null) {
+              // Extract name/text from country object
+              patientData.country =
+                patientData.country.text ||
+                patientData.country.name ||
+                patientData.country.id.toString();
+            } else {
+              // Already a string (name)
+              patientData.country = patientData.country.toString();
+            }
+          }
+
+          // Extract state - handle both Nigeria structure (with nested LGA) and international structure (with ID)
+          if (patientData.state) {
+            if (typeof patientData.state === 'object' && patientData.state !== null) {
+              // Nigeria structure: state has { name, lga }
+              if (patientData.state.name && patientData.state.lga) {
+                patientData.state = patientData.state.name;
+              } else {
+                // International structure: state has { id, text }
+                patientData.state = patientData.state.id
+                  ? patientData.state.id.toString()
+                  : patientData.state.text ||
+                    patientData.state.name ||
+                    patientData.state.toString();
+              }
+            } else {
+              patientData.state = patientData.state.toString();
+            }
+          }
+
+          // Extract LGA - can be name (Nigeria) or ID (international)
+          if (patientData.lga) {
+            if (typeof patientData.lga === 'object' && patientData.lga !== null) {
+              // If it's an object, extract name or ID
+              patientData.lga =
+                patientData.lga.name ||
+                patientData.lga.text ||
+                patientData.lga.id ||
+                patientData.lga.toString();
+            } else {
+              // Already a string (name or ID)
+              patientData.lga = patientData.lga.toString();
+            }
+          }
+
           const data = {
-            patient: this.patient,
+            patient: patientData,
             ...(this.image && { picture: this.image }),
           };
+
           this.$store
             .dispatch('patient/updatePatient', { data, id: this.$route.params.id })
             .then((response) => this.endRequest(response, submitButton))

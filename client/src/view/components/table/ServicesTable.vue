@@ -40,11 +40,7 @@
             <td>{{ service.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
             <td>
               <span v-if="allowedDepartments.includes(currentUser.department)">
-                <a
-                  href="#"
-                  :class="loading && 'disabled'"
-                  @click="showDeleteAlert(service)"
-                  v-if="service.payment_status === PENDING"
+                <a href="#" :class="loading && 'disabled'" @click="showDeleteAlert(service)"
                   ><i class="flaticon-delete text-danger"></i
                 ></a>
               </span>
@@ -63,7 +59,19 @@ export default {
   name: 'ServicesTable',
   data: () => ({
     currentUser: parseJwt(localStorage.getItem('user_token')),
-    allowedDepartments: ['Administration', 'Reception', 'Medical Practitioners', 'Records'],
+    allowedDepartments: [
+      'Administration',
+      'Medical Practitioners',
+      'Surgery Unit',
+      'Medicine Unit',
+      'Pediatrics Unit',
+      'Family Medicine Unit',
+      'Obstetrics & Gynaecology Unit',
+      'Physiotherapy Unit',
+      'Nursing',
+      'Reception',
+      'Records',
+    ],
     loading: false,
     UNBILLED: 'Unbilled',
     PENDING: 'Pending',

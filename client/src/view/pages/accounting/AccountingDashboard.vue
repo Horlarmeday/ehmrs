@@ -330,6 +330,18 @@
 
         <!-- Core Accounting Row -->
         <div class="nav-row">
+          <div class="nav-item-large" @click="navigateToPage('deposit-transactions')">
+            <div class="nav-icon-large bg-primary">
+              <i class="fas fa-receipt"></i>
+            </div>
+            <div class="nav-content">
+              <h5>Deposit Transactions</h5>
+              <p>View all deposit creation and top-up transactions</p>
+            </div>
+            <div class="nav-arrow">
+              <i class="fas fa-arrow-right"></i>
+            </div>
+          </div>
           <div class="nav-item-large" @click="navigateToPage('chart-of-accounts')">
             <div class="nav-icon-large bg-info">
               <i class="fas fa-book"></i>
@@ -624,6 +636,7 @@ export default {
         bills: '/accounting/bills',
         payments: '/accounting/payments',
         deposits: '/accounting/deposits',
+        'deposit-transactions': '/accounting/deposit-transactions',
         'patient-financial-lookup': '/accounting/patient-financial-lookup',
         'admitted-patients': '/accounting/admitted-patients',
         'chart-of-accounts': '/accounting/chart-of-accounts',

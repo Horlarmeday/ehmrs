@@ -290,6 +290,19 @@
           </div>
         </div>
 
+        <div class="operation-card" @click="navigateToPage('deposit-transactions')">
+          <div class="operation-icon bg-primary">
+            <i class="fas fa-receipt"></i>
+          </div>
+          <div class="operation-content">
+            <h5>Deposit Transactions</h5>
+            <p>View deposit creation and top-up transactions</p>
+          </div>
+          <div class="operation-arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+
         <div class="operation-card" @click="navigateToPage('cash-registers')">
           <div class="operation-icon bg-danger">
             <i class="fas fa-cash-register"></i>
@@ -519,6 +532,7 @@ export default {
         bills: '/accounting/bills',
         payments: '/accounting/payments',
         deposits: '/accounting/deposits',
+        'deposit-transactions': '/accounting/deposit-transactions',
         'patient-financial-lookup': '/accounting/patient-financial-lookup',
         'cash-registers': '/accounting/cash-registers',
         'pos-terminals': '/accounting/pos-terminals',

@@ -171,6 +171,29 @@
                 />
               </div>
             </div>
+            <div class="form-group row align-items-center">
+              <label
+                class="col-xl-3 col-lg-3 col-form-label font-weight-bold text-left text-lg-right"
+                >Allow Auto Debit</label
+              >
+              <div class="col-lg-9 col-xl-6">
+                <div class="custom-control custom-switch">
+                  <input
+                    type="checkbox"
+                    class="custom-control-input"
+                    id="allow-auto-debit-switch"
+                    v-model="settings.allow_auto_debit"
+                  />
+                  <label class="custom-control-label" for="allow-auto-debit-switch">
+                    <span v-if="settings.allow_auto_debit">Enabled</span>
+                    <span v-else>Disabled</span>
+                  </label>
+                </div>
+                <small class="form-text text-muted">
+                  When enabled, the system will automatically attempt to pay bills using patient deposits when prescriptions are created.
+                </small>
+              </div>
+            </div>
           </div>
         </form>
         <!--end::Form-->

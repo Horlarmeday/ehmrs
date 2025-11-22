@@ -207,6 +207,20 @@ export default {
     state.depositConsolidationReport = report;
   },
 
+  // Deposit Transactions mutations
+  SET_DEPOSIT_TRANSACTIONS(state, transactions) {
+    state.depositTransactions = transactions;
+  },
+  SET_DEPOSIT_TRANSACTIONS_TOTAL(state, total) {
+    state.depositTransactionsTotal = total;
+  },
+  SET_DEPOSIT_TRANSACTIONS_PAGES(state, pages) {
+    state.depositTransactionsPages = pages;
+  },
+  SET_DEPOSIT_TRANSACTIONS_SUMMARY(state, summary) {
+    state.depositTransactionsSummary = summary;
+  },
+
   // Financial reports mutations
   SET_FINANCIAL_REPORTS(state, data) {
     state.financialReports = { ...state.financialReports, ...data };
@@ -304,5 +318,24 @@ export default {
   },
   CLEAR_PATIENT_DEFAULT_INSURANCE(state) {
     state.patientDefaultInsurance = null;
+  },
+
+  // ===== PATIENT FINANCIAL LOOKUP MUTATIONS =====
+
+  SET_PATIENT_FINANCIAL_LOOKUP(state, { selectedPatient, financialSummary, searchQuery }) {
+    if (selectedPatient !== undefined) {
+      state.patientFinancialLookup.selectedPatient = selectedPatient;
+    }
+    if (financialSummary !== undefined) {
+      state.patientFinancialLookup.financialSummary = financialSummary;
+    }
+    if (searchQuery !== undefined) {
+      state.patientFinancialLookup.searchQuery = searchQuery;
+    }
+  },
+  CLEAR_PATIENT_FINANCIAL_LOOKUP(state) {
+    state.patientFinancialLookup.selectedPatient = null;
+    state.patientFinancialLookup.financialSummary = null;
+    state.patientFinancialLookup.searchQuery = '';
   },
 };

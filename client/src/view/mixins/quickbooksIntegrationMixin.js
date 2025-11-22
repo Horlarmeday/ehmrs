@@ -176,7 +176,9 @@ export default {
       } catch (error) {
         console.error('QuickBooks authorization failed:', error);
         this.$bvToast.toast(
-          error?.response?.data?.message || error?.message || 'Failed to start QuickBooks authorization',
+          error?.response?.data?.message ||
+            error?.message ||
+            'Failed to start QuickBooks authorization',
           {
             title: 'QuickBooks',
             variant: 'danger',
@@ -204,11 +206,7 @@ export default {
       if (this.quickbooksWindow && !this.quickbooksWindow.closed) {
         this.quickbooksWindow.close();
       }
-      this.quickbooksWindow = window.open(
-        url,
-        'quickbooks-oauth',
-        'width=600,height=720,noopener'
-      );
+      this.quickbooksWindow = window.open(url, 'quickbooks-oauth', 'width=600,height=720,noopener');
       if (!this.quickbooksWindow) {
         this.$bvToast.toast('Please enable pop-ups to continue with QuickBooks authorization', {
           title: 'QuickBooks',
@@ -391,8 +389,10 @@ export default {
     openQuickbooksCredentialsModal() {
       this.quickbooksModals.credentials = true;
       if (this.quickbooksCredentialsSummary) {
-        this.quickbooksForms.credentials.environment = this.quickbooksCredentialsSummary.environment || 'SANDBOX';
-        this.quickbooksForms.credentials.redirectUri = this.quickbooksCredentialsSummary.redirectUri || '';
+        this.quickbooksForms.credentials.environment =
+          this.quickbooksCredentialsSummary.environment || 'SANDBOX';
+        this.quickbooksForms.credentials.redirectUri =
+          this.quickbooksCredentialsSummary.redirectUri || '';
       }
     },
     closeQuickbooksCredentialsModal() {
@@ -451,4 +451,3 @@ export default {
     this.closeQuickbooksPopup();
   },
 };
-

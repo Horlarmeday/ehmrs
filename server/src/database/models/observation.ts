@@ -78,11 +78,6 @@ export class Observation extends Model {
   bmi: number;
 
   @Column({
-    type: DataType.STRING,
-  })
-  rvs: string;
-
-  @Column({
     type: DataType.FLOAT,
   })
   pulse: number;
@@ -127,6 +122,16 @@ export class Observation extends Model {
     type: DataType.STRING,
   })
   muac: string;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  fbc: string;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  rbs: string;
 
   @Column({
     type: DataType.TEXT,

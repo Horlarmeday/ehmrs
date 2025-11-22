@@ -6,7 +6,7 @@
           <tr>
             <th>Bill #</th>
             <th>Patient</th>
-            <th>Visit Date</th>
+            <th>Date Created</th>
             <th>Total Amount</th>
             <!-- <th>Billing Status</th> -->
             <th>Payment Status</th>
@@ -27,7 +27,7 @@
                 <small class="patient-number">{{ bill.patient?.hospital_id }}</small>
               </div>
             </td>
-            <td>{{ formatDate(bill.visit?.date_visit_start) }}</td>
+            <td>{{ formatDate(bill.createdAt) }}</td>
             <td>
               <span class="amount">{{ formatCurrency(bill.final_amount) }}</span>
             </td>
@@ -79,6 +79,7 @@
 </template>
 
 <script>
+import dayjs from 'dayjs';
 export default {
   name: 'BillTable',
   props: {
@@ -94,7 +95,7 @@ export default {
   methods: {
     formatDate(dateString) {
       if (!dateString) return 'N/A';
-      return new Date(dateString).toLocaleDateString('en-NG');
+      return dayjs(dateString).format('DD/MM/YYYY, h:mma');
     },
 
     formatCurrency(amount) {

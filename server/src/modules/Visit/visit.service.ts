@@ -152,7 +152,7 @@ class VisitService {
    * @param visit The created visit
    * @param visitData The original visit data
    */
-  private static async createSpecializedRecords(
+  static async createSpecializedRecords(
     visit: Visit,
     visitData: CreateVisit
   ): Promise<void> {

@@ -96,6 +96,22 @@ export default {
   getDepositConsolidationReport: (state) => state.depositConsolidationReport,
   isDepositConsolidationLoading: (state) => state.depositConsolidationLoading,
 
+  // Deposit Transactions getters
+  getDepositTransactions: (state) => state.depositTransactions || [],
+  getDepositTransactionsTotal: (state) => state.depositTransactionsTotal || 0,
+  getDepositTransactionsPages: (state) => state.depositTransactionsPages || 0,
+  getDepositTransactionsSummary: (state) =>
+    state.depositTransactionsSummary || {
+      totalTransactions: 0,
+      totalAmount: 0,
+      createdCount: 0,
+      createdAmount: 0,
+      topUpCount: 0,
+      topUpAmount: 0,
+      todayCount: 0,
+      todayAmount: 0,
+    },
+
   // Reports getters
   getFinancialReports: (state) => state.financialReports,
 
@@ -141,4 +157,8 @@ export default {
   getRealTimeMonitoring: (state) => state.realTimeMonitoring,
 
   // ===== END PHASE 6 GETTERS =====
+
+  // ===== PATIENT FINANCIAL LOOKUP GETTERS =====
+
+  getPatientFinancialLookup: (state) => state.patientFinancialLookup,
 };

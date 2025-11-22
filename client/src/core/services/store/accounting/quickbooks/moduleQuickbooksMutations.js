@@ -77,4 +77,3 @@ export default {
     state.credentials = summary || null;
   },
 };
-
