@@ -2071,7 +2071,7 @@ export class AccountingRepository {
       order: [['createdAt', 'DESC']],
       paginate: limit,
       page,
-    })
+    });
   }
 
   static async updatePatientDeposit(
@@ -2161,7 +2161,9 @@ export class AccountingRepository {
   /**
    * Get patient deposit with associations required for receipt generation
    */
-  static async getPatientDepositReceiptData(depositId: number): Promise<{
+  static async getPatientDepositReceiptData(
+    depositId: number
+  ): Promise<{
     deposit: PatientDeposit;
     transactions: DepositTransaction[];
   } | null> {
@@ -2223,17 +2225,21 @@ export class AccountingRepository {
     if (filters.start_date || filters.end_date) {
       where.createdAt = {};
       if (filters.start_date) {
-        where.createdAt[Op.gte] = dayjs(filters.start_date).startOf('day').toDate();
+        where.createdAt[Op.gte] = dayjs(filters.start_date)
+          .startOf('day')
+          .toDate();
       }
       if (filters.end_date) {
-        where.createdAt[Op.lte] = dayjs(filters.end_date).endOf('day').toDate();
+        where.createdAt[Op.lte] = dayjs(filters.end_date)
+          .endOf('day')
+          .toDate();
       }
     }
 
     // Handle search by patient name, hospital_id, or reference_number
     if (filters.search) {
       const searchTerm = `%${filters.search}%`;
-      
+
       // First, find matching patients (by firstname, lastname, hospital_id)
       const matchingPatients = await Patient.findAll({
         where: {
@@ -2310,11 +2316,13 @@ export class AccountingRepository {
             required: false,
           },
         ],
-        ...(filters.deposit_type ? {
-          where: {
-            deposit_type: filters.deposit_type,
-          },
-        } : {}),
+        ...(filters.deposit_type
+          ? {
+              where: {
+                deposit_type: filters.deposit_type,
+              },
+            }
+          : {}),
       },
       {
         model: Staff,
@@ -2362,10 +2370,14 @@ export class AccountingRepository {
     if (filters.start_date || filters.end_date) {
       where.createdAt = {};
       if (filters.start_date) {
-        where.createdAt[Op.gte] = dayjs(filters.start_date).startOf('day').toDate();
+        where.createdAt[Op.gte] = dayjs(filters.start_date)
+          .startOf('day')
+          .toDate();
       }
       if (filters.end_date) {
-        where.createdAt[Op.lte] = dayjs(filters.end_date).endOf('day').toDate();
+        where.createdAt[Op.lte] = dayjs(filters.end_date)
+          .endOf('day')
+          .toDate();
       }
     }
 
@@ -2374,7 +2386,7 @@ export class AccountingRepository {
 
     if (filters.search || filters.deposit_type) {
       const depositWhere: any = {};
-      
+
       // Apply deposit_type filter
       if (filters.deposit_type) {
         depositWhere.deposit_type = filters.deposit_type;
@@ -2383,7 +2395,7 @@ export class AccountingRepository {
       // Handle search by patient name, hospital_id, or reference_number
       if (filters.search) {
         const searchTerm = `%${filters.search}%`;
-        
+
         // First, find matching patients (by firstname, lastname, hospital_id)
         const matchingPatients = await Patient.findAll({
           where: {
@@ -2440,7 +2452,7 @@ export class AccountingRepository {
         });
 
         depositIds = matchingDeposits.map(d => d.id);
-        
+
         if (depositIds.length > 0) {
           where.deposit_id = { [Op.in]: depositIds };
         } else {
@@ -2457,27 +2469,43 @@ export class AccountingRepository {
     });
 
     // Calculate today's date range
-    const today = dayjs().startOf('day').toDate();
-    const tomorrow = dayjs().endOf('day').toDate();
+    const today = dayjs()
+      .startOf('day')
+      .toDate();
+    const tomorrow = dayjs()
+      .endOf('day')
+      .toDate();
 
     // Calculate statistics
     const totalTransactions = allTransactions.length;
-    const totalAmount = allTransactions.reduce((sum, t) => sum + parseFloat(t.amount as any || 0), 0);
+    const totalAmount = allTransactions.reduce(
+      (sum, t) => sum + parseFloat((t.amount as any) || 0),
+      0
+    );
 
     const createdTransactions = allTransactions.filter(t => t.transaction_type === 'CREATED');
     const createdCount = createdTransactions.length;
-    const createdAmount = createdTransactions.reduce((sum, t) => sum + parseFloat(t.amount as any || 0), 0);
+    const createdAmount = createdTransactions.reduce(
+      (sum, t) => sum + parseFloat((t.amount as any) || 0),
+      0
+    );
 
     const topUpTransactions = allTransactions.filter(t => t.transaction_type === 'TOP_UP');
     const topUpCount = topUpTransactions.length;
-    const topUpAmount = topUpTransactions.reduce((sum, t) => sum + parseFloat(t.amount as any || 0), 0);
+    const topUpAmount = topUpTransactions.reduce(
+      (sum, t) => sum + parseFloat((t.amount as any) || 0),
+      0
+    );
 
     const todayTransactions = allTransactions.filter(t => {
       const createdAt = new Date(t.createdAt);
       return createdAt >= today && createdAt < tomorrow;
     });
     const todayCount = todayTransactions.length;
-    const todayAmount = todayTransactions.reduce((sum, t) => sum + parseFloat(t.amount as any || 0), 0);
+    const todayAmount = todayTransactions.reduce(
+      (sum, t) => sum + parseFloat((t.amount as any) || 0),
+      0
+    );
 
     return {
       totalTransactions,
@@ -2845,7 +2873,27 @@ export class AccountingRepository {
         required: false, // Allow LEFT JOIN for search flexibility
       },
       { model: Staff, as: 'processedByStaff', attributes: staffAttributes },
-      { model: ClinicalPaymentItem, as: 'paymentItems', attributes: ['id', 'amount_paid', 'bill_item_id', 'createdAt'], include: [{ model: ClinicalBillItem, as: 'billItem', attributes: ['id', 'item_name', 'quantity', 'unit_price', 'total_price', 'item_type', 'item_id', 'item_name'] }] },
+      {
+        model: ClinicalPaymentItem,
+        as: 'paymentItems',
+        attributes: ['id', 'amount_paid', 'bill_item_id', 'createdAt'],
+        include: [
+          {
+            model: ClinicalBillItem,
+            as: 'billItem',
+            attributes: [
+              'id',
+              'item_name',
+              'quantity',
+              'unit_price',
+              'total_price',
+              'item_type',
+              'item_id',
+              'item_name',
+            ],
+          },
+        ],
+      },
     ];
 
     // Handle search across multiple fields
@@ -3347,7 +3395,7 @@ export class AccountingRepository {
     }
 
     // Convert bills to plain objects first
-    const plainBills = bills.map((bill) => {
+    const plainBills = bills.map(bill => {
       const plainBill = bill.get ? bill.get({ plain: true }) : bill;
       if (plainBill.billItems) {
         plainBill.billItems = plainBill.billItems.map((item: any) =>
@@ -3364,7 +3412,7 @@ export class AccountingRepository {
     const serviceIds: number[] = [];
     const additionalItemIds: number[] = [];
 
-    plainBills.forEach((bill) => {
+    plainBills.forEach(bill => {
       if (bill.billItems && bill.billItems.length > 0) {
         bill.billItems.forEach((item: any) => {
           switch (item.item_type) {
@@ -3423,14 +3471,14 @@ export class AccountingRepository {
     ]);
 
     // Create lookup maps for fast access
-    const drugMap = new Map(drugs.map((d) => [d.id, d]));
-    const testMap = new Map(tests.map((t) => [t.id, t]));
-    const investigationMap = new Map(investigations.map((i) => [i.id, i]));
-    const serviceMap = new Map(services.map((s) => [s.id, s]));
-    const additionalItemMap = new Map(additionalItems.map((a) => [a.id, a]));
+    const drugMap = new Map(drugs.map(d => [d.id, d]));
+    const testMap = new Map(tests.map(t => [t.id, t]));
+    const investigationMap = new Map(investigations.map(i => [i.id, i]));
+    const serviceMap = new Map(services.map(s => [s.id, s]));
+    const additionalItemMap = new Map(additionalItems.map(a => [a.id, a]));
 
     // Enrich bill items with status data on plain objects
-    plainBills.forEach((bill) => {
+    plainBills.forEach(bill => {
       if (bill.billItems && bill.billItems.length > 0) {
         bill.billItems.forEach((item: any) => {
           switch (item.item_type) {
@@ -3487,7 +3535,16 @@ export class AccountingRepository {
           {
             model: ClinicalBillItem,
             as: 'billItems',
-            attributes: ['id', 'item_name', 'quantity', 'unit_price', 'total_price', 'item_type', 'item_id', 'createdAt'],
+            attributes: [
+              'id',
+              'item_name',
+              'quantity',
+              'unit_price',
+              'total_price',
+              'item_type',
+              'item_id',
+              'createdAt',
+            ],
           },
         ],
         order: [['createdAt', 'DESC']],
@@ -3514,8 +3571,8 @@ export class AccountingRepository {
    */
   static async getPatientBillItemsWithPayments(
     patientId: number,
-    currentPage: number = 1,
-    pageLimit: number = 20
+    currentPage = 1,
+    pageLimit = 20
   ): Promise<any> {
     try {
       // Get total count first
@@ -3568,7 +3625,7 @@ export class AccountingRepository {
       });
 
       // Get all bill item IDs for the paginated items
-      const billItemIds = billItems.map((item) => item.id);
+      const billItemIds = billItems.map(item => item.id);
 
       // Get all payment items for these bill items in one query
       const paymentItems = await ClinicalPaymentItem.findAll({
@@ -3584,7 +3641,7 @@ export class AccountingRepository {
 
       // Group payment items by bill_item_id
       const paymentItemsByBillItem: Record<number, any[]> = {};
-      paymentItems.forEach((paymentItem) => {
+      paymentItems.forEach(paymentItem => {
         const billItemId = paymentItem.bill_item_id;
         if (!paymentItemsByBillItem[billItemId]) {
           paymentItemsByBillItem[billItemId] = [];
@@ -3593,7 +3650,7 @@ export class AccountingRepository {
       });
 
       // Process each bill item to calculate amount_paid and determine paid_at
-      const processedItems = billItems.map((billItem) => {
+      const processedItems = billItems.map(billItem => {
         const itemData = billItem.get({ plain: true });
         const itemPaymentItems = paymentItemsByBillItem[itemData.id] || [];
 
@@ -3644,6 +3701,435 @@ export class AccountingRepository {
         'Patient Bill Items Retrieval Error',
         500,
         `Failed to get patient bill items: ${error.message}`
+      );
+    }
+  }
+
+  /**
+   * Get comprehensive financial summary for a patient with server-side calculations
+   * Calculates totals using database aggregations for better performance and accuracy
+   * @param patientId - The patient ID
+   * @returns Complete financial summary with calculated metrics and detailed data
+   */
+  static async getPatientFinancialSummary(patientId: number): Promise<any> {
+    try {
+      // Fetch all data in parallel for better performance
+      const [
+        bills,
+        payments,
+        deposits,
+        depositIdsResult,
+        billsSummary,
+        paymentsSummary,
+        depositsSummary,
+      ] = await Promise.all([
+        // Get all bills with items
+        ClinicalBill.findAll({
+          where: { patient_id: patientId },
+          include: [
+            { model: Visit, as: 'visit', attributes: ['id', 'department'] },
+            {
+              model: ClinicalBillItem,
+              as: 'billItems',
+              attributes: [
+                'id',
+                'item_name',
+                'quantity',
+                'unit_price',
+                'total_price',
+                'item_type',
+                'item_id',
+                'createdAt',
+              ],
+            },
+          ],
+          order: [['createdAt', 'DESC']],
+        }),
+
+        // Get all payments with items
+        ClinicalPayment.findAll({
+          where: { patient_id: patientId },
+          include: [
+            {
+              model: ClinicalBill,
+              as: 'bill',
+              attributes: ['id', 'bill_number', 'final_amount'],
+              required: false,
+            },
+            {
+              model: ClinicalPaymentItem,
+              as: 'paymentItems',
+              attributes: ['id', 'amount_paid', 'bill_item_id', 'createdAt'],
+              include: [
+                {
+                  model: ClinicalBillItem,
+                  as: 'billItem',
+                  attributes: [
+                    'id',
+                    'item_name',
+                    'quantity',
+                    'unit_price',
+                    'total_price',
+                    'item_type',
+                    'item_id',
+                    'item_name',
+                  ],
+                },
+              ],
+            },
+          ],
+          order: [['processed_at', 'DESC']],
+        }),
+
+        // Get all deposits
+        PatientDeposit.findAll({
+          where: { patient_id: patientId },
+          include: [
+            { model: Patient, as: 'patient', attributes: patientAttributes },
+            { model: Staff, as: 'createdByStaff', attributes: staffAttributes },
+          ],
+          order: [['createdAt', 'DESC']],
+        }),
+
+        // Get all patient deposit IDs for transaction query
+        PatientDeposit.findAll({
+          where: { patient_id: patientId },
+          attributes: ['id'],
+          raw: true,
+        }),
+
+        // Calculate bills summary using database aggregation
+        Promise.all([
+          ClinicalBill.count({ where: { patient_id: patientId } }),
+          ClinicalBill.sum('final_amount', { where: { patient_id: patientId } }),
+        ]),
+
+        // Calculate payments summary using database aggregation
+        Promise.all([
+          ClinicalPayment.count({ where: { patient_id: patientId } }),
+          ClinicalPayment.sum('amount', { where: { patient_id: patientId } }),
+        ]),
+
+        // Calculate deposits summary using database aggregation
+        Promise.all([
+          PatientDeposit.count({
+            where: {
+              patient_id: patientId,
+              status: DepositStatus.ACTIVE,
+            },
+          }),
+          PatientDeposit.sum('current_balance', {
+            where: {
+              patient_id: patientId,
+              status: DepositStatus.ACTIVE,
+            },
+          }),
+        ]),
+      ]);
+
+      // Get deposit transaction history using the deposit IDs
+      const depositIds = depositIdsResult.map((d: any) => d.id);
+      const depositTransactions =
+        depositIds.length > 0
+          ? await DepositTransaction.findAll({
+              where: {
+                deposit_id: {
+                  [Op.in]: depositIds,
+                },
+              },
+              include: [{ model: Staff, as: 'createdByStaff', attributes: staffAttributes }],
+              order: [['createdAt', 'DESC']],
+            })
+          : [];
+
+      // Enrich bills with prescription status data
+      const enrichedBills = await this.enrichBillItemsWithPrescriptionStatus(bills);
+
+      // Extract summary values from aggregation results
+      const [billsCount, billsAmount] = billsSummary;
+      const [paymentsCount, paymentsAmount] = paymentsSummary;
+      const [depositsCount, depositsAmount] = depositsSummary;
+
+      // Convert to numbers (Sequelize sum returns null if no records)
+      const totalBills = billsCount || 0;
+      const totalBillsAmount = parseFloat(String(billsAmount || 0)) || 0;
+      const totalPayments = paymentsCount || 0;
+      const totalPaymentsAmount = parseFloat(String(paymentsAmount || 0)) || 0;
+      const totalDeposits = depositsCount || 0;
+      const totalDepositsAmount = parseFloat(String(depositsAmount || 0)) || 0;
+
+      // Calculate outstanding balance
+      const outstandingBalance = totalBillsAmount - totalPaymentsAmount;
+
+      return {
+        bills: enrichedBills,
+        payments,
+        deposits: Array.isArray(deposits) ? deposits : deposits ? [deposits] : [],
+        history: depositTransactions || [],
+        summary: {
+          totalBills,
+          totalBillsAmount,
+          totalPayments,
+          totalPaymentsAmount,
+          totalDeposits,
+          totalDepositsAmount,
+          outstandingBalance,
+        },
+      };
+    } catch (error) {
+      throw new BadException(
+        'Patient Financial Summary Retrieval Error',
+        500,
+        `Failed to get patient financial summary: ${error.message}`
+      );
+    }
+  }
+
+  /**
+   * Get patient ledger transactions (bill items, payment items, deposits)
+   * Returns chronologically sorted transactions with running balance
+   */
+  static async getPatientLedgerTransactions(
+    patientId: number,
+    options: {
+      startDate?: string;
+      endDate?: string;
+      currentPage?: number;
+      pageLimit?: number;
+    } = {}
+  ): Promise<{
+    rows: Array<{
+      date: Date;
+      description: string;
+      itemType: string;
+      bill: number;
+      payment: number;
+      balance: number;
+    }>;
+    totals: {
+      bill: number;
+      payment: number;
+      balance: number;
+    };
+    count: number;
+    pages: number;
+    currentPage: number;
+    pageLimit: number;
+  }> {
+    try {
+      const { startDate, endDate, currentPage = 1, pageLimit = 50 } = options;
+
+      // Build date filter for createdAt
+      const dateFilter: any = {};
+      if (startDate && endDate) {
+        const start = dayjs(startDate)
+          .startOf('day')
+          .toDate();
+        const end = dayjs(endDate)
+          .endOf('day')
+          .toDate();
+        dateFilter[Op.between] = [start, end];
+      } else if (startDate) {
+        const start = dayjs(startDate)
+          .startOf('day')
+          .toDate();
+        dateFilter[Op.gte] = start;
+      } else if (endDate) {
+        const end = dayjs(endDate)
+          .endOf('day')
+          .toDate();
+        dateFilter[Op.lte] = end;
+      }
+
+      // Fetch bill items for the patient
+      const bills = await ClinicalBill.findAll({
+        where: { patient_id: patientId },
+        include: [
+          {
+            model: ClinicalBillItem,
+            as: 'billItems',
+            where: Object.keys(dateFilter).length > 0 ? { createdAt: dateFilter } : {},
+            required: false,
+            attributes: ['id', 'item_name', 'item_type', 'total_price', 'createdAt'],
+          },
+        ],
+      });
+
+      // Fetch payment items for the patient (through ClinicalPayment)
+      const paymentItemsWhere: any = {};
+      if (Object.keys(dateFilter).length > 0) {
+        paymentItemsWhere.createdAt = dateFilter;
+      }
+
+      const paymentItems = await ClinicalPaymentItem.findAll({
+        include: [
+          {
+            model: ClinicalPayment,
+            as: 'payment',
+            where: { patient_id: patientId },
+            required: true,
+            attributes: ['id', 'payment_method', 'payment_reference', 'processed_at'],
+            include: [
+              {
+                model: ClinicalBill,
+                as: 'bill',
+                attributes: ['id', 'bill_number'],
+                required: false,
+              },
+            ],
+          },
+          {
+            model: ClinicalBillItem,
+            as: 'billItem',
+            attributes: ['id', 'item_name'],
+            required: false,
+          },
+        ],
+        where: paymentItemsWhere,
+        order: [['createdAt', 'ASC']],
+      });
+
+      // Fetch deposit transactions for the patient
+      const deposits = await PatientDeposit.findAll({
+        where: { patient_id: patientId, status: DepositStatus.ACTIVE },
+        attributes: ['id'],
+        raw: true,
+      });
+
+      const depositIds = deposits.map((d: any) => d.id);
+      const depositWhere: any = {
+        deposit_id: {
+          [Op.in]: depositIds,
+        },
+      };
+      if (Object.keys(dateFilter).length > 0) {
+        depositWhere.createdAt = dateFilter;
+      }
+
+      const depositTransactions =
+        depositIds.length > 0
+          ? await DepositTransaction.findAll({
+              where: depositWhere,
+              order: [['createdAt', 'ASC']],
+            })
+          : [];
+
+      // Build ledger rows
+      const ledgerRows: Array<{
+        date: Date;
+        description: string;
+        itemType: string;
+        bill: number;
+        payment: number;
+        balance: number;
+      }> = [];
+
+      let runningBalance = 0;
+
+      // Process bill items
+      bills.forEach(bill => {
+        if (bill.billItems && bill.billItems.length > 0) {
+          bill.billItems.forEach((item: any) => {
+            const billAmount = parseFloat(item.total_price) || 0;
+            runningBalance -= billAmount;
+
+            ledgerRows.push({
+              date: item.createdAt || bill.createdAt,
+              description: item.item_name || 'N/A',
+              itemType: item.item_type || '',
+              bill: billAmount,
+              payment: 0,
+              balance: runningBalance,
+            });
+          });
+        }
+      });
+
+      // Process payment items
+      paymentItems.forEach((paymentItem: any) => {
+        const paymentAmount = parseFloat(paymentItem.amount_paid) || 0;
+        runningBalance += paymentAmount;
+
+        // Build payment description
+        let paymentDescription = paymentItem.payment?.payment_method || 'Payment';
+        if (paymentItem.payment?.bill?.bill_number) {
+          paymentDescription += ` [${paymentItem.payment.bill.bill_number}]`;
+        } else if (paymentItem.payment?.payment_reference) {
+          paymentDescription += ` [${paymentItem.payment.payment_reference}]`;
+        }
+
+        ledgerRows.push({
+          date: paymentItem.createdAt || paymentItem.payment?.processed_at,
+          description: paymentDescription,
+          itemType: '',
+          bill: 0,
+          payment: paymentAmount,
+          balance: runningBalance,
+        });
+      });
+
+      // Process deposit transactions
+      depositTransactions.forEach((history: any) => {
+        const depositAmount = parseFloat(history.amount) || 0;
+
+        if (history.transaction_type === 'CREDIT') {
+          runningBalance += depositAmount;
+        } else {
+          runningBalance -= depositAmount;
+        }
+
+        let description = history.description || '';
+        if (!description) {
+          description = history.transaction_type === 'CREDIT' ? 'Deposit Added' : 'Deposit Used';
+        }
+
+        ledgerRows.push({
+          date: history.createdAt,
+          description: description,
+          itemType: '',
+          bill: history.transaction_type === 'DEBIT' ? depositAmount : 0,
+          payment: history.transaction_type === 'CREDIT' ? depositAmount : 0,
+          balance: runningBalance,
+        });
+      });
+
+      // Sort chronologically by date
+      ledgerRows.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      // Calculate totals from ALL rows (before pagination)
+      const totals = {
+        bill: ledgerRows.reduce((sum, row) => sum + (row.bill || 0), 0),
+        payment: ledgerRows.reduce((sum, row) => sum + (row.payment || 0), 0),
+        balance: 0,
+      };
+      totals.balance = totals.payment - totals.bill;
+
+      // Recalculate running balance for all rows (needed for correct balance on paginated results)
+      let cumulativeBalance = 0;
+      ledgerRows.forEach(row => {
+        cumulativeBalance = cumulativeBalance - row.bill + row.payment;
+        row.balance = cumulativeBalance;
+      });
+
+      // Apply pagination
+      const totalCount = ledgerRows.length;
+      const { limit, offset } = calcLimitAndOffset(currentPage, pageLimit);
+      const paginatedRows = ledgerRows.slice(offset, offset + limit);
+      const totalPages = Math.ceil(totalCount / pageLimit);
+
+      return {
+        rows: paginatedRows,
+        totals,
+        count: totalCount,
+        pages: totalPages,
+        currentPage,
+        pageLimit,
+      };
+    } catch (error) {
+      throw new BadException(
+        'Patient Ledger Transactions Retrieval Error',
+        500,
+        `Failed to get patient ledger transactions: ${error.message}`
       );
     }
   }
@@ -4857,13 +5343,17 @@ export class AccountingRepository {
 
   /**
    * Get recent bills with pagination
+   * Orders by payment_status PENDING first, then by updatedAt DESC
    * @param limit - Number of bills to retrieve
    * @returns Array of recent bills
    */
   static async getRecentBills(limit = 5) {
     return await ClinicalBill.findAll({
       limit,
-      order: [['updatedAt', 'DESC']],
+      order: [
+        [Sequelize.literal("CASE WHEN payment_status = 'PENDING' THEN 0 ELSE 1 END"), 'ASC'],
+        ['updatedAt', 'DESC'],
+      ],
       include: [
         {
           model: Patient,

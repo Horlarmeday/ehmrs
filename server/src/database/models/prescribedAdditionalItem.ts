@@ -388,7 +388,9 @@ export class PrescribedAdditionalItem extends Model {
   })
   hmo_billed_amount: number;
 
-  @BelongsTo(() => Staff)
+  @BelongsTo(() => Staff, {
+    foreignKey: 'examiner',
+  })
   requester: Staff;
 
   @BelongsTo(() => Staff, {

@@ -655,6 +655,11 @@ export const getOneDrugPrescription = async (drugPrescriptionId: number | string
             attributes: staffAttributes,
             as: 'dispenser',
           },
+          {
+            model: Staff,
+            attributes: staffAttributes,
+            as: 'requester',
+          },
         ],
       },
       {
@@ -666,6 +671,11 @@ export const getOneDrugPrescription = async (drugPrescriptionId: number | string
             model: Staff,
             attributes: staffAttributes,
             as: 'dispenser',
+          },
+          {
+            model: Staff,
+            attributes: staffAttributes,
+            as: 'requester',
           },
         ],
       },
@@ -754,8 +764,7 @@ export const dispenseDrug = async (
 
     await DrugPrescription.update(
       {
-        status:
-          prescriptionComplete ? DrugStatus.COMPLETE_DISPENSE : DrugStatus.PARTIAL_DISPENSED,
+        status: prescriptionComplete ? DrugStatus.COMPLETE_DISPENSE : DrugStatus.PARTIAL_DISPENSED,
       },
       { where: { id: drug_prescription_id }, transaction: t }
     );

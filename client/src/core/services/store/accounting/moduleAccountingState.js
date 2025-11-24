@@ -245,4 +245,16 @@ export default {
     financialSummary: null,
     searchQuery: '',
   },
+  patientLedgerTransactions: {
+    rows: [],
+    totals: {
+      bill: 0,
+      payment: 0,
+      balance: 0,
+    },
+    count: 0,
+    pages: 0,
+    currentPage: 1,
+    pageLimit: 50,
+  },
 };

@@ -96,7 +96,7 @@
                 <h6 class="stat-label">Total Bills</h6>
                 <h3 class="stat-value">{{ financialSummary.summary.totalBills }}</h3>
                 <p class="stat-amount">
-                  ₦{{ formatCurrency(financialSummary.summary.totalBillsAmount) }}
+                  {{ formatCurrency(financialSummary.summary.totalBillsAmount) }}
                 </p>
               </div>
             </div>
@@ -111,7 +111,7 @@
                 <h6 class="stat-label">Total Payments</h6>
                 <h3 class="stat-value">{{ financialSummary.summary.totalPayments }}</h3>
                 <p class="stat-amount">
-                  ₦{{ formatCurrency(financialSummary.summary.totalPaymentsAmount) }}
+                  {{ formatCurrency(financialSummary.summary.totalPaymentsAmount) }}
                 </p>
               </div>
             </div>
@@ -126,7 +126,7 @@
                 <h6 class="stat-label">Active Deposits</h6>
                 <h3 class="stat-value">{{ financialSummary.summary.totalDeposits }}</h3>
                 <p class="stat-amount">
-                  ₦{{ formatCurrency(financialSummary.summary.totalDepositsAmount) }}
+                  {{ formatCurrency(financialSummary.summary.totalDepositsAmount) }}
                 </p>
               </div>
             </div>
@@ -146,7 +146,7 @@
                   {{ financialSummary.summary.outstandingBalance > 0 ? 'Owes' : 'Paid' }}
                 </h3>
                 <p class="stat-amount">
-                  ₦{{ formatCurrency(Math.abs(financialSummary.summary.outstandingBalance)) }}
+                  {{ formatCurrency(Math.abs(financialSummary.summary.outstandingBalance)) }}
                 </p>
               </div>
             </div>
@@ -157,8 +157,148 @@
       <!-- Tabbed Data Display -->
       <b-card>
         <b-tabs content-class="mt-3" v-model="activeTab">
+          <!-- All Transactions Tab -->
+          <b-tab title="Transactions" active>
+            <div class="tab-header mb-3 d-flex justify-content-between align-items-start flex-wrap">
+              <div>
+                <h5>Complete Transaction History ({{ ledgerTotal }})</h5>
+                <small v-if="dateFilters.allTransactions.active" class="text-muted">
+                  Filtered: {{ formatDate(dateFilters.allTransactions.start) }} -
+                  {{ formatDate(dateFilters.allTransactions.end) }}
+                  <b-button
+                    size="sm"
+                    variant="link"
+                    @click="clearLedgerDateFilter"
+                    class="p-0 ml-2"
+                  >
+                    <i class="fas fa-times"></i> Clear
+                  </b-button>
+                </small>
+              </div>
+              <div class="d-flex gap-2">
+                <b-dropdown
+                  text="Export"
+                  variant="outline-success"
+                  size="sm"
+                  :disabled="exporting || ledgerTransactions.length === 0"
+                  class="mr-2"
+                >
+                  <b-dropdown-item @click="exportAllTransactions('pdf')">
+                    <i class="fas fa-file-pdf mr-2"></i>PDF (.pdf)
+                  </b-dropdown-item>
+                  <b-dropdown-item @click="exportAllTransactions('xlsx')">
+                    <i class="fas fa-file-excel mr-2"></i>Excel (.xlsx)
+                  </b-dropdown-item>
+                  <b-dropdown-item @click="exportAllTransactions('csv')">
+                    <i class="fas fa-file-csv mr-2"></i>CSV (.csv)
+                  </b-dropdown-item>
+                </b-dropdown>
+              </div>
+            </div>
+
+            <DateFilter
+              label="All Transactions"
+              @filterbydate="handleLedgerDateFilter"
+              class="mb-3"
+            />
+
+            <div v-if="loadingLedger" class="text-center py-5">
+              <b-spinner></b-spinner>
+              <p class="mt-3 text-muted">Loading ledger transactions...</p>
+            </div>
+            <div v-else-if="ledgerTransactions.length > 0" class="table-responsive">
+              <table class="table table-hover ledger-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Item Type</th>
+                    <th class="text-right">Bill</th>
+                    <th class="text-right">Payment</th>
+                    <th class="text-right">Balance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(transaction, index) in ledgerTransactions" :key="`ledger-${index}`">
+                    <td>{{ formatLedgerDate(transaction.date) }}</td>
+                    <td>{{ transaction.description }}</td>
+                    <td>
+                      <span
+                        v-if="transaction.itemType"
+                        class="badge"
+                        :class="getBillItemTypeVariant(transaction.itemType)"
+                      >
+                        {{ transaction.itemType }}
+                      </span>
+                      <span v-else class="text-muted">-</span>
+                    </td>
+                    <td class="text-right">
+                      <span v-if="transaction.bill > 0">{{
+                        formatLedgerCurrency(transaction.bill)
+                      }}</span>
+                      <span v-else class="text-muted">0.00</span>
+                    </td>
+                    <td class="text-right">
+                      <span v-if="transaction.payment > 0" class="text-success">{{
+                        formatLedgerCurrency(transaction.payment)
+                      }}</span>
+                      <span v-else class="text-muted">0.00</span>
+                    </td>
+                    <td class="text-right" :class="transaction.balance < 0 ? 'text-danger' : ''">
+                      <strong>{{ formatLedgerCurrency(transaction.balance) }}</strong>
+                    </td>
+                  </tr>
+                  <!-- Totals Row -->
+                  <tr class="totals-row">
+                    <td colspan="2"><strong>TOTAL</strong></td>
+                    <td></td>
+                    <td class="text-right">
+                      <strong>{{ formatLedgerCurrency(ledgerTotals.bill) }}</strong>
+                    </td>
+                    <td class="text-right">
+                      <strong>{{ formatLedgerCurrency(ledgerTotals.payment) }}</strong>
+                    </td>
+                    <td class="text-right" :class="ledgerTotals.balance < 0 ? 'text-danger' : ''">
+                      <strong>{{ formatLedgerCurrency(ledgerTotals.balance) }}</strong>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <!-- Pagination -->
+              <div v-if="ledgerPages > 1" class="pagination-section mt-4">
+                <b-pagination
+                  v-model="ledgerCurrentPage"
+                  :total-rows="ledgerTotal"
+                  :per-page="ledgerPageLimit"
+                  @change="onLedgerPageChange"
+                  align="center"
+                  size="md"
+                ></b-pagination>
+                <div class="pagination-info text-center mt-2">
+                  <small class="text-muted">
+                    Showing {{ (ledgerCurrentPage - 1) * ledgerPageLimit + 1 }} to
+                    {{ Math.min(ledgerCurrentPage * ledgerPageLimit, ledgerTotal) }} of
+                    {{ ledgerTotal }} transactions
+                    <span v-if="ledgerPages > 1"
+                      >(Page {{ ledgerCurrentPage }} of {{ ledgerPages }})</span
+                    >
+                  </small>
+                </div>
+              </div>
+            </div>
+            <div v-else-if="!loadingLedger" class="text-center py-5">
+              <i class="fas fa-history fa-3x text-muted mb-3"></i>
+              <p class="text-muted">
+                No transaction history available{{
+                  dateFilters.allTransactions.active ? ' for selected date range' : ''
+                }}
+              </p>
+            </div>
+          </b-tab>
+
           <!-- Bills Tab -->
-          <b-tab title="Bills" active>
+          <b-tab title="Bills">
             <div class="tab-header mb-3 d-flex justify-content-between align-items-start flex-wrap">
               <div>
                 <h5>Clinical Bills ({{ filteredBills.length }})</h5>
@@ -223,7 +363,7 @@
                       <td>{{ formatDate(bill.createdAt) }}</td>
                       <td>{{ bill.notes || 'Clinical Service' }}</td>
                       <td>
-                        <strong>₦{{ formatCurrency(bill.final_amount) }}</strong>
+                        <strong>{{ formatCurrency(bill.final_amount) }}</strong>
                       </td>
                       <td>
                         <span class="badge" :class="getBillStatusClass(bill.payment_status)">
@@ -296,9 +436,9 @@
                                     </div>
                                   </td>
                                   <td>{{ item.quantity }}</td>
-                                  <td>₦{{ formatCurrency(item.unit_price) }}</td>
+                                  <td>{{ formatCurrency(item.unit_price) }}</td>
                                   <td>
-                                    <strong>₦{{ formatCurrency(item.total_price) }}</strong>
+                                    <strong>{{ formatCurrency(item.total_price) }}</strong>
                                   </td>
                                   <td>{{ formatDate(item.createdAt) }}</td>
                                 </tr>
@@ -399,7 +539,7 @@
                       <td>{{ formatDate(payment.processed_at) }}</td>
                       <td>{{ payment?.bill?.bill_number || 'N/A' }}</td>
                       <td>
-                        <strong>₦{{ formatCurrency(payment.amount) }}</strong>
+                        <strong>{{ formatCurrency(payment.amount) }}</strong>
                       </td>
                       <td>{{ payment.payment_method }}</td>
                       <td>
@@ -450,12 +590,12 @@
                                     }}</b-badge>
                                   </td>
                                   <td>{{ item.billItem?.quantity || 'N/A' }}</td>
-                                  <td>₦{{ formatCurrency(item.billItem?.unit_price) }}</td>
+                                  <td>{{ formatCurrency(item.billItem?.unit_price) }}</td>
                                   <td>
-                                    <strong>₦{{ formatCurrency(item.billItem?.total_price) }}</strong>
+                                    <strong>{{ formatCurrency(item.billItem?.total_price) }}</strong>
                                   </td>
                                   <td>
-                                    <strong class="text-success">₦{{ formatCurrency(item.amount_paid) }}</strong>
+                                    <strong class="text-success">{{ formatCurrency(item.amount_paid) }}</strong>
                                   </td>
                                   <td>{{ formatDate(item.createdAt) }}</td>
                                 </tr>
@@ -509,10 +649,10 @@
                     </td>
                     <td>{{ formatDate(deposit.createdAt) }}</td>
                     <td>
-                      <strong>₦{{ formatCurrency(deposit.amount) }}</strong>
+                      <strong>{{ formatCurrency(deposit.amount) }}</strong>
                     </td>
-                    <td>₦{{ formatCurrency(deposit.amount - deposit.current_balance) }}</td>
-                    <td>₦{{ formatCurrency(deposit.current_balance) }}</td>
+                    <td>{{ formatCurrency(deposit.amount - deposit.current_balance) }}</td>
+                    <td>{{ formatCurrency(deposit.current_balance) }}</td>
                     <td>
                       <span
                         class="badge"
@@ -573,11 +713,11 @@
                       </b-badge>
                     </td>
                     <td>
-                      <strong>₦{{ formatCurrency(item.total_price) }}</strong>
+                      <strong>{{ formatCurrency(item.total_price) }}</strong>
                     </td>
                     <td>
                       <strong :class="item.amount_paid > 0 ? 'text-success' : 'text-muted'">
-                        ₦{{ formatCurrency(item.amount_paid) }}
+                        {{ formatCurrency(item.amount_paid) }}
                       </strong>
                     </td>
                     <td>
@@ -609,7 +749,9 @@
                     Showing {{ (billItemsCurrentPage - 1) * billItemsPageLimit + 1 }} to
                     {{ Math.min(billItemsCurrentPage * billItemsPageLimit, billItemsTotal) }} of
                     {{ billItemsTotal }} bill items
-                    <span v-if="billItemsPages > 1">(Page {{ billItemsCurrentPage }} of {{ billItemsPages }})</span>
+                    <span v-if="billItemsPages > 1"
+                      >(Page {{ billItemsCurrentPage }} of {{ billItemsPages }})</span
+                    >
                   </small>
                 </div>
               </div>
@@ -617,40 +759,6 @@
             <div v-else class="text-center py-5">
               <i class="fas fa-list fa-3x text-muted mb-3"></i>
               <p class="text-muted">No bill items found for this patient</p>
-            </div>
-          </b-tab>
-
-          <!-- All Transactions Tab -->
-          <b-tab title="All Transactions">
-            <div class="tab-header mb-3">
-              <h5>Complete Transaction History ({{ allTransactions.length }})</h5>
-            </div>
-            <div v-if="allTransactions.length > 0" class="timeline-container">
-              <div
-                v-for="transaction in allTransactions"
-                :key="`${transaction.type}-${transaction.id}`"
-                class="timeline-item"
-              >
-                <div class="timeline-marker" :class="getTransactionTypeClass(transaction.type)">
-                  <i :class="getTransactionIcon(transaction.type)"></i>
-                </div>
-                <div class="timeline-content">
-                  <div class="transaction-header">
-                    <strong>{{ transaction.title }}</strong>
-                    <span class="transaction-date">{{ formatDate(transaction.date) }}</span>
-                  </div>
-                  <div class="transaction-details">
-                    <p class="mb-1">{{ transaction.description }}</p>
-                    <h5 class="transaction-amount" :class="transaction.amountClass">
-                      ₦{{ formatCurrency(transaction.amount) }}
-                    </h5>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div v-else class="text-center py-5">
-              <i class="fas fa-history fa-3x text-muted mb-3"></i>
-              <p class="text-muted">No transaction history available</p>
             </div>
           </b-tab>
         </b-tabs>
@@ -802,7 +910,23 @@ export default {
           end: null,
           active: false,
         },
+        allTransactions: {
+          start: null,
+          end: null,
+          active: false,
+        },
       },
+      ledgerTransactions: [],
+      ledgerTotals: {
+        bill: 0,
+        payment: 0,
+        balance: 0,
+      },
+      loadingLedger: false,
+      ledgerCurrentPage: 1,
+      ledgerPageLimit: 50,
+      ledgerTotal: 0,
+      ledgerPages: 0,
       exporting: false,
       billItems: [],
       loadingBillItems: false,
@@ -968,6 +1092,7 @@ export default {
       getPatientFinancialSummary: 'accounting/getPatientFinancialSummary',
       generatePatientFinancialStatement: 'accounting/generatePatientFinancialStatement',
       getPatientBillItemsWithPayments: 'accounting/getPatientBillItemsWithPayments',
+      getPatientLedgerTransactions: 'accounting/getPatientLedgerTransactions',
     }),
     ...mapMutations('accounting', [
       'SET_PATIENT_FINANCIAL_LOOKUP',
@@ -977,6 +1102,13 @@ export default {
     restoreStateFromVuex() {
       const storedData = this.getPatientFinancialLookup;
       if (storedData && storedData.selectedPatient) {
+        // Check if route has a different patientId - if so, don't restore (route takes priority)
+        const routePatientId = this.$route.query.patientId;
+        if (routePatientId && String(routePatientId) !== String(storedData.selectedPatient.id)) {
+          // Route has a different patientId, skip restoration
+          return;
+        }
+
         this.selectedPatient = storedData.selectedPatient;
         this.searchQuery =
           storedData.searchQuery ||
@@ -990,8 +1122,9 @@ export default {
             query: { ...this.$route.query, patientId: storedData.selectedPatient.id },
           });
         }
-        // Load bill items for restored patient
+        // Load bill items and ledger transactions for restored patient
         this.loadPatientBillItems(storedData.selectedPatient.id, this.billItemsCurrentPage);
+        this.loadLedgerTransactions(storedData.selectedPatient.id, this.ledgerCurrentPage);
       }
     },
 
@@ -1087,6 +1220,7 @@ export default {
       await Promise.all([
         this.loadPatientFinancialData(patient.id),
         this.loadPatientBillItems(patient.id),
+        this.loadLedgerTransactions(patient.id),
       ]);
     },
 
@@ -1155,7 +1289,13 @@ export default {
         });
 
         if (response.success) {
-          const data = response.data || { rows: [], count: 0, pages: 0, currentPage: 1, pageLimit: 20 };
+          const data = response.data || {
+            rows: [],
+            count: 0,
+            pages: 0,
+            currentPage: 1,
+            pageLimit: 20,
+          };
           this.billItems = data.rows || [];
           this.billItemsTotal = data.count || 0;
           this.billItemsPages = data.pages || 0;
@@ -1184,14 +1324,103 @@ export default {
       }
     },
 
+    async loadLedgerTransactions(patientId, page = 1) {
+      this.loadingLedger = true;
+
+      try {
+        const params = {
+          patientId,
+          currentPage: page,
+          pageLimit: this.ledgerPageLimit,
+        };
+
+        if (this.dateFilters.allTransactions.active) {
+          params.startDate = this.dateFilters.allTransactions.start;
+          params.endDate = this.dateFilters.allTransactions.end;
+        }
+
+        const response = await this.getPatientLedgerTransactions(params);
+
+        if (response.success) {
+          this.ledgerTransactions = response.data.rows || [];
+          this.ledgerTotals = response.data.totals || { bill: 0, payment: 0, balance: 0 };
+          this.ledgerTotal = response.data.count || 0;
+          this.ledgerPages = response.data.pages || 0;
+          this.ledgerCurrentPage = response.data.currentPage || 1;
+        } else {
+          throw new Error(response.error || 'Failed to load ledger transactions');
+        }
+      } catch (error) {
+        console.error('Failed to load ledger transactions:', error);
+        this.$bvToast.toast('Failed to load ledger transactions', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+        this.ledgerTransactions = [];
+        this.ledgerTotals = { bill: 0, payment: 0, balance: 0 };
+        this.ledgerTotal = 0;
+        this.ledgerPages = 0;
+      } finally {
+        this.loadingLedger = false;
+      }
+    },
+
+    onLedgerPageChange(page) {
+      if (this.selectedPatient) {
+        this.loadLedgerTransactions(this.selectedPatient.id, page);
+      }
+    },
+
+    handleLedgerDateFilter(start, end) {
+      this.dateFilters.allTransactions = {
+        start,
+        end,
+        active: true,
+      };
+      this.ledgerCurrentPage = 1; // Reset to first page
+      if (this.selectedPatient) {
+        this.loadLedgerTransactions(this.selectedPatient.id, 1);
+      }
+    },
+
+    clearLedgerDateFilter() {
+      this.dateFilters.allTransactions = {
+        start: null,
+        end: null,
+        active: false,
+      };
+      this.ledgerCurrentPage = 1; // Reset to first page
+      if (this.selectedPatient) {
+        this.loadLedgerTransactions(this.selectedPatient.id, 1);
+      }
+    },
+
     formatCurrency(value) {
       if (!value && value !== 0) return '0.00';
-      return parseFloat(value).toFixed(2);
+      return new Intl.NumberFormat('en-NG', {
+        style: 'currency',
+        currency: 'NGN',
+      }).format(value || 0);
     },
 
     formatDate(date) {
       if (!date) return 'N/A';
       return dayjs(date).format('DD/MM/YYYY, h:mma');
+    },
+
+    formatLedgerDate(date) {
+      if (!date) return 'N/A';
+      return dayjs(date).format('DD-MMM-YYYY');
+    },
+
+    formatLedgerCurrency(value) {
+      if (!value && value !== 0) return '0.00';
+      const numValue = parseFloat(value) || 0;
+      return new Intl.NumberFormat('en-NG', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(numValue);
     },
 
     getBillStatusClass(status) {
@@ -1523,6 +1752,98 @@ export default {
       }
     },
 
+    async exportAllTransactions(format) {
+      try {
+        this.exporting = true;
+
+        if (this.ledgerTransactions.length === 0) {
+          this.$bvToast.toast('No transaction data to export', {
+            title: 'Export Failed',
+            variant: 'warning',
+            solid: true,
+          });
+          return;
+        }
+
+        // If there are more transactions than current page, fetch all for export
+        let allTransactions = this.ledgerTransactions;
+        if (this.ledgerTotal > this.ledgerTransactions.length) {
+          // Fetch all transactions for export (without pagination)
+          const params = {
+            patientId: this.selectedPatient.id,
+            currentPage: 1,
+            pageLimit: this.ledgerTotal, // Get all records
+          };
+
+          if (this.dateFilters.allTransactions.active) {
+            params.startDate = this.dateFilters.allTransactions.start;
+            params.endDate = this.dateFilters.allTransactions.end;
+          }
+
+          const response = await this.getPatientLedgerTransactions(params);
+          if (response.success && response.data.rows) {
+            allTransactions = response.data.rows;
+          }
+        }
+
+        // Prepare ledger data for export
+        const exportData = allTransactions.map((row) => ({
+          Date: this.formatLedgerDate(row.date),
+          Description: row.description,
+          'Item Type': row.itemType || '',
+          Bill: this.formatLedgerCurrency(row.bill),
+          Payment: this.formatLedgerCurrency(row.payment),
+          Balance: this.formatLedgerCurrency(row.balance),
+        }));
+
+        // Add totals row (use server-provided totals or calculate from all transactions)
+        const totals =
+          this.ledgerTotals.bill > 0 || this.ledgerTotals.payment > 0
+            ? this.ledgerTotals
+            : {
+                bill: allTransactions.reduce((sum, row) => sum + (row.bill || 0), 0),
+                payment: allTransactions.reduce((sum, row) => sum + (row.payment || 0), 0),
+                balance: 0,
+              };
+        totals.balance = totals.payment - totals.bill;
+
+        exportData.push({
+          Date: 'TOTAL',
+          Description: '',
+          'Item Type': '',
+          Bill: this.formatLedgerCurrency(totals.bill),
+          Payment: this.formatLedgerCurrency(totals.payment),
+          Balance: this.formatLedgerCurrency(totals.balance),
+        });
+
+        const timestamp = new Date().toISOString().split('T')[0];
+        const filename = `all_transactions_${this.selectedPatient.hospital_id}_${timestamp}.${format}`;
+
+        if (format === 'csv') {
+          exportService.exportToCSV(exportData, filename);
+        } else if (format === 'pdf') {
+          exportService.exportToPDF(exportData, filename);
+        } else {
+          exportService.exportToExcel(exportData, filename);
+        }
+
+        this.$bvToast.toast(`All transactions exported successfully as ${format.toUpperCase()}`, {
+          title: 'Export Successful',
+          variant: 'success',
+          solid: true,
+        });
+      } catch (error) {
+        console.error('Export failed:', error);
+        this.$bvToast.toast('Failed to export transaction data', {
+          title: 'Export Error',
+          variant: 'danger',
+          solid: true,
+        });
+      } finally {
+        this.exporting = false;
+      }
+    },
+
     // Financial Statement Methods
     openStatementModal() {
       // Set default dates (last 3 months)
@@ -1589,7 +1910,7 @@ export default {
   watch: {
     '$route.query.patientId': {
       handler(newPatientId) {
-        if (newPatientId && newPatientId !== this.selectedPatient?.id) {
+        if (newPatientId && String(newPatientId) !== String(this.selectedPatient?.id)) {
           this.loadPatientById(newPatientId);
         }
       },
@@ -1598,12 +1919,24 @@ export default {
   },
 
   mounted() {
-    // First, try to restore state from Vuex
-    this.restoreStateFromVuex();
+    // Prioritize route query patientId over Vuex state
+    const routePatientId = this.$route.query.patientId;
 
-    // If no persisted state and route has patientId, load by ID
-    if (!this.selectedPatient && this.$route.query.patientId) {
-      this.loadPatientById(this.$route.query.patientId);
+    if (routePatientId) {
+      // Route has patientId - check if it matches restored patient
+      this.restoreStateFromVuex();
+
+      // If route patientId differs from restored patient, load from route
+      if (this.selectedPatient && String(this.selectedPatient.id) !== String(routePatientId)) {
+        this.loadPatientById(routePatientId);
+      } else if (!this.selectedPatient) {
+        // No patient restored, load from route
+        this.loadPatientById(routePatientId);
+      }
+      // If restored patient matches route, restoration is sufficient
+    } else {
+      // No route patientId - restore from Vuex as fallback
+      this.restoreStateFromVuex();
     }
 
     document.addEventListener('click', (e) => {
@@ -1866,7 +2199,65 @@ export default {
   background-color: #f8f9fa;
 }
 
-/* Timeline for All Transactions */
+/* Ledger Table for All Transactions */
+.ledger-table {
+  font-size: 0.9rem;
+}
+
+.ledger-table thead th {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+  font-weight: 600;
+  color: #495057;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  padding: 12px 15px;
+}
+
+.ledger-table tbody td {
+  padding: 10px 15px;
+  vertical-align: middle;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.ledger-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.ledger-table .text-right {
+  text-align: right;
+  font-family: 'Courier New', monospace;
+  font-weight: 500;
+}
+
+.ledger-table .text-danger {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.ledger-table .text-success {
+  color: #28a745;
+  font-weight: 500;
+}
+
+.totals-row {
+  background-color: #f8f9fa;
+  border-top: 2px solid #495057;
+  font-weight: 700;
+}
+
+.totals-row td {
+  padding: 12px 15px;
+  border-top: 2px solid #495057;
+  font-size: 0.95rem;
+}
+
+.totals-row td:first-child {
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+/* Timeline for All Transactions (kept for backward compatibility) */
 .timeline-container {
   padding: 20px 0;
 }

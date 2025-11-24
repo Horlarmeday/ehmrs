@@ -6,7 +6,10 @@ import { PatientDepositService } from './services/patientDeposit.service';
 import { DepositAuditService } from './services/depositAudit.service';
 import { FinancialPeriodManagementService } from './services/financialPeriodManagement.service';
 import { FinancialPeriodValidationService } from './services/financialPeriodValidation.service';
-import { PatientDepositConsolidationService, ConsolidationResult } from './services/patientDepositConsolidation.service';
+import {
+  PatientDepositConsolidationService,
+  ConsolidationResult,
+} from './services/patientDepositConsolidation.service';
 import {
   PatientDepositData,
   ClinicalBillData,
@@ -126,7 +129,11 @@ export class AccountingService {
       return result;
     } catch (error) {
       if (error instanceof BadException) throw error;
-      throw new BadException('Failed to retrieve deposit transaction receipt data', 500, error.message);
+      throw new BadException(
+        'Failed to retrieve deposit transaction receipt data',
+        500,
+        error.message
+      );
     }
   }
 
@@ -157,7 +164,9 @@ export class AccountingService {
   /**
    * Get patient deposit details required for receipt generation
    */
-  static async getPatientDepositReceiptData(depositId: number): Promise<{
+  static async getPatientDepositReceiptData(
+    depositId: number
+  ): Promise<{
     deposit: any;
     patient: any;
     createdBy?: any;
@@ -312,9 +321,11 @@ export class AccountingService {
     }
   }
 
-  static async consolidatePatientDeposits(
-    options: { patientId?: number; consolidatedBy: number; dryRun?: boolean }
-  ): Promise<ConsolidationResult[]> {
+  static async consolidatePatientDeposits(options: {
+    patientId?: number;
+    consolidatedBy: number;
+    dryRun?: boolean;
+  }): Promise<ConsolidationResult[]> {
     try {
       return await PatientDepositConsolidationService.consolidateAllActiveDeposits(options);
     } catch (error) {
@@ -617,7 +628,7 @@ export class AccountingService {
 
   // Clinical Bills
   static async createClinicalBill(
-    billingRequest: BillingRequestData,
+    billingRequest: BillingRequestData
   ): Promise<{ bill: ClinicalBill; items: ClinicalBillItem[] }> {
     try {
       // Generate bill number
@@ -739,9 +750,7 @@ export class AccountingService {
     }
   }
 
-  static async getClinicalBills(
-    filters: BillSearchFilters
-  ) {
+  static async getClinicalBills(filters: BillSearchFilters) {
     try {
       return AccountingRepository.getClinicalBills(filters);
     } catch (error) {
@@ -1393,9 +1402,7 @@ export class AccountingService {
 
       // Calculate average bill amount
       const averageBillAmount =
-        allBillsStats.total_count > 0
-          ? allBillsStats.total_amount / allBillsStats.total_count
-          : 0;
+        allBillsStats.total_count > 0 ? allBillsStats.total_amount / allBillsStats.total_count : 0;
 
       // Get pending payments count from payment status breakdown
       const pendingPayments = paymentStatusBreakdown.pending || 0;
@@ -1541,17 +1548,58 @@ export class AccountingService {
 
   static async getPatientBillItemsWithPayments(
     patientId: number,
-    currentPage: number = 1,
-    pageLimit: number = 20
+    currentPage = 1,
+    pageLimit = 20
   ): Promise<any> {
     try {
-      return await AccountingRepository.getPatientBillItemsWithPayments(patientId, currentPage, pageLimit);
+      return await AccountingRepository.getPatientBillItemsWithPayments(
+        patientId,
+        currentPage,
+        pageLimit
+      );
     } catch (error) {
       throw new BadException(
         'Patient Bill Items Retrieval Error',
         500,
         `Failed to get patient bill items: ${error.message}`
       );
+    }
+  }
+
+  /**
+   * Get comprehensive financial summary for a patient
+   * Calculates totals using database aggregations for better performance
+   * @param patientId - The patient ID
+   * @returns Complete financial summary with calculated metrics and detailed data
+   */
+  static async getPatientFinancialSummary(patientId: number): Promise<any> {
+    try {
+      return await AccountingRepository.getPatientFinancialSummary(patientId);
+    } catch (error) {
+      throw new BadException(`Failed to get patient financial summary: ${error.message}`, 500);
+    }
+  }
+
+  /**
+   * Get patient ledger transactions (bill items, payment items, deposits)
+   * @param patientId - The patient ID
+   * @param options - Filter and pagination options
+   * @returns Ledger transactions with running balance and totals
+   */
+  static async getPatientLedgerTransactionsService(
+    patientId: number,
+    options: {
+      startDate?: string;
+      endDate?: string;
+      currentPage?: number;
+      pageLimit?: number;
+    } = {}
+  ) {
+    try {
+      return await AccountingRepository.getPatientLedgerTransactions(patientId, options);
+    } catch (error) {
+      if (error instanceof BadException) throw error;
+      throw new BadException('Failed to get patient ledger transactions', 500, error.message);
     }
   }
 

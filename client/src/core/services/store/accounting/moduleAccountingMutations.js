@@ -338,4 +338,14 @@ export default {
     state.patientFinancialLookup.financialSummary = null;
     state.patientFinancialLookup.searchQuery = '';
   },
+  SET_PATIENT_LEDGER_TRANSACTIONS(state, data) {
+    state.patientLedgerTransactions = {
+      rows: data.rows || [],
+      totals: data.totals || { bill: 0, payment: 0, balance: 0 },
+      count: data.count || 0,
+      pages: data.pages || 0,
+      currentPage: data.currentPage || 1,
+      pageLimit: data.pageLimit || 50,
+    };
+  },
 };

@@ -123,7 +123,6 @@ router.get('/deposits/audit-summary', AccountingController.getAuditSummary);
 // Enhanced Reconciliation & Reporting
 router.get('/deposits/reconciliation-report', AccountingController.generateReconciliationReport);
 
-
 router.get('/deposits/:id', AccountingController.getPatientDepositById);
 router.get('/deposits', AccountingController.getPatientDeposits);
 router.put('/deposits/:id', AccountingController.updatePatientDeposit);
@@ -242,6 +241,16 @@ router.get('/billing-points', AccountingController.fetchBillingPoints);
 router.get('/bills/number/:billNumber', AccountingController.getClinicalBillByNumber);
 router.get('/bills/patient/:patientId', AccountingController.getPatientClinicalBills);
 router.get('/bills/patient/:patientId/items', AccountingController.getPatientBillItemsWithPayments);
+
+// ===== PATIENT FINANCIAL SUMMARY =====
+router.get(
+  '/patients/:patientId/financial-summary',
+  AccountingController.getPatientFinancialSummary
+);
+router.get(
+  '/patients/:patientId/ledger-transactions',
+  AccountingController.getPatientLedgerTransactions
+);
 
 // ===== PATIENT FINANCIAL STATEMENT =====
 router.get(

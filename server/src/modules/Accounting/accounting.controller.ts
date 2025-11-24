@@ -255,10 +255,17 @@ export class AccountingController {
     }
   }
 
-  static async getDepositTransactions(req: Request, res: Response, next: NextFunction): Promise<void> {
+  static async getDepositTransactions(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
       // Validate query parameters
-      const validatedQuery = AccountingController.validateRequest(req.query, depositTransactionFilterSchema);
+      const validatedQuery = AccountingController.validateRequest(
+        req.query,
+        depositTransactionFilterSchema
+      );
 
       const filters: DepositTransactionSearchFilters = {
         transaction_type: validatedQuery.transaction_type as 'CREATED' | 'TOP_UP' | undefined,
@@ -284,10 +291,17 @@ export class AccountingController {
     }
   }
 
-  static async getDepositTransactionSummary(req: Request, res: Response, next: NextFunction): Promise<void> {
+  static async getDepositTransactionSummary(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
       // Validate query parameters (same schema as getDepositTransactions, but page/limit not needed)
-      const validatedQuery = AccountingController.validateRequest(req.query, depositTransactionFilterSchema);
+      const validatedQuery = AccountingController.validateRequest(
+        req.query,
+        depositTransactionFilterSchema
+      );
 
       const filters: DepositTransactionSearchFilters = {
         transaction_type: validatedQuery.transaction_type as 'CREATED' | 'TOP_UP' | undefined,
@@ -381,7 +395,10 @@ export class AccountingController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const validatedBody = AccountingController.validateRequest(req.body, consolidateDepositSchema);
+      const validatedBody = AccountingController.validateRequest(
+        req.body,
+        consolidateDepositSchema
+      );
 
       const rawPatientId = validatedBody.patient_id;
       const normalizedPatientId =
@@ -1495,8 +1512,10 @@ export class AccountingController {
   ): Promise<void> {
     try {
       const { patientId } = req.params;
-      const currentPage = parseInt(req.query.currentPage as string) || parseInt(req.query.page as string) || 1;
-      const pageLimit = parseInt(req.query.pageLimit as string) || parseInt(req.query.itemsPerPage as string) || 20;
+      const currentPage =
+        parseInt(req.query.currentPage as string) || parseInt(req.query.page as string) || 1;
+      const pageLimit =
+        parseInt(req.query.pageLimit as string) || parseInt(req.query.itemsPerPage as string) || 20;
 
       if (!patientId || Number.isNaN(Number(patientId))) {
         throw new BadException('Validation Error', 400, 'Valid patient ID is required');
@@ -1520,6 +1539,74 @@ export class AccountingController {
         success: true,
         data: result,
         message: 'Bill items retrieved successfully',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get comprehensive financial summary for a patient
+   * Calculates totals using database aggregations for better performance
+   */
+  static async getPatientFinancialSummary(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { patientId } = req.params;
+
+      if (!patientId || Number.isNaN(Number(patientId))) {
+        throw new BadException('Validation Error', 400, 'Valid patient ID is required');
+      }
+
+      const result = await AccountingService.getPatientFinancialSummary(parseInt(patientId));
+
+      res.status(200).json({
+        success: true,
+        data: result,
+        message: 'Patient financial summary retrieved successfully',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getPatientLedgerTransactions(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { patientId } = req.params;
+      const { startDate, endDate, currentPage, pageLimit } = req.query;
+
+      if (!patientId || Number.isNaN(Number(patientId))) {
+        throw new BadException('Validation Error', 400, 'Valid patient ID is required');
+      }
+
+      const options: {
+        startDate?: string;
+        endDate?: string;
+        currentPage?: number;
+        pageLimit?: number;
+      } = {};
+
+      if (startDate) options.startDate = startDate as string;
+      if (endDate) options.endDate = endDate as string;
+      if (currentPage) options.currentPage = parseInt(currentPage as string, 10);
+      if (pageLimit) options.pageLimit = parseInt(pageLimit as string, 10);
+
+      const result = await AccountingService.getPatientLedgerTransactionsService(
+        parseInt(patientId),
+        options
+      );
+
+      res.status(200).json({
+        success: true,
+        data: result,
+        message: 'Patient ledger transactions retrieved successfully',
       });
     } catch (error) {
       next(error);
@@ -3907,7 +3994,7 @@ export class AccountingController {
         throw new BadException(
           'VALIDATION_ERROR',
           400,
-          error.details.map((d) => d.message).join(', ')
+          error.details.map(d => d.message).join(', ')
         );
       }
 
@@ -3921,7 +4008,8 @@ export class AccountingController {
       });
 
       // Generate filename
-      const patientHospitalId = `${statementData.patient.hospital_id}_${statementData.patient.fullname}` || patientId;
+      const patientHospitalId =
+        `${statementData.patient.hospital_id}_${statementData.patient.fullname}` || patientId;
       const startDateStr = value.startDate
         ? new Date(value.startDate).toISOString().split('T')[0]
         : 'default';

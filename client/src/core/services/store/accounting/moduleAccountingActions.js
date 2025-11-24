@@ -2285,88 +2285,78 @@ export default {
 
   /**
    * Get comprehensive financial summary for a patient
-   * Fetches bills, payments, deposits, and history in parallel
+   * Uses server-side calculations for better performance and accuracy
    * @param {Object} context - Vuex context with dispatch and commit
    * @param {number} patientId - The patient ID
-   * @returns {Promise<Object>} Complete financial summary
+   * @returns {Promise<Object>} Complete financial summary with server-calculated metrics
    */
-  async getPatientFinancialSummary({ dispatch, commit }, patientId) {
-    try {
-      // Fetch all data in parallel for better performance
-      const [billsResult, paymentsResult, depositsResult, historyResult] = await Promise.all([
-        dispatch('getPatientBills', patientId),
-        dispatch('getPatientPayments', patientId),
-        dispatch('getPatientDepositByPatientId', patientId),
-        dispatch('getPatientDepositHistory', patientId),
-      ]);
+  async getPatientLedgerTransactions(
+    { commit },
+    { patientId, startDate, endDate, currentPage, pageLimit }
+  ) {
+    commit('SET_LOADING', true);
+    commit('CLEAR_ERROR');
 
-      console.log({
-        billsResult,
-        paymentsResult,
-        depositsResult,
-        historyResult,
+    try {
+      const params = {};
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
+      if (currentPage) params.currentPage = currentPage;
+      if (pageLimit) params.pageLimit = pageLimit;
+
+      const response = await axios.get(`/accounting/patients/${patientId}/ledger-transactions`, {
+        params,
       });
 
-      const bills = billsResult.data || [];
-      const payments = paymentsResult.data || [];
-      const deposits = depositsResult.data || [];
-      const history = historyResult.data || [];
-
-      // Calculate summary statistics
-      const totalBills = bills.length;
-      const totalBillsAmount = bills.reduce(
-        (sum, bill) => sum + (parseFloat(bill.final_amount) || 0),
-        0
-      );
-
-      const totalPayments = payments.length;
-      const totalPaymentsAmount = payments.reduce(
-        (sum, payment) => sum + (parseFloat(payment.amount) || 0),
-        0
-      );
-
-      const activeDeposits = Array.isArray(deposits)
-        ? deposits.filter((d) => d.status === 'ACTIVE')
-        : deposits && deposits.status === 'ACTIVE'
-        ? [deposits]
-        : [];
-      const totalDeposits = activeDeposits.length;
-      const totalDepositsAmount = activeDeposits.reduce(
-        (sum, deposit) => sum + (parseFloat(deposit.current_balance) || 0),
-        0
-      );
-
-      // Calculate outstanding balance (bills - payments)
-      const outstandingBalance = totalBillsAmount - totalPaymentsAmount;
-
-      const financialSummary = {
-        bills,
-        payments,
-        deposits: Array.isArray(deposits) ? deposits : deposits ? [deposits] : [],
-        history,
-        summary: {
-          totalBills,
-          totalBillsAmount,
-          totalPayments,
-          totalPaymentsAmount,
-          totalDeposits,
-          totalDepositsAmount,
-          outstandingBalance,
-        },
-      };
-
-      // Commit financial summary to state for persistence
-      commit('SET_PATIENT_FINANCIAL_LOOKUP', { financialSummary });
-
-      return {
-        success: true,
-        data: financialSummary,
-      };
+      if (response.data.success) {
+        commit('SET_PATIENT_LEDGER_TRANSACTIONS', response.data.data);
+        return { success: true, data: response.data.data };
+      } else {
+        return {
+          success: false,
+          error: response.data.message || 'Failed to fetch ledger transactions',
+        };
+      }
     } catch (error) {
+      commit('SET_ERROR', error.message);
+      console.error('Failed to fetch patient ledger transactions:', error);
+      return {
+        success: false,
+        error:
+          error.response?.data?.message || error.message || 'Failed to fetch ledger transactions',
+      };
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async getPatientFinancialSummary({ commit }, patientId) {
+    try {
+      commit('SET_LOADING', true);
+      commit('CLEAR_ERROR');
+
+      // Call new endpoint that calculates metrics on the server
+      const response = await axios.get(`/accounting/patients/${patientId}/financial-summary`);
+
+      if (response.data.success && response.data.data) {
+        const financialSummary = response.data.data;
+
+        // Commit financial summary to state for persistence
+        commit('SET_PATIENT_FINANCIAL_LOOKUP', { financialSummary });
+
+        return {
+          success: true,
+          data: financialSummary,
+        };
+      } else {
+        throw new Error(response.data.message || 'Failed to retrieve financial summary');
+      }
+    } catch (error) {
+      commit('SET_ERROR', error.message);
       console.error('Failed to get patient financial summary:', error);
       return {
         success: false,
-        error: error.message,
+        error: error.response?.data?.message || error.message,
         data: {
           bills: [],
           payments: [],
@@ -2383,6 +2373,8 @@ export default {
           },
         },
       };
+    } finally {
+      commit('SET_LOADING', false);
     }
   },
 };

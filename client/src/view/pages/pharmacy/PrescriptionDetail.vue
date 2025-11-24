@@ -197,7 +197,7 @@ export default {
         total_price: item.total_price,
         reason_for_return: item.reason_for_return,
         disabledReturn: val.status === this.COMPLETE_DISPENSE,
-        staff: val.examiner,
+        staff: val.requester,
         dispenser: item?.dispenser,
         shouldDisableDispense:
           item.quantity_dispensed === item.quantity_to_dispense ||
