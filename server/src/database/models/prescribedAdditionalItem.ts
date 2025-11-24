@@ -327,7 +327,9 @@ export class PrescribedAdditionalItem extends Model {
   })
   original_total_price: number;
 
-  @BelongsTo(() => Staff)
+  @BelongsTo(() => Staff, {
+    foreignKey: 'examiner',
+  })
   requester: Staff;
 
   @BelongsTo(() => Staff, {

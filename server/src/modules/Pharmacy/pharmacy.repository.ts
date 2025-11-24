@@ -534,6 +534,11 @@ export const getOneDrugPrescription = async (drugPrescriptionId: number | string
             attributes: staffAttributes,
             as: 'dispenser',
           },
+          {
+            model: Staff,
+            attributes: staffAttributes,
+            as: 'requester',
+          },
         ],
       },
       {
@@ -545,6 +550,11 @@ export const getOneDrugPrescription = async (drugPrescriptionId: number | string
             model: Staff,
             attributes: staffAttributes,
             as: 'dispenser',
+          },
+          {
+            model: Staff,
+            attributes: staffAttributes,
+            as: 'requester',
           },
         ],
       },
