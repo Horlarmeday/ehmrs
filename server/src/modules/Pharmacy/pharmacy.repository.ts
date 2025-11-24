@@ -632,7 +632,7 @@ export const getDrugPrescriptions = async ({
 export const getOneDrugPrescription = async (drugPrescriptionId: number | string): Promise<any> => {
   const drugPrescription = await DrugPrescription.findOne({
     where: { id: drugPrescriptionId },
-    attributes: ['status', 'visit_id'],
+    attributes: ['status', 'visit_id', 'createdAt'],
     include: [
       {
         model: Patient,
