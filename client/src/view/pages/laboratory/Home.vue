@@ -46,7 +46,7 @@ export default {
         {
           name: 'Tests Orders',
           desc: 'Click here to view all laboratory tests orders',
-          link: '/laboratory/samples-to-collect',
+          link: '/laboratory/test-orders-home',
           showComponent: true,
         },
         {
@@ -61,12 +61,12 @@ export default {
           desc: 'Click here to view all laboratory tests',
           showComponent: true,
         },
-        {
-          name: 'Result Forms',
-          link: '/laboratory/forms',
-          desc: 'Click here to view all laboratory result forms',
-          showComponent: true,
-        },
+        // {
+        //   name: 'Result Forms',
+        //   link: '/laboratory/forms',
+        //   desc: 'Click here to view all laboratory result forms',
+        //   showComponent: true,
+        // },
         {
           name: 'Results Update',
           link: '/laboratory/results-update',

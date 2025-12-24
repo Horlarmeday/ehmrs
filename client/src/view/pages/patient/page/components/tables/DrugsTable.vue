@@ -6,6 +6,7 @@
           <tr class="text-uppercase">
             <th scope="col">Drug</th>
             <th scope="col">Dose</th>
+            <th scope="col">Payment Status</th>
             <th scope="col">Strength</th>
             <th scope="col">Frequency</th>
             <th scope="col">Duration</th>
@@ -36,6 +37,9 @@
             </th>
             <td>
               <span>{{ drug.quantity_to_dispense }} {{ drug?.dosage_form?.name || '-' }}</span>
+            </td>
+            <td>
+              <span :class="getPaymentColor(drug.payment_status)">{{ drug.payment_status }}</span>
             </td>
             <td>
               <span>{{ drug.prescribed_strength }}{{ drug?.strength?.name || '-' }}</span>
@@ -101,6 +105,13 @@ export default {
   },
   methods: {
     getLabelDotStatus,
+    getPaymentColor(status) {
+      if (status === 'Pending') return 'label label-inline label-light-warning font-weight-bold';
+      if (status === 'Paid') return 'label label-inline label-light-success font-weight-bold';
+      if (status === 'Cleared') return 'label label-inline label-light-info font-weight-bold';
+      return 'label label-inline label-light-danger font-weight-bold';
+    },
+
     viewPopover(item) {
       this.item = item;
       this.showPopover = true;

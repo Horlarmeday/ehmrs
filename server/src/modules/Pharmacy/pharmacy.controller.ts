@@ -404,11 +404,44 @@ class PharmacyController {
    */
   static async getDrugPrescriptions(req: Request, res: Response, next: NextFunction) {
     try {
-      const drugPrescriptions = await PharmacyService.getDrugPrescriptions(req.query);
+      const { status, ...otherParams } = req.query;
+      const drugPrescriptions = await PharmacyService.getDrugPrescriptions({
+        ...otherParams,
+        status: status || null,
+      });
 
       return successResponse({
         res,
         data: drugPrescriptions,
+        message: SUCCESS,
+        httpCode: StatusCodes.OK,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get prescription statistics
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with prescription statistics
+   */
+  static async getPrescriptionStatistics(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { period, start, end } = req.query;
+      const statistics = await PharmacyService.getPrescriptionStatisticsService({
+        period: period || null,
+        start: start || null,
+        end: end || null,
+      });
+
+      return successResponse({
+        res,
+        data: statistics,
         message: SUCCESS,
         httpCode: StatusCodes.OK,
       });

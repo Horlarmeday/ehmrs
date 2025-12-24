@@ -40,7 +40,10 @@
     <!-- Statistics Cards -->
     <div v-if="summary" class="row mb-6">
       <div class="col-lg-3 col-md-6 mb-4">
-        <div class="card card-custom bg-light-primary h-100">
+        <div
+          class="card card-custom bg-light-primary h-100 clickable-stat-card"
+          @click="handleFilterClick(null)"
+        >
           <div class="card-body">
             <div class="d-flex align-items-center">
               <div class="flex-grow-1">
@@ -56,7 +59,10 @@
       </div>
 
       <div class="col-lg-3 col-md-6 mb-4">
-        <div class="card card-custom bg-light-warning h-100">
+        <div
+          class="card card-custom bg-light-warning h-100 clickable-stat-card"
+          @click="handleFilterClick('low_stock')"
+        >
           <div class="card-body">
             <div class="d-flex align-items-center">
               <div class="flex-grow-1">
@@ -72,7 +78,10 @@
       </div>
 
       <div class="col-lg-3 col-md-6 mb-4">
-        <div class="card card-custom bg-light-danger h-100">
+        <div
+          class="card card-custom bg-light-danger h-100 clickable-stat-card"
+          @click="handleFilterClick('critical_stock')"
+        >
           <div class="card-body">
             <div class="d-flex align-items-center">
               <div class="flex-grow-1">
@@ -111,7 +120,10 @@
     <!-- Additional Statistics Row -->
     <div v-if="summary" class="row mb-6">
       <div class="col-lg-3 col-md-6 mb-4">
-        <div class="card card-custom bg-light-info h-100">
+        <div
+          class="card card-custom bg-light-info h-100 clickable-stat-card"
+          @click="handleFilterClick('expiring_soon')"
+        >
           <div class="card-body">
             <div class="d-flex align-items-center">
               <div class="flex-grow-1">
@@ -129,7 +141,10 @@
       </div>
 
       <div class="col-lg-3 col-md-6 mb-4">
-        <div class="card card-custom bg-light-danger h-100">
+        <div
+          class="card card-custom bg-light-danger h-100 clickable-stat-card"
+          @click="handleFilterClick('expired')"
+        >
           <div class="card-body">
             <div class="d-flex align-items-center">
               <div class="flex-grow-1">
@@ -164,54 +179,16 @@
     </div>
 
     <!-- Filters and Search -->
-    <div class="card card-custom gutter-b mb-6">
-      <div class="card-header border-0 py-4">
-        <div class="row align-items-center">
-          <div class="col-lg-6">
-            <h3 class="card-title mb-0">Inventory Items</h3>
-          </div>
-          <!-- <div class="col-lg-6 text-right">
-            <b-button-group class="mr-3">
-              <b-button
-                :variant="filterType === 'low_stock' ? 'warning' : 'outline-warning'"
-                @click="applyFilter('low_stock')"
-                size="sm"
-              >
-                Low Stock
-              </b-button>
-              <b-button
-                :variant="filterType === 'critical' ? 'danger' : 'outline-danger'"
-                @click="applyFilter('critical')"
-                size="sm"
-              >
-                Critical
-              </b-button>
-              <b-button
-                :variant="filterType === 'expiring' ? 'info' : 'outline-info'"
-                @click="applyFilter('expiring')"
-                size="sm"
-              >
-                Expiring Soon
-              </b-button>
-              <b-button
-                v-if="filterType"
-                variant="outline-secondary"
-                @click="clearFilter"
-                size="sm"
-              >
-                Clear
-              </b-button>
-            </b-button-group>
-          </div> -->
-        </div>
-      </div>
-      <div class="card-body">
-        <search @search="onHandleSearch" />
-      </div>
-    </div>
-
     <!-- Inventory Table -->
     <div class="card card-custom gutter-b">
+      <div class="card-header border-0 py-5">
+        <h3 class="card-title align-items-start flex-column">
+          <span class="card-label font-weight-bolder text-dark">Inventory Items</span>
+        </h3>
+      </div>
+
+      <search @search="onHandleSearch" />
+
       <inventory-table
         :items="items"
         :pagination-params="{
@@ -294,11 +271,13 @@ export default {
 
     refreshData() {
       this.loading = true;
+      const filter = this.$route.query.filter || null;
       Promise.all([
         this.fetchInventoryItems({
           currentPage: this.$route.query.currentPage || this.currentPage,
           itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
           search: this.$route.query.search || null,
+          filter,
         }),
         this.$store.dispatch('inventory/fetchInventorySummary', this.$route.params.id),
       ]).finally(() => {
@@ -308,7 +287,13 @@ export default {
 
     applyFilter(type) {
       this.filterType = type;
-      // TODO: Implement filter logic in fetchInventoryItems
+      setUrlQueryParams({
+        currentPage: 1,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || null,
+        name: this.inventoryName,
+        filter: type,
+      });
       this.fetchInventoryItems({
         currentPage: 1,
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
@@ -319,6 +304,12 @@ export default {
 
     clearFilter() {
       this.filterType = null;
+      setUrlQueryParams({
+        currentPage: 1,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || null,
+        name: this.inventoryName,
+      });
       this.fetchInventoryItems({
         currentPage: 1,
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
@@ -357,35 +348,42 @@ export default {
     },
 
     handlePageChange() {
+      const filter = this.$route.query.filter || null;
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         search: this.$route.query.search || null,
         name: this.inventoryName,
+        ...(filter && { filter }),
       });
       this.fetchInventoryItems({
         currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         search: this.$route.query.search || null,
+        filter,
       });
     },
 
     onHandleSearch(prop) {
       const { search, spinDiv } = prop;
+      const filter = this.$route.query.filter || null;
       setUrlQueryParams({
         currentPage: 1,
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         search,
         name: this.inventoryName,
+        ...(filter && { filter }),
       });
       this.debounceSearch(search, this, spinDiv);
     },
 
     debounceSearch: debounce((search, vm, spinDiv) => {
+      const filter = vm.$route.query.filter || null;
       vm.fetchInventoryItems({
         currentPage: 1,
         itemsPerPage: vm.itemsPerPage,
         search,
+        filter,
       })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));
@@ -397,25 +395,29 @@ export default {
     },
 
     onChangePageCount(pagecount) {
+      const filter = this.$route.query.filter || null;
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: pagecount,
         search: this.$route.query.search || null,
         name: this.inventoryName,
+        ...(filter && { filter }),
       });
       this.fetchInventoryItems({
         currentPage: this.$route.query.currentPage || this.currentPage,
         itemsPerPage: pagecount,
         search: this.$route.query.search || null,
+        filter,
       });
     },
 
-    fetchInventoryItems({ currentPage, itemsPerPage, search }) {
+    fetchInventoryItems({ currentPage, itemsPerPage, search, filter }) {
       return this.$store.dispatch('inventory/fetchInventoryItems', {
         currentPage,
         itemsPerPage,
         inventory: this.$route.params.id,
         ...(search && { search }),
+        ...(filter && { filter }),
       });
     },
 
@@ -440,10 +442,12 @@ export default {
         id: item.id,
         status: 'Inactive',
       };
+      const filter = this.$route.query.filter || null;
       this.$store.dispatch('inventory/updateInventoryItem', data).then(() => {
         this.fetchInventoryItems({
           currentPage: this.$route.query.currentPage || this.currentPage,
           itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+          filter,
         });
       });
     },
@@ -473,16 +477,50 @@ export default {
         isInvalid: false,
       }));
     },
+
+    handleFilterClick(filterType) {
+      const queryParams = {
+        currentPage: 1,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || null,
+        name: this.inventoryName,
+      };
+
+      // Only add filter to query params if it's not null
+      if (filterType) {
+        queryParams.filter = filterType;
+      }
+
+      setUrlQueryParams(queryParams);
+      this.fetchInventoryItems({
+        currentPage: 1,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || null,
+        ...(filterType && { filter: filterType }),
+      });
+    },
   },
   created() {
+    const filter = this.$route.query.filter || null;
     this.fetchInventoryItems({
       currentPage: this.$route.query.currentPage || this.currentPage,
       itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
       search: this.$route.query.search || null,
+      filter,
     });
     this.$store.dispatch('inventory/fetchInventorySummary', this.$route.params.id);
   },
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.clickable-stat-card {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.clickable-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+</style>

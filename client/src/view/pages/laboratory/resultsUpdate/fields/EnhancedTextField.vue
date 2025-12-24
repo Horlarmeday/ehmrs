@@ -39,6 +39,9 @@
         />
         <small v-if="field.unit" class="unit-info">Unit: {{ field.unit }}</small>
         <span v-if="hasError" class="error-feedback">{{ errorMessage }}</span>
+        <div v-if="field.description" class="field-description">
+          <div class="description-content">{{ field.description }}</div>
+        </div>
       </div>
     </template>
   </component>
@@ -186,5 +189,22 @@ export default {
   color: #8b0000;
   font-size: 13px;
   margin-top: 4px;
+}
+
+.field-description {
+  margin-top: 10px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-left: 3px solid #8b0000;
+  border-radius: 4px;
+}
+
+.description-content {
+  font-size: 13px;
+  color: #5e6278;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  text-align: left;
 }
 </style>

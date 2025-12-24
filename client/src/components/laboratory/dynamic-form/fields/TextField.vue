@@ -30,6 +30,9 @@
       />
       <small v-if="field.unit" class="form-text text-muted">Unit: {{ field.unit }}</small>
       <span v-if="hasError" class="invalid-feedback d-block">{{ errorMessage }}</span>
+      <div v-if="field.description" class="field-description">
+        <div class="description-content">{{ field.description }}</div>
+      </div>
     </template>
   </component>
 </template>
@@ -105,5 +108,27 @@ export default {
 <style scoped>
 .form-group {
   margin-bottom: 1rem;
+}
+
+.field-description {
+  margin-top: 10px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-left: 3px solid #3699ff;
+  border-radius: 4px;
+}
+
+.description-content {
+  font-size: 13px;
+  color: #5e6278;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  text-align: left;
+}
+
+.description-cell {
+  padding: 12px !important;
+  background-color: #f8f9fa;
 }
 </style>

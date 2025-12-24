@@ -53,6 +53,7 @@ export interface FormSection {
 export interface FormField {
   id: string;
   label: string;
+  description?: string;
   type: 'text' | 'number' | 'date' | 'select' | 'radio' | 'checkbox' | 'textarea';
   unit?: string;
   placeholder?: string;

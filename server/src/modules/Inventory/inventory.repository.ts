@@ -1,4 +1,4 @@
-import sequelize, { literal, Op, Optional, WhereOptions } from 'sequelize';
+import sequelize, { Sequelize, literal, Op, Optional, WhereOptions } from 'sequelize';
 
 import {
   Unit,
@@ -34,6 +34,7 @@ import { AcceptedDrugType } from '../../database/models/inventory';
 import { DrugType } from '../../database/models/pharmacyStore';
 import { DispenseStatus } from '../../database/models/prescribedAdditionalItem';
 import { DrugForm } from '../../database/models/drug';
+import dayjs from 'dayjs';
 
 /**
  * receive product(s) into the inventory
@@ -57,7 +58,7 @@ export async function receiveItem(data) {
     date_received,
     inventory_id,
   } = data;
-  return InventoryItem.create({
+  const item = await InventoryItem.create({
     drug_id,
     quantity_received: quantity,
     unit_id,
@@ -110,6 +111,99 @@ export async function getInventoryItems({ inventory, currentPage = 1, pageLimit 
       {
         model: Unit,
         attributes: ['name'],
+      },
+      {
+        model: DosageForm,
+        attributes: ['name', 'id'],
+      },
+      {
+        model: Measurement,
+        attributes: ['name', 'id'],
+      },
+    ],
+  });
+}
+
+/**
+ * get filtered inventory items by filter type
+ *
+ * @function
+ * @returns {json} json object with filtered items data
+ * @param inventory
+ * @param currentPage
+ * @param pageLimit
+ * @param filterType - 'low_stock', 'critical_stock', 'expiring_soon', or 'expired'
+ */
+export async function getFilteredInventoryItems({
+  inventory,
+  currentPage = 1,
+  pageLimit = 10,
+  filterType,
+}) {
+  const today = dayjs().startOf('day').toDate();
+  const sixMonthsFromNow = dayjs().add(6, 'month').endOf('day').toDate();
+
+  // Get inventory to access refill_level
+  const inventoryRecord = await Inventory.findByPk(inventory, {
+    attributes: ['id', 'refill_level'],
+  });
+
+  const refillLevel = inventoryRecord?.refill_level || 50;
+
+  const where: WhereOptions<InventoryItem> = {
+    inventory_id: inventory,
+    status: InventoryItemStatus.ACTIVE,
+  };
+
+  // Apply filter-specific conditions
+  switch (filterType) {
+    case 'low_stock':
+      // Low stock: quantity_remaining < refill_level (default 50)
+      where.quantity_remaining = {
+        [Op.lt]: refillLevel,
+      };
+      break;
+
+    case 'critical_stock':
+      // Critical stock: quantity_remaining < 20
+      where.quantity_remaining = {
+        [Op.lt]: 20,
+      };
+      break;
+
+    case 'expiring_soon':
+      // Expiring soon: expiration <= 6 months from now AND expiration > today
+      where.expiration = {
+        [Op.lte]: sixMonthsFromNow,
+        [Op.gt]: today,
+      };
+      break;
+
+    case 'expired':
+      // Expired: expiration < today
+      where.expiration = {
+        [Op.lt]: today,
+      };
+      break;
+
+    default:
+      throw new BadException('INVALID', 400, `Invalid filter type: ${filterType}`);
+  }
+
+  return InventoryItem.paginate({
+    page: currentPage,
+    paginate: pageLimit,
+    order: [['createdAt', 'DESC']],
+    where,
+    include: [
+      {
+        model: Drug,
+        order: [['name', 'ASC']],
+        attributes: ['name', 'id'],
+      },
+      {
+        model: Unit,
+        attributes: ['name', 'id'],
       },
       {
         model: DosageForm,
@@ -255,9 +349,13 @@ export const getInventoryItemQuery = async (query: WhereOptions<InventoryItem>) 
  * @param data
  * @returns {Inventory} inventory product data
  */
-export const updateInventoryItem = (data: Partial<InventoryItem>) => {
+export const updateInventoryItem = async (data: Partial<InventoryItem>) => {
   const { id, ...rest } = data;
-  return InventoryItem.update({ ...rest }, { where: { id } });
+ 
+  
+  const result = await InventoryItem.update({ ...rest }, { where: { id } });
+  
+  return result;
 };
 
 export const getQuantitySum = async (
@@ -492,75 +590,135 @@ export const getInventorySummary = async (inventoryId: number): Promise<{
   total_valuation: number;
   drug_type_breakdown: Record<string, number>;
 }> => {
-  const items = await InventoryItem.findAll({
-    where: {
+
+  try {
+    // Get inventory refill_level separately (small, fast query)
+    const inventoryRecord = await Inventory.findByPk(inventoryId, {
+      attributes: ['id', 'refill_level'],
+    });
+
+    if (!inventoryRecord) {
+      throw new BadException('NOT_FOUND', 404, `Inventory with id ${inventoryId} not found`);
+    }
+
+    const refillLevel = inventoryRecord.refill_level || 50;
+
+    // Calculate date ranges using dayjs (consistent with codebase)
+    const today = dayjs().startOf('day').toDate();
+    const sixMonthsFromNow = dayjs().add(6, 'month').endOf('day').toDate();
+
+    // Base where clause for active items in this inventory
+    const whereClause: WhereOptions<InventoryItem> = {
       inventory_id: inventoryId,
       status: InventoryItemStatus.ACTIVE,
-    },
-    include: [
-      {
-        model: Inventory,
-        as: 'inventory',
-        attributes: ['refill_level'],
-      },
-    ],
-  });
+    };
 
-  const today = new Date();
-  const sixMonthsFromNow = new Date();
-  sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
+    // Execute main summary query with database-level aggregations
+    // This calculates all metrics in a single optimized query
+    const summaryResult = await InventoryItem.findOne({
+      where: whereClause,
+      attributes: [
+        [Sequelize.fn('COUNT', Sequelize.col('id')), 'total_items'],
+        [
+          Sequelize.fn('COALESCE', Sequelize.fn('SUM', Sequelize.col('quantity_remaining')), 0),
+          'total_quantity_remaining',
+        ],
+        [
+          Sequelize.fn(
+            'COALESCE',
+            Sequelize.fn(
+              'SUM',
+              Sequelize.literal('quantity_remaining * selling_price')
+            ),
+            0
+          ),
+          'total_valuation',
+        ],
+        [
+          Sequelize.fn(
+            'SUM',
+            Sequelize.literal(
+              `CASE WHEN quantity_remaining < ${refillLevel} THEN 1 ELSE 0 END`
+            )
+          ),
+          'low_stock_count',
+        ],
+        [
+          Sequelize.fn(
+            'SUM',
+            Sequelize.literal('CASE WHEN quantity_remaining < 20 THEN 1 ELSE 0 END')
+          ),
+          'critical_stock_count',
+        ],
+        [
+          Sequelize.fn(
+            'SUM',
+            Sequelize.literal(
+              `CASE WHEN expiration IS NOT NULL AND expiration < '${today.toISOString()}' THEN 1 ELSE 0 END`
+            )
+          ),
+          'expired_count',
+        ],
+        [
+          Sequelize.fn(
+            'SUM',
+            Sequelize.literal(
+              `CASE WHEN expiration IS NOT NULL AND expiration <= '${sixMonthsFromNow.toISOString()}' AND expiration > '${today.toISOString()}' THEN 1 ELSE 0 END`
+            )
+          ),
+          'expiring_soon_count',
+        ],
+      ],
+      raw: true,
+    });
 
-  let totalQuantityRemaining = 0;
-  let lowStockCount = 0;
-  let criticalStockCount = 0;
-  let expiringSoonCount = 0;
-  let expiredCount = 0;
-  let totalValuation = 0;
-  const drugTypeBreakdown: Record<string, number> = {};
+    // Execute separate query for drug type breakdown using GROUP BY
+    const drugTypeResults = await InventoryItem.findAll({
+      where: whereClause,
+      attributes: [
+        [
+          Sequelize.fn('COALESCE', Sequelize.col('drug_type'), 'Unknown'),
+          'drug_type',
+        ],
+        [Sequelize.fn('COUNT', Sequelize.col('id')), 'count'],
+      ],
+      group: ['drug_type'],
+      raw: true,
+    });
 
-  items.forEach(item => {
-    const quantityRemaining = item.quantity_remaining || 0;
-    const sellingPrice = parseFloat(item.selling_price?.toString() || '0');
-    
-    totalQuantityRemaining += quantityRemaining;
-    totalValuation += quantityRemaining * sellingPrice;
+    // Transform drug type results into object
+    const drugTypeBreakdown: Record<string, number> = {};
+    drugTypeResults.forEach((result: any) => {
+      const drugType = result.drug_type || 'Unknown';
+      drugTypeBreakdown[drugType] = parseInt(result.count, 10) || 0;
+    });
 
-    // Low stock check: use refill_level if set, otherwise default to 50
-    const lowStockThreshold = item.inventory?.refill_level || 50;
-    if (quantityRemaining < lowStockThreshold) {
-      lowStockCount++;
+    // Extract and parse results from summary query
+    const summary = summaryResult as any;
+
+    const result = {
+      total_items: parseInt(summary?.total_items || '0', 10),
+      total_quantity_remaining: parseFloat(summary?.total_quantity_remaining || '0'),
+      low_stock_count: parseInt(summary?.low_stock_count || '0', 10),
+      critical_stock_count: parseInt(summary?.critical_stock_count || '0', 10),
+      expiring_soon_count: parseInt(summary?.expiring_soon_count || '0', 10),
+      expired_count: parseInt(summary?.expired_count || '0', 10),
+      total_valuation: parseFloat(summary?.total_valuation || '0'),
+      drug_type_breakdown: drugTypeBreakdown,
+    };
+
+    return result;
+  } catch (error) {
+    // Enhanced error handling
+    if (error instanceof BadException) {
+      throw error;
     }
-
-    // Critical stock: less than 20
-    if (quantityRemaining < 20) {
-      criticalStockCount++;
-    }
-
-    // Expiry checks
-    if (item.expiration) {
-      const expirationDate = new Date(item.expiration);
-      if (expirationDate < today) {
-        expiredCount++;
-      } else if (expirationDate <= sixMonthsFromNow) {
-        expiringSoonCount++;
-      }
-    }
-
-    // Drug type breakdown
-    const drugType = item.drug_type || 'Unknown';
-    drugTypeBreakdown[drugType] = (drugTypeBreakdown[drugType] || 0) + 1;
-  });
-
-  return {
-    total_items: items.length,
-    total_quantity_remaining: totalQuantityRemaining,
-    low_stock_count: lowStockCount,
-    critical_stock_count: criticalStockCount,
-    expiring_soon_count: expiringSoonCount,
-    expired_count: expiredCount,
-    total_valuation: totalValuation,
-    drug_type_breakdown: drugTypeBreakdown,
-  };
+    throw new BadException(
+      'SERVER_ERROR',
+      500,
+      `Failed to get inventory summary: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
 };
 
 /**
@@ -831,6 +989,7 @@ export const bulkTransferItemsBetweenInventories = async (
 
   const successful: Array<{ sourceItem: InventoryItem; destinationItem: InventoryItem }> = [];
   const failed: Array<{ item_id: number; error: string }> = [];
+  const affectedInventoryIds = new Set<number>();
 
   // Process each item transfer
   for (const transferItem of items) {
@@ -846,6 +1005,11 @@ export const bulkTransferItemsBetweenInventories = async (
         staff_id
       );
       successful.push(result);
+      // Track affected inventories for cache invalidation
+      if (result.sourceItem?.inventory_id) {
+        affectedInventoryIds.add(result.sourceItem.inventory_id);
+      }
+      affectedInventoryIds.add(destination_inventory_id);
     } catch (error) {
       failed.push({
         item_id: transferItem.source_inventory_item_id,
@@ -908,7 +1072,9 @@ export const getPendingPrescriptionsForItem = async ({
       order: [['createdAt', 'DESC']],
       where: {
         drug_id: inventoryItem.drug_id,
-        dispense_status: DispenseStatus.PENDING,
+        dispense_status: {
+          [Op.in]: [DispenseStatus.PENDING, DispenseStatus.PARTIAL_DISPENSED],
+        }
       },
       include: [
         {
@@ -938,7 +1104,9 @@ export const getPendingPrescriptionsForItem = async ({
       order: [['createdAt', 'DESC']],
       where: {
         drug_id: inventoryItem.drug_id,
-        dispense_status: DispenseStatus.PENDING,
+        dispense_status: {
+          [Op.in]: [DispenseStatus.PENDING, DispenseStatus.PARTIAL_DISPENSED],
+        }
       },
       include: [
         {

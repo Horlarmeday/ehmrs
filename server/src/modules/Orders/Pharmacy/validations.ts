@@ -157,11 +157,24 @@ export function validateCreateTreatmentData(item: any) {
     .items(
       Joi.object({
         drug_id: Joi.number().required(),
-        dosage_administered: Joi.string().required(),
+        dosage_administered: Joi.string()
+          .required()
+          .custom((value, helpers) => {
+            // Validate that dosage_administered contains a quantity
+            // This is a basic check - actual extraction happens in repository
+            const hasNumber = /\d+/.test(value);
+            if (!hasNumber) {
+              return helpers.error('any.custom', {
+                message: 'dosage_administered must contain a quantity (number)',
+              });
+            }
+            return value;
+          }),
         remarks: Joi.string().required(),
         source: Joi.string()
           .valid('Admission', 'Consultation')
           .required(),
+        extracted_quantity: Joi.number().optional(), // Optional field for frontend validation
       })
     )
     .required();

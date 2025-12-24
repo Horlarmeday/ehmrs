@@ -127,4 +127,11 @@ export default {
   SET_HISTORY_PAGES(state, pages) {
     state.historyPages = pages;
   },
+
+  /**
+   * PRESCRIPTION STATISTICS
+   */
+  SET_PRESCRIPTION_STATISTICS(state, statistics) {
+    state.prescriptionStatistics = statistics;
+  },
 };

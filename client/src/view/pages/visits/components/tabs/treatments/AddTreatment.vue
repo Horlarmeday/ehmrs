@@ -31,10 +31,15 @@
             <span class="vertical-line"></span>
             <label class="mr-3"
               >Quantity:
-              <span class="font-weight-bolder"
-                >{{ item.quantity }} {{ item.dosage_form }}</span
-              ></label
-            >
+              <span class="font-weight-bolder">{{ item.quantity }} {{ item.dosage_form }}</span>
+              <span
+                v-if="item.quantity_administered > 0"
+                class="ml-2 text-muted"
+                style="font-size: 0.9em"
+              >
+                (Administered: {{ item.quantity_administered }})
+              </span>
+            </label>
             <span class="vertical-line"></span>
             <label class="mr-3"
               >Route: <span class="font-weight-bolder">{{ item.route }}</span></label
@@ -46,15 +51,36 @@
           </div>
           <div
             class="d-flex justify-content-between mb-3"
-            :class="item.dosage_completed && 'disabled'"
+            :class="(item.dosage_completed || item.isInputDisabled) && 'disabled'"
           >
             <div class="d-flex flex-column flex-root">
-              <label>Dosage Administered:</label>
+              <label>
+                Dosage Administered:
+                <span
+                  v-if="item.remaining_quantity !== undefined"
+                  :class="{
+                    'text-success': item.remaining_quantity > 0,
+                    'text-warning':
+                      item.remaining_quantity > 0 &&
+                      item.remaining_quantity <= item.quantity * 0.2,
+                    'text-danger': item.remaining_quantity === 0,
+                  }"
+                  class="ml-2 font-weight-bold"
+                >
+                  (Remaining: {{ item.remaining_quantity }} {{ item.dosage_form }})
+                </span>
+              </label>
               <input
                 type="text"
                 v-model="item.dosage_administered"
+                :disabled="item.isInputDisabled"
                 class="form-control form-control-sm"
+                :class="{ 'is-invalid': treatmentErrors[item.drug_id] }"
+                @input="validateDosageInput(item)"
               />
+              <div v-if="treatmentErrors[item.drug_id]" class="invalid-feedback d-block">
+                {{ treatmentErrors[item.drug_id] }}
+              </div>
             </div>
             <div class="d-flex flex-column flex-root">
               <label>Remarks:</label>
@@ -62,6 +88,7 @@
                 <input type="text" v-model="item.remarks" class="form-control form-control-sm" />
                 <div class="input-group-append">
                   <a
+                    v-if="!item.isInputDisabled"
                     v-b-tooltip.hover
                     title="Click to complete dosage"
                     href="#"
@@ -70,6 +97,13 @@
                   >
                     Complete
                   </a>
+                  <span
+                    v-else
+                    class="btn btn-secondary btn-sm disabled"
+                    title="Dosage already completed or no remaining quantity"
+                  >
+                    Completed
+                  </span>
                 </div>
               </div>
             </div>
@@ -96,6 +130,7 @@
 <script>
 import DefaultSkeleton from '@/utils/DefaultSkeleton.vue';
 import Swal from 'sweetalert2';
+import { extractQuantityFromText } from '@/utils/dosageUtils';
 
 export default {
   components: { DefaultSkeleton },
@@ -117,6 +152,7 @@ export default {
     loading: true,
     currentPage: 1,
     itemsPerPage: 15,
+    treatmentErrors: {}, // Track validation errors for each treatment
   }),
   created() {
     if (this.source === 'Admission') this.fetchPrescribedDrugsWithRetry();
@@ -132,18 +168,29 @@ export default {
     },
 
     treatments() {
-      return this.orders.map((order) => ({
-        drug_name: order.drug.name,
-        drug_id: order.id,
-        drug_type: order.drug_type,
-        dosage_form: order.dosage_form.name,
-        route: order.route.name,
-        dosage_administered: '',
-        remarks: '',
-        quantity: order.quantity_to_dispense,
-        strength: order.strength.name,
-        dosage_completed: order.dosage_completed,
-      }));
+      return this.orders.map((order) => {
+        const quantityAdministered = order.quantity_administered || 0;
+        const quantityToDispense = order.quantity_to_dispense || 0;
+        const remainingQuantity = Math.max(0, quantityToDispense - quantityAdministered);
+        const isDisabled = remainingQuantity <= 0 || order.dosage_completed;
+
+        return {
+          drug_name: order.drug.name,
+          drug_id: order.id,
+          drug_type: order.drug_type,
+          dosage_form: order.dosage_form.name,
+          route: order.route.name,
+          dosage_administered: '',
+          remarks: '',
+          quantity: quantityToDispense,
+          quantity_administered: quantityAdministered,
+          remaining_quantity: remainingQuantity,
+          strength: order.strength.name,
+          dosage_completed: order.dosage_completed,
+          isInputDisabled: isDisabled,
+          extracted_quantity: null,
+        };
+      });
     },
   },
   methods: {
@@ -185,7 +232,9 @@ export default {
       this.treatments.forEach((treatment) => {
         treatment.dosage_administered = '';
         treatment.remarks = '';
+        treatment.extracted_quantity = null;
       });
+      this.treatmentErrors = {};
     },
 
     fetchPrescribedDrugs() {
@@ -202,40 +251,131 @@ export default {
         .then(() => (this.loading = false));
     },
 
+    validateDosageInput(treatment) {
+      // Clear previous error
+      this.$delete(this.treatmentErrors, treatment.drug_id);
+
+      if (!treatment.dosage_administered || !treatment.dosage_administered.trim()) {
+        return; // Allow empty input
+      }
+
+      // Extract quantity from text
+      const extractedQuantity = extractQuantityFromText(treatment.dosage_administered);
+
+      if (extractedQuantity === null) {
+        this.$set(
+          this.treatmentErrors,
+          treatment.drug_id,
+          'No quantity found in input. Please include a number (e.g., "4 tablets")'
+        );
+        treatment.extracted_quantity = null;
+        return;
+      }
+
+      // Validate against remaining quantity
+      if (extractedQuantity > treatment.remaining_quantity) {
+        this.$set(
+          this.treatmentErrors,
+          treatment.drug_id,
+          `Cannot administer ${extractedQuantity} units. Remaining quantity is ${treatment.remaining_quantity} ${treatment.dosage_form}`
+        );
+        treatment.extracted_quantity = null;
+        return;
+      }
+
+      // Valid quantity
+      treatment.extracted_quantity = extractedQuantity;
+    },
+
     submitDrugs() {
+      // Validate all treatments before submission
+      this.treatmentErrors = {};
+      let hasErrors = false;
+
+      const treatmentsToSubmit = this.treatments.filter((treatment) => {
+        if (!treatment.dosage_administered || !treatment.dosage_administered.trim()) {
+          return false; // Skip empty inputs
+        }
+
+        // Validate each treatment
+        this.validateDosageInput(treatment);
+
+        if (this.treatmentErrors[treatment.drug_id]) {
+          hasErrors = true;
+          return false;
+        }
+
+        return true;
+      });
+
+      if (hasErrors) {
+        this.$bvToast.toast('Please fix validation errors before submitting', {
+          title: 'Validation Error',
+          variant: 'danger',
+          solid: true,
+        });
+        return;
+      }
+
+      if (treatmentsToSubmit.length === 0) {
+        this.$bvToast.toast('Please enter at least one dosage administration', {
+          title: 'No Data',
+          variant: 'warning',
+          solid: true,
+        });
+        return;
+      }
+
       // set spinner to submit button
       const submitButton = this.$refs['kt_addTreatment_submit'];
       this.addSpinner(submitButton);
 
-      const treatments = this.treatments
-        .filter((treatment) => treatment.dosage_administered)
-        .map(
-          ({
-            // eslint-disable-next-line no-unused-vars
-            drug_name,
-            // eslint-disable-next-line no-unused-vars
-            strength,
-            // eslint-disable-next-line no-unused-vars
-            dosage_form,
-            // eslint-disable-next-line no-unused-vars
-            drug_type,
-            // eslint-disable-next-line no-unused-vars
-            quantity,
-            // eslint-disable-next-line no-unused-vars
-            route,
-            // eslint-disable-next-line no-unused-vars
-            dosage_completed,
-            ...rest
-          }) => ({
-            ...rest,
-            source: this.source,
-          })
-        );
+      const treatments = treatmentsToSubmit.map(
+        ({
+          // eslint-disable-next-line no-unused-vars
+          drug_name,
+          // eslint-disable-next-line no-unused-vars
+          strength,
+          // eslint-disable-next-line no-unused-vars
+          dosage_form,
+          // eslint-disable-next-line no-unused-vars
+          drug_type,
+          // eslint-disable-next-line no-unused-vars
+          quantity,
+          // eslint-disable-next-line no-unused-vars
+          route,
+          // eslint-disable-next-line no-unused-vars
+          dosage_completed,
+          // eslint-disable-next-line no-unused-vars
+          quantity_administered,
+          // eslint-disable-next-line no-unused-vars
+          remaining_quantity,
+          // eslint-disable-next-line no-unused-vars
+          isInputDisabled,
+          // eslint-disable-next-line no-unused-vars
+          extracted_quantity,
+          ...rest
+        }) => ({
+          ...rest,
+          source: this.source,
+        })
+      );
 
       this.$store
         .dispatch('order/orderTreatment', { data: treatments, id: this.$route.params.id })
-        .then(() => this.endRequest(submitButton))
-        .catch(() => this.removeSpinner(submitButton));
+        .then(() => {
+          this.endRequest(submitButton);
+          // Refresh prescribed drugs to get updated quantity_administered
+          this.fetchPrescribedDrugs();
+        })
+        .catch((error) => {
+          this.removeSpinner(submitButton);
+          this.$bvToast.toast(error.response?.data?.message || 'Failed to submit treatment data', {
+            title: 'Error',
+            variant: 'danger',
+            solid: true,
+          });
+        });
     },
 
     delay(ms) {

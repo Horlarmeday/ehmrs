@@ -5,7 +5,7 @@
       <DefaultSkeleton v-if="!results?.length" />
 
       <div v-else class="accordion" id="approvalAccordion">
-        <div v-for="(test, i) in results" :key="test.prescribed_test_id" class="test-card">
+        <div v-for="(test, i) in sortedResults" :key="test.prescribed_test_id" class="test-card">
           <!-- Test Header -->
           <div class="test-header" :id="`heading-${i}`">
             <button class="test-header-btn" type="button" v-b-toggle="`collapse-${i}`">
@@ -171,11 +171,20 @@ export default {
     shouldDisable() {
       return this.results.every((result) => !result.result);
     },
+    sortedResults() {
+      return [...this.results].sort((a, b) => {
+        const aIsPending = a.testStatus === this.VERIFIED;
+        const bIsPending = b.testStatus === this.VERIFIED;
+        if (aIsPending && !bIsPending) return -1;
+        if (!aIsPending && bIsPending) return 1;
+        return 0;
+      });
+    },
   },
   data() {
     return {
       results: this.tests
-        .filter((test) => test?.result?.status === 'Accepted')
+        .filter((test) => test?.result?.status === 'Accepted' && test.status !== 'Approved')
         .map((test) => ({
           prescribed_test_id: test.id,
           test_prescription_id: this.$route.params.id,
@@ -185,6 +194,7 @@ export default {
           result: test?.result?.result,
           comments: test?.result?.comments,
           status: test?.result?.status,
+          testStatus: test.status,
           test_type: test?.test_type,
           is_urgent: test?.is_urgent,
           result_form: test?.test?.result_form,
@@ -199,6 +209,7 @@ export default {
       APPROVED: 'Approved',
       REJECTED: 'Rejected',
       PENDING: 'Pending',
+      VERIFIED: 'Verified',
       DISABLED: 'disabledCard',
       APPROVAL_SECTION: 'ApprovalSection',
     };
@@ -255,7 +266,6 @@ export default {
           result_form,
           sample_name,
           payment_status,
-          testStatus,
           rejected_status,
           form_template_id,
           ...rest

@@ -25,6 +25,30 @@
               <investigations-accordion :filter="filter" />
             </div>
 
+            <!-- Combo Investigations Selection Form -->
+            <div class="form-group row mb-4">
+              <label class="col-lg-3 col-form-label font-weight-bold text-dark">
+                <i class="fas fa-layer-group mr-1 text-primary"></i>
+                Combo Investigations:
+              </label>
+              <div class="col-lg-9">
+                <v-select
+                  multiple
+                  name="comboInvestigation"
+                  v-model="combo_investigation_id"
+                  label="name"
+                  :options="comboInvestigations"
+                  :reduce="(combo) => combo.id"
+                  placeholder="Select combo investigations for quick ordering..."
+                  class="form-control-lg"
+                  @input="onComboInvestigationSelect"
+                />
+                <small class="form-text text-muted">
+                  Combo investigations will automatically add individual investigations below
+                </small>
+              </div>
+            </div>
+
             <!-- Services Selection Form -->
             <div class="form-group row">
               <label class="col-lg-3 col-form-label font-weight-bold text-dark">
@@ -93,7 +117,8 @@ export default {
   components: { InvestigationsAccordion, vSelect },
   data() {
     return {
-      investigation_id: '',
+      investigation_id: [],
+      combo_investigation_id: [],
       isDisabled: false,
       itemsPerPage: 20,
     };
@@ -101,6 +126,10 @@ export default {
   computed: {
     investigations() {
       return this.$store.state.radiology.investigations;
+    },
+
+    comboInvestigations() {
+      return this.$store.state.radiology.comboInvestigations;
     },
 
     visit() {
@@ -128,12 +157,16 @@ export default {
     },
 
     debounceSearch: debounce((loading, search, vm) => {
+      // Extract IDs from investigation objects for selectedIds parameter
+      const selectedIds = Array.isArray(vm.investigation_id)
+        ? vm.investigation_id.map((inv) => (typeof inv === 'object' ? inv.id : inv))
+        : [];
       vm.$store
         .dispatch('radiology/fetchInvestigations', {
           currentPage: 1,
           itemsPerPage: vm.itemsPerPage,
           search,
-          selectedIds: vm.investigation_id || [], // Pass selected investigation IDs
+          selectedIds,
         })
         .then(() => loading(false))
         .catch(() => loading(false));
@@ -150,7 +183,63 @@ export default {
     },
 
     initValues() {
-      this.investigation_id = '';
+      this.investigation_id = [];
+      this.combo_investigation_id = [];
+    },
+
+    async onComboInvestigationSelect(selectedComboIds) {
+      if (!selectedComboIds || selectedComboIds.length === 0) return;
+
+      try {
+        // Ensure investigation_id is an array
+        if (!Array.isArray(this.investigation_id)) {
+          this.investigation_id = this.investigation_id ? [this.investigation_id] : [];
+        }
+
+        // Fetch each combo investigation and expand to individual investigations
+        for (const comboId of selectedComboIds) {
+          const response = await this.$store.dispatch(
+            'radiology/fetchOneComboInvestigation',
+            comboId
+          );
+          const comboInvestigation = response.data.data;
+
+          // Map combo investigation items to investigation objects and add to investigation_id array
+          if (comboInvestigation && comboInvestigation.comboInvestigationItems) {
+            comboInvestigation.comboInvestigationItems.forEach((item) => {
+              if (item.investigation) {
+                const investigationObj = {
+                  id: item.investigation.id,
+                  price: item.investigation.price,
+                  name: item.investigation.name,
+                  imaging_id: item.investigation.imaging_id,
+                };
+
+                // Check if investigation already exists to prevent duplicates
+                const exists = this.investigation_id.some((inv) => inv.id === investigationObj.id);
+                if (!exists) {
+                  this.investigation_id.push(investigationObj);
+                }
+              }
+            });
+          }
+        }
+
+        this.$bvToast.toast(
+          'Individual investigations from combo have been added to your selection',
+          {
+            title: 'Combo Investigations Expanded',
+            variant: 'success',
+            solid: true,
+          }
+        );
+      } catch (error) {
+        this.$bvToast.toast('Failed to expand combo investigations', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+      }
     },
 
     endRequest(button) {
@@ -227,9 +316,17 @@ export default {
         itemsPerPage: 100,
       });
     },
+
+    fetchComboInvestigations() {
+      this.$store.dispatch('radiology/fetchComboInvestigations', {
+        currentPage: 1,
+        itemsPerPage: 100,
+      });
+    },
   },
   created() {
     this.fetchInvestigations();
+    this.fetchComboInvestigations();
     this.$store.dispatch('visit/fetchVisit', this.$route.params.id).then((response) => {
       const res = response.data.data;
       this.$store.dispatch('patient/setCurrentPatient', {

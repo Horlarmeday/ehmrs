@@ -45,4 +45,14 @@ export default {
   prescriptionsHistory: [],
   totalHistory: 0,
   historyPages: 0,
+
+  /**
+   * PRESCRIPTION STATISTICS
+   */
+  prescriptionStatistics: {
+    total: 0,
+    pending: 0,
+    partialDispense: 0,
+    completeDispense: 0,
+  },
 };

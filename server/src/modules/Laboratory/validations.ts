@@ -90,6 +90,9 @@ export function validateAddTestResult(result) {
           status: Joi.string()
             .optional()
             .allow(''),
+          test_status: Joi.string()
+            .optional()
+            .allow(''),
           result: Joi.object().required(),
           valid_range: Joi.string()
             .optional()
@@ -124,6 +127,9 @@ export function validateTestResults(result) {
           status: Joi.string()
             .valid('Accepted', 'Rejected', 'Pending')
             .required(),
+          testStatus: Joi.string()
+            .optional()
+            .allow(''),
           result: Joi.object().required(),
           is_abnormal: Joi.boolean()
             .optional()
@@ -152,6 +158,9 @@ export function validateApproveTestResults(result) {
           name: Joi.string().required(),
           patient_id: Joi.number().required(),
           test_status: Joi.boolean().required(),
+          testStatus: Joi.string()
+            .optional()
+            .allow(''),
           status: Joi.string()
             .valid('Accepted', 'Rejected', 'Pending')
             .required(),

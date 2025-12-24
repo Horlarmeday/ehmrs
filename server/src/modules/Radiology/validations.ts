@@ -94,3 +94,11 @@ export function validateResultApproval(result) {
 
   return schema.validate(result);
 }
+
+export function validateCreateComboInvestigation(body) {
+  const schema = Joi.object({
+    name: Joi.string().required(),
+    investigation_ids: Joi.array().items(Joi.number().required()),
+  });
+  return schema.validate(body);
+}

@@ -975,11 +975,19 @@ const router = new Router({
             {
               path: 'prescriptions',
               name: 'drug-prescriptions',
-              component: () => import('@/view/pages/pharmacy/Prescriptions.vue'),
+              component: () => import('@/view/pages/pharmacy/prescriptionsUpdate/PrescriptionsPage.vue'),
               meta: {
                 requiresAuth: true,
               },
             },
+            // {
+            //   path: 'prescriptions-update',
+            //   name: 'prescriptions-update',
+            //   component: () => import('@/view/pages/pharmacy/prescriptionsUpdate/PrescriptionsPage.vue'),
+            //   meta: {
+            //     requiresAuth: true,
+            //   },
+            // },
             {
               path: 'prescriptions/:id/dispense',
               name: 'drug-prescription',
@@ -1008,6 +1016,14 @@ const router = new Router({
               path: 'laboratory-type',
               name: 'laboratory-type',
               component: () => import('@/view/pages/laboratory/Home.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'test-orders-home',
+              name: 'test-orders-home',
+              component: () => import('@/view/pages/laboratory/TestOrdersHome.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1546,6 +1562,15 @@ const router = new Router({
               path: 'investigations',
               name: 'investigations',
               component: () => import('@/view/pages/radiology/components/Investigation.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
+              path: 'combo-investigations',
+              name: 'combo-investigations',
+              component: () =>
+                import('@/view/pages/radiology/combo-investigations/ComboInvestigationList.vue'),
               meta: {
                 requiresAuth: true,
               },

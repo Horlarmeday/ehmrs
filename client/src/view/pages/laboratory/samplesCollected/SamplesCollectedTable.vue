@@ -18,10 +18,11 @@
               <th style="min-width: 100px">Patient ID</th>
               <th style="min-width: 200px">Patient Name</th>
               <th style="min-width: 70px">Pending</th>
-              <th style="min-width: 70px">Result Added</th>
+              <th style="min-width: 70px">Result</th>
               <th style="min-width: 70px">Verified</th>
+              <th style="min-width: 70px">Approved</th>
               <th style="min-width: 70px">Total</th>
-              <th style="min-width: 80px">Status</th>
+              <!-- <th style="min-width: 80px">Status</th> -->
               <th style="min-width: 100px">Date Collected</th>
               <th class="text-right" style="min-width: 100px">Action</th>
             </tr>
@@ -81,17 +82,22 @@
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-md">{{
-                  sample.total
+                  sample.approved_tests_count
                 }}</span>
               </td>
               <td>
+                <span class="text-dark-75 font-weight-bolder d-block font-size-md">{{
+                  sample.total
+                }}</span>
+              </td>
+              <!-- <td>
                 <span :class="getSampleStatus(sample.status)" class="label label-dot mr-2"></span>
                 <span
                   :class="getSampleTextColor(sample.status)"
                   class="font-size-sm font-weight-bold"
                   >{{ sample.status }}</span
                 >
-              </td>
+              </td> -->
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-md">{{
                   sample.date_sample_received | dayjs('DD/MM/YYYY, h:mma')

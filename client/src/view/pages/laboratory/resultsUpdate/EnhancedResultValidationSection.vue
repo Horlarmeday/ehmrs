@@ -5,7 +5,7 @@
       <DefaultSkeleton v-if="!results?.length" />
 
       <div v-else class="accordion" id="validationAccordion">
-        <div v-for="(test, i) in results" :key="test.prescribed_test_id" class="test-card">
+        <div v-for="(test, i) in sortedResults" :key="test.prescribed_test_id" class="test-card">
           <!-- Test Header -->
           <div class="test-header" :id="`heading-${i}`">
             <button class="test-header-btn" type="button" v-b-toggle="`collapse-${i}`">
@@ -174,6 +174,15 @@ export default {
     shouldDisable() {
       return this.results.every((result) => !result.result);
     },
+    sortedResults() {
+      return [...this.results].sort((a, b) => {
+        const aIsPending = a.testStatus === this.RESULT_ADDED;
+        const bIsPending = b.testStatus === this.RESULT_ADDED;
+        if (aIsPending && !bIsPending) return -1;
+        if (!aIsPending && bIsPending) return 1;
+        return 0; // Maintain original order within same status group
+      });
+    },
   },
   data() {
     return {
@@ -201,6 +210,7 @@ export default {
       ACCEPTED: 'Accepted',
       REJECTED: 'Rejected',
       PENDING: 'Pending',
+      RESULT_ADDED: 'Result Added',
       DISABLED: 'disabledCard',
       VALIDATION_SECTION: 'ValidationSection',
       result_notes: '',
@@ -240,7 +250,6 @@ export default {
                 result_form,
                 sample_name,
                 payment_status,
-                testStatus,
                 form_template_id,
                 ...rest
               }) => rest

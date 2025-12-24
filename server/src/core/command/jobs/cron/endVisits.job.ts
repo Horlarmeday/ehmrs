@@ -18,7 +18,11 @@ const visitHandler = async (visit: Visit) => {
 export const endVisits = async () => {
   const message = taggedMessaged('EndVisits');
   const fiveDaysAgo = dayjs()
-    .subtract(5, 'days')
+    .subtract(2, 'days')
+    .toDate();
+
+  const twentyFourHoursAgo = dayjs()
+    .subtract(24, 'hours')
     .toDate();
 
   const [todayUntakenVisits, dialysisVisits, fiveDaysAgoVisits] = await Promise.all([
@@ -26,7 +30,12 @@ export const endVisits = async () => {
       where: { ...todayQuery('createdAt'), status: VisitStatus.ONGOING, is_taken: false },
     }),
     Visit.findAll({
-      where: { category: VisitCategory.DIALYSIS, status: VisitStatus.ONGOING },
+      where: { 
+        category: VisitCategory.DIALYSIS, status: VisitStatus.ONGOING,
+        createdAt: {
+          [Op.gte]: twentyFourHoursAgo,
+        },
+      },
     }),
     Visit.findAll({
       where: {

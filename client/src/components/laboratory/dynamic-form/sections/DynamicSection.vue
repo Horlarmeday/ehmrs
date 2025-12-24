@@ -17,15 +17,23 @@
           </tr>
         </thead>
         <tbody>
-          <DynamicField
-            v-for="field in section.fields"
-            :key="`field-${field.id}`"
-            :field="field"
-            :value="result[field.id]"
-            :disabled="disabled"
-            :render-as="'table-row'"
-            @input="handleFieldChange(field.id, $event)"
-          />
+          <template v-for="field in section.fields">
+            <DynamicField
+              :key="`field-${field.id}`"
+              :field="field"
+              :value="result[field.id]"
+              :disabled="disabled"
+              :render-as="'table-row'"
+              @input="handleFieldChange(field.id, $event)"
+            />
+            <tr v-if="field.description" :key="`desc-${field.id}`">
+              <td :colspan="tableHeaders.length" class="description-cell">
+                <div class="field-description">
+                  <div class="description-content">{{ field.description }}</div>
+                </div>
+              </td>
+            </tr>
+          </template>
         </tbody>
       </table>
 
@@ -246,5 +254,25 @@ export default {
   .table {
     font-size: 0.85rem;
   }
+}
+
+.description-cell {
+  padding: 12px !important;
+  background-color: #f8f9fa;
+  border-top: none;
+  text-align: left;
+}
+
+.field-description {
+  padding: 0;
+}
+
+.description-content {
+  font-size: 13px;
+  color: #5e6278;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  text-align: left;
 }
 </style>

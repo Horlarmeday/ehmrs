@@ -1,5 +1,6 @@
 import {
   validateAddInvestigationResults,
+  validateCreateComboInvestigation,
   validateImaging,
   validateInvestigation,
   validateResultApproval,
@@ -17,6 +18,7 @@ import {
 import { NextFunction, Response, Request } from 'express';
 import LaboratoryService from '../Laboratory/laboratory.service';
 import { validateUpdateInvestigationsResultStatus } from '../Orders/Radiology/validations';
+import { downloadRadiologyResult } from '../../core/helpers/downloadRadiologyResult';
 
 export class RadiologyController {
   /**
@@ -518,6 +520,176 @@ export class RadiologyController {
         message: DATA_UPDATED,
         httpCode: StatusCodes.CREATED,
         data: investigationPrescription,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * Download radiology result as PDF
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {pdf} PDF file download
+   */
+  static async downloadRadiologyResult(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { patientInfo, radiologyResults } = await RadiologyService.downloadRadiologyResult(
+        +req.params.id
+      );
+      return downloadRadiologyResult(patientInfo, radiologyResults, res);
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /** ***********************
+   * COMBO INVESTIGATIONS
+   ********************** */
+
+  /**
+   * create a combo investigation
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, combo investigation data
+   */
+  static async createComboInvestigation(
+    req: Request & { user: { sub: number } },
+    res: Response,
+    next: NextFunction
+  ) {
+    const { error } = validateCreateComboInvestigation(req.body);
+    if (error)
+      return errorResponse({
+        res,
+        message: error.details[0].message,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+
+    const { name, investigation_ids } = req.body;
+    try {
+      const comboInvestigation = await RadiologyService.createComboInvestigation({
+        name,
+        investigation_ids,
+        staff_id: req.user.sub,
+      });
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.CREATED,
+        message: DATA_SAVED,
+        data: comboInvestigation,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get combo investigations
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with combo investigations data
+   */
+  static async getComboInvestigations(req: Request, res: Response, next: NextFunction) {
+    try {
+      const comboInvestigations = await RadiologyService.getComboInvestigations(req.query);
+
+      return successResponse({
+        res,
+        message: DATA_RETRIEVED,
+        httpCode: StatusCodes.OK,
+        data: comboInvestigations,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get one combo investigation
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with combo investigation data
+   */
+  static async getOneComboInvestigation(req: Request, res: Response, next: NextFunction) {
+    try {
+      const comboInvestigation = await RadiologyService.getOneComboInvestigation(+req.params.id);
+
+      return successResponse({
+        res,
+        message: DATA_RETRIEVED,
+        httpCode: StatusCodes.OK,
+        data: comboInvestigation,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * update a combo investigation
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, combo investigation data
+   */
+  static async updateComboInvestigation(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.body;
+    if (!id) {
+      return errorResponse({
+        res,
+        httpCode: StatusCodes.BAD_REQUEST,
+        message: 'Combo investigation ID is required',
+      });
+    }
+
+    try {
+      const comboInvestigation = await RadiologyService.updateComboInvestigation(req.body);
+
+      return successResponse({
+        res,
+        data: comboInvestigation,
+        message: DATA_UPDATED,
+        httpCode: StatusCodes.OK,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * delete a combo investigation
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status message
+   */
+  static async deleteComboInvestigation(req: Request, res: Response, next: NextFunction) {
+    try {
+      await RadiologyService.deleteComboInvestigation(+req.params.id);
+
+      return successResponse({
+        res,
+        message: 'Combo investigation deleted successfully',
+        httpCode: StatusCodes.OK,
+        data: null,
       });
     } catch (e) {
       return next(e);

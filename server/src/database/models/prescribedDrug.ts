@@ -146,6 +146,12 @@ export class PrescribedDrug extends Model {
   })
   quantity_returned: number;
 
+  @Column({
+    type: DataType.INTEGER,
+    defaultValue: 0,
+  })
+  quantity_administered: number;
+
   @ForeignKey(() => RoutesOfAdministration)
   @Column({
     type: DataType.INTEGER,

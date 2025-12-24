@@ -63,6 +63,12 @@ export default {
           link: '/radiology/results-update',
           desc: 'Click here to update investigations result',
           showComponent: true,
+        },   
+        {
+          name: 'Combo Investigations',
+          link: '/radiology/combo-investigations',
+          desc: 'Click here to view combo investigations',
+          showComponent: true,
         },
       ],
     };

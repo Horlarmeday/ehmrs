@@ -350,6 +350,7 @@ class LaboratoryService {
     model: string;
     range: string;
     unit?: string;
+    description?: string;
     rows: string[];
     headers: string[];
     align: string[];
@@ -378,6 +379,7 @@ class LaboratoryService {
           model: value,
           range: range !== '-' ? `${range}${unit ? ' ' + unit : ''}` : '-',
           unit,
+          description: field?.description || '',
           headers: ['Test', 'Result', 'Range'],
           align: ['left', 'right', 'left'],
           rows: [field.label, value, range !== '-' ? `${range}${unit ? ' ' + unit : ''}` : '-'],
@@ -635,7 +637,7 @@ class LaboratoryService {
   static async appendTestResults(laboratoryResultDto: LaboratoryResultDto) {
     const { results, staff_id, tester_id } = laboratoryResultDto;
     const data = results
-      .filter(({ result }) => Object.values(result)?.length)
+      .filter(({ result, test_status }) => Object.values(result)?.length && test_status !== TestStatus.APPROVED)
       .map(result => ({
         ...result,
         staff_id,
@@ -655,7 +657,7 @@ class LaboratoryService {
   static async validateTestResults(laboratoryResultValidationDto: LaboratoryResultValidationDto) {
     const { results, result_notes, staff_id } = laboratoryResultValidationDto;
     const data = results
-      .filter(({ result }) => !isEmpty(result))
+      .filter(({ result, testStatus }) => !isEmpty(result) && testStatus !== TestStatus.APPROVED)
       .map(result => ({
         ...result,
         staff_id,
@@ -676,7 +678,7 @@ class LaboratoryService {
     }));
     const rejectedResults = data.filter(({ status }) => status === ResultStatus.REJECTED);
     const acceptedResults = data.filter(
-      ({ status, test_status }) => status === ResultStatus.ACCEPTED && test_status
+      ({ status, test_status, testStatus }) => status === ResultStatus.ACCEPTED && test_status && testStatus !== TestStatus.APPROVED
     );
     if (rejectedResults?.length) await validateTestResults(rejectedResults, '');
     if (acceptedResults?.length) await approveTestResults(acceptedResults);

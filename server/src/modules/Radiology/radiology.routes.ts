@@ -48,8 +48,20 @@ router.get(
   verify,
   RadiologyController.getOneInvestigationPrescription
 );
+router.post('/download-results/:id', verify, RadiologyController.downloadRadiologyResult);
 
 // Investigation images routes
 router.use('/investigation-images', investigationImagesRoutes);
+
+// combo investigations
+router.post('/combo-investigations/create', verify, RadiologyController.createComboInvestigation);
+router.get('/combo-investigations/get', verify, RadiologyController.getComboInvestigations);
+router.get('/combo-investigations/get/:id', verify, RadiologyController.getOneComboInvestigation);
+router.put('/combo-investigations/update', verify, RadiologyController.updateComboInvestigation);
+router.delete(
+  '/combo-investigations/delete/:id',
+  verify,
+  RadiologyController.deleteComboInvestigation
+);
 
 export default router;

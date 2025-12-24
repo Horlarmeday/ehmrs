@@ -432,6 +432,15 @@ export const getCollectedSamples = async ({
           sequelize.fn(
             'COUNT',
             sequelize.literal(
+              `DISTINCT CASE WHEN tests.status = '${TestStatus.APPROVED}' THEN tests.id END`
+            )
+          ),
+          'approved_tests_count',
+        ],
+        [
+          sequelize.fn(
+            'COUNT',
+            sequelize.literal(
               `DISTINCT CASE WHEN tests.payment_status = '${PaymentStatus.PENDING}' THEN tests.id END`
             )
           ),
@@ -952,11 +961,11 @@ export const todayTestStats = async () => {
     resultCompleted,
     awaitingApproval,
   ] = await Promise.all([
-    countRecords(TestPrescription, { status: TestStatus.PENDING }, 'date_requested'),
-    countRecords(TestPrescription, { status: TestStatus.SAMPLE_COLLECTED }, 'date_sample_received'),
-    countRecords(PrescribedTest, { status: TestStatus.RESULT_ADDED }, 'date_requested'),
-    countRecords(TestPrescription, { status: TestStatus.COMPLETED }, 'date_requested'),
-    countRecords(PrescribedTest, { status: TestStatus.VERIFIED }, 'date_requested'),
+    countRecords(TestPrescription, { status: TestStatus.PENDING, has_paid: true }, 'date_requested'),
+    countRecords(TestPrescription, { status: TestStatus.SAMPLE_COLLECTED, has_paid: true }, 'date_sample_received'),
+    countRecords(PrescribedTest, { status: TestStatus.RESULT_ADDED, payment_status: PaymentStatus.PAID }, 'date_requested'),
+    countRecords(TestPrescription, { status: TestStatus.COMPLETED, has_paid: true }, 'date_requested'),
+    countRecords(PrescribedTest, { status: TestStatus.VERIFIED, payment_status: PaymentStatus.PAID }, 'date_requested'),
   ]);
   return {
     samplesToCollect,

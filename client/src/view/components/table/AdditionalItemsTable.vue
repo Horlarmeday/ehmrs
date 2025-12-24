@@ -39,13 +39,13 @@
               <span>{{ item?.requester?.fullname }}</span>
             </td>
             <td>
-              <span>
-                <a
-                  href="#"
-                  :class="loading && 'disabled'"
-                  @click="showDeleteAlert(item)"
-                  v-if="item.billing_status === UNBILLED && item.payment_status === PENDING"
-                >
+              <span
+                v-if="
+                  allowedDepartments.includes(currentUser.department) ||
+                  currentUser.sub === item.requester
+                "
+              >
+                <a href="#" :class="loading && 'disabled'" @click="showDeleteAlert(item)">
                   <i class="flaticon-delete text-danger"></i>
                 </a>
               </span>
@@ -59,12 +59,27 @@
 <script>
 import Swal from 'sweetalert2';
 import { getLabelDotStatus } from '@/common/common';
+import { parseJwt } from '@/core/plugins/parseJwt';
 
 export default {
   data: () => ({
     loading: false,
-    UNBILLED: 'Unbilled',
+    currentUser: parseJwt(localStorage.getItem('user_token')),
+    allowedDepartments: [
+      'Medical Practitioners',
+      'Administration',
+      'Surgery Unit',
+      'Medicine Unit',
+      'Pediatrics Unit',
+      'Family Medicine Unit',
+      'Obstetrics & Gynaecology Unit',
+      'Physiotherapy Unit',
+      'Records',
+      'Reception',
+      'Nursing',
+    ],
     PENDING: 'Pending',
+    UNBILLED: 'Unbilled',
   }),
 
   props: {

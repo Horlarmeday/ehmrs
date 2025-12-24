@@ -41,6 +41,7 @@ export default {
             type: 'number',
             unit: '',
             placeholder: '',
+            description: '',
             validation: {
               required: false,
               min: undefined,
@@ -64,6 +65,7 @@ export default {
             label: 'Text Field',
             type: 'text',
             placeholder: '',
+            description: '',
             validation: {
               required: false,
               pattern: '',
@@ -79,6 +81,7 @@ export default {
             label: 'Textarea Field',
             type: 'textarea',
             placeholder: '',
+            description: '',
             rows: 4,
             validation: {
               required: false,
@@ -94,6 +97,7 @@ export default {
             label: 'Select Field',
             type: 'select',
             placeholder: 'Select an option',
+            description: '',
             options: [
               { value: 'option1', label: 'Option 1' },
               { value: 'option2', label: 'Option 2' },
@@ -111,6 +115,7 @@ export default {
           defaultConfig: {
             label: 'Radio Field',
             type: 'radio',
+            description: '',
             options: [
               { value: 'yes', label: 'Yes' },
               { value: 'no', label: 'No' },
@@ -128,6 +133,7 @@ export default {
           defaultConfig: {
             label: 'Checkbox Field',
             type: 'checkbox',
+            description: '',
             options: [
               { value: 'option1', label: 'Option 1' },
               { value: 'option2', label: 'Option 2' },
@@ -145,6 +151,7 @@ export default {
           defaultConfig: {
             label: 'Date Field',
             type: 'date',
+            description: '',
             validation: {
               required: false,
             },

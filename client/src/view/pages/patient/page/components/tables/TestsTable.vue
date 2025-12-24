@@ -40,6 +40,17 @@
             </td>
             <td>{{ test.examiner.fullname }}</td>
             <td>{{ test.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
+            <td>
+              <span>
+                <a
+                  target="_blank"
+                  :href="`/laboratory/test-result/${test.test_prescription_id}?lab_test=${test.id}`"
+                  v-if="test.status === APPROVED && test.result_id"
+                >
+                  <i class="flaticon-file-2 text-success"></i>
+                </a>
+              </span>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -64,6 +75,7 @@ export default {
   data: () => ({
     currentPage: 1,
     itemsPerPage: 10,
+    APPROVED: 'Approved',
   }),
   computed: {
     tests() {

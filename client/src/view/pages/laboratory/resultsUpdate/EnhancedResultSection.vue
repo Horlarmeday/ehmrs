@@ -5,7 +5,7 @@
       <DefaultSkeleton v-if="!tests?.length" />
 
       <div v-else class="accordion" id="enhancedAccordion">
-        <div v-for="(test, i) in tests" :key="test.prescribed_test_id" class="test-card">
+        <div v-for="(test, i) in sortedResults" :key="test.prescribed_test_id" class="test-card">
           <!-- Test Header -->
           <div class="test-header" :id="`heading-${i}`">
             <button class="test-header-btn" type="button" v-b-toggle="`collapse-${i}`">
@@ -194,6 +194,15 @@ export default {
     staffs() {
       return this.$store.state.employee.employees;
     },
+    sortedResults() {
+      return [...this.tests].sort((a, b) => {
+        const aIsPending = a.test_status === this.PENDING;
+        const bIsPending = b.test_status === this.PENDING;
+        if (aIsPending && !bIsPending) return -1;
+        if (!aIsPending && bIsPending) return 1;
+        return 0;
+      });
+    },
   },
   data() {
     return {
@@ -262,7 +271,6 @@ export default {
             is_urgent,
             result_form,
             sample_name,
-            test_status,
             ...rest
           }) => rest
         );
@@ -298,6 +306,13 @@ export default {
       if (status === 'Pending') return 'label-warning';
       if (status === 'Paid') return 'label-success';
       if (status === 'Cleared') return 'label-info';
+      return 'label-primary';
+    },
+
+    getResultStatus(status) {
+      if (status === 'Pending') return 'label-warning';
+      if (status === 'Approved') return 'label-success';
+      if (status === 'Verified') return 'label-info';
       return 'label-primary';
     },
 

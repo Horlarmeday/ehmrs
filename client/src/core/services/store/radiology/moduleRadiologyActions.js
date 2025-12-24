@@ -629,4 +629,121 @@ export default {
   clearInvestigationImages({ commit }) {
     commit('CLEAR_INVESTIGATION_IMAGES');
   },
+
+  /**
+   * Download radiology result as PDF
+   */
+  downloadRadiologyResult(_, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(
+          `/radiology/download-results/${payload.id}`,
+          {},
+          {
+            responseType: 'arraybuffer', // Important to receive binary data
+          }
+        )
+        .then((response) => {
+          const contentType = response.headers['content-type'].split(';')[0];
+          const fileNameSplit = response.headers['content-disposition']?.split(';')[1];
+          const fileName = fileNameSplit?.split('=')[1];
+          const blob = new Blob([response.data], {
+            type: contentType,
+          });
+          const url = window.URL.createObjectURL(blob);
+          // Create an anchor element with download attribute and trigger click event
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = fileName;
+          a.click();
+          // Clean up resources
+          window.URL.revokeObjectURL(url);
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * COMBO INVESTIGATIONS
+   */
+  fetchComboInvestigations({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/radiology/combo-investigations/get', {
+          params: {
+            currentPage: payload.currentPage,
+            pageLimit: payload.itemsPerPage,
+            search: payload.search,
+          },
+        })
+        .then((response) => {
+          commit('SET_COMBO_INVESTIGATIONS', response.data.data.docs);
+          commit('SET_COMBO_INVESTIGATIONS_TOTAL', response.data.data.total);
+          commit('SET_COMBO_INVESTIGATIONS_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchOneComboInvestigation({ commit }, id) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/radiology/combo-investigations/get/${id}`)
+        .then((response) => {
+          commit('SET_COMBO_INVESTIGATION', response.data.data);
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+
+  createComboInvestigation({ commit }, data) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post('/radiology/combo-investigations/create', data)
+        .then((response) => {
+          commit('ADD_COMBO_INVESTIGATION', response.data.data);
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+
+  updateComboInvestigation({ commit }, data) {
+    return new Promise((resolve, reject) => {
+      axios
+        .put('/radiology/combo-investigations/update', data)
+        .then((response) => {
+          commit('UPDATE_COMBO_INVESTIGATION', response.data.data);
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+
+  deleteComboInvestigation({ commit }, id) {
+    return new Promise((resolve, reject) => {
+      axios
+        .delete(`/radiology/combo-investigations/delete/${id}`)
+        .then((response) => {
+          commit('REMOVE_COMBO_INVESTIGATION', id);
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
 };

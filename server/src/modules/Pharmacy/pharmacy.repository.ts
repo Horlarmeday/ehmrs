@@ -513,6 +513,7 @@ export const getOnePrescription = async (query: sequelize.WhereOptions<any>) => 
  * @param search
  * @param start
  * @param end
+ * @param status
  */
 export const getDrugPrescriptions = async ({
   currentPage = 1,
@@ -521,6 +522,7 @@ export const getDrugPrescriptions = async ({
   search = null,
   start = null,
   end = null,
+  status = null,
 }): Promise<{
   total: number;
   pages: number;
@@ -529,8 +531,25 @@ export const getDrugPrescriptions = async ({
   currentPage: number;
 }> => {
   const { limit, offset } = calcLimitAndOffset(+currentPage, +pageLimit);
+  
+  // Build status filter
+  let statusFilter = {};
+  if (status && status !== 'all') {
+    // Filter by specific status
+    statusFilter = { status: status as DrugStatus };
+  } else if (status === 'all') {
+    // Explicitly show all statuses (no status filter)
+    statusFilter = {};
+  } else {
+    statusFilter = {};
+    // // Default behavior when status is null/undefined: show PENDING and PARTIAL_DISPENSED (backward compatibility)
+    // statusFilter = {
+    //   [Op.or]: [{ status: DrugStatus.PENDING }, { status: DrugStatus.PARTIAL_DISPENSED }],
+    // };
+  }
+  
   const query = {
-    [Op.or]: [{ status: DrugStatus.PENDING }, { status: DrugStatus.PARTIAL_DISPENSED }],
+    ...statusFilter,
     has_paid: true,
     ...(period && getPeriodQuery(period, 'date_prescribed')),
     ...(start && end && dateIntervalQuery('date_prescribed', start, end)),
@@ -620,6 +639,67 @@ export const getDrugPrescriptions = async ({
   });
   const count = await DrugPrescription.count({ where: { ...query } });
   return paginate({ rows: samples, count }, currentPage, limit);
+};
+
+/**
+ * get prescription statistics
+ *
+ * @function
+ * @returns {json} json object with prescription statistics
+ * @param period
+ * @param start
+ * @param end
+ */
+export const getPrescriptionStatistics = async ({
+  period = null,
+  start = null,
+  end = null,
+}): Promise<{
+  total: number;
+  pending: number;
+  partialDispense: number;
+  completeDispense: number;
+}> => {
+  // Build base query with same filters as getDrugPrescriptions
+  const baseQuery = {
+    has_paid: true,
+    ...(period && getPeriodQuery(period, 'date_prescribed')),
+    ...(start && end && dateIntervalQuery('date_prescribed', start, end)),
+  };
+
+  // Get total count
+  const total = await DrugPrescription.count({
+    where: baseQuery,
+  });
+
+  // Get counts by status
+  const [pending, partialDispense, completeDispense] = await Promise.all([
+    DrugPrescription.count({
+      where: {
+        ...baseQuery,
+        status: DrugStatus.PENDING,
+      },
+    }),
+    DrugPrescription.count({
+      where: {
+        ...baseQuery,
+        status: DrugStatus.PARTIAL_DISPENSED,
+      },
+    }),
+    DrugPrescription.count({
+      where: {
+        ...baseQuery,
+        status: DrugStatus.COMPLETE_DISPENSE,
+      },
+    }),
+  ]);
+
+  return {
+    total,
+    pending,
+    partialDispense,
+    completeDispense,
+  };
 };
 
 /**
@@ -756,8 +836,8 @@ export const dispenseDrug = async (
     const drug = await prescribedDrug.save({ transaction: t });
 
     const [prescriptions, additionalItems] = await Promise.all([
-      getPrescribedDrugsWithoutJoins({ drug_prescription_id }),
-      getAdditionalItemsWithoutJoins({ drug_prescription_id }),
+      PrescribedDrug.findAll({ where: { drug_prescription_id }, attributes: ['dispense_status', 'quantity_dispensed'], transaction: t }),
+      PrescribedAdditionalItem.findAll({ where: { drug_prescription_id }, attributes: ['dispense_status', 'quantity_dispensed'], transaction: t }),
     ]);
 
     const prescriptionComplete = isPrescriptionFullyDispensed(prescriptions, additionalItems);

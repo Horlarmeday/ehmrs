@@ -13,6 +13,7 @@ export class Result {
   institute_referred?: string;
   referral_reason?: string;
   comments?: string;
+  testStatus?: string;
 }
 export class LaboratoryResultDto {
   results: Array<Result>;

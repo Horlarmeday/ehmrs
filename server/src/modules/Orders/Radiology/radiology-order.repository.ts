@@ -8,6 +8,7 @@ import {
   Patient,
   Drug,
   ClinicalBill,
+  InvestigationPrescription,
 } from '../../../database/models';
 import { Transaction, WhereOptions } from 'sequelize';
 import { staffAttributes } from '../../Antenatal/antenatal.repository';
@@ -443,6 +444,18 @@ export const deletePrescribedInvestigation = async (
   const investigation = await PrescribedInvestigation.findByPk(investigationId, { transaction });
   if (!investigation) return 0;
 
+  const investigationPrescriptionId = investigation.investigation_prescription_id;
+
+  // Count investigations before deletion to check if this is the last one
+  let wasLastInvestigation = false;
+  if (investigationPrescriptionId) {
+    const investigationsCount = await PrescribedInvestigation.count({
+      where: { investigation_prescription_id: investigationPrescriptionId },
+      transaction,
+    });
+    wasLastInvestigation = investigationsCount === 1;
+  }
+
   const bill = await ClinicalBill.findOne({
     where: { visit_id: investigation.visit_id },
     transaction,
@@ -460,6 +473,14 @@ export const deletePrescribedInvestigation = async (
     } catch (billingError) {
       console.error('Failed to remove prescribed investigation from billing:', billingError);
     }
+  }
+
+  // If this was the last investigation, delete the InvestigationPrescription
+  if (deletedCount > 0 && wasLastInvestigation && investigationPrescriptionId) {
+    await InvestigationPrescription.destroy({
+      where: { id: investigationPrescriptionId },
+      transaction,
+    });
   }
 
   return deletedCount;

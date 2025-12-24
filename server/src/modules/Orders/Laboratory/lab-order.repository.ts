@@ -6,6 +6,7 @@ import {
   TestResult,
   Patient,
   ClinicalBill,
+  TestPrescription,
 } from '../../../database/models';
 import sequelize, { Transaction, WhereOptions } from 'sequelize';
 import { staffAttributes } from '../../Antenatal/antenatal.repository';
@@ -212,9 +213,21 @@ export const getOnePrescribedTest = async (query: WhereOptions<PrescribedTest>) 
  * @param testId
  */
 export const deletePrescribedTest = async (testId: number, transaction?: Transaction) => {
-  // Get the test before deletion to get visit_id
+  // Get the test before deletion to get visit_id and test_prescription_id
   const test = await PrescribedTest.findByPk(testId, { transaction });
   if (!test) return 0;
+
+  const testPrescriptionId = test.test_prescription_id;
+
+  // Count tests before deletion to check if this is the last one
+  let wasLastTest = false;
+  if (testPrescriptionId) {
+    const testsCount = await PrescribedTest.count({
+      where: { test_prescription_id: testPrescriptionId },
+      transaction,
+    });
+    wasLastTest = testsCount === 1;
+  }
 
   // Find the bill for this visit
   const bill = await ClinicalBill.findOne({
@@ -232,6 +245,14 @@ export const deletePrescribedTest = async (testId: number, transaction?: Transac
     } catch (billingError) {
       console.error('Failed to remove prescribed test from billing:', billingError);
     }
+  }
+
+  // If this was the last test, delete the TestPrescription
+  if (deletedCount > 0 && wasLastTest && testPrescriptionId) {
+    await TestPrescription.destroy({
+      where: { id: testPrescriptionId },
+      transaction,
+    });
   }
 
   return deletedCount;

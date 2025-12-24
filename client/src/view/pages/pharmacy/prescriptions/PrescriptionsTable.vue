@@ -23,7 +23,7 @@
               <th style="min-width: 100px">Source</th>
               <th style="min-width: 100px">Status</th>
               <th style="min-width: 100px">Date Prescribed</th>
-              <th class="text-right" style="min-width: 50px">Action</th>
+              <th class="text-right" style="min-width: 50px"></th>
             </tr>
           </thead>
           <tbody>

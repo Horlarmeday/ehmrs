@@ -16,16 +16,16 @@
                   <div class="result-meta">
                     <small class="text-muted mr-3">
                       <i class="fas fa-calendar-alt"></i>
-                      {{ formatDate(result.created_at) }}
+                      {{ formatDate(result?.createdAt) }}
                     </small>
                     <small v-if="result.approved_by" class="text-muted mr-3">
                       <i class="fas fa-user-md"></i>
-                      Approved by: {{ result.approved_by }}
+                      Approved by: {{ result?.investigation.investigation_approver?.fullname }}
                     </small>
-                    <small v-if="result.approved_at" class="text-muted">
+                    <p v-if="result?.investigation?.investigation_approved_date" class="text-bold">
                       <i class="fas fa-check-circle text-success"></i>
-                      {{ formatDate(result.approved_at) }}
-                    </small>
+                      {{ formatDate(result?.investigation.investigation_approved_date) }}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -49,9 +49,10 @@
               <div>
                 <strong class="text-success">Approved & Finalized</strong>
                 <br />
-                <small class="text-muted">
-                  {{ formatDate(result.approved_at) }} by {{ result.approved_by || 'Radiologist' }}
-                </small>
+                <p class="text-bold">
+                  {{ formatDate(result?.investigation.investigation_approved_date) }} by
+                  {{ result?.investigation.investigation_approver?.fullname || 'Radiologist' }}
+                </p>
               </div>
             </div>
           </div>

@@ -241,4 +241,41 @@ export default {
     state.uploadProgress = {};
     state.imageUploadErrors = [];
   },
+
+  /**
+   * COMBO INVESTIGATIONS
+   */
+  SET_COMBO_INVESTIGATIONS(state, comboInvestigations) {
+    state.comboInvestigations = comboInvestigations;
+  },
+
+  SET_COMBO_INVESTIGATION(state, comboInvestigation) {
+    state.comboInvestigation = comboInvestigation;
+  },
+
+  SET_COMBO_INVESTIGATIONS_TOTAL(state, total) {
+    state.totalComboInvestigations = total;
+  },
+
+  SET_COMBO_INVESTIGATIONS_PAGES(state, pages) {
+    state.totalComboInvestigationsPages = pages;
+  },
+
+  ADD_COMBO_INVESTIGATION(state, comboInvestigation) {
+    state.comboInvestigations.unshift(comboInvestigation);
+  },
+
+  UPDATE_COMBO_INVESTIGATION(state, comboInvestigation) {
+    const index = state.comboInvestigations.findIndex((t) => t.id === comboInvestigation.id);
+    if (index !== -1) {
+      Object.assign(state.comboInvestigations[index], comboInvestigation);
+    }
+  },
+
+  REMOVE_COMBO_INVESTIGATION(state, id) {
+    const index = state.comboInvestigations.findIndex((t) => t.id === id);
+    if (index !== -1) {
+      state.comboInvestigations.splice(index, 1);
+    }
+  },
 };

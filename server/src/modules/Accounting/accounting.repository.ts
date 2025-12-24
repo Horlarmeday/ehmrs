@@ -5343,7 +5343,7 @@ export class AccountingRepository {
 
   /**
    * Get recent bills with pagination
-   * Orders by payment_status PENDING first, then by updatedAt DESC
+   * Orders by updatedAt DESC (latest first), then by payment_status PENDING as secondary sort
    * @param limit - Number of bills to retrieve
    * @returns Array of recent bills
    */
@@ -5351,8 +5351,8 @@ export class AccountingRepository {
     return await ClinicalBill.findAll({
       limit,
       order: [
-        [Sequelize.literal("CASE WHEN payment_status = 'PENDING' THEN 0 ELSE 1 END"), 'ASC'],
         ['updatedAt', 'DESC'],
+        [Sequelize.literal("CASE WHEN payment_status = 'PENDING' THEN 0 ELSE 1 END"), 'ASC'],
       ],
       include: [
         {
@@ -5378,6 +5378,11 @@ export class AccountingRepository {
     return await ClinicalPayment.findAll({
       limit,
       order: [['processed_at', 'DESC']],
+      where: {
+        status: {
+          [Op.notIn]: [PaymentStatus.CANCELLED, PaymentStatus.REFUNDED, PaymentStatus.FAILED],
+        },
+      },
       include: [
         {
           model: Patient,

@@ -479,8 +479,8 @@ export class VisitBillingHelper {
         );
 
         if (!hmoPricing) {
-          const unitPrice = prescribedDrug.total_price || 0;
-          const totalPrice = unitPrice;
+          const unitPrice = (Number(prescribedDrug.total_price) / Number(prescribedDrug.quantity_to_dispense)) || 0;
+          const totalPrice = prescribedDrug.total_price || 0;
 
           return {
             unitPrice,
@@ -498,8 +498,8 @@ export class VisitBillingHelper {
         };
       } else {
         // Use regular pricing (cash patient)
-        const unitPrice = prescribedDrug.total_price || 0;
-        const totalPrice = unitPrice;
+        const unitPrice = (Number(prescribedDrug.total_price) / Number(prescribedDrug.quantity_to_dispense)) || 0;
+        const totalPrice = prescribedDrug.total_price || 0;
 
         return {
           unitPrice,
@@ -510,8 +510,8 @@ export class VisitBillingHelper {
       }
     } catch (error) {
       // Fallback to regular pricing if HMO pricing fails
-      const unitPrice = prescribedDrug.original_total_price || 0;
-      const totalPrice = unitPrice;
+      const unitPrice = (Number(prescribedDrug.total_price) / Number(prescribedDrug.quantity_to_dispense)) || 0;
+      const totalPrice = prescribedDrug.total_price || 0;
 
       return {
         unitPrice,
@@ -734,8 +734,8 @@ export class VisitBillingHelper {
       if (patientInsurance) {
         // For additional items, we might not have HMO pricing, so use regular pricing
         // but mark as insurance billing mode
-        const unitPrice = prescribedAdditionalItem.total_price || 0;
-        const totalPrice = unitPrice;
+        const unitPrice = (Number(prescribedAdditionalItem.total_price) / Number(prescribedAdditionalItem.quantity_to_dispense)) || 0;
+        const totalPrice = prescribedAdditionalItem.total_price || 0;
 
         // For insurance, typically patient pays a small co-pay
         const patientCoPay = totalPrice * 0.1; // 10% co-pay
@@ -749,8 +749,8 @@ export class VisitBillingHelper {
         };
       } else {
         // Use regular pricing (cash patient)
-        const unitPrice = prescribedAdditionalItem.total_price || 0;
-        const totalPrice = unitPrice;
+        const unitPrice = (Number(prescribedAdditionalItem.total_price) / Number(prescribedAdditionalItem.quantity_to_dispense)) || 0;
+        const totalPrice = prescribedAdditionalItem.total_price || 0;
 
         return {
           unitPrice,
@@ -761,8 +761,8 @@ export class VisitBillingHelper {
       }
     } catch (error) {
       // Fallback to regular pricing
-      const unitPrice = prescribedAdditionalItem.total_price || 0;
-      const totalPrice = unitPrice;
+      const unitPrice = (Number(prescribedAdditionalItem.total_price) / Number(prescribedAdditionalItem.quantity_to_dispense)) || 0;
+      const totalPrice = prescribedAdditionalItem.total_price || 0;
 
       return {
         unitPrice,

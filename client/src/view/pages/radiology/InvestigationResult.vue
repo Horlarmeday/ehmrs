@@ -18,6 +18,16 @@
             <!-- Quick Actions -->
             <b-button-group size="sm">
               <b-button
+                variant="outline-primary"
+                @click="downloadPDF"
+                :disabled="downloadingPdf"
+                v-b-tooltip.hover
+                title="Download PDF Report"
+              >
+                <b-spinner v-if="downloadingPdf" small></b-spinner>
+                <i v-else class="fas fa-file-pdf"></i>
+              </b-button>
+              <b-button
                 variant="outline-secondary"
                 @click="viewPrescription"
                 v-b-tooltip.hover
@@ -59,7 +69,9 @@
               <b-col md="3">
                 <div class="metadata-item">
                   <small class="text-muted d-block">Approved Date</small>
-                  <strong>{{ formatDate(result?.approved_at) }}</strong>
+                  <strong>{{
+                    formatDate(result?.results?.[0]?.investigation?.investigation_approved_date)
+                  }}</strong>
                 </div>
               </b-col>
               <b-col md="3">
@@ -137,24 +149,12 @@ export default {
       showShareModal: false,
       shareEmail: '',
       shareIncludeImages: true,
+      downloadingPdf: false,
     };
   },
   computed: {
     result() {
       return this.$store.state.radiology.result;
-    },
-    totalImages() {
-      if (!this.result?.results) return 0;
-      return this.result.results.reduce((total, result) => {
-        return total + (result.images?.length || 0);
-      }, 0);
-    },
-    dicomImageCount() {
-      if (!this.result?.results) return 0;
-      return this.result.results.reduce((total, result) => {
-        const dicomImages = (result.images || []).filter((img) => img.file_type === 'DICOM');
-        return total + dicomImages.length;
-      }, 0);
     },
     hasCriticalFindings() {
       if (!this.result?.results) return false;
@@ -163,9 +163,6 @@ export default {
     criticalFindingsCount() {
       if (!this.result?.results) return 0;
       return this.result.results.filter((result) => result.has_critical_finding).length;
-    },
-    hasImages() {
-      return this.totalImages > 0;
     },
   },
   async created() {
@@ -178,11 +175,6 @@ export default {
         await this.$store.dispatch('radiology/fetchOneInvestigationResult', {
           id: this.$route.params.id,
         });
-
-        // Check for previous results
-        if (this.result?.patient?.id) {
-          await this.checkPreviousResults();
-        }
       } catch (error) {
         this.$notify({
           group: 'foo',
@@ -192,17 +184,6 @@ export default {
         });
       } finally {
         this.isLoading = false;
-      }
-    },
-
-    async checkPreviousResults() {
-      try {
-        const response = await this.$http.get(
-          `/radiology/patient-results/${this.result.patient.id}`
-        );
-        this.hasPreviousResults = response.data.data && response.data.data.length > 1; // More than current
-      } catch (error) {
-        console.error('Error checking previous results:', error);
       }
     },
 
@@ -248,99 +229,27 @@ export default {
       }
     },
 
-    printPage() {
-      window.print();
-    },
-
-    downloadPdf() {
-      this.$notify({
-        group: 'foo',
-        title: 'Info',
-        text: 'PDF generation in progress...',
-        type: 'info',
-      });
-      // Call API to generate PDF
-      window.open(`/radiology/results/${this.$route.params.id}/pdf`, '_blank');
-    },
-
-    async downloadAllImages() {
-      this.$notify({
-        group: 'foo',
-        title: 'Download Started',
-        text: 'Preparing all images for download...',
-        type: 'info',
-      });
-
+    async downloadPDF() {
+      this.downloadingPdf = true;
       try {
-        const response = await this.$http.get(
-          `/radiology/results/${this.$route.params.id}/download-images`,
-          {
-            responseType: 'blob',
-          }
-        );
+        await this.$store.dispatch('radiology/downloadRadiologyResult', {
+          id: this.$route.params.id,
+        });
 
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `result-${this.$route.params.id}-images.zip`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-
-        this.$notify({
-          group: 'foo',
+        this.$bvToast.toast('PDF downloaded successfully', {
           title: 'Success',
-          text: 'All images downloaded successfully',
-          type: 'success',
+          variant: 'success',
+          solid: true,
         });
       } catch (error) {
-        this.$notify({
-          group: 'foo',
+        console.error('Error downloading PDF:', error);
+        this.$bvToast.toast(error.response?.data?.message || 'Failed to download PDF', {
           title: 'Error',
-          text: 'Failed to download images',
-          type: 'error',
+          variant: 'danger',
+          solid: true,
         });
-      }
-    },
-
-    shareResult() {
-      this.showShareModal = true;
-    },
-
-    async handleShare() {
-      if (!this.shareEmail) {
-        this.$notify({
-          group: 'foo',
-          title: 'Error',
-          text: 'Please enter an email address',
-          type: 'error',
-        });
-        return;
-      }
-
-      try {
-        await this.$http.post(`/radiology/results/${this.$route.params.id}/share`, {
-          email: this.shareEmail,
-          includeImages: this.shareIncludeImages,
-        });
-
-        this.$notify({
-          group: 'foo',
-          title: 'Success',
-          text: 'Result shared successfully',
-          type: 'success',
-        });
-
-        this.showShareModal = false;
-        this.shareEmail = '';
-        this.shareIncludeImages = true;
-      } catch (error) {
-        this.$notify({
-          group: 'foo',
-          title: 'Error',
-          text: 'Failed to share result',
-          type: 'error',
-        });
+      } finally {
+        this.downloadingPdf = false;
       }
     },
 

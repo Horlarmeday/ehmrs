@@ -159,3 +159,7 @@ export { LabFormTemplateVersion } from './labFormTemplateVersion';
 // Combo Test Models
 export { ComboTest } from './comboTest';
 export { ComboTestItem } from './comboTestItem';
+
+// Combo Investigation Models
+export { ComboInvestigation } from './comboInvestigation';
+export { ComboInvestigationItem } from './comboInvestigationItem';

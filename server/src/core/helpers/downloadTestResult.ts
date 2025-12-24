@@ -10,6 +10,7 @@ type Result = {
   name: string;
   model: string;
   range: string;
+  description?: string;
   rows: string[];
   headers: string[];
   align: string[];
@@ -180,7 +181,71 @@ function generateResultTable(doc: PDFDocument, testResult: TestResult, y: number
       borderColor: '#ddd',
     }
   );
-  return doc.y; // Return the new Y position after generating the table
+
+  // Render descriptions after the table
+  // After table is rendered, doc.y will be at the bottom of the table
+  const leftMargin = 71; // Left margin for text alignment
+  const tableWidth = 465; // Table width
+  const descriptionLeftMargin = leftMargin + 10; // Slightly indented from table
+
+  // Add some space after the table before descriptions
+  doc.moveDown(0.5);
+
+  testResult.results.forEach((result) => {
+    if (result.description && result.description.trim()) {
+      // Check if we need a new page
+      if (doc.y + 50 > doc.page.height - 100) {
+        doc.addPage();
+        doc.y = 50;
+      }
+
+      // Set font properties for text measurement
+      doc.fontSize(10).font('Helvetica');
+
+      // Calculate text height
+      const padding = 10;
+      const textWidth = tableWidth - 20 - padding * 2;
+      const textHeight = doc.heightOfString(result.description, {
+        width: textWidth,
+        lineGap: 2,
+      });
+
+      // Calculate box dimensions
+      const boxHeight = textHeight + padding * 2;
+      const boxY = doc.y;
+      const boxWidth = tableWidth - 20;
+
+      // Draw grey background rectangle
+      doc
+        .fillColor('#f8f9fa')
+        .rect(descriptionLeftMargin, boxY, boxWidth, boxHeight)
+        .fill();
+
+      // Draw border
+      doc
+        .strokeColor('#e0e0e0')
+        .lineWidth(1)
+        .rect(descriptionLeftMargin, boxY, boxWidth, boxHeight)
+        .stroke();
+
+      // Render text on top with padding
+      doc
+        .fillColor('#5e6278')
+        .text(result.description, descriptionLeftMargin + padding, boxY + padding, {
+          width: textWidth,
+          align: 'left',
+          lineGap: 2,
+        });
+
+      // Update doc.y to position after the description box
+      doc.y = boxY + boxHeight;
+
+      // Move down after description
+      doc.moveDown(0.5);
+    }
+  });
+
+  return doc.y; // Return the new Y position after generating the table and descriptions
 }
 
 function addStampSignatureAndFooter(doc: PDFDocument, verifier: string, approver: string) {

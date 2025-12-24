@@ -54,4 +54,12 @@ export default {
   dicomMetadata: null,
   uploadProgress: {},
   imageUploadErrors: [],
+
+  /**
+   * COMBO INVESTIGATIONS
+   */
+  comboInvestigations: [],
+  comboInvestigation: null,
+  totalComboInvestigations: 0,
+  totalComboInvestigationsPages: 0,
 };

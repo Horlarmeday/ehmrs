@@ -1,4 +1,6 @@
 import {
+  ComboInvestigation,
+  ComboInvestigationItem,
   Imaging,
   Investigation,
   InvestigationPrescription,
@@ -8,6 +10,7 @@ import {
   Patient,
   PatientInsurance,
   PrescribedInvestigation,
+  Staff,
 } from '../../database/models';
 import sequelize, { Op, WhereOptions } from 'sequelize';
 import {
@@ -16,6 +19,7 @@ import {
   dateIntervalQuery,
   paginate,
   patientAttributes,
+  staffAttributes,
   StatusCodes,
 } from '../../core/helpers/helper';
 import { getModelById, getPeriodQuery } from '../../core/helpers/general';
@@ -414,12 +418,24 @@ export const getOneRequestedInvestigation = async (
       },
       {
         model: PrescribedInvestigation,
-        attributes: ['investigation_id', 'id', 'status', 'payment_status'],
+        attributes: [
+          'investigation_id',
+          'id',
+          'status',
+          'payment_status',
+          'investigation_approved_by',
+          'investigation_approved_date',
+        ],
         include: [
           { model: Investigation, attributes: ['name', 'id'] },
           {
             model: InvestigationResult,
             attributes: ['result', 'image', 'comments', 'status', 'id'],
+          },
+          {
+            model: Staff,
+            as: 'investigation_approver',
+            attributes: staffAttributes,
           },
         ],
       },
@@ -688,15 +704,27 @@ export const getInvestigationResult = async (investigationPrescriptionId: number
       },
       {
         model: InvestigationResult,
-        attributes: ['result', 'prescribed_investigation_id', 'status', 'id'],
+        attributes: ['result', 'prescribed_investigation_id', 'status', 'id', 'createdAt'],
         where: {
           status: ResultStatus.ACCEPTED,
         },
         include: [
           {
             model: PrescribedInvestigation,
-            attributes: ['id'],
-            include: [{ model: Investigation, attributes: ['name'] }],
+            attributes: [
+              'id',
+              'payment_status',
+              'investigation_approved_by',
+              'investigation_approved_date',
+            ],
+            include: [
+              { model: Investigation, attributes: ['name'] },
+              {
+                model: Staff,
+                as: 'investigation_approver',
+                attributes: staffAttributes,
+              },
+            ],
           },
         ],
       },
@@ -738,4 +766,165 @@ export const changeInvestigationResultsStatus = async (
   } catch (e) {
     throw new BadException('Error', StatusCodes.SERVER_ERROR, ERROR_UPDATING_INVESTIGATION);
   }
+};
+
+/** ***********************
+ * COMBO INVESTIGATIONS
+ ********************** */
+
+/**
+ * create a combo investigation
+ * @param data
+ */
+export const createComboInvestigation = async (data: {
+  name: string;
+  staff_id: number;
+  investigation_ids: number[];
+}) => {
+  return sequelizeConnection.transaction(async t => {
+    const comboInvestigation = await ComboInvestigation.create(
+      {
+        name: data.name,
+        staff_id: data.staff_id,
+      },
+      { transaction: t }
+    );
+
+    const comboInvestigationItems = data.investigation_ids.map(investigation_id => ({
+      combo_investigation_id: comboInvestigation.id,
+      investigation_id,
+    }));
+
+    await ComboInvestigationItem.bulkCreate(comboInvestigationItems, { transaction: t });
+
+    return getOneComboInvestigation(comboInvestigation.id);
+  });
+};
+
+/**
+ * get combo investigations
+ *
+ * @function
+ * @returns {json} json object with combo investigations data
+ * @param currentPage
+ * @param pageLimit
+ * @param search
+ */
+export const getComboInvestigations = async ({ currentPage = 1, pageLimit = 20, search = null }) => {
+  return ComboInvestigation.paginate({
+    page: +currentPage,
+    paginate: +pageLimit,
+    order: [['name', 'ASC']],
+    where: {
+      ...(search && {
+        name: {
+          [Op.like]: `%${search}%`,
+        },
+      }),
+    },
+    include: [
+      {
+        model: ComboInvestigationItem,
+        as: 'comboInvestigationItems',
+        include: [
+          {
+            model: Investigation,
+            attributes: ['id', 'name', 'price', 'imaging_id'],
+          },
+        ],
+      },
+      {
+        model: Staff,
+        attributes: ['id', 'firstname', 'lastname'],
+      },
+    ],
+  });
+};
+
+/**
+ * get one combo investigation with items
+ * @param id
+ * @returns {Promise<ComboInvestigation>}
+ */
+export const getOneComboInvestigation = async (id: number) => {
+  return ComboInvestigation.findByPk(id, {
+    include: [
+      {
+        model: ComboInvestigationItem,
+        as: 'comboInvestigationItems',
+        include: [
+          {
+            model: Investigation,
+            attributes: [
+              'id',
+              'name',
+              'price',
+              'imaging_id',
+              'nhis_price',
+              'phis_price',
+              'pssh_price',
+              'retainership_price',
+            ],
+          },
+        ],
+      },
+      {
+        model: Staff,
+        attributes: ['id', 'firstname', 'lastname'],
+      },
+    ],
+  });
+};
+
+/**
+ * update combo investigation
+ * @param data
+ * @returns {Promise<ComboInvestigation>}
+ */
+export const updateComboInvestigation = async (data: {
+  id: number;
+  name?: string;
+  investigation_ids?: number[];
+  is_active?: boolean;
+}) => {
+  return sequelizeConnection.transaction(async t => {
+    const comboInvestigation = await ComboInvestigation.findByPk(data.id);
+
+    if (!comboInvestigation) {
+      throw new BadException('NOT_FOUND', StatusCodes.NOT_FOUND, 'Combo investigation not found');
+    }
+
+    if (data.name) {
+      await comboInvestigation.update({ name: data.name }, { transaction: t });
+    }
+
+    if (data.is_active !== undefined) {
+      await comboInvestigation.update({ is_active: data.is_active }, { transaction: t });
+    }
+
+    if (data.investigation_ids) {
+      // Delete existing items
+      await ComboInvestigationItem.destroy(
+        { where: { combo_investigation_id: data.id }, transaction: t }
+      );
+
+      // Create new items
+      const comboInvestigationItems = data.investigation_ids.map(investigation_id => ({
+        combo_investigation_id: data.id,
+        investigation_id,
+      }));
+      await ComboInvestigationItem.bulkCreate(comboInvestigationItems, { transaction: t });
+    }
+
+    return getOneComboInvestigation(data.id);
+  });
+};
+
+/**
+ * delete combo investigation
+ * @param id
+ * @returns {Promise<number>}
+ */
+export const deleteComboInvestigation = async (id: number) => {
+  return ComboInvestigation.destroy({ where: { id } });
 };

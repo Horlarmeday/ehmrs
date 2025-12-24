@@ -245,6 +245,7 @@ export default {
             start: payload.start,
             end: payload.end,
             period: payload.period,
+            status: payload.status || null,
           },
         })
         .then((response) => {
@@ -315,6 +316,26 @@ export default {
           commit('SET_PRESCRIPTIONS_HISTORY', response.data.data.docs);
           commit('SET_HISTORY_TOTAL', response.data.data.total);
           commit('SET_HISTORY_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchPrescriptionStatistics({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/pharmacy/prescriptions/statistics/get', {
+          params: {
+            period: payload.period || null,
+            start: payload.start || null,
+            end: payload.end || null,
+          },
+        })
+        .then((response) => {
+          commit('SET_PRESCRIPTION_STATISTICS', response.data.data);
           resolve(response);
         })
         .catch((error) => {

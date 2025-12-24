@@ -16,6 +16,7 @@ import {
   searchInventoryItems,
   updateInventoryItem,
   updateReturnRequests,
+  getFilteredInventoryItems,
 } from './inventory.repository';
 import { Inventory, InventoryItem, ReturnItem } from '../../database/models';
 import {
@@ -130,6 +131,21 @@ class InventoryService {
    */
   static async getInventoryItems(body: GetInventoryItemsBody) {
     const { currentPage, pageLimit, search, inventory, filter } = body;
+    
+    // Check if filter is one of the predefined filter types
+    const filterTypes = ['low_stock', 'critical_stock', 'expiring_soon', 'expired'];
+    const isFilterType = filter && filterTypes.includes(filter);
+    
+    if (isFilterType) {
+      // Use the new filtered items function
+      return getFilteredInventoryItems({
+        inventory,
+        currentPage: +currentPage || 1,
+        pageLimit: +pageLimit || 10,
+        filterType: filter,
+      });
+    }
+    
     if (filter && search) {
       return searchInventoryItems({
         inventory,

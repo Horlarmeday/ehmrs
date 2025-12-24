@@ -61,7 +61,6 @@
               :options="tests"
               :reduce="(test) => test.id"
               placeholder="Search and select tests to include..."
-              class="form-control-lg"
               :class="{ 'is-invalid': errors.test_ids }"
             >
               <template #option="{ price, name }">
@@ -90,18 +89,17 @@
           </div>
         </div>
 
-        <div class="form-group row">
+        <div class="form-group row" v-if="totalPrice > 0">
           <!-- Total Price Display -->
-          <div v-if="totalPrice > 0" class="form-group row">
-            <label class="col-lg-3 col-form-label font-weight-bold text-dark">
-              <i class="fas fa-calculator mr-1 text-primary"></i>
-              Total Price:
-            </label>
-            <div class="col-lg-9">
-              <div class="alert alert-light-success d-flex align-items-center">
-                <div class="alert-text font-weight-bold" style="font-size: 1.2rem">
-                  ₦{{ totalPrice }}
-                </div>
+
+          <label class="col-lg-3 col-form-label font-weight-bold text-dark">
+            <i class="fas fa-calculator mr-1 text-primary"></i>
+            Total Price:
+          </label>
+          <div class="col-lg-9">
+            <div class="alert alert-light-success d-flex align-items-center">
+              <div class="alert-text font-weight-bold" style="font-size: 1.2rem">
+                {{ formatCurrency(totalPrice) }}
               </div>
             </div>
           </div>
@@ -233,6 +231,13 @@ export default {
         loading(true);
         this.debounceTestSearch(loading, search, this);
       }
+    },
+
+    formatCurrency(price) {
+      return new Intl.NumberFormat('en-NG', {
+        style: 'currency',
+        currency: 'NGN',
+      }).format(price);
     },
 
     debounceTestSearch: debounce((loading, search, vm) => {

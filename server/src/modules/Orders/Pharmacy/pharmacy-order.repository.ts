@@ -13,6 +13,7 @@ import {
   RoutesOfAdministration,
   Staff,
   Unit,
+  DrugPrescription,
 } from '../../../database/models';
 import { Optional, Transaction, WhereOptions } from 'sequelize';
 import dayjs from 'dayjs';
@@ -62,6 +63,51 @@ const PRESCRIPTION_DURATION = {
   Weeks: 7,
   Months: 30,
 };
+
+/**
+ * Extract quantity from dosage administered text
+ * Handles various formats like "4 tablets", "administered 4", "4x", "4.5", etc.
+ * @param text - The text input from the nurse
+ * @returns The extracted quantity or null if not found
+ */
+export function extractQuantityFromDosageText(text: string): number | null {
+  if (!text || typeof text !== 'string') {
+    return null;
+  }
+
+  // Remove leading/trailing whitespace
+  const trimmedText = text.trim();
+
+  if (!trimmedText) {
+    return null;
+  }
+
+  // Pattern to match numbers (integers or decimals)
+  // This will match:
+  // - "4" in "4 tablets"
+  // - "4" in "administered 4"
+  // - "4.5" in "4.5 tablets"
+  // - "4" in "4x"
+  // - First number found in text
+  const numberPattern = /(\d+\.?\d*)/;
+
+  const match = trimmedText.match(numberPattern);
+
+  if (!match || match.length === 0) {
+    return null;
+  }
+
+  // Extract the first number found
+  const quantity = parseFloat(match[1]);
+
+  // Validate it's a valid positive number
+  if (isNaN(quantity) || quantity < 0) {
+    return null;
+  }
+
+  // Return as integer if it's a whole number, otherwise return decimal
+  return quantity % 1 === 0 ? parseInt(quantity.toString(), 10) : quantity;
+}
 
 /**
  * prescribe a drug for patient
@@ -307,6 +353,9 @@ export const getPrescribedDrugs = ({ currentPage = 1, pageLimit = 10, filter = n
     where: {
       ...(filter && JSON.parse(filter)),
     },
+    attributes: {
+      include: ['quantity_administered'],
+    },
     include: [
       {
         model: Drug,
@@ -543,6 +592,9 @@ export const getOnePrescribedDrug = async (
 ): Promise<PrescribedDrug> => {
   return await PrescribedDrug.findOne({
     where: { ...query },
+    attributes: {
+      include: ['quantity_administered'],
+    },
     include: [
       {
         model: Drug,
@@ -608,6 +660,9 @@ export const getDrugsPrescribed = async (
   return PrescribedDrug.findAll({
     where: { ...query },
     order: [['createdAt', 'DESC']],
+    attributes: {
+      include: ['quantity_administered'],
+    },
     include: [
       {
         model: Drug,
@@ -835,7 +890,88 @@ export const bulkSyringeNeedlePrescriptions = async ({
  * @returns {Promise<PatientTreatment[]>} patient treatment data
  */
 export const createBulkTreatmentData = async (data): Promise<PatientTreatment[]> => {
-  return PatientTreatment.bulkCreate(data);
+  const transaction = await sequelizeConnection.transaction();
+
+  try {
+    // Group treatments by drug_id to handle multiple administrations of the same drug
+    const drugGroups = new Map<number, typeof data>();
+
+    for (const treatment of data) {
+      const drugId = treatment.drug_id;
+      if (!drugGroups.has(drugId)) {
+        drugGroups.set(drugId, []);
+      }
+      drugGroups.get(drugId)!.push(treatment);
+    }
+
+    // Process each drug group
+    for (const [drugId, treatments] of drugGroups.entries()) {
+      // Get the prescribed drug to check current quantity_administered
+      const prescribedDrug = await PrescribedDrug.findByPk(drugId, { transaction });
+
+      if (!prescribedDrug) {
+        throw new BadException(
+          'NOT_FOUND',
+          StatusCodes.NOT_FOUND,
+          `Prescribed drug with id ${drugId} not found`
+        );
+      }
+
+      // Calculate total quantity to be administered in this batch
+      let totalQuantityToAdminister = 0;
+
+      for (const treatment of treatments) {
+        // Extract quantity from dosage_administered text
+        const extractedQuantity = extractQuantityFromDosageText(treatment.dosage_administered);
+
+        if (extractedQuantity === null || extractedQuantity <= 0) {
+          throw new BadException(
+            'VALIDATION_ERROR',
+            StatusCodes.BAD_REQUEST,
+            `Invalid or missing quantity in dosage_administered for drug_id ${drugId}: "${treatment.dosage_administered}"`
+          );
+        }
+
+        totalQuantityToAdminister += extractedQuantity;
+      }
+
+      // Calculate remaining quantity
+      const currentAdministered = prescribedDrug.quantity_administered || 0;
+      const remainingQuantity = prescribedDrug.quantity_to_dispense - currentAdministered;
+
+      // Validate that new quantity doesn't exceed remaining
+      if (totalQuantityToAdminister > remainingQuantity) {
+        throw new BadException(
+          'VALIDATION_ERROR',
+          StatusCodes.BAD_REQUEST,
+          `Cannot administer ${totalQuantityToAdminister} units. Remaining quantity is ${remainingQuantity} units for drug_id ${drugId}`
+        );
+      }
+
+      // Update quantity_administered atomically
+      await PrescribedDrug.update(
+        {
+          quantity_administered: currentAdministered + totalQuantityToAdminister,
+        },
+        {
+          where: { id: drugId },
+          transaction,
+        }
+      );
+    }
+
+    // Create all treatment records
+    const createdTreatments = await PatientTreatment.bulkCreate(data, { transaction });
+
+    // Commit transaction
+    await transaction.commit();
+
+    return createdTreatments;
+  } catch (error) {
+    // Rollback transaction on error
+    await transaction.rollback();
+    throw error;
+  }
 };
 
 /**
@@ -884,6 +1020,25 @@ export const deletePrescribedDrug = async (drugId: number, transaction?: Transac
   const drug = await PrescribedDrug.findByPk(drugId, { transaction });
   if (!drug) return 0;
 
+  const drugPrescriptionId = drug.drug_prescription_id;
+
+  // Count drugs and items before deletion to check if this is the last one
+  let wasLastItem = false;
+  if (drugPrescriptionId) {
+    const [drugsCount, itemsCount] = await Promise.all([
+      PrescribedDrug.count({
+        where: { drug_prescription_id: drugPrescriptionId },
+        transaction,
+      }),
+      PrescribedAdditionalItem.count({
+        where: { drug_prescription_id: drugPrescriptionId },
+        transaction,
+      }),
+    ]);
+    // If this is the only drug and there are no items, it's the last one
+    wasLastItem = drugsCount === 1 && itemsCount === 0;
+  }
+
   const bill = await ClinicalBill.findOne({
     where: { visit_id: drug.visit_id },
     transaction,
@@ -899,6 +1054,14 @@ export const deletePrescribedDrug = async (drugId: number, transaction?: Transac
     }
   }
 
+  // If this was the last drug/item, delete the DrugPrescription
+  if (deletedCount > 0 && wasLastItem && drugPrescriptionId) {
+    await DrugPrescription.destroy({
+      where: { id: drugPrescriptionId },
+      transaction,
+    });
+  }
+
   return deletedCount;
 };
 
@@ -909,6 +1072,25 @@ export const deletePrescribedDrug = async (drugId: number, transaction?: Transac
 export const deleteAdditionalItem = async (itemId: number, transaction?: Transaction) => {
   const item = await PrescribedAdditionalItem.findByPk(itemId, { transaction });
   if (!item) return 0;
+
+  const drugPrescriptionId = item.drug_prescription_id;
+
+  // Count drugs and items before deletion to check if this is the last one
+  let wasLastItem = false;
+  if (drugPrescriptionId) {
+    const [drugsCount, itemsCount] = await Promise.all([
+      PrescribedDrug.count({
+        where: { drug_prescription_id: drugPrescriptionId },
+        transaction,
+      }),
+      PrescribedAdditionalItem.count({
+        where: { drug_prescription_id: drugPrescriptionId },
+        transaction,
+      }),
+    ]);
+    // If there are no drugs and this is the only item, it's the last one
+    wasLastItem = drugsCount === 0 && itemsCount === 1;
+  }
 
   const bill = await ClinicalBill.findOne({
     where: { visit_id: item.visit_id },
@@ -923,6 +1105,14 @@ export const deleteAdditionalItem = async (itemId: number, transaction?: Transac
     } catch (billingError) {
       logger.error('Failed to remove additional item from billing:', billingError);
     }
+  }
+
+  // If this was the last drug/item, delete the DrugPrescription
+  if (deletedCount > 0 && wasLastItem && drugPrescriptionId) {
+    await DrugPrescription.destroy({
+      where: { id: drugPrescriptionId },
+      transaction,
+    });
   }
 
   return deletedCount;

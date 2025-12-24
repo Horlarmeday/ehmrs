@@ -15,12 +15,12 @@
               <tr class="text-left">
                 <th>Patient</th>
                 <th>Drug</th>
-                <th>Quantity Prescribed</th>
                 <th>Quantity to Dispense</th>
                 <th>Quantity Dispensed</th>
+                <th>Payment Status</th>
                 <th>Status</th>
                 <th>Date Prescribed</th>
-                <!-- <th>Actions</th> -->
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -36,9 +36,13 @@
                   </router-link>
                 </td>
                 <td>{{ prescription.drug?.name }}</td>
-                <td>{{ prescription.quantity_prescribed }}</td>
                 <td>{{ prescription.quantity_to_dispense }}</td>
                 <td>{{ prescription.quantity_dispensed || 0 }}</td>
+                <td>
+                  <span :class="getPaymentColor(prescription.payment_status)">{{
+                    prescription.payment_status
+                  }}</span>
+                </td>
                 <td>
                   <span
                     :class="{
@@ -49,15 +53,17 @@
                     {{ prescription.dispense_status }}
                   </span>
                 </td>
-                <td>{{ prescription.date_prescribed | dayjs('MMM DD, YYYY') }}</td>
-                <!-- <td>
+                <td>{{ prescription.date_prescribed | dayjs('MMM DD, YYYY, h:mma') }}</td>
+                <td>
                   <router-link
-                    :to="`/visits/${prescription.visit_id}`"
-                    class="btn btn-sm btn-light-primary"
+                    v-b-tooltip.hover
+                    title="Dispense drug"
+                    :to="`/pharmacy/prescriptions/${prescription.drug_prescription_id}`"
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm"
                   >
-                    View Visit
+                    <ArrowRightIcon />
                   </router-link>
-                </td> -->
+                </td>
               </tr>
             </tbody>
           </table>
@@ -82,12 +88,12 @@
               <tr class="text-left">
                 <th>Patient</th>
                 <th>Item</th>
-                <th>Quantity Prescribed</th>
                 <th>Quantity to Dispense</th>
                 <th>Quantity Dispensed</th>
+                <th>Payment Status</th>
                 <th>Status</th>
                 <th>Date Prescribed</th>
-                <!-- <th>Actions</th> -->
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -103,9 +109,13 @@
                   </router-link>
                 </td>
                 <td>{{ item.drug?.name }}</td>
-                <td>{{ item.quantity_prescribed }}</td>
                 <td>{{ item.quantity_to_dispense }}</td>
                 <td>{{ item.quantity_dispensed || 0 }}</td>
+                <td>
+                  <span :class="getPaymentColor(item.payment_status)">{{
+                    item.payment_status
+                  }}</span>
+                </td>
                 <td>
                   <span
                     :class="{
@@ -116,15 +126,17 @@
                     {{ item.dispense_status }}
                   </span>
                 </td>
-                <td>{{ item.date_prescribed | dayjs('MMM DD, YYYY') }}</td>
-                <!-- <td>
+                <td>{{ item.date_prescribed | dayjs('MMM DD, YYYY, h:mma') }}</td>
+                <td>
                   <router-link
-                    :to="`/visits/${item.visit_id}`"
-                    class="btn btn-sm btn-light-primary"
+                    v-b-tooltip.hover
+                    title="Dispense item"
+                    :to="`/pharmacy/prescriptions/${item.drug_prescription_id}`"
+                    class="btn btn-icon btn-light btn-hover-primary btn-sm"
                   >
-                    View Visit
+                    <ArrowRightIcon />
                   </router-link>
-                </td> -->
+                </td>
               </tr>
             </tbody>
           </table>
@@ -156,11 +168,13 @@
 <script>
 import Pagination from '@/utils/Pagination.vue';
 import { mapState } from 'vuex';
+import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
 
 export default {
   name: 'PendingPrescriptions',
   components: {
     Pagination,
+    ArrowRightIcon,
   },
   props: {
     inventoryItemId: {
@@ -199,6 +213,13 @@ export default {
     },
   },
   methods: {
+    getPaymentColor(status) {
+      if (status === 'Pending') return 'label label-inline label-light-warning font-weight-bold';
+      if (status === 'Paid') return 'label label-inline label-light-success font-weight-bold';
+      if (status === 'Cleared') return 'label label-inline label-light-info font-weight-bold';
+      return 'label label-inline label-light-danger font-weight-bold';
+    },
+
     onPageChange(page) {
       this.currentPage = page;
       this.loadPrescriptions();

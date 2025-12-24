@@ -13,6 +13,7 @@ import {
   getGenericDrugs,
   getMeasurements,
   getOneDrugPrescription,
+  getPrescriptionStatistics,
   getRoutesOfAdministration,
   returnDrugToInventory,
   searchGenericDrugs,
@@ -246,13 +247,22 @@ class PharmacyService {
    * @param body
    */
   static async getDrugPrescriptions(body) {
-    const { currentPage, pageLimit, search, start, end, period } = body;
+    const { currentPage, pageLimit, search, start, end, period, status } = body;
 
     if (Object.values(body).length) {
-      return getDrugPrescriptions({ currentPage, pageLimit, period, search, start, end });
+      return getDrugPrescriptions({ currentPage, pageLimit, period, search, start, end, status });
     }
 
     return getDrugPrescriptions({ period });
+  }
+
+  /**
+   * get prescription statistics
+   * @param body
+   */
+  static async getPrescriptionStatisticsService(body) {
+    const { period, start, end } = body;
+    return getPrescriptionStatistics({ period, start, end });
   }
 
   /**

@@ -62,6 +62,20 @@
             :placeholder="`Enter ${selectedField.label || 'value'}`"
           />
         </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea
+            class="form-control form-control-sm"
+            v-model="selectedField.description"
+            @input="onPropertyChange"
+            rows="5"
+            placeholder="Enter detailed description for this field (optional)"
+          ></textarea>
+          <small class="form-text text-muted">
+            Multi-line description that will be displayed in preview, form, and result views
+          </small>
+        </div>
       </div>
 
       <!-- Validation -->
