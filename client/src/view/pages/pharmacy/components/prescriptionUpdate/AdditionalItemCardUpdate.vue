@@ -67,7 +67,7 @@
     <div class="primary-action-section">
       <button
         class="primary-action-btn"
-        :disabled="item.shouldDisableDispense"
+        :disabled="item.shouldDisableDispense || (item.payment_status === PENDING && DISABLED)"
         @click="handleDispense"
       >
         <span class="btn-icon">📦</span>
@@ -306,6 +306,7 @@ export default {
       returnQuantity: this.item.quantity_remaining_to_return,
       returnReason: '',
       PENDING: 'Pending',
+      DISABLED: 'disabledCard',
       allowedSubRoles: ['HOD'],
       allowedRoles: ['Super Admin'],
       currentUser: parseJwt(localStorage.getItem('user_token')),
@@ -452,6 +453,10 @@ export default {
 </script>
 
 <style scoped>
+.disabledCard {
+  pointer-events: none;
+  opacity: 0.4;
+}
 .additional-item-card-update {
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
   border-radius: 1rem;
