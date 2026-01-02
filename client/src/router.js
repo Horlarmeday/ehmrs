@@ -974,6 +974,14 @@ const router = new Router({
                 requiresAuth: true,
               },
             },
+            {
+              path: 'test-orders-home',
+              name: 'test-orders-home',
+              component: () => import('@/view/pages/orders/TestOrdersHome.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
           ],
         },
         // ORDERS

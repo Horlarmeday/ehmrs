@@ -42,7 +42,7 @@ export default {
       {
         name: 'Laboratory Tests Orders',
         desc: 'Click here to view all laboratory tests orders',
-        link: '/laboratory/samples-to-collect',
+        link: '/laboratory/test-orders-home',
       },
       {
         name: 'Pharmacy Orders',

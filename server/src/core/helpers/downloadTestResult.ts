@@ -222,7 +222,7 @@ function addStampSignatureAndFooter(doc: PDFDocument, verifier: string, approver
   // Approver
   generateApproverLineAndName(doc, pageWidth, lineWidth, signatureY, 'Approved By', approver);
 
-  generateFooter(doc);
+  // generateFooter(doc);
 }
 
 function generateSampleCollectorAndTester(
