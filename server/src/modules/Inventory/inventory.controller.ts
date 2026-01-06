@@ -307,6 +307,31 @@ class InventoryController {
       return next(e);
     }
   }
+
+  /**
+   * get inventory statistics
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with inventory statistics data
+   */
+  static async getInventoryStatistics(req: Request, res: Response, next: NextFunction) {
+    try {
+      const inventoryId = parseInt(req.params.id, 10);
+      const statistics = await InventoryService.getInventoryStatistics(inventoryId);
+
+      return successResponse({
+        res,
+        data: statistics,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
 }
 
 export default InventoryController;

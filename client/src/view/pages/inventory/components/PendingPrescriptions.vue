@@ -8,6 +8,14 @@
     </div>
     <!--end::Header-->
 
+    <!--begin::Search and Filter-->
+    <search-component
+      :show-date-filter="true"
+      @search="onSearch"
+      @filterByDateRange="onSearchByDate"
+    />
+    <!--end::Search and Filter-->
+
     <!--begin::Body-->
     <div class="card-body py-0">
       <!--begin::Table-->
@@ -108,15 +116,23 @@
 <script>
 import Pagination from '@/utils/Pagination.vue';
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
+import SearchComponent from '@/utils/Search.vue';
+import { debounce, removeSpinner } from '@/common/common';
+import dayjs from 'dayjs';
+
 export default {
   name: 'PendingPrescriptions',
   components: {
     Pagination,
     ArrowRightIcon,
+    SearchComponent,
   },
   data: () => ({
     itemsPerPage: 10,
     currentPage: 1,
+    search: '',
+    startDate: null,
+    endDate: null,
   }),
   computed: {
     prescriptions() {
@@ -138,11 +154,48 @@ export default {
         currentPage: this.currentPage,
         itemsPerPage: this.itemsPerPage,
         inventoryItemId: this.$route.params.id,
+        search: this.search || null,
+        start: this.startDate || null,
+        end: this.endDate || null,
       });
     },
     onPageChange(page) {
       this.currentPage = page;
       this.handlePageChange();
+    },
+    onSearch({ search, spinDiv }) {
+      this.search = search;
+      this.currentPage = 1;
+      this.debounceSearch(search, this, spinDiv);
+    },
+    debounceSearch: debounce((search, vm, spinDiv) => {
+      vm.$store
+        .dispatch('inventory/fetchPendingPrescriptions', {
+          currentPage: 1,
+          itemsPerPage: vm.itemsPerPage,
+          inventoryItemId: vm.$route.params.id,
+          search: search || null,
+          start: vm.startDate || null,
+          end: vm.endDate || null,
+        })
+        .then(() => removeSpinner(spinDiv))
+        .catch(() => removeSpinner(spinDiv));
+    }, 500),
+    onSearchByDate({ start, end, dateSpin }) {
+      this.currentPage = 1;
+      this.startDate = dayjs(start).format('YYYY-MM-DD');
+      this.endDate = dayjs(end).format('YYYY-MM-DD');
+      this.$store
+        .dispatch('inventory/fetchPendingPrescriptions', {
+          currentPage: 1,
+          itemsPerPage: this.itemsPerPage,
+          inventoryItemId: this.$route.params.id,
+          search: this.search || null,
+          start: this.startDate,
+          end: this.endDate,
+        })
+        .then(() => removeSpinner(dateSpin))
+        .catch(() => removeSpinner(dateSpin));
     },
     getRemainingQuantity(prescription) {
       return prescription.quantity_to_dispense - prescription.quantity_dispensed;
@@ -159,6 +212,9 @@ export default {
       currentPage: this.currentPage,
       itemsPerPage: this.itemsPerPage,
       inventoryItemId: this.$route.params.id,
+      search: this.search || null,
+      start: this.startDate || null,
+      end: this.endDate || null,
     });
   },
 };

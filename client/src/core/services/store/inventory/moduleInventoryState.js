@@ -20,4 +20,6 @@ export default {
   pendingPrescriptions: [],
   pendingPrescriptionsTotal: 0,
   pendingPrescriptionsPages: 0,
+
+  statistics: null,
 };

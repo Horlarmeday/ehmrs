@@ -363,12 +363,18 @@ class PharmacyService {
       inventoryItemId,
       currentPage = body.currentPage || body.page || 1,
       pageLimit = body.pageLimit || body.pageSize || body.itemsPerPage || 20,
+      search = null,
+      start = null,
+      end = null,
     } = body;
 
     return getPendingPrescriptionsByInventoryItem({
       inventoryItemId: +inventoryItemId,
       currentPage: +currentPage,
       pageLimit: +pageLimit,
+      search: search || null,
+      start: start || null,
+      end: end || null,
     });
   }
 

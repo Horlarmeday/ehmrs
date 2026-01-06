@@ -30,7 +30,8 @@ export type GetInventoryItemsBody = {
   pageLimit?: number;
   search?: string;
   inventory: number;
-  filter: any;
+  filter?: unknown;
+  filterType?: string;
 };
 
 export type ItemsToDispensedBody = {

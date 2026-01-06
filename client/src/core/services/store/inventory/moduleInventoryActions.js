@@ -46,14 +46,22 @@ export default {
 
   fetchInventoryItems({ commit }, payload) {
     return new Promise((resolve, reject) => {
+      const params = {
+        currentPage: payload.currentPage,
+        pageLimit: payload.itemsPerPage,
+        search: payload.search,
+      };
+
+      // Add filter or filterType
+      if (payload.filterType) {
+        params.filterType = payload.filterType;
+      } else if (payload.filter) {
+        params.filter = payload.filter;
+      }
+
       axios
         .get(`/inventory/get/${payload.inventory}/items`, {
-          params: {
-            currentPage: payload.currentPage,
-            pageLimit: payload.itemsPerPage,
-            search: payload.search,
-            filter: payload?.filter,
-          },
+          params,
         })
         .then((response) => {
           commit('SET_ITEMS', response.data.data.docs);
@@ -111,6 +119,9 @@ export default {
             inventoryItemId: payload.inventoryItemId,
             currentPage: payload.currentPage,
             pageLimit: payload.itemsPerPage,
+            search: payload.search || null,
+            start: payload.start || null,
+            end: payload.end || null,
           },
         })
         .then((response) => {
@@ -230,6 +241,20 @@ export default {
           // Clean up resources
           window.URL.revokeObjectURL(url);
           commit('REMOVE_ALL_SELECTED_ITEMS', []);
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchInventoryStatistics({ commit }, inventoryId) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/inventory/get/${inventoryId}/statistics`)
+        .then((response) => {
+          commit('SET_STATISTICS', response.data.data);
           resolve(response);
         })
         .catch((error) => {

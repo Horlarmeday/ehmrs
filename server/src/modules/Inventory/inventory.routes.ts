@@ -13,5 +13,6 @@ router.get('/request-return/get', verify, InventoryController.getInventoryReturn
 router.get('/get/items/:id', verify, InventoryController.getInventoryItem);
 router.get('/get/:id/items', verify, InventoryController.getInventoryItems);
 router.get('/get/:id/history', verify, InventoryController.getInventoryItemHistory);
+router.get('/get/:id/statistics', verify, InventoryController.getInventoryStatistics);
 
 export default router;

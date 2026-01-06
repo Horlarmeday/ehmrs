@@ -11,7 +11,7 @@ export default {
   },
 
   UPDATE_INVENTORY(state, inventory) {
-    const inventoryIndex = state.inventories.findIndex(p => p.id === inventory.id);
+    const inventoryIndex = state.inventories.findIndex((p) => p.id === inventory.id);
     Object.assign(state.inventories[inventoryIndex], inventory);
   },
 
@@ -109,5 +109,12 @@ export default {
 
   SET_PENDING_PRESCRIPTIONS_PAGES(state, pages) {
     state.pendingPrescriptionsPages = pages;
+  },
+
+  /**
+   * INVENTORY STATISTICS
+   */
+  SET_STATISTICS(state, statistics) {
+    state.statistics = statistics;
   },
 };

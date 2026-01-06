@@ -1,4 +1,4 @@
-import sequelize, { literal, Op, WhereOptions } from 'sequelize';
+import sequelize, { literal, Op, WhereOptions, QueryTypes } from 'sequelize';
 import {
   Unit,
   Measurement,
@@ -16,8 +16,13 @@ import {
 import { RequestReturnToStore, UpdateReturnRequest } from './types/inventory.types';
 import { dateIntervalQuery, staffAttributes } from '../../core/helpers/helper';
 import { sequelizeConnection } from '../../database/config/data-source';
-import { HistoryType, ReturnItemStatus as Status } from '../../database/enums';
+import {
+  HistoryType,
+  ReturnItemStatus as Status,
+  Status as InventoryItemStatus,
+} from '../../database/enums';
 import { getOnePharmacyStoreItem } from '../Store/store.repository';
+import dayjs from 'dayjs';
 
 /**
  * receive product(s) into the inventory
@@ -76,14 +81,21 @@ export async function receiveBulkItem(data): Promise<InventoryItem[]> {
  * @param inventory
  * @param currentPage
  * @param pageLimit
+ * @param filter
  */
-export async function getInventoryItems({ inventory, currentPage = 1, pageLimit = 10 }) {
+export async function getInventoryItems({
+  inventory,
+  currentPage = 1,
+  pageLimit = 10,
+  filter = null,
+}) {
   return InventoryItem.paginate({
     page: currentPage,
     paginate: pageLimit,
     order: [['createdAt', 'DESC']],
     where: {
       inventory_id: inventory,
+      ...(filter && { ...filter }),
     },
     include: [
       {
@@ -131,7 +143,7 @@ export async function searchInventoryItems({
     order: [['quantity_remaining', 'DESC']],
     where: {
       inventory_id: inventory,
-      ...(filter && { ...JSON.parse(filter) }),
+      ...(filter && { ...filter }),
     },
     include: [
       {
@@ -521,4 +533,142 @@ export const getSelectedInventoryItems = async (
       },
     ],
   });
+};
+
+/**
+ * get inventory statistics
+ * @param inventoryId
+ * @returns {Promise<object>} inventory statistics data
+ */
+export const getInventoryStatistics = async (inventoryId: number) => {
+  const inventory = await getAnInventory(inventoryId);
+  if (!inventory) {
+    throw new Error('Inventory not found');
+  }
+
+  const today = dayjs().toDate();
+  const thirtyDaysFromNow = dayjs()
+    .add(30, 'day')
+    .toDate();
+
+  // Total Items
+  const totalItems = await InventoryItem.count({
+    where: {
+      inventory_id: inventoryId,
+      status: InventoryItemStatus.ACTIVE,
+    },
+  });
+
+  // Expiring Soon (within 30 days)
+  const expiringSoon = await InventoryItem.count({
+    where: {
+      inventory_id: inventoryId,
+      status: InventoryItemStatus.ACTIVE,
+      expiration: {
+        [Op.between]: [today, thirtyDaysFromNow],
+      },
+    },
+  });
+
+  // Low Stock (quantity_remaining < inventory.refill_level)
+  const lowStock = await InventoryItem.count({
+    where: {
+      inventory_id: inventoryId,
+      status: InventoryItemStatus.ACTIVE,
+      quantity_remaining: {
+        [Op.lt]: inventory.refill_level || 0,
+      },
+    },
+  });
+
+  // Critical Stock (quantity_remaining < 5)
+  const criticalStock = await InventoryItem.count({
+    where: {
+      inventory_id: inventoryId,
+      status: InventoryItemStatus.ACTIVE,
+      quantity_remaining: {
+        [Op.lt]: 5,
+      },
+    },
+  });
+
+  // Total Valuations (sum of quantity_remaining * selling_price)
+  const totalValuationsResult = ((await InventoryItem.findAll({
+    where: {
+      inventory_id: inventoryId,
+      status: InventoryItemStatus.ACTIVE,
+    },
+    attributes: [
+      [literal('COALESCE(SUM(quantity_remaining * selling_price), 0)'), 'total_valuations'],
+    ],
+    raw: true,
+  })) as unknown) as { total_valuations: number }[];
+
+  const totalValuations = totalValuationsResult[0]?.total_valuations || 0;
+
+  // Expired Items
+  const expiredItems = await InventoryItem.count({
+    where: {
+      inventory_id: inventoryId,
+      status: InventoryItemStatus.ACTIVE,
+      expiration: {
+        [Op.lt]: today,
+      },
+    },
+  });
+
+  // Most Dispensed Item (from InventoryItemHistory)
+  const mostDispensedResult = ((await InventoryItemHistory.findAll({
+    where: {
+      inventory_id: inventoryId,
+      history_type: HistoryType.DISPENSED,
+    },
+    attributes: ['inventory_item_id', [literal('SUM(quantity_dispensed)'), 'total_dispensed']],
+    group: ['inventory_item_id'],
+    order: [[literal('total_dispensed'), 'DESC']],
+    limit: 1,
+    raw: true,
+  })) as unknown) as { inventory_item_id: number; total_dispensed: number }[];
+
+  let mostDispensedItem = null;
+  if (mostDispensedResult.length > 0) {
+    const mostDispensedItemId = mostDispensedResult[0].inventory_item_id;
+    mostDispensedItem = await InventoryItem.findByPk(mostDispensedItemId, {
+      include: [
+        {
+          model: Drug,
+          attributes: ['name', 'id'],
+        },
+      ],
+    });
+  }
+
+  // Total Quantities (sum of quantity_remaining)
+  const totalQuantitiesResult = ((await InventoryItem.findAll({
+    where: {
+      inventory_id: inventoryId,
+      status: InventoryItemStatus.ACTIVE,
+    },
+    attributes: [[literal('COALESCE(SUM(quantity_remaining), 0)'), 'total_quantities']],
+    raw: true,
+  })) as unknown) as { total_quantities: number }[];
+
+  const totalQuantities = totalQuantitiesResult[0]?.total_quantities || 0;
+
+  return {
+    totalItems,
+    expiringSoon,
+    lowStock,
+    criticalStock,
+    totalValuations: parseFloat(totalValuations.toString()),
+    expiredItems,
+    mostDispensedItem: mostDispensedItem
+      ? {
+          id: mostDispensedItem.id,
+          drug_name: mostDispensedItem.drug?.name || 'N/A',
+          quantity_dispensed: mostDispensedResult[0]?.total_dispensed || 0,
+        }
+      : null,
+    totalQuantities: parseInt(totalQuantities.toString(), 10),
+  };
 };

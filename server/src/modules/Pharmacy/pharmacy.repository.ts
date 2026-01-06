@@ -948,11 +948,17 @@ export const getDrugPrescriptionsHistory = async (
  * @param inventoryItemId
  * @param currentPage
  * @param pageLimit
+ * @param search
+ * @param start
+ * @param end
  */
 export const getPendingPrescriptionsByInventoryItem = async ({
   inventoryItemId,
   currentPage = 1,
   pageLimit = 10,
+  search = null,
+  start = null,
+  end = null,
 }): Promise<{
   total: number;
   pages: number;
@@ -969,13 +975,14 @@ export const getPendingPrescriptionsByInventoryItem = async ({
   const { drug_id, inventory_id, drug_form } = inventoryItem;
 
   // Build where clause for filtering
-  const whereClause = {
+  const whereClause: WhereOptions<any> = {
     inventory_id,
     drug_id,
     [Op.or]: [
       { dispense_status: DispenseStatus.PENDING },
       { dispense_status: DispenseStatus.PARTIAL_DISPENSED },
     ],
+    ...(start && end && dateIntervalQuery('date_prescribed', start, end)),
   };
 
   // Determine which model to query based on drug_form
@@ -990,6 +997,32 @@ export const getPendingPrescriptionsByInventoryItem = async ({
         {
           model: Patient,
           attributes: patientAttributes,
+          where: {
+            ...(search && {
+              [Op.or]: [
+                {
+                  firstname: {
+                    [Op.like]: `%${search}%`,
+                  },
+                },
+                {
+                  lastname: {
+                    [Op.like]: `%${search}%`,
+                  },
+                },
+                {
+                  hospital_id: {
+                    [Op.like]: `%${search}%`,
+                  },
+                },
+                {
+                  complete_name: {
+                    [Op.like]: `%${search}%`,
+                  },
+                },
+              ],
+            }),
+          },
         },
         {
           model: Staff,
@@ -1013,6 +1046,32 @@ export const getPendingPrescriptionsByInventoryItem = async ({
         {
           model: Patient,
           attributes: patientAttributes,
+          where: {
+            ...(search && {
+              [Op.or]: [
+                {
+                  firstname: {
+                    [Op.like]: `%${search}%`,
+                  },
+                },
+                {
+                  lastname: {
+                    [Op.like]: `%${search}%`,
+                  },
+                },
+                {
+                  hospital_id: {
+                    [Op.like]: `%${search}%`,
+                  },
+                },
+                {
+                  complete_name: {
+                    [Op.like]: `%${search}%`,
+                  },
+                },
+              ],
+            }),
+          },
         },
         {
           model: Staff,

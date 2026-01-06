@@ -50,6 +50,13 @@
     </div>
     <!--end::Header-->
 
+    <statistics-cards
+      :statistics="statistics"
+      :loading="statisticsLoading"
+      :active-filter="activeFilter"
+      @card-clicked="handleCardClick"
+    />
+
     <search @search="onHandleSearch" />
 
     <!--begin::Body-->
@@ -74,6 +81,7 @@
 <script>
 import InventoryTable from './components/InventoryTable';
 import Search from '@/utils/Search.vue';
+import StatisticsCards from './components/StatisticsCards.vue';
 import { debounce, removeSpinner, setUrlQueryParams } from '@/common/common';
 import Swal from 'sweetalert2';
 import ReturnItemsModal from '@/view/pages/inventory/components/ReturnItemsModal.vue';
@@ -89,6 +97,8 @@ export default {
       displayExportSelectedPrompt: false,
       itemsToReturn: [],
       selectAllItems: false,
+      activeFilter: null,
+      statisticsLoading: false,
     };
   },
   computed: {
@@ -111,10 +121,13 @@ export default {
       return this.$store.state.inventory.selectedItems;
     },
     selectedItemIds() {
-      return this.selectedItems.map(item => item.id);
+      return this.selectedItems.map((item) => item.id);
+    },
+    statistics() {
+      return this.$store.state.inventory.statistics;
     },
   },
-  components: { ExportModal, ReturnItemsModal, InventoryTable, Search },
+  components: { ExportModal, ReturnItemsModal, InventoryTable, Search, StatisticsCards },
   methods: {
     hideModal() {
       this.displayPrompt = false;
@@ -198,14 +211,50 @@ export default {
       });
     },
 
-    fetchInventoryItems({ currentPage, itemsPerPage, search, start, end }) {
+    fetchInventoryItems({ currentPage, itemsPerPage, search, start, end, filterType }) {
       return this.$store.dispatch('inventory/fetchInventoryItems', {
         currentPage,
         itemsPerPage,
         inventory: this.$route.params.id,
         ...(search && { search }),
         ...(start && end && { start, end }),
+        ...(filterType && { filterType }),
       });
+    },
+
+    handleCardClick(filterType) {
+      // Toggle filter - if same filter is clicked, clear it
+      if (this.activeFilter === filterType) {
+        this.activeFilter = null;
+      } else {
+        this.activeFilter = filterType;
+      }
+
+      // Update URL query params
+      setUrlQueryParams({
+        currentPage: 1,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || null,
+        name: this.inventoryName,
+        filterType: this.activeFilter,
+      });
+
+      // Fetch filtered items
+      this.fetchInventoryItems({
+        currentPage: 1,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        search: this.$route.query.search || null,
+        filterType: this.activeFilter,
+      });
+    },
+
+    fetchStatistics() {
+      this.statisticsLoading = true;
+      this.$store
+        .dispatch('inventory/fetchInventoryStatistics', this.$route.params.id)
+        .finally(() => {
+          this.statisticsLoading = false;
+        });
     },
 
     displayDeactivatePrompt(item) {
@@ -264,10 +313,20 @@ export default {
     },
   },
   created() {
+    // Set active filter from URL if present
+    if (this.$route.query.filterType) {
+      this.activeFilter = this.$route.query.filterType;
+    }
+
+    // Fetch statistics
+    this.fetchStatistics();
+
+    // Fetch inventory items
     this.fetchInventoryItems({
       currentPage: this.$route.query.currentPage || this.currentPage,
       itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
       search: this.$route.query.search || null,
+      filterType: this.activeFilter,
     });
   },
 };

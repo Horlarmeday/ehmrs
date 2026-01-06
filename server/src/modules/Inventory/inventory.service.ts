@@ -14,8 +14,10 @@ import {
   updateReturnRequests,
   getAllInventoryItems,
   getSelectedInventoryItems,
+  getInventoryStatistics,
 } from './inventory.repository';
-import { Inventory, InventoryItem, ReturnItem } from '../../database/models';
+import { Inventory, InventoryItem, ReturnItem, InventoryItemHistory } from '../../database/models';
+import { literal, Op } from 'sequelize';
 import {
   InventoryTypes,
   RequestReturnToStore,
@@ -25,6 +27,7 @@ import {
 import { GetInventoryItemsBody } from './types/inventory-item.types';
 import { BadException } from '../../common/util/api-error';
 import dayjs from 'dayjs';
+import { HistoryType } from '../../database/enums';
 
 class InventoryService {
   /**
@@ -127,14 +130,22 @@ class InventoryService {
    * @memberOf InventoryService
    */
   static async getInventoryItems(body: GetInventoryItemsBody) {
-    const { currentPage, pageLimit, search, inventory, filter } = body;
-    if (filter && search) {
+    const { currentPage, pageLimit, search, inventory, filter, filterType } = body;
+
+    // Handle special filter types
+    let processedFilter = filter;
+    if (filterType && !filter) {
+      processedFilter = await this.buildFilterFromType(filterType, inventory);
+      console.log(processedFilter, 'processedFilter');
+    }
+
+    if (processedFilter && search) {
       return searchInventoryItems({
         inventory,
         currentPage: +currentPage,
         pageLimit: +pageLimit,
         search,
-        filter,
+        filter: processedFilter,
       });
     }
 
@@ -144,6 +155,16 @@ class InventoryService {
         currentPage: +currentPage,
         pageLimit: +pageLimit,
         search,
+        filter: processedFilter,
+      });
+    }
+
+    if (processedFilter) {
+      return getInventoryItems({
+        inventory,
+        currentPage: +currentPage,
+        pageLimit: +pageLimit,
+        filter: processedFilter,
       });
     }
 
@@ -156,6 +177,73 @@ class InventoryService {
     }
 
     return getInventoryItems({ inventory });
+  }
+
+  /**
+   * Build filter object from filter type
+   * @param filterType
+   * @param inventoryId
+   * @private
+   */
+  private static async buildFilterFromType(filterType: string, inventoryId: number) {
+    const today = dayjs().toDate();
+    const thirtyDaysFromNow = dayjs()
+      .add(30, 'day')
+      .toDate();
+
+    const inventory = await getAnInventory(inventoryId);
+
+    switch (filterType) {
+      case 'expiring_soon':
+        return {
+          expiration: {
+            [Op.between]: [today, thirtyDaysFromNow],
+          },
+        };
+      case 'low_stock':
+        return {
+          quantity_remaining: {
+            [Op.lt]: inventory?.refill_level || 0,
+          },
+        };
+      case 'critical_stock':
+        return {
+          quantity_remaining: {
+            [Op.lt]: 5,
+          },
+        };
+      case 'expired':
+        return {
+          expiration: {
+            [Op.lt]: today,
+          },
+        };
+      case 'most_dispensed': {
+        const mostDispensedResult = await InventoryItemHistory.findAll({
+          where: {
+            inventory_id: inventoryId,
+            history_type: HistoryType.DISPENSED,
+          },
+          attributes: [
+            'inventory_item_id',
+            [literal('SUM(quantity_dispensed)'), 'total_dispensed'],
+          ],
+          group: ['inventory_item_id'],
+          order: [[literal('total_dispensed'), 'DESC']],
+          limit: 1,
+          raw: true,
+        });
+
+        if (mostDispensedResult.length > 0) {
+          return {
+            id: mostDispensedResult[0].inventory_item_id,
+          };
+        }
+        return null;
+      }
+      default:
+        return null;
+    }
   }
 
   /**
@@ -268,6 +356,15 @@ class InventoryService {
         : 'N/A',
       Status: item.quantity_remaining > 0 ? 'Available' : 'Out of Stock',
     }));
+  }
+
+  /**
+   * get inventory statistics
+   * @param inventoryId
+   * @returns {Promise<object>} inventory statistics data
+   */
+  static async getInventoryStatistics(inventoryId: number) {
+    return getInventoryStatistics(inventoryId);
   }
 }
 

@@ -1,7 +1,7 @@
 <template>
   <div>
     <div v-if="prescriptions">
-      <div class="mt-3">
+      <div class="mt-3 mb-3">
         <div class="card-body py-1 px-0">
           <div class="d-flex align-items-center justify-content-between flex-wrap">
             <div class="col-lg-3 col-md-6 mb-3 mb-md-0">
