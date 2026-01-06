@@ -25,7 +25,7 @@
             <span
               v-if="
                 allowedUsers.includes(currentUser.role) ||
-                  allowedSubRole.includes(currentUser.sub_role)
+                allowedSubRole.includes(currentUser.sub_role)
               "
               class="opacity-70"
               >₦{{ item?.acquired_price?.toLocaleString() }}</span
@@ -109,12 +109,12 @@ export default {
     allowedSubRole: ['HOD'],
   }),
 
-  computed: {
-    item() {
-      return this.$store.state.inventory.item;
+  props: {
+    item: {
+      type: Object,
+      required: true,
     },
   },
-
   methods: {
     getItemType,
     getExpiryStatus(expiryDate) {
@@ -128,18 +128,6 @@ export default {
       if (month > 0 && month <= 6) return 'label label-inline label-warning';
       if (month <= 0) return 'label label-inline label-danger';
     },
-
-    countToHundred() {
-      for (let i = 1; i <= 100; i++) {
-        this.count = i;
-        if (this.item) break;
-      }
-    },
-  },
-
-  created() {
-    this.countToHundred();
-    this.$store.dispatch('inventory/fetchInventoryItem', { id: this.$route.params.id });
   },
 };
 </script>

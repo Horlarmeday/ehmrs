@@ -2,11 +2,42 @@
   <div>
     <div v-if="prescriptions">
       <div class="mt-3">
-        <search
-          @search="onHandleSearch"
-          @filterByDateRange="searchByDate"
-          :show-date-filter="true"
-        />
+        <div class="card-body py-1 px-0">
+          <div class="d-flex align-items-center justify-content-between flex-wrap">
+            <div class="col-lg-3 col-md-6 mb-3 mb-md-0">
+              <div ref="spin">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Search"
+                  data-col-index="0"
+                  :value="$route.query.search || ''"
+                  @keyup="onSearch"
+                />
+              </div>
+            </div>
+            <div class="col-lg-2 col-md-6 mb-3 mb-md-0">
+              <select v-model="selectedStatus" @change="onFilterChange" class="form-control">
+                <option value="">All Status</option>
+                <option value="Pending">Pending</option>
+                <option value="Partial Dispense">Partial Dispense</option>
+                <option value="Complete Dispense">Complete Dispense</option>
+              </select>
+            </div>
+            <div class="col-lg-2 col-md-6 mb-3 mb-md-0">
+              <select v-model="selectedSource" @change="onFilterChange" class="form-control">
+                <option value="">All Source</option>
+                <option value="Antenatal">Antenatal</option>
+                <option value="Consultation">Consultation</option>
+                <option value="Theater">Theater</option>
+                <option value="Immunization">Immunization</option>
+              </select>
+            </div>
+            <div class="col-lg-auto">
+              <date-range @searchByDate="searchByDate" />
+            </div>
+          </div>
+        </div>
       </div>
       <div class="table-responsive">
         <table class="table table-head-custom table-head-bg table-vertical-center">
@@ -123,14 +154,20 @@
 
 <script>
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
-import { debounce, getPatientDotStatus, removeSpinner, setUrlQueryParams } from '@/common/common';
-import Search from '../../../../utils/Search.vue';
+import {
+  debounce,
+  getPatientDotStatus,
+  removeSpinner,
+  setUrlQueryParams,
+  addSpinner,
+} from '@/common/common';
+import DateRange from '@/utils/DateRange.vue';
 import Pagination from '@/utils/Pagination.vue';
 import dayjs from 'dayjs';
 import TableSkeleton from '@/view/pages/nhis/components/TableSkeleton.vue';
 
 export default {
-  components: { TableSkeleton, Pagination, ArrowRightIcon, Search },
+  components: { TableSkeleton, Pagination, ArrowRightIcon, DateRange },
   props: {
     period: {
       type: String,
@@ -142,6 +179,8 @@ export default {
     itemsPerPage: 10,
     start: null,
     end: null,
+    selectedStatus: '',
+    selectedSource: '',
     TODAY: 'Today',
   }),
   computed: {
@@ -166,13 +205,23 @@ export default {
       return 'label-light-danger ';
     },
 
-    fetchPrescriptions({ currentPage, itemsPerPage, search = null, start = null, end = null }) {
+    fetchPrescriptions({
+      currentPage,
+      itemsPerPage,
+      search = null,
+      start = null,
+      end = null,
+      status = null,
+      source = null,
+    }) {
       return this.$store.dispatch('pharmacy/fetchPrescriptions', {
         currentPage,
         itemsPerPage,
         period: this.period,
         ...(search && { search }),
         ...(start && end && { start, end }),
+        ...(status && { status }),
+        ...(source && { source }),
       });
     },
 
@@ -183,6 +232,8 @@ export default {
         search: this.$route.query.search,
         startDate: this.$route.query.startDate,
         endDate: this.$route.query.endDate,
+        status: this.selectedStatus,
+        source: this.selectedSource,
       });
       this.fetchPrescriptions({
         currentPage: this.$route.query.currentPage || this.currentPage,
@@ -190,6 +241,8 @@ export default {
         search: this.$route.query.search || null,
         start: this.$route.query.startDate,
         end: this.$route.query.endDate,
+        status: this.selectedStatus || null,
+        source: this.selectedSource || null,
       });
     },
 
@@ -198,40 +251,73 @@ export default {
       this.handlePageChange();
     },
 
-    onHandleSearch(prop) {
-      const { search, spinDiv } = prop;
+    onSearch(event) {
+      const search = event.target.value;
+      const spinDiv = this.$refs['spin'];
+      addSpinner(spinDiv);
       setUrlQueryParams({
-        currentPage: this.currentPage,
+        currentPage: 1,
         itemsPerPage: this.itemsPerPage,
         search,
+        status: this.selectedStatus,
+        source: this.selectedSource,
       });
       this.debounceSearch(search, this, spinDiv);
     },
 
     debounceSearch: debounce((search, vm, spinDiv) => {
+      vm.currentPage = 1;
       vm.fetchPrescriptions({
         currentPage: 1,
         itemsPerPage: vm.itemsPerPage,
         search,
+        status: vm.selectedStatus || null,
+        source: vm.selectedSource || null,
       })
         .then(() => removeSpinner(spinDiv))
         .catch(() => removeSpinner(spinDiv));
     }, 500),
 
+    onFilterChange() {
+      this.currentPage = 1;
+      setUrlQueryParams({
+        currentPage: 1,
+        itemsPerPage: this.itemsPerPage,
+        search: this.$route.query.search,
+        startDate: this.$route.query.startDate,
+        endDate: this.$route.query.endDate,
+        status: this.selectedStatus,
+        source: this.selectedSource,
+      });
+      this.fetchPrescriptions({
+        currentPage: 1,
+        itemsPerPage: this.itemsPerPage,
+        search: this.$route.query.search || null,
+        start: this.$route.query.startDate || null,
+        end: this.$route.query.endDate || null,
+        status: this.selectedStatus || null,
+        source: this.selectedSource || null,
+      });
+    },
+
     handlePageCount(count) {
       setUrlQueryParams({
         currentPage: this.currentPage,
         itemsPerPage: count,
-        search: this.$route.query.search || this.patient_name,
+        search: this.$route.query.search,
         startDate: this.$route.query.startDate,
         endDate: this.$route.query.endDate,
+        status: this.selectedStatus,
+        source: this.selectedSource,
       });
       this.fetchPrescriptions({
-        currentPage: this.$route.query.currentPage,
-        itemsPerPage: this.$route.query.itemsPerPage,
-        start: this.$route.query.startDate,
-        end: this.$route.query.endDate,
+        currentPage: this.$route.query.currentPage || this.currentPage,
+        itemsPerPage: count,
+        start: this.$route.query.startDate || null,
+        end: this.$route.query.endDate || null,
         search: this.$route.query.search || null,
+        status: this.selectedStatus || null,
+        source: this.selectedSource || null,
       });
     },
 
@@ -239,16 +325,22 @@ export default {
       const { start, end, dateSpin } = range;
       this.currentPage = 1;
       setUrlQueryParams({
-        currentPage: this.$route.query.currentPage || this.currentPage,
+        currentPage: 1,
         itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
         startDate: dayjs(start).format('YYYY-MM-DD'),
         endDate: dayjs(end).format('YYYY-MM-DD'),
+        search: this.$route.query.search,
+        status: this.selectedStatus,
+        source: this.selectedSource,
       });
       this.fetchPrescriptions({
-        currentPage: this.$route.query.currentPage,
-        itemsPerPage: this.$route.query.itemsPerPage,
-        start: this.$route.query.startDate,
-        end: this.$route.query.endDate,
+        currentPage: 1,
+        itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
+        start: dayjs(start).format('YYYY-MM-DD'),
+        end: dayjs(end).format('YYYY-MM-DD'),
+        search: this.$route.query.search || null,
+        status: this.selectedStatus || null,
+        source: this.selectedSource || null,
       })
         .then(() => removeSpinner(dateSpin))
         .catch(() => removeSpinner(dateSpin));
@@ -258,12 +350,17 @@ export default {
   watch: {
     period: {
       handler() {
+        // Initialize filters from URL query params
+        this.selectedStatus = this.$route.query.status || '';
+        this.selectedSource = this.$route.query.source || '';
         this.fetchPrescriptions({
           currentPage: this.$route.query.currentPage || this.currentPage,
           itemsPerPage: this.$route.query.itemsPerPage || this.itemsPerPage,
           start: this.$route.query.startDate || null,
           end: this.$route.query.endDate || null,
-          search: this.$route.query.search,
+          search: this.$route.query.search || null,
+          status: this.selectedStatus || null,
+          source: this.selectedSource || null,
         });
       },
       immediate: true,

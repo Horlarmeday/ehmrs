@@ -667,7 +667,7 @@ export default {
         this.activeTab = 'drugs';
       } else if (hasPrescriptions && hasItems) {
         // Both exist → default to drugs tab (can be switched)
-        this.activeTab = 'drugs';
+        // this.activeTab = 'drugs';
       }
     },
   },
