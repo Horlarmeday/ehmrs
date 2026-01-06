@@ -14,9 +14,9 @@ import {
   Staff,
   Unit,
 } from '../../../database/models';
-import { Optional, Transaction, WhereOptions } from 'sequelize';
+import { Op, Optional, Transaction, WhereOptions } from 'sequelize';
 import dayjs from 'dayjs';
-import { DrugForm } from '../../../database/enums';
+import { DrugForm, DispenseStatus, PaymentStatus } from '../../../database/enums';
 import { getOneRouteOfAdministration } from '../../Pharmacy/pharmacy.repository';
 import { PatientStatus, DefaultType } from '../../../database/enums';
 import { getOneDefault } from '../../AdminSettings/admin.repository';
@@ -163,10 +163,7 @@ export const prescribeBulkDrugs = async (
       );
 
       const itemBodies = flattenArray(additionalItems);
-      await PrescribedAdditionalItem.bulkCreate(
-        (itemBodies as unknown) as readonly Optional<any, string>[],
-        { transaction: t }
-      );
+      await bulkCreateAdditionalItems(itemBodies, t);
     }
 
     return drugs;
@@ -319,12 +316,56 @@ export const prescribeAdditionalItem = async (
 };
 
 /**
- * bulk create additional items
- * @param data
+ * bulk create additional items with consolidation logic
+ * @param data - array of items to create
+ * @param transaction - optional transaction
  * @returns {Promise<PrescribedAdditionalItem[]>} prescribed additional item data
  */
-export const bulkCreateAdditionalItems = async (data): Promise<PrescribedAdditionalItem[]> => {
-  return await PrescribedAdditionalItem.bulkCreate(data);
+export const bulkCreateAdditionalItems = async (
+  data: (PrescribedAdditionalItemBody & { date_prescribed?: Date | number })[],
+  transaction?: Transaction
+): Promise<PrescribedAdditionalItem[]> => {
+  if (!data || data.length === 0) {
+    return [];
+  }
+
+  // Consolidate items: find existing similar items and group for update vs create
+  const { itemsToUpdate, itemsToCreate } = await consolidateAdditionalItems(data, transaction);
+
+  const createdItems: PrescribedAdditionalItem[] = [];
+
+  // Update existing items with consolidated quantities
+  if (itemsToUpdate.length > 0) {
+    await Promise.all(
+      itemsToUpdate.map(async ({ id, updates }) => {
+        await PrescribedAdditionalItem.update(updates, {
+          where: { id },
+          transaction,
+        });
+      })
+    );
+    // Fetch updated items to return
+    const updatedItems = await Promise.all(
+      itemsToUpdate.map(async ({ id }) => {
+        return PrescribedAdditionalItem.findByPk(id, { transaction });
+      })
+    );
+    createdItems.push(...(updatedItems.filter(Boolean) as PrescribedAdditionalItem[]));
+  }
+
+  // Create new items that don't have matches
+  if (itemsToCreate.length > 0) {
+    const newItems = await PrescribedAdditionalItem.bulkCreate(
+      (itemsToCreate as unknown) as readonly Optional<
+        PrescribedAdditionalItem,
+        keyof PrescribedAdditionalItem
+      >[],
+      { transaction }
+    );
+    createdItems.push(...newItems);
+  }
+
+  return createdItems;
 };
 
 /**
@@ -332,7 +373,6 @@ export const bulkCreateAdditionalItems = async (data): Promise<PrescribedAdditio
  * @param data
  */
 export const updateAdditionalItem = async (data: Partial<PrescribedAdditionalItem>) => {
-  console.log(data);
   try {
     await PrescribedAdditionalItem.update({ ...data }, { where: { id: data.id } });
   } catch (e) {
@@ -517,6 +557,164 @@ export const getAdditionalItemsWithoutJoins = async (
   return PrescribedAdditionalItem.findAll({ where: { ...query } });
 };
 
+/**
+ * generate a similarity key for matching items
+ * @param item - item to generate key for
+ * @returns {string} similarity key
+ */
+const getSimilarityKey = (
+  item:
+    | (PrescribedAdditionalItemBody & { date_prescribed?: Date | number })
+    | PrescribedAdditionalItem
+): string => {
+  const date = item.date_prescribed ? new Date(item.date_prescribed) : new Date();
+  const dateKey = dayjs(date).format('YYYY-MM-DD');
+  return `${item.drug_id}_${item.unit_id}_${item.drug_type}_${item.patient_id}_${item.examiner}_${dateKey}`;
+};
+
+/**
+ * query similar additional items that can be consolidated
+ * @param item - item to find similar matches for
+ * @param transaction - optional transaction
+ * @returns {Promise<PrescribedAdditionalItem | null>} similar item if found
+ */
+export const querySimilarAdditionalItems = async (
+  item: PrescribedAdditionalItemBody & { date_prescribed?: Date | number },
+  transaction?: Transaction
+): Promise<PrescribedAdditionalItem | null> => {
+  const itemDate = item.date_prescribed ? new Date(item.date_prescribed) : new Date();
+  const startOfDay = dayjs(itemDate)
+    .startOf('day')
+    .toDate();
+  const endOfDay = dayjs(itemDate)
+    .endOf('day')
+    .toDate();
+
+  const whereClause: WhereOptions<PrescribedAdditionalItem> = {
+    drug_id: item.drug_id,
+    unit_id: item.unit_id,
+    drug_type: item.drug_type,
+    patient_id: item.patient_id,
+    examiner: item.examiner,
+    payment_status: PaymentStatus.PENDING,
+    dispense_status: DispenseStatus.PENDING,
+    date_prescribed: {
+      [Op.gte]: startOfDay,
+      [Op.lt]: endOfDay,
+    },
+  };
+
+  return PrescribedAdditionalItem.findOne({
+    where: whereClause,
+    transaction,
+  });
+};
+
+/**
+ * consolidate additional items by finding existing similar items and grouping for update vs create
+ * Optimized to use a single bulk query instead of N+1 queries for better performance
+ * @param items - array of items to consolidate
+ * @param transaction - optional transaction
+ * @returns {Promise<{itemsToUpdate: Array<{id: number, updates: Partial<PrescribedAdditionalItem>}>, itemsToCreate: PrescribedAdditionalItemBody[]}>}
+ */
+export const consolidateAdditionalItems = async (
+  items: (PrescribedAdditionalItemBody & { date_prescribed?: Date | number })[],
+  transaction?: Transaction
+): Promise<{
+  itemsToUpdate: Array<{ id: number; updates: Partial<PrescribedAdditionalItem> }>;
+  itemsToCreate: (PrescribedAdditionalItemBody & { date_prescribed?: Date | number })[];
+}> => {
+  // Early return if no items
+  if (!items || items.length === 0) {
+    return { itemsToUpdate: [], itemsToCreate: [] };
+  }
+
+  const itemsToUpdate: Array<{ id: number; updates: Partial<PrescribedAdditionalItem> }> = [];
+  const itemsToCreate: (PrescribedAdditionalItemBody & { date_prescribed?: Date | number })[] = [];
+
+  // Build array of OR conditions for all items in a single query
+  const orConditions = items.map(item => {
+    const itemDate = item.date_prescribed ? new Date(item.date_prescribed) : new Date();
+    const startOfDay = dayjs(itemDate)
+      .startOf('day')
+      .toDate();
+    const endOfDay = dayjs(itemDate)
+      .endOf('day')
+      .toDate();
+
+    return {
+      drug_id: item.drug_id,
+      unit_id: item.unit_id,
+      drug_type: item.drug_type,
+      patient_id: item.patient_id,
+      examiner: item.examiner,
+      payment_status: PaymentStatus.PENDING,
+      dispense_status: DispenseStatus.PENDING,
+      date_prescribed: {
+        [Op.gte]: startOfDay,
+        [Op.lt]: endOfDay,
+      },
+    };
+  });
+
+  // Single bulk query to fetch all potentially matching items
+  const existingItems = await PrescribedAdditionalItem.findAll({
+    where: {
+      [Op.or]: orConditions,
+    },
+    transaction,
+  });
+
+  // Build Map for O(1) lookup of existing items by similarity key
+  const existingItemsMap = new Map<string, PrescribedAdditionalItem>();
+  existingItems.forEach(item => {
+    const key = getSimilarityKey(item);
+    // If multiple items match the same key, keep the first one (shouldn't happen with proper constraints)
+    if (!existingItemsMap.has(key)) {
+      existingItemsMap.set(key, item);
+    }
+  });
+
+  // Match items in memory using the lookup map
+  for (const item of items) {
+    const key = getSimilarityKey(item);
+    const existingItem = existingItemsMap.get(key);
+
+    if (existingItem) {
+      // Calculate unit price from new item (if available) or existing item
+      const newItemUnitPrice =
+        item.quantity_to_dispense > 0 && item.total_price
+          ? item.total_price / item.quantity_to_dispense
+          : existingItem.quantity_to_dispense > 0
+          ? existingItem.total_price / existingItem.quantity_to_dispense
+          : 0;
+
+      // Calculate new quantities
+      const newQuantityPrescribed =
+        Number(existingItem.quantity_prescribed) + Number(item.quantity_prescribed || 0);
+      const newQuantityToDispense =
+        Number(existingItem.quantity_to_dispense) + Number(item.quantity_to_dispense || 0);
+
+      // Recalculate total price based on new item's unit price (per plan: use price from new item if different)
+      const newTotalPrice = newItemUnitPrice * newQuantityToDispense;
+
+      itemsToUpdate.push({
+        id: existingItem.id,
+        updates: {
+          quantity_prescribed: newQuantityPrescribed,
+          quantity_to_dispense: newQuantityToDispense,
+          total_price: newTotalPrice,
+        },
+      });
+    } else {
+      // No similar item found, create new one
+      itemsToCreate.push(item);
+    }
+  }
+
+  return { itemsToUpdate, itemsToCreate };
+};
+
 export const bulkSyringeNeedlePrescriptions = async ({
   prescription,
   patient,
@@ -567,8 +765,6 @@ export const bulkSyringeNeedlePrescriptions = async ({
       ({ drug }) =>
         new RegExp(`\\b${syringeName}\\b`, 'i').test(drug.name) && drug?.drug_type === drugType
     );
-
-    console.log({ syringeName, syringe });
 
     const isGloves = /gloves/i.test(syringeName);
     if (syringe) {

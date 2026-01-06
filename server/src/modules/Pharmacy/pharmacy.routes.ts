@@ -26,8 +26,14 @@ router.get('/generic-drugs/get', verify, PharmacyController.getGenericDrugs);
 router.get('/dosage-forms/get', verify, PharmacyController.getDosageForms);
 router.get('/measurements/get', verify, PharmacyController.getMeasurements);
 router.get('/routes-of-administration/get', verify, PharmacyController.getRoutesOfAdministration);
+router.get('/prescriptions/statistics', verify, PharmacyController.getPrescriptionStatistics);
 router.get('/prescriptions/get', verify, PharmacyController.getDrugPrescriptions);
 router.get('/prescriptions/history/get', verify, PharmacyController.getDrugPrescriptionsHistory);
 router.get('/prescriptions/get/:id', verify, PharmacyController.getOnePrescription);
+router.get(
+  '/prescriptions/pending/get',
+  verify,
+  PharmacyController.getPendingPrescriptionsByInventoryItem
+);
 
 export default router;

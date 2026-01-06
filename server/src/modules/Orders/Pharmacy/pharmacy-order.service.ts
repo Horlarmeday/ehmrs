@@ -298,7 +298,7 @@ class PharmacyOrderService {
       }
     }
 
-    const data = await Promise.all(
+    const data = ((await Promise.all(
       body.map(async item => {
         const { drug_id, drug_type, quantity_to_dispense, price, inventory_id } = item;
         const inventoryItem = await getInventoryItemQuery({ inventory_id, drug_id });
@@ -320,7 +320,7 @@ class PharmacyOrderService {
           original_total_price: inventoryItem.selling_price * +quantity_to_dispense,
         };
       })
-    );
+    )) as unknown) as PrescribedAdditionalItemBody[];
 
     return bulkCreateAdditionalItems(data);
   }

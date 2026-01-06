@@ -394,6 +394,30 @@ class PharmacyController {
    * PRESCRIPTIONS
    */
   /**
+   * get prescription statistics
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with prescription statistics data
+   */
+  static async getPrescriptionStatistics(req: Request, res: Response, next: NextFunction) {
+    try {
+      const statistics = await PharmacyService.getPrescriptionStatisticsService(req.query);
+
+      return successResponse({
+        res,
+        data: statistics,
+        message: SUCCESS,
+        httpCode: StatusCodes.OK,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
    * get drugs prescriptions
    *
    * @static
@@ -537,6 +561,34 @@ class PharmacyController {
       return successResponse({
         res,
         data: drugPrescriptions,
+        httpCode: StatusCodes.OK,
+        message: SUCCESS,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get pending prescriptions by inventory item
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns json object with pending prescriptions data
+   */
+  static async getPendingPrescriptionsByInventoryItem(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const prescriptions = await PharmacyService.getPendingPrescriptionsByInventoryItem(req.query);
+
+      return successResponse({
+        res,
+        data: prescriptions,
         httpCode: StatusCodes.OK,
         message: SUCCESS,
       });

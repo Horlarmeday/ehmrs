@@ -18,7 +18,7 @@ export class PrescribedAdditionalItemBody {
   patient_id: number;
   visit_id: number;
   inventory_id: number;
-  start_date: Date;
+  start_date: Date | number;
   ante_natal_id?: number;
   surgery_id?: number;
   source: string;

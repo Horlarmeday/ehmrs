@@ -31,7 +31,14 @@ import {
   Unit,
 } from '../../database/models';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
-import { DispenseStatus, VisitCategory, DrugStatus, HistoryType } from '../../database/enums';
+import {
+  DispenseStatus,
+  VisitCategory,
+  DrugStatus,
+  HistoryType,
+  DrugForm,
+  Source,
+} from '../../database/enums';
 import { sequelizeConnection } from '../../database/config/data-source';
 import { DispenseDrugType, ReturnDrugType } from './interface/prescribed-drug.type';
 import {
@@ -50,6 +57,22 @@ import {
   getConsultationSummary,
   getPatientDiagnoses,
 } from '../Consultation/consultation.repository';
+
+type DispensedEntity = { dispense_status: DispenseStatus };
+
+const areEntitiesFullyDispensed = (entities?: DispensedEntity[]): boolean => {
+  if (!entities || entities.length === 0) {
+    return true;
+  }
+  return entities.every(entity => entity.dispense_status === DispenseStatus.DISPENSED);
+};
+
+export const isPrescriptionFullyDispensed = (
+  prescriptions?: DispensedEntity[],
+  additionalItems?: DispensedEntity[]
+): boolean => {
+  return areEntitiesFullyDispensed(prescriptions) && areEntitiesFullyDispensed(additionalItems);
+};
 
 async function includeOneModel({ model, modelToInclude, id, includeAs }) {
   return model.findOne({
@@ -383,6 +406,55 @@ export const getOnePrescription = async (query: sequelize.WhereOptions<any>) => 
 };
 
 /**
+ * get prescription statistics by status
+ *
+ * @function
+ * @returns {json} json object with prescription statistics
+ * @param period
+ */
+export const getPrescriptionStatistics = async ({
+  period = null,
+}): Promise<{
+  total: number;
+  pending: number;
+  partialDispense: number;
+  completeDispense: number;
+}> => {
+  const baseQuery: WhereOptions<any> = {
+    ...(period && getPeriodQuery(period, 'date_prescribed')),
+  };
+
+  const [total, pending, partialDispense, completeDispense] = await Promise.all([
+    DrugPrescription.count({ where: baseQuery }),
+    DrugPrescription.count({
+      where: {
+        ...baseQuery,
+        status: DrugStatus.PENDING,
+      },
+    }),
+    DrugPrescription.count({
+      where: {
+        ...baseQuery,
+        status: DrugStatus.PARTIAL_DISPENSED,
+      },
+    }),
+    DrugPrescription.count({
+      where: {
+        ...baseQuery,
+        status: DrugStatus.COMPLETE_DISPENSE,
+      },
+    }),
+  ]);
+
+  return {
+    total,
+    pending,
+    partialDispense,
+    completeDispense,
+  };
+};
+
+/**
  * get drugs prescriptions
  *
  * @function
@@ -393,6 +465,8 @@ export const getOnePrescription = async (query: sequelize.WhereOptions<any>) => 
  * @param search
  * @param start
  * @param end
+ * @param status
+ * @param source
  */
 export const getDrugPrescriptions = async ({
   currentPage = 1,
@@ -401,6 +475,8 @@ export const getDrugPrescriptions = async ({
   search = null,
   start = null,
   end = null,
+  status = null,
+  source = null,
 }): Promise<{
   total: number;
   pages: number;
@@ -409,8 +485,48 @@ export const getDrugPrescriptions = async ({
   currentPage: number;
 }> => {
   const { limit, offset } = calcLimitAndOffset(+currentPage, +pageLimit);
+
+  // Build status filter - maintain backward compatibility
+  let statusFilter: WhereOptions<any> = {};
+  if (status) {
+    // Map frontend status values to enum values
+    const statusMap: Record<string, DrugStatus> = {
+      Pending: DrugStatus.PENDING,
+      'Partial Dispense': DrugStatus.PARTIAL_DISPENSED,
+      'Complete Dispense': DrugStatus.COMPLETE_DISPENSE,
+    };
+    if (statusMap[status]) {
+      statusFilter = { status: statusMap[status] };
+    }
+  } else {
+    // Default behavior: show PENDING and PARTIAL_DISPENSED
+    statusFilter = {
+      [Op.or]: [
+        { status: DrugStatus.PENDING },
+        { status: DrugStatus.PARTIAL_DISPENSED },
+        { status: DrugStatus.COMPLETE_DISPENSE },
+      ],
+    };
+  }
+
+  // Build source filter
+  let sourceFilter: WhereOptions<any> = {};
+  if (source) {
+    // Map frontend source values to enum values
+    const sourceMap: Record<string, Source> = {
+      Antenatal: Source.ANC,
+      Consultation: Source.CONSULTATION,
+      Theater: Source.THEATER,
+      Immunization: Source.IMMUNIZATION,
+    };
+    if (sourceMap[source]) {
+      sourceFilter = { source: sourceMap[source] };
+    }
+  }
+
   const query = {
-    [Op.or]: [{ status: DrugStatus.PENDING }, { status: DrugStatus.PARTIAL_DISPENSED }],
+    ...statusFilter,
+    ...sourceFilter,
     ...(period && getPeriodQuery(period, 'date_prescribed')),
     ...(start && end && dateIntervalQuery('date_prescribed', start, end)),
   };
@@ -634,22 +750,23 @@ export const dispenseDrug = async (
     const drug = await prescribedDrug.save({ transaction: t });
 
     const [prescriptions, additionalItems] = await Promise.all([
-      getPrescribedDrugsWithoutJoins({ drug_prescription_id }),
-      getAdditionalItemsWithoutJoins({ drug_prescription_id }),
+      PrescribedDrug.findAll({
+        where: { drug_prescription_id },
+        attributes: ['dispense_status', 'quantity_dispensed'],
+        transaction: t,
+      }),
+      PrescribedAdditionalItem.findAll({
+        where: { drug_prescription_id },
+        attributes: ['dispense_status', 'quantity_dispensed'],
+        transaction: t,
+      }),
     ]);
 
-    const isDrugsAllDispensed = prescriptions?.every(
-      drug => drug.dispense_status === DispenseStatus.DISPENSED
-    );
-    const isAdditionalItemsAllDispensed = additionalItems?.every(
-      drug => drug.dispense_status === DispenseStatus.DISPENSED
-    );
+    const prescriptionComplete = isPrescriptionFullyDispensed(prescriptions, additionalItems);
+
     await DrugPrescription.update(
       {
-        status:
-          isDrugsAllDispensed && isAdditionalItemsAllDispensed
-            ? DrugStatus.COMPLETE_DISPENSE
-            : DrugStatus.PARTIAL_DISPENSED,
+        status: prescriptionComplete ? DrugStatus.COMPLETE_DISPENSE : DrugStatus.PARTIAL_DISPENSED,
       },
       { where: { id: drug_prescription_id }, transaction: t }
     );
@@ -824,4 +941,93 @@ export const getDrugPrescriptionsHistory = async (
   }));
 
   return paginate({ rows: summary, count }, currentPage, limit);
+};
+
+/**
+ * get pending prescriptions by inventory item
+ * @param inventoryItemId
+ * @param currentPage
+ * @param pageLimit
+ */
+export const getPendingPrescriptionsByInventoryItem = async ({
+  inventoryItemId,
+  currentPage = 1,
+  pageLimit = 10,
+}): Promise<{
+  total: number;
+  pages: number;
+  perPage: number;
+  docs: (PrescribedDrug | PrescribedAdditionalItem)[];
+  currentPage: number;
+}> => {
+  // Fetch the inventory item
+  const inventoryItem = await getModelById(InventoryItem, inventoryItemId);
+  if (!inventoryItem) {
+    throw new BadException('NOT_FOUND', StatusCodes.NOT_FOUND, 'Inventory item not found');
+  }
+
+  const { drug_id, inventory_id, drug_form } = inventoryItem;
+
+  // Build where clause for filtering
+  const whereClause = {
+    inventory_id,
+    drug_id,
+    [Op.or]: [
+      { dispense_status: DispenseStatus.PENDING },
+      { dispense_status: DispenseStatus.PARTIAL_DISPENSED },
+    ],
+  };
+
+  // Determine which model to query based on drug_form
+  if (drug_form === DrugForm.DRUG) {
+    // Query PrescribedDrug
+    return await PrescribedDrug.paginate({
+      where: whereClause,
+      page: currentPage,
+      paginate: pageLimit,
+      order: [['date_prescribed', 'DESC']],
+      include: [
+        {
+          model: Patient,
+          attributes: patientAttributes,
+        },
+        {
+          model: Staff,
+          as: 'requester',
+          attributes: staffAttributes,
+        },
+        {
+          model: DrugPrescription,
+          attributes: ['id', 'status', 'date_prescribed'],
+        },
+      ],
+    });
+  } else {
+    // Query PrescribedAdditionalItem
+    return await PrescribedAdditionalItem.paginate({
+      where: whereClause,
+      page: currentPage,
+      paginate: pageLimit,
+      order: [['date_prescribed', 'DESC']],
+      include: [
+        {
+          model: Patient,
+          attributes: patientAttributes,
+        },
+        {
+          model: Staff,
+          as: 'requester',
+          attributes: staffAttributes,
+        },
+        {
+          model: Unit,
+          attributes: ['id', 'name'],
+        },
+        {
+          model: DrugPrescription,
+          attributes: ['id', 'status', 'date_prescribed'],
+        },
+      ],
+    });
+  }
 };

@@ -11,8 +11,10 @@ import {
   getDrugPrescriptions,
   getDrugPrescriptionsHistory,
   getGenericDrugs,
+  getPendingPrescriptionsByInventoryItem,
   getMeasurements,
   getOneDrugPrescription,
+  getPrescriptionStatistics,
   getRoutesOfAdministration,
   returnDrugToInventory,
   searchGenericDrugs,
@@ -240,14 +242,32 @@ class PharmacyService {
    ********************** */
 
   /**
+   * get prescription statistics
+   * @param body
+   */
+  static async getPrescriptionStatisticsService(body: { period?: string }) {
+    const { period } = body;
+    return getPrescriptionStatistics({ period: period || null });
+  }
+
+  /**
    * get drug prescriptions
    * @param body
    */
   static async getDrugPrescriptions(body) {
-    const { currentPage, pageLimit, search, start, end, period } = body;
+    const { currentPage, pageLimit, search, start, end, period, status, source } = body;
 
     if (Object.values(body).length) {
-      return getDrugPrescriptions({ currentPage, pageLimit, period, search, start, end });
+      return getDrugPrescriptions({
+        currentPage,
+        pageLimit,
+        period,
+        search,
+        start,
+        end,
+        status: status || null,
+        source: source || null,
+      });
     }
 
     return getDrugPrescriptions({ period });
@@ -331,6 +351,25 @@ class PharmacyService {
     }
 
     return getDrugPrescriptionsHistory(1, 5, visit.patient_id);
+  }
+
+  /**
+   * Get pending prescriptions by inventory item
+   * @param body
+   * @memberof PharmacyService
+   */
+  static async getPendingPrescriptionsByInventoryItem(body) {
+    const {
+      inventoryItemId,
+      currentPage = body.currentPage || body.page || 1,
+      pageLimit = body.pageLimit || body.pageSize || body.itemsPerPage || 20,
+    } = body;
+
+    return getPendingPrescriptionsByInventoryItem({
+      inventoryItemId: +inventoryItemId,
+      currentPage: +currentPage,
+      pageLimit: +pageLimit,
+    });
   }
 
   static dispenseDrugValidations(
