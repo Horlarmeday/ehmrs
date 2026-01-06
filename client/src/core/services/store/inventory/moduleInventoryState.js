@@ -16,4 +16,8 @@ export default {
   returnRequests: [],
   totalReturnRequests: 0,
   returnRequestsPages: 0,
+
+  pendingPrescriptions: [],
+  pendingPrescriptionsTotal: 0,
+  pendingPrescriptionsPages: 0,
 };

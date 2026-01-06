@@ -125,4 +125,16 @@ export default {
   SET_HISTORY_PAGES(state, pages) {
     state.historyPages = pages;
   },
+
+  /**
+   * PRESCRIPTION STATISTICS
+   */
+  SET_PRESCRIPTION_STATISTICS(state, statistics) {
+    state.prescriptionStatistics = {
+      total: statistics.total || 0,
+      pending: statistics.pending || 0,
+      partialDispense: statistics.partialDispense || 0,
+      completeDispense: statistics.completeDispense || 0,
+    };
+  },
 };

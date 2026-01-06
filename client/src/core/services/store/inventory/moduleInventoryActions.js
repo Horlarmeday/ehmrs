@@ -6,11 +6,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/inventory/create`, inventory)
-        .then(response => {
+        .then((response) => {
           commit('ADD_INVENTORY', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -20,11 +20,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/inventory/get`)
-        .then(response => {
+        .then((response) => {
           commit('SET_INVENTORIES', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -34,11 +34,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/inventory/update`, inventory)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_INVENTORY', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -55,13 +55,13 @@ export default {
             filter: payload?.filter,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_ITEMS', response.data.data.docs);
           commit('SET_ITEMS_TOTAL', response.data.data.total);
           commit('SET_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -71,11 +71,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/inventory/get/items/${payload.id}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_ITEM', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -91,13 +91,35 @@ export default {
             filter: payload.filter,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_ITEM_HISTORY', response.data.data.docs);
           commit('SET_ITEM_HISTORY_TOTAL', response.data.data.total);
           commit('SET_ITEM_HISTORY_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+
+  fetchPendingPrescriptions({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/pharmacy/prescriptions/pending/get', {
+          params: {
+            inventoryItemId: payload.inventoryItemId,
+            currentPage: payload.currentPage,
+            pageLimit: payload.itemsPerPage,
+          },
+        })
+        .then((response) => {
+          commit('SET_PENDING_PRESCRIPTIONS', response.data.data.docs);
+          commit('SET_PENDING_PRESCRIPTIONS_TOTAL', response.data.data.total);
+          commit('SET_PENDING_PRESCRIPTIONS_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch((error) => {
           reject(error);
         });
     });
@@ -107,11 +129,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/inventory/item/update/`, inventory)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_ITEM', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -121,11 +143,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/inventory/request-return`, items)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_ITEM', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -135,11 +157,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/inventory/request-return/update`, items)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_ITEM', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -155,13 +177,13 @@ export default {
             search: payload.search,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_RETURN_REQUESTS', response.data.data.docs);
           commit('SET_RETURN_REQUESTS_TOTAL', response.data.data.total);
           commit('SET_RETURN_REQUESTS_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -192,7 +214,7 @@ export default {
         .post('/inventory/items/export', payload, {
           responseType: 'arraybuffer', // Important to receive binary data
         })
-        .then(response => {
+        .then((response) => {
           const contentType = response.headers['content-type'].split(';')[0];
           const blob = new Blob([response.data], {
             type: contentType,
@@ -210,7 +232,7 @@ export default {
           commit('REMOVE_ALL_SELECTED_ITEMS', []);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });

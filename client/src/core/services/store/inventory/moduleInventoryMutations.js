@@ -95,4 +95,19 @@ export default {
   SET_RETURN_REQUESTS_PAGES(state, pages) {
     state.returnRequestsPages = pages;
   },
+
+  /**
+   * PENDING PRESCRIPTIONS
+   */
+  SET_PENDING_PRESCRIPTIONS(state, prescriptions) {
+    state.pendingPrescriptions = prescriptions;
+  },
+
+  SET_PENDING_PRESCRIPTIONS_TOTAL(state, total) {
+    state.pendingPrescriptionsTotal = total;
+  },
+
+  SET_PENDING_PRESCRIPTIONS_PAGES(state, pages) {
+    state.pendingPrescriptionsPages = pages;
+  },
 };

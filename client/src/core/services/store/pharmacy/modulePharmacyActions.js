@@ -234,6 +234,24 @@ export default {
    * PRESCRIPTIONS
    */
 
+  fetchPrescriptionStatistics({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/pharmacy/prescriptions/statistics', {
+          params: {
+            period: payload.period,
+          },
+        })
+        .then(response => {
+          commit('SET_PRESCRIPTION_STATISTICS', response.data.data);
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
   fetchPrescriptions({ commit }, payload) {
     return new Promise((resolve, reject) => {
       axios
@@ -245,6 +263,8 @@ export default {
             start: payload.start,
             end: payload.end,
             period: payload.period,
+            status: payload.status,
+            source: payload.source,
           },
         })
         .then(response => {
