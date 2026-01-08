@@ -95,7 +95,7 @@ export async function getInventoryItems({
     order: [['createdAt', 'DESC']],
     where: {
       inventory_id: inventory,
-      ...(filter && { ...filter }),
+      ...(filter && { ...JSON.parse(filter) }),
     },
     include: [
       {
@@ -143,7 +143,7 @@ export async function searchInventoryItems({
     order: [['quantity_remaining', 'DESC']],
     where: {
       inventory_id: inventory,
-      ...(filter && { ...filter }),
+      ...(filter && { ...JSON.parse(filter) }),
     },
     include: [
       {
