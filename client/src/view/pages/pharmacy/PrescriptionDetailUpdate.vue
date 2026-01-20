@@ -619,7 +619,7 @@ export default {
           date_dispensed: drug.date_dispensed,
           notes: drug.notes,
           dispense_status: drug.dispense_status,
-          disabledReturn: val.status === this.COMPLETE_DISPENSE,
+          disabledReturn: drug.quantity_returned === drug.quantity_dispensed,
           payment_status: drug.payment_status,
           reason_for_return: drug.reason_for_return,
           staff: drug.requester,
@@ -647,9 +647,10 @@ export default {
           unit: item.unit.name,
           total_price: item.total_price,
           reason_for_return: item.reason_for_return,
-          disabledReturn: val.status === this.COMPLETE_DISPENSE,
+          disabledReturn: item.quantity_returned === item.quantity_dispensed,
           staff: item.requester,
           dispenser: item?.dispenser,
+          quantity_returned: item.quantity_returned,
           shouldDisableDispense:
             item.quantity_dispensed === item.quantity_to_dispense ||
             item.quantity_returned === item.quantity_to_dispense,

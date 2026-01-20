@@ -39,6 +39,9 @@
                   table_name="Returns"
                 />
               </b-tab>
+              <b-tab title="All" lazy>
+                <inventory-item-history :history_type="null" table_type="All" table_name="All" />
+              </b-tab>
               <b-tab title="Pending Prescriptions" lazy>
                 <pending-prescriptions />
               </b-tab>

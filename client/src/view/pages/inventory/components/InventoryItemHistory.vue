@@ -15,19 +15,45 @@
         <table class="table table-head-custom table-vertical-center" id="kt_advance_table_widget_1">
           <thead>
             <tr class="text-left">
-              <th class="pr-0" style="width: 180px">Quantity {{ table_type }}</th>
+              <th v-if="table_type === 'All'" style="width: 50px"></th>
+              <th class="pr-0" style="width: 180px">
+                {{ table_type === 'All' ? 'Quantity' : `Quantity ${table_type}` }}
+              </th>
               <th style="min-width: 150px">Quantity Remaining</th>
-              <th v-if="table_type === 'Dispensed'" style="min-width: 150px">Patient ID</th>
-              <th v-if="table_type === 'Dispensed'" style="min-width: 150px">Patient</th>
-              <th style="min-width: 150px">{{ table_type }} By</th>
-              <th style="min-width: 150px">Date {{ table_type }}</th>
+              <th style="min-width: 100px">Status</th>
+              <th
+                v-if="table_type === 'Dispensed' || table_type === 'All'"
+                style="min-width: 150px"
+              >
+                Patient ID
+              </th>
+              <th
+                v-if="table_type === 'Dispensed' || table_type === 'All'"
+                style="min-width: 150px"
+              >
+                Patient
+              </th>
+              <th style="min-width: 150px">
+                {{ table_type === 'All' ? 'Action By' : `${table_type} By` }}
+              </th>
+              <th style="min-width: 150px">
+                {{ table_type === 'All' ? 'Date' : `Date ${table_type}` }}
+              </th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="histories.length === 0">
-              <td colspan="9" align="center" class="text-muted">No Data</td>
+              <td :colspan="getColspan()" align="center" class="text-muted">No Data</td>
             </tr>
             <tr v-for="history in histories" :key="history.id">
+              <td v-if="table_type === 'All'">
+                <i
+                  v-b-tooltip.hover
+                  :title="getHistoryTypeTooltip(history)"
+                  :class="getHistoryTypeIcon(history)"
+                  style="font-size: 1.2rem"
+                ></i>
+              </td>
               <td class="pr-0">
                 <a
                   href="#"
@@ -40,14 +66,24 @@
                   {{ history.quantity_remaining }} {{ history?.unit?.name }}
                 </span>
               </td>
-              <td v-if="table_type === 'Dispensed'">
-                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ history?.patient?.hospital_id }}
+              <td>
+                <span :class="getHistoryStatus(history)" class="label label-dot mr-1"> </span>
+                <span :class="getHistoryTextColor(history)" class="font-size-sm font-weight-bold">
+                  {{ history.history_type }}
                 </span>
               </td>
-              <td v-if="table_type === 'Dispensed'">
+              <td v-if="table_type === 'Dispensed' || table_type === 'All'">
                 <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
-                  {{ history?.patient?.firstname }} {{ history?.patient?.lastname }}
+                  {{ history?.patient?.hospital_id || '-' }}
+                </span>
+              </td>
+              <td v-if="table_type === 'Dispensed' || table_type === 'All'">
+                <span class="text-dark-75 font-weight-bolder d-block font-size-lg">
+                  {{
+                    history?.patient?.firstname && history?.patient?.lastname
+                      ? `${history.patient.firstname} ${history.patient.lastname}`
+                      : '-'
+                  }}
                 </span>
               </td>
               <td>
@@ -137,10 +173,53 @@ export default {
     },
 
     getQuantityToDisplay(history) {
+      if (this.table_type === 'All') {
+        if (history.history_type === 'Dispensed') return history.quantity_dispensed;
+        if (history.history_type === 'Returned') return history.quantity_returned;
+        if (history.history_type === 'Supplied') return history.quantity_supplied;
+      }
       if (this.table_type === 'Dispensed') return history.quantity_dispensed;
       if (this.table_type === 'Returned') return history.quantity_returned;
       if (this.table_type === 'Supplied') return history.quantity_supplied;
       return history.quantity_dispensed;
+    },
+
+    getHistoryTypeIcon(history) {
+      const iconMap = {
+        Dispensed: 'fas fa-pills text-primary',
+        Supplied: 'fas fa-truck text-success',
+        Returned: 'fas fa-undo text-warning',
+      };
+      return iconMap[history.history_type] || 'fas fa-circle text-muted';
+    },
+
+    getHistoryTypeTooltip(history) {
+      const tooltipMap = {
+        Dispensed: 'Dispensed to Patient',
+        Supplied: 'Supplied to Inventory',
+        Returned: 'Returned from Patient',
+      };
+      return tooltipMap[history.history_type] || 'Unknown';
+    },
+
+    getHistoryStatus(history) {
+      if (history.history_type === 'Dispensed') return 'label-success';
+      if (history.history_type === 'Returned') return 'label-primary';
+      if (history.history_type === 'Supplied') return 'label-warning';
+      return 'label-success';
+    },
+
+    getHistoryTextColor(history) {
+      if (history.history_type === 'Dispensed') return 'text-success';
+      if (history.history_type === 'Returned') return 'text-primary';
+      if (history.history_type === 'Supplied') return 'text-warning';
+      return 'text-danger';
+    },
+
+    getColspan() {
+      if (this.table_type === 'All') return 8;
+      if (this.table_type === 'Dispensed') return 7;
+      return 5;
     },
   },
   created() {
