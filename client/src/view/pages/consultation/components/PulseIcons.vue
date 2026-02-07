@@ -91,6 +91,7 @@ export default {
 
   watch: {
     visit: {
+      immediate: true,
       handler(value) {
         this.icons.filter(icon => {
           if (icon.title === this.ADMISSION_DETAILS && value.category === this.INPATIENT) {
