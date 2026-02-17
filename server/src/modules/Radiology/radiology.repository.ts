@@ -412,7 +412,7 @@ export const getOneRequestedInvestigation = async (
       },
       {
         model: PrescribedInvestigation,
-        attributes: ['investigation_id', 'id', 'status', 'payment_status'],
+        attributes: ['investigation_id', 'id', 'status', 'payment_status', 'visit_id'],
         include: [
           { model: Investigation, attributes: ['name', 'id'] },
           {

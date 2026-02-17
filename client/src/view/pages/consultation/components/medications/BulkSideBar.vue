@@ -620,7 +620,7 @@ export default {
         .dispatch('inventory/fetchInventoryItems', {
           inventory,
           search,
-          filter: { drug_form: 'Drug' },
+          filterType: 'drug',
         })
         .then(() => loading(false));
     }, 500),

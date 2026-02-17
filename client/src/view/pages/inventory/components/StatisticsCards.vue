@@ -12,7 +12,10 @@
             <div class="d-flex flex-column">
               <span class="text-muted font-weight-bold font-size-sm mb-2">{{ card.label }}</span>
               <div class="d-flex align-items-center">
-                <span class="text-dark font-weight-bolder font-size-h2 mr-2">
+                <span
+                  :class="card.label === 'Most Dispensed Item' ? 'font-size-h6' : 'font-size-h2'"
+                  class="text-dark font-weight-bolder mr-2"
+                >
                   <template v-if="loading">
                     <div class="spinner spinner-sm spinner-primary"></div>
                   </template>

@@ -5,6 +5,7 @@
       <div class="card-body pt-0">
         <section-title text="Patient Information" />
         <patient-section :patient="investigation.patient" :insurance="investigation.insurance" />
+        <banner :visit-id="investigation.investigations?.[0]?.visit_id" />
         <investigation-result-section
           :tests="investigation.investigations"
           :patient_id="investigation.patient.id"
@@ -22,10 +23,12 @@ import PatientSection from '@/utils/PatientSection.vue';
 import PageTitle from '@/utils/PageTitle.vue';
 import InvestigationResultSection from './result/InputResultSection.vue';
 import ResultSkeleton from '@/view/pages/radiology/components/skeleton/ResultSkeleton.vue';
+import Banner from './Banner.vue';
 export default {
   name: 'AddInvestigationTestResult',
 
   components: {
+    Banner,
     ResultSkeleton,
     InvestigationResultSection,
     PageTitle,

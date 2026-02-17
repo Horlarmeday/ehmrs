@@ -23,6 +23,7 @@ import {
 } from '../../database/enums';
 import { getOnePharmacyStoreItem } from '../Store/store.repository';
 import dayjs from 'dayjs';
+import { isEmpty } from 'lodash';
 
 /**
  * receive product(s) into the inventory
@@ -95,7 +96,7 @@ export async function getInventoryItems({
     order: [['createdAt', 'DESC']],
     where: {
       inventory_id: inventory,
-      ...(filter && { ...JSON.parse(filter) }),
+      ...(!isEmpty(filter) && filter),
     },
     include: [
       {
@@ -143,7 +144,7 @@ export async function searchInventoryItems({
     order: [['quantity_remaining', 'DESC']],
     where: {
       inventory_id: inventory,
-      ...(filter && { ...JSON.parse(filter) }),
+      ...(!isEmpty(filter) && filter),
     },
     include: [
       {

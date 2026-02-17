@@ -187,7 +187,7 @@ export default {
         .dispatch('inventory/fetchInventoryItems', {
           search,
           inventory,
-          filter: { drug_form: 'Consumable' },
+          filterType: 'consumable',
         })
         .then(() => loading(false));
     }, 500),

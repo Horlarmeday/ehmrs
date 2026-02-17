@@ -138,7 +138,6 @@ class InventoryService {
       processedFilter = await this.buildFilterFromType(filterType, inventory);
     }
 
-    console.log('processedFilter', processedFilter);
     if (processedFilter && search) {
       return searchInventoryItems({
         inventory,
@@ -195,29 +194,37 @@ class InventoryService {
 
     switch (filterType) {
       case 'expiring_soon':
-        return JSON.stringify({
+        return {
           expiration: {
             [Op.between]: [today, thirtyDaysFromNow],
           },
-        });
+        };
       case 'low_stock':
-        return JSON.stringify({
+        return {
           quantity_remaining: {
             [Op.lt]: inventory?.refill_level || 0,
           },
-        });
+        };
+      case 'drug':
+        return {
+          drug_form: 'Drug',
+        };
+      case 'consumable':
+        return {
+          drug_form: 'Consumable',
+        };
       case 'critical_stock':
-        return JSON.stringify({
+        return {
           quantity_remaining: {
             [Op.lt]: 5,
           },
-        });
+        };
       case 'expired':
-        return JSON.stringify({
+        return {
           expiration: {
             [Op.lt]: today,
           },
-        });
+        };
       case 'most_dispensed': {
         const mostDispensedResult = await InventoryItemHistory.findAll({
           where: {
@@ -235,9 +242,9 @@ class InventoryService {
         });
 
         if (mostDispensedResult.length > 0) {
-          return JSON.stringify({
+          return {
             id: mostDispensedResult[0].inventory_item_id,
-          });
+          };
         }
         return null;
       }
