@@ -272,7 +272,7 @@ export default {
         description: '',
         status: 'active',
         sort_order: 0,
-        color: '#667eea',
+        color: '#00acc1',
         is_featured: false,
         requires_approval: false,
       },
@@ -322,7 +322,7 @@ export default {
             description: subcategory.description || '',
             status: subcategory.status || 'active',
             sort_order: subcategory.sort_order || 0,
-            color: subcategory.color || '#667eea',
+            color: subcategory.color || '#00acc1',
             is_featured: subcategory.is_featured || false,
             requires_approval: subcategory.requires_approval || false,
           };
@@ -394,7 +394,7 @@ export default {
 }
 
 .card-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #00acc1 0%, #0097a7 100%);
   color: white;
   border-bottom: none;
 }
@@ -428,7 +428,7 @@ export default {
 }
 
 .modal-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #00acc1 0%, #0097a7 100%);
   color: white;
   border-bottom: none;
 }

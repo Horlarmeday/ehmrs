@@ -920,9 +920,9 @@ export default {
 }
 
 .wizard-step-card.active {
-  border-color: #3699ff;
+  border-color: #00acc1;
   background: linear-gradient(135deg, #ffffff 0%, #f7f9fc 100%);
-  box-shadow: 0 4px 16px rgba(54, 153, 255, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 172, 193, 0.2);
   transform: translateY(-2px);
 }
 
@@ -943,7 +943,7 @@ export default {
 }
 
 .wizard-step-card.active .step-card-icon {
-  color: #3699ff;
+  color: #00acc1;
   transform: scale(1.1);
 }
 
@@ -960,7 +960,7 @@ export default {
 }
 
 .wizard-step-card.active .step-card-title {
-  color: #3699ff;
+  color: #00acc1;
   font-weight: 700;
 }
 
@@ -992,7 +992,7 @@ export default {
 }
 
 .wizard-step-card.active .step-card-number {
-  background: #3699ff;
+  background: #00acc1;
   color: white;
   transform: scale(1.1);
 }
@@ -1052,13 +1052,13 @@ export default {
 }
 
 .selected-patient-card {
-  border: 2px solid #3699ff;
+  border: 2px solid #00acc1;
   border-radius: 12px;
   transition: all 0.3s ease;
 }
 
 .selected-patient-card:hover {
-  box-shadow: 0 4px 12px rgba(54, 153, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 172, 193, 0.15);
 }
 
 .form-group {
@@ -1080,8 +1080,8 @@ export default {
 }
 
 .time-slots-grid .time-slot.active {
-  background-color: #3699ff;
-  border-color: #3699ff;
+  background-color: #00acc1;
+  border-color: #00acc1;
   color: white;
 }
 

@@ -673,7 +673,7 @@ export default {
 }
 
 .filters-section .card {
-  border: 1px solid #e1f0ff;
+  border: 1px solid #e0f7fa;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
@@ -693,7 +693,7 @@ export default {
 
 .category-card:hover {
   transform: translateY(-5px);
-  border-color: #e1f0ff;
+  border-color: #e0f7fa;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
 }
 
@@ -767,7 +767,7 @@ export default {
 }
 
 .pagination-section .card {
-  border: 1px solid #e1f0ff;
+  border: 1px solid #e0f7fa;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 

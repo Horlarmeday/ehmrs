@@ -3043,8 +3043,8 @@ export default {
 }
 
 .btn-group .btn.active {
-  background-color: #3699ff;
-  border-color: #3699ff;
+  background-color: #00acc1;
+  border-color: #00acc1;
   color: white;
 }
 
@@ -3079,8 +3079,8 @@ export default {
 }
 
 .label-light-primary {
-  background-color: #e1f0ff;
-  color: #3699ff;
+  background-color: #e0f7fa;
+  color: #00acc1;
 }
 
 .label-light-warning {
@@ -3131,7 +3131,7 @@ export default {
   top: 10px;
   width: 10px;
   height: 10px;
-  background-color: #3699ff; /* Timeline dot color */
+  background-color: #00acc1; /* Timeline dot color */
   border-radius: 50%;
   border: 2px solid white;
 }
@@ -3233,10 +3233,10 @@ export default {
   font-size: 0.85em;
   padding: 8px 12px;
   border-radius: 20px;
-  background-color: #3699ff;
+  background-color: #00acc1;
   color: white;
   border: none;
-  box-shadow: 0 2px 4px rgba(54, 153, 255, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 172, 193, 0.3);
 }
 
 .diagnosis-tags .badge i {
@@ -3419,10 +3419,10 @@ export default {
   font-size: 0.85em;
   padding: 8px 12px;
   border-radius: 20px;
-  background-color: #3699ff;
+  background-color: #00acc1;
   color: white;
   border: none;
-  box-shadow: 0 2px 4px rgba(54, 153, 255, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 172, 193, 0.3);
 }
 
 .selected-services .badge i {

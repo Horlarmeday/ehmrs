@@ -5,15 +5,15 @@
 
 :root {
   // Primary Brand Colors
-  --heritage-maroon: #8B0000;
-  --heritage-maroon-hover: #A0522D;
-  --heritage-maroon-light: #F5F5DC;
+  --heritage-maroon: #00ACC1;
+  --heritage-maroon-hover: #0097A7;
+  --heritage-maroon-light: #E0F7FA;
   --heritage-maroon-inverse: #FFFFFF;
   
   // Secondary Brand Colors
-  --heritage-blue: #000080;
-  --heritage-blue-hover: #191970;
-  --heritage-blue-light: #E6E6FA;
+  --heritage-blue: #1976D2;
+  --heritage-blue-hover: #1565C0;
+  --heritage-blue-light: #E3F2FD;
   --heritage-blue-inverse: #FFFFFF;
   
   --heritage-green: #006400;
@@ -23,7 +23,7 @@
   
   // Accent Colors
   --heritage-light-green: #90EE90;
-  --heritage-accent-red: #CD5C5C;
+  --heritage-accent-red: #F44336;
   
   // Semantic Colors (mapped to Heritage palette)
   --primary: var(--heritage-maroon);

@@ -49,7 +49,7 @@ export default {
   data() {
     return {
       activeTab: '',
-      backgroundColor: '#3699ff29',
+      backgroundColor: '#00acc129',
       searchString: '',
       currentPage: 1,
       itemsPerPage: 100,

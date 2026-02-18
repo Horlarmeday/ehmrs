@@ -112,11 +112,11 @@ export default {
 
 .nav-link:hover {
   background-color: #f4f6fa;
-  color: #3699ff;
+  color: #00acc1;
 }
 
 .nav-link.active {
-  background-color: #3699ff;
+  background-color: #00acc1;
   color: white;
 }
 

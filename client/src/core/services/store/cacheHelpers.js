@@ -15,7 +15,7 @@ const DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes
  */
 export const createCachedAction = (originalAction, cacheKey, stateSelector, ttl = DEFAULT_TTL) => {
   return function cachedAction(context, payload) {
-    const { commit, state } = context;
+    const { state } = context;
     const now = Date.now();
     const cacheTimestamp = cacheTimestamps.get(cacheKey);
 

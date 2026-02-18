@@ -254,7 +254,7 @@ export default {
 }
 
 .form-control:focus {
-  border-color: #3699ff;
-  box-shadow: 0 0 0 0.2rem rgba(54, 153, 255, 0.25);
+  border-color: #00acc1;
+  box-shadow: 0 0 0 0.2rem rgba(0, 172, 193, 0.25);
 }
 </style>

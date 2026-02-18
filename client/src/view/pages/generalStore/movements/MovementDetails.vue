@@ -615,7 +615,7 @@ export default {
 }
 
 .card-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #00acc1 0%, #0097a7 100%);
   color: white;
   border-bottom: none;
 }
@@ -658,7 +658,7 @@ export default {
   height: 12px;
   border-radius: 50%;
   border: 2px solid #fff;
-  box-shadow: 0 0 0 2px #667eea;
+  box-shadow: 0 0 0 2px #00acc1;
 }
 
 .timeline-marker.active {

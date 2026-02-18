@@ -42,4 +42,3 @@ export function extractQuantityFromText(text) {
   // Return as integer if it's a whole number, otherwise return decimal
   return quantity % 1 === 0 ? parseInt(quantity, 10) : quantity;
 }
-

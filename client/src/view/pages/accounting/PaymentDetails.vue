@@ -341,11 +341,11 @@ export default {
 }
 
 .summary-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #00acc1 0%, #0097a7 100%);
   color: white;
   padding: 2rem;
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 172, 193, 0.3);
 }
 
 .summary-header {

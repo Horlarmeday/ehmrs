@@ -222,7 +222,7 @@ export default {
 }
 
 .text-hover-primary:hover {
-  color: #3699ff !important;
+  color: #00acc1 !important;
   transition: color 0.2s ease;
 }
 

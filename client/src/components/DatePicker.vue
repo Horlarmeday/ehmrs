@@ -106,12 +106,12 @@ export default {
       }
 
       &.selected {
-        background-color: #3699ff;
+        background-color: #00acc1;
         color: #ffffff;
       }
 
       &.in-range {
-        background-color: #e1f0ff;
+        background-color: #e0f7fa;
       }
     }
 

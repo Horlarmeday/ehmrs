@@ -834,7 +834,7 @@ export default {
 }
 
 .appointment-count {
-  background-color: #3699ff;
+  background-color: #00acc1;
   color: white;
   border-radius: 50%;
   width: 20px;
@@ -904,7 +904,7 @@ export default {
 
 .more-appointments {
   text-align: center;
-  color: #3699ff;
+  color: #00acc1;
   cursor: pointer;
   font-size: 0.75rem;
   padding: 0.25rem;
@@ -990,7 +990,7 @@ export default {
 }
 
 .appointment-slot {
-  background-color: #3699ff;
+  background-color: #00acc1;
   color: white;
   border-radius: 4px;
   padding: 0.25rem 0.5rem;
@@ -1070,7 +1070,7 @@ export default {
 
 .appointment-time {
   font-weight: bold;
-  color: #3699ff;
+  color: #00acc1;
 }
 
 .appointment-details div {

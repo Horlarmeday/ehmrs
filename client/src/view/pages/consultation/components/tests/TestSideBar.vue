@@ -13,7 +13,7 @@ export default {
   data() {
     return {
       tabIndex: 0,
-      sBackgroundColor: '#3699ff29',
+      sBackgroundColor: '#00acc129',
     };
   },
   props: {

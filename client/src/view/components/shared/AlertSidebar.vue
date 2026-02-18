@@ -984,7 +984,7 @@ export default {
 
 .alert-sidebar-item-unread {
   background: linear-gradient(90deg, #f0f8ff 0%, #fff 50%);
-  border-left: 3px solid #3699ff;
+  border-left: 3px solid #00acc1;
 }
 
 .alert-sidebar-item-selected {

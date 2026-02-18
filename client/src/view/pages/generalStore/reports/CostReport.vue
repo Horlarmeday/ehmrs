@@ -429,8 +429,8 @@ export default {
 }
 
 .icon-circle-primary {
-  background-color: rgba(54, 153, 255, 0.1);
-  color: #3699ff;
+  background-color: rgba(0, 172, 193, 0.1);
+  color: #00acc1;
 }
 
 .icon-circle-success {
@@ -485,10 +485,10 @@ export default {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: rgba(54, 153, 255, 0.1);
+  background-color: rgba(0, 172, 193, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #3699ff;
+  color: #00acc1;
 }
 </style>

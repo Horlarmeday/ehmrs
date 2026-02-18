@@ -201,6 +201,7 @@
 
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex';
+import Chart from 'chart.js/auto';
 
 export default {
   name: 'AlertWidget',
@@ -525,8 +526,8 @@ export default {
           datasets: [
             {
               data: alertCounts,
-              borderColor: '#3699ff',
-              backgroundColor: 'rgba(54, 153, 255, 0.1)',
+              borderColor: '#00acc1',
+              backgroundColor: 'rgba(0, 172, 193, 0.1)',
               borderWidth: 2,
               fill: true,
               tension: 0.4,

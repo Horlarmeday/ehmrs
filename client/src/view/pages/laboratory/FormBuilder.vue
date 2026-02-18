@@ -563,8 +563,8 @@ export default {
 }
 
 .drop-zone.drag-over {
-  background: #f1f8ff;
-  border: 2px dashed #3699ff;
+  background: #e0f7fa;
+  border: 2px dashed #00acc1;
 }
 
 .drop-zone-empty {
@@ -588,13 +588,13 @@ export default {
 }
 
 .field-item:hover {
-  border-color: #3699ff;
-  box-shadow: 0 2px 8px rgba(54, 153, 255, 0.2);
+  border-color: #00acc1;
+  box-shadow: 0 2px 8px rgba(0, 172, 193, 0.2);
 }
 
 .field-item.selected {
-  border-color: #3699ff;
-  background: #f1f8ff;
+  border-color: #00acc1;
+  background: #e0f7fa;
 }
 
 .field-icon {
@@ -609,7 +609,7 @@ export default {
 }
 
 .field-icon i {
-  color: #3699ff;
+  color: #00acc1;
 }
 
 .field-info {

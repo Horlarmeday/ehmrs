@@ -131,7 +131,7 @@ export default {
         curve: 'smooth',
         width: 2,
       },
-      colors: ['#3699FF', '#F64E60'],
+      colors: ['#00ACC1', '#F64E60'],
       xaxis: {
         categories: [],
       },
@@ -172,7 +172,7 @@ export default {
         },
       },
       labels: [],
-      colors: ['#3699FF', '#1BC5BD', '#F64E60', '#FFA800', '#8950FC'],
+      colors: ['#00ACC1', '#1BC5BD', '#F64E60', '#FFA800', '#8950FC'],
       legend: {
         position: 'bottom',
       },
@@ -192,7 +192,7 @@ export default {
           show: false,
         },
       },
-      colors: ['#3699FF'],
+      colors: ['#00ACC1'],
       xaxis: {
         categories: [],
       },

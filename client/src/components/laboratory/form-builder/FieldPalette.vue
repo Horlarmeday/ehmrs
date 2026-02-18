@@ -215,8 +215,8 @@ export default {
 }
 
 .field-type-item:hover {
-  border-color: #3699ff;
-  box-shadow: 0 3px 10px rgba(54, 153, 255, 0.2);
+  border-color: #00acc1;
+  box-shadow: 0 3px 10px rgba(0, 172, 193, 0.2);
   transform: translateY(-2px);
 }
 
@@ -237,7 +237,7 @@ export default {
 
 .field-icon i {
   font-size: 18px;
-  color: #3699ff;
+  color: #00acc1;
 }
 
 .field-info {

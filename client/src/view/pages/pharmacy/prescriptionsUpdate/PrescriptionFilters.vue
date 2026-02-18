@@ -53,7 +53,10 @@
     <div v-if="hasActiveFilters" class="card-body pt-0 pb-4">
       <div class="d-flex align-items-center flex-wrap">
         <span class="text-muted mr-2 font-weight-bold">Active Filters:</span>
-        <span v-if="localStatus && localStatus !== 'all'" class="badge badge-light-primary mr-2 mb-2">
+        <span
+          v-if="localStatus && localStatus !== 'all'"
+          class="badge badge-light-primary mr-2 mb-2"
+        >
           Status: {{ getStatusLabel(localStatus) }}
           <i class="ki ki-close ml-1 cursor-pointer" @click="clearStatus"></i>
         </span>

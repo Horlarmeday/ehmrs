@@ -4,15 +4,15 @@
 //
 
 // Primary Brand Colors (from logo)
-$heritage-maroon:                                   #8B0000;  // Dark Maroon (main brand color)
-$heritage-maroon-hover:                             #A0522D;  // Saddle Brown (hover state)
-$heritage-maroon-light:                             #F5F5DC;  // Beige (light variant)
+$heritage-maroon:                                   #00ACC1;  // Teal (dominant brand color)
+$heritage-maroon-hover:                             #0097A7;  // Darker teal (hover state)
+$heritage-maroon-light:                             #E0F7FA;  // Light teal (backgrounds)
 $heritage-maroon-inverse:                           #FFFFFF;  // White (text on primary)
 
 // Secondary Brand Colors (from logo elements)
-$heritage-blue:                                     #000080;  // Dark Blue (from logo arcs)
-$heritage-blue-hover:                               #191970;  // Midnight Blue
-$heritage-blue-light:                               #E6E6FA;  // Lavender
+$heritage-blue:                                     #1976D2;  // Deep blue
+$heritage-blue-hover:                               #1565C0;  // Darker deep blue
+$heritage-blue-light:                               #E3F2FD;  // Light blue
 $heritage-blue-inverse:                             #FFFFFF;  // White
 
 $heritage-green:                                    #006400;  // Dark Green (from logo arcs)
@@ -21,8 +21,8 @@ $heritage-green-light:                              #F0FFF0;  // Honeydew
 $heritage-green-inverse:                            #FFFFFF;  // White
 
 // Accent Colors (from logo details)
-$heritage-light-green:                              #90EE90;  // Light Green (medical cross)
-$heritage-accent-red:                               #CD5C5C;  // Indian Red (kidney accent)
+$heritage-light-green:                              #90EE90;  // Light green (accent)
+$heritage-accent-red:                               #F44336;  // Red (medical cross)
 
 // Semantic Color Mapping
 $primary:                                           $heritage-maroon;

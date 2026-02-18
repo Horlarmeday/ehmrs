@@ -136,7 +136,6 @@ export default {
       return 'label label-inline label-light-danger font-weight-bold';
     },
 
-
     showDeleteAlert(drug) {
       const self = this;
       Swal.fire({

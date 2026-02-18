@@ -555,7 +555,7 @@ export default {
 }
 
 .header-section {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #00acc1 0%, #0097a7 100%);
   color: white;
   padding: 2rem;
   border-radius: 1rem;
@@ -601,7 +601,7 @@ export default {
 
 .nav-card:hover {
   transform: translateY(-5px);
-  border-color: #e1f0ff;
+  border-color: #e0f7fa;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
 }
 

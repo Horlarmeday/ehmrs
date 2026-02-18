@@ -190,7 +190,8 @@
                   </label>
                 </div>
                 <small class="form-text text-muted">
-                  When enabled, the system will automatically attempt to pay bills using patient deposits when prescriptions are created.
+                  When enabled, the system will automatically attempt to pay bills using patient
+                  deposits when prescriptions are created.
                 </small>
               </div>
             </div>

@@ -2048,7 +2048,7 @@ export default {
 .patient-info-card {
   border: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #00acc1 0%, #0097a7 100%);
   color: white;
 }
 
@@ -2122,7 +2122,7 @@ export default {
 }
 
 .bills-card .stat-icon {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #00acc1 0%, #0097a7 100%);
   color: white;
 }
 
@@ -2293,7 +2293,7 @@ export default {
 }
 
 .marker-bill {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #00acc1 0%, #0097a7 100%);
   color: white;
 }
 
@@ -2435,11 +2435,11 @@ export default {
 }
 
 .bill-items-table thead {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #00acc1 0%, #0097a7 100%);
 }
 
 .bill-items-table thead th {
-  color: rgb(58, 58, 58);
+  color: white;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.75rem;

@@ -91,7 +91,7 @@
                 id="account-name"
                 v-model="form.account_name"
                 type="text"
-                placeholder="Enter account name (e.g., Caroline Hospital Main Account)"
+                placeholder="Enter account name (e.g., Health Clone Medical Center Main Account)"
                 :state="getFieldState('account_name')"
                 @blur="validateField('account_name')"
                 @input="validateField('account_name')"
@@ -624,7 +624,7 @@ export default {
 .form-icon {
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #00acc1 0%, #0097a7 100%);
   border-radius: 12px;
   display: flex;
   align-items: center;

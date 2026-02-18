@@ -657,7 +657,7 @@ export default {
 }
 
 .header-section {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #00acc1 0%, #0097a7 100%);
   color: white;
   padding: 2rem;
   border-radius: 1rem;
@@ -672,7 +672,7 @@ export default {
 }
 
 .filters-section .card {
-  border: 1px solid #e1f0ff;
+  border: 1px solid #e0f7fa;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
@@ -735,7 +735,7 @@ export default {
 }
 
 .pagination-section .card {
-  border: 1px solid #e1f0ff;
+  border: 1px solid #e0f7fa;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 

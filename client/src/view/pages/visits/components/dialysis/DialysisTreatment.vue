@@ -555,8 +555,8 @@ export default {
 }
 
 .form-control:focus {
-  border-color: #3699ff;
-  box-shadow: 0 0 0 0.2rem rgba(54, 153, 255, 0.25);
+  border-color: #00acc1;
+  box-shadow: 0 0 0 0.2rem rgba(0, 172, 193, 0.25);
 }
 
 .v-select {
@@ -565,8 +565,8 @@ export default {
 }
 
 .v-select:focus-within {
-  border-color: #3699ff;
-  box-shadow: 0 0 0 0.2rem rgba(54, 153, 255, 0.25);
+  border-color: #00acc1;
+  box-shadow: 0 0 0 0.2rem rgba(0, 172, 193, 0.25);
 }
 
 .symbol {
@@ -582,7 +582,7 @@ export default {
 }
 
 .symbol-light-primary {
-  background-color: #e1f0ff;
+  background-color: #e0f7fa;
 }
 
 .symbol-label {

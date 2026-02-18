@@ -1969,7 +1969,7 @@ export class PaymentProcessingService {
         // Add more patient details when patient repository is available
       },
       hospital_info: {
-        name: 'Caroline Hospital', // This should come from configuration
+        name: 'Health Clone Medical Center', // This should come from configuration
         address: 'Hospital Address', // This should come from configuration
         phone: 'Hospital Phone', // This should come from configuration
         email: 'hospital@email.com', // This should come from configuration

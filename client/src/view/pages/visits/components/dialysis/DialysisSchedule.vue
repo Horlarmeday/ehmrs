@@ -462,8 +462,8 @@ export default {
 }
 
 .time-slot.has-appointment {
-  border-color: #3699ff;
-  background-color: #f8f9ff;
+  border-color: #00acc1;
+  background-color: #e0f7fa;
 }
 
 .time-header {
@@ -494,8 +494,8 @@ export default {
 }
 
 .status-booked {
-  background-color: #e1f0ff;
-  color: #3699ff;
+  background-color: #e0f7fa;
+  color: #00acc1;
 }
 
 .appointment-info {
@@ -521,7 +521,7 @@ export default {
 }
 
 .treatment-type {
-  color: #3699ff;
+  color: #00acc1;
   font-weight: 500;
 }
 
@@ -558,8 +558,8 @@ export default {
 }
 
 .form-control:focus {
-  border-color: #3699ff;
-  box-shadow: 0 0 0 0.2rem rgba(54, 153, 255, 0.25);
+  border-color: #00acc1;
+  box-shadow: 0 0 0 0.2rem rgba(0, 172, 193, 0.25);
 }
 
 .v-select {
@@ -568,7 +568,7 @@ export default {
 }
 
 .v-select:focus-within {
-  border-color: #3699ff;
-  box-shadow: 0 0 0 0.2rem rgba(54, 153, 255, 0.25);
+  border-color: #00acc1;
+  box-shadow: 0 0 0 0.2rem rgba(0, 172, 193, 0.25);
 }
 </style>

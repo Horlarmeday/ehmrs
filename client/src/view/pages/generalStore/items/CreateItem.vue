@@ -664,7 +664,7 @@ export default {
 }
 
 .card-custom {
-  border: 1px solid #e1f0ff;
+  border: 1px solid #e0f7fa;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
 }
@@ -675,7 +675,7 @@ export default {
 
 .card-header {
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-bottom: 1px solid #e1f0ff;
+  border-bottom: 1px solid #e0f7fa;
 }
 
 .card-title {
@@ -684,8 +684,8 @@ export default {
 }
 
 .form-control:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+  border-color: #00acc1;
+  box-shadow: 0 0 0 0.2rem rgba(0, 172, 193, 0.25);
 }
 
 .input-group-text {
@@ -695,8 +695,8 @@ export default {
 }
 
 .custom-control-input:checked ~ .custom-control-label::before {
-  background-color: #667eea;
-  border-color: #667eea;
+  background-color: #00acc1;
+  border-color: #00acc1;
 }
 
 .form-actions {

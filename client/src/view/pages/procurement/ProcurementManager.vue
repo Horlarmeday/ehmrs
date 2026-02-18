@@ -1592,8 +1592,8 @@ export default {
 }
 
 .btn-group .btn.active {
-  background-color: #3699ff;
-  border-color: #3699ff;
+  background-color: #00acc1;
+  border-color: #00acc1;
   color: white;
 }
 
@@ -1615,8 +1615,8 @@ export default {
 }
 
 .form-control:focus {
-  border-color: #3699ff;
-  box-shadow: 0 0 0 0.2rem rgba(54, 153, 255, 0.25);
+  border-color: #00acc1;
+  box-shadow: 0 0 0 0.2rem rgba(0, 172, 193, 0.25);
 }
 
 .v-select {
@@ -1625,8 +1625,8 @@ export default {
 }
 
 .v-select:focus-within {
-  border-color: #3699ff;
-  box-shadow: 0 0 0 0.2rem rgba(54, 153, 255, 0.25);
+  border-color: #00acc1;
+  box-shadow: 0 0 0 0.2rem rgba(0, 172, 193, 0.25);
 }
 
 @keyframes fadeIn {
@@ -1658,7 +1658,7 @@ export default {
 }
 
 .symbol-light-primary {
-  background-color: #e1f0ff;
+  background-color: #e0f7fa;
 }
 
 .symbol-light-success {
@@ -1705,8 +1705,8 @@ export default {
 }
 
 .label-light-primary {
-  background-color: #e1f0ff;
-  color: #3699ff;
+  background-color: #e0f7fa;
+  color: #00acc1;
 }
 
 .label-light-danger {
@@ -1715,7 +1715,7 @@ export default {
 }
 
 .bg-light-primary {
-  background-color: #e1f0ff !important;
+  background-color: #e0f7fa !important;
 }
 
 .bg-light-success {

@@ -190,7 +190,7 @@ export default {
   },
   computed: {
     logo() {
-      return process.env.BASE_URL + 'media/logos/Caroline.png';
+      return process.env.BASE_URL + 'media/logos/health-clone.png';
     },
 
     ...mapGetters(['layoutConfig', 'getClasses']),

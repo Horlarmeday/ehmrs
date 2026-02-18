@@ -108,6 +108,6 @@ export default {
 
 <style scoped>
 .selected {
-  border: 2px solid #3699ff;
+  border: 2px solid #00acc1;
 }
 </style>

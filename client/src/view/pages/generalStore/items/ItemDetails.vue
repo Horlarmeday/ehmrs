@@ -22,7 +22,7 @@
         </div>
         <div class="col-lg-4 text-right">
           <div class="d-flex justify-content-end">
-            <button 
+            <button
               v-if="ALLOWED_ROLES.includes(user.role)"
               @click="showEditModal = true"
               class="btn btn-warning btn-lg mr-3"
@@ -30,11 +30,7 @@
               <i class="flaticon2-edit mr-2"></i>
               Edit Item
             </button>
-            <button 
-              @click="refreshData"
-              class="btn btn-light btn-lg"
-              :disabled="loading"
-            >
+            <button @click="refreshData" class="btn btn-light btn-lg" :disabled="loading">
               <i class="flaticon2-refresh mr-2" :class="{ 'fa-spin': loading }"></i>
               Refresh
             </button>
@@ -72,7 +68,7 @@
                     <span class="badge badge-primary badge-lg">{{ item.item_code }}</span>
                   </p>
                 </div>
-                
+
                 <div class="col-md-6 mb-3">
                   <label class="form-label font-weight-bold text-muted">Status</label>
                   <p class="form-control-static">
@@ -81,25 +77,29 @@
                     </span>
                   </p>
                 </div>
-                
+
                 <div class="col-12 mb-3">
                   <label class="form-label font-weight-bold text-muted">Description</label>
                   <p class="form-control-static">
                     {{ item.description || 'No description provided' }}
                   </p>
                 </div>
-                
+
                 <div class="col-md-6 mb-3">
                   <label class="form-label font-weight-bold text-muted">Category</label>
                   <p class="form-control-static">
-                    <span class="badge badge-light-primary">{{ item.category?.name || 'N/A' }}</span>
+                    <span class="badge badge-light-primary">{{
+                      item.category?.name || 'N/A'
+                    }}</span>
                   </p>
                 </div>
-                
+
                 <div class="col-md-6 mb-3">
                   <label class="form-label font-weight-bold text-muted">Subcategory</label>
                   <p class="form-control-static">
-                    <span class="badge badge-light-info">{{ item.subcategory?.name || 'N/A' }}</span>
+                    <span class="badge badge-light-info">{{
+                      item.subcategory?.name || 'N/A'
+                    }}</span>
                   </p>
                 </div>
               </div>
@@ -122,20 +122,22 @@
                     {{ item.manufacturer || 'Not specified' }}
                   </p>
                 </div>
-                
+
                 <div class="col-md-6 mb-3">
                   <label class="form-label font-weight-bold text-muted">Model Number</label>
                   <p class="form-control-static">
                     {{ item.model_number || 'Not specified' }}
                   </p>
                 </div>
-                
+
                 <div class="col-12 mb-3">
                   <label class="form-label font-weight-bold text-muted">Specifications</label>
-                  <p class="form-control-static">
-                    <pre v-if="item.specifications" class="specifications-json">{{ formatSpecifications(item.specifications) }}</pre>
+                  <div class="form-control-static">
+                    <pre v-if="item.specifications" class="specifications-json">{{
+                      formatSpecifications(item.specifications)
+                    }}</pre>
                     <span v-else class="text-muted">No specifications provided</span>
-                  </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -155,28 +157,31 @@
                 <p class="text-muted mb-0">No recent movements</p>
               </div>
               <div v-else>
-                <div 
-                  v-for="movement in itemMovements.slice(0, 5)" 
+                <div
+                  v-for="movement in itemMovements.slice(0, 5)"
                   :key="movement.id"
                   class="movement-item d-flex align-items-center py-3 border-bottom"
                 >
                   <div class="movement-icon mr-3">
-                    <i 
-                      :class="[getMovementIcon(movement.movement_type), getMovementColor(movement.movement_type)]"
+                    <i
+                      :class="[
+                        getMovementIcon(movement.movement_type),
+                        getMovementColor(movement.movement_type),
+                      ]"
                     ></i>
                   </div>
                   <div class="flex-grow-1">
                     <h6 class="font-weight-bold mb-1">{{ movement.movement_type }}</h6>
                     <p class="text-muted mb-0">
-                      Quantity: {{ movement.quantity }} | 
-                      Reference: {{ movement.reference_number || 'N/A' }}
+                      Quantity: {{ movement.quantity }} | Reference:
+                      {{ movement.reference_number || 'N/A' }}
                     </p>
                   </div>
                   <div class="text-right">
                     <small class="text-muted">{{ formatDate(movement.created_at) }}</small>
                   </div>
                 </div>
-                
+
                 <div class="text-center pt-3">
                   <button @click="viewAllMovements" class="btn btn-sm btn-outline-primary">
                     View All Movements
@@ -204,48 +209,55 @@
                   <small class="stock-label">Current Stock</small>
                 </div>
               </div>
-              
+
               <div class="stock-details">
                 <div class="stock-item d-flex justify-content-between mb-2">
                   <span class="text-muted">Minimum Stock:</span>
                   <span class="font-weight-bold">{{ item.minimum_stock }}</span>
                 </div>
-                
+
                 <div class="stock-item d-flex justify-content-between mb-2">
                   <span class="text-muted">Maximum Stock:</span>
                   <span class="font-weight-bold">{{ item.maximum_stock || 'Not set' }}</span>
                 </div>
-                
+
                 <div class="stock-item d-flex justify-content-between mb-2">
                   <span class="text-muted">Unit Cost:</span>
-                  <span class="font-weight-bold text-success">${{ formatCurrency(item.unit_cost) }}</span>
+                  <span class="font-weight-bold text-success"
+                    >${{ formatCurrency(item.unit_cost) }}</span
+                  >
                 </div>
-                
+
                 <div class="stock-item d-flex justify-content-between mb-3">
                   <span class="text-muted">Total Value:</span>
-                  <span class="font-weight-bold text-primary">${{ formatCurrency(item.current_stock * item.unit_cost) }}</span>
+                  <span class="font-weight-bold text-primary"
+                    >${{ formatCurrency(item.current_stock * item.unit_cost) }}</span
+                  >
                 </div>
-                
+
                 <div class="stock-bar mb-3">
                   <div class="stock-bar-label d-flex justify-content-between mb-1">
                     <small class="text-muted">Stock Level</small>
                     <small class="text-muted">{{ getStockPercentage(item) }}%</small>
                   </div>
                   <div class="stock-bar-bg">
-                    <div 
+                    <div
                       class="stock-bar-fill"
                       :class="getStockLevelClass(item)"
                       :style="{ width: getStockPercentage(item) + '%' }"
                     ></div>
                   </div>
                 </div>
-                
+
                 <div class="stock-alerts">
                   <div v-if="item.current_stock === 0" class="alert alert-danger py-2 mb-2">
                     <i class="flaticon2-warning mr-1"></i>
                     Out of Stock
                   </div>
-                  <div v-else-if="item.current_stock <= item.minimum_stock" class="alert alert-warning py-2 mb-2">
+                  <div
+                    v-else-if="item.current_stock <= item.minimum_stock"
+                    class="alert alert-warning py-2 mb-2"
+                  >
                     <i class="flaticon2-warning mr-1"></i>
                     Low Stock Alert
                   </div>
@@ -272,37 +284,57 @@
                   <span class="text-muted">Location:</span>
                   <span class="font-weight-bold">{{ item.location || 'Not specified' }}</span>
                 </div>
-                
+
                 <div class="storage-item d-flex justify-content-between mb-2">
                   <span class="text-muted">Shelf Number:</span>
                   <span class="font-weight-bold">{{ item.shelf_number || 'Not specified' }}</span>
                 </div>
-                
+
                 <div class="storage-item d-flex justify-content-between mb-2">
                   <span class="text-muted">Expiry Date:</span>
-                  <span class="font-weight-bold">{{ item.expiry_date ? formatDate(item.expiry_date) : 'Not specified' }}</span>
+                  <span class="font-weight-bold">{{
+                    item.expiry_date ? formatDate(item.expiry_date) : 'Not specified'
+                  }}</span>
                 </div>
-                
+
                 <div class="storage-item d-flex justify-content-between mb-2">
                   <span class="text-muted">Expirable:</span>
                   <span class="font-weight-bold">
-                    <i :class="item.is_expirable ? 'flaticon2-check text-success' : 'flaticon2-close text-muted'"></i>
+                    <i
+                      :class="
+                        item.is_expirable
+                          ? 'flaticon2-check text-success'
+                          : 'flaticon2-close text-muted'
+                      "
+                    ></i>
                     {{ item.is_expirable ? 'Yes' : 'No' }}
                   </span>
                 </div>
-                
+
                 <div class="storage-item d-flex justify-content-between mb-2">
                   <span class="text-muted">Serialized:</span>
                   <span class="font-weight-bold">
-                    <i :class="item.is_serialized ? 'flaticon2-check text-success' : 'flaticon2-close text-muted'"></i>
+                    <i
+                      :class="
+                        item.is_serialized
+                          ? 'flaticon2-check text-success'
+                          : 'flaticon2-close text-muted'
+                      "
+                    ></i>
                     {{ item.is_serialized ? 'Yes' : 'No' }}
                   </span>
                 </div>
-                
+
                 <div class="storage-item d-flex justify-content-between mb-2">
                   <span class="text-muted">Lot Tracked:</span>
                   <span class="font-weight-bold">
-                    <i :class="item.is_lot_tracked ? 'flaticon2-check text-success' : 'flaticon2-close text-muted'"></i>
+                    <i
+                      :class="
+                        item.is_lot_tracked
+                          ? 'flaticon2-check text-success'
+                          : 'flaticon2-close text-muted'
+                      "
+                    ></i>
                     {{ item.is_lot_tracked ? 'Yes' : 'No' }}
                   </span>
                 </div>
@@ -324,17 +356,17 @@
                   <i class="flaticon2-arrow mr-2"></i>
                   Record Movement
                 </button>
-                
+
                 <button @click="showRequestModal = true" class="btn btn-warning btn-block mb-2">
                   <i class="flaticon2-file mr-2"></i>
                   Create Request
                 </button>
-                
+
                 <button @click="printItem" class="btn btn-info btn-block mb-2">
                   <i class="flaticon2-printer mr-2"></i>
                   Print Details
                 </button>
-                
+
                 <button @click="exportItem" class="btn btn-secondary btn-block">
                   <i class="flaticon2-download mr-2"></i>
                   Export Data
@@ -359,10 +391,10 @@
           </button>
         </div>
         <div class="modal-body">
-          <EditItemForm 
-            :item="item" 
-            @item-updated="handleItemUpdated" 
-            @cancel="showEditModal = false" 
+          <EditItemForm
+            :item="item"
+            @item-updated="handleItemUpdated"
+            @cancel="showEditModal = false"
           />
         </div>
       </div>
@@ -381,10 +413,10 @@
           </button>
         </div>
         <div class="modal-body">
-          <CreateMovementForm 
-            :item="item" 
-            @movement-created="handleMovementCreated" 
-            @cancel="showMovementModal = false" 
+          <CreateMovementForm
+            :item="item"
+            @movement-created="handleMovementCreated"
+            @cancel="showMovementModal = false"
           />
         </div>
       </div>
@@ -403,10 +435,10 @@
           </button>
         </div>
         <div class="modal-body">
-          <CreateRequestForm 
-            :item="item" 
-            @request-created="handleRequestCreated" 
-            @cancel="showRequestModal = false" 
+          <CreateRequestForm
+            :item="item"
+            @request-created="handleRequestCreated"
+            @cancel="showRequestModal = false"
           />
         </div>
       </div>
@@ -432,7 +464,7 @@ export default {
   components: {
     EditItemForm,
     CreateMovementForm,
-    CreateRequestForm
+    CreateRequestForm,
   },
   data() {
     return {
@@ -469,7 +501,7 @@ export default {
         const itemId = this.$route.params.id;
         await this.$store.dispatch('generalStore/fetchItemById', itemId);
         await this.$store.dispatch('generalStore/fetchItemMovements', { itemId: itemId, limit: 5 });
-        
+
         // if (!this.item) {
         //   this.$router.push('/general-store/items');
         // }
@@ -482,9 +514,9 @@ export default {
 
     getStatusBadgeClass(status) {
       const classes = {
-        'ACTIVE': 'badge badge-success',
-        'INACTIVE': 'badge badge-warning',
-        'DISCONTINUED': 'badge badge-danger'
+        ACTIVE: 'badge badge-success',
+        INACTIVE: 'badge badge-warning',
+        DISCONTINUED: 'badge badge-danger',
       };
       return classes[status] || 'badge badge-secondary';
     },
@@ -502,20 +534,20 @@ export default {
 
     getMovementIcon(type) {
       const icons = {
-        'IN': 'flaticon2-arrow-down',
-        'OUT': 'flaticon2-arrow-up',
-        'TRANSFER': 'flaticon2-arrow-right',
-        'ADJUSTMENT': 'flaticon2-edit'
+        IN: 'flaticon2-arrow-down',
+        OUT: 'flaticon2-arrow-up',
+        TRANSFER: 'flaticon2-arrow-right',
+        ADJUSTMENT: 'flaticon2-edit',
       };
       return icons[type] || 'flaticon2-arrow';
     },
 
     getMovementColor(type) {
       const colors = {
-        'IN': 'text-success',
-        'OUT': 'text-danger',
-        'TRANSFER': 'text-info',
-        'ADJUSTMENT': 'text-warning'
+        IN: 'text-success',
+        OUT: 'text-danger',
+        TRANSFER: 'text-info',
+        ADJUSTMENT: 'text-warning',
       };
       return colors[type] || 'text-muted';
     },
@@ -568,19 +600,21 @@ export default {
 
     async printItem() {
       try {
-        const itemData = [{
-          id: this.item.id,
-          name: this.item.name,
-          code: this.item.code,
-          description: this.item.description,
-          current_stock: this.item.current_stock,
-          minimum_stock: this.item.minimum_stock,
-          unit_price: this.item.unit_price,
-          total_value: this.item.current_stock * this.item.unit_price,
-          category: this.item.category?.name || 'N/A',
-          subcategory: this.item.subcategory?.name || 'N/A',
-          created_at: this.item.created_at,
-        }];
+        const itemData = [
+          {
+            id: this.item.id,
+            name: this.item.name,
+            code: this.item.code,
+            description: this.item.description,
+            current_stock: this.item.current_stock,
+            minimum_stock: this.item.minimum_stock,
+            unit_price: this.item.unit_price,
+            total_value: this.item.current_stock * this.item.unit_price,
+            category: this.item.category?.name || 'N/A',
+            subcategory: this.item.subcategory?.name || 'N/A',
+            created_at: this.item.created_at,
+          },
+        ];
 
         const reportConfig = {
           title: `Item Details - ${this.item.name}`,
@@ -597,19 +631,21 @@ export default {
 
     async exportItem() {
       try {
-        const itemData = [{
-          id: this.item.id,
-          name: this.item.name,
-          code: this.item.code,
-          description: this.item.description,
-          current_stock: this.item.current_stock,
-          minimum_stock: this.item.minimum_stock,
-          unit_price: this.item.unit_price,
-          total_value: this.item.current_stock * this.item.unit_price,
-          category: this.item.category?.name || 'N/A',
-          subcategory: this.item.subcategory?.name || 'N/A',
-          created_at: this.item.created_at,
-        }];
+        const itemData = [
+          {
+            id: this.item.id,
+            name: this.item.name,
+            code: this.item.code,
+            description: this.item.description,
+            current_stock: this.item.current_stock,
+            minimum_stock: this.item.minimum_stock,
+            unit_price: this.item.unit_price,
+            total_value: this.item.current_stock * this.item.unit_price,
+            category: this.item.category?.name || 'N/A',
+            subcategory: this.item.subcategory?.name || 'N/A',
+            created_at: this.item.created_at,
+          },
+        ];
 
         const reportName = `Item_${this.item.code}_${new Date().toISOString().split('T')[0]}`;
         await this.$exportData(itemData, reportName, 'xlsx', {
@@ -619,14 +655,14 @@ export default {
             unit_price: (value) => Number(value || 0).toFixed(2),
             total_value: (value) => Number(value || 0).toFixed(2),
             created_at: (value) => new Date(value).toLocaleDateString(),
-          }
+          },
         });
       } catch (error) {
         this.$logError('Failed to export item details', error, { itemId: this.item.id });
         this.$toast.error('Failed to export item details');
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -637,7 +673,7 @@ export default {
 }
 
 .header-section {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #00acc1 0%, #0097a7 100%);
   color: white;
   padding: 2rem;
   border-radius: 1rem;
@@ -652,7 +688,7 @@ export default {
 }
 
 .card-custom {
-  border: 1px solid #e1f0ff;
+  border: 1px solid #e0f7fa;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
 }
@@ -663,7 +699,7 @@ export default {
 
 .card-header {
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-bottom: 1px solid #e1f0ff;
+  border-bottom: 1px solid #e0f7fa;
 }
 
 .card-title {
@@ -881,21 +917,21 @@ export default {
     padding: 1rem;
     text-align: center;
   }
-  
+
   .header-section .text-right {
     text-align: center !important;
     margin-top: 1rem;
   }
-  
+
   .stock-circle {
     width: 100px;
     height: 100px;
   }
-  
+
   .stock-number {
     font-size: 1.5rem;
   }
-  
+
   .modal-content {
     width: 95%;
     margin: 1rem;

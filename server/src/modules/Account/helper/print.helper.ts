@@ -82,8 +82,8 @@ export const printReceiptPDF = async ({
   // Logo
   const logoPath =
     process.env.NODE_ENV === 'production'
-      ? `server/public/Caroline.png`
-      : 'src/public/Caroline.png';
+      ? `server/public/health-clone.png`
+      : 'src/public/health-clone.png';
 
   if (fs.existsSync(logoPath)) {
     doc.image(logoPath, (RECEIPT_WIDTH - 60) / 2, 10, { width: 60 });
@@ -93,11 +93,11 @@ export const printReceiptPDF = async ({
   doc
     .fontSize(12)
     .font('Helvetica-Bold')
-    .text('Heritage Kidney and Medical Care', { align: 'center' })
+    .text('Health Clone Medical Center', { align: 'center' })
     .moveDown(0.2)
     .fontSize(8)
     .font('Helvetica')
-    .text('kaura District, Opp. Suncity', { align: 'center' })
+    .text('Karu. ', { align: 'center' })
     .moveDown(0.5);
 
   // Receipt Title

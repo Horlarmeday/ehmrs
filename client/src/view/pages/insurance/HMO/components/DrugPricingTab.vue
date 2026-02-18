@@ -223,7 +223,7 @@ export default {
 }
 
 .symbol-light-success {
-  background-color: #e1f0ff;
+  background-color: #e0f7fa;
 }
 
 .symbol-label {
@@ -243,8 +243,8 @@ export default {
 }
 
 .label-light-primary {
-  background-color: #e1f0ff;
-  color: #3699ff;
+  background-color: #e0f7fa;
+  color: #00acc1;
 }
 
 .label-light-info {

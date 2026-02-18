@@ -525,7 +525,7 @@
 </template>
 
 <script>
-import { mapState, mapGetters, mapActions } from 'vuex';
+import { mapState, mapActions } from 'vuex';
 
 export default {
   name: 'AlertHistoryTable',
@@ -683,7 +683,7 @@ export default {
           this.selectedAlerts.length === this.paginatedAlerts.length
         );
       },
-      set(value) {
+      set() {
         // Handled by toggleAllSelection method
       },
     },
@@ -1184,7 +1184,7 @@ ${alert.message}`;
 }
 
 .sortable:hover {
-  color: #3699ff;
+  color: #00acc1;
 }
 
 .table-row-critical {

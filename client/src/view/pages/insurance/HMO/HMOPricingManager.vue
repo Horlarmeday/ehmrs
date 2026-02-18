@@ -576,8 +576,8 @@ export default {
 }
 
 .btn-group .btn.active {
-  background-color: #3699ff;
-  border-color: #3699ff;
+  background-color: #00acc1;
+  border-color: #00acc1;
   color: white;
 }
 

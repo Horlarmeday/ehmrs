@@ -71,7 +71,9 @@
                   </span>
                 </td>
                 <td>
-                  <span class="font-weight-bold">{{ formatCurrency(calculateTotalPrice(comboInvestigation)) }}</span>
+                  <span class="font-weight-bold">{{
+                    formatCurrency(calculateTotalPrice(comboInvestigation))
+                  }}</span>
                 </td>
                 <td>
                   <span v-if="comboInvestigation.staff">
@@ -80,7 +82,9 @@
                 </td>
                 <td>
                   <span
-                    :class="comboInvestigation.is_active ? 'badge badge-success' : 'badge badge-danger'"
+                    :class="
+                      comboInvestigation.is_active ? 'badge badge-success' : 'badge badge-danger'
+                    "
                   >
                     {{ comboInvestigation.is_active ? 'Active' : 'Inactive' }}
                   </span>
@@ -196,7 +200,10 @@ export default {
     },
 
     calculateTotalPrice(comboInvestigation) {
-      if (!comboInvestigation.comboInvestigationItems || comboInvestigation.comboInvestigationItems.length === 0)
+      if (
+        !comboInvestigation.comboInvestigationItems ||
+        comboInvestigation.comboInvestigationItems.length === 0
+      )
         return 0;
       const total = comboInvestigation.comboInvestigationItems.reduce((sum, item) => {
         return sum + (parseFloat(item.investigation?.price) || 0);
@@ -289,7 +296,7 @@ export default {
 
 <style scoped>
 .badge-light-primary {
-  background-color: #e1f0ff;
-  color: #3699ff;
+  background-color: #e0f7fa;
+  color: #00acc1;
 }
 </style>

@@ -3,13 +3,13 @@
   "self": {
     "layout": "default",
     "logo": {
-      "default": "media/logos/Caroline.png",
-      "sticky": "media/logos/Caroline.png"
+      "default": "media/logos/health-clone.png",
+      "sticky": "media/logos/health-clone.png"
     }
   },
   "loader": {
     "type": "spinner-logo",
-    "logo": "media/logos/Caroline.png",
+    "logo": "media/logos/health-clone.png",
     "message": "Please wait..."
   },
   "breakpoints": {
@@ -23,7 +23,7 @@
     "theme": {
       "base": {
         "white": "#ffffff",
-        "primary": "#6993FF",
+        "primary": "#00ACC1",
         "secondary": "#E5EAEE",
         "success": "#1BC5BD",
         "info": "#8950FC",
@@ -34,7 +34,7 @@
       },
       "light": {
         "white": "#ffffff",
-        "primary": "#E1E9FF",
+        "primary": "#E0F7FA",
         "secondary": "#ECF0F3",
         "success": "#C9F7F5",
         "info": "#EEE5FF",

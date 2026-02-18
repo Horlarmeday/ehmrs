@@ -294,7 +294,7 @@ export default {
     },
 
     displayedAlerts() {
-      return this.activeAlerts
+      return [...this.activeAlerts]
         .sort((a, b) => {
           // Sort by severity, then by creation date
           const severityOrder = { critical: 3, warning: 2, info: 1 };
@@ -666,7 +666,7 @@ export default {
   top: 0;
   bottom: 0;
   width: 3px;
-  background: #3699ff;
+  background: #00acc1;
 }
 
 .alert-item-critical {
@@ -721,7 +721,7 @@ export default {
 
 .timer-progress {
   height: 100%;
-  background: linear-gradient(90deg, #1bc5bd, #3699ff);
+  background: linear-gradient(90deg, #1bc5bd, #00acc1);
   transition: width 0.1s linear;
 }
 

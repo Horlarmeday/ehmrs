@@ -10,7 +10,7 @@
                 <h3 class="card-title">
                   <span
                     class="color-indicator"
-                    :style="{ backgroundColor: subcategory.color || '#667eea' }"
+                    :style="{ backgroundColor: subcategory.color || '#00acc1' }"
                   ></span>
                   {{ subcategory.name }}
                 </h3>
@@ -91,9 +91,9 @@
                       <span class="info-value">
                         <span
                           class="color-preview"
-                          :style="{ backgroundColor: subcategory.color || '#667eea' }"
+                          :style="{ backgroundColor: subcategory.color || '#00acc1' }"
                         ></span>
-                        {{ subcategory.color || '#667eea' }}
+                        {{ subcategory.color || '#00acc1' }}
                       </span>
                     </div>
                   </div>
@@ -437,7 +437,7 @@ export default {
 }
 
 .card-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #00acc1 0%, #0097a7 100%);
   color: white;
   border-bottom: none;
 }
@@ -489,7 +489,7 @@ export default {
 .stat-value {
   font-size: 2em;
   font-weight: 700;
-  color: #667eea;
+  color: #00acc1;
 }
 
 .stat-label {
@@ -516,9 +516,9 @@ export default {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background-color: #667eea;
+  background-color: #00acc1;
   border: 2px solid #fff;
-  box-shadow: 0 0 0 2px #667eea;
+  box-shadow: 0 0 0 2px #00acc1;
 }
 
 .timeline-content {

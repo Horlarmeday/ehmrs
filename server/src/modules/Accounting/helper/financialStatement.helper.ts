@@ -96,8 +96,8 @@ export const generateFinancialStatementPDF = async ({
   // Try to add logo
   const logoPath =
   process.env.NODE_ENV === 'production'
-    ? `server/public/Caroline.png`
-    : 'src/public/Caroline.png';
+    ? `server/public/health-clone.png`
+    : 'src/public/health-clone.png';
   let logoYPos = 20;
   
   if (fs.existsSync(logoPath)) {
@@ -112,15 +112,15 @@ export const generateFinancialStatementPDF = async ({
   doc.fillColor(COLORS.white)
     .fontSize(18)
     .font('Helvetica-Bold')
-    .text('Heritage Kidney and Medical Care', leftMargin + 75, logoYPos + 5, {
+    .text('Health Clone Medical Center', leftMargin + 75, logoYPos + 5, {
       width: contentWidth - 75,
     });
   
   doc.fontSize(9)
     .font('Helvetica')
-    .text('Kaura District, Opp. Suncity', leftMargin + 75, logoYPos + 30);
+    .text('Karu. ', leftMargin + 75, logoYPos + 30);
   
-  doc.fontSize(9).text('Tel: +234 XXX XXX XXXX | Email: info@kidneyheritage.com', leftMargin + 75, logoYPos + 45);
+  doc.fontSize(9).text('Tel: +234 XXX XXX XXXX | Email: info@healthclone.com', leftMargin + 75, logoYPos + 45);
 
   // Document title
   doc.fillColor(COLORS.white)

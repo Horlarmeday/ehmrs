@@ -644,8 +644,8 @@ export default {
             {
               label: 'Usage Quantity',
               data: chartData.quantities,
-              borderColor: '#3699FF',
-              backgroundColor: 'rgba(54, 153, 255, 0.1)',
+              borderColor: '#00ACC1',
+              backgroundColor: 'rgba(0, 172, 193, 0.1)',
               tension: 0.4,
               fill: true,
             },
@@ -727,7 +727,7 @@ export default {
             {
               data: deptData.map((d) => d.total_value),
               backgroundColor: [
-                '#3699FF',
+                '#00ACC1',
                 '#1BC5BD',
                 '#F64E60',
                 '#FFA800',
@@ -772,8 +772,8 @@ export default {
             {
               label: 'Usage Quantity',
               data: seasonalData.quantities,
-              backgroundColor: 'rgba(54, 153, 255, 0.8)',
-              borderColor: '#3699FF',
+              backgroundColor: 'rgba(0, 172, 193, 0.8)',
+              borderColor: '#00ACC1',
               borderWidth: 1,
             },
           ],
@@ -910,8 +910,8 @@ export default {
 }
 
 .icon-circle-primary {
-  background-color: rgba(54, 153, 255, 0.1);
-  color: #3699ff;
+  background-color: rgba(0, 172, 193, 0.1);
+  color: #00acc1;
 }
 
 .icon-circle-success {
@@ -973,11 +973,11 @@ export default {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: rgba(54, 153, 255, 0.1);
+  background-color: rgba(0, 172, 193, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #3699ff;
+  color: #00acc1;
 }
 
 .report-option {
@@ -988,19 +988,19 @@ export default {
 }
 
 .report-option:hover {
-  border-color: #3699ff;
-  box-shadow: 0 0 20px rgba(54, 153, 255, 0.1);
+  border-color: #00acc1;
+  box-shadow: 0 0 20px rgba(0, 172, 193, 0.1);
 }
 
 .option-icon {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background-color: rgba(54, 153, 255, 0.1);
+  background-color: rgba(0, 172, 193, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #3699ff;
+  color: #00acc1;
   flex-shrink: 0;
 }
 

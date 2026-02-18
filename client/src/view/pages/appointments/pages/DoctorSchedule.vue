@@ -984,12 +984,12 @@ export default {
 }
 
 .date-cell.today-cell {
-  border-left: 3px solid #3699ff;
+  border-left: 3px solid #00acc1;
 }
 
 /* Appointments in slots */
 .appointment-in-slot {
-  background-color: #3699ff;
+  background-color: #00acc1;
   color: white;
   border-radius: 4px;
   padding: 0.25rem 0.5rem;
@@ -1146,8 +1146,8 @@ export default {
 }
 
 .btn-group-toggle .btn.active {
-  background-color: #3699ff;
-  border-color: #3699ff;
+  background-color: #00acc1;
+  border-color: #00acc1;
   color: white;
 }
 </style>

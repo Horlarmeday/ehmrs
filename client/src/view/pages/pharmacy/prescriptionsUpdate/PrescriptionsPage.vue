@@ -278,13 +278,13 @@ export default {
 }
 
 .nav-tabs .nav-link:hover {
-  color: #3699ff;
+  color: #00acc1;
   border-bottom-color: #e4e6ef;
 }
 
 .nav-tabs .nav-link.active {
-  color: #3699ff;
-  border-bottom-color: #3699ff;
+  color: #00acc1;
+  border-bottom-color: #00acc1;
   font-weight: 600;
 }
 

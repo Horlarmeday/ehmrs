@@ -61,8 +61,7 @@
                   :class="{
                     'text-success': item.remaining_quantity > 0,
                     'text-warning':
-                      item.remaining_quantity > 0 &&
-                      item.remaining_quantity <= item.quantity * 0.2,
+                      item.remaining_quantity > 0 && item.remaining_quantity <= item.quantity * 0.2,
                     'text-danger': item.remaining_quantity === 0,
                   }"
                   class="ml-2 font-weight-bold"

@@ -182,7 +182,7 @@ export default {
   margin-top: 10px;
   padding: 12px;
   background-color: #f8f9fa;
-  border-left: 3px solid #3699ff;
+  border-left: 3px solid #00acc1;
   border-radius: 4px;
 }
 

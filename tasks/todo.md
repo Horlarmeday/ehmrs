@@ -267,3 +267,36 @@ Comprehensive plan to fix all issues in the generalStore categories and subcateg
 **API Optimization**: Infrastructure implemented and tested
 **Performance Impact**: 60% duplicate API calls identified and optimization framework ready
 **Recommendation**: Integrate optimized store modules for immediate performance improvements
+
+---
+
+## Login Page Modern Redesign (Review)
+
+**Completed**: Implementation of the Login Page Modern Redesign plan in `client/src/view/pages/auth/Login-1.vue`.
+
+### Summary of Changes
+
+1. **Brand section**: Teal gradient (already via CSS vars); emoji replaced with Font Awesome `fa-shield-alt` icon; tightened typography (smaller title/subtitle/tagline, reduced spacing); logo size and margins refined.
+2. **Background**: Page background uses a soft teal-tinted gradient (`#f0fafb` → `#e8f4f5` → `#f5f9fa`); radial gradients updated from old maroon to teal (`rgba(0, 172, 193, 0.04)` etc.).
+3. **Layout**: Asymmetric split (45% brand / 55% form); form side has light gray background (`#fafbfc`).
+4. **Form container**: New `.login-card` wrapper with white background, 16px border-radius, soft shadow, and light entrance animation (`formEnter`).
+5. **Inputs**: Teal focus ring (`rgba(0, 172, 193, 0.15)`); border-radius 10px; transitions limited to border, background, box-shadow. Password toggle hover uses teal tint.
+6. **Button**: Teal gradient and hover shadow `rgba(0, 172, 193, 0.35)`; min-height 48px for touch targets; targeted transitions only.
+7. **Modal**: Forgot-password modal uses teal for title and primary button; button gradient and teal shadow; modal close hover uses `--heritage-maroon-light`.
+8. **Transitions**: Global `* { transition }` removed; transitions applied only to `.form-input`, `.login-button`, `.password-toggle`, `.heritage-logo`, modal elements.
+9. **Accessibility**: Focus outlines (2px teal) on inputs, Sign In button, Forgot link, modal close, and modal buttons.
+10. **Responsive**: Breakpoints at 1024px and 768px; `.login-card` padding reduced on small screens; modal actions stack on narrow viewports.
+
+### Technical Notes
+
+- No script or auth flow changes; all behavior (VeeValidate, login/forgot dispatch, redirect) unchanged.
+- `@import '@/assets/sass/pages/login/login-1.scss'` retained.
+
+### Testing Evidence
+
+- **Lint**: `npm run lint -- --fix` completed with no errors.
+- **Build**: Production build failed due to existing `console` usage in `SystemSettings.vue` (unchanged by this task). Login-1.vue implementation is complete.
+
+### Recommendation
+
+- Fix or allow `console` in `SystemSettings.vue` to get a green production build. Manually verify login page: sign-in, forgot password modal, password visibility toggle, and redirect after login.

@@ -335,7 +335,7 @@ export default {
 }
 
 .bg-light-primary {
-  background-color: #e1f0ff;
+  background-color: #e0f7fa;
 }
 
 .bg-light-info {

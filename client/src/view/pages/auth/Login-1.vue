@@ -11,16 +11,16 @@
           <!-- Heritage Logo -->
           <div class="logo-container">
             <img
-              src="/media/logos/Caroline.png"
-              alt="Heritage Kidney & Medical Care"
+              src="/media/logos/health-clone.png"
+              alt="Health Clone Medical Center Karu"
               class="heritage-logo"
             />
           </div>
 
           <!-- Brand Text -->
           <div class="brand-text">
-            <h1 class="brand-title">Heritage</h1>
-            <h2 class="brand-subtitle">Kidney & Medical Care</h2>
+            <h1 class="brand-title">Health Clone</h1>
+            <h2 class="brand-subtitle">Medical Center Karu</h2>
             <p class="brand-tagline">
               Providing exceptional healthcare with compassion and expertise
             </p>
@@ -28,7 +28,7 @@
 
           <!-- Decorative Elements -->
           <div class="decorative-elements">
-            <div class="medical-symbol">🏥</div>
+            <i class="fas fa-shield-alt medical-icon" aria-hidden="true"></i>
             <div class="trust-indicator">Trusted Healthcare Provider</div>
           </div>
         </div>
@@ -36,101 +36,103 @@
 
       <!-- Right Side - Login Form -->
       <div class="login-section">
-        <div class="login-content">
-          <!-- Welcome Header -->
-          <div class="welcome-header">
-            <h2 class="welcome-title">Welcome Back</h2>
-            <p class="welcome-subtitle">Sign in to access your medical dashboard</p>
-          </div>
-
-          <!-- Login Form -->
-          <form class="login-form" @submit.prevent="onSubmitLogin">
-            <!-- Username Field -->
-            <div class="form-group">
-              <label class="form-label">Username</label>
-              <div class="input-wrapper">
-                <div class="input-icon">
-                  <i class="fas fa-user"></i>
-                </div>
-                <input
-                  v-validate="'required|min:3'"
-                  data-vv-validate-on="blur"
-                  class="form-input"
-                  type="text"
-                  autofocus="true"
-                  autocomplete="off"
-                  ref="username"
-                  name="username"
-                  v-model="form.username"
-                  placeholder="Enter your username"
-                />
-              </div>
-              <span class="error-message" v-if="errors.has('username')">{{
-                errors.first('username')
-              }}</span>
+        <div class="login-card">
+          <div class="login-content">
+            <!-- Welcome Header -->
+            <div class="welcome-header">
+              <h2 class="welcome-title">Welcome Back</h2>
+              <p class="welcome-subtitle">Sign in to access your medical dashboard</p>
             </div>
 
-            <!-- Password Field -->
-            <div class="form-group">
-              <label class="form-label">Password</label>
-              <div class="input-wrapper">
-                <div class="input-icon">
-                  <i class="fas fa-lock"></i>
+            <!-- Login Form -->
+            <form class="login-form" @submit.prevent="onSubmitLogin">
+              <!-- Username Field -->
+              <div class="form-group">
+                <label class="form-label">Username</label>
+                <div class="input-wrapper">
+                  <div class="input-icon">
+                    <i class="fas fa-user"></i>
+                  </div>
+                  <input
+                    v-validate="'required|min:3'"
+                    data-vv-validate-on="blur"
+                    class="form-input"
+                    type="text"
+                    autofocus="true"
+                    autocomplete="off"
+                    ref="username"
+                    name="username"
+                    v-model="form.username"
+                    placeholder="Enter your username"
+                  />
                 </div>
-                <input
-                  data-vv-validate-on="blur"
-                  v-validate="'required|min:6'"
-                  class="form-input"
-                  :type="showPassword ? 'text' : 'password'"
-                  name="password"
-                  ref="password"
-                  v-model="form.password"
-                  autocomplete="off"
-                  placeholder="Enter your password"
-                />
-                <div class="password-toggle" @click="togglePasswordVisibility">
-                  <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                <span class="error-message" v-if="errors.has('username')">{{
+                  errors.first('username')
+                }}</span>
+              </div>
+
+              <!-- Password Field -->
+              <div class="form-group">
+                <label class="form-label">Password</label>
+                <div class="input-wrapper">
+                  <div class="input-icon">
+                    <i class="fas fa-lock"></i>
+                  </div>
+                  <input
+                    data-vv-validate-on="blur"
+                    v-validate="'required|min:6'"
+                    class="form-input"
+                    :type="showPassword ? 'text' : 'password'"
+                    name="password"
+                    ref="password"
+                    v-model="form.password"
+                    autocomplete="off"
+                    placeholder="Enter your password"
+                  />
+                  <div class="password-toggle" @click="togglePasswordVisibility">
+                    <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                  </div>
                 </div>
+                <span class="error-message" v-if="errors.has('password')">{{
+                  errors.first('password')
+                }}</span>
               </div>
-              <span class="error-message" v-if="errors.has('password')">{{
-                errors.first('password')
-              }}</span>
-            </div>
 
-            <!-- Forgot Password Link -->
-            <div class="forgot-password">
-              <a class="forgot-link" href="#" @click="showForm('forgot')">
-                Forgot your password?
-              </a>
-            </div>
-
-            <!-- Login Button -->
-            <button
-              ref="kt_login_signin_submit"
-              @click="onSubmitLogin"
-              :disabled="isDisabled"
-              class="login-button"
-              type="submit"
-            >
-              <span class="button-text">Sign In</span>
-              <div class="button-icon">
-                <i class="fas fa-arrow-right"></i>
+              <!-- Forgot Password Link -->
+              <div class="forgot-password">
+                <a class="forgot-link" href="#" @click="showForm('forgot')">
+                  Forgot your password?
+                </a>
               </div>
-            </button>
-          </form>
 
-          <!-- Additional Info -->
-          <div class="additional-info">
-            <p class="info-text">Need help? Contact our support team</p>
-            <div class="contact-info">
-              <span class="contact-item">
-                <i class="fas fa-phone"></i>
-                +234 XXX XXX XXXX
-              </span>
-              <span class="contact-item">
-                <i class="fas fa-envelope"></i>
-                support@heritagekidney.com
-              </span>
+              <!-- Login Button -->
+              <button
+                ref="kt_login_signin_submit"
+                @click="onSubmitLogin"
+                :disabled="isDisabled"
+                class="login-button"
+                type="submit"
+              >
+                <span class="button-text">Sign In</span>
+                <div class="button-icon">
+                  <i class="fas fa-arrow-right"></i>
+                </div>
+              </button>
+            </form>
+
+            <!-- Additional Info -->
+            <div class="additional-info">
+              <p class="info-text">Need help? Contact our support team</p>
+              <div class="contact-info">
+                <span class="contact-item">
+                  <i class="fas fa-phone"></i>
+                  +234 XXX XXX XXXX
+                </span>
+                <span class="contact-item">
+                  <i class="fas fa-envelope"></i>
+                  support@healthclone.com
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -191,29 +193,29 @@
 <style lang="scss">
 @import '@/assets/sass/pages/login/login-1.scss';
 
-// Heritage Hospital World-Class Login Styles
+// Modern Login - Health-Clone teal theme
 .heritage-login-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: linear-gradient(160deg, #f0fafb 0%, #e8f4f5 50%, #f5f9fa 100%);
   position: relative;
   overflow: hidden;
   font-family: 'Poppins', sans-serif;
 }
 
-// Background Pattern
+// Background Pattern - soft teal tint
 .background-pattern {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: radial-gradient(circle at 20% 80%, rgba(139, 0, 0, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(0, 0, 128, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 40% 40%, rgba(0, 100, 0, 0.02) 0%, transparent 50%);
+  background-image: radial-gradient(circle at 20% 80%, rgba(0, 172, 193, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(0, 151, 167, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(224, 247, 250, 0.5) 0%, transparent 70%);
   z-index: 1;
 }
 
-// Main Login Wrapper
+// Main Login Wrapper - asymmetric split 45% / 55%
 .login-wrapper {
   position: relative;
   z-index: 2;
@@ -222,7 +224,7 @@
   max-width: 1400px;
   margin: 0 auto;
   background: white;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
 
   @media (max-width: 1024px) {
     flex-direction: column;
@@ -230,14 +232,14 @@
   }
 }
 
-// Brand Section (Left Side)
+// Brand Section (Left) - teal gradient
 .brand-section {
-  flex: 1;
+  flex: 0 0 45%;
   background: linear-gradient(135deg, var(--heritage-maroon) 0%, var(--heritage-maroon-hover) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 3rem 2rem;
+  padding: 2.5rem 2rem;
   position: relative;
   overflow: hidden;
 
@@ -249,11 +251,12 @@
     right: 0;
     bottom: 0;
     background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="medical-pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23medical-pattern)"/></svg>');
-    opacity: 0.3;
+    opacity: 0.25;
   }
 
   @media (max-width: 1024px) {
-    min-height: 300px;
+    flex: none;
+    min-height: 280px;
     padding: 2rem 1rem;
   }
 }
@@ -263,127 +266,143 @@
   color: white;
   position: relative;
   z-index: 2;
-  max-width: 400px;
+  max-width: 360px;
 }
 
 .logo-container {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 
   .heritage-logo {
-    width: 120px;
-    height: 120px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
+    border: 3px solid rgba(255, 255, 255, 0.35);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
     background: white;
-    padding: 8px;
+    padding: 6px;
 
     &:hover {
-      transform: scale(1.05);
-      border-color: rgba(255, 255, 255, 0.5);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+      transform: scale(1.04);
+      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.2);
     }
   }
 }
 
 .brand-text {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 
   .brand-title {
-    font-size: 3.5rem;
-    font-weight: 700;
-    margin: 0 0 0.5rem 0;
-    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    letter-spacing: 2px;
-
-    @media (max-width: 1024px) {
-      font-size: 2.5rem;
-    }
-  }
-
-  .brand-subtitle {
-    font-size: 1.5rem;
-    font-weight: 400;
-    margin: 0 0 1rem 0;
-    opacity: 0.9;
-    letter-spacing: 1px;
-
-    @media (max-width: 1024px) {
-      font-size: 1.2rem;
-    }
-  }
-
-  .brand-tagline {
-    font-size: 1rem;
-    opacity: 0.8;
-    line-height: 1.6;
-    margin: 0;
-  }
-}
-
-.decorative-elements {
-  .medical-symbol {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    animation: pulse 2s infinite;
-  }
-
-  .trust-indicator {
-    font-size: 0.9rem;
-    opacity: 0.7;
-    font-weight: 500;
-    letter-spacing: 1px;
-  }
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-}
-
-// Login Section (Right Side)
-.login-section {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem 2rem;
-  background: white;
-
-  @media (max-width: 1024px) {
-    padding: 2rem 1rem;
-  }
-}
-
-.login-content {
-  width: 100%;
-  max-width: 400px;
-}
-
-.welcome-header {
-  text-align: center;
-  margin-bottom: 2.5rem;
-
-  .welcome-title {
     font-size: 2.5rem;
     font-weight: 700;
-    color: var(--heritage-maroon);
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.35rem 0;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    letter-spacing: 1px;
 
     @media (max-width: 1024px) {
       font-size: 2rem;
     }
   }
 
+  .brand-subtitle {
+    font-size: 1.25rem;
+    font-weight: 400;
+    margin: 0 0 0.75rem 0;
+    opacity: 0.95;
+    letter-spacing: 0.5px;
+
+    @media (max-width: 1024px) {
+      font-size: 1.1rem;
+    }
+  }
+
+  .brand-tagline {
+    font-size: 0.9rem;
+    opacity: 0.85;
+    line-height: 1.5;
+    margin: 0;
+  }
+}
+
+.decorative-elements {
+  .medical-icon {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.9;
+    display: inline-block;
+    transition: transform 0.25s ease;
+  }
+
+  .medical-icon:hover {
+    transform: scale(1.08);
+  }
+
+  .trust-indicator {
+    font-size: 0.85rem;
+    opacity: 0.8;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+}
+
+// Login Section (Right Side) - form primary
+.login-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 3rem;
+  background: #fafbfc;
+
+  @media (max-width: 1024px) {
+    padding: 2rem 1rem;
+  }
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.04);
+  padding: 2.25rem;
+  animation: formEnter 0.4s ease-out;
+}
+
+@keyframes formEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-content {
+  width: 100%;
+  max-width: 100%;
+}
+
+.welcome-header {
+  text-align: center;
+  margin-bottom: 2rem;
+
+  .welcome-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--heritage-maroon);
+    margin: 0 0 0.35rem 0;
+
+    @media (max-width: 1024px) {
+      font-size: 1.75rem;
+    }
+  }
+
   .welcome-subtitle {
-    font-size: 1.1rem;
+    font-size: 1rem;
     color: #6c757d;
     margin: 0;
     line-height: 1.5;
@@ -430,14 +449,14 @@
   z-index: 2;
   padding: 0.5rem;
   border-radius: 50%;
-  transition: all 0.3s ease;
+  transition: color 0.2s ease, background 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
 
   &:hover {
     color: var(--heritage-maroon);
-    background: rgba(139, 0, 0, 0.1);
+    background: rgba(0, 172, 193, 0.1);
   }
 
   i {
@@ -447,14 +466,13 @@
 
 .form-input {
   width: 100%;
-  padding: 1rem 1rem 1rem 3rem;
+  padding: 0.875rem 1rem 0.875rem 3rem;
   border: 2px solid #e9ecef;
-  border-radius: 12px;
+  border-radius: 10px;
   font-size: 1rem;
-  transition: all 0.3s ease;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
   background: #f8f9fa;
 
-  // Special padding for password field to accommodate toggle button
   &[type='password'],
   &[type='text'] {
     padding-right: 3.5rem;
@@ -464,7 +482,7 @@
     outline: none;
     border-color: var(--heritage-maroon);
     background: white;
-    box-shadow: 0 0 0 4px rgba(139, 0, 0, 0.1);
+    box-shadow: 0 0 0 4px rgba(0, 172, 193, 0.15);
   }
 
   &::placeholder {
@@ -500,15 +518,16 @@
 // Login Button
 .login-button {
   width: 100%;
-  padding: 1rem 2rem;
+  min-height: 48px;
+  padding: 0.875rem 2rem;
   background: linear-gradient(135deg, var(--heritage-maroon) 0%, var(--heritage-maroon-hover) 100%);
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   color: white;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -518,10 +537,10 @@
 
   &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(139, 0, 0, 0.3);
+    box-shadow: 0 8px 24px rgba(0, 172, 193, 0.35);
   }
 
-  &:active {
+  &:active:not(:disabled) {
     transform: translateY(0);
   }
 
@@ -538,10 +557,10 @@
 
   .button-icon {
     z-index: 2;
-    transition: transform 0.3s ease;
+    transition: transform 0.2s ease;
   }
 
-  &:hover .button-icon {
+  &:hover:not(:disabled) .button-icon {
     transform: translateX(4px);
   }
 }
@@ -611,8 +630,9 @@
   max-width: 400px;
   position: relative;
   z-index: 1001;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
   animation: modalSlideIn 0.3s ease-out;
+  transition: box-shadow 0.2s ease;
 }
 
 @keyframes modalSlideIn {
@@ -647,16 +667,20 @@
     cursor: pointer;
     padding: 0.5rem;
     border-radius: 50%;
-    transition: all 0.3s ease;
+    transition: background 0.2s ease, color 0.2s ease;
 
     &:hover {
-      background: #f8f9fa;
+      background: var(--heritage-maroon-light);
       color: var(--heritage-maroon);
     }
   }
 }
 
 .forgot-form {
+  .form-input {
+    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  }
+
   .modal-actions {
     display: flex;
     gap: 1rem;
@@ -665,21 +689,25 @@
     .btn-secondary {
       flex: 1;
       padding: 0.75rem 1.5rem;
-      background: var(--heritage-maroon);
+      background: linear-gradient(
+        135deg,
+        var(--heritage-maroon) 0%,
+        var(--heritage-maroon-hover) 100%
+      );
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       color: white;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
 
       &:hover {
-        background: var(--heritage-maroon-hover);
         transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(0, 172, 193, 0.35);
       }
     }
 
@@ -687,11 +715,11 @@
       padding: 0.75rem 1.5rem;
       background: #6c757d;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       color: white;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: background 0.2s ease, transform 0.2s ease;
 
       &:hover {
         background: #5a6268;
@@ -708,7 +736,11 @@
   }
 
   .brand-section {
-    min-height: 250px;
+    min-height: 240px;
+  }
+
+  .login-card {
+    padding: 1.75rem 1.25rem;
   }
 
   .brand-title {
@@ -720,7 +752,7 @@
   }
 
   .welcome-title {
-    font-size: 1.8rem !important;
+    font-size: 1.75rem !important;
   }
 
   .modal-content {
@@ -758,34 +790,23 @@
   }
 }
 
-// Focus States for Accessibility
+// Focus States for Accessibility (teal ring)
 .form-input:focus,
 .login-button:focus,
 .modal-close:focus,
 .btn-secondary:focus,
-.btn-cancel:focus {
+.btn-cancel:focus,
+.forgot-link:focus {
   outline: 2px solid var(--heritage-maroon);
   outline-offset: 2px;
 }
 
-// Smooth Transitions
-* {
-  transition: all 0.3s ease;
-}
-
-// Enhanced Hover Effects
 .form-input:hover {
-  border-color: #ced4da;
-  background: white;
+  border-color: #dee2e6;
+  background: #fff;
 }
 
-.login-button:hover:not(:disabled) {
-  .button-icon {
-    transform: translateX(6px);
-  }
-}
-
-// Professional Typography
+// Typography
 .brand-title,
 .welcome-title {
   font-family: 'Poppins', sans-serif;

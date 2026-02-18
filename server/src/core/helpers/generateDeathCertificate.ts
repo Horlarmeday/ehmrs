@@ -182,8 +182,8 @@ function generateHeader(
   // Hospital Logo with enhanced fallback
   const logoPath =
     process.env.NODE_ENV === 'production'
-      ? `server/public/Caroline.png`
-      : 'src/public/Caroline.png';
+      ? `server/public/health-clone.png`
+      : 'src/public/health-clone.png';
 
   if (fs.existsSync(logoPath)) {
     doc.image(logoPath, 70, startY, { width: 50, height: 50 });

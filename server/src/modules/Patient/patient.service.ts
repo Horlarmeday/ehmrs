@@ -1754,10 +1754,10 @@ Date: ${new Date().toLocaleString()}
 
     // Hospital information (you can customize this)
     const hospitalInfo = {
-      name: 'Heritage Kidney and Medical Care',
-      address: 'Kaura District, Opp. Suncity',
+      name: 'Health Clone Medical Center',
+      address: 'Karu. ',
       phone: '+234 XXX XXX XXXX',
-      email: 'info@heritagekidney.com',
+      email: 'info@healthclone.com',
     };
 
     // Generate private key for digital signature if needed
