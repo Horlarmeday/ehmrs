@@ -1,0 +1,51 @@
+{
+  "name": "ehmrs-client-vue3",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint src --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts",
+    "format": "prettier --write src/"
+  },
+  "dependencies": {
+    "@tanstack/vue-table": "^8.21.3",
+    "@vee-validate/zod": "^4.15.1",
+    "@vueuse/core": "^14.2.1",
+    "axios": "^1.13.6",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "dayjs": "^1.11.19",
+    "lucide-vue-next": "^1.0.0",
+    "pinia": "^2.3.1",
+    "reka-ui": "^2.9.5",
+    "tailwind-merge": "^3.5.0",
+    "tailwindcss-animate": "^1.0.7",
+    "vee-validate": "^4.15.1",
+    "vue": "3.5",
+    "vue-router": "^4.6.4",
+    "vue-sonner": "^2.0.9",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.0",
+    "@vitejs/plugin-vue": "^6.0.4",
+    "@vue/test-utils": "^2.4.6",
+    "@vue/tsconfig": "^0.8.1",
+    "autoprefixer": "^10.4.27",
+    "eslint": "^8.57.1",
+    "jsdom": "^27.0.1",
+    "postcss": "^8.5.8",
+    "prettier": "^3.8.1",
+    "sass": "^1.97.3",
+    "tailwindcss": "^3.4.0",
+    "typescript": "~5.9.3",
+    "vite": "^5.4.21",
+    "vitest": "^1.6.1",
+    "vue-tsc": "^3.1.5"
+  }
+}

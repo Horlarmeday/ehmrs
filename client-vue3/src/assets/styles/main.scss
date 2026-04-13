@@ -1,0 +1,124 @@
+/**
+ * Main Stylesheet
+ *
+ * Imports:
+ * - Custom SCSS variables and mixins (must be @use'd first)
+ * - Tailwind CSS utilities
+ * - shadcn-vue CSS variables (design tokens)
+ * - Global styles
+ */
+
+// Custom Variables & Mixins (SCSS @use must come first)
+@use './variables' as *;
+@use './mixins' as *;
+
+// Tailwind CSS
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// shadcn-vue Design Tokens
+// Mapped to EHMRS color system from CLIENT_DESIGN_SYSTEM.md
+@layer base {
+  :root {
+    // Background & Foreground
+    --background: 0 0% 100%;           // #ffffff
+    --foreground: 222.2 84% 4.9%;      // #111827 (Gray-900)
+
+    // Card
+    --card: 0 0% 100%;                 // #ffffff
+    --card-foreground: 222.2 84% 4.9%; // #111827
+
+    // Popover
+    --popover: 0 0% 100%;              // #ffffff
+    --popover-foreground: 222.2 84% 4.9%;
+
+    // Primary (Blue-600/700)
+    --primary: 217.2 91.2% 59.8%;      // #2563eb
+    --primary-foreground: 0 0% 100%;   // #ffffff
+    --primary-hover: 221.2 83.2% 53.3%; // #1d4ed8
+    --primary-light: 213.8 93.9% 91.8%; // #dbeafe
+
+    // Secondary
+    --secondary: 210 40% 96.1%;        // #f1f5f9
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    // Muted
+    --muted: 210 40% 96.1%;            // #f1f5f9
+    --muted-foreground: 215.4 16.3% 46.9%; // #6b7280 (Gray-500)
+
+    // Accent
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    // Destructive (Error)
+    --destructive: 0 84.2% 60.2%;      // #ef4444
+    --destructive-foreground: 0 0% 98%;
+
+    // Semantic: Success
+    --success: 160 84.1% 39.4%;        // #10b981
+    --success-light: 151.8 81% 89.8%;  // #d1fae5
+    --success-foreground: 0 0% 98%;
+
+    // Semantic: Warning
+    --warning: 38 95.7% 50.2%;         // #f59e0b
+    --warning-light: 42.9 97.2% 86.5%; // #fef3c7
+    --warning-foreground: 0 0% 98%;
+
+    // Semantic: Info
+    --info: 217.2 91.2% 59.8%;         // #3b82f6
+    --info-light: 213.8 93.9% 91.8%;   // #dbeafe
+    --info-foreground: 0 0% 98%;
+
+    // Border & Input
+    --border: 214.3 31.8% 91.4%;       // #e5e7eb (Gray-200)
+    --input: 214.3 31.8% 91.4%;        // #e5e7eb
+    --ring: 217.2 91.2% 59.8%;         // #2563eb (focus ring)
+
+    // Border Radius
+    --radius-sm: 0.25rem;    // 4px
+    --radius-md: 0.375rem;   // 6px
+    --radius-lg: 0.5rem;     // 8px
+    --radius-xl: 0.75rem;    // 12px
+    --radius-2xl: 1rem;      // 16px
+    --radius-full: 9999px;
+
+    // Shadows
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+}
+
+// Base styles
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-gray-50 text-foreground font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+// Custom Component Styles
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover transition-colors;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-secondary-foreground px-4 py-2 rounded-lg hover:bg-muted transition-colors;
+  }
+
+  .input-base {
+    @apply w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent;
+  }
+
+  .card {
+    @apply bg-card rounded-lg shadow-sm p-6;
+  }
+}

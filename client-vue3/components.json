@@ -1,0 +1,14 @@
+{
+  "$schema": "https://shadcn-vue.com/schema.json",
+  "style": "vega",
+  "typescript": true,
+  "tailwind": {
+    "config": "tailwind.config.js",
+    "css": "src/assets/styles/main.scss",
+    "baseColor": "slate"
+  },
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils"
+  }
+}

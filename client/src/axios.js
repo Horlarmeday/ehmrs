@@ -68,7 +68,6 @@ axios.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.log(error.response, 'error');
     NProgress.done(true);
     let res = error.response;
     if (res && res.data) {

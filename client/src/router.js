@@ -1268,12 +1268,12 @@ const router = new Router({
         {
           path: '/general-store',
           name: 'general-store',
-          component: () => import('@/view/pages/generalStore/GeneralStore.vue'),
+          component: () => import('@/view/pages/generalStore-deprecated/GeneralStore.vue'),
           children: [
             {
               path: '',
               name: 'general-store-home',
-              component: () => import('@/view/pages/generalStore/Home.vue'),
+              component: () => import('@/view/pages/generalStore-deprecated/Home.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1281,7 +1281,7 @@ const router = new Router({
             {
               path: 'items',
               name: 'general-store-items',
-              component: () => import('@/view/pages/generalStore/items/ItemsList.vue'),
+              component: () => import('@/view/pages/generalStore-deprecated/items/ItemsList.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1289,7 +1289,7 @@ const router = new Router({
             {
               path: 'items/create',
               name: 'general-store-create-item',
-              component: () => import('@/view/pages/generalStore/items/CreateItem.vue'),
+              component: () => import('@/view/pages/generalStore-deprecated/items/CreateItem.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1297,7 +1297,7 @@ const router = new Router({
             {
               path: 'items/:id',
               name: 'general-store-item-details',
-              component: () => import('@/view/pages/generalStore/items/ItemDetails.vue'),
+              component: () => import('@/view/pages/generalStore-deprecated/items/ItemDetails.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1305,7 +1305,7 @@ const router = new Router({
             {
               path: 'items/:id/edit',
               name: 'general-store-edit-item',
-              component: () => import('@/view/pages/generalStore/items/EditItem.vue'),
+              component: () => import('@/view/pages/generalStore-deprecated/items/EditItem.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1313,7 +1313,8 @@ const router = new Router({
             {
               path: 'categories',
               name: 'general-store-categories',
-              component: () => import('@/view/pages/generalStore/categories/CategoriesList.vue'),
+              component: () =>
+                import('@/view/pages/generalStore-deprecated/categories/CategoriesList.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1321,7 +1322,8 @@ const router = new Router({
             {
               path: 'categories/create',
               name: 'general-store-create-category',
-              component: () => import('@/view/pages/generalStore/categories/CreateCategory.vue'),
+              component: () =>
+                import('@/view/pages/generalStore-deprecated/categories/CreateCategory.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1329,7 +1331,8 @@ const router = new Router({
             {
               path: 'categories/:id',
               name: 'general-store-category-details',
-              component: () => import('@/view/pages/generalStore/categories/CategoryDetails.vue'),
+              component: () =>
+                import('@/view/pages/generalStore-deprecated/categories/CategoryDetails.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1337,7 +1340,8 @@ const router = new Router({
             {
               path: 'categories/:id/edit',
               name: 'general-store-edit-category',
-              component: () => import('@/view/pages/generalStore/categories/EditCategory.vue'),
+              component: () =>
+                import('@/view/pages/generalStore-deprecated/categories/EditCategory.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1346,7 +1350,7 @@ const router = new Router({
               path: 'subcategories',
               name: 'general-store-subcategories',
               component: () =>
-                import('@/view/pages/generalStore/subcategories/SubcategoriesList.vue'),
+                import('@/view/pages/generalStore-deprecated/subcategories/SubcategoriesList.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1355,7 +1359,7 @@ const router = new Router({
               path: 'subcategories/create',
               name: 'general-store-create-subcategory',
               component: () =>
-                import('@/view/pages/generalStore/subcategories/CreateSubcategory.vue'),
+                import('@/view/pages/generalStore-deprecated/subcategories/CreateSubcategory.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1364,7 +1368,7 @@ const router = new Router({
               path: 'subcategories/:id',
               name: 'general-store-subcategory-details',
               component: () =>
-                import('@/view/pages/generalStore/subcategories/SubcategoryDetails.vue'),
+                import('@/view/pages/generalStore-deprecated/subcategories/SubcategoryDetails.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1373,7 +1377,7 @@ const router = new Router({
               path: 'subcategories/:id/edit',
               name: 'general-store-edit-subcategory',
               component: () =>
-                import('@/view/pages/generalStore/subcategories/EditSubcategory.vue'),
+                import('@/view/pages/generalStore-deprecated/subcategories/EditSubcategory.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1381,7 +1385,8 @@ const router = new Router({
             {
               path: 'requests',
               name: 'general-store-requests',
-              component: () => import('@/view/pages/generalStore/requests/RequestsList.vue'),
+              component: () =>
+                import('@/view/pages/generalStore-deprecated/requests/RequestsList.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1389,7 +1394,8 @@ const router = new Router({
             {
               path: 'requests/create',
               name: 'general-store-create-request',
-              component: () => import('@/view/pages/generalStore/requests/CreateRequest.vue'),
+              component: () =>
+                import('@/view/pages/generalStore-deprecated/requests/CreateRequest.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1397,7 +1403,8 @@ const router = new Router({
             {
               path: 'requests/:id',
               name: 'general-store-request-details',
-              component: () => import('@/view/pages/generalStore/requests/RequestDetails.vue'),
+              component: () =>
+                import('@/view/pages/generalStore-deprecated/requests/RequestDetails.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1405,7 +1412,8 @@ const router = new Router({
             {
               path: 'requests/:id/edit',
               name: 'general-store-edit-request',
-              component: () => import('@/view/pages/generalStore/requests/EditRequest.vue'),
+              component: () =>
+                import('@/view/pages/generalStore-deprecated/requests/EditRequest.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1413,7 +1421,8 @@ const router = new Router({
             {
               path: 'movements',
               name: 'general-store-movements',
-              component: () => import('@/view/pages/generalStore/movements/MovementsList.vue'),
+              component: () =>
+                import('@/view/pages/generalStore-deprecated/movements/MovementsList.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1421,7 +1430,8 @@ const router = new Router({
             {
               path: 'movements/create',
               name: 'general-store-create-movement',
-              component: () => import('@/view/pages/generalStore/movements/CreateMovement.vue'),
+              component: () =>
+                import('@/view/pages/generalStore-deprecated/movements/CreateMovement.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1429,7 +1439,8 @@ const router = new Router({
             {
               path: 'movements/:id',
               name: 'general-store-movement-details',
-              component: () => import('@/view/pages/generalStore/movements/MovementDetails.vue'),
+              component: () =>
+                import('@/view/pages/generalStore-deprecated/movements/MovementDetails.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1437,7 +1448,7 @@ const router = new Router({
             {
               path: 'reports',
               name: 'general-store-reports',
-              component: () => import('@/view/pages/generalStore/reports/Reports.vue'),
+              component: () => import('@/view/pages/generalStore-deprecated/reports/Reports.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1445,7 +1456,8 @@ const router = new Router({
                 {
                   path: '',
                   name: 'general-store-reports-dashboard',
-                  component: () => import('@/view/pages/generalStore/reports/ReportsDashboard.vue'),
+                  component: () =>
+                    import('@/view/pages/generalStore-deprecated/reports/ReportsDashboard.vue'),
                   meta: {
                     requiresAuth: true,
                   },
@@ -1453,7 +1465,8 @@ const router = new Router({
                 {
                   path: 'stock',
                   name: 'general-store-stock-report',
-                  component: () => import('@/view/pages/generalStore/reports/StockReport.vue'),
+                  component: () =>
+                    import('@/view/pages/generalStore-deprecated/reports/StockReport.vue'),
                   meta: {
                     requiresAuth: true,
                   },
@@ -1461,7 +1474,8 @@ const router = new Router({
                 {
                   path: 'movement',
                   name: 'general-store-movement-report',
-                  component: () => import('@/view/pages/generalStore/reports/MovementReport.vue'),
+                  component: () =>
+                    import('@/view/pages/generalStore-deprecated/reports/MovementReport.vue'),
                   meta: {
                     requiresAuth: true,
                   },
@@ -1469,7 +1483,8 @@ const router = new Router({
                 {
                   path: 'usage',
                   name: 'general-store-usage-report',
-                  component: () => import('@/view/pages/generalStore/reports/UsageReport.vue'),
+                  component: () =>
+                    import('@/view/pages/generalStore-deprecated/reports/UsageReport.vue'),
                   meta: {
                     requiresAuth: true,
                   },
@@ -1477,7 +1492,8 @@ const router = new Router({
                 {
                   path: 'cost',
                   name: 'general-store-cost-report',
-                  component: () => import('@/view/pages/generalStore/reports/CostReport.vue'),
+                  component: () =>
+                    import('@/view/pages/generalStore-deprecated/reports/CostReport.vue'),
                   meta: {
                     requiresAuth: true,
                   },
@@ -1488,7 +1504,7 @@ const router = new Router({
               path: 'dispensaries',
               name: 'general-store-dispensaries',
               component: () =>
-                import('@/view/pages/generalStore/dispensaries/DispensariesList.vue'),
+                import('@/view/pages/generalStore-deprecated/dispensaries/DispensariesList.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1497,7 +1513,7 @@ const router = new Router({
               path: 'dispensaries/create',
               name: 'general-store-create-dispensary',
               component: () =>
-                import('@/view/pages/generalStore/dispensaries/CreateDispensary.vue'),
+                import('@/view/pages/generalStore-deprecated/dispensaries/CreateDispensary.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1506,7 +1522,7 @@ const router = new Router({
               path: 'dispensaries/:id',
               name: 'general-store-dispensary-details',
               component: () =>
-                import('@/view/pages/generalStore/dispensaries/DispensaryDetails.vue'),
+                import('@/view/pages/generalStore-deprecated/dispensaries/DispensaryDetails.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1514,7 +1530,8 @@ const router = new Router({
             {
               path: 'dispensaries/:id/edit',
               name: 'general-store-edit-dispensary',
-              component: () => import('@/view/pages/generalStore/dispensaries/EditDispensary.vue'),
+              component: () =>
+                import('@/view/pages/generalStore-deprecated/dispensaries/EditDispensary.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1522,7 +1539,8 @@ const router = new Router({
             {
               path: 'dispensaries/:id/stock',
               name: 'general-store-dispensary-stock',
-              component: () => import('@/view/pages/generalStore/dispensaries/DispensaryStock.vue'),
+              component: () =>
+                import('@/view/pages/generalStore-deprecated/dispensaries/DispensaryStock.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -1530,7 +1548,7 @@ const router = new Router({
             {
               path: 'settings',
               name: 'general-store-settings',
-              component: () => import('@/view/pages/generalStore/settings/Settings.vue'),
+              component: () => import('@/view/pages/generalStore-deprecated/settings/Settings.vue'),
               meta: {
                 requiresAuth: true,
               },
