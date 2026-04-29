@@ -27,9 +27,9 @@
         <label class="col-2 col-form-label">Received By</label>
         <div class="col-3">
           <select v-model="receiver" class="form-control-sm form-control">
-            <option v-for="(staff, i) in staffs" :value="staff.id" :key="i">{{
-              staff.fullname
-            }}</option>
+            <option v-for="(staff, i) in staffs" :value="staff.id" :key="i">
+              {{ staff.fullname }}
+            </option>
           </select>
         </div>
       </div>
@@ -69,7 +69,7 @@ export default {
   },
   methods: {
     generateAccessionNumber() {
-      this.$store.dispatch('laboratory/generateAccessionNumber').then(response => {
+      this.$store.dispatch('laboratory/generateAccessionNumber').then((response) => {
         this.accession_number = response.data.data;
       });
     },
@@ -123,6 +123,7 @@ export default {
         currentPage,
         itemsPerPage,
         ...(search && { search }),
+        filter: { status: 'Active' },
       });
     },
   },

@@ -6,6 +6,7 @@
 
 <script>
 import SuperAdmin from './superadmin/Dashboard.vue';
+import Admin from './admin/Dashboard.vue';
 import Laboratory from './laboratory/Dashboard.vue';
 import Radiology from './radiology/Dashboard.vue';
 import Pharmacy from './pharmacy/Dashboard.vue';
@@ -45,6 +46,7 @@ import { parseJwt } from '@/common/common';
 
 const Roles = {
   SUPER_ADMIN: 'Super Admin',
+  ADMIN: 'Admin',
   LABORATORY: 'Laboratory',
   RADIOLOGY: 'Radiology',
   PHARMACY: 'Pharmacy',
@@ -92,6 +94,8 @@ export default {
       switch (role.role) {
         case Roles.SUPER_ADMIN:
           return (this.dashboardComponent = SuperAdmin);
+        case Roles.ADMIN:
+          return (this.dashboardComponent = Admin);
         case Roles.LABORATORY:
           return this.getLaboratoryDashboard(role.sub_role);
         case Roles.RADIOLOGY:

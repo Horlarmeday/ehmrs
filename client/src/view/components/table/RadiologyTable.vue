@@ -76,7 +76,7 @@ import { getLabelDotStatus } from '@/common/common';
 export default {
   data: () => ({
     currentUser: parseJwt(localStorage.getItem('user_token')),
-    allowedDepartments: ['Medical Practitioners', 'Administrator'],
+    allowedDepartments: ['Medical Practitioners', 'Administrator', 'Administration', 'Nursing'],
     loading: false,
     UNBILLED: 'Unbilled',
     PENDING: 'Pending',
