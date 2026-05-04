@@ -73,13 +73,14 @@ export default {
           desc: 'Click here to view all laboratory result forms',
         },
       ],
+      allowedDepartments: ['Administrator', 'Administration'],
     };
   },
   watch: {
     currentUser: {
       handler(val) {
-        this.items.filter(tab => {
-          if (val.role !== 'Super Admin' && tab.name === 'Results Update') {
+        this.items.filter((tab) => {
+          if (!this.allowedDepartments.includes(val.department) && tab.name === 'Results Update') {
             tab.showComponent = false;
           }
           return tab;
