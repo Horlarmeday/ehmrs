@@ -24,11 +24,11 @@ export default [
     icon: 'flaticon-security',
     name: 'Programs',
   },
-  // {
-  //   url: '/employee/choose-type',
-  //   icon: 'fas fa-users',
-  //   name: 'Employees',
-  // },
+  {
+    url: '/employee/choose-type',
+    icon: 'fas fa-users',
+    name: 'Employees',
+  },
   // {
   //   url: '/store/store-type',
   //   icon: 'fas fa-warehouse',

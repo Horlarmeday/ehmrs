@@ -149,8 +149,8 @@ export default {
     { model: 'potassium', name: 'K', range: '3.5 - 5.5 Mmol/L' },
     { model: 'chlorine', name: 'CL', range: '97 - 108 Mmol/L' },
     { model: 'hco3', name: 'HCO3', range: '24 - 32 Mmol/L' },
-    { model: 'urea', name: 'Urea', range: '10 - 55 Mmol/L' },
-    { model: 'chromium', name: 'Cr', range: '0.7 - 1.4 Mmol/L' },
+    { model: 'urea', name: 'Urea', range: '10 - 55 mg/dL' },
+    { model: 'chromium', name: 'Cr', range: '0.7 - 1.4 mg/dL' },
     { model: 'comments', name: 'Comments' },
   ],
   StoolAnalysisForm: [
