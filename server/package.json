@@ -31,7 +31,8 @@
         "isolatedModules": true,
         "diagnostics": false
       }
-    }
+    },
+    "maxWorkers": 1
   },
   "author": "Mahmud Ajao",
   "license": "ISC",

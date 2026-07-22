@@ -2,7 +2,22 @@ import '../../core/config/env';
 import { sequelizeConnection } from '../../database/config/data-source';
 import { OutboxEvent } from '../../database/models/outboxEvent';
 import { OutboxSequence } from '../../database/models/outboxSequence';
-import { emitChargeCapturedForRows } from './outbox-writer';
+import { emitChargeCapturedForRows, normalisePrice } from './outbox-writer';
+
+describe('normalisePrice', () => {
+  it('leaves a DECIMAL string untouched', () => {
+    expect(normalisePrice('2500.00')).toBe('2500.00');
+  });
+  it('converts an integer request number to a 2dp string', () => {
+    expect(normalisePrice(200)).toBe('200.00');
+  });
+  it('converts a 2dp request number exactly', () => {
+    expect(normalisePrice(150.5)).toBe('150.50');
+  });
+  it('REFUSES sub-kobo precision rather than rounding', () => {
+    expect(() => normalisePrice(10.005)).toThrow(/sub-kobo/);
+  });
+});
 
 /**
  * Tests the emit-for-rows path the prescribe endpoints call — the A1.2a wiring — against real

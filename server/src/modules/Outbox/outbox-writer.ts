@@ -104,6 +104,31 @@ function asPrescribedRecord(row: unknown): Record<string, unknown> {
 }
 
 /**
+ * Normalises a price to the decimal STRING the builder expects.
+ *
+ * A price reaches here two ways: from a reloaded row it is already the DECIMAL driver string; from
+ * a just-created row it may still be the JS number the HTTP request body carried. A number from a
+ * price field is a legitimate naira amount (the DECIMAL column would store it identically), NOT the
+ * float-artifact the builder's number-rejection guards against — so convert an integer-or-2dp
+ * number to its exact string here. A number with more than 2 decimal places is refused: that is
+ * sub-kobo precision the money layer must not silently round.
+ */
+export function normalisePrice(value: unknown): unknown {
+  if (typeof value !== 'number') {
+    return value;
+  }
+  if (!Number.isFinite(value)) {
+    throw new Error(`Outbox: price is not a finite number (${value}).`);
+  }
+  // toFixed(2) is exact for a value with <= 2 decimal places; reject anything finer than a kobo.
+  const rounded = Number(value.toFixed(2));
+  if (rounded !== value) {
+    throw new Error(`Outbox: price ${value} has sub-kobo precision; refusing to round.`);
+  }
+  return value.toFixed(2);
+}
+
+/**
  * Emits a charge.captured for each row a prescribe endpoint created, on its transaction.
  *
  * The single call every emit site makes. Reading the price by the per-type column name (not a
@@ -129,7 +154,7 @@ export async function emitChargeCapturedForRows(
       id: Number(row.id),
       patient_id: Number(row.patient_id),
       visit_id: Number(row.visit_id),
-      amount: row[priceField],
+      amount: normalisePrice(row[priceField]),
       quantity: Number(row.quantity_prescribed ?? row.quantity ?? 1),
       service_date: serviceDate,
     };

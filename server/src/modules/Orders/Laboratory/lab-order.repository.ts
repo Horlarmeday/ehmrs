@@ -1,10 +1,13 @@
 /* eslint-disable camelcase */
 import { PrescribedTest, Staff, Test, TestResult } from '../../../database/models';
 import sequelize, { WhereOptions } from 'sequelize';
+import dayjs from 'dayjs';
 import { staffAttributes } from '../../Antenatal/antenatal.repository';
 import { BadException } from '../../../common/util/api-error';
 import { StatusCodes } from '../../../core/helpers/helper';
 import { ERROR_UPDATING_TEST } from './messages/response-messages';
+import { sequelizeConnection } from '../../../database/config/data-source';
+import { emitChargeCapturedForRows } from '../../Outbox/outbox-writer';
 
 /**
  * prescribe a test for patient
@@ -31,7 +34,14 @@ export async function prescribeTest(data) {
  * @returns {object} prescribed test data
  */
 export async function orderBulkTest(data) {
-  const tests = await PrescribedTest.bulkCreate(data);
+  // A1.2b: this write had NO transaction, so the lines and their outbox events could not commit
+  // atomically. Wrapping it also makes the bulkCreate itself atomic — a partial failure no longer
+  // leaves half a prescription behind. No-op emission unless EMR_OUTBOX_ENABLED.
+  const tests = await sequelizeConnection.transaction(async t => {
+    const created = await PrescribedTest.bulkCreate(data, { transaction: t });
+    await emitChargeCapturedForRows('test', created, dayjs().format('YYYY-MM-DD'), t);
+    return created;
+  });
   const testIds = tests.map(({ id }) => id);
   return getPrescriptionTests({ id: testIds });
 }
