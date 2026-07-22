@@ -35,6 +35,7 @@ import {
 } from './messages/response-messages';
 import { sequelizeConnection } from '../../../database/config/data-source';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
+import { emitChargeCapturedForRows } from '../../Outbox/outbox-writer';
 
 type PrescribeDrugType = PrescribedDrugBody & {
   drug_prescription_id: number;
@@ -140,6 +141,10 @@ export const prescribeBulkDrugs = async (
   return sequelizeConnection.transaction(async (t: Transaction) => {
     const drugs = await PrescribedDrug.bulkCreate(data, { transaction: t });
 
+    // Emit charge.captured for each drug in the SAME transaction (ADR-0018): the drug and its
+    // event commit together or both roll back. No-op unless EMR_OUTBOX_ENABLED.
+    await emitChargeCapturedForRows('drug', drugs, dayjs().format('YYYY-MM-DD'), t);
+
     if (injections?.length) {
       const injectionDefaults = await getOneDefault({ type: DefaultType.INJECTION_ITEMS });
       if (!injectionDefaults) throw new BadException('Error', 400, INJECTION_SYRINGES_NOT_FOUND);
@@ -163,7 +168,16 @@ export const prescribeBulkDrugs = async (
       );
 
       const itemBodies = flattenArray(additionalItems);
-      await bulkCreateAdditionalItems(itemBodies, t);
+      const createdItems = await bulkCreateAdditionalItems(itemBodies, t);
+
+      // Consumables (syringes/needles) are billable like any line — emit for them too, in the
+      // same transaction. Missing this is the silent-charge-loss ADR-0027 warns about.
+      await emitChargeCapturedForRows(
+        'additional_item',
+        createdItems,
+        dayjs().format('YYYY-MM-DD'),
+        t
+      );
     }
 
     return drugs;

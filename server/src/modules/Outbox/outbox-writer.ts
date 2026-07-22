@@ -2,6 +2,7 @@ import { QueryTypes, Transaction } from 'sequelize';
 import { sequelizeConnection } from '../../database/config/data-source';
 import { OutboxEvent } from '../../database/models/outboxEvent';
 import { buildChargeCapturedEvent, visitAggregateId, PrescribedLineInput } from './event-builder';
+import { PRICE_FIELD_BY_TYPE, PrescribedLineType } from './prescribed-line-types';
 
 /**
  * Writes charge.captured events to the outbox INSIDE a clinical write transaction (ADR-0018).
@@ -82,4 +83,56 @@ export async function emitChargeCaptured(
     } as never,
     { transaction }
   );
+}
+
+/**
+ * The subset of a Prescribed_* model the outbox reads. The five Sequelize models don't share a
+ * base type, so a row arrives as `unknown` and is narrowed here: the fields read (id, patient_id,
+ * visit_id, the per-type price column, a quantity) exist on all five, and the builder validates
+ * the values it actually uses. Narrowing rather than casting keeps a malformed row from silently
+ * producing a bad event.
+ */
+function asPrescribedRecord(row: unknown): Record<string, unknown> {
+  if (typeof row !== 'object' || row === null) {
+    throw new Error('Outbox: expected a prescribed-line record, got a non-object.');
+  }
+  // Sequelize instances expose column values via get(); fall back to own enumerable props.
+  const model = row as { get?: (opts: { plain: boolean }) => Record<string, unknown> };
+  return typeof model.get === 'function'
+    ? model.get({ plain: true })
+    : (row as Record<string, unknown>);
+}
+
+/**
+ * Emits a charge.captured for each row a prescribe endpoint created, on its transaction.
+ *
+ * The single call every emit site makes. Reading the price by the per-type column name (not a
+ * fixed field) is what lets one helper serve all five types whose price column differs. A row
+ * missing its price is a data bug, not something to paper over — nairaStringToKoboString throws,
+ * which rolls the whole clinical write back rather than emitting a zero-value charge.
+ */
+export async function emitChargeCapturedForRows(
+  type: PrescribedLineType,
+  rows: readonly unknown[],
+  serviceDate: string,
+  transaction: Transaction
+): Promise<void> {
+  if (!isOutboxEnabled() || rows.length === 0) {
+    return;
+  }
+
+  const priceField = PRICE_FIELD_BY_TYPE[type];
+  for (const raw of rows) {
+    const row = asPrescribedRecord(raw);
+    const input: PrescribedLineInput = {
+      type,
+      id: Number(row.id),
+      patient_id: Number(row.patient_id),
+      visit_id: Number(row.visit_id),
+      amount: row[priceField],
+      quantity: Number(row.quantity_prescribed ?? row.quantity ?? 1),
+      service_date: serviceDate,
+    };
+    await emitChargeCaptured(input, transaction);
+  }
 }

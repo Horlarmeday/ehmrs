@@ -96,21 +96,31 @@ describe('buildChargeCapturedEvent', () => {
     );
   });
 
-  it('REFUSES a demographic field in the body (ADR-0016)', () => {
-    // Simulate a caller that tried to enrich the body with a name.
-    const row = buildChargeCapturedEvent(baseLine, context);
-    (row.payload.body as Record<string, unknown>).patient_name = 'Jane Doe';
-    // The guard runs at build time, so re-running the build with a demographic input is the real
-    // test: extend the input shape to smuggle one in.
-    const withDemographic = {
-      ...baseLine,
-      // @ts-expect-error deliberately passing a field the type does not allow
-      firstname: 'Jane',
-    };
-    // The builder only copies known fields, so a stray input key never reaches the body; assert
-    // that too - the body stays clean.
-    const clean = buildChargeCapturedEvent(withDemographic, context);
-    expect((clean.payload.body as Record<string, unknown>).firstname).toBeUndefined();
+  it('emits a body free of demographic fields (ADR-0016)', () => {
+    // The builder copies only the known ID/money fields, so even a caller passing extra input
+    // keys cannot leak demographics into the body. Assert the body carries references only.
+    const row = buildChargeCapturedEvent(
+      { ...baseLine, department: 'Pharmacy', service_line: 'Outpatient' },
+      context
+    );
+    const body = row.payload.body as Record<string, unknown>;
+    const demographicKeys = ['firstname', 'lastname', 'patient_name', 'phone', 'address', 'dob'];
+    for (const key of demographicKeys) {
+      expect(body[key]).toBeUndefined();
+    }
+    expect(Object.keys(body).sort()).toEqual(
+      [
+        'amount_kobo',
+        'department',
+        'encounter_id',
+        'external_line_ref',
+        'patient_id',
+        'quantity',
+        'service_date',
+        'service_line',
+        'visit_id',
+      ].sort()
+    );
   });
 
   it('rejects an unknown prescribed-line type', () => {
