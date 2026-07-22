@@ -1,4 +1,5 @@
 /* eslint-disable camelcase */
+import { Model, ModelStatic } from 'sequelize';
 import { PrescribedTest, Patient, Sample, Staff, Test, Visit } from '../../../database/models';
 import { VisitCategory } from '../../../database/enums';
 import { OPD } from '../../../core/constants';
@@ -33,7 +34,9 @@ function unique(prefix: string): string {
  * this fixture owns without having to know the full downstream graph. `truncate` is used per
  * table so auto-increment ids reset between suites.
  */
-const FIXTURE_TABLES = [PrescribedTest, Test, Sample, Visit, Patient, Staff] as const;
+// Typed as the shared ModelStatic base: the entries are different model classes, and we only
+// call destroy(), which every model exposes identically.
+const FIXTURE_TABLES: ModelStatic<Model>[] = [PrescribedTest, Test, Sample, Visit, Patient, Staff];
 
 export async function cleanUpOrderFixtures(): Promise<void> {
   const sequelize = Staff.sequelize;
