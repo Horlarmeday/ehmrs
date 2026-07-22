@@ -35,10 +35,30 @@ npm run migrations
 npm run dev
 ```
 #### test
-To run integration test, run below command
+The integration suite runs against a MySQL **test database**, provisioned from a committed schema
+snapshot (`server/src/database/test-schema/schema.sql`) rather than from migrations — the
+migrations reproduce only ~36 of the ~94 live tables, so a migrated database cannot run the tests.
+
+First, add the test-database settings to `server/.env`:
 ```bash
-npm run test
+TEST_DB_USER=root
+TEST_DB_PASS=your_password
+TEST_DB_NAME=ehmrs_test   # must contain "test" — the setup script refuses anything else
+TEST_DB_HOST=127.0.0.1
 ```
+Then provision it (drops and recreates `TEST_DB_NAME`, structure only — no data) and run the tests:
+```bash
+cd server
+yarn test:db:setup   # load schema.sql into a fresh ehmrs_test
+yarn test
+```
+To refresh the snapshot after the live schema changes:
+```bash
+mysqldump -h <host> -u <user> -p --no-data --no-tablespaces --routines \
+  --set-gtid-purged=OFF <live_db> > server/src/database/test-schema/schema.sql
+```
+Regenerating the Sequelize migrations to match the real schema (so a migrated database could run
+the tests directly) is the principled fix and a separate task.
 #### production
 To run integration test, run below command
 ```bash
