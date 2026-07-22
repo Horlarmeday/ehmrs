@@ -9,6 +9,7 @@ import {
   assignImmunizationNumber,
   closeAntenatalAccount,
   endVisits,
+  drainOutbox,
 } from '../jobs';
 import { logger } from '../../helpers/logger';
 import dayjs from 'dayjs';
@@ -22,6 +23,7 @@ const Jobs = {
   [JobName.ASSIGN_IMMUNIZATION_NUMBER]: assignImmunizationNumber,
   [JobName.CLOSE_ANTENATAL_ACCOUNT]: closeAntenatalAccount,
   [JobName.END_VISIT]: endVisits,
+  [JobName.DRAIN_OUTBOX]: drainOutbox,
 };
 
 const setFailureBehavior = (agenda: Agenda, jobName: string) => {
