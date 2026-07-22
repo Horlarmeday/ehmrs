@@ -11,8 +11,10 @@ import { staffAttributes } from '../../Antenatal/antenatal.repository';
 import { getDrugType, StatusCodes } from '../../../core/helpers/helper';
 import { BadException } from '../../../common/util/api-error';
 import { ERROR_UPDATING_INVESTIGATION, HSG_ITEMS_MISSING } from './messages/response-messages';
+import dayjs from 'dayjs';
 import { sequelizeConnection } from '../../../database/config/data-source';
 import { getOneDefault } from '../../AdminSettings/admin.repository';
+import { emitChargeCapturedForRows } from '../../Outbox/outbox-writer';
 import { DefaultType, DrugForm, PharmacyDrugType } from '../../../database/enums';
 import { NHISApprovalStatus } from '../../../core/helpers/general';
 import { getDrugPrice } from '../../Pharmacy/pharmacy.repository';
@@ -72,6 +74,14 @@ export const orderBulkInvestigation = async ({
 }: OrderBulkInvestigationType) => {
   const result = await sequelizeConnection.transaction(async (t: Transaction) => {
     const investigations = await PrescribedInvestigation.bulkCreate(data, { transaction: t });
+
+    // Emit in the same transaction (ADR-0018). No-op unless EMR_OUTBOX_ENABLED.
+    await emitChargeCapturedForRows(
+      'investigation',
+      investigations,
+      dayjs().format('YYYY-MM-DD'),
+      t
+    );
 
     if (includesHSG) {
       const hsgItemsDefaults = await getOneDefault({ type: DefaultType.HSG_ADDITIONAL_ITEMS });
@@ -204,8 +214,13 @@ const insertHSGAdditionalItems = async ({
       };
     })
   );
-  await PrescribedDrug.bulkCreate(mapDrugs, { transaction: t });
-  await PrescribedAdditionalItem.bulkCreate(mapConsumables, { transaction: t });
+  const hsgDrugs = await PrescribedDrug.bulkCreate(mapDrugs, { transaction: t });
+  const hsgItems = await PrescribedAdditionalItem.bulkCreate(mapConsumables, { transaction: t });
+
+  // HSG drugs and consumables are billable lines too — emit for them in the same transaction.
+  const serviceDate = dayjs().format('YYYY-MM-DD');
+  await emitChargeCapturedForRows('drug', hsgDrugs, serviceDate, t);
+  await emitChargeCapturedForRows('additional_item', hsgItems, serviceDate, t);
 };
 
 /**
