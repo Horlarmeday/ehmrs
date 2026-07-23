@@ -10,3 +10,4 @@ export { closeAntenatalAccount } from './cron/closeAntenatalAccount.job';
 export { endVisits } from './cron/endVisits.job';
 export { createPatientInsuranceAccount } from './now/createPatientInsurance.job';
 export { drainOutbox } from './cron/drainOutbox.job';
+export { drainInboxJob } from './cron/drainInbox.job';

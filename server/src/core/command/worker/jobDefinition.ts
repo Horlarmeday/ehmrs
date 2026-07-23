@@ -10,6 +10,7 @@ import {
   closeAntenatalAccount,
   endVisits,
   drainOutbox,
+  drainInboxJob,
 } from '../jobs';
 import { logger } from '../../helpers/logger';
 import dayjs from 'dayjs';
@@ -24,6 +25,7 @@ const Jobs = {
   [JobName.CLOSE_ANTENATAL_ACCOUNT]: closeAntenatalAccount,
   [JobName.END_VISIT]: endVisits,
   [JobName.DRAIN_OUTBOX]: drainOutbox,
+  [JobName.DRAIN_INBOX]: drainInboxJob,
 };
 
 const setFailureBehavior = (agenda: Agenda, jobName: string) => {

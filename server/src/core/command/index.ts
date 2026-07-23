@@ -9,6 +9,7 @@ export enum JobName {
   END_VISIT = 'End visit',
   CLOSE_ANTENATAL_ACCOUNT = 'Close antenatal account',
   DRAIN_OUTBOX = 'Drain EMR-Accounting outbox',
+  DRAIN_INBOX = 'Drain Accounting-EMR inbox',
 }
 
 export const CronTimer = {
@@ -19,6 +20,9 @@ export const CronTimer = {
   // Frequent: settlement latency matters, and a no-op pass is cheap when the flag is off or the
   // outbox is empty.
   [JobName.DRAIN_OUTBOX]: '* * * * *', // every minute
+  // Frequent for the same reason: a paid patient's gate should open promptly once the instruction
+  // arrives, and a no-op pass is cheap when the inbox is empty or the flag is off.
+  [JobName.DRAIN_INBOX]: '* * * * *', // every minute
 };
 
 export const ImmediateJob = {};
