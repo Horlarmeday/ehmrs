@@ -35,6 +35,7 @@ import {
 } from './messages/response-messages';
 import { sequelizeConnection } from '../../../database/config/data-source';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
+import { emitChargeCapturedForRows } from '../../Outbox/outbox-writer';
 
 type PrescribeDrugType = PrescribedDrugBody & {
   drug_prescription_id: number;
@@ -93,35 +94,42 @@ export async function prescribeDrug(data: PrescribeDrugType): Promise<Prescribed
     nhis_status,
     patient_insurance_id,
   } = data || {};
-  return PrescribedDrug.create({
-    drug_id,
-    drug_type,
-    quantity_prescribed,
-    quantity_to_dispense,
-    route_id,
-    dosage_form_id,
-    prescribed_strength,
-    strength_id,
-    frequency,
-    duration,
-    duration_unit,
-    notes,
-    total_price,
-    examiner,
-    patient_id,
-    visit_id,
-    start_date,
-    date_prescribed: Date.now(),
-    drug_prescription_id,
-    drug_group: drug_group || null,
-    inventory_id,
-    source,
-    ante_natal_id,
-    unit_id,
-    immunization_id,
-    surgery_id,
-    nhis_status,
-    patient_insurance_id,
+  return sequelizeConnection.transaction(async t => {
+    const drug = await PrescribedDrug.create(
+      {
+        drug_id,
+        drug_type,
+        quantity_prescribed,
+        quantity_to_dispense,
+        route_id,
+        dosage_form_id,
+        prescribed_strength,
+        strength_id,
+        frequency,
+        duration,
+        duration_unit,
+        notes,
+        total_price,
+        examiner,
+        patient_id,
+        visit_id,
+        start_date,
+        date_prescribed: Date.now(),
+        drug_prescription_id,
+        drug_group: drug_group || null,
+        inventory_id,
+        source,
+        ante_natal_id,
+        unit_id,
+        immunization_id,
+        surgery_id,
+        nhis_status,
+        patient_insurance_id,
+      },
+      { transaction: t }
+    );
+    await emitChargeCapturedForRows('drug', [drug], dayjs().format('YYYY-MM-DD'), t);
+    return drug;
   });
 }
 
@@ -139,6 +147,10 @@ export const prescribeBulkDrugs = async (
 ): Promise<PrescribedDrug[]> => {
   return sequelizeConnection.transaction(async (t: Transaction) => {
     const drugs = await PrescribedDrug.bulkCreate(data, { transaction: t });
+
+    // Emit charge.captured for each drug in the SAME transaction (ADR-0018): the drug and its
+    // event commit together or both roll back. No-op unless EMR_OUTBOX_ENABLED.
+    await emitChargeCapturedForRows('drug', drugs, dayjs().format('YYYY-MM-DD'), t);
 
     if (injections?.length) {
       const injectionDefaults = await getOneDefault({ type: DefaultType.INJECTION_ITEMS });
@@ -163,7 +175,16 @@ export const prescribeBulkDrugs = async (
       );
 
       const itemBodies = flattenArray(additionalItems);
-      await bulkCreateAdditionalItems(itemBodies, t);
+      const createdItems = await bulkCreateAdditionalItems(itemBodies, t);
+
+      // Consumables (syringes/needles) are billable like any line — emit for them too, in the
+      // same transaction. Missing this is the silent-charge-loss ADR-0027 warns about.
+      await emitChargeCapturedForRows(
+        'additional_item',
+        createdItems,
+        dayjs().format('YYYY-MM-DD'),
+        t
+      );
     }
 
     return drugs;
@@ -296,22 +317,29 @@ export const prescribeAdditionalItem = async (
     unit_id,
     inventory_id,
   } = data;
-  return PrescribedAdditionalItem.create({
-    drug_id,
-    drug_type,
-    quantity_prescribed,
-    quantity_to_dispense,
-    drug_form,
-    total_price,
-    examiner,
-    patient_id,
-    visit_id,
-    start_date,
-    drug_prescription_id,
-    unit_id,
-    date_prescribed: Date.now(),
-    inventory_id,
-    prescribed_drug_id,
+  return sequelizeConnection.transaction(async t => {
+    const item = await PrescribedAdditionalItem.create(
+      {
+        drug_id,
+        drug_type,
+        quantity_prescribed,
+        quantity_to_dispense,
+        drug_form,
+        total_price,
+        examiner,
+        patient_id,
+        visit_id,
+        start_date,
+        drug_prescription_id,
+        unit_id,
+        date_prescribed: Date.now(),
+        inventory_id,
+        prescribed_drug_id,
+      },
+      { transaction: t }
+    );
+    await emitChargeCapturedForRows('additional_item', [item], dayjs().format('YYYY-MM-DD'), t);
+    return item;
   });
 };
 

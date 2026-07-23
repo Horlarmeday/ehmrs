@@ -25,6 +25,9 @@ import { getInventories } from '../Inventory/inventory.repository';
 import { getDrugPrice } from '../Pharmacy/pharmacy.repository';
 import { getInventoryItemQuery } from '../Inventory/inventory.repository';
 import { PrescribedDrug, PrescribedAdditionalItem, DrugPrescription } from '../../database/models';
+import dayjs from 'dayjs';
+import { sequelizeConnection } from '../../database/config/data-source';
+import { emitChargeCapturedForRows } from '../Outbox/outbox-writer';
 import {
   DrugForm,
   PharmacyDrugType,
@@ -900,7 +903,10 @@ export const insertDefaultDialysisItems = async ({
         })
       );
 
-      await PrescribedDrug.bulkCreate(mapDrugs);
+      await sequelizeConnection.transaction(async t => {
+        const created = await PrescribedDrug.bulkCreate(mapDrugs, { transaction: t });
+        await emitChargeCapturedForRows('drug', created, dayjs().format('YYYY-MM-DD'), t);
+      });
     }
 
     // Create prescribed additional items (consumables)
@@ -945,7 +951,17 @@ export const insertDefaultDialysisItems = async ({
         })
       );
 
-      await PrescribedAdditionalItem.bulkCreate(mapConsumables);
+      await sequelizeConnection.transaction(async t => {
+        const created = await PrescribedAdditionalItem.bulkCreate(mapConsumables, {
+          transaction: t,
+        });
+        await emitChargeCapturedForRows(
+          'additional_item',
+          created,
+          dayjs().format('YYYY-MM-DD'),
+          t
+        );
+      });
     }
 
     return true;

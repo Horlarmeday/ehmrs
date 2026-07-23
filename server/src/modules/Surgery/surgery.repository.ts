@@ -9,7 +9,9 @@ import {
 import { Op, WhereOptions } from 'sequelize';
 import { dateIntervalQuery, patientAttributes, staffAttributes } from '../../core/helpers/helper';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
+import dayjs from 'dayjs';
 import { sequelizeConnection } from '../../database/config/data-source';
+import { emitChargeCapturedForRows } from '../Outbox/outbox-writer';
 import { PrescribedServiceType as ServiceType } from '../../database/enums';
 import { BadException } from '../../common/util/api-error';
 
@@ -25,7 +27,7 @@ export const requestSurgery = async (data): Promise<SurgeryRequest> => {
 
     const surgeryRequest = await SurgeryRequest.create({ ...data }, { transaction: t });
 
-    await PrescribedService.create(
+    const surgeryService = await PrescribedService.create(
       {
         service_id: service.id,
         surgery_id: surgeryRequest.id,
@@ -38,6 +40,9 @@ export const requestSurgery = async (data): Promise<SurgeryRequest> => {
       },
       { transaction: t }
     );
+
+    // Already inside requestSurgery's transaction — emit the surgery service charge with it.
+    await emitChargeCapturedForRows('service', [surgeryService], dayjs().format('YYYY-MM-DD'), t);
     return surgeryRequest;
   });
 };

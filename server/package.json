@@ -5,6 +5,7 @@
   "main": "app.js",
   "scripts": {
     "test": "jest --detectOpenHandles",
+    "test:db:setup": "node src/database/test-schema/setup-test-db.js",
     "start:dev": "nodemon",
     "start": "node dist/app.js",
     "build": "rimraf ./dist && tsc && yarn sentry:sourcemaps",
@@ -30,7 +31,8 @@
         "isolatedModules": true,
         "diagnostics": false
       }
-    }
+    },
+    "maxWorkers": 1
   },
   "author": "Mahmud Ajao",
   "license": "ISC",

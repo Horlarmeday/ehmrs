@@ -39,6 +39,7 @@ import {
 } from '../../database/enums';
 import { getOneDefault, getWardWithService } from '../AdminSettings/admin.repository';
 import { getPatientById } from '../Patient/patient.repository';
+import { emitChargeCapturedForRows } from '../Outbox/outbox-writer';
 import { AdmissionBodyType, ChangeWardBodyType, DischargeBodyType } from './types/admission.types';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import {
@@ -118,8 +119,8 @@ export const admitPatient = async (data: AdmissionBodyType) => {
       !patient.has_insurance ||
       !EXCLUDED_INSURANCE.includes(insurance?.insurance?.name) ||
       patient.admitted_days_in_year > 21
-    )
-      await PrescribedService.create(
+    ) {
+      const admissionService = await PrescribedService.create(
         {
           service_id: ward.service.id,
           price: ward.service.price,
@@ -131,6 +132,15 @@ export const admitPatient = async (data: AdmissionBodyType) => {
         },
         { transaction: t }
       );
+
+      // Already inside admitPatient's transaction — emit the admission charge with it (ADR-0018).
+      await emitChargeCapturedForRows(
+        'service',
+        [admissionService],
+        dayjs().format('YYYY-MM-DD'),
+        t
+      );
+    }
 
     await Patient.update(
       { patient_status: PatientStatus.INPATIENT },
