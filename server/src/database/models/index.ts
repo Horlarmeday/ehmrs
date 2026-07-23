@@ -78,3 +78,8 @@ export { Vendor } from './vendor';
 export { Visit } from './visit';
 export { Ward } from './ward';
 export { WardRound } from './wardRound';
+
+// Registered LAST: these import only sequelize-typescript, so appending them keeps them out
+// of the model<->helper<->repository import cycle that the earlier entries participate in.
+export { OutboxEvent } from './outboxEvent';
+export { OutboxSequence } from './outboxSequence';

@@ -8,6 +8,7 @@ export enum JobName {
   SEND_PATIENT_SMS = 'Registration SMS',
   END_VISIT = 'End visit',
   CLOSE_ANTENATAL_ACCOUNT = 'Close antenatal account',
+  DRAIN_OUTBOX = 'Drain EMR-Accounting outbox',
 }
 
 export const CronTimer = {
@@ -15,6 +16,9 @@ export const CronTimer = {
     process.env.NODE_ENV === 'development' ? '0 2 * * *' : '*/5 * * * *', // every 5 minutes
   [JobName.CLOSE_ANTENATAL_ACCOUNT]: '0 1 * * *', // every 1am
   [JobName.END_VISIT]: '0 0 * * *', // 12am
+  // Frequent: settlement latency matters, and a no-op pass is cheap when the flag is off or the
+  // outbox is empty.
+  [JobName.DRAIN_OUTBOX]: '* * * * *', // every minute
 };
 
 export const ImmediateJob = {};
