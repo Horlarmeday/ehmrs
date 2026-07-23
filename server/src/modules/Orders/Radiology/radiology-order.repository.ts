@@ -44,15 +44,27 @@ export const prescribeInvestigation = data => {
     ante_natal_id,
   } = data;
 
-  return PrescribedInvestigation.create({
-    investigation_id,
-    requester,
-    price,
-    patient_id,
-    date_requested: Date.now(),
-    visit_id,
-    imaging_id,
-    ante_natal_id,
+  return sequelizeConnection.transaction(async t => {
+    const investigation = await PrescribedInvestigation.create(
+      {
+        investigation_id,
+        requester,
+        price,
+        patient_id,
+        date_requested: Date.now(),
+        visit_id,
+        imaging_id,
+        ante_natal_id,
+      },
+      { transaction: t }
+    );
+    await emitChargeCapturedForRows(
+      'investigation',
+      [investigation],
+      dayjs().format('YYYY-MM-DD'),
+      t
+    );
+    return investigation;
   });
 };
 

@@ -1,11 +1,14 @@
 import { PrescribedService } from '../../../database/models';
 import { PrescribeServiceBody } from './types/service-order.types';
 import { WhereOptions } from 'sequelize';
+import dayjs from 'dayjs';
 import { Service, Staff } from '../../../database/models';
 import { staffAttributes } from '../../Antenatal/antenatal.repository';
 import { StatusCodes } from '../../../core/helpers/helper';
 import { BadException } from '../../../common/util/api-error';
 import { ERROR_UPDATING_SERVICE } from './messages/response-messages';
+import { sequelizeConnection } from '../../../database/config/data-source';
+import { emitChargeCapturedForRows } from '../../Outbox/outbox-writer';
 
 /**
  * prescribe multiple services for patient
@@ -13,7 +16,12 @@ import { ERROR_UPDATING_SERVICE } from './messages/response-messages';
  * @returns {object} prescribed service data
  */
 export const orderBulkService = async data => {
-  return PrescribedService.bulkCreate(data);
+  // A1.2b: wrap so the services and their outbox events commit atomically.
+  return sequelizeConnection.transaction(async t => {
+    const services = await PrescribedService.bulkCreate(data, { transaction: t });
+    await emitChargeCapturedForRows('service', services, dayjs().format('YYYY-MM-DD'), t);
+    return services;
+  });
 };
 
 /**
@@ -33,16 +41,23 @@ export const prescribeService = async (data: PrescribeServiceBody): Promise<Pres
     surgery_id,
   } = data || {};
 
-  return PrescribedService.create({
-    service_id,
-    service_type,
-    requester,
-    price,
-    patient_id,
-    date_requested: Date.now(),
-    visit_id,
-    surgery_id,
-    ante_natal_id,
+  return sequelizeConnection.transaction(async t => {
+    const service = await PrescribedService.create(
+      {
+        service_id,
+        service_type,
+        requester,
+        price,
+        patient_id,
+        date_requested: Date.now(),
+        visit_id,
+        surgery_id,
+        ante_natal_id,
+      },
+      { transaction: t }
+    );
+    await emitChargeCapturedForRows('service', [service], dayjs().format('YYYY-MM-DD'), t);
+    return service;
   });
 };
 

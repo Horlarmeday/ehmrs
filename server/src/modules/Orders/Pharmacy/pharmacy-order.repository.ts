@@ -94,35 +94,42 @@ export async function prescribeDrug(data: PrescribeDrugType): Promise<Prescribed
     nhis_status,
     patient_insurance_id,
   } = data || {};
-  return PrescribedDrug.create({
-    drug_id,
-    drug_type,
-    quantity_prescribed,
-    quantity_to_dispense,
-    route_id,
-    dosage_form_id,
-    prescribed_strength,
-    strength_id,
-    frequency,
-    duration,
-    duration_unit,
-    notes,
-    total_price,
-    examiner,
-    patient_id,
-    visit_id,
-    start_date,
-    date_prescribed: Date.now(),
-    drug_prescription_id,
-    drug_group: drug_group || null,
-    inventory_id,
-    source,
-    ante_natal_id,
-    unit_id,
-    immunization_id,
-    surgery_id,
-    nhis_status,
-    patient_insurance_id,
+  return sequelizeConnection.transaction(async t => {
+    const drug = await PrescribedDrug.create(
+      {
+        drug_id,
+        drug_type,
+        quantity_prescribed,
+        quantity_to_dispense,
+        route_id,
+        dosage_form_id,
+        prescribed_strength,
+        strength_id,
+        frequency,
+        duration,
+        duration_unit,
+        notes,
+        total_price,
+        examiner,
+        patient_id,
+        visit_id,
+        start_date,
+        date_prescribed: Date.now(),
+        drug_prescription_id,
+        drug_group: drug_group || null,
+        inventory_id,
+        source,
+        ante_natal_id,
+        unit_id,
+        immunization_id,
+        surgery_id,
+        nhis_status,
+        patient_insurance_id,
+      },
+      { transaction: t }
+    );
+    await emitChargeCapturedForRows('drug', [drug], dayjs().format('YYYY-MM-DD'), t);
+    return drug;
   });
 }
 
@@ -310,22 +317,29 @@ export const prescribeAdditionalItem = async (
     unit_id,
     inventory_id,
   } = data;
-  return PrescribedAdditionalItem.create({
-    drug_id,
-    drug_type,
-    quantity_prescribed,
-    quantity_to_dispense,
-    drug_form,
-    total_price,
-    examiner,
-    patient_id,
-    visit_id,
-    start_date,
-    drug_prescription_id,
-    unit_id,
-    date_prescribed: Date.now(),
-    inventory_id,
-    prescribed_drug_id,
+  return sequelizeConnection.transaction(async t => {
+    const item = await PrescribedAdditionalItem.create(
+      {
+        drug_id,
+        drug_type,
+        quantity_prescribed,
+        quantity_to_dispense,
+        drug_form,
+        total_price,
+        examiner,
+        patient_id,
+        visit_id,
+        start_date,
+        drug_prescription_id,
+        unit_id,
+        date_prescribed: Date.now(),
+        inventory_id,
+        prescribed_drug_id,
+      },
+      { transaction: t }
+    );
+    await emitChargeCapturedForRows('additional_item', [item], dayjs().format('YYYY-MM-DD'), t);
+    return item;
   });
 };
 

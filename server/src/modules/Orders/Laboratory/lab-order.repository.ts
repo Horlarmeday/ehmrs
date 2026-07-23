@@ -17,14 +17,21 @@ import { emitChargeCapturedForRows } from '../../Outbox/outbox-writer';
 export async function prescribeTest(data) {
   const { test_id, requester, price, patient_id, visit_id, ante_natal_id } = data;
 
-  return PrescribedTest.create({
-    test_id,
-    requester,
-    price,
-    patient_id,
-    date_requested: Date.now(),
-    visit_id,
-    ante_natal_id,
+  return sequelizeConnection.transaction(async t => {
+    const test = await PrescribedTest.create(
+      {
+        test_id,
+        requester,
+        price,
+        patient_id,
+        date_requested: Date.now(),
+        visit_id,
+        ante_natal_id,
+      },
+      { transaction: t }
+    );
+    await emitChargeCapturedForRows('test', [test], dayjs().format('YYYY-MM-DD'), t);
+    return test;
   });
 }
 
