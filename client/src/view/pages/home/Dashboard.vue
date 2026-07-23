@@ -21,6 +21,7 @@ import Ophthalmologist from './medicalPractitioners/opthalmology/Dashboard.vue';
 import Dermatologist from './medicalPractitioners/dermatologist/Dashboard.vue';
 import Psychiatrist from './medicalPractitioners/psychiatrist/Dashboard.vue';
 import Neurologist from './medicalPractitioners/neurologist/Dashboard.vue';
+import Nephrologist from './medicalPractitioners/nephrologist/Dashboard.vue';
 import Orthopaedist from './medicalPractitioners/orthopeadist/Dashboard.vue';
 import Urologist from './medicalPractitioners/urologist/Dashboard.vue';
 import Endocrinologist from './medicalPractitioners/endocrinologist/Dashboard.vue';
@@ -57,6 +58,7 @@ const Roles = {
   ONCOLOGIST: 'Oncologist',
   OPHTHALMOLOGIST: 'Ophthalmologist',
   NEUROLOGIST: 'Neurologist',
+  NEPHROLOGIST: 'Nephrologist',
   DERMATOLOGIST: 'Dermatologist',
   PSYCHIATRIST: 'Psychiatrist',
   ORTHOPAEDIST: 'Orthopaedist',
@@ -144,6 +146,8 @@ export default {
           return (this.dashboardComponent = FinancialOfficer);
         case Roles.HEMATOLOGIST:
           return (this.dashboardComponent = Hematologist);
+        case Roles.NEPHROLOGIST:
+          return (this.dashboardComponent = Nephrologist);
         default:
           return (this.dashboardComponent = MedicalRecords);
       }
