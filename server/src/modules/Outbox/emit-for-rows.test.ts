@@ -2,7 +2,15 @@ import '../../core/config/env';
 import { sequelizeConnection } from '../../database/config/data-source';
 import { OutboxEvent } from '../../database/models/outboxEvent';
 import { OutboxSequence } from '../../database/models/outboxSequence';
+import { Insurance } from '../../database/models/insurance';
+import { HMO } from '../../database/models/hmo';
+import { PatientInsurance } from '../../database/models/patientInsurance';
+import { Patient } from '../../database/models/patient';
 import { emitChargeCapturedForRows, normalisePrice } from './outbox-writer';
+
+afterAll(async () => {
+  await sequelizeConnection.close();
+});
 
 describe('normalisePrice', () => {
   it('leaves a DECIMAL string untouched', () => {
@@ -44,9 +52,8 @@ const consumableRow = (id: number) => ({
 describe('emitChargeCapturedForRows (A1.2a wiring)', () => {
   const originalFlag = process.env.EMR_OUTBOX_ENABLED;
 
-  afterAll(async () => {
+  afterAll(() => {
     process.env.EMR_OUTBOX_ENABLED = originalFlag;
-    await sequelizeConnection.close();
   });
   beforeEach(async () => {
     await OutboxEvent.destroy({ where: {}, truncate: true, force: true });
@@ -120,5 +127,199 @@ describe('emitChargeCapturedForRows (A1.2a wiring)', () => {
 
     expect(threw).toBe(true);
     expect(await OutboxEvent.count()).toBe(0);
+  });
+
+  it('omits the payer for a cash line (no patient_insurance_id)', async () => {
+    process.env.EMR_OUTBOX_ENABLED = 'true';
+    const t = await sequelizeConnection.transaction();
+    await emitChargeCapturedForRows('drug', [drugRow(60)], '2026-07-22', t);
+    await t.commit();
+
+    const [row] = await OutboxEvent.findAll();
+    const body = row.payload.body as Record<string, unknown>;
+    expect('payer' in body).toBe(false);
+  });
+});
+
+/**
+ * The payer-derivation path (#114) — reads the line's own patient_insurance_id against real MySQL
+ * and attaches the resolved ID-only payer. Seeds an Insurance + PatientInsurance so the resolver
+ * has a row to classify.
+ */
+describe('emitChargeCapturedForRows — payer derivation (#114)', () => {
+  const originalFlag = process.env.EMR_OUTBOX_ENABLED;
+  let patientId: number;
+  let schemeInsuranceId: number;
+  let retainerInsuranceId: number;
+  let schemeHmoId: number;
+  let retainerCompanyHmoId: number;
+  let schemePatientInsuranceId: number;
+  let retainerPatientInsuranceId: number;
+
+  beforeAll(async () => {
+    // The FK chain (Patient_Insurances → Patients / Insurances / HMOs) is real in the test schema,
+    // so the parent rows must exist. Seed the minimum: a patient, two insurances, an HMO under each.
+    const patient = await Patient.create({
+      firstname: 'Test',
+      lastname: 'Payer',
+      gender: 'Male',
+      phone: '08000000000',
+      address: 'N/A',
+      country: 'Nigeria',
+      state: 'Lagos',
+      lga: 'Ikeja',
+      date_of_birth: new Date('1990-01-01'),
+      has_insurance: true,
+    } as never);
+    patientId = patient.id;
+
+    const scheme = await Insurance.create({ name: 'NHIS' } as never);
+    const retainer = await Insurance.create({ name: 'Retainership' } as never);
+    schemeInsuranceId = scheme.id;
+    retainerInsuranceId = retainer.id;
+
+    const schemeHmo = await HMO.create({
+      name: 'Scheme HMO',
+      insurance_id: schemeInsuranceId,
+    } as never);
+    const retainerCompany = await HMO.create({
+      name: 'Retainer Co',
+      insurance_id: retainerInsuranceId,
+    } as never);
+    schemeHmoId = schemeHmo.id;
+    retainerCompanyHmoId = retainerCompany.id;
+
+    const schemePi = await PatientInsurance.create({
+      patient_id: patientId,
+      insurance_id: schemeInsuranceId,
+      hmo_id: schemeHmoId,
+    } as never);
+    const retainerPi = await PatientInsurance.create({
+      patient_id: patientId,
+      insurance_id: retainerInsuranceId,
+      hmo_id: retainerCompanyHmoId,
+    } as never);
+    schemePatientInsuranceId = schemePi.id;
+    retainerPatientInsuranceId = retainerPi.id;
+  });
+
+  afterAll(async () => {
+    process.env.EMR_OUTBOX_ENABLED = originalFlag;
+    await PatientInsurance.destroy({
+      where: { id: [schemePatientInsuranceId, retainerPatientInsuranceId] },
+      force: true,
+    });
+    await HMO.destroy({ where: { id: [schemeHmoId, retainerCompanyHmoId] }, force: true });
+    await Insurance.destroy({
+      where: { id: [schemeInsuranceId, retainerInsuranceId] },
+      force: true,
+    });
+    await Patient.destroy({ where: { id: patientId }, force: true });
+  });
+
+  beforeEach(async () => {
+    process.env.EMR_OUTBOX_ENABLED = 'true';
+    await OutboxEvent.destroy({ where: {}, truncate: true, force: true });
+    await OutboxSequence.destroy({ where: {}, truncate: true, force: true });
+  });
+
+  const insuredDrugRow = (id: number, patient_insurance_id: number, drug_type = 'NHIS') => ({
+    id,
+    patient_id: patientId,
+    visit_id: 8891,
+    total_price: '2500.00',
+    quantity_prescribed: 1,
+    patient_insurance_id,
+    drug_type,
+  });
+
+  it('emits a scheme_hmo payer for an NHIS line — ids only, no name/enrollee_code', async () => {
+    const t = await sequelizeConnection.transaction();
+    await emitChargeCapturedForRows(
+      'drug',
+      [insuredDrugRow(70, schemePatientInsuranceId)],
+      '2026-07-22',
+      t
+    );
+    await t.commit();
+
+    const [row] = await OutboxEvent.findAll();
+    const body = row.payload.body as Record<string, unknown>;
+    expect(body.payer).toEqual({
+      payer_type: 'scheme_hmo',
+      scheme_id: String(schemeInsuranceId),
+      hmo_id: String(schemeHmoId),
+    });
+    // No demographic value leaked into the payload anywhere.
+    const serialised = JSON.stringify(row.payload);
+    expect(serialised).not.toContain('NHIS');
+    expect(serialised).not.toContain('enrollee');
+  });
+
+  it('emits a retainership payer keyed by the company hmo id', async () => {
+    const t = await sequelizeConnection.transaction();
+    await emitChargeCapturedForRows(
+      'drug',
+      [insuredDrugRow(71, retainerPatientInsuranceId)],
+      '2026-07-22',
+      t
+    );
+    await t.commit();
+
+    const [row] = await OutboxEvent.findAll();
+    expect((row.payload.body as Record<string, unknown>).payer).toEqual({
+      payer_type: 'retainership',
+      retainership_id: String(retainerCompanyHmoId),
+    });
+  });
+
+  it('omits the payer when the line is Cash despite an insurance on file', async () => {
+    const t = await sequelizeConnection.transaction();
+    await emitChargeCapturedForRows(
+      'drug',
+      [insuredDrugRow(72, schemePatientInsuranceId, 'Cash')],
+      '2026-07-22',
+      t
+    );
+    await t.commit();
+
+    const [row] = await OutboxEvent.findAll();
+    expect('payer' in (row.payload.body as Record<string, unknown>)).toBe(false);
+  });
+
+  it('falls back to cash (no payer) when patient_insurance_id resolves to no row', async () => {
+    const t = await sequelizeConnection.transaction();
+    await emitChargeCapturedForRows('drug', [insuredDrugRow(73, 9_999_999)], '2026-07-22', t);
+    await t.commit();
+
+    const [row] = await OutboxEvent.findAll();
+    expect('payer' in (row.payload.body as Record<string, unknown>)).toBe(false);
+  });
+
+  it('resolves once for a bulk sharing one patient_insurance_id (all rows get the payer)', async () => {
+    const findOneSpy = jest.spyOn(PatientInsurance, 'findOne');
+    const t = await sequelizeConnection.transaction();
+    await emitChargeCapturedForRows(
+      'drug',
+      [
+        insuredDrugRow(74, schemePatientInsuranceId),
+        insuredDrugRow(75, schemePatientInsuranceId),
+        insuredDrugRow(76, schemePatientInsuranceId),
+      ],
+      '2026-07-22',
+      t
+    );
+    await t.commit();
+
+    const rows = await OutboxEvent.findAll();
+    expect(rows).toHaveLength(3);
+    for (const row of rows) {
+      expect((row.payload.body as Record<string, unknown>).payer).toMatchObject({
+        payer_type: 'scheme_hmo',
+      });
+    }
+    // One lookup for three rows sharing the id — the per-resolver cache.
+    expect(findOneSpy).toHaveBeenCalledTimes(1);
+    findOneSpy.mockRestore();
   });
 });

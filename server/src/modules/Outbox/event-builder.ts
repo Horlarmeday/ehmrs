@@ -66,6 +66,23 @@ export function visitAggregateId(visitId: number | string): string {
   return `visit:${visitId}`;
 }
 
+/**
+ * The payer reference carried on `charge.captured` (ADR-0028). Additive, optional, ID-only: it
+ * tells Accounting which payer the patient was under at prescription time so it can resolve the
+ * split. No demographics (ADR-0016) — scheme/hmo ids only, never a name or membership number. No
+ * money. A missing payer means cash; the receiver defaults an absent field to `patient-liable`.
+ *
+ * The EMR has no `retainership_id`: retainership is an Insurance (scheme) type and the retainer
+ * companies are HMO rows under it, so a retainership line carries the company `hmo_id` as
+ * `retainership_id` (owned by Accounting #138 on the receiving end).
+ */
+export interface ChargeCapturedPayer {
+  readonly payer_type: 'cash' | 'scheme_hmo' | 'retainership';
+  readonly scheme_id?: string;
+  readonly hmo_id?: string;
+  readonly retainership_id?: string;
+}
+
 export interface PrescribedLineInput {
   readonly type: PrescribedLineType;
   readonly id: number | string;
@@ -77,6 +94,8 @@ export interface PrescribedLineInput {
   readonly service_date: string;
   readonly department?: string;
   readonly service_line?: string;
+  /** Payer at prescription time (ADR-0028). Omitted for cash lines; ID references only. */
+  readonly payer?: ChargeCapturedPayer;
 }
 
 export interface BuildContext {
@@ -104,6 +123,25 @@ function assertNoDemographics(body: Record<string, unknown>): void {
       );
     }
   }
+}
+
+/**
+ * Serialises a payer for the wire: `payer_type` plus only the id fields that are present, each as a
+ * string (ids are INTEGER autoincrement in the EMR). Absent ids are dropped rather than emitted as
+ * null/undefined, so a scheme_hmo payer never carries a stray `retainership_id` and vice versa.
+ */
+function buildPayer(payer: ChargeCapturedPayer): Record<string, unknown> {
+  const wire: Record<string, unknown> = { payer_type: payer.payer_type };
+  if (payer.scheme_id !== undefined) {
+    wire.scheme_id = String(payer.scheme_id);
+  }
+  if (payer.hmo_id !== undefined) {
+    wire.hmo_id = String(payer.hmo_id);
+  }
+  if (payer.retainership_id !== undefined) {
+    wire.retainership_id = String(payer.retainership_id);
+  }
+  return wire;
 }
 
 /**
@@ -167,6 +205,9 @@ export function buildChargeCapturedEvent(
   }
   if (line.service_line !== undefined) {
     body.service_line = line.service_line;
+  }
+  if (line.payer !== undefined) {
+    body.payer = buildPayer(line.payer);
   }
 
   assertNoDemographics(body);

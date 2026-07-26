@@ -136,4 +136,49 @@ describe('buildChargeCapturedEvent', () => {
     expect(body.patient_id).toBe('100');
     expect(body.visit_id).toBe('8891');
   });
+
+  it('omits the payer entirely when the line carries none (cash — ADR-0028)', () => {
+    const row = buildChargeCapturedEvent(baseLine, context);
+    const body = row.payload.body as Record<string, unknown>;
+    expect('payer' in body).toBe(false);
+  });
+
+  it('emits a scheme_hmo payer with scheme_id and hmo_id as strings, ids only', () => {
+    const row = buildChargeCapturedEvent(
+      { ...baseLine, payer: { payer_type: 'scheme_hmo', scheme_id: '3', hmo_id: '7' } },
+      context
+    );
+    const payer = (row.payload.body as Record<string, unknown>).payer;
+    expect(payer).toEqual({ payer_type: 'scheme_hmo', scheme_id: '3', hmo_id: '7' });
+  });
+
+  it('emits a retainership payer carrying the company hmo id as retainership_id', () => {
+    const row = buildChargeCapturedEvent(
+      { ...baseLine, payer: { payer_type: 'retainership', retainership_id: '42' } },
+      context
+    );
+    expect((row.payload.body as Record<string, unknown>).payer).toEqual({
+      payer_type: 'retainership',
+      retainership_id: '42',
+    });
+  });
+
+  it('drops absent id fields rather than emitting a stray key', () => {
+    const row = buildChargeCapturedEvent(
+      { ...baseLine, payer: { payer_type: 'scheme_hmo', scheme_id: '3', hmo_id: '7' } },
+      context
+    );
+    const payer = (row.payload.body as Record<string, unknown>).payer as Record<string, unknown>;
+    expect('retainership_id' in payer).toBe(false);
+  });
+
+  it('stringifies a numeric payer id (numbers coming off a Sequelize row)', () => {
+    const row = buildChargeCapturedEvent(
+      // @ts-expect-error the wire type is string; a raw numeric id must still serialise to a string
+      { ...baseLine, payer: { payer_type: 'retainership', retainership_id: 42 } },
+      context
+    );
+    const payer = (row.payload.body as Record<string, unknown>).payer as Record<string, unknown>;
+    expect(payer.retainership_id).toBe('42');
+  });
 });
