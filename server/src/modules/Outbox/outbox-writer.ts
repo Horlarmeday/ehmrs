@@ -1,7 +1,12 @@
 import { QueryTypes, Transaction } from 'sequelize';
 import { sequelizeConnection } from '../../database/config/data-source';
 import { OutboxEvent } from '../../database/models/outboxEvent';
-import { buildChargeCapturedEvent, visitAggregateId, PrescribedLineInput } from './event-builder';
+import {
+  buildChargeCapturedEvent,
+  buildEncounterOpenedEvent,
+  visitAggregateId,
+  PrescribedLineInput,
+} from './event-builder';
 import {
   COVERAGE_TYPE_FIELD_BY_TYPE,
   PRICE_FIELD_BY_TYPE,
@@ -75,6 +80,42 @@ export async function emitChargeCaptured(
   const sequence = await claimSequence(aggregateId, transaction);
 
   const event = buildChargeCapturedEvent(line, { tenantKey: TENANT_KEY, sequence });
+
+  return OutboxEvent.create(
+    {
+      aggregate_type: event.aggregate_type,
+      aggregate_id: event.aggregate_id,
+      sequence: event.sequence,
+      event_type: event.event_type,
+      event_version: event.event_version,
+      idempotency_key: event.idempotency_key,
+      payload: event.payload,
+    } as never,
+    { transaction }
+  );
+}
+
+/**
+ * Builds and persists an `encounter.opened` outbox row on the caller's transaction — the same
+ * transaction the Visit INSERT runs in, so the visit and its opening event commit together or not
+ * at all. No-op when the outbox is disabled.
+ */
+export async function emitEncounterOpened(
+  visitId: number | string,
+  emergency: boolean,
+  transaction: Transaction
+): Promise<OutboxEvent | undefined> {
+  if (!isOutboxEnabled()) {
+    return undefined;
+  }
+
+  const aggregateId = visitAggregateId(visitId);
+  const sequence = await claimSequence(aggregateId, transaction);
+
+  const event = buildEncounterOpenedEvent(
+    { visit_id: visitId, emergency },
+    { tenantKey: TENANT_KEY, sequence }
+  );
 
   return OutboxEvent.create(
     {

@@ -38,6 +38,8 @@ import { FEMALE_REQUIRED } from '../Antenatal/messages/antenatal.messages';
 import { getOneImmunization } from '../Immunization/immunization.repository';
 import { PatientActiveStatus } from '../../database/enums';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
+import { sequelizeConnection } from '../../database/config/data-source';
+import { emitEncounterOpened } from '../Outbox/outbox-writer';
 
 class VisitService {
   /**
@@ -105,7 +107,15 @@ class VisitService {
       body.ante_natal_id = antenatal?.id;
     }
 
-    const createdVisit = await createVisit(body);
+    // The visit INSERT and its encounter.opened outbox row commit together or not at all
+    // (ADR-0018). Only that pair is transactional: the service/dialysis side effects below keep
+    // their existing semantics, where a failure leaves the visit committed.
+    const createdVisit = await sequelizeConnection.transaction(async transaction => {
+      const visitRow = await createVisit(body, transaction);
+      await emitEncounterOpened(visitRow.id, category === VisitCategory.EMERGENCY, transaction);
+      return visitRow;
+    });
+
     await insertSingleOrMultipleServices({
       service_id,
       patient_id,

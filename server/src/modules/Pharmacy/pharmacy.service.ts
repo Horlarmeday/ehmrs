@@ -51,6 +51,8 @@ import {
   RETURN_QUANTITY_MORE_THAN_DOCTOR_QUANTITY,
 } from './messages/response-messages';
 import { getVisitById } from '../Visit/visit.repository';
+import { checkGate, gateHoldMessage, isHold } from '../Outbox/gate-check';
+import { visitAggregateId } from '../Outbox/event-builder';
 
 class PharmacyService {
   /** ***********************
@@ -307,6 +309,21 @@ class PharmacyService {
       throw new BadException('NOT_FOUND', StatusCodes.NOT_FOUND, INVENTORY_ITEM_NOT_FOUND);
     }
     this.dispenseDrugValidations(body, prescribedDrug, inventoryItem);
+
+    // The authoritative payment gate (issue #137). Fails closed: a block, an unverifiable state,
+    // or an unreachable Accounting all HOLD the drug rather than release it.
+    const gate = await checkGate({
+      kind: 'settlement',
+      encounter_id: visitAggregateId(prescribedDrug.visit_id),
+      external_line_ref: {
+        type: prescription_id ? 'drug' : 'additional_item',
+        id: String(prescription_id || additional_item_id),
+      },
+    });
+    if (isHold(gate)) {
+      throw new BadException('FORBIDDEN', StatusCodes.FORBIDDEN, gateHoldMessage(gate));
+    }
+
     return dispenseDrug(inventoryItem, prescribedDrug, body);
   }
 

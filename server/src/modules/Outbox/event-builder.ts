@@ -158,6 +158,14 @@ export function chargeIdempotencyKey(type: PrescribedLineType, id: number | stri
   return `charge:${type}:${id}`;
 }
 
+/**
+ * `encounter-opened:{visit_id}` — one open per visit, deterministic on domain identity rather than
+ * on the send attempt (ADR-0025 §3), so a redelivery dedupes at the inbox.
+ */
+export function encounterOpenedIdempotencyKey(visitId: number | string): string {
+  return `encounter-opened:${visitId}`;
+}
+
 export interface OutboxEventRow {
   readonly aggregate_type: string;
   readonly aggregate_id: string;
@@ -232,6 +240,57 @@ export function buildChargeCapturedEvent(
     event_type: 'charge.captured',
     event_version: context.eventVersion ?? 1,
     idempotency_key: chargeIdempotencyKey(line.type, line.id),
+    payload,
+  };
+}
+
+export interface EncounterOpenedInput {
+  readonly visit_id: number | string;
+  readonly emergency: boolean;
+}
+
+/**
+ * Builds an `encounter.opened` outbox row. The body carries ONE optional boolean and nothing else
+ * (ADR-0016): no patient id, no category string, no department.
+ *
+ * The flag is emitted only when true. Accounting LATCHES on `emergency === true` and has no code
+ * path that clears it, so a `false` is indistinguishable from an absent field at the receiver —
+ * emitting one would falsely imply an encounter can be corrected back to routine.
+ */
+export function buildEncounterOpenedEvent(
+  input: EncounterOpenedInput,
+  context: BuildContext
+): OutboxEventRow {
+  const encounterId = visitAggregateId(input.visit_id);
+  const occurredAt = context.occurredAt ?? new Date();
+  const sentAt = context.sentAt ?? new Date();
+  const idempotencyKey = encounterOpenedIdempotencyKey(input.visit_id);
+  const eventVersion = context.eventVersion ?? 1;
+
+  const body: Record<string, unknown> = input.emergency ? { emergency: true } : {};
+
+  assertNoDemographics(body);
+
+  const payload: Record<string, unknown> = {
+    event_id: uuidV7(context.now),
+    event_type: 'encounter.opened',
+    event_version: eventVersion,
+    tenant_key: context.tenantKey,
+    occurred_at: occurredAt.toISOString(),
+    sent_at: sentAt.toISOString(),
+    aggregate: { type: 'encounter', id: encounterId },
+    sequence: Number(context.sequence),
+    idempotency_key: idempotencyKey,
+    body,
+  };
+
+  return {
+    aggregate_type: 'encounter',
+    aggregate_id: encounterId,
+    sequence: context.sequence,
+    event_type: 'encounter.opened',
+    event_version: eventVersion,
+    idempotency_key: idempotencyKey,
     payload,
   };
 }

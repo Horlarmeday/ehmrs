@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 
-import { Op, WhereOptions } from 'sequelize';
+import { Op, Transaction, WhereOptions } from 'sequelize';
 
 import { Insurance, Patient, PatientInsurance, Staff, Visit } from '../../database/models';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
@@ -45,9 +45,11 @@ import { isToday } from '../../core/helpers/helper';
 /**
  * create a patient visit
  * @param data
+ * @param transaction optional; when supplied the INSERT joins the caller's transaction so the
+ *   visit and its outbox event commit atomically (ADR-0018)
  * @returns {Promise<Visit>} visit data
  */
-export async function createVisit(data): Promise<Visit> {
+export async function createVisit(data, transaction?: Transaction): Promise<Visit> {
   const {
     patient_id,
     type,
@@ -61,18 +63,21 @@ export async function createVisit(data): Promise<Visit> {
     immunization_id,
   } = data || {};
 
-  return Visit.create({
-    patient_id,
-    category,
-    professional,
-    department,
-    date_visit_start: date_of_visit,
-    type,
-    staff_id,
-    ante_natal_id,
-    priority,
-    immunization_id,
-  });
+  return Visit.create(
+    {
+      patient_id,
+      category,
+      professional,
+      department,
+      date_visit_start: date_of_visit,
+      type,
+      staff_id,
+      ante_natal_id,
+      priority,
+      immunization_id,
+    },
+    transaction ? { transaction } : undefined
+  );
 }
 
 /**
