@@ -18,6 +18,13 @@ import { isPrescribedLineType, PrescribedLineType } from '../Outbox/prescribed-l
  * There is deliberately NO synchronous counter→EMR write to "freshen" the status on demand: that
  * would make Accounting's commit wait on a cross-engine HTTP write and let a slow EMR block the
  * cashier from taking money. The gate reads only what has already been durably recorded here.
+ *
+ * DELIBERATELY UNWIRED (issue #137). No release path calls this. The authoritative gate at the
+ * dispense and discharge sites is the synchronous, fail-closed `checkGate` in
+ * `Outbox/gate-check.ts`, which folds in emergency-bypass, override, and the recorded-paid check
+ * server-side. Composing the two would only create a gate that can DISAGREE with the authoritative
+ * one: the local `payment_status` projection is precisely the stale data the remote call exists to
+ * see past. Left in place for the reverse-inbox applier's use; do not wire it into a release path.
  */
 
 const MODEL_BY_TYPE: Record<PrescribedLineType, ModelStatic<Model>> = {

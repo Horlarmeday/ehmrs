@@ -52,6 +52,8 @@ import { getVisitPrescriptions } from '../Consultation/consultation.repository';
 import { CreateDeliveryInfo, CreatePostNatal } from '../Antenatal/types/antenatal.types';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import { DischargeStatus, VisitCategory } from '../../database/enums';
+import { checkGate, gateHoldMessage, isHold } from '../Outbox/gate-check';
+import { visitAggregateId } from '../Outbox/event-builder';
 
 export class AdmissionService {
   /**
@@ -339,6 +341,17 @@ export class AdmissionService {
     staffId: number
   ): Promise<Discharge> {
     const admission = await getOneAdmission({ id: admissionId });
+
+    // The authoritative payment gate (issue #137). Fails closed: an outstanding balance, an
+    // unverifiable state, or an unreachable Accounting all HOLD the discharge.
+    const gate = await checkGate({
+      kind: 'discharge',
+      encounter_id: visitAggregateId(admission.visit_id),
+    });
+    if (isHold(gate)) {
+      throw new BadException('FORBIDDEN', StatusCodes.FORBIDDEN, gateHoldMessage(gate));
+    }
+
     const data = {
       ...body,
       admission_id: admission.id,
