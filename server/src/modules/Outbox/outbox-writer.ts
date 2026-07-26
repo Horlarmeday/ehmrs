@@ -2,7 +2,12 @@ import { QueryTypes, Transaction } from 'sequelize';
 import { sequelizeConnection } from '../../database/config/data-source';
 import { OutboxEvent } from '../../database/models/outboxEvent';
 import { buildChargeCapturedEvent, visitAggregateId, PrescribedLineInput } from './event-builder';
-import { PRICE_FIELD_BY_TYPE, PrescribedLineType } from './prescribed-line-types';
+import {
+  COVERAGE_TYPE_FIELD_BY_TYPE,
+  PRICE_FIELD_BY_TYPE,
+  PrescribedLineType,
+} from './prescribed-line-types';
+import { PayerResolver } from './payer-derivation';
 
 /**
  * Writes charge.captured events to the outbox INSIDE a clinical write transaction (ADR-0018).
@@ -147,8 +152,11 @@ export async function emitChargeCapturedForRows(
   }
 
   const priceField = PRICE_FIELD_BY_TYPE[type];
+  const coverageField = COVERAGE_TYPE_FIELD_BY_TYPE[type];
+  const payerResolver = new PayerResolver(transaction);
   for (const raw of rows) {
     const row = asPrescribedRecord(raw);
+    const payer = await payerResolver.resolve(row.patient_insurance_id, row[coverageField]);
     const input: PrescribedLineInput = {
       type,
       id: Number(row.id),
@@ -157,6 +165,7 @@ export async function emitChargeCapturedForRows(
       amount: normalisePrice(row[priceField]),
       quantity: Number(row.quantity_prescribed ?? row.quantity ?? 1),
       service_date: serviceDate,
+      payer,
     };
     await emitChargeCaptured(input, transaction);
   }

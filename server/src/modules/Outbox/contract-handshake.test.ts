@@ -84,6 +84,83 @@ function buildAndSign() {
   return signEvent(row.payload, SHARED_KEY);
 }
 
+/**
+ * Mirrors Accounting's `chargeCapturedPayerSchema` (event-contract.ts, ADR-0028), reconstructed
+ * from the contract — not imported, for the same independence reason as the verifier above.
+ * `payer_type` is one of the three literals; each id, when present, is a non-empty string; and no
+ * key outside the four the schema allows may appear.
+ */
+const ALLOWED_PAYER_KEYS = new Set(['payer_type', 'scheme_id', 'hmo_id', 'retainership_id']);
+const PAYER_TYPES = new Set(['cash', 'scheme_hmo', 'retainership']);
+
+function payerPassesAccountingGuard(payer: unknown): boolean {
+  if (typeof payer !== 'object' || payer === null) return false;
+  const p = payer as Record<string, unknown>;
+  if (!PAYER_TYPES.has(p.payer_type as string)) return false;
+  for (const key of Object.keys(p)) {
+    if (!ALLOWED_PAYER_KEYS.has(key)) return false;
+    if (key === 'payer_type') continue;
+    if (typeof p[key] !== 'string' || (p[key] as string).length === 0) return false;
+  }
+  return true;
+}
+
+function buildPayerBody(payer: {
+  payer_type: 'cash' | 'scheme_hmo' | 'retainership';
+  scheme_id?: string;
+  hmo_id?: string;
+  retainership_id?: string;
+}) {
+  const row = buildChargeCapturedEvent(
+    {
+      type: 'drug',
+      id: 1,
+      patient_id: 100,
+      visit_id: 8891,
+      amount: '2500.00',
+      quantity: 2,
+      service_date: '2026-07-22',
+      payer,
+    },
+    { tenantKey: TENANT_KEY, sequence: 42 }
+  );
+  return (row.payload.body as Record<string, unknown>).payer;
+}
+
+describe('charge.captured payer passes Accounting chargeCapturedPayerSchema (#114)', () => {
+  it('accepts a scheme_hmo payer with scheme_id and hmo_id', () => {
+    expect(
+      payerPassesAccountingGuard(
+        buildPayerBody({ payer_type: 'scheme_hmo', scheme_id: '3', hmo_id: '7' })
+      )
+    ).toBe(true);
+  });
+
+  it('accepts a retainership payer keyed by the company hmo id', () => {
+    expect(
+      payerPassesAccountingGuard(
+        buildPayerBody({ payer_type: 'retainership', retainership_id: '42' })
+      )
+    ).toBe(true);
+  });
+
+  it('a cash line carries no payer, which the schema accepts as absent', () => {
+    const row = buildChargeCapturedEvent(
+      {
+        type: 'drug',
+        id: 1,
+        patient_id: 100,
+        visit_id: 8891,
+        amount: '2500.00',
+        quantity: 2,
+        service_date: '2026-07-22',
+      },
+      { tenantKey: TENANT_KEY, sequence: 42 }
+    );
+    expect('payer' in (row.payload.body as Record<string, unknown>)).toBe(false);
+  });
+});
+
 describe('EMR outbox ↔ Accounting inbox handshake', () => {
   it('a signed event is ACCEPTED by the verifier', () => {
     const signed = buildAndSign();

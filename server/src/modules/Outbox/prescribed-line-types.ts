@@ -36,6 +36,20 @@ export const PRICE_FIELD_BY_TYPE: Record<PrescribedLineType, string> = {
   investigation: 'price',
 };
 
+/**
+ * Which column carries the coverage marker (`Cash`/`NHIS`/…) per type — the field that says a line
+ * was raised as cash regardless of any insurance on file. Co-located with the price field for the
+ * same reason: the column name is not uniform (`drug_type` for drug and additional_item, a
+ * `*_type` variant for the rest), and a per-call-site literal is how it drifts.
+ */
+export const COVERAGE_TYPE_FIELD_BY_TYPE: Record<PrescribedLineType, string> = {
+  drug: 'drug_type',
+  additional_item: 'drug_type',
+  test: 'test_type',
+  service: 'service_type',
+  investigation: 'investigation_type',
+};
+
 export function isPrescribedLineType(value: unknown): value is PrescribedLineType {
   return typeof value === 'string' && PRESCRIBED_LINE_TYPES.some(type => type === value);
 }
