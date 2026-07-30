@@ -7,6 +7,7 @@ import { PrescribedTest } from '../../database/models/prescribedTest';
 import { PrescribedAdditionalItem } from '../../database/models/prescribedAdditionalItem';
 import { InboxSequence } from '../../database/models/inboxSequence';
 import { isPrescribedLineType, PrescribedLineType } from '../Outbox/prescribed-line-types';
+import { emitPatientDemographicsChanged } from '../Outbox/outbox-writer';
 
 /**
  * Applies a verified reverse instruction to the EMR's OWN rows (ADR-0023, ADR-0025 §6b).
@@ -110,6 +111,10 @@ export async function applyInstruction(
   body: Record<string, unknown>,
   transaction: Transaction
 ): Promise<ApplyResult> {
+  if (eventType === 'patient.demographics.requested') {
+    return applyDemographicsRequest(body, transaction);
+  }
+
   const nextStatus = statusFor(eventType);
   if (nextStatus === undefined) {
     // A valid reverse event whose handling has not landed (authorisation.rejected, stock.received).
@@ -144,6 +149,30 @@ export async function applyInstruction(
   });
 
   return { outcome: 'APPLIED' };
+}
+
+/**
+ * `patient.demographics.requested` — an OPERATOR asked Accounting to refresh one patient's cached
+ * demographics, and Accounting relayed the request here (Accounting #43).
+ *
+ * Deliberately NOT sequence-guarded: a resync is a request to send current state, not a state
+ * change, so there is nothing to be stale against. Discarding one as "old" would defeat the whole
+ * point — it is the manual remedy when an earlier event was lost.
+ *
+ * A missing or unparseable patient id is UNHANDLED rather than an error: a resync that cannot be
+ * satisfied must never poison the reverse inbox for the payment instructions behind it.
+ */
+async function applyDemographicsRequest(
+  body: Record<string, unknown>,
+  transaction: Transaction
+): Promise<ApplyResult> {
+  const raw = body.patient_id;
+  if (typeof raw !== 'string' && typeof raw !== 'number') {
+    return { outcome: 'UNHANDLED' };
+  }
+
+  const emitted = await emitPatientDemographicsChanged(raw, transaction);
+  return emitted === undefined ? { outcome: 'UNHANDLED' } : { outcome: 'APPLIED' };
 }
 
 /** The status a reverse event sets, or undefined for a valid-but-unhandled reverse type. */

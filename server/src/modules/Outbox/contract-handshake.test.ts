@@ -1,5 +1,5 @@
 import { createHash, createHmac } from 'crypto';
-import { buildChargeCapturedEvent } from './event-builder';
+import { buildChargeCapturedEvent, buildPatientDemographicsChangedEvent } from './event-builder';
 import { signEvent } from './signer';
 
 /**
@@ -206,5 +206,91 @@ describe('EMR outbox ↔ Accounting inbox handshake', () => {
       ok: false,
       reason: 'TIMESTAMP_OUTSIDE_WINDOW',
     });
+  });
+});
+
+/**
+ * `patient.demographics.changed` must satisfy Accounting's ENVELOPE guard (Accounting #43,
+ * ADR-0030), which is stricter than it looks: `aggregate.type` is a closed enum, so the second
+ * aggregate type is exactly where this can silently break. An envelope Accounting rejects is
+ * dead-lettered as MALFORMED_ENVELOPE before any handler runs — a failure that would surface as
+ * "the cache is mysteriously empty", not as an error at the send site.
+ *
+ * Reconstructed from Accounting's `envelopeSchema`, not imported, for the reason given at the top
+ * of this file.
+ */
+function envelopePassesAccountingGuard(payload: Record<string, unknown>): true | string {
+  const uuidV7Pattern = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+  if (typeof payload.event_id !== 'string' || !uuidV7Pattern.test(payload.event_id)) {
+    return 'event_id must be a UUIDv7';
+  }
+  if (payload.event_type !== 'patient.demographics.changed') {
+    return 'event_type must be an inbound type';
+  }
+  if (typeof payload.event_version !== 'number' || payload.event_version < 1) {
+    return 'event_version must be a positive integer';
+  }
+  if (typeof payload.tenant_key !== 'string' || payload.tenant_key.length === 0) {
+    return 'tenant_key is required';
+  }
+  for (const field of ['occurred_at', 'sent_at']) {
+    const value = payload[field];
+    if (typeof value !== 'string' || !value.includes('T') || Number.isNaN(Date.parse(value))) {
+      return `${field} must be an ISO-8601 instant`;
+    }
+  }
+
+  const aggregate = payload.aggregate as Record<string, unknown> | undefined;
+  if (!aggregate || (aggregate.type !== 'encounter' && aggregate.type !== 'patient')) {
+    return 'aggregate.type must be "encounter" or "patient"';
+  }
+  if (typeof aggregate.id !== 'string' || aggregate.id.length === 0) {
+    return 'aggregate.id is required';
+  }
+  if (typeof payload.sequence !== 'number' || payload.sequence < 0) {
+    return 'sequence must be a non-negative integer';
+  }
+  if (typeof payload.idempotency_key !== 'string' || payload.idempotency_key.length > 200) {
+    return 'idempotency_key must be a string of at most 200 chars';
+  }
+  return true;
+}
+
+describe('patient.demographics.changed passes the Accounting envelope guard (#43)', () => {
+  const built = () =>
+    buildPatientDemographicsChangedEvent(
+      {
+        patient_id: 100,
+        first_name: 'Chinelo',
+        middle_name: null,
+        last_name: 'Nwosu',
+        date_of_birth: '1990-01-15',
+        hospital_number: 'PSSH/023555',
+        phone: '+2348012345678',
+        insurances: [
+          { patient_insurance_id: 412, enrollee_code: 'NHIS-99', hmo_id: 7, is_default: true },
+        ],
+      },
+      { tenantKey: TENANT_KEY, sequence: 42 }
+    );
+
+  it('is accepted on the patient aggregate — the ADR-0030 widening', () => {
+    expect(envelopePassesAccountingGuard(built().payload)).toBe(true);
+  });
+
+  it('is signed and verified like any other event — one transport, no special case', () => {
+    const signed = signEvent(built().payload, SHARED_KEY);
+    expect(verifyLikeAccounting(Buffer.from(signed.rawBody), signed.headers)).toEqual({
+      ok: true,
+      keyId: SHARED_KEY.keyId,
+    });
+  });
+
+  it('would be REJECTED on an aggregate type outside the closed set', () => {
+    const payload = { ...built().payload, aggregate: { type: 'person', id: 'person:100' } };
+    expect(envelopePassesAccountingGuard(payload)).toBe(
+      'aggregate.type must be "encounter" or "patient"'
+    );
   });
 });

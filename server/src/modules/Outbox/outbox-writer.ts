@@ -1,9 +1,13 @@
 import { QueryTypes, Transaction } from 'sequelize';
 import { sequelizeConnection } from '../../database/config/data-source';
 import { OutboxEvent } from '../../database/models/outboxEvent';
+import { Patient } from '../../database/models/patient';
+import { PatientInsurance } from '../../database/models/patientInsurance';
 import {
   buildChargeCapturedEvent,
   buildEncounterOpenedEvent,
+  buildPatientDemographicsChangedEvent,
+  patientAggregateId,
   visitAggregateId,
   PrescribedLineInput,
 } from './event-builder';
@@ -132,6 +136,103 @@ export async function emitEncounterOpened(
 }
 
 /**
+ * Emits `patient.demographics.changed` for one patient, on the caller's transaction.
+ *
+ * The ONE event carrying demographic content (ADR-0016 tier 1) — it feeds Accounting's erasable
+ * demographic cache, which is what lets the settlement counter show a name and hospital number
+ * without a synchronous call into this system.
+ *
+ * Reads the patient and their COMPLETE `Patient_Insurances` set. The completeness matters: the
+ * receiver reconciles by diff and hard-deletes any insurance absent from the array, so emitting a
+ * partial list would silently drop a patient's live coverage.
+ *
+ * Returns undefined when the outbox is disabled or the patient no longer exists — a missing
+ * patient must never roll back the clinical write that triggered this.
+ */
+export async function emitPatientDemographicsChanged(
+  patientId: number | string,
+  transaction: Transaction
+): Promise<OutboxEvent | undefined> {
+  if (!isOutboxEnabled()) {
+    return undefined;
+  }
+
+  const patient = await Patient.findOne({
+    where: { id: patientId },
+    attributes: [
+      'id',
+      'firstname',
+      'middlename',
+      'lastname',
+      'date_of_birth',
+      'hospital_id',
+      'phone',
+    ],
+    transaction,
+  });
+  if (!patient) {
+    return undefined;
+  }
+
+  const insurances = await PatientInsurance.findAll({
+    where: { patient_id: patientId },
+    attributes: ['id', 'enrollee_code', 'hmo_id', 'insurance_id', 'plan', 'is_default'],
+    transaction,
+  });
+
+  const aggregateId = patientAggregateId(patientId);
+  const sequence = await claimSequence(aggregateId, transaction);
+
+  const event = buildPatientDemographicsChangedEvent(
+    {
+      patient_id: patientId,
+      first_name: patient.firstname ?? null,
+      middle_name: patient.middlename ?? null,
+      last_name: patient.lastname ?? null,
+      date_of_birth: toIsoDate(patient.date_of_birth),
+      // Renamed on the wire: Accounting's schema guard exempts any `*_id` field as an ID
+      // reference, so a field named `hospital_id` would slip past it onto a transaction table.
+      hospital_number: patient.hospital_id ?? null,
+      phone: patient.phone ?? null,
+      insurances: insurances.map(insurance => ({
+        patient_insurance_id: insurance.id,
+        enrollee_code: insurance.enrollee_code ?? null,
+        hmo_id: insurance.hmo_id ?? null,
+        insurance_id: insurance.insurance_id ?? null,
+        plan: insurance.plan ?? null,
+        is_default: insurance.is_default === true,
+      })),
+    },
+    { tenantKey: TENANT_KEY, sequence }
+  );
+
+  return OutboxEvent.create(
+    {
+      aggregate_type: event.aggregate_type,
+      aggregate_id: event.aggregate_id,
+      sequence: event.sequence,
+      event_type: event.event_type,
+      event_version: event.event_version,
+      idempotency_key: event.idempotency_key,
+      payload: event.payload,
+    } as never,
+    { transaction }
+  );
+}
+
+/** `YYYY-MM-DD`, never a timestamp — a DOB with a time can shift across a date boundary. */
+function toIsoDate(value: unknown): string | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  const date = value instanceof Date ? value : new Date(String(value));
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+  return date.toISOString().slice(0, 10);
+}
+
+/**
  * The subset of a Prescribed_* model the outbox reads. The five Sequelize models don't share a
  * base type, so a row arrives as `unknown` and is narrowed here: the fields read (id, patient_id,
  * visit_id, the per-type price column, a quantity) exist on all five, and the builder validates
@@ -195,13 +296,16 @@ export async function emitChargeCapturedForRows(
   const priceField = PRICE_FIELD_BY_TYPE[type];
   const coverageField = COVERAGE_TYPE_FIELD_BY_TYPE[type];
   const payerResolver = new PayerResolver(transaction);
+  const demographicsEmitted = new Set<string>();
+
   for (const raw of rows) {
     const row = asPrescribedRecord(raw);
     const payer = await payerResolver.resolve(row.patient_insurance_id, row[coverageField]);
+    const patientId = Number(row.patient_id);
     const input: PrescribedLineInput = {
       type,
       id: Number(row.id),
-      patient_id: Number(row.patient_id),
+      patient_id: patientId,
       visit_id: Number(row.visit_id),
       amount: normalisePrice(row[priceField]),
       quantity: Number(row.quantity_prescribed ?? row.quantity ?? 1),
@@ -209,5 +313,18 @@ export async function emitChargeCapturedForRows(
       payer,
     };
     await emitChargeCaptured(input, transaction);
+
+    // THE COLD-CACHE FIX. Accounting's demographic cache is fed by `demographics.changed`, which
+    // fires on CHANGE — so a patient registered before this integration was switched on has never
+    // changed, and the cache would be empty exactly when the cashier first needs it. Emitting
+    // alongside the charge guarantees every billable patient is known by name.
+    //
+    // Deduped per call so a 20-line prescription emits ONE demographics event, not 20. Repeat
+    // emissions across calls are harmless (the receiver upserts, sequence-guarded) but wasteful.
+    const patientKey = String(patientId);
+    if (!demographicsEmitted.has(patientKey)) {
+      demographicsEmitted.add(patientKey);
+      await emitPatientDemographicsChanged(patientId, transaction);
+    }
   }
 }
