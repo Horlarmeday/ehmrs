@@ -1,20 +1,30 @@
-import { QueryTypes, Transaction } from 'sequelize';
+import { Model, ModelStatic, QueryTypes, Transaction } from 'sequelize';
 import { sequelizeConnection } from '../../database/config/data-source';
 import { OutboxEvent } from '../../database/models/outboxEvent';
 import { Patient } from '../../database/models/patient';
 import { PatientInsurance } from '../../database/models/patientInsurance';
+import { PrescribedAdditionalItem } from '../../database/models/prescribedAdditionalItem';
+import { PrescribedDrug } from '../../database/models/prescribedDrug';
+import { PrescribedInvestigation } from '../../database/models/prescribedInvestigation';
+import { PrescribedService } from '../../database/models/prescribedService';
+import { PrescribedTest } from '../../database/models/prescribedTest';
 import {
   buildChargeCapturedEvent,
+  buildChargeVoidedEvent,
+  buildEncounterClosedEvent,
   buildEncounterOpenedEvent,
   buildPatientDemographicsChangedEvent,
   patientAggregateId,
   visitAggregateId,
   PrescribedLineInput,
+  ChargeVoidedInput,
 } from './event-builder';
 import {
   COVERAGE_TYPE_FIELD_BY_TYPE,
+  PRESCRIBED_LINE_TYPES,
   PRICE_FIELD_BY_TYPE,
   PrescribedLineType,
+  VOIDABLE_PREDICATE_BY_TYPE,
 } from './prescribed-line-types';
 import { PayerResolver } from './payer-derivation';
 
@@ -31,8 +41,83 @@ import { PayerResolver } from './payer-derivation';
 
 const TENANT_KEY = process.env.EMR_TENANT_KEY || 'default';
 
+export const MODEL_BY_TYPE: Record<PrescribedLineType, ModelStatic<Model>> = {
+  drug: (PrescribedDrug as unknown) as ModelStatic<Model>,
+  investigation: (PrescribedInvestigation as unknown) as ModelStatic<Model>,
+  service: (PrescribedService as unknown) as ModelStatic<Model>,
+  test: (PrescribedTest as unknown) as ModelStatic<Model>,
+  additional_item: (PrescribedAdditionalItem as unknown) as ModelStatic<Model>,
+};
+
+function buildContext(sequence: number, occurredAt: Date) {
+  return { tenantKey: TENANT_KEY, sequence, occurredAt, sentAt: occurredAt };
+}
+
+const IDEMPOTENT_SKIP_EVENT_TYPES = new Set(['charge.voided', 'encounter.closed']);
+
+async function persistOutboxEvent(
+  event: {
+    aggregate_type: string;
+    aggregate_id: string;
+    sequence: number | string;
+    event_type: string;
+    event_version: number;
+    idempotency_key: string;
+    payload: Record<string, unknown>;
+  },
+  transaction: Transaction
+): Promise<OutboxEvent> {
+  if (IDEMPOTENT_SKIP_EVENT_TYPES.has(event.event_type)) {
+    const existing = await OutboxEvent.findOne({
+      where: { idempotency_key: event.idempotency_key },
+      transaction,
+    });
+    if (existing) {
+      return existing;
+    }
+  }
+
+  return OutboxEvent.create(
+    {
+      aggregate_type: event.aggregate_type,
+      aggregate_id: event.aggregate_id,
+      sequence: event.sequence,
+      event_type: event.event_type,
+      event_version: event.event_version,
+      idempotency_key: event.idempotency_key,
+      payload: event.payload,
+    } as never,
+    { transaction }
+  );
+}
+
 export function isOutboxEnabled(): boolean {
   return process.env.EMR_OUTBOX_ENABLED === 'true';
+}
+
+/**
+ * Claims a block of sequential sequences for an aggregate, inside the caller's transaction.
+ */
+export async function claimSequences(
+  aggregateId: string,
+  count: number,
+  transaction: Transaction
+): Promise<number> {
+  if (count <= 0) {
+    throw new Error('Outbox: count must be greater than 0');
+  }
+  await sequelizeConnection.query(
+    `INSERT INTO Outbox_Sequences (aggregate_id, last_sequence, createdAt, updatedAt)
+     VALUES (:aggregateId, LAST_INSERT_ID(:count), NOW(), NOW())
+     ON DUPLICATE KEY UPDATE last_sequence = LAST_INSERT_ID(last_sequence + :count), updatedAt = NOW()`,
+    { replacements: { aggregateId, count }, transaction, type: QueryTypes.INSERT }
+  );
+
+  const [row] = await sequelizeConnection.query<{ seq: number }>('SELECT LAST_INSERT_ID() AS seq', {
+    transaction,
+    type: QueryTypes.SELECT,
+  });
+  return Number(row.seq);
 }
 
 /**
@@ -47,22 +132,8 @@ export function isOutboxEnabled(): boolean {
  * aggregate" and "nth event" cases into one atomic statement that also takes the row lock, so
  * there is no read-then-write window for a concurrent transaction to slip through.
  */
-export async function claimSequence(
-  aggregateId: string,
-  transaction: Transaction
-): Promise<number> {
-  await sequelizeConnection.query(
-    `INSERT INTO Outbox_Sequences (aggregate_id, last_sequence, createdAt, updatedAt)
-     VALUES (:aggregateId, LAST_INSERT_ID(1), NOW(), NOW())
-     ON DUPLICATE KEY UPDATE last_sequence = LAST_INSERT_ID(last_sequence + 1), updatedAt = NOW()`,
-    { replacements: { aggregateId }, transaction, type: QueryTypes.INSERT }
-  );
-
-  const [row] = await sequelizeConnection.query<{ seq: number }>('SELECT LAST_INSERT_ID() AS seq', {
-    transaction,
-    type: QueryTypes.SELECT,
-  });
-  return Number(row.seq);
+export function claimSequence(aggregateId: string, transaction: Transaction): Promise<number> {
+  return claimSequences(aggregateId, 1, transaction);
 }
 
 /**
@@ -85,18 +156,7 @@ export async function emitChargeCaptured(
 
   const event = buildChargeCapturedEvent(line, { tenantKey: TENANT_KEY, sequence });
 
-  return OutboxEvent.create(
-    {
-      aggregate_type: event.aggregate_type,
-      aggregate_id: event.aggregate_id,
-      sequence: event.sequence,
-      event_type: event.event_type,
-      event_version: event.event_version,
-      idempotency_key: event.idempotency_key,
-      payload: event.payload,
-    } as never,
-    { transaction }
-  );
+  return persistOutboxEvent(event, transaction);
 }
 
 /**
@@ -121,18 +181,111 @@ export async function emitEncounterOpened(
     { tenantKey: TENANT_KEY, sequence }
   );
 
-  return OutboxEvent.create(
-    {
-      aggregate_type: event.aggregate_type,
-      aggregate_id: event.aggregate_id,
-      sequence: event.sequence,
-      event_type: event.event_type,
-      event_version: event.event_version,
-      idempotency_key: event.idempotency_key,
-      payload: event.payload,
-    } as never,
-    { transaction }
+  return persistOutboxEvent(event, transaction);
+}
+
+export async function emitEncounterClosed(
+  visitId: number | string,
+  occurredAt: Date,
+  transaction: Transaction,
+  sequenceOverride?: number
+): Promise<OutboxEvent | undefined> {
+  if (!isOutboxEnabled()) {
+    return undefined;
+  }
+
+  const aggregateId = visitAggregateId(visitId);
+  const sequence =
+    sequenceOverride !== undefined
+      ? sequenceOverride
+      : await claimSequence(aggregateId, transaction);
+
+  const event = buildEncounterClosedEvent(
+    { visit_id: visitId },
+    buildContext(sequence, occurredAt)
   );
+
+  return persistOutboxEvent(event, transaction);
+}
+
+export async function emitChargeVoided(
+  line: ChargeVoidedInput,
+  occurredAt: Date,
+  transaction: Transaction,
+  sequenceOverride?: number
+): Promise<OutboxEvent | undefined> {
+  if (!isOutboxEnabled()) {
+    return undefined;
+  }
+
+  const aggregateId = visitAggregateId(line.visit_id);
+  const sequence =
+    sequenceOverride !== undefined
+      ? sequenceOverride
+      : await claimSequence(aggregateId, transaction);
+
+  const event = buildChargeVoidedEvent(line, buildContext(sequence, occurredAt));
+
+  return persistOutboxEvent(event, transaction);
+}
+
+export async function getQualifyingVoidableLinesForVisit(
+  visitId: number | string,
+  transaction: Transaction
+): Promise<Array<{ type: PrescribedLineType; id: number }>> {
+  const qualifyingLines: Array<{ type: PrescribedLineType; id: number }> = [];
+  for (const type of PRESCRIBED_LINE_TYPES) {
+    const predicate = VOIDABLE_PREDICATE_BY_TYPE[type];
+    const model = MODEL_BY_TYPE[type];
+    const rows = await model.findAll({
+      where: { visit_id: visitId, ...predicate.voidableWhere() },
+      transaction,
+    });
+
+    for (const row of rows) {
+      const plain = asPrescribedRecord(row);
+      if (predicate.qualifies(plain)) {
+        qualifyingLines.push({ type, id: Number(plain.id) });
+      }
+    }
+  }
+  return qualifyingLines;
+}
+
+export async function emitChargeVoidedForVisit(
+  visitId: number | string,
+  occurredAt: Date,
+  transaction: Transaction,
+  startSequenceOverride?: number
+): Promise<number> {
+  if (!isOutboxEnabled()) {
+    return 0;
+  }
+
+  const lines = await getQualifyingVoidableLinesForVisit(visitId, transaction);
+  if (lines.length === 0) {
+    return 0;
+  }
+
+  const aggregateId = visitAggregateId(visitId);
+  const endSequence =
+    startSequenceOverride !== undefined
+      ? startSequenceOverride + lines.length - 1
+      : await claimSequences(aggregateId, lines.length, transaction);
+  const startSequence = endSequence - lines.length + 1;
+
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    const sequence = startSequence + i;
+    await emitChargeVoided(
+      { type: line.type, id: line.id, visit_id: visitId },
+      occurredAt,
+      transaction,
+      sequence
+    );
+  }
+
+  return lines.length;
 }
 
 /**
@@ -206,21 +359,8 @@ export async function emitPatientDemographicsChanged(
     { tenantKey: TENANT_KEY, sequence }
   );
 
-  return OutboxEvent.create(
-    {
-      aggregate_type: event.aggregate_type,
-      aggregate_id: event.aggregate_id,
-      sequence: event.sequence,
-      event_type: event.event_type,
-      event_version: event.event_version,
-      idempotency_key: event.idempotency_key,
-      payload: event.payload,
-    } as never,
-    { transaction }
-  );
+  return persistOutboxEvent(event, transaction);
 }
-
-/** `YYYY-MM-DD`, never a timestamp — a DOB with a time can shift across a date boundary. */
 function toIsoDate(value: unknown): string | null {
   if (value === null || value === undefined) {
     return null;
@@ -239,7 +379,7 @@ function toIsoDate(value: unknown): string | null {
  * the values it actually uses. Narrowing rather than casting keeps a malformed row from silently
  * producing a bad event.
  */
-function asPrescribedRecord(row: unknown): Record<string, unknown> {
+export function asPrescribedRecord(row: unknown): Record<string, unknown> {
   if (typeof row !== 'object' || row === null) {
     throw new Error('Outbox: expected a prescribed-line record, got a non-object.');
   }

@@ -1,3 +1,11 @@
+import { Op, WhereOptions } from 'sequelize';
+import {
+  DispenseStatus,
+  InvestigationStatus,
+  PaymentStatus,
+  PrescribedTestStatus,
+} from '../../database/enums';
+
 /**
  * The five billable prescribed-line types — one per `Prescribed_*` table.
  *
@@ -16,6 +24,10 @@
  * The PRICE FIELD IS PART OF THIS TABLE because the column name is not uniform — `total_price` on
  * two tables, `price` on the other three. Reading the wrong column emits a wrong amount or
  * `undefined`, and a per-call-site literal is exactly how that drifts.
+ *
+ * VOIDABLE_PREDICATE_BY_TYPE lives here for the same reason: the qualifying rule is per-type (only
+ * two of five share `dispense_status`), and a per-call-site `where` clause is how a type silently
+ * drops out of the void set — leaving fabricated AR uncleared with no error anywhere.
  */
 export const PRESCRIBED_LINE_TYPES = [
   'drug',
@@ -48,6 +60,72 @@ export const COVERAGE_TYPE_FIELD_BY_TYPE: Record<PrescribedLineType, string> = {
   test: 'test_type',
   service: 'service_type',
   investigation: 'investigation_type',
+};
+
+export type VoidableLineRecord = Record<string, unknown>;
+
+export interface VoidablePredicateSpec {
+  voidableWhere: () => WhereOptions;
+  qualifies: (row: VoidableLineRecord) => boolean;
+}
+
+function isZeroOrNull(value: unknown): boolean {
+  return value === null || value === undefined || value === 0;
+}
+
+const pendingPaymentWhere: WhereOptions = { payment_status: PaymentStatus.PENDING };
+
+const dispensedQuantityWhere: WhereOptions = {
+  [Op.and]: [
+    { [Op.or]: [{ quantity_dispensed: 0 }, { quantity_dispensed: null }] },
+    { [Op.or]: [{ quantity_returned: 0 }, { quantity_returned: null }] },
+  ],
+};
+
+function qualifiesDispenseLine(row: VoidableLineRecord): boolean {
+  return (
+    row.payment_status === PaymentStatus.PENDING &&
+    row.dispense_status === DispenseStatus.PENDING &&
+    isZeroOrNull(row.quantity_dispensed) &&
+    isZeroOrNull(row.quantity_returned)
+  );
+}
+
+const dispenseLineVoidableWhere = (): WhereOptions => ({
+  ...pendingPaymentWhere,
+  dispense_status: DispenseStatus.PENDING,
+  ...dispensedQuantityWhere,
+});
+
+export const VOIDABLE_PREDICATE_BY_TYPE: Record<PrescribedLineType, VoidablePredicateSpec> = {
+  drug: {
+    voidableWhere: dispenseLineVoidableWhere,
+    qualifies: qualifiesDispenseLine,
+  },
+  additional_item: {
+    voidableWhere: dispenseLineVoidableWhere,
+    qualifies: qualifiesDispenseLine,
+  },
+  test: {
+    voidableWhere: () => ({
+      ...pendingPaymentWhere,
+      status: PrescribedTestStatus.PENDING,
+    }),
+    qualifies: row =>
+      row.payment_status === PaymentStatus.PENDING && row.status === PrescribedTestStatus.PENDING,
+  },
+  investigation: {
+    voidableWhere: () => ({
+      ...pendingPaymentWhere,
+      status: InvestigationStatus.PENDING,
+    }),
+    qualifies: row =>
+      row.payment_status === PaymentStatus.PENDING && row.status === InvestigationStatus.PENDING,
+  },
+  service: {
+    voidableWhere: () => ({ ...pendingPaymentWhere }),
+    qualifies: row => row.payment_status === PaymentStatus.PENDING,
+  },
 };
 
 export function isPrescribedLineType(value: unknown): value is PrescribedLineType {

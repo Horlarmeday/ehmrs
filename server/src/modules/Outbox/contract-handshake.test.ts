@@ -1,5 +1,10 @@
 import { createHash, createHmac } from 'crypto';
-import { buildChargeCapturedEvent, buildPatientDemographicsChangedEvent } from './event-builder';
+import {
+  buildChargeCapturedEvent,
+  buildChargeVoidedEvent,
+  buildEncounterClosedEvent,
+  buildPatientDemographicsChangedEvent,
+} from './event-builder';
 import { signEvent } from './signer';
 
 /**
@@ -167,6 +172,30 @@ describe('EMR outbox ↔ Accounting inbox handshake', () => {
     expect(verifyLikeAccounting(Buffer.from(signed.rawBody), signed.headers)).toEqual({
       ok: true,
       keyId: 'emr-2026-07',
+    });
+  });
+
+  it('a signed charge.voided is ACCEPTED by the verifier', () => {
+    const row = buildChargeVoidedEvent(
+      { type: 'drug', id: 42, visit_id: 8891 },
+      { tenantKey: TENANT_KEY, sequence: 43 }
+    );
+    const signed = signEvent(row.payload, SHARED_KEY);
+    expect(verifyLikeAccounting(Buffer.from(signed.rawBody), signed.headers)).toEqual({
+      ok: true,
+      keyId: SHARED_KEY.keyId,
+    });
+  });
+
+  it('a signed encounter.closed is ACCEPTED by the verifier', () => {
+    const row = buildEncounterClosedEvent(
+      { visit_id: 8891 },
+      { tenantKey: TENANT_KEY, sequence: 44 }
+    );
+    const signed = signEvent(row.payload, SHARED_KEY);
+    expect(verifyLikeAccounting(Buffer.from(signed.rawBody), signed.headers)).toEqual({
+      ok: true,
+      keyId: SHARED_KEY.keyId,
     });
   });
 
