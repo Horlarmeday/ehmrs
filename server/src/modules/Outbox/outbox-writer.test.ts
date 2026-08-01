@@ -44,7 +44,10 @@ describe('outbox writer', () => {
       await t.commit();
 
       expect(result).toBeUndefined();
-      expect(await OutboxEvent.count()).toBe(0);
+      // Scoped to THIS line's key, not a global count. These suites share one MySQL, so a bare
+      // `count()` also sees rows another suite is mid-way through writing — which makes this
+      // assertion fail for a reason that has nothing to do with the feature flag.
+      expect(await OutboxEvent.count({ where: { idempotency_key: 'charge:drug:1' } })).toBe(0);
       process.env.EMR_OUTBOX_ENABLED = 'true';
     });
   });

@@ -312,14 +312,65 @@ describe('emitChargeCapturedForRows — payer derivation (#114)', () => {
     await t.commit();
 
     const rows = await OutboxEvent.findAll();
-    expect(rows).toHaveLength(3);
-    for (const row of rows) {
+    const charges = rows.filter(row => row.event_type === 'charge.captured');
+    const demographics = rows.filter(row => row.event_type === 'patient.demographics.changed');
+
+    expect(charges).toHaveLength(3);
+    for (const row of charges) {
       expect((row.payload.body as Record<string, unknown>).payer).toMatchObject({
         payer_type: 'scheme_hmo',
       });
     }
+
+    // ONE demographics event for three lines sharing a patient (Accounting #43): the emission is
+    // deduped per call, so a 20-line prescription does not produce 20 identical sync events.
+    expect(demographics).toHaveLength(1);
+
     // One lookup for three rows sharing the id — the per-resolver cache.
     expect(findOneSpy).toHaveBeenCalledTimes(1);
     findOneSpy.mockRestore();
+  });
+
+  /**
+   * THE COLD-CACHE FIX (Accounting #43).
+   *
+   * Accounting's demographic cache is fed by `patient.demographics.changed`, which fires on
+   * CHANGE — so a patient registered before this integration was switched on has never changed,
+   * and the cache would be empty exactly when the cashier first needs a name at the counter.
+   * Emitting alongside the charge is what guarantees every billable patient is known.
+   */
+  it('emits demographics alongside a charge, so a never-changed patient is still cached', async () => {
+    const t = await sequelizeConnection.transaction();
+    await emitChargeCapturedForRows(
+      'drug',
+      [insuredDrugRow(90, schemePatientInsuranceId)],
+      '2026-07-22',
+      t
+    );
+    await t.commit();
+
+    const demographics = (await OutboxEvent.findAll()).filter(
+      row => row.event_type === 'patient.demographics.changed'
+    );
+    expect(demographics).toHaveLength(1);
+
+    const event = demographics[0];
+    expect(event.aggregate_type).toBe('patient');
+    expect(event.aggregate_id).toBe(`patient:${patientId}`);
+
+    const body = event.payload.body as Record<string, unknown>;
+    expect(body).toMatchObject({
+      patient_id: String(patientId),
+      first_name: 'Test',
+      last_name: 'Payer',
+      date_of_birth: '1990-01-01',
+    });
+
+    // Name PARTS, never a composed legal_name — Accounting composes once, on write.
+    expect(body.legal_name).toBeUndefined();
+
+    // The COMPLETE insurance set: Accounting hard-deletes anything absent from this array, so a
+    // partial list would silently drop the patient's live coverage.
+    expect(body.insurances).toHaveLength(2);
   });
 });

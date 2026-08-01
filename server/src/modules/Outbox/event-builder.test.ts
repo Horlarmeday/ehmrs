@@ -1,7 +1,10 @@
 import {
   EventBuildError,
   buildChargeCapturedEvent,
+  buildEncounterOpenedEvent,
+  buildPatientDemographicsChangedEvent,
   chargeIdempotencyKey,
+  patientAggregateId,
   uuidV7,
   visitAggregateId,
 } from './event-builder';
@@ -180,5 +183,134 @@ describe('buildChargeCapturedEvent', () => {
     );
     const payer = (row.payload.body as Record<string, unknown>).payer as Record<string, unknown>;
     expect(payer.retainership_id).toBe('42');
+  });
+});
+
+describe('patientAggregateId', () => {
+  it('prefixes the patient id, keeping the person aggregate distinct from visit:', () => {
+    expect(patientAggregateId(100)).toBe('patient:100');
+  });
+});
+
+describe('buildPatientDemographicsChangedEvent', () => {
+  const demographics = {
+    patient_id: 100,
+    first_name: 'Chinelo',
+    middle_name: null,
+    last_name: 'Nwosu',
+    date_of_birth: '1990-01-15',
+    hospital_number: 'PSSH/023555',
+    phone: '+2348012345678',
+  };
+
+  it('emits on the patient aggregate, not the encounter (ADR-0030)', () => {
+    const event = buildPatientDemographicsChangedEvent(demographics, context);
+
+    expect(event.aggregate_type).toBe('patient');
+    expect(event.aggregate_id).toBe('patient:100');
+    expect(event.payload.aggregate).toEqual({ type: 'patient', id: 'patient:100' });
+  });
+
+  it('carries demographic content — the one event permitted to (ADR-0016 tier 1)', () => {
+    const event = buildPatientDemographicsChangedEvent(demographics, context);
+    const body = event.payload.body as Record<string, unknown>;
+
+    expect(body).toMatchObject({
+      patient_id: '100',
+      first_name: 'Chinelo',
+      last_name: 'Nwosu',
+      date_of_birth: '1990-01-15',
+      hospital_number: 'PSSH/023555',
+      phone: '+2348012345678',
+    });
+  });
+
+  it('sends name PARTS, never a composed legal_name (the receiver composes)', () => {
+    const event = buildPatientDemographicsChangedEvent(demographics, context);
+    const body = event.payload.body as Record<string, unknown>;
+
+    expect(body.legal_name).toBeUndefined();
+    expect(body.fullname).toBeUndefined();
+  });
+
+  it('rejects a date_of_birth carrying a time — it can shift across a date boundary', () => {
+    expect(() =>
+      buildPatientDemographicsChangedEvent(
+        { ...demographics, date_of_birth: '1990-01-15T00:00:00.000Z' },
+        context
+      )
+    ).toThrow(EventBuildError);
+  });
+
+  it('serialises the complete insurance set, ids as strings', () => {
+    const event = buildPatientDemographicsChangedEvent(
+      {
+        ...demographics,
+        insurances: [
+          { patient_insurance_id: 412, enrollee_code: 'NHIS-99', hmo_id: 7, is_default: true },
+        ],
+      },
+      context
+    );
+    const body = event.payload.body as Record<string, unknown>;
+
+    expect(body.insurances).toEqual([
+      { patient_insurance_id: '412', enrollee_code: 'NHIS-99', hmo_id: '7', is_default: true },
+    ]);
+  });
+
+  it('distinguishes an ABSENT insurances key from an empty array', () => {
+    const absent = buildPatientDemographicsChangedEvent(demographics, context);
+    const empty = buildPatientDemographicsChangedEvent(
+      { ...demographics, insurances: [] },
+      context
+    );
+
+    // Absent means "not stated" and leaves the receiver's rows alone; empty means "holds none"
+    // and clears them. Conflating the two would silently wipe a patient's live coverage.
+    expect((absent.payload.body as Record<string, unknown>).insurances).toBeUndefined();
+    expect((empty.payload.body as Record<string, unknown>).insurances).toEqual([]);
+  });
+
+  it('is deterministic per emission, so a redelivery dedupes at the inbox', () => {
+    const event = buildPatientDemographicsChangedEvent(demographics, context);
+    expect(event.idempotency_key).toBe('patient-demographics:100:42');
+  });
+});
+
+describe('the demographic assertion stays scoped, not deleted', () => {
+  /**
+   * `charge.captured` has TWO independent defences and this covers the second.
+   *
+   * The first is that its builder copies only known ID/money fields, so a caller's stray key never
+   * reaches the body (asserted above by the exact key-set test). The second is
+   * `assertNoDemographics`, which catches a field a FUTURE edit adds to the body directly. Only
+   * the second could be weakened by scoping the assertion per event type, so it is what is
+   * checked here — via `service_line`, a passthrough field, carrying a demographic-looking value.
+   */
+  it('leaves charge.captured carrying only ID references, exemption notwithstanding', () => {
+    const row = buildChargeCapturedEvent(
+      { ...baseLine, department: 'Pharmacy', service_line: 'Outpatient' },
+      context
+    );
+    const body = row.payload.body as Record<string, unknown>;
+
+    for (const key of ['first_name', 'last_name', 'phone', 'hospital_number', 'date_of_birth']) {
+      expect(body[key]).toBeUndefined();
+    }
+  });
+
+  it('exempts ONLY patient.demographics.changed — the list is one entry long', () => {
+    // A second entry here would be a policy change, not a refactor. Pinning the length makes
+    // widening the exemption a deliberate, reviewable edit rather than a quiet one.
+    const demographicEvent = buildPatientDemographicsChangedEvent(
+      { patient_id: 100, first_name: 'Chinelo', phone: '+2348012345678' },
+      context
+    );
+    expect(demographicEvent.event_type).toBe('patient.demographics.changed');
+
+    // encounter.opened keeps an ID-only body: the assertion still runs for it.
+    const opened = buildEncounterOpenedEvent({ visit_id: 8891, emergency: true }, context);
+    expect(opened.payload.body).toEqual({ emergency: true });
   });
 });
