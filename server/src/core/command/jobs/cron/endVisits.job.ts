@@ -5,13 +5,15 @@ import { VisitCategory, VisitStatus } from '../../../../database/enums';
 import dayjs from 'dayjs';
 import { processTasksExecution } from '../../../helpers/tasksProcessor';
 import { Op } from 'sequelize';
+import { sequelizeConnection } from '../../../../database/config/data-source';
+import { endVisitAndEmitOutboxEvents } from '../../../../modules/Outbox/visit-close-emission';
 
-const visitHandler = async (visit: Visit) => {
+export const visitHandler = async (visit: Visit) => {
   const message = taggedMessaged('visitHandler');
-  await Visit.update(
-    { status: VisitStatus.ENDED, date_visit_ended: Date.now() },
-    { where: { id: visit.id } }
-  );
+  const occurredAt = new Date();
+  await sequelizeConnection.transaction(async transaction => {
+    await endVisitAndEmitOutboxEvents(visit, occurredAt, transaction);
+  });
   logger.notice(message(`Ended visit for patient ${visit.patient_id}`));
 };
 
@@ -47,21 +49,40 @@ export const endVisits = async () => {
     }),
   ]);
 
-  const visits = [
-    ...antenatalVisits,
-    ...todayUntakenVisits,
-    ...fiveDaysAgoVisits,
-    ...immunizationVisits,
-  ];
+  const visits = Array.from(
+    new Map(
+      [
+        ...antenatalVisits,
+        ...todayUntakenVisits,
+        ...fiveDaysAgoVisits,
+        ...immunizationVisits,
+      ].map(visit => [visit.id, visit])
+    ).values()
+  );
 
   try {
     if (visits?.length) {
-      await processTasksExecution({
+      const { errors } = await processTasksExecution({
         tasks: visits,
         message,
         concurrency: 10,
-        handler: visitHandler,
+        handler: async task => {
+          try {
+            await visitHandler(task);
+          } catch (error) {
+            logger.error(message(`Failed to end visit ${task.id}`), {
+              visitId: task.id,
+              error,
+            });
+            throw error;
+          }
+        },
       });
+      if (errors.length > 0) {
+        logger.error(message(`${errors.length} visit(s) failed to end`), {
+          errors: errors.map(error => error.message),
+        });
+      }
       return;
     }
     logger.notice(message(`No visits to end`));

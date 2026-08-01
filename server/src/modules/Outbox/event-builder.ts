@@ -193,6 +193,19 @@ export function encounterOpenedIdempotencyKey(visitId: number | string): string 
   return `encounter-opened:${visitId}`;
 }
 
+export function encounterClosedIdempotencyKey(visitId: number | string): string {
+  return `encounter-closed:${visitId}`;
+}
+
+export function chargeVoidedIdempotencyKey(type: PrescribedLineType, id: number | string): string {
+  if (!isPrescribedLineType(type)) {
+    throw new EventBuildError(
+      `Unknown prescribed-line type "${type}"; expected one of ${PRESCRIBED_LINE_TYPES.join(', ')}`
+    );
+  }
+  return `charge-voided:${type}:${id}`;
+}
+
 export interface OutboxEventRow {
   readonly aggregate_type: string;
   readonly aggregate_id: string;
@@ -284,6 +297,103 @@ export interface EncounterOpenedInput {
  * path that clears it, so a `false` is indistinguishable from an absent field at the receiver —
  * emitting one would falsely imply an encounter can be corrected back to routine.
  */
+export interface EncounterClosedInput {
+  readonly visit_id: number | string;
+}
+
+export interface ChargeVoidedInput {
+  readonly type: PrescribedLineType;
+  readonly id: number | string;
+  readonly visit_id: number | string;
+}
+
+export function buildEncounterClosedEvent(
+  input: EncounterClosedInput,
+  context: BuildContext
+): OutboxEventRow {
+  const encounterId = visitAggregateId(input.visit_id);
+  const occurredAt = context.occurredAt ?? new Date();
+  const sentAt = context.sentAt ?? new Date();
+  const idempotencyKey = encounterClosedIdempotencyKey(input.visit_id);
+  const eventVersion = context.eventVersion ?? 1;
+
+  const body: Record<string, unknown> = {};
+
+  assertNoDemographics(body, 'encounter.closed');
+
+  const payload: Record<string, unknown> = {
+    event_id: uuidV7(context.now),
+    event_type: 'encounter.closed',
+    event_version: eventVersion,
+    tenant_key: context.tenantKey,
+    occurred_at: occurredAt.toISOString(),
+    sent_at: sentAt.toISOString(),
+    aggregate: { type: 'encounter', id: encounterId },
+    sequence: Number(context.sequence),
+    idempotency_key: idempotencyKey,
+    body,
+  };
+
+  return {
+    aggregate_type: 'encounter',
+    aggregate_id: encounterId,
+    sequence: context.sequence,
+    event_type: 'encounter.closed',
+    event_version: eventVersion,
+    idempotency_key: idempotencyKey,
+    payload,
+  };
+}
+
+export function buildChargeVoidedEvent(
+  input: ChargeVoidedInput,
+  context: BuildContext
+): OutboxEventRow {
+  if (!isPrescribedLineType(input.type)) {
+    throw new EventBuildError(
+      `Unknown prescribed-line type "${input.type}"; expected one of ${PRESCRIBED_LINE_TYPES.join(
+        ', '
+      )}`
+    );
+  }
+
+  const encounterId = visitAggregateId(input.visit_id);
+  const occurredAt = context.occurredAt ?? new Date();
+  const sentAt = context.sentAt ?? new Date();
+  const idempotencyKey = chargeVoidedIdempotencyKey(input.type, input.id);
+  const eventVersion = context.eventVersion ?? 1;
+
+  const body: Record<string, unknown> = {
+    external_line_ref: { type: input.type, id: String(input.id) },
+    encounter_id: encounterId,
+  };
+
+  assertNoDemographics(body, 'charge.voided');
+
+  const payload: Record<string, unknown> = {
+    event_id: uuidV7(context.now),
+    event_type: 'charge.voided',
+    event_version: eventVersion,
+    tenant_key: context.tenantKey,
+    occurred_at: occurredAt.toISOString(),
+    sent_at: sentAt.toISOString(),
+    aggregate: { type: 'encounter', id: encounterId },
+    sequence: Number(context.sequence),
+    idempotency_key: idempotencyKey,
+    body,
+  };
+
+  return {
+    aggregate_type: 'encounter',
+    aggregate_id: encounterId,
+    sequence: context.sequence,
+    event_type: 'charge.voided',
+    event_version: eventVersion,
+    idempotency_key: idempotencyKey,
+    payload,
+  };
+}
+
 export function buildEncounterOpenedEvent(
   input: EncounterOpenedInput,
   context: BuildContext

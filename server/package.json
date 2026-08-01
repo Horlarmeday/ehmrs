@@ -4,7 +4,7 @@
   "description": "Electronic Health Management Resource System",
   "main": "app.js",
   "scripts": {
-    "test": "jest --detectOpenHandles",
+    "test": "jest --detectOpenHandles --forceExit",
     "test:db:setup": "node src/database/test-schema/setup-test-db.js",
     "start:dev": "nodemon",
     "start": "node dist/app.js",
