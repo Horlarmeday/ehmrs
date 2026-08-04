@@ -184,6 +184,27 @@ describe('buildChargeCapturedEvent', () => {
     const payer = (row.payload.body as Record<string, unknown>).payer as Record<string, unknown>;
     expect(payer.retainership_id).toBe('42');
   });
+
+  it('omits visit_type and consultation_valid_until when the line carries none (backward-compat)', () => {
+    const row = buildChargeCapturedEvent(baseLine, context);
+    const body = row.payload.body as Record<string, unknown>;
+    expect('visit_type' in body).toBe(false);
+    expect('consultation_valid_until' in body).toBe(false);
+  });
+
+  it('emits visit_type and consultation_valid_until when provided', () => {
+    const row = buildChargeCapturedEvent(
+      {
+        ...baseLine,
+        visit_type: 'Outpatient',
+        consultation_valid_until: '2026-08-04T12:00:00Z',
+      },
+      context
+    );
+    const body = row.payload.body as Record<string, unknown>;
+    expect(body.visit_type).toBe('Outpatient');
+    expect(body.consultation_valid_until).toBe('2026-08-04T12:00:00Z');
+  });
 });
 
 describe('patientAggregateId', () => {
