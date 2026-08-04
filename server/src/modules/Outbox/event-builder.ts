@@ -108,6 +108,8 @@ export interface PrescribedLineInput {
   readonly service_line?: string;
   /** Payer at prescription time (ADR-0028). Omitted for cash lines; ID references only. */
   readonly payer?: ChargeCapturedPayer;
+  readonly visit_type?: string;
+  readonly consultation_valid_until?: string;
 }
 
 export interface BuildContext {
@@ -256,6 +258,12 @@ export function buildChargeCapturedEvent(
   }
   if (line.payer !== undefined) {
     body.payer = buildPayer(line.payer);
+  }
+  if (line.visit_type !== undefined) {
+    body.visit_type = line.visit_type;
+  }
+  if (line.consultation_valid_until !== undefined) {
+    body.consultation_valid_until = line.consultation_valid_until;
   }
 
   assertNoDemographics(body, 'charge.captured');

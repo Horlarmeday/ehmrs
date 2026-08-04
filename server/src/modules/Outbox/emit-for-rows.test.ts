@@ -6,6 +6,8 @@ import { Insurance } from '../../database/models/insurance';
 import { HMO } from '../../database/models/hmo';
 import { PatientInsurance } from '../../database/models/patientInsurance';
 import { Patient } from '../../database/models/patient';
+import { Visit } from '../../database/models/visit';
+import { VisitCategory } from '../../database/enums';
 import { emitChargeCapturedForRows, normalisePrice } from './outbox-writer';
 
 afterAll(async () => {
@@ -205,6 +207,7 @@ describe('emitChargeCapturedForRows — payer derivation (#114)', () => {
 
   afterAll(async () => {
     process.env.EMR_OUTBOX_ENABLED = originalFlag;
+    await Visit.destroy({ where: { patient_id: patientId }, force: true });
     await PatientInsurance.destroy({
       where: { id: [schemePatientInsuranceId, retainerPatientInsuranceId] },
       force: true,
@@ -372,5 +375,117 @@ describe('emitChargeCapturedForRows — payer derivation (#114)', () => {
     // The COMPLETE insurance set: Accounting hard-deletes anything absent from this array, so a
     // partial list would silently drop the patient's live coverage.
     expect(body.insurances).toHaveLength(2);
+  });
+
+  describe('visit metadata emission (#192)', () => {
+    it('attaches visit_type and consultation_valid_until for an OPD visit', async () => {
+      const visit = await Visit.create({
+        patient_id: patientId,
+        category: VisitCategory.OPD,
+        date_visit_start: new Date('2026-08-04T12:00:00.000Z'),
+        department: 'GOPD',
+        professional: 'Doctor',
+        type: 'New',
+      } as never);
+
+      const t = await sequelizeConnection.transaction();
+      await emitChargeCapturedForRows(
+        'drug',
+        [
+          {
+            id: 95,
+            patient_id: patientId,
+            visit_id: visit.id,
+            total_price: '100.00',
+            quantity_prescribed: 1,
+          },
+        ],
+        '2026-08-04',
+        t
+      );
+      await t.commit();
+
+      const events = await OutboxEvent.findAll();
+      const charge = events.find(row => row.event_type === 'charge.captured');
+      expect(charge).toBeDefined();
+      const body = charge!.payload.body as Record<string, unknown>;
+      expect(body.visit_type).toBe('Outpatient');
+      expect(body.consultation_valid_until).toBe('2026-08-09T12:00:00.000Z'); // start + 5 days
+    });
+
+    it('attaches visit_type and omits consultation_valid_until for an ongoing IPD visit', async () => {
+      const visit = await Visit.create({
+        patient_id: patientId,
+        category: VisitCategory.IPD,
+        date_visit_start: new Date('2026-08-04T12:00:00.000Z'),
+        department: 'Ward A',
+        professional: 'Doctor',
+        type: 'Admission',
+      } as never);
+
+      const t = await sequelizeConnection.transaction();
+      await emitChargeCapturedForRows(
+        'drug',
+        [
+          {
+            id: 96,
+            patient_id: patientId,
+            visit_id: visit.id,
+            total_price: '100.00',
+            quantity_prescribed: 1,
+          },
+        ],
+        '2026-08-04',
+        t
+      );
+      await t.commit();
+
+      const events = await OutboxEvent.findAll();
+      const charge = events.find(
+        row => row.event_type === 'charge.captured' && row.idempotency_key === 'charge:drug:96'
+      );
+      expect(charge).toBeDefined();
+      const body = charge!.payload.body as Record<string, unknown>;
+      expect(body.visit_type).toBe('Inpatient');
+      expect('consultation_valid_until' in body).toBe(false);
+    });
+
+    it('attaches visit_type and consultation_valid_until (as date_visit_ended) for a closed IPD visit', async () => {
+      const visit = await Visit.create({
+        patient_id: patientId,
+        category: VisitCategory.IPD,
+        date_visit_start: new Date('2026-08-04T12:00:00.000Z'),
+        date_visit_ended: new Date('2026-08-05T15:00:00.000Z'),
+        department: 'Ward A',
+        professional: 'Doctor',
+        type: 'Admission',
+      } as never);
+
+      const t = await sequelizeConnection.transaction();
+      await emitChargeCapturedForRows(
+        'drug',
+        [
+          {
+            id: 97,
+            patient_id: patientId,
+            visit_id: visit.id,
+            total_price: '100.00',
+            quantity_prescribed: 1,
+          },
+        ],
+        '2026-08-04',
+        t
+      );
+      await t.commit();
+
+      const events = await OutboxEvent.findAll();
+      const charge = events.find(
+        row => row.event_type === 'charge.captured' && row.idempotency_key === 'charge:drug:97'
+      );
+      expect(charge).toBeDefined();
+      const body = charge!.payload.body as Record<string, unknown>;
+      expect(body.visit_type).toBe('Inpatient');
+      expect(body.consultation_valid_until).toBe('2026-08-05T15:00:00.000Z');
+    });
   });
 });

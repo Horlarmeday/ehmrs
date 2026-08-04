@@ -13,6 +13,9 @@ import { Drug } from '../../database/models/drug';
 import { Test } from '../../database/models/test';
 import { Investigation } from '../../database/models/investigation';
 import { Service } from '../../database/models/service';
+import { Visit } from '../../database/models/visit';
+import { VisitCategory } from '../../database/enums';
+import dayjs from 'dayjs';
 import {
   buildChargeCapturedEvent,
   buildChargeVoidedEvent,
@@ -433,6 +436,60 @@ export function normalisePrice(value: unknown): unknown {
   return value.toFixed(2);
 }
 
+export class VisitResolver {
+  private readonly cache = new Map<
+    number,
+    { visit_type: string; consultation_valid_until?: string } | null
+  >();
+
+  constructor(private readonly transaction: Transaction) {}
+
+  async resolve(
+    visitId: unknown
+  ): Promise<{ visit_type: string; consultation_valid_until?: string } | null> {
+    const id = Number(visitId);
+    if (!Number.isInteger(id)) {
+      return null;
+    }
+
+    if (this.cache.has(id)) {
+      const cached = this.cache.get(id);
+      return cached !== undefined ? cached : null;
+    }
+
+    const visit = await Visit.findOne({
+      where: { id },
+      attributes: ['id', 'category', 'date_visit_start', 'date_visit_ended'],
+      transaction: this.transaction,
+    });
+
+    if (!visit) {
+      this.cache.set(id, null);
+      return null;
+    }
+
+    const visitType = visit.category;
+    const result: { visit_type: string; consultation_valid_until?: string } = {
+      visit_type: visitType,
+    };
+
+    if (visit.category === VisitCategory.IPD || visit.category === VisitCategory.EMERGENCY) {
+      if (visit.date_visit_ended) {
+        result.consultation_valid_until = dayjs(visit.date_visit_ended).toISOString();
+      }
+    } else {
+      if (visit.date_visit_start) {
+        result.consultation_valid_until = dayjs(visit.date_visit_start)
+          .add(5, 'days')
+          .toISOString();
+      }
+    }
+
+    this.cache.set(id, result);
+    return result;
+  }
+}
+
 /**
  * Emits a charge.captured for each row a prescribe endpoint created, on its transaction.
  *
@@ -454,6 +511,7 @@ export async function emitChargeCapturedForRows(
   const priceField = PRICE_FIELD_BY_TYPE[type];
   const coverageField = COVERAGE_TYPE_FIELD_BY_TYPE[type];
   const payerResolver = new PayerResolver(transaction);
+  const visitResolver = new VisitResolver(transaction);
   const processedPatients = new Set<string>();
 
   const serviceLineResolver = createServiceLineResolver(type, transaction);
@@ -462,9 +520,10 @@ export async function emitChargeCapturedForRows(
     const row = asPrescribedRecord(raw);
     const patientId = Number(row.patient_id);
 
-    const [payer, serviceLine] = await Promise.all([
+    const [payer, serviceLine, visitInfo] = await Promise.all([
       payerResolver.resolve(row.patient_insurance_id, row[coverageField]),
       serviceLineResolver(row),
+      visitResolver.resolve(row.visit_id),
     ]);
 
     const input: PrescribedLineInput = {
@@ -477,6 +536,8 @@ export async function emitChargeCapturedForRows(
       service_date: serviceDate,
       payer,
       service_line: serviceLine,
+      visit_type: visitInfo?.visit_type,
+      consultation_valid_until: visitInfo?.consultation_valid_until,
     };
 
     await emitChargeCaptured(input, transaction);
