@@ -1,4 +1,5 @@
-import { Model, ModelStatic, QueryTypes, Transaction } from 'sequelize';
+import { ModelStatic, QueryTypes, Transaction } from 'sequelize';
+import { Model } from 'sequelize-typescript';
 import { sequelizeConnection } from '../../database/config/data-source';
 import { OutboxEvent } from '../../database/models/outboxEvent';
 import { Patient } from '../../database/models/patient';
@@ -8,6 +9,10 @@ import { PrescribedDrug } from '../../database/models/prescribedDrug';
 import { PrescribedInvestigation } from '../../database/models/prescribedInvestigation';
 import { PrescribedService } from '../../database/models/prescribedService';
 import { PrescribedTest } from '../../database/models/prescribedTest';
+import { Drug } from '../../database/models/drug';
+import { Test } from '../../database/models/test';
+import { Investigation } from '../../database/models/investigation';
+import { Service } from '../../database/models/service';
 import {
   buildChargeCapturedEvent,
   buildChargeVoidedEvent,
@@ -42,11 +47,11 @@ import { PayerResolver } from './payer-derivation';
 const TENANT_KEY = process.env.EMR_TENANT_KEY || 'default';
 
 export const MODEL_BY_TYPE: Record<PrescribedLineType, ModelStatic<Model>> = {
-  drug: (PrescribedDrug as unknown) as ModelStatic<Model>,
-  investigation: (PrescribedInvestigation as unknown) as ModelStatic<Model>,
-  service: (PrescribedService as unknown) as ModelStatic<Model>,
-  test: (PrescribedTest as unknown) as ModelStatic<Model>,
-  additional_item: (PrescribedAdditionalItem as unknown) as ModelStatic<Model>,
+  drug: PrescribedDrug,
+  investigation: PrescribedInvestigation,
+  service: PrescribedService,
+  test: PrescribedTest,
+  additional_item: PrescribedAdditionalItem,
 };
 
 function buildContext(sequence: number, occurredAt: Date) {
@@ -81,12 +86,12 @@ async function persistOutboxEvent(
     {
       aggregate_type: event.aggregate_type,
       aggregate_id: event.aggregate_id,
-      sequence: event.sequence,
+      sequence: Number(event.sequence),
       event_type: event.event_type,
       event_version: event.event_version,
       idempotency_key: event.idempotency_key,
       payload: event.payload,
-    } as never,
+    },
     { transaction }
   );
 }
@@ -379,15 +384,28 @@ function toIsoDate(value: unknown): string | null {
  * the values it actually uses. Narrowing rather than casting keeps a malformed row from silently
  * producing a bad event.
  */
-export function asPrescribedRecord(row: unknown): Record<string, unknown> {
-  if (typeof row !== 'object' || row === null) {
+export function asPrescribedRecord(row: Model | Record<string, unknown>): Record<string, unknown> {
+  if (!row || typeof row !== 'object') {
     throw new Error('Outbox: expected a prescribed-line record, got a non-object.');
   }
-  // Sequelize instances expose column values via get(); fall back to own enumerable props.
-  const model = row as { get?: (opts: { plain: boolean }) => Record<string, unknown> };
-  return typeof model.get === 'function'
-    ? model.get({ plain: true })
-    : (row as Record<string, unknown>);
+
+  if ('get' in row && typeof row.get === 'function') {
+    const plain = row.get({ plain: true });
+    if (plain && typeof plain === 'object' && !Array.isArray(plain)) {
+      const record: Record<string, unknown> = {};
+      for (const [key, val] of Object.entries(plain)) {
+        record[key] = val;
+      }
+      return record;
+    }
+    throw new Error('Outbox: expected a plain object from Model.get');
+  }
+
+  const record: Record<string, unknown> = {};
+  for (const [key, val] of Object.entries(row)) {
+    record[key] = val;
+  }
+  return record;
 }
 
 /**
@@ -425,7 +443,7 @@ export function normalisePrice(value: unknown): unknown {
  */
 export async function emitChargeCapturedForRows(
   type: PrescribedLineType,
-  rows: readonly unknown[],
+  rows: readonly (Model | Record<string, unknown>)[],
   serviceDate: string,
   transaction: Transaction
 ): Promise<void> {
@@ -436,12 +454,19 @@ export async function emitChargeCapturedForRows(
   const priceField = PRICE_FIELD_BY_TYPE[type];
   const coverageField = COVERAGE_TYPE_FIELD_BY_TYPE[type];
   const payerResolver = new PayerResolver(transaction);
-  const demographicsEmitted = new Set<string>();
+  const processedPatients = new Set<string>();
+
+  const serviceLineResolver = createServiceLineResolver(type, transaction);
 
   for (const raw of rows) {
     const row = asPrescribedRecord(raw);
-    const payer = await payerResolver.resolve(row.patient_insurance_id, row[coverageField]);
     const patientId = Number(row.patient_id);
+
+    const [payer, serviceLine] = await Promise.all([
+      payerResolver.resolve(row.patient_insurance_id, row[coverageField]),
+      serviceLineResolver(row),
+    ]);
+
     const input: PrescribedLineInput = {
       type,
       id: Number(row.id),
@@ -451,20 +476,57 @@ export async function emitChargeCapturedForRows(
       quantity: Number(row.quantity_prescribed ?? row.quantity ?? 1),
       service_date: serviceDate,
       payer,
+      service_line: serviceLine,
     };
+
     await emitChargeCaptured(input, transaction);
 
-    // THE COLD-CACHE FIX. Accounting's demographic cache is fed by `demographics.changed`, which
-    // fires on CHANGE — so a patient registered before this integration was switched on has never
-    // changed, and the cache would be empty exactly when the cashier first needs it. Emitting
-    // alongside the charge guarantees every billable patient is known by name.
-    //
-    // Deduped per call so a 20-line prescription emits ONE demographics event, not 20. Repeat
-    // emissions across calls are harmless (the receiver upserts, sequence-guarded) but wasteful.
+    // Emit demographics for new patients only (deduplicated per call)
     const patientKey = String(patientId);
-    if (!demographicsEmitted.has(patientKey)) {
-      demographicsEmitted.add(patientKey);
+    if (!processedPatients.has(patientKey)) {
+      processedPatients.add(patientKey);
       await emitPatientDemographicsChanged(patientId, transaction);
     }
   }
+}
+
+/**
+ * Creates a service line resolver function based on the prescribed line type.
+ * Uses a factory pattern to encapsulate type-specific logic.
+ */
+function createServiceLineResolver(
+  type: PrescribedLineType,
+  transaction: Transaction
+): (row: Record<string, unknown>) => Promise<string | undefined> {
+  const modelMap: Record<
+    PrescribedLineType,
+    { model: ModelStatic<Model>; idField: string } | null
+  > = {
+    drug: { model: Drug, idField: 'drug_id' },
+    additional_item: { model: Drug, idField: 'drug_id' },
+    test: { model: Test, idField: 'test_id' },
+    investigation: { model: Investigation, idField: 'investigation_id' },
+    service: { model: Service, idField: 'service_id' },
+  };
+
+  const config = modelMap[type];
+
+  if (!config) {
+    return async () => undefined;
+  }
+
+  return async (row: Record<string, unknown>): Promise<string | undefined> => {
+    const id = row[config.idField];
+    if (id == null) return undefined;
+
+    const entity = await config.model.findOne({
+      where: { id },
+      transaction,
+    });
+
+    if (entity && 'name' in entity && typeof entity.name === 'string') {
+      return entity.name;
+    }
+    return undefined;
+  };
 }
