@@ -35,7 +35,10 @@ import {
 } from './messages/response-messages';
 import { sequelizeConnection } from '../../../database/config/data-source';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
-import { emitChargeCapturedForRows } from '../../Outbox/outbox-writer';
+import {
+  emitChargeCapturedForRows,
+  deletePrescribedLineWithReversalRequested,
+} from '../../Outbox/outbox-writer';
 
 type PrescribeDrugType = PrescribedDrugBody & {
   drug_prescription_id: number;
@@ -914,7 +917,12 @@ export const getPatientTreatments = ({ currentPage = 1, pageLimit = 10, filter =
  * @param drugId
  */
 export const deletePrescribedDrug = async (drugId: number) => {
-  return PrescribedDrug.destroy({ where: { id: drugId } });
+  return deletePrescribedLineWithReversalRequested(
+    'drug',
+    drugId,
+    transaction => PrescribedDrug.findOne({ where: { id: drugId }, transaction }),
+    transaction => PrescribedDrug.destroy({ where: { id: drugId }, transaction })
+  );
 };
 
 /**
@@ -922,7 +930,12 @@ export const deletePrescribedDrug = async (drugId: number) => {
  * @param itemId
  */
 export const deleteAdditionalItem = async (itemId: number) => {
-  return PrescribedAdditionalItem.destroy({ where: { id: itemId } });
+  return deletePrescribedLineWithReversalRequested(
+    'additional_item',
+    itemId,
+    transaction => PrescribedAdditionalItem.findOne({ where: { id: itemId }, transaction }),
+    transaction => PrescribedAdditionalItem.destroy({ where: { id: itemId }, transaction })
+  );
 };
 
 /**

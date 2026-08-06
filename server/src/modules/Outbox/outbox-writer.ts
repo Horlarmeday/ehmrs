@@ -18,6 +18,7 @@ import { VisitCategory } from '../../database/enums';
 import dayjs from 'dayjs';
 import {
   buildChargeCapturedEvent,
+  buildChargeReversalRequestedEvent,
   buildChargeVoidedEvent,
   buildEncounterClosedEvent,
   buildEncounterOpenedEvent,
@@ -25,6 +26,7 @@ import {
   patientAggregateId,
   visitAggregateId,
   PrescribedLineInput,
+  ChargeReversalRequestedInput,
   ChargeVoidedInput,
 } from './event-builder';
 import {
@@ -235,6 +237,48 @@ export async function emitChargeVoided(
   const event = buildChargeVoidedEvent(line, buildContext(sequence, occurredAt));
 
   return persistOutboxEvent(event, transaction);
+}
+
+export async function emitChargeReversalRequested(
+  line: ChargeReversalRequestedInput,
+  transaction: Transaction
+): Promise<OutboxEvent | undefined> {
+  if (!isOutboxEnabled()) {
+    return undefined;
+  }
+
+  const aggregateId = visitAggregateId(line.visit_id);
+  const sequence = await claimSequence(aggregateId, transaction);
+
+  const event = buildChargeReversalRequestedEvent(line, {
+    tenantKey: TENANT_KEY,
+    sequence,
+  });
+
+  return persistOutboxEvent(event, transaction);
+}
+
+export async function deletePrescribedLineWithReversalRequested(
+  type: PrescribedLineType,
+  lineId: number,
+  findLine: (transaction: Transaction) => Promise<{ id: number; visit_id: number | string } | null>,
+  destroyLine: (transaction: Transaction) => Promise<number>
+): Promise<number> {
+  return sequelizeConnection.transaction(async transaction => {
+    const line = await findLine(transaction);
+    if (!line) {
+      return 0;
+    }
+
+    if (isOutboxEnabled()) {
+      await emitChargeReversalRequested(
+        { type, id: line.id, visit_id: line.visit_id },
+        transaction
+      );
+    }
+
+    return destroyLine(transaction);
+  });
 }
 
 export async function getQualifyingVoidableLinesForVisit(
@@ -542,7 +586,6 @@ export async function emitChargeCapturedForRows(
 
     await emitChargeCaptured(input, transaction);
 
-    // Emit demographics for new patients only (deduplicated per call)
     const patientKey = String(patientId);
     if (!processedPatients.has(patientKey)) {
       processedPatients.add(patientKey);

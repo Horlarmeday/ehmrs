@@ -7,7 +7,10 @@ import { BadException } from '../../../common/util/api-error';
 import { StatusCodes } from '../../../core/helpers/helper';
 import { ERROR_UPDATING_TEST } from './messages/response-messages';
 import { sequelizeConnection } from '../../../database/config/data-source';
-import { emitChargeCapturedForRows } from '../../Outbox/outbox-writer';
+import {
+  emitChargeCapturedForRows,
+  deletePrescribedLineWithReversalRequested,
+} from '../../Outbox/outbox-writer';
 
 /**
  * prescribe a test for patient
@@ -123,5 +126,10 @@ export const getOnePrescribedTest = async (query: WhereOptions<PrescribedTest>) 
  * @param testId
  */
 export const deletePrescribedTest = async (testId: number) => {
-  return PrescribedTest.destroy({ where: { id: testId } });
+  return deletePrescribedLineWithReversalRequested(
+    'test',
+    testId,
+    transaction => PrescribedTest.findOne({ where: { id: testId }, transaction }),
+    transaction => PrescribedTest.destroy({ where: { id: testId }, transaction })
+  );
 };

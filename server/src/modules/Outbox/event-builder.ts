@@ -208,6 +208,18 @@ export function chargeVoidedIdempotencyKey(type: PrescribedLineType, id: number 
   return `charge-voided:${type}:${id}`;
 }
 
+export function chargeReversalRequestedIdempotencyKey(
+  type: PrescribedLineType,
+  id: number | string
+): string {
+  if (!isPrescribedLineType(type)) {
+    throw new EventBuildError(
+      `Unknown prescribed-line type "${type}"; expected one of ${PRESCRIBED_LINE_TYPES.join(', ')}`
+    );
+  }
+  return `reversal_requested:${type}:${id}`;
+}
+
 export interface OutboxEventRow {
   readonly aggregate_type: string;
   readonly aggregate_id: string;
@@ -315,6 +327,13 @@ export interface ChargeVoidedInput {
   readonly visit_id: number | string;
 }
 
+export interface ChargeReversalRequestedInput {
+  readonly type: PrescribedLineType;
+  readonly id: number | string;
+  readonly visit_id: number | string;
+  readonly reason?: string;
+}
+
 export function buildEncounterClosedEvent(
   input: EncounterClosedInput,
   context: BuildContext
@@ -396,6 +415,58 @@ export function buildChargeVoidedEvent(
     aggregate_id: encounterId,
     sequence: context.sequence,
     event_type: 'charge.voided',
+    event_version: eventVersion,
+    idempotency_key: idempotencyKey,
+    payload,
+  };
+}
+
+export function buildChargeReversalRequestedEvent(
+  input: ChargeReversalRequestedInput,
+  context: BuildContext
+): OutboxEventRow {
+  if (!isPrescribedLineType(input.type)) {
+    throw new EventBuildError(
+      `Unknown prescribed-line type "${input.type}"; expected one of ${PRESCRIBED_LINE_TYPES.join(
+        ', '
+      )}`
+    );
+  }
+
+  const encounterId = visitAggregateId(input.visit_id);
+  const occurredAt = context.occurredAt ?? new Date();
+  const sentAt = context.sentAt ?? new Date();
+  const idempotencyKey = chargeReversalRequestedIdempotencyKey(input.type, input.id);
+  const eventVersion = context.eventVersion ?? 1;
+
+  const body: Record<string, unknown> = {
+    external_line_ref: { type: input.type, id: String(input.id) },
+    encounter_id: encounterId,
+  };
+  if (input.reason !== undefined) {
+    body.reason = input.reason;
+  }
+
+  assertNoDemographics(body, 'charge.reversal.requested');
+
+  const payload: Record<string, unknown> = {
+    event_id: uuidV7(context.now),
+    event_type: 'charge.reversal.requested',
+    event_version: eventVersion,
+    tenant_key: context.tenantKey,
+    occurred_at: occurredAt.toISOString(),
+    sent_at: sentAt.toISOString(),
+    aggregate: { type: 'encounter', id: encounterId },
+    sequence: Number(context.sequence),
+    idempotency_key: idempotencyKey,
+    body,
+  };
+
+  return {
+    aggregate_type: 'encounter',
+    aggregate_id: encounterId,
+    sequence: context.sequence,
+    event_type: 'charge.reversal.requested',
     event_version: eventVersion,
     idempotency_key: idempotencyKey,
     payload,
