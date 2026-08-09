@@ -8,7 +8,10 @@ import { StatusCodes } from '../../../core/helpers/helper';
 import { BadException } from '../../../common/util/api-error';
 import { ERROR_UPDATING_SERVICE } from './messages/response-messages';
 import { sequelizeConnection } from '../../../database/config/data-source';
-import { emitChargeCapturedForRows } from '../../Outbox/outbox-writer';
+import {
+  emitChargeCapturedForRows,
+  deletePrescribedLineWithReversalRequested,
+} from '../../Outbox/outbox-writer';
 
 /**
  * prescribe multiple services for patient
@@ -148,5 +151,10 @@ export const getOnePrescribedService = async (
  * @param serviceId
  */
 export const deleteService = async serviceId => {
-  return PrescribedService.destroy({ where: { id: serviceId } });
+  return deletePrescribedLineWithReversalRequested(
+    'service',
+    serviceId,
+    transaction => PrescribedService.findOne({ where: { id: serviceId }, transaction }),
+    transaction => PrescribedService.destroy({ where: { id: serviceId }, transaction })
+  );
 };

@@ -1,6 +1,7 @@
 import { createHash, createHmac } from 'crypto';
 import {
   buildChargeCapturedEvent,
+  buildChargeReversalRequestedEvent,
   buildChargeVoidedEvent,
   buildEncounterClosedEvent,
   buildPatientDemographicsChangedEvent,
@@ -179,6 +180,18 @@ describe('EMR outbox ↔ Accounting inbox handshake', () => {
     const row = buildChargeVoidedEvent(
       { type: 'drug', id: 42, visit_id: 8891 },
       { tenantKey: TENANT_KEY, sequence: 43 }
+    );
+    const signed = signEvent(row.payload, SHARED_KEY);
+    expect(verifyLikeAccounting(Buffer.from(signed.rawBody), signed.headers)).toEqual({
+      ok: true,
+      keyId: SHARED_KEY.keyId,
+    });
+  });
+
+  it('a signed charge.reversal.requested is ACCEPTED by the verifier', () => {
+    const row = buildChargeReversalRequestedEvent(
+      { type: 'drug', id: 42, visit_id: 8891, reason: 'WRONG_PATIENT' },
+      { tenantKey: TENANT_KEY, sequence: 45 }
     );
     const signed = signEvent(row.payload, SHARED_KEY);
     expect(verifyLikeAccounting(Buffer.from(signed.rawBody), signed.headers)).toEqual({

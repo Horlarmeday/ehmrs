@@ -14,7 +14,10 @@ import { ERROR_UPDATING_INVESTIGATION, HSG_ITEMS_MISSING } from './messages/resp
 import dayjs from 'dayjs';
 import { sequelizeConnection } from '../../../database/config/data-source';
 import { getOneDefault } from '../../AdminSettings/admin.repository';
-import { emitChargeCapturedForRows } from '../../Outbox/outbox-writer';
+import {
+  emitChargeCapturedForRows,
+  deletePrescribedLineWithReversalRequested,
+} from '../../Outbox/outbox-writer';
 import { DefaultType, DrugForm, PharmacyDrugType } from '../../../database/enums';
 import { NHISApprovalStatus } from '../../../core/helpers/general';
 import { getDrugPrice } from '../../Pharmacy/pharmacy.repository';
@@ -313,5 +316,10 @@ export const getOnePrescribedInvestigation = async (
  * @param investigationId
  */
 export const deletePrescribedInvestigation = async (investigationId: number) => {
-  return PrescribedInvestigation.destroy({ where: { id: investigationId } });
+  return deletePrescribedLineWithReversalRequested(
+    'investigation',
+    investigationId,
+    transaction => PrescribedInvestigation.findOne({ where: { id: investigationId }, transaction }),
+    transaction => PrescribedInvestigation.destroy({ where: { id: investigationId }, transaction })
+  );
 };
