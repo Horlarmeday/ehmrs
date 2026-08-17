@@ -96,7 +96,13 @@ function buildAndSign() {
  * `payer_type` is one of the three literals; each id, when present, is a non-empty string; and no
  * key outside the four the schema allows may appear.
  */
-const ALLOWED_PAYER_KEYS = new Set(['payer_type', 'scheme_id', 'hmo_id', 'retainership_id']);
+const ALLOWED_PAYER_KEYS = new Set([
+  'payer_type',
+  'scheme_id',
+  'hmo_id',
+  'retainership_id',
+  'patient_insurance_id',
+]);
 const PAYER_TYPES = new Set(['cash', 'scheme_hmo', 'retainership']);
 
 function payerPassesAccountingGuard(payer: unknown): boolean {
@@ -116,6 +122,7 @@ function buildPayerBody(payer: {
   scheme_id?: string;
   hmo_id?: string;
   retainership_id?: string;
+  patient_insurance_id?: string;
 }) {
   const row = buildChargeCapturedEvent(
     {
@@ -146,6 +153,19 @@ describe('charge.captured payer passes Accounting chargeCapturedPayerSchema (#11
     expect(
       payerPassesAccountingGuard(
         buildPayerBody({ payer_type: 'retainership', retainership_id: '42' })
+      )
+    ).toBe(true);
+  });
+
+  it('accepts patient_insurance_id on a scheme_hmo payer (ADR-0037)', () => {
+    expect(
+      payerPassesAccountingGuard(
+        buildPayerBody({
+          payer_type: 'scheme_hmo',
+          scheme_id: '3',
+          hmo_id: '7',
+          patient_insurance_id: '412',
+        })
       )
     ).toBe(true);
   });
