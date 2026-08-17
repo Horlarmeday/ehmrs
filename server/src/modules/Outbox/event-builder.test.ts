@@ -155,6 +155,27 @@ describe('buildChargeCapturedEvent', () => {
     expect(payer).toEqual({ payer_type: 'scheme_hmo', scheme_id: '3', hmo_id: '7' });
   });
 
+  it('emits patient_insurance_id on the payer when present (ADR-0037)', () => {
+    const row = buildChargeCapturedEvent(
+      {
+        ...baseLine,
+        payer: {
+          payer_type: 'scheme_hmo',
+          scheme_id: '3',
+          hmo_id: '7',
+          patient_insurance_id: '412',
+        },
+      },
+      context
+    );
+    expect((row.payload.body as Record<string, unknown>).payer).toEqual({
+      payer_type: 'scheme_hmo',
+      scheme_id: '3',
+      hmo_id: '7',
+      patient_insurance_id: '412',
+    });
+  });
+
   it('emits a retainership payer carrying the company hmo id as retainership_id', () => {
     const row = buildChargeCapturedEvent(
       { ...baseLine, payer: { payer_type: 'retainership', retainership_id: '42' } },

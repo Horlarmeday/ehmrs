@@ -66,7 +66,9 @@ export class PayerResolver {
           }
         : null
     );
-    this.cache.set(id, payer);
-    return payer;
+    const resolved =
+      payer && insurance ? { ...payer, patient_insurance_id: String(insurance.id) } : payer;
+    this.cache.set(id, resolved);
+    return resolved;
   }
 }

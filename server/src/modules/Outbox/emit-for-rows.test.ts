@@ -252,6 +252,7 @@ describe('emitChargeCapturedForRows — payer derivation (#114)', () => {
       payer_type: 'scheme_hmo',
       scheme_id: String(schemeInsuranceId),
       hmo_id: String(schemeHmoId),
+      patient_insurance_id: String(schemePatientInsuranceId),
     });
     // No demographic value leaked into the payload anywhere.
     const serialised = JSON.stringify(row.payload);
@@ -273,6 +274,7 @@ describe('emitChargeCapturedForRows — payer derivation (#114)', () => {
     expect((row.payload.body as Record<string, unknown>).payer).toEqual({
       payer_type: 'retainership',
       retainership_id: String(retainerCompanyHmoId),
+      patient_insurance_id: String(retainerPatientInsuranceId),
     });
   });
 

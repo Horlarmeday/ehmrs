@@ -93,6 +93,8 @@ export interface ChargeCapturedPayer {
   readonly scheme_id?: string;
   readonly hmo_id?: string;
   readonly retainership_id?: string;
+  /** EMR Patient_Insurances.id — which membership this line was raised under (ADR-0037). ID only. */
+  readonly patient_insurance_id?: string;
 }
 
 export interface PrescribedLineInput {
@@ -169,6 +171,9 @@ function buildPayer(payer: ChargeCapturedPayer): Record<string, unknown> {
   }
   if (payer.retainership_id !== undefined) {
     wire.retainership_id = String(payer.retainership_id);
+  }
+  if (payer.patient_insurance_id !== undefined) {
+    wire.patient_insurance_id = String(payer.patient_insurance_id);
   }
   return wire;
 }
