@@ -226,6 +226,28 @@ describe('buildChargeCapturedEvent', () => {
     expect(body.visit_type).toBe('Outpatient');
     expect(body.consultation_valid_until).toBe('2026-08-04T12:00:00Z');
   });
+
+  it('includes item_code on the charge.captured body when present', () => {
+    const row = buildChargeCapturedEvent({ ...baseLine, item_code: 'PARA500' }, context);
+    expect((row.payload.body as Record<string, unknown>).item_code).toBe('PARA500');
+  });
+
+  it('omits item_code from the body when not provided', () => {
+    const row = buildChargeCapturedEvent(baseLine, context);
+    expect('item_code' in (row.payload.body as Record<string, unknown>)).toBe(false);
+  });
+
+  it('rejects an empty item_code at build time', () => {
+    expect(() => buildChargeCapturedEvent({ ...baseLine, item_code: '' }, context)).toThrow(
+      EventBuildError
+    );
+  });
+
+  it('rejects an item_code longer than 43 characters', () => {
+    expect(() =>
+      buildChargeCapturedEvent({ ...baseLine, item_code: 'C'.repeat(44) }, context)
+    ).toThrow(EventBuildError);
+  });
 });
 
 describe('patientAggregateId', () => {

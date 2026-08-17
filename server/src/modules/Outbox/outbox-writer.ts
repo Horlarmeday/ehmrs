@@ -558,15 +558,15 @@ export async function emitChargeCapturedForRows(
   const visitResolver = new VisitResolver(transaction);
   const processedPatients = new Set<string>();
 
-  const serviceLineResolver = createServiceLineResolver(type, transaction);
+  const catalogueResolver = new CatalogueResolver(type, transaction);
 
   for (const raw of rows) {
     const row = asPrescribedRecord(raw);
     const patientId = Number(row.patient_id);
 
-    const [payer, serviceLine, visitInfo] = await Promise.all([
+    const [payer, catalogue, visitInfo] = await Promise.all([
       payerResolver.resolve(row.patient_insurance_id, row[coverageField]),
-      serviceLineResolver(row),
+      catalogueResolver.resolve(row),
       visitResolver.resolve(row.visit_id),
     ]);
 
@@ -579,7 +579,8 @@ export async function emitChargeCapturedForRows(
       quantity: Number(row.quantity_prescribed ?? row.quantity ?? 1),
       service_date: serviceDate,
       payer,
-      service_line: serviceLine,
+      service_line: catalogue.serviceLine,
+      item_code: catalogue.itemCode,
       visit_type: visitInfo?.visit_type,
       consultation_valid_until: visitInfo?.consultation_valid_until,
     };
@@ -594,43 +595,70 @@ export async function emitChargeCapturedForRows(
   }
 }
 
-/**
- * Creates a service line resolver function based on the prescribed line type.
- * Uses a factory pattern to encapsulate type-specific logic.
- */
-function createServiceLineResolver(
-  type: PrescribedLineType,
-  transaction: Transaction
-): (row: Record<string, unknown>) => Promise<string | undefined> {
-  const modelMap: Record<
-    PrescribedLineType,
-    { model: ModelStatic<Model>; idField: string } | null
-  > = {
-    drug: { model: Drug, idField: 'drug_id' },
-    additional_item: { model: Drug, idField: 'drug_id' },
-    test: { model: Test, idField: 'test_id' },
-    investigation: { model: Investigation, idField: 'investigation_id' },
-    service: { model: Service, idField: 'service_id' },
-  };
+interface CatalogueFields {
+  readonly serviceLine?: string;
+  readonly itemCode?: string;
+}
 
-  const config = modelMap[type];
+const CATALOGUE_MODEL_BY_TYPE: Record<
+  PrescribedLineType,
+  { model: ModelStatic<Model>; idField: string } | null
+> = {
+  drug: { model: Drug, idField: 'drug_id' },
+  additional_item: { model: Drug, idField: 'drug_id' },
+  test: { model: Test, idField: 'test_id' },
+  investigation: { model: Investigation, idField: 'investigation_id' },
+  service: { model: Service, idField: 'service_id' },
+};
 
-  if (!config) {
-    return async () => undefined;
+function catalogueFieldsFromEntity(
+  entity: Model | null,
+  type: PrescribedLineType
+): CatalogueFields {
+  if (!entity || !('name' in entity) || typeof entity.name !== 'string') {
+    return {};
   }
 
-  return async (row: Record<string, unknown>): Promise<string | undefined> => {
+  if (type !== 'investigation' && 'code' in entity && typeof entity.code === 'string') {
+    const trimmed = entity.code.trim();
+    if (trimmed.length > 0) {
+      return { serviceLine: entity.name, itemCode: trimmed };
+    }
+  }
+
+  return { serviceLine: entity.name };
+}
+
+class CatalogueResolver {
+  private readonly cache = new Map<string, CatalogueFields>();
+
+  constructor(
+    private readonly type: PrescribedLineType,
+    private readonly transaction: Transaction
+  ) {}
+
+  async resolve(row: Record<string, unknown>): Promise<CatalogueFields> {
+    const config = CATALOGUE_MODEL_BY_TYPE[this.type];
+    if (!config) {
+      return {};
+    }
+
     const id = row[config.idField];
-    if (id == null) return undefined;
+    if (id == null) {
+      return {};
+    }
+
+    const cacheKey = `${this.type}:${id}`;
+    if (this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey) ?? {};
+    }
 
     const entity = await config.model.findOne({
       where: { id },
-      transaction,
+      transaction: this.transaction,
     });
-
-    if (entity && 'name' in entity && typeof entity.name === 'string') {
-      return entity.name;
-    }
-    return undefined;
-  };
+    const fields = catalogueFieldsFromEntity(entity, this.type);
+    this.cache.set(cacheKey, fields);
+    return fields;
+  }
 }
