@@ -1,5 +1,13 @@
 <template>
   <div class="accordion accordion-toggle-arrow" id="accordionExample1">
+    <div
+      class="d-flex align-items-center font-size-md mb-4"
+      v-if="sample_collector || date_sample_collected"
+    >
+      <span class="text-black-50 mr-2">Sample collected by</span>
+      <span class="text-dark font-weight-bold mr-2">{{ sample_collector?.fullname || '—' }}</span>
+      <span class="text-black-50">on {{ formatDate(date_sample_collected) }}</span>
+    </div>
     <div class="card" v-for="(test, i) in results" :key="test.prescribed_test_id">
       <div class="card-header">
         <div class="card-title" v-b-toggle="`collapse-${i}`">
@@ -18,6 +26,16 @@
           <span class="mr-3 text-black-50">Sample Type:</span
           ><span class="mr-5 text-dark">{{ test?.sample_name }}</span>
           <span class="vertical-line"></span>
+
+          <span
+            v-if="test.test_approved_date"
+            class="label label-inline label-light-success font-weight-bold mr-3"
+            v-b-tooltip.hover
+            :title="`Approved on ${formatDate(test.test_approved_date)}`"
+          >
+            <i class="fas fa-check-circle text-success mr-1"></i>
+            Approved {{ test.test_approved_date | dayjs('MMM D, YYYY') }}
+          </span>
           <span
             v-if="test.is_urgent"
             class="label pulse pulse-warning ml-5"
@@ -37,6 +55,26 @@
         :test-id="test.prescribed_test_id"
         :section="APPROVAL_SECTION"
       />
+      <div
+        class="card-footer border-0 pt-4 pb-4 font-size-md text-black-50"
+        v-if="hasTestTimeline(test)"
+      >
+        <template v-if="test.tester"
+          >Tested by <span class="text-dark font-bold">{{ test.tester }}</span> ({{
+            formatDate(test.test_conducted_date)
+          }})<span class="mx-2 font-weight-boldest">•</span></template
+        >
+        <template v-if="test.test_verifier"
+          >Verified by <span class="text-dark font-bold">{{ test.test_verifier }}</span> ({{
+            formatDate(test.test_verified_date)
+          }})<span class="mx-2">•</span></template
+        >
+        <template v-if="test.test_approver"
+          >Approved by <span class="text-dark font-bold">{{ test.test_approver }}</span> ({{
+            formatDate(test.test_approved_date)
+          }})</template
+        >
+      </div>
     </div>
     <div class="separator separator-solid mb-6"></div>
     <div v-if="result_notes">
@@ -46,54 +84,6 @@
           <div class="example-highlight">{{ result_notes }}</div>
         </div>
       </div>
-    </div>
-    <div
-      class="kt-invoice__body kt-invoice__body--centered table-responsive border"
-      v-if="test_verifier && test_approver"
-    >
-      <table class="table table-head-custom table-vertical-center">
-        <tr>
-          <th></th>
-          <th>NAME</th>
-          <th>DATE</th>
-        </tr>
-        <tr v-if="sample_collector">
-          <th>Sample Collector</th>
-          <td>
-            {{ sample_collector?.fullname }}
-          </td>
-          <td>
-            {{ date_sample_collected | dayjs('MMMM D, YYYY, h:mm A') }}
-          </td>
-        </tr>
-        <tr v-if="tester">
-          <th>Tester</th>
-          <td>
-            {{ tester }}
-          </td>
-          <td>
-            {{ test_conducted_date | dayjs('MMMM D, YYYY, h:mm A') }}
-          </td>
-        </tr>
-        <tr>
-          <th>Test Verifier</th>
-          <td>
-            {{ test_verifier }}
-          </td>
-          <td>
-            {{ test_verified_date | dayjs('MMMM D, YYYY, h:mm A') }}
-          </td>
-        </tr>
-        <tr>
-          <th>Test Approver</th>
-          <td>
-            {{ test_approver }}
-          </td>
-          <td>
-            {{ test_approved_date | dayjs('MMMM D, YYYY, h:mm A') }}
-          </td>
-        </tr>
-      </table>
     </div>
     <div class="text-center mt-3" v-if="allowedDepartments.includes(currentUser.department)">
       <button
@@ -151,20 +141,26 @@ export default {
         result_form: test?.test?.result_form,
         shouldDisable: test.status === 'Approved',
         test_status: test.status === 'Approved',
+        tester: test?.tester?.fullname,
+        test_conducted_date: test?.test_conducted_date,
+        test_verifier: test?.test_verifier?.fullname,
+        test_verified_date: test?.test_verified_date,
+        test_approver: test?.test_approver?.fullname,
+        test_approved_date: test?.test_approved_date,
       })),
       APPROVAL_SECTION: 'ApprovalSection',
-      test_verifier: this.tests?.[0]?.test_verifier?.fullname,
-      test_approver: this.tests?.[0]?.test_approver?.fullname,
-      tester: this.tests?.[0]?.tester?.fullname,
-      test_approved_date: this.tests?.[0]?.test_approved_date,
-      test_verified_date: this.tests?.[0]?.test_verified_date,
-      test_conducted_date: this.tests?.[0]?.test_conducted_date,
       allowedDepartments: ['Administrator', 'Laboratory', 'Administration'],
       currentUser: parseJwt(localStorage.getItem('user_token')),
     };
   },
   methods: {
     getLabelDotStatus,
+    hasTestTimeline(test) {
+      return !!(test.tester || test.test_verifier || test.test_approver);
+    },
+    formatDate(value) {
+      return value ? this.$options.filters.dayjs(value, 'MMMM D, YYYY, h:mm A') : '—';
+    },
     addSpinner(submitButton) {
       this.isDisabled = true;
       submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');

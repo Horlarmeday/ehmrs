@@ -557,6 +557,9 @@ export const getOneCollectedSample = async (testPrescriptionId: number | string)
           'is_urgent',
           'result_status',
           'tester_id',
+          'test_conducted_date',
+          'test_verified_date',
+          'test_approved_date',
         ],
         include: [
           { model: Test, attributes: ['name', 'result_unit', 'valid_range', 'result_form'] },
@@ -663,9 +666,16 @@ export const approveTestResults = async (data: Partial<Result & { staff_id: numb
 
 export const appendTestResults = async (data: any[]) => {
   return sequelizeConnection.transaction(async t => {
-    const testResults = await Promise.all(
-      data.map(result => TestResult.upsert(result, { transaction: t }))
-    );
+    // `date_created` is intentionally excluded from the update fields so the
+    // original result-entry date is preserved when a result is re-submitted.
+    const testResults = await TestResult.bulkCreate(data, {
+      updateOnDuplicate: testResultFieldsToUpdate([
+        'staff_id',
+        'institute_referred',
+        'referral_reason',
+      ]),
+      transaction: t,
+    });
 
     const testIds = data.map(({ prescribed_test_id }) => prescribed_test_id) as number[];
     const results = await TestResult.findAll({

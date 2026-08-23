@@ -34,7 +34,7 @@ import {
   Result,
 } from './dto/laboratory-result.dto';
 import dayjs from 'dayjs';
-import { TestPrescription } from '../../database/models';
+import { PrescribedTest, TestPrescription } from '../../database/models';
 import { BadException } from '../../common/util/api-error';
 import { ACCESSION_NUMB_EXIST } from './messages/response-messages';
 import forms from '../../core/helpers/testResultForms';
@@ -288,7 +288,17 @@ class LaboratoryService {
     prescriptionId: number
   ): Promise<{ patientInfo: PatientInfo; testResults: TestResult[] }> {
     const testResult = await getOneTestResult(prescriptionId);
-    const { patient, date_requested, accession_number, tests, sample_receiver } = testResult;
+    const {
+      patient,
+      date_requested,
+      date_sample_received,
+      accession_number,
+      tests,
+      sample_receiver,
+    } = testResult;
+
+    const latestApproved = this.getLatestByDate(tests, 'test_approved_date');
+    const latestVerified = this.getLatestByDate(tests, 'test_verified_date');
 
     const patientInfo = {
       patientName: patient.fullname.toString(),
@@ -296,15 +306,19 @@ class LaboratoryService {
       sex: patient.gender,
       age: dayjs().diff(patient.date_of_birth, 'years'),
       orderDate: dayjs(date_requested).format('MMM D, YYYY, h:mma'),
+      collectionDate: date_sample_received
+        ? dayjs(date_sample_received).format('MMM D, YYYY, h:mma')
+        : '-',
       reportDate: dayjs().format('MMM D, YYYY, h:mma'),
       accession_number,
-      test_verifier: tests?.[0]?.test_verifier?.fullname,
-      test_approver: tests?.[0]?.test_approver?.fullname,
-      tester: tests?.[0]?.tester?.fullname,
+      test_verifier: (latestVerified?.test_verifier?.fullname || '') as string,
+      test_approver: (latestApproved?.test_approver?.fullname || '') as string,
+      tester: (tests?.[0]?.tester?.fullname || '') as string,
       sample_receiver: sample_receiver.fullname,
     };
 
-    const testResults = tests.reduce((acc, { test, result }) => {
+    const testResults = tests.reduce((acc, prescribedTest) => {
+      const { test, result } = prescribedTest;
       const form = forms[test.result_form];
       const testName = test.name;
 
@@ -324,7 +338,11 @@ class LaboratoryService {
         );
 
       if (results?.length) {
-        acc[testName] = acc[testName] || { test: testName, results: [] };
+        acc[testName] = acc[testName] || {
+          test: testName,
+          results: [],
+          approval: this.getTestApprovalInfo(prescribedTest),
+        };
         acc[testName].results.push(...results);
       }
 
@@ -332,6 +350,32 @@ class LaboratoryService {
     }, {});
 
     return { patientInfo, testResults: Object.values(testResults) };
+  }
+
+  static getLatestByDate(
+    tests: PrescribedTest[],
+    dateField: 'test_approved_date' | 'test_verified_date'
+  ) {
+    return (tests || [])
+      .filter(test => test[dateField])
+      .sort((a, b) => dayjs(b[dateField]).valueOf() - dayjs(a[dateField]).valueOf())[0];
+  }
+
+  static getTestApprovalInfo(prescribedTest: PrescribedTest) {
+    return {
+      tester: prescribedTest.tester?.fullname || '-',
+      conducted_date: prescribedTest.test_conducted_date
+        ? dayjs(prescribedTest.test_conducted_date).format('MMM D, YYYY, h:mma')
+        : null,
+      verified_by: prescribedTest.test_verifier?.fullname || null,
+      verified_date: prescribedTest.test_verified_date
+        ? dayjs(prescribedTest.test_verified_date).format('MMM D, YYYY, h:mma')
+        : null,
+      approved_by: prescribedTest.test_approver?.fullname || null,
+      approved_date: prescribedTest.test_approved_date
+        ? dayjs(prescribedTest.test_approved_date).format('MMM D, YYYY, h:mma')
+        : null,
+    };
   }
 
   static getTestResultForm(
