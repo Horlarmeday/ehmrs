@@ -1,18 +1,28 @@
 import { Response } from 'express';
-import PDFDocument from './pdfKitTable';
+import PDFDocumentWithTable from './pdfKitTable';
+
+export type ApprovalInfo = {
+  tester?: string;
+  conducted_date?: string | null;
+  verified_by?: string | null;
+  verified_date?: string | null;
+  approved_by?: string | null;
+  approved_date?: string | null;
+};
+
+export type Result = {
+  name?: string;
+  model?: string;
+  range?: string;
+  rows: string[] | string[][];
+  headers: string[];
+  align?: string[];
+};
 
 export type TestResult = {
   test: string;
   results: Result[];
-};
-
-type Result = {
-  name: string;
-  model: string;
-  range: string;
-  rows: string[];
-  headers: string[];
-  align: string[];
+  approval?: ApprovalInfo;
 };
 
 export type PatientInfo = {
@@ -22,6 +32,7 @@ export type PatientInfo = {
   sex: string;
   orderDate: string;
   accession_number: string;
+  collectionDate: string;
   reportDate: string;
   test_verifier: string;
   test_approver: string;
@@ -29,336 +40,312 @@ export type PatientInfo = {
   tester: string;
 };
 
+const THEME = {
+  primary: '#0f4c81', // Medical Deep Navy
+  primaryLight: '#eef4fb', // Subtle Ice Blue
+  textDark: '#1e293b', // Slate 800
+  textMuted: '#64748b', // Slate 500
+  cardBg: '#f8fafc', // Slate 50
+  cardBorder: '#cbd5e1', // Slate 300
+  white: '#ffffff',
+};
+
 export const downloadTestResult = (
   patientInfo: PatientInfo,
   testResults: TestResult[],
   res: Response
 ) => {
-  const doc = new PDFDocument({});
-  const filename = 'lab_test_result.pdf';
-  // Stream the PDF output to a file (change 'lab_report.pdf' to your desired filename)
+  const doc = new PDFDocumentWithTable({
+    margin: 40,
+    size: 'A4',
+    bufferPages: true,
+  });
+  doc.page.margins.bottom = 60; // keep content clear of the footer band
+
+  const filename = `Lab_Report_${patientInfo.accession_number || 'Result'}.pdf`;
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
 
   doc.pipe(res);
 
   generateHeader(doc);
-  generatePatientInformation(doc, patientInfo);
-  generateSampleCollectorAndTester(
-    doc,
-    patientInfo?.sample_receiver || 'N/A',
-    patientInfo?.tester || 'N/A'
-  );
+  generatePatientCard(doc, patientInfo);
 
-  let currentY = doc.y; // Starting Y position after patient information
-  const tableWidth = 465;
+  const contentWidth = doc.page.width - 80;
 
   testResults.forEach(testResult => {
-    if (currentY + 200 > doc.page.height - 100) {
+    if (doc.y + 120 > doc.page.height - 120) {
       doc.addPage();
-      currentY = 50; // Reset Y position for the new page
     }
-    currentY = generateTestName(doc, testResult, currentY, tableWidth);
-    currentY = generateResultTable(doc, testResult, currentY);
-    doc.moveDown(1); // Add some space between tables
-    currentY = doc.y; // Update currentY to the new position after moving down
+
+    generateTestHeader(doc, testResult.test, contentWidth);
+    generateResultTable(doc, testResult, contentWidth);
+
+    if (testResult.approval) {
+      generateInlineApproval(doc, testResult.approval, contentWidth);
+    }
+    doc.moveDown(0.6);
   });
 
-  // generateResultTable(doc, testResults);
-  addStampSignatureAndFooter(doc, patientInfo.test_verifier, patientInfo.test_approver);
-  // Finalize the PDF
-  return doc.end();
+  generateSignatureSection(doc, patientInfo.test_verifier, patientInfo.test_approver);
+  generatePageFooters(doc);
+
+  doc.end();
 };
 
-function generateHeader(doc: PDFDocument) {
-  const filePath =
+function generateHeader(doc: PDFDocumentWithTable) {
+  const logoPath =
     process.env.NODE_ENV === 'production'
-      ? `ehmrs-api/public/images/logo-letter-1.png`
+      ? 'ehmrs-api/public/images/logo-letter-1.png'
       : 'src/public/images/logo-letter-2.png';
+
+  // Accent bar
+  doc.rect(0, 0, doc.page.width, 5).fill(THEME.primary);
+
+  // Logo fallback handler
+  try {
+    doc.image(logoPath, 40, 20, { width: 44 });
+  } catch {
+    doc.roundedRect(40, 20, 44, 44, 4).fill(THEME.primaryLight);
+    doc
+      .fillColor(THEME.primary)
+      .fontSize(8)
+      .text('HOSPITAL', 44, 38);
+  }
+
+  // Facility Details
   doc
-    .image(filePath, 50, 45, { width: 50 })
-    .fillColor('#444444')
-    .fontSize(15)
-    .text('St. Vincent De Paul Hospital', 110, 62)
+    .fillColor(THEME.primary)
+    .font('Helvetica-Bold')
+    .fontSize(13)
+    .text('ST. VINCENT DE PAUL HOSPITAL', 92, 22)
+    .font('Helvetica')
+    .fontSize(8)
+    .fillColor(THEME.textMuted)
+    .text('Diagnostic Laboratory & Pathology Center', 92, 37)
+    .text('Plot 505, Cadastral Zone F01, Kubwa Extension, FCT – Abuja', 92, 48);
+
+  // Contact Info
+  doc
+    .fontSize(8)
+    .fillColor(THEME.textMuted)
+    .text('dcstvinhosp@gmail.com', 350, 25, { align: 'right', width: 205 })
+    .text('+234 (0) 813 484 8878', 350, 36, { align: 'right', width: 205 })
+    .text('www.stvincenthospital.ng', 350, 47, { align: 'right', width: 205 });
+
+  doc
+    .strokeColor(THEME.cardBorder)
+    .lineWidth(0.5)
+    .moveTo(40, 70)
+    .lineTo(doc.page.width - 40, 70)
+    .stroke();
+
+  doc.y = 78;
+  doc
+    .fillColor(THEME.textDark)
+    .font('Helvetica-Bold')
     .fontSize(11)
-    .text('Plot 505, Cadastral Zone,', 200, 55, { align: 'right' })
-    .text('F01, Kubwa Extension,', 200, 70, { align: 'right' })
-    .text('FCT – Abuja, Nigeria.', 200, 85, { align: 'right' })
-    .text('dcstvinhosp@gmail.com', 200, 100, { align: 'right' })
-    .text('08134848878', 200, 115, { align: 'right' })
-    .moveDown(1.5);
+    .text('LABORATORY INVESTIGATION REPORT', 40, 78, { align: 'center' });
+
+  doc.y = 96;
 }
 
-function generatePatientInformation(doc: PDFDocument, patientInfo: PatientInfo) {
-  doc
-    .fillColor('#444444')
-    .fontSize(20)
-    .text('Lab Test Result', 50, 160, { align: 'center' });
-
-  generateHr(doc, 185);
-
-  const patientInformationTop = 200;
+function generatePatientCard(doc: PDFDocumentWithTable, patient: PatientInfo) {
+  const startX = 40;
+  const startY = doc.y;
+  const cardWidth = doc.page.width - 80;
+  const cardHeight = 65;
 
   doc
-    .fontSize(10)
-    .text('Accession Number:', 71, patientInformationTop)
-    .font('Helvetica-Bold')
-    .text(patientInfo.accession_number, 171, patientInformationTop)
-    .font('Helvetica')
-    .text('Order Date:', 71, patientInformationTop + 15)
-    .text(patientInfo.orderDate, 171, patientInformationTop + 15)
-    .text('Collection Date:', 71, patientInformationTop + 30)
-    .text(patientInfo.reportDate, 171, patientInformationTop + 30)
+    .roundedRect(startX, startY, cardWidth, cardHeight, 5)
+    .fillAndStroke(THEME.cardBg, THEME.cardBorder);
 
-    .text('Patient Name:', 321, patientInformationTop)
-    .font('Helvetica-Bold')
-    .text(patientInfo.patientName, 401, patientInformationTop)
-    .font('Helvetica')
-    .text('Patient ID:', 321, patientInformationTop + 15)
-    .text(patientInfo.patientId, 401, patientInformationTop + 15)
-    .text('Other Details:', 321, patientInformationTop + 30)
-    .text(patientInfo.sex + ', ' + patientInfo.age + ' years, ', 401, patientInformationTop + 30)
-    .moveDown();
+  const col1X = startX + 12;
+  const col2X = startX + 185;
+  const col3X = startX + 360;
+  const row1Y = startY + 10;
+  const row2Y = startY + 26;
+  const row3Y = startY + 42;
 
-  generateHr(doc, 252);
-  doc.moveDown();
+  const renderField = (label: string, value: string | number, x: number, y: number) => {
+    doc
+      .fontSize(8)
+      .font('Helvetica')
+      .fillColor(THEME.textMuted)
+      .text(label, x, y, { continued: true })
+      .font('Helvetica-Bold')
+      .fillColor(THEME.textDark)
+      .text(`  ${value || '—'}`);
+  };
+
+  renderField('Patient Name:', patient.patientName, col1X, row1Y);
+  renderField('Patient ID:', patient.patientId, col1X, row2Y);
+  renderField('Age / Sex:', `${patient.age} Yrs / ${patient.sex}`, col1X, row3Y);
+
+  renderField('Accession No:', patient.accession_number, col2X, row1Y);
+  renderField('Order Date:', patient.orderDate, col2X, row2Y);
+  renderField('Collection Date:', patient.collectionDate, col2X, row3Y);
+
+  renderField('Report Date:', patient.reportDate || 'N/A', col3X, row1Y);
+  renderField('Sample Receiver:', patient.sample_receiver || 'N/A', col3X, row2Y);
+  renderField('Lab Scientist:', patient.tester || 'N/A', col3X, row3Y);
+
+  doc.y = startY + cardHeight + 12;
 }
 
-function generateTestName(doc: PDFDocument, testResult: TestResult, y: number, tableWidth: number) {
-  doc.y = y; // Set the current Y position
-  doc.moveDown(1.5);
+function generateTestHeader(doc: PDFDocumentWithTable, testName: string, width: number) {
+  const startY = doc.y;
+  const height = 20;
 
-  const testName = testResult.test;
-  const fontSize = 12;
-  const padding = 10; // Padding on left and right
-  const backgroundHeight = 25; // Height of the background rectangle
+  doc.roundedRect(40, startY, width, height, 3).fill(THEME.primary);
 
-  // Calculate the position of the background rectangle
-  const rectX = (doc.page.width - tableWidth) / 2; // Center the rectangle based on table width
-
-  // Draw the background rectangle
   doc
-    .fillColor('#f0f0f0') // Light gray background color
-    .rect(rectX, doc.y - 5, tableWidth, backgroundHeight)
-    .fill();
-
-  // Write the test name
-  doc
-    .fillColor('#444444')
-    .fontSize(fontSize)
-    .text(testName, rectX, doc.y, {
-      width: tableWidth,
-      align: 'center',
+    .fillColor(THEME.white)
+    .font('Helvetica-Bold')
+    .fontSize(9)
+    .text(testName.toUpperCase(), 48, startY + 5, {
+      width: width - 16,
+      align: 'left',
     });
 
-  return doc.y + backgroundHeight; // Return the new Y position after writing the test name
+  doc.y = startY + height + 6;
 }
 
-function generateResultTable(doc: PDFDocument, testResult: TestResult, y: number) {
-  doc.y = y; // Set the current Y position
-  // doc.moveDown(1.5);
-  // Check if there's enough space on the current page
-  // const tableHeight = (testResults.length + 1) * 30; // Estimate table height (adjust as needed)
-  // if (doc.y + tableHeight > doc.page.height - 100) {
-  //   doc.addPage(); // Add a new page if there's not enough space
-  // }
-  const rows = testResult.results.map(result => result?.rows);
-  const headers = testResult.results[0].headers;
-  const align = testResult.results[0].align;
+function generateResultTable(doc: PDFDocumentWithTable, testResult: TestResult, width: number) {
+  if (!testResult.results || testResult.results.length === 0) return;
+
+  // Flatten and normalize rows into string[][]
+  const normalizedRows: string[][] = [];
+  testResult.results.forEach(item => {
+    if (!item?.rows) return;
+    if (Array.isArray(item.rows[0])) {
+      (item.rows as string[][]).forEach(r => {
+        normalizedRows.push(r.map(c => String(c ?? '')));
+      });
+    } else {
+      normalizedRows.push((item.rows as string[]).map(c => String(c ?? '')));
+    }
+  });
+
+  const rawHeaders = testResult.results[0]?.headers || ['Test Name', 'Result', 'Ref Range'];
+  const headers = rawHeaders.map(h => String(h).toUpperCase());
 
   doc.table(
     {
       headers,
-      rows,
+      rows: normalizedRows,
     },
     {
-      prepareHeader: () => doc.font('Helvetica-Bold'),
-      prepareRow: () => doc.font('Helvetica'),
-      align,
-      padding: 5,
-      borderWidth: 1,
-      borderColor: '#ddd',
+      columnSpacing: 10,
+      rowSpacing: 6,
+      width,
+      prepareHeader: () => {
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(8)
+          .fillColor(THEME.textDark);
+        doc.strokeColor(THEME.primary);
+      },
+      prepareRow: () => {
+        doc
+          .font('Helvetica')
+          .fontSize(8.5)
+          .fillColor(THEME.textDark);
+        doc.strokeColor(THEME.cardBorder);
+      },
     }
   );
-  return doc.y; // Return the new Y position after generating the table
 }
 
-function addStampSignatureAndFooter(doc: PDFDocument, verifier: string, approver: string) {
-  // const pageHeight = doc.page.height;
-  // const marginBottom = 50; // Adjust this value as needed
-  //
-  // // If there isn't enough space at the bottom of the current page, add a new page
-  // if (doc.y > pageHeight - 100) {
-  //   // 150 is an estimate for stamp + footer height, adjust as needed
-  //   doc.addPage();
-  // }
-  //
-  // // Calculate Y position for stamp and signature
-  // const stampY = pageHeight - 100; // Adjust this value as needed
-  //
-  // generateStampAndSignature(doc, stampY);
+function generateInlineApproval(doc: PDFDocumentWithTable, approval: ApprovalInfo, width: number) {
+  const parts = [
+    approval.conducted_date && `Tested: ${approval.conducted_date}`,
+    approval.verified_date && `Verified: ${approval.verified_date}`,
+    approval.approved_date && `Approved: ${approval.approved_date}`,
+  ].filter(Boolean);
+
+  if (!parts.length) return;
+
+  doc.y += 2;
+  doc
+    .fillColor(THEME.textMuted)
+    .font('Helvetica')
+    .fontSize(7.5)
+    .text(parts.join('   |   '), 40, doc.y, {
+      width,
+      align: 'right',
+    });
+}
+
+function generateSignatureSection(doc: PDFDocumentWithTable, verifier: string, approver: string) {
   const pageHeight = doc.page.height;
   const pageWidth = doc.page.width;
-  const margins = {
-    top: 50,
-    bottom: 50,
-    left: 50,
-    right: 50,
-  };
 
-  // If there isn't enough space at the bottom of the current page, add a new page
-  if (doc.y > pageHeight - 250) {
+  if (doc.y > pageHeight - 110) {
     doc.addPage();
   }
 
-  // Calculate Y position for signatures
-  const signatureY = pageHeight - 150;
-  const lineWidth = 200;
+  const signAreaY = pageHeight - 95;
+  const boxWidth = 180;
+  const leftColX = 55;
+  const rightColX = pageWidth - 55 - boxWidth;
 
-  doc.fontSize(10); // Font size for names
+  const renderSignatory = (x: number, title: string, name: string) => {
+    doc
+      .fontSize(9)
+      .fillColor(THEME.textDark)
+      .font('Helvetica-Bold')
+      .text(name || 'Pending Sign-off', x, signAreaY - 14, {
+        width: boxWidth,
+        align: 'center',
+      });
 
-  // Verifier
-  generateVerifierLineAndName(doc, pageWidth, lineWidth, signatureY, 'Verified By:', verifier);
-  // Approver
-  generateApproverLineAndName(doc, pageWidth, lineWidth, signatureY, 'Approved By', approver);
+    doc
+      .strokeColor(THEME.cardBorder)
+      .lineWidth(0.8)
+      .moveTo(x, signAreaY)
+      .lineTo(x + boxWidth, signAreaY)
+      .stroke();
 
-  // generateFooter(doc);
+    doc
+      .fontSize(7.5)
+      .font('Helvetica')
+      .fillColor(THEME.textMuted)
+      .text(title, x, signAreaY + 4, {
+        width: boxWidth,
+        align: 'center',
+      });
+  };
+
+  renderSignatory(leftColX, 'Medical Laboratory Scientist (Verified)', verifier);
+  renderSignatory(rightColX, 'Consultant Pathologist (Approved)', approver);
 }
 
-function generateSampleCollectorAndTester(
-  doc: PDFDocument,
-  sampleReceiver: string,
-  tester: string
-) {
-  const margin = 71;
-  const availableWidth = doc.page.width - margin * 2;
-  const halfWidth = availableWidth / 2;
-  const currentY = doc.y + 10;
-  doc.fontSize(10);
-
-  // Left column: Sample Collector with name in bold
-  doc.font('Helvetica').text('Sample Collector:', margin, currentY, {
-    width: halfWidth,
-    align: 'left',
-    continued: true,
-  });
-  doc.font('Helvetica-Bold').text(` ${sampleReceiver}`, { continued: false });
-
-  // Right column: Tester with name in bold
-  doc.font('Helvetica').text('Tester:', margin + halfWidth, currentY, {
-    width: halfWidth,
-    align: 'left',
-    continued: true,
-  });
-  doc.font('Helvetica-Bold').text(` ${tester}`, { continued: false });
-
-  doc.moveDown();
-}
-
-function generateVerifierLineAndName(
-  doc: PDFDocument,
-  pageWidth: number,
-  lineWidth: number,
-  signatureY: number,
-  text: string,
-  name: string
-) {
-  doc
-    .fontSize(11)
-    .fillColor('#000000') // Black color for the name
-    .font('Helvetica-Bold')
-    .text(name, pageWidth / 4 - lineWidth / 2, signatureY - 20, {
-      width: lineWidth,
-      align: 'center',
-    });
-
-  doc
-    .strokeColor('#aaaaaa')
-    .lineWidth(1)
-    .moveTo(pageWidth / 4 - lineWidth / 2, signatureY)
-    .lineTo(pageWidth / 4 + lineWidth / 2, signatureY)
-    .stroke();
-
-  doc
-    .fontSize(9)
-    .font('Helvetica')
-    .text(text, pageWidth / 4 - lineWidth / 2, signatureY + 5, {
-      width: lineWidth,
-      align: 'center',
-    });
-}
-
-function generateApproverLineAndName(
-  doc: PDFDocument,
-  pageWidth: number,
-  lineWidth: number,
-  signatureY: number,
-  text: string,
-  name: string
-) {
-  doc
-    .fontSize(11)
-    .fillColor('#000000') // Black color for the name
-    .font('Helvetica-Bold')
-    .text(name, (3 * pageWidth) / 4 - lineWidth / 2, signatureY - 20, {
-      width: lineWidth,
-      align: 'center',
-    });
-
-  doc
-    .strokeColor('#aaaaaa')
-    .lineWidth(1)
-    .moveTo((3 * pageWidth) / 4 - lineWidth / 2, signatureY)
-    .lineTo((3 * pageWidth) / 4 + lineWidth / 2, signatureY)
-    .stroke();
-
-  doc
-    .fontSize(9)
-    .font('Helvetica')
-    .text(text, (3 * pageWidth) / 4 - lineWidth / 2, signatureY + 5, {
-      width: lineWidth,
-      align: 'center',
-    });
-}
-
-function generateFooter(doc: PDFDocument) {
+function generatePageFooters(doc: PDFDocumentWithTable) {
+  const range = doc.bufferedPageRange();
   const pageHeight = doc.page.height;
   const pageWidth = doc.page.width;
+  const note =
+    'Kindly note that, this result must be signed and stamped before it can be considered valid.';
 
-  doc.page.margins = {
-    top: 0,
-    bottom: 0,
-    left: 50,
-    right: 50,
-  };
+  for (let i = range.start; i < range.start + range.count; i++) {
+    doc.switchToPage(i);
 
-  doc
-    .fontSize(10)
-    .fillColor('#000000') // Ensure footer text is in black
-    .text(
-      'Kindly note that, this result must be signed and stamped before it can be considered valid.',
-      50,
-      pageHeight - 30,
-      {
-        align: 'center',
-        width: pageWidth - 100, // Full width minus left and right margins
-      }
-    );
+    // no `width` + lineBreak: false → bypasses LineWrapper's maxY check,
+    // so drawing below the bottom margin cannot trigger a phantom page break
+    doc
+      .fontSize(7)
+      .font('Helvetica')
+      .fillColor(THEME.textMuted)
+      .text(note, 40, pageHeight - 26, { lineBreak: false });
 
-  // Reset margins to default if needed
-  doc.page.margins = {
-    top: 50,
-    bottom: 50,
-    left: 50,
-    right: 50,
-  };
-}
-
-function generateHr(doc: PDFDocument, y: number, lineWidth = 1) {
-  doc
-    .strokeColor('#aaaaaa')
-    .lineWidth(lineWidth)
-    .moveTo(71, y)
-    .lineTo(540, y)
-    .stroke();
+    // align: 'right' requires a width, so measure and position manually
+    const label = `Page ${i + 1} of ${range.count}`;
+    const labelWidth = doc.widthOfString(label);
+    doc
+      .fontSize(7.5)
+      .font('Helvetica')
+      .fillColor(THEME.textMuted)
+      .text(label, pageWidth - 40 - labelWidth, pageHeight - 26, { lineBreak: false });
+  }
 }
