@@ -5,6 +5,7 @@ import {
   createTest,
   createTestSample,
   createTestTariff,
+  getAdmittedPatientsSamples,
   getCollectedSamples,
   getOneCollectedSample,
   getOneSampleToCollect,
@@ -238,11 +239,20 @@ class LaboratoryService {
 
   /**
    * Get one sample to collect
-   * @memberOf LaboratoryService
    * @param prescriptionId
+   * @memberOf LaboratoryService
    */
   static async getOneCollectedSample(prescriptionId: number | string) {
     return getOneCollectedSample(prescriptionId);
+  }
+
+  /**
+   * Get all lab samples for currently admitted patients
+   * @param body
+   * @memberOf LaboratoryService
+   */
+  static async admittedPatientsSamples(body) {
+    return getAdmittedPatientsSamples(body);
   }
 
   /**

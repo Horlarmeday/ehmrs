@@ -7,6 +7,8 @@ import {
 } from '../../core/helpers/general';
 
 import {
+  Admission,
+  Bed,
   Insurance,
   Patient,
   PatientInsurance,
@@ -17,6 +19,7 @@ import {
   TestPrescription,
   TestResult,
   TestTariff,
+  Ward,
 } from '../../database/models';
 import {
   calcLimitAndOffset,
@@ -35,6 +38,7 @@ import { CANNOT_ADD_RESULTS, RESULT_NOT_FOUND, TEST_NOT_FOUND } from './messages
 import { Result } from './dto/laboratory-result.dto';
 import { ERROR_UPDATING_TEST } from '../Orders/Laboratory/messages/response-messages';
 import {
+  DischargeStatus,
   PaymentStatus,
   PrescriptionType,
   PrescribedTestStatus as TestStatus,
@@ -479,6 +483,153 @@ export const getCollectedSamples = async ({
   });
   const count = await TestPrescription.count({ where: { ...query } });
   return paginate({ rows: samples, count }, currentPage, limit);
+};
+
+export const getAdmittedPatientsSamples = async ({
+  currentPage = 1,
+  pageLimit = 10,
+  search = null,
+  start = null,
+  end = null,
+}) => {
+  const { limit, offset } = calcLimitAndOffset(+currentPage, +pageLimit);
+  const dateAdmittedLiteral = sequelize.literal(
+    `(SELECT MAX(a.date_admitted) FROM Admissions a WHERE a.patient_id = TestPrescription.patient_id AND a.discharge_status = '${DischargeStatus.ON_ADMISSION}')`
+  );
+  const query = {
+    patient_id: {
+      [Op.in]: sequelize.literal(
+        `(SELECT a.patient_id FROM Admissions a WHERE a.discharge_status = '${DischargeStatus.ON_ADMISSION}')`
+      ),
+    },
+    date_requested: {
+      [Op.gte]: dateAdmittedLiteral,
+      ...(start && end && dateIntervalQuery('date_requested', start, end).date_requested),
+    },
+  };
+  const samples = await TestPrescription.findAll({
+    attributes: {
+      include: [
+        [sequelize.fn('COUNT', sequelize.col('tests.id')), 'total'],
+        [
+          sequelize.fn(
+            'COUNT',
+            sequelize.literal(
+              `DISTINCT CASE WHEN tests.status = '${TestStatus.PENDING}' THEN tests.id END`
+            )
+          ),
+          'pending_tests_count',
+        ],
+        [
+          sequelize.fn(
+            'COUNT',
+            sequelize.literal(
+              `DISTINCT CASE WHEN tests.status = '${TestStatus.VERIFIED}' THEN tests.id END`
+            )
+          ),
+          'verified_tests_count',
+        ],
+        [
+          sequelize.fn(
+            'COUNT',
+            sequelize.literal(
+              `DISTINCT CASE WHEN tests.status = '${TestStatus.RESULT_ADDED}' THEN tests.id END`
+            )
+          ),
+          'pending_validations_count',
+        ],
+        [
+          sequelize.fn(
+            'COUNT',
+            sequelize.literal(
+              `DISTINCT CASE WHEN tests.payment_status = '${PaymentStatus.PENDING}' THEN tests.id END`
+            )
+          ),
+          'total_pending_payments',
+        ],
+      ],
+    },
+    order: [['date_requested', 'DESC']],
+    where: {
+      ...query,
+    },
+    include: [
+      {
+        model: PrescribedTest,
+        as: 'tests',
+        attributes: [], // Exclude all columns from the PrescribedTest table (we only need the count)
+      },
+      {
+        model: Patient,
+        attributes: patientAttributes,
+        where: {
+          ...(search && {
+            [Op.or]: [
+              {
+                firstname: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+              {
+                lastname: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+              {
+                hospital_id: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+              {
+                complete_name: {
+                  [Op.like]: `%${search}%`,
+                },
+              },
+            ],
+          }),
+        },
+        include: [
+          {
+            model: PatientInsurance,
+            where: { is_default: true },
+            limit: 1,
+            order: [['createdAt', 'DESC']],
+            attributes: ['id', 'insurance_id'],
+            include: [{ model: Insurance, attributes: ['name'] }],
+          },
+        ],
+      },
+    ],
+    group: ['TestPrescription.id'], // Group the results by testPrescription.id to get the count per sample
+    subQuery: false,
+    limit,
+    offset,
+  });
+
+  const patientIds = [...new Set(samples.map(sample => sample.patient_id))];
+  const admissions = patientIds.length
+    ? await Admission.findAll({
+        where: { patient_id: patientIds, discharge_status: DischargeStatus.ON_ADMISSION },
+        attributes: ['patient_id'],
+        order: [['date_admitted', 'DESC']],
+        include: [
+          { model: Ward, as: 'ward', attributes: ['name'] },
+          { model: Bed, attributes: ['code'] },
+        ],
+      })
+    : [];
+
+  const docs = samples.map(sample => {
+    const admission = admissions.find(item => item.patient_id === sample.patient_id);
+    return {
+      ...sample.toJSON(),
+      ward: admission?.ward?.name,
+      bed: admission?.bed?.code,
+    };
+  });
+
+  const count = await TestPrescription.count({ where: { ...query } });
+  return paginate({ rows: docs, count }, currentPage, limit);
 };
 
 export const getLastTestPrescription = async (patient_id: number) => {

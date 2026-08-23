@@ -25,6 +25,11 @@ export default [
     name: 'Results',
   },
   {
+    url: '/laboratory/admitted-patients-samples',
+    icon: 'fas fa-bed',
+    name: 'Admitted Patients',
+  },
+  {
     url: '/laboratory/reports',
     icon: 'flaticon2-list-1',
     name: 'Reports',

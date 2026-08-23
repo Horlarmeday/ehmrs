@@ -16,7 +16,7 @@ export default {
   },
 
   UPDATE_TEST(state, test) {
-    const testIndex = state.tests.findIndex(p => p.id === test.id);
+    const testIndex = state.tests.findIndex((p) => p.id === test.id);
     Object.assign(state.tests[testIndex], test);
   },
 
@@ -40,7 +40,7 @@ export default {
   },
 
   UPDATE_SAMPLE(state, sample) {
-    const sampleIndex = state.samples.findIndex(p => p.id === sample.id);
+    const sampleIndex = state.samples.findIndex((p) => p.id === sample.id);
     Object.assign(state.samples[sampleIndex], sample);
   },
 
@@ -64,7 +64,7 @@ export default {
   },
 
   UPDATE_NHIS_TEST(state, test) {
-    const testIndex = state.nhisTests.findIndex(p => p.id === test.id);
+    const testIndex = state.nhisTests.findIndex((p) => p.id === test.id);
     Object.assign(state.nhisTests[testIndex], test);
   },
 
@@ -112,6 +112,21 @@ export default {
 
   SET_SAMPLE_COLLECTED(state, sample) {
     state.sampleCollected = sample;
+  },
+
+  /**
+   * ADMITTED PATIENTS SAMPLES
+   */
+  SET_ADMITTED_PATIENTS_SAMPLES(state, samples) {
+    state.admittedPatientsSamples = samples;
+  },
+
+  SET_ADMITTED_PATIENTS_SAMPLES_TOTAL(state, total) {
+    state.totalAdmittedPatientsSamples = total;
+  },
+
+  SET_ADMITTED_PATIENTS_SAMPLES_PAGES(state, pages) {
+    state.totalAdmittedPatientsSamplesPages = pages;
   },
 
   /****

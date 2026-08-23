@@ -355,6 +355,25 @@ class LaboratoryController {
   }
 
   /**
+   * get all lab samples for currently admitted patients
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with tests data
+   */
+  static async admittedPatientsSamples(req: Request, res: Response, next: NextFunction) {
+    try {
+      const tests = await LaboratoryService.admittedPatientsSamples(req.query);
+
+      return successResponse({ res, message: SUCCESS, httpCode: StatusCodes.OK, data: tests });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
    * get one sample to collect
    *
    * @static

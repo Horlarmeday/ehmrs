@@ -38,6 +38,13 @@ export default {
   totalSamplesCollected: 0,
   totalSamplesCollectedPages: 0,
 
+  /**
+   * ADMITTED PATIENTS SAMPLES
+   */
+  admittedPatientsSamples: [],
+  totalAdmittedPatientsSamples: 0,
+  totalAdmittedPatientsSamplesPages: 0,
+
   /***
    * TEST RESULT
    */

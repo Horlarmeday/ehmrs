@@ -9,7 +9,7 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/laboratory/tests/create', test)
-        .then(response => {
+        .then((response) => {
           commit(
             'ADD_TEST',
             Object.assign(test, {
@@ -20,7 +20,7 @@ export default {
           );
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -37,13 +37,13 @@ export default {
             sampleId: payload.sampleId,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_TESTS', response.data.data.docs);
           commit('SET_TESTS_TOTAL', response.data.data.total);
           commit('SET_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -52,11 +52,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/laboratory/tests/update`, test)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_TEST', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -69,7 +69,7 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/laboratory/test/samples/create', sample)
-        .then(response => {
+        .then((response) => {
           commit(
             'ADD_SAMPLE',
             Object.assign(sample, {
@@ -79,7 +79,7 @@ export default {
           );
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -95,13 +95,13 @@ export default {
             search: payload.search,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_SAMPLES', response.data.data.docs);
           commit('SET_SAMPLES_TOTAL', response.data.data.total);
           commit('SET_SAMPLE_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -111,11 +111,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/laboratory/test/samples/update`, sample)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_SAMPLE', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -135,13 +135,13 @@ export default {
             period: payload.period,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_SAMPLES_TO_COLLECT', response.data.data.docs);
           commit('SET_SAMPLES_TO_COLLECT_TOTAL', response.data.data.total);
           commit('SET_SAMPLES_TO_COLLECT_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -151,11 +151,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/laboratory/samples-to-collect/get/${payload.id}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_SAMPLE_TO_COLLECT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -165,11 +165,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/laboratory/samples-collected/get/${payload.id}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_SAMPLE_COLLECTED', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -179,11 +179,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/laboratory/accession-number`)
-        .then(response => {
+        .then((response) => {
           commit('GEN_ACCESSION_NUMBER', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -193,11 +193,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/laboratory/collect-samples`, payload)
-        .then(response => {
+        .then((response) => {
           commit('COLLECT_SAMPLES', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -210,11 +210,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/laboratory/add-test-result`, payload)
-        .then(response => {
+        .then((response) => {
           commit('SET_TEST_RESULT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -224,11 +224,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/laboratory/validate-test-result`, { ...payload })
-        .then(response => {
+        .then((response) => {
           commit('SET_TEST_RESULT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -238,11 +238,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post(`/laboratory/approve-test-result`, { results: payload })
-        .then(response => {
+        .then((response) => {
           commit('SET_TEST_RESULT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -260,13 +260,13 @@ export default {
             end: payload.end,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_TEST_RESULTS', response.data.data.docs);
           commit('SET_TEST_RESULTS_TOTAL', response.data.data.total);
           commit('SET_TEST_RESULTS_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -276,11 +276,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/laboratory/test-results/get/${payload.id}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_TEST_RESULT', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -296,7 +296,7 @@ export default {
             responseType: 'arraybuffer', // Important to receive binary data
           }
         )
-        .then(response => {
+        .then((response) => {
           const contentType = response.headers['content-type'].split(';')[0];
           const blob = new Blob([response.data], {
             type: contentType,
@@ -314,7 +314,7 @@ export default {
           commit('REMOVE_ALL_SELECTED_ITEMS', []);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -326,11 +326,11 @@ export default {
         .put(`/laboratory/test-results/bulk-update/${payload.id}`, {
           selectedTests: payload.selectedTests,
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_UPDATED_TESTS_RESULTS', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -352,13 +352,40 @@ export default {
             end: payload.end,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_SAMPLES_COLLECTED', response.data.data.docs);
           commit('SET_SAMPLES_COLLECTED_TOTAL', response.data.data.total);
           commit('SET_SAMPLES_COLLECTED_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+
+  /***
+   * ADMITTED PATIENTS SAMPLES
+   */
+  fetchAdmittedPatientsSamples({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get('/laboratory/admitted-patients-samples/get', {
+          params: {
+            currentPage: payload.currentPage,
+            pageLimit: payload.itemsPerPage,
+            search: payload.search,
+            start: payload.start,
+            end: payload.end,
+          },
+        })
+        .then((response) => {
+          commit('SET_ADMITTED_PATIENTS_SAMPLES', response.data.data.docs);
+          commit('SET_ADMITTED_PATIENTS_SAMPLES_TOTAL', response.data.data.total);
+          commit('SET_ADMITTED_PATIENTS_SAMPLES_PAGES', response.data.data.pages);
+          resolve(response);
+        })
+        .catch((error) => {
           reject(error);
         });
     });
@@ -381,13 +408,13 @@ export default {
             period: payload.period,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_VERIFIED_TESTS', response.data.data.docs);
           commit('SET_VERIFIED_TESTS_TOTAL', response.data.data.total);
           commit('SET_VERIFIED_TESTS_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -401,11 +428,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get('/laboratory/today-stats/get')
-        .then(response => {
+        .then((response) => {
           commit('SET_TODAY_STATS', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -418,11 +445,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .get(`/laboratory/test-prescription/get/${payload.id}`)
-        .then(response => {
+        .then((response) => {
           commit('SET_TEST_PRESCRIPTION', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -435,7 +462,7 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .post('/laboratory/nhis/tests/create', test)
-        .then(response => {
+        .then((response) => {
           commit(
             'ADD_NHIS_TEST',
             Object.assign(test, {
@@ -445,7 +472,7 @@ export default {
           );
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -461,13 +488,13 @@ export default {
             filter: payload.filter,
           },
         })
-        .then(response => {
+        .then((response) => {
           commit('SET_NHIS_TESTS', response.data.data.docs);
           commit('SET_NHIS_TESTS_TOTAL', response.data.data.total);
           commit('SET_NHIS_NUMB_PAGES', response.data.data.pages);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -476,11 +503,11 @@ export default {
     return new Promise((resolve, reject) => {
       axios
         .put(`/laboratory/nhis/tests/update`, test)
-        .then(response => {
+        .then((response) => {
           commit('UPDATE_NHIS_TEST', response.data.data);
           resolve(response);
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });

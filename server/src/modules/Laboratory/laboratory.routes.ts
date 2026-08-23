@@ -24,6 +24,7 @@ router.get('/samples-to-collect/get', verify, LaboratoryController.samplesToColl
 router.get('/samples-to-collect/get/:id', verify, LaboratoryController.getOneSampleToCollect);
 router.get('/samples-collected/get', verify, LaboratoryController.samplesCollected);
 router.get('/samples-collected/get/:id', verify, LaboratoryController.getOneCollectedSample);
+router.get('/admitted-patients-samples/get', verify, LaboratoryController.admittedPatientsSamples);
 router.get('/test-results/get', verify, LaboratoryController.getTestResults);
 router.get('/test-results/get/:id', verify, LaboratoryController.getTestResult);
 router.get('/verified-results/get', verify, LaboratoryController.getVerifiedTestResults);

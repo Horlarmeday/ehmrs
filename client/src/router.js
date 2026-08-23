@@ -878,6 +878,14 @@ const router = new Router({
               },
             },
             {
+              path: 'admitted-patients-samples',
+              name: 'admitted-patients-samples',
+              component: () => import('@/view/pages/laboratory/AdmittedPatientsSamples.vue'),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+            {
               path: 'result-validation/:id',
               name: 'result-validation',
               component: () => import('@/view/pages/laboratory/ResultValidation.vue'),
@@ -1530,7 +1538,7 @@ router.beforeEach((to, from, next) => {
   // reset config to initial state
   store.dispatch(RESET_LAYOUT_CONFIG);
 
-  if (to.matched.some(record => record.meta.requiresAuth)) {
+  if (to.matched.some((record) => record.meta.requiresAuth)) {
     if (authStore.state.token) {
       next();
       return;
