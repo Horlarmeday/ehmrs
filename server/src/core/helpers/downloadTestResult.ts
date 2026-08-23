@@ -50,6 +50,10 @@ const THEME = {
   white: '#ffffff',
 };
 
+// y-coordinate where result content starts on every page:
+// header (ends y=96) + patient card (65 high + 12 gap) + padding
+const CONTENT_TOP = 185;
+
 export const downloadTestResult = (
   patientInfo: PatientInfo,
   testResults: TestResult[],
@@ -68,8 +72,19 @@ export const downloadTestResult = (
 
   doc.pipe(res);
 
+  // repeat header + patient card on every continuation page (explicit AND
+  // table-internal page breaks both emit 'pageAdded'); raising margins.top
+  // makes flowing content and pdfKitTable resume below the repeated band
+  doc.on('pageAdded', () => {
+    generateHeader(doc);
+    generatePatientCard(doc, patientInfo);
+    doc.y = CONTENT_TOP;
+    doc.page.margins.top = CONTENT_TOP;
+  });
+
   generateHeader(doc);
   generatePatientCard(doc, patientInfo);
+  doc.y = CONTENT_TOP;
 
   const contentWidth = doc.page.width - 80;
 
@@ -122,7 +137,7 @@ function generateHeader(doc: PDFDocumentWithTable) {
     .font('Helvetica')
     .fontSize(8)
     .fillColor(THEME.textMuted)
-    .text('Diagnostic Laboratory & Pathology Center', 92, 37)
+    .text('Holistic care to the patient with a healing hand', 92, 37)
     .text('Plot 505, Cadastral Zone F01, Kubwa Extension, FCT – Abuja', 92, 48);
 
   // Contact Info
