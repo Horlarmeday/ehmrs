@@ -340,19 +340,9 @@ function generatePageFooters(doc: PDFDocumentWithTable) {
   const range = doc.bufferedPageRange();
   const pageHeight = doc.page.height;
   const pageWidth = doc.page.width;
-  const note =
-    'Kindly note that, this result must be signed and stamped before it can be considered valid.';
 
   for (let i = range.start; i < range.start + range.count; i++) {
     doc.switchToPage(i);
-
-    // no `width` + lineBreak: false → bypasses LineWrapper's maxY check,
-    // so drawing below the bottom margin cannot trigger a phantom page break
-    doc
-      .fontSize(7)
-      .font('Helvetica')
-      .fillColor(THEME.textMuted)
-      .text(note, 40, pageHeight - 26, { lineBreak: false });
 
     // align: 'right' requires a width, so measure and position manually
     const label = `Page ${i + 1} of ${range.count}`;
