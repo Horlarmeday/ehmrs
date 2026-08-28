@@ -12,6 +12,15 @@ import { emitPatientDemographicsChanged } from '../Outbox/outbox-writer';
 /**
  * Applies a verified reverse instruction to the EMR's OWN rows (ADR-0023, ADR-0025 §6b).
  *
+ * THE INSURER LIFECYCLE (Accounting #286, ADR-0039). `authorisation.granted` sets `Permitted` —
+ * the HMO authorised the line, so it may be fulfilled without the patient paying at the counter.
+ * It arrives on ANY approval, full or partial: a partial approval has already moved its shortfall
+ * onto the patient's portion in Accounting, and that residue is chased by the encounter-scoped
+ * discharge gate rather than by holding this line. `authorisation.rejected` returns the line to
+ * `Pending`, which HOLDS — the EMR has no `Declined` status, so "the HMO refused" and "nobody has
+ * asked yet" are the same row state here. They gate identically; only the wording of the chase
+ * differs, and that lives in Accounting.
+ *
  * THE LOAD-BEARING INVARIANT: the EMR writes; Accounting never writes this column. There is
  * deliberately no "Accounting UPDATEs the EMR's MySQL" path — that is ADR-0011's lethal shortcut in
  * mirror image, made tempting by co-location. Everything money-facing about a prescribed line's
@@ -117,8 +126,8 @@ export async function applyInstruction(
 
   const nextStatus = statusFor(eventType);
   if (nextStatus === undefined) {
-    // A valid reverse event whose handling has not landed (authorisation.rejected, stock.received).
-    // Not a failure and not applied — recorded UNHANDLED, exactly as Accounting does inbound.
+    // A valid reverse event whose handling has not landed (stock.received). Not a failure and not
+    // applied — recorded UNHANDLED, exactly as Accounting does inbound.
     return { outcome: 'UNHANDLED' };
   }
 
@@ -181,6 +190,10 @@ function statusFor(eventType: string): PaymentStatus | undefined {
     case 'payment.settled':
       return PaymentStatus.PAID;
     case 'payment.refunded':
+      return PaymentStatus.PENDING;
+    case 'authorisation.granted':
+      return PaymentStatus.PERMITTED;
+    case 'authorisation.rejected':
       return PaymentStatus.PENDING;
     default:
       return undefined;

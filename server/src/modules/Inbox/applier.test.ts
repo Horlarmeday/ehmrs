@@ -71,6 +71,21 @@ function settledBody() {
   return { external_line_ref: { type: 'drug', id: String(DRUG_ID) }, encounter_id: AGG };
 }
 
+/**
+ * What Accounting actually puts on the wire for `authorisation.granted` (ADR-0039): money as a
+ * STRING of kobo, `null` for a full approval. The applier reads only the line ref, but the fixture
+ * carries the real shape so a contract drift shows up here rather than in production.
+ */
+function grantedBody() {
+  return {
+    external_line_ref: { type: 'drug', id: String(DRUG_ID) },
+    encounter_id: AGG,
+    auth_code: 'AUTH-286',
+    approved_amount_kobo: '250000',
+    expires_at: '2026-09-01T00:00:00.000Z',
+  };
+}
+
 describe('applier + gate (B2.2 / B2.3)', () => {
   afterAll(async () => {
     await deleteDrug();
@@ -149,12 +164,90 @@ describe('applier + gate (B2.2 / B2.3)', () => {
   it('a valid-but-unhandled reverse type is UNHANDLED, not applied and not failed', async () => {
     await seedDrug(PaymentStatus.PENDING, 0);
 
+    // `authorisation.rejected` used to be the example here; it is handled now (#286), so the
+    // unhandled case is demonstrated with a type that genuinely has no applier yet.
     const result = await sequelizeConnection.transaction(t =>
-      applyInstruction('authorisation.rejected', AGG, 1, settledBody(), t)
+      applyInstruction('stock.received', AGG, 1, settledBody(), t)
     );
 
     expect(result.outcome).toBe('UNHANDLED');
     expect((await readDrug()).payment_status).toBe(PaymentStatus.PENDING);
+  });
+
+  describe('the insurer lifecycle (Accounting #286, ADR-0039)', () => {
+    it('authorisation.granted flips payment_status to Permitted and touches nothing else', async () => {
+      await seedDrug(PaymentStatus.PENDING, 0);
+
+      const result = await sequelizeConnection.transaction(t =>
+        applyInstruction('authorisation.granted', AGG, 1, grantedBody(), t)
+      );
+
+      expect(result.outcome).toBe('APPLIED');
+      const drug = await readDrug();
+      expect(drug.payment_status).toBe(PaymentStatus.PERMITTED);
+      // Decision 9 holds for the insurer lifecycle too: an authorisation hands out no drugs.
+      expect(Number(drug.quantity_dispensed)).toBe(0);
+    });
+
+    it('authorisation.rejected returns the line to Pending, which HOLDS', async () => {
+      await seedDrug(PaymentStatus.PERMITTED, 0);
+
+      const result = await sequelizeConnection.transaction(t =>
+        applyInstruction('authorisation.rejected', AGG, 1, settledBody(), t)
+      );
+
+      expect(result.outcome).toBe('APPLIED');
+      expect((await readDrug()).payment_status).toBe(PaymentStatus.PENDING);
+      expect((await isReleased('drug', DRUG_ID)).released).toBe(false);
+    });
+
+    it('a Permitted line releases the gate without the patient having paid', async () => {
+      await seedDrug(PaymentStatus.PENDING, 0);
+      await sequelizeConnection.transaction(t =>
+        applyInstruction('authorisation.granted', AGG, 1, grantedBody(), t)
+      );
+
+      const decision = await isReleased('drug', DRUG_ID);
+      expect(decision.released).toBe(true);
+      expect(decision.status).toBe(PaymentStatus.PERMITTED);
+    });
+
+    it('discards a stale authorisation.granted redelivery, keeping the fresher state', async () => {
+      // D5's EMR-side half: Accounting proves monotonic ALLOCATION, the EMR proves the DISCARD.
+      // A redelivered grant at a sequence at-or-below the applied mark must not claw a rejected
+      // line back to Permitted.
+      await seedDrug(PaymentStatus.PENDING, 0);
+
+      const granted = await sequelizeConnection.transaction(t =>
+        applyInstruction('authorisation.granted', AGG, 4, grantedBody(), t)
+      );
+      const rejected = await sequelizeConnection.transaction(t =>
+        applyInstruction('authorisation.rejected', AGG, 5, settledBody(), t)
+      );
+      const redelivered = await sequelizeConnection.transaction(t =>
+        applyInstruction('authorisation.granted', AGG, 4, grantedBody(), t)
+      );
+
+      expect(granted.outcome).toBe('APPLIED');
+      expect(rejected.outcome).toBe('APPLIED');
+      expect(redelivered.outcome).toBe('DISCARDED_STALE');
+      // The rejection at the higher sequence stands; the late grant did not resurrect Permitted.
+      expect((await readDrug()).payment_status).toBe(PaymentStatus.PENDING);
+    });
+
+    it('a granted instruction naming a line that does not exist is an error, not a silent no-op', async () => {
+      await expect(
+        sequelizeConnection.transaction(t =>
+          applyInstruction(
+            'authorisation.granted',
+            AGG,
+            1,
+            { external_line_ref: { type: 'drug', id: '424242' }, encounter_id: AGG },
+            t
+          )
+        )
+      ).rejects.toThrow(/does not exist/);
+    });
   });
 
   describe('gate (B2.3) fails safe', () => {
