@@ -877,9 +877,9 @@ export const updateVendor = (id: number, body: Partial<Vendor>) => {
   return Vendor.update(body, { where: { id } });
 };
 
-/** ***********************
- * LABORATORY STORE
- ********************** */
+/** ********************************
+ * LABORATORY STORE - DEPRECATED
+ ******************************** */
 
 /**
  * create a laboratory item

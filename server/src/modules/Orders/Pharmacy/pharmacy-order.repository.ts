@@ -394,6 +394,13 @@ export const bulkCreateAdditionalItems = async (
       { transaction }
     );
     createdItems.push(...newItems);
+
+    await emitChargeCapturedForRows(
+      'additional_item',
+      newItems,
+      dayjs().format('YYYY-MM-DD'),
+      transaction
+    );
   }
 
   return createdItems;
