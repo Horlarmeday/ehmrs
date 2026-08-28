@@ -7,6 +7,7 @@ import {
   InventoryItemHistory,
   PharmacyStore,
   PharmacyStoreHistory,
+  ReturnItem,
   Staff,
   Unit,
 } from '../../database/models';
@@ -15,6 +16,7 @@ import { dispensePharmacyItems } from './store.repository';
 import {
   getInventoryItemLayers,
   sumLayerQuantityRemaining,
+  updateReturnRequests,
 } from '../Inventory/inventory.repository';
 import { dispenseDrug, returnDrugToInventory } from '../Pharmacy/pharmacy.repository';
 
@@ -138,6 +140,12 @@ describe('store → inventory transfer keeps batch identity (#295)', () => {
   });
 
   afterAll(async () => {
+    const layerRows = await InventoryItem.findAll({
+      where: { inventory_id },
+      attributes: ['id'],
+    });
+    const layerIds = layerRows.map(row => row.id);
+    await ReturnItem.destroy({ where: { inventory_item_id: layerIds }, force: true });
     await InventoryItemHistory.destroy({ where: { inventory_id }, force: true });
     await InventoryItem.destroy({ where: { inventory_id }, force: true });
     await PharmacyStoreHistory.destroy({ where: { inventory_id }, force: true });
@@ -308,5 +316,40 @@ describe('store → inventory transfer keeps batch identity (#295)', () => {
       order: [['id', 'DESC']],
     });
     expect(history.pharmacy_store_id).toBe(target.pharmacy_store_id);
+  });
+
+  it('a granted dispensary→store return still works against the multi-layer shape', async () => {
+    const layers = await getInventoryItemLayers(inventory_id, drug_id);
+    const target = layers[0];
+    const before = Number(target.quantity_remaining);
+
+    const request = await ReturnItem.create({
+      inventory_item_id: target.id,
+      quantity: 5,
+      date_received: new Date(),
+      reason_for_return: 'audit store return',
+      staff_id,
+    });
+
+    await updateReturnRequests(
+      [{ id: request.id, inventory_item_id: target.id, quantity: 5, status: 'Granted' }],
+      staff_id
+    );
+
+    const after = await InventoryItem.findByPk(target.id);
+    expect(Number(after.quantity_remaining)).toBe(before - 5);
+
+    const history = await InventoryItemHistory.findOne({
+      where: {
+        inventory_id,
+        history_type: HistoryType.RETURNED,
+        inventory_item_id: target.id,
+      },
+      order: [['id', 'DESC']],
+    });
+    expect(Number(history.quantity_returned)).toBe(5);
+    expect(history.pharmacy_store_id).toBe(target.pharmacy_store_id);
+
+    await ReturnItem.destroy({ where: { id: request.id }, force: true });
   });
 });
