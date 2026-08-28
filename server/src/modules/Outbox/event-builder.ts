@@ -108,6 +108,7 @@ export interface PrescribedLineInput {
   readonly service_date: string;
   readonly department?: string;
   readonly service_line?: string;
+  readonly item_code?: string;
   /** Payer at prescription time (ADR-0028). Omitted for cash lines; ID references only. */
   readonly payer?: ChargeCapturedPayer;
   readonly visit_type?: string;
@@ -272,6 +273,14 @@ export function buildChargeCapturedEvent(
   }
   if (line.service_line !== undefined) {
     body.service_line = line.service_line;
+  }
+  if (line.item_code !== undefined) {
+    if (line.item_code.length === 0 || line.item_code.length > 43) {
+      throw new EventBuildError(
+        `item_code must be 1–43 characters, got length ${line.item_code.length}`
+      );
+    }
+    body.item_code = line.item_code;
   }
   if (line.payer !== undefined) {
     body.payer = buildPayer(line.payer);

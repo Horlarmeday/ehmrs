@@ -8,7 +8,15 @@ import { PatientInsurance } from '../../database/models/patientInsurance';
 import { Patient } from '../../database/models/patient';
 import { Visit } from '../../database/models/visit';
 import { VisitCategory } from '../../database/enums';
+import { Drug, DrugForm } from '../../database/models/drug';
+import { Test } from '../../database/models/test';
+import { Service } from '../../database/models/service';
+import { Investigation } from '../../database/models/investigation';
+import { Imaging } from '../../database/models/imaging';
+import { GeneralServiceType, InvestigationType } from '../../database/enums';
+import { createTestStaff, seedLabCatalogue } from '../Orders/__fixtures__/order-fixtures';
 import { emitChargeCapturedForRows, normalisePrice } from './outbox-writer';
+import { EventBuildError } from './event-builder';
 
 afterAll(async () => {
   await sequelizeConnection.close();
@@ -489,5 +497,269 @@ describe('emitChargeCapturedForRows — payer derivation (#114)', () => {
       expect(body.visit_type).toBe('Inpatient');
       expect(body.consultation_valid_until).toBe('2026-08-05T15:00:00.000Z');
     });
+  });
+});
+
+describe('emitChargeCapturedForRows — item_code derivation (#255)', () => {
+  const originalFlag = process.env.EMR_OUTBOX_ENABLED;
+  let staffId: number;
+  let drugId: number;
+  let paddedDrugId: number;
+  let longCodeDrugId: number;
+  let testId: number;
+  let serviceId: number;
+  let investigationId: number;
+
+  beforeAll(async () => {
+    const staff = await createTestStaff();
+    staffId = staff.id;
+
+    const drug = await Drug.create({
+      name: 'Paracetamol 500mg',
+      code: 'PARA500',
+      type: DrugForm.DRUG,
+      staff_id: staffId,
+    } as never);
+    drugId = drug.id;
+
+    const paddedDrug = await Drug.create({
+      name: 'Trimmed Drug',
+      code: ' PARA500 ',
+      type: DrugForm.DRUG,
+      staff_id: staffId,
+    } as never);
+    paddedDrugId = paddedDrug.id;
+
+    const longCodeDrug = await Drug.create({
+      name: 'Long Code Drug',
+      code: 'C'.repeat(44),
+      type: DrugForm.DRUG,
+      staff_id: staffId,
+    } as never);
+    longCodeDrugId = longCodeDrug.id;
+
+    const { testIds } = await seedLabCatalogue(staffId);
+    testId = testIds[0];
+
+    const service = await Service.create({
+      name: 'Consultation Fee',
+      code: 'CONSULT',
+      price: '500.00',
+      type: GeneralServiceType.PRIMARY,
+      staff_id: staffId,
+    } as never);
+    serviceId = service.id;
+
+    const imaging = await Imaging.create({ name: 'X-Ray', staff_id: staffId } as never);
+    const investigation = await Investigation.create({
+      name: 'Chest X-Ray',
+      price: '2500.00',
+      type: InvestigationType.PRIMARY,
+      imaging_id: imaging.id,
+      staff_id: staffId,
+    } as never);
+    investigationId = investigation.id;
+  });
+
+  afterAll(async () => {
+    process.env.EMR_OUTBOX_ENABLED = originalFlag;
+  });
+
+  beforeEach(async () => {
+    process.env.EMR_OUTBOX_ENABLED = 'true';
+    await OutboxEvent.destroy({ where: {}, truncate: true, force: true });
+    await OutboxSequence.destroy({ where: {}, truncate: true, force: true });
+  });
+
+  const baseRow = (id: number, extra: Record<string, unknown> = {}) => ({
+    id,
+    patient_id: 100,
+    visit_id: 8891,
+    total_price: '2500.00',
+    quantity_prescribed: 1,
+    ...extra,
+  });
+
+  it('emits item_code from the drug catalogue code', async () => {
+    const t = await sequelizeConnection.transaction();
+    await emitChargeCapturedForRows('drug', [baseRow(200, { drug_id: drugId })], '2026-07-22', t);
+    await t.commit();
+
+    const [row] = await OutboxEvent.findAll();
+    const body = row.payload.body as Record<string, unknown>;
+    expect(body.item_code).toBe('PARA500');
+    expect(body.service_line).toBe('Paracetamol 500mg');
+  });
+
+  it('item_code is the catalogue code not the drug name', async () => {
+    const t = await sequelizeConnection.transaction();
+    await emitChargeCapturedForRows('drug', [baseRow(201, { drug_id: drugId })], '2026-07-22', t);
+    await t.commit();
+
+    const body = (await OutboxEvent.findAll())[0].payload.body as Record<string, unknown>;
+    expect(body.item_code).toBe('PARA500');
+    expect(body.item_code).not.toBe(body.service_line);
+  });
+
+  it('trims whitespace from catalogue code before emit', async () => {
+    const t = await sequelizeConnection.transaction();
+    await emitChargeCapturedForRows(
+      'drug',
+      [baseRow(202, { drug_id: paddedDrugId })],
+      '2026-07-22',
+      t
+    );
+    await t.commit();
+
+    const body = (await OutboxEvent.findAll())[0].payload.body as Record<string, unknown>;
+    expect(body.item_code).toBe('PARA500');
+  });
+
+  it('emits item_code from the test catalogue code', async () => {
+    const t = await sequelizeConnection.transaction();
+    await emitChargeCapturedForRows(
+      'test',
+      [
+        {
+          id: 203,
+          patient_id: 100,
+          visit_id: 8891,
+          price: '100.00',
+          quantity: 1,
+          test_id: testId,
+        },
+      ],
+      '2026-07-22',
+      t
+    );
+    await t.commit();
+
+    const body = (await OutboxEvent.findAll())[0].payload.body as Record<string, unknown>;
+    expect(body.item_code).toBe('FBC');
+  });
+
+  it('emits item_code from the service catalogue code', async () => {
+    const t = await sequelizeConnection.transaction();
+    await emitChargeCapturedForRows(
+      'service',
+      [
+        {
+          id: 204,
+          patient_id: 100,
+          visit_id: 8891,
+          price: '500.00',
+          quantity: 1,
+          service_id: serviceId,
+        },
+      ],
+      '2026-07-22',
+      t
+    );
+    await t.commit();
+
+    const body = (await OutboxEvent.findAll())[0].payload.body as Record<string, unknown>;
+    expect(body.item_code).toBe('CONSULT');
+  });
+
+  it('omits item_code for investigation lines', async () => {
+    const t = await sequelizeConnection.transaction();
+    await emitChargeCapturedForRows(
+      'investigation',
+      [
+        {
+          id: 205,
+          patient_id: 100,
+          visit_id: 8891,
+          price: '2500.00',
+          quantity: 1,
+          investigation_id: investigationId,
+        },
+      ],
+      '2026-07-22',
+      t
+    );
+    await t.commit();
+
+    const body = (await OutboxEvent.findAll())[0].payload.body as Record<string, unknown>;
+    expect('item_code' in body).toBe(false);
+    expect(body.service_line).toBe('Chest X-Ray');
+  });
+
+  it('omits item_code when drug_id is missing', async () => {
+    const t = await sequelizeConnection.transaction();
+    await emitChargeCapturedForRows('drug', [baseRow(206)], '2026-07-22', t);
+    await t.commit();
+
+    const body = (await OutboxEvent.findAll())[0].payload.body as Record<string, unknown>;
+    expect('item_code' in body).toBe(false);
+  });
+
+  it('omits item_code when the catalogue row has no code', async () => {
+    const t = await sequelizeConnection.transaction();
+    await emitChargeCapturedForRows(
+      'investigation',
+      [
+        {
+          id: 207,
+          patient_id: 100,
+          visit_id: 8891,
+          price: '2500.00',
+          quantity: 1,
+          investigation_id: investigationId,
+        },
+      ],
+      '2026-07-22',
+      t
+    );
+    await t.commit();
+
+    const body = (await OutboxEvent.findAll())[0].payload.body as Record<string, unknown>;
+    expect('item_code' in body).toBe(false);
+  });
+
+  it('resolves catalogue once for a bulk sharing one drug_id', async () => {
+    const findOneSpy = jest.spyOn(Drug, 'findOne');
+    const t = await sequelizeConnection.transaction();
+    await emitChargeCapturedForRows(
+      'drug',
+      [
+        baseRow(208, { drug_id: drugId }),
+        baseRow(209, { drug_id: drugId }),
+        baseRow(210, { drug_id: drugId }),
+      ],
+      '2026-07-22',
+      t
+    );
+    await t.commit();
+
+    expect(findOneSpy).toHaveBeenCalledTimes(1);
+    findOneSpy.mockRestore();
+
+    const rows = await OutboxEvent.findAll();
+    expect(rows).toHaveLength(3);
+    for (const row of rows) {
+      expect((row.payload.body as Record<string, unknown>).item_code).toBe('PARA500');
+    }
+  });
+
+  it('rolls the clinical write back when the catalogue code exceeds 43 characters', async () => {
+    const t = await sequelizeConnection.transaction();
+    let threw = false;
+    try {
+      await emitChargeCapturedForRows(
+        'drug',
+        [baseRow(211, { drug_id: longCodeDrugId })],
+        '2026-07-22',
+        t
+      );
+      await t.commit();
+    } catch (error) {
+      threw = true;
+      expect(error).toBeInstanceOf(EventBuildError);
+      await t.rollback();
+    }
+
+    expect(threw).toBe(true);
+    expect(await OutboxEvent.count()).toBe(0);
   });
 });

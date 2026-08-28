@@ -117,6 +117,34 @@ function payerPassesAccountingGuard(payer: unknown): boolean {
   return true;
 }
 
+function itemCodePassesAccountingGuard(body: Record<string, unknown>): boolean {
+  if (!('item_code' in body)) {
+    return true;
+  }
+  const itemCode = body.item_code;
+  if (typeof itemCode !== 'string') {
+    return false;
+  }
+  return itemCode.length >= 1 && itemCode.length <= 43;
+}
+
+function buildChargeBody(itemCode?: string) {
+  const row = buildChargeCapturedEvent(
+    {
+      type: 'drug',
+      id: 1,
+      patient_id: 100,
+      visit_id: 8891,
+      amount: '2500.00',
+      quantity: 2,
+      service_date: '2026-07-22',
+      ...(itemCode !== undefined ? { item_code: itemCode } : {}),
+    },
+    { tenantKey: TENANT_KEY, sequence: 42 }
+  );
+  return row.payload.body as Record<string, unknown>;
+}
+
 function buildPayerBody(payer: {
   payer_type: 'cash' | 'scheme_hmo' | 'retainership';
   scheme_id?: string;
@@ -184,6 +212,26 @@ describe('charge.captured payer passes Accounting chargeCapturedPayerSchema (#11
       { tenantKey: TENANT_KEY, sequence: 42 }
     );
     expect('payer' in (row.payload.body as Record<string, unknown>)).toBe(false);
+  });
+});
+
+describe('charge.captured item_code passes Accounting chargeCapturedBodySchema (#255)', () => {
+  it('accepts item_code on charge.captured body', () => {
+    expect(itemCodePassesAccountingGuard(buildChargeBody('PARA500'))).toBe(true);
+  });
+
+  it('accepts a body with no item_code (additive)', () => {
+    expect(itemCodePassesAccountingGuard(buildChargeBody())).toBe(true);
+  });
+
+  it('rejects an empty item_code', () => {
+    expect(itemCodePassesAccountingGuard({ ...buildChargeBody(), item_code: '' })).toBe(false);
+  });
+
+  it('rejects an item_code longer than 43 characters on the wire', () => {
+    expect(itemCodePassesAccountingGuard({ ...buildChargeBody(), item_code: 'C'.repeat(44) })).toBe(
+      false
+    );
   });
 });
 
