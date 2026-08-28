@@ -22,6 +22,7 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Inventory } from './inventory';
+import { PharmacyStore } from './pharmacyStore';
 import { Status, PharmacyDrugType as DrugType, DrugForm } from '../enums';
 
 @DefaultScope(() => ({
@@ -186,6 +187,18 @@ export class InventoryItem extends Model {
   })
   brand: string;
 
+  @ForeignKey(() => PharmacyStore)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+  })
+  pharmacy_store_id: number;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  batch: string;
+
   @ForeignKey(() => Staff)
   @Column({
     type: DataType.INTEGER,
@@ -200,6 +213,9 @@ export class InventoryItem extends Model {
 
   @BelongsTo(() => Staff)
   staff: Staff;
+
+  @BelongsTo(() => PharmacyStore)
+  pharmacy_store_item: PharmacyStore;
 
   @BelongsTo(() => DosageForm)
   dosage_form: DosageForm;

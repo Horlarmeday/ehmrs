@@ -21,7 +21,7 @@ import {
 import { DefaultType, DrugForm, PharmacyDrugType } from '../../../database/enums';
 import { NHISApprovalStatus } from '../../../core/helpers/general';
 import { getDrugPrice } from '../../Pharmacy/pharmacy.repository';
-import { getInventories, getInventoryItemQuery } from '../../Inventory/inventory.repository';
+import { getInventories, getInventoryItemLayers } from '../../Inventory/inventory.repository';
 import { DrugGroup } from '../../../database/enums';
 import PharmacyOrderService from '../Pharmacy/pharmacy-order.service';
 import {
@@ -153,10 +153,7 @@ const insertHSGAdditionalItems = async ({
         inventories.find(inventory => inventory.name.toLowerCase().includes(drugType.toLowerCase()))
           ?.id || 1;
 
-      const inventoryItem = await getInventoryItemQuery({
-        inventory_id,
-        drug_id: drug?.drug?.drug_id,
-      });
+      const inventoryItem = (await getInventoryItemLayers(inventory_id, drug?.drug?.drug_id))[0];
       const drugPrice =
         (await getDrugPrice(patient, drug?.drug?.drug_id, inventoryItem)) * +drug?.quantity;
 
@@ -198,10 +195,7 @@ const insertHSGAdditionalItems = async ({
         inventories.find(inventory => inventory.name.toLowerCase().includes(drugType.toLowerCase()))
           ?.id || 1;
 
-      const inventoryItem = await getInventoryItemQuery({
-        inventory_id,
-        drug_id: drug?.drug?.drug_id,
-      });
+      const inventoryItem = (await getInventoryItemLayers(inventory_id, drug?.drug?.drug_id))[0];
       const drugPrice =
         (await getDrugPrice(patient, drug?.drug?.drug_id, inventoryItem)) * +drug?.quantity;
 

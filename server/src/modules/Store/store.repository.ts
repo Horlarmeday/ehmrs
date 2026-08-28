@@ -568,9 +568,7 @@ export const updatePharmacyStoreItems = async (
           { ...inventoryItemToUpdate },
           {
             where: {
-              drug_id: field.drug_id,
-              drug_type: field.drug_type,
-              drug_form: field.drug_form,
+              pharmacy_store_id: field.id,
             },
             transaction: t,
           }
@@ -759,6 +757,8 @@ const mapInventoryItem = (
   drug_form: storeItem.drug_form,
   drug_type: storeItem.drug_type,
   brand: storeItem.brand,
+  pharmacy_store_id: storeItem.id,
+  batch: storeItem.batch,
   date_received: Date.now(),
   staff_id,
 });
@@ -773,6 +773,7 @@ const mapInventoryItemHistory = (
   inventory_item_id: inventoryItem.id,
   inventory_id: inventoryItem.inventory_id,
   unit_id: item.unit_id,
+  pharmacy_store_id: inventoryItem.pharmacy_store_id,
   item_receiver: item.receiver,
   staff_id,
   history_date: Date.now(),
@@ -810,7 +811,11 @@ export const dispensePharmacyItems = async (items: ItemsToDispensedBody[], staff
 
       return sequelizeConnection.transaction(async t => {
         const [inventoryItem, created] = await InventoryItem.findOrCreate({
-          where: { drug_id: mappedItem.drug_id, inventory_id: mappedItem.inventory_id },
+          where: {
+            drug_id: mappedItem.drug_id,
+            inventory_id: mappedItem.inventory_id,
+            pharmacy_store_id: mappedItem.pharmacy_store_id,
+          },
           defaults: { ...mappedItem },
           transaction: t,
         });
@@ -818,12 +823,15 @@ export const dispensePharmacyItems = async (items: ItemsToDispensedBody[], staff
         if (!created) {
           await InventoryItem.update(
             {
-              ...mappedItem,
               quantity_remaining: literal(`quantity_remaining + ${mappedItem.quantity_remaining}`),
               quantity_received: literal(`quantity_received + ${mappedItem.quantity_remaining}`),
             },
             {
-              where: { drug_id: mappedItem.drug_id, inventory_id: mappedItem.inventory_id },
+              where: {
+                drug_id: mappedItem.drug_id,
+                inventory_id: mappedItem.inventory_id,
+                pharmacy_store_id: mappedItem.pharmacy_store_id,
+              },
               transaction: t,
             }
           );

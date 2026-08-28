@@ -48,7 +48,7 @@ import {
   getPrescribedDrugsWithoutJoins,
 } from '../Orders/Pharmacy/pharmacy-order.repository';
 import { BadException } from '../../common/util/api-error';
-import { PRESCRIPTION_NOT_FOUND } from './messages/response-messages';
+import { INVENTORY_QUANTITY_LOW, PRESCRIPTION_NOT_FOUND } from './messages/response-messages';
 import { getVisitsQuery } from '../Visit/visit.repository';
 import { getPrescriptionTests } from '../Orders/Laboratory/lab-order.repository';
 import { getAncTriages, getAntenatalObservations } from '../Antenatal/antenatal.repository';
@@ -709,39 +709,56 @@ const getReturnStatus = (
 /**
  * dispense drug from inventory
  *
+ * Consumes across dispensary layers, soonest expiry first (FEFO), writing one history row per
+ * layer touched so each movement names the store batch it came from (issue #295).
+ *
  * @function
- * @param inventoryItem
+ * @param layers — the drug's layers in the inventory, FEFO-ordered
  * @param prescribedDrug
  * @param data
  */
 export const dispenseDrug = async (
-  inventoryItem: InventoryItem,
+  layers: InventoryItem[],
   prescribedDrug: PrescribedDrug | PrescribedAdditionalItem,
   data: DispenseDrugType
 ) => {
   return await sequelizeConnection.transaction(async t => {
     const { quantity_to_dispense, staff_id, drug_prescription_id } = data;
-    inventoryItem.quantity_consumed += +quantity_to_dispense;
-    inventoryItem.quantity_remaining -= +quantity_to_dispense;
-    const item = await inventoryItem.save({ transaction: t });
 
-    await InventoryItemHistory.create(
-      {
-        quantity_dispensed: quantity_to_dispense,
-        quantity_remaining: item.quantity_remaining,
-        inventory_item_id: inventoryItem.id,
-        inventory_id: inventoryItem.inventory_id,
-        unit_id: inventoryItem.unit_id,
-        staff_id,
-        history_date: Date.now(),
-        history_type: HistoryType.DISPENSED,
-        patient_id: prescribedDrug.patient_id,
-        drug_prescription_id: data?.prescription_id,
-        visit_id: prescribedDrug.visit_id,
-        additional_item_id: data?.additional_item_id,
-      },
-      { transaction: t }
-    );
+    let yetToDispense = +quantity_to_dispense;
+    for (const layer of layers) {
+      if (yetToDispense <= 0) break;
+      const portion = Math.min(yetToDispense, Number(layer.quantity_remaining));
+      if (portion <= 0) continue;
+
+      layer.quantity_consumed = Number(layer.quantity_consumed || 0) + portion;
+      layer.quantity_remaining = Number(layer.quantity_remaining) - portion;
+      const item = await layer.save({ transaction: t });
+
+      await InventoryItemHistory.create(
+        {
+          quantity_dispensed: portion,
+          quantity_remaining: item.quantity_remaining,
+          inventory_item_id: layer.id,
+          inventory_id: layer.inventory_id,
+          unit_id: layer.unit_id,
+          pharmacy_store_id: layer.pharmacy_store_id,
+          staff_id,
+          history_date: Date.now(),
+          history_type: HistoryType.DISPENSED,
+          patient_id: prescribedDrug.patient_id,
+          drug_prescription_id: data?.prescription_id,
+          visit_id: prescribedDrug.visit_id,
+          additional_item_id: data?.additional_item_id,
+        },
+        { transaction: t }
+      );
+      yetToDispense -= portion;
+    }
+
+    if (yetToDispense > 0) {
+      throw new BadException('INVALID', StatusCodes.BAD_REQUEST, INVENTORY_QUANTITY_LOW);
+    }
 
     prescribedDrug.dispense_status = getDispenseStatus(+quantity_to_dispense, prescribedDrug);
     prescribedDrug.quantity_dispensed += +quantity_to_dispense;
@@ -777,6 +794,9 @@ export const dispenseDrug = async (
 /**
  * return drug back to inventory
  *
+ * Credits the soonest-expiring layer (the service passes layers[0]): returned units rejoin the
+ * stock that will be dispensed first, and the history row names the layer it landed on.
+ *
  * @function
  * @param inventoryItem
  * @param prescribedDrug
@@ -800,6 +820,7 @@ export const returnDrugToInventory = async (
         inventory_item_id: inventoryItem.id,
         inventory_id: inventoryItem.inventory_id,
         unit_id: inventoryItem.unit_id,
+        pharmacy_store_id: inventoryItem.pharmacy_store_id,
         staff_id,
         history_date: Date.now(),
         history_type: HistoryType.RETURNED,

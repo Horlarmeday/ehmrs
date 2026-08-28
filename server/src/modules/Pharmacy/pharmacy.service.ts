@@ -27,7 +27,6 @@ import { DosageMeasurement } from './interface/dosage-measurements.interface';
 import { DosageForm } from './interface/dosage-forms.interface';
 import { Drug } from './interface/generic-drugs.interface';
 import {
-  InventoryItem,
   InventoryItemHistory,
   PrescribedAdditionalItem,
   PrescribedDrug,
@@ -42,7 +41,11 @@ import { DispenseDrugType, ReturnDrugType } from './interface/prescribed-drug.ty
 import { BadException } from '../../common/util/api-error';
 import { StatusCodes } from '../../core/helpers/helper';
 import { gt, gte } from 'lodash';
-import { getInventoryItemQuery, getQuantitySum } from '../Inventory/inventory.repository';
+import {
+  getInventoryItemLayers,
+  getQuantitySum,
+  sumLayerQuantityRemaining,
+} from '../Inventory/inventory.repository';
 import {
   INVENTORY_ITEM_NOT_FOUND,
   INVENTORY_QUANTITY_LOW,
@@ -301,14 +304,14 @@ class PharmacyService {
       : getOneAdditionalItem({ id: additional_item_id });
 
     const prescribedDrug = await fetchPrescribedDrug;
-    const inventoryItem = await getInventoryItemQuery({
-      inventory_id: prescribedDrug.inventory_id,
-      drug_id: prescribedDrug.drug_id,
-    });
-    if (!inventoryItem) {
+    const layers = await getInventoryItemLayers(
+      prescribedDrug.inventory_id,
+      prescribedDrug.drug_id
+    );
+    if (!layers.length) {
       throw new BadException('NOT_FOUND', StatusCodes.NOT_FOUND, INVENTORY_ITEM_NOT_FOUND);
     }
-    this.dispenseDrugValidations(body, prescribedDrug, inventoryItem);
+    this.dispenseDrugValidations(body, prescribedDrug, sumLayerQuantityRemaining(layers));
 
     // The authoritative payment gate (issue #137). Fails closed: a block, an unverifiable state,
     // or an unreachable Accounting all HOLD the drug rather than release it.
@@ -324,7 +327,7 @@ class PharmacyService {
       throw new BadException('FORBIDDEN', StatusCodes.FORBIDDEN, gateHoldMessage(gate));
     }
 
-    return dispenseDrug(inventoryItem, prescribedDrug, body);
+    return dispenseDrug(layers, prescribedDrug, body);
   }
 
   /**
@@ -342,15 +345,15 @@ class PharmacyService {
       : getOneAdditionalItem({ id: additional_item_id });
 
     const prescribedDrug = await fetchPrescribedDrug;
-    const inventoryItem = await getInventoryItemQuery({
-      inventory_id: prescribedDrug.inventory_id,
-      drug_id: prescribedDrug.drug_id,
-    });
-    if (!inventoryItem) {
+    const layers = await getInventoryItemLayers(
+      prescribedDrug.inventory_id,
+      prescribedDrug.drug_id
+    );
+    if (!layers.length) {
       throw new BadException('NOT_FOUND', StatusCodes.NOT_FOUND, INVENTORY_ITEM_NOT_FOUND);
     }
     this.returnDrugValidations(body, prescribedDrug);
-    return returnDrugToInventory(inventoryItem, prescribedDrug, body);
+    return returnDrugToInventory(layers[0], prescribedDrug, body);
   }
 
   /**
@@ -398,7 +401,7 @@ class PharmacyService {
   static dispenseDrugValidations(
     data: DispenseDrugType,
     prescribedDrug: PrescribedDrug | PrescribedAdditionalItem,
-    inventoryItem: InventoryItem
+    availableQuantity: number
   ) {
     if (gt(+data.quantity_to_dispense, +prescribedDrug.quantity_to_dispense))
       throw new BadException(
@@ -412,7 +415,7 @@ class PharmacyService {
     if (gt(+data.quantity_to_dispense, quantityYetDispensed))
       throw new BadException('INVALID', StatusCodes.BAD_REQUEST, QUANTITY_MORE_THAN_QUANTITY_LEFT);
 
-    if (gt(+data.quantity_to_dispense, +inventoryItem.quantity_remaining))
+    if (gt(+data.quantity_to_dispense, availableQuantity))
       throw new BadException('INVALID', StatusCodes.BAD_REQUEST, INVENTORY_QUANTITY_LOW);
   }
 
