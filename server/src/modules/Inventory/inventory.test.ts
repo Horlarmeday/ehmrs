@@ -21,6 +21,7 @@ const q = 10;
 
 describe('Inventory Endpoints /inventory request-return/update', () => {
   let token;
+  let storeTotalBefore: number;
   let staff_id: number;
   let unit_id: number;
   let drug_id: number;
@@ -150,6 +151,7 @@ describe('Inventory Endpoints /inventory request-return/update', () => {
     rowA = await makeStoreRow('LOT-A', 100, '2027-01-31');
     rowB = await makeStoreRow('LOT-B', 150, '2028-06-30');
     rowC = await makeStoreRow('LOT-C', 200, '2029-03-31');
+    storeTotalBefore = rowA.quantity_remaining + rowB.quantity_remaining + rowC.quantity_remaining;
 
     sourcedItem = await makeInventoryItem({
       pharmacy_store_id: rowB.id,
@@ -208,6 +210,8 @@ describe('Inventory Endpoints /inventory request-return/update', () => {
 
     await reloadRows();
     expect(rowB.quantity_remaining).toBe(110);
+    expect(rowB.unit_price).toBe('150.00');
+    expect(String(new Date(rowB.expiration).toISOString()).startsWith('2028-06-30')).toBe(true);
     expect(rowA.quantity_remaining).toBe(100);
     expect(rowC.quantity_remaining).toBe(100);
   }, 10000);
@@ -228,7 +232,7 @@ describe('Inventory Endpoints /inventory request-return/update', () => {
     });
     const total = rows.reduce((sum, row) => sum + row.quantity_remaining, 0);
     expect(rows).toHaveLength(3);
-    expect(total).toBe(310);
+    expect(total).toBe(storeTotalBefore + q);
   }, 10000);
 
   it('a granted return stamps history from the row it actually updated', async () => {
@@ -289,6 +293,18 @@ describe('Inventory Endpoints /inventory request-return/update', () => {
 
   it('a pending request moves no stock', async () => {
     const historyBefore = await returnedHistoryCount();
+    const res = await request(server)
+      .put('/api/inventory/request-return/update')
+      .set('Authorization', `Bearer ${token}`)
+      .send([
+        {
+          id: pendingReturnItem.id,
+          inventory_item_id: mixedValidItem.id,
+          quantity: q,
+          status: 'Pending',
+        },
+      ]);
+    expect(res.status).toBe(201);
     await pendingReturnItem.reload();
     expect(pendingReturnItem.status).toBe('Pending');
     await reloadRows();
