@@ -21,7 +21,7 @@ import {
   ReturnItemStatus as Status,
   Status as InventoryItemStatus,
 } from '../../database/enums';
-import { getOnePharmacyStoreItem } from '../Store/store.repository';
+import { BadException } from '../../common/util/api-error';
 import dayjs from 'dayjs';
 import { isEmpty } from 'lodash';
 
@@ -419,22 +419,41 @@ export const updateReturnRequests = async (
   const declinedRequests = items.filter(item => item.status === 'Declined');
   const grantedRequests = items.filter(item => item.status === 'Granted');
 
+  const grants = (
+    await Promise.all(
+      grantedRequests.map(async item => ({
+        item,
+        inventoryItem: await getInventoryItemQuery({ id: item.inventory_item_id }),
+        returnItem: await ReturnItem.findOne({ where: { id: item.id } }),
+      }))
+    )
+  ).filter(({ returnItem }) => returnItem?.status !== Status.RETURNED);
+
+  const unsourced = grants.filter(({ inventoryItem }) => !inventoryItem?.pharmacy_store_id);
+  if (unsourced.length) {
+    throw new BadException(
+      'INVALID_REQUEST',
+      400,
+      `Cannot return to store: no source batch recorded for inventory item(s) ${unsourced
+        .map(({ item }) => item.inventory_item_id)
+        .join(', ')}. These were dispensed before batch tracking and must be reconciled manually.`
+    );
+  }
+
   if (declinedRequests?.length) {
     const declinedRequestIds = declinedRequests.map(item => item.id);
     await ReturnItem.update({ status: Status.DECLINED }, { where: { id: declinedRequestIds } });
   }
 
-  for await (const item of grantedRequests) {
-    // find the inventory item
-    const inventoryItem = await getInventoryItemQuery({ id: item.inventory_item_id });
-    const [storeItem, returnItem] = await Promise.all([
-      getOnePharmacyStoreItem({
-        drug_id: inventoryItem.drug_id,
-        drug_type: inventoryItem.drug_type,
-        drug_form: inventoryItem.drug_form,
-      }),
-      ReturnItem.findOne({ where: { id: item.id } }),
-    ]);
+  for await (const { item, inventoryItem, returnItem } of grants) {
+    const storeItem = await PharmacyStore.findByPk(inventoryItem.pharmacy_store_id);
+    if (!storeItem) {
+      throw new BadException(
+        'NOT_FOUND',
+        404,
+        `Source batch ${inventoryItem.pharmacy_store_id} no longer exists in the store`
+      );
+    }
 
     await sequelizeConnection.transaction(async t => {
       // update the inventory item quantity_remaining
@@ -469,11 +488,7 @@ export const updateReturnRequests = async (
           quantity_remaining: literal(`quantity_remaining + ${+item.quantity}`),
         },
         {
-          where: {
-            drug_id: inventoryItem.drug_id,
-            drug_type: inventoryItem.drug_type,
-            drug_form: inventoryItem.drug_form,
-          },
+          where: { id: storeItem.id },
           transaction: t,
         }
       );
@@ -491,8 +506,11 @@ export const updateReturnRequests = async (
         },
         { transaction: t }
       );
-      // update teh return items status to RETURNED
-      await ReturnItem.update({ status: Status.RETURNED }, { where: { id: item.id } });
+      // update the return items status to RETURNED
+      await ReturnItem.update(
+        { status: Status.RETURNED },
+        { where: { id: item.id }, transaction: t }
+      );
     });
   }
 };
