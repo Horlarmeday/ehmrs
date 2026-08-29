@@ -20,6 +20,7 @@ import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Inventory } from './inventory';
 import { InventoryItem } from './inventoryItem';
 import { Patient } from './patient';
+import { PharmacyStore } from './pharmacyStore';
 import { PrescribedDrug } from './prescribedDrug';
 import { PrescribedAdditionalItem } from './prescribedAdditionalItem';
 import { Visit } from './visit';
@@ -155,6 +156,13 @@ export class InventoryItemHistory extends Model {
   })
   visit_id: number;
 
+  @ForeignKey(() => PharmacyStore)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+  })
+  pharmacy_store_id: number;
+
   @Column({
     type: DataType.TEXT,
   })
@@ -177,6 +185,9 @@ export class InventoryItemHistory extends Model {
 
   @BelongsTo(() => Visit)
   visit: Visit;
+
+  @BelongsTo(() => PharmacyStore)
+  pharmacy_store_item: PharmacyStore;
 
   static async paginate(param: {
     paginate: number;

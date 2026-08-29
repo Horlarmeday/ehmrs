@@ -248,6 +248,28 @@ export const getInventoryItemQuery = async (query: WhereOptions<InventoryItem>) 
 };
 
 /**
+ * Every dispensary layer of a drug in an inventory, soonest expiry first (FEFO — ADR-0009: even a
+ * weighted-average tenant dispenses the soonest-expiring batch first). The dispensary is
+ * multi-layer: one row per originating store batch, so a drug+inventory key matches N rows.
+ */
+export const getInventoryItemLayers = async (
+  inventory_id: number,
+  drug_id: number
+): Promise<InventoryItem[]> => {
+  return InventoryItem.findAll({
+    where: { inventory_id, drug_id },
+    order: [
+      ['expiration', 'ASC'],
+      ['createdAt', 'ASC'],
+    ],
+    include: [{ model: Drug, attributes: ['name'] }],
+  });
+};
+
+export const sumLayerQuantityRemaining = (layers: InventoryItem[]): number =>
+  layers.reduce((total, layer) => total + Number(layer.quantity_remaining), 0);
+
+/**
  * update an inventory item
  * @param data
  * @returns {Inventory} inventory product data
@@ -433,6 +455,7 @@ export const updateReturnRequests = async (
           inventory_item_id: inventoryItem.id,
           inventory_id: inventoryItem.inventory_id,
           unit_id: inventoryItem.unit_id,
+          pharmacy_store_id: inventoryItem.pharmacy_store_id,
           staff_id,
           history_date: Date.now(),
           history_type: HistoryType.RETURNED,

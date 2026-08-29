@@ -48,7 +48,10 @@ import {
   INJECTION_SYRINGES_NOT_FOUND,
   NHIS_DRUG_QUOTA,
 } from './messages/response-messages';
-import { getInventoryItemQuery } from '../../Inventory/inventory.repository';
+import {
+  getInventoryItemLayers,
+  sumLayerQuantityRemaining,
+} from '../../Inventory/inventory.repository';
 import { getVisitById } from '../../Visit/visit.repository';
 import { getOneAdmission, getOneAdmissionQuery } from '../../Admission/admission.repository';
 import { getPeriodQuery, NHISApprovalStatus } from '../../../core/helpers/general';
@@ -110,10 +113,11 @@ class PharmacyOrderService {
           drug_group,
           drug_name,
         } = data;
-        const inventoryItem = await getInventoryItemQuery({ inventory_id, drug_id });
-        if (!inventoryItem) {
+        const layers = await getInventoryItemLayers(inventory_id, drug_id);
+        if (!layers.length) {
           throw new BadException('Error', 400, `Cannot find drug ${drug_name} in the inventory`);
         }
+        const inventoryItem = layers[0];
 
         const drugPrice =
           (await getDrugPrice(patient, drug_id, inventoryItem)) * +quantity_to_dispense;
@@ -133,7 +137,7 @@ class PharmacyOrderService {
           drug_group: drug_group || null,
           original_total_price: inventoryItem.selling_price * +quantity_to_dispense,
           drugPrice: inventoryItem.selling_price * +quantity_to_dispense,
-          quantity_remaining: inventoryItem.quantity_remaining,
+          quantity_remaining: sumLayerQuantityRemaining(layers),
           drugName: inventoryItem?.drug?.name,
         };
       })
@@ -183,9 +187,9 @@ class PharmacyOrderService {
       quantity_to_dispense,
     } = body;
     const visit = await VisitService.getVisitById(visit_id);
-    const [drugPrescription, inventoryItem, insurance, patient, admission] = await Promise.all([
+    const [drugPrescription, inventoryLayers, insurance, patient, admission] = await Promise.all([
       this.getDrugPrescription(visit.patient_id, body),
-      getInventoryItemQuery({ inventory_id, drug_id }),
+      getInventoryItemLayers(inventory_id, drug_id),
       getPatientInsuranceQuery({
         patient_id: visit.patient_id,
         is_default: true,
@@ -196,6 +200,7 @@ class PharmacyOrderService {
         discharge_status: DischargeStatus.ON_ADMISSION,
       }),
     ]);
+    const inventoryItem = inventoryLayers[0];
     const drugPrice = (await getDrugPrice(patient, drug_id, inventoryItem)) * +quantity_to_dispense;
 
     if (
@@ -289,11 +294,8 @@ class PharmacyOrderService {
 
     // check that the quantity is not low in the dispensary
     for await (const item of body) {
-      const inventoryItem = await getInventoryItemQuery({
-        drug_id: item.drug_id,
-        inventory_id: item.inventory_id,
-      });
-      if (lt(inventoryItem.quantity_remaining, item.quantity_to_dispense)) {
+      const layers = await getInventoryItemLayers(item.inventory_id, item.drug_id);
+      if (lt(sumLayerQuantityRemaining(layers), item.quantity_to_dispense)) {
         throw new BadException('Invalid', 400, INVALID_QUANTITY.replace('drug', item.name));
       }
     }
@@ -301,7 +303,8 @@ class PharmacyOrderService {
     const data = ((await Promise.all(
       body.map(async item => {
         const { drug_id, drug_type, quantity_to_dispense, price, inventory_id } = item;
-        const inventoryItem = await getInventoryItemQuery({ inventory_id, drug_id });
+        const layers = await getInventoryItemLayers(inventory_id, drug_id);
+        const inventoryItem = layers[0];
         const drugPrice =
           +(await getDrugPrice(patient, drug_id, inventoryItem)) * +quantity_to_dispense;
         const totalPrice = +price * +quantity_to_dispense;
