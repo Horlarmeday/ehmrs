@@ -22,6 +22,8 @@ import {
   Status as InventoryItemStatus,
 } from '../../database/enums';
 import { BadException } from '../../common/util/api-error';
+import { emitStockReturned } from '../Outbox/outbox-writer';
+import { storeAggregateId } from '../Outbox/event-builder';
 import dayjs from 'dayjs';
 import { isEmpty } from 'lodash';
 
@@ -511,6 +513,32 @@ export const updateReturnRequests = async (
         { status: Status.RETURNED },
         { where: { id: item.id }, transaction: t }
       );
+
+      // Inside this iteration's transaction (ADR-0018). ONE event per granted item, not one per
+      // grant: the transaction is per iteration, so an aggregate event could commit for items
+      // whose stock writes rolled back. Flow 2 has no patient and no sale, so it emits
+      // stock.returned ONLY — never charge.returned, which would reverse revenue for a sale that
+      // never happened (ADR-0040, Accounting #298).
+      if (storeItem.external_batch_id) {
+        const drug = await Drug.findByPk(inventoryItem.drug_id, {
+          attributes: ['code'],
+          transaction: t,
+        });
+        const itemCode = drug?.code?.trim();
+        if (itemCode) {
+          await emitStockReturned(
+            {
+              external_batch_id: storeItem.external_batch_id,
+              item_code: itemCode,
+              quantity: +item.quantity,
+              source: 'dispensary_to_store',
+              aggregate_id: storeAggregateId(inventoryItem.inventory_id),
+              return_id: item.id,
+            },
+            t
+          );
+        }
+      }
     });
   }
 };

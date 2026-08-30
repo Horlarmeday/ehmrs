@@ -164,10 +164,11 @@ describe('applier + gate (B2.2 / B2.3)', () => {
   it('a valid-but-unhandled reverse type is UNHANDLED, not applied and not failed', async () => {
     await seedDrug(PaymentStatus.PENDING, 0);
 
-    // `authorisation.rejected` used to be the example here; it is handled now (#286), so the
-    // unhandled case is demonstrated with a type that genuinely has no applier yet.
+    // The example here keeps moving as appliers land: `authorisation.rejected` until #286, then
+    // `stock.received` until #297 gave it one. `discharge.cleared` is a valid outbound type with
+    // no applier yet (Accounting #32), so it demonstrates the unhandled case today.
     const result = await sequelizeConnection.transaction(t =>
-      applyInstruction('stock.received', AGG, 1, settledBody(), t)
+      applyInstruction('discharge.cleared', AGG, 1, settledBody(), t)
     );
 
     expect(result.outcome).toBe('UNHANDLED');

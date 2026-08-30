@@ -68,6 +68,19 @@ export class PharmacyStore extends Model {
   })
   batch: string;
 
+  /**
+   * The batch id Accounting minted for this receipt, applied from `stock.received` (ADR-0040).
+   *
+   * Null for stock Accounting never saw (pre-cutover, donations) — permanently, since such a row
+   * can never acquire one retroactively. Non-unique: `stock.received` is additive, so a redelivery
+   * re-writes the same value and must not raise.
+   */
+  @Column({
+    type: DataType.STRING(36),
+    allowNull: true,
+  })
+  external_batch_id: string;
+
   @Column({
     type: DataType.INTEGER,
     allowNull: false,

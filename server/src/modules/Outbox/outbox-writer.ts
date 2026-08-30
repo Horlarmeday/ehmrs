@@ -20,14 +20,18 @@ import {
   buildChargeCapturedEvent,
   buildChargeReversalRequestedEvent,
   buildChargeVoidedEvent,
+  buildDispenseRecordedEvent,
   buildEncounterClosedEvent,
   buildEncounterOpenedEvent,
   buildPatientDemographicsChangedEvent,
+  buildStockReturnedEvent,
   patientAggregateId,
   visitAggregateId,
   PrescribedLineInput,
   ChargeReversalRequestedInput,
   ChargeVoidedInput,
+  DispenseRecordedInput,
+  StockReturnedInput,
 } from './event-builder';
 import {
   COVERAGE_TYPE_FIELD_BY_TYPE,
@@ -165,6 +169,54 @@ export async function emitChargeCaptured(
   const sequence = await claimSequence(aggregateId, transaction);
 
   const event = buildChargeCapturedEvent(line, { tenantKey: TENANT_KEY, sequence });
+
+  return persistOutboxEvent(event, transaction);
+}
+
+/**
+ * Builds and persists a `dispense.recorded` outbox row on the caller's transaction — the SAME
+ * transaction the stock decrement runs in, so no dispense can reduce stock without the event
+ * committing alongside it (ADR-0018). No-op when the outbox is disabled.
+ *
+ * One event per physical dispense, with the cost layers itemised inside it. See
+ * `buildDispenseRecordedEvent` for why `batches` is an array and why it may name fewer units than
+ * were dispensed.
+ */
+export async function emitDispenseRecorded(
+  input: DispenseRecordedInput,
+  transaction: Transaction
+): Promise<OutboxEvent | undefined> {
+  if (!isOutboxEnabled()) {
+    return undefined;
+  }
+
+  const aggregateId = visitAggregateId(input.visit_id);
+  const sequence = await claimSequence(aggregateId, transaction);
+
+  const event = buildDispenseRecordedEvent(input, { tenantKey: TENANT_KEY, sequence });
+
+  return persistOutboxEvent(event, transaction);
+}
+
+/**
+ * Builds and persists a `stock.returned` outbox row on the caller's transaction — the same
+ * transaction the stock credit runs in (ADR-0018). No-op when the outbox is disabled.
+ *
+ * Fires from BOTH return paths, distinguished by `source`. The dispensary→store grant commits one
+ * transaction per granted item, so it calls this once per item rather than once per grant.
+ */
+export async function emitStockReturned(
+  input: StockReturnedInput,
+  transaction: Transaction
+): Promise<OutboxEvent | undefined> {
+  if (!isOutboxEnabled()) {
+    return undefined;
+  }
+
+  const aggregateId = input.aggregate_id;
+  const sequence = await claimSequence(aggregateId, transaction);
+
+  const event = buildStockReturnedEvent(input, { tenantKey: TENANT_KEY, sequence });
 
   return persistOutboxEvent(event, transaction);
 }
