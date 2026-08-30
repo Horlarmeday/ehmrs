@@ -24,6 +24,7 @@ import {
 import { BadException } from '../../common/util/api-error';
 import { emitStockReturned } from '../Outbox/outbox-writer';
 import { storeAggregateId } from '../Outbox/event-builder';
+import { logStockReturnedSkip } from '../Outbox/skip-observability';
 import dayjs from 'dayjs';
 import { isEmpty } from 'lodash';
 
@@ -519,25 +520,42 @@ export const updateReturnRequests = async (
       // whose stock writes rolled back. Flow 2 has no patient and no sale, so it emits
       // stock.returned ONLY — never charge.returned, which would reverse revenue for a sale that
       // never happened (ADR-0040, Accounting #298).
-      if (storeItem.external_batch_id) {
-        const drug = await Drug.findByPk(inventoryItem.drug_id, {
-          attributes: ['code'],
-          transaction: t,
-        });
-        const itemCode = drug?.code?.trim();
-        if (itemCode) {
-          await emitStockReturned(
-            {
-              external_batch_id: storeItem.external_batch_id,
-              item_code: itemCode,
-              quantity: +item.quantity,
-              source: 'dispensary_to_store',
-              aggregate_id: storeAggregateId(inventoryItem.inventory_id),
-              return_id: item.id,
-            },
-            t
-          );
-        }
+      //
+      // Either guard missing is a legitimate state, not an error — but the skip is LOGGED rather
+      // than silent (#21, #22): stock moves regardless, and Accounting cannot detect an event it
+      // never receives.
+      const drug = storeItem.external_batch_id
+        ? await Drug.findByPk(inventoryItem.drug_id, {
+            attributes: ['code'],
+            transaction: t,
+          })
+        : null;
+      const itemCode = drug?.code?.trim();
+
+      const skipContext = {
+        source: 'dispensary_to_store' as const,
+        return_id: item.id,
+        drug_id: inventoryItem.drug_id,
+        pharmacy_store_id: storeItem.id,
+        inventory_item_id: inventoryItem.id,
+      };
+
+      if (!storeItem.external_batch_id) {
+        logStockReturnedSkip({ ...skipContext, reason: 'missing_batch_id' });
+      } else if (!itemCode) {
+        logStockReturnedSkip({ ...skipContext, reason: 'missing_item_code' });
+      } else {
+        await emitStockReturned(
+          {
+            external_batch_id: storeItem.external_batch_id,
+            item_code: itemCode,
+            quantity: +item.quantity,
+            source: 'dispensary_to_store',
+            aggregate_id: storeAggregateId(inventoryItem.inventory_id),
+            return_id: item.id,
+          },
+          t
+        );
       }
     });
   }
