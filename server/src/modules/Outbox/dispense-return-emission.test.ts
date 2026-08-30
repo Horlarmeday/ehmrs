@@ -26,6 +26,7 @@ import { getInventoryItemLayers, updateReturnRequests } from '../Inventory/inven
 import { dispenseDrug, returnDrugToInventory } from '../Pharmacy/pharmacy.repository';
 import { applyInstruction } from '../Inbox/applier';
 import { emitDispenseRecorded } from './outbox-writer';
+import { logger } from '../../core/helpers/logger';
 
 /**
  * Integration tests for the dispense/return emitters and the stock.received applier (Accounting
@@ -440,6 +441,70 @@ describe('dispense.recorded and stock.returned emission (#297, ADR-0040)', () =>
     rows.forEach(row => expect(bodyOf(row).source).toBe('dispensary_to_store'));
 
     expect(await OutboxEvent.count({ where: { event_type: 'charge.returned' } })).toBe(0);
+  });
+
+  it('a granted return from a LEGACY layer moves stock, emits nothing, and now LOGS the skip (#21)', async () => {
+    // Deliberately does NOT clear the outbox: this case emits nothing by design, so draining the
+    // table here would leave the later "no emitted body carries a cost or a price" scan with no
+    // rows to inspect. The store-aggregate count is taken as a delta instead.
+    const storeEventsBefore = await OutboxEvent.count({
+      where: { event_type: 'stock.returned', aggregate_id: `store:${inventory_id}` },
+    });
+
+    // The defect #21 reports: this path used to move stock and emit nothing with no trace at all.
+    // The guard must still hold — emitting would abort the clinical transaction — so what is
+    // asserted is that the skip is now VISIBLE.
+    const warn = jest.spyOn(logger, 'warn').mockImplementation(() => logger);
+
+    const legacyLayer = (await getInventoryItemLayers(inventory_id, drug_id)).find(
+      layer => layer.pharmacy_store_id === storeRowLegacy.id
+    );
+    const remainingBefore = Number(legacyLayer.quantity_remaining);
+
+    const returnItem = await ReturnItem.create({
+      inventory_item_id: legacyLayer.id,
+      quantity: 2,
+      status: ReturnItemStatus.PENDING,
+      reason_for_return: 'overstocked',
+      date_received: new Date(),
+      staff_id,
+    });
+
+    await updateReturnRequests(
+      [
+        {
+          id: returnItem.id,
+          inventory_item_id: legacyLayer.id,
+          quantity: 2,
+          status: 'Granted',
+        },
+      ] as never,
+      staff_id
+    );
+
+    // Stock still moved: the guard drops the EVENT, never the clinical write.
+    const layerAfter = await InventoryItem.findByPk(legacyLayer.id);
+    expect(Number(layerAfter.quantity_remaining)).toBe(remainingBefore - 2);
+    expect((await ReturnItem.findByPk(returnItem.id)).status).toBe(ReturnItemStatus.RETURNED);
+
+    // Still no event — a fabricated batch id is forbidden (#295 D3).
+    expect(
+      await OutboxEvent.count({
+        where: { event_type: 'stock.returned', aggregate_id: `store:${inventory_id}` },
+      })
+    ).toBe(storeEventsBefore);
+
+    // But no longer silent.
+    const skipLines = warn.mock.calls
+      .map(call => String(call[0]))
+      .filter(line => line.includes('[stock.returned]'));
+    expect(skipLines).toHaveLength(1);
+    expect(skipLines[0]).toContain('reason=missing_batch_id');
+    expect(skipLines[0]).toContain('dispensary_to_store');
+    expect(skipLines[0]).toContain(`return_id=${returnItem.id}`);
+    expect(skipLines[0]).toContain(`pharmacy_store_id=${storeRowLegacy.id}`);
+
+    warn.mockRestore();
   });
 
   it('no emitted body carries a cost or a price', async () => {
