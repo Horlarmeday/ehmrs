@@ -24,6 +24,7 @@ import {
   Measurement,
   Patient,
   PatientInsurance,
+  PharmacyStore,
   PrescribedAdditionalItem,
   PrescribedDrug,
   RoutesOfAdministration,
@@ -48,6 +49,8 @@ import {
   getPrescribedDrugsWithoutJoins,
 } from '../Orders/Pharmacy/pharmacy-order.repository';
 import { BadException } from '../../common/util/api-error';
+import { emitDispenseRecorded, emitStockReturned } from '../Outbox/outbox-writer';
+import { DispensedBatchInput, visitAggregateId } from '../Outbox/event-builder';
 import { INVENTORY_QUANTITY_LOW, PRESCRIPTION_NOT_FOUND } from './messages/response-messages';
 import { getVisitsQuery } from '../Visit/visit.repository';
 import { getPrescriptionTests } from '../Orders/Laboratory/lab-order.repository';
@@ -726,6 +729,11 @@ export const dispenseDrug = async (
     const { quantity_to_dispense, staff_id, drug_prescription_id } = data;
 
     let yetToDispense = +quantity_to_dispense;
+    // Accumulated for the dispense.recorded emit below (Accounting #297, ADR-0040): one entry per
+    // layer actually consumed, and the id of the FIRST history row as the dispense's identity.
+    const batches: DispensedBatchInput[] = [];
+    let firstHistoryId: number | undefined;
+
     for (const layer of layers) {
       if (yetToDispense <= 0) break;
       const portion = Math.min(yetToDispense, Number(layer.quantity_remaining));
@@ -735,7 +743,7 @@ export const dispenseDrug = async (
       layer.quantity_remaining = Number(layer.quantity_remaining) - portion;
       const item = await layer.save({ transaction: t });
 
-      await InventoryItemHistory.create(
+      const history = await InventoryItemHistory.create(
         {
           quantity_dispensed: portion,
           quantity_remaining: item.quantity_remaining,
@@ -753,6 +761,20 @@ export const dispenseDrug = async (
         },
         { transaction: t }
       );
+
+      if (firstHistoryId === undefined) {
+        firstHistoryId = history.id;
+      }
+
+      // A legacy layer (null pharmacy_store_id) and a store row Accounting never saw both yield no
+      // batch id. OMIT the entry rather than fabricating one: Accounting reads the unnamed
+      // remainder as explicitly uncostable, which is true, where a guessed id would be silently
+      // wrong (#295 D3, ADR-0040).
+      const externalBatchId = await resolveExternalBatchId(layer.pharmacy_store_id, t);
+      if (externalBatchId) {
+        batches.push({ external_batch_id: externalBatchId, quantity: portion });
+      }
+
       yetToDispense -= portion;
     }
 
@@ -787,8 +809,58 @@ export const dispenseDrug = async (
       },
       { where: { id: drug_prescription_id }, transaction: t }
     );
+
+    // Inside the transaction (ADR-0018): no dispense reduces stock without this event committing
+    // alongside it. One event per physical dispense, cost layers itemised inside it.
+    if (firstHistoryId !== undefined) {
+      await emitDispenseRecorded(
+        {
+          type: data.prescription_id ? 'drug' : 'additional_item',
+          id: data.prescription_id ?? data.additional_item_id,
+          visit_id: prescribedDrug.visit_id,
+          quantity: +quantity_to_dispense,
+          dispense_id: firstHistoryId,
+          item_code: await resolveItemCode(prescribedDrug.drug_id, t),
+          batches: batches.length > 0 ? batches : undefined,
+        },
+        t
+      );
+    }
+
     return drug;
   });
+};
+
+/**
+ * The batch id Accounting minted for the store row a dispensary layer came from (ADR-0040).
+ *
+ * Two hops, both of which legitimately yield nothing: a legacy layer has no `pharmacy_store_id`
+ * (#295 D3 — permanently nullable), and a store row for stock Accounting never saw has no
+ * `external_batch_id`. Returns undefined in both cases, and the caller omits the entry.
+ */
+const resolveExternalBatchId = async (
+  pharmacyStoreId: number | null | undefined,
+  transaction: sequelize.Transaction
+): Promise<string | undefined> => {
+  if (!pharmacyStoreId) return undefined;
+  const storeItem = await PharmacyStore.findByPk(pharmacyStoreId, {
+    attributes: ['external_batch_id'],
+    transaction,
+  });
+  return storeItem?.external_batch_id || undefined;
+};
+
+/**
+ * The catalogue code for a drug — `Drug.code`, the same field `charge.captured` emits as
+ * `item_code` (outbox-writer's CatalogueResolver). An ID reference, never a name or a price.
+ */
+const resolveItemCode = async (
+  drugId: number,
+  transaction: sequelize.Transaction
+): Promise<string | undefined> => {
+  if (!drugId) return undefined;
+  const drug = await Drug.findByPk(drugId, { attributes: ['code'], transaction });
+  return drug?.code?.trim() || undefined;
 };
 
 /**
@@ -846,6 +918,27 @@ export const returnDrugToInventory = async (
       },
       { where: { id: drug_prescription_id }, transaction: t }
     );
+
+    // Inside the transaction (ADR-0018). Scalar batch id, not an array: the service hands this
+    // function layers[0], so exactly ONE layer is credited (ADR-0040 records that this re-layers
+    // stock — the units may have been dispensed from several layers). Emitted only when the layer
+    // has a batch identity; a legacy layer's return is invisible to Accounting rather than
+    // attributed to a fabricated batch.
+    const externalBatchId = await resolveExternalBatchId(inventoryItem.pharmacy_store_id, t);
+    const itemCode = await resolveItemCode(inventoryItem.drug_id, t);
+    if (externalBatchId && itemCode) {
+      await emitStockReturned(
+        {
+          external_batch_id: externalBatchId,
+          item_code: itemCode,
+          quantity: +quantity_to_return,
+          source: 'patient_to_dispensary',
+          aggregate_id: visitAggregateId(prescribedDrug.visit_id),
+          return_id: history.id,
+        },
+        t
+      );
+    }
 
     return history;
   });

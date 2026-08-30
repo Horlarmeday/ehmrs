@@ -1,0 +1,504 @@
+import '../../core/config/env';
+import { sequelizeConnection } from '../../database/config/data-source';
+import {
+  Drug,
+  Inventory,
+  InventoryItem,
+  InventoryItemHistory,
+  OutboxEvent,
+  Patient,
+  PharmacyStore,
+  PharmacyStoreHistory,
+  ReturnItem,
+  Staff,
+  Unit,
+  Visit,
+} from '../../database/models';
+import {
+  PharmacyDrugType,
+  AcceptedDrugType,
+  DrugForm,
+  ReturnItemStatus,
+  VisitCategory,
+} from '../../database/enums';
+import { dispensePharmacyItems } from '../Store/store.repository';
+import { getInventoryItemLayers, updateReturnRequests } from '../Inventory/inventory.repository';
+import { dispenseDrug, returnDrugToInventory } from '../Pharmacy/pharmacy.repository';
+import { applyInstruction } from '../Inbox/applier';
+import { emitDispenseRecorded } from './outbox-writer';
+
+/**
+ * Integration tests for the dispense/return emitters and the stock.received applier (Accounting
+ * #297, ADR-0040). Against real MySQL: every claim here — that an event commits with the stock
+ * movement, that a multi-layer dispense names BOTH layers, that a redelivery writes no second row
+ * — is a claim about the DATABASE and cannot be shown against a mock.
+ *
+ * Fixture: one drug, two store batches with Accounting batch ids, plus a third with NO batch id
+ * standing in for the legacy population (all 1,644 live rows today).
+ */
+
+const suffix = Date.now()
+  .toString()
+  .slice(-8);
+
+const staffBody = () => ({
+  firstname: 'Emission',
+  lastname: 'Auditor',
+  fullname: 'Emission Auditor',
+  username: `emission_auditor_${suffix}`,
+  gender: 'Male',
+  address: 'Kubwa',
+  photo: 'IMG_EMISSION.jpg',
+  password: '123456',
+  email: `emission_auditor_${suffix}@ehmrs.test`,
+  department: 'Pharmacy',
+  role: 'Pharmacist',
+  sub_role: 'GP',
+  date_of_birth: '1994-09-02',
+  phone: `0704${suffix}`,
+});
+
+const storeBatch = (
+  drug_id: number,
+  unit_id: number,
+  staff_id: number,
+  overrides: { batch: string; expiration: Date; external_batch_id: string | null }
+) => ({
+  drug_id,
+  quantity_received: 500,
+  quantity_remaining: 500,
+  unit_id,
+  unit_price: 100,
+  selling_price: 100,
+  total_price: 50000,
+  drug_form: DrugForm.DRUG,
+  drug_type: PharmacyDrugType.CASH,
+  batch: overrides.batch,
+  expiration: overrides.expiration,
+  brand: 'Brand-X',
+  external_batch_id: overrides.external_batch_id,
+  staff_id,
+  date_received: new Date(),
+});
+
+const prescribedStub = (quantity: number, visit_id: number, patient_id: number) => ({
+  patient_id,
+  visit_id,
+  drug_id: 0,
+  quantity_to_dispense: quantity,
+  quantity_dispensed: 0,
+  quantity_returned: 0,
+  dispense_status: 'Pending',
+  save: async function() {
+    return this;
+  },
+});
+
+describe('dispense.recorded and stock.returned emission (#297, ADR-0040)', () => {
+  let VISIT_ID: number;
+  let patient_id: number;
+  let staff_id: number;
+  let drug_id: number;
+  let drug_code: string;
+  let unit_id: number;
+  let inventory_id: number;
+  let storeRowA: PharmacyStore;
+  let storeRowB: PharmacyStore;
+  let storeRowLegacy: PharmacyStore;
+
+  const transfer = (storeRow: PharmacyStore, quantity: number) =>
+    dispensePharmacyItems(
+      [
+        {
+          id: storeRow.id,
+          drug_type: storeRow.drug_type,
+          quantity_to_dispense: quantity,
+          dispensary: inventory_id,
+          unit_id,
+          drug_name: 'Emissionamol',
+          receiver: staff_id,
+        },
+      ],
+      staff_id
+    );
+
+  const outboxFor = (eventType: string) =>
+    OutboxEvent.findAll({
+      where: { event_type: eventType, aggregate_id: `visit:${VISIT_ID}` },
+      order: [['id', 'ASC']],
+    });
+
+  const bodyOf = (row: OutboxEvent): Record<string, unknown> => {
+    const payload =
+      typeof row.payload === 'string'
+        ? (JSON.parse(row.payload) as Record<string, unknown>)
+        : (row.payload as Record<string, unknown>);
+    return payload.body as Record<string, unknown>;
+  };
+
+  const clearOutbox = () =>
+    OutboxEvent.destroy({
+      where: { aggregate_id: [`visit:${VISIT_ID}`, `store:${inventory_id}`] },
+      force: true,
+    });
+
+  beforeAll(async () => {
+    const staff = await Staff.create(staffBody());
+    staff_id = staff.id;
+
+    // A real Patient + Visit: Inventory_Item_Histories.visit_id is a foreign key, so a synthetic
+    // id cannot be used, and the emitted aggregate id must be the real visit's.
+    const patient = await Patient.create({
+      firstname: 'Emission',
+      lastname: 'Patient',
+      gender: 'Male',
+      phone: `0705${suffix}`,
+      address: 'Kubwa',
+      country: 'Nigeria',
+      state: 'FCT',
+      lga: 'Bwari',
+      date_of_birth: new Date('1990-01-01'),
+      hospital_id: `EMI${suffix}`,
+      staff_id,
+    } as never);
+    patient_id = patient.id;
+
+    const visit = await Visit.create({
+      patient_id,
+      category: VisitCategory.OPD,
+      date_visit_start: new Date(),
+      department: 'Pharmacy',
+      type: 'General',
+      professional: 'Pharmacist',
+      staff_id,
+    } as never);
+    VISIT_ID = visit.id;
+    drug_code = `EMI-${suffix}`;
+    const [drug, unit, inventory] = await Promise.all([
+      Drug.create({
+        name: `Emissionamol ${suffix}`,
+        code: drug_code,
+        type: DrugForm.DRUG,
+        staff_id,
+      }),
+      Unit.create({ name: `vial ${suffix}`, staff_id }),
+      Inventory.create({
+        name: `Emission Dispensary ${suffix}`,
+        accepted_drug_type: AcceptedDrugType.CASH,
+        staff_id,
+      }),
+    ]);
+    drug_id = drug.id;
+    unit_id = unit.id;
+    inventory_id = inventory.id;
+
+    storeRowA = await PharmacyStore.create(
+      storeBatch(drug_id, unit_id, staff_id, {
+        batch: 'LOT-A',
+        expiration: new Date('2027-01-31'),
+        external_batch_id: `acct-batch-a-${suffix}`,
+      })
+    );
+    storeRowB = await PharmacyStore.create(
+      storeBatch(drug_id, unit_id, staff_id, {
+        batch: 'LOT-B',
+        expiration: new Date('2028-06-30'),
+        external_batch_id: `acct-batch-b-${suffix}`,
+      })
+    );
+    storeRowLegacy = await PharmacyStore.create(
+      storeBatch(drug_id, unit_id, staff_id, {
+        batch: 'LOT-LEGACY',
+        expiration: new Date('2029-06-30'),
+        external_batch_id: null,
+      })
+    );
+  });
+
+  afterAll(async () => {
+    const layerRows = await InventoryItem.findAll({
+      where: { inventory_id },
+      attributes: ['id'],
+    });
+    const layerIds = layerRows.map(row => row.id);
+
+    // Child-first, and each step tolerated: a fixture row another suite already removed must not
+    // fail the suite AFTER its assertions have all passed. The scratch database is recreated by
+    // `test:db:setup`, so a leftover row is harmless; a false FAIL is not.
+    const steps: Array<() => Promise<unknown>> = [
+      () => clearOutbox(),
+      () =>
+        layerIds.length
+          ? ReturnItem.destroy({ where: { inventory_item_id: layerIds }, force: true })
+          : Promise.resolve(0),
+      () => InventoryItemHistory.destroy({ where: { inventory_id }, force: true }),
+      () => InventoryItem.destroy({ where: { inventory_id }, force: true }),
+      () => PharmacyStoreHistory.destroy({ where: { inventory_id }, force: true }),
+      () => PharmacyStore.destroy({ where: { drug_id }, force: true }),
+      () => Inventory.destroy({ where: { id: inventory_id }, force: true }),
+      () => Drug.destroy({ where: { id: drug_id }, force: true }),
+      () => Unit.destroy({ where: { id: unit_id }, force: true }),
+      () => Visit.destroy({ where: { id: VISIT_ID }, force: true }),
+      () => Patient.destroy({ where: { id: patient_id }, force: true }),
+      () => Staff.destroy({ where: { id: staff_id }, force: true }),
+    ];
+
+    for (const step of steps) {
+      try {
+        await step();
+      } catch {
+        // Cleanup only — never fails the suite.
+      }
+    }
+
+    await sequelizeConnection.close();
+  });
+
+  it('a dispense spanning two layers emits ONE event naming BOTH layers', async () => {
+    await transfer(storeRowA, 100);
+    await transfer(storeRowB, 100);
+    await clearOutbox();
+
+    const layers = (await getInventoryItemLayers(inventory_id, drug_id)).filter(
+      layer => layer.pharmacy_store_id === storeRowA.id || layer.pharmacy_store_id === storeRowB.id
+    );
+    const stub = prescribedStub(150, VISIT_ID, patient_id);
+    stub.drug_id = drug_id;
+
+    await dispenseDrug(layers, stub as never, {
+      quantity_to_dispense: 150,
+      staff_id,
+      drug_prescription_id: 99999901,
+      prescription_id: 5551,
+    });
+
+    const rows = await outboxFor('dispense.recorded');
+    expect(rows).toHaveLength(1);
+
+    const body = bodyOf(rows[0]);
+    expect(body.quantity).toBe(150);
+    expect(body.item_code).toBe(drug_code);
+
+    const batches = body.batches as Array<{ external_batch_id: string; quantity: number }>;
+    expect(batches).toHaveLength(2);
+    expect(batches.reduce((sum, b) => sum + b.quantity, 0)).toBe(150);
+    expect(batches.map(b => b.external_batch_id).sort()).toEqual(
+      [storeRowA.external_batch_id, storeRowB.external_batch_id].sort()
+    );
+  });
+
+  it('a dispense from a legacy layer emits WITHOUT a batch array, never a fabricated id', async () => {
+    await transfer(storeRowLegacy, 50);
+    await clearOutbox();
+
+    const legacyLayer = (await getInventoryItemLayers(inventory_id, drug_id)).find(
+      layer => layer.pharmacy_store_id === storeRowLegacy.id
+    );
+    const stub = prescribedStub(10, VISIT_ID, patient_id);
+    stub.drug_id = drug_id;
+
+    await dispenseDrug([legacyLayer], stub as never, {
+      quantity_to_dispense: 10,
+      staff_id,
+      drug_prescription_id: 99999902,
+      prescription_id: 5552,
+    });
+
+    const rows = await outboxFor('dispense.recorded');
+    expect(rows).toHaveLength(1);
+
+    const body = bodyOf(rows[0]);
+    expect(body.quantity).toBe(10);
+    expect(body).not.toHaveProperty('batches');
+  });
+
+  it('a failed dispense leaves NEITHER stock NOR outbox changed (ADR-0018)', async () => {
+    await clearOutbox();
+
+    const layer = (await getInventoryItemLayers(inventory_id, drug_id)).find(
+      l => l.pharmacy_store_id === storeRowA.id || l.pharmacy_store_id === storeRowB.id
+    );
+    const remainingBefore = Number(layer.quantity_remaining);
+
+    // A quantity no layer can satisfy: dispenseDrug throws INVENTORY_QUANTITY_LOW after the
+    // decrement loop, so the whole transaction — stock rows AND the outbox row — must roll back.
+    const stub = prescribedStub(999999, VISIT_ID, patient_id);
+    stub.drug_id = drug_id;
+
+    await expect(
+      dispenseDrug([layer], stub as never, {
+        quantity_to_dispense: 999999,
+        staff_id,
+        drug_prescription_id: 99999903,
+        prescription_id: 5553,
+      })
+    ).rejects.toThrow();
+
+    const layerAfter = await InventoryItem.findByPk(layer.id);
+    expect(Number(layerAfter.quantity_remaining)).toBe(remainingBefore);
+    expect(await outboxFor('dispense.recorded')).toHaveLength(0);
+  });
+
+  it('refuses a redelivered dispense: the idempotency key is UNIQUE, so a replay cannot double-emit', async () => {
+    await clearOutbox();
+
+    // Emitted directly rather than through dispenseDrug: the point under test is the outbox's
+    // uniqueness guard, and re-running a whole dispense would consume stock a second time.
+    const dispenseId = `redeliver-${suffix}`;
+    const emit = () =>
+      sequelizeConnection.transaction(t =>
+        emitDispenseRecorded(
+          {
+            type: 'drug',
+            id: 5555,
+            visit_id: VISIT_ID,
+            quantity: 5,
+            dispense_id: dispenseId,
+            item_code: drug_code,
+          },
+          t
+        )
+      );
+
+    await emit();
+
+    // A replay RAISES on the unique idempotency_key rather than silently writing a second row —
+    // the same posture ADR-0039 records for the reversal writer. Accounting treats the key as
+    // opaque and cannot validate it, so a key that varied across redeliveries would
+    // double-recognise revenue with Accounting reporting success either way. The guard is here.
+    await expect(emit()).rejects.toThrow();
+
+    const rows = await outboxFor('dispense.recorded');
+    expect(rows).toHaveLength(1);
+    expect(rows[0].idempotency_key).toBe(`dispense:${dispenseId}`);
+  });
+
+  it('a patient return emits stock.returned naming the credited layer', async () => {
+    await clearOutbox();
+
+    const layer = (await getInventoryItemLayers(inventory_id, drug_id)).find(
+      l => l.pharmacy_store_id === storeRowA.id || l.pharmacy_store_id === storeRowB.id
+    );
+    const stub = prescribedStub(0, VISIT_ID, patient_id);
+    stub.drug_id = drug_id;
+    stub.quantity_dispensed = 10;
+
+    await returnDrugToInventory(layer, stub as never, {
+      quantity_to_return: 3,
+      staff_id,
+      drug_prescription_id: 99999904,
+      prescription_id: 5554,
+      reason_for_return: 'patient refused',
+    });
+
+    const rows = await outboxFor('stock.returned');
+    expect(rows).toHaveLength(1);
+
+    const body = bodyOf(rows[0]);
+    expect(body.source).toBe('patient_to_dispensary');
+    expect(body.quantity).toBe(3);
+    expect(typeof body.external_batch_id).toBe('string');
+    // ADR-0016: the reason and the returning staff member stay EMR-side.
+    expect(body).not.toHaveProperty('reason_for_return');
+    expect(body).not.toHaveProperty('returned_by');
+  });
+
+  it('a granted store return emits ONE stock.returned per item, and no charge.returned', async () => {
+    await clearOutbox();
+
+    const layers = (await getInventoryItemLayers(inventory_id, drug_id)).filter(
+      l => l.pharmacy_store_id === storeRowA.id || l.pharmacy_store_id === storeRowB.id
+    );
+    const returnItems = await Promise.all(
+      layers.slice(0, 2).map(layer =>
+        ReturnItem.create({
+          inventory_item_id: layer.id,
+          quantity: 2,
+          status: ReturnItemStatus.PENDING,
+          reason_for_return: 'overstocked',
+          date_received: new Date(),
+          staff_id,
+        })
+      )
+    );
+
+    await updateReturnRequests(
+      returnItems.map((row, index) => ({
+        id: row.id,
+        inventory_item_id: layers[index].id,
+        quantity: 2,
+        status: 'Granted',
+      })) as never,
+      staff_id
+    );
+
+    const rows = await OutboxEvent.findAll({
+      where: { event_type: 'stock.returned', aggregate_id: `store:${inventory_id}` },
+      order: [['id', 'ASC']],
+    });
+    expect(rows).toHaveLength(2);
+    rows.forEach(row => expect(bodyOf(row).source).toBe('dispensary_to_store'));
+
+    expect(await OutboxEvent.count({ where: { event_type: 'charge.returned' } })).toBe(0);
+  });
+
+  it('no emitted body carries a cost or a price', async () => {
+    const rows = await OutboxEvent.findAll({
+      where: { event_type: ['dispense.recorded', 'stock.returned'] },
+    });
+    expect(rows.length).toBeGreaterThan(0);
+
+    rows.forEach(row => {
+      const serialized = JSON.stringify(bodyOf(row));
+      expect(serialized).not.toMatch(/cost/i);
+      expect(serialized).not.toMatch(/price/i);
+    });
+  });
+
+  describe('inbound stock.received persists the batch id (D5)', () => {
+    const receivedBody = (batchId: string) => ({
+      external_batch_id: batchId,
+      item_code: drug_code,
+      quantity: 100,
+      expiry_date: '2029-12-31',
+      received_at: new Date().toISOString(),
+    });
+
+    it('writes the external batch id onto the unclaimed store row', async () => {
+      const batchId = `acct-inbound-${suffix}`;
+      const result = await sequelizeConnection.transaction(t =>
+        applyInstruction('stock.received', `visit:${VISIT_ID}`, 1, receivedBody(batchId), t)
+      );
+
+      expect(result.outcome).toBe('APPLIED');
+      const claimed = await PharmacyStore.findOne({ where: { external_batch_id: batchId } });
+      expect(claimed).not.toBeNull();
+      expect(claimed.id).toBe(storeRowLegacy.id);
+    });
+
+    it('is idempotent: redelivering leaves the batch id on the SAME single row', async () => {
+      const batchId = `acct-inbound-${suffix}`;
+      const result = await sequelizeConnection.transaction(t =>
+        applyInstruction('stock.received', `visit:${VISIT_ID}`, 1, receivedBody(batchId), t)
+      );
+
+      expect(result.outcome).toBe('APPLIED');
+      const claimed = await PharmacyStore.findAll({ where: { external_batch_id: batchId } });
+      expect(claimed).toHaveLength(1);
+    });
+
+    it('a receipt for an unknown item_code FAILS rather than being silently dropped', async () => {
+      await expect(
+        sequelizeConnection.transaction(t =>
+          applyInstruction(
+            'stock.received',
+            `visit:${VISIT_ID}`,
+            1,
+            { ...receivedBody(`acct-unknown-${suffix}`), item_code: `NO-SUCH-${suffix}` },
+            t
+          )
+        )
+      ).rejects.toThrow(/matches no drug/);
+    });
+  });
+});

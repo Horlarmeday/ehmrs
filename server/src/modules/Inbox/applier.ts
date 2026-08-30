@@ -6,6 +6,8 @@ import { PrescribedService } from '../../database/models/prescribedService';
 import { PrescribedTest } from '../../database/models/prescribedTest';
 import { PrescribedAdditionalItem } from '../../database/models/prescribedAdditionalItem';
 import { InboxSequence } from '../../database/models/inboxSequence';
+import { Drug } from '../../database/models/drug';
+import { PharmacyStore } from '../../database/models/pharmacyStore';
 import { isPrescribedLineType, PrescribedLineType } from '../Outbox/prescribed-line-types';
 import { emitPatientDemographicsChanged } from '../Outbox/outbox-writer';
 
@@ -124,10 +126,14 @@ export async function applyInstruction(
     return applyDemographicsRequest(body, transaction);
   }
 
+  if (eventType === 'stock.received') {
+    return applyStockReceived(body, transaction);
+  }
+
   const nextStatus = statusFor(eventType);
   if (nextStatus === undefined) {
-    // A valid reverse event whose handling has not landed (stock.received). Not a failure and not
-    // applied — recorded UNHANDLED, exactly as Accounting does inbound.
+    // A valid reverse event whose handling has not landed. Not a failure and not applied —
+    // recorded UNHANDLED, exactly as Accounting does inbound.
     return { outcome: 'UNHANDLED' };
   }
 
@@ -182,6 +188,84 @@ async function applyDemographicsRequest(
 
   const emitted = await emitPatientDemographicsChanged(raw, transaction);
   return emitted === undefined ? { outcome: 'UNHANDLED' } : { outcome: 'APPLIED' };
+}
+
+/**
+ * `stock.received` — Accounting recorded a stock receipt and is telling the EMR which batch id it
+ * minted for it (Accounting #297, ADR-0040).
+ *
+ * Persisting it is the second hop of the join #295 designed: `Inventory_Items.pharmacy_store_id` →
+ * `Pharmacy_Store_Items.external_batch_id` → Accounting's `stock_batch`. Without it the EMR cannot
+ * echo a batch back on `dispense.recorded` and Accounting's COGS slice has nothing to cost.
+ *
+ * NOT sequence-guarded, and that is correct rather than an oversight: `stock.received` is an
+ * ADDITIVE event, so a late one is still true. Note this branch returns BEFORE the `claimSequence`
+ * staleness check below — idempotency rests entirely on the inbox key plus the fact that writing
+ * the same id twice is a no-op. This is why the column is deliberately non-unique.
+ *
+ * A receipt whose `item_code` matches no store row THROWS rather than returning UNHANDLED:
+ * Accounting minted a batch against an item this EMR cannot place, and that divergence must be
+ * visible as a FAILED row rather than silently swallowed. The reverse — the EMR quietly forgetting
+ * a batch id — is exactly the gap this issue exists to close.
+ */
+async function applyStockReceived(
+  body: Record<string, unknown>,
+  transaction: Transaction
+): Promise<ApplyResult> {
+  const externalBatchId = body.external_batch_id;
+  const itemCode = body.item_code;
+
+  if (typeof externalBatchId !== 'string' || externalBatchId.length === 0) {
+    throw new ApplyError('stock.received carries no external_batch_id');
+  }
+  if (typeof itemCode !== 'string' || itemCode.length === 0) {
+    throw new ApplyError(
+      `stock.received ${externalBatchId} carries no item_code, so the batch cannot be placed`
+    );
+  }
+
+  const drug = await Drug.findOne({ where: { code: itemCode }, transaction });
+  if (!drug) {
+    throw new ApplyError(
+      `stock.received ${externalBatchId} names item_code "${itemCode}", which matches no drug in ` +
+        'this EMR. Accounting minted a batch this EMR cannot place.'
+    );
+  }
+
+  // Redelivery check FIRST. An additive event may arrive more than once, and this branch runs
+  // before the inbox's sequence guard, so the second delivery must find its own earlier write and
+  // stop — not consume a second store row, which would attribute one Accounting batch to two EMR
+  // rows and silently double the stock it names.
+  const alreadyApplied = await PharmacyStore.findOne({
+    where: { external_batch_id: externalBatchId },
+    transaction,
+  });
+  if (alreadyApplied) {
+    return { outcome: 'APPLIED' };
+  }
+
+  // The most recent store row for the drug that has not already been given a batch id. Accounting
+  // emits one stock.received per receipt and the EMR creates one store row per receipt, so the
+  // newest unclaimed row is the one this receipt describes.
+  const storeItem = await PharmacyStore.findOne({
+    where: { drug_id: drug.id, external_batch_id: null },
+    order: [['createdAt', 'DESC']],
+    transaction,
+  });
+
+  if (!storeItem) {
+    throw new ApplyError(
+      `stock.received ${externalBatchId} names item_code "${itemCode}" but no unclaimed store row ` +
+        'exists for it. The receipt cannot be placed against a batch.'
+    );
+  }
+
+  await PharmacyStore.update(
+    { external_batch_id: externalBatchId },
+    { where: { id: storeItem.id }, transaction }
+  );
+
+  return { outcome: 'APPLIED' };
 }
 
 /** The status a reverse event sets, or undefined for a valid-but-unhandled reverse type. */

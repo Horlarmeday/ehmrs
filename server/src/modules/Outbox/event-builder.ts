@@ -79,6 +79,19 @@ export function patientAggregateId(patientId: number | string): string {
 }
 
 /**
+ * The aggregate id for a dispensary→store stock return (ADR-0040).
+ *
+ * Flow 2 has NO visit and NO patient — `Return_Items` references only an inventory item — but every
+ * envelope needs an aggregate and the contract's set is {encounter, patient}. So the dispensary
+ * stands in as the aggregate, with a `store:` prefix that says plainly on the wire that this is not
+ * a visit. Each dispensary gets its own monotonic sequence counter, which is all the aggregate is
+ * used for here: `stock.returned` is ADDITIVE, so its sequence is never used for staleness.
+ */
+export function storeAggregateId(inventoryId: number | string): string {
+  return `store:${inventoryId}`;
+}
+
+/**
  * The payer reference carried on `charge.captured` (ADR-0028). Additive, optional, ID-only: it
  * tells Accounting which payer the patient was under at prescription time so it can resolve the
  * split. No demographics (ADR-0016) — scheme/hmo ids only, never a name or membership number. No
@@ -664,6 +677,264 @@ export function buildPatientDemographicsChangedEvent(
     aggregate_id: aggregateId,
     sequence: context.sequence,
     event_type: 'patient.demographics.changed',
+    event_version: eventVersion,
+    idempotency_key: idempotencyKey,
+    payload,
+  };
+}
+
+/**
+ * The idempotency key for one physical dispense (ADR-0033 §45, ADR-0040).
+ *
+ * ADR-0033 names this `dispense:{dispense_id}`, but the EMR has no dispense entity. The stable
+ * per-dispense identity available is the `Inventory_Item_Histories` row the dispense writes: it is
+ * created inside the same transaction, has an autoincrement PK, and there is exactly one per layer
+ * touched. A multi-layer dispense emits ONE event keyed on its FIRST history row.
+ *
+ * Keying on the prescribed line instead would be WRONG, not merely coarse: a line may be dispensed
+ * more than once (`PARTIAL_DISPENSED`), and Accounting's handler accumulates recognised revenue per
+ * line precisely so several dispenses can each recognise their slice. A line-scoped key would make
+ * the second partial dispense dedup against the first and its revenue would never be recognised.
+ */
+export function dispenseIdempotencyKey(dispenseId: number | string): string {
+  return `dispense:${dispenseId}`;
+}
+
+/**
+ * The idempotency key for one physical stock return (ADR-0040).
+ *
+ * Keyed on the `Inventory_Item_Histories` row for a patient return, and on the `Return_Items` row
+ * for a store return — one per granted item, since the grant commits one transaction per item.
+ */
+export function stockReturnedIdempotencyKey(
+  source: StockReturnSource,
+  returnId: number | string
+): string {
+  return `stock-returned:${source}:${returnId}`;
+}
+
+/** One cost layer a dispense drew from. Carries NO cost — that is Accounting's (ADR-0009). */
+export interface DispensedBatchInput {
+  readonly external_batch_id: string;
+  readonly quantity: number;
+}
+
+export interface DispenseRecordedInput {
+  readonly type: PrescribedLineType;
+  readonly id: number | string;
+  readonly visit_id: number | string;
+  readonly quantity: number;
+  /** The id of the first Inventory_Item_Histories row this dispense wrote. */
+  readonly dispense_id: number | string;
+  readonly item_code?: string;
+  /** One entry per layer actually consumed. Omitted entirely when no layer had a batch id. */
+  readonly batches?: readonly DispensedBatchInput[];
+}
+
+/**
+ * Translates a physical dispense into a `dispense.recorded` outbox row (ADR-0033, ADR-0040).
+ *
+ * `batches` is an ARRAY because `dispenseDrug` consumes FEFO ACROSS LAYERS and writes one history
+ * row per layer touched. A 150-unit dispense drawing 100 from LOT-A and 50 from LOT-B is one event
+ * with two entries — never one entry naming a single layer, which would let Accounting cost the
+ * whole quantity at one layer's price.
+ *
+ * Entries sum to AT MOST `quantity`. Less is legitimate and expected: a layer with a null
+ * `pharmacy_store_id` (the entire legacy population) has no batch id, so it is OMITTED rather than
+ * given a fabricated one. Accounting treats the unnamed remainder as explicitly uncostable.
+ *
+ * Carries NO cost and no price. Which layer was consumed is the EMR's fact; what it cost is
+ * Accounting's (ADR-0009).
+ */
+export function buildDispenseRecordedEvent(
+  input: DispenseRecordedInput,
+  context: BuildContext
+): OutboxEventRow {
+  if (!isPrescribedLineType(input.type)) {
+    throw new EventBuildError(
+      `Unknown prescribed-line type "${input.type}"; expected one of ${PRESCRIBED_LINE_TYPES.join(
+        ', '
+      )}`
+    );
+  }
+
+  if (!Number.isInteger(input.quantity) || input.quantity <= 0) {
+    throw new EventBuildError(
+      `dispense.recorded quantity must be a positive integer, got ${input.quantity}`
+    );
+  }
+
+  const batches = input.batches ?? [];
+  const claimed = batches.reduce((sum, batch) => sum + batch.quantity, 0);
+  if (claimed > input.quantity) {
+    throw new EventBuildError(
+      `dispense.recorded batches claim ${claimed} units but only ${input.quantity} were ` +
+        'dispensed; a split may name fewer units than were dispensed (a legacy layer has no ' +
+        'batch id) but never more.'
+    );
+  }
+  for (const batch of batches) {
+    if (!Number.isInteger(batch.quantity) || batch.quantity <= 0) {
+      throw new EventBuildError(
+        `dispense.recorded batch quantity must be a positive integer, got ${batch.quantity}`
+      );
+    }
+  }
+
+  const encounterId = visitAggregateId(input.visit_id);
+  const occurredAt = context.occurredAt ?? new Date();
+  const sentAt = context.sentAt ?? new Date();
+  const idempotencyKey = dispenseIdempotencyKey(input.dispense_id);
+  const eventVersion = context.eventVersion ?? 1;
+
+  const body: Record<string, unknown> = {
+    external_line_ref: { type: input.type, id: String(input.id) },
+    encounter_id: encounterId,
+    quantity: input.quantity,
+  };
+
+  if (input.item_code !== undefined) {
+    if (input.item_code.length === 0 || input.item_code.length > 43) {
+      throw new EventBuildError(
+        `item_code must be 1–43 characters, got length ${input.item_code.length}`
+      );
+    }
+    body.item_code = input.item_code;
+  }
+
+  // Omitted, never emitted empty: an absent array means "no layer could be named", which is what
+  // Accounting reads as an uncostable dispense. An empty array would say the same thing in a shape
+  // the contract does not define.
+  if (batches.length > 0) {
+    body.batches = batches.map(batch => ({
+      external_batch_id: String(batch.external_batch_id),
+      quantity: batch.quantity,
+    }));
+  }
+
+  assertNoDemographics(body, 'dispense.recorded');
+
+  const payload: Record<string, unknown> = {
+    event_id: uuidV7(context.now),
+    event_type: 'dispense.recorded',
+    event_version: eventVersion,
+    tenant_key: context.tenantKey,
+    occurred_at: occurredAt.toISOString(),
+    sent_at: sentAt.toISOString(),
+    aggregate: { type: 'encounter', id: encounterId },
+    sequence: Number(context.sequence),
+    idempotency_key: idempotencyKey,
+    body,
+  };
+
+  return {
+    aggregate_type: 'encounter',
+    aggregate_id: encounterId,
+    sequence: context.sequence,
+    event_type: 'dispense.recorded',
+    event_version: eventVersion,
+    idempotency_key: idempotencyKey,
+    payload,
+  };
+}
+
+/**
+ * The two return flows, which have OPPOSITE financial meaning (ADR-0040):
+ *
+ *   - `patient_to_dispensary` — a patient hands drugs back. A sale is unwound and a patient is
+ *     owed money (Accounting #174).
+ *   - `dispensary_to_store` — the dispensary returns stock to the bulk store on an approved
+ *     request. NO patient, NO sale, only stock moving between locations (Accounting #298).
+ *
+ * Emitted explicitly rather than left to be inferred: a consumer guessing wrong would reverse
+ * revenue for a sale that never happened.
+ */
+export type StockReturnSource = 'patient_to_dispensary' | 'dispensary_to_store';
+
+const STOCK_RETURN_SOURCES: StockReturnSource[] = ['patient_to_dispensary', 'dispensary_to_store'];
+
+export interface StockReturnedInput {
+  readonly external_batch_id: string;
+  readonly item_code: string;
+  readonly quantity: number;
+  readonly source: StockReturnSource;
+  /**
+   * The encounter aggregate this return belongs to: `visitAggregateId(visit_id)` for a patient
+   * return, `storeAggregateId(inventory_id)` for a store return, which has no visit.
+   */
+  readonly aggregate_id: string;
+  /** Inventory_Item_Histories.id for a patient return; Return_Items.id for a store return. */
+  readonly return_id: number | string;
+  readonly returned_at?: Date;
+}
+
+/**
+ * Translates a stock return into a `stock.returned` outbox row (ADR-0040).
+ *
+ * `external_batch_id` is a SCALAR, unlike `dispense.recorded`'s array, because the return path
+ * credits ONE layer — `returnDrugToInventory` is handed `layers[0]`, the soonest-expiring layer,
+ * and the store grant credits exactly one store row by primary key. There is one layer to name.
+ *
+ * Carries NO cost (ADR-0009) and NO `reason_for_return` or `returned_by`: both exist on the EMR's
+ * own row and both are narrative rather than ID references (ADR-0016).
+ */
+export function buildStockReturnedEvent(
+  input: StockReturnedInput,
+  context: BuildContext
+): OutboxEventRow {
+  if (!STOCK_RETURN_SOURCES.includes(input.source)) {
+    throw new EventBuildError(
+      `Unknown stock.returned source "${input.source}"; expected one of ` +
+        `${STOCK_RETURN_SOURCES.join(', ')}`
+    );
+  }
+
+  if (!Number.isInteger(input.quantity) || input.quantity <= 0) {
+    throw new EventBuildError(
+      `stock.returned quantity must be a positive integer, got ${input.quantity}`
+    );
+  }
+
+  if (!input.external_batch_id || String(input.external_batch_id).length === 0) {
+    throw new EventBuildError(
+      'stock.returned requires an external_batch_id: a return that names no batch cannot be placed.'
+    );
+  }
+
+  const encounterId = input.aggregate_id;
+  const occurredAt = context.occurredAt ?? new Date();
+  const sentAt = context.sentAt ?? new Date();
+  const idempotencyKey = stockReturnedIdempotencyKey(input.source, input.return_id);
+  const eventVersion = context.eventVersion ?? 1;
+
+  const body: Record<string, unknown> = {
+    external_batch_id: String(input.external_batch_id),
+    item_code: input.item_code,
+    quantity: input.quantity,
+    source: input.source,
+    returned_at: (input.returned_at ?? occurredAt).toISOString(),
+  };
+
+  assertNoDemographics(body, 'stock.returned');
+
+  const payload: Record<string, unknown> = {
+    event_id: uuidV7(context.now),
+    event_type: 'stock.returned',
+    event_version: eventVersion,
+    tenant_key: context.tenantKey,
+    occurred_at: occurredAt.toISOString(),
+    sent_at: sentAt.toISOString(),
+    aggregate: { type: 'encounter', id: encounterId },
+    sequence: Number(context.sequence),
+    idempotency_key: idempotencyKey,
+    body,
+  };
+
+  return {
+    aggregate_type: 'encounter',
+    aggregate_id: encounterId,
+    sequence: context.sequence,
+    event_type: 'stock.returned',
     event_version: eventVersion,
     idempotency_key: idempotencyKey,
     payload,
