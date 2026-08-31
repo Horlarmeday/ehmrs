@@ -75,6 +75,13 @@ export class PharmacyStore extends Model {
       notEmpty: {
         msg: 'quantity is required',
       },
+      // #29: a receipt quantity is a count of physical units that arrived; it cannot be negative.
+      // Without this floor a negative reorder silently SUBTRACTED from quantity_remaining and filed
+      // a SUPPLIED history row claiming a negative delivery, which then poisoned total_price and
+      // every stock-level ratio that divides by quantity_received. Mirrors quantity_remaining's
+      // validator below. Belt to the DB CHECK constraint's braces — validators are skipped by
+      // update() without validate: true, and the constraint alone surfaces as an opaque driver error.
+      min: { args: [0], msg: 'The minimum quantity_received cannot be less than zero' },
     },
   })
   quantity_received: number;
