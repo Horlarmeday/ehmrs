@@ -1,5 +1,5 @@
 import { ModelStatic, Model, Transaction } from 'sequelize';
-import { PaymentStatus } from '../../database/enums';
+import { HistoryType, PaymentStatus, Status } from '../../database/enums';
 import { PrescribedDrug } from '../../database/models/prescribedDrug';
 import { PrescribedInvestigation } from '../../database/models/prescribedInvestigation';
 import { PrescribedService } from '../../database/models/prescribedService';
@@ -8,6 +8,7 @@ import { PrescribedAdditionalItem } from '../../database/models/prescribedAdditi
 import { InboxSequence } from '../../database/models/inboxSequence';
 import { Drug } from '../../database/models/drug';
 import { PharmacyStore } from '../../database/models/pharmacyStore';
+import { PharmacyStoreHistory } from '../../database/models/pharmacyStoreHistory';
 import { isPrescribedLineType, PrescribedLineType } from '../Outbox/prescribed-line-types';
 import { emitPatientDemographicsChanged } from '../Outbox/outbox-writer';
 
@@ -195,46 +196,64 @@ async function applyDemographicsRequest(
  * minted for it (Accounting #297, ADR-0040).
  *
  * Persisting it is the second hop of the join #295 designed: `Inventory_Items.pharmacy_store_id` →
- * `Pharmacy_Store_Items.external_batch_id` → Accounting's `stock_batch`. Without it the EMR cannot
+ * `Pharmacy_Store_Histories.external_batch_id` → Accounting's `stock_batch`. Without it the EMR cannot
  * echo a batch back on `dispense.recorded` and Accounting's COGS slice has nothing to cost.
  *
- * NEVER CHANGES QUANTITY, and that is the whole posture of the reverse contract: a reverse event
- * updates state the EMR owns and produces no side effects of its own (ADR-0025 decision 9 — they
- * "never carry money as a side effect and never hand out drugs"). The store row's
- * `quantity_received` was written when the stock physically arrived. Adding the event's `quantity`
- * on top would count the same receipt twice. The field is carried so the EMR can VERIFY agreement,
- * which is what the mismatch check below does.
+ * TWO ENTRY PATHS, both permanent (ADR-0041). A PURCHASED receipt originates in Accounting, which
+ * mints the batch and instructs the EMR here. DONATED, sample and pre-cutover stock never passes
+ * through Accounting at all — no cost, no payable — and is entered on the EMR store screen as
+ * before. A delivery with no `external_batch_id` therefore asserts "this did not come through
+ * procurement" rather than recording a failed match.
  *
- * TWO ENTRY PATHS, and the EMR currently uses the older one. Accounting issue #26 makes goods
- * receipt an accounting-module action: Accounting mints the batch and the EMR "references only
- * batches it was told about, never invents one". But `createCashItem`
- * (`Store/store.repository.ts`) still creates store rows directly, and that path is in daily use.
- * So this applier ATTACHES to an existing unclaimed row when it finds one (the legacy path) and
- * would CREATE the row when it does not (the #26 path).
+ * FOUR OUTCOMES, in order:
  *
- * The create path is BLOCKED, deliberately and visibly, by the final `ApplyError` below.
- * `Pharmacy_Store_Items` requires `unit_price` and `selling_price` NOT NULL, and `stock.received`
- * deliberately carries NO cost (ADR-0009). Creating the row would mean inventing both — a
- * fabricated acquisition cost and, worse, a fabricated patient-facing selling price. That is
- * precisely the "silently wrong" failure ADR-0009 exists to prevent, so the receipt fails loudly
- * instead. Closing it needs a contract decision, not a default value.
+ *   ATTACH     an unclaimed SUPPLIED delivery matching drug + class + quantity. The EMR-originated
+ *              path: the clerk entered the receipt here and Accounting is echoing its id back.
+ *   REFUSE     an unclaimed delivery exists but the quantity disagrees. Exact agreement is the bar:
+ *              stock is discrete, so a gap is missing units, not a rounding artefact.
+ *   INCREMENT  the bin exists and all its deliveries are claimed — Accounting is adding stock, as
+ *              `reorderPharmacyItems` does for a clerk-entered restock. THE COMMON CASE: 493 of 504
+ *              drugs on production already have a bin.
+ *   CREATE     no bin for this (drug, class). Honest now because the event carries a cost and,
+ *              where the clerk gave one, a price. A missing COST refuses; a missing PRICE does not
+ *              — the row is born unpriced and is simply not dispensable until a human prices it.
+ *
+ * QUANTITY CHANGES ON TWO OF THOSE FOUR, which reverses the older posture recorded here. It was
+ * once true that this applier never touched quantity, because Accounting could only echo an id back
+ * onto stock the EMR had already recorded. Now Accounting can be the ORIGINATOR, and a receipt the
+ * EMR has never seen must add its units — otherwise the instruction is inert. ADR-0025 decision 9
+ * still holds where it applies: the attach path is still a pure id write, and no reverse event
+ * hands out drugs or moves money.
+ *
+ * MATCHED ON (drug, drug_type, Active) THROUGHOUT. A drug has up to five bins, one per payer class,
+ * each feeding a physically separate dispensary; matching on drug alone files stock where the goods
+ * never went. `Inactive` rows count as not existing, so a retired-then-relisted drug can still
+ * receive stock and a deactivated row is never silently resurrected.
  *
  * NOT sequence-guarded, and that is correct rather than an oversight: `stock.received` is an
  * ADDITIVE event, so a late one is still true. Note this branch returns BEFORE the `claimSequence`
  * staleness check below — idempotency rests entirely on the inbox key plus the fact that writing
  * the same id twice is a no-op. This is why the column is deliberately non-unique.
  *
- * A receipt this EMR cannot place THROWS rather than returning UNHANDLED: Accounting minted a batch
- * against stock this EMR has no row for, and that divergence must be visible as a FAILED row rather
- * than silently swallowed. The reverse — the EMR quietly forgetting a batch id — is exactly the gap
- * issue #297 exists to close.
+ * A receipt this EMR CANNOT place still THROWS rather than returning UNHANDLED — an unknown item
+ * code, a quantity disagreement, duplicate bins, no unit of measure to inherit. Each is a real
+ * divergence between two systems, and it must be visible as a FAILED row rather than silently
+ * swallowed. The reverse — the EMR quietly forgetting a batch id — is the gap #297 closed.
  */
+/**
+ * The payer classes a receipt may name. Wider than the `PharmacyDrugType` enum, which omits
+ * `Plaschema` — production holds a Plaschema store row and a Plaschema dispensary, so refusing that
+ * class here would dead-letter a legitimate receipt on a gap in our own enum.
+ */
+const RECEIVABLE_DRUG_TYPES = ['Cash', 'NHIS', 'Private', 'Retainership', 'Plaschema'];
+
 async function applyStockReceived(
   body: Record<string, unknown>,
   transaction: Transaction
 ): Promise<ApplyResult> {
   const externalBatchId = body.external_batch_id;
   const itemCode = body.item_code;
+  const drugType = body.drug_type;
 
   if (typeof externalBatchId !== 'string' || externalBatchId.length === 0) {
     throw new ApplyError('stock.received carries no external_batch_id');
@@ -242,6 +261,13 @@ async function applyStockReceived(
   if (typeof itemCode !== 'string' || itemCode.length === 0) {
     throw new ApplyError(
       `stock.received ${externalBatchId} carries no item_code, so the batch cannot be placed`
+    );
+  }
+  if (typeof drugType !== 'string' || !RECEIVABLE_DRUG_TYPES.includes(drugType)) {
+    throw new ApplyError(
+      `stock.received ${externalBatchId} names drug_type "${String(drugType)}", which is not one ` +
+        `of ${RECEIVABLE_DRUG_TYPES.join(', ')}. The class cannot be guessed: each is a separate ` +
+        'dispensary, and defaulting would file the stock where the goods never went.'
     );
   }
 
@@ -261,11 +287,19 @@ async function applyStockReceived(
     );
   }
 
+  const unitPrice = parseOptionalKobo(body.unit_cost_kobo, 'unit_cost_kobo', externalBatchId);
+  const sellingPrice = parseOptionalKobo(
+    body.selling_price_kobo,
+    'selling_price_kobo',
+    externalBatchId
+  );
+  const vendorId = typeof body.vendor_id === 'number' ? body.vendor_id : null;
+
   // Redelivery check FIRST. An additive event may arrive more than once, and this branch runs
   // before the inbox's sequence guard, so the second delivery must find its own earlier write and
-  // stop — not consume a second store row, which would attribute one Accounting batch to two EMR
-  // rows and silently double the stock it names.
-  const alreadyApplied = await PharmacyStore.findOne({
+  // stop — not create a second row or increment a second time, either of which would silently
+  // double the stock the batch names.
+  const alreadyApplied = await PharmacyStoreHistory.findOne({
     where: { external_batch_id: externalBatchId },
     transaction,
   });
@@ -273,52 +307,231 @@ async function applyStockReceived(
     return { outcome: 'APPLIED' };
   }
 
-  // Matched on drug AND quantity, not drug alone. "Newest unclaimed row for this drug" is a
-  // heuristic, and it misattributes as soon as two receipts of the same drug are entered before
-  // either event drains: both rows are unclaimed, and the events would attach in whatever order
-  // they arrive. Requiring the quantity to agree narrows the candidates to rows that actually
-  // match what Accounting recorded, and turns a disagreement into a visible failure below.
-  const storeItem = await PharmacyStore.findOne({
-    where: { drug_id: drug.id, external_batch_id: null, quantity_received: quantity },
+  // ATTACH first, for the EMR-originated path: the store clerk entered the receipt here and
+  // Accounting is echoing back the batch id it minted. The delivery is selected directly rather
+  // than via its bin — a bin holds several deliveries, some already claimed, so finding the bin
+  // first would fail on a claimed delivery even when another bin's is free.
+  //
+  // Matched on drug AND quantity AND class. Quantity narrows two pending receipts of one drug to
+  // the one Accounting actually describes; class keeps a Cash receipt off the NHIS shelf.
+  const delivery = await PharmacyStoreHistory.findOne({
+    where: {
+      history_type: HistoryType.SUPPLIED,
+      external_batch_id: null,
+      quantity_supplied: quantity,
+    },
+    include: [
+      {
+        model: PharmacyStore,
+        as: 'store',
+        required: true,
+        where: { drug_id: drug.id, drug_type: drugType, status: Status.ACTIVE },
+      },
+    ],
     order: [['createdAt', 'DESC']],
     transaction,
   });
 
-  if (storeItem) {
-    await PharmacyStore.update(
+  if (delivery) {
+    await PharmacyStoreHistory.update(
       { external_batch_id: externalBatchId },
-      { where: { id: storeItem.id }, transaction }
+      { where: { id: delivery.id }, transaction }
     );
     return { outcome: 'APPLIED' };
   }
 
-  // No quantity match. Distinguish "the EMR has an unclaimed row that DISAGREES" from "the EMR has
-  // no row at all" — the first is a divergence between two systems that both think they know what
-  // arrived, the second is the #26 path this EMR cannot yet serve.
-  const quantityMismatch = await PharmacyStore.findOne({
-    where: { drug_id: drug.id, external_batch_id: null },
+  // An unclaimed delivery EXISTS for this drug and class but disagrees about the quantity. Both
+  // systems think they know what arrived, and they differ — incrementing would file the difference
+  // as new stock and hide the divergence behind a row that looks correctly linked. Exact agreement
+  // is the bar (#304 Q8): stock is discrete, so a gap is missing units, not a rounding artefact.
+  const disagreeing = await PharmacyStoreHistory.findOne({
+    where: { history_type: HistoryType.SUPPLIED, external_batch_id: null },
+    include: [
+      {
+        model: PharmacyStore,
+        as: 'store',
+        required: true,
+        where: { drug_id: drug.id, drug_type: drugType, status: Status.ACTIVE },
+      },
+    ],
     order: [['createdAt', 'DESC']],
     transaction,
   });
 
-  if (quantityMismatch) {
+  if (disagreeing) {
     throw new ApplyError(
-      `stock.received ${externalBatchId} records ${quantity} units of "${itemCode}", but the ` +
-        `newest unclaimed store row (id ${quantityMismatch.id}) received ` +
-        `${quantityMismatch.quantity_received}. Accounting and the EMR disagree about what ` +
-        'arrived; attaching the batch id would hide the divergence.'
+      `stock.received ${externalBatchId} records ${quantity} units of "${itemCode}" (${drugType}), ` +
+        `but the newest unclaimed delivery on store row ${disagreeing.pharmacy_store_id} supplied ` +
+        `${disagreeing.quantity_supplied}. Accounting and the EMR disagree about what arrived; ` +
+        'attaching the batch id would hide the divergence.'
     );
   }
 
-  throw new ApplyError(
-    `stock.received ${externalBatchId} names ${quantity} units of "${itemCode}" but this EMR has ` +
-      'no unclaimed store row for it. Accounting-originated goods receipt (Accounting #26) would ' +
-      'require CREATING the store row here, which this EMR cannot do honestly: ' +
-      'Pharmacy_Store_Items requires unit_price and selling_price NOT NULL, and stock.received ' +
-      'deliberately carries no cost (ADR-0009). Creating the row would mean inventing an ' +
-      'acquisition cost and a patient-facing selling price. Record the receipt in the EMR first, ' +
-      'or resolve the contract gap.'
+  // No unclaimed delivery at all. Either this bin exists and every delivery it has is already
+  // accounted for — Accounting is adding stock to it (a reorder) — or the EMR has never stocked
+  // this drug in this class (a first receipt).
+  //
+  // C3c: a (drug, class) SHOULD have at most one bin — `pharmacyStoreValidations` enforces it on
+  // the create path — but the rule is application-level with no unique index behind it, and 12
+  // pairs on production violate it. The applier must not pick among them, and "newest" is
+  // measurably the wrong guess: in 5 of those 12 the newest row holds ZERO stock while the older
+  // holds it all, so incrementing the newest would file the delivery into an abandoned row. In 4
+  // more, both hold stock and no rule is right. Refuse, name both rows, and let a human merge them.
+  const bins = await PharmacyStore.findAll({
+    where: { drug_id: drug.id, drug_type: drugType, status: Status.ACTIVE },
+    order: [['createdAt', 'DESC']],
+    transaction,
+  });
+
+  if (bins.length > 1) {
+    throw new ApplyError(
+      `stock.received ${externalBatchId} names "${itemCode}" (${drugType}), but this EMR holds ` +
+        `${bins.length} active store rows for that drug and class (ids ${bins
+          .map(row => row.id)
+          .join(
+            ', '
+          )}). Only one may receive the stock, and choosing between them here would put ` +
+        'the delivery in an arbitrary row — often an emptied one. Merge the duplicates first.'
+    );
+  }
+
+  const bin = bins[0] ?? null;
+
+  if (bin) {
+    // C2b — the REORDER path, and the common case: 493 of 504 drugs on production already have a
+    // store row. Increment the bin and record the delivery, exactly as `reorderPharmacyItems` does
+    // for a clerk-entered restock. The bin is NOT replaced: `quantity_remaining` accumulates, and
+    // `quantity_received` restates what THIS delivery brought, matching the reorder screen.
+    //
+    // Price and cost are written only when the event carried them. An omitted price leaves whatever
+    // the bin already had — it does not blank a working price — and an omitted cost likewise.
+    const nextRemaining = Number(bin.quantity_remaining) + quantity;
+    await PharmacyStore.update(
+      {
+        quantity_received: quantity,
+        quantity_remaining: nextRemaining,
+        ...(unitPrice !== null ? { unit_price: unitPrice, total_price: unitPrice * quantity } : {}),
+        ...(sellingPrice !== null ? { selling_price: sellingPrice } : {}),
+        ...(vendorId !== null ? { vendor_id: vendorId } : {}),
+      },
+      { where: { id: bin.id }, transaction }
+    );
+
+    await PharmacyStoreHistory.create(
+      {
+        pharmacy_store_id: bin.id,
+        quantity_supplied: quantity,
+        quantity_remaining: nextRemaining,
+        unit_id: bin.unit_id,
+        item_receiver: bin.staff_id,
+        history_date: Date.now(),
+        history_type: HistoryType.SUPPLIED,
+        external_batch_id: externalBatchId,
+        vendor_id: vendorId ?? bin.vendor_id,
+        selling_price: sellingPrice ?? bin.selling_price,
+        unit_price: unitPrice ?? bin.unit_price,
+      },
+      { transaction }
+    );
+
+    return { outcome: 'APPLIED' };
+  }
+
+  // C2a — the CREATE path, closing the gap #26 specified and #297 could not serve. It is honest now
+  // because the event carries what the row needs: `unit_cost_kobo` for the cost the EMR reports on,
+  // and `selling_price_kobo` where the clerk supplied one. Nothing is invented.
+  //
+  // `selling_price` may legitimately be null — the row is then born unpriced and is not dispensable
+  // until a human prices it (C5). That is the whole reason C1 made the column nullable: a
+  // fabricated patient-facing price is the silently-wrong failure ADR-0001 and ADR-0009 prevent.
+  if (unitPrice === null) {
+    throw new ApplyError(
+      `stock.received ${externalBatchId} would CREATE a store row for "${itemCode}" (${drugType}) ` +
+        'but carries no unit_cost_kobo. The row requires a cost, and inventing one would corrupt ' +
+        "the EMR's inventory valuation. Send the cost, or record the receipt in the EMR first."
+    );
+  }
+
+  // `unit_id` is NOT NULL and the event does not carry a unit — deliberately, since a unit is EMR
+  // catalogue vocabulary ("Packs" vs "Tablets"), not something Accounting knows. A SIBLING bin for
+  // the same drug in another payer class is the honest source: 486 of 504 drugs on production use
+  // one unit across all their classes. Where the classes disagree (18 drugs do), there is no safe
+  // pick and the receipt fails rather than guessing a unit that would misstate every quantity.
+  const siblingUnits = await PharmacyStore.findAll({
+    where: { drug_id: drug.id, status: Status.ACTIVE },
+    attributes: ['unit_id'],
+    group: ['unit_id'],
+    transaction,
+  });
+
+  if (siblingUnits.length !== 1) {
+    throw new ApplyError(
+      `stock.received ${externalBatchId} would CREATE the first "${itemCode}" (${drugType}) row, ` +
+        `but this EMR ${
+          siblingUnits.length === 0
+            ? 'has no other stock of that drug to take a unit of measure from'
+            : 'stocks that drug in more than one unit of measure, so the unit cannot be inferred'
+        }. A wrong unit misstates every quantity that follows. Record the first receipt of this ` +
+        'drug in the EMR, where the unit is chosen explicitly.'
+    );
+  }
+
+  const created = await PharmacyStore.create(
+    {
+      drug_id: drug.id,
+      drug_type: drugType,
+      unit_id: siblingUnits[0].unit_id,
+      // Supplier packaging data the clerk reads off the carton. NOT NULL with no default, and it
+      // matches `Drugs.code` on 0 of 1,664 production rows, so it cannot be derived — born blank,
+      // which is already the norm there (#304 R6/A7).
+      product_code: '',
+      quantity_received: quantity,
+      quantity_remaining: quantity,
+      unit_price: unitPrice,
+      total_price: unitPrice * quantity,
+      selling_price: sellingPrice,
+      expiration: typeof body.expiry_date === 'string' ? new Date(body.expiry_date) : null,
+      drug_form: drug.type,
+      vendor_id: vendorId,
+      status: Status.ACTIVE,
+      date_received: new Date(),
+    },
+    { transaction }
   );
+
+  await PharmacyStoreHistory.create(
+    {
+      pharmacy_store_id: created.id,
+      quantity_supplied: quantity,
+      quantity_remaining: quantity,
+      unit_id: created.unit_id,
+      history_date: Date.now(),
+      history_type: HistoryType.SUPPLIED,
+      external_batch_id: externalBatchId,
+      vendor_id: vendorId,
+      selling_price: sellingPrice,
+      unit_price: unitPrice,
+    },
+    { transaction }
+  );
+
+  return { outcome: 'APPLIED' };
+}
+
+/**
+ * Money arrives as a STRING of integer kobo (CONVENTIONS §1) and the EMR stores naira decimals, so
+ * the conversion happens once, here. A malformed value THROWS rather than defaulting: a silently
+ * dropped cost would corrupt the margin reports this field exists to keep working.
+ */
+function parseOptionalKobo(raw: unknown, field: string, externalBatchId: string): number | null {
+  if (raw === undefined || raw === null) return null;
+  if (typeof raw !== 'string' || !/^\d+$/.test(raw)) {
+    throw new ApplyError(
+      `stock.received ${externalBatchId} carries a malformed ${field} (${String(raw)}); money ` +
+        'crosses as a string of integer kobo.'
+    );
+  }
+  return Number(BigInt(raw)) / 100;
 }
 
 /** The status a reverse event sets, or undefined for a valid-but-unhandled reverse type. */

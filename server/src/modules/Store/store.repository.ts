@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { literal, Op, QueryTypes, WhereOptions } from 'sequelize';
+import { literal, Op, QueryTypes, Transaction, WhereOptions } from 'sequelize';
 import {
   Drug,
   PharmacyStore,
@@ -23,7 +23,11 @@ import { BadException } from '../../common/util/api-error';
 import { ItemsToDispensedBody } from '../Inventory/types/inventory-item.types';
 import { getAnInventory } from '../Inventory/inventory.repository';
 import { lt } from 'lodash';
-import { INVALID_INVENTORY, INVALID_QUANTITY } from '../Inventory/messages/response-messages';
+import {
+  INVALID_INVENTORY,
+  INVALID_QUANTITY,
+  UNPRICED_ITEM,
+} from '../Inventory/messages/response-messages';
 import { staffAttributes, StatusCodes } from '../../core/helpers/helper';
 
 /** ***********************
@@ -31,11 +35,21 @@ import { staffAttributes, StatusCodes } from '../../core/helpers/helper';
  ********************** */
 
 /**
- * create a cash pharmacy item
- * @param data
- * @returns {object} item data
+ * create a pharmacy store item and its opening SUPPLIED history row, in one transaction.
+ *
+ * The history row is what makes a delivery an addressable event rather than a mutation of a bin.
+ * `reorderPharmacyItems` has always written one per restock; the create paths never did, so a drug's
+ * FIRST delivery left no trace and history began at the second. On `ehmrs_prod` that is 40 SUPPLIED
+ * rows against 1,664 store rows.
+ *
+ * Accounting #304 needs it because `external_batch_id` belongs on the delivery, not on the bin: the
+ * bin row is reused and overwritten across restocks (`reorderPharmacyItems` spreads `...item` over
+ * it), so a batch id stored there names only the most recent delivery.
+ *
+ * Both writes share one transaction. A store row whose opening history is missing would understate
+ * what arrived, and the row is the thing stock is dispensed from — the pair commits or neither does.
  */
-export async function createCashItem(data) {
+async function createStoreItem(data, drug_type: PharmacyDrugType, selling_price) {
   const {
     drug_id,
     shelf,
@@ -45,7 +59,6 @@ export async function createCashItem(data) {
     quantity_received,
     unit_id,
     unit_price,
-    selling_price,
     expiration,
     dosage_form_id,
     staff_id,
@@ -58,30 +71,62 @@ export async function createCashItem(data) {
     vendor_id,
   } = data;
 
-  return PharmacyStore.create({
-    drug_id,
-    shelf,
-    product_code,
-    batch,
-    voucher,
-    quantity_received,
-    quantity_remaining: quantity_received,
-    unit_id,
-    unit_price,
-    total_price: quantity_received * unit_price,
-    selling_price,
-    expiration,
-    dosage_form_id,
-    staff_id,
-    date_received,
-    measurement_id,
-    strength_input,
-    route_id,
-    drug_form,
-    brand,
-    drug_type: PharmacyDrugType.CASH,
-    vendor_id,
+  return sequelizeConnection.transaction(async t => {
+    const item = await PharmacyStore.create(
+      {
+        drug_id,
+        shelf,
+        product_code,
+        batch,
+        voucher,
+        quantity_received,
+        quantity_remaining: quantity_received,
+        unit_id,
+        unit_price,
+        total_price: quantity_received * unit_price,
+        selling_price,
+        expiration,
+        dosage_form_id,
+        staff_id,
+        date_received,
+        measurement_id,
+        strength_input,
+        route_id,
+        drug_form,
+        brand,
+        drug_type,
+        vendor_id,
+      },
+      { transaction: t }
+    );
+
+    await PharmacyStoreHistory.create(
+      {
+        quantity_supplied: quantity_received,
+        pharmacy_store_id: item.id,
+        quantity_remaining: quantity_received,
+        unit_id,
+        item_receiver: staff_id,
+        history_date: date_received || Date.now(),
+        history_type: HistoryType.SUPPLIED,
+        vendor_id,
+        selling_price,
+        unit_price,
+      },
+      { transaction: t }
+    );
+
+    return item;
   });
+}
+
+/**
+ * create a cash pharmacy item
+ * @param data
+ * @returns {object} item data
+ */
+export async function createCashItem(data) {
+  return createStoreItem(data, PharmacyDrugType.CASH, data.selling_price);
 }
 
 /**
@@ -90,52 +135,7 @@ export async function createCashItem(data) {
  * @returns {object} item data
  */
 export async function createNHISItem(data) {
-  const {
-    drug_id,
-    shelf,
-    product_code,
-    batch,
-    voucher,
-    quantity_received,
-    unit_id,
-    unit_price,
-    nhis_selling_price,
-    expiration,
-    dosage_form_id,
-    staff_id,
-    date_received,
-    measurement_id,
-    strength_input,
-    route_id,
-    drug_form,
-    brand,
-    vendor_id,
-  } = data;
-
-  return PharmacyStore.create({
-    drug_id,
-    shelf,
-    product_code,
-    batch,
-    voucher,
-    quantity_received,
-    quantity_remaining: quantity_received,
-    unit_id,
-    unit_price,
-    total_price: quantity_received * unit_price,
-    selling_price: nhis_selling_price,
-    expiration,
-    dosage_form_id,
-    staff_id,
-    date_received,
-    measurement_id,
-    strength_input,
-    route_id,
-    drug_form,
-    brand,
-    drug_type: PharmacyDrugType.NHIS,
-    vendor_id,
-  });
+  return createStoreItem(data, PharmacyDrugType.NHIS, data.nhis_selling_price);
 }
 
 /**
@@ -144,52 +144,7 @@ export async function createNHISItem(data) {
  * @returns {object} item data
  */
 export async function createPrivateItem(data) {
-  const {
-    drug_id,
-    shelf,
-    product_code,
-    batch,
-    voucher,
-    quantity_received,
-    unit_id,
-    unit_price,
-    private_selling_price,
-    expiration,
-    dosage_form_id,
-    staff_id,
-    date_received,
-    measurement_id,
-    strength_input,
-    route_id,
-    brand,
-    drug_form,
-    vendor_id,
-  } = data;
-
-  return PharmacyStore.create({
-    drug_id,
-    shelf,
-    product_code,
-    batch,
-    voucher,
-    quantity_received,
-    quantity_remaining: quantity_received,
-    unit_id,
-    unit_price,
-    total_price: quantity_received * unit_price,
-    selling_price: private_selling_price,
-    expiration,
-    dosage_form_id,
-    staff_id,
-    date_received,
-    measurement_id,
-    strength_input,
-    route_id,
-    drug_form,
-    brand,
-    drug_type: PharmacyDrugType.PRIVATE,
-    vendor_id,
-  });
+  return createStoreItem(data, PharmacyDrugType.PRIVATE, data.private_selling_price);
 }
 
 /**
@@ -722,6 +677,19 @@ const dispenseValidations = async (item: ItemsToDispensedBody) => {
     throw new BadException('Invalid', 400, INVALID_QUANTITY.replace('drug', item.drug_name));
   }
 
+  // #304 C5: an unpriced row is not dispensable. A row created from `stock.received` without a
+  // selling price is born null (ADR-0041 §6) rather than priced at a fabricated number, and letting
+  // it reach a dispensary would hand the patient stock nobody can bill for: `getDrugPrice`
+  // (pharmacy.repository.ts) reads the layer's `selling_price` and the caller multiplies it by the
+  // quantity, so a null becomes NaN on the bill rather than an error anyone sees.
+  //
+  // Blocked HERE, at the store→dispensary transfer, rather than at the patient-facing dispense:
+  // this is the last point where the stock has not yet moved, and it fails in the store screen
+  // where the price is actually set.
+  if (storeItem.selling_price === null || storeItem.selling_price === undefined) {
+    throw new BadException('Invalid', 400, UNPRICED_ITEM.replace('drug', item.drug_name));
+  }
+
   if (!inventory.accepted_drug_type.includes(storeItem.drug_type)) {
     const matchObj = {
       drug: item.drug_name,
@@ -738,10 +706,41 @@ const dispenseValidations = async (item: ItemsToDispensedBody) => {
   return storeItem;
 };
 
+/**
+ * The batch id Accounting minted for the delivery a transfer is drawing from (ADR-0041).
+ *
+ * A bin holds several deliveries, and the units on its shelf are commingled — so "which delivery"
+ * cannot be answered exactly from quantity alone. The NEWEST claimed SUPPLIED row is the honest
+ * approximation at THIS seam, and it is a far narrower guess than the one it replaces: it is made
+ * once, when stock physically leaves the store, and is then FROZEN onto the layer. Every later
+ * return of those units names the delivery this transfer recorded, rather than re-guessing against
+ * a bin whose contents have moved on.
+ *
+ * Returns null when the bin has no claimed delivery — pre-cutover stock, donations, or a store row
+ * Accounting never saw. Null is visibly unknown; a fabricated id is silently wrong (#295 D3).
+ */
+const resolveDeliveryBatchId = async (
+  pharmacyStoreId: number,
+  transaction: Transaction
+): Promise<string | null> => {
+  const delivery = await PharmacyStoreHistory.findOne({
+    where: {
+      pharmacy_store_id: pharmacyStoreId,
+      history_type: HistoryType.SUPPLIED,
+      external_batch_id: { [Op.ne]: null },
+    },
+    order: [['createdAt', 'DESC']],
+    attributes: ['external_batch_id'],
+    transaction,
+  });
+  return delivery?.external_batch_id ?? null;
+};
+
 const mapInventoryItem = (
   storeItem: PharmacyStore,
   item: ItemsToDispensedBody,
-  staff_id: number
+  staff_id: number,
+  externalBatchId: string | null
 ) => ({
   inventory_id: item.dispensary,
   drug_id: storeItem.drug_id,
@@ -759,6 +758,7 @@ const mapInventoryItem = (
   brand: storeItem.brand,
   pharmacy_store_id: storeItem.id,
   batch: storeItem.batch,
+  external_batch_id: externalBatchId,
   date_received: Date.now(),
   staff_id,
 });
@@ -807,9 +807,11 @@ export const dispensePharmacyItems = async (items: ItemsToDispensedBody[], staff
   return Promise.allSettled(
     items.map(async item => {
       const storeItem = await dispenseValidations(item);
-      const mappedItem = mapInventoryItem(storeItem, item, staff_id);
 
       return sequelizeConnection.transaction(async t => {
+        const externalBatchId = await resolveDeliveryBatchId(storeItem.id, t);
+        const mappedItem = mapInventoryItem(storeItem, item, staff_id, externalBatchId);
+
         const [inventoryItem, created] = await InventoryItem.findOrCreate({
           where: {
             drug_id: mappedItem.drug_id,
@@ -941,7 +943,9 @@ export async function searchLaboratoryItems(currentPage = 1, pageLimit = 10, sea
     paginate: pageLimit,
     order: [['createdAt', 'DESC']],
     where: {
-      name: `%${search}%`,
+      name: {
+        [Op.like]: `%${search}%`,
+      },
     },
     include: [
       {

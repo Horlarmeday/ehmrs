@@ -68,19 +68,6 @@ export class PharmacyStore extends Model {
   })
   batch: string;
 
-  /**
-   * The batch id Accounting minted for this receipt, applied from `stock.received` (ADR-0040).
-   *
-   * Null for stock Accounting never saw (pre-cutover, donations) — permanently, since such a row
-   * can never acquire one retroactively. Non-unique: `stock.received` is additive, so a redelivery
-   * re-writes the same value and must not raise.
-   */
-  @Column({
-    type: DataType.STRING(36),
-    allowNull: true,
-  })
-  external_batch_id: string;
-
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
@@ -124,16 +111,19 @@ export class PharmacyStore extends Model {
   })
   unit_price: number;
 
+  /**
+   * The patient-facing price. NULLABLE since #304/ADR-0041: a row created from `stock.received`
+   * is born unpriced when the receipt carried no price, rather than priced at a fabricated number.
+   * An unpriced row is not dispensable — `dispenseValidations` refuses it.
+   *
+   * Contrast `unit_price`, which stays NOT NULL: acquisition cost is Accounting's and is always
+   * known at receipt. Only the patient-facing price can legitimately be pending.
+   */
   @Column({
     type: DataType.DECIMAL(12, 2),
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'selling price is required',
-      },
-    },
+    allowNull: true,
   })
-  selling_price: number;
+  selling_price: number | null;
 
   @Column({
     type: DataType.DECIMAL(12, 2),
@@ -178,7 +168,8 @@ export class PharmacyStore extends Model {
       PharmacyDrugType.CASH,
       PharmacyDrugType.NHIS,
       PharmacyDrugType.PRIVATE,
-      PharmacyDrugType.RETAINERSHIP
+      PharmacyDrugType.RETAINERSHIP,
+      PharmacyDrugType.PLASCHEMA
     ),
     allowNull: false,
     validate: {
