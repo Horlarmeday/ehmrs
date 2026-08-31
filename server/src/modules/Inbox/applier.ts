@@ -360,11 +360,32 @@ async function applyStockReceived(
   // No unclaimed delivery at all. Either this bin exists and every delivery it has is already
   // accounted for — Accounting is adding stock to it (a reorder) — or the EMR has never stocked
   // this drug in this class (a first receipt).
-  const bin = await PharmacyStore.findOne({
+  //
+  // C3c: a (drug, class) SHOULD have at most one bin — `pharmacyStoreValidations` enforces it on
+  // the create path — but the rule is application-level with no unique index behind it, and 12
+  // pairs on production violate it. The applier must not pick among them, and "newest" is
+  // measurably the wrong guess: in 5 of those 12 the newest row holds ZERO stock while the older
+  // holds it all, so incrementing the newest would file the delivery into an abandoned row. In 4
+  // more, both hold stock and no rule is right. Refuse, name both rows, and let a human merge them.
+  const bins = await PharmacyStore.findAll({
     where: { drug_id: drug.id, drug_type: drugType, status: Status.ACTIVE },
     order: [['createdAt', 'DESC']],
     transaction,
   });
+
+  if (bins.length > 1) {
+    throw new ApplyError(
+      `stock.received ${externalBatchId} names "${itemCode}" (${drugType}), but this EMR holds ` +
+        `${bins.length} active store rows for that drug and class (ids ${bins
+          .map(row => row.id)
+          .join(
+            ', '
+          )}). Only one may receive the stock, and choosing between them here would put ` +
+        'the delivery in an arbitrary row — often an emptied one. Merge the duplicates first.'
+    );
+  }
+
+  const bin = bins[0] ?? null;
 
   if (bin) {
     // C2b — the REORDER path, and the common case: 493 of 504 drugs on production already have a

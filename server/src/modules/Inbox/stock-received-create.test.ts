@@ -296,6 +296,47 @@ describe('stock.received creates or increments a store row (#304 C2a/C2b)', () =
     });
   });
 
+  describe('C3c — duplicate bins for one (drug, class)', () => {
+    it('REFUSES rather than picking between two active rows', async () => {
+      // 12 such pairs exist on production: the one-row-per-(drug, class) rule is application-level
+      // with no unique index behind it. "Newest wins" is measurably wrong — in 5 of those 12 the
+      // newest row holds ZERO stock while the older holds it all, so incrementing the newest would
+      // file the delivery into an abandoned row; in 4 more, both hold stock and no rule is right.
+      const duplicate = await PharmacyStore.create({
+        drug_id,
+        drug_type: PharmacyDrugType.NHIS,
+        product_code: '',
+        quantity_received: 0,
+        quantity_remaining: 0,
+        unit_id,
+        unit_price: 350,
+        selling_price: 800,
+        total_price: 0,
+        drug_form: DrugForm.DRUG,
+        status: Status.ACTIVE,
+        staff_id,
+        date_received: new Date(),
+      });
+
+      const before = await PharmacyStore.count({
+        where: { drug_id, drug_type: PharmacyDrugType.NHIS },
+      });
+      expect(before).toBe(2);
+
+      await expect(apply(body({ drug_type: PharmacyDrugType.NHIS, quantity: 9 }))).rejects.toThrow(
+        /2 active store rows for that drug and class/
+      );
+
+      // Nothing moved and nothing was created: the receipt is a dead letter until a human merges.
+      expect(
+        await PharmacyStore.count({ where: { drug_id, drug_type: PharmacyDrugType.NHIS } })
+      ).toBe(2);
+      expect(Number((await PharmacyStore.findByPk(duplicate.id)).quantity_remaining)).toBe(0);
+
+      await PharmacyStore.destroy({ where: { id: duplicate.id } });
+    });
+  });
+
   describe('guards', () => {
     it('refuses a receipt naming no drug type — the class cannot be guessed', async () => {
       await expect(apply({ ...body(), drug_type: undefined })).rejects.toThrow(/is not one of/);
