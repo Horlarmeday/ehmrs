@@ -31,11 +31,21 @@ import { staffAttributes, StatusCodes } from '../../core/helpers/helper';
  ********************** */
 
 /**
- * create a cash pharmacy item
- * @param data
- * @returns {object} item data
+ * create a pharmacy store item and its opening SUPPLIED history row, in one transaction.
+ *
+ * The history row is what makes a delivery an addressable event rather than a mutation of a bin.
+ * `reorderPharmacyItems` has always written one per restock; the create paths never did, so a drug's
+ * FIRST delivery left no trace and history began at the second. On `ehmrs_prod` that is 40 SUPPLIED
+ * rows against 1,664 store rows.
+ *
+ * Accounting #304 needs it because `external_batch_id` belongs on the delivery, not on the bin: the
+ * bin row is reused and overwritten across restocks (`reorderPharmacyItems` spreads `...item` over
+ * it), so a batch id stored there names only the most recent delivery.
+ *
+ * Both writes share one transaction. A store row whose opening history is missing would understate
+ * what arrived, and the row is the thing stock is dispensed from — the pair commits or neither does.
  */
-export async function createCashItem(data) {
+async function createStoreItem(data, drug_type: PharmacyDrugType, selling_price) {
   const {
     drug_id,
     shelf,
@@ -45,7 +55,6 @@ export async function createCashItem(data) {
     quantity_received,
     unit_id,
     unit_price,
-    selling_price,
     expiration,
     dosage_form_id,
     staff_id,
@@ -58,30 +67,62 @@ export async function createCashItem(data) {
     vendor_id,
   } = data;
 
-  return PharmacyStore.create({
-    drug_id,
-    shelf,
-    product_code,
-    batch,
-    voucher,
-    quantity_received,
-    quantity_remaining: quantity_received,
-    unit_id,
-    unit_price,
-    total_price: quantity_received * unit_price,
-    selling_price,
-    expiration,
-    dosage_form_id,
-    staff_id,
-    date_received,
-    measurement_id,
-    strength_input,
-    route_id,
-    drug_form,
-    brand,
-    drug_type: PharmacyDrugType.CASH,
-    vendor_id,
+  return sequelizeConnection.transaction(async t => {
+    const item = await PharmacyStore.create(
+      {
+        drug_id,
+        shelf,
+        product_code,
+        batch,
+        voucher,
+        quantity_received,
+        quantity_remaining: quantity_received,
+        unit_id,
+        unit_price,
+        total_price: quantity_received * unit_price,
+        selling_price,
+        expiration,
+        dosage_form_id,
+        staff_id,
+        date_received,
+        measurement_id,
+        strength_input,
+        route_id,
+        drug_form,
+        brand,
+        drug_type,
+        vendor_id,
+      },
+      { transaction: t }
+    );
+
+    await PharmacyStoreHistory.create(
+      {
+        quantity_supplied: quantity_received,
+        pharmacy_store_id: item.id,
+        quantity_remaining: quantity_received,
+        unit_id,
+        item_receiver: staff_id,
+        history_date: date_received || Date.now(),
+        history_type: HistoryType.SUPPLIED,
+        vendor_id,
+        selling_price,
+        unit_price,
+      },
+      { transaction: t }
+    );
+
+    return item;
   });
+}
+
+/**
+ * create a cash pharmacy item
+ * @param data
+ * @returns {object} item data
+ */
+export async function createCashItem(data) {
+  return createStoreItem(data, PharmacyDrugType.CASH, data.selling_price);
 }
 
 /**
@@ -90,52 +131,7 @@ export async function createCashItem(data) {
  * @returns {object} item data
  */
 export async function createNHISItem(data) {
-  const {
-    drug_id,
-    shelf,
-    product_code,
-    batch,
-    voucher,
-    quantity_received,
-    unit_id,
-    unit_price,
-    nhis_selling_price,
-    expiration,
-    dosage_form_id,
-    staff_id,
-    date_received,
-    measurement_id,
-    strength_input,
-    route_id,
-    drug_form,
-    brand,
-    vendor_id,
-  } = data;
-
-  return PharmacyStore.create({
-    drug_id,
-    shelf,
-    product_code,
-    batch,
-    voucher,
-    quantity_received,
-    quantity_remaining: quantity_received,
-    unit_id,
-    unit_price,
-    total_price: quantity_received * unit_price,
-    selling_price: nhis_selling_price,
-    expiration,
-    dosage_form_id,
-    staff_id,
-    date_received,
-    measurement_id,
-    strength_input,
-    route_id,
-    drug_form,
-    brand,
-    drug_type: PharmacyDrugType.NHIS,
-    vendor_id,
-  });
+  return createStoreItem(data, PharmacyDrugType.NHIS, data.nhis_selling_price);
 }
 
 /**
@@ -144,52 +140,7 @@ export async function createNHISItem(data) {
  * @returns {object} item data
  */
 export async function createPrivateItem(data) {
-  const {
-    drug_id,
-    shelf,
-    product_code,
-    batch,
-    voucher,
-    quantity_received,
-    unit_id,
-    unit_price,
-    private_selling_price,
-    expiration,
-    dosage_form_id,
-    staff_id,
-    date_received,
-    measurement_id,
-    strength_input,
-    route_id,
-    brand,
-    drug_form,
-    vendor_id,
-  } = data;
-
-  return PharmacyStore.create({
-    drug_id,
-    shelf,
-    product_code,
-    batch,
-    voucher,
-    quantity_received,
-    quantity_remaining: quantity_received,
-    unit_id,
-    unit_price,
-    total_price: quantity_received * unit_price,
-    selling_price: private_selling_price,
-    expiration,
-    dosage_form_id,
-    staff_id,
-    date_received,
-    measurement_id,
-    strength_input,
-    route_id,
-    drug_form,
-    brand,
-    drug_type: PharmacyDrugType.PRIVATE,
-    vendor_id,
-  });
+  return createStoreItem(data, PharmacyDrugType.PRIVATE, data.private_selling_price);
 }
 
 /**
