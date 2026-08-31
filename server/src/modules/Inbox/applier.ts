@@ -199,36 +199,46 @@ async function applyDemographicsRequest(
  * `Pharmacy_Store_Histories.external_batch_id` → Accounting's `stock_batch`. Without it the EMR cannot
  * echo a batch back on `dispense.recorded` and Accounting's COGS slice has nothing to cost.
  *
- * NEVER CHANGES QUANTITY, and that is the whole posture of the reverse contract: a reverse event
- * updates state the EMR owns and produces no side effects of its own (ADR-0025 decision 9 — they
- * "never carry money as a side effect and never hand out drugs"). The store row's
- * `quantity_received` was written when the stock physically arrived. Adding the event's `quantity`
- * on top would count the same receipt twice. The field is carried so the EMR can VERIFY agreement,
- * which is what the mismatch check below does.
+ * TWO ENTRY PATHS, both permanent (ADR-0041). A PURCHASED receipt originates in Accounting, which
+ * mints the batch and instructs the EMR here. DONATED, sample and pre-cutover stock never passes
+ * through Accounting at all — no cost, no payable — and is entered on the EMR store screen as
+ * before. A delivery with no `external_batch_id` therefore asserts "this did not come through
+ * procurement" rather than recording a failed match.
  *
- * TWO ENTRY PATHS, and the EMR currently uses the older one. Accounting issue #26 makes goods
- * receipt an accounting-module action: Accounting mints the batch and the EMR "references only
- * batches it was told about, never invents one". But `createCashItem`
- * (`Store/store.repository.ts`) still creates store rows directly, and that path is in daily use.
- * So this applier ATTACHES to an existing unclaimed row when it finds one (the legacy path) and
- * would CREATE the row when it does not (the #26 path).
+ * FOUR OUTCOMES, in order:
  *
- * The create path is BLOCKED, deliberately and visibly, by the final `ApplyError` below.
- * `Pharmacy_Store_Items` requires `unit_price` and `selling_price` NOT NULL, and `stock.received`
- * deliberately carries NO cost (ADR-0009). Creating the row would mean inventing both — a
- * fabricated acquisition cost and, worse, a fabricated patient-facing selling price. That is
- * precisely the "silently wrong" failure ADR-0009 exists to prevent, so the receipt fails loudly
- * instead. Closing it needs a contract decision, not a default value.
+ *   ATTACH     an unclaimed SUPPLIED delivery matching drug + class + quantity. The EMR-originated
+ *              path: the clerk entered the receipt here and Accounting is echoing its id back.
+ *   REFUSE     an unclaimed delivery exists but the quantity disagrees. Exact agreement is the bar:
+ *              stock is discrete, so a gap is missing units, not a rounding artefact.
+ *   INCREMENT  the bin exists and all its deliveries are claimed — Accounting is adding stock, as
+ *              `reorderPharmacyItems` does for a clerk-entered restock. THE COMMON CASE: 493 of 504
+ *              drugs on production already have a bin.
+ *   CREATE     no bin for this (drug, class). Honest now because the event carries a cost and,
+ *              where the clerk gave one, a price. A missing COST refuses; a missing PRICE does not
+ *              — the row is born unpriced and is simply not dispensable until a human prices it.
+ *
+ * QUANTITY CHANGES ON TWO OF THOSE FOUR, which reverses the older posture recorded here. It was
+ * once true that this applier never touched quantity, because Accounting could only echo an id back
+ * onto stock the EMR had already recorded. Now Accounting can be the ORIGINATOR, and a receipt the
+ * EMR has never seen must add its units — otherwise the instruction is inert. ADR-0025 decision 9
+ * still holds where it applies: the attach path is still a pure id write, and no reverse event
+ * hands out drugs or moves money.
+ *
+ * MATCHED ON (drug, drug_type, Active) THROUGHOUT. A drug has up to five bins, one per payer class,
+ * each feeding a physically separate dispensary; matching on drug alone files stock where the goods
+ * never went. `Inactive` rows count as not existing, so a retired-then-relisted drug can still
+ * receive stock and a deactivated row is never silently resurrected.
  *
  * NOT sequence-guarded, and that is correct rather than an oversight: `stock.received` is an
  * ADDITIVE event, so a late one is still true. Note this branch returns BEFORE the `claimSequence`
  * staleness check below — idempotency rests entirely on the inbox key plus the fact that writing
  * the same id twice is a no-op. This is why the column is deliberately non-unique.
  *
- * A receipt this EMR cannot place THROWS rather than returning UNHANDLED: Accounting minted a batch
- * against stock this EMR has no row for, and that divergence must be visible as a FAILED row rather
- * than silently swallowed. The reverse — the EMR quietly forgetting a batch id — is exactly the gap
- * issue #297 exists to close.
+ * A receipt this EMR CANNOT place still THROWS rather than returning UNHANDLED — an unknown item
+ * code, a quantity disagreement, duplicate bins, no unit of measure to inherit. Each is a real
+ * divergence between two systems, and it must be visible as a FAILED row rather than silently
+ * swallowed. The reverse — the EMR quietly forgetting a batch id — is the gap #297 closed.
  */
 /**
  * The payer classes a receipt may name. Wider than the `PharmacyDrugType` enum, which omits
