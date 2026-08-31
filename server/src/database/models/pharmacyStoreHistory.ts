@@ -141,6 +141,25 @@ export class PharmacyStoreHistory extends Model {
   })
   vendor_id: number;
 
+  /**
+   * The batch id Accounting minted for THIS delivery, applied from `stock.received` (ADR-0041).
+   *
+   * It lives on the history row rather than the store row because the store row is a per-drug bin
+   * reused across restocks: `reorderPharmacyItems` overwrites it in place, so an id held there
+   * would name only the most recent delivery. A SUPPLIED history row is one delivery, which is the
+   * grain a batch identity needs.
+   *
+   * Null for deliveries Accounting never saw (pre-cutover, donations, samples) — permanently, and
+   * per ADR-0041 that null positively asserts the stock did not come through procurement rather
+   * than recording a failed match. Non-unique: `stock.received` is additive, so a redelivery
+   * re-writes the same value and must not raise.
+   */
+  @Column({
+    type: DataType.STRING(36),
+    allowNull: true,
+  })
+  external_batch_id: string | null;
+
   @BelongsTo(() => Unit)
   unit: Unit;
 

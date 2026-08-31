@@ -771,7 +771,7 @@ export const dispenseDrug = async (
       // batch id. OMIT the entry rather than fabricating one: Accounting reads the unnamed
       // remainder as explicitly uncostable, which is true, where a guessed id would be silently
       // wrong (#295 D3, ADR-0040).
-      const externalBatchId = await resolveExternalBatchId(layer.pharmacy_store_id, t);
+      const externalBatchId = await resolveExternalBatchId(layer.id, t);
       if (externalBatchId) {
         batches.push({ external_batch_id: externalBatchId, quantity: portion });
       }
@@ -833,22 +833,26 @@ export const dispenseDrug = async (
 };
 
 /**
- * The batch id Accounting minted for the store row a dispensary layer came from (ADR-0040).
+ * The batch id Accounting minted for the DELIVERY a dispensary layer was drawn from (ADR-0041).
  *
- * Two hops, both of which legitimately yield nothing: a legacy layer has no `pharmacy_store_id`
- * (#295 D3 — permanently nullable), and a store row for stock Accounting never saw has no
- * `external_batch_id`. Returns undefined in both cases, and the caller omits the entry.
+ * Read straight off the layer, which froze it at transfer. It used to be resolved from the store
+ * row, but a bin holds several deliveries with different batch ids and its units are commingled, so
+ * the bin can no longer say which delivery a layer came from — the layer can, because the transfer
+ * that created it drew from exactly one.
+ *
+ * Legitimately null for a legacy layer (#295 D3) and for stock Accounting never saw. Returns
+ * undefined in both cases, and the caller omits the entry rather than guessing.
  */
 const resolveExternalBatchId = async (
-  pharmacyStoreId: number | null | undefined,
+  inventoryItemId: number | null | undefined,
   transaction: sequelize.Transaction
 ): Promise<string | undefined> => {
-  if (!pharmacyStoreId) return undefined;
-  const storeItem = await PharmacyStore.findByPk(pharmacyStoreId, {
+  if (!inventoryItemId) return undefined;
+  const layer = await InventoryItem.findByPk(inventoryItemId, {
     attributes: ['external_batch_id'],
     transaction,
   });
-  return storeItem?.external_batch_id || undefined;
+  return layer?.external_batch_id || undefined;
 };
 
 /**
@@ -928,7 +932,7 @@ export const returnDrugToInventory = async (
     //
     // A miss on either resolver is LOGGED rather than silent (#21, #22): the units rejoin stock
     // either way, and Accounting cannot detect an event it never receives.
-    const externalBatchId = await resolveExternalBatchId(inventoryItem.pharmacy_store_id, t);
+    const externalBatchId = await resolveExternalBatchId(inventoryItem.id, t);
     const itemCode = await resolveItemCode(inventoryItem.drug_id, t);
 
     if (!externalBatchId || !itemCode) {

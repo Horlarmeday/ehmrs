@@ -199,6 +199,23 @@ export class InventoryItem extends Model {
   })
   batch: string;
 
+  /**
+   * The batch id Accounting minted for the DELIVERY this layer was drawn from (ADR-0041).
+   *
+   * Copied from the source store row's SUPPLIED history at transfer, alongside `batch`,
+   * `expiration` and `acquired_price`. It is held here rather than resolved on demand because the
+   * bin cannot answer "which delivery did these units come from" once it holds several — and a
+   * return has to name the delivery it was actually dispensed from.
+   *
+   * Null for a legacy layer with no `pharmacy_store_id` (#295 D3), and for stock Accounting never
+   * saw. A null is visibly unknown; a guessed id is silently wrong.
+   */
+  @Column({
+    type: DataType.STRING(36),
+    allowNull: true,
+  })
+  external_batch_id: string | null;
+
   @ForeignKey(() => Staff)
   @Column({
     type: DataType.INTEGER,

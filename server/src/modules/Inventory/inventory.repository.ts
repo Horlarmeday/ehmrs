@@ -524,7 +524,11 @@ export const updateReturnRequests = async (
       // Either guard missing is a legitimate state, not an error — but the skip is LOGGED rather
       // than silent (#21, #22): stock moves regardless, and Accounting cannot detect an event it
       // never receives.
-      const drug = storeItem.external_batch_id
+      // The batch id comes from the LAYER, not the store row: since ADR-0041 a bin holds several
+      // deliveries with different ids, so it cannot say which one these units came from. The layer
+      // froze that at transfer, and these are precisely the units that transfer moved.
+      const externalBatchId = inventoryItem.external_batch_id;
+      const drug = externalBatchId
         ? await Drug.findByPk(inventoryItem.drug_id, {
             attributes: ['code'],
             transaction: t,
@@ -540,14 +544,14 @@ export const updateReturnRequests = async (
         inventory_item_id: inventoryItem.id,
       };
 
-      if (!storeItem.external_batch_id) {
+      if (!externalBatchId) {
         logStockReturnedSkip({ ...skipContext, reason: 'missing_batch_id' });
       } else if (!itemCode) {
         logStockReturnedSkip({ ...skipContext, reason: 'missing_item_code' });
       } else {
         await emitStockReturned(
           {
-            external_batch_id: storeItem.external_batch_id,
+            external_batch_id: externalBatchId,
             item_code: itemCode,
             quantity: +item.quantity,
             source: 'dispensary_to_store',

@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { literal, Op, QueryTypes, WhereOptions } from 'sequelize';
+import { literal, Op, QueryTypes, Transaction, WhereOptions } from 'sequelize';
 import {
   Drug,
   PharmacyStore,
@@ -689,10 +689,41 @@ const dispenseValidations = async (item: ItemsToDispensedBody) => {
   return storeItem;
 };
 
+/**
+ * The batch id Accounting minted for the delivery a transfer is drawing from (ADR-0041).
+ *
+ * A bin holds several deliveries, and the units on its shelf are commingled — so "which delivery"
+ * cannot be answered exactly from quantity alone. The NEWEST claimed SUPPLIED row is the honest
+ * approximation at THIS seam, and it is a far narrower guess than the one it replaces: it is made
+ * once, when stock physically leaves the store, and is then FROZEN onto the layer. Every later
+ * return of those units names the delivery this transfer recorded, rather than re-guessing against
+ * a bin whose contents have moved on.
+ *
+ * Returns null when the bin has no claimed delivery — pre-cutover stock, donations, or a store row
+ * Accounting never saw. Null is visibly unknown; a fabricated id is silently wrong (#295 D3).
+ */
+const resolveDeliveryBatchId = async (
+  pharmacyStoreId: number,
+  transaction: Transaction
+): Promise<string | null> => {
+  const delivery = await PharmacyStoreHistory.findOne({
+    where: {
+      pharmacy_store_id: pharmacyStoreId,
+      history_type: HistoryType.SUPPLIED,
+      external_batch_id: { [Op.ne]: null },
+    },
+    order: [['createdAt', 'DESC']],
+    attributes: ['external_batch_id'],
+    transaction,
+  });
+  return delivery?.external_batch_id ?? null;
+};
+
 const mapInventoryItem = (
   storeItem: PharmacyStore,
   item: ItemsToDispensedBody,
-  staff_id: number
+  staff_id: number,
+  externalBatchId: string | null
 ) => ({
   inventory_id: item.dispensary,
   drug_id: storeItem.drug_id,
@@ -710,6 +741,7 @@ const mapInventoryItem = (
   brand: storeItem.brand,
   pharmacy_store_id: storeItem.id,
   batch: storeItem.batch,
+  external_batch_id: externalBatchId,
   date_received: Date.now(),
   staff_id,
 });
@@ -758,9 +790,11 @@ export const dispensePharmacyItems = async (items: ItemsToDispensedBody[], staff
   return Promise.allSettled(
     items.map(async item => {
       const storeItem = await dispenseValidations(item);
-      const mappedItem = mapInventoryItem(storeItem, item, staff_id);
 
       return sequelizeConnection.transaction(async t => {
+        const externalBatchId = await resolveDeliveryBatchId(storeItem.id, t);
+        const mappedItem = mapInventoryItem(storeItem, item, staff_id, externalBatchId);
+
         const [inventoryItem, created] = await InventoryItem.findOrCreate({
           where: {
             drug_id: mappedItem.drug_id,

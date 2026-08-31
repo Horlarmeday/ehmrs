@@ -18,6 +18,7 @@ import {
   PharmacyDrugType,
   AcceptedDrugType,
   DrugForm,
+  HistoryType,
   ReturnItemStatus,
   VisitCategory,
 } from '../../database/enums';
@@ -63,7 +64,7 @@ const storeBatch = (
   drug_id: number,
   unit_id: number,
   staff_id: number,
-  overrides: { batch: string; expiration: Date; external_batch_id: string | null }
+  overrides: { batch: string; expiration: Date }
 ) => ({
   drug_id,
   quantity_received: 500,
@@ -77,10 +78,41 @@ const storeBatch = (
   batch: overrides.batch,
   expiration: overrides.expiration,
   brand: 'Brand-X',
-  external_batch_id: overrides.external_batch_id,
   staff_id,
   date_received: new Date(),
 });
+
+/**
+ * A store row plus the SUPPLIED delivery row that carries Accounting's batch id.
+ *
+ * Since ADR-0041 the id lives on the DELIVERY, not the bin: a bin is reused across restocks, so an
+ * id held there would name only the most recent one. This mirrors what the create path does in
+ * production (#304 C0) — a store row is never created without its opening history row.
+ */
+const storeRowWithDelivery = async (
+  drug_id: number,
+  unit_id: number,
+  staff_id: number,
+  overrides: { batch: string; expiration: Date; external_batch_id: string | null }
+): Promise<PharmacyStore> => {
+  const row = await PharmacyStore.create(
+    storeBatch(drug_id, unit_id, staff_id, {
+      batch: overrides.batch,
+      expiration: overrides.expiration,
+    })
+  );
+  await PharmacyStoreHistory.create({
+    pharmacy_store_id: row.id,
+    quantity_supplied: 500,
+    quantity_remaining: 500,
+    unit_id,
+    item_receiver: staff_id,
+    history_date: Date.now(),
+    history_type: HistoryType.SUPPLIED,
+    external_batch_id: overrides.external_batch_id,
+  });
+  return row;
+};
 
 const prescribedStub = (quantity: number, visit_id: number, patient_id: number) => ({
   patient_id,
@@ -193,27 +225,21 @@ describe('dispense.recorded and stock.returned emission (#297, ADR-0040)', () =>
     unit_id = unit.id;
     inventory_id = inventory.id;
 
-    storeRowA = await PharmacyStore.create(
-      storeBatch(drug_id, unit_id, staff_id, {
-        batch: 'LOT-A',
-        expiration: new Date('2027-01-31'),
-        external_batch_id: `acct-batch-a-${suffix}`,
-      })
-    );
-    storeRowB = await PharmacyStore.create(
-      storeBatch(drug_id, unit_id, staff_id, {
-        batch: 'LOT-B',
-        expiration: new Date('2028-06-30'),
-        external_batch_id: `acct-batch-b-${suffix}`,
-      })
-    );
-    storeRowLegacy = await PharmacyStore.create(
-      storeBatch(drug_id, unit_id, staff_id, {
-        batch: 'LOT-LEGACY',
-        expiration: new Date('2029-06-30'),
-        external_batch_id: null,
-      })
-    );
+    storeRowA = await storeRowWithDelivery(drug_id, unit_id, staff_id, {
+      batch: 'LOT-A',
+      expiration: new Date('2027-01-31'),
+      external_batch_id: `acct-batch-a-${suffix}`,
+    });
+    storeRowB = await storeRowWithDelivery(drug_id, unit_id, staff_id, {
+      batch: 'LOT-B',
+      expiration: new Date('2028-06-30'),
+      external_batch_id: `acct-batch-b-${suffix}`,
+    });
+    storeRowLegacy = await storeRowWithDelivery(drug_id, unit_id, staff_id, {
+      batch: 'LOT-LEGACY',
+      expiration: new Date('2029-06-30'),
+      external_batch_id: null,
+    });
   });
 
   afterAll(async () => {
@@ -284,7 +310,7 @@ describe('dispense.recorded and stock.returned emission (#297, ADR-0040)', () =>
     expect(batches).toHaveLength(2);
     expect(batches.reduce((sum, b) => sum + b.quantity, 0)).toBe(150);
     expect(batches.map(b => b.external_batch_id).sort()).toEqual(
-      [storeRowA.external_batch_id, storeRowB.external_batch_id].sort()
+      [`acct-batch-a-${suffix}`, `acct-batch-b-${suffix}`].sort()
     );
   });
 
@@ -520,9 +546,9 @@ describe('dispense.recorded and stock.returned emission (#297, ADR-0040)', () =>
     });
   });
 
-  describe('inbound stock.received persists the batch id (D5)', () => {
-    // The fixture store rows are created with quantity_received: 500, and the applier now matches
-    // on quantity as well as drug — see the two-unclaimed-rows test below for why.
+  describe('inbound stock.received persists the batch id on the DELIVERY (D5, ADR-0041)', () => {
+    // The fixture store rows are created with quantity_received: 500, and the applier matches on
+    // quantity as well as drug — see the two-unclaimed-rows test below for why.
     const FIXTURE_QUANTITY = 500;
 
     const receivedBody = (batchId: string) => ({
@@ -538,27 +564,48 @@ describe('dispense.recorded and stock.returned emission (#297, ADR-0040)', () =>
         applyInstruction('stock.received', `visit:${VISIT_ID}`, 1, body, t)
       );
 
-    it('writes the external batch id onto the unclaimed store row', async () => {
+    /** An unpriced bin plus its unclaimed SUPPLIED delivery, as the create path writes them. */
+    const pendingDelivery = async (batch: string, quantity: number, expiration: Date) => {
+      const row = await PharmacyStore.create({
+        ...storeBatch(drug_id, unit_id, staff_id, { batch, expiration }),
+        quantity_received: quantity,
+        quantity_remaining: quantity,
+      });
+      await PharmacyStoreHistory.create({
+        pharmacy_store_id: row.id,
+        quantity_supplied: quantity,
+        quantity_remaining: quantity,
+        unit_id,
+        item_receiver: staff_id,
+        history_date: Date.now(),
+        history_type: HistoryType.SUPPLIED,
+        external_batch_id: null,
+      });
+      return row;
+    };
+
+    const deliveryIdFor = async (storeRowId: number) =>
+      (
+        await PharmacyStoreHistory.findOne({
+          where: { pharmacy_store_id: storeRowId, history_type: HistoryType.SUPPLIED },
+          order: [['createdAt', 'DESC']],
+        })
+      )?.external_batch_id ?? null;
+
+    it('writes the external batch id onto the unclaimed DELIVERY, not the bin', async () => {
       const batchId = `acct-inbound-${suffix}`;
       const result = await apply(receivedBody(batchId));
 
       expect(result.outcome).toBe('APPLIED');
-      const claimed = await PharmacyStore.findOne({ where: { external_batch_id: batchId } });
+      const claimed = await PharmacyStoreHistory.findOne({
+        where: { external_batch_id: batchId },
+      });
       expect(claimed).not.toBeNull();
-      expect(claimed.id).toBe(storeRowLegacy.id);
+      expect(claimed.pharmacy_store_id).toBe(storeRowLegacy.id);
     });
 
     it('NEVER changes quantity — the stock already arrived; the event only names the batch', async () => {
-      // A row with no other activity, so the assertion is about the applier and nothing else.
-      const untouched = await PharmacyStore.create({
-        ...storeBatch(drug_id, unit_id, staff_id, {
-          batch: 'LOT-QTY-PROOF',
-          expiration: new Date('2031-01-31'),
-          external_batch_id: null,
-        }),
-        quantity_received: 31,
-        quantity_remaining: 31,
-      });
+      const untouched = await pendingDelivery('LOT-QTY-PROOF', 31, new Date('2031-01-31'));
 
       const result = await apply({ ...receivedBody(`acct-qty-${suffix}`), quantity: 31 });
       expect(result.outcome).toBe('APPLIED');
@@ -566,18 +613,20 @@ describe('dispense.recorded and stock.returned emission (#297, ADR-0040)', () =>
       // Quantity is exactly what the EMR recorded when the stock physically arrived. Adding the
       // event's quantity on top would count the same receipt twice (ADR-0025 decision 9 — a
       // reverse event updates state the EMR owns and produces no side effects of its own).
+      expect(await deliveryIdFor(untouched.id)).toBe(`acct-qty-${suffix}`);
       const claimed = await PharmacyStore.findByPk(untouched.id);
-      expect(claimed.external_batch_id).toBe(`acct-qty-${suffix}`);
       expect(Number(claimed.quantity_received)).toBe(31);
       expect(Number(claimed.quantity_remaining)).toBe(31);
     });
 
-    it('is idempotent: redelivering leaves the batch id on the SAME single row', async () => {
+    it('is idempotent: redelivering leaves the batch id on the SAME single delivery', async () => {
       const batchId = `acct-inbound-${suffix}`;
       const result = await apply(receivedBody(batchId));
 
       expect(result.outcome).toBe('APPLIED');
-      const claimed = await PharmacyStore.findAll({ where: { external_batch_id: batchId } });
+      const claimed = await PharmacyStoreHistory.findAll({
+        where: { external_batch_id: batchId },
+      });
       expect(claimed).toHaveLength(1);
     });
 
@@ -588,15 +637,7 @@ describe('dispense.recorded and stock.returned emission (#297, ADR-0040)', () =>
     });
 
     it('REFUSES a receipt whose quantity disagrees with the unclaimed store row', async () => {
-      const pending = await PharmacyStore.create({
-        ...storeBatch(drug_id, unit_id, staff_id, {
-          batch: 'LOT-MISMATCH',
-          expiration: new Date('2031-06-30'),
-          external_batch_id: null,
-        }),
-        quantity_received: 40,
-        quantity_remaining: 40,
-      });
+      const pending = await pendingDelivery('LOT-MISMATCH', 40, new Date('2031-06-30'));
 
       // Both systems think they know what arrived, and they disagree. Attaching the batch id
       // anyway would hide the divergence behind a row that looks correctly linked.
@@ -605,50 +646,32 @@ describe('dispense.recorded and stock.returned emission (#297, ADR-0040)', () =>
       ).rejects.toThrow(/disagree about what arrived/);
 
       expect(
-        await PharmacyStore.findOne({ where: { external_batch_id: `acct-mismatch-${suffix}` } })
+        await PharmacyStoreHistory.findOne({
+          where: { external_batch_id: `acct-mismatch-${suffix}` },
+        })
       ).toBeNull();
-      expect((await PharmacyStore.findByPk(pending.id)).external_batch_id).toBeNull();
+      expect(await deliveryIdFor(pending.id)).toBeNull();
     });
 
     it('matches the right row when two unclaimed receipts of one drug are pending', async () => {
       // The failure the quantity match exists to prevent: two receipts entered before either
       // event drains. Matching on drug alone would attach to whichever row is newest, regardless
       // of which receipt the event actually describes.
-      const [smaller, larger] = await Promise.all([
-        PharmacyStore.create({
-          ...storeBatch(drug_id, unit_id, staff_id, {
-            batch: 'LOT-PENDING-SMALL',
-            expiration: new Date('2030-01-31'),
-            external_batch_id: null,
-          }),
-          quantity_received: 7,
-          quantity_remaining: 7,
-        }),
-        PharmacyStore.create({
-          ...storeBatch(drug_id, unit_id, staff_id, {
-            batch: 'LOT-PENDING-LARGE',
-            expiration: new Date('2030-06-30'),
-            external_batch_id: null,
-          }),
-          quantity_received: 9,
-          quantity_remaining: 9,
-        }),
-      ]);
+      const smaller = await pendingDelivery('LOT-PENDING-SMALL', 7, new Date('2030-01-31'));
+      const larger = await pendingDelivery('LOT-PENDING-LARGE', 9, new Date('2030-06-30'));
 
       // Names the OLDER, smaller receipt. A drug-only match would have taken `larger`.
       const batchId = `acct-two-pending-${suffix}`;
       const result = await apply({ ...receivedBody(batchId), quantity: 7 });
 
       expect(result.outcome).toBe('APPLIED');
-      expect((await PharmacyStore.findByPk(smaller.id)).external_batch_id).toBe(batchId);
-      expect((await PharmacyStore.findByPk(larger.id)).external_batch_id).toBeNull();
+      expect(await deliveryIdFor(smaller.id)).toBe(batchId);
+      expect(await deliveryIdFor(larger.id)).toBeNull();
     });
 
     it('FAILS a receipt with no store row at all, naming the #26 contract gap', async () => {
-      // Accounting-originated goods receipt (#26) would require CREATING the row here. It cannot
-      // be done honestly: Pharmacy_Store_Items requires unit_price and selling_price NOT NULL and
-      // stock.received carries no cost (ADR-0009), so the row would need an invented acquisition
-      // cost and an invented patient-facing selling price.
+      // Accounting-originated goods receipt (#26) would require CREATING the row here. C2 of #304
+      // adds that path; until it lands the applier fails loudly rather than inventing a row.
       const otherDrug = await Drug.create({
         name: `Unstocked ${suffix}`,
         code: `UNS-${suffix}`,

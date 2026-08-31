@@ -1,5 +1,5 @@
 import { ModelStatic, Model, Transaction } from 'sequelize';
-import { PaymentStatus } from '../../database/enums';
+import { HistoryType, PaymentStatus } from '../../database/enums';
 import { PrescribedDrug } from '../../database/models/prescribedDrug';
 import { PrescribedInvestigation } from '../../database/models/prescribedInvestigation';
 import { PrescribedService } from '../../database/models/prescribedService';
@@ -8,6 +8,7 @@ import { PrescribedAdditionalItem } from '../../database/models/prescribedAdditi
 import { InboxSequence } from '../../database/models/inboxSequence';
 import { Drug } from '../../database/models/drug';
 import { PharmacyStore } from '../../database/models/pharmacyStore';
+import { PharmacyStoreHistory } from '../../database/models/pharmacyStoreHistory';
 import { isPrescribedLineType, PrescribedLineType } from '../Outbox/prescribed-line-types';
 import { emitPatientDemographicsChanged } from '../Outbox/outbox-writer';
 
@@ -195,7 +196,7 @@ async function applyDemographicsRequest(
  * minted for it (Accounting #297, ADR-0040).
  *
  * Persisting it is the second hop of the join #295 designed: `Inventory_Items.pharmacy_store_id` →
- * `Pharmacy_Store_Items.external_batch_id` → Accounting's `stock_batch`. Without it the EMR cannot
+ * `Pharmacy_Store_Histories.external_batch_id` → Accounting's `stock_batch`. Without it the EMR cannot
  * echo a batch back on `dispense.recorded` and Accounting's COGS slice has nothing to cost.
  *
  * NEVER CHANGES QUANTITY, and that is the whole posture of the reverse contract: a reverse event
@@ -265,7 +266,7 @@ async function applyStockReceived(
   // before the inbox's sequence guard, so the second delivery must find its own earlier write and
   // stop — not consume a second store row, which would attribute one Accounting batch to two EMR
   // rows and silently double the stock it names.
-  const alreadyApplied = await PharmacyStore.findOne({
+  const alreadyApplied = await PharmacyStoreHistory.findOne({
     where: { external_batch_id: externalBatchId },
     transaction,
   });
@@ -278,16 +279,33 @@ async function applyStockReceived(
   // either event drains: both rows are unclaimed, and the events would attach in whatever order
   // they arrive. Requiring the quantity to agree narrows the candidates to rows that actually
   // match what Accounting recorded, and turns a disagreement into a visible failure below.
-  const storeItem = await PharmacyStore.findOne({
-    where: { drug_id: drug.id, external_batch_id: null, quantity_received: quantity },
+  // Select the DELIVERY directly, not the bin. Since ADR-0041 the batch id lands on an unclaimed
+  // SUPPLIED history row, and a bin may hold several deliveries — some already claimed. Finding the
+  // bin first and then looking for an unclaimed delivery inside it picks the newest bin whose
+  // QUANTITY matches and then fails if that particular bin's delivery is already claimed, even
+  // though another bin's is free. Matching the delivery in one query cannot make that mistake.
+  const delivery = await PharmacyStoreHistory.findOne({
+    where: {
+      history_type: HistoryType.SUPPLIED,
+      external_batch_id: null,
+      quantity_supplied: quantity,
+    },
+    include: [
+      {
+        model: PharmacyStore,
+        as: 'store',
+        required: true,
+        where: { drug_id: drug.id },
+      },
+    ],
     order: [['createdAt', 'DESC']],
     transaction,
   });
 
-  if (storeItem) {
-    await PharmacyStore.update(
+  if (delivery) {
+    await PharmacyStoreHistory.update(
       { external_batch_id: externalBatchId },
-      { where: { id: storeItem.id }, transaction }
+      { where: { id: delivery.id }, transaction }
     );
     return { outcome: 'APPLIED' };
   }
@@ -295,11 +313,22 @@ async function applyStockReceived(
   // No quantity match. Distinguish "the EMR has an unclaimed row that DISAGREES" from "the EMR has
   // no row at all" — the first is a divergence between two systems that both think they know what
   // arrived, the second is the #26 path this EMR cannot yet serve.
-  const quantityMismatch = await PharmacyStore.findOne({
-    where: { drug_id: drug.id, external_batch_id: null },
+  // "Unclaimed" now means the BIN has a SUPPLIED delivery with no batch id yet (ADR-0041), so the
+  // probe joins through history rather than reading a column the bin no longer carries.
+  const unclaimedDelivery = await PharmacyStoreHistory.findOne({
+    where: { history_type: HistoryType.SUPPLIED, external_batch_id: null },
+    include: [
+      {
+        model: PharmacyStore,
+        as: 'store',
+        required: true,
+        where: { drug_id: drug.id },
+      },
+    ],
     order: [['createdAt', 'DESC']],
     transaction,
   });
+  const quantityMismatch = unclaimedDelivery?.store ?? null;
 
   if (quantityMismatch) {
     throw new ApplyError(
