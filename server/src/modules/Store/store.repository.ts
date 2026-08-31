@@ -941,7 +941,9 @@ export async function searchLaboratoryItems(currentPage = 1, pageLimit = 10, sea
     paginate: pageLimit,
     order: [['createdAt', 'DESC']],
     where: {
-      name: `%${search}%`,
+      name: {
+        [Op.like]: `%${search}%`,
+      },
     },
     include: [
       {
