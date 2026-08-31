@@ -175,13 +175,13 @@ paths never did.
       identical on baseline); the three new suites green (15 tests); all Store/Inbox suites
       green; the 12 failing suites elsewhere fail identically on the pre-change baseline
       (shared-test-DB isolation defects, documented in store-create-history.test.ts).
-- [ ] **T14** — Update issue #29: note defect A retired per §0, defect B repaired. Confirm
+- [x] **T14** — Update issue #29: note defect A retired per §0, defect B repaired. Confirm
       whether #25/#26 (superseded by #29) are fully covered or need reopening for the collapse
       claim that is now withdrawn. Restate the narrower blocking claim on Accounting #36.
-      <!-- drafted in Review; posting is a maintainer action -->
-- [ ] **T15** — PR against the working branch, linking the reconciliation report and the
+      <!-- posted: https://github.com/Horlarmeday/ehmrs/issues/29#issuecomment-5484786400 -->
+- [x] **T15** — PR against the working branch, linking the reconciliation report and the
       quarantine CSV.
-      <!-- awaiting commit/PR go-ahead -->
+      <!-- PR #30: https://github.com/Horlarmeday/ehmrs/pull/30 -->
 
 ## Open questions for the issue author
 
