@@ -2,13 +2,22 @@ import '../../core/config/env';
 import { sequelizeConnection } from '../../database/config/data-source';
 import {
   Drug,
+  Inventory,
+  InventoryItem,
   PharmacyStore,
   PharmacyStoreHistory,
   Staff,
   Unit,
   Vendor,
 } from '../../database/models';
-import { DrugForm, HistoryType, PharmacyDrugType, Status } from '../../database/enums';
+import {
+  AcceptedDrugType,
+  DrugForm,
+  HistoryType,
+  PharmacyDrugType,
+  Status,
+} from '../../database/enums';
+import { dispensePharmacyItems } from '../Store/store.repository';
 import { applyInstruction } from './applier';
 
 /**
@@ -236,6 +245,54 @@ describe('stock.received creates or increments a store row (#304 C2a/C2b)', () =
       ).rejects.toThrow(/carries no unit_cost_kobo/);
 
       expect(await binFor(PharmacyDrugType.RETAINERSHIP)).toBeNull();
+    });
+  });
+
+  describe('C5 — an unpriced row is not dispensable', () => {
+    it('BLOCKS the transfer of a row created without a price, then allows it once priced', async () => {
+      const dispensary = await Inventory.create({
+        name: `Private Dispensary ${suffix}`,
+        accepted_drug_type: AcceptedDrugType.PRIVATE,
+        staff_id,
+      });
+
+      // Created by the Private receipt above, which carried no selling_price_kobo.
+      const unpriced = await binFor(PharmacyDrugType.PRIVATE);
+      expect(unpriced.selling_price).toBeNull();
+
+      const transfer = () =>
+        dispensePharmacyItems(
+          [
+            {
+              id: unpriced.id,
+              drug_type: unpriced.drug_type,
+              quantity_to_dispense: 5,
+              dispensary: dispensary.id,
+              unit_id,
+              drug_name: 'Createamol',
+              receiver: staff_id,
+            },
+          ],
+          staff_id
+        );
+
+      // `dispensePharmacyItems` uses Promise.allSettled, so a refusal surfaces as a rejected
+      // settlement rather than a thrown error — and the stock must not have moved.
+      const [blocked] = await transfer();
+      expect(blocked.status).toBe('rejected');
+      expect(String((blocked as PromiseRejectedResult).reason.message)).toMatch(
+        /no selling price yet/
+      );
+      expect(await InventoryItem.count({ where: { pharmacy_store_id: unpriced.id } })).toBe(0);
+      expect(Number((await binFor(PharmacyDrugType.PRIVATE)).quantity_remaining)).toBe(
+        Number(unpriced.quantity_remaining)
+      );
+
+      // The release valve: a human prices it in the store, and the same transfer now succeeds.
+      await PharmacyStore.update({ selling_price: 750 }, { where: { id: unpriced.id } });
+      const [allowed] = await transfer();
+      expect(allowed.status).toBe('fulfilled');
+      expect(await InventoryItem.count({ where: { pharmacy_store_id: unpriced.id } })).toBe(1);
     });
   });
 

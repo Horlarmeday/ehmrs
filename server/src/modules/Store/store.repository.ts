@@ -23,7 +23,11 @@ import { BadException } from '../../common/util/api-error';
 import { ItemsToDispensedBody } from '../Inventory/types/inventory-item.types';
 import { getAnInventory } from '../Inventory/inventory.repository';
 import { lt } from 'lodash';
-import { INVALID_INVENTORY, INVALID_QUANTITY } from '../Inventory/messages/response-messages';
+import {
+  INVALID_INVENTORY,
+  INVALID_QUANTITY,
+  UNPRICED_ITEM,
+} from '../Inventory/messages/response-messages';
 import { staffAttributes, StatusCodes } from '../../core/helpers/helper';
 
 /** ***********************
@@ -671,6 +675,19 @@ const dispenseValidations = async (item: ItemsToDispensedBody) => {
   ]);
   if (lt(storeItem.quantity_remaining, item.quantity_to_dispense)) {
     throw new BadException('Invalid', 400, INVALID_QUANTITY.replace('drug', item.drug_name));
+  }
+
+  // #304 C5: an unpriced row is not dispensable. A row created from `stock.received` without a
+  // selling price is born null (ADR-0041 §6) rather than priced at a fabricated number, and letting
+  // it reach a dispensary would hand the patient stock nobody can bill for: `getDrugPrice`
+  // (pharmacy.repository.ts) reads the layer's `selling_price` and the caller multiplies it by the
+  // quantity, so a null becomes NaN on the bill rather than an error anyone sees.
+  //
+  // Blocked HERE, at the store→dispensary transfer, rather than at the patient-facing dispense:
+  // this is the last point where the stock has not yet moved, and it fails in the store screen
+  // where the price is actually set.
+  if (storeItem.selling_price === null || storeItem.selling_price === undefined) {
+    throw new BadException('Invalid', 400, UNPRICED_ITEM.replace('drug', item.drug_name));
   }
 
   if (!inventory.accepted_drug_type.includes(storeItem.drug_type)) {
