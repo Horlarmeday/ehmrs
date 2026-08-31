@@ -337,6 +337,44 @@ describe('stock.received creates or increments a store row (#304 C2a/C2b)', () =
     });
   });
 
+  describe('E2 — the wire body Accounting actually emits', () => {
+    it('applies the exact envelope body from the Accounting drainer test', async () => {
+      // Copied verbatim from ehmrs_accounting's reverse-drainer.int-spec.ts, which asserts this is
+      // what its drainer PUTS ON THE WIRE for a recorded receipt — including the money as strings.
+      // If either side's shape drifts, one of the two tests fails rather than both staying green
+      // against fixtures that agree only with themselves.
+      const wireBody: Record<string, unknown> = {
+        external_batch_id: `acct-e2e-${suffix}`,
+        item_code: drug_code,
+        drug_type: 'NHIS',
+        quantity: 60,
+        expiry_date: '2027-03-31',
+        received_at: '2026-08-27T09:00:00.000Z',
+        unit_cost_kobo: '35000',
+        selling_price_kobo: '80000',
+        vendor_id,
+      };
+
+      const result = await apply(wireBody);
+      expect(result.outcome).toBe('APPLIED');
+
+      // The NHIS bin already exists by this point, so this is the INCREMENT path — the common case.
+      const bin = await binFor(PharmacyDrugType.NHIS);
+      expect(bin).not.toBeNull();
+
+      // Money arrived as strings of kobo and is stored as naira decimals.
+      expect(Number(bin.unit_price)).toBe(350);
+      expect(Number(bin.selling_price)).toBe(800);
+      expect(bin.vendor_id).toBe(vendor_id);
+
+      const claimed = await PharmacyStoreHistory.findOne({
+        where: { external_batch_id: `acct-e2e-${suffix}` },
+      });
+      expect(claimed).not.toBeNull();
+      expect(Number(claimed.quantity_supplied)).toBe(60);
+    });
+  });
+
   describe('guards', () => {
     it('refuses a receipt naming no drug type — the class cannot be guessed', async () => {
       await expect(apply({ ...body(), drug_type: undefined })).rejects.toThrow(/is not one of/);
