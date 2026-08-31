@@ -168,7 +168,8 @@ export class PharmacyStore extends Model {
       PharmacyDrugType.CASH,
       PharmacyDrugType.NHIS,
       PharmacyDrugType.PRIVATE,
-      PharmacyDrugType.RETAINERSHIP
+      PharmacyDrugType.RETAINERSHIP,
+      PharmacyDrugType.PLASCHEMA
     ),
     allowNull: false,
     validate: {

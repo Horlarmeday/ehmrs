@@ -151,12 +151,15 @@ describe('store → inventory transfer keeps batch identity (#295)', () => {
     // By store row, not by inventory_id: since #304 C0 the create path writes an opening SUPPLIED
     // history row, and that row has no inventory_id (the stock has not moved to a dispensary yet).
     // Deleting only the dispensary-linked rows leaves it behind, and its FK blocks the store delete.
-    const storeRows = await PharmacyStore.findAll({ where: { drug_id }, attributes: ['id'] });
+    const storeRows = await PharmacyStore.unscoped().findAll({
+      where: { drug_id },
+      attributes: ['id'],
+    });
     await PharmacyStoreHistory.destroy({
       where: { pharmacy_store_id: storeRows.map(row => row.id) },
       force: true,
     });
-    await PharmacyStore.destroy({ where: { drug_id }, force: true });
+    await PharmacyStore.unscoped().destroy({ where: { drug_id }, force: true });
     await Inventory.destroy({ where: { id: inventory_id }, force: true });
     await Drug.destroy({ where: { id: drug_id }, force: true });
     await Unit.destroy({ where: { id: unit_id }, force: true });

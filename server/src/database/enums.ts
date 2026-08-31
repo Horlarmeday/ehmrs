@@ -73,6 +73,9 @@ export enum PharmacyDrugType {
   NHIS = 'NHIS',
   PRIVATE = 'Private',
   RETAINERSHIP = 'Retainership',
+  // Present in the database's own enum and in a live `Inventories` dispensary, but omitted here
+  // until #304 — so a Plaschema store row could not be written through the model at all.
+  PLASCHEMA = 'Plaschema',
 }
 
 export enum DrugForm {

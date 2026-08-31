@@ -554,6 +554,7 @@ describe('dispense.recorded and stock.returned emission (#297, ADR-0040)', () =>
     const receivedBody = (batchId: string) => ({
       external_batch_id: batchId,
       item_code: drug_code,
+      drug_type: PharmacyDrugType.CASH,
       quantity: FIXTURE_QUANTITY,
       expiry_date: '2029-12-31',
       received_at: new Date().toISOString(),
@@ -669,9 +670,10 @@ describe('dispense.recorded and stock.returned emission (#297, ADR-0040)', () =>
       expect(await deliveryIdFor(larger.id)).toBeNull();
     });
 
-    it('FAILS a receipt with no store row at all, naming the #26 contract gap', async () => {
-      // Accounting-originated goods receipt (#26) would require CREATING the row here. C2 of #304
-      // adds that path; until it lands the applier fails loudly rather than inventing a row.
+    it('REFUSES to create a first row for a drug this EMR has no unit of measure for', async () => {
+      // The create path (#304 C2a) needs a unit, and the event does not carry one — a unit is EMR
+      // catalogue vocabulary, not something Accounting knows. With no sibling row to take it from,
+      // guessing would misstate every quantity that follows.
       const otherDrug = await Drug.create({
         name: `Unstocked ${suffix}`,
         code: `UNS-${suffix}`,
@@ -680,8 +682,12 @@ describe('dispense.recorded and stock.returned emission (#297, ADR-0040)', () =>
       });
 
       await expect(
-        apply({ ...receivedBody(`acct-norow-${suffix}`), item_code: `UNS-${suffix}` })
-      ).rejects.toThrow(/no unclaimed store row/);
+        apply({
+          ...receivedBody(`acct-norow-${suffix}`),
+          item_code: `UNS-${suffix}`,
+          unit_cost_kobo: '10000',
+        })
+      ).rejects.toThrow(/no other stock of that drug to take a unit of measure from/);
 
       await Drug.destroy({ where: { id: otherDrug.id }, force: true });
     });
