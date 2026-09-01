@@ -128,12 +128,23 @@ export async function getDashboardOverview(
       }
     );
 
-    // Stock metrics - low stock count
+    // Stock metrics - low stock count.
+    // #29: a row whose receipt is unknown (quantity_received = 0 after the repair) has no ratio to
+    // compare, but a shelf at zero IS low stock — it would otherwise vanish from this count simply
+    // because its receipt history was corrupt.
     const lowStockCount = await PharmacyStore.count({
       where: {
-        quantity_remaining: {
-          [Op.lt]: literal('quantity_received * 0.1'),
-        },
+        [Op.or]: [
+          {
+            quantity_remaining: {
+              [Op.lt]: literal('quantity_received * 0.1'),
+            },
+          },
+          {
+            quantity_received: { [Op.lte]: 0 },
+            quantity_remaining: 0,
+          },
+        ],
       },
     });
 
@@ -966,12 +977,17 @@ export async function getStockLevels(params: StockLevelsParams): Promise<StockLe
       },
     };
 
-    // Apply threshold filters
+    // Apply threshold filters.
+    // #29: every ratio below needs quantity_received > 0 — a repaired row carries 0 (what arrived
+    // is unknown), and against a zero denominator "< 20%" is never true while "> 80%" is ALWAYS
+    // true, silently filing every repaired row as overstocked.
     if (threshold && threshold < 20) {
+      whereClause.quantity_received = { [Op.gt]: 0 };
       whereClause.quantity_remaining = {
         [Op.lt]: literal('quantity_received * 0.2'),
       };
     } else if (threshold && threshold > 80) {
+      whereClause.quantity_received = { [Op.gt]: 0 };
       whereClause.quantity_remaining = {
         [Op.gt]: literal('quantity_received * 0.8'),
       };
@@ -998,14 +1014,23 @@ export async function getStockLevels(params: StockLevelsParams): Promise<StockLe
       order: [[sortBy, order]],
     });
 
-    // Low stock alerts
+    // Low stock alerts. #29: same guard as the low-stock count above — an unknown receipt with a
+    // shelf at zero is low stock; an unknown receipt with stock on it has no ratio to judge.
     const lowStockAlerts = await PharmacyStore.paginate({
       page: +currentPage,
       paginate: +pageLimit,
       where: {
-        quantity_remaining: {
-          [Op.lt]: literal('quantity_received * 0.1'),
-        },
+        [Op.or]: [
+          {
+            quantity_remaining: {
+              [Op.lt]: literal('quantity_received * 0.1'),
+            },
+          },
+          {
+            quantity_received: { [Op.lte]: 0 },
+            quantity_remaining: 0,
+          },
+        ],
       },
       include: [
         {
@@ -1020,11 +1045,16 @@ export async function getStockLevels(params: StockLevelsParams): Promise<StockLe
       order: [['quantity_remaining', 'ASC']],
     });
 
-    // Stock distribution
+    // Stock distribution.
+    // #29: an unknown receipt (quantity_received = 0 after the repair) must not fall through to
+    // 'Overstocked' on the `> quantity_received * 0.8` comparison, which a zero denominator makes
+    // trivially true. It gets its own bucket: the shelf may hold anything, and the receipt that
+    // would say how much is not recoverable.
     const stockDistributionQuery = `
     SELECT 
       CASE 
         WHEN quantity_remaining = 0 THEN 'Out of Stock'
+        WHEN quantity_received <= 0 THEN 'Unknown Receipt'
         WHEN quantity_remaining < quantity_received * 0.2 THEN 'Low Stock'
         WHEN quantity_remaining > quantity_received * 0.8 THEN 'Overstocked'
         ELSE 'Adequate Stock'
@@ -1043,9 +1073,14 @@ export async function getStockLevels(params: StockLevelsParams): Promise<StockLe
     const optimizationRecommendations = [];
     // Analyze low stock alerts for recommendations
     for (const item of lowStockAlerts.docs) {
-      const stockPercentage = (item.quantity_remaining / item.quantity_received) * 100;
+      // #29: a repaired row's quantity_received is 0 — what arrived is unknown — and dividing by
+      // it yields Infinity/NaN, firing every threshold below. No receipt, no ratio.
+      const stockPercentage =
+        Number(item.quantity_received) > 0
+          ? (Number(item.quantity_remaining) / Number(item.quantity_received)) * 100
+          : null;
 
-      if (stockPercentage < 5) {
+      if (stockPercentage !== null && stockPercentage < 5) {
         optimizationRecommendations.push({
           type: 'urgent_reorder',
           priority: 'high',
@@ -1070,9 +1105,13 @@ export async function getStockLevels(params: StockLevelsParams): Promise<StockLe
       }
     }
 
-    // Analyze stock distribution for overstocking recommendations
+    // Analyze stock distribution for overstocking recommendations.
+    // #29: quantity_received > 0 is required — against the zero of a repaired row, the
+    // `> quantity_received * 0.9` comparison is trivially true and the percentage below is
+    // Infinity, recommending order reductions for stock nobody can size.
     const overstockedItems = await PharmacyStore.findAll({
       where: {
+        quantity_received: { [Op.gt]: 0 },
         quantity_remaining: {
           [Op.gt]: literal('quantity_received * 0.9'),
         },
@@ -1091,9 +1130,13 @@ export async function getStockLevels(params: StockLevelsParams): Promise<StockLe
     });
 
     for (const item of overstockedItems) {
-      const stockPercentage = (item.quantity_remaining / item.quantity_received) * 100;
+      // Belt to the where clause above: never divide by a non-positive receipt.
+      const stockPercentage =
+        Number(item.quantity_received) > 0
+          ? (Number(item.quantity_remaining) / Number(item.quantity_received)) * 100
+          : null;
 
-      if (stockPercentage > 90) {
+      if (stockPercentage !== null && stockPercentage > 90) {
         optimizationRecommendations.push({
           type: 'reduce_ordering',
           priority: 'low',
