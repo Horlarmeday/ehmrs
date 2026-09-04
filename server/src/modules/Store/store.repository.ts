@@ -71,6 +71,23 @@ async function createStoreItem(data, drug_type: PharmacyDrugType, selling_price)
     vendor_id,
   } = data;
 
+  // #29: reject a non-integer or negative receipt at the writer, in the applier's shape
+  // (applier.ts `stock.received` quantity guard). Zero is allowed — an empty delivery is odd but
+  // not corrupting — but a negative quantity_received would set quantity_remaining negative and
+  // file a SUPPLIED history row claiming a negative delivery. Reject; do not clamp silently.
+  if (
+    typeof quantity_received !== 'number' ||
+    !Number.isInteger(quantity_received) ||
+    quantity_received < 0
+  ) {
+    throw new BadException(
+      'Invalid',
+      StatusCodes.BAD_REQUEST,
+      `quantity_received for drug ${drug_id} must be a whole number of 0 or more; got ` +
+        `${String(quantity_received)}. A negative receipt would subtract from the shelf.`
+    );
+  }
+
   return sequelizeConnection.transaction(async t => {
     const item = await PharmacyStore.create(
       {
@@ -628,6 +645,25 @@ export const getPharmacyStoreItemLogs = async ({ currentPage = 1, pageLimit = 10
  */
 export const reorderPharmacyItems = async (items: ItemsToReorder[], staff_id: number) => {
   try {
+    // #29: validate every receipt BEFORE the loop applies any of them. Each item commits in its
+    // own transaction below, so a guard inside the loop would reject item 4 of 4 with items 1-3
+    // already restocked — a half-applied reorder. A negative quantity_received here used to
+    // spread `...item` onto the bin and SUBTRACT from quantity_remaining, filing a SUPPLIED
+    // history row claiming a negative delivery. Reject; do not clamp silently.
+    for (const item of items) {
+      if (
+        typeof item.quantity_received !== 'number' ||
+        !Number.isInteger(item.quantity_received) ||
+        item.quantity_received < 0
+      ) {
+        throw new BadException(
+          'Invalid',
+          StatusCodes.BAD_REQUEST,
+          `quantity_received for store item ${item.id} must be a whole number of 0 or more; got ` +
+            `${String(item.quantity_received)}. A negative reorder would subtract from the shelf.`
+        );
+      }
+    }
     for await (const item of items) {
       const storeItem = await getPharmacyStoreItemById(item.id);
       const { id, ...rest } = storeItem.toJSON();
@@ -1049,8 +1085,21 @@ export async function getInventoryReports(filters: {
       'date_received',
       'drug_type',
       'batch',
-      [literal('(quantity_received - quantity_remaining)'), 'quantity_dispensed'],
-      [literal('(quantity_received - quantity_remaining) * selling_price'), 'revenue_generated'],
+      // #29: quantity_received - quantity_remaining goes NEGATIVE on a repaired row (0 - what is
+      // still on the shelf). With no valid receipt there is no dispensed figure either — NULL is
+      // visibly unknown; a fabricated negative (or zero) dispense is silently wrong.
+      [
+        literal(
+          'CASE WHEN quantity_received > 0 THEN (quantity_received - quantity_remaining) ELSE NULL END'
+        ),
+        'quantity_dispensed',
+      ],
+      [
+        literal(
+          'CASE WHEN quantity_received > 0 THEN (quantity_received - quantity_remaining) * selling_price ELSE NULL END'
+        ),
+        'revenue_generated',
+      ],
     ],
     order: [['date_received', 'DESC']],
   });
