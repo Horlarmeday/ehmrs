@@ -15,7 +15,7 @@
         </tr>
         <tr v-for="(alert, i) in alerts" :key="i">
           <td>{{ alert.alert }}</td>
-          <td>{{ alert.staff.fullname }}</td>
+          <td>{{ alert.staff?.fullname?.trim() || 'Unknown' }}</td>
           <td>{{ alert.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
           <td v-if="allowedRoles.includes(currentUser.role)">
             <span>
@@ -80,7 +80,7 @@ export default {
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Yes, Disable!',
-      }).then(function(result) {
+      }).then(function (result) {
         if (result.value) {
           self.disableAlert(alert);
         }

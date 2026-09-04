@@ -129,7 +129,7 @@
             <li
               v-if="
                 doctorAllowedTabs.includes(currentUser.department) ||
-                  subRolesAllowedTabs.includes(currentUser.sub_role)
+                subRolesAllowedTabs.includes(currentUser.sub_role)
               "
               class="nav-item"
             >
@@ -158,7 +158,7 @@
                 >Surgery</a
               >
             </li>
-            <li v-if="nurseAllowedTabs.includes(currentUser.role)" class="nav-item">
+            <li v-if="canCreateAlerts" class="nav-item">
               <a
                 class="nav-link text-dark py-4 px-6"
                 :class="{ active: tabIndex === 9, disabled: tabIndex === 9 }"
@@ -206,6 +206,7 @@ import Radiology from '@/view/pages/programs/antenatal/tabs/Radiology.vue';
 import ClinicalNote from '@/view/pages/programs/antenatal/tabs/ClinicalNote.vue';
 import Summary from '@/view/pages/programs/antenatal/tabs/Summary.vue';
 import { parseJwt } from '@/core/plugins/parseJwt';
+import { canCreateAlerts } from '@/core/plugins/alertPermissions';
 import Observation from '@/view/pages/programs/antenatal/tabs/Observation.vue';
 import Disposition from '@/view/pages/consultation/tabs/Disposition.vue';
 import Surgery from '@/view/pages/consultation/tabs/Surgery.vue';
@@ -251,6 +252,9 @@ export default {
   computed: {
     antenatal() {
       return this.$store.state.antenatal.antenatal;
+    },
+    canCreateAlerts() {
+      return canCreateAlerts(this.currentUser);
     },
   },
   methods: {
@@ -340,7 +344,7 @@ export default {
     fetchAntenatalRecord() {
       this.$store
         .dispatch('antenatal/fetchOneAntenatalAccount', this.$route.query.antenatal)
-        .then(response => {
+        .then((response) => {
           const res = response.data.data;
           this.$store.dispatch('insurance/fetchPatientDefaultInsurance', res.patient_id);
           this.$store.dispatch('patient/setCurrentPatient', { ...res.insurance, ...res.patient });

@@ -9,12 +9,13 @@ import { staffAttributes } from '../../core/helpers/helper';
  * @returns {Promise<Alert>} alert data
  */
 export const createAlert = async (data): Promise<Alert> => {
-  const { name, alert, staff_id, patient_id } = data;
+  const { name, alert, severity, staff_id, patient_id } = data;
 
   return Alert.create({
     name,
     staff_id,
     alert,
+    severity,
     patient_id,
   });
 };
@@ -32,6 +33,24 @@ export const getAlerts = ({ currentPage = 1, pageLimit = 10, patient_id }) => {
   return Alert.paginate({
     page: +currentPage,
     paginate: +pageLimit,
+    order: [['createdAt', 'DESC']],
+    include: [{ model: Staff, attributes: staffAttributes }],
+    where: {
+      patient_id,
+      status: Status.ACTIVE,
+    },
+  });
+};
+
+/**
+ * get all active alerts for a patient, newest first
+ *
+ * @function
+ * @returns {Promise<Alert[]>} list of active alerts
+ * @param patient_id
+ */
+export const getAlertsByPatient = (patient_id: number): Promise<Alert[]> => {
+  return Alert.findAll({
     order: [['createdAt', 'DESC']],
     include: [{ model: Staff, attributes: staffAttributes }],
     where: {

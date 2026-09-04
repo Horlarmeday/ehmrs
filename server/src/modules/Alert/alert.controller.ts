@@ -6,7 +6,7 @@ import { NextFunction, Request, Response } from 'express';
 import { AlertService } from './alert.service';
 import { SUCCESS } from '../../core/constants';
 import { isEmpty } from 'lodash';
-import { EMPTY_BODY } from './messages/response.messages';
+import { EMPTY_BODY, INVALID_PATIENT_ID } from './messages/response.messages';
 import { validateAlert } from './validations';
 
 export class AlertController {
@@ -56,6 +56,33 @@ export class AlertController {
   static async getAlerts(req: Request, res: Response, next: NextFunction) {
     try {
       const alerts = await AlertService.getAlerts(req.query);
+
+      return successResponse({ res, message: SUCCESS, data: alerts, httpCode: 200 });
+    } catch (e) {
+      return next(e);
+    }
+  }
+
+  /**
+   * get all active alerts for a patient
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with alerts data
+   */
+  static async getPatientAlerts(req: Request, res: Response, next: NextFunction) {
+    const patientId = +req.params.patientId;
+    if (!Number.isInteger(patientId) || patientId <= 0)
+      return errorResponse({
+        res,
+        message: INVALID_PATIENT_ID,
+        httpCode: StatusCodes.BAD_REQUEST,
+      });
+
+    try {
+      const alerts = await AlertService.getPatientAlerts(patientId);
 
       return successResponse({ res, message: SUCCESS, data: alerts, httpCode: 200 });
     } catch (e) {

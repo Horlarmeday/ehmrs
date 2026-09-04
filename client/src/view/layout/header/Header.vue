@@ -129,7 +129,7 @@
                 <div
                   id="kt_header_menu"
                   ref="kt_header_menu"
-                  class="header-menu header-menu-mobile header-menu-layout-default"
+                  class="header-menu header-menu-mobile header-menu-layout-default flex-grow-1"
                 >
                   <KTMenu v-if="!displayPatientDetails" />
                   <patient-details v-else />

@@ -15,6 +15,14 @@
         <span class="text-danger text-sm">{{ errors.first('content') }}</span>
       </div>
     </div>
+    <div class="form-group row">
+      <label class="col-lg-3 col-form-label">Severity:</label>
+      <div class="col-lg-8">
+        <select v-model="severity" class="form-control">
+          <option v-for="option in severities" :key="option" :value="option">{{ option }}</option>
+        </select>
+      </div>
+    </div>
     <div>
       <button
         :disabled="isDisabled"
@@ -29,11 +37,15 @@
 </template>
 
 <script>
+import { ALERT_SEVERITY, ALERT_SEVERITIES } from '@/core/plugins/alertPermissions';
+
 export default {
   data: () => ({
     content: '',
     id: '',
     isDisabled: false,
+    severity: ALERT_SEVERITY.WARNING,
+    severities: ALERT_SEVERITIES,
   }),
 
   props: {
@@ -46,6 +58,7 @@ export default {
   watch: {
     alert(data) {
       this.content = data.alert;
+      this.severity = data.severity || ALERT_SEVERITY.WARNING;
     },
   },
 
@@ -69,13 +82,15 @@ export default {
     initValues() {
       this.content = '';
       this.id = '';
+      this.severity = ALERT_SEVERITY.WARNING;
     },
 
     createAlert() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             alert: this.content,
+            severity: this.severity,
             visit_id: this.$route.params.id,
             id: this.alert?.id,
           };

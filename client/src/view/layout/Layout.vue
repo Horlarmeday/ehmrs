@@ -13,7 +13,7 @@
         <!-- end:: Header -->
 
         <!-- begin:: Content -->
-        <div id="kt_content" class="content  d-flex flex-column flex-column-fluid">
+        <div id="kt_content" class="content d-flex flex-column flex-column-fluid">
           <!-- begin:: Content Head -->
           <!--          <KTSubheader-->
           <!--            v-if="subheaderDisplay && displaySubheaderOnDashboard"-->
@@ -35,6 +35,7 @@
                 <KTAside v-if="asideEnabled"></KTAside>
                 <!-- end:: Aside Left -->
                 <div class="content-wrapper flex-row-fluid">
+                  <patient-alerts-banner />
                   <transition name="fade-in-up">
                     <router-view />
                   </transition>
@@ -64,6 +65,7 @@ import HtmlClass from '@/core/services/htmlclass.service';
 import KTStickyToolbar from '@/view/layout/extras/StickyToolbar.vue';
 import KTScrollTop from '@/view/layout/extras/ScrollTop';
 import Loader from '@/view/content/Loader.vue';
+import PatientAlertsBanner from '@/view/components/alerts/PatientAlertsBanner.vue';
 import {
   ADD_BODY_CLASSNAME,
   REMOVE_BODY_CLASSNAME,
@@ -78,6 +80,7 @@ export default {
     // KTSubheader,
     KTFooter,
     KTStickyToolbar,
+    PatientAlertsBanner,
     KTScrollTop,
     Loader,
   },

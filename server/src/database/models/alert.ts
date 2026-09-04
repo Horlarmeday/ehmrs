@@ -17,7 +17,7 @@ import {
 } from 'sequelize/types/model';
 import { calcLimitAndOffset, paginate } from '../../core/helpers/helper';
 import { Patient } from './patient';
-import { Status } from '../enums';
+import { AlertSeverity, Status } from '../enums';
 
 @Table({ timestamps: true })
 export class Alert extends Model {
@@ -47,6 +47,13 @@ export class Alert extends Model {
     defaultValue: Status.ACTIVE,
   })
   status: Status;
+
+  @Column({
+    type: DataType.ENUM(AlertSeverity.CRITICAL, AlertSeverity.WARNING, AlertSeverity.INFO),
+    allowNull: false,
+    defaultValue: AlertSeverity.WARNING,
+  })
+  severity: AlertSeverity;
 
   @ForeignKey(() => Staff)
   @Column({

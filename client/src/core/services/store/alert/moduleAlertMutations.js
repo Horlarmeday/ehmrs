@@ -7,6 +7,10 @@ export default {
     state.alerts = alerts;
   },
 
+  SET_PATIENT_ALERTS(state, alerts) {
+    state.patientAlerts = alerts;
+  },
+
   SET_ALERTS_TOTAL(state, total) {
     state.total = total;
   },

@@ -1,4 +1,4 @@
-import { createAlert, getAlerts, updateAlert } from './alert.repository';
+import { createAlert, getAlerts, getAlertsByPatient, updateAlert } from './alert.repository';
 import VisitService from '../Visit/visit.service';
 
 export class AlertService {
@@ -10,6 +10,8 @@ export class AlertService {
    * @memberOf AlertService
    */
   static async createAlert(body) {
+    if (body.patient_id) return createAlert(body);
+
     const visit = await VisitService.getVisitById(body.visit_id);
     return createAlert({ ...body, patient_id: visit.patient_id });
   }
@@ -24,20 +26,25 @@ export class AlertService {
    */
   static async getAlerts(body) {
     const { visit_id, pageLimit, currentPage } = body;
-    console.log(body);
     const visit = await VisitService.getVisitById(visit_id);
 
-    if (Object.values(body).length) {
-      return getAlerts({
-        currentPage,
-        pageLimit,
-        patient_id: visit.patient_id,
-      });
-    }
-
     return getAlerts({
+      currentPage,
+      pageLimit,
       patient_id: visit.patient_id,
     });
+  }
+
+  /**
+   * get all active alerts for a patient
+   *
+   * @static
+   * @returns {json} json object with alerts data
+   * @param patientId
+   * @memberOf AlertService
+   */
+  static async getPatientAlerts(patientId: number) {
+    return getAlertsByPatient(patientId);
   }
 
   /** update an alert

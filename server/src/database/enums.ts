@@ -20,6 +20,12 @@ export enum Status {
   BANNED = 'banned',
 }
 
+export enum AlertSeverity {
+  CRITICAL = 'Critical',
+  WARNING = 'Warning',
+  INFO = 'Info',
+}
+
 export enum Source {
   ANC = 'Antenatal',
   CONSULTATION = 'Consultation',
