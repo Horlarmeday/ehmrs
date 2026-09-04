@@ -91,9 +91,8 @@ export default {
     state.accession_number = number;
   },
 
-  COLLECT_SAMPLES(state, number) {
-    console.log(number);
-  },
+  // eslint-disable-next-line no-unused-vars
+  COLLECT_SAMPLES(_state, _number) {},
 
   /**
    * SAMPLES COLLECTED
