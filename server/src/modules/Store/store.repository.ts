@@ -371,6 +371,27 @@ export const getPharmacyItemByDrugId = async (drugId: number) => {
  * @returns {Promise<PharmacyStore>} json object with pharmacy store item data
  * @param query
  */
+export const getDispensableBatchesForDrug = async (
+  drugId: number,
+  drugType: PharmacyDrugType
+): Promise<PharmacyStore[]> => {
+  return PharmacyStore.findAll({
+    where: {
+      drug_id: drugId,
+      drug_type: drugType,
+      quantity_remaining: { [Op.gt]: 0 },
+    },
+    include: [
+      { model: Drug, attributes: ['name'] },
+      { model: Unit, attributes: ['name', 'id'] },
+    ],
+    order: [
+      ['expiration', 'ASC'],
+      ['id', 'ASC'],
+    ],
+  });
+};
+
 export const getOnePharmacyStoreItem = async (
   query: WhereOptions<PharmacyStore>
 ): Promise<PharmacyStore> => {

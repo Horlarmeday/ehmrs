@@ -4,14 +4,26 @@
     <div v-for="(item, i) in selectedRequests" :key="i">
       <label class="font-weight-bolder">{{ item.drug_name }}</label>
       <div class="form-group row">
-        <div class="col-lg-6">
+        <div :class="item.status === 'Granted' ? 'col-lg-4' : 'col-lg-6'">
           <label>Status:</label>
           <select class="form-control form-control-sm" v-model="item.status">
             <option value="Granted">Granted</option>
             <option value="Declined">Declined</option>
           </select>
         </div>
-        <div class="col-lg-5">
+        <div class="col-lg-4" v-if="item.status === 'Granted'">
+          <label>Batch:</label>
+          <select class="form-control form-control-sm" v-model="item.pharmacy_store_id">
+            <option :value="undefined" disabled>Select a batch</option>
+            <option v-for="batch in batchesFor(item)" :key="batch.id" :value="batch.id">
+              {{ batchLabel(batch) }}
+            </option>
+          </select>
+          <span v-if="!batchesFor(item).length" class="text-danger font-size-sm">
+            No batch with stock is available for this drug
+          </span>
+        </div>
+        <div :class="item.status === 'Granted' ? 'col-lg-3' : 'col-lg-5'">
           <label>Quantity</label>
           <div class="input-group input-group-sm">
             <div class="input-group-prepend">
@@ -60,6 +72,7 @@ export default {
     message: 'You have the following errors while trying to process your requests: ',
     lists: [],
     localItemsToRequest: [],
+    batchesByRequest: {},
   }),
   created() {
     this.localItemsToRequest = JSON.parse(JSON.stringify(this.itemsToRequest)); // Deep copy
@@ -97,12 +110,35 @@ export default {
     itemsToRequest: {
       handler(newVal) {
         this.localItemsToRequest = JSON.parse(JSON.stringify(newVal)); // Update local copy
+        this.loadBatches();
       },
       immediate: true, // Trigger the watcher immediately on component creation
       deep: true, // Watch for deep changes in the array or object
     },
   },
   methods: {
+    batchesFor(item) {
+      return this.batchesByRequest[item.id] || [];
+    },
+
+    batchLabel(batch) {
+      const expiry = batch.expiration
+        ? new Date(batch.expiration).toLocaleDateString()
+        : 'no expiry';
+      const unit = batch.unit?.name || '';
+      return `${batch.batch || 'unbatched'} · exp ${expiry} · ${batch.quantity_remaining} ${unit}`;
+    },
+
+    loadBatches() {
+      this.localItemsToRequest.forEach(({ id }) => {
+        if (this.batchesByRequest[id]) return;
+        this.$store
+          .dispatch('request/fetchDispensableBatches', id)
+          .then((batches) => this.$set(this.batchesByRequest, id, batches))
+          .catch(() => this.$set(this.batchesByRequest, id, []));
+      });
+    },
+
     addSpinner(submitButton) {
       this.isDisabled = true;
       submitButton.classList.add('spinner', 'spinner-light', 'spinner-right');
@@ -134,7 +170,7 @@ export default {
     },
 
     unsuccessfulRequests(errors, successRequestIds) {
-      this.lists = errors.map(reason => reason);
+      this.lists = errors.map((reason) => reason);
       const updatedRequests = this.selectedRequests.filter(
         ({ id }) => !successRequestIds.includes(id)
       );
@@ -174,14 +210,29 @@ export default {
         });
       }
 
+      if (
+        this.selectedRequests.some(
+          ({ status, pharmacy_store_id }) => status === 'Granted' && !pharmacy_store_id
+        )
+      ) {
+        return this.$notify({
+          group: 'foo',
+          title: 'Error message',
+          text: 'A granted request does not have a batch selected',
+          type: 'error',
+        });
+      }
+
       // set spinner to submit button
       const submitButton = this.$refs['kt_updateRequest_submit'];
       this.addSpinner(submitButton);
 
-      const requests = this.selectedRequests.map(({ id, status }) => ({ id, status }));
+      const requests = this.selectedRequests.map(({ id, status, pharmacy_store_id }) =>
+        status === 'Granted' ? { id, status, pharmacy_store_id } : { id, status }
+      );
       this.$store
         .dispatch('request/updateRequests', { requests })
-        .then(response => this.endRequest(submitButton, response))
+        .then((response) => this.endRequest(submitButton, response))
         .catch(() => this.removeSpinner(submitButton));
     },
   },

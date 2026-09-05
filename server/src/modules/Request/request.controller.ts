@@ -134,4 +134,32 @@ export class RequestController {
       return next(e);
     }
   }
+
+  /**
+   * get the store batches a request may be dispensed from
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {object} next next middleware
+   * @returns {json} json object with status, batches data
+   */
+  static async getDispensableBatches(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<SuccessResponse | void> {
+    try {
+      const batches = await RequestService.getDispensableBatches(+req.params.id);
+
+      return successResponse({
+        res,
+        httpCode: StatusCodes.OK,
+        message: DATA_RETRIEVED,
+        data: batches,
+      });
+    } catch (e) {
+      return next(e);
+    }
+  }
 }
