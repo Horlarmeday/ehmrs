@@ -10,4 +10,5 @@ export class CreateBulkRequestBody {
 export class ProcessRequestBody {
   status: RequestStatus;
   id: number;
+  pharmacy_store_id?: number;
 }

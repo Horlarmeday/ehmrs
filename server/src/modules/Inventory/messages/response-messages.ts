@@ -7,3 +7,6 @@ export const UNPRICED_ITEM =
 export const ITEM_EXISTS_CASH = 'Item already exists in the store for Cash';
 export const ITEM_EXISTS_NHIS = 'Item already exists in the store for NHIS';
 export const ITEM_EXISTS_PRIVATE = 'Item already exists in the store for Private';
+export const BATCH_NOT_FOUND = 'the selected batch no longer exists in the store';
+export const BATCH_DRUG_MISMATCH =
+  'the selected batch holds a different drug than the one requested';

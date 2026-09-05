@@ -9,11 +9,12 @@ import {
 import { PharmacyStore, Request } from '../../database/models';
 import { ParsedQs } from 'qs';
 import { getInventoryItemQuery } from '../Inventory/inventory.repository';
-import { getOnePharmacyStoreItem } from '../Store/store.repository';
+import { getDispensableBatchesForDrug, getPharmacyStoreItemById } from '../Store/store.repository';
 import { ItemsToDispensedBody } from '../Inventory/types/inventory-item.types';
 import StoreService from '../Store/store.service';
 import { RequestStatus } from '../../database/enums';
 import { BadException } from '../../common/util/api-error';
+import { BATCH_DRUG_MISMATCH, BATCH_NOT_FOUND } from '../Inventory/messages/response-messages';
 
 export class RequestService {
   /**
@@ -79,6 +80,31 @@ export class RequestService {
   }
 
   /**
+   * get the store batches an approver may dispense a request from
+   *
+   * @static
+   * @returns {Promise<PharmacyStore[]>} in-stock batches for the request's drug, nearest expiry first
+   * @param requestId
+   * @memberOf RequestService
+   */
+  static async getDispensableBatches(requestId: number): Promise<PharmacyStore[]> {
+    const request = await getRequestQuery({ id: requestId });
+    if (!request) {
+      throw new BadException('Error', 404, 'request not found');
+    }
+
+    const inventoryItem = await getInventoryItemQuery({
+      id: request.item_id,
+      inventory_id: request.inventory_id,
+    });
+    if (!inventoryItem) {
+      throw new BadException('Error', 404, `drug not found in the inventory`);
+    }
+
+    return getDispensableBatchesForDrug(inventoryItem.drug_id, inventoryItem.drug_type);
+  }
+
+  /**
    * update requests status
    *
    * @static
@@ -114,10 +140,16 @@ export class RequestService {
         if (!inventoryItem) {
           throw new BadException('Error', 404, `drug not found in the inventory`);
         }
-        const storeItem = await getOnePharmacyStoreItem({
-          drug_id: inventoryItem.drug_id,
-          drug_type: inventoryItem.drug_type,
-        });
+        const storeItem = await getPharmacyStoreItemById(data.pharmacy_store_id);
+        if (!storeItem) {
+          throw new BadException('Error', 404, BATCH_NOT_FOUND);
+        }
+        if (
+          storeItem.drug_id !== inventoryItem.drug_id ||
+          storeItem.drug_type !== inventoryItem.drug_type
+        ) {
+          throw new BadException('Invalid', 400, BATCH_DRUG_MISMATCH);
+        }
 
         const dispenseData: ItemsToDispensedBody & { request_id: number } = {
           id: storeItem.id,
@@ -148,10 +180,6 @@ export class RequestService {
       }));
 
     const updatedRequests = await updateRequestStatus(itemsToUpdate, staffId);
-
-    console.log(itemsDispensed, 'itemsDispensed');
-    console.log(updatedRequests, 'updatedRequests');
-    console.log(errors, 'errors');
 
     return {
       errors: errors.map(error => 'reason' in error && error.reason?.message),

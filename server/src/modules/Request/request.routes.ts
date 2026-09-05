@@ -8,4 +8,5 @@ router.post('/create', verify, RequestController.createBulkRequest);
 router.put('/update', verify, RequestController.updateRequestStatus);
 router.get('/get', verify, RequestController.getRequests);
 router.get('/get/me', verify, RequestController.getCurrentUserRequests);
+router.get('/:id/batches', verify, RequestController.getDispensableBatches);
 export default router;

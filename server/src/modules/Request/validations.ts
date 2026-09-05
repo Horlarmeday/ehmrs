@@ -25,6 +25,11 @@ export function validateUpdateRequestsStatus(request: any) {
             .valid(RequestStatus.GRANTED, RequestStatus.DECLINED)
             .required(),
           id: Joi.number().required(),
+          pharmacy_store_id: Joi.number().when('status', {
+            is: RequestStatus.GRANTED,
+            then: Joi.required(),
+            otherwise: Joi.forbidden(),
+          }),
         })
       )
       .required(),
