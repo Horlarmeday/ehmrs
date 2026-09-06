@@ -18,6 +18,7 @@ import { VisitCategory } from '../../database/enums';
 import dayjs from 'dayjs';
 import {
   buildChargeCapturedEvent,
+  buildChargeReturnedEvent,
   buildChargeReversalRequestedEvent,
   buildChargeVoidedEvent,
   buildDispenseRecordedEvent,
@@ -28,6 +29,7 @@ import {
   patientAggregateId,
   visitAggregateId,
   PrescribedLineInput,
+  ChargeReturnedInput,
   ChargeReversalRequestedInput,
   ChargeVoidedInput,
   DispenseRecordedInput,
@@ -69,6 +71,29 @@ function buildContext(sequence: number, occurredAt: Date) {
 
 const IDEMPOTENT_SKIP_EVENT_TYPES = new Set(['charge.voided', 'encounter.closed']);
 
+/**
+ * Every event type this outbox may write (EMR #32 D4).
+ *
+ * These are the WIRE strings the builders stamp, which are not always the string their idempotency
+ * key uses — `charge.reversal.requested` is dotted here and underscored in its key. Copying a key
+ * format into this set would throw on every reversal emit.
+ *
+ * Enforced at the one chokepoint every emitter funnels through, so a typo'd type aborts the
+ * clinical write rather than reaching Accounting's inbox to be dropped there as unrecognised —
+ * silently, since a receiver cannot report an event it did not understand.
+ */
+export const PERMITTED_EVENT_TYPES = new Set([
+  'charge.captured',
+  'charge.voided',
+  'charge.reversal.requested',
+  'charge.returned',
+  'dispense.recorded',
+  'stock.returned',
+  'encounter.opened',
+  'encounter.closed',
+  'patient.demographics.changed',
+]);
+
 async function persistOutboxEvent(
   event: {
     aggregate_type: string;
@@ -81,6 +106,13 @@ async function persistOutboxEvent(
   },
   transaction: Transaction
 ): Promise<OutboxEvent> {
+  if (!PERMITTED_EVENT_TYPES.has(event.event_type)) {
+    throw new Error(
+      `Outbox: refusing to write an unpermitted event type "${event.event_type}"; expected one ` +
+        `of ${Array.from(PERMITTED_EVENT_TYPES).join(', ')}.`
+    );
+  }
+
   if (IDEMPOTENT_SKIP_EVENT_TYPES.has(event.event_type)) {
     const existing = await OutboxEvent.findOne({
       where: { idempotency_key: event.idempotency_key },
@@ -217,6 +249,33 @@ export async function emitStockReturned(
   const sequence = await claimSequence(aggregateId, transaction);
 
   const event = buildStockReturnedEvent(input, { tenantKey: TENANT_KEY, sequence });
+
+  return persistOutboxEvent(event, transaction);
+}
+
+/**
+ * Builds and persists a `charge.returned` outbox row on the caller's transaction — the same
+ * transaction the stock credit runs in (ADR-0018), so no return can unwind stock without the sale
+ * unwind committing alongside it. No-op when the outbox is disabled.
+ *
+ * The SALE half of a patient return, and the only producer of this event in the EMR (Accounting
+ * #174). Flow 2 (dispensary→store) must never reach here: it has no patient and no sale.
+ *
+ * Unlike `emitStockReturned`, the caller must NOT gate this on a batch identity — see
+ * `buildChargeReturnedEvent` for why.
+ */
+export async function emitChargeReturned(
+  input: ChargeReturnedInput,
+  transaction: Transaction
+): Promise<OutboxEvent | undefined> {
+  if (!isOutboxEnabled()) {
+    return undefined;
+  }
+
+  const aggregateId = visitAggregateId(input.visit_id);
+  const sequence = await claimSequence(aggregateId, transaction);
+
+  const event = buildChargeReturnedEvent(input, { tenantKey: TENANT_KEY, sequence });
 
   return persistOutboxEvent(event, transaction);
 }

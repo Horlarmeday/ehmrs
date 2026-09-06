@@ -1,7 +1,9 @@
 import {
   EventBuildError,
+  buildChargeReturnedEvent,
   buildDispenseRecordedEvent,
   buildStockReturnedEvent,
+  chargeReturnedIdempotencyKey,
   dispenseIdempotencyKey,
   stockReturnedIdempotencyKey,
   storeAggregateId,
@@ -191,5 +193,130 @@ describe('buildStockReturnedEvent (ADR-0040)', () => {
 
     expect(store.event_type).toBe('stock.returned');
     expect(store.event_type).not.toBe('charge.returned');
+  });
+});
+
+const baseChargeReturn = {
+  type: 'drug' as const,
+  id: 77,
+  visit_id: 8891,
+  quantity: 3,
+  return_id: 9001,
+};
+
+/**
+ * Flow 1's SALE half (EMR #32, Accounting #174). The tests that matter most here are the ones
+ * asserting what this builder does NOT require: it must build for a legacy layer that can name no
+ * batch, because the patient is owed money regardless.
+ */
+describe('buildChargeReturnedEvent (EMR #32)', () => {
+  it('carries the line ref, the encounter and the RETURNED quantity', () => {
+    const row = buildChargeReturnedEvent(baseChargeReturn, context);
+
+    expect(row.event_type).toBe('charge.returned');
+    expect(row.aggregate_type).toBe('encounter');
+    expect(row.aggregate_id).toBe('visit:8891');
+    expect(row.event_version).toBe(1);
+
+    const body = row.payload.body as Record<string, unknown>;
+    expect(body.external_line_ref).toEqual({ type: 'drug', id: '77' });
+    expect(body.encounter_id).toBe(visitAggregateId(8891));
+    expect(body.quantity).toBe(3);
+  });
+
+  it('builds for an additional_item as well as a drug', () => {
+    const row = buildChargeReturnedEvent({ ...baseChargeReturn, type: 'additional_item' }, context);
+
+    const body = row.payload.body as Record<string, unknown>;
+    expect(body.external_line_ref).toEqual({ type: 'additional_item', id: '77' });
+  });
+
+  // THE point of #32. `stock.returned` throws without a batch id; this must not even ask for one,
+  // so a legacy-layer return (permanently possible — #295 D3) still refunds the patient.
+  it('builds with NO batch id and NO item code — the asymmetry with stock.returned', () => {
+    const row = buildChargeReturnedEvent(baseChargeReturn, context);
+
+    const body = row.payload.body as Record<string, unknown>;
+    expect(body).not.toHaveProperty('external_batch_id');
+    expect(body).not.toHaveProperty('item_code');
+    expect(row.event_type).toBe('charge.returned');
+  });
+
+  it('refuses a non-positive or fractional returned quantity', () => {
+    expect(() => buildChargeReturnedEvent({ ...baseChargeReturn, quantity: 0 }, context)).toThrow(
+      EventBuildError
+    );
+    expect(() => buildChargeReturnedEvent({ ...baseChargeReturn, quantity: -3 }, context)).toThrow(
+      EventBuildError
+    );
+    expect(() => buildChargeReturnedEvent({ ...baseChargeReturn, quantity: 1.5 }, context)).toThrow(
+      EventBuildError
+    );
+  });
+
+  it('refuses an unknown prescribed-line type', () => {
+    expect(() =>
+      buildChargeReturnedEvent({ ...baseChargeReturn, type: 'ward_bed' as never }, context)
+    ).toThrow(EventBuildError);
+  });
+
+  it('carries no cost and no price (ADR-0009)', () => {
+    const serialized = JSON.stringify(
+      buildChargeReturnedEvent(baseChargeReturn, context).payload.body
+    );
+
+    expect(serialized).not.toMatch(/cost/i);
+    expect(serialized).not.toMatch(/price/i);
+    expect(serialized).not.toMatch(/amount/i);
+  });
+
+  describe('reason (EMR #32 D3)', () => {
+    it('carries it, trimmed, when supplied', () => {
+      const row = buildChargeReturnedEvent(
+        { ...baseChargeReturn, reason: '  patient refused  ' },
+        context
+      );
+
+      expect((row.payload.body as Record<string, unknown>).reason).toBe('patient refused');
+    });
+
+    it('omits the key entirely when absent, empty or whitespace', () => {
+      for (const reason of [undefined, '', '   ']) {
+        const row = buildChargeReturnedEvent({ ...baseChargeReturn, reason }, context);
+        expect(row.payload.body as Record<string, unknown>).not.toHaveProperty('reason');
+      }
+    });
+
+    it('truncates to 500 characters — the body is signed, so its size is bounded', () => {
+      const row = buildChargeReturnedEvent(
+        { ...baseChargeReturn, reason: 'x'.repeat(900) },
+        context
+      );
+
+      expect((row.payload.body as Record<string, unknown>).reason).toHaveLength(500);
+    });
+  });
+
+  describe('idempotency key (EMR #32 D1)', () => {
+    it('is keyed on the physical return, not the line', () => {
+      const row = buildChargeReturnedEvent(baseChargeReturn, context);
+
+      expect(row.idempotency_key).toBe('charge-returned:9001');
+      expect(chargeReturnedIdempotencyKey(9001)).toBe('charge-returned:9001');
+    });
+
+    // The trap a line-scoped key would spring: the second partial return on ONE line would collide
+    // on the UNIQUE index and that patient would never be refunded for it.
+    it('DIFFERS across two partial returns of the same line', () => {
+      const first = buildChargeReturnedEvent({ ...baseChargeReturn, quantity: 3 }, context);
+      const second = buildChargeReturnedEvent(
+        { ...baseChargeReturn, quantity: 2, return_id: 9002 },
+        context
+      );
+
+      expect(first.idempotency_key).not.toBe(second.idempotency_key);
+      expect((first.payload.body as Record<string, unknown>).quantity).toBe(3);
+      expect((second.payload.body as Record<string, unknown>).quantity).toBe(2);
+    });
   });
 });

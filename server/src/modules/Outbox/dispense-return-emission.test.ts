@@ -26,7 +26,7 @@ import { dispensePharmacyItems } from '../Store/store.repository';
 import { getInventoryItemLayers, updateReturnRequests } from '../Inventory/inventory.repository';
 import { dispenseDrug, returnDrugToInventory } from '../Pharmacy/pharmacy.repository';
 import { applyInstruction } from '../Inbox/applier';
-import { emitDispenseRecorded } from './outbox-writer';
+import { PERMITTED_EVENT_TYPES, emitChargeReturned, emitDispenseRecorded } from './outbox-writer';
 import { logger } from '../../core/helpers/logger';
 
 /**
@@ -430,6 +430,156 @@ describe('dispense.recorded and stock.returned emission (#297, ADR-0040)', () =>
     expect(body).not.toHaveProperty('returned_by');
   });
 
+  /**
+   * Flow 1's SALE half (EMR #32, Accounting #174). The patient return test above asserts the STOCK
+   * half; these assert the half that pays the patient back.
+   */
+  it('a patient return emits BOTH halves on the same encounter, with distinct sequences', async () => {
+    await clearOutbox();
+
+    const layer = (await getInventoryItemLayers(inventory_id, drug_id)).find(
+      l => l.pharmacy_store_id === storeRowA.id || l.pharmacy_store_id === storeRowB.id
+    );
+    const stub = prescribedStub(0, VISIT_ID, patient_id);
+    stub.drug_id = drug_id;
+    stub.quantity_dispensed = 10;
+
+    const history = await returnDrugToInventory(layer, stub as never, {
+      quantity_to_return: 4,
+      staff_id,
+      drug_prescription_id: 99999905,
+      prescription_id: 5561,
+      reason_for_return: 'wrong strength',
+    });
+
+    const charge = await outboxFor('charge.returned');
+    const stock = await outboxFor('stock.returned');
+    expect(charge).toHaveLength(1);
+    expect(stock).toHaveLength(1);
+
+    const body = bodyOf(charge[0]);
+    expect(body.external_line_ref).toEqual({ type: 'drug', id: '5561' });
+    expect(body.encounter_id).toBe(`visit:${VISIT_ID}`);
+    expect(body.quantity).toBe(4);
+    expect(body.reason).toBe('wrong strength');
+    // ADR-0009: what the refund is WORTH is Accounting's to compute.
+    expect(JSON.stringify(body)).not.toMatch(/cost|price/i);
+
+    // Keyed on the physical return, so a later partial return of the same line is a distinct event.
+    expect(charge[0].idempotency_key).toBe(`charge-returned:${history.id}`);
+
+    // Both halves land on the encounter aggregate, each with its own sequence.
+    expect(charge[0].aggregate_id).toBe(`visit:${VISIT_ID}`);
+    expect(Number(charge[0].sequence)).not.toBe(Number(stock[0].sequence));
+  });
+
+  // THE regression guard for #32. If someone later "tidies" the charge.returned emit back inside
+  // the batch-identity guard, this fails — and nothing else would, because the units rejoin stock
+  // either way and no error is raised.
+  it('a LEGACY-layer patient return still emits charge.returned, and only logs the stock skip', async () => {
+    await clearOutbox();
+    const warn = jest.spyOn(logger, 'warn').mockImplementation(() => logger);
+
+    await transfer(storeRowLegacy, 40);
+    const legacyLayer = (await getInventoryItemLayers(inventory_id, drug_id)).find(
+      l => l.pharmacy_store_id === storeRowLegacy.id
+    );
+    const remainingBefore = Number(legacyLayer.quantity_remaining);
+
+    const stub = prescribedStub(0, VISIT_ID, patient_id);
+    stub.drug_id = drug_id;
+    stub.quantity_dispensed = 10;
+
+    const history = await returnDrugToInventory(legacyLayer, stub as never, {
+      quantity_to_return: 2,
+      staff_id,
+      drug_prescription_id: 99999906,
+      prescription_id: 5562,
+      reason_for_return: 'patient refused',
+    });
+
+    // The patient is owed money even though the layer can name no batch (#295 D3).
+    const charge = await outboxFor('charge.returned');
+    expect(charge).toHaveLength(1);
+    expect(bodyOf(charge[0]).quantity).toBe(2);
+    expect(charge[0].idempotency_key).toBe(`charge-returned:${history.id}`);
+
+    // The stock half correctly stays unemitted — and stays visible.
+    expect(await outboxFor('stock.returned')).toHaveLength(0);
+
+    const skipLines = warn.mock.calls
+      .map(call => String(call[0]))
+      .filter(line => line.includes('[stock.returned]'));
+    expect(skipLines).toHaveLength(1);
+    expect(skipLines[0]).toContain('reason=missing_batch_id');
+    expect(skipLines[0]).toContain('patient_to_dispensary');
+
+    // And the stock still moved.
+    const layerAfter = await InventoryItem.findByPk(legacyLayer.id);
+    expect(Number(layerAfter.quantity_remaining)).toBe(remainingBefore + 2);
+
+    warn.mockRestore();
+  });
+
+  it('two partial returns of ONE line each emit their own charge.returned (EMR #32 D1)', async () => {
+    await clearOutbox();
+
+    const layer = (await getInventoryItemLayers(inventory_id, drug_id)).find(
+      l => l.pharmacy_store_id === storeRowA.id || l.pharmacy_store_id === storeRowB.id
+    );
+    const stub = prescribedStub(0, VISIT_ID, patient_id);
+    stub.drug_id = drug_id;
+    stub.quantity_dispensed = 10;
+
+    // A line-scoped idempotency key would make this second call collide on the UNIQUE index and
+    // the patient would never be refunded for it.
+    await returnDrugToInventory(layer, stub as never, {
+      quantity_to_return: 3,
+      staff_id,
+      drug_prescription_id: 99999907,
+      prescription_id: 5563,
+      reason_for_return: 'first partial',
+    });
+    await returnDrugToInventory(layer, stub as never, {
+      quantity_to_return: 2,
+      staff_id,
+      drug_prescription_id: 99999907,
+      prescription_id: 5563,
+      reason_for_return: 'second partial',
+    });
+
+    const charge = await outboxFor('charge.returned');
+    expect(charge).toHaveLength(2);
+    expect(charge.map(row => bodyOf(row).quantity)).toEqual([3, 2]);
+    expect(charge[0].idempotency_key).not.toBe(charge[1].idempotency_key);
+  });
+
+  it('a redelivered charge.returned RAISES on the unique key rather than double-refunding', async () => {
+    await clearOutbox();
+
+    const returnId = `redeliver-charge-${suffix}`;
+    const emit = () =>
+      sequelizeConnection.transaction(t =>
+        emitChargeReturned(
+          {
+            type: 'drug',
+            id: 5564,
+            visit_id: VISIT_ID,
+            quantity: 2,
+            return_id: returnId,
+          },
+          t
+        )
+      );
+
+    await emit();
+    await expect(emit()).rejects.toThrow();
+
+    const rows = await outboxFor('charge.returned');
+    expect(rows).toHaveLength(1);
+    expect(rows[0].idempotency_key).toBe(`charge-returned:${returnId}`);
+  });
+
   it('a granted store return emits ONE stock.returned per item, and no charge.returned', async () => {
     await clearOutbox();
 
@@ -691,5 +841,26 @@ describe('dispense.recorded and stock.returned emission (#297, ADR-0040)', () =>
 
       await Drug.destroy({ where: { id: otherDrug.id }, force: true });
     });
+  });
+});
+
+/**
+ * The allowlist is enforced in `persistOutboxEvent`, which is not exported — so this asserts the
+ * property that matters: every WIRE type the builders stamp is permitted, and nothing else is.
+ *
+ * The trap it catches: `buildChargeReversalRequestedEvent` stamps `charge.reversal.requested`
+ * (dotted) while its idempotency key uses `reversal_requested` (underscored). An allowlist written
+ * from the key format would throw on every reversal emit — and only in production.
+ */
+describe('PERMITTED_EVENT_TYPES (EMR #32 D4)', () => {
+  it('permits the reversal type in its DOTTED wire form, not its underscored key form', () => {
+    expect(PERMITTED_EVENT_TYPES.has('charge.reversal.requested')).toBe(true);
+    expect(PERMITTED_EVENT_TYPES.has('reversal_requested')).toBe(false);
+  });
+
+  it('covers all nine event types, including the one #32 adds, and admits nothing else', () => {
+    expect(PERMITTED_EVENT_TYPES.size).toBe(9);
+    expect(PERMITTED_EVENT_TYPES.has('charge.returned')).toBe(true);
+    expect(PERMITTED_EVENT_TYPES.has('charge.refunded')).toBe(false);
   });
 });

@@ -940,3 +940,117 @@ export function buildStockReturnedEvent(
     payload,
   };
 }
+
+/**
+ * The idempotency key for one physical patient return (EMR #32 D1).
+ *
+ * Keyed on the `Inventory_Item_Histories` row the return writes — the SAME identity
+ * `stock.returned` uses for this flow, so the two halves of one return name the same physical
+ * event.
+ *
+ * Keying on the prescribed line instead would be WRONG, not merely coarse — the identical trap
+ * `dispenseIdempotencyKey` documents. `getReturnStatus` yields `PARTIAL_RETURNED`, so a line may
+ * be returned several times; a line-scoped key would collide on the UNIQUE index and the second
+ * partial return would never refund the patient.
+ */
+export function chargeReturnedIdempotencyKey(returnId: number | string): string {
+  return `charge-returned:${returnId}`;
+}
+
+/** The longest `reason` that goes on the wire; longer text is truncated (EMR #32 D3). */
+const CHARGE_RETURNED_REASON_MAX = 500;
+
+export interface ChargeReturnedInput {
+  readonly type: PrescribedLineType;
+  readonly id: number | string;
+  readonly visit_id: number | string;
+  readonly quantity: number;
+  /** Inventory_Item_Histories.id for this physical return. */
+  readonly return_id: number | string;
+  readonly reason?: string;
+}
+
+/**
+ * Translates the SALE half of a patient drug return into a `charge.returned` outbox row
+ * (Accounting #174, EMR #32).
+ *
+ * A patient return produces TWO events with different preconditions. `stock.returned` names the
+ * layer the units rejoined and REQUIRES a batch identity — it throws without one, because a stock
+ * movement that cannot name its batch has nowhere to land. This event names neither a batch nor a
+ * layer, and so **must never require one**: a patient is owed money whether or not the dispensary
+ * layer happens to carry a batch identity, and `pharmacy_store_id` is permanently nullable
+ * (#295 D3), which makes legacy layers a live ongoing case rather than a migration artifact.
+ *
+ * That is why there is no `external_batch_id` or `item_code` on this input at all — the asymmetry
+ * is enforced by the shape, not by a caller remembering it.
+ *
+ * `quantity` is the RETURNED quantity, not the line's: a `PARTIAL_RETURNED` reverses only its own
+ * portion, and each partial return emits its own event under its own key.
+ *
+ * Carries NO cost and NO price (ADR-0009) — what the refund is worth is Accounting's to compute.
+ */
+export function buildChargeReturnedEvent(
+  input: ChargeReturnedInput,
+  context: BuildContext
+): OutboxEventRow {
+  if (!isPrescribedLineType(input.type)) {
+    throw new EventBuildError(
+      `Unknown prescribed-line type "${input.type}"; expected one of ${PRESCRIBED_LINE_TYPES.join(
+        ', '
+      )}`
+    );
+  }
+
+  if (!Number.isInteger(input.quantity) || input.quantity <= 0) {
+    throw new EventBuildError(
+      `charge.returned quantity must be a positive integer, got ${input.quantity}`
+    );
+  }
+
+  const encounterId = visitAggregateId(input.visit_id);
+  const occurredAt = context.occurredAt ?? new Date();
+  const sentAt = context.sentAt ?? new Date();
+  const idempotencyKey = chargeReturnedIdempotencyKey(input.return_id);
+  const eventVersion = context.eventVersion ?? 1;
+
+  const body: Record<string, unknown> = {
+    external_line_ref: { type: input.type, id: String(input.id) },
+    encounter_id: encounterId,
+    quantity: input.quantity,
+  };
+
+  // Free text the clinician typed, unlike `stock.returned`, which omits it as narrative
+  // (ADR-0016). Trimmed and capped rather than passed through raw: this body is signed, so its
+  // size must be bounded. Omitted entirely when blank — an empty string is not a reason.
+  if (input.reason !== undefined && input.reason !== null) {
+    const trimmed = String(input.reason).trim();
+    if (trimmed.length > 0) {
+      body.reason = trimmed.slice(0, CHARGE_RETURNED_REASON_MAX);
+    }
+  }
+
+  assertNoDemographics(body, 'charge.returned');
+
+  const payload: Record<string, unknown> = {
+    event_id: uuidV7(context.now),
+    event_type: 'charge.returned',
+    event_version: eventVersion,
+    tenant_key: context.tenantKey,
+    occurred_at: occurredAt.toISOString(),
+    sent_at: sentAt.toISOString(),
+    aggregate: { type: 'encounter', id: encounterId },
+    sequence: Number(context.sequence),
+    idempotency_key: idempotencyKey,
+    body,
+  };
+
+  return {
+    aggregate_type: 'encounter',
+    aggregate_id: encounterId,
+    sequence: context.sequence,
+    event_type: 'charge.returned',
+    event_version: eventVersion,
+    idempotency_key: idempotencyKey,
+    payload,
+  };
+}

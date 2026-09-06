@@ -49,7 +49,11 @@ import {
   getPrescribedDrugsWithoutJoins,
 } from '../Orders/Pharmacy/pharmacy-order.repository';
 import { BadException } from '../../common/util/api-error';
-import { emitDispenseRecorded, emitStockReturned } from '../Outbox/outbox-writer';
+import {
+  emitChargeReturned,
+  emitDispenseRecorded,
+  emitStockReturned,
+} from '../Outbox/outbox-writer';
 import { DispensedBatchInput, visitAggregateId } from '../Outbox/event-builder';
 import { logStockReturnedSkip } from '../Outbox/skip-observability';
 import { INVENTORY_QUANTITY_LOW, PRESCRIPTION_NOT_FOUND } from './messages/response-messages';
@@ -924,17 +928,42 @@ export const returnDrugToInventory = async (
       { where: { id: drug_prescription_id }, transaction: t }
     );
 
-    // Inside the transaction (ADR-0018). Scalar batch id, not an array: the service hands this
-    // function layers[0], so exactly ONE layer is credited (ADR-0040 records that this re-layers
-    // stock — the units may have been dispensed from several layers). Emitted only when the layer
-    // has a batch identity; a legacy layer's return is invisible to Accounting rather than
-    // attributed to a fabricated batch.
+    // A patient return produces TWO events, and they are NOT gated alike (EMR #32).
     //
-    // A miss on either resolver is LOGGED rather than silent (#21, #22): the units rejoin stock
-    // either way, and Accounting cannot detect an event it never receives.
+    // Both go inside the transaction (ADR-0018): no return may unwind stock without both halves
+    // committing alongside it.
     const externalBatchId = await resolveExternalBatchId(inventoryItem.id, t);
     const itemCode = await resolveItemCode(inventoryItem.drug_id, t);
 
+    // The SALE half, emitted UNCONDITIONALLY — deliberately outside the batch-identity guard
+    // below. Do not "tidy" this into the else-branch: the patient is owed money whether or not
+    // the dispensary layer happens to carry a batch identity, and `pharmacy_store_id` is
+    // permanently nullable (#295 D3), so legacy layers are a live ongoing case rather than a
+    // migration artifact. Gating this is exactly the defect #32 exists to fix, and it would go
+    // unnoticed — the units rejoin stock either way and no error is raised.
+    //
+    // `quantity_to_return`, not the line's quantity: a PARTIAL_RETURNED reverses only its own
+    // portion, and each partial return emits its own event keyed on its own history row.
+    await emitChargeReturned(
+      {
+        type: data.prescription_id ? 'drug' : 'additional_item',
+        id: data.prescription_id ?? data.additional_item_id,
+        visit_id: prescribedDrug.visit_id,
+        quantity: +quantity_to_return,
+        return_id: history.id,
+        reason: reason_for_return,
+      },
+      t
+    );
+
+    // The STOCK half. Scalar batch id, not an array: the service hands this function layers[0], so
+    // exactly ONE layer is credited (ADR-0040 records that this re-layers stock — the units may
+    // have been dispensed from several layers). Emitted only when the layer has a batch identity;
+    // a stock movement that cannot name its batch has nowhere to land, and fabricating an id is
+    // forbidden (#295 D3).
+    //
+    // A miss on either resolver is LOGGED rather than silent (#21, #22): the units rejoin stock
+    // either way, and Accounting cannot detect an event it never receives.
     if (!externalBatchId || !itemCode) {
       logStockReturnedSkip({
         source: 'patient_to_dispensary',
