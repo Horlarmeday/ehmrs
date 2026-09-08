@@ -4,7 +4,7 @@ Full-stack healthcare management system. Two independent apps in one repo, no mo
 
 ## ⚠️ BEFORE STARTING ANY NON-TRIVIAL TASK
 
-Create a feature branch and do NOT commit to `main`:
+Create a feature branch from `svsh_branch` and do NOT commit to `svsh_branch`, `svsh_branch` serves as the head:
 
 ```bash
 git checkout -b <issue-number>-<short-name>
