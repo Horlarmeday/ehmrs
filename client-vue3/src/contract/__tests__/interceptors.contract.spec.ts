@@ -21,6 +21,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { http, HttpResponse } from 'msw';
+import type { Method } from 'axios';
 
 vi.mock('nprogress', () => ({
   default: {
@@ -36,7 +37,7 @@ import axios from '../../core/axios';
 import { setToastSink, type ToastPayload } from '../../common/notify';
 import { useAuthStore } from '../../stores/auth';
 import { createReplayServer } from '../replay';
-import type { Scenario } from '../types';
+import { stringField, type Scenario } from '../types';
 import authCorpus from '../fixtures/auth.json' with { type: 'json' };
 
 const toasts: ToastPayload[] = [];
@@ -62,6 +63,15 @@ const synthetic: Scenario[] = [
 
 const replay = createReplayServer();
 
+const METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'] as const;
+
+function toMethod(raw: string): Method {
+  for (const m of METHODS) {
+    if (m === raw.toUpperCase()) return m;
+  }
+  return 'GET';
+}
+
 interface Recorded {
   resolved: boolean;
   value?: unknown;
@@ -81,7 +91,7 @@ async function drive(scenario: Scenario): Promise<Recorded> {
   try {
     const value = await axios({
       url: scenario.request.url,
-      method: scenario.request.method as never,
+      method: toMethod(scenario.request.method),
       data: scenario.request.body,
     });
     return { resolved: true, value };
@@ -113,7 +123,7 @@ describe('interceptor contract (corpus: auth + synthetic)', () => {
         expect(toasts, 'error toast content').toEqual([
           {
             title: 'Error message',
-            text: (scenario.response.body as { message?: string })?.message,
+            text: stringField(scenario.response.body, 'message'),
             type: 'error',
           },
         ]);
@@ -132,7 +142,7 @@ describe('interceptor contract (corpus: auth + synthetic)', () => {
             ? [
                 {
                   title: 'Success message',
-                  text: (scenario.response.body as { message?: string })?.message,
+                  text: stringField(scenario.response.body, 'message'),
                   type: 'success',
                 },
               ]

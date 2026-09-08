@@ -13,10 +13,31 @@ export default defineConfigWithVueTs(
     },
   },
   {
+    rules: {
+      // Project rule: no `any` and no direct type casting anywhere in src.
+      // Use precise types or runtime-checked guards (see contract/types.ts
+      // for the single sanctioned boundary conversion). Escape hatch: a
+      // targeted eslint-disable with written justification.
+      '@typescript-eslint/no-explicit-any': 'error',
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'TSAsExpression:not([typeAnnotation.type="TSTypeReference"][typeAnnotation.typeName.name="const"])',
+          message: 'Direct type casting is banned — use precise types or runtime-checked guards (targeted eslint-disable with justification only).',
+        },
+        {
+          selector: 'TSTypeAssertion',
+          message: 'Angle-bracket type casting is banned — use precise types or runtime-checked guards (targeted eslint-disable with justification only).',
+        },
+      ],
+    },
+  },
+  {
     files: ['*.config.js', '*.config.ts'],
     rules: {
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
+      'no-restricted-syntax': 'off',
     },
   },
 )

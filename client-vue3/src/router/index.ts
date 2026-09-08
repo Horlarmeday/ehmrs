@@ -8,6 +8,10 @@
  * - Metronic demo routes dropped: builder (commented out in legacy), quill.
  * - RESET_LAYOUT_CONFIG dispatch dropped (dead presentation module, ADR-0006).
  * - path '*' -> '/:pathMatch(.*)*' (vue-router 4 catch-all spelling).
+ * - legacy root '/' guard-only record dropped: vue-router 4 resolves URL
+ *   '/' to the '' layout record below regardless, so the record was never
+ *   matched and its guard was dead — the same redirect logic lives on the
+ *   '' record, scoped to to.path === '/'.
  * - /statistics child path '/' -> '' (v4 treats leading-slash children as
  *   root paths; route is name- and link-unreferenced in legacy).
  * - Duplicate name 'results-update' (laboratory/radiology): legacy v3
@@ -23,24 +27,6 @@ import type { RouteRecordRaw, RouterHistory } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 
 const routes: RouteRecordRaw[] = [
-    {
-      // legacy root record: guard-only, no component. vue-router 4 typing
-      // requires component/children/redirect; v4 matching resolves URL '/'
-      // to the '' layout record below regardless, where the same redirect
-      // is replicated (scoped to to.path === '/'). Kept for table parity.
-      path: '/',
-      beforeEnter: (_to: unknown, _from: unknown, next: (loc?: string) => void) => {
-        const authStore = useAuthStore();
-        if (authStore.token) {
-          next('/dashboard');
-          return;
-        }
-        next('/auth/login');
-      },
-    } as unknown as RouteRecordRaw,
-    // =============================================================================
-    // MAIN LAYOUT ROUTES
-    // =============================================================================
     {
       path: '',
       component: () => import('@/view/layout/Layout.vue'),

@@ -34,6 +34,10 @@ interface RawObj {
   requiresAuth?: boolean;
 }
 
+type PathObj = RawObj & { path: string };
+
+const hasPath = (s: RawObj): s is PathObj => s.path !== undefined;
+
 /** Innermost object span containing a source offset. */
 function innermostSpan(spans: RawObj[], at: number): RawObj | undefined {
   let best: RawObj | undefined;
@@ -83,7 +87,7 @@ function parseLegacyRoutes(src: string): LegacyRoute[] {
 
   // requiresAuth sits on the meta object; propagate to nearest ancestor
   // route object (the one carrying the path)
-  const routeObjsAll = spans.filter(s => s.path !== undefined);
+  const routeObjsAll = spans.filter(hasPath);
   for (const s of spans) {
     if (s.requiresAuth && s.path === undefined) {
       const owner = routeObjsAll
@@ -94,15 +98,17 @@ function parseLegacyRoutes(src: string): LegacyRoute[] {
   }
 
   // resolve nesting: attach each route object to its nearest ancestor route
-  const routeObjs = spans.filter(s => s.path !== undefined);
-  const full = new Map<RawObj, string>();
-  const resolve = (obj: RawObj): string => {
-    if (full.has(obj)) return full.get(obj) as string;
+  const routeObjs = spans.filter(hasPath);
+  const full = new Map<PathObj, string>();
+
+  const resolve = (obj: PathObj): string => {
+    const cached = full.get(obj);
+    if (cached !== undefined) return cached;
     const parent = [...routeObjs]
       .filter(p => p.open < obj.open && p.close > obj.close)
       .sort((a, b) => b.open - a.open)[0];
     let result: string;
-    const raw = obj.path as string;
+    const raw = obj.path;
     if (raw === '*' || raw.startsWith('/')) {
       result = raw;
     } else if (!parent) {

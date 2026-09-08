@@ -12,6 +12,49 @@ export interface ReplayCorpus {
   scenarios: Scenario[];
 }
 
+export interface StaffCredentials {
+  username: string;
+  password: string;
+}
+
+/** Runtime-checked view of an unknown scenario body as staff credentials. */
+export function asCredentials(body: unknown): StaffCredentials {
+  if (typeof body === 'object' && body !== null) {
+    const username = Reflect.get(body, 'username');
+    const password = Reflect.get(body, 'password');
+    if (typeof username === 'string' && typeof password === 'string') {
+      return { username, password };
+    }
+  }
+  throw new Error(`scenario body is not staff credentials: ${JSON.stringify(body)}`);
+}
+
+/** Runtime-checked string field lookup on an unknown corpus value. */
+export function stringField(source: unknown, key: string): string | undefined {
+  if (typeof source === 'object' && source !== null) {
+    const value = Reflect.get(source, key);
+    if (typeof value === 'string') return value;
+  }
+  return undefined;
+}
+
+/**
+ * Runtime-checked narrowing of an unknown corpus body to a JSON value for
+ * MSW. This is the single sanctioned type-conversion point at the unknown
+ * boundary (see eslint no-restricted-syntax ban on casts): the assertion is
+ * preceded by a runtime shape check, so it can never lie.
+ */
+export function jsonBody(value: unknown): Record<string, unknown> | unknown[] | string | number | boolean | undefined {
+  if (value === null || value === undefined) return undefined;
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value;
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'object') {
+    // eslint-disable-next-line no-restricted-syntax -- single sanctioned boundary conversion, runtime-checked above
+    return value as Record<string, unknown>;
+  }
+  return undefined;
+}
+
 /** Deep structural equality with a readable path-annotated diff message. */
 export function describeMismatch(
   expected: unknown,
@@ -28,8 +71,8 @@ export function describeMismatch(
     for (const k of keys) {
       out.push(
         ...describeMismatch(
-          (expected as Record<string, unknown>)[k],
-          (actual as Record<string, unknown>)[k],
+          Reflect.get(expected, k),
+          Reflect.get(actual, k),
           `${path}.${k}`,
         ),
       );

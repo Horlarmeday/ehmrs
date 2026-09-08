@@ -11,7 +11,7 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import type { ReplayCorpus, Scenario } from './types';
-import { describeMismatch } from './types';
+import { describeMismatch, jsonBody } from './types';
 
 export interface ActualRequest {
   method: string;
@@ -72,7 +72,7 @@ export function createReplayServer() {
       return HttpResponse.json({ error: 'contract drift', detail }, { status: DRIFT_STATUS });
     }
 
-    return HttpResponse.json(expected.response.body as Record<string, unknown> | undefined, {
+    return HttpResponse.json(jsonBody(expected.response.body), {
       status: expected.response.status,
     });
   });

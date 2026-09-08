@@ -8,13 +8,14 @@
 import { describe, expect, it } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { runContractCase } from '../contractTest';
+import { asCredentials, stringField } from '../types';
 import { useAuthStore } from '../../stores/auth';
 import axios from '../../core/axios';
 import authCorpus from '../fixtures/auth.json' with { type: 'json' };
 
 const success = authCorpus.scenarios[0]!;
 
-type AnyStore = { login: (staff: { username: string; password: string }) => Promise<unknown> };
+type AnyStore = { status?: string; login: (staff: { username: string; password: string }) => Promise<unknown> };
 
 function newAuthStore() {
   setActivePinia(createPinia());
@@ -55,9 +56,9 @@ describe('contract harness self-test', () => {
       scenario: success,
       bootstrap: newAuthStore,
       testCase: {
-        act: (store, s) => store.login(s.request.body as { username: string; password: string }),
+        act: (store, s) => store.login(asCredentials(s.request.body)),
         snapshot: (store) => ({ status: store.status, token: store.token }),
-        expectSnapshot: (s) => ({ status: 'success', token: (s.response.body as { data: string }).data }),
+        expectSnapshot: (s) => ({ status: 'success', token: stringField(s.response.body, 'data') ?? '' }),
       },
     });
     expect(result.failures).toEqual([]);
@@ -70,8 +71,8 @@ describe('contract harness self-test', () => {
         scenario: success,
         bootstrap: def.bootstrap,
         testCase: {
-          act: (store, s) => store.login(s.request.body as { username: string; password: string }),
-          snapshot: (store) => (store as unknown as { status?: string }).status ?? '',
+          act: (store, s) => store.login(asCredentials(s.request.body)),
+          snapshot: (store) => store.status ?? '',
           expectSnapshot: () => 'success',
         },
       });
@@ -96,8 +97,8 @@ describe('contract harness self-test', () => {
       scenario: success,
       bootstrap: () => store,
       testCase: {
-        act: (s, sc) => s.login(sc.request.body as { username: string; password: string }),
-        snapshot: (s) => ({ status: (s as typeof store).status }),
+        act: (s, sc) => s.login(asCredentials(sc.request.body)),
+        snapshot: (s) => ({ status: s.status ?? '' }),
         expectSnapshot: () => ({ status: 'success' }),
       },
     });

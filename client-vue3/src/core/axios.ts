@@ -12,8 +12,10 @@
  *   omitted entirely when absent — legacy stamped `Bearer null` on every
  *   request when logged out and never refreshed the token after
  *   login/logout in another tab.
- * - `NProgress.setColor` validates its argument against a safe color
- *   pattern before interpolating into CSS.
+ * - The legacy `NProgress.setColor` monkey-patch is a plain local function
+ *   (`setProgressBarColor`) validating its argument against a safe color
+ *   pattern before interpolating into CSS — only our own code ever called
+ *   it, so behavior is identical.
  * - Success path calls `NProgress.done(true)` immediately instead of after
  *   the legacy 30000ms delay (the delay left the bar stuck on screen).
  * - The unreachable `case 401` in the success switch is removed (axios
@@ -38,7 +40,7 @@ axios.defaults.baseURL = '/api';
 delete axios.defaults.headers.common['Authorization'];
 axios.defaults.timeout = 180000;
 
-(NProgress as unknown as { setColor: (color: string) => void }).setColor = (color: string) => {
+const setProgressBarColor = (color: string) => {
   if (!SAFE_COLOR.test(color)) return;
   const style = document.createElement('style');
   style.textContent = `
@@ -60,7 +62,7 @@ axios.interceptors.request.use(
     } else {
       delete config.headers.Authorization;
     }
-    (NProgress as unknown as { setColor: (color: string) => void }).setColor('black');
+    setProgressBarColor('black');
     NProgress.start();
     return config;
   },
