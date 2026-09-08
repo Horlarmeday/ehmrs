@@ -1,14 +1,4 @@
-/**
- * Pinia port of the legacy Vuex `auth` module (ADR-0003 dialect):
- * - store id = legacy module name
- * - actions keep exact names, bodies and payload shapes; axios calls identical
- * - mutations (auth_request/auth_success/auth_error/logout) become same-named
- *   actions with the same bodies — no idiomatic cleanup during migration
- * - cross-module dispatch: none in this module
- * - mapping deviation: legacy dispatch('auth/logout') → logoutSession() — the
- *   legacy action name `logout` clashes with the ported same-named
- *   mutation-action (Vuex could distinguish commit vs dispatch; Pinia cannot)
- */
+// ! legacy dispatch('auth/logout') maps to logoutSession: the action name clashes with the ported mutation-action
 import { defineStore } from 'pinia';
 import axios from '../core/axios';
 

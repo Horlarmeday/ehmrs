@@ -1,13 +1,4 @@
-/**
- * Issue #37 — router parity + guard behavior tests.
- *
- * Parity strategy: mechanically parse the legacy Vue 2 router
- * (client/src/router.js) and compare every (path, name, requiresAuth)
- * tuple with the vue-router 4 port's flattened route table. Every legacy
- * route must appear verbatim, except the explicitly dropped Metronic demo
- * routes (quill; builder was already commented out in legacy) and the two
- * documented mechanical adaptations (catch-all spelling, statistics child).
- */
+// ! parity strategy: mechanically parse legacy router.js and compare every (path, name, requiresAuth) tuple with the port
 import { beforeEach, describe, expect, test } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -34,7 +25,10 @@ interface RawObj {
   requiresAuth?: boolean;
 }
 
-/** Innermost object span containing a source offset. */
+type PathObj = RawObj & { path: string };
+
+const hasPath = (s: RawObj): s is PathObj => s.path !== undefined;
+
 function innermostSpan(spans: RawObj[], at: number): RawObj | undefined {
   let best: RawObj | undefined;
   for (const s of spans) {
@@ -43,14 +37,12 @@ function innermostSpan(spans: RawObj[], at: number): RawObj | undefined {
   return best;
 }
 
-/** Parse the prettier-formatted legacy router into flat resolved routes. */
 function parseLegacyRoutes(src: string): LegacyRoute[] {
   const cleaned = src
     .split('\n')
     .filter(line => !line.trim().startsWith('//'))
     .join('\n');
 
-  // object spans
   const spans: RawObj[] = [];
   const openStack: number[] = [];
   for (let i = 0; i < cleaned.length; i++) {
@@ -81,9 +73,7 @@ function parseLegacyRoutes(src: string): LegacyRoute[] {
     if (obj) obj.requiresAuth = true;
   }
 
-  // requiresAuth sits on the meta object; propagate to nearest ancestor
-  // route object (the one carrying the path)
-  const routeObjsAll = spans.filter(s => s.path !== undefined);
+  const routeObjsAll = spans.filter(hasPath);
   for (const s of spans) {
     if (s.requiresAuth && s.path === undefined) {
       const owner = routeObjsAll
@@ -93,16 +83,17 @@ function parseLegacyRoutes(src: string): LegacyRoute[] {
     }
   }
 
-  // resolve nesting: attach each route object to its nearest ancestor route
-  const routeObjs = spans.filter(s => s.path !== undefined);
-  const full = new Map<RawObj, string>();
-  const resolve = (obj: RawObj): string => {
-    if (full.has(obj)) return full.get(obj) as string;
+  const routeObjs = spans.filter(hasPath);
+  const full = new Map<PathObj, string>();
+
+  const resolve = (obj: PathObj): string => {
+    const cached = full.get(obj);
+    if (cached !== undefined) return cached;
     const parent = [...routeObjs]
       .filter(p => p.open < obj.open && p.close > obj.close)
       .sort((a, b) => b.open - a.open)[0];
     let result: string;
-    const raw = obj.path as string;
+    const raw = obj.path;
     if (raw === '*' || raw.startsWith('/')) {
       result = raw;
     } else if (!parent) {
@@ -122,15 +113,12 @@ function parseLegacyRoutes(src: string): LegacyRoute[] {
   }));
 }
 
-/** Legacy -> ported adaptations (documented in tasks/37-router-port.md). */
 const DROPPED = new Set(['/quill']);
-const DROP_NAME = new Set(['/laboratory/results-update']); // duplicate-name v4 semantics
+const DROP_NAME = new Set(['/laboratory/results-update']); // ! duplicate-name v4 semantics
 const ADAPTED: Record<string, string> = {
   '*': '/:pathMatch(.*)*',
 };
 const ADAPTED_BY_NAME: Record<string, string> = {
-  // v4 treats leading-slash children as root paths; default-child is the
-  // mechanical v4 equivalent of legacy's odd child path '/'
   'statistics-home': '/statistics',
 };
 
@@ -146,10 +134,6 @@ function expectedLegacyRoutes(): LegacyRoute[] {
       name: DROP_NAME.has(r.path) ? undefined : r.name,
       requiresAuth: r.requiresAuth,
     }));
-  // legacy has two unnamed '/' records (root redirect record + login
-  // parent). vue-router 4 keeps only one '/' in getRoutes(); the root
-  // record is shadowed by the '' layout record in v4 matching and its
-  // redirect behavior is replicated on that record's beforeEnter.
   const firstUnnamedRoot = mapped.findIndex(r => r.path === '/' && r.name === undefined);
   mapped.splice(firstUnnamedRoot, 1);
   return mapped;
@@ -174,7 +158,7 @@ describe('route parity with legacy client/src/router.js', () => {
   });
 
   test('all 153 legacy requiresAuth meta entries preserved', () => {
-    // 154 textual occurrences in legacy router.js minus the beforeEach guard
+    // ! 154 textual occurrences in legacy router.js minus the beforeEach guard
     expect(router.getRoutes().filter(r => r.meta.requiresAuth).length).toBe(153);
   });
 
@@ -192,7 +176,7 @@ describe('guard behavior (ported 1:1)', () => {
 
   async function navigateTo(target: string) {
     const r = testRouter();
-    await r.push('/__start'); // memory history starts at '/', prime a distinct origin
+    await r.push('/__start'); // ! memory history starts at '/', prime a distinct origin
     await r.push(target);
     return r.currentRoute.value.path;
   }

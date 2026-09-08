@@ -1,17 +1,7 @@
-/**
- * MSW queue replay server (ADR-0003's drift gate).
- *
- * A single catch-all handler serves the loaded corpus scenarios in capture
- * order and — before responding — checks the *actual* outgoing request against
- * the queued expectation (method, URL, payload). Any drift (wrong URL, wrong
- * method, changed payload) yields a 599 "contract drift" response, so the
- * store call itself fails loudly instead of silently passing against a
- * permissive mock. An un-replayed leftover scenario means the store under-called.
- */
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import type { ReplayCorpus, Scenario } from './types';
-import { describeMismatch } from './types';
+import { describeMismatch, jsonBody } from './types';
 
 export interface ActualRequest {
   method: string;
@@ -54,8 +44,6 @@ export function createReplayServer() {
     };
     requests.push(actual);
 
-    // Legacy axios baseURL is '/api'; corpus URLs are captured upstream of
-    // that prefix, so accept both the bare and the prefixed path.
     const expectedPaths = [expected.request.url, `/api${expected.request.url}`];
     const mismatches: string[] = [];
     if (actual.method !== expected.request.method) {
@@ -72,7 +60,7 @@ export function createReplayServer() {
       return HttpResponse.json({ error: 'contract drift', detail }, { status: DRIFT_STATUS });
     }
 
-    return HttpResponse.json(expected.response.body as Record<string, unknown> | undefined, {
+    return HttpResponse.json(jsonBody(expected.response.body), {
       status: expected.response.status,
     });
   });
@@ -82,7 +70,6 @@ export function createReplayServer() {
 
   return {
     server,
-    /** Load a scenario queue (replaces any previous one) and reset failures. */
     load(scenarios: Scenario[]) {
       queue = scenarios.map((s) => ({ ...s }));
       requests.length = 0;
