@@ -10,6 +10,8 @@ Create a feature branch from `svsh_branch` and do NOT commit to `svsh_branch`, `
 git checkout -b <issue-number>-<short-name>
 ```
 
+**Always open a PR (base `svsh_branch`) via `gh pr create` after completing a task/issue — this is mandatory, not optional.**
+
 ## Layout
 
 - `client/` — Vue 2 + Vuex + BootstrapVue, vue-cli. Pages in `src/view/`, Vuex modules in `src/core/services/store/`. Uses **npm** (`package-lock.json`).
