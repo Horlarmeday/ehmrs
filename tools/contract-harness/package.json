@@ -1,0 +1,31 @@
+{
+  "name": "@ehmrs/contract-harness",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Dev-stack fixture capture proxy + replay-corpus builder (issue #36, ADR-0003/0005)",
+  "type": "module",
+  "bin": {
+    "capture-proxy": "./dist/proxy-cli.js",
+    "capture-fixtures": "./dist/corpus-cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "capture": "node dist/proxy-cli.js",
+    "fixtures": "node dist/corpus-cli.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@ehmrs/phi-scrubber": "file:../phi-scrubber"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
+  }
+}

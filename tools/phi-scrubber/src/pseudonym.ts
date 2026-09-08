@@ -72,6 +72,7 @@ export class PseudonymStore {
     }
     let out = text;
     for (const real of this.sortedReals) {
+      if (real.length === 0) continue;
       if (out.includes(real)) {
         out = out.split(real).join(this.realToFake.get(real)!);
       }
