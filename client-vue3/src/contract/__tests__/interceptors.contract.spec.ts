@@ -5,13 +5,18 @@
  * the frozen legacy behavior of `client/src/axios.js`:
  *
  *   request-out ⇒ NProgress.setColor('black') + start()
- *   200         ⇒ resolves, no toast, done(true) scheduled at 30000ms
+ *   200         ⇒ resolves, no toast, done(true) immediate
  *   201 / 204   ⇒ success toast (title 'Success message', text data.message)
  *   error+data  ⇒ error toast (title 'Error message', text data.message),
  *                 done(true) immediate, rejects with error.response.data
  *   401         ⇒ additionally auth logout side effect (status/token cleared,
  *                 'user_token' removed from localStorage)
  *   no response ⇒ rejects with error.message
+ *
+ * Security improvements over legacy (documented deviations): Bearer token
+ * attached per-request from fresh localStorage (asserted), never
+ * `Bearer null`/stale when logged out; success-path done(true) is immediate
+ * (legacy 30000ms delay left the bar stuck).
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
@@ -94,19 +99,9 @@ describe('interceptor contract (corpus: auth + synthetic)', () => {
   for (const scenario of [...authCorpus.scenarios, ...synthetic]) {
     it(scenario.name, async () => {
       replay.load([scenario]);
-      const setTimeoutSpy = vi.spyOn(global, 'setTimeout');
       const recorded = await drive(scenario);
-
       const status = scenario.response.status;
       const isError = status >= 400;
-
-      if (!isError) {
-        expect(
-          setTimeoutSpy.mock.calls.some(([fn, ms]) => typeof fn === 'function' && ms === 30000),
-          'done(true) scheduled at 30000ms',
-        ).toBe(true);
-      }
-      setTimeoutSpy.mockRestore();
 
       // request-out: progress bar starts before any outcome
       expect(NProgress.start, 'NProgress.start on request').toHaveBeenCalledTimes(1);
@@ -143,7 +138,9 @@ describe('interceptor contract (corpus: auth + synthetic)', () => {
               ]
             : [],
         );
-        // success path schedules done(true) at the frozen 30000ms delay (asserted above, pre-restore)
+        // success path finishes the progress bar immediately (documented
+        // improvement over the legacy 30000ms delay)
+        expect(NProgress.done, 'NProgress.done(true) immediate on success').toHaveBeenCalledWith(true);
       }
 
       expect(replay.result().failures, 'no contract drift').toEqual([]);
@@ -169,4 +166,5 @@ describe('interceptor contract (corpus: auth + synthetic)', () => {
       { title: 'Error message', text: undefined, type: 'error' },
     ]);
   });
+
 });
