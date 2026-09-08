@@ -1,0 +1,19 @@
+{
+  "outDir": "client-vue3/src/types/api",
+  "modules": [
+    {
+      "flow": "auth",
+      "serverDir": "server",
+      "moduleDir": "Auth",
+      "fixtureFile": "client-vue3/src/contract/fixtures/auth.json",
+      "requests": [
+        { "kind": "joi", "fn": "validateLogin", "name": "LoginRequest" },
+        { "kind": "joi", "fn": "validateForgotPassword", "name": "ForgotPasswordRequest" },
+        { "kind": "interface", "file": "interface/auth.interface.ts", "from": "ChangePasswordParam", "name": "ChangePasswordRequest", "omit": ["user_id"] }
+      ],
+      "responses": [
+        { "method": "POST", "path": "/api/auth/login", "name": "LoginResponse" }
+      ]
+    }
+  ]
+}
