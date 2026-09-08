@@ -53,3 +53,6 @@ server/config.json
 .zip
 # Added by code-review-graph
 .code-review-graph/
+
+# PHI scrubber (ADR-0005): raw captures + pseudonym map live OUTSIDE the repo
+# in ~/.ehmrs/ and must never be committed. See tools/phi-scrubber/README.md
