@@ -47,6 +47,12 @@ pseudonyms stable across runs and files.
 | mrn / patient / visit ids | `mrn`, `hospitalNumber`, `patientId`, `visitNo`, … | `MRNXXXXXXXX` (stable → joins preserved) |
 | address | `address`, `street`, `lga` | generated address |
 | dob | `dob`, `dateOfBirth`, … | deterministically shifted date |
+| token | `token`, `authorization`, `jwt`, `api_key`, embedded JWTs (`eyJ…`) | `FAKETOKEN.…` (stable → response/state contracts stay meaningful) |
+| password | `password`, `passphrase`, `secret`, `pin` | `FakePass_XXXXXXXX` |
+| username | `username`, `login`, `staff_id` | `staff.xxxxxxxx` |
+
+Empty/whitespace values are never mapped (they carry no identity and would
+otherwise corrupt free-text substitution).
 
 Free-text fields are scanned for embedded phones/emails, and any real value
 already present in the pseudonym map (e.g. a patient name mapped from a

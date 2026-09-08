@@ -39,6 +39,43 @@ afterEach(() => {
 });
 
 describe('structural scrubbing', () => {
+  it('scrubs credentials and bearer tokens from an auth capture', () => {
+    const realJwt =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIn0.4AdcjXoTF0backf4bf4zKPl6Wg80';
+    const capture = {
+      request: { method: 'POST', url: '/auth/login', body: { username: 'admin', password: 'SuperSecret1!' } },
+      response: { status: 200, body: { status: 'success', data: realJwt } },
+      headers: { authorization: `Bearer ${realJwt}`, user_token: realJwt },
+    };
+    const out = scrubJson(capture, store) as typeof capture;
+    const serialized = JSON.stringify(out);
+    for (const real of ['admin', 'SuperSecret1!', realJwt]) {
+      expect(serialized).not.toContain(real);
+    }
+    expect(out.request.body.username).toMatch(/^staff\./);
+    expect(out.request.body.password).toMatch(/^FakePass_\d{8}$/);
+    expect(out.response.body.data).toMatch(/^FAKETOKEN\./);
+    expect(out.headers.authorization).toMatch(/^FAKETOKEN\./);
+    expect(out.headers.user_token).toBe(out.response.body.data);
+  });
+
+  it('is idempotent for credential kinds (fake does not re-match)', () => {
+    const capture = { username: 'admin', password: 'SuperSecret1!' };
+    const once = scrubJson(capture, store);
+    const twice = scrubJson(once, store);
+    expect(twice).toEqual(once);
+  });
+
+  it('never maps empty strings (validation messages stay intact)', () => {
+    const capture = {
+      body: { username: '', password: 'x' },
+      message: '"password" length must be at least 6 characters long',
+    };
+    const out = scrubJson(capture, store) as typeof capture;
+    expect(out.body.username).toBe('');
+    expect(out.message).toBe('"password" length must be at least 6 characters long');
+  });
+
   it('removes known real values from nested clinical JSON', () => {
     const out = scrubJson(patient, store) as typeof patient;
     const serialized = JSON.stringify(out);

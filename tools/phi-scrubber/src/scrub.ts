@@ -13,8 +13,13 @@ function scrubString(value: string, field: string, store: PseudonymStore): strin
   // Already a pseudonym from a previous run — idempotence.
   if (store.isPseudonym(value)) return value;
 
+  // Empty/whitespace values carry no identity — never map them (an empty
+  // real in the reverse index would corrupt free text via substituteKnown).
+  const trimmed = value.trim();
+  if (!trimmed) return value;
+
   const kind = kindForField(field);
-  if (kind) return store.pseudonym(kind, value.trim());
+  if (kind) return store.pseudonym(kind, trimmed);
 
   // Free text: replace embedded identifier patterns with stable pseudonyms.
   let out = value;

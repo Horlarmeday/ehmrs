@@ -7,7 +7,10 @@ export type PseudonymKind =
   | 'email'
   | 'mrn'
   | 'address'
-  | 'dob';
+  | 'dob'
+  | 'token'
+  | 'password'
+  | 'username';
 
 export function hashHex(input: string): string {
   return createHash('sha256').update(input, 'utf8').digest('hex');
@@ -67,6 +70,11 @@ export const generators: Record<PseudonymKind, (real: string, seed: string) => s
   address: (_real, seed) =>
     `${numSuffix(seed, 3)} ${pick(FIRST_NAMES, seed + ':st')} ${pick(STREETS, seed + ':st2')}, ${pick(CITIES, seed + ':city')}`,
   dob: (real, seed) => shiftDate(real, seed),
+  // Opaque credential-safe fakes: shape deliberately unlike the real thing so
+  // generated fakes never re-match the embedded patterns (idempotence).
+  token: (_real, seed) => `FAKETOKEN.${hexSuffix(seed, 40)}`,
+  password: (_real, seed) => `FakePass_${numSuffix(seed, 8)}`,
+  username: (_real, seed) => `staff.${hexSuffix(seed, 8).toLowerCase()}`,
 };
 
 /** Shift a date by a stable per-value offset (1..3650 days). */
@@ -92,6 +100,9 @@ const FIELD_RULES: ReadonlyArray<{ re: RegExp; kind: PseudonymKind }> = [
   { re: /(^|[^a-z])(mrn|hospital[_.]?number|medical[_.]?record|patient[_.]?(id|no|number)|visit[_.]?(id|no)|encounter[_.]?(id|no))/i, kind: 'mrn' },
   { re: /address|street|lga/i, kind: 'address' },
   { re: /dob|date[_.]?of[_.]?birth|birth[_.]?date|birthday/i, kind: 'dob' },
+  { re: /password|passphrase|\bsecret\b|\bpin\b/i, kind: 'password' },
+  { re: /token|authorization|\bjwt\b|bearer|api[_.]?key/i, kind: 'token' },
+  { re: /user[_.]?name|^login$|^staff_id$|staff[_.]?username/i, kind: 'username' },
 ];
 
 export function kindForField(field: string): PseudonymKind | undefined {
@@ -100,6 +111,8 @@ export function kindForField(field: string): PseudonymKind | undefined {
 
 /** Embedded PHI patterns found inside free-text strings. */
 export const EMBEDDED_PATTERNS: ReadonlyArray<{ re: RegExp; kind: PseudonymKind; name: string }> = [
+  // JWTs first: they can contain '.'-separated segments that overlap other patterns.
+  { re: /\beyJ[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]*\b/g, kind: 'token', name: 'jwt' },
   { re: /\b[\w.+-]+@[\w-]+\.[\w.]+\b/g, kind: 'email', name: 'email' },
   { re: /(?:\+234|0)\d{10}\b/g, kind: 'phone', name: 'ng-phone' },
 ];
