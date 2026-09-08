@@ -51,3 +51,5 @@ server/config.json
 .cursor/
 .claude/
 .zip
+# Added by code-review-graph
+.code-review-graph/
