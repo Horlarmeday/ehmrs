@@ -1,10 +1,3 @@
-/**
- * Security-improvement tests for the ported axios layer (issue #38): the
- * Bearer token is attached per-request from a fresh localStorage read and is
- * never sent as `Bearer null`/stale when logged out (legacy stamped the
- * header once at module load). Kept out of the contract spec file so the
- * replay server there never double-intercepts these requests.
- */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';

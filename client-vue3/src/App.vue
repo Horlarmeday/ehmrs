@@ -1,8 +1,5 @@
 <script setup lang="ts">
-// Router shell — UI lands with per-domain migration issues (see docs/adr/0001).
-// The toast sink bridges the frozen notifySuccess/notifyError content to the
-// PrimeVue ToastService chrome (summary=legacy title, detail=legacy text,
-// severity=legacy type).
+// ! toast sink bridges frozen notify content to PrimeVue chrome
 import { useToast } from 'primevue/usetoast'
 import { setToastSink } from './common/notify'
 

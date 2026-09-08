@@ -1,26 +1,3 @@
-/**
- * Port of legacy `client/src/axios.js` (issue #38). The frozen contract
- * surface (what the harness gates) is unchanged: baseURL '/api', 180000ms
- * timeout, NProgress start/done + setColor, toast triggers on 201/204 and on
- * errors, 401 ⇒ logout, rejection shapes (`error.response.data` /
- * `error.message`). Legacy `store.dispatch('auth/logout')` maps to
- * `useAuthStore().logoutSession()` per the #36 mapping deviation.
- *
- * Deliberate improvements over the legacy file, each documented in
- * `tasks/38-http-layer-port.md`:
- * - Bearer token is attached per-request from a fresh localStorage read and
- *   omitted entirely when absent — legacy stamped `Bearer null` on every
- *   request when logged out and never refreshed the token after
- *   login/logout in another tab.
- * - The legacy `NProgress.setColor` monkey-patch is a plain local function
- *   (`setProgressBarColor`) validating its argument against a safe color
- *   pattern before interpolating into CSS — only our own code ever called
- *   it, so behavior is identical.
- * - Success path calls `NProgress.done(true)` immediately instead of after
- *   the legacy 30000ms delay (the delay left the bar stuck on screen).
- * - The unreachable `case 401` in the success switch is removed (axios
- *   rejects non-2xx, so the error handler owns 401).
- */
 import axios from 'axios';
 import NProgress from 'nprogress';
 import { useAuthStore } from '../stores/auth';

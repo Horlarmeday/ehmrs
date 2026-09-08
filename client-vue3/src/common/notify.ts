@@ -1,11 +1,3 @@
-/**
- * Toast adapter — frozen port of legacy `client/src/common/common.js`
- * notifySuccess/notifyError. Content is frozen (titles, text source, type);
- * only the chrome changed: legacy vue-notification `group: 'foo'` is replaced
- * by PrimeVue ToastService, registered as a sink by the app shell
- * (`App.vue`). Before registration the sink is a no-op so stores/tests can
- * import this module without an app context.
- */
 export interface ToastPayload {
   title: string;
   text: string | undefined;

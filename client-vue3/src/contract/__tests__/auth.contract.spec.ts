@@ -1,14 +1,4 @@
-/**
- * Auth-flow contract test — the template exemplar for store ports.
- *
- * Expected behavior is authored from the LEGACY Vuex module
- * (client/src/core/services/store/auth/*), not from the Pinia port:
- *
- *   login(staff) commits auth_request; POSTs to /auth/login; on success stores
- *   response.data.data in localStorage('user_token') + state.token and commits
- *   auth_success (status 'success'); on failure commits auth_error (status
- *   'error'), removes the token, and rejects.
- */
+// ! expectations authored from the LEGACY Vuex auth module, not the port
 import { createPinia, setActivePinia } from 'pinia';
 import { defineContractSuite } from '../contractTest';
 import { asCredentials, stringField } from '../types';

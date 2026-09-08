@@ -1,10 +1,3 @@
-/**
- * Harness self-test — a drift gate that cannot fail protects nothing.
- *
- * Deliberately drifted stores (wrong URL, wrong payload, wrong state
- * transition, no HTTP call at all) must each FAIL the contract runner against
- * the real captured corpus, and the faithful port must pass it.
- */
 import { describe, expect, it } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { runContractCase } from '../contractTest';

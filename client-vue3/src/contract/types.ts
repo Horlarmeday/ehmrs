@@ -1,4 +1,3 @@
-/** Corpus types — mirror of tools/contract-harness src/corpus.ts output. */
 export interface Scenario {
   name: string;
   request: { method: string; url: string; body?: unknown };
@@ -17,7 +16,6 @@ export interface StaffCredentials {
   password: string;
 }
 
-/** Runtime-checked view of an unknown scenario body as staff credentials. */
 export function asCredentials(body: unknown): StaffCredentials {
   if (typeof body === 'object' && body !== null) {
     const username = Reflect.get(body, 'username');
@@ -29,7 +27,6 @@ export function asCredentials(body: unknown): StaffCredentials {
   throw new Error(`scenario body is not staff credentials: ${JSON.stringify(body)}`);
 }
 
-/** Runtime-checked string field lookup on an unknown corpus value. */
 export function stringField(source: unknown, key: string): string | undefined {
   if (typeof source === 'object' && source !== null) {
     const value = Reflect.get(source, key);
@@ -38,12 +35,6 @@ export function stringField(source: unknown, key: string): string | undefined {
   return undefined;
 }
 
-/**
- * Runtime-checked narrowing of an unknown corpus body to a JSON value for
- * MSW. This is the single sanctioned type-conversion point at the unknown
- * boundary (see eslint no-restricted-syntax ban on casts): the assertion is
- * preceded by a runtime shape check, so it can never lie.
- */
 export function jsonBody(value: unknown): Record<string, unknown> | unknown[] | string | number | boolean | undefined {
   if (value === null || value === undefined) return undefined;
   if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value;
@@ -55,7 +46,6 @@ export function jsonBody(value: unknown): Record<string, unknown> | unknown[] | 
   return undefined;
 }
 
-/** Deep structural equality with a readable path-annotated diff message. */
 export function describeMismatch(
   expected: unknown,
   actual: unknown,

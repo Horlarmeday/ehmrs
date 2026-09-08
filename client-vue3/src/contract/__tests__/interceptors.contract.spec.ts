@@ -1,23 +1,4 @@
-/**
- * Interceptor-layer contract test (issue #38). Replays the captured auth
- * fixtures plus synthetic corpus-shape scenarios (201/204/401/network error —
- * not yet in the captured corpus) through the ported axios layer and asserts
- * the frozen legacy behavior of `client/src/axios.js`:
- *
- *   request-out ⇒ NProgress.setColor('black') + start()
- *   200         ⇒ resolves, no toast, done(true) immediate
- *   201 / 204   ⇒ success toast (title 'Success message', text data.message)
- *   error+data  ⇒ error toast (title 'Error message', text data.message),
- *                 done(true) immediate, rejects with error.response.data
- *   401         ⇒ additionally auth logout side effect (status/token cleared,
- *                 'user_token' removed from localStorage)
- *   no response ⇒ rejects with error.message
- *
- * Security improvements over legacy (documented deviations): Bearer token
- * attached per-request from fresh localStorage (asserted), never
- * `Bearer null`/stale when logged out; success-path done(true) is immediate
- * (legacy 30000ms delay left the bar stuck).
- */
+// ! expectations authored from legacy client/src/axios.js semantics, not the port
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { http, HttpResponse } from 'msw';
@@ -113,11 +94,9 @@ describe('interceptor contract (corpus: auth + synthetic)', () => {
       const status = scenario.response.status;
       const isError = status >= 400;
 
-      // request-out: progress bar starts before any outcome
       expect(NProgress.start, 'NProgress.start on request').toHaveBeenCalledTimes(1);
 
       if (isError) {
-        // error path: done immediately, toast, rejection shape
         expect(recorded.resolved, 'error response rejects').toBe(false);
         expect(NProgress.done, 'NProgress.done(true) immediate on error').toHaveBeenCalledWith(true);
         expect(toasts, 'error toast content').toEqual([
@@ -148,8 +127,6 @@ describe('interceptor contract (corpus: auth + synthetic)', () => {
               ]
             : [],
         );
-        // success path finishes the progress bar immediately (documented
-        // improvement over the legacy 30000ms delay)
         expect(NProgress.done, 'NProgress.done(true) immediate on success').toHaveBeenCalledWith(true);
       }
 

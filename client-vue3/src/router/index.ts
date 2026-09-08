@@ -1,27 +1,3 @@
-/**
- * 1:1 vue-router 4 port of the legacy client/src/router.js (issue #37).
- * Frozen surface (ADR-0002): paths, names, nesting, meta and guards are
- * translated mechanically — no redesign. Components point to stub views
- * replaced per-domain by later migration issues.
- *
- * Deliberate deltas vs legacy (see tasks/37-router-port.md parity table):
- * - Metronic demo routes dropped: builder (commented out in legacy), quill.
- * - RESET_LAYOUT_CONFIG dispatch dropped (dead presentation module, ADR-0006).
- * - path '*' -> '/:pathMatch(.*)*' (vue-router 4 catch-all spelling).
- * - legacy root '/' guard-only record dropped: vue-router 4 resolves URL
- *   '/' to the '' layout record below regardless, so the record was never
- *   matched and its guard was dead — the same redirect logic lives on the
- *   '' record, scoped to to.path === '/'.
- * - /statistics child path '/' -> '' (v4 treats leading-slash children as
- *   root paths; route is name- and link-unreferenced in legacy).
- * - Duplicate name 'results-update' (laboratory/radiology): legacy v3
- *   last-wins name lookup resolves to radiology while both paths stay
- *   reachable; v4 would DELETE the earlier record on a duplicate name, so
- *   the laboratory record keeps its path but omits the name — name
- *   resolution and path reachability behave identically to legacy.
- * - Duplicate parent path /settings ('settings' + 'account-settings')
- *   preserved verbatim: first-registered-wins path match in both versions.
- */
 import { createRouter, createWebHistory } from 'vue-router';
 import type { RouteRecordRaw, RouterHistory } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
@@ -31,10 +7,7 @@ const routes: RouteRecordRaw[] = [
       path: '',
       component: () => import('@/view/layout/Layout.vue'),
       beforeEnter: (to, _from, next) => {
-        // vue-router 4 resolves URL '/' to this '' record, shadowing the
-        // root '/' record below (v3 matched the root record first). The
-        // legacy root redirect is replicated here, scoped to the '/' URL
-        // only — observable behavior identical to legacy for every path.
+        // ! v4 resolves '/' to this '' record, not the legacy root record; the legacy root redirect is replicated here
         if (to.path === '/') {
           const authStore = useAuthStore();
           if (authStore.token) {
@@ -58,11 +31,6 @@ const routes: RouteRecordRaw[] = [
             requiresAuth: true,
           },
         },
-        // {
-        //   path: "/builder",
-        //   name: "builder",
-        //   components: () => import("@/view/pages/Builder.vue")
-        // },
         // PATIENT
         {
           path: '/patient',
@@ -975,11 +943,7 @@ const routes: RouteRecordRaw[] = [
               },
             },
             {
-              // name omitted deliberately: legacy also has 'results-update'
-              // on the radiology route (vue-router last-wins for name lookup);
-              // vue-router 4 would DELETE this record on the duplicate name,
-              // breaking the /laboratory/results-update URL legacy serves.
-              // Path reachability + name resolution stay identical to legacy.
+              // ! name omitted: v4 deletes records on duplicate names; legacy last-wins behavior preserved
               path: 'results-update',
               component: () =>
                 import('@/view/pages/laboratory/approvedResults/ApprovedResults.vue'),
@@ -1510,9 +1474,7 @@ const routes: RouteRecordRaw[] = [
         },
       ],
     },
-    // =============================================================================
     // FULL PAGE LAYOUTS
-    // =============================================================================
     {
       path: '/',
       component: () => import('@/view/pages/auth/Login-1.vue'),
@@ -1534,7 +1496,6 @@ const routes: RouteRecordRaw[] = [
       redirect: '/404',
     },
     {
-      // the 404 route, when none of the above matches
       path: '/404',
       name: '404',
       component: () => import('@/view/pages/error/Error-1.vue'),
@@ -1544,15 +1505,13 @@ export function createAppRouter(history: RouterHistory = createWebHistory(import
   const router = createRouter({
     history,
     scrollBehavior() {
-      // legacy returned { x: 0, y: 0 }; v4 ScrollPosition spells it left/top
+      // ! legacy scrollBehavior returned { x: 0, y: 0 }
       return { left: 0, top: 0 };
     },
     routes,
   });
 
   router.beforeEach((to, _from, next) => {
-    // legacy reset of layout config (RESET_LAYOUT_CONFIG) dropped — dead
-    // presentation module per ADR-0006
 
     if (to.matched.some(record => record.meta.requiresAuth)) {
       if (useAuthStore().token) {
