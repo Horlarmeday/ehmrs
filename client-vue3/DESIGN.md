@@ -10,6 +10,18 @@ PrimeVue preset (`src/design/ehmrs.preset.ts`) and the Tailwind tokens
 (`tailwind.tokens.ts`). Never edit the generated files by hand; change a table here and
 run `cd tools/token-pipeline && npm run generate`.
 
+## Product and operating context
+
+eHMRS is a hospital ERP client with roughly 480 views. Its centre of gravity is dense,
+repetitive data work: patient lists, lab result entry, pharmacy dispense, store
+inventory, admissions, and reports. Nurses, pharmacists, lab scientists, and records
+staff use these screens for rapid entry and verification, including overnight shifts.
+
+The system therefore optimizes for scan speed, comparison, keyboard flow, and visible
+state over marketing-style spaciousness. Density is a usability requirement: whitespace
+must clarify groups and hierarchy without lowering the amount of decision-relevant data
+visible in a working viewport.
+
 ## Non-negotiables
 
 1. **Density is ERP-scale, not marketing-scale.** The default control size on data
@@ -31,11 +43,15 @@ run `cd tools/token-pipeline && npm run generate`.
 
 ## Complex-component brief constraints (ADR-0001)
 
-Open Design owns layout, composition, and simple components. For complex interactive
-components Open Design designs **the skin around fixed PrimeVue anatomy** — palette,
-typography, radius, density, state colors — and the page around the component. It never
-invents the component's internal structure. A brief that says "design a table" is
-malformed; it must say "design the skin around a PrimeVue-class DataTable".
+Open Design has full authority over page layout, navigation, composition, and
+simple/static components such as buttons, cards, panels, and form layout. These designs
+must be expressible near 1:1 as Tailwind Vue components.
+
+For complex interactive components, PrimeVue owns the anatomy. Open Design designs
+**the skin around fixed PrimeVue anatomy** — palette, typography, radius, density, state
+colors — and the page around the component. It never invents or redraws the component's
+internal structure. A brief that says "design a table" is malformed; it must say
+"design the skin around a PrimeVue-class DataTable".
 
 PrimeVue anatomy pinned by the archetypes (skin targets of this token set):
 
@@ -58,6 +74,47 @@ PrimeVue anatomy pinned by the archetypes (skin targets of this token set):
 - **Accent: hospital blue** — continuity with the Vue 2 app's blue family, chosen at the
   #40 HITL session over clinical teal and health-sector green.
 - Typography stack and mono stack predate this document (tooling scaffold, #34).
+
+Changing the seed, hospital-blue accent family, or light-only v1 mode strategy requires
+a new owner-reviewed HITL decision. Such a change must be presented as a proposal with
+rationale; it must not enter the token tables as an unannounced reseed.
+
+## Archetype and export contract (ADR-0009)
+
+This system seeds a kit of approximately 6–10 reusable page archetypes:
+
+- list with filters;
+- detail with tabs;
+- entry form or wizard;
+- dashboard;
+- report with export;
+- settings;
+- one exemplar domain spanning authentication, list, and form.
+
+Every archetype must name the PrimeVue component responsible for each complex
+interaction and confine custom design to its skin, surrounding layout, and simple
+components. Bespoke screen design is reserved for patient search/registration, triage,
+lab result entry, and dispense/verify, where the clinical workflow carries higher risk.
+
+Design exports must use generated token names and Tailwind utilities so implementation
+can be transcribed directly—for example, `bg-surface-page`, `text-ink`, a generated
+`sm` control-height utility, and `text-sm`. One-off hex values are forbidden: if a new
+color is necessary, add it to an existing parser-supported token table and declare every
+required foreground/background contrast pair. Any entirely new token group must first
+be proposed in prose for the code side to wire into the pipeline.
+
+## Review gates
+
+Before an archetype or high-stakes screen is accepted:
+
+1. Confirm data-screen controls use `sm` by default and `lg` appears only for an
+   isolated-page primary CTA.
+2. Confirm numeric data uses `font.mono` with tabular numerals.
+3. Confirm every complex component maps to the pinned PrimeVue anatomy below.
+4. Confirm every data-bearing foreground/background pairing is declared in
+   `contrast.pairs` and passes 4.5:1.
+5. Confirm the export contains no one-off color values or hand-written dark-mode
+   overrides.
 
 ## Tokens
 
