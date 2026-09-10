@@ -39,7 +39,7 @@ import {
 } from '../../database/enums';
 import { getOneDefault, getWardWithService } from '../AdminSettings/admin.repository';
 import { getPatientById } from '../Patient/patient.repository';
-import { emitChargeCapturedForRows } from '../Outbox/outbox-writer';
+import { emitChargeCapturedForRows, emitEncounterWardAssigned } from '../Outbox/outbox-writer';
 import { AdmissionBodyType, ChangeWardBodyType, DischargeBodyType } from './types/admission.types';
 import { getPatientInsuranceQuery } from '../Insurance/insurance.repository';
 import {
@@ -114,6 +114,14 @@ export const admitPatient = async (data: AdmissionBodyType) => {
     );
 
     await Bed.update({ status: BedStatus.TAKEN }, { where: { id: bedId }, transaction: t });
+
+    // Unconditional, unlike the admission charge below: every admission has a ward regardless of
+    // the patient's cover, and the ward round needs it either way (#330). Same transaction as the
+    // Admission INSERT, so the two commit together (ADR-0018); `ward` is the row already fetched
+    // above, so this costs no extra query.
+    if (ward?.name) {
+      await emitEncounterWardAssigned(visit_id, ward.name, t);
+    }
 
     if (
       !patient.has_insurance ||
@@ -498,6 +506,15 @@ export const changePatientWard = async (
     await admission.update({ ...data, previous_ward: admission.ward_id }, { transaction: t });
     // assign new bed to the patient in the new ward
     await Bed.update({ status: BedStatus.TAKEN }, { where: { id: data.bed_id }, transaction: t });
+
+    // Without this the ward round keeps showing the ward the patient has LEFT, which is worse than
+    // the blank column #330 set out to fix (#330, ADR-0050). `getWardWithService` is not usable
+    // here: it inner-joins UNTAKEN beds, and the bed just taken above may leave the new ward with
+    // none. Read by primary key instead, on this transaction so it sees the writes above.
+    const newWard = await Ward.findByPk(data.ward_id, { transaction: t });
+    if (newWard) {
+      await emitEncounterWardAssigned(admission.visit_id, newWard.name, t);
+    }
   });
 };
 

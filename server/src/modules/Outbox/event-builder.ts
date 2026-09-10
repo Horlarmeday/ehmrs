@@ -218,6 +218,22 @@ export function encounterClosedIdempotencyKey(visitId: number | string): string 
   return `encounter-closed:${visitId}`;
 }
 
+/**
+ * `encounter-ward-assigned:{visit_id}:{sequence}` — one event per assignment (#330, ADR-0050).
+ *
+ * The sequence is part of the key because a stay produces SEVERAL of these: one at admission and
+ * one per transfer. `outbox_events.idempotency_key` is UNIQUE, so a key constant per visit would
+ * let only the first be emitted. Keying on `{visit_id}:{ward_id}` instead would collide on the
+ * return leg of an ICU -> Medical -> ICU move, stranding the anchor on "Medical". The sequence is
+ * already claimed per-aggregate by `claimSequence`, so it is unique by construction.
+ */
+export function encounterWardAssignedIdempotencyKey(
+  visitId: number | string,
+  sequence: number | string
+): string {
+  return `encounter-ward-assigned:${visitId}:${sequence}`;
+}
+
 export function chargeVoidedIdempotencyKey(type: PrescribedLineType, id: number | string): string {
   if (!isPrescribedLineType(type)) {
     throw new EventBuildError(
@@ -343,9 +359,20 @@ export interface EncounterOpenedInput {
  * The flag is emitted only when true. Accounting LATCHES on `emergency === true` and has no code
  * path that clears it, so a `false` is indistinguishable from an absent field at the receiver —
  * emitting one would falsely imply an encounter can be corrected back to routine.
+ *
+ * The WARD does not belong here, though Accounting's contract still accepts an optional `ward` on
+ * this body for a direct-admission EMR that knows one at open. This EMR does not: a visit opens at
+ * reception, the ward is chosen later at admission, and it changes again on transfer. It rides
+ * `encounter.ward.assigned` instead (#330, ADR-0050) — and could not ride here even if it were
+ * known later, because this key is constant per visit and `idempotency_key` is UNIQUE.
  */
 export interface EncounterClosedInput {
   readonly visit_id: number | string;
+}
+
+export interface EncounterWardAssignedInput {
+  readonly visit_id: number | string;
+  readonly ward: string;
 }
 
 export interface ChargeVoidedInput {
@@ -532,6 +559,67 @@ export function buildEncounterOpenedEvent(
     aggregate_id: encounterId,
     sequence: context.sequence,
     event_type: 'encounter.opened',
+    event_version: eventVersion,
+    idempotency_key: idempotencyKey,
+    payload,
+  };
+}
+
+/** Accounting stores `ward` as varchar(64) and its Zod caps it there; `Wards.name` is
+ * varchar(255). An over-long name must be TRUNCATED, never sent whole: the receiver would reject
+ * the body and dead-letter the event, and the ward is display text where a clipped label is a far
+ * smaller loss than a dropped event. */
+const WARD_MAX_LENGTH = 64;
+
+/**
+ * Builds an `encounter.ward.assigned` outbox row (#330, ADR-0050).
+ *
+ * A separate event from `encounter.opened` because the ward is NOT knowable when a visit opens: a
+ * visit is opened at reception, the ward is chosen later at admission, and it changes again on
+ * transfer. `encounter.opened` also cannot carry it retroactively — its key is constant per visit
+ * and `idempotency_key` is UNIQUE, so a second one for the same visit fails at the INSERT.
+ *
+ * The body carries `Ward.name`, the label, not the ward id: Accounting holds no ward catalogue to
+ * resolve an id against and renders this value directly. A ward is a place, not a person, so it is
+ * not demographic content (ADR-0016) — `assertNoDemographics` still runs over the body.
+ */
+export function buildEncounterWardAssignedEvent(
+  input: EncounterWardAssignedInput,
+  context: BuildContext
+): OutboxEventRow {
+  const ward = input.ward.trim();
+  if (!ward) {
+    throw new EventBuildError('encounter.ward.assigned requires a non-empty ward name');
+  }
+
+  const encounterId = visitAggregateId(input.visit_id);
+  const occurredAt = context.occurredAt ?? new Date();
+  const sentAt = context.sentAt ?? new Date();
+  const idempotencyKey = encounterWardAssignedIdempotencyKey(input.visit_id, context.sequence);
+  const eventVersion = context.eventVersion ?? 1;
+
+  const body: Record<string, unknown> = { ward: ward.slice(0, WARD_MAX_LENGTH) };
+
+  assertNoDemographics(body, 'encounter.ward.assigned');
+
+  const payload: Record<string, unknown> = {
+    event_id: uuidV7(context.now),
+    event_type: 'encounter.ward.assigned',
+    event_version: eventVersion,
+    tenant_key: context.tenantKey,
+    occurred_at: occurredAt.toISOString(),
+    sent_at: sentAt.toISOString(),
+    aggregate: { type: 'encounter', id: encounterId },
+    sequence: Number(context.sequence),
+    idempotency_key: idempotencyKey,
+    body,
+  };
+
+  return {
+    aggregate_type: 'encounter',
+    aggregate_id: encounterId,
+    sequence: context.sequence,
+    event_type: 'encounter.ward.assigned',
     event_version: eventVersion,
     idempotency_key: idempotencyKey,
     payload,
