@@ -24,6 +24,7 @@ import {
   buildDispenseRecordedEvent,
   buildEncounterClosedEvent,
   buildEncounterOpenedEvent,
+  buildEncounterWardAssignedEvent,
   buildPatientDemographicsChangedEvent,
   buildStockReturnedEvent,
   patientAggregateId,
@@ -91,6 +92,7 @@ export const PERMITTED_EVENT_TYPES = new Set([
   'stock.returned',
   'encounter.opened',
   'encounter.closed',
+  'encounter.ward.assigned',
   'patient.demographics.changed',
 ]);
 
@@ -299,6 +301,34 @@ export async function emitEncounterOpened(
 
   const event = buildEncounterOpenedEvent(
     { visit_id: visitId, emergency },
+    { tenantKey: TENANT_KEY, sequence }
+  );
+
+  return persistOutboxEvent(event, transaction);
+}
+
+/**
+ * Builds and persists an `encounter.ward.assigned` outbox row on the caller's transaction — the
+ * same transaction as the admission or ward-transfer write it describes, so the clinical fact and
+ * its event commit together or not at all (ADR-0018). No-op when the outbox is disabled.
+ *
+ * Emitted more than once per stay by design: at admission, and again on every transfer. The key
+ * carries the sequence, so each is distinct at the UNIQUE constraint (#330, ADR-0050).
+ */
+export async function emitEncounterWardAssigned(
+  visitId: number | string,
+  ward: string,
+  transaction: Transaction
+): Promise<OutboxEvent | undefined> {
+  if (!isOutboxEnabled()) {
+    return undefined;
+  }
+
+  const aggregateId = visitAggregateId(visitId);
+  const sequence = await claimSequence(aggregateId, transaction);
+
+  const event = buildEncounterWardAssignedEvent(
+    { visit_id: visitId, ward },
     { tenantKey: TENANT_KEY, sequence }
   );
 

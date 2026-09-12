@@ -2,7 +2,12 @@ import '../../core/config/env';
 import { sequelizeConnection } from '../../database/config/data-source';
 import { OutboxEvent } from '../../database/models/outboxEvent';
 import { OutboxSequence } from '../../database/models/outboxSequence';
-import { claimSequence, emitChargeCaptured, isOutboxEnabled } from './outbox-writer';
+import {
+  claimSequence,
+  emitChargeCaptured,
+  emitEncounterWardAssigned,
+  isOutboxEnabled,
+} from './outbox-writer';
 
 /**
  * Integration tests for the outbox writer, against real MySQL. The claims here — atomicity with
@@ -143,6 +148,55 @@ describe('outbox writer', () => {
 
     it('isOutboxEnabled reflects the flag', () => {
       expect(isOutboxEnabled()).toBe(true);
+    });
+  });
+
+  describe('emitEncounterWardAssigned (#330)', () => {
+    it('is a no-op when the outbox is disabled', async () => {
+      process.env.EMR_OUTBOX_ENABLED = 'false';
+      const t = await sequelizeConnection.transaction();
+      const result = await emitEncounterWardAssigned(8891, 'Medical ward', t);
+      await t.commit();
+      process.env.EMR_OUTBOX_ENABLED = 'true';
+
+      expect(result).toBeUndefined();
+      expect(await OutboxEvent.count()).toBe(0);
+    });
+
+    it('persists the ward on the caller transaction, and rolls back with it', async () => {
+      const t = await sequelizeConnection.transaction();
+      await emitEncounterWardAssigned(8891, 'Medical ward', t);
+      await t.rollback();
+
+      // ADR-0018: the event is only real if the clinical write it rode with is.
+      expect(await OutboxEvent.count()).toBe(0);
+    });
+
+    it('emits a SECOND event for a transfer, which a visit-constant key could not', async () => {
+      const admission = await sequelizeConnection.transaction();
+      await emitEncounterWardAssigned(8891, 'Medical ward', admission);
+      await admission.commit();
+
+      const transfer = await sequelizeConnection.transaction();
+      await emitEncounterWardAssigned(8891, 'ICU', transfer);
+      await transfer.commit();
+
+      const rows = await OutboxEvent.findAll({ order: [['sequence', 'ASC']] });
+      expect(rows).toHaveLength(2);
+      expect(rows[0].idempotency_key).toBe('encounter-ward-assigned:8891:1');
+      expect(rows[1].idempotency_key).toBe('encounter-ward-assigned:8891:2');
+    });
+
+    it('lets a patient return to a ward they already left', async () => {
+      // The ICU -> Medical -> ICU case a `{visit_id}:{ward_id}` key would collide on, stranding
+      // the anchor on the middle ward for the rest of the stay.
+      for (const ward of ['ICU', 'Medical ward', 'ICU']) {
+        const t = await sequelizeConnection.transaction();
+        await emitEncounterWardAssigned(8891, ward, t);
+        await t.commit();
+      }
+
+      expect(await OutboxEvent.count()).toBe(3);
     });
   });
 });
