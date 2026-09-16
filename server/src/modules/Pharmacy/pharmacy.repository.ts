@@ -52,6 +52,7 @@ import { BadException } from '../../common/util/api-error';
 import {
   emitChargeReturned,
   emitDispenseRecorded,
+  emitItemChanged,
   emitStockReturned,
 } from '../Outbox/outbox-writer';
 import { DispensedBatchInput, visitAggregateId } from '../Outbox/event-builder';
@@ -101,11 +102,22 @@ async function includeOneModel({ model, modelToInclude, id, includeAs }) {
 export async function createGenericDrug(data) {
   const { name, type, staff_id } = data;
 
-  return Drug.create({
-    name,
-    staff_id,
-    type,
-    code: `D${generateRandomNumbers(6)}`,
+  // The catalogue write and its label event commit together (Accounting ADR-0052): an event after a
+  // rolled-back write names a drug that does not exist, and a lost event leaves Accounting's cache
+  // permanently stale with no resync trigger.
+  return sequelizeConnection.transaction(async t => {
+    const drug = await Drug.create(
+      {
+        name,
+        staff_id,
+        type,
+        code: `D${generateRandomNumbers(6)}`,
+      },
+      { transaction: t }
+    );
+
+    await emitItemChanged(drug.id, t);
+    return drug;
   });
 }
 
@@ -116,8 +128,19 @@ export async function createGenericDrug(data) {
  */
 export async function updateGenericDrug(data) {
   const { drug_id } = data;
-  const drug = await getModelById(Drug, drug_id);
-  return drug.update(data);
+
+  // A rename is the event Accounting most needs: its cached label is what the purchase-order picker
+  // shows. `getModelById` takes no transaction, so the row is read directly on this one.
+  return sequelizeConnection.transaction(async t => {
+    const drug = await Drug.findByPk(drug_id, { transaction: t });
+    if (!drug) {
+      return drug;
+    }
+
+    const updated = await drug.update(data, { transaction: t });
+    await emitItemChanged(updated.id, t);
+    return updated;
+  });
 }
 
 /**

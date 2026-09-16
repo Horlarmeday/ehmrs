@@ -18,6 +18,7 @@ import {
 } from '../../database/models';
 import { PharmacyDrugType, LogType, HistoryType } from '../../database/enums';
 import { sequelizeConnection } from '../../database/config/data-source';
+import { emitVendorChanged } from '../Outbox/outbox-writer';
 import { ItemsToReorder } from './types/pharmacy-item.types';
 import { BadException } from '../../common/util/api-error';
 import { ItemsToDispensedBody } from '../Inventory/types/inventory-item.types';
@@ -920,7 +921,13 @@ export const dispensePharmacyItems = async (items: ItemsToDispensedBody[], staff
  * @param staff_id
  */
 export const createVendor = (body, staff_id: number) => {
-  return Vendor.create({ ...body, staff_id });
+  // The vendor row and its label event commit together (Accounting ADR-0051) — same reasoning as
+  // the catalogue label: a half-applied pair leaves the two systems disagreeing with no remedy.
+  return sequelizeConnection.transaction(async t => {
+    const vendor = await Vendor.create({ ...body, staff_id }, { transaction: t });
+    await emitVendorChanged(vendor.id, t);
+    return vendor;
+  });
 };
 
 /**
@@ -941,7 +948,15 @@ export const getVendors = (currentPage = 1, pageLimit = 50) => {
  * @param body
  */
 export const updateVendor = (id: number, body: Partial<Vendor>) => {
-  return Vendor.update(body, { where: { id } });
+  return sequelizeConnection.transaction(async t => {
+    const [affected] = await Vendor.update(body, { where: { id }, transaction: t });
+    // Emit only when a row actually changed: `Vendor.update` reports 0 for an id that does not
+    // exist, and emitting then would claim a supplier the EMR does not have.
+    if (affected > 0) {
+      await emitVendorChanged(id, t);
+    }
+    return [affected];
+  });
 };
 
 /** ********************************

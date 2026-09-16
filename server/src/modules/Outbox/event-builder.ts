@@ -92,6 +92,23 @@ export function storeAggregateId(inventoryId: number | string): string {
 }
 
 /**
+ * The aggregate id for a catalogue item label (Accounting ADR-0052 D1).
+ *
+ * Keyed by the catalogue CODE, not `Drug.id`: the code is what Accounting's
+ * `purchase_order_line.item_code` and `stock_batch.item_code` already store, so a numeric id would
+ * need a join Accounting cannot perform. `claimSequence` takes an opaque string, so a new aggregate
+ * needs no schema change here.
+ */
+export function itemAggregateId(itemCode: string): string {
+  return `item:${itemCode}`;
+}
+
+/** The aggregate id for a supplier label (Accounting ADR-0051 D1). */
+export function vendorAggregateId(vendorId: number | string): string {
+  return `vendor:${vendorId}`;
+}
+
+/**
  * The payer reference carried on `charge.captured` (ADR-0028). Additive, optional, ID-only: it
  * tells Accounting which payer the patient was under at prescription time so it can resolve the
  * split. No demographics (ADR-0016) — scheme/hmo ids only, never a name or membership number. No
@@ -152,7 +169,23 @@ export class EventBuildError extends Error {
  * rather than a relaxation of `assertNoDemographics`. Deleting or weakening that assertion to let
  * this event through would silently reopen the hole on `charge.captured` and every future event.
  */
-const DEMOGRAPHIC_EVENT_TYPES = ['patient.demographics.changed'];
+/**
+ * `item.changed` and `vendor.changed` are exempt for a different reason than the demographic
+ * channel: their `name` is a PRODUCT or a COMPANY name, not a person's (Accounting ADR-0052 D3,
+ * ADR-0051 D3). `DEMOGRAPHIC_KEYS` matches the bare key `name`, so without this they would throw on
+ * every emission.
+ *
+ * These stay per-type exemptions for the reason above: relaxing `assertNoDemographics`, or dropping
+ * `name` from `DEMOGRAPHIC_KEYS`, would silently reopen the hole on `charge.captured` where a
+ * patient name must never appear. Accounting answers the mirror-image guard the same way, listing
+ * `item_label.name` and `vendor_label.name` in `NON_DEMOGRAPHIC_DESPITE_NAME` rather than exempting
+ * the column class.
+ */
+export const DEMOGRAPHIC_EVENT_TYPES = [
+  'patient.demographics.changed',
+  'item.changed',
+  'vendor.changed',
+];
 
 function assertNoDemographics(body: Record<string, unknown>, eventType: string): void {
   if (DEMOGRAPHIC_EVENT_TYPES.includes(eventType)) {
@@ -652,6 +685,144 @@ export interface PatientDemographicsInput {
    * Omit the field entirely to mean "not stated"; an empty array means "holds none".
    */
   readonly insurances?: readonly PatientInsuranceInput[];
+}
+
+/**
+ * `item-changed:{item_code}:{sequence}` — the sequence is part of the key because ONE code emits
+ * repeatedly: once at first sight and again on every rename. `outbox_events.idempotency_key` is
+ * UNIQUE, so a key constant per code would let only the first emission through and a rename would
+ * never reach Accounting.
+ */
+export function itemChangedIdempotencyKey(itemCode: string, sequence: number | string): string {
+  return `item-changed:${itemCode}:${sequence}`;
+}
+
+/** `vendor-changed:{vendor_id}:{sequence}` — repeatable per vendor, for the same reason. */
+export function vendorChangedIdempotencyKey(
+  vendorId: number | string,
+  sequence: number | string
+): string {
+  return `vendor-changed:${vendorId}:${sequence}`;
+}
+
+export interface ItemChangedInput {
+  /** The catalogue row's own `.code`, 1–43 chars — the bound `charge.captured` already carries. */
+  readonly item_code: string;
+  readonly name: string;
+}
+
+export interface VendorChangedInput {
+  readonly vendor_id: number | string;
+  readonly name: string;
+}
+
+/**
+ * `item.changed` — the catalogue label Accounting caches so a purchase-order line can be picked
+ * rather than typed (ADR-0052). Overwrite: a per-code sequence, stale-discarded at the receiver.
+ *
+ * Carries the code and the name and nothing else. No price (that is the tariff's job), no numeric
+ * catalogue id (Accounting never sees one), no stock figures.
+ */
+export function buildItemChangedEvent(
+  input: ItemChangedInput,
+  context: BuildContext
+): OutboxEventRow {
+  const itemCode = input.item_code.trim();
+  if (itemCode === '' || itemCode.length > 43) {
+    throw new EventBuildError(
+      `item_code must be 1-43 characters, got length ${itemCode.length}. Accounting bounds it so ` +
+        '`item:<type>:<code>` fits the 64-char tariff key.'
+    );
+  }
+
+  const name = input.name.trim();
+  if (name === '' || name.length > 256) {
+    throw new EventBuildError(`item.changed name must be 1-256 characters, got ${name.length}.`);
+  }
+
+  const aggregateId = itemAggregateId(itemCode);
+  const occurredAt = context.occurredAt ?? new Date();
+  const sentAt = context.sentAt ?? new Date();
+  const eventVersion = context.eventVersion ?? 1;
+  const idempotencyKey = itemChangedIdempotencyKey(itemCode, context.sequence);
+
+  const body: Record<string, unknown> = { item_code: itemCode, name };
+  assertNoDemographics(body, 'item.changed');
+
+  return {
+    aggregate_type: 'item',
+    aggregate_id: aggregateId,
+    sequence: context.sequence,
+    event_type: 'item.changed',
+    event_version: eventVersion,
+    idempotency_key: idempotencyKey,
+    payload: {
+      event_id: uuidV7(context.now),
+      event_type: 'item.changed',
+      event_version: eventVersion,
+      tenant_key: context.tenantKey,
+      occurred_at: occurredAt.toISOString(),
+      sent_at: sentAt.toISOString(),
+      aggregate: { type: 'item', id: aggregateId },
+      sequence: Number(context.sequence),
+      idempotency_key: idempotencyKey,
+      body,
+    },
+  };
+}
+
+/**
+ * `vendor.changed` — the supplier label Accounting caches (ADR-0051).
+ *
+ * Only the NAME crosses. `Vendor` also holds phone, address and email — all in `DEMOGRAPHIC_KEYS` —
+ * and the frozen body omits them deliberately: Accounting owns vendor terms (ADR-0044 D1) and has
+ * no use for contact details it would then have to protect.
+ */
+export function buildVendorChangedEvent(
+  input: VendorChangedInput,
+  context: BuildContext
+): OutboxEventRow {
+  const vendorId = Number(input.vendor_id);
+  if (!Number.isInteger(vendorId) || vendorId <= 0) {
+    throw new EventBuildError(
+      `vendor_id must be a positive integer, got "${String(input.vendor_id)}".`
+    );
+  }
+
+  const name = input.name.trim();
+  if (name === '' || name.length > 256) {
+    throw new EventBuildError(`vendor.changed name must be 1-256 characters, got ${name.length}.`);
+  }
+
+  const aggregateId = vendorAggregateId(vendorId);
+  const occurredAt = context.occurredAt ?? new Date();
+  const sentAt = context.sentAt ?? new Date();
+  const eventVersion = context.eventVersion ?? 1;
+  const idempotencyKey = vendorChangedIdempotencyKey(vendorId, context.sequence);
+
+  const body: Record<string, unknown> = { vendor_id: vendorId, name };
+  assertNoDemographics(body, 'vendor.changed');
+
+  return {
+    aggregate_type: 'vendor',
+    aggregate_id: aggregateId,
+    sequence: context.sequence,
+    event_type: 'vendor.changed',
+    event_version: eventVersion,
+    idempotency_key: idempotencyKey,
+    payload: {
+      event_id: uuidV7(context.now),
+      event_type: 'vendor.changed',
+      event_version: eventVersion,
+      tenant_key: context.tenantKey,
+      occurred_at: occurredAt.toISOString(),
+      sent_at: sentAt.toISOString(),
+      aggregate: { type: 'vendor', id: aggregateId },
+      sequence: Number(context.sequence),
+      idempotency_key: idempotencyKey,
+      body,
+    },
+  };
 }
 
 /** `patient-demographics:{patient_id}:{sequence}` — deterministic per emission (ADR-0025 §3). */

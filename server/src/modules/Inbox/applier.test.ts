@@ -1,8 +1,13 @@
 import '../../core/config/env';
 import { QueryTypes } from 'sequelize';
 import { sequelizeConnection } from '../../database/config/data-source';
-import { PaymentStatus } from '../../database/enums';
+import { DrugForm, PaymentStatus } from '../../database/enums';
+import { Drug } from '../../database/models/drug';
 import { InboxSequence } from '../../database/models/inboxSequence';
+import { OutboxEvent } from '../../database/models/outboxEvent';
+import { OutboxSequence } from '../../database/models/outboxSequence';
+import { Vendor } from '../../database/models/vendor';
+import { createTestStaff } from '../Orders/__fixtures__/order-fixtures';
 import { applyInstruction } from './applier';
 import { isReleased } from './gate';
 
@@ -273,6 +278,99 @@ describe('applier + gate (B2.2 / B2.3)', () => {
       const decision = await isReleased('drug', 424242);
       expect(decision.released).toBe(false);
       expect(decision.status).toBeNull();
+    });
+  });
+
+  /**
+   * The reverse-outbox resyncs for the two label channels (Accounting ADR-0052 D2, ADR-0051 D2).
+   *
+   * These assert the EMITTED ROW, not just the outcome: the point of a resync is that a label
+   * actually reaches the wire, so an APPLIED outcome over an empty outbox would be a green test for
+   * a broken remedy.
+   */
+  describe('label resyncs put the requested label back on the wire', () => {
+    const ITEM_CODE = 'RESYNC-AMOX-500';
+    let staffId: number;
+    let vendorId: number;
+
+    beforeEach(async () => {
+      await OutboxEvent.destroy({ where: {}, truncate: true, force: true });
+      await OutboxSequence.destroy({ where: {}, truncate: true, force: true });
+      await Drug.destroy({ where: { code: ITEM_CODE }, force: true });
+      await Vendor.destroy({ where: { name: 'Resync Pharma Ltd' }, force: true });
+
+      const staff = await createTestStaff();
+      staffId = staff.id;
+
+      await Drug.create({
+        name: 'Amoxicillin 500 mg capsules',
+        code: ITEM_CODE,
+        type: DrugForm.DRUG,
+        staff_id: staffId,
+      } as never);
+
+      const vendor = await Vendor.create({
+        name: 'Resync Pharma Ltd',
+        staff_id: staffId,
+      } as never);
+      vendorId = vendor.id;
+    });
+
+    afterEach(async () => {
+      await Drug.destroy({ where: { code: ITEM_CODE }, force: true });
+      await Vendor.destroy({ where: { name: 'Resync Pharma Ltd' }, force: true });
+      await OutboxEvent.destroy({ where: {}, truncate: true, force: true });
+      await OutboxSequence.destroy({ where: {}, truncate: true, force: true });
+    });
+
+    it('item.requested emits item.changed carrying the code and the name', async () => {
+      const result = await sequelizeConnection.transaction(t =>
+        applyInstruction('item.requested', `item:${ITEM_CODE}`, 1, { item_code: ITEM_CODE }, t)
+      );
+
+      expect(result.outcome).toBe('APPLIED');
+
+      const event = await OutboxEvent.findOne({ where: { event_type: 'item.changed' } });
+      expect(event).not.toBeNull();
+      expect(event.aggregate_id).toBe(`item:${ITEM_CODE}`);
+      expect(event.payload.body).toEqual({
+        item_code: ITEM_CODE,
+        name: 'Amoxicillin 500 mg capsules',
+      });
+    });
+
+    it('vendor.requested emits vendor.changed carrying the id and the name', async () => {
+      const result = await sequelizeConnection.transaction(t =>
+        applyInstruction('vendor.requested', `vendor:${vendorId}`, 1, { vendor_id: vendorId }, t)
+      );
+
+      expect(result.outcome).toBe('APPLIED');
+
+      const event = await OutboxEvent.findOne({ where: { event_type: 'vendor.changed' } });
+      expect(event).not.toBeNull();
+      expect(event.payload.body).toEqual({ vendor_id: vendorId, name: 'Resync Pharma Ltd' });
+    });
+
+    /**
+     * An unsatisfiable resync is UNHANDLED, never a throw: it must not poison the reverse inbox for
+     * the payment instructions queued behind it.
+     */
+    it('a code no drug carries is UNHANDLED, and emits nothing', async () => {
+      const result = await sequelizeConnection.transaction(t =>
+        applyInstruction('item.requested', 'item:NO-SUCH-CODE', 1, { item_code: 'NO-SUCH-CODE' }, t)
+      );
+
+      expect(result.outcome).toBe('UNHANDLED');
+      expect(await OutboxEvent.count()).toBe(0);
+    });
+
+    it('an absent vendor id is UNHANDLED, and emits nothing', async () => {
+      const result = await sequelizeConnection.transaction(t =>
+        applyInstruction('vendor.requested', 'vendor:424242', 1, { vendor_id: 424242 }, t)
+      );
+
+      expect(result.outcome).toBe('UNHANDLED');
+      expect(await OutboxEvent.count()).toBe(0);
     });
   });
 });
