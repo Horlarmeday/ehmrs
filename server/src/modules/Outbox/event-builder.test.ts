@@ -1,4 +1,5 @@
 import {
+  DEMOGRAPHIC_EVENT_TYPES,
   EventBuildError,
   buildChargeCapturedEvent,
   buildEncounterOpenedEvent,
@@ -364,9 +365,25 @@ describe('the demographic assertion stays scoped, not deleted', () => {
     }
   });
 
-  it('exempts ONLY patient.demographics.changed — the list is one entry long', () => {
-    // A second entry here would be a policy change, not a refactor. Pinning the length makes
-    // widening the exemption a deliberate, reviewable edit rather than a quiet one.
+  /**
+   * Adding an entry is a policy change, not a refactor: a type listed here may carry a `name`, so
+   * each needs a reason its subject is not a person. Asserting the exact list makes widening it a
+   * deliberate, reviewable edit rather than a quiet one.
+   *
+   * This assertion used to live only in this test's NAME and comment — the constant was unexported,
+   * so nothing checked it, and the two label channels were added underneath a green test. Hence the
+   * real pin.
+   */
+  it('exempts exactly three types, each for a non-person reason', () => {
+    expect(DEMOGRAPHIC_EVENT_TYPES).toEqual([
+      // ADR-0016 tier 1: the one event permitted to carry patient demographics.
+      'patient.demographics.changed',
+      // ADR-0052 D3 / ADR-0051 D3: a drug and a company are not data subjects, but `name` is a
+      // DEMOGRAPHIC_KEYS member, so without the exemption these would throw on every emission.
+      'item.changed',
+      'vendor.changed',
+    ]);
+
     const demographicEvent = buildPatientDemographicsChangedEvent(
       { patient_id: 100, first_name: 'Chinelo', phone: '+2348012345678' },
       context

@@ -10,7 +10,11 @@ import { Drug } from '../../database/models/drug';
 import { PharmacyStore } from '../../database/models/pharmacyStore';
 import { PharmacyStoreHistory } from '../../database/models/pharmacyStoreHistory';
 import { isPrescribedLineType, PrescribedLineType } from '../Outbox/prescribed-line-types';
-import { emitPatientDemographicsChanged } from '../Outbox/outbox-writer';
+import {
+  emitItemChanged,
+  emitPatientDemographicsChanged,
+  emitVendorChanged,
+} from '../Outbox/outbox-writer';
 
 /**
  * Applies a verified reverse instruction to the EMR's OWN rows (ADR-0023, ADR-0025 §6b).
@@ -131,6 +135,14 @@ export async function applyInstruction(
     return applyStockReceived(body, transaction);
   }
 
+  if (eventType === 'item.requested') {
+    return applyItemRequest(body, transaction);
+  }
+
+  if (eventType === 'vendor.requested') {
+    return applyVendorRequest(body, transaction);
+  }
+
   const nextStatus = statusFor(eventType);
   if (nextStatus === undefined) {
     // A valid reverse event whose handling has not landed. Not a failure and not applied —
@@ -168,16 +180,50 @@ export async function applyInstruction(
 }
 
 /**
- * `patient.demographics.requested` — an OPERATOR asked Accounting to refresh one patient's cached
- * demographics, and Accounting relayed the request here (Accounting #43).
+ * `item.requested` — Accounting's cache missed a catalogue code and is asking for its label
+ * (ADR-0052 D2).
  *
- * Deliberately NOT sequence-guarded: a resync is a request to send current state, not a state
- * change, so there is nothing to be stale against. Discarding one as "old" would defeat the whole
- * point — it is the manual remedy when an earlier event was lost.
- *
- * A missing or unparseable patient id is UNHANDLED rather than an error: a resync that cannot be
- * satisfied must never poison the reverse inbox for the payment instructions behind it.
+ * Like the demographic resync below, this sits BEFORE the sequence claim: a resync carries no state
+ * to be stale against, and discarding one as "old" would defeat the remedy it exists to be. A code
+ * no drug carries is UNHANDLED rather than an error — an unsatisfiable resync must never poison the
+ * reverse inbox for the instructions queued behind it.
  */
+async function applyItemRequest(
+  body: Record<string, unknown>,
+  transaction: Transaction
+): Promise<ApplyResult> {
+  const raw = body.item_code;
+  if (typeof raw !== 'string' || raw.trim() === '') {
+    return { outcome: 'UNHANDLED' };
+  }
+
+  const drug = await Drug.findOne({
+    where: { code: raw.trim() },
+    attributes: ['id'],
+    transaction,
+  });
+  if (drug === null) {
+    return { outcome: 'UNHANDLED' };
+  }
+
+  const emitted = await emitItemChanged(drug.id, transaction);
+  return emitted === undefined ? { outcome: 'UNHANDLED' } : { outcome: 'APPLIED' };
+}
+
+/** `vendor.requested` — the same remedy for a supplier label (ADR-0051 D2). */
+async function applyVendorRequest(
+  body: Record<string, unknown>,
+  transaction: Transaction
+): Promise<ApplyResult> {
+  const raw = body.vendor_id;
+  if (typeof raw !== 'string' && typeof raw !== 'number') {
+    return { outcome: 'UNHANDLED' };
+  }
+
+  const emitted = await emitVendorChanged(raw, transaction);
+  return emitted === undefined ? { outcome: 'UNHANDLED' } : { outcome: 'APPLIED' };
+}
+
 async function applyDemographicsRequest(
   body: Record<string, unknown>,
   transaction: Transaction

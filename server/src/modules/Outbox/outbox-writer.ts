@@ -13,6 +13,7 @@ import { Drug } from '../../database/models/drug';
 import { Test } from '../../database/models/test';
 import { Investigation } from '../../database/models/investigation';
 import { Service } from '../../database/models/service';
+import { Vendor } from '../../database/models/vendor';
 import { Visit } from '../../database/models/visit';
 import { VisitCategory } from '../../database/enums';
 import dayjs from 'dayjs';
@@ -25,9 +26,13 @@ import {
   buildEncounterClosedEvent,
   buildEncounterOpenedEvent,
   buildEncounterWardAssignedEvent,
+  buildItemChangedEvent,
   buildPatientDemographicsChangedEvent,
   buildStockReturnedEvent,
+  buildVendorChangedEvent,
+  itemAggregateId,
   patientAggregateId,
+  vendorAggregateId,
   visitAggregateId,
   PrescribedLineInput,
   ChargeReturnedInput,
@@ -94,6 +99,8 @@ export const PERMITTED_EVENT_TYPES = new Set([
   'encounter.closed',
   'encounter.ward.assigned',
   'patient.demographics.changed',
+  'item.changed',
+  'vendor.changed',
 ]);
 
 async function persistOutboxEvent(
@@ -554,6 +561,76 @@ export async function emitPatientDemographicsChanged(
 
   return persistOutboxEvent(event, transaction);
 }
+/**
+ * Emits `item.changed` for one drug, on the caller's transaction (Accounting ADR-0052).
+ *
+ * Feeds the `item_label` cache the purchase-order picker reads, so a store officer selects an item
+ * instead of keying its code. Returns undefined when the outbox is disabled, the drug no longer
+ * exists, or it carries no code — a catalogue write must never roll back because a label could not
+ * be emitted.
+ */
+export async function emitItemChanged(
+  drugId: number | string,
+  transaction: Transaction
+): Promise<OutboxEvent | undefined> {
+  if (!isOutboxEnabled()) {
+    return undefined;
+  }
+
+  const drug = await Drug.findOne({
+    where: { id: drugId },
+    attributes: ['id', 'name', 'code'],
+    transaction,
+  });
+  if (!drug || !drug.code || !drug.name) {
+    return undefined;
+  }
+
+  const aggregateId = itemAggregateId(drug.code);
+  const sequence = await claimSequence(aggregateId, transaction);
+
+  const event = buildItemChangedEvent(
+    { item_code: drug.code, name: drug.name },
+    { tenantKey: TENANT_KEY, sequence }
+  );
+
+  return persistOutboxEvent(event, transaction);
+}
+
+/**
+ * Emits `vendor.changed` for one supplier, on the caller's transaction (Accounting ADR-0051).
+ *
+ * Only the name crosses: Accounting owns vendor TERMS (ADR-0044 D1) and the id remains the
+ * reference on every transaction row it holds.
+ */
+export async function emitVendorChanged(
+  vendorId: number | string,
+  transaction: Transaction
+): Promise<OutboxEvent | undefined> {
+  if (!isOutboxEnabled()) {
+    return undefined;
+  }
+
+  const vendor = await Vendor.findOne({
+    where: { id: vendorId },
+    attributes: ['id', 'name'],
+    transaction,
+  });
+  if (!vendor || !vendor.name) {
+    return undefined;
+  }
+
+  const aggregateId = vendorAggregateId(vendor.id);
+  const sequence = await claimSequence(aggregateId, transaction);
+
+  const event = buildVendorChangedEvent(
+    { vendor_id: vendor.id, name: vendor.name },
+    { tenantKey: TENANT_KEY, sequence }
+  );
+
+  return persistOutboxEvent(event, transaction);
+}
+
 function toIsoDate(value: unknown): string | null {
   if (value === null || value === undefined) {
     return null;
