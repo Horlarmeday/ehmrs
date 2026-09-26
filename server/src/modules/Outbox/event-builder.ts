@@ -108,6 +108,19 @@ export function vendorAggregateId(vendorId: number | string): string {
   return `vendor:${vendorId}`;
 }
 
+/**
+ * The aggregate id for a store-row label (Accounting #81).
+ *
+ * Keyed `(item_code, drug_type)` — EXACTLY the key Accounting's store-row cache slots on — not the
+ * `Pharmacy_Store_Items.id`: the row id means nothing to Accounting, and a row can be deactivated
+ * and a fresh one created for the same pair without the cache slot changing. `claimSequence` takes
+ * an opaque string, so the new namespace needs no schema change, and it deliberately does NOT share
+ * the `store:{inventory_id}` counter `stock.returned` uses.
+ */
+export function storeRowAggregateId(itemCode: string, drugType: string): string {
+  return `store-row:${itemCode}:${drugType}`;
+}
+
 /** The aggregate id for a payer-scheme label (Accounting #82, ADR-0067). */
 export function insuranceAggregateId(insuranceId: number | string): string {
   return `insurance:${insuranceId}`;
@@ -743,6 +756,132 @@ export function isItemCatalogueLineType(value: unknown): value is ItemCatalogueL
 export interface VendorChangedInput {
   readonly vendor_id: number | string;
   readonly name: string;
+}
+
+/**
+ * The payer classes a store row (and a `stock.received` receipt) may name. Wider than the
+ * `PharmacyDrugType` enum was before #304 added `Plaschema`: production holds a Plaschema store
+ * row and a Plaschema dispensary, and each class is a physically separate bin. The `stock.received`
+ * applier validates its `drug_type` against the SAME set, so the two directions cannot drift.
+ */
+export const STORE_ROW_DRUG_TYPES = ['Cash', 'NHIS', 'Private', 'Retainership', 'Plaschema'];
+
+export function isStoreRowDrugType(value: unknown): value is string {
+  return typeof value === 'string' && STORE_ROW_DRUG_TYPES.includes(value);
+}
+
+/**
+ * `store-row-changed:{item_code}:{drug_type}:{sequence}` — the sequence is part of the key because
+ * ONE cache slot emits repeatedly (create, reprice, deactivate, resync). `outbox_events
+ * .idempotency_key` is UNIQUE, so a key constant per slot would let only the first emission through.
+ */
+export function storeRowChangedIdempotencyKey(
+  itemCode: string,
+  drugType: string,
+  sequence: number | string
+): string {
+  return `store-row-changed:${itemCode}:${drugType}:${sequence}`;
+}
+
+export interface StoreRowChangedInput {
+  /** The catalogue code — the same string Accounting keys its cache and its PO lines on. */
+  readonly item_code: string;
+  readonly drug_type: string;
+  /** False for a row that does not exist or is INACTIVE: an increment target it is not. */
+  readonly row_exists: boolean;
+  /**
+   * Integer kobo as a STRING, or null for an existing-but-unpriced row. Null when `row_exists` is
+   * false — an absent row carries no price.
+   */
+  readonly selling_price_kobo: string | null;
+}
+
+/**
+ * `store.row.changed` — the store-row state Accounting's goods-receipt form caches (#81): whether
+ * a `(drug, class)` bin exists and what it dispenses at, so the receipt screen can say "this will
+ * CREATE a row" or pre-fill the price for a reorder. Overwrite: a per-slot sequence, stale-discarded
+ * at the receiver.
+ *
+ * The body carries a code, a class, a boolean and a price — no names, so it needs no demographic
+ * exemption. The `selling_price` column is the ONE price that governs every class: the
+ * `nhis_selling_price`/`private_selling_price` request fields are per-class only in the HTTP body
+ * and land in that single column (`store.repository.ts` create paths).
+ */
+export function buildStoreRowChangedEvent(
+  input: StoreRowChangedInput,
+  context: BuildContext
+): OutboxEventRow {
+  const itemCode = input.item_code.trim();
+  if (itemCode === '' || itemCode.length > 43) {
+    throw new EventBuildError(
+      `store.row.changed item_code must be 1-43 characters, got length ${itemCode.length}.`
+    );
+  }
+
+  if (!isStoreRowDrugType(input.drug_type)) {
+    throw new EventBuildError(
+      `store.row.changed drug_type must be one of ${STORE_ROW_DRUG_TYPES.join(', ')}, got ` +
+        `"${String(input.drug_type)}".`
+    );
+  }
+
+  if (typeof input.row_exists !== 'boolean') {
+    throw new EventBuildError('store.row.changed row_exists must be a boolean.');
+  }
+
+  if (!input.row_exists) {
+    if (input.selling_price_kobo !== null) {
+      throw new EventBuildError(
+        'store.row.changed carries a price for a row_exists=false body; an absent row carries ' +
+          'no price.'
+      );
+    }
+  } else if (
+    input.selling_price_kobo === null ||
+    (typeof input.selling_price_kobo === 'string' && /^\d+$/.test(input.selling_price_kobo))
+  ) {
+    // null (unpriced) and a string of integer digits are both valid for an existing row.
+  } else {
+    throw new EventBuildError(
+      `store.row.changed selling_price_kobo must be a string of integer kobo or null, got ` +
+        `"${String(input.selling_price_kobo)}".`
+    );
+  }
+
+  const aggregateId = storeRowAggregateId(itemCode, input.drug_type);
+  const occurredAt = context.occurredAt ?? new Date();
+  const sentAt = context.sentAt ?? new Date();
+  const eventVersion = context.eventVersion ?? 1;
+  const idempotencyKey = storeRowChangedIdempotencyKey(itemCode, input.drug_type, context.sequence);
+
+  const body: Record<string, unknown> = {
+    item_code: itemCode,
+    drug_type: input.drug_type,
+    row_exists: input.row_exists,
+    selling_price_kobo: input.selling_price_kobo,
+  };
+  assertNoDemographics(body, 'store.row.changed');
+
+  return {
+    aggregate_type: 'store_row',
+    aggregate_id: aggregateId,
+    sequence: context.sequence,
+    event_type: 'store.row.changed',
+    event_version: eventVersion,
+    idempotency_key: idempotencyKey,
+    payload: {
+      event_id: uuidV7(context.now),
+      event_type: 'store.row.changed',
+      event_version: eventVersion,
+      tenant_key: context.tenantKey,
+      occurred_at: occurredAt.toISOString(),
+      sent_at: sentAt.toISOString(),
+      aggregate: { type: 'store_row', id: aggregateId },
+      sequence: Number(context.sequence),
+      idempotency_key: idempotencyKey,
+      body,
+    },
+  };
 }
 
 /**

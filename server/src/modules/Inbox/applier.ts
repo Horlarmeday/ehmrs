@@ -16,13 +16,19 @@ import { Investigation } from '../../database/models/investigation';
 import { PharmacyStore } from '../../database/models/pharmacyStore';
 import { PharmacyStoreHistory } from '../../database/models/pharmacyStoreHistory';
 import { isPrescribedLineType, PrescribedLineType } from '../Outbox/prescribed-line-types';
-import { ITEM_CATALOGUE_LINE_TYPES, ItemCatalogueLineType } from '../Outbox/event-builder';
+import {
+  ITEM_CATALOGUE_LINE_TYPES,
+  ItemCatalogueLineType,
+  STORE_ROW_DRUG_TYPES,
+  isStoreRowDrugType,
+} from '../Outbox/event-builder';
 import {
   emitHmoChanged,
   emitInsuranceChanged,
   emitItemChanged,
   emitItemChangedForKind,
   emitPatientDemographicsChanged,
+  emitStoreRowChangedForDrug,
   emitVendorChanged,
 } from '../Outbox/outbox-writer';
 
@@ -153,6 +159,10 @@ export async function applyInstruction(
     return applyVendorRequest(body, transaction);
   }
 
+  if (eventType === 'store.row.requested') {
+    return applyStoreRowRequest(body, transaction);
+  }
+
   if (eventType === 'catalogue.requested' || eventType === 'payer.requested') {
     return applyCatalogueRequest(eventType, body, transaction);
   }
@@ -235,6 +245,41 @@ async function applyVendorRequest(
   }
 
   const emitted = await emitVendorChanged(raw, transaction);
+  return emitted === undefined ? { outcome: 'UNHANDLED' } : { outcome: 'APPLIED' };
+}
+
+/**
+ * `store.row.requested` — the same remedy for Accounting's store-row cache (#81): a cache miss on
+ * `(item_code, drug_type)` asks whether the EMR holds that bin and what it dispenses at.
+ *
+ * Like the label resyncs above this sits BEFORE the sequence claim: a resync carries no state to be
+ * stale against. Unsatisfiable — a code no drug carries, a class outside the vocabulary, a
+ * malformed body — is UNHANDLED rather than an error, so it cannot poison the reverse inbox for the
+ * `stock.received` instructions queued behind it. An EXISTING drug with no bin still answers:
+ * `row_exists: false` is an answer, not a silence.
+ */
+async function applyStoreRowRequest(
+  body: Record<string, unknown>,
+  transaction: Transaction
+): Promise<ApplyResult> {
+  const rawCode = body.item_code;
+  if (typeof rawCode !== 'string' || rawCode.trim() === '') {
+    return { outcome: 'UNHANDLED' };
+  }
+  if (!isStoreRowDrugType(body.drug_type)) {
+    return { outcome: 'UNHANDLED' };
+  }
+
+  const drug = await Drug.findOne({
+    where: { code: rawCode.trim() },
+    attributes: ['id'],
+    transaction,
+  });
+  if (drug === null) {
+    return { outcome: 'UNHANDLED' };
+  }
+
+  const emitted = await emitStoreRowChangedForDrug(drug.id, body.drug_type, transaction);
   return emitted === undefined ? { outcome: 'UNHANDLED' } : { outcome: 'APPLIED' };
 }
 
@@ -370,11 +415,10 @@ async function applyDemographicsRequest(
  * swallowed. The reverse — the EMR quietly forgetting a batch id — is the gap #297 closed.
  */
 /**
- * The payer classes a receipt may name. Wider than the `PharmacyDrugType` enum, which omits
- * `Plaschema` — production holds a Plaschema store row and a Plaschema dispensary, so refusing that
- * class here would dead-letter a legitimate receipt on a gap in our own enum.
+ * The payer classes a receipt may name, shared with the `store.row.changed` channel so the two
+ * directions cannot drift (#81).
  */
-const RECEIVABLE_DRUG_TYPES = ['Cash', 'NHIS', 'Private', 'Retainership', 'Plaschema'];
+const RECEIVABLE_DRUG_TYPES = STORE_ROW_DRUG_TYPES;
 
 async function applyStockReceived(
   body: Record<string, unknown>,
@@ -563,6 +607,12 @@ async function applyStockReceived(
       { transaction }
     );
 
+    // #81: this receipt may have REPRICED the bin (`selling_price_kobo` is written when carried).
+    // The cache must hear the new price, or its next reorder would pre-fill a stale one.
+    if (sellingPrice !== null) {
+      await emitStoreRowChangedForDrug(drug.id, drugType, transaction, bin.id);
+    }
+
     return { outcome: 'APPLIED' };
   }
 
@@ -643,6 +693,10 @@ async function applyStockReceived(
     },
     { transaction }
   );
+
+  // #81: Accounting just caused this row to EXIST. Without the event its cache keeps answering
+  // "create" for a row it itself created, forever.
+  await emitStoreRowChangedForDrug(drug.id, drugType, transaction, created.id);
 
   return { outcome: 'APPLIED' };
 }

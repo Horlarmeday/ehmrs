@@ -18,7 +18,7 @@ import {
 } from '../../database/models';
 import { PharmacyDrugType, LogType, HistoryType } from '../../database/enums';
 import { sequelizeConnection } from '../../database/config/data-source';
-import { emitVendorChanged } from '../Outbox/outbox-writer';
+import { emitStoreRowChangedForDrug, emitVendorChanged } from '../Outbox/outbox-writer';
 import { ItemsToReorder } from './types/pharmacy-item.types';
 import { BadException } from '../../common/util/api-error';
 import { ItemsToDispensedBody } from '../Inventory/types/inventory-item.types';
@@ -133,6 +133,10 @@ async function createStoreItem(data, drug_type: PharmacyDrugType, selling_price)
       },
       { transaction: t }
     );
+
+    // #81: the row and its cache label commit together — a half-applied pair leaves Accounting
+    // answering "create" for a bin the EMR already holds.
+    await emitStoreRowChangedForDrug(drug_id, drug_type, t, item.id);
 
     return item;
   });
@@ -544,6 +548,21 @@ export const updatePharmacyStoreItems = async (
           { transaction: t }
         );
 
+        // #81: emit only when the write actually CHANGED what the cache holds — the row's
+        // existence (status) or its dispensing price. The screen posts the full row back, so
+        // key presence alone proves nothing; the values must differ.
+        const sameAmount = (a: unknown, b: unknown) => {
+          const left = a === undefined ? null : a;
+          const right = b === undefined ? null : b;
+          return left === null || right === null ? left === right : Number(left) === Number(right);
+        };
+        const priceChanged =
+          'selling_price' in rest && !sameAmount(rest.selling_price, item.selling_price);
+        const statusChanged = 'status' in rest && rest.status !== item.status;
+        if (priceChanged || statusChanged) {
+          await emitStoreRowChangedForDrug(item.drug_id, item.drug_type, t, field.id);
+        }
+
         const inventoryItemToUpdate = {
           selling_price: field.selling_price,
           acquired_price: field.total_price,
@@ -719,6 +738,12 @@ export const reorderPharmacyItems = async (items: ItemsToReorder[], staff_id: nu
           },
           { transaction: t }
         );
+
+        // #81: a reorder carries the price in its payload (`...item` is spread onto the bin), so
+        // it can REPRICE the row — quantity alone never triggers an emission.
+        if (item.selling_price !== null && item.selling_price !== undefined) {
+          await emitStoreRowChangedForDrug(storeItem.drug_id, storeItem.drug_type, t, item.id);
+        }
       });
     }
   } catch (e) {
