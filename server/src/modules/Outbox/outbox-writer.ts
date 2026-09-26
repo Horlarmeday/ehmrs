@@ -697,7 +697,11 @@ export async function emitVendorChanged(
  *
  * An INACTIVE row answers `row_exists: false`: the applier and the reorder screen only ever touch
  * ACTIVE bins, so offering one to Accounting as an increment target would file receipts into a
- * retired row. A codeless drug is SKIPPED (undefined) — it cannot be keyed, and an empty
+ * retired row. The no-id lookup resolves the slot to the NEWEST ACTIVE bin — production holds
+ * duplicate `(drug, drug_type)` pairs (C3c), and an INACTIVE newest row must not mask an ACTIVE
+ * sibling, or Accounting would offer "CREATE" for a pair the EMR already stocks.
+ *
+ * A codeless drug is SKIPPED (undefined) — it cannot be keyed, and an empty
  * `item_code` would dead-letter at Accounting as malformed (ADR-0040's silent-skip class).
  *
  * Returns undefined when the outbox is disabled, the drug or its code is missing, or the drug_type
@@ -732,7 +736,7 @@ export async function emitStoreRowChangedForDrug(
     row = await PharmacyStore.unscoped().findByPk(pharmacyStoreId, { transaction });
   } else {
     row = await PharmacyStore.unscoped().findOne({
-      where: { drug_id: drugId, drug_type: drugType } as never,
+      where: { drug_id: drugId, drug_type: drugType, status: Status.ACTIVE } as never,
       order: [['createdAt', 'DESC']],
       transaction,
     });

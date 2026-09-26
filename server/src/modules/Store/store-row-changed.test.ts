@@ -2,7 +2,7 @@ import '../../core/config/env';
 import '../../database/config/data-source';
 import { sequelizeConnection } from '../../database/config/data-source';
 import { Drug, PharmacyStore, PharmacyStoreHistory, Staff, Unit } from '../../database/models';
-import { DrugForm, Status } from '../../database/enums';
+import { DrugForm, PharmacyDrugType, Status } from '../../database/enums';
 import { OutboxEvent } from '../../database/models/outboxEvent';
 import { OutboxSequence } from '../../database/models/outboxSequence';
 import {
@@ -241,6 +241,40 @@ describe('store.row.changed emissions from the EMR store flows (#81)', () => {
 
     const row = await PharmacyStore.unscoped().findByPk(item.id);
     expect(row.status).toBe(Status.INACTIVE);
+  });
+
+  it('deactivating one of two duplicate bins answers for the sibling, not the slot', async () => {
+    const item = await createCashItem(receipt({ selling_price: 450 }));
+    const duplicate = await PharmacyStore.create({
+      drug_id,
+      drug_type: PharmacyDrugType.CASH,
+      product_code: '',
+      quantity_received: 10,
+      quantity_remaining: 10,
+      unit_id,
+      unit_price: 300,
+      selling_price: 525,
+      total_price: 3000,
+      drug_form: DrugForm.DRUG,
+      status: Status.ACTIVE,
+      staff_id,
+      date_received: new Date(),
+    });
+    await OutboxEvent.destroy({ where: {}, truncate: true, force: true });
+
+    await StoreService.deactivatePharmacyStoreItems([item.id]);
+
+    const events = await storeEvents();
+    expect(events).toHaveLength(1);
+    expect(events[0].payload.body).toEqual({
+      item_code: drug_code,
+      drug_type: 'Cash',
+      row_exists: true,
+      selling_price_kobo: '52500',
+    });
+
+    await PharmacyStoreHistory.destroy({ where: { pharmacy_store_id: item.id } });
+    await PharmacyStore.unscoped().destroy({ where: { id: [item.id, duplicate.id] } });
   });
 
   it('a codeless drug is skipped: the write commits, no event is emitted', async () => {

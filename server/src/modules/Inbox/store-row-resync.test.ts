@@ -201,6 +201,67 @@ describe('store.row.requested and stock.received emissions (#81)', () => {
       await PharmacyStore.unscoped().destroy({ where: { id: bin.id } });
     });
 
+    it('resolves the slot to the newest ACTIVE bin when a newer INACTIVE bin shadows an older ACTIVE one', async () => {
+      const older = await PharmacyStore.create({
+        drug_id,
+        drug_type: PharmacyDrugType.RETAINERSHIP,
+        product_code: '',
+        quantity_received: 20,
+        quantity_remaining: 20,
+        unit_id,
+        unit_price: 300,
+        selling_price: 700,
+        total_price: 6000,
+        drug_form: DrugForm.DRUG,
+        status: Status.ACTIVE,
+        staff_id,
+        date_received: new Date(),
+      });
+      await PharmacyStoreHistory.create({
+        pharmacy_store_id: older.id,
+        quantity_supplied: 20,
+        quantity_remaining: 20,
+        unit_id,
+        item_receiver: staff_id,
+        history_date: Date.now(),
+        history_type: HistoryType.SUPPLIED,
+        external_batch_id: `rsq-shadow-${suffix}`,
+      });
+      const newer = await PharmacyStore.create({
+        drug_id,
+        drug_type: PharmacyDrugType.RETAINERSHIP,
+        product_code: '',
+        quantity_received: 0,
+        quantity_remaining: 0,
+        unit_id,
+        unit_price: 300,
+        selling_price: 900,
+        total_price: 0,
+        drug_form: DrugForm.DRUG,
+        status: Status.INACTIVE,
+        staff_id,
+        date_received: new Date(),
+      });
+
+      const result = await apply('store.row.requested', {
+        item_code: drug_code,
+        drug_type: 'Retainership',
+      });
+
+      expect(result.outcome).toBe('APPLIED');
+      expect(await eventBodies()).toEqual([
+        {
+          item_code: drug_code,
+          drug_type: 'Retainership',
+          row_exists: true,
+          selling_price_kobo: '70000',
+        },
+      ]);
+
+      await PharmacyStoreHistory.destroy({ where: { pharmacy_store_id: older.id } });
+      await PharmacyStore.unscoped().destroy({ where: { id: [older.id, newer.id] } });
+    });
+
     it('is UNHANDLED and emits nothing for a code no drug carries', async () => {
       const result = await apply('store.row.requested', {
         item_code: 'NO-SUCH-CODE',

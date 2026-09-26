@@ -92,6 +92,12 @@ Accounting (ehmrs_accounting#307) caches the EMR's `(drug, drug_type)` store row
 ### Testing evidence
 - `npx tsc --noEmit` clean; eslint clean on touched files (pre-existing warnings only).
 - Full Outbox + Inbox + Store suites: **34 suites / 425 tests, all pass** (real MySQL).
+- Post-review fix round: same suites re-run after the changes below — all pass (`emit-for-rows.test.ts` fails identically with the changes stashed; pre-existing, unrelated).
+
+### Review follow-up (code-review fixes, 2026-09-26)
+1. **Duplicate-bin slot resolution corrected.** The no-id lookup in `emitStoreRowChangedForDrug` picked the newest bin regardless of status, so a newer INACTIVE bin masked an older ACTIVE sibling (answer: `row_exists: false` where an increment target existed). The fallback now scopes to `status: ACTIVE`, resolving the slot to the newest ACTIVE bin. `deactivatePharmacyStoreItems` emits slot-level (no row id), so deactivating one of two duplicate bins answers from the remaining ACTIVE sibling instead of wrongly declaring the whole slot gone. Regression tests added in both `store-row-changed.test.ts` and `store-row-resync.test.ts`.
+2. **Deactivate re-emission gated.** Only rows that were ACTIVE pre-update emit; re-deactivating an already-INACTIVE row no longer produces a duplicate event.
+3. **`sameAmount` normalises `undefined` to `null`** so a payload key with an undefined value no longer counts as a price change.
 
 ### Limitations / future considerations
 - Duplicate-bin rows (12 pairs on production, C3c) resolve to the newest ACTIVE bin on resync; Accounting's own refuse-on-duplicates rule still guards receipts.

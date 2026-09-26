@@ -551,10 +551,11 @@ export const updatePharmacyStoreItems = async (
         // #81: emit only when the write actually CHANGED what the cache holds — the row's
         // existence (status) or its dispensing price. The screen posts the full row back, so
         // key presence alone proves nothing; the values must differ.
-        const sameAmount = (a: unknown, b: unknown) =>
-          a === null || a === undefined || b === null || b === undefined
-            ? a === b
-            : Number(a) === Number(b);
+        const sameAmount = (a: unknown, b: unknown) => {
+          const left = a === undefined ? null : a;
+          const right = b === undefined ? null : b;
+          return left === null || right === null ? left === right : Number(left) === Number(right);
+        };
         const priceChanged =
           'selling_price' in rest && !sameAmount(rest.selling_price, item.selling_price);
         const statusChanged = 'status' in rest && rest.status !== item.status;

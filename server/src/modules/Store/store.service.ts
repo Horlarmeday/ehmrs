@@ -177,17 +177,24 @@ class StoreService {
    */
   static async deactivatePharmacyStoreItems(items: number[]) {
     // #81: deactivation is the closest the store has to a DELETE, and Accounting must hear it —
-    // a row it believes exists would be offered as an increment target. The answer is
-    // `row_exists: false`: an INACTIVE bin is invisible to the applier and the reorder screen.
+    // a row it believes exists would be offered as an increment target. The answer describes the
+    // SLOT, not the deactivated row: the emission resolves to the newest remaining ACTIVE bin, so
+    // deactivating one of two duplicate bins keeps the cache honest about the sibling.
     return sequelizeConnection.transaction(async t => {
+      const before = await PharmacyStore.unscoped().findAll({
+        where: { id: items } as never,
+        transaction: t,
+      });
+      const wasActive = new Set(
+        before.filter(row => row.status === Status.ACTIVE).map(row => row.id)
+      );
       const [affected] = await PharmacyStore.update(
         { status: Status.INACTIVE },
         { where: { id: items }, transaction: t }
       );
-      for (const id of items) {
-        const row = await PharmacyStore.unscoped().findByPk(id, { transaction: t });
-        if (row) {
-          await emitStoreRowChangedForDrug(row.drug_id, row.drug_type, t, id);
+      for (const row of before) {
+        if (wasActive.has(row.id)) {
+          await emitStoreRowChangedForDrug(row.drug_id, row.drug_type, t);
         }
       }
       return [affected];
