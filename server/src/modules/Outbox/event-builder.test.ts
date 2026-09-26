@@ -374,7 +374,7 @@ describe('the demographic assertion stays scoped, not deleted', () => {
    * so nothing checked it, and the two label channels were added underneath a green test. Hence the
    * real pin.
    */
-  it('exempts exactly three types, each for a non-person reason', () => {
+  it('exempts exactly five types, each for a non-person reason', () => {
     expect(DEMOGRAPHIC_EVENT_TYPES).toEqual([
       // ADR-0016 tier 1: the one event permitted to carry patient demographics.
       'patient.demographics.changed',
@@ -382,6 +382,9 @@ describe('the demographic assertion stays scoped, not deleted', () => {
       // DEMOGRAPHIC_KEYS member, so without the exemption these would throw on every emission.
       'item.changed',
       'vendor.changed',
+      // #82 / ADR-0067: an insurance scheme and an HMO are organisations, for the same reason.
+      'insurance.changed',
+      'hmo.changed',
     ]);
 
     const demographicEvent = buildPatientDemographicsChangedEvent(

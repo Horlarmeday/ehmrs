@@ -7,11 +7,21 @@ import { PrescribedTest } from '../../database/models/prescribedTest';
 import { PrescribedAdditionalItem } from '../../database/models/prescribedAdditionalItem';
 import { InboxSequence } from '../../database/models/inboxSequence';
 import { Drug } from '../../database/models/drug';
+import { Insurance } from '../../database/models/insurance';
+import { HMO } from '../../database/models/hmo';
+import { Vendor } from '../../database/models/vendor';
+import { Test } from '../../database/models/test';
+import { Service } from '../../database/models/service';
+import { Investigation } from '../../database/models/investigation';
 import { PharmacyStore } from '../../database/models/pharmacyStore';
 import { PharmacyStoreHistory } from '../../database/models/pharmacyStoreHistory';
 import { isPrescribedLineType, PrescribedLineType } from '../Outbox/prescribed-line-types';
+import { ITEM_CATALOGUE_LINE_TYPES, ItemCatalogueLineType } from '../Outbox/event-builder';
 import {
+  emitHmoChanged,
+  emitInsuranceChanged,
   emitItemChanged,
+  emitItemChangedForKind,
   emitPatientDemographicsChanged,
   emitVendorChanged,
 } from '../Outbox/outbox-writer';
@@ -143,6 +153,10 @@ export async function applyInstruction(
     return applyVendorRequest(body, transaction);
   }
 
+  if (eventType === 'catalogue.requested' || eventType === 'payer.requested') {
+    return applyCatalogueRequest(eventType, body, transaction);
+  }
+
   const nextStatus = statusFor(eventType);
   if (nextStatus === undefined) {
     // A valid reverse event whose handling has not landed. Not a failure and not applied —
@@ -222,6 +236,75 @@ async function applyVendorRequest(
 
   const emitted = await emitVendorChanged(raw, transaction);
   return emitted === undefined ? { outcome: 'UNHANDLED' } : { outcome: 'APPLIED' };
+}
+
+/**
+ * The catalogue tables a full item send reads from, one per `item.changed` line_type (#82).
+ */
+const CATALOGUE_MODEL_BY_KIND: Record<ItemCatalogueLineType, ModelStatic<Model>> = {
+  drug: (Drug as unknown) as ModelStatic<Model>,
+  test: (Test as unknown) as ModelStatic<Model>,
+  service: (Service as unknown) as ModelStatic<Model>,
+  investigation: (Investigation as unknown) as ModelStatic<Model>,
+};
+
+/**
+ * `catalogue.requested` / `payer.requested` — Accounting's cache is cold and asks for a WHOLE list
+ * (#82, ADR-0067): payer → every insurance and HMO, vendor → every supplier, item → every Drug,
+ * Test, Service and Investigation row. Each row is answered through the outbox as its `*.changed`
+ * event, so the send rides the same channel, signing and envelope as a write-time emission.
+ *
+ * Like the single-label resyncs above this sits BEFORE the sequence claim: a list request carries
+ * no state to be stale against. Idempotency rests on the inbox dedup — a redelivered request with
+ * the same key never re-reaches here, so the outbox does not double. An unknown or absent kind is
+ * UNHANDLED rather than an error: an unsatisfiable request must never poison the reverse inbox
+ * for the instructions queued behind it.
+ */
+async function applyCatalogueRequest(
+  eventType: string,
+  body: Record<string, unknown>,
+  transaction: Transaction
+): Promise<ApplyResult> {
+  const kind = eventType === 'payer.requested' ? 'payer' : body.kind;
+
+  if (kind === 'payer') {
+    const insurances = await Insurance.findAll({ attributes: ['id'], transaction });
+    for (const insurance of insurances) {
+      await emitInsuranceChanged(insurance.get('id') as number, transaction);
+    }
+
+    const hmos = await HMO.findAll({ attributes: ['id'], transaction });
+    for (const hmo of hmos) {
+      await emitHmoChanged(hmo.get('id') as number, transaction);
+    }
+
+    return { outcome: 'APPLIED' };
+  }
+
+  if (kind === 'vendor') {
+    const vendors = await Vendor.findAll({ attributes: ['id'], transaction });
+    for (const vendor of vendors) {
+      await emitVendorChanged(vendor.get('id') as number, transaction);
+    }
+
+    return { outcome: 'APPLIED' };
+  }
+
+  if (kind === 'item') {
+    for (const itemKind of ITEM_CATALOGUE_LINE_TYPES) {
+      const rows = await CATALOGUE_MODEL_BY_KIND[itemKind].findAll({
+        attributes: ['id'],
+        transaction,
+      });
+      for (const row of rows) {
+        await emitItemChangedForKind(itemKind, row.get('id') as number, transaction);
+      }
+    }
+
+    return { outcome: 'APPLIED' };
+  }
+
+  return { outcome: 'UNHANDLED' };
 }
 
 async function applyDemographicsRequest(

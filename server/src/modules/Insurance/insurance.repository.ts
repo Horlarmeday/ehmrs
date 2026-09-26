@@ -2,6 +2,8 @@
 import { Op, WhereOptions } from 'sequelize';
 
 import { Insurance, HMO, PatientInsurance } from '../../database/models';
+import { sequelizeConnection } from '../../database/config/data-source';
+import { emitHmoChanged, emitInsuranceChanged } from '../Outbox/outbox-writer';
 
 /**
  * create a health insurance type
@@ -10,10 +12,10 @@ import { Insurance, HMO, PatientInsurance } from '../../database/models';
  */
 export async function createInsurance(data) {
   const { name, description, staff_id } = data;
-  return Insurance.create({
-    name,
-    description,
-    staff_id,
+  return sequelizeConnection.transaction(async t => {
+    const insurance = await Insurance.create({ name, description, staff_id }, { transaction: t });
+    await emitInsuranceChanged(insurance.id, t);
+    return insurance;
   });
 }
 
@@ -42,15 +44,22 @@ export async function getHMOById(data) {
  */
 export async function createHMO(data) {
   const { name, hmo_num, insurance_id, staff_id } = data;
-  const hmo = await HMO.create({
-    name,
-    hmo_num,
-    insurance_id,
-    staff_id,
-  });
-  return HMO.findOne({
-    where: { id: hmo.id },
-    include: [{ model: Insurance, attributes: ['name'] }],
+  return sequelizeConnection.transaction(async t => {
+    const hmo = await HMO.create(
+      {
+        name,
+        hmo_num,
+        insurance_id,
+        staff_id,
+      },
+      { transaction: t }
+    );
+    await emitHmoChanged(hmo.id, t);
+    return HMO.findOne({
+      where: { id: hmo.id },
+      include: [{ model: Insurance, attributes: ['name'] }],
+      transaction: t,
+    });
   });
 }
 
@@ -159,8 +168,12 @@ export async function searchHMOs(currentPage = 1, pageLimit = 10, search) {
  * @returns {object} insurance data
  */
 export async function updateInsurance(data) {
-  const insurance = await getInsuranceById(data.insurance_id);
-  return insurance.update(data);
+  return sequelizeConnection.transaction(async t => {
+    const insurance = await getInsuranceById(data.insurance_id);
+    const updated = await insurance.update(data, { transaction: t });
+    await emitInsuranceChanged(data.insurance_id, t);
+    return updated;
+  });
 }
 
 /**
@@ -169,8 +182,12 @@ export async function updateInsurance(data) {
  * @returns {object} HMO data
  */
 export async function updateHMO(data) {
-  const hmo = await getHMOById(data.hmo_id);
-  return hmo.update(data);
+  return sequelizeConnection.transaction(async t => {
+    const hmo = await getHMOById(data.hmo_id);
+    const updated = await hmo.update(data, { transaction: t });
+    await emitHmoChanged(data.hmo_id, t);
+    return updated;
+  });
 }
 
 /**
