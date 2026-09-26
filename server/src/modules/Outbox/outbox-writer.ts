@@ -10,6 +10,7 @@ import { PrescribedInvestigation } from '../../database/models/prescribedInvesti
 import { PrescribedService } from '../../database/models/prescribedService';
 import { PrescribedTest } from '../../database/models/prescribedTest';
 import { Drug } from '../../database/models/drug';
+import { PharmacyStore } from '../../database/models/pharmacyStore';
 import { Insurance } from '../../database/models/insurance';
 import { HMO } from '../../database/models/hmo';
 import { Test } from '../../database/models/test';
@@ -18,6 +19,7 @@ import { Service } from '../../database/models/service';
 import { Vendor } from '../../database/models/vendor';
 import { Visit } from '../../database/models/visit';
 import { VisitCategory } from '../../database/enums';
+import { Status } from '../../database/enums';
 import dayjs from 'dayjs';
 import {
   buildChargeCapturedEvent,
@@ -33,11 +35,13 @@ import {
   buildItemChangedEvent,
   buildPatientDemographicsChangedEvent,
   buildStockReturnedEvent,
+  buildStoreRowChangedEvent,
   buildVendorChangedEvent,
   itemAggregateId,
   hmoAggregateId,
   insuranceAggregateId,
   patientAggregateId,
+  storeRowAggregateId,
   vendorAggregateId,
   ItemCatalogueLineType,
   visitAggregateId,
@@ -48,6 +52,7 @@ import {
   DispenseRecordedInput,
   StockReturnedInput,
 } from './event-builder';
+import { nairaStringToKoboString } from './money';
 import {
   COVERAGE_TYPE_FIELD_BY_TYPE,
   PRESCRIBED_LINE_TYPES,
@@ -111,6 +116,7 @@ export const PERMITTED_EVENT_TYPES = new Set([
   'vendor.changed',
   'insurance.changed',
   'hmo.changed',
+  'store.row.changed',
 ]);
 
 async function persistOutboxEvent(
@@ -676,6 +682,105 @@ export async function emitVendorChanged(
     { vendor_id: vendor.id, name: vendor.name },
     { tenantKey: TENANT_KEY, sequence }
   );
+
+  return persistOutboxEvent(event, transaction);
+}
+
+/**
+ * Emits `store.row.changed` for the store row a `(drug, drug_type)` pair currently resolves to
+ * (#81), on the caller's transaction — the same transaction the store write runs in.
+ *
+ * THE POST-WRITE STATE, ALWAYS. The row is read here, not taken from the caller's in-memory
+ * instance: the DECIMAL columns return exact driver strings on a read, whereas a just-created or
+ * just-updated instance may still hold the JS number the HTTP body carried, which the money layer
+ * refuses.
+ *
+ * An INACTIVE row answers `row_exists: false`: the applier and the reorder screen only ever touch
+ * ACTIVE bins, so offering one to Accounting as an increment target would file receipts into a
+ * retired row. A codeless drug is SKIPPED (undefined) — it cannot be keyed, and an empty
+ * `item_code` would dead-letter at Accounting as malformed (ADR-0040's silent-skip class).
+ *
+ * Returns undefined when the outbox is disabled, the drug or its code is missing, or the drug_type
+ * is outside the five-value vocabulary — a store write must never roll back because an event could
+ * not be emitted.
+ */
+export async function emitStoreRowChangedForDrug(
+  drugId: number | string,
+  drugType: string,
+  transaction: Transaction,
+  pharmacyStoreId?: number | string
+): Promise<OutboxEvent | undefined> {
+  if (!isOutboxEnabled()) {
+    return undefined;
+  }
+
+  const drug = await Drug.findOne({
+    where: { id: drugId },
+    attributes: ['id', 'code'],
+    transaction,
+  });
+  if (!drug || !drug.code) {
+    return undefined;
+  }
+  const itemCode = drug.code.trim();
+  if (itemCode === '' || itemCode.length > 43) {
+    return undefined;
+  }
+
+  let row: PharmacyStore | null;
+  if (pharmacyStoreId !== undefined) {
+    row = await PharmacyStore.unscoped().findByPk(pharmacyStoreId, { transaction });
+  } else {
+    row = await PharmacyStore.unscoped().findOne({
+      where: { drug_id: drugId, drug_type: drugType } as never,
+      order: [['createdAt', 'DESC']],
+      transaction,
+    });
+  }
+
+  const rowExists = row !== null && row.status === Status.ACTIVE;
+  let sellingPriceKobo: string | null = null;
+  if (rowExists) {
+    const price = normalisePrice(row.selling_price);
+    sellingPriceKobo =
+      price === null || price === undefined
+        ? null
+        : nairaStringToKoboString(price, 'store.row.changed selling_price');
+  }
+
+  return emitStoreRowChanged(
+    {
+      item_code: itemCode,
+      drug_type: drugType,
+      row_exists: rowExists,
+      selling_price_kobo: sellingPriceKobo,
+    },
+    transaction
+  );
+}
+
+/**
+ * Builds and persists a `store.row.changed` outbox row on the caller's transaction, claiming the
+ * sequence for its `(item_code, drug_type)` aggregate here so the counter lock is held for the
+ * minimum span. No-op when the outbox is disabled.
+ */
+export async function emitStoreRowChanged(
+  input: {
+    item_code: string;
+    drug_type: string;
+    row_exists: boolean;
+    selling_price_kobo: string | null;
+  },
+  transaction: Transaction
+): Promise<OutboxEvent | undefined> {
+  if (!isOutboxEnabled()) {
+    return undefined;
+  }
+
+  const aggregateId = storeRowAggregateId(input.item_code, input.drug_type);
+  const sequence = await claimSequence(aggregateId, transaction);
+
+  const event = buildStoreRowChangedEvent(input, { tenantKey: TENANT_KEY, sequence });
 
   return persistOutboxEvent(event, transaction);
 }

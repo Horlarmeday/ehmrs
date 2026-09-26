@@ -20,12 +20,13 @@ import {
   resetPharmacyStoreItemsQuantities,
   searchLaboratoryItems,
   searchPharmacyStoreItems,
-  updatePharmacyStoreItem,
   updatePharmacyStoreItems,
   updateVendor,
 } from './store.repository';
 import { splitSort } from '../../core/helpers/helper';
 import { LaboratoryStore, PharmacyStore } from '../../database/models';
+import { sequelizeConnection } from '../../database/config/data-source';
+import { emitStoreRowChangedForDrug } from '../Outbox/outbox-writer';
 import { BadException } from '../../common/util/api-error';
 import { ItemsToDispensedBody } from '../Inventory/types/inventory-item.types';
 import {
@@ -175,7 +176,22 @@ class StoreService {
    * @param items
    */
   static async deactivatePharmacyStoreItems(items: number[]) {
-    return updatePharmacyStoreItem({ id: items }, { status: Status.INACTIVE });
+    // #81: deactivation is the closest the store has to a DELETE, and Accounting must hear it —
+    // a row it believes exists would be offered as an increment target. The answer is
+    // `row_exists: false`: an INACTIVE bin is invisible to the applier and the reorder screen.
+    return sequelizeConnection.transaction(async t => {
+      const [affected] = await PharmacyStore.update(
+        { status: Status.INACTIVE },
+        { where: { id: items }, transaction: t }
+      );
+      for (const id of items) {
+        const row = await PharmacyStore.unscoped().findByPk(id, { transaction: t });
+        if (row) {
+          await emitStoreRowChangedForDrug(row.drug_id, row.drug_type, t, id);
+        }
+      }
+      return [affected];
+    });
   }
 
   /**
