@@ -31,7 +31,7 @@ export function validateInvestigation(investigation) {
       .optional()
       .allow(''),
   });
-  return schema.validate(investigation);
+  return schema.validate(investigation, { stripUnknown: true });
 }
 
 export function validateInvestigationTariff(investigation) {

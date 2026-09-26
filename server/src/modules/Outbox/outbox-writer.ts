@@ -963,7 +963,7 @@ function catalogueFieldsFromEntity(
     return {};
   }
 
-  if (type !== 'investigation' && 'code' in entity && typeof entity.code === 'string') {
+  if ('code' in entity && typeof entity.code === 'string') {
     const trimmed = entity.code.trim();
     if (trimmed.length > 0) {
       return { serviceLine: entity.name, itemCode: trimmed };

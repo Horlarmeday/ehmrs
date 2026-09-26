@@ -122,6 +122,21 @@ const investigationResultFieldsToUpdate = (fields: string[] = []) => [
 ];
 
 /**
+ * Codes are server-owned (#83): `INV-####` numbered from `MAX(id) + 1`. The backfill assigned
+ * suffixes in id order and every create inserts a higher id, so `MAX(id) + 1` is always past
+ * every existing suffix — deletions only lower MAX(id). This keeps tariff rules in Accounting
+ * keyable on `item:investigation:<code>`. The unique index on `Investigations.code` is the
+ * race safety net; on a rare collision the number is recomputed, bounded so a pathological
+ * data state fails loudly instead of looping.
+ */
+const MAX_CODE_GENERATION_RETRIES = 5;
+
+const nextInvestigationCode = async (): Promise<string> => {
+  const maxId = Number((await Investigation.max('id')) ?? 0);
+  return `INV-${String(maxId + 1).padStart(4, '0')}`;
+};
+
+/**
  * create an Investigation
  * @param data
  * @returns {object} investigation data
@@ -137,18 +152,31 @@ export const createInvestigation = async (data: CreateInvestigationDto) => {
     nhis_price,
     phis_price,
   } = data;
-  const investigation = await Investigation.create({
-    name,
-    imaging_id,
-    staff_id,
-    price,
-    type,
-    retainership_price,
-    phis_price,
-    nhis_price,
-    is_available_for_nhis: !!nhis_price,
-    is_available_for_phis: !!phis_price,
-  });
+  let investigation;
+  for (let attempt = 0; attempt < MAX_CODE_GENERATION_RETRIES; attempt += 1) {
+    const code = await nextInvestigationCode();
+    try {
+      investigation = await Investigation.create({
+        name,
+        imaging_id,
+        staff_id,
+        price,
+        type,
+        code,
+        retainership_price,
+        phis_price,
+        nhis_price,
+        is_available_for_nhis: !!nhis_price,
+        is_available_for_phis: !!phis_price,
+      });
+      break;
+    } catch (error) {
+      const isUniqueViolation = error?.name === 'SequelizeUniqueConstraintError';
+      if (!isUniqueViolation || attempt === MAX_CODE_GENERATION_RETRIES - 1) {
+        throw error;
+      }
+    }
+  }
   return Investigation.findOne({
     where: { id: investigation.id },
     include: [{ model: Imaging, attributes: ['name'] }],
@@ -195,7 +223,8 @@ export async function getInvestigations({
 export const updateInvestigation = async data => {
   const { investigation_id } = data;
   const investigation = await getModelById(Investigation, investigation_id);
-  return investigation.update(data);
+  const { code: _code, ...editable } = data;
+  return investigation.update(editable);
 };
 
 /** ***********************

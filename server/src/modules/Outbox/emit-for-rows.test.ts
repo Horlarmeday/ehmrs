@@ -553,6 +553,7 @@ describe('emitChargeCapturedForRows — item_code derivation (#255)', () => {
     const imaging = await Imaging.create({ name: 'X-Ray', staff_id: staffId } as never);
     const investigation = await Investigation.create({
       name: 'Chest X-Ray',
+      code: 'CXR',
       price: '2500.00',
       type: InvestigationType.PRIMARY,
       imaging_id: imaging.id,
@@ -661,7 +662,7 @@ describe('emitChargeCapturedForRows — item_code derivation (#255)', () => {
     expect(body.item_code).toBe('CONSULT');
   });
 
-  it('omits item_code for investigation lines', async () => {
+  it('emits item_code from the investigation catalogue code', async () => {
     const t = await sequelizeConnection.transaction();
     await emitChargeCapturedForRows(
       'investigation',
@@ -681,7 +682,7 @@ describe('emitChargeCapturedForRows — item_code derivation (#255)', () => {
     await t.commit();
 
     const body = (await OutboxEvent.findAll())[0].payload.body as Record<string, unknown>;
-    expect('item_code' in body).toBe(false);
+    expect(body.item_code).toBe('CXR');
     expect(body.service_line).toBe('Chest X-Ray');
   });
 
@@ -695,26 +696,34 @@ describe('emitChargeCapturedForRows — item_code derivation (#255)', () => {
   });
 
   it('omits item_code when the catalogue row has no code', async () => {
-    const t = await sequelizeConnection.transaction();
-    await emitChargeCapturedForRows(
-      'investigation',
-      [
-        {
-          id: 207,
-          patient_id: 100,
-          visit_id: 8891,
-          price: '2500.00',
-          quantity: 1,
-          investigation_id: investigationId,
-        },
-      ],
-      '2026-07-22',
-      t
-    );
-    await t.commit();
+    const findOneSpy = jest
+      .spyOn(Investigation, 'findOne')
+      .mockResolvedValue({ name: 'Chest X-Ray' } as never);
+    try {
+      const t = await sequelizeConnection.transaction();
+      await emitChargeCapturedForRows(
+        'investigation',
+        [
+          {
+            id: 207,
+            patient_id: 100,
+            visit_id: 8891,
+            price: '2500.00',
+            quantity: 1,
+            investigation_id: investigationId,
+          },
+        ],
+        '2026-07-22',
+        t
+      );
+      await t.commit();
 
-    const body = (await OutboxEvent.findAll())[0].payload.body as Record<string, unknown>;
-    expect('item_code' in body).toBe(false);
+      const body = (await OutboxEvent.findAll())[0].payload.body as Record<string, unknown>;
+      expect('item_code' in body).toBe(false);
+      expect(body.service_line).toBe('Chest X-Ray');
+    } finally {
+      findOneSpy.mockRestore();
+    }
   });
 
   it('resolves catalogue once for a bulk sharing one drug_id', async () => {
