@@ -83,6 +83,18 @@ export class Investigation extends Model {
   })
   type: InvestigationType;
 
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    unique: true,
+    validate: {
+      notEmpty: {
+        msg: 'code is required',
+      },
+    },
+  })
+  code: string;
+
   @ForeignKey(() => Imaging)
   @Column({
     type: DataType.INTEGER,

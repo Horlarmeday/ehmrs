@@ -97,6 +97,7 @@ beforeAll(async () => {
   const imaging = await Imaging.create({ name: 'Channel Imaging', staff_id: staffId } as never);
   const investigation = await Investigation.create({
     name: 'Channel Investigation',
+    code: 'CHAN-INV',
     price: '2500.00',
     type: InvestigationType.PRIMARY,
     imaging_id: imaging.id,
