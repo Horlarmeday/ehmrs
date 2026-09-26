@@ -858,10 +858,15 @@ describe('PERMITTED_EVENT_TYPES (EMR #32 D4)', () => {
     expect(PERMITTED_EVENT_TYPES.has('reversal_requested')).toBe(false);
   });
 
-  it('covers all ten event types, including the one #330 adds, and admits nothing else', () => {
-    expect(PERMITTED_EVENT_TYPES.size).toBe(10);
+  it('covers all fourteen event types, including the two #82 adds, and admits nothing else', () => {
+    expect(PERMITTED_EVENT_TYPES.size).toBe(14);
     expect(PERMITTED_EVENT_TYPES.has('charge.returned')).toBe(true);
     expect(PERMITTED_EVENT_TYPES.has('charge.refunded')).toBe(false);
+  });
+
+  it('permits the payer-name channels #82 adds', () => {
+    expect(PERMITTED_EVENT_TYPES.has('insurance.changed')).toBe(true);
+    expect(PERMITTED_EVENT_TYPES.has('hmo.changed')).toBe(true);
   });
 
   it('permits the ward assignment #330 adds', () => {

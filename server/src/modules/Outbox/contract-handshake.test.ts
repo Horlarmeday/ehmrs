@@ -4,6 +4,9 @@ import {
   buildChargeReversalRequestedEvent,
   buildChargeVoidedEvent,
   buildEncounterClosedEvent,
+  buildHmoChangedEvent,
+  buildInsuranceChangedEvent,
+  buildItemChangedEvent,
   buildPatientDemographicsChangedEvent,
 } from './event-builder';
 import { signEvent } from './signer';
@@ -316,6 +319,111 @@ describe('EMR outbox ↔ Accounting inbox handshake', () => {
       ok: false,
       reason: 'TIMESTAMP_OUTSIDE_WINDOW',
     });
+  });
+});
+
+/**
+ * The #82 payer-name channels, reconstructed from Accounting's ADR-0067 guards: each body carries
+ * exactly its contract keys, ids are positive integers, and a `name` is a scheme or company name —
+ * an organisation, never a person.
+ */
+const INSURANCE_CHANGED_KEYS = new Set(['insurance_id', 'name', 'is_retainership']);
+const HMO_CHANGED_KEYS = new Set(['hmo_id', 'insurance_id', 'name', 'hmo_num']);
+
+function isPositiveInt(value: unknown): boolean {
+  return typeof value === 'number' && Number.isInteger(value) && value > 0;
+}
+
+function insuranceChangedPassesAccountingGuard(body: unknown): boolean {
+  if (typeof body !== 'object' || body === null) return false;
+  const b = body as Record<string, unknown>;
+  for (const key of Object.keys(b)) {
+    if (!INSURANCE_CHANGED_KEYS.has(key)) return false;
+  }
+  return (
+    isPositiveInt(b.insurance_id) &&
+    typeof b.name === 'string' &&
+    b.name.length >= 1 &&
+    b.name.length <= 256 &&
+    typeof b.is_retainership === 'boolean'
+  );
+}
+
+function hmoChangedPassesAccountingGuard(body: unknown): boolean {
+  if (typeof body !== 'object' || body === null) return false;
+  const b = body as Record<string, unknown>;
+  for (const key of Object.keys(b)) {
+    if (!HMO_CHANGED_KEYS.has(key)) return false;
+  }
+  return (
+    isPositiveInt(b.hmo_id) &&
+    isPositiveInt(b.insurance_id) &&
+    typeof b.name === 'string' &&
+    b.name.length >= 1 &&
+    b.name.length <= 256 &&
+    typeof b.hmo_num === 'string' &&
+    b.hmo_num.length >= 1
+  );
+}
+
+const ITEM_LINE_TYPES = new Set(['drug', 'test', 'service', 'investigation']);
+
+function itemChangedPassesAccountingGuard(body: Record<string, unknown>): boolean {
+  return (
+    typeof body.line_type === 'string' &&
+    ITEM_LINE_TYPES.has(body.line_type) &&
+    typeof body.item_code === 'string' &&
+    body.item_code.length >= 1 &&
+    body.item_code.length <= 43
+  );
+}
+
+describe('payer-name channels pass Accounting ADR-0067 guards (#82)', () => {
+  const insuranceRow = () =>
+    buildInsuranceChangedEvent(
+      { insurance_id: 7, name: 'NHIS', is_retainership: false },
+      { tenantKey: TENANT_KEY, sequence: 42 }
+    );
+  const hmoRow = () =>
+    buildHmoChangedEvent(
+      { hmo_id: 12, insurance_id: 7, name: 'Clearline', hmo_num: 'CL-0091' },
+      { tenantKey: TENANT_KEY, sequence: 43 }
+    );
+
+  it('a signed insurance.changed is ACCEPTED and its body satisfies the guard', () => {
+    const signed = signEvent(insuranceRow().payload, SHARED_KEY);
+    expect(verifyLikeAccounting(Buffer.from(signed.rawBody), signed.headers)).toEqual({
+      ok: true,
+      keyId: SHARED_KEY.keyId,
+    });
+    expect(insuranceChangedPassesAccountingGuard(insuranceRow().payload.body)).toBe(true);
+  });
+
+  it('a signed hmo.changed is ACCEPTED and its body satisfies the guard', () => {
+    const signed = signEvent(hmoRow().payload, SHARED_KEY);
+    expect(verifyLikeAccounting(Buffer.from(signed.rawBody), signed.headers)).toEqual({
+      ok: true,
+      keyId: SHARED_KEY.keyId,
+    });
+    expect(hmoChangedPassesAccountingGuard(hmoRow().payload.body)).toBe(true);
+  });
+
+  it('a body key outside the contract is REJECTED by the guard', () => {
+    const body = {
+      ...(insuranceRow().payload.body as Record<string, unknown>),
+      phone: '+2348012345678',
+    };
+    expect(insuranceChangedPassesAccountingGuard(body)).toBe(false);
+  });
+
+  it('item.changed with a catalogue line_type satisfies the widened guard', () => {
+    const row = buildItemChangedEvent(
+      { item_code: 'PARA500', name: 'Paracetamol 500mg', line_type: 'test' },
+      { tenantKey: TENANT_KEY, sequence: 44 }
+    );
+    expect(itemChangedPassesAccountingGuard(row.payload.body as Record<string, unknown>)).toBe(
+      true
+    );
   });
 });
 

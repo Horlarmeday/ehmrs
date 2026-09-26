@@ -22,7 +22,7 @@ export interface CoverageFacts {
   readonly insuranceName: string | null | undefined;
 }
 
-const RETAINERSHIP_INSURANCE_NAME = 'Retainership';
+export const RETAINERSHIP_INSURANCE_NAME = 'Retainership';
 
 export function classifyPayer(facts: CoverageFacts | null): ChargeCapturedPayer | undefined {
   if (!facts) {

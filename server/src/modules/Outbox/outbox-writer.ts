@@ -10,6 +10,8 @@ import { PrescribedInvestigation } from '../../database/models/prescribedInvesti
 import { PrescribedService } from '../../database/models/prescribedService';
 import { PrescribedTest } from '../../database/models/prescribedTest';
 import { Drug } from '../../database/models/drug';
+import { Insurance } from '../../database/models/insurance';
+import { HMO } from '../../database/models/hmo';
 import { Test } from '../../database/models/test';
 import { Investigation } from '../../database/models/investigation';
 import { Service } from '../../database/models/service';
@@ -26,13 +28,18 @@ import {
   buildEncounterClosedEvent,
   buildEncounterOpenedEvent,
   buildEncounterWardAssignedEvent,
+  buildHmoChangedEvent,
+  buildInsuranceChangedEvent,
   buildItemChangedEvent,
   buildPatientDemographicsChangedEvent,
   buildStockReturnedEvent,
   buildVendorChangedEvent,
   itemAggregateId,
+  hmoAggregateId,
+  insuranceAggregateId,
   patientAggregateId,
   vendorAggregateId,
+  ItemCatalogueLineType,
   visitAggregateId,
   PrescribedLineInput,
   ChargeReturnedInput,
@@ -49,6 +56,7 @@ import {
   VOIDABLE_PREDICATE_BY_TYPE,
 } from './prescribed-line-types';
 import { PayerResolver } from './payer-derivation';
+import { RETAINERSHIP_INSURANCE_NAME } from './payer-classification';
 
 /**
  * Writes charge.captured events to the outbox INSIDE a clinical write transaction (ADR-0018).
@@ -101,6 +109,8 @@ export const PERMITTED_EVENT_TYPES = new Set([
   'patient.demographics.changed',
   'item.changed',
   'vendor.changed',
+  'insurance.changed',
+  'hmo.changed',
 ]);
 
 async function persistOutboxEvent(
@@ -562,39 +572,78 @@ export async function emitPatientDemographicsChanged(
   return persistOutboxEvent(event, transaction);
 }
 /**
- * Emits `item.changed` for one drug, on the caller's transaction (Accounting ADR-0052).
+ * The catalogue table each `item.changed` line_type describes (#82). All four share the
+ * (id, name, code) shape the label needs, except Investigation, which has no `code` column yet
+ * (#83 adds it): its rows are read without one and skipped by the no-code rule below, so an
+ * emitter never fabricates an item_code.
+ */
+const ITEM_CATALOGUE_MODEL_BY_KIND: Record<ItemCatalogueLineType, ModelStatic<Model>> = {
+  drug: (Drug as unknown) as ModelStatic<Model>,
+  test: (Test as unknown) as ModelStatic<Model>,
+  service: (Service as unknown) as ModelStatic<Model>,
+  investigation: (Investigation as unknown) as ModelStatic<Model>,
+};
+
+const ITEM_CATALOGUE_ATTRIBUTES_BY_KIND: Record<ItemCatalogueLineType, string[]> = {
+  drug: ['id', 'name', 'code'],
+  test: ['id', 'name', 'code'],
+  service: ['id', 'name', 'code'],
+  investigation: ['id', 'name'],
+};
+
+/**
+ * Emits `item.changed` for one catalogue row of any of the four kinds, on the caller's transaction
+ * (Accounting ADR-0052, #82).
  *
  * Feeds the `item_label` cache the purchase-order picker reads, so a store officer selects an item
- * instead of keying its code. Returns undefined when the outbox is disabled, the drug no longer
- * exists, or it carries no code — a catalogue write must never roll back because a label could not
- * be emitted.
+ * instead of keying its code. Returns undefined when the outbox is disabled, the row no longer
+ * exists, or it carries no code or name — a catalogue write must never roll back because a label
+ * could not be emitted.
  */
-export async function emitItemChanged(
-  drugId: number | string,
+export async function emitItemChangedForKind(
+  kind: ItemCatalogueLineType,
+  rowId: number | string,
   transaction: Transaction
 ): Promise<OutboxEvent | undefined> {
   if (!isOutboxEnabled()) {
     return undefined;
   }
 
-  const drug = await Drug.findOne({
-    where: { id: drugId },
-    attributes: ['id', 'name', 'code'],
+  const row = await ITEM_CATALOGUE_MODEL_BY_KIND[kind].findOne({
+    where: { id: rowId } as never,
+    attributes: ITEM_CATALOGUE_ATTRIBUTES_BY_KIND[kind],
     transaction,
   });
-  if (!drug || !drug.code || !drug.name) {
+  const plain = (row?.get({ plain: true }) ?? null) as {
+    id: number;
+    name: string;
+    code: string;
+  } | null;
+  if (!plain || !plain.code || !plain.name) {
     return undefined;
   }
 
-  const aggregateId = itemAggregateId(drug.code);
+  const itemCode = plain.code.trim();
+  if (itemCode === '' || itemCode.length > 43) {
+    return undefined;
+  }
+
+  const aggregateId = itemAggregateId(itemCode);
   const sequence = await claimSequence(aggregateId, transaction);
 
   const event = buildItemChangedEvent(
-    { item_code: drug.code, name: drug.name },
+    { item_code: itemCode, name: plain.name, line_type: kind },
     { tenantKey: TENANT_KEY, sequence }
   );
 
   return persistOutboxEvent(event, transaction);
+}
+
+export async function emitItemChanged(
+  drugId: number | string,
+  transaction: Transaction
+): Promise<OutboxEvent | undefined> {
+  return emitItemChangedForKind('drug', drugId, transaction);
 }
 
 /**
@@ -625,6 +674,83 @@ export async function emitVendorChanged(
 
   const event = buildVendorChangedEvent(
     { vendor_id: vendor.id, name: vendor.name },
+    { tenantKey: TENANT_KEY, sequence }
+  );
+
+  return persistOutboxEvent(event, transaction);
+}
+
+/**
+ * Emits `insurance.changed` for one payer scheme, on the caller's transaction (#82, ADR-0067).
+ *
+ * `is_retainership` is computed with the SAME rule `classifyPayer` applies — the exported
+ * `RETAINERSHIP_INSURANCE_NAME` constant, so the two cannot drift. Returns undefined when the
+ * outbox is disabled or the scheme is missing/unnamed.
+ */
+export async function emitInsuranceChanged(
+  insuranceId: number | string,
+  transaction: Transaction
+): Promise<OutboxEvent | undefined> {
+  if (!isOutboxEnabled()) {
+    return undefined;
+  }
+
+  const insurance = await Insurance.findOne({
+    where: { id: insuranceId } as never,
+    attributes: ['id', 'name'],
+    transaction,
+  });
+  if (!insurance || !insurance.name) {
+    return undefined;
+  }
+
+  const aggregateId = insuranceAggregateId(insurance.id);
+  const sequence = await claimSequence(aggregateId, transaction);
+
+  const event = buildInsuranceChangedEvent(
+    {
+      insurance_id: insurance.id,
+      name: insurance.name,
+      is_retainership: insurance.name === RETAINERSHIP_INSURANCE_NAME,
+    },
+    { tenantKey: TENANT_KEY, sequence }
+  );
+
+  return persistOutboxEvent(event, transaction);
+}
+
+/**
+ * Emits `hmo.changed` for one HMO, on the caller's transaction (#82, ADR-0067). An HMO without a
+ * `hmo_num` is skipped rather than emitted incomplete — that number is the whole reason the
+ * channel exists: it is what the EMR HMO list shows.
+ */
+export async function emitHmoChanged(
+  hmoId: number | string,
+  transaction: Transaction
+): Promise<OutboxEvent | undefined> {
+  if (!isOutboxEnabled()) {
+    return undefined;
+  }
+
+  const hmo = await HMO.findOne({
+    where: { id: hmoId } as never,
+    attributes: ['id', 'insurance_id', 'name', 'hmo_num'],
+    transaction,
+  });
+  if (!hmo || !hmo.name || !hmo.hmo_num || hmo.insurance_id == null) {
+    return undefined;
+  }
+
+  const aggregateId = hmoAggregateId(hmo.id);
+  const sequence = await claimSequence(aggregateId, transaction);
+
+  const event = buildHmoChangedEvent(
+    {
+      hmo_id: hmo.id,
+      insurance_id: hmo.insurance_id,
+      name: hmo.name,
+      hmo_num: hmo.hmo_num,
+    },
     { tenantKey: TENANT_KEY, sequence }
   );
 

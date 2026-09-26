@@ -336,6 +336,7 @@ describe('applier + gate (B2.2 / B2.3)', () => {
       expect(event.payload.body).toEqual({
         item_code: ITEM_CODE,
         name: 'Amoxicillin 500 mg capsules',
+        line_type: 'drug',
       });
     });
 

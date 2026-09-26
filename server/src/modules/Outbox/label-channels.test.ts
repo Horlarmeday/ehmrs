@@ -53,13 +53,14 @@ describe('aggregate ids', () => {
 describe('buildItemChangedEvent', () => {
   it('emits the code and the name as the whole body', () => {
     const row = buildItemChangedEvent(
-      { item_code: 'PHM-AMOX-500', name: 'Amoxicillin 500 mg capsules' },
+      { item_code: 'PHM-AMOX-500', name: 'Amoxicillin 500 mg capsules', line_type: 'drug' },
       context
     );
 
     expect(bodyOf(row)).toEqual({
       item_code: 'PHM-AMOX-500',
       name: 'Amoxicillin 500 mg capsules',
+      line_type: 'drug',
     });
     expect(row.event_type).toBe('item.changed');
     expect(row.aggregate_type).toBe('item');
@@ -69,25 +70,41 @@ describe('buildItemChangedEvent', () => {
 
   it('trims before validating and emitting', () => {
     const row = buildItemChangedEvent(
-      { item_code: '  PHM-AMOX-500  ', name: '  Amoxicillin  ' },
+      { item_code: '  PHM-AMOX-500  ', name: '  Amoxicillin  ', line_type: 'drug' },
       context
     );
-    expect(bodyOf(row)).toEqual({ item_code: 'PHM-AMOX-500', name: 'Amoxicillin' });
+    expect(bodyOf(row)).toEqual({
+      item_code: 'PHM-AMOX-500',
+      name: 'Amoxicillin',
+      line_type: 'drug',
+    });
   });
 
   it('refuses a code longer than the 43 chars Accounting bounds it to', () => {
     expect(() =>
-      buildItemChangedEvent({ item_code: 'C'.repeat(44), name: 'Something' }, context)
+      buildItemChangedEvent(
+        { item_code: 'C'.repeat(44), name: 'Something', line_type: 'drug' },
+        context
+      )
     ).toThrow(/1-43 characters/);
   });
 
   it('refuses an empty code or an empty name', () => {
-    expect(() => buildItemChangedEvent({ item_code: '   ', name: 'X' }, context)).toThrow(
-      /1-43 characters/
-    );
     expect(() =>
-      buildItemChangedEvent({ item_code: 'PHM-AMOX-500', name: '   ' }, context)
+      buildItemChangedEvent({ item_code: '   ', name: 'X', line_type: 'drug' }, context)
+    ).toThrow(/1-43 characters/);
+    expect(() =>
+      buildItemChangedEvent({ item_code: 'PHM-AMOX-500', name: '   ', line_type: 'drug' }, context)
     ).toThrow(/1-256 characters/);
+  });
+
+  it('refuses a line_type outside the four catalogue kinds', () => {
+    expect(() =>
+      buildItemChangedEvent(
+        { item_code: 'PHM-AMOX-500', name: 'Amoxicillin', line_type: 'additional_item' as never },
+        context
+      )
+    ).toThrow(/line_type/);
   });
 });
 
@@ -114,7 +131,10 @@ describe('buildVendorChangedEvent', () => {
 describe('the demographic exemption is per type, not a relaxation', () => {
   it('lets a product name through on item.changed', () => {
     expect(() =>
-      buildItemChangedEvent({ item_code: 'PHM-AMOX-500', name: 'Amoxicillin' }, context)
+      buildItemChangedEvent(
+        { item_code: 'PHM-AMOX-500', name: 'Amoxicillin', line_type: 'drug' },
+        context
+      )
     ).not.toThrow();
   });
 

@@ -108,6 +108,16 @@ export function vendorAggregateId(vendorId: number | string): string {
   return `vendor:${vendorId}`;
 }
 
+/** The aggregate id for a payer-scheme label (Accounting #82, ADR-0067). */
+export function insuranceAggregateId(insuranceId: number | string): string {
+  return `insurance:${insuranceId}`;
+}
+
+/** The aggregate id for an HMO label (Accounting #82, ADR-0067). */
+export function hmoAggregateId(hmoId: number | string): string {
+  return `hmo:${hmoId}`;
+}
+
 /**
  * The payer reference carried on `charge.captured` (ADR-0028). Additive, optional, ID-only: it
  * tells Accounting which payer the patient was under at prescription time so it can resolve the
@@ -185,6 +195,8 @@ export const DEMOGRAPHIC_EVENT_TYPES = [
   'patient.demographics.changed',
   'item.changed',
   'vendor.changed',
+  'insurance.changed',
+  'hmo.changed',
 ];
 
 function assertNoDemographics(body: Record<string, unknown>, eventType: string): void {
@@ -709,6 +721,23 @@ export interface ItemChangedInput {
   /** The catalogue row's own `.code`, 1–43 chars — the bound `charge.captured` already carries. */
   readonly item_code: string;
   readonly name: string;
+  /** Which catalogue table the row lives in (#82, ADR-0067). Lowercase line-type vocabulary. */
+  readonly line_type: ItemCatalogueLineType;
+}
+
+/**
+ * The catalogue tables an `item.changed` may describe (#82). Lowercase: the same vocabulary as
+ * `PrescribedLineType` already on the wire. `additional_item` is absent deliberately — consumables
+ * are billable lines, not catalogue rows a purchase order can name.
+ */
+export const ITEM_CATALOGUE_LINE_TYPES = ['drug', 'test', 'service', 'investigation'] as const;
+export type ItemCatalogueLineType = typeof ITEM_CATALOGUE_LINE_TYPES[number];
+
+export function isItemCatalogueLineType(value: unknown): value is ItemCatalogueLineType {
+  return (
+    typeof value === 'string' &&
+    ITEM_CATALOGUE_LINE_TYPES.some(type => type === (value as ItemCatalogueLineType))
+  );
 }
 
 export interface VendorChangedInput {
@@ -740,13 +769,20 @@ export function buildItemChangedEvent(
     throw new EventBuildError(`item.changed name must be 1-256 characters, got ${name.length}.`);
   }
 
+  if (!isItemCatalogueLineType(input.line_type)) {
+    throw new EventBuildError(
+      `item.changed line_type must be one of ${ITEM_CATALOGUE_LINE_TYPES.join(', ')}, got ` +
+        `"${String(input.line_type)}".`
+    );
+  }
+
   const aggregateId = itemAggregateId(itemCode);
   const occurredAt = context.occurredAt ?? new Date();
   const sentAt = context.sentAt ?? new Date();
   const eventVersion = context.eventVersion ?? 1;
   const idempotencyKey = itemChangedIdempotencyKey(itemCode, context.sequence);
 
-  const body: Record<string, unknown> = { item_code: itemCode, name };
+  const body: Record<string, unknown> = { item_code: itemCode, name, line_type: input.line_type };
   assertNoDemographics(body, 'item.changed');
 
   return {
@@ -818,6 +854,163 @@ export function buildVendorChangedEvent(
       occurred_at: occurredAt.toISOString(),
       sent_at: sentAt.toISOString(),
       aggregate: { type: 'vendor', id: aggregateId },
+      sequence: Number(context.sequence),
+      idempotency_key: idempotencyKey,
+      body,
+    },
+  };
+}
+
+export interface InsuranceChangedInput {
+  readonly insurance_id: number | string;
+  readonly name: string;
+  /** Same rule as `classifyPayer`: the scheme name IS the discriminator (#82, ADR-0067). */
+  readonly is_retainership: boolean;
+}
+
+export interface HmoChangedInput {
+  readonly hmo_id: number | string;
+  readonly insurance_id: number | string;
+  readonly name: string;
+  readonly hmo_num: string;
+}
+
+/** `insurance-changed:{insurance_id}:{sequence}` — repeatable per scheme, like every label channel. */
+export function insuranceChangedIdempotencyKey(
+  insuranceId: number | string,
+  sequence: number | string
+): string {
+  return `insurance-changed:${insuranceId}:${sequence}`;
+}
+
+/** `hmo-changed:{hmo_id}:{sequence}` — repeatable per HMO, for the same reason. */
+export function hmoChangedIdempotencyKey(
+  hmoId: number | string,
+  sequence: number | string
+): string {
+  return `hmo-changed:${hmoId}:${sequence}`;
+}
+
+/**
+ * `insurance.changed` — the payer-scheme label Accounting caches so a finance officer picks a
+ * scheme by name instead of keying an EMR id (#82, ADR-0067).
+ *
+ * `is_retainership` uses the classifyPayer rule: the insurance `name` being exactly
+ * `Retainership` is what distinguishes a retainer agreement from NHIS/FHSS/PHIS-style schemes.
+ */
+export function buildInsuranceChangedEvent(
+  input: InsuranceChangedInput,
+  context: BuildContext
+): OutboxEventRow {
+  const insuranceId = Number(input.insurance_id);
+  if (!Number.isInteger(insuranceId) || insuranceId <= 0) {
+    throw new EventBuildError(
+      `insurance_id must be a positive integer, got "${String(input.insurance_id)}".`
+    );
+  }
+
+  const name = input.name.trim();
+  if (name === '' || name.length > 256) {
+    throw new EventBuildError(
+      `insurance.changed name must be 1-256 characters, got ${name.length}.`
+    );
+  }
+
+  const aggregateId = insuranceAggregateId(insuranceId);
+  const occurredAt = context.occurredAt ?? new Date();
+  const sentAt = context.sentAt ?? new Date();
+  const eventVersion = context.eventVersion ?? 1;
+  const idempotencyKey = insuranceChangedIdempotencyKey(insuranceId, context.sequence);
+
+  const body: Record<string, unknown> = {
+    insurance_id: insuranceId,
+    name,
+    is_retainership: input.is_retainership === true,
+  };
+  assertNoDemographics(body, 'insurance.changed');
+
+  return {
+    aggregate_type: 'insurance',
+    aggregate_id: aggregateId,
+    sequence: context.sequence,
+    event_type: 'insurance.changed',
+    event_version: eventVersion,
+    idempotency_key: idempotencyKey,
+    payload: {
+      event_id: uuidV7(context.now),
+      event_type: 'insurance.changed',
+      event_version: eventVersion,
+      tenant_key: context.tenantKey,
+      occurred_at: occurredAt.toISOString(),
+      sent_at: sentAt.toISOString(),
+      aggregate: { type: 'insurance', id: aggregateId },
+      sequence: Number(context.sequence),
+      idempotency_key: idempotencyKey,
+      body,
+    },
+  };
+}
+
+/**
+ * `hmo.changed` — the HMO label Accounting caches (#82, ADR-0067). `insurance_id` is carried so
+ * Accounting can group companies under their scheme without a lookup.
+ */
+export function buildHmoChangedEvent(
+  input: HmoChangedInput,
+  context: BuildContext
+): OutboxEventRow {
+  const hmoId = Number(input.hmo_id);
+  const insuranceId = Number(input.insurance_id);
+  if (!Number.isInteger(hmoId) || hmoId <= 0) {
+    throw new EventBuildError(`hmo_id must be a positive integer, got "${String(input.hmo_id)}".`);
+  }
+  if (!Number.isInteger(insuranceId) || insuranceId <= 0) {
+    throw new EventBuildError(
+      `hmo.changed insurance_id must be a positive integer, got "${String(input.insurance_id)}".`
+    );
+  }
+
+  const name = input.name.trim();
+  if (name === '' || name.length > 256) {
+    throw new EventBuildError(`hmo.changed name must be 1-256 characters, got ${name.length}.`);
+  }
+
+  const hmoNum = input.hmo_num.trim();
+  if (hmoNum === '') {
+    throw new EventBuildError(
+      'hmo.changed hmo_num must be a non-empty string; it is the number the EMR HMO list shows.'
+    );
+  }
+
+  const aggregateId = hmoAggregateId(hmoId);
+  const occurredAt = context.occurredAt ?? new Date();
+  const sentAt = context.sentAt ?? new Date();
+  const eventVersion = context.eventVersion ?? 1;
+  const idempotencyKey = hmoChangedIdempotencyKey(hmoId, context.sequence);
+
+  const body: Record<string, unknown> = {
+    hmo_id: hmoId,
+    insurance_id: insuranceId,
+    name,
+    hmo_num: hmoNum,
+  };
+  assertNoDemographics(body, 'hmo.changed');
+
+  return {
+    aggregate_type: 'hmo',
+    aggregate_id: aggregateId,
+    sequence: context.sequence,
+    event_type: 'hmo.changed',
+    event_version: eventVersion,
+    idempotency_key: idempotencyKey,
+    payload: {
+      event_id: uuidV7(context.now),
+      event_type: 'hmo.changed',
+      event_version: eventVersion,
+      tenant_key: context.tenantKey,
+      occurred_at: occurredAt.toISOString(),
+      sent_at: sentAt.toISOString(),
+      aggregate: { type: 'hmo', id: aggregateId },
       sequence: Number(context.sequence),
       idempotency_key: idempotencyKey,
       body,
