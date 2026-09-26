@@ -56,7 +56,7 @@ import {
   emitStockReturned,
 } from '../Outbox/outbox-writer';
 import { DispensedBatchInput, visitAggregateId } from '../Outbox/event-builder';
-import { logStockReturnedSkip } from '../Outbox/skip-observability';
+import { recordStockReturnedSkip } from '../Outbox/skip-metrics';
 import { INVENTORY_QUANTITY_LOW, PRESCRIPTION_NOT_FOUND } from './messages/response-messages';
 import { getVisitsQuery } from '../Visit/visit.repository';
 import { getPrescriptionTests } from '../Orders/Laboratory/lab-order.repository';
@@ -988,7 +988,7 @@ export const returnDrugToInventory = async (
     // A miss on either resolver is LOGGED rather than silent (#21, #22): the units rejoin stock
     // either way, and Accounting cannot detect an event it never receives.
     if (!externalBatchId || !itemCode) {
-      logStockReturnedSkip({
+      recordStockReturnedSkip({
         source: 'patient_to_dispensary',
         reason: !externalBatchId ? 'missing_batch_id' : 'missing_item_code',
         return_id: history.id,
