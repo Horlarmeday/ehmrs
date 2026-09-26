@@ -8,17 +8,22 @@ services:
     env_file:
       - server/.env
     links: 
-      - mongo
+      - mongodb
       - mysql
     depends_on: 
       - mysql
-      - mongo
+      - mongodb
     volumes: 
       - '.:/app'
       - '/app/node_modules'
     networks: 
       - sail
     restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: '20m'
+        max-file: '5'
     deploy:
       replicas: 5
     command: 'npm run build && npm run start'
@@ -32,3 +37,7 @@ services:
       - sail
     ports: 
       - '80:80'
+
+networks:
+  sail:
+    driver: bridge

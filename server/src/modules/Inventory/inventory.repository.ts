@@ -24,7 +24,7 @@ import {
 import { BadException } from '../../common/util/api-error';
 import { emitStockReturned } from '../Outbox/outbox-writer';
 import { storeAggregateId } from '../Outbox/event-builder';
-import { logStockReturnedSkip } from '../Outbox/skip-observability';
+import { recordStockReturnedSkip } from '../Outbox/skip-metrics';
 import dayjs from 'dayjs';
 import { isEmpty } from 'lodash';
 
@@ -545,9 +545,9 @@ export const updateReturnRequests = async (
       };
 
       if (!externalBatchId) {
-        logStockReturnedSkip({ ...skipContext, reason: 'missing_batch_id' });
+        recordStockReturnedSkip({ ...skipContext, reason: 'missing_batch_id' });
       } else if (!itemCode) {
-        logStockReturnedSkip({ ...skipContext, reason: 'missing_item_code' });
+        recordStockReturnedSkip({ ...skipContext, reason: 'missing_item_code' });
       } else {
         await emitStockReturned(
           {

@@ -49,6 +49,14 @@ const transports = [
     level: 'error',
     maxSize: '20m',
   }),
+  new winston.transports.DailyRotateFile({
+    filename: 'logs/warn-%DATE%.log',
+    datePattern: 'YYYY-MM-DD',
+    zippedArchive: true,
+    maxFiles: '14d',
+    level: 'warn',
+    maxSize: '20m',
+  }),
 ];
 
 export const logger = winston.createLogger({
