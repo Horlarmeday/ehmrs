@@ -8,7 +8,7 @@ import {
   PatientInsurance,
   PrescribedInvestigation,
 } from '../../database/models';
-import sequelize, { Op, QueryTypes, WhereOptions } from 'sequelize';
+import sequelize, { Op, WhereOptions } from 'sequelize';
 import {
   calcLimitAndOffset,
   canUsePriceTariff,
@@ -122,22 +122,18 @@ const investigationResultFieldsToUpdate = (fields: string[] = []) => [
 ];
 
 /**
- * Codes are server-owned (#83): `INV-####` from the highest existing suffix, so tariff
- * rules in Accounting can key on `item:investigation:<code>`. The unique index on
- * `Investigations.code` is the race safety net; on a rare collision the next number is
- * tried, bounded so a pathological data state fails loudly instead of looping.
+ * Codes are server-owned (#83): `INV-####` numbered from `MAX(id) + 1`. The backfill assigned
+ * suffixes in id order and every create inserts a higher id, so `MAX(id) + 1` is always past
+ * every existing suffix — deletions only lower MAX(id). This keeps tariff rules in Accounting
+ * keyable on `item:investigation:<code>`. The unique index on `Investigations.code` is the
+ * race safety net; on a rare collision the number is recomputed, bounded so a pathological
+ * data state fails loudly instead of looping.
  */
 const MAX_CODE_GENERATION_RETRIES = 5;
 
 const nextInvestigationCode = async (): Promise<string> => {
-  const rows = await sequelizeConnection.query<{ max_suffix: number | null }>(
-    `SELECT MAX(CAST(SUBSTRING(code, 5) AS UNSIGNED)) AS max_suffix
-     FROM \`Investigations\`
-     WHERE code LIKE 'INV-%' AND code REGEXP '^INV-[0-9]+$'`,
-    { type: QueryTypes.SELECT }
-  );
-  const maxSuffix = Number(rows[0]?.max_suffix ?? 0);
-  return `INV-${String(maxSuffix + 1).padStart(4, '0')}`;
+  const maxId = Number((await Investigation.max('id')) ?? 0);
+  return `INV-${String(maxId + 1).padStart(4, '0')}`;
 };
 
 /**

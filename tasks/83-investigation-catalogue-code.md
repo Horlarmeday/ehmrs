@@ -14,7 +14,7 @@ Issue: Horlarmeday/ehmrs#83 · Parent: ehmrs_accounting#394 · Slice C2
 
 - [x] `server/src/database/models/investigation.ts` — `code`: STRING(43), NOT NULL, unique, `notEmpty` validate (`code is required`).
 - [x] `server/src/database/migrations/20260926000000-add-code-to-investigations.js` — add nullable column (after `name`) → backfill `INV-####` via `ROW_NUMBER() OVER (ORDER BY id)` join-update → NOT NULL → unique index `uniq_investigations_code`. `down` drops both.
-- [x] `radiology.repository.ts` — `nextInvestigationCode()` picks `MAX(CAST(SUBSTRING(code,5) AS UNSIGNED))` over `INV-<digits>` codes; `createInvestigation` retries (bounded, 5) on unique-violation race. Client-supplied `code` is never read.
+- [x] `radiology.repository.ts` — `nextInvestigationCode()` numbers from `MAX(id) + 1` via `Investigation.max('id')` (no raw SQL). `createInvestigation` retries (bounded, 5) on unique-violation race. Client-supplied `code` is never read.
 - [x] `updateInvestigation` — strips `code` before `investigation.update`, so the API cannot mutate codes.
 - [x] `outbox-writer.ts` — removed the `type !== 'investigation'` guard in `catalogueFieldsFromEntity`; investigations now emit `item_code` identically to the other four types, falling back to `service_line`-only when a row has no code.
 - [x] `radiology/validations.ts` — `validateInvestigation` now validates with `stripUnknown: true`.
@@ -43,7 +43,7 @@ Investigations now carry a server-owned unique catalogue code. The backfill assi
 ### Limitations / future considerations
 - `Test` and `Service` codes are still not DB-unique (out of scope).
 - Snapshot regeneration blocked on dev-DB/outbox sync (documented above).
-- The generation query is MySQL-specific (`REGEXP`, `CAST ... AS UNSIGNED`) — fine for this stack.
+- Codes are unique and monotonic in creation order, but not necessarily contiguous (a snapshot restored with a pre-advanced AUTO_INCREMENT yields gaps, e.g. `INV-0001` → `INV-0147`). Tariff keys only require uniqueness, not contiguity.
 
 ## Out of scope
 - Vue2 client form changes (code is server-managed only).
