@@ -66,7 +66,7 @@ export const downloadTestResult = (
   });
   doc.page.margins.bottom = 60; // keep content clear of the footer band
 
-  const filename = `Lab_Report_${patientInfo.accession_number || 'Result'}.pdf`;
+  const filename = `Lab_Report_${patientInfo.patientId || 'Result'}.pdf`;
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
 
