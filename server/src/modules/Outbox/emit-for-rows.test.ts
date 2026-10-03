@@ -498,6 +498,146 @@ describe('emitChargeCapturedForRows — payer derivation (#114)', () => {
       expect(body.consultation_valid_until).toBe('2026-08-05T15:00:00.000Z');
     });
   });
+
+  describe('department emission (#88)', () => {
+    it('attaches department verbatim from the visit (Visit.department)', async () => {
+      const visit = await Visit.create({
+        patient_id: patientId,
+        category: VisitCategory.OPD,
+        date_visit_start: new Date('2026-08-04T12:00:00.000Z'),
+        department: 'GOPD',
+        professional: 'Doctor',
+        type: 'New',
+      } as never);
+
+      const t = await sequelizeConnection.transaction();
+      await emitChargeCapturedForRows(
+        'drug',
+        [
+          {
+            id: 98,
+            patient_id: patientId,
+            visit_id: visit.id,
+            total_price: '100.00',
+            quantity_prescribed: 1,
+          },
+        ],
+        '2026-08-04',
+        t
+      );
+      await t.commit();
+
+      const events = await OutboxEvent.findAll();
+      const charge = events.find(
+        row => row.event_type === 'charge.captured' && row.idempotency_key === 'charge:drug:98'
+      );
+      expect(charge).toBeDefined();
+      const body = charge!.payload.body as Record<string, unknown>;
+      expect(body.department).toBe('GOPD');
+    });
+
+    it('omits department when the visit has an empty-string department', async () => {
+      const visit = await Visit.create({
+        patient_id: patientId,
+        category: VisitCategory.OPD,
+        date_visit_start: new Date('2026-08-04T12:00:00.000Z'),
+        department: 'Temp',
+        professional: 'Doctor',
+        type: 'New',
+      } as never);
+      await visit.update({ department: '' }, { validate: false });
+
+      const t = await sequelizeConnection.transaction();
+      await emitChargeCapturedForRows(
+        'drug',
+        [
+          {
+            id: 99,
+            patient_id: patientId,
+            visit_id: visit.id,
+            total_price: '100.00',
+            quantity_prescribed: 1,
+          },
+        ],
+        '2026-08-04',
+        t
+      );
+      await t.commit();
+
+      const events = await OutboxEvent.findAll();
+      const charge = events.find(
+        row => row.event_type === 'charge.captured' && row.idempotency_key === 'charge:drug:99'
+      );
+      expect(charge).toBeDefined();
+      const body = charge!.payload.body as Record<string, unknown>;
+      expect('department' in body).toBe(false);
+    });
+
+    it('omits department when the visit department is whitespace-only', async () => {
+      const visit = await Visit.create({
+        patient_id: patientId,
+        category: VisitCategory.OPD,
+        date_visit_start: new Date('2026-08-04T12:00:00.000Z'),
+        department: 'Temp',
+        professional: 'Doctor',
+        type: 'New',
+      } as never);
+      await visit.update({ department: '   ' }, { validate: false });
+
+      const t = await sequelizeConnection.transaction();
+      await emitChargeCapturedForRows(
+        'drug',
+        [
+          {
+            id: 100,
+            patient_id: patientId,
+            visit_id: visit.id,
+            total_price: '100.00',
+            quantity_prescribed: 1,
+          },
+        ],
+        '2026-08-04',
+        t
+      );
+      await t.commit();
+
+      const events = await OutboxEvent.findAll();
+      const charge = events.find(
+        row => row.event_type === 'charge.captured' && row.idempotency_key === 'charge:drug:100'
+      );
+      expect(charge).toBeDefined();
+      const body = charge!.payload.body as Record<string, unknown>;
+      expect('department' in body).toBe(false);
+    });
+
+    it('omits department when the row points at no visit', async () => {
+      const t = await sequelizeConnection.transaction();
+      await emitChargeCapturedForRows(
+        'drug',
+        [
+          {
+            id: 101,
+            patient_id: patientId,
+            visit_id: 9_999_999,
+            total_price: '100.00',
+            quantity_prescribed: 1,
+          },
+        ],
+        '2026-08-04',
+        t
+      );
+      await t.commit();
+
+      const events = await OutboxEvent.findAll();
+      const charge = events.find(
+        row => row.event_type === 'charge.captured' && row.idempotency_key === 'charge:drug:101'
+      );
+      expect(charge).toBeDefined();
+      const body = charge!.payload.body as Record<string, unknown>;
+      expect('department' in body).toBe(false);
+      expect('visit_type' in body).toBe(false);
+    });
+  });
 });
 
 describe('emitChargeCapturedForRows — item_code derivation (#255)', () => {
