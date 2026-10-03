@@ -933,17 +933,18 @@ export function normalisePrice(value: unknown): unknown {
   return value.toFixed(2);
 }
 
+interface ResolvedVisitInfo {
+  visit_type: string;
+  department?: string;
+  consultation_valid_until?: string;
+}
+
 export class VisitResolver {
-  private readonly cache = new Map<
-    number,
-    { visit_type: string; consultation_valid_until?: string } | null
-  >();
+  private readonly cache = new Map<number, ResolvedVisitInfo | null>();
 
   constructor(private readonly transaction: Transaction) {}
 
-  async resolve(
-    visitId: unknown
-  ): Promise<{ visit_type: string; consultation_valid_until?: string } | null> {
+  async resolve(visitId: unknown): Promise<ResolvedVisitInfo | null> {
     const id = Number(visitId);
     if (!Number.isInteger(id)) {
       return null;
@@ -956,7 +957,7 @@ export class VisitResolver {
 
     const visit = await Visit.findOne({
       where: { id },
-      attributes: ['id', 'category', 'date_visit_start', 'date_visit_ended'],
+      attributes: ['id', 'category', 'date_visit_start', 'date_visit_ended', 'department'],
       transaction: this.transaction,
     });
 
@@ -966,9 +967,15 @@ export class VisitResolver {
     }
 
     const visitType = visit.category;
-    const result: { visit_type: string; consultation_valid_until?: string } = {
+    const result: ResolvedVisitInfo = {
       visit_type: visitType,
     };
+
+    // Omit blank/whitespace-only departments: Accounting's contract refuses empty strings
+    // (min(1)), and a missing key is its existing "unattributed" path. A real value is verbatim.
+    if (typeof visit.department === 'string' && visit.department.trim().length > 0) {
+      result.department = visit.department;
+    }
 
     if (visit.category === VisitCategory.IPD || visit.category === VisitCategory.EMERGENCY) {
       if (visit.date_visit_ended) {
@@ -1035,6 +1042,7 @@ export async function emitChargeCapturedForRows(
       service_line: catalogue.serviceLine,
       item_code: catalogue.itemCode,
       visit_type: visitInfo?.visit_type,
+      department: visitInfo?.department,
       consultation_valid_until: visitInfo?.consultation_valid_until,
     };
 
