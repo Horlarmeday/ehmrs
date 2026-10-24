@@ -36,6 +36,7 @@ import {
   DrugStatus,
   AccountStatus,
   Source,
+  PharmacyDrugType,
 } from '../../database/enums';
 import { getOneDefault, getWardWithService } from '../AdminSettings/admin.repository';
 import { getPatientById } from '../Patient/patient.repository';
@@ -48,7 +49,8 @@ import {
   getDrugsPrescribed,
   getPatientTreatments,
 } from '../Orders/Pharmacy/pharmacy-order.repository';
-import { getInventories } from '../Inventory/inventory.repository';
+import { getInventories, getInventoryItemLayers } from '../Inventory/inventory.repository';
+import { multiplyNairaByQuantity } from '../../core/helpers/money';
 import { staffAttributes } from '../Antenatal/antenatal.repository';
 import {
   dateIntervalQuery,
@@ -575,13 +577,28 @@ export const insertDefaultAdmissionItems = async ({
   const inventory = inventories.find(({ accepted_drug_type }) =>
     new RegExp(`\\b${drugType}\\b`, 'i').test(accepted_drug_type)
   );
-  const isNHIS = EXCLUDED_INSURANCE.includes(insurance?.insurance?.name);
+  const inventoryId = inventory?.id || 1;
   const drugPrescription = await getDrugPrescription(patient.id, {
     visit_id: admission.visit_id,
     source: Source.CONSULTATION,
     examiner: admission.admitted_by,
     ante_natal_id: admission.ante_natal_id,
   });
+
+  // The default-config price is a snapshot from when the default was authored. Prefer the current
+  // dispensary layer's selling_price, and fall back to the configured price only if none exists.
+  const unitPriceByDrugId = new Map<number, unknown>();
+  const uniqueDrugIds = [
+    ...new Set(items.map(item => item?.drug?.drug_id).filter((id): id is number => !!id)),
+  ];
+  await Promise.all(
+    uniqueDrugIds.map(async drugId => {
+      const layers = await getInventoryItemLayers(inventoryId, drugId);
+      const configuredPrice = items.find(item => item?.drug?.drug_id === drugId)?.drug?.price;
+      unitPriceByDrugId.set(drugId, layers[0]?.selling_price ?? configuredPrice);
+    })
+  );
+
   const createItems = (filteredItems: any[]) => {
     const consumables = filteredItems?.filter(item => item?.drug?.drug_type === drugType);
     if (consumables?.length) {
@@ -590,7 +607,7 @@ export const insertDefaultAdmissionItems = async ({
         quantity_prescribed: +item.quantity,
         quantity_to_dispense: +item.quantity,
         visit_id: admission?.visit_id,
-        inventory_id: inventory?.id || 1,
+        inventory_id: inventoryId,
         start_date: Date.now(),
         date_prescribed: Date.now(),
         ante_natal_id: admission?.ante_natal_id,
@@ -602,8 +619,12 @@ export const insertDefaultAdmissionItems = async ({
         unit_id: item?.drug?.unit_id,
         drug_prescription_id: drugPrescription?.id,
         patient_insurance_id: insurance?.id,
-        total_price:
-          item?.drug?.price * item.quantity * (isNHIS && !/gloves/i.test(item) ? 0.1 : 1),
+        nhis_status: drugType === PharmacyDrugType.NHIS && insurance?.id ? 'Pending' : null,
+        total_price: multiplyNairaByQuantity(
+          unitPriceByDrugId.get(item?.drug?.drug_id) ?? item?.drug?.price,
+          item.quantity,
+          `admission consumable ${item?.drug?.drug_id} total_price`
+        ),
       }));
     }
     return [];

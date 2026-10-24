@@ -37,6 +37,7 @@ import {
   buildStockReturnedEvent,
   buildStoreRowChangedEvent,
   buildVendorChangedEvent,
+  chargeIdempotencyKey,
   itemAggregateId,
   hmoAggregateId,
   insuranceAggregateId,
@@ -164,6 +165,29 @@ async function persistOutboxEvent(
 
 export function isOutboxEnabled(): boolean {
   return process.env.EMR_OUTBOX_ENABLED === 'true';
+}
+
+/**
+ * True when this EMR line has already emitted `charge.captured`.
+ *
+ * The outbox row is the authoritative record: its `charge:{type}:{id}` key is unique, and the
+ * event was written in the same transaction as the line. Price/quantity must not change after
+ * that point, because Accounting has already billed the amount the event carried.
+ *
+ * Deliberately independent of `isOutboxEnabled`: if the outbox is off, no event exists and the
+ * line is not captured (nothing was ever sent to Accounting).
+ */
+export async function hasEmittedChargeCaptured(
+  type: PrescribedLineType,
+  id: number,
+  transaction?: Transaction
+): Promise<boolean> {
+  const event = await OutboxEvent.findOne({
+    where: { idempotency_key: chargeIdempotencyKey(type, id) },
+    attributes: ['id'],
+    transaction,
+  });
+  return event !== null;
 }
 
 /**
@@ -1036,7 +1060,10 @@ export async function emitChargeCapturedForRows(
       patient_id: patientId,
       visit_id: Number(row.visit_id),
       amount: normalisePrice(row[priceField]),
-      quantity: Number(row.quantity_prescribed ?? row.quantity ?? 1),
+      // The amount is built from quantity_to_dispense, so that is the quantity Accounting must
+      // use as its basis. The fallbacks keep test/investigation (no quantity) and service
+      // (`quantity`) working exactly as before.
+      quantity: Number(row.quantity_to_dispense ?? row.quantity_prescribed ?? row.quantity ?? 1),
       service_date: serviceDate,
       payer,
       service_line: catalogue.serviceLine,

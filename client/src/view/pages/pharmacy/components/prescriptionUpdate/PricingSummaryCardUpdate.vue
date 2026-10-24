@@ -1,204 +1,79 @@
 <template>
   <div class="pricing-summary-card-update">
-    <!-- Header -->
     <div class="pricing-header">
       <h3 class="pricing-title">💎 FINANCIAL SUMMARY</h3>
     </div>
 
-    <!-- Prescription Drugs Section -->
-    <div class="pricing-section" v-if="totalDrugsPrice > 0">
+    <div class="pricing-section">
       <div class="section-header">
-        <h4 class="section-title">💊 PRESCRIPTION DRUGS</h4>
+        <h4 class="section-title">💊 PRESCRIPTION TOTAL</h4>
       </div>
 
       <div class="pricing-breakdown">
-        <div class="breakdown-item nhis-coverage" v-if="!isEmpty(prescription?.insurance)">
+        <div class="breakdown-item">
+          <div class="breakdown-header">
+            <div class="breakdown-icon">🧾</div>
+            <div class="breakdown-label">Total</div>
+          </div>
+          <div class="breakdown-amount">₦{{ formatCurrency(summary.total) }}</div>
+          <div class="breakdown-description">gross amount captured</div>
+        </div>
+
+        <div class="breakdown-item patient-payment">
+          <div class="breakdown-header">
+            <div class="breakdown-icon">💳</div>
+            <div class="breakdown-label">Patient pays</div>
+          </div>
+          <div class="breakdown-amount">₦{{ formatCurrency(summary.patient) }}</div>
+          <div class="breakdown-description">net patient share</div>
+        </div>
+
+        <div class="breakdown-item nhis-coverage">
           <div class="breakdown-header">
             <div class="breakdown-icon">🏥</div>
-            <div class="breakdown-label">NHIS (90%)</div>
+            <div class="breakdown-label">Payer covers</div>
           </div>
-          <div class="breakdown-amount">₦{{ formatCurrency(nhisNinetyPercent) }}</div>
-          <div class="breakdown-description">covered by insurance</div>
-        </div>
-
-        <div class="breakdown-item patient-payment" v-if="!isEmpty(prescription?.insurance)">
-          <div class="breakdown-header">
-            <div class="breakdown-icon">💳</div>
-            <div class="breakdown-label">CASH (10%)</div>
-          </div>
-          <div class="breakdown-amount">₦{{ formatCurrency(nhisTenPercent) }}</div>
-          <div class="breakdown-description">patient pays</div>
-        </div>
-        <div class="breakdown-item patient-payment" v-if="isEmpty(prescription?.insurance)">
-          <div class="breakdown-header">
-            <div class="breakdown-icon">💳</div>
-            <div class="breakdown-label">CASH</div>
-          </div>
-          <div class="breakdown-amount">₦{{ formatCurrency(totalDrugsPrice) }}</div>
+          <div class="breakdown-amount">₦{{ formatCurrency(summary.payer) }}</div>
+          <div class="breakdown-description">HMO + company, net of unwinds</div>
         </div>
       </div>
 
-      <div class="section-total">
-        <div class="total-label">Drugs Subtotal:</div>
-        <div class="total-amount">₦{{ formatCurrency(totalDrugsPrice) }}</div>
+      <div v-if="summary.awaiting" class="text-warning font-weight-bold mt-3">
+        {{ summary.awaiting }} line{{ summary.awaiting === 1 ? '' : 's' }} awaiting the payer split
       </div>
     </div>
 
-    <!-- Additional Items Section -->
-    <div class="pricing-section" v-if="totalItemsPrice > 0">
-      <div class="section-header">
-        <h4 class="section-title">📦 ADDITIONAL ITEMS</h4>
-      </div>
-
-      <div class="pricing-breakdown">
-        <div class="breakdown-item cash-payment">
-          <div class="breakdown-header">
-            <div class="breakdown-icon">💳</div>
-            <div class="breakdown-label">Full Cash Payment</div>
-          </div>
-          <div class="breakdown-amount">₦{{ formatCurrency(totalItemsPrice) }}</div>
-        </div>
-      </div>
-
-      <div class="section-total">
-        <div class="total-label">Items Subtotal:</div>
-        <div class="total-amount">₦{{ formatCurrency(totalItemsPrice) }}</div>
-      </div>
-    </div>
-
-    <!-- Grand Total Section -->
     <div class="grand-total-section">
       <div class="grand-total-header">
         <h4 class="grand-total-title">🌟 GRAND TOTAL</h4>
       </div>
 
       <div class="grand-total-amount">
-        <div class="total-main">₦{{ formatCurrency(grandTotal) }}</div>
-        <!--        <div class="total-breakdown">-->
-        <!--          <div class="breakdown-line">-->
-        <!--            <span class="breakdown-label">🏥 NHIS Coverage:</span>-->
-        <!--            <span class="breakdown-value">₦{{ formatCurrency(nhis90Percent) }}</span>-->
-        <!--          </div>-->
-        <!--          <div class="breakdown-line">-->
-        <!--            <span class="breakdown-label">💳 Patient Payment:</span>-->
-        <!--            <span class="breakdown-value">₦{{ formatCurrency(patientPayment) }}</span>-->
-        <!--          </div>-->
-        <!--        </div>-->
+        <div class="total-main">₦{{ formatCurrency(summary.total) }}</div>
       </div>
     </div>
-
-    <!-- Payment Status Section -->
-    <!-- <div class="payment-status-section">
-      <div class="status-header">
-        <h4 class="status-title">💳 PAYMENT STATUS</h4>
-      </div>
-
-      <div class="status-items">
-        <div class="status-item" :class="nhisStatusClass">
-          <div class="status-icon">✅</div>
-          <div class="status-content">
-            <div class="status-label">NHIS Pre-approved</div>
-            <div class="status-description">Insurance coverage confirmed</div>
-          </div>
-        </div>
-
-        <div class="status-item" :class="patientPaymentStatusClass">
-          <div class="status-icon">{{ patientPaymentIcon }}</div>
-          <div class="status-content">
-            <div class="status-label">{{ patientPaymentStatusText }}</div>
-            <div class="status-description">{{ patientPaymentDescription }}</div>
-          </div>
-        </div>
-      </div>
-    </div> -->
   </div>
 </template>
 
 <script>
-import { isEmpty } from '@/common/common';
 export default {
   name: 'PricingSummaryCardUpdate',
   props: {
-    totalDrugsPrice: {
-      type: Number,
-      default: 0,
-    },
-    totalItemsPrice: {
-      type: Number,
-      default: 0,
-    },
-    nhisTenPercent: {
-      type: Number,
-      default: 0,
-    },
-    nhisNinetyPercent: {
-      type: Number,
-      default: 0,
+    summary: {
+      type: Object,
+      default: () => ({ total: 0, patient: 0, payer: 0, awaiting: 0 }),
     },
     prescription: {
       type: Object,
       default: () => ({}),
     },
   },
-  computed: {
-    grandTotal() {
-      return this.totalDrugsPrice + this.totalItemsPrice;
-    },
-
-    patientPayment() {
-      return this.nhisTenPercent + this.totalItemsPrice;
-    },
-
-    nhisStatusClass() {
-      return this.prescription?.insurance ? 'status-success' : 'status-warning';
-    },
-
-    patientPaymentStatusClass() {
-      // This would be based on actual payment status from prescription
-      return 'status-pending';
-    },
-
-    patientPaymentStatusText() {
-      return 'Awaiting patient payment';
-    },
-
-    patientPaymentDescription() {
-      return 'Payment required to complete dispense';
-    },
-
-    patientPaymentIcon() {
-      return '⏳';
-    },
-  },
   methods: {
-    isEmpty,
     formatCurrency(amount) {
       if (typeof amount !== 'number') return '0.00';
       return amount.toLocaleString('en-NG', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
-      });
-    },
-
-    handlePrintReceipt() {
-      this.$emit('print-receipt', {
-        totalDrugsPrice: this.totalDrugsPrice,
-        totalItemsPrice: this.totalItemsPrice,
-        nhis10Percent: this.nhisTenPercent,
-        nhis90Percent: this.nhisNinetyPercent,
-        grandTotal: this.grandTotal,
-        patientPayment: this.patientPayment,
-      });
-    },
-
-    handleViewBreakdown() {
-      this.$emit('view-breakdown', {
-        totalDrugsPrice: this.totalDrugsPrice,
-        totalItemsPrice: this.totalItemsPrice,
-        nhis10Percent: this.nhisTenPercent,
-        nhis90Percent: this.nhisNinetyPercent,
-        grandTotal: this.grandTotal,
-        patientPayment: this.patientPayment,
       });
     },
   },

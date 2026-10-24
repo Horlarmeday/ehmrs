@@ -30,7 +30,7 @@
               <span> {{ item.quantity_prescribed }} {{ item?.unit?.name }} </span>
             </td>
             <td>
-              <span> ₦{{ item.total_price }} </span>
+              <charge-split-figures :line="item" compact />
             </td>
             <td>
               <span>{{ item.date_prescribed | dayjs('ddd, MMM Do YYYY, h:mma') }}</span>
@@ -59,8 +59,10 @@
 <script>
 import Swal from 'sweetalert2';
 import { getLabelDotStatus } from '@/common/common';
+import ChargeSplitFigures from '@/view/components/charge/ChargeSplitFigures.vue';
 
 export default {
+  components: { ChargeSplitFigures },
   data: () => ({
     loading: false,
     UNBILLED: 'Unbilled',
@@ -88,7 +90,7 @@ export default {
           confirmButton: 'btn btn-danger',
           cancelButton: 'btn btn-default',
         },
-      }).then(function(result) {
+      }).then(function (result) {
         if (result.value) {
           self.deleteAdditionalItem(item);
         }

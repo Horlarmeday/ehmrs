@@ -14,7 +14,8 @@ export class PrescribedAdditionalItemBody {
   drug_prescription_id?: number;
   prescribed_drug_id?: number;
   price?: number;
-  total_price?: number;
+  total_price?: number | string;
+  nhis_status?: string | null;
   patient_id: number;
   visit_id: number;
   inventory_id: number;
@@ -41,7 +42,7 @@ export class PrescribedDrugBody {
   duration: number;
   duration_unit: string;
   notes: string;
-  total_price: number;
+  total_price: number | string;
   examiner: number;
   patient_id: number;
   visit_id: number;

@@ -20,7 +20,7 @@ import {
 } from '../../Outbox/outbox-writer';
 import { DefaultType, DrugForm, PharmacyDrugType } from '../../../database/enums';
 import { NHISApprovalStatus } from '../../../core/helpers/general';
-import { getDrugPrice } from '../../Pharmacy/pharmacy.repository';
+import { multiplyNairaByQuantity } from '../../../core/helpers/money';
 import { getInventories, getInventoryItemLayers } from '../../Inventory/inventory.repository';
 import { DrugGroup } from '../../../database/enums';
 import PharmacyOrderService from '../Pharmacy/pharmacy-order.service';
@@ -154,8 +154,11 @@ const insertHSGAdditionalItems = async ({
           ?.id || 1;
 
       const inventoryItem = (await getInventoryItemLayers(inventory_id, drug?.drug?.drug_id))[0];
-      const drugPrice =
-        (await getDrugPrice(patient, drug?.drug?.drug_id, inventoryItem)) * +drug?.quantity;
+      const drugPrice = multiplyNairaByQuantity(
+        inventoryItem?.selling_price ?? drug?.drug?.price,
+        drug?.quantity,
+        `HSG drug ${drug?.drug?.drug_id} total_price`
+      );
 
       return {
         drug_id: drug?.drug?.drug_id,
@@ -169,7 +172,7 @@ const insertHSGAdditionalItems = async ({
         frequency: drug?.frequency,
         duration: 1,
         duration_unit: 'Days',
-        total_price: drug?.drug?.drug_type === PharmacyDrugType.NHIS ? drugPrice * 0.1 : drugPrice,
+        total_price: drugPrice,
         examiner: investigations?.[0]?.requester,
         patient_id: patient?.id,
         visit_id,
@@ -196,8 +199,11 @@ const insertHSGAdditionalItems = async ({
           ?.id || 1;
 
       const inventoryItem = (await getInventoryItemLayers(inventory_id, drug?.drug?.drug_id))[0];
-      const drugPrice =
-        (await getDrugPrice(patient, drug?.drug?.drug_id, inventoryItem)) * +drug?.quantity;
+      const drugPrice = multiplyNairaByQuantity(
+        inventoryItem?.selling_price ?? drug?.drug?.price,
+        drug?.quantity,
+        `HSG consumable ${drug?.drug?.drug_id} total_price`
+      );
 
       return {
         drug_form: DrugForm.CONSUMABLE,
@@ -207,7 +213,7 @@ const insertHSGAdditionalItems = async ({
         drug_type: drug?.drug?.drug_type,
         quantity_prescribed: drug?.quantity,
         quantity_to_dispense: drug?.quantity,
-        total_price: drug?.drug?.drug_type === PharmacyDrugType.NHIS ? drugPrice * 0.1 : drugPrice,
+        total_price: drugPrice,
         examiner: investigations?.[0]?.requester,
         patient_id: patient?.id,
         start_date: Date.now(),

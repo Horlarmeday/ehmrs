@@ -126,9 +126,8 @@
         <div class="info-card">
           <div class="info-icon">💎</div>
           <div class="info-content">
-            <div class="info-label">TOTAL</div>
-            <div class="info-value">₦{{ item.total_price }}</div>
-            <div class="info-unit">total cost</div>
+            <div class="info-label">CHARGES</div>
+            <charge-split-figures :line="item" compact />
           </div>
         </div>
       </div>
@@ -281,11 +280,15 @@
 <script>
 import StatusBadgeUpdate from './StatusBadgeUpdate.vue';
 import { parseJwt } from '@/common/common';
+import chargeSplit from '@/common/chargeSplit';
+import ChargeSplitFigures from '@/view/components/charge/ChargeSplitFigures.vue';
 
 export default {
   name: 'AdditionalItemCardUpdate',
+  mixins: [chargeSplit],
   components: {
     StatusBadgeUpdate,
+    ChargeSplitFigures,
   },
   props: {
     item: {
@@ -344,7 +347,7 @@ export default {
     },
 
     unitPrice() {
-      return (this.item.total_price / this.item.quantity_to_dispense).toFixed(2);
+      return (this.chargeTotal(this.item) / (this.item.quantity_to_dispense || 1)).toFixed(2);
     },
 
     dispensedText() {

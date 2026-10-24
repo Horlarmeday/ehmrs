@@ -215,9 +215,9 @@
         <div class="detail-card">
           <div class="detail-icon">💎</div>
           <div class="detail-content">
-            <div class="detail-label">TOTAL COST</div>
-            <div class="detail-value">₦{{ prescription.total_price }}</div>
-            <div class="detail-description">per ₦{{ unitPrice }} unit cost</div>
+            <div class="detail-label">CHARGES</div>
+            <charge-split-figures :line="prescription" compact />
+            <div class="detail-description">Unit price ₦{{ unitPrice }}</div>
           </div>
         </div>
       </div>
@@ -324,11 +324,15 @@
 <script>
 import StatusBadgeUpdate from './StatusBadgeUpdate.vue';
 import { parseJwt } from '@/common/common';
+import chargeSplit from '@/common/chargeSplit';
+import ChargeSplitFigures from '@/view/components/charge/ChargeSplitFigures.vue';
 
 export default {
   name: 'DrugDispenseCardUpdate',
+  mixins: [chargeSplit],
   components: {
     StatusBadgeUpdate,
+    ChargeSplitFigures,
   },
   props: {
     prescription: {
@@ -393,7 +397,8 @@ export default {
     },
 
     unitPrice() {
-      return (this.prescription.total_price / this.prescription.quantity_prescribed).toFixed(2);
+      const quantity = this.prescription.quantity_to_dispense || 1;
+      return (this.chargeTotal(this.prescription) / quantity).toFixed(2);
     },
 
     dispensedText() {

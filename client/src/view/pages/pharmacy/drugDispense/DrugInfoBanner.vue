@@ -54,14 +54,9 @@
               >{{ prescription.duration }} {{ prescription.duration_unit }}</span
             ></a
           >
-          <a
-            href="#"
-            v-b-tooltip.hover
-            title="Total Price"
-            class="text-dark-50 text-hover-primary font-weight-bold mr-lg-8 mr-5 mb-lg-0 mb-2"
-            ><i class="far fa-money-bill-alt mr-2 font-size-lg icon-lg"></i>Total Price:
-            <span class="text-dark ml-2">₦‎{{ prescription.total_price }}</span></a
-          >
+          <div class="mb-2">
+            <charge-split-figures :line="prescription" compact />
+          </div>
         </div>
         <div class="d-flex flex-column flex-root">
           <a
@@ -112,7 +107,10 @@
   </div>
 </template>
 <script>
+import ChargeSplitFigures from '@/view/components/charge/ChargeSplitFigures.vue';
+
 export default {
+  components: { ChargeSplitFigures },
   props: {
     prescription: {
       type: Object,

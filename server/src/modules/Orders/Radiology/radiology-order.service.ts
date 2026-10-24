@@ -10,7 +10,6 @@ import VisitService from '../../Visit/visit.service';
 import PatientService from '../../Patient/patient.service';
 import {
   createInvestigationPrescription,
-  getInvestigationPrice,
   getLastInvestigationPrescription,
 } from '../../Radiology/radiology.repository';
 import { PrescribedInvestigationBody } from './types/radiology-order.types';
@@ -59,19 +58,24 @@ export class RadiologyOrderService {
     ]);
 
     const bulkInvestigations = await Promise.all(
-      investigations.map(async investigation => ({
-        ...investigation,
-        price: (await getInvestigationPrice(patient, investigation)) || investigation.price,
-        requester: staff_id,
-        visit_id,
-        patient_id: visit.patient_id,
-        date_requested: Date.now(),
-        investigation_prescription_id: prescription.id,
-        ...(investigation.investigation_type === PrescriptionType.NHIS && {
-          nhis_status: NHISApprovalStatus.PENDING,
-        }),
-        patient_insurance_id: insurance?.id,
-      }))
+      investigations.map(async investigation => {
+        // Accounting prices insured investigations from its own item rules. Send the cash price.
+        const effectiveType = insurance?.id
+          ? investigation.investigation_type
+          : PrescriptionType.CASH;
+        return {
+          ...investigation,
+          investigation_type: effectiveType,
+          price: investigation.price,
+          requester: staff_id,
+          visit_id,
+          patient_id: visit.patient_id,
+          date_requested: Date.now(),
+          investigation_prescription_id: prescription.id,
+          nhis_status: effectiveType === PrescriptionType.NHIS ? NHISApprovalStatus.PENDING : null,
+          patient_insurance_id: insurance?.id,
+        };
+      })
     );
 
     const includesHSG = investigations.some(investigation => /\bHSG\b/i.test(investigation.name));

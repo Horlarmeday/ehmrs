@@ -47,10 +47,10 @@
               <span> {{ item.quantity_to_dispense }} {{ item?.unit?.name }} </span>
             </td>
             <td>
-              <span>{{ getUnitPrice(item.total_price, item.quantity_to_dispense) }} </span>
+              <span>{{ getUnitPrice(item) }} </span>
             </td>
             <td>
-              <span>{{ item.total_price }} </span>
+              <charge-split-figures :line="item" compact />
             </td>
             <td>
               <span>
@@ -77,10 +77,13 @@
 </template>
 <script>
 import { getLabelDotStatus } from '@/common/common';
+import chargeSplit from '@/common/chargeSplit';
 import ButtonPaymentOptions from '@/view/pages/account/components/ButtonPaymentOptions.vue';
+import ChargeSplitFigures from '@/view/components/charge/ChargeSplitFigures.vue';
 
 export default {
-  components: { ButtonPaymentOptions },
+  mixins: [chargeSplit],
+  components: { ButtonPaymentOptions, ChargeSplitFigures },
   data: () => ({
     loading: false,
     UNBILLED: 'Unbilled',
@@ -94,7 +97,7 @@ export default {
     },
 
     disableBilling() {
-      return this.items.every(drug => drug.billing_status === 'Billed');
+      return this.items.every((drug) => drug.billing_status === 'Billed');
     },
   },
   created() {
@@ -107,8 +110,8 @@ export default {
       this.$store.dispatch('order/fetchAdditionalItemsPerVisit', { id: this.$route.params.id });
     },
 
-    getUnitPrice(totalPrice, quantity) {
-      return totalPrice / quantity || 0;
+    getUnitPrice(line) {
+      return this.chargeTotal(line) / (line.quantity_to_dispense || 1) || 0;
     },
 
     isSelected(item) {
@@ -118,7 +121,7 @@ export default {
     toggleItem(item) {
       if (this.isSelected(item)) {
         // If the item is already selected, remove it from selectedItems
-        const itemIndex = this.selectedItems.findIndex(id => id === item.id);
+        const itemIndex = this.selectedItems.findIndex((id) => id === item.id);
         this.selectedItems.splice(itemIndex, 1);
       } else {
         // If the item is not selected, add it to selectedItems

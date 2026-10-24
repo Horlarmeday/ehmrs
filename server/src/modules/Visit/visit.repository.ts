@@ -22,7 +22,7 @@ import { getOnePrescribedService } from '../Orders/Service/service-order.reposit
 import { getOnePrescribedInvestigation } from '../Orders/Radiology/radiology-order.repository';
 import { getOneDefault } from '../AdminSettings/admin.repository';
 import { getInventories } from '../Inventory/inventory.repository';
-import { getDrugPrice } from '../Pharmacy/pharmacy.repository';
+import { multiplyNairaByQuantity } from '../../core/helpers/money';
 import { getInventoryItemQuery } from '../Inventory/inventory.repository';
 import { PrescribedDrug, PrescribedAdditionalItem, DrugPrescription } from '../../database/models';
 import dayjs from 'dayjs';
@@ -38,7 +38,7 @@ import {
   VisitStatus,
 } from '../../database/enums';
 import { NHISApprovalStatus } from '../../core/helpers/general';
-import { getDrugType, EXCLUDED_INSURANCE } from '../../core/helpers/helper';
+import { getDrugType } from '../../core/helpers/helper';
 import { isEmpty } from 'lodash';
 import { isToday } from '../../core/helpers/helper';
 
@@ -847,7 +847,6 @@ export const insertDefaultDialysisItems = async ({
 
     const drugType = getDrugType(patient.has_insurance, insurance);
     const inventories = await getInventories();
-    const isNHIS = insurance ? EXCLUDED_INSURANCE.includes(insurance?.insurance?.name) : false;
 
     // Get drug prescription for this visit
     const drugPrescription = await getDrugPrescription(patient.id, {
@@ -873,8 +872,11 @@ export const insertDefaultDialysisItems = async ({
             inventory_id,
             drug_id: drug?.drug?.drug_id,
           });
-          const drugPrice =
-            (await getDrugPrice(patient, drug?.drug?.drug_id, inventoryItem)) * +drug?.quantity;
+          const drugPrice = multiplyNairaByQuantity(
+            inventoryItem?.selling_price ?? drug?.drug?.price,
+            drug?.quantity,
+            `dialysis drug ${drug?.drug?.drug_id} total_price`
+          );
 
           return {
             drug_id: drug?.drug?.drug_id,
@@ -888,8 +890,7 @@ export const insertDefaultDialysisItems = async ({
             frequency: drug?.frequency || 'OD',
             duration: 1,
             duration_unit: 'Days',
-            total_price:
-              drug?.drug?.drug_type === PharmacyDrugType.NHIS ? drugPrice * 0.1 : drugPrice,
+            total_price: drugPrice,
             examiner: visit.staff_id,
             patient_id: patient.id,
             visit_id: visit.id,
@@ -927,9 +928,11 @@ export const insertDefaultDialysisItems = async ({
             inventory_id,
             drug_id: consumable?.drug?.drug_id,
           });
-          const drugPrice =
-            (await getDrugPrice(patient, consumable?.drug?.drug_id, inventoryItem)) *
-            +consumable?.quantity;
+          const drugPrice = multiplyNairaByQuantity(
+            inventoryItem?.selling_price ?? consumable?.drug?.price,
+            consumable?.quantity,
+            `dialysis consumable ${consumable?.drug?.drug_id} total_price`
+          );
 
           return {
             drug_form: DrugForm.CONSUMABLE,
@@ -939,8 +942,7 @@ export const insertDefaultDialysisItems = async ({
             drug_type: consumable?.drug?.drug_type,
             quantity_prescribed: consumable?.quantity,
             quantity_to_dispense: consumable?.quantity,
-            total_price:
-              consumable?.drug?.drug_type === PharmacyDrugType.NHIS ? drugPrice * 0.1 : drugPrice,
+            total_price: drugPrice,
             examiner: visit.staff_id,
             patient_id: patient.id,
             start_date: Date.now(),

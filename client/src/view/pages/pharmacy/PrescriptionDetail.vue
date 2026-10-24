@@ -23,18 +23,21 @@
           <div class="mb-4 border p-4" v-if="prescriptions?.length">
             <div class="form-inline flex-lg-row">
               <h6>Drugs</h6>
-              <h5 class="ml-auto" v-if="!isEmpty(prescription?.insurance)">
-                <span class="mr-2">NHIS 10% Total: </span>
-                ₦‎{{ nhis10PercentDrugsPrice }}
+              <h5 class="ml-auto mr-4">
+                <span class="mr-2">Total:</span>
+                ₦‎{{ formatNaira(drugSummary.total) }}
               </h5>
-              <h5 class="ml-auto" v-if="!isEmpty(prescription?.insurance)">
-                <span class="mr-2">NHIS 90% Total: </span>
-                ₦‎{{ nhis90PercentDrugsPrice }}
+              <h5 class="ml-auto mr-4">
+                <span class="mr-2">Patient pays:</span>
+                ₦‎{{ formatNaira(drugSummary.patient) }}
               </h5>
-              <h5 class="ml-auto" v-if="isEmpty(prescription?.insurance)">
-                <span class="mr-2">Total: </span>
-                ₦‎{{ totalDrugsPrice }}
+              <h5 class="ml-auto">
+                <span class="mr-2">Payer covers:</span>
+                ₦‎{{ formatNaira(drugSummary.payer) }}
               </h5>
+              <span v-if="drugSummary.awaiting" class="ml-3 text-warning font-weight-bold">
+                {{ drugSummary.awaiting }} awaiting split
+              </span>
             </div>
             <drug-dispense-section
               :key="prescriptionKey"
@@ -45,10 +48,21 @@
           <div class="border p-4" v-if="items?.length">
             <div class="form-inline flex-lg-row">
               <h6>Additional Items</h6>
-              <h5 class="ml-auto">
-                <span class="mr-2">Total: </span>
-                ₦‎{{ totalItemsPrice }}
+              <h5 class="ml-auto mr-4">
+                <span class="mr-2">Total:</span>
+                ₦‎{{ formatNaira(itemSummary.total) }}
               </h5>
+              <h5 class="ml-auto mr-4">
+                <span class="mr-2">Patient pays:</span>
+                ₦‎{{ formatNaira(itemSummary.patient) }}
+              </h5>
+              <h5 class="ml-auto">
+                <span class="mr-2">Payer covers:</span>
+                ₦‎{{ formatNaira(itemSummary.payer) }}
+              </h5>
+              <span v-if="itemSummary.awaiting" class="ml-3 text-warning font-weight-bold">
+                {{ itemSummary.awaiting }} awaiting split
+              </span>
             </div>
             <additional-item-dispense-section
               :key="prescriptionKey"
@@ -70,9 +84,10 @@ import DrugDispenseSection from '@/view/pages/pharmacy/drugDispense/DrugDispense
 import PrescriptionSkeleton from '@/view/pages/pharmacy/components/skeleton/PrescriptionSkeleton.vue';
 import AdditionalItemDispenseSection from '@/view/pages/pharmacy/drugDispense/AdditionalItemDispenseSection.vue';
 import HistoryModal from '@/view/pages/pharmacy/history/HistoryModal.vue';
-import { isEmpty } from '@/common/common';
+import chargeSplit from '@/common/chargeSplit';
 
 export default {
+  mixins: [chargeSplit],
   components: {
     HistoryModal,
     AdditionalItemDispenseSection,
@@ -103,37 +118,15 @@ export default {
       return this.prescription.visit_id;
     },
 
-    totalDrugsPrice() {
-      const totalPrice = this.prescription.drugs?.map(pres => pres.total_price);
-      return totalPrice.reduce((acc, cur) => acc + +cur, 0);
+    drugSummary() {
+      return this.summarizeChargeLines(this.prescriptions);
     },
 
-    totalItemsPrice() {
-      const totalPrice = this.prescription.items?.map(pres => pres.total_price);
-      return totalPrice.reduce((acc, cur) => acc + +cur, 0);
-    },
-
-    nhisMappedTotalPrice() {
-      return this.prescription.drugs
-        ?.filter(drug => drug?.drug_type === 'NHIS')
-        .map(pres => pres.total_price);
-    },
-
-    nhis90PercentDrugsPrice() {
-      const mappedTotal10PercentPrice = this.nhisMappedTotalPrice.reduce(
-        (acc, cur) => acc + +cur,
-        0
-      );
-      const totalActualPrice = mappedTotal10PercentPrice / 0.1;
-      return totalActualPrice * 0.9;
-    },
-
-    nhis10PercentDrugsPrice() {
-      return this.nhisMappedTotalPrice.reduce((acc, cur) => acc + +cur, 0);
+    itemSummary() {
+      return this.summarizeChargeLines(this.items);
     },
   },
   methods: {
-    isEmpty,
     hideModal() {
       this.displayPrompt = false;
     },
@@ -144,7 +137,7 @@ export default {
   },
   watch: {
     prescription(val) {
-      this.prescriptions = val.drugs.map(drug => ({
+      this.prescriptions = val.drugs.map((drug) => ({
         id: drug.id,
         drug_name: drug.drug.name,
         drug_type: drug.drug_type,
@@ -162,6 +155,15 @@ export default {
         duration: drug.duration,
         duration_unit: drug.duration_unit,
         total_price: drug.total_price,
+        patient_insurance_id: drug.patient_insurance_id,
+        coverage_outcome: drug.coverage_outcome,
+        split_amount: drug.split_amount,
+        patient_share: drug.patient_share,
+        patient_net: drug.patient_net,
+        insurer_amount: drug.insurer_amount,
+        insurer_net: drug.insurer_net,
+        corporate_amount: drug.corporate_amount,
+        corporate_net: drug.corporate_net,
         quantity: drug.quantity_prescribed,
         start_date: drug.start_date,
         frequency: drug.frequency,
@@ -179,7 +181,7 @@ export default {
           drug.quantity_returned === drug.quantity_to_dispense,
       }));
 
-      this.items = val.items.map(item => ({
+      this.items = val.items.map((item) => ({
         id: item.id,
         item_name: item.drug.name,
         drug_type: item.drug_type,
@@ -195,6 +197,15 @@ export default {
         date_dispensed: item.date_dispensed,
         unit: item.unit.name,
         total_price: item.total_price,
+        patient_insurance_id: item.patient_insurance_id,
+        coverage_outcome: item.coverage_outcome,
+        split_amount: item.split_amount,
+        patient_share: item.patient_share,
+        patient_net: item.patient_net,
+        insurer_amount: item.insurer_amount,
+        insurer_net: item.insurer_net,
+        corporate_amount: item.corporate_amount,
+        corporate_net: item.corporate_net,
         reason_for_return: item.reason_for_return,
         disabledReturn: val.status === this.COMPLETE_DISPENSE,
         staff: val.examiner,

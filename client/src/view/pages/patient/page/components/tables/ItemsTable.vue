@@ -30,7 +30,7 @@
               <span> {{ item.quantity_prescribed }} {{ item?.unit?.name }} </span>
             </td>
             <td>
-              <span>{{ item.total_price }} </span>
+              <charge-split-figures :line="item" compact />
             </td>
             <td>
               <span>{{ item.date_prescribed | dayjs('ddd, MMM Do YYYY, h:mma') }}</span>
@@ -55,9 +55,10 @@
 <script>
 import { getLabelDotStatus } from '@/common/common';
 import Pagination from '@/utils/Pagination.vue';
+import ChargeSplitFigures from '@/view/components/charge/ChargeSplitFigures.vue';
 
 export default {
-  components: { Pagination },
+  components: { Pagination, ChargeSplitFigures },
   data: () => ({
     currentPage: 1,
     itemsPerPage: 10,

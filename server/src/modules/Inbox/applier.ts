@@ -1,5 +1,6 @@
 import { ModelStatic, Model, Transaction } from 'sequelize';
-import { HistoryType, PaymentStatus, Status } from '../../database/enums';
+import { CoverageOutcome, HistoryType, PaymentStatus, Status } from '../../database/enums';
+import { koboStringToNairaString } from '../../core/helpers/money';
 import { PrescribedDrug } from '../../database/models/prescribedDrug';
 import { PrescribedInvestigation } from '../../database/models/prescribedInvestigation';
 import { PrescribedService } from '../../database/models/prescribedService';
@@ -165,6 +166,10 @@ export async function applyInstruction(
 
   if (eventType === 'catalogue.requested' || eventType === 'payer.requested') {
     return applyCatalogueRequest(eventType, body, transaction);
+  }
+
+  if (eventType === 'charge.split.updated') {
+    return applyChargeSplit(aggregateId, sequence, body, transaction);
   }
 
   const nextStatus = statusFor(eventType);
@@ -715,6 +720,125 @@ function parseOptionalKobo(raw: unknown, field: string, externalBatchId: string)
     );
   }
   return Number(BigInt(raw)) / 100;
+}
+
+const COVERAGE_OUTCOMES = new Set<string>(Object.values(CoverageOutcome));
+
+interface SplitKobo {
+  readonly raw: string;
+  readonly cents: bigint;
+  readonly naira: string;
+}
+
+function readSplitKobo(body: Record<string, unknown>, field: string): SplitKobo {
+  const raw = body[field];
+  if (typeof raw !== 'string' || !/^\d+$/.test(raw)) {
+    throw new ApplyError(
+      `charge.split.updated carries a malformed ${field} (${String(
+        raw
+      )}); money crosses as a string of integer kobo.`
+    );
+  }
+  return { raw, cents: BigInt(raw), naira: koboStringToNairaString(raw, field) };
+}
+
+/**
+ * `charge.split.updated` — Accounting's resolved split for an insured line (ADR-0096/0097).
+ *
+ * Overwrite semantics, sequenced PER CHARGE LINE (`reverse_charge_line`), not per encounter:
+ * discarding a stale split must never discard a later `payment.settled` for the same encounter,
+ * and vice versa. The aggregate id is Accounting's charge line id, so `claimSequence` keeps a
+ * separate high-water mark from the encounter's.
+ *
+ * The EMR cannot re-derive these figures, so every field is validated and any malformed or
+ * non-conserving body is dead-lettered rather than stored. A cash line receives no event and keeps
+ * all eight columns NULL; the UI treats that as cash (or “awaiting split” for an insured line).
+ */
+async function applyChargeSplit(
+  aggregateId: string,
+  sequence: number,
+  body: Record<string, unknown>,
+  transaction: Transaction
+): Promise<ApplyResult> {
+  const fresh = await claimSequence(aggregateId, sequence, transaction);
+  if (!fresh) {
+    return { outcome: 'DISCARDED_STALE' };
+  }
+
+  const outcome = body.outcome;
+  if (typeof outcome !== 'string' || !COVERAGE_OUTCOMES.has(outcome)) {
+    throw new ApplyError(
+      `charge.split.updated carries an unknown outcome "${String(outcome)}"; expected one of ${[
+        ...COVERAGE_OUTCOMES,
+      ].join(', ')}.`
+    );
+  }
+
+  const { type, id } = readLineRef(body);
+  const model = MODEL_BY_TYPE[type];
+
+  const existing = await model.findByPk(id, { transaction });
+  if (existing === null) {
+    throw new ApplyError(
+      `no ${type} row with id ${id} to apply charge.split.updated to — the line the instruction ` +
+        'names does not exist.'
+    );
+  }
+
+  const amount = readSplitKobo(body, 'amount_kobo');
+  const patientShare = readSplitKobo(body, 'patient_share_kobo');
+  const patientNet = readSplitKobo(body, 'patient_net_kobo');
+  const insurerAmount = readSplitKobo(body, 'insurer_amount_kobo');
+  const insurerNet = readSplitKobo(body, 'insurer_net_kobo');
+  const corporateAmount = readSplitKobo(body, 'corporate_amount_kobo');
+  const corporateNet = readSplitKobo(body, 'corporate_net_kobo');
+
+  // Accounting refuses to emit a non-conserving split. Re-check on this side: the EMR stores
+  // these figures as fact and has no way to repair a bad one after the fact.
+  const portions = patientShare.cents + insurerAmount.cents + corporateAmount.cents;
+  if (outcome === CoverageOutcome.CAPITATED) {
+    if (portions !== BigInt(0)) {
+      throw new ApplyError(
+        `charge.split.updated is capitated but its portions sum to ${portions.toString()} kobo; ` +
+          'a capitated line must carry zero portions.'
+      );
+    }
+  } else if (portions !== amount.cents) {
+    throw new ApplyError(
+      `charge.split.updated portions sum to ${portions.toString()} kobo against a ` +
+        `${amount.raw} kobo gross.`
+    );
+  }
+
+  const nets: readonly [string, SplitKobo, string, SplitKobo][] = [
+    ['patient net', patientNet, 'patient share', patientShare],
+    ['insurer net', insurerNet, 'insurer amount', insurerAmount],
+    ['corporate net', corporateNet, 'corporate amount', corporateAmount],
+  ];
+  for (const [netName, net, shareName, share] of nets) {
+    if (net.cents > share.cents) {
+      throw new ApplyError(
+        `charge.split.updated carries a ${netName} (${net.raw} kobo) above the ${shareName} ` +
+          `(${share.raw} kobo).`
+      );
+    }
+  }
+
+  await model.update(
+    {
+      coverage_outcome: outcome,
+      split_amount: amount.naira,
+      patient_share: patientShare.naira,
+      patient_net: patientNet.naira,
+      insurer_amount: insurerAmount.naira,
+      insurer_net: insurerNet.naira,
+      corporate_amount: corporateAmount.naira,
+      corporate_net: corporateNet.naira,
+    } as never,
+    { where: { id }, transaction }
+  );
+
+  return { outcome: 'APPLIED' };
 }
 
 /** The status a reverse event sets, or undefined for a valid-but-unhandled reverse type. */

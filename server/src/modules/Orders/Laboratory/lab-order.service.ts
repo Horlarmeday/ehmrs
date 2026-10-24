@@ -13,7 +13,6 @@ import PatientService from '../../Patient/patient.service';
 import {
   createTestPrescription,
   getLastTestPrescription,
-  getTestPrice,
 } from '../../Laboratory/laboratory.repository';
 import { isToday, StatusCodes } from '../../../core/helpers/helper';
 import { getVisitById } from '../../Visit/visit.repository';
@@ -62,23 +61,26 @@ export class LabOrderService {
     ]);
 
     const bulkTests = await Promise.all(
-      tests.map(async test => ({
-        ...test,
-        price: (await getTestPrice(patient, test)) || test.price,
-        requester: staff_id,
-        visit_id,
-        patient_id: visit.patient_id,
-        date_requested: Date.now(),
-        test_prescription_id: prescription.id,
-        ...(test.test_type === PrescriptionType.NHIS && {
-          nhis_status: NHISApprovalStatus.PENDING,
-        }),
-        patient_insurance_id: insurance?.id,
-        test_group:
-          patient?.has_insurance && test.test_type !== PrescriptionType.CASH
-            ? TestType.SECONDARY
-            : null,
-      }))
+      tests.map(async test => {
+        // Accounting prices insured tests from its own item rules. The EMR sends the cash price.
+        const effectiveType = insurance?.id ? test.test_type : PrescriptionType.CASH;
+        return {
+          ...test,
+          test_type: effectiveType,
+          price: test.price,
+          requester: staff_id,
+          visit_id,
+          patient_id: visit.patient_id,
+          date_requested: Date.now(),
+          test_prescription_id: prescription.id,
+          nhis_status: effectiveType === PrescriptionType.NHIS ? NHISApprovalStatus.PENDING : null,
+          patient_insurance_id: insurance?.id,
+          test_group:
+            patient?.has_insurance && effectiveType !== PrescriptionType.CASH
+              ? TestType.SECONDARY
+              : null,
+        };
+      })
     );
     return orderBulkTest(bulkTests);
   }

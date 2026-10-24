@@ -26,7 +26,6 @@ import {
 import {
   AdditionalTreatment,
   Admission,
-  InventoryItem,
   PatientTreatment,
   PrescribedAdditionalItem,
   PrescribedDrug,
@@ -36,9 +35,9 @@ import PatientService from '../../Patient/patient.service';
 import VisitService from '../../Visit/visit.service';
 import {
   createDrugPrescription,
-  getDrugPrice,
   getLastDrugPrescription,
 } from '../../Pharmacy/pharmacy.repository';
+import { isPositiveMoney, multiplyNairaByQuantity } from '../../../core/helpers/money';
 import { EXCLUDED_INSURANCE, isToday, StatusCodes } from '../../../core/helpers/helper';
 import { getOneDefault } from '../../AdminSettings/admin.repository';
 import { BadException } from '../../../common/util/api-error';
@@ -60,7 +59,6 @@ import { gt, isEmpty, lt } from 'lodash';
 import { INVALID_QUANTITY } from '../../Inventory/messages/response-messages';
 import { Period } from './interface/prescribed-drug.interface';
 import {
-  Status,
   PharmacyDrugType as DrugType,
   PaymentStatus,
   DefaultType,
@@ -119,24 +117,30 @@ class PharmacyOrderService {
         }
         const inventoryItem = layers[0];
 
-        const drugPrice =
-          (await getDrugPrice(patient, drug_id, inventoryItem)) * +quantity_to_dispense;
+        // Accounting owns the co-pay. The EMR sends the gross store price, and a line typed as
+        // insured with no insurance row is raised as cash rather than as an insurance line.
+        const effectiveDrugType = insurance?.id ? drug_type : DrugType.CASH;
+        const isNhis = effectiveDrugType === DrugType.NHIS;
+        const lineTotal = multiplyNairaByQuantity(
+          inventoryItem.selling_price,
+          quantity_to_dispense,
+          `drug ${drug_id} total_price`
+        );
 
         return {
           ...data,
+          drug_type: effectiveDrugType,
           patient_id: patient.id,
           examiner: staff_id,
-          total_price: drug_type === DrugType.NHIS ? drugPrice * 0.1 : drugPrice,
+          total_price: lineTotal,
           drug_prescription_id: drugPrescription.id,
-          ...(drug_type === DrugType.NHIS && {
-            nhis_status: NHISApprovalStatus.PENDING,
-          }),
+          nhis_status: isNhis ? NHISApprovalStatus.PENDING : null,
           patient_insurance_id: insurance?.id,
           visit_id,
           date_prescribed: Date.now(),
-          drug_group: drug_group || null,
-          original_total_price: inventoryItem.selling_price * +quantity_to_dispense,
-          drugPrice: inventoryItem.selling_price * +quantity_to_dispense,
+          drug_group: isNhis ? drug_group || null : null,
+          original_total_price: lineTotal,
+          drugPrice: lineTotal,
           quantity_remaining: sumLayerQuantityRemaining(layers),
           drugName: inventoryItem?.drug?.name,
         };
@@ -201,7 +205,13 @@ class PharmacyOrderService {
       }),
     ]);
     const inventoryItem = inventoryLayers[0];
-    const drugPrice = (await getDrugPrice(patient, drug_id, inventoryItem)) * +quantity_to_dispense;
+    const effectiveDrugType = insurance?.id ? drug_type : DrugType.CASH;
+    const isNhis = effectiveDrugType === DrugType.NHIS;
+    const lineTotal = multiplyNairaByQuantity(
+      inventoryItem.selling_price,
+      quantity_to_dispense,
+      `drug ${drug_id} total_price`
+    );
 
     if (
       insurance &&
@@ -224,8 +234,11 @@ class PharmacyOrderService {
       });
 
       if (body?.drug_group === DrugGroup.PRIMARY) {
-        const totalPrice = inventoryItem.selling_price * +quantity_to_dispense;
-        const totalSum = sumOfDrugsPrescribedToday + sumOfItemsPrescribedToday + totalPrice;
+        // Every stored total is now gross, so the quota compares like with like.
+        const totalSum =
+          Number(sumOfDrugsPrescribedToday || 0) +
+          Number(sumOfItemsPrescribedToday || 0) +
+          Number(lineTotal);
         const settings = await SystemSettings.findOne();
         if (settings) {
           if (totalSum > +settings.nhis_daily_quota_amount) {
@@ -237,13 +250,13 @@ class PharmacyOrderService {
 
     const prescribedDrug = await prescribeDrug({
       ...body,
+      drug_type: effectiveDrugType,
       patient_id: patient.id,
       examiner: staff_id,
-      total_price: drug_type === DrugType.NHIS ? drugPrice * 0.1 : drugPrice,
+      total_price: lineTotal,
       drug_prescription_id: drugPrescription.id,
-      ...(drug_type === DrugType.NHIS && {
-        nhis_status: NHISApprovalStatus.PENDING,
-      }),
+      nhis_status: isNhis ? NHISApprovalStatus.PENDING : null,
+      drug_group: isNhis ? body?.drug_group || null : null,
       patient_insurance_id: insurance?.id,
     });
     if (/\binjection\b/i.test(dosage_form_name) || /\bInj\b/i.test(dosage_form_name)) {
@@ -305,13 +318,29 @@ class PharmacyOrderService {
         const { drug_id, drug_type, quantity_to_dispense, price, inventory_id } = item;
         const layers = await getInventoryItemLayers(inventory_id, drug_id);
         const inventoryItem = layers[0];
-        const drugPrice =
-          +(await getDrugPrice(patient, drug_id, inventoryItem)) * +quantity_to_dispense;
-        const totalPrice = +price * +quantity_to_dispense;
+        const effectiveDrugType = insurance?.id ? drug_type : DrugType.CASH;
+        const isNhis = effectiveDrugType === DrugType.NHIS;
+        const grossLineTotal = inventoryItem?.selling_price
+          ? multiplyNairaByQuantity(
+              inventoryItem.selling_price,
+              quantity_to_dispense,
+              `additional item ${drug_id} total_price`
+            )
+          : null;
+        // The client price is only a fallback for an unpriced/zero store row, and it must be
+        // converted to a line total before use — `'0.00'` is truthy, hence the positive check.
+        const clientLineTotal = multiplyNairaByQuantity(
+          price,
+          quantity_to_dispense,
+          `additional item ${drug_id} client price`
+        );
+        const lineTotal =
+          grossLineTotal && isPositiveMoney(grossLineTotal) ? grossLineTotal : clientLineTotal;
 
         return {
           ...item,
-          total_price: drug_type === DrugType.NHIS ? drugPrice * 0.1 : drugPrice || totalPrice,
+          drug_type: effectiveDrugType,
+          total_price: lineTotal,
           quantity_prescribed: item.quantity_to_dispense,
           examiner: staffId,
           patient_id: patient.id,
@@ -320,7 +349,8 @@ class PharmacyOrderService {
           date_prescribed: Date.now(),
           drug_prescription_id: drugPrescription.id,
           patient_insurance_id: insurance?.id,
-          original_total_price: inventoryItem.selling_price * +quantity_to_dispense,
+          nhis_status: isNhis ? NHISApprovalStatus.PENDING : null,
+          original_total_price: grossLineTotal || clientLineTotal,
         };
       })
     )) as unknown) as PrescribedAdditionalItemBody[];
@@ -659,7 +689,11 @@ class PharmacyOrderService {
   }
 
   /**
-   * check if patient has reached daily NHIS limit quota
+   * Check if the patient has reached the daily NHIS limit quota.
+   *
+   * BASIS: GROSS. Every stored `total_price` is now the full store amount (no patient-share
+   * reduction), so the quota compares the day's gross drug totals against the gross amount being
+   * prescribed. Both the single and bulk paths use `total_price`, never `original_total_price`.
    *
    * @static
    * @param drugs
@@ -668,7 +702,7 @@ class PharmacyOrderService {
   private static async checkNHISDailyQuotaLimit(drugs, patient_id: number) {
     const hasPrimaryDrugs = drugs.some(drug => drug?.drug_group === DrugGroup.PRIMARY);
     if (hasPrimaryDrugs) {
-      const sumOfDrugsToday = await PrescribedDrug.sum('original_total_price', {
+      const sumOfDrugsToday = await PrescribedDrug.sum('total_price', {
         where: {
           patient_id,
           ...getPeriodQuery(Period.TODAY, 'date_prescribed'),
@@ -676,7 +710,7 @@ class PharmacyOrderService {
         },
       });
 
-      const sumOfItemsPrescribedToday = await PrescribedAdditionalItem.sum('original_total_price', {
+      const sumOfItemsPrescribedToday = await PrescribedAdditionalItem.sum('total_price', {
         where: {
           patient_id,
           ...getPeriodQuery(Period.TODAY, 'date_prescribed'),
@@ -685,9 +719,12 @@ class PharmacyOrderService {
 
       const totalPrimaryDrugsPrice = drugs
         .filter(drug => drug?.drug_group === DrugGroup.PRIMARY)
-        .reduce((a, b) => a + b.drugPrice, 0);
+        .reduce((a, b) => a + Number(b.drugPrice), 0);
 
-      const totalSum = sumOfDrugsToday + sumOfItemsPrescribedToday + totalPrimaryDrugsPrice;
+      const totalSum =
+        Number(sumOfDrugsToday || 0) +
+        Number(sumOfItemsPrescribedToday || 0) +
+        totalPrimaryDrugsPrice;
       const settings = await SystemSettings.findOne();
       if (settings) {
         if (totalSum > +settings.nhis_daily_quota_amount) {
