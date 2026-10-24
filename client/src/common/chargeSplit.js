@@ -9,12 +9,33 @@
  * `Total` after a split is Accounting's resolved gross (`split_amount`), not the amount the EMR
  * sent, so the three figures always conserve even when a payer tariff applies.
  */
-const typeFields = ['drug_type', 'test_type', 'investigation_type', 'service_type'];
+/**
+ * Mirror of the server's `COVERAGE_TYPE_FIELD_BY_TYPE` (Outbox/prescribed-line-types.ts).
+ *
+ * The five billable line types map to four columns because `drug` and `additional_item` share
+ * `drug_type`. Keep the full five-type map here so `additional_item` is explicit rather than
+ * silently assumed, then derive the distinct fields for the coverage lookup.
+ */
+export const COVERAGE_TYPE_FIELD_BY_TYPE = {
+  drug: 'drug_type',
+  additional_item: 'drug_type',
+  test: 'test_type',
+  investigation: 'investigation_type',
+  service: 'service_type',
+};
 
-export function lineTypeOf(line) {
+const COVERAGE_TYPE_FIELDS = Array.from(new Set(Object.values(COVERAGE_TYPE_FIELD_BY_TYPE)));
+
+/**
+ * The line's coverage marker (`Cash`, `NHIS`, `Private`, …), whichever of the four columns its
+ * table uses. This is intentionally NOT a table-type inference: the display only needs the
+ * coverage fact, and the coverage field is the authoritative one.
+ */
+export function coverageTypeOf(line) {
   if (!line) return null;
-  for (const field of typeFields) {
-    if (line[field] !== undefined && line[field] !== null) return line[field];
+  for (const field of COVERAGE_TYPE_FIELDS) {
+    const value = line[field];
+    if (value !== undefined && value !== null) return value;
   }
   return null;
 }
@@ -23,9 +44,13 @@ export function hasChargeSplit(line) {
   return !!line && line.coverage_outcome !== null && line.coverage_outcome !== undefined;
 }
 
+/**
+ * A Cash-typed line is a cash line even when the patient happens to have an insurance record.
+ * Accounting sends no split for a cash-payer line, so requiring `patient_insurance_id` to be
+ * absent would leave those lines stuck on “Awaiting split” forever.
+ */
 export function isCashChargeLine(line) {
-  if (!line) return false;
-  return !line.patient_insurance_id && lineTypeOf(line) === 'Cash';
+  return !!line && coverageTypeOf(line) === 'Cash';
 }
 
 export function chargeSplitState(line) {
@@ -117,7 +142,7 @@ export function formatNaira(value) {
 /** Vue 2 mixin: every screen that prints a prescribed-line total uses the same rules. */
 export default {
   methods: {
-    lineTypeOf,
+    coverageTypeOf,
     hasChargeSplit,
     isCashChargeLine,
     chargeSplitState,
