@@ -603,8 +603,6 @@ export default {
           id: item.id,
           item_name: item.drug.name,
           drug_type: item.drug_type,
-          drug_form: item.drug_form,
-          prescribed_drug_id: item.prescribed_drug_id,
           quantity_to_dispense: item.quantity_to_dispense,
           quantity_remaining_to_dispense: item.quantity_to_dispense - item.quantity_dispensed,
           quantity_remaining_to_return: item.quantity_to_dispense - item.quantity_returned,

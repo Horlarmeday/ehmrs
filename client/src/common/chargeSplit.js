@@ -9,59 +9,14 @@
  * `Total` after a split is Accounting's resolved gross (`split_amount`), not the amount the EMR
  * sent, so the three figures always conserve even when a payer tariff applies.
  */
-/**
- * The client mirror of `server/src/modules/Outbox/prescribed-line-types.ts`.
- *
- * The server's five billable line types are `drug`, `additional_item`, `test`, `investigation`
- * and `service`. `additional_item` shares `drug_type` with `drug`, so the field names are NOT the
- * type names: always resolve the type first, then look up its coverage field.
- */
-export const PRESCRIBED_LINE_TYPES = [
-  'drug',
-  'additional_item',
-  'test',
-  'investigation',
-  'service',
-];
+const typeFields = ['drug_type', 'test_type', 'investigation_type', 'service_type'];
 
-export const COVERAGE_TYPE_FIELD_BY_TYPE = {
-  drug: 'drug_type',
-  additional_item: 'drug_type',
-  test: 'test_type',
-  investigation: 'investigation_type',
-  service: 'service_type',
-};
-
-/**
- * Resolve which `Prescribed_*` table a raw row came from. Tests/investigations/services have
- * unique columns; the two pharmacy tables are distinguished by `drug_form`/`prescribed_drug_id`,
- * which only an additional item carries.
- */
 export function lineTypeOf(line) {
   if (!line) return null;
-  if (line.test_type !== undefined && line.test_type !== null) return 'test';
-  if (line.investigation_type !== undefined && line.investigation_type !== null) {
-    return 'investigation';
-  }
-  if (line.service_type !== undefined && line.service_type !== null) return 'service';
-  if (line.drug_type !== undefined && line.drug_type !== null) {
-    if (line.drug_form !== undefined && line.drug_form !== null) return 'additional_item';
-    if (line.prescribed_drug_id !== undefined && line.prescribed_drug_id !== null) {
-      return 'additional_item';
-    }
-    return 'drug';
+  for (const field of typeFields) {
+    if (line[field] !== undefined && line[field] !== null) return line[field];
   }
   return null;
-}
-
-export function coverageTypeFieldOf(line) {
-  const type = lineTypeOf(line);
-  return type ? COVERAGE_TYPE_FIELD_BY_TYPE[type] : null;
-}
-
-export function coverageTypeOf(line) {
-  const field = coverageTypeFieldOf(line);
-  return field ? line[field] : null;
 }
 
 export function hasChargeSplit(line) {
@@ -70,7 +25,7 @@ export function hasChargeSplit(line) {
 
 export function isCashChargeLine(line) {
   if (!line) return false;
-  return !line.patient_insurance_id && coverageTypeOf(line) === 'Cash';
+  return !line.patient_insurance_id && lineTypeOf(line) === 'Cash';
 }
 
 export function chargeSplitState(line) {
@@ -163,8 +118,6 @@ export function formatNaira(value) {
 export default {
   methods: {
     lineTypeOf,
-    coverageTypeFieldOf,
-    coverageTypeOf,
     hasChargeSplit,
     isCashChargeLine,
     chargeSplitState,
