@@ -10,3 +10,7 @@ export const NHIS_DRUG_QUOTA =
   'Sum of drugs prescribed today and ones you are trying to prescribe is more than the NHIS daily price quota';
 export const DRUG_QUANTITY_UNAVAILABLE =
   'The quantity of drug you are trying to prescribe is more than the available quantity in the dispensary';
+export const CAPTURED_LINE_CHANGE_NOT_ALLOWED =
+  'This line has already been billed. Price and quantity can no longer be changed; create a new line instead.';
+export const CAPTURED_LINE_INTERNAL_FIELD =
+  'Charge split fields are managed by the accounting integration.';

@@ -53,9 +53,7 @@
                 </span>
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
-                  {{ item.total_price }}
-                </span>
+                <charge-split-figures :line="item" compact />
               </td>
               <td>
                 <span
@@ -127,10 +125,11 @@ import CancelIcon from '@/assets/icons/CancelIcon.vue';
 import Pagination from '@/utils/Pagination.vue';
 import Swal from 'sweetalert2';
 import AuthCodeModal from '@/view/pages/nhis/components/AuthCodeModal.vue';
+import ChargeSplitFigures from '@/view/components/charge/ChargeSplitFigures.vue';
 import { getItemType, parseJwt } from '@/common/common';
 
 export default {
-  components: { AuthCodeModal, Pagination, CancelIcon, ApproveIcon },
+  components: { AuthCodeModal, Pagination, CancelIcon, ApproveIcon, ChargeSplitFigures },
   data: () => ({
     PENDING: 'Pending',
     PRIMARY: 'Primary',
@@ -198,7 +197,7 @@ export default {
           ?.toLowerCase()} it!`,
         cancelButtonText: 'No, cancel!',
         reverseButtons: true,
-      }).then(function(result) {
+      }).then(function (result) {
         if (result.value) {
           self.changeDrugNhisStatus({ nhis_status, itemId });
         }

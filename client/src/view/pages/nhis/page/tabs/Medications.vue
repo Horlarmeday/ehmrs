@@ -71,9 +71,7 @@
                 >
               </td>
               <td>
-                <span class="text-dark-75 font-weight-bolder d-block font-size-md">
-                  {{ drug.total_price }}
-                </span>
+                <charge-split-figures :line="drug" compact />
               </td>
               <td>
                 <span class="text-dark-75 font-weight-bolder d-block font-size-md">
@@ -173,6 +171,7 @@ import Pagination from '@/utils/Pagination.vue';
 import Swal from 'sweetalert2';
 import AuthCodeModal from '@/view/pages/nhis/components/AuthCodeModal.vue';
 import DrugPopover from '@/view/components/popover/DrugPopover.vue';
+import ChargeSplitFigures from '@/view/components/charge/ChargeSplitFigures.vue';
 import { getItemType, parseJwt } from '@/common/common';
 import ChangeDrugGroup from '@/view/pages/nhis/components/ChangeDrugGroup.vue';
 // import OpenIcon from '@/assets/icons/OpenIcon.vue';
@@ -182,6 +181,7 @@ export default {
     // OpenIcon,
     ChangeDrugGroup,
     DrugPopover,
+    ChargeSplitFigures,
     AuthCodeModal,
     Pagination,
     CancelIcon,

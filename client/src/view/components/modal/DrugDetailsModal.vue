@@ -46,9 +46,9 @@
           </td>
         </tr>
         <tr>
-          <th scope="row">Total Price</th>
+          <th scope="row">Charges</th>
           <td>
-            <span>₦{{ drug.total_price }}</span>
+            <charge-split-figures :line="drug" compact />
           </td>
         </tr>
         <tr>
@@ -79,7 +79,10 @@
 </template>
 
 <script>
+import ChargeSplitFigures from '@/view/components/charge/ChargeSplitFigures.vue';
+
 export default {
+  components: { ChargeSplitFigures },
   props: {
     displayPrompt: {
       type: Boolean,

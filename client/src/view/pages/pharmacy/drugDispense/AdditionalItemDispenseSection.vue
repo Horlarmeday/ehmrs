@@ -25,8 +25,8 @@
             >
             <span class="vertical-line"></span>
 
-            <span class="mr-5 text-black-50 lead font-italic font-size-h4 ml-5">Price:</span>
-            <span class="mr-5 text-dark">₦{{ item.total_price }}</span>
+            <span class="mr-3 text-black-50 lead font-italic font-size-h4 ml-5">Price:</span>
+            <charge-split-figures :line="item" compact />
             <span class="vertical-line"></span>
 
             <span class="mr-3 text-black-50 lead font-size-h4 font-italic ml-5">Prescribed By:</span
@@ -119,9 +119,11 @@
 <script>
 import DefaultSkeleton from '@/utils/DefaultSkeleton.vue';
 
+import ChargeSplitFigures from '@/view/components/charge/ChargeSplitFigures.vue';
+
 export default {
   name: 'AdditionalItemDispenseSection',
-  components: { DefaultSkeleton },
+  components: { DefaultSkeleton, ChargeSplitFigures },
   props: {
     items: {
       type: Array,

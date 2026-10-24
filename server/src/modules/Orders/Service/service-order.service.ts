@@ -10,7 +10,7 @@ import VisitService from '../../Visit/visit.service';
 import PatientService from '../../Patient/patient.service';
 import { PrescribedService, Service } from '../../../database/models';
 import { PrescribedBulkServiceBody } from './types/service-order.types';
-import { getServicePrice } from '../../AdminSettings/admin.repository';
+import { multiplyNairaByQuantity } from '../../../core/helpers/money';
 import { NHISApprovalStatus } from '../../../core/helpers/general';
 import { BadException } from '../../../common/util/api-error';
 import { StatusCodes } from '../../../core/helpers/helper';
@@ -98,20 +98,26 @@ export class ServiceOrderService {
     ]);
 
     const bulkServices = await Promise.all(
-      services.map(async service => ({
-        ...service,
-        price:
-          (await getServicePrice(patient, service.service_id)) ||
-          +service.price * (+service.quantity || 1),
-        requester: staff_id,
-        visit_id,
-        patient_id: visit.patient_id,
-        date_requested: Date.now(),
-        ...(service.service_type === ServiceType.NHIS && {
-          nhis_status: NHISApprovalStatus.PENDING,
-        }),
-        patient_insurance_id: insurance?.id,
-      }))
+      services.map(async service => {
+        const effectiveType = insurance?.id ? service.service_type : ServiceType.CASH;
+        // One basis for every service line: price is a LINE TOTAL, unit price × quantity.
+        const lineTotal = multiplyNairaByQuantity(
+          service.price,
+          service.quantity || 1,
+          `service ${service.service_id} price`
+        );
+        return {
+          ...service,
+          service_type: effectiveType,
+          price: lineTotal,
+          requester: staff_id,
+          visit_id,
+          patient_id: visit.patient_id,
+          date_requested: Date.now(),
+          nhis_status: effectiveType === ServiceType.NHIS ? NHISApprovalStatus.PENDING : null,
+          patient_insurance_id: insurance?.id,
+        };
+      })
     );
 
     const result = await orderBulkService(bulkServices);

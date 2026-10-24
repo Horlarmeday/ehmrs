@@ -29,6 +29,7 @@ import {
   PrescribedServiceType as ServiceType,
   ServiceGroup,
   Source,
+  CoverageOutcome,
 } from '../enums';
 
 @Table({ timestamps: true, tableName: 'Prescribed_Services' })
@@ -130,6 +131,40 @@ export class PrescribedService extends Model {
     defaultValue: BillingStatus.UNBILLED,
   })
   billing_status: BillingStatus;
+
+  /** Accounting's resolved split (ADR-0096). Written ONLY by the reverse inbox applier. */
+  @Column({
+    type: DataType.ENUM(
+      CoverageOutcome.CAPITATED,
+      CoverageOutcome.FFS_CLAIMABLE,
+      CoverageOutcome.CO_PAY,
+      CoverageOutcome.PATIENT_LIABLE,
+      CoverageOutcome.RETAINERSHIP
+    ),
+    allowNull: true,
+  })
+  coverage_outcome: CoverageOutcome;
+
+  @Column({ type: DataType.DECIMAL(12, 2), allowNull: true })
+  split_amount: number;
+
+  @Column({ type: DataType.DECIMAL(12, 2), allowNull: true })
+  patient_share: number;
+
+  @Column({ type: DataType.DECIMAL(12, 2), allowNull: true })
+  patient_net: number;
+
+  @Column({ type: DataType.DECIMAL(12, 2), allowNull: true })
+  insurer_amount: number;
+
+  @Column({ type: DataType.DECIMAL(12, 2), allowNull: true })
+  insurer_net: number;
+
+  @Column({ type: DataType.DECIMAL(12, 2), allowNull: true })
+  corporate_amount: number;
+
+  @Column({ type: DataType.DECIMAL(12, 2), allowNull: true })
+  corporate_net: number;
 
   @Column({
     type: DataType.INTEGER,

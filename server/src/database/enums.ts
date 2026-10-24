@@ -33,6 +33,19 @@ export enum BillingStatus {
   UNBILLED = 'Unbilled',
 }
 
+/**
+ * Accounting's resolved coverage outcome for a prescribed line (ADR-0096).
+ *
+ * The EMR never derives this: it arrives on `charge.split.updated` and is displayed as-is.
+ */
+export enum CoverageOutcome {
+  CAPITATED = 'capitated',
+  FFS_CLAIMABLE = 'ffs_claimable',
+  CO_PAY = 'co_pay',
+  PATIENT_LIABLE = 'patient_liable',
+  RETAINERSHIP = 'retainership',
+}
+
 // ================================
 // PATIENT & VISIT ENUMS
 // ================================

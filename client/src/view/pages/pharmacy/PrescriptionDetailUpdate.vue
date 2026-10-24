@@ -97,21 +97,16 @@
                   <div class="payment-icon">💳</div>
                   <div class="payment-content">
                     <div class="payment-main">
-                      ₦{{ formatCurrency(totalDrugsPrice + totalItemsPrice) }}
+                      Total ₦{{ formatCurrency(combinedSummary.total) }}
                     </div>
                     <div class="payment-details">
-                      {{
-                        !isEmpty(prescription?.insurance)
-                          ? 'NHIS Coverage Available'
-                          : 'Full Cash Payment'
-                      }}
+                      Patient pays ₦{{ formatCurrency(combinedSummary.patient) }}
                     </div>
                     <div class="payment-note">
-                      {{
-                        !isEmpty(prescription?.insurance)
-                          ? '90% covered + 10% cash'
-                          : '100% cash payment'
-                      }}
+                      Payer covers ₦{{ formatCurrency(combinedSummary.payer) }}
+                      <span v-if="combinedSummary.awaiting" class="text-warning ml-2">
+                        ({{ combinedSummary.awaiting }} awaiting split)
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -148,14 +143,10 @@
           <div class="metric-icon">💰</div>
           <div class="metric-content">
             <div class="metric-label">TOTAL VALUE</div>
-            <div class="metric-value">
-              ₦{{ formatCurrency(totalDrugsPrice + totalItemsPrice || 0) }}
-            </div>
+            <div class="metric-value">₦{{ formatCurrency(combinedSummary.total) }}</div>
             <div class="metric-description">
-              {{
-                !isEmpty(prescription?.insurance)
-                  ? 'NHIS Coverage 90% + 10% cash'
-                  : 'Full Cash Payment'
+              Patient pays ₦{{ formatCurrency(combinedSummary.patient) }} · Payer covers ₦{{
+                formatCurrency(combinedSummary.payer)
               }}
             </div>
           </div>
@@ -270,13 +261,7 @@
 
       <!-- Right Sidebar -->
       <div class="content-right">
-        <PricingSummaryCardUpdate
-          :total-drugs-price="totalDrugsPrice"
-          :total-items-price="totalItemsPrice"
-          :nhis-ten-percent="nhis10PercentDrugsPrice"
-          :nhis-ninety-percent="nhis90PercentDrugsPrice"
-          :prescription="prescription"
-        />
+        <PricingSummaryCardUpdate :summary="combinedSummary" :prescription="prescription" />
       </div>
     </div>
 
@@ -291,6 +276,7 @@
 <script>
 import { mapState } from 'vuex';
 import { isEmpty } from '@/common/common';
+import chargeSplit from '@/common/chargeSplit';
 import HistoryModal from '@/view/pages/pharmacy/history/HistoryModal.vue';
 import PrescriptionSkeleton from '@/view/pages/pharmacy/components/skeleton/PrescriptionSkeleton.vue';
 
@@ -301,6 +287,7 @@ import PricingSummaryCardUpdate from '@/view/pages/pharmacy/components/prescript
 
 export default {
   name: 'PrescriptionDetailUpdate',
+  mixins: [chargeSplit],
   components: {
     HistoryModal,
     PrescriptionSkeleton,
@@ -331,38 +318,11 @@ export default {
       return this.prescription?.visit_id || 0;
     },
 
-    totalDrugsPrice() {
-      if (!this.prescription?.drugs) return 0;
-      const totalPrice = this.prescription.drugs.map((pres) => pres.total_price);
-      return totalPrice.reduce((acc, cur) => acc + +cur, 0);
-    },
-
-    totalItemsPrice() {
-      if (!this.prescription?.items) return 0;
-      const totalPrice = this.prescription.items.map((pres) => pres.total_price);
-      return totalPrice.reduce((acc, cur) => acc + +cur, 0);
-    },
-
-    nhisMappedTotalPrice() {
-      if (!this.prescription?.drugs) return [];
-      return this.prescription.drugs
-        ?.filter((drug) => drug?.drug_type === 'NHIS')
-        .map((pres) => pres.total_price);
-    },
-
-    nhis90PercentDrugsPrice() {
-      const mappedTotal10PercentPrice = this.nhisMappedTotalPrice.reduce(
-        (acc, cur) => acc + +cur,
-        0
-      );
-      const totalActualPrice = mappedTotal10PercentPrice / 0.1;
-      const sum = totalActualPrice * 0.9;
-      console.log(sum, 'sum');
-      return sum;
-    },
-
-    nhis10PercentDrugsPrice() {
-      return this.nhisMappedTotalPrice.reduce((acc, cur) => acc + +cur, 0);
+    combinedSummary() {
+      return this.summarizeChargeLines([
+        ...(this.prescription?.drugs || []),
+        ...(this.prescription?.items || []),
+      ]);
     },
 
     insuranceStatusClass() {
@@ -612,6 +572,15 @@ export default {
           duration: drug.duration,
           duration_unit: drug.duration_unit,
           total_price: drug.total_price,
+          patient_insurance_id: drug.patient_insurance_id,
+          coverage_outcome: drug.coverage_outcome,
+          split_amount: drug.split_amount,
+          patient_share: drug.patient_share,
+          patient_net: drug.patient_net,
+          insurer_amount: drug.insurer_amount,
+          insurer_net: drug.insurer_net,
+          corporate_amount: drug.corporate_amount,
+          corporate_net: drug.corporate_net,
           quantity: drug.quantity_prescribed,
           start_date: drug.start_date,
           frequency: drug.frequency,
@@ -646,6 +615,15 @@ export default {
           date_dispensed: item.date_dispensed,
           unit: item.unit.name,
           total_price: item.total_price,
+          patient_insurance_id: item.patient_insurance_id,
+          coverage_outcome: item.coverage_outcome,
+          split_amount: item.split_amount,
+          patient_share: item.patient_share,
+          patient_net: item.patient_net,
+          insurer_amount: item.insurer_amount,
+          insurer_net: item.insurer_net,
+          corporate_amount: item.corporate_amount,
+          corporate_net: item.corporate_net,
           reason_for_return: item.reason_for_return,
           disabledReturn: item.quantity_returned === item.quantity_dispensed,
           staff: item.requester,

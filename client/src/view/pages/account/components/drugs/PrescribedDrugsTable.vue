@@ -9,7 +9,7 @@
       :disable-billing="disableBilling"
     />
     <div class="table-responsive">
-      <table class="table ">
+      <table class="table">
         <thead class="thead-light">
           <tr class="text-uppercase">
             <th scope="col"></th>
@@ -47,10 +47,10 @@
               <span>{{ drug.quantity_to_dispense }} {{ drug?.dosage_form?.name || '-' }}</span>
             </td>
             <td>
-              <span>{{ getUnitPrice(drug.total_price, drug.quantity_to_dispense) }} </span>
+              <span>{{ getUnitPrice(drug) }} </span>
             </td>
             <td>
-              <span>{{ drug.total_price }} </span>
+              <charge-split-figures :line="drug" compact />
             </td>
             <td>
               <span>
@@ -77,11 +77,14 @@
 </template>
 <script>
 import { getLabelDotStatus } from '@/common/common';
+import chargeSplit from '@/common/chargeSplit';
 import ButtonPaymentOptions from '@/view/pages/account/components/ButtonPaymentOptions.vue';
+import ChargeSplitFigures from '@/view/components/charge/ChargeSplitFigures.vue';
 
 export default {
   name: 'PrescribedDrugsTable',
-  components: { ButtonPaymentOptions },
+  mixins: [chargeSplit],
+  components: { ButtonPaymentOptions, ChargeSplitFigures },
   data: () => ({
     selectedDrugs: [],
     loading: false,
@@ -95,7 +98,7 @@ export default {
     },
 
     disableBilling() {
-      return this.drugs.every(drug => drug.billing_status === 'Billed');
+      return this.drugs.every((drug) => drug.billing_status === 'Billed');
     },
   },
   created() {
@@ -138,8 +141,8 @@ export default {
       this.$store.dispatch('order/fetchPrescribedDrugsPerVisit', { id: this.$route.params.id });
     },
 
-    getUnitPrice(totalPrice, quantity) {
-      return totalPrice / quantity || 0;
+    getUnitPrice(line) {
+      return this.chargeTotal(line) / (line.quantity_to_dispense || 1) || 0;
     },
 
     isSelected(drug) {
@@ -149,7 +152,7 @@ export default {
     toggleItem(drug) {
       if (this.isSelected(drug)) {
         // If the item is already selected, remove it from selectedItems
-        const drugIndex = this.selectedDrugs.findIndex(id => id === drug.id);
+        const drugIndex = this.selectedDrugs.findIndex((id) => id === drug.id);
         this.selectedDrugs.splice(drugIndex, 1);
       } else {
         // If the item is not selected, add it to selectedItems

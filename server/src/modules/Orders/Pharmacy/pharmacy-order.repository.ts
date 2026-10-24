@@ -14,21 +14,19 @@ import {
   Staff,
   Unit,
 } from '../../../database/models';
-import { Op, Optional, Transaction, WhereOptions } from 'sequelize';
+import { Transaction, WhereOptions } from 'sequelize';
 import dayjs from 'dayjs';
-import { DrugForm, DispenseStatus, PaymentStatus } from '../../../database/enums';
+import { DrugForm } from '../../../database/enums';
 import { getOneRouteOfAdministration } from '../../Pharmacy/pharmacy.repository';
 import { PatientStatus, DefaultType } from '../../../database/enums';
 import { getOneDefault } from '../../AdminSettings/admin.repository';
 import { staffAttributes } from '../../Antenatal/antenatal.repository';
 import { BadException } from '../../../common/util/api-error';
+import { flattenArray, getDrugType, StatusCodes } from '../../../core/helpers/helper';
+import { multiplyNairaByQuantity } from '../../../core/helpers/money';
+import { getInventoryItemLayers } from '../../Inventory/inventory.repository';
 import {
-  EXCLUDED_INSURANCE,
-  flattenArray,
-  getDrugType,
-  StatusCodes,
-} from '../../../core/helpers/helper';
-import {
+  CAPTURED_LINE_CHANGE_NOT_ALLOWED,
   ERROR_UPDATING_DRUG,
   ERROR_UPDATING_ITEM,
   INJECTION_SYRINGES_NOT_FOUND,
@@ -38,7 +36,9 @@ import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
 import {
   emitChargeCapturedForRows,
   deletePrescribedLineWithReversalRequested,
+  hasEmittedChargeCaptured,
 } from '../../Outbox/outbox-writer';
+import { sameMoney } from '../../../core/helpers/money';
 
 type PrescribeDrugType = PrescribedDrugBody & {
   drug_prescription_id: number;
@@ -178,16 +178,8 @@ export const prescribeBulkDrugs = async (
       );
 
       const itemBodies = flattenArray(additionalItems);
-      const createdItems = await bulkCreateAdditionalItems(itemBodies, t);
-
-      // Consumables (syringes/needles) are billable like any line — emit for them too, in the
-      // same transaction. Missing this is the silent-charge-loss ADR-0027 warns about.
-      await emitChargeCapturedForRows(
-        'additional_item',
-        createdItems,
-        dayjs().format('YYYY-MM-DD'),
-        t
-      );
+      // `bulkCreateAdditionalItems` emits for every created row in this same transaction.
+      await bulkCreateAdditionalItems(itemBodies, t);
     }
 
     return drugs;
@@ -241,13 +233,71 @@ export const getPrescribedDrugs = ({ currentPage = 1, pageLimit = 10, filter = n
 };
 
 /**
+ * The eight split columns are inbox-owned (ADR-0096). No HTTP body may write them, whatever the
+ * caller sends.
+ */
+const SPLIT_COLUMNS = [
+  'coverage_outcome',
+  'split_amount',
+  'patient_share',
+  'patient_net',
+  'insurer_amount',
+  'insurer_net',
+  'corporate_amount',
+  'corporate_net',
+] as const;
+
+function withoutSplitColumns<T extends Record<string, any>>(data: T): Partial<T> {
+  const clean: Record<string, any> = { ...data };
+  for (const column of SPLIT_COLUMNS) {
+    delete clean[column];
+  }
+  return clean as Partial<T>;
+}
+
+function quantityChanged(next: unknown, current: unknown): boolean {
+  if (next === undefined || next === null) {
+    return false;
+  }
+  return Number(next) !== Number(current);
+}
+
+/**
  * update prescribed drug
  * @param data
  */
 export const updatePrescribedDrug = async (data: Partial<PrescribedDrug>) => {
+  const update = withoutSplitColumns(data);
+
   try {
-    await PrescribedDrug.update({ ...data }, { where: { id: data.id } });
+    await sequelizeConnection.transaction(async transaction => {
+      const existing = await PrescribedDrug.findByPk(update.id, {
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
+
+      if (existing && (await hasEmittedChargeCaptured('drug', update.id, transaction))) {
+        const priceChanged =
+          update.total_price !== undefined && !sameMoney(update.total_price, existing.total_price);
+        if (
+          priceChanged ||
+          quantityChanged(update.quantity_prescribed, existing.quantity_prescribed) ||
+          quantityChanged(update.quantity_to_dispense, existing.quantity_to_dispense)
+        ) {
+          throw new BadException(
+            'Error',
+            StatusCodes.BAD_REQUEST,
+            CAPTURED_LINE_CHANGE_NOT_ALLOWED
+          );
+        }
+      }
+
+      await PrescribedDrug.update({ ...update }, { where: { id: update.id }, transaction });
+    });
   } catch (e) {
+    if (e instanceof BadException) {
+      throw e;
+    }
     console.error(e);
     throw new BadException('Error', StatusCodes.SERVER_ERROR, ERROR_UPDATING_DRUG);
   }
@@ -360,50 +410,18 @@ export const bulkCreateAdditionalItems = async (
     return [];
   }
 
-  // Consolidate items: find existing similar items and group for update vs create
-  const { itemsToUpdate, itemsToCreate } = await consolidateAdditionalItems(data, transaction);
+  const createAll = async (t: Transaction): Promise<PrescribedAdditionalItem[]> => {
+    // NO consolidation. A captured line's amount/quantity must never change silently, so every
+    // extra quantity is a NEW line with its own `charge.captured`. This is what makes prescribing
+    // an injection twice produce two consumable lines rather than one merged line.
+    const created = await PrescribedAdditionalItem.bulkCreate(data as never, { transaction: t });
+    await emitChargeCapturedForRows('additional_item', created, dayjs().format('YYYY-MM-DD'), t);
+    return created;
+  };
 
-  const createdItems: PrescribedAdditionalItem[] = [];
-
-  // Update existing items with consolidated quantities
-  if (itemsToUpdate.length > 0) {
-    await Promise.all(
-      itemsToUpdate.map(async ({ id, updates }) => {
-        await PrescribedAdditionalItem.update(updates, {
-          where: { id },
-          transaction,
-        });
-      })
-    );
-    // Fetch updated items to return
-    const updatedItems = await Promise.all(
-      itemsToUpdate.map(async ({ id }) => {
-        return PrescribedAdditionalItem.findByPk(id, { transaction });
-      })
-    );
-    createdItems.push(...(updatedItems.filter(Boolean) as PrescribedAdditionalItem[]));
-  }
-
-  // Create new items that don't have matches
-  if (itemsToCreate.length > 0) {
-    const newItems = await PrescribedAdditionalItem.bulkCreate(
-      (itemsToCreate as unknown) as readonly Optional<
-        PrescribedAdditionalItem,
-        keyof PrescribedAdditionalItem
-      >[],
-      { transaction }
-    );
-    createdItems.push(...newItems);
-
-    await emitChargeCapturedForRows(
-      'additional_item',
-      newItems,
-      dayjs().format('YYYY-MM-DD'),
-      transaction
-    );
-  }
-
-  return createdItems;
+  // Callers that already own a transaction get the same atomicity; callers that do not (the
+  // admission/dialysis paths) get one here, so the lines and their events never diverge.
+  return transaction ? createAll(transaction) : sequelizeConnection.transaction(createAll);
 };
 
 /**
@@ -411,9 +429,40 @@ export const bulkCreateAdditionalItems = async (
  * @param data
  */
 export const updateAdditionalItem = async (data: Partial<PrescribedAdditionalItem>) => {
+  const update = withoutSplitColumns(data);
+
   try {
-    await PrescribedAdditionalItem.update({ ...data }, { where: { id: data.id } });
+    await sequelizeConnection.transaction(async transaction => {
+      const existing = await PrescribedAdditionalItem.findByPk(update.id, {
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
+
+      if (existing && (await hasEmittedChargeCaptured('additional_item', update.id, transaction))) {
+        const priceChanged =
+          update.total_price !== undefined && !sameMoney(update.total_price, existing.total_price);
+        if (
+          priceChanged ||
+          quantityChanged(update.quantity_prescribed, existing.quantity_prescribed) ||
+          quantityChanged(update.quantity_to_dispense, existing.quantity_to_dispense)
+        ) {
+          throw new BadException(
+            'Error',
+            StatusCodes.BAD_REQUEST,
+            CAPTURED_LINE_CHANGE_NOT_ALLOWED
+          );
+        }
+      }
+
+      await PrescribedAdditionalItem.update(
+        { ...update },
+        { where: { id: update.id }, transaction }
+      );
+    });
   } catch (e) {
+    if (e instanceof BadException) {
+      throw e;
+    }
     console.error(e);
     throw new BadException('Error', StatusCodes.SERVER_ERROR, ERROR_UPDATING_ITEM);
   }
@@ -600,159 +649,6 @@ export const getAdditionalItemsWithoutJoins = async (
  * @param item - item to generate key for
  * @returns {string} similarity key
  */
-const getSimilarityKey = (
-  item:
-    | (PrescribedAdditionalItemBody & { date_prescribed?: Date | number })
-    | PrescribedAdditionalItem
-): string => {
-  const date = item.date_prescribed ? new Date(item.date_prescribed) : new Date();
-  const dateKey = dayjs(date).format('YYYY-MM-DD');
-  return `${item.drug_id}_${item.unit_id}_${item.drug_type}_${item.patient_id}_${item.examiner}_${dateKey}`;
-};
-
-/**
- * query similar additional items that can be consolidated
- * @param item - item to find similar matches for
- * @param transaction - optional transaction
- * @returns {Promise<PrescribedAdditionalItem | null>} similar item if found
- */
-export const querySimilarAdditionalItems = async (
-  item: PrescribedAdditionalItemBody & { date_prescribed?: Date | number },
-  transaction?: Transaction
-): Promise<PrescribedAdditionalItem | null> => {
-  const itemDate = item.date_prescribed ? new Date(item.date_prescribed) : new Date();
-  const startOfDay = dayjs(itemDate)
-    .startOf('day')
-    .toDate();
-  const endOfDay = dayjs(itemDate)
-    .endOf('day')
-    .toDate();
-
-  const whereClause: WhereOptions<PrescribedAdditionalItem> = {
-    drug_id: item.drug_id,
-    unit_id: item.unit_id,
-    drug_type: item.drug_type,
-    patient_id: item.patient_id,
-    examiner: item.examiner,
-    payment_status: PaymentStatus.PENDING,
-    dispense_status: DispenseStatus.PENDING,
-    date_prescribed: {
-      [Op.gte]: startOfDay,
-      [Op.lt]: endOfDay,
-    },
-  };
-
-  return PrescribedAdditionalItem.findOne({
-    where: whereClause,
-    transaction,
-  });
-};
-
-/**
- * consolidate additional items by finding existing similar items and grouping for update vs create
- * Optimized to use a single bulk query instead of N+1 queries for better performance
- * @param items - array of items to consolidate
- * @param transaction - optional transaction
- * @returns {Promise<{itemsToUpdate: Array<{id: number, updates: Partial<PrescribedAdditionalItem>}>, itemsToCreate: PrescribedAdditionalItemBody[]}>}
- */
-export const consolidateAdditionalItems = async (
-  items: (PrescribedAdditionalItemBody & { date_prescribed?: Date | number })[],
-  transaction?: Transaction
-): Promise<{
-  itemsToUpdate: Array<{ id: number; updates: Partial<PrescribedAdditionalItem> }>;
-  itemsToCreate: (PrescribedAdditionalItemBody & { date_prescribed?: Date | number })[];
-}> => {
-  // Early return if no items
-  if (!items || items.length === 0) {
-    return { itemsToUpdate: [], itemsToCreate: [] };
-  }
-
-  const itemsToUpdate: Array<{ id: number; updates: Partial<PrescribedAdditionalItem> }> = [];
-  const itemsToCreate: (PrescribedAdditionalItemBody & { date_prescribed?: Date | number })[] = [];
-
-  // Build array of OR conditions for all items in a single query
-  const orConditions = items.map(item => {
-    const itemDate = item.date_prescribed ? new Date(item.date_prescribed) : new Date();
-    const startOfDay = dayjs(itemDate)
-      .startOf('day')
-      .toDate();
-    const endOfDay = dayjs(itemDate)
-      .endOf('day')
-      .toDate();
-
-    return {
-      drug_id: item.drug_id,
-      unit_id: item.unit_id,
-      drug_type: item.drug_type,
-      patient_id: item.patient_id,
-      examiner: item.examiner,
-      payment_status: PaymentStatus.PENDING,
-      dispense_status: DispenseStatus.PENDING,
-      date_prescribed: {
-        [Op.gte]: startOfDay,
-        [Op.lt]: endOfDay,
-      },
-    };
-  });
-
-  // Single bulk query to fetch all potentially matching items
-  const existingItems = await PrescribedAdditionalItem.findAll({
-    where: {
-      [Op.or]: orConditions,
-    },
-    transaction,
-  });
-
-  // Build Map for O(1) lookup of existing items by similarity key
-  const existingItemsMap = new Map<string, PrescribedAdditionalItem>();
-  existingItems.forEach(item => {
-    const key = getSimilarityKey(item);
-    // If multiple items match the same key, keep the first one (shouldn't happen with proper constraints)
-    if (!existingItemsMap.has(key)) {
-      existingItemsMap.set(key, item);
-    }
-  });
-
-  // Match items in memory using the lookup map
-  for (const item of items) {
-    const key = getSimilarityKey(item);
-    const existingItem = existingItemsMap.get(key);
-
-    if (existingItem) {
-      // Calculate unit price from new item (if available) or existing item
-      const newItemUnitPrice =
-        item.quantity_to_dispense > 0 && item.total_price
-          ? item.total_price / item.quantity_to_dispense
-          : existingItem.quantity_to_dispense > 0
-          ? existingItem.total_price / existingItem.quantity_to_dispense
-          : 0;
-
-      // Calculate new quantities
-      const newQuantityPrescribed =
-        Number(existingItem.quantity_prescribed) + Number(item.quantity_prescribed || 0);
-      const newQuantityToDispense =
-        Number(existingItem.quantity_to_dispense) + Number(item.quantity_to_dispense || 0);
-
-      // Recalculate total price based on new item's unit price (per plan: use price from new item if different)
-      const newTotalPrice = newItemUnitPrice * newQuantityToDispense;
-
-      itemsToUpdate.push({
-        id: existingItem.id,
-        updates: {
-          quantity_prescribed: newQuantityPrescribed,
-          quantity_to_dispense: newQuantityToDispense,
-          total_price: newTotalPrice,
-        },
-      });
-    } else {
-      // No similar item found, create new one
-      itemsToCreate.push(item);
-    }
-  }
-
-  return { itemsToUpdate, itemsToCreate };
-};
-
 export const bulkSyringeNeedlePrescriptions = async ({
   prescription,
   patient,
@@ -769,7 +665,6 @@ export const bulkSyringeNeedlePrescriptions = async ({
   const formattedDate = dayjs(patient.date_of_birth).format('YYYY-MM-DD');
   const age = dayjs().diff(dayjs(formattedDate), 'year');
   const route = await getOneRouteOfAdministration({ id: prescription.route_id });
-  const isNHIS = EXCLUDED_INSURANCE.includes(insurance?.insurance?.name);
   const drugType = getDrugType(patient.has_insurance, insurance);
 
   const prescriptionStrength = +prescription.prescribed_strength;
@@ -795,32 +690,42 @@ export const bulkSyringeNeedlePrescriptions = async ({
     source: prescription.source,
     patient_id: patient.id,
     patient_insurance_id,
+    nhis_status: prescription.drug_type === 'NHIS' ? 'Pending' : null,
     date_prescribed: Date.now(),
   };
 
-  const selectSyringe = (syringeName: string) => {
+  const selectSyringe = async (syringeName: string) => {
     const syringe = injectionItems.find(
       ({ drug }) =>
         new RegExp(`\\b${syringeName}\\b`, 'i').test(drug.name) && drug?.drug_type === drugType
     );
 
-    const isGloves = /gloves/i.test(syringeName);
-    if (syringe) {
-      return {
-        drug_id: syringe.drug.drug_id,
-        unit_id: syringe.drug.unit_id,
-        total_price: syringe.drug.price * quantity * (isNHIS && !isGloves ? 0.1 : 1),
-      };
+    if (!syringe) {
+      return null;
     }
-    return null;
+
+    // Price from the CURRENT store row, not the default-config snapshot. The default is only a
+    // fallback for a consumable that has no dispensary layer yet.
+    const layers = await getInventoryItemLayers(prescription.inventory_id, syringe.drug.drug_id);
+    const unitPrice = layers[0]?.selling_price ?? syringe.drug.price;
+
+    return {
+      drug_id: syringe.drug.drug_id,
+      unit_id: syringe.drug.unit_id,
+      total_price: multiplyNairaByQuantity(
+        unitPrice,
+        quantity,
+        `consumable ${syringe.drug.drug_id} total_price`
+      ),
+    };
   };
 
   const syringeData =
     prescriptionStrength <= 2
-      ? selectSyringe('2 mls')
+      ? await selectSyringe('2 mls')
       : prescriptionStrength <= 5
-      ? selectSyringe('5 mls')
-      : selectSyringe('10 mls');
+      ? await selectSyringe('5 mls')
+      : await selectSyringe('10 mls');
 
   if (syringeData) {
     additionalItems.push({
@@ -832,12 +737,12 @@ export const bulkSyringeNeedlePrescriptions = async ({
   const needleData =
     route.name === 'Intramuscular'
       ? age <= 15
-        ? selectSyringe('extraneedle 23G')
-        : selectSyringe('extraneedle 21G')
+        ? await selectSyringe('extraneedle 23G')
+        : await selectSyringe('extraneedle 21G')
       : route.name === 'Intravenous' && patient.patient_status === PatientStatus.OUTPATIENT
       ? age <= 15
-        ? selectSyringe('scalp vein 23G')
-        : selectSyringe('scalp vein 21G')
+        ? await selectSyringe('scalp vein 23G')
+        : await selectSyringe('scalp vein 21G')
       : null;
 
   if (needleData) {
@@ -849,7 +754,7 @@ export const bulkSyringeNeedlePrescriptions = async ({
 
   const gloveData =
     patient.patient_status === PatientStatus.OUTPATIENT
-      ? selectSyringe('examination gloves/pair')
+      ? await selectSyringe('examination gloves/pair')
       : null;
   if (gloveData) {
     additionalItems.push({
@@ -861,7 +766,7 @@ export const bulkSyringeNeedlePrescriptions = async ({
   const oneDefault = await getOneDefault({ type: DefaultType.WATER_INJECTIONS });
   const waterNeededInjections = oneDefault?.data?.map(({ drug }) => drug.drug_id) || [];
   const waterData = waterNeededInjections?.includes(prescription.drug_id)
-    ? selectSyringe('water for injection')
+    ? await selectSyringe('water for injection')
     : null;
   if (waterData) {
     additionalItems.push({
