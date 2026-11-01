@@ -25,6 +25,27 @@ Every form control takes `label`, `error` and `disabled`, and works with `v-mode
 - `@search` becomes the `search` prop, which returns options as `{ value, label }[]`. The kit handles debouncing and ignores out-of-date responses.
 - When editing a saved value, pass its option in `initialOptions` so its label shows before any search.
 
+## Data display
+
+| Component       | Use for                                          | Props                                                                                                                                                                                             | Events and slots                                                                                  |
+| --------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `KitTable`      | Lists of records in a native `<table>`           | `label`, `columns` (`id`, `header`, `numeric`, `sortable`), `rows`, `rowKey`, `groupKey`, `sort`, `loading`, `error`, `dense`, `maxHeight`, `selectable`, `rowLabel`, `emptyText`, `skeletonRows` | `v-model:selected`, `update:sort`, `retry`; `cell-<id>` slot with `row` and `value`; `empty` slot |
+| `KitPagination` | Paging for a server-side list                    | `page`, `pageSize`, `total`, `shownCount`, `label`, `pageSizes`, `maxButtons`                                                                                                                     | `update:page`, `update:pageSize`                                                                  |
+| `KitBadge`      | Status labels, always with visible text          | `severity` (`primary`, `success`, `warning`, `danger`, `info`, `neutral`), `variant` (`subtle`, `solid`)                                                                                          | Default slot                                                                                      |
+| `KitSkeleton`   | Loading placeholders, hidden from assistive tech | `variant` (`lines`, `table`, `form`), `rows`, `columns`, `dense`                                                                                                                                  | None                                                                                              |
+| `KitResultGrid` | A table of inputs with grid keyboard movement    | `label`                                                                                                                                                                                           | `head` and default slots                                                                          |
+
+`useServerTable(load, options)` holds `page`, `pageSize`, `sort`, `rows`, `total`, `loading` and `error`, and provides `reload`, `setPage`, `setPageSize` and `setSort`. Changing size or sort returns to page 1, a failed request keeps the current rows, and a page that no longer exists moves to the new last page. Call `reload()` once to load the first page.
+
+## Mapping from legacy components
+
+These map behaviour only. Legacy screens are not a reference for layout or format.
+
+- `<table>` with a "no records" `colspan` row: `KitTable`, which has its own empty state.
+- `<pagination>`: `total-pages` is calculated from `total` and `pageSize`. `current-page` becomes `page`, `per-page` becomes `pageSize`, `@pagechanged` becomes `update:page`, and `@changepagecount` becomes `update:pageSize`.
+- `label-light-*` and `label-*`: `KitBadge` with `variant` `subtle` or `solid`. `dark` and `secondary` become `neutral`.
+- `DefaultSkeleton`, `TableSkeleton` and `b-skeleton`: `KitSkeleton`.
+
 ## Helpers
 
 - `useGridNavigation.ts`: on a container, `@keydown="onGridKeydown"` moves between inputs with the same `data-grid-col` using ArrowUp, ArrowDown and Enter.

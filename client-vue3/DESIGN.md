@@ -196,6 +196,22 @@ pipeline fails on unknown or circular refs.
 | amber.900 | #78350f | |
 | amber.950 | #451a03 | |
 
+### tokens:palette.purple
+
+| token | value | note |
+| --- | --- | --- |
+| purple.50 | #faf5ff | info subtle bg |
+| purple.100 | #f3e8ff | |
+| purple.200 | #e9d5ff | |
+| purple.300 | #d8b4fe | |
+| purple.400 | #c084fc | |
+| purple.500 | #a855f7 | |
+| purple.600 | #9333ea | |
+| purple.700 | #7e22ce | info solid, subtle text |
+| purple.800 | #6b21a8 | |
+| purple.900 | #581c87 | |
+| purple.950 | #3b0764 | |
+
 ### tokens:semantic
 
 | token | value | note |
@@ -236,6 +252,14 @@ pipeline fails on unknown or circular refs.
 | warning.subtle.bg | {amber.50} | caution tint |
 | warning.subtle.text | {amber.800} | caution text |
 | warning.on | {gray.900} | dark text on amber solids |
+| info.default | {purple.700} | informational status badges |
+| info.subtle.bg | {purple.50} | info tint |
+| info.subtle.text | {purple.700} | info text |
+| info.on | #ffffff | |
+| neutral.default | {gray.700} | neutral status badges (legacy dark, secondary) |
+| neutral.subtle.bg | {gray.100} | neutral tint |
+| neutral.subtle.text | {gray.700} | neutral text |
+| neutral.on | #ffffff | |
 
 ### tokens:semantic
 
@@ -336,4 +360,8 @@ pipeline fails on unknown or circular refs.
 | danger.on | danger.default | data-text | 4.5 |
 | success.on | success.default | data-text | 4.5 |
 | warning.on | warning.default | data-text | 4.5 |
+| info.on | info.default | data-text | 4.5 |
+| info.subtle.text | info.subtle.bg | data-text | 4.5 |
+| neutral.on | neutral.default | data-text | 4.5 |
+| neutral.subtle.text | neutral.subtle.bg | data-text | 4.5 |
 | text.disabled | surface.0 | decorative | 0 |

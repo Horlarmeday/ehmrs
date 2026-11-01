@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import ControlsView from './ControlsView.vue';
 import FbcEntryView from './FbcEntryView.vue';
+import DisplayView from './DisplayView.vue';
 import PickersView from './PickersView.vue';
+import TableView from './TableView.vue';
 import ValidationView from './ValidationView.vue';
 
 const view = new URLSearchParams(window.location.search).get('view');
@@ -13,6 +15,8 @@ const view = new URLSearchParams(window.location.search).get('view');
     <FbcEntryView v-if="view === 'fbc'" />
     <PickersView v-else-if="view === 'pickers'" />
     <ValidationView v-else-if="view === 'validation'" />
+    <TableView v-else-if="view === 'table'" />
+    <DisplayView v-else-if="view === 'display'" />
     <ControlsView v-else />
   </main>
 </template>
