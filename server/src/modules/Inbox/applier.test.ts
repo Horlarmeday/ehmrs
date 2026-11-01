@@ -332,7 +332,7 @@ describe('applier + gate (B2.2 / B2.3)', () => {
 
       const event = await OutboxEvent.findOne({ where: { event_type: 'item.changed' } });
       expect(event).not.toBeNull();
-      expect(event.aggregate_id).toBe(`item:${ITEM_CODE}`);
+      expect(event.aggregate_id).toBe(`item:drug:${ITEM_CODE}`);
       expect(event.payload.body).toEqual({
         item_code: ITEM_CODE,
         name: 'Amoxicillin 500 mg capsules',

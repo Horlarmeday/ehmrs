@@ -603,9 +603,7 @@ export async function emitPatientDemographicsChanged(
 }
 /**
  * The catalogue table each `item.changed` line_type describes (#82). All four share the
- * (id, name, code) shape the label needs, except Investigation, which has no `code` column yet
- * (#83 adds it): its rows are read without one and skipped by the no-code rule below, so an
- * emitter never fabricates an item_code.
+ * (id, name, code) shape the label needs.
  */
 const ITEM_CATALOGUE_MODEL_BY_KIND: Record<ItemCatalogueLineType, ModelStatic<Model>> = {
   drug: (Drug as unknown) as ModelStatic<Model>,
@@ -618,7 +616,7 @@ const ITEM_CATALOGUE_ATTRIBUTES_BY_KIND: Record<ItemCatalogueLineType, string[]>
   drug: ['id', 'name', 'code'],
   test: ['id', 'name', 'code'],
   service: ['id', 'name', 'code'],
-  investigation: ['id', 'name'],
+  investigation: ['id', 'name', 'code'],
 };
 
 /**
@@ -658,7 +656,7 @@ export async function emitItemChangedForKind(
     return undefined;
   }
 
-  const aggregateId = itemAggregateId(itemCode);
+  const aggregateId = itemAggregateId(itemCode, kind);
   const sequence = await claimSequence(aggregateId, transaction);
 
   const event = buildItemChangedEvent(
