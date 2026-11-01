@@ -53,6 +53,8 @@ export function emitTailwind(manifest: DesignManifest): string {
   lines.push(`    danger: { DEFAULT: ${color('danger.default')}, hover: ${color('danger.hover')}, active: ${color('danger.active')}, on: ${color('danger.on')}, subtle: ${color('danger.subtle.bg')}, 'subtle-text': ${color('danger.subtle.text')} },`);
   lines.push(`    success: { DEFAULT: ${color('success.default')}, hover: ${color('success.hover')}, active: ${color('success.active')}, on: ${color('success.on')}, subtle: ${color('success.subtle.bg')}, 'subtle-text': ${color('success.subtle.text')} },`);
   lines.push(`    warning: { DEFAULT: ${color('warning.default')}, hover: ${color('warning.hover')}, active: ${color('warning.active')}, on: ${color('warning.on')}, subtle: ${color('warning.subtle.bg')}, 'subtle-text': ${color('warning.subtle.text')} },`);
+  lines.push(`    info: { DEFAULT: ${color('info.default')}, on: ${color('info.on')}, subtle: ${color('info.subtle.bg')}, 'subtle-text': ${color('info.subtle.text')} },`);
+  lines.push(`    neutral: { DEFAULT: ${color('neutral.default')}, on: ${color('neutral.on')}, subtle: ${color('neutral.subtle.bg')}, 'subtle-text': ${color('neutral.subtle.text')} },`);
   lines.push('  },');
   lines.push(`  fontFamily: { sans: ${fontFamilyArray(get('font.sans'))}, mono: ${fontFamilyArray(get('font.mono'))} },`);
   lines.push(`  fontSize: { xs: '${get('control.font.xs')}', sm: '${get('control.font.sm')}', md: '${get('control.font.md')}', lg: '${get('control.font.lg')}', xl: '${get('control.font.xl')}' },`);

@@ -67,6 +67,19 @@ export const EHMRS_TOKENS = {
       "800": "#92400e",
       "900": "#78350f",
       "950": "#451a03"
+    },
+    "purple": {
+      "50": "#faf5ff",
+      "100": "#f3e8ff",
+      "200": "#e9d5ff",
+      "300": "#d8b4fe",
+      "400": "#c084fc",
+      "500": "#a855f7",
+      "600": "#9333ea",
+      "700": "#7e22ce",
+      "800": "#6b21a8",
+      "900": "#581c87",
+      "950": "#3b0764"
     }
   },
   "semantic": {
@@ -106,6 +119,14 @@ export const EHMRS_TOKENS = {
     "warning.subtle.bg": "{amber.50}",
     "warning.subtle.text": "{amber.800}",
     "warning.on": "{gray.900}",
+    "info.default": "{purple.700}",
+    "info.subtle.bg": "{purple.50}",
+    "info.subtle.text": "{purple.700}",
+    "info.on": "#ffffff",
+    "neutral.default": "{gray.700}",
+    "neutral.subtle.bg": "{gray.100}",
+    "neutral.subtle.text": "{gray.700}",
+    "neutral.on": "#ffffff",
     "control.height.xs": "24px",
     "control.height.sm": "28px",
     "control.height.md": "32px",
@@ -334,6 +355,30 @@ export const EHMRS_TOKENS = {
       "min": 4.5
     },
     {
+      "fg": "info.on",
+      "bg": "info.default",
+      "cls": "data-text",
+      "min": 4.5
+    },
+    {
+      "fg": "info.subtle.text",
+      "bg": "info.subtle.bg",
+      "cls": "data-text",
+      "min": 4.5
+    },
+    {
+      "fg": "neutral.on",
+      "bg": "neutral.default",
+      "cls": "data-text",
+      "min": 4.5
+    },
+    {
+      "fg": "neutral.subtle.text",
+      "bg": "neutral.subtle.bg",
+      "cls": "data-text",
+      "min": 4.5
+    },
+    {
       "fg": "text.disabled",
       "bg": "surface.0",
       "cls": "decorative",
@@ -396,6 +441,19 @@ export const tokens = {
       900: '#14532d',
       950: '#052e16',
     },
+    purple: {
+      50: '#faf5ff',
+      100: '#f3e8ff',
+      200: '#e9d5ff',
+      300: '#d8b4fe',
+      400: '#c084fc',
+      500: '#a855f7',
+      600: '#9333ea',
+      700: '#7e22ce',
+      800: '#6b21a8',
+      900: '#581c87',
+      950: '#3b0764',
+    },
     red: {
       50: '#fef2f2',
       100: '#fee2e2',
@@ -416,6 +474,8 @@ export const tokens = {
     danger: { DEFAULT: '#dc2626', hover: '#b91c1c', active: '#991b1b', on: '#ffffff', subtle: '#fef2f2', 'subtle-text': '#b91c1c' },
     success: { DEFAULT: '#15803d', hover: '#166534', active: '#14532d', on: '#ffffff', subtle: '#f0fdf4', 'subtle-text': '#15803d' },
     warning: { DEFAULT: '#d97706', hover: '#f59e0b', active: '#fbbf24', on: '#111827', subtle: '#fffbeb', 'subtle-text': '#92400e' },
+    info: { DEFAULT: '#7e22ce', on: '#ffffff', subtle: '#faf5ff', 'subtle-text': '#7e22ce' },
+    neutral: { DEFAULT: '#374151', on: '#ffffff', subtle: '#f3f4f6', 'subtle-text': '#374151' },
   },
   fontFamily: { sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'], mono: ['JetBrains Mono', 'Fira Code', 'ui-monospace', 'monospace'] },
   fontSize: { xs: '11px', sm: '12px', md: '13px', lg: '14px', xl: '16px' },
