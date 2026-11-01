@@ -32,14 +32,27 @@ const id = useId();
         :disabled="disabled"
         :aria-invalid="error ? 'true' : undefined"
         :aria-describedby="error ? `${id}-error` : undefined"
-        class="relative flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border bg-surface before:absolute before:-inset-[5px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:bg-surface-alt data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-on data-[state=indeterminate]:border-primary data-[state=indeterminate]:bg-primary data-[state=indeterminate]:text-primary-on"
-        :class="error ? 'border-danger' : 'border-line'"
+        class="relative flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-xs border bg-surface transition-colors before:absolute before:-inset-[4px] enabled:hover:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:bg-surface-alt data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-on data-[state=indeterminate]:border-primary data-[state=indeterminate]:bg-primary data-[state=indeterminate]:text-primary-on"
+        :class="error ? 'border-danger' : 'border-ink-disabled'"
       >
-        <CheckboxIndicator aria-hidden="true" class="text-xs leading-none">{{
-          indeterminate ? '–' : '✓'
-        }}</CheckboxIndicator>
+        <CheckboxIndicator aria-hidden="true" class="flex">
+          <svg
+            viewBox="0 0 16 16"
+            class="h-[14px] w-[14px]"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.25"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path v-if="indeterminate" d="M3.5 8h9" />
+            <path v-else d="M3.5 8.5l3 3 6-7" />
+          </svg>
+        </CheckboxIndicator>
       </CheckboxRoot>
-      <label :for="id" :class="hideLabel ? 'sr-only' : ''">{{ label }}</label>
+      <label :for="id" class="cursor-pointer" :class="hideLabel ? 'sr-only' : ''">{{
+        label
+      }}</label>
     </div>
     <span v-if="error" :id="`${id}-error`" class="text-danger-subtle-text">{{ error }}</span>
   </div>

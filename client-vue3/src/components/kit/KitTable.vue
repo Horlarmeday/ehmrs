@@ -8,6 +8,8 @@ export interface KitColumn {
   id: string;
   header: string;
   numeric?: boolean;
+  mono?: boolean;
+  compact?: boolean;
   sortable?: boolean;
 }
 
@@ -93,14 +95,22 @@ function setAll(value: boolean): void {
 const labelFor = (row: TRow): string =>
   props.rowLabel ? props.rowLabel(row) : `Select ${String(row[props.rowKey])}`;
 const headCell =
-  'sticky top-0 z-10 border-b border-line bg-surface-alt px-2 py-[5px] font-semibold text-ink-secondary';
+  'sticky top-0 z-10 border-b border-line-subtle bg-surface-page px-3 py-[9px] text-xs font-medium text-ink-muted';
+function cellClasses(column: KitColumn): string[] {
+  return [
+    column.compact ? 'border-b border-line-subtle px-3 py-0' : bodyCell.value,
+    column.numeric ? 'text-right font-mono tabular-nums' : '',
+    column.mono ? 'font-mono tabular-nums' : '',
+  ];
+}
+
 const bodyCell = computed(
-  () => `border-b border-line-subtle ${props.dense ? 'px-[5px] py-[3px]' : 'px-2 py-1'}`
+  () => `border-b border-line-subtle ${props.dense ? 'px-2 py-[3px]' : 'px-3 py-1'}`
 );
 </script>
 
 <template>
-  <div class="relative rounded-sm border border-line bg-surface text-sm text-ink">
+  <div class="relative bg-surface-page text-sm text-ink">
     <span
       role="status"
       class="absolute right-2 top-1 z-20 rounded-sm bg-surface-alt px-1 text-ink-secondary"
@@ -144,7 +154,7 @@ const bodyCell = computed(
               <button
                 v-if="column.sortable"
                 type="button"
-                class="min-h-xs rounded-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+                class="min-h-xs rounded-xs font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
                 @click="toggleSort(column.id)"
               >
                 {{ column.header }}
@@ -188,21 +198,21 @@ const bodyCell = computed(
             </td>
           </tr>
           <template v-for="row in rows" :key="String(row[rowKey])">
-            <tr v-if="isGroup(row)" :class="rowHeight" class="bg-surface-alt">
+            <tr v-if="isGroup(row)" :class="rowHeight">
               <th
                 :colspan="span"
                 scope="colgroup"
-                class="border-b border-line-subtle px-2 text-left font-semibold"
+                class="border-b border-line-subtle px-3 text-left font-semibold"
               >
                 {{ groupKey ? row[groupKey] : '' }}
               </th>
             </tr>
             <tr
               v-else
-              :class="[rowHeight, isSelected(row) ? 'bg-blue-100' : 'hover:bg-surface-alt']"
+              :class="[rowHeight, isSelected(row) ? 'bg-teal-100' : 'hover:bg-surface-alt']"
               data-testid="table-row"
             >
-              <td v-if="selectable" class="border-b border-line-subtle px-2 py-0">
+              <td v-if="selectable" class="border-b border-line-subtle px-3 py-0">
                 <KitCheckbox
                   :model-value="isSelected(row)"
                   :label="labelFor(row)"
@@ -210,11 +220,7 @@ const bodyCell = computed(
                   @update:model-value="setSelected(row, $event)"
                 />
               </td>
-              <td
-                v-for="column in columns"
-                :key="column.id"
-                :class="[bodyCell, column.numeric ? 'text-right font-mono tabular-nums' : '']"
-              >
+              <td v-for="column in columns" :key="column.id" :class="cellClasses(column)">
                 <slot :name="`cell-${column.id}`" :row="row" :value="row[column.id]">{{
                   row[column.id]
                 }}</slot>

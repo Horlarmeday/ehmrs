@@ -27,9 +27,9 @@ test('skeletons match real row and control heights and hide from assistive tech'
   page,
 }) => {
   const tables = page.getByTestId('skeleton').filter({ has: page.getByTestId('skeleton-row') });
-  expect(await heightOf(tables.nth(0).getByTestId('skeleton-row').first())).toBe(30);
-  expect(await heightOf(tables.nth(1).getByTestId('skeleton-row').first())).toBe(26);
-  expect(await heightOf(page.getByTestId('skeleton-control').first())).toBe(28);
+  expect(await heightOf(tables.nth(0).getByTestId('skeleton-row').first())).toBe(44);
+  expect(await heightOf(tables.nth(1).getByTestId('skeleton-row').first())).toBe(32);
+  expect(await heightOf(page.getByTestId('skeleton-control').first())).toBe(38);
   for (const skeleton of await page.getByTestId('skeleton').all()) {
     await expect(skeleton).toHaveAttribute('aria-hidden', 'true');
   }

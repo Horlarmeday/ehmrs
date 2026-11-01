@@ -30,7 +30,7 @@ const id = useId();
       :disabled="disabled"
       :aria-invalid="error ? 'true' : undefined"
       :aria-describedby="error ? `${id}-error` : undefined"
-      class="min-h-sm w-full rounded-sm border bg-surface px-2 py-0 text-sm text-ink placeholder:text-ink-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:bg-surface-alt disabled:text-ink-secondary"
+      class="min-h-sm w-full rounded-sm border bg-surface px-3 py-0 text-sm text-ink placeholder:text-ink-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:bg-surface-alt disabled:text-ink-secondary"
       :class="[
         error ? 'border-danger' : 'border-line',
         numeric ? 'text-right font-mono tabular-nums' : '',

@@ -38,7 +38,7 @@ const sizeModel = computed({
 });
 
 const button =
-  'inline-flex min-h-sm min-w-7 items-center justify-center rounded-sm border border-line bg-surface px-1 text-ink hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:bg-surface-alt disabled:text-ink-secondary data-[selected]:border-primary data-[selected]:bg-primary data-[selected]:text-primary-on';
+  'inline-flex min-h-sm min-w-[38px] items-center justify-center rounded-sm px-1 text-ink-secondary hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:text-ink-disabled disabled:hover:bg-transparent data-[selected]:bg-primary-subtle data-[selected]:font-semibold data-[selected]:text-primary-subtle-text';
 </script>
 
 <template>
@@ -70,7 +70,7 @@ const button =
       <select
         v-model="sizeModel"
         aria-label="Records per page"
-        class="min-h-sm rounded-sm border border-line bg-surface px-1 text-sm text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+        class="min-h-sm rounded-sm border border-line-subtle bg-surface px-2 text-sm text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
       >
         <option v-for="size in pageSizes" :key="size" :value="String(size)">{{ size }}</option>
       </select>

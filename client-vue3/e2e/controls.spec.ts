@@ -6,7 +6,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 const fills: Record<string, string> = {
-  primary: 'rgb(37, 99, 235)',
+  primary: 'rgb(27, 31, 35)',
   success: 'rgb(21, 128, 61)',
   danger: 'rgb(220, 38, 38)',
   warning: 'rgb(217, 119, 6)',
@@ -32,10 +32,20 @@ for (const [severity, fill] of Object.entries(fills)) {
   });
 }
 
+test('secondary button is AA at rest and on hover', async ({ page }) => {
+  const button = page.getByRole('button', { name: 'secondary', exact: true });
+  const rest = await colorsOf(button);
+  expect(contrast(rest.fg, rest.bg)).toBeGreaterThanOrEqual(4.5);
+  await button.hover();
+  const hover = await colorsOf(button);
+  expect(hover.bg).not.toBe(rest.bg);
+  expect(contrast(hover.fg, hover.bg)).toBeGreaterThanOrEqual(4.5);
+});
+
 test('button sizes follow the density scale', async ({ page }) => {
-  expect(await heightOf(page.getByRole('button', { name: 'primary', exact: true }))).toBe(28);
-  expect(await heightOf(page.getByRole('button', { name: 'Extra small' }))).toBe(24);
-  expect(await heightOf(page.getByRole('button', { name: 'Large' }))).toBe(40);
+  expect(await heightOf(page.getByRole('button', { name: 'primary', exact: true }))).toBe(38);
+  expect(await heightOf(page.getByRole('button', { name: 'Extra small' }))).toBe(30);
+  expect(await heightOf(page.getByRole('button', { name: 'Large' }))).toBe(44);
 });
 
 test('button works by keyboard and shows focus; disabled and loading cannot fire', async ({
@@ -54,7 +64,7 @@ test('button works by keyboard and shows focus; disabled and loading cannot fire
 
 test('input is 28px, shows focus, and reaches the model', async ({ page }) => {
   const input = page.getByLabel('Name');
-  expect(await heightOf(input)).toBe(28);
+  expect(await heightOf(input)).toBe(38);
   await input.focus();
   await page.keyboard.type('Ada');
   await expect(page.getByTestId('name')).toHaveText('Ada');

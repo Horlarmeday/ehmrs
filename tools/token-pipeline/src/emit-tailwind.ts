@@ -47,6 +47,7 @@ export function emitTailwind(manifest: DesignManifest): string {
     lines.push(...paletteBlock(name, manifest.palettes[name], '    '));
   }
   lines.push(`    primary: { DEFAULT: ${color('primary.color')}, hover: ${color('primary.hover')}, active: ${color('primary.active')}, on: ${color('primary.on')}, subtle: ${color('primary.subtle.bg')}, 'subtle-text': ${color('primary.subtle.text')} },`);
+  lines.push(`    action: { DEFAULT: ${color('action.default')}, hover: ${color('action.hover')}, active: ${color('action.active')}, on: ${color('action.on')} },`);
   lines.push(`    surface: { DEFAULT: ${color('surface.0')}, page: ${color('surface.50')}, alt: ${color('surface.100')} },`);
   lines.push(`    line: { DEFAULT: ${color('border.default')}, subtle: ${color('border.subtle')} },`);
   lines.push(`    ink: { DEFAULT: ${color('text.primary')}, secondary: ${color('text.secondary')}, muted: ${color('text.muted')}, disabled: ${color('text.disabled')} },`);
@@ -60,7 +61,7 @@ export function emitTailwind(manifest: DesignManifest): string {
   lines.push(`  fontSize: { xs: '${get('control.font.xs')}', sm: '${get('control.font.sm')}', md: '${get('control.font.md')}', lg: '${get('control.font.lg')}', xl: '${get('control.font.xl')}' },`);
   lines.push(`  minHeight: { xs: '${get('control.height.xs')}', sm: '${get('control.height.sm')}', md: '${get('control.height.md')}', lg: '${get('control.height.lg')}' },`);
   lines.push(`  height: { row: '${get('table.row.height')}', 'row-dense': '${get('table.row.height.dense')}' },`);
-  lines.push(`  borderRadius: { none: '${get('radius.none')}', sm: '${get('radius.sm')}', DEFAULT: '${get('radius.md')}', lg: '${get('radius.lg')}', full: '9999px' },`);
+  lines.push(`  borderRadius: { none: '${get('radius.none')}', xs: '${get('radius.xs')}', sm: '${get('radius.sm')}', DEFAULT: '${get('radius.md')}', lg: '${get('radius.lg')}', full: '9999px' },`);
   lines.push(`  boxShadow: { sm: '${get('shadow.sm')}', md: '${get('shadow.md')}', lg: '${get('shadow.lg')}' },`);
   lines.push('}');
   lines.push('');

@@ -27,3 +27,7 @@ requiring explicit sign-off.
 - `store/pharmacy/reports/components/ExportButton.vue` — the one view that calls axios —
   is treated as logic: ported verbatim, not redesigned.
 - The single-export exception aside, no new API calls may appear in views.
+
+## Amendment (owner decision, 2026-11-01)
+
+The system gets a new UI/UX design (`tasks/ui-ux-redesign.md`), so a new screen may combine or reorder today's views. Script code may therefore be reorganized across components rather than translated 1:1 per view. The freeze line above still holds: guards, dispatches with their payloads, and post-dispatch behaviour stay the same unless the owner signs off. Without a line-by-line diff per view, each screen needs behaviour tests and closer review.

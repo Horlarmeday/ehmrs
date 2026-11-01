@@ -40,13 +40,13 @@ test.describe('entry section', () => {
 
   test('L2 density holds and nothing overflows at 1280px', async ({ page }) => {
     for (const row of await page.getByTestId('result-row').all()) {
-      expect(await heightOf(row)).toBe(30);
-      expect(await heightOf(row.getByRole('textbox'))).toBe(28);
+      expect(await heightOf(row)).toBe(44);
+      expect(await heightOf(row.getByRole('textbox'))).toBe(38);
     }
     const fontSize = await page
       .getByRole('textbox', { name: 'WBC' })
       .evaluate((e) => getComputedStyle(e).fontSize);
-    expect(fontSize).toBe('12px');
+    expect(fontSize).toBe('14px');
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth > window.innerWidth
     );

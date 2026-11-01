@@ -39,18 +39,18 @@ describe('token snapshot', () => {
     expect(failures.map(({ p, actual }) => `${p.fg}/${p.bg} ${actual.toFixed(2)}:1`)).toEqual([])
   })
 
-  it('pins the ERP density scale (sm = 28px controls, 12px font, 30px rows)', () => {
-    expect(resolveToken('control.height.sm')).toBe('28px')
-    expect(resolveToken('control.font.sm')).toBe('12px')
-    expect(resolveToken('table.row.height')).toBe('30px')
-    expect(resolveToken('control.height.lg')).toBe('40px')
+  it('pins the density scale (sm = 38px controls, 14px font, 44px rows)', () => {
+    expect(resolveToken('control.height.sm')).toBe('38px')
+    expect(resolveToken('control.font.sm')).toBe('14px')
+    expect(resolveToken('table.row.height')).toBe('44px')
+    expect(resolveToken('control.height.lg')).toBe('44px')
   })
 
   it('keeps one source: Tailwind tokens carry the DESIGN.md values', () => {
     expect(tokens.colors.primary.DEFAULT).toBe(resolveToken('primary.color'))
     expect(tokens.colors.ink.DEFAULT).toBe(resolveToken('text.primary'))
     expect(tokens.colors.surface.page).toBe(resolveToken('surface.50'))
-    expect(tokens.minHeight.sm).toBe('28px')
+    expect(tokens.minHeight.sm).toBe('38px')
     expect(tokens.height.row).toBe(resolveToken('table.row.height'))
     expect(tokens.colors.ink.muted).toBe(resolveToken('text.muted'))
     for (const [color, group] of [

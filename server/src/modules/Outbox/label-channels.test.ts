@@ -41,7 +41,7 @@ describe('idempotency keys carry the sequence', () => {
 
 describe('aggregate ids', () => {
   it('keys an item by its catalogue code, not a numeric id', () => {
-    expect(itemAggregateId('PHM-AMOX-500')).toBe('item:PHM-AMOX-500');
+    expect(itemAggregateId('PHM-AMOX-500', 'drug')).toBe('item:drug:PHM-AMOX-500');
   });
 
   it('keys a vendor by its EMR id', () => {
@@ -64,8 +64,16 @@ describe('buildItemChangedEvent', () => {
     });
     expect(row.event_type).toBe('item.changed');
     expect(row.aggregate_type).toBe('item');
-    expect(row.aggregate_id).toBe('item:PHM-AMOX-500');
+    expect(row.aggregate_id).toBe('item:drug:PHM-AMOX-500');
     expect(row.event_version).toBe(1);
+  });
+
+  it('keeps the same code in two catalogues apart', () => {
+    const drug = buildItemChangedEvent({ item_code: 'X1', name: 'A', line_type: 'drug' }, context);
+    const test = buildItemChangedEvent({ item_code: 'X1', name: 'B', line_type: 'test' }, context);
+
+    expect(drug.aggregate_id).not.toBe(test.aggregate_id);
+    expect(drug.idempotency_key).not.toBe(test.idempotency_key);
   });
 
   it('trims before validating and emitting', () => {

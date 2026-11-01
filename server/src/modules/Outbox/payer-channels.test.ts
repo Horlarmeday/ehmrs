@@ -254,15 +254,15 @@ describe('catalogue.requested full sends', () => {
     expect(result.outcome).toBe('APPLIED');
 
     const events = await OutboxEvent.findAll({ where: { event_type: 'item.changed' } });
-    // Investigations have no `code` column yet (#83 adds it), so they contribute nothing until
-    // then: the full send covers coded rows of every kind and never fabricates an item_code. A
+    // The full send covers coded rows of every kind and never fabricates an item_code. A
     // row whose code overflows the 43-char wire bound is skipped, not thrown — a full send must
     // never dead-letter on one bad catalogue row.
     const codedRowCount = (
       await sequelizeConnection.query<{ c: number }>(
         `SELECT (SELECT COUNT(*) FROM Drugs WHERE code IS NOT NULL AND LENGTH(TRIM(code)) BETWEEN 1 AND 43)
               + (SELECT COUNT(*) FROM Tests WHERE code IS NOT NULL AND LENGTH(TRIM(code)) BETWEEN 1 AND 43)
-              + (SELECT COUNT(*) FROM Services WHERE code IS NOT NULL AND LENGTH(TRIM(code)) BETWEEN 1 AND 43) AS c`,
+              + (SELECT COUNT(*) FROM Services WHERE code IS NOT NULL AND LENGTH(TRIM(code)) BETWEEN 1 AND 43)
+              + (SELECT COUNT(*) FROM Investigations WHERE code IS NOT NULL AND LENGTH(TRIM(code)) BETWEEN 1 AND 43) AS c`,
         { type: QueryTypes.SELECT }
       )
     )[0].c;
@@ -279,6 +279,11 @@ describe('catalogue.requested full sends', () => {
       item_code: 'CHAN-SVC',
       name: 'Channel Service',
       line_type: 'service',
+    });
+    expect(bodies).toContainEqual({
+      item_code: 'CHAN-INV',
+      name: expect.any(String),
+      line_type: 'investigation',
     });
     expect(bodies).toContainEqual({
       item_code: 'CHAN-TST',

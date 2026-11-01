@@ -94,13 +94,16 @@ export function storeAggregateId(inventoryId: number | string): string {
 /**
  * The aggregate id for a catalogue item label (Accounting ADR-0052 D1).
  *
+ * Composite (Accounting ADR-0068 D4) because the four catalogue tables carry independent code
+ * sequences, so the bare code cannot order two rows that share one.
+ *
  * Keyed by the catalogue CODE, not `Drug.id`: the code is what Accounting's
  * `purchase_order_line.item_code` and `stock_batch.item_code` already store, so a numeric id would
  * need a join Accounting cannot perform. `claimSequence` takes an opaque string, so a new aggregate
  * needs no schema change here.
  */
-export function itemAggregateId(itemCode: string): string {
-  return `item:${itemCode}`;
+export function itemAggregateId(itemCode: string, lineType: ItemCatalogueLineType): string {
+  return `item:${lineType}:${itemCode}`;
 }
 
 /** The aggregate id for a supplier label (Accounting ADR-0051 D1). */
@@ -915,11 +918,14 @@ export function buildItemChangedEvent(
     );
   }
 
-  const aggregateId = itemAggregateId(itemCode);
+  const aggregateId = itemAggregateId(itemCode, input.line_type);
   const occurredAt = context.occurredAt ?? new Date();
   const sentAt = context.sentAt ?? new Date();
   const eventVersion = context.eventVersion ?? 1;
-  const idempotencyKey = itemChangedIdempotencyKey(itemCode, context.sequence);
+  const idempotencyKey = itemChangedIdempotencyKey(
+    `${input.line_type}:${itemCode}`,
+    context.sequence
+  );
 
   const body: Record<string, unknown> = { item_code: itemCode, name, line_type: input.line_type };
   assertNoDemographics(body, 'item.changed');

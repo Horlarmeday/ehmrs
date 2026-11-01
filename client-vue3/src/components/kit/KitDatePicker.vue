@@ -85,7 +85,7 @@ function update(next: unknown): void {
           :aria-label="label"
           :aria-invalid="message ? 'true' : undefined"
           :aria-describedby="message ? `${id}-error` : undefined"
-          class="inline-flex min-h-sm w-full items-center rounded-sm border bg-surface pl-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-primary"
+          class="inline-flex min-h-sm w-full items-center rounded-sm border bg-surface pl-3 transition-colors hover:border-primary focus-within:border-primary focus-within:outline focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-primary"
           :class="[message ? 'border-danger' : 'border-line', disabled ? 'bg-surface-alt' : '']"
         >
           <template v-for="segment in segments" :key="segment.part">
@@ -99,38 +99,72 @@ function update(next: unknown): void {
             <DatePickerInput
               v-else
               :part="segment.part"
-              class="rounded-sm px-px font-mono tabular-nums focus:bg-blue-100 focus:outline-none data-[placeholder]:text-ink-muted"
+              class="rounded-xs px-[2px] tabular-nums focus:bg-teal-100 focus:outline-none data-[placeholder]:text-ink-muted"
             >
               {{ segment.value }}
             </DatePickerInput>
           </template>
           <DatePickerTrigger
             :aria-label="`Open ${label} calendar`"
-            class="ml-auto h-[26px] w-[26px] rounded-sm text-ink-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+            class="ml-auto flex h-[36px] w-[36px] items-center justify-center rounded-sm text-ink-muted hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           >
-            ▾
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 16 16"
+              class="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="2" y="3" width="12" height="11" rx="2" />
+              <path d="M2 6.5h12M5.5 1.5v3M10.5 1.5v3" />
+            </svg>
           </DatePickerTrigger>
         </DatePickerField>
       </DatePickerAnchor>
       <DatePickerContent
         align="start"
-        :side-offset="2"
-        class="z-50 rounded border border-line bg-surface p-2 text-sm text-ink shadow-md"
+        :side-offset="6"
+        class="z-50 rounded-lg border border-line-subtle bg-surface p-3 text-sm text-ink shadow-lg"
       >
         <DatePickerCalendar v-slot="{ weekDays, grid }">
-          <DatePickerHeader class="mb-1 flex items-center justify-between">
+          <DatePickerHeader class="mb-2 flex items-center justify-between">
             <DatePickerPrev
               aria-label="Previous month"
-              class="min-h-xs min-w-[24px] rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+              class="flex min-h-xs min-w-[30px] items-center justify-center rounded-sm text-ink-secondary hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
             >
-              ‹
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 16 16"
+                class="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.75"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M10 3.5L5.5 8l4.5 4.5" />
+              </svg>
             </DatePickerPrev>
             <DatePickerHeading class="font-semibold" />
             <DatePickerNext
               aria-label="Next month"
-              class="min-h-xs min-w-[24px] rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+              class="flex min-h-xs min-w-[30px] items-center justify-center rounded-sm text-ink-secondary hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
             >
-              ›
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 16 16"
+                class="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.75"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M6 3.5L10.5 8 6 12.5" />
+              </svg>
             </DatePickerNext>
           </DatePickerHeader>
           <DatePickerGrid
@@ -143,7 +177,7 @@ function update(next: unknown): void {
                 <DatePickerHeadCell
                   v-for="day in weekDays"
                   :key="day"
-                  class="h-[24px] w-[28px] font-medium text-ink-secondary"
+                  class="h-[30px] w-[38px] text-xs font-medium text-ink-muted"
                 >
                   {{ day }}
                 </DatePickerHeadCell>
@@ -155,7 +189,7 @@ function update(next: unknown): void {
                   <DatePickerCellTrigger
                     :day="day"
                     :month="month.value"
-                    class="flex h-[24px] w-[28px] items-center justify-center rounded-sm font-mono tabular-nums hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary data-[outside-view]:text-ink-muted data-[disabled]:text-ink-disabled data-[disabled]:line-through data-[selected]:bg-primary data-[selected]:text-primary-on"
+                    class="mx-auto flex h-[34px] w-[34px] items-center justify-center rounded-full tabular-nums transition-colors hover:bg-primary-subtle focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary data-[outside-view]:text-ink-muted data-[disabled]:text-ink-disabled data-[disabled]:line-through data-[today]:font-bold data-[today]:text-primary data-[selected]:bg-primary data-[selected]:font-semibold data-[selected]:text-primary-on data-[selected]:hover:bg-primary-hover"
                   />
                 </DatePickerCell>
               </DatePickerGridRow>
