@@ -16,7 +16,7 @@ git checkout -b <issue-number>-<short-name>
 
 - `client/` — Vue 2 + Vuex + BootstrapVue, vue-cli. Pages in `src/view/`, Vuex modules in `src/core/services/store/`. Uses **npm** (`package-lock.json`).
 - `server/` — Express + TypeScript (ts-node via nodemon in dev), sequelize-typescript on MySQL, plus MongoDB and Redis. Feature modules in `src/modules/<Name>/` with the pattern `name.controller.ts` / `name.service.ts` / `name.repository.ts` / `name.routes.ts` / `validations.ts`. Uses **yarn 1** (`yarn.lock`).
-- `client-vue3/` — only a built `dist/` of an abandoned Vue 3 attempt. Not active source; the sanctioned rewrite (PrimeVue 4 + Tailwind) is specified in `docs/adr/`.
+- `client-vue3/` — only a built `dist/` of an abandoned Vue 3 attempt. Not active source; the sanctioned rewrite (reka-ui + Tailwind) is specified in `docs/adr/`.
 - `tasks/` — numbered per-feature plan files (`<issue>-<slug>.md`). Commit subjects reference them: `feat(#32): ...`, `fix(#301): ...`.
 - `docs/adr/` — binding architecture decisions; read the relevant ADR before Vue 3 migration, validation, or fixture work.
 

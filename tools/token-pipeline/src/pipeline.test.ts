@@ -165,19 +165,28 @@ describe('contrast', () => {
 
 describe('emission', () => {
   it('is deterministic (two runs byte-identical)', () => {
-    const a = buildOutputs();
-    const b = buildOutputs();
-    expect(a.preset).toBe(b.preset);
-    expect(a.tailwind).toBe(b.tailwind);
+    expect(buildOutputs().tailwind).toBe(buildOutputs().tailwind);
   });
 
-  it('preset maps density to rem and carries the manifest', () => {
-    const { preset } = buildOutputs();
-    expect(preset).toContain("fontSize: '0.75rem'");
-    expect(preset).toContain("paddingY: '0.3125rem'");
-    expect(preset).toContain("padding: '0.25rem 0.5rem'");
-    expect(preset).toContain('EHMRS_TOKENS');
-    expect(preset).toContain('definePreset(Aura');
+  it('carries the manifest and table density', () => {
+    const { tailwind } = buildOutputs();
+    expect(tailwind).toContain('EHMRS_TOKENS');
+    expect(tailwind).toContain("height: { row: '30px', 'row-dense': '26px' }");
+  });
+
+  it('exposes solid fills with their foregrounds', () => {
+    const { tailwind } = buildOutputs();
+    expect(tailwind).toContain("warning: { DEFAULT: '#d97706', hover: '#f59e0b', active: '#fbbf24', on: '#111827'");
+    expect(tailwind).toContain("danger: { DEFAULT: '#dc2626', hover: '#b91c1c', active: '#991b1b', on: '#ffffff'");
+    expect(tailwind).toContain("muted: '#5f6775'");
+  });
+
+  it('refuses muted text that fails AA on the selected row', () => {
+    expect(() => buildOutputsFromMd(designMd.replace('| gray.500 | #5f6775 |', '| gray.500 | #6b7280 |'))).toThrow(/text\.muted .* on blue\.100/);
+  });
+
+  it('refuses a warning hover that darkens under dark text', () => {
+    expect(() => buildOutputsFromMd(designMd.replace('| warning.hover | {amber.500} |', '| warning.hover | {amber.700} |'))).toThrow(/warning\.on .* on warning\.hover/);
   });
 
   it('tailwind output exposes the ERP-default density and AA-capable colors', () => {
@@ -188,9 +197,8 @@ describe('emission', () => {
   });
 
   it('reflects DESIGN.md density edits in generated output', () => {
-    const a = buildOutputsFromMd(designMd).preset;
-    const b = buildOutputsFromMd(designMd.replace('| control.font.sm | 12px |', '| control.font.sm | 13px |')).preset;
-    expect(a).not.toBe(b);
-    expect(b).toContain("fontSize: '0.8125rem'");
+    const edited = buildOutputsFromMd(designMd.replace('| control.font.sm | 12px |', '| control.font.sm | 13px |')).tailwind;
+    expect(edited).not.toBe(buildOutputsFromMd(designMd).tailwind);
+    expect(edited).toContain("sm: '13px'");
   });
 });

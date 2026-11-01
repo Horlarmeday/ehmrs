@@ -1,5 +1,7 @@
 # PrimeVue 4 as UI anatomy with Open Design owning the skin and page layout
 
+**Status: superseded by [ADR-0010](0010-reka-ui-kit-replaces-primevue.md) on 2026-11-01.**
+
 The Vue 3 migration (see `tasks/VUE3_MIGRATION_ANALYSIS.md`) freezes business logic and
 redesigns only the view layer. We decided the new client sits on **PrimeVue 4 + Tailwind**
 for complex interactive components (data tables, date pickers, multi-selects, comboboxes,

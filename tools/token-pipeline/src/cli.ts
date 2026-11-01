@@ -4,13 +4,11 @@ import { fileURLToPath } from 'url';
 import { buildOutputs } from './generate.js';
 
 const repoRoot = join(fileURLToPath(new URL('.', import.meta.url)), '..', '..', '..');
-const presetOut = join(repoRoot, 'client-vue3', 'src', 'design', 'ehmrs.preset.ts');
 const tailwindOut = join(repoRoot, 'client-vue3', 'tailwind.tokens.ts');
 
 const check = process.argv.includes('--check');
 const outputs = buildOutputs();
 const targets: Array<[string, string]> = [
-  [presetOut, outputs.preset],
   [tailwindOut, outputs.tailwind],
 ];
 

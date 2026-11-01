@@ -1,10 +1,9 @@
-# token-pipeline (issue #40, ADR-0001/0009)
+# token-pipeline (issue #40, ADR-0010/0009)
 
 `client-vue3/DESIGN.md` is the single source of truth for design tokens. This tool parses
-its `### tokens:` tables, enforces the design contract, and generates **both** consumers:
-
-- `client-vue3/src/design/ehmrs.preset.ts` — PrimeVue 5 theme preset (`definePreset(Aura, …)`)
-- `client-vue3/tailwind.tokens.ts` — Tailwind theme tokens (imported by `tailwind.config.js`)
+its `### tokens:` tables, enforces the design contract, and generates
+`client-vue3/tailwind.tokens.ts`: the Tailwind theme tokens (imported by
+`tailwind.config.js`) and the `EHMRS_TOKENS` manifest used by the client's token tests.
 
 ## Commands
 
@@ -12,8 +11,8 @@ its `### tokens:` tables, enforces the design contract, and generates **both** c
 cd tools/token-pipeline
 npm install
 npm test          # vitest (parser strictness, contrast gate, determinism)
-npm run generate  # regenerate both committed files from DESIGN.md
-npm run check     # exit 1 if committed files drifted from DESIGN.md (PR gate)
+npm run generate  # regenerate the committed file from DESIGN.md
+npm run check     # exit 1 if the committed file drifted from DESIGN.md (PR gate)
 ```
 
 ## The AA rule is enforced in code
@@ -29,7 +28,7 @@ are exempt.
 1. Edit the table in `client-vue3/DESIGN.md` (values: `#rrggbb`, `Npx`, numbers, compound
    sizes like `4px 8px`, or `{dotted.ref}`).
 2. `cd tools/token-pipeline && npm run generate`.
-3. Commit DESIGN.md + both generated files together (the `--check` gate keeps them in sync).
+3. Commit DESIGN.md + the generated file together (the `--check` gate keeps them in sync).
 
 ## Table contract (strict)
 
@@ -41,13 +40,5 @@ are exempt.
 - Unknown headers, unknown refs, circular refs, wrong prefixes: hard errors. The parser
   fails loudly rather than guessing — a drifted table must never silently restyle the app.
 
-## Preset mapping notes
-
-The emitted preset overrides only **skin** (per ADR-0001): primitive ramps, `borderRadius`,
-typography, focus ring, text/surface/content/highlight semantics, `formField` density
-(sm = 28px / 12px ERP default), and DataTable cell paddings. Everything else inherits from
-Aura. Complex components keep PrimeVue anatomy; DESIGN.md's "Complex-component brief
-constraints" section restates the briefing rule for design sessions.
-
-Dark mode: light-only in v1 (`darkModeSelector: 'none'` in `src/main.ts`); a dark token
-set would be added as a second DESIGN.md-sourced scheme through this same pipeline.
+Dark mode: light-only in v1; a dark token set would be added as a second DESIGN.md-sourced
+scheme through this same pipeline.

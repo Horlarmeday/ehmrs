@@ -5,10 +5,21 @@ Blueprint** (dense data-grid system), accent **hospital blue**, **light mode onl
 LTR only — no RTL.
 
 This file is the **single source of truth** for design tokens. The token pipeline
-(`tools/token-pipeline`) parses the `### tokens:` tables below and generates BOTH the
-PrimeVue preset (`src/design/ehmrs.preset.ts`) and the Tailwind tokens
-(`tailwind.tokens.ts`). Never edit the generated files by hand; change a table here and
+(`tools/token-pipeline`) parses the `### tokens:` tables below and generates the Tailwind
+tokens (`tailwind.tokens.ts`). Never edit the generated file by hand; change a table here and
 run `cd tools/token-pipeline && npm run generate`.
+
+## Product and operating context
+
+eHMRS is a hospital ERP client with roughly 480 views. Its centre of gravity is dense,
+repetitive data work: patient lists, lab result entry, pharmacy dispense, store
+inventory, admissions, and reports. Nurses, pharmacists, lab scientists, and records
+staff use these screens for rapid entry and verification, including overnight shifts.
+
+The system therefore optimizes for scan speed, comparison, keyboard flow, and visible
+state over marketing-style spaciousness. Density is a usability requirement: whitespace
+must clarify groups and hierarchy without lowering the amount of decision-relevant data
+visible in a working viewport.
 
 ## Non-negotiables
 
@@ -29,25 +40,27 @@ run `cd tools/token-pipeline && npm run generate`.
 4. **Light mode only** in v1. Dark tokens may be added later as a second token set
    through this same pipeline; hand-written dark overrides are forbidden.
 
-## Complex-component brief constraints (ADR-0001)
+## Complex-component brief constraints (ADR-0010)
 
-Open Design owns layout, composition, and simple components. For complex interactive
-components Open Design designs **the skin around fixed PrimeVue anatomy** — palette,
-typography, radius, density, state colors — and the page around the component. It never
-invents the component's internal structure. A brief that says "design a table" is
-malformed; it must say "design the skin around a PrimeVue-class DataTable".
+Open Design has full authority over page layout, navigation, composition, and how every
+component looks. These designs must be expressible near 1:1 as Tailwind Vue components.
 
-PrimeVue anatomy pinned by the archetypes (skin targets of this token set):
+For interactive components, reka-ui owns behaviour and accessibility: keyboard use, focus,
+ARIA, and overlays. Open Design styles those components freely, but a design must be
+achievable on the primitive and may not redefine its behaviour. A brief that says "design
+a date picker" must name the primitive it builds on.
 
-| Anatomy | PrimeVue component | Skin entry points |
+Kit foundations pinned by the archetypes:
+
+| Component | Foundation | Token entry points |
 | --- | --- | --- |
-| Data grid | DataTable | `formField`, `text`, `surface`, row paddings (`table.cell.padding`) |
-| Pickers | DatePicker / Select / MultiSelect | `formField` (+ `sm` variant), `focus` |
-| Overlays | Dialog / Drawer / OverlayPanel | `surface`, `shadow.md` |
-| Buttons | Button (`sm` default) | `primary`, `success`/`danger`/`warning` solids |
-| Editors | InputText / Textarea / InputNumber | `formField`, `focus` |
-| Feedback | Toast / Message | `*.subtle.bg` + `*.subtle.text` pairs |
-| Charts | apexcharts (per ADR-0001) | palette ramps only |
+| Data grid | Native `<table>` | `surface`, `text`, `table.row.height`, `table.cell.padding` |
+| Pickers | reka-ui Combobox / DatePicker | `control.*`, `focus` |
+| Overlays | reka-ui Dialog / Popover | `surface`, `shadow.md` |
+| Buttons | Native `<button>` (`sm` default) | `primary`, `success`/`danger`/`warning` solids and `.on` |
+| Editors | Native `<input>` / `<textarea>` | `control.*`, `focus` |
+| Feedback | reka-ui Toast | `*.subtle.bg` + `*.subtle.text` pairs |
+| Charts | apexcharts (per ADR-0010) | palette ramps only |
 
 ## Provenance and rationale
 
@@ -58,6 +71,44 @@ PrimeVue anatomy pinned by the archetypes (skin targets of this token set):
 - **Accent: hospital blue** — continuity with the Vue 2 app's blue family, chosen at the
   #40 HITL session over clinical teal and health-sector green.
 - Typography stack and mono stack predate this document (tooling scaffold, #34).
+
+Changing the seed, hospital-blue accent family, or light-only v1 mode strategy requires
+a new owner-reviewed HITL decision. Such a change must be presented as a proposal with
+rationale; it must not enter the token tables as an unannounced reseed.
+
+## Archetype and export contract (ADR-0009)
+
+This system seeds a kit of approximately 6–10 reusable page archetypes:
+
+- list with filters;
+- detail with tabs;
+- entry form or wizard;
+- dashboard;
+- report with export;
+- settings;
+- one exemplar domain spanning authentication, list, and form.
+
+Every archetype must name the kit component responsible for each complex interaction. Bespoke screen design is reserved for patient search/registration, triage,
+lab result entry, and dispense/verify, where the clinical workflow carries higher risk.
+
+Design exports must use generated token names and Tailwind utilities so implementation
+can be transcribed directly—for example, `bg-surface-page`, `text-ink`, `min-h-sm`, and `text-sm`. One-off hex values are forbidden: if a new
+color is necessary, add it to an existing parser-supported token table and declare every
+required foreground/background contrast pair. Any entirely new token group must first
+be proposed in prose for the code side to wire into the pipeline.
+
+## Review gates
+
+Before an archetype or high-stakes screen is accepted:
+
+1. Confirm data-screen controls use `sm` by default and `lg` appears only for an
+   isolated-page primary CTA.
+2. Confirm numeric data uses `font.mono` with tabular numerals.
+3. Confirm every complex component maps to a pinned kit foundation above.
+4. Confirm every data-bearing foreground/background pairing is declared in
+   `contrast.pairs` and passes 4.5:1.
+5. Confirm the export contains no one-off color values or hand-written dark-mode
+   overrides.
 
 ## Tokens
 
@@ -90,8 +141,8 @@ pipeline fails on unknown or circular refs.
 | gray.200 | #e5e7eb | subtle borders, dividers |
 | gray.300 | #d1d5db | default control borders |
 | gray.400 | #9ca3af | disabled, decorative icons |
-| gray.500 | #6b7280 | muted text (4.76:1 on white) |
-| gray.600 | #4b5563 | secondary text (7:1 on white) |
+| gray.500 | #5f6775 | muted text (5.70:1 on white, 4.67:1 on selected row) |
+| gray.600 | #4b5563 | secondary text (7.56:1 on white) |
 | gray.700 | #374151 | |
 | gray.800 | #1f2937 | |
 | gray.900 | #111827 | primary text, on-warning |
@@ -124,7 +175,7 @@ pipeline fails on unknown or circular refs.
 | green.400 | #4ade80 | |
 | green.500 | #22c55e | |
 | green.600 | #16a34a | |
-| green.700 | #15803d | success.action (white on it: 4.7:1) |
+| green.700 | #15803d | success.action (white on it: 5.02:1) |
 | green.800 | #166534 | success.hover, subtle text |
 | green.900 | #14532d | |
 | green.950 | #052e16 | |
@@ -137,11 +188,11 @@ pipeline fails on unknown or circular refs.
 | amber.100 | #fef3c7 | |
 | amber.200 | #fde68a | |
 | amber.300 | #fcd34d | |
-| amber.400 | #fbbf24 | |
-| amber.500 | #f59e0b | |
+| amber.400 | #fbbf24 | warning.active |
+| amber.500 | #f59e0b | warning.hover |
 | amber.600 | #d97706 | warning.action (gray.900 on it: 5.6:1) |
-| amber.700 | #b45309 | warning.hover |
-| amber.800 | #92400e | warning subtle text (6.8:1 on amber.50) |
+| amber.700 | #b45309 | |
+| amber.800 | #92400e | warning subtle text |
 | amber.900 | #78350f | |
 | amber.950 | #451a03 | |
 
@@ -156,7 +207,7 @@ pipeline fails on unknown or circular refs.
 | surface.300 | {gray.300} | control border |
 | text.primary | {gray.900} | data-bearing text, 17:1 on white |
 | text.secondary | {gray.600} | labels, captions carrying data |
-| text.muted | {gray.500} | placeholders, meta — still AA |
+| text.muted | {gray.500} | placeholders, meta — AA on page, alt, and selected rows |
 | text.disabled | {gray.400} | decorative only, never data |
 | text.on.primary | #ffffff | on blue solids |
 | border.default | {gray.300} | |
@@ -169,16 +220,19 @@ pipeline fails on unknown or circular refs.
 | primary.on | #ffffff | |
 | danger.default | {red.600} | destructive actions |
 | danger.hover | {red.700} | |
+| danger.active | {red.800} | |
 | danger.subtle.bg | {red.50} | error tint |
 | danger.subtle.text | {red.700} | error text |
 | danger.on | #ffffff | |
 | success.default | {green.700} | confirm actions |
 | success.hover | {green.800} | |
+| success.active | {green.900} | |
 | success.subtle.bg | {green.50} | ok tint |
 | success.subtle.text | {green.700} | ok text |
 | success.on | #ffffff | |
 | warning.default | {amber.600} | caution actions |
-| warning.hover | {amber.700} | |
+| warning.hover | {amber.500} | lightens: warning.on is dark text |
+| warning.active | {amber.400} | |
 | warning.subtle.bg | {amber.50} | caution tint |
 | warning.subtle.text | {amber.800} | caution text |
 | warning.on | {gray.900} | dark text on amber solids |
@@ -257,8 +311,24 @@ pipeline fails on unknown or circular refs.
 | text.secondary | surface.0 | data-text | 4.5 |
 | text.secondary | surface.50 | data-text | 4.5 |
 | text.secondary | surface.100 | data-text | 4.5 |
+| text.primary | blue.100 | data-text | 4.5 |
+| text.secondary | blue.100 | data-text | 4.5 |
 | text.muted | surface.0 | data-text | 4.5 |
+| text.muted | surface.50 | data-text | 4.5 |
+| text.muted | surface.100 | data-text | 4.5 |
+| text.muted | blue.100 | data-text | 4.5 |
+| primary.color | surface.0 | data-text | 4.5 |
+| primary.color | surface.50 | data-text | 4.5 |
+| primary.color | surface.100 | data-text | 4.5 |
 | text.on.primary | primary.color | data-text | 4.5 |
+| text.on.primary | primary.hover | data-text | 4.5 |
+| text.on.primary | primary.active | data-text | 4.5 |
+| danger.on | danger.hover | data-text | 4.5 |
+| danger.on | danger.active | data-text | 4.5 |
+| success.on | success.hover | data-text | 4.5 |
+| success.on | success.active | data-text | 4.5 |
+| warning.on | warning.hover | data-text | 4.5 |
+| warning.on | warning.active | data-text | 4.5 |
 | primary.subtle.text | primary.subtle.bg | data-text | 4.5 |
 | danger.subtle.text | danger.subtle.bg | data-text | 4.5 |
 | success.subtle.text | success.subtle.bg | data-text | 4.5 |
