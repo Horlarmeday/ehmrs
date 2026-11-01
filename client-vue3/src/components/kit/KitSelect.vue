@@ -222,7 +222,7 @@ function onBackspace(): void {
                 v-for="option in options"
                 :key="option.value"
                 :value="option.value"
-                class="flex min-h-xs cursor-default items-center rounded-sm px-2 data-[highlighted]:bg-blue-100 data-[state=checked]:font-semibold"
+                class="flex min-h-xs cursor-default items-center rounded-sm px-2 data-[highlighted]:bg-primary-subtle data-[state=checked]:font-semibold"
               >
                 {{ option.label }}
               </ComboboxItem>

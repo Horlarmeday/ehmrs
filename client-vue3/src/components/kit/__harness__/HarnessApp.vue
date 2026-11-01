@@ -4,6 +4,7 @@ import FbcEntryView from './FbcEntryView.vue';
 import DisplayView from './DisplayView.vue';
 import LabDesk from '../../../prototypes/lab-entry/LabDesk.vue';
 import PatientDesk from '../../../prototypes/patient-desk/PatientDesk.vue';
+import OverlaysView from './OverlaysView.vue';
 import PickersView from './PickersView.vue';
 import TableView from './TableView.vue';
 import ValidationView from './ValidationView.vue';
@@ -21,6 +22,7 @@ const view = new URLSearchParams(window.location.search).get('view');
     <ValidationView v-else-if="view === 'validation'" />
     <TableView v-else-if="view === 'table'" />
     <DisplayView v-else-if="view === 'display'" />
+    <OverlaysView v-else-if="view === 'overlays'" />
     <ControlsView v-else />
   </main>
 </template>
