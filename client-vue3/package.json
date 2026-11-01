@@ -11,7 +11,7 @@
     "test:watch": "vitest",
     "test:e2e": "tsc -p tsconfig.e2e.json && playwright test",
     "lint": "eslint .",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/ e2e/"
   },
   "dependencies": {
     "@internationalized/date": "^3.12.4",
@@ -39,6 +39,7 @@
     "autoprefixer": "^10.4.27",
     "axe-core": "^4.14.0",
     "eslint": "^9.17.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-vue": "^9.32.0",
     "jsdom": "^27.0.1",
     "postcss": "^8.5.8",

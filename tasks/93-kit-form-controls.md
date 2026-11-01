@@ -117,14 +117,14 @@ Added Button, Input, Textarea, Checkbox, RadioGroup, FileUpload, Select and Date
 ### Testing evidence
 
 - `npm run test:e2e`: 39 tests, 117/117 across three repeats in Chromium.
-- `npm run lint`: 0 errors, 156 formatting warnings. `npm run build`: exit 0, no harness code in `dist`. `npm test`: 40/40. Token `--check`: OK.
+- `npm run lint`: 0 errors, 0 warnings, after adding `eslint-config-prettier` so Prettier alone owns formatting. Non-formatting rules were confirmed still firing. `npm run build`: exit 0, no harness code in `dist`. `npm test`: 40/40. Token `--check`: OK.
 - Negative controls, each failing its test: no grid navigation, not read-only, wrong row height, wrong warning foreground, no stale-response guard, no ARIA override, centered popover, range not enforced, error not shown.
 - Screenshots reviewed for FBC entry, pickers with the calendar open, and validation errors.
 
 ### Limitations
 
 - reka-ui selects a radio in a timer after arrow-key focus, and stops once the key is released. A zero-length synthetic key press can miss it, so the test holds the key for 50ms. Human presses were not tested separately.
-- Screen readers, other lab forms, the real store and API remain untested.
+- Screen readers and radio arrow keys by hand move to #41; other lab forms to #94; the real store and API to #42 and #51-#53; legacy validation messages to #44.
 - `min-h-sm` and `h-[26px]` values inside Select are fixed for the `sm` size; there is no `xs` or `lg` Select yet.
 - Chromium only. No CI by owner decision, so all tests run locally.
 
