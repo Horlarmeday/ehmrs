@@ -19,7 +19,7 @@ test.beforeEach(async ({ page }) => {
 
 test.describe('select', () => {
   test('S1 is 28px tall', async ({ page }) => {
-    expect(await heightOf(drug(page).locator('xpath=..'))).toBe(28);
+    expect(await heightOf(drug(page).locator('xpath=..'))).toBe(38);
   });
 
   test('S2 debounces and ignores stale responses', async ({ page }) => {
@@ -131,7 +131,7 @@ test.describe('select', () => {
 
 test.describe('date picker', () => {
   test('D1 is 28px tall', async ({ page }) => {
-    expect(await heightOf(day(page).locator('xpath=..'))).toBe(28);
+    expect(await heightOf(day(page).locator('xpath=..'))).toBe(38);
   });
 
   test('D2 typed entry gives an ISO date without opening the calendar', async ({ page }) => {
@@ -225,7 +225,7 @@ test.describe('checkbox, radio and file upload', () => {
 
   test('file upload is 28px and reaches the model', async ({ page }) => {
     const input = page.getByLabel('Logo');
-    expect(await heightOf(input)).toBe(28);
+    expect(await heightOf(input)).toBe(38);
     await input.setInputFiles({
       name: 'logo.png',
       mimeType: 'image/png',

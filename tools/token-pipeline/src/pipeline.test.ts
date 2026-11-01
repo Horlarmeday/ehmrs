@@ -124,7 +124,7 @@ describe('parse', () => {
   it('parses the real DESIGN.md', () => {
     const manifest = parseDesign(designMd);
     expect(Object.keys(manifest.palettes)).toContain('blue');
-    expect(manifest.semantic['primary.color']).toBe('{blue.600}');
+    expect(manifest.semantic['primary.color']).toBe('{teal.700}');
     expect(manifest.contrastPairs.length).toBeGreaterThan(10);
   });
 
@@ -171,33 +171,33 @@ describe('emission', () => {
   it('carries the manifest and table density', () => {
     const { tailwind } = buildOutputs();
     expect(tailwind).toContain('EHMRS_TOKENS');
-    expect(tailwind).toContain("height: { row: '30px', 'row-dense': '26px' }");
+    expect(tailwind).toContain("height: { row: '44px', 'row-dense': '32px' }");
   });
 
   it('exposes solid fills with their foregrounds', () => {
     const { tailwind } = buildOutputs();
-    expect(tailwind).toContain("warning: { DEFAULT: '#d97706', hover: '#f59e0b', active: '#fbbf24', on: '#111827'");
+    expect(tailwind).toContain("warning: { DEFAULT: '#d97706', hover: '#f59e0b', active: '#fbbf24', on: '#1b1f23'");
     expect(tailwind).toContain("danger: { DEFAULT: '#dc2626', hover: '#b91c1c', active: '#991b1b', on: '#ffffff'");
-    expect(tailwind).toContain("muted: '#5f6775'");
+    expect(tailwind).toContain("muted: '#5f676e'");
   });
 
   it('refuses muted text that fails AA on the selected row', () => {
-    expect(() => buildOutputsFromMd(designMd.replace('| gray.500 | #5f6775 |', '| gray.500 | #6b7280 |'))).toThrow(/text\.muted .* on blue\.100/);
+    expect(() => buildOutputsFromMd(designMd.replace('| gray.500 | #5f676e |', '| gray.500 | #7a828a |'))).toThrow(/text\.muted .* on /);
   });
 
   it('refuses a warning hover that darkens under dark text', () => {
     expect(() => buildOutputsFromMd(designMd.replace('| warning.hover | {amber.500} |', '| warning.hover | {amber.700} |'))).toThrow(/warning\.on .* on warning\.hover/);
   });
 
-  it('tailwind output exposes the ERP-default density and AA-capable colors', () => {
+  it('tailwind output exposes the default density and AA-capable colors', () => {
     const { tailwind } = buildOutputs();
-    expect(tailwind).toContain("sm: '28px'");
-    expect(tailwind).toContain("DEFAULT: '#2563eb'");
-    expect(tailwind).toContain("DEFAULT: '#111827'");
+    expect(tailwind).toContain("sm: '38px'");
+    expect(tailwind).toContain("DEFAULT: '#0b6e69'");
+    expect(tailwind).toContain("DEFAULT: '#1b1f23'");
   });
 
   it('reflects DESIGN.md density edits in generated output', () => {
-    const edited = buildOutputsFromMd(designMd.replace('| control.font.sm | 12px |', '| control.font.sm | 13px |')).tailwind;
+    const edited = buildOutputsFromMd(designMd.replace('| control.font.sm | 14px |', '| control.font.sm | 13px |')).tailwind;
     expect(edited).not.toBe(buildOutputsFromMd(designMd).tailwind);
     expect(edited).toContain("sm: '13px'");
   });

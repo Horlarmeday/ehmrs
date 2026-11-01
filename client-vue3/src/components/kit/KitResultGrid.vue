@@ -5,7 +5,7 @@ defineProps<{ label: string }>();
 </script>
 
 <template>
-  <div class="rounded-sm border border-line bg-surface" @keydown="onGridKeydown">
+  <div class="bg-surface-page" @keydown="onGridKeydown">
     <table class="w-full border-collapse">
       <caption class="sr-only">
         {{

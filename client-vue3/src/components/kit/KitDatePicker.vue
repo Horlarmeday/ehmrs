@@ -99,14 +99,14 @@ function update(next: unknown): void {
             <DatePickerInput
               v-else
               :part="segment.part"
-              class="rounded-sm px-px font-mono tabular-nums focus:bg-blue-100 focus:outline-none data-[placeholder]:text-ink-muted"
+              class="rounded-sm px-px font-mono tabular-nums focus:bg-teal-100 focus:outline-none data-[placeholder]:text-ink-muted"
             >
               {{ segment.value }}
             </DatePickerInput>
           </template>
           <DatePickerTrigger
             :aria-label="`Open ${label} calendar`"
-            class="ml-auto h-[26px] w-[26px] rounded-sm text-ink-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+            class="ml-auto h-[36px] w-[36px] rounded-sm text-ink-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           >
             ▾
           </DatePickerTrigger>
@@ -155,7 +155,7 @@ function update(next: unknown): void {
                   <DatePickerCellTrigger
                     :day="day"
                     :month="month.value"
-                    class="flex h-[24px] w-[28px] items-center justify-center rounded-sm font-mono tabular-nums hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary data-[outside-view]:text-ink-muted data-[disabled]:text-ink-disabled data-[disabled]:line-through data-[selected]:bg-primary data-[selected]:text-primary-on"
+                    class="flex h-[30px] w-[34px] items-center justify-center rounded-sm font-mono tabular-nums hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary data-[outside-view]:text-ink-muted data-[disabled]:text-ink-disabled data-[disabled]:line-through data-[selected]:bg-primary data-[selected]:text-primary-on"
                   />
                 </DatePickerCell>
               </DatePickerGridRow>

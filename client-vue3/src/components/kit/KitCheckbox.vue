@@ -32,7 +32,7 @@ const id = useId();
         :disabled="disabled"
         :aria-invalid="error ? 'true' : undefined"
         :aria-describedby="error ? `${id}-error` : undefined"
-        class="relative flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border bg-surface before:absolute before:-inset-[5px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:bg-surface-alt data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-on data-[state=indeterminate]:border-primary data-[state=indeterminate]:bg-primary data-[state=indeterminate]:text-primary-on"
+        class="relative flex h-4 w-4 shrink-0 items-center justify-center rounded-xs border bg-surface before:absolute before:-inset-[5px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:bg-surface-alt data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-on data-[state=indeterminate]:border-primary data-[state=indeterminate]:bg-primary data-[state=indeterminate]:text-primary-on"
         :class="error ? 'border-danger' : 'border-line'"
       >
         <CheckboxIndicator aria-hidden="true" class="text-xs leading-none">{{

@@ -4,7 +4,7 @@ import KitButton from '../KitButton.vue';
 import KitInput from '../KitInput.vue';
 import KitTextarea from '../KitTextarea.vue';
 
-const severities = ['primary', 'success', 'danger', 'warning'] as const;
+const severities = ['primary', 'secondary', 'accent', 'success', 'danger', 'warning'] as const;
 const name = ref('');
 const notes = ref('');
 const clicks = ref(0);

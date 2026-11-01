@@ -15,7 +15,7 @@ test.describe('table', () => {
     await open(page);
     const row = records(page).getByTestId('table-row').first();
     await expect(row).toBeVisible();
-    expect(await heightOf(row)).toBe(30);
+    expect(await heightOf(row)).toBe(44);
     const amount = row.getByRole('cell').nth(2);
     const style = await amount.evaluate((e) => {
       const s = getComputedStyle(e);
@@ -26,14 +26,14 @@ test.describe('table', () => {
         align: s.textAlign,
       };
     });
-    expect(style.family).toContain('JetBrains Mono');
+    expect(style.family).toContain('Geist Mono');
     expect(style.numeric).toBe('tabular-nums');
-    expect(style.size).toBe('12px');
+    expect(style.size).toBe('14px');
     expect(style.align).toBe('right');
 
     await open(page, '&dense');
     await expect(records(page).getByTestId('table-row').first()).toBeVisible();
-    expect(await heightOf(records(page).getByTestId('table-row').first())).toBe(26);
+    expect(await heightOf(records(page).getByTestId('table-row').first())).toBe(32);
   });
 
   test('T2 sends page and sort, and aria-sort follows', async ({ page }) => {
@@ -145,7 +145,7 @@ test.describe('table', () => {
 
     const row = records(page).getByTestId('table-row').first();
     const { bg } = await colorsOf(row);
-    expect(bg).toBe('rgb(219, 234, 254)');
+    expect(bg).toBe('rgb(214, 236, 234)');
     const { fg } = await colorsOf(firstCell(page));
     expect(contrast(fg, bg)).toBeGreaterThanOrEqual(4.5);
 
@@ -237,8 +237,8 @@ test.describe('pagination', () => {
   test('controls measure 28px and a shrunk data set moves to the new last page', async ({
     page,
   }) => {
-    expect(await heightOf(page.getByRole('button', { name: 'Next page' }))).toBe(28);
-    expect(await heightOf(page.getByRole('combobox', { name: 'Records per page' }))).toBe(28);
+    expect(await heightOf(page.getByRole('button', { name: 'Next page' }))).toBe(38);
+    expect(await heightOf(page.getByRole('combobox', { name: 'Records per page' }))).toBe(38);
     await page.getByRole('button', { name: 'Last page' }).click();
     await expect(firstCell(page)).toHaveText('Item 51');
     await page.getByRole('button', { name: 'Shrink data' }).click();

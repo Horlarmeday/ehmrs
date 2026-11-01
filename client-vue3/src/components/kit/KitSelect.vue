@@ -188,7 +188,7 @@ function onBackspace(): void {
           :placeholder="placeholder"
           :aria-invalid="error ? 'true' : undefined"
           :aria-describedby="error ? `${id}-error` : undefined"
-          class="h-[26px] min-w-16 flex-1 bg-transparent outline-none placeholder:text-ink-muted disabled:text-ink-secondary"
+          class="h-[36px] min-w-16 flex-1 bg-transparent outline-none placeholder:text-ink-muted disabled:text-ink-secondary"
           @focus="open = true"
           @blur="restoreLabel"
           @keydown.backspace="onBackspace"

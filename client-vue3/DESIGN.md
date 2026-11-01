@@ -1,8 +1,6 @@
 # DESIGN.md — eHMRS Vue 3 design system
 
-Status: **approved direction** (issue #40 HITL gate, 2026-09-08): seeded from **Palantir
-Blueprint** (dense data-grid system), accent **hospital blue**, **light mode only** in v1.
-LTR only — no RTL.
+Status: **approved direction** (owner, 2026-11-01): **Calm workspace**. Quiet sidebar, borderless lists, roomy rows, one main action, teal accent, light mode only. LTR only, no RTL.
 
 This file is the **single source of truth** for design tokens. The token pipeline
 (`tools/token-pipeline`) parses the `### tokens:` tables below and generates the Tailwind
@@ -23,11 +21,7 @@ visible in a working viewport.
 
 ## Non-negotiables
 
-1. **Density is ERP-scale, not marketing-scale.** The default control size on data
-   screens is `sm` (28px tall, 12px font, 8px horizontal padding). Marketing-scale
-   (`lg`, 40px) is reserved for primary CTAs on isolated pages (login, empty states).
-   Table rows default to 30px; dense mode 26px. Any interactive target must expose a
-   ≥24px hit area (visual size may be smaller with padding).
+1. **Calm comes first.** Data screens use 44px rows, 38px controls and 14px text, with 32px rows as a dense option for long lab and stock lists. Separate content with space and hairlines, not boxes. Each view has one solid action; other actions stay quiet. Any interactive target must expose a ≥24px hit area.
 2. **WCAG-AA contrast for data-bearing text.** Every `data-text` pair declared in the
    `contrast.pairs` table must measure ≥4.5:1. The pipeline computes the ratio at
    generation time and **refuses to emit** a non-AA pair — this rule is enforced in code
@@ -57,24 +51,18 @@ Kit foundations pinned by the archetypes:
 | Data grid | Native `<table>` | `surface`, `text`, `table.row.height`, `table.cell.padding` |
 | Pickers | reka-ui Combobox / DatePicker | `control.*`, `focus` |
 | Overlays | reka-ui Dialog / Popover | `surface`, `shadow.md` |
-| Buttons | Native `<button>` (`sm` default) | `primary`, `success`/`danger`/`warning` solids and `.on` |
+| Buttons | Native `<button>` (`sm` default) | `action`, `primary`, `success`/`danger`/`warning` solids and `.on` |
 | Editors | Native `<input>` / `<textarea>` | `control.*`, `focus` |
 | Feedback | reka-ui Toast | `*.subtle.bg` + `*.subtle.text` pairs |
 | Charts | apexcharts (per ADR-0010) | palette ramps only |
 
 ## Provenance and rationale
 
-- **Seed: Palantir Blueprint** — shipped dense-dashboard system (30px table rows, 24/28/32px
-  control ladder, tabular numerals, restrained neutral surfaces). Its information-density
-  temperament is customized here: hospital blue accent, 3px radii (Blueprint 2–3px),
-  visible 2px focus ring (WCAG 2.2 focus appearance), Inter instead of Blueprint Sans.
-- **Accent: hospital blue** — continuity with the Vue 2 app's blue family, chosen at the
-  #40 HITL session over clinical teal and health-sector green.
-- Typography stack and mono stack predate this document (tooling scaffold, #34).
+- **Direction: Calm workspace** — chosen by the owner on 2026-11-01 after rejecting the earlier Blueprint-style dense prototype as dated. Research and the options shown are in https://claude.ai/artifact/RsrqeTNoxNmKbjT9XXgYim.
+- **Why these sizes:** IBM Carbon treats 40px rows as its default and small rows as a special case for very dense layouts. Linear's redesign reduced chrome and limited accent colour.
+- **Type:** Figtree for text and Geist Mono for numbers and identifiers, both self-hosted so they work without internet.
 
-Changing the seed, hospital-blue accent family, or light-only v1 mode strategy requires
-a new owner-reviewed HITL decision. Such a change must be presented as a proposal with
-rationale; it must not enter the token tables as an unannounced reseed.
+Changing this direction, the teal accent or light-only v1 requires a new owner review. It must not enter the token tables as an unannounced reseed.
 
 ## Archetype and export contract (ADR-0009)
 
@@ -121,7 +109,7 @@ pipeline fails on unknown or circular refs.
 | token | value | note |
 | --- | --- | --- |
 | blue.50 | #eff6ff | subtle tint backgrounds |
-| blue.100 | #dbeafe | selected-row tint |
+| blue.100 | #dbeafe | |
 | blue.200 | #bfdbfe | |
 | blue.300 | #93c5fd | |
 | blue.400 | #60a5fa | |
@@ -136,17 +124,17 @@ pipeline fails on unknown or circular refs.
 
 | token | value | note |
 | --- | --- | --- |
-| gray.50 | #f9fafb | page background |
-| gray.100 | #f3f4f6 | alt surface, hover tint |
-| gray.200 | #e5e7eb | subtle borders, dividers |
-| gray.300 | #d1d5db | default control borders |
-| gray.400 | #9ca3af | disabled, decorative icons |
-| gray.500 | #5f6775 | muted text (5.70:1 on white, 4.67:1 on selected row) |
-| gray.600 | #4b5563 | secondary text (7.56:1 on white) |
-| gray.700 | #374151 | |
-| gray.800 | #1f2937 | |
-| gray.900 | #111827 | primary text, on-warning |
-| gray.950 | #030712 | |
+| gray.50 | #fbfbfa | page background |
+| gray.100 | #f1f2f1 | alt surface, hover tint |
+| gray.200 | #e6e7e6 | subtle borders, dividers |
+| gray.300 | #d5d8d6 | default control borders |
+| gray.400 | #9aa1a0 | disabled, decorative icons |
+| gray.500 | #5f676e | muted text  |
+| gray.600 | #4f565c | secondary text (7.56:1 on white) |
+| gray.700 | #3a4045 | |
+| gray.800 | #2a2e33 | |
+| gray.900 | #1b1f23 | primary text, on-warning |
+| gray.950 | #121518 | |
 
 ### tokens:palette.red
 
@@ -196,6 +184,22 @@ pipeline fails on unknown or circular refs.
 | amber.900 | #78350f | |
 | amber.950 | #451a03 | |
 
+### tokens:palette.teal
+
+| token | value | note |
+| --- | --- | --- |
+| teal.50 | #eef7f6 | accent tint |
+| teal.100 | #d6ecea | selected row |
+| teal.200 | #b4dcd8 |  |
+| teal.300 | #86c5bf |  |
+| teal.400 | #4fa59e |  |
+| teal.500 | #23857e |  |
+| teal.600 | #127872 |  |
+| teal.700 | #0b6e69 | accent |
+| teal.800 | #095a56 | accent hover |
+| teal.900 | #07483f | accent active |
+| teal.950 | #04302b |  |
+
 ### tokens:palette.purple
 
 | token | value | note |
@@ -225,14 +229,18 @@ pipeline fails on unknown or circular refs.
 | text.secondary | {gray.600} | labels, captions carrying data |
 | text.muted | {gray.500} | placeholders, meta — AA on page, alt, and selected rows |
 | text.disabled | {gray.400} | decorative only, never data |
-| text.on.primary | #ffffff | on blue solids |
+| text.on.primary | #ffffff | on teal solids |
 | border.default | {gray.300} | |
 | border.subtle | {gray.200} | |
-| primary.color | {blue.600} | actions, links |
-| primary.hover | {blue.700} | |
-| primary.active | {blue.800} | |
-| primary.subtle.bg | {blue.50} | info/selected tint |
-| primary.subtle.text | {blue.700} | text on primary tint |
+| primary.color | {teal.700} | accent: links, selection, focus |
+| action.default | {gray.900} | the one solid button in a view |
+| action.hover | {gray.800} | |
+| action.active | {gray.700} | |
+| action.on | #ffffff | |
+| primary.hover | {teal.800} | |
+| primary.active | {teal.900} | |
+| primary.subtle.bg | {teal.50} | info/selected tint |
+| primary.subtle.text | {teal.800} | text on primary tint |
 | primary.on | #ffffff | |
 | danger.default | {red.600} | destructive actions |
 | danger.hover | {red.700} | |
@@ -265,47 +273,48 @@ pipeline fails on unknown or circular refs.
 
 | token | value | note |
 | --- | --- | --- |
-| control.height.xs | 24px | inline filters, dense toolbars |
-| control.height.sm | 28px | **ERP default** for all data screens |
-| control.height.md | 32px | dialogs, one-off forms |
-| control.height.lg | 40px | primary CTA / marketing islands |
-| control.font.xs | 11px | xs controls, table dense |
-| control.font.sm | 12px | **ERP default** data font |
-| control.font.md | 13px | dialog body |
-| control.font.lg | 14px | lg controls |
-| control.font.xl | 16px | page titles |
-| control.padding.x | 8px | default horizontal control padding |
-| control.padding.y.sm | 5px | sm control vertical padding (28px total) |
-| control.padding.y.xs | 4px | xs control vertical padding (24px total) |
-| control.padding.y.lg | 8px | lg control vertical padding (40px total) |
-| control.padding.x.xs | 6px | xs horizontal padding |
-| table.row.height | 30px | default row |
-| table.row.height.dense | 26px | dense mode |
-| table.cell.padding | 4px 8px | body cell padding |
-| table.cell.padding.dense | 3px 5px | dense-mode cell padding |
-| table.header.cell.padding | 5px 8px | header cell padding |
-| icon.size.sm | 14px | inline with 12px text |
-| icon.size.md | 16px | standalone |
+| control.height.xs | 30px | row actions, inline filters |
+| control.height.sm | 38px | **default** for all data screens |
+| control.height.md | 40px | dialogs, one-off forms |
+| control.height.lg | 44px | primary CTA / marketing islands |
+| control.font.xs | 13px | row actions, table headers, meta |
+| control.font.sm | 14px | **default** data font |
+| control.font.md | 15px | dialog body |
+| control.font.lg | 18px | lg controls |
+| control.font.xl | 22px | page titles |
+| control.padding.x | 12px | default horizontal control padding |
+| control.padding.y.sm | 8px | sm control vertical padding (38px total) |
+| control.padding.y.xs | 4px | xs control vertical padding (30px total) |
+| control.padding.y.lg | 10px | lg control vertical padding (44px total) |
+| control.padding.x.xs | 10px | xs horizontal padding |
+| table.row.height | 44px | default row |
+| table.row.height.dense | 32px | dense mode |
+| table.cell.padding | 4px 12px | body cell padding |
+| table.cell.padding.dense | 3px 8px | dense-mode cell padding |
+| table.header.cell.padding | 9px 12px | header cell padding |
+| icon.size.sm | 16px | inline with 14px text |
+| icon.size.md | 18px | standalone |
 
 ### tokens:semantic
 
 | token | value | note |
 | --- | --- | --- |
-| font.sans | Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif | UI text |
-| font.mono | JetBrains Mono, Fira Code, ui-monospace, monospace | numerics: doses, lab values, money |
+| font.sans | Figtree Variable, Figtree, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif | UI text |
+| font.mono | Geist Mono, ui-monospace, monospace | numbers and identifiers: doses, lab values, money, hospital numbers |
 | font.weight.regular | 400 | |
 | font.weight.medium | 500 | emphasis in tables |
 | font.weight.semibold | 600 | headers, labels |
-| line.height | 1.4 | dense multi-line |
+| line.height | 1.5 | body text |
 
 ### tokens:semantic
 
 | token | value | note |
 | --- | --- | --- |
 | radius.none | 0px | |
-| radius.sm | 3px | **default** — inputs, buttons, cells |
-| radius.md | 4px | cards, panels |
-| radius.lg | 6px | overlays, dialogs |
+| radius.xs | 4px | checkboxes, small marks |
+| radius.sm | 8px | **default** — inputs, buttons |
+| radius.md | 10px | cards, panels |
+| radius.lg | 12px | overlays, dialogs |
 | radius.pill | 9999px | badges, toggles |
 
 ### tokens:semantic
@@ -320,7 +329,7 @@ pipeline fails on unknown or circular refs.
 
 | token | value | note |
 | --- | --- | --- |
-| focus.ring.color | {blue.600} | |
+| focus.ring.color | {teal.700} | |
 | focus.ring.width | 2px | WCAG 2.2 focus appearance |
 | focus.ring.style | solid | |
 | focus.ring.offset | 1px | |
@@ -335,15 +344,18 @@ pipeline fails on unknown or circular refs.
 | text.secondary | surface.0 | data-text | 4.5 |
 | text.secondary | surface.50 | data-text | 4.5 |
 | text.secondary | surface.100 | data-text | 4.5 |
-| text.primary | blue.100 | data-text | 4.5 |
-| text.secondary | blue.100 | data-text | 4.5 |
+| text.primary | teal.100 | data-text | 4.5 |
+| text.secondary | teal.100 | data-text | 4.5 |
 | text.muted | surface.0 | data-text | 4.5 |
 | text.muted | surface.50 | data-text | 4.5 |
 | text.muted | surface.100 | data-text | 4.5 |
-| text.muted | blue.100 | data-text | 4.5 |
+| text.muted | teal.100 | data-text | 4.5 |
 | primary.color | surface.0 | data-text | 4.5 |
 | primary.color | surface.50 | data-text | 4.5 |
 | primary.color | surface.100 | data-text | 4.5 |
+| action.on | action.default | data-text | 4.5 |
+| action.on | action.hover | data-text | 4.5 |
+| action.on | action.active | data-text | 4.5 |
 | text.on.primary | primary.color | data-text | 4.5 |
 | text.on.primary | primary.hover | data-text | 4.5 |
 | text.on.primary | primary.active | data-text | 4.5 |

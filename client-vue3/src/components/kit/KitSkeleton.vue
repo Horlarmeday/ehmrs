@@ -27,7 +27,7 @@ const bar = 'animate-pulse rounded-sm bg-line-subtle motion-reduce:animate-none'
       <div
         v-for="row in rows"
         :key="row"
-        class="flex items-center gap-4 border-b border-line-subtle px-2"
+        class="flex items-center gap-4 border-b border-line-subtle px-3"
         :class="dense ? 'h-row-dense' : 'h-row'"
         data-testid="skeleton-row"
       >
