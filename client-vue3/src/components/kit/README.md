@@ -46,6 +46,38 @@ These map behaviour only. Legacy screens are not a reference for layout or forma
 - `label-light-*` and `label-*`: `KitBadge` with `variant` `subtle` or `solid`. `dark` and `secondary` become `neutral`.
 - `DefaultSkeleton`, `TableSkeleton` and `b-skeleton`: `KitSkeleton`.
 
+## Overlays and layout
+
+| Component        | Use for                                  | Props                                                                                                                   | Events and slots                                                            |
+| ---------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `KitDialog`      | Focused work above the page              | `title`, `description`, `size` (`sm` 400, `md` 520, `lg` 800, `xl` 1120), `closeOnBackdrop` (off), `closeOnEscape` (on) | `v-model:open`, `opened`, `closed`; default and `footer` slots              |
+| `KitConfirmHost` | Shows `useConfirm` questions             | None. Mount one at app level                                                                                            | None                                                                        |
+| `KitTabs`        | Switching between sections of one record | `label`, `tabs` (`value`, `label`, `disabled`, `lazy`)                                                                  | `v-model`; `panel-<value>` slots                                            |
+| `KitAccordion`   | Sections that open and close in place    | `items` (`value`, `title`, `disabled`, `lazy`), `multiple`, `headingLevel`                                              | `v-model`, a string or a string array when `multiple`; `item-<value>` slots |
+| `KitTooltip`     | A short hint on one focusable element    | `text`, `side`                                                                                                          | Default slot holds the element                                              |
+| `KitDropdown`    | A short menu of actions                  | `label`, `items` (`value`, `label`, `disabled`, `danger`, `separatorBefore`), `severity`, `size`                        | `select` with the item's value, sent after the menu closes; `trigger` slot  |
+
+`const { confirm } = useConfirm()`, then `await confirm({ title, text, confirmLabel, cancelLabel, severity })` returns `true` or `false`. Focus starts on Cancel. A question asked while another is open waits its turn.
+
+`KitDialog` opens from state, so the opening button stays in the parent. It focuses the first control and returns focus to whatever had it before opening. If that element has gone, focus moves to `main`.
+
+Panels and accordion sections stay mounted when hidden, so typed values survive. Set `lazy` to render a panel only while it is open, which also discards its state when it closes.
+
+A tooltip doesn't name its element. Icon-only buttons need their own `aria-label`.
+
+### Mapping from legacy overlays
+
+These map behaviour only.
+
+- `<b-modal v-model hide-footer title size>`: `KitDialog` with `v-model:open`, `title`, `size`. `@show` becomes `opened`, `@hidden` becomes `closed`, `no-close-on-esc` becomes `:close-on-escape="false"`.
+- `no-close-on-backdrop` is now the default. Add `close-on-backdrop` only where a dialog has nothing to lose. This differs from legacy on purpose, to protect typed work.
+- `Swal.fire({ showCancelButton: true, ... }).then((result) => { if (result.value) ... })`: `confirm({ ... }).then((confirmed) => { if (confirmed) ... })`. `confirmButtonText` becomes `confirmLabel`, and a `btn-danger` confirm button becomes `severity: 'danger'`.
+- `Swal.fire` without a cancel button: `common/notify.ts`, not this kit.
+- `<b-tabs><b-tab title lazy active>`: `KitTabs`. `title` becomes `label`, and `active` becomes the initial `v-model` value.
+- `<b-collapse accordion="group">` with `v-b-toggle`: `KitAccordion`. A standalone `b-collapse` is one item with `multiple`.
+- `v-b-tooltip.hover="'text'"` and `title`: wrap the element in `KitTooltip`.
+- `<b-dropdown text><b-dropdown-item @click>`: `KitDropdown` with `items` and `@select`. `split` becomes a `KitButton` beside a `KitDropdown`.
+
 ## Helpers
 
 - `useGridNavigation.ts`: on a container, `@keydown="onGridKeydown"` moves between inputs with the same `data-grid-col` using ArrowUp, ArrowDown and Enter.
@@ -53,4 +85,4 @@ These map behaviour only. Legacy screens are not a reference for layout or forma
 
 ## On reka-ui upgrades
 
-`KitSelect` overrides `aria-controls` and `aria-activedescendant` while closed, because reka-ui leaves them pointing at removed elements. Rerun `npm run test:e2e` after any upgrade.
+`KitTooltip` reopens after focus scrolls its element into view, because reka-ui closes tooltips on scroll. `KitDropdown` uses a non-modal menu, because reka-ui's modal menu trips the axe `aria-hidden-focus` check. `KitSelect` overrides `aria-controls` and `aria-activedescendant` while closed, because reka-ui leaves them pointing at removed elements. Rerun `npm run test:e2e` after any upgrade.

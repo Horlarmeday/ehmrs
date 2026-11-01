@@ -1,5 +1,7 @@
 # New UI/UX design for the whole system
 
+**Record only.** Direction A is carried by `client-vue3/DESIGN.md`, and remaining work is tracked in GitHub issues #33, #41, #42 and #45 onward.
+
 Parent: #33 · Related: ADR-0002, ADR-0006, ADR-0009, ADR-0010, #41 · Owner direction 2026-11-01
 Status: **owner approved the plan and both decisions as recommended (2026-11-01); AI parked by owner; Direction A confirmed (only the AI patterns were rejected); translation left out of the migration; Direction A look approved by owner on real screens (2026-11-01); task 3e done, PR #98; lab result entry prototype approved by owner; screen design paused so work returns to the GitHub issue order (#95, #41, #42, #43)**
 

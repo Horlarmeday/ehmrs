@@ -1,20 +1,12 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import {
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogOverlay,
-  AlertDialogPortal,
-  AlertDialogRoot,
-  AlertDialogTitle,
-} from 'reka-ui';
 import KitBadge from '../../components/kit/KitBadge.vue';
 import KitButton from '../../components/kit/KitButton.vue';
+import KitConfirmHost from '../../components/kit/KitConfirmHost.vue';
 import KitDatePicker from '../../components/kit/KitDatePicker.vue';
 import KitPagination from '../../components/kit/KitPagination.vue';
 import KitTable, { type KitColumn } from '../../components/kit/KitTable.vue';
+import { useConfirm } from '../../components/kit/useConfirm';
 import { useServerTable } from '../../components/kit/useServerTable';
 import { searchPatients, type FakePatient } from './fakeData';
 import { deactivateRoles, startVisitRoles, type DemoRole } from './roles';
@@ -36,16 +28,17 @@ watch([() => props.term, from, to], () => table.setPage(1));
 
 const canStartVisit = computed(() => startVisitRoles.includes(props.role));
 const canDeactivate = computed(() => deactivateRoles.includes(props.role));
-const pending = ref<FakePatient | null>(null);
-const dialogOpen = ref(false);
+const { confirm } = useConfirm();
 
-function confirmDeactivate(patient: FakePatient): void {
-  pending.value = patient;
-  dialogOpen.value = true;
-}
-
-function deactivate(): void {
-  if (pending.value) pending.value.status = 'inactive';
+async function confirmDeactivate(patient: FakePatient): Promise<void> {
+  const confirmed = await confirm({
+    title: `Deactivate ${patient.name}?`,
+    text: 'No new visits can start for this patient until the account is reactivated.',
+    confirmLabel: 'Deactivate',
+    severity: 'danger',
+  });
+  if (!confirmed) return;
+  patient.status = 'inactive';
   table.reload();
 }
 
@@ -143,31 +136,6 @@ const columns: KitColumn[] = [
       @update:page="table.setPage"
       @update:page-size="table.setPageSize"
     />
-    <AlertDialogRoot v-model:open="dialogOpen">
-      <AlertDialogPortal>
-        <AlertDialogOverlay class="fixed inset-0 z-40 bg-ink/40" />
-        <AlertDialogContent
-          class="fixed left-1/2 top-1/3 z-50 w-96 -translate-x-1/2 rounded bg-surface p-4 text-sm text-ink shadow-lg"
-        >
-          <AlertDialogTitle class="text-lg font-semibold"
-            >Deactivate {{ pending?.name }}?</AlertDialogTitle
-          >
-          <AlertDialogDescription class="mt-1 text-ink-secondary"
-            >No new visits can start for this patient until the account is
-            reactivated.</AlertDialogDescription
-          >
-          <div class="mt-3 flex justify-end gap-2">
-            <AlertDialogCancel as-child
-              ><KitButton severity="secondary">Cancel</KitButton></AlertDialogCancel
-            >
-            <AlertDialogAction as-child
-              ><KitButton severity="danger" @click="deactivate"
-                >Deactivate</KitButton
-              ></AlertDialogAction
-            >
-          </div>
-        </AlertDialogContent>
-      </AlertDialogPortal>
-    </AlertDialogRoot>
+    <KitConfirmHost />
   </section>
 </template>
