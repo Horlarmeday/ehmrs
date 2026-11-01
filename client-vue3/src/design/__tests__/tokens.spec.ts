@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { mount } from '@vue/test-utils'
-import PrimeVue from 'primevue/config'
-import Button from 'primevue/button'
-import { EHMRS_TOKENS, EhmrsPreset } from '../ehmrs.preset'
-import tokens from '../../../tailwind.tokens'
+import tokens, { EHMRS_TOKENS } from '../../../tailwind.tokens'
 
 function channel(c: number): number {
   return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
@@ -50,30 +46,23 @@ describe('token snapshot', () => {
     expect(resolveToken('control.height.lg')).toBe('40px')
   })
 
-  it('keeps one source: Tailwind tokens and the PrimeVue preset derive from the same values', () => {
+  it('keeps one source: Tailwind tokens carry the DESIGN.md values', () => {
     expect(tokens.colors.primary.DEFAULT).toBe(resolveToken('primary.color'))
     expect(tokens.colors.ink.DEFAULT).toBe(resolveToken('text.primary'))
     expect(tokens.colors.surface.page).toBe(resolveToken('surface.50'))
     expect(tokens.minHeight.sm).toBe('28px')
-    expect(EhmrsPreset).toBeDefined()
-  })
-
-  it('reaches the PrimeVue theme engine: preset variables land in the document CSS', async () => {
-    document.head.querySelectorAll('style').forEach((s) => s.remove())
-    const wrapper = mount(Button, {
-      props: { label: 'Save' },
-      global: {
-        plugins: [[PrimeVue, { theme: { preset: EhmrsPreset, options: { darkModeSelector: 'none' } } }]],
-        components: { Button },
-      },
-    })
-    await new Promise((r) => setTimeout(r, 0))
-    const css = Array.from(document.querySelectorAll('style'))
-      .map((s) => s.textContent ?? '')
-      .join('')
-    expect(css).toContain('--p-primary-color')
-    expect(css.toLowerCase()).toContain('#2563eb')
-    expect(css).toContain('--p-form-field-padding-y')
-    wrapper.unmount()
+    expect(tokens.height.row).toBe(resolveToken('table.row.height'))
+    expect(tokens.colors.ink.muted).toBe(resolveToken('text.muted'))
+    for (const [color, group] of [
+      [tokens.colors.primary, 'primary'],
+      [tokens.colors.success, 'success'],
+      [tokens.colors.danger, 'danger'],
+      [tokens.colors.warning, 'warning'],
+    ] as const) {
+      expect(color.on).toBe(resolveToken(`${group}.on`))
+      expect(ratio(color.on, color.DEFAULT)).toBeGreaterThanOrEqual(4.5)
+      expect(ratio(color.on, color.hover)).toBeGreaterThanOrEqual(4.5)
+      expect(ratio(color.on, color.active)).toBeGreaterThanOrEqual(4.5)
+    }
   })
 })

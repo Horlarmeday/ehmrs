@@ -3,13 +3,12 @@ import { join } from 'path';
 import { fileURLToPath } from 'url';
 import { parseDesign, flatten, resolveColor, ParseError } from './parse.js';
 import { contrastRatio, requiredMinimum } from './contrast.js';
-import { emitPreset } from './emit-preset.js';
 import { emitTailwind } from './emit-tailwind.js';
 
 const repoRoot = join(fileURLToPath(new URL('.', import.meta.url)), '..', '..', '..');
 const designMd = join(repoRoot, 'client-vue3', 'DESIGN.md');
 
-export function buildOutputsFromMd(md: string): { preset: string; tailwind: string } {
+export function buildOutputsFromMd(md: string): { tailwind: string } {
   const manifest = parseDesign(md);
   const flat = flatten(manifest);
   const failures: string[] = [];
@@ -25,9 +24,9 @@ export function buildOutputsFromMd(md: string): { preset: string; tailwind: stri
   if (failures.length > 0) {
     throw new ParseError(`DESIGN.md violates its own contrast contract:\n${failures.map((f) => `  ${f}`).join('\n')}`);
   }
-  return { preset: emitPreset(manifest), tailwind: emitTailwind(manifest) };
+  return { tailwind: emitTailwind(manifest) };
 }
 
-export function buildOutputs(): { preset: string; tailwind: string } {
+export function buildOutputs(): { tailwind: string } {
   return buildOutputsFromMd(readFileSync(designMd, 'utf8'));
 }

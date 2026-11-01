@@ -13,12 +13,11 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
-    "@primeuix/themes": "^3.0.0",
     "axios": "^1.20.0",
     "msw": "^2.15.0",
     "nprogress": "^0.2.0",
     "pinia": "^4.0.3",
-    "primevue": "^5.0.1",
+    "reka-ui": "^2.11.0",
     "vue": "^3.5.13",
     "vue-router": "^4.6.4"
   },
