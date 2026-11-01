@@ -126,7 +126,7 @@ Added Button, Input, Textarea, Checkbox, RadioGroup, FileUpload, Select and Date
 - reka-ui selects a radio in a timer after arrow-key focus, and stops once the key is released. A zero-length synthetic key press can miss it, so the test holds the key for 50ms. Human presses were not tested separately.
 - Screen readers and radio arrow keys by hand move to #41; other lab forms to #94; the real store and API to #42 and #51-#53; legacy validation messages to #44.
 - `min-h-sm` and `h-[26px]` values inside Select are fixed for the `sm` size; there is no `xs` or `lg` Select yet.
-- Chromium only. No CI by owner decision, so all tests run locally.
+- Chromium only, because the owner confirmed the hospital's machines use Chrome (version not stated). No CI by owner decision, so all tests run locally.
 
 ### Impact
 
