@@ -1,7 +1,7 @@
 # New UI/UX design for the whole system
 
 Parent: #33 · Related: ADR-0002, ADR-0006, ADR-0009, ADR-0010, #41 · Owner direction 2026-11-01
-Status: **owner approved the plan and both decisions as recommended (2026-11-01); AI parked by owner; Direction A confirmed (only the AI patterns were rejected); translation left out of the migration; Direction A look approved by owner on real screens (2026-11-01); task 3e done, task 4 next**
+Status: **owner approved the plan and both decisions as recommended (2026-11-01); AI parked by owner; Direction A confirmed (only the AI patterns were rejected); translation left out of the migration; Direction A look approved by owner on real screens (2026-11-01); task 3e done, PR #98; lab result entry prototype approved by owner; screen design paused so work returns to the GitHub issue order (#95, #41, #42, #43)**
 
 The owner chose patient search and registration as the first screen (2026-11-01). The workflow map and navigation still cover the whole system.
 
@@ -74,3 +74,9 @@ The AI spec and AI design notes are in `docs/ai/`. They don't affect migration w
 - `DESIGN.md`, tokens, kit and the patient prototype now follow Direction A. New tokens: teal ramp, `action`, `radius.xs`. Fonts are self-hosted.
 - **Patient list columns:** account type, registration date and registered-by left the list. Registration date and registered-by are in the chart; account type isn't shown yet. The owner approved the screens with this called out.
 - Tests updated only for size, colour and font values, plus prototype layout.
+
+### Lab result entry prototype (`client-vue3/src/prototypes/lab-entry/`)
+
+- Fake data and no API. Carries over: several tests per sample, lock on pending payment or approval, optional referral, required tester, partial save, accept or reject with abnormal flag and comments, result notes, approve accepted results.
+- **Changes proposed:** one test at a time with a test list; live High or Low flags; only the range for this patient. The prototype uses adult female ranges, so real age and sex selection is still to build. Flags are display only and don't set the abnormal field.
+- Prototype covers three of the legacy result form types (FBC, Widal, free text). The other forms still need mapping.
