@@ -143,8 +143,22 @@ export async function drainOnce(
   return { claimed: claimed.length, sent, failed, deadLettered };
 }
 
-/** The default poster: a real fetch to the inbox. */
+/** True for any process whose events are fixtures: running under Jest, or connected to the test database. */
+export function usesTestDatabase(): boolean {
+  return (
+    process.env.NODE_ENV === 'test' ||
+    sequelizeConnection.config.database === process.env.TEST_DB_NAME
+  );
+}
+
+/**
+ * The default poster: a real fetch to the inbox. `.env` gives every process the real inbox URL and
+ * key, so this is the last line stopping test events reaching it (#101).
+ */
 export const httpPoster: EventPoster = async (url, body, headers) => {
+  if (usesTestDatabase()) {
+    throw new Error('Refusing to deliver outbox events from the test database.');
+  }
   const response = await fetch(url, { method: 'POST', body, headers });
   return { status: response.status };
 };

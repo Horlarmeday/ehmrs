@@ -2,8 +2,13 @@ import agenda from '../agenda';
 import { Patient } from '../../../database/models';
 import { JobName } from '../index';
 
-const agendaSchedule = async (when: string, jobName: string, data: { [p: string]: unknown }) =>
+const agendaSchedule = async (when: string, jobName: string, data: { [p: string]: unknown }) => {
+  // The test process has no job store (see agenda.ts).
+  if (process.env.NODE_ENV === 'test') {
+    return;
+  }
   await agenda.schedule(when, jobName, data);
+};
 
 export const JobSchedule = {
   sendGeneratedPassword: (message: string, phone: string) =>
