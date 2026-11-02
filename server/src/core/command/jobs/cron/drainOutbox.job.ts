@@ -1,5 +1,5 @@
 import { logger, taggedMessaged } from '../../../helpers/logger';
-import { drainOnce, httpPoster } from '../../../../modules/Outbox/drainer';
+import { drainOnce, httpPoster, usesTestDatabase } from '../../../../modules/Outbox/drainer';
 import { isOutboxEnabled } from '../../../../modules/Outbox/outbox-writer';
 
 /**
@@ -16,7 +16,7 @@ import { isOutboxEnabled } from '../../../../modules/Outbox/outbox-writer';
 export const drainOutbox = async (): Promise<void> => {
   const message = taggedMessaged('DrainOutbox');
 
-  if (!isOutboxEnabled()) {
+  if (!isOutboxEnabled() || usesTestDatabase()) {
     return;
   }
 
