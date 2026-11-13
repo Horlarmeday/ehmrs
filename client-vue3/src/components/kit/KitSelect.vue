@@ -158,7 +158,7 @@ function onBackspace(): void {
       @update:model-value="update"
     >
       <ComboboxAnchor
-        class="flex min-h-sm flex-wrap items-center gap-1 rounded-sm border bg-surface px-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-primary"
+        class="flex min-h-sm flex-wrap items-center gap-1 rounded-sm border touch:min-h-touch bg-surface px-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-primary"
         :class="[error ? 'border-danger' : 'border-line', disabled ? 'bg-surface-alt' : '']"
       >
         <template v-if="multiple">
@@ -170,7 +170,7 @@ function onBackspace(): void {
             {{ labelOf(value) }}
             <button
               type="button"
-              class="h-[24px] w-[24px] rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+              class="relative h-[24px] w-[24px] rounded-sm before:absolute touch:before:-inset-[10px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
               :disabled="disabled"
               :aria-label="`Remove ${labelOf(value)}`"
               @click="remove(value)"
@@ -188,7 +188,7 @@ function onBackspace(): void {
           :placeholder="placeholder"
           :aria-invalid="error ? 'true' : undefined"
           :aria-describedby="error ? `${id}-error` : undefined"
-          class="h-[36px] min-w-16 flex-1 bg-transparent outline-none placeholder:text-ink-muted disabled:text-ink-secondary"
+          class="h-[36px] min-w-16 flex-1 touch:h-[42px] bg-transparent outline-none placeholder:text-ink-muted disabled:text-ink-secondary"
           @focus="open = true"
           @blur="restoreLabel"
           @keydown.backspace="onBackspace"
@@ -196,7 +196,7 @@ function onBackspace(): void {
         <button
           v-if="clearable && !multiple && !disabled && selected.length"
           type="button"
-          class="h-[24px] w-[24px] shrink-0 rounded-sm text-ink-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          class="relative h-[24px] w-[24px] shrink-0 rounded-sm before:absolute touch:before:-inset-[10px] text-ink-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           :aria-label="`Clear ${label}`"
           @click="clear"
         >
@@ -222,7 +222,7 @@ function onBackspace(): void {
                 v-for="option in options"
                 :key="option.value"
                 :value="option.value"
-                class="flex min-h-xs cursor-default items-center rounded-sm px-2 data-[highlighted]:bg-primary-subtle data-[state=checked]:font-semibold"
+                class="flex min-h-xs cursor-default items-center rounded-sm px-2 touch:min-h-touch data-[highlighted]:bg-primary-subtle data-[state=checked]:font-semibold"
               >
                 {{ option.label }}
               </ComboboxItem>

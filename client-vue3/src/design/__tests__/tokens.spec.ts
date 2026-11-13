@@ -46,6 +46,12 @@ describe('token snapshot', () => {
     expect(resolveToken('control.height.lg')).toBe('44px')
   })
 
+  it('pins the touch target size (44px on coarse pointers)', () => {
+    expect(resolveToken('control.height.touch')).toBe('44px')
+    expect(tokens.minHeight.touch).toBe('44px')
+    expect(tokens.minWidth.touch).toBe('44px')
+  })
+
   it('keeps one source: Tailwind tokens carry the DESIGN.md values', () => {
     expect(tokens.colors.primary.DEFAULT).toBe(resolveToken('primary.color'))
     expect(tokens.colors.ink.DEFAULT).toBe(resolveToken('text.primary'))

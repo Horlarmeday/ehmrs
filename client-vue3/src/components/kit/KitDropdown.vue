@@ -72,7 +72,7 @@ function onCloseAutoFocus(event: Event) {
           <DropdownMenuSeparator v-if="item.separatorBefore" class="my-1 h-px bg-line-subtle" />
           <DropdownMenuItem
             :disabled="item.disabled"
-            class="flex min-h-sm cursor-pointer items-center rounded-sm px-2 outline-none data-[highlighted]:bg-surface-alt data-[disabled]:cursor-not-allowed data-[disabled]:text-ink-muted"
+            class="flex min-h-sm cursor-pointer items-center rounded-sm px-2 touch:min-h-touch outline-none data-[highlighted]:bg-surface-alt data-[disabled]:cursor-not-allowed data-[disabled]:text-ink-muted"
             :class="{ 'text-danger': item.danger && !item.disabled }"
             @select="onItemSelect(item.value)"
           >

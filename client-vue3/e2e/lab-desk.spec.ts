@@ -1,6 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoSeriousA11yIssues, heightOf } from './helpers';
 
+test.skip(
+  ({ hasTouch }) => hasTouch,
+  'lab entry prototype gets its tablet layout on the worklist archetype (#41 task 16)'
+);
+
 const open = (page: Page) => page.goto('/kit-harness.html?view=lab-desk');
 const list = (page: Page) => page.getByRole('list', { name: 'Tests in this sample' });
 const pick = (page: Page, name: string) => list(page).getByRole('button', { name }).click();

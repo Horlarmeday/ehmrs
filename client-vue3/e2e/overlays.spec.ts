@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { expectNoSeriousA11yIssues } from './helpers';
+import { expectNoSeriousA11yIssues, isTouch } from './helpers';
 
 const consoleProblems: string[] = [];
 
@@ -17,9 +17,10 @@ test.afterEach(() => {
   expect(consoleProblems).toEqual([]);
 });
 
-
 test.describe('dialog', () => {
-  test('focuses the first field, traps focus, Escape closes and focus returns', async ({ page }) => {
+  test('focuses the first field, traps focus, Escape closes and focus returns', async ({
+    page,
+  }) => {
     const opener = page.getByTestId('open-form');
     await opener.focus();
     await page.keyboard.press('Enter');
@@ -30,7 +31,9 @@ test.describe('dialog', () => {
     await expectNoSeriousA11yIssues(page, 'dialog open');
     for (let press = 0; press < 8; press += 1) {
       await page.keyboard.press('Tab');
-      expect(await page.evaluate(() => !!document.activeElement?.closest('[role=dialog]'))).toBe(true);
+      expect(await page.evaluate(() => !!document.activeElement?.closest('[role=dialog]'))).toBe(
+        true
+      );
     }
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
@@ -77,7 +80,9 @@ test.describe('dialog', () => {
     await expect(dialog.getByRole('heading', { name: 'Prescriptions history' })).toBeInViewport();
     await expect(page.getByTestId('long-done')).toBeInViewport();
     const box = await dialog.boundingBox();
-    expect(box?.width).toBe(1120);
+    const viewport = page.viewportSize();
+    if (!viewport) throw new Error('no viewport');
+    expect(box?.width).toBe(Math.min(1120, viewport.width - 32));
     await expectNoSeriousA11yIssues(page, 'long dialog');
   });
 
@@ -212,7 +217,9 @@ test.describe('tabs', () => {
     await list.getByRole('tab', { name: 'Department tab 1', exact: true }).focus();
     await page.keyboard.press('End');
     await expect(list.getByRole('tab', { name: 'Department tab 24' })).toBeInViewport();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true
+    );
     await expectNoSeriousA11yIssues(page, 'many tabs');
   });
 });
@@ -264,7 +271,11 @@ test.describe('accordion', () => {
     const accordion = page.getByTestId('accordion');
     await accordion.getByRole('button', { name: 'Vitals' }).click();
     for (const name of ['Vitals', 'Allergies', 'Archived', 'Past visits']) {
-      const box = await accordion.getByRole('button', { name }).locator('xpath=ancestor::*[@data-state][@data-orientation][1]').last().boundingBox();
+      const box = await accordion
+        .getByRole('button', { name })
+        .locator('xpath=ancestor::*[@data-state][@data-orientation][1]')
+        .last()
+        .boundingBox();
       expect(box?.height, name).toBeLessThanOrEqual(46);
     }
   });
@@ -289,7 +300,8 @@ test.describe('tooltip', () => {
     await expect(page.getByRole('tooltip')).toBeHidden();
   });
 
-  test('shows on hover, and the pointer can move onto it', async ({ page }) => {
+  test('shows on hover, and the pointer can move onto it', async ({ page }, info) => {
+    test.skip(isTouch(info), 'touch screens have no hover');
     await page.getByTestId('tooltip-trigger').hover();
     const tooltip = page.getByRole('tooltip');
     await expect(tooltip).toBeVisible();
@@ -431,4 +443,3 @@ test.describe('layers inside a dialog', () => {
     await expect(page.getByTestId('open-layers')).toBeFocused();
   });
 });
-

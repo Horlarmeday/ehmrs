@@ -41,8 +41,8 @@ Complexity: S under 30 min, M under 2 h, L more than one session.
       *Accept:* findings recorded and the design updated. Requires the owner to arrange access.
 - [ ] **5. Other high-risk workflows (L).** Lab result entry, triage, and dispense and verify, one at a time.
       *Accept:* owner review of each.
-- [ ] **6. Update the architecture records (M).** Revise ADR-0009 and #41's archetypes with the resulting patterns.
-      *Accept:* owner sign-off.
+- [x] **6. Update the architecture records (M).** Revise ADR-0009 and #41's archetypes with the resulting patterns.
+      *Accept:* owner sign-off. Done in #41 (`tasks/41-archetype-kit.md`): four archetypes, no wizard, tablet support; owner decisions 2026-11-13.
 - [ ] **7. Update the roadmap (S).** Change #33, #41 and the domain issues to reference the approved designs, and change "smoke vs legacy" to behaviour and data.
       *Accept:* no issue treats legacy layout as a requirement.
 

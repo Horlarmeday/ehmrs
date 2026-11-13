@@ -154,7 +154,7 @@ const bodyCell = computed(
               <button
                 v-if="column.sortable"
                 type="button"
-                class="min-h-xs rounded-xs font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+                class="min-h-xs rounded-xs font-medium touch:min-h-touch focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
                 @click="toggleSort(column.id)"
               >
                 {{ column.header }}

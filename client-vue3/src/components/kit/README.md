@@ -78,6 +78,14 @@ These map behaviour only.
 - `v-b-tooltip.hover="'text'"` and `title`: wrap the element in `KitTooltip`.
 - `<b-dropdown text><b-dropdown-item @click>`: `KitDropdown` with `items` and `@select`. `split` becomes a `KitButton` beside a `KitDropdown`.
 
+## Touch screens
+
+Touch-only Android tablets are used for ward rounds and vitals. The `touch:` variant (`pointer: coarse`) grows every tap target to 44px using the `touch` size token (`min-h-touch`, `min-w-touch`). Small icon buttons keep their look and get a 44px `::before` hit area instead. Desktop sizes don't change. `e2e/touch-targets.spec.ts` measures every control on a touch screen; any new kit component must pass it.
+
+- Never put information a user needs only in a tooltip or a `title`. Touch screens can't hover, and reka-ui links a tooltip's text to its button only while it is open, so on a tablet nobody can reach it, screen readers included. Show reasons, such as why a button is disabled, as visible text.
+- On touch, `KitDatePicker` opens its calendar centred in a `KitDialog` instead of under the field, because a 44px calendar doesn't fit beside a field on a landscape tablet. Typing the date still works. `KitCalendar` is that standalone calendar, and `useCoarsePointer()` tells a component whether it is on a touch screen.
+- Table rows that hold controls are at least 44px on touch, so dense rows only stay 32px on desktop.
+
 ## Helpers
 
 - `useGridNavigation.ts`: on a container, `@keydown="onGridKeydown"` moves between inputs with the same `data-grid-col` using ArrowUp, ArrowDown and Enter.

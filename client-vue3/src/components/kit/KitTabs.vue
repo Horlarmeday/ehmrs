@@ -28,7 +28,7 @@ const active = computed({
         :key="tab.value"
         :value="tab.value"
         :disabled="tab.disabled"
-        class="-mb-px inline-flex min-h-sm shrink-0 items-center whitespace-nowrap border-b-2 border-transparent px-3 text-sm font-medium text-ink-secondary hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary data-[state=active]:border-primary data-[state=active]:text-ink data-[disabled]:cursor-not-allowed data-[disabled]:text-ink-muted"
+        class="-mb-px inline-flex min-h-sm shrink-0 touch:min-h-touch items-center whitespace-nowrap border-b-2 border-transparent px-3 text-sm font-medium text-ink-secondary hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary data-[state=active]:border-primary data-[state=active]:text-ink data-[disabled]:cursor-not-allowed data-[disabled]:text-ink-muted"
       >
         {{ tab.label }}
       </TabsTrigger>

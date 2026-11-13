@@ -97,7 +97,7 @@ function onEscapeKeyDown(event: Event) {
           </div>
           <DialogClose
             aria-label="Close"
-            class="inline-flex min-h-xs min-w-xs items-center justify-center rounded-sm text-ink-secondary hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+            class="inline-flex min-h-xs min-w-xs items-center touch:min-h-touch touch:min-w-touch justify-center rounded-sm text-ink-secondary hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
           >
             <svg aria-hidden="true" viewBox="0 0 16 16" class="h-4 w-4" fill="none">
               <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" />
@@ -112,10 +112,7 @@ function onEscapeKeyDown(event: Event) {
         >
           <slot />
         </div>
-        <footer
-          v-if="$slots.footer"
-          class="flex justify-end gap-2 border-t border-line-subtle p-4"
-        >
+        <footer v-if="$slots.footer" class="flex justify-end gap-2 border-t border-line-subtle p-4">
           <slot name="footer" />
         </footer>
       </DialogContent>

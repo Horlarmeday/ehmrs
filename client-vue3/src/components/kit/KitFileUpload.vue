@@ -31,7 +31,7 @@ function onChange(event: Event): void {
       :disabled="disabled"
       :aria-invalid="error ? 'true' : undefined"
       :aria-describedby="error ? `${id}-error` : undefined"
-      class="min-h-sm w-full rounded-sm border bg-surface pr-2 text-sm text-ink file:mr-2 file:min-h-[26px] file:cursor-pointer file:border-0 file:bg-surface-alt file:px-2 file:text-sm file:font-medium file:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:bg-surface-alt disabled:text-ink-secondary"
+      class="min-h-sm w-full rounded-sm border touch:min-h-touch bg-surface pr-2 text-sm text-ink file:mr-2 file:min-h-[26px] file:cursor-pointer file:border-0 file:bg-surface-alt file:px-2 file:text-sm file:font-medium file:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:bg-surface-alt disabled:text-ink-secondary"
       :class="error ? 'border-danger' : 'border-line'"
       @change="onChange"
     />

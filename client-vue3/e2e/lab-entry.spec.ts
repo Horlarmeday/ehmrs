@@ -2,6 +2,11 @@ import { expect, test } from '@playwright/test';
 import { differentialRows, morphologyRows, rows } from '../src/components/kit/__harness__/fbcRows';
 import { expectNoSeriousA11yIssues, heightOf } from './helpers';
 
+test.skip(
+  ({ hasTouch }) => hasTouch,
+  'legacy-layout FBC page, kept as a desktop keyboard test only; touch sizes are checked in touch-targets.spec.ts'
+);
+
 const allRows = [...rows, ...differentialRows, ...morphologyRows];
 
 async function model(page: import('@playwright/test').Page): Promise<Record<string, string>> {

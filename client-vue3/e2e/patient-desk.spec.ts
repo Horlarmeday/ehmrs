@@ -1,6 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoSeriousA11yIssues } from './helpers';
 
+test.skip(
+  ({ hasTouch }) => hasTouch,
+  'patient prototype gets its tablet layout on the app shell (#41 task 10)'
+);
+
 const open = async (page: Page) => {
   await page.goto('/kit-harness.html?view=patient-desk');
   await expect(

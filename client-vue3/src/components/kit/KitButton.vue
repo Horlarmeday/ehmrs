@@ -26,8 +26,8 @@ const severityClasses = {
 };
 
 const sizeClasses = {
-  xs: 'min-h-xs px-[10px] text-xs',
-  sm: 'min-h-sm px-3 text-sm',
+  xs: 'min-h-xs px-[10px] text-xs touch:min-h-touch',
+  sm: 'min-h-sm px-3 text-sm touch:min-h-touch',
   lg: 'min-h-lg px-4 text-md',
 };
 
@@ -42,7 +42,7 @@ const classes = computed(() => [
     :type="type"
     :disabled="disabled || loading"
     :aria-busy="loading ? 'true' : undefined"
-    class="inline-flex items-center justify-center gap-1 rounded-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+    class="inline-flex items-center justify-center gap-1 rounded-sm font-semibold touch:min-w-touch focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
     :class="classes"
   >
     <span

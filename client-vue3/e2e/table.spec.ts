@@ -1,5 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
-import { colorsOf, contrast, expectNoSeriousA11yIssues, heightOf } from './helpers';
+import {
+  colorsOf,
+  contrast,
+  controlHeight,
+  expectNoSeriousA11yIssues,
+  expectRowHeight,
+  heightOf,
+} from './helpers';
 
 const open = (page: Page, query = '') => page.goto(`/kit-harness.html?view=table${query}`);
 const records = (page: Page) => page.getByRole('table', { name: 'Records', exact: true });
@@ -11,11 +18,11 @@ async function requests(page: Page) {
 }
 
 test.describe('table', () => {
-  test('T1 rows are 30px, 26px dense, with mono numerals', async ({ page }) => {
+  test('T1 rows follow the density scale, with mono numerals', async ({ page }, info) => {
     await open(page);
     const row = records(page).getByTestId('table-row').first();
     await expect(row).toBeVisible();
-    expect(await heightOf(row)).toBe(44);
+    await expectRowHeight(row, info, 44);
     const amount = row.getByRole('cell').nth(2);
     const style = await amount.evaluate((e) => {
       const s = getComputedStyle(e);
@@ -33,7 +40,7 @@ test.describe('table', () => {
 
     await open(page, '&dense');
     await expect(records(page).getByTestId('table-row').first()).toBeVisible();
-    expect(await heightOf(records(page).getByTestId('table-row').first())).toBe(32);
+    await expectRowHeight(records(page).getByTestId('table-row').first(), info, 32);
   });
 
   test('T2 sends page and sort, and aria-sort follows', async ({ page }) => {
@@ -234,11 +241,15 @@ test.describe('pagination', () => {
     await expect(records(page).getByTestId('table-row')).toHaveCount(20);
   });
 
-  test('controls measure 28px and a shrunk data set moves to the new last page', async ({
+  test('controls follow the density scale and a shrunk data set moves to the new last page', async ({
     page,
-  }) => {
-    expect(await heightOf(page.getByRole('button', { name: 'Next page' }))).toBe(38);
-    expect(await heightOf(page.getByRole('combobox', { name: 'Records per page' }))).toBe(38);
+  }, info) => {
+    expect(await heightOf(page.getByRole('button', { name: 'Next page' }))).toBe(
+      controlHeight(info, 38)
+    );
+    expect(await heightOf(page.getByRole('combobox', { name: 'Records per page' }))).toBe(
+      controlHeight(info, 38)
+    );
     await page.getByRole('button', { name: 'Last page' }).click();
     await expect(firstCell(page)).toHaveText('Item 51');
     await page.getByRole('button', { name: 'Shrink data' }).click();

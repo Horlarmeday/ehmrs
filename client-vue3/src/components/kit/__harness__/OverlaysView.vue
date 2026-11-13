@@ -32,12 +32,14 @@ const removableShown = ref(true);
 const queued = ref<string[]>([]);
 
 async function ask() {
-  answer.value = String(await confirm({
-    title: 'Delete this service?',
-    text: 'The service is removed from this visit.',
-    confirmLabel: 'Delete',
-    severity: 'danger',
-  }));
+  answer.value = String(
+    await confirm({
+      title: 'Delete this service?',
+      text: 'The service is removed from this visit.',
+      confirmLabel: 'Delete',
+      severity: 'danger',
+    })
+  );
 }
 
 async function askThenRemove() {
@@ -123,7 +125,9 @@ function onMenuSelect(value: string) {
         @click="askThenRemove"
         >Ask then remove</KitButton
       >
-      <KitButton severity="secondary" data-testid="ask-twice" @click="askTwice">Ask twice</KitButton>
+      <KitButton severity="secondary" data-testid="ask-twice" @click="askTwice"
+        >Ask twice</KitButton
+      >
       <output data-testid="answer">{{ answer }}</output>
       <output data-testid="queued">{{ queued.join(',') }}</output>
     </section>
@@ -152,7 +156,10 @@ function onMenuSelect(value: string) {
     </section>
 
     <section aria-label="Accordions" class="flex flex-col gap-4">
-      <KitButton severity="secondary" data-testid="section-from-parent" @click="section = 'allergies'"
+      <KitButton
+        severity="secondary"
+        data-testid="section-from-parent"
+        @click="section = 'allergies'"
         >Go to allergies</KitButton
       >
       <KitAccordion v-model="section" :items="accordionItems" data-testid="accordion">
@@ -209,7 +216,9 @@ function onMenuSelect(value: string) {
 
     <KitDialog v-model:open="longOpen" title="Prescriptions history" size="xl">
       <p v-for="line in 80" :key="line" class="py-1">History line {{ line }}</p>
-      <template #footer><KitButton data-testid="long-done" @click="longOpen = false">Done</KitButton></template>
+      <template #footer
+        ><KitButton data-testid="long-done" @click="longOpen = false">Done</KitButton></template
+      >
     </KitDialog>
 
     <KitDialog v-model:open="backdropOpen" title="Details" size="sm" close-on-backdrop>
@@ -222,7 +231,12 @@ function onMenuSelect(value: string) {
 
     <KitDialog v-model:open="layersOpen" title="Layered controls" size="lg">
       <div class="flex flex-col gap-3">
-        <KitSelect v-model="dialogDrug" label="Dialog drug" placeholder="Search drugs" :search="searchDrugs" />
+        <KitSelect
+          v-model="dialogDrug"
+          label="Dialog drug"
+          placeholder="Search drugs"
+          :search="searchDrugs"
+        />
         <KitDatePicker v-model="dialogDate" label="Dialog date" min="2026-01-10" max="2026-12-20" />
         <KitTooltip text="Inside the dialog">
           <KitButton severity="secondary" data-testid="dialog-tooltip">Hint</KitButton>

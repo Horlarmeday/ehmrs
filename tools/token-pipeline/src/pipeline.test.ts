@@ -65,6 +65,7 @@ const MINIMAL_DENSITY_MD = (fontSm: string) => `
 | control.height.sm | 28px | |
 | control.height.md | 32px | |
 | control.height.lg | 40px | |
+| control.height.touch | 44px | |
 | control.font.xs | 11px | |
 | control.font.sm | ${fontSm} | |
 | control.font.md | 13px | |
@@ -194,6 +195,18 @@ describe('emission', () => {
     expect(tailwind).toContain("sm: '38px'");
     expect(tailwind).toContain("DEFAULT: '#0b6e69'");
     expect(tailwind).toContain("DEFAULT: '#1b1f23'");
+  });
+
+  it('tailwind output exposes the touch target size for height and width', () => {
+    const { tailwind } = buildOutputs();
+    expect(tailwind).toMatch(/minHeight: \{[^}]*touch: '44px'/);
+    expect(tailwind).toMatch(/minWidth: \{[^}]*touch: '44px'/);
+  });
+
+  it('refuses a touch target below 44px', () => {
+    expect(() =>
+      buildOutputsFromMd(designMd.replace('| control.height.touch | 44px |', '| control.height.touch | 38px |'))
+    ).toThrow(/control.height.touch/);
   });
 
   it('reflects DESIGN.md density edits in generated output', () => {

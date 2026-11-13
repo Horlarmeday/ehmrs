@@ -25,14 +25,14 @@ const id = useId();
 
 <template>
   <div class="flex flex-col gap-1 text-sm text-ink">
-    <div class="inline-flex min-h-xs items-center gap-2">
+    <div class="inline-flex min-h-xs items-center gap-2 touch:min-h-touch">
       <CheckboxRoot
         :id="id"
         v-model="state"
         :disabled="disabled"
         :aria-invalid="error ? 'true' : undefined"
         :aria-describedby="error ? `${id}-error` : undefined"
-        class="relative flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-xs border bg-surface transition-colors before:absolute before:-inset-[4px] enabled:hover:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:bg-surface-alt data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-on data-[state=indeterminate]:border-primary data-[state=indeterminate]:bg-primary data-[state=indeterminate]:text-primary-on"
+        class="relative flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-xs border bg-surface transition-colors before:absolute before:-inset-[4px] touch:before:-inset-[13px] enabled:hover:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:bg-surface-alt data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-on data-[state=indeterminate]:border-primary data-[state=indeterminate]:bg-primary data-[state=indeterminate]:text-primary-on"
         :class="error ? 'border-danger' : 'border-ink-disabled'"
       >
         <CheckboxIndicator aria-hidden="true" class="flex">
@@ -50,9 +50,12 @@ const id = useId();
           </svg>
         </CheckboxIndicator>
       </CheckboxRoot>
-      <label :for="id" class="cursor-pointer" :class="hideLabel ? 'sr-only' : ''">{{
-        label
-      }}</label>
+      <label
+        :for="id"
+        class="cursor-pointer touch:flex touch:min-h-touch touch:items-center"
+        :class="hideLabel ? 'sr-only' : ''"
+        >{{ label }}</label
+      >
     </div>
     <span v-if="error" :id="`${id}-error`" class="text-danger-subtle-text">{{ error }}</span>
   </div>

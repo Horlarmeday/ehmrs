@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { expectNoSeriousA11yIssues, heightOf } from './helpers';
+import { controlHeight, expectNoSeriousA11yIssues, heightOf, isTouch } from './helpers';
 
 declare global {
   interface Window {
@@ -18,8 +18,8 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('select', () => {
-  test('S1 is 28px tall', async ({ page }) => {
-    expect(await heightOf(drug(page).locator('xpath=..'))).toBe(38);
+  test('S1 follows the density scale', async ({ page }, info) => {
+    expect(await heightOf(drug(page).locator('xpath=..'))).toBe(controlHeight(info, 38));
   });
 
   test('S2 debounces and ignores stale responses', async ({ page }) => {
@@ -130,8 +130,8 @@ test.describe('select', () => {
 });
 
 test.describe('date picker', () => {
-  test('D1 is 28px tall', async ({ page }) => {
-    expect(await heightOf(day(page).locator('xpath=..'))).toBe(38);
+  test('D1 follows the density scale', async ({ page }, info) => {
+    expect(await heightOf(day(page).locator('xpath=..'))).toBe(controlHeight(info, 38));
   });
 
   test('D2 typed entry gives an ISO date without opening the calendar', async ({ page }) => {
@@ -183,13 +183,62 @@ test.describe('date picker', () => {
     await expect(page.getByRole('dialog')).toHaveCount(0);
   });
 
-  test('the calendar opens under its field', async ({ page }) => {
+  test('the calendar opens under its field', async ({ page }, info) => {
+    test.skip(isTouch(info), 'short touch screens are covered by the next test');
     const field = await day(page).locator('xpath=..').boundingBox();
     await calendarButton(page).click();
     const dialog = await page.getByRole('dialog').boundingBox();
     if (!field || !dialog) throw new Error('missing box');
     expect(Math.abs(dialog.x - field.x)).toBeLessThanOrEqual(1);
     expect(dialog.y).toBeGreaterThanOrEqual(field.y + field.height);
+  });
+
+  test('the calendar stays fully on screen', async ({ page }) => {
+    await calendarButton(page).click();
+    const dialog = await page.getByRole('dialog').boundingBox();
+    const viewport = page.viewportSize();
+    if (!dialog || !viewport) throw new Error('missing box');
+    expect(dialog.x).toBeGreaterThanOrEqual(0);
+    expect(dialog.y).toBeGreaterThanOrEqual(0);
+    expect(dialog.x + dialog.width).toBeLessThanOrEqual(viewport.width);
+    expect(dialog.y + dialog.height).toBeLessThanOrEqual(viewport.height);
+  });
+
+  test('on touch the calendar opens centred, picks a date and returns focus', async ({
+    page,
+  }, info) => {
+    test.skip(!isTouch(info), 'touch screens only');
+    const button = calendarButton(page);
+    await button.tap();
+    const dialog = page.getByRole('dialog', { name: 'Sample date' });
+    await expect(dialog).toBeVisible();
+    const box = await dialog.boundingBox();
+    const viewport = page.viewportSize();
+    if (!box || !viewport) throw new Error('missing box');
+    expect(Math.abs(box.x + box.width / 2 - viewport.width / 2)).toBeLessThanOrEqual(1);
+    expect(Math.abs(box.y + box.height / 2 - viewport.height / 2)).toBeLessThanOrEqual(1);
+    await expectNoSeriousA11yIssues(page, 'touch calendar open');
+    const firstDay = dialog
+      .locator('[data-reka-calendar-cell-trigger]:not([data-outside-view]):not([data-disabled])')
+      .first();
+    const value = await firstDay.getAttribute('data-value');
+    await firstDay.tap();
+    await expect(dialog).toHaveCount(0);
+    await expect(page.getByTestId('date')).toHaveText(value ?? '');
+    await expect(button).toBeFocused();
+  });
+
+  test('every day of the month can be reached when the calendar is short of room', async ({
+    page,
+  }) => {
+    await calendarButton(page).click();
+    const days = page.locator('[data-reka-calendar-cell-trigger]:not([data-outside-view])');
+    const last = days.last();
+    await last.scrollIntoViewIfNeeded();
+    await expect(last).toBeInViewport();
+    await last.click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(page.getByTestId('date')).not.toHaveText('null');
   });
 });
 
@@ -223,9 +272,9 @@ test.describe('checkbox, radio and file upload', () => {
     expect(hit).toBeGreaterThanOrEqual(24);
   });
 
-  test('file upload is 28px and reaches the model', async ({ page }) => {
+  test('file upload follows the density scale and reaches the model', async ({ page }, info) => {
     const input = page.getByLabel('Logo');
-    expect(await heightOf(input)).toBe(38);
+    expect(await heightOf(input)).toBe(controlHeight(info, 38));
     await input.setInputFiles({
       name: 'logo.png',
       mimeType: 'image/png',

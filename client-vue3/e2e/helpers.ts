@@ -1,4 +1,28 @@
-import { expect, type Locator, type Page } from '@playwright/test';
+import { expect, type Locator, type Page, type TestInfo } from '@playwright/test';
+
+export const TOUCH_TARGET = 44;
+
+export function isTouch(info: TestInfo): boolean {
+  return Boolean(info.project.use.hasTouch);
+}
+
+export function controlHeight(info: TestInfo, desktop: number): number {
+  return isTouch(info) ? Math.max(desktop, TOUCH_TARGET) : desktop;
+}
+
+export async function expectRowHeight(
+  row: Locator,
+  info: TestInfo,
+  desktop: number
+): Promise<void> {
+  const height = await heightOf(row);
+  if (isTouch(info)) {
+    expect(height).toBeGreaterThanOrEqual(TOUCH_TARGET);
+    expect(height).toBeLessThanOrEqual(TOUCH_TARGET + 2);
+  } else {
+    expect(height).toBe(desktop);
+  }
+}
 import AxeBuilder from '@axe-core/playwright';
 
 export async function expectNoSeriousA11yIssues(page: Page, state: string): Promise<void> {
