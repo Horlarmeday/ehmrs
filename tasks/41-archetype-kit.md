@@ -1,7 +1,7 @@
 # Issue 41 — Archetype kit v1: list, entry form, detail with tabs, worklist
 
 Issue: #41 · Parent: #33 · ADR-0009, ADR-0010, ADR-0002 (amended), ADR-0007 · Branch: `41-archetype-kit` from `svsh_branch`
-Status: **plan approved by owner (2026-11-13); Phases 0 to 2 done, all designs approved; Phases 3 and the shell (task 10) done, menu approved; task 11 next**
+Status: **plan approved by owner (2026-11-13); Phases 0 to 2 done, all designs approved; Phases 3 and the shell (task 10) done, menu approved; tasks 11 and 12 done; task 13 next**
 
 Blocked by #93, #94 and #95, which are all closed (PRs #96, #97, #100). #42 (auth) and every domain issue (#45–#67) are blocked by this one.
 
@@ -185,10 +185,25 @@ Complexity: S under 30 min, M under 2 h, L more than one session.
   - `AppShell` got `autofocusSearch` (off by default, ignored on touch); the search box is now one `<label>`, so a tap anywhere in it focuses the field (the size check found the input was 21px).
   - Patient prototype moved onto `AppShell` and `menuFor`; portrait shows cards; the role reason is visible text instead of a `title`; `patient-desk.spec.ts` runs on all three projects.
   - Tests: `src/view/layout/__tests__/navigation.spec.ts`, `src/common/__tests__/jwt.spec.ts`, `e2e/shell.spec.ts` (redirect when signed out, menu per role, current section, search, skip link, `/` shortcut, sign-out, tablet drawer, axe). Results: lint clean, build passes, `npm test` 51/51, e2e 1389/1389 over three repeats.
-- [ ] **11. Route state (M).** `useRouteState`.
+- [x] **11. Route state (M).** `useRouteState`.
   - AC: filters, page, tab and selection survive refresh and back; invalid or tampered query values fall back to defaults instead of breaking the page or reaching `load` unchecked; changing state replaces rather than floods history.
-- [ ] **12. Validation setup (M).** Register `@vee-validate/rules` globally with the legacy vee-validate 2 English messages, transcribed from the v2 locale the legacy client loads.
+  - Done: `src/components/archetypes/useRouteState.ts`. `useRouteParam(key, field)` with typed fields (`intField`, `textField`, `choiceField`, `numberChoiceField`); defaults are left out of the URL; changes made together are merged into one `router.replace`; unknown query keys are kept. No type casts (lint rule), so one call per value rather than one generic object. 6 unit tests in `__tests__/useRouteState.spec.ts`.
+- [x] **12. Validation setup (M).** Register `@vee-validate/rules` globally with the legacy vee-validate 2 English messages, transcribed from the v2 locale the legacy client loads.
   - AC: a table in this file lists every rule used in legacy with its v2 message and the new output, and they match; custom legacy messages pass through unchanged.
+  - Done: `src/validation/setup.ts`, called once in `main.ts`. Legacy uses vee-validate 2.2.15 with its built-in English messages and no customisation. Rule strings found in legacy views: `required` (232), `required|min:11|max:11|phone_pattern` (4), `required|min:3` (3), `required|between:0,2` (3), `required|min:11|max:11` (2), `bp:systolic` (2), `required|min:6|max:255`, `required|min:6`, `required|min:1`, `required|min_value:1`, `required|confirmed:confirmPassword` (1 each). `phone_pattern` and `bp` are custom and port with their views.
+
+    | Rule | vee-validate 2 message | New message |
+    | --- | --- | --- |
+    | `required` | The {field} field is required | same |
+    | `min:n` | The {field} field must be at least n characters | same |
+    | `max:n` | The {field} field may not be greater than n characters | same |
+    | `between:a,b` | The {field} field must be between a and b | same |
+    | `min_value:n` | The {field} field must be n or more | same |
+    | `confirmed` | The {field} confirmation does not match | same |
+
+    All other v2 messages are carried over word for word (no full stop), checked in `src/validation/__tests__/setup.spec.ts` (38 tests).
+  - **Behaviour check:** ran every legacy rule string through vee-validate 2's own `Validator` and v4's `validate` on sample values. One difference: v2 `required` accepts `false` (an unticked box), v4 rejects it. The setup registers `required` with v2 behaviour (`false` passes unless `required:true`), so no legacy form starts blocking. After that, zero differences.
+  - **Transcription note for domain issues:** v2 `confirmed:confirmPassword` becomes `confirmed:@confirmPassword` in v4.
 - [ ] **13. List with filters (L).** `ListPage.vue`.
   - AC: the A contract; filter drawer on tablet; skeleton while loading.
 - [ ] **14. Entry form (L).** `EntryForm.vue` and `useEntryForm.ts`, page and dialog hosts.
