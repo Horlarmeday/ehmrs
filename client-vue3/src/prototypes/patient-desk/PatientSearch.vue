@@ -2,11 +2,13 @@
 import { computed, ref, watch } from 'vue';
 import KitBadge from '../../components/kit/KitBadge.vue';
 import KitButton from '../../components/kit/KitButton.vue';
+import KitCardList from '../../components/kit/KitCardList.vue';
 import KitConfirmHost from '../../components/kit/KitConfirmHost.vue';
 import KitDatePicker from '../../components/kit/KitDatePicker.vue';
 import KitPagination from '../../components/kit/KitPagination.vue';
 import KitTable, { type KitColumn } from '../../components/kit/KitTable.vue';
 import { useConfirm } from '../../components/kit/useConfirm';
+import { useMediaQuery } from '../../components/kit/useMediaQuery';
 import { useServerTable } from '../../components/kit/useServerTable';
 import { searchPatients, type FakePatient } from './fakeData';
 import { deactivateRoles, startVisitRoles, type DemoRole } from './roles';
@@ -27,6 +29,7 @@ table.reload();
 watch([() => props.term, from, to], () => table.setPage(1));
 
 const canStartVisit = computed(() => startVisitRoles.includes(props.role));
+const atLeastMd = useMediaQuery('(min-width: 768px)');
 const canDeactivate = computed(() => deactivateRoles.includes(props.role));
 const { confirm } = useConfirm();
 
@@ -71,7 +74,67 @@ const columns: KitColumn[] = [
         <KitDatePicker v-model="to" label="Registered to" />
       </div>
     </div>
+    <p v-if="!canStartVisit" class="text-ink-secondary" data-testid="role-note">
+      Your role can view patients but cannot start visits.
+    </p>
+    <KitCardList
+      v-if="!atLeastMd"
+      label="Patients"
+      :rows="table.rows.value"
+      row-key="id"
+      :loading="table.loading.value"
+      :error="table.error.value"
+      @retry="table.reload"
+    >
+      <template #default="{ row }">
+        <div class="flex items-start justify-between gap-2">
+          <button
+            type="button"
+            class="min-h-touch text-left font-semibold hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+            @click="emit('open', row)"
+          >
+            {{ row.name }}
+          </button>
+          <KitBadge variant="dot" :severity="row.status === 'active' ? 'success' : 'danger'">{{
+            row.status === 'active' ? 'Active' : 'Inactive'
+          }}</KitBadge>
+        </div>
+        <p class="flex flex-wrap gap-x-3 gap-y-1 text-ink-secondary">
+          <span class="font-mono text-xs">{{ row.hospitalNumber }}</span>
+          <span class="font-mono text-xs">{{ row.phone }}</span>
+          <span>{{ row.gender }}, {{ row.age }}</span>
+          <span>{{ row.insurance }}</span>
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <KitButton
+            size="xs"
+            severity="accent"
+            :disabled="Boolean(visitReason(row))"
+            :aria-label="`Start visit for ${row.name}`"
+            @click="emit('visit', row)"
+            >Start visit</KitButton
+          >
+          <KitButton
+            v-if="canDeactivate && row.status === 'active'"
+            size="xs"
+            severity="secondary"
+            :aria-label="`Deactivate ${row.name}`"
+            @click="confirmDeactivate(row)"
+            >Deactivate</KitButton
+          >
+        </div>
+      </template>
+      <template #empty>
+        <span class="flex flex-col items-center gap-2" data-testid="no-match">
+          <span>No patient matches “{{ term }}”.</span>
+          <KitButton @click="emit('register', term)"
+            >Register “{{ term }}” as a new patient</KitButton
+          >
+        </span>
+      </template>
+    </KitCardList>
     <KitTable
+      v-else
       label="Patients"
       :columns="columns"
       :rows="table.rows.value"
@@ -83,7 +146,7 @@ const columns: KitColumn[] = [
       <template #cell-name="{ row }">
         <button
           type="button"
-          class="min-h-xs rounded-xs text-left font-semibold text-ink hover:text-primary hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          class="min-h-xs rounded-xs text-left font-semibold text-ink hover:text-primary hover:underline touch:min-h-touch focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           @click="emit('open', row)"
         >
           {{ row.name }}
@@ -103,7 +166,6 @@ const columns: KitColumn[] = [
             size="xs"
             severity="accent"
             :disabled="Boolean(visitReason(row))"
-            :title="visitReason(row)"
             :aria-label="`Start visit for ${row.name}`"
             @click="emit('visit', row)"
             >Start visit</KitButton

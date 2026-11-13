@@ -1,19 +1,22 @@
 import { expect, test, type Page } from '@playwright/test';
-import { expectNoSeriousA11yIssues } from './helpers';
-
-test.skip(
-  ({ hasTouch }) => hasTouch,
-  'patient prototype gets its tablet layout on the app shell (#41 task 10)'
-);
+import { expectNoSeriousA11yIssues, expectRowHeight } from './helpers';
 
 const open = async (page: Page) => {
   await page.goto('/kit-harness.html?view=patient-desk');
   await expect(
-    page.getByRole('table', { name: 'Patients' }).getByTestId('table-row').first()
+    page
+      .getByRole('table', { name: 'Patients' })
+      .getByTestId('table-row')
+      .or(page.getByRole('list', { name: 'Patients' }).getByTestId('card'))
+      .first()
   ).toBeVisible();
 };
 const box = (page: Page) => page.getByRole('searchbox');
-const rows = (page: Page) => page.getByRole('table', { name: 'Patients' }).getByTestId('table-row');
+const rows = (page: Page) =>
+  page
+    .getByRole('table', { name: 'Patients' })
+    .getByTestId('table-row')
+    .or(page.getByRole('list', { name: 'Patients' }).getByTestId('card'));
 
 async function find(page: Page, term: string) {
   await box(page).fill(term);
@@ -27,7 +30,8 @@ async function pick(page: Page, label: string, option: string) {
   await page.getByRole('option', { name: option, exact: true }).click();
 }
 
-test('search starts focused and / returns to it', async ({ page }) => {
+test('search starts focused and / returns to it', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'focusing search on touch would open the on-screen keyboard');
   await open(page);
   await expect(box(page)).toBeFocused();
   await page.getByRole('button', { name: 'Register patient' }).focus();
@@ -90,7 +94,12 @@ test('role rules: visits and deactivation', async ({ page }) => {
   await expect(
     page.getByRole('button', { name: 'Start visit for Testa Alpha' }).first()
   ).toBeDisabled();
+  await expect(page.getByTestId('role-note')).toBeVisible();
+  const menuButton = page.getByRole('button', { name: 'Open menu' });
+  if (await menuButton.isVisible()) await menuButton.click();
   await expect(page.getByRole('navigation', { name: 'Main' })).not.toContainText('Patients');
+  if (await page.getByRole('dialog', { name: 'eHMRS' }).isVisible())
+    await page.keyboard.press('Escape');
 
   await role.selectOption('Admin');
   const first = rows(page).first();
@@ -168,10 +177,12 @@ test.describe('registration', () => {
   });
 });
 
-test('rows keep the 44px rule with actions', async ({ page }) => {
+test('rows keep the 44px rule with actions', async ({ page }, info) => {
   await open(page);
   await page.getByLabel('Prototype role').selectOption('Admin');
-  expect((await rows(page).first().boundingBox())?.height).toBe(44);
+  const tableRow = page.getByRole('table', { name: 'Patients' }).getByTestId('table-row').first();
+  test.skip(!(await tableRow.isVisible()), 'portrait tablets show cards instead of rows');
+  await expectRowHeight(tableRow, info, 44);
 });
 
 test('search screen has no serious accessibility issues and fits 1280px', async ({ page }) => {

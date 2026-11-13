@@ -1,7 +1,7 @@
 # Issue 41 — Archetype kit v1: list, entry form, detail with tabs, worklist
 
 Issue: #41 · Parent: #33 · ADR-0009, ADR-0010, ADR-0002 (amended), ADR-0007 · Branch: `41-archetype-kit` from `svsh_branch`
-Status: **plan approved by owner (2026-11-13); Phases 0 to 2 done, all designs approved; Phase 3 (kit additions) in progress**
+Status: **plan approved by owner (2026-11-13); Phases 0 to 2 done, all designs approved; Phases 3 and the shell (task 10) done; menu table waiting for owner review; task 11 next**
 
 Blocked by #93, #94 and #95, which are all closed (PRs #96, #97, #100). #42 (auth) and every domain issue (#45–#67) are blocked by this one.
 
@@ -178,8 +178,13 @@ Complexity: S under 30 min, M under 2 h, L more than one session.
 
 ### Phase 4: shell and archetypes
 
-- [ ] **10. App shell (L).** Per the shell section.
+- [x] **10. App shell (L).** Per the shell section.
   - AC: skip link and landmarks; `/` ignored while typing; focus to the heading on route change; drawer on tablet traps focus and closes on Escape and on navigation; prototypes run on the shell and their specs pass.
+  - Done. `src/view/layout/Layout.vue` wraps every signed-in route in `AppShell`; `App.vue` mounts `KitConfirmHost` once. Menu by role (owner decision: built here from the legacy dashboard tiles) in `src/view/layout/navigation.ts`, with the generated table and the legacy oddities it keeps in `docs/design/information-architecture.md` ("Menu by role"), waiting for owner review. Patient search sends `?search=` to `/patient/find-patient`, which that page already reads. Sign-out calls `logoutSession` then goes to `/auth/login`, as legacy does. Page title follows the current section; focus moves to the page heading (or `main`) on route change.
+  - Ported `parseJwt` to `src/common/jwt.ts`. **Deviation:** it returns `null` for a missing or malformed token instead of throwing, and decodes base64url and non-ASCII names correctly (legacy `atob` fails on both).
+  - `AppShell` got `autofocusSearch` (off by default, ignored on touch); the search box is now one `<label>`, so a tap anywhere in it focuses the field (the size check found the input was 21px).
+  - Patient prototype moved onto `AppShell` and `menuFor`; portrait shows cards; the role reason is visible text instead of a `title`; `patient-desk.spec.ts` runs on all three projects.
+  - Tests: `src/view/layout/__tests__/navigation.spec.ts`, `src/common/__tests__/jwt.spec.ts`, `e2e/shell.spec.ts` (redirect when signed out, menu per role, current section, search, skip link, `/` shortcut, sign-out, tablet drawer, axe). Results: lint clean, build passes, `npm test` 51/51, e2e 1389/1389 over three repeats.
 - [ ] **11. Route state (M).** `useRouteState`.
   - AC: filters, page, tab and selection survive refresh and back; invalid or tampered query values fall back to defaults instead of breaking the page or reaching `load` unchecked; changing state replaces rather than floods history.
 - [ ] **12. Validation setup (M).** Register `@vee-validate/rules` globally with the legacy vee-validate 2 English messages, transcribed from the v2 locale the legacy client loads.

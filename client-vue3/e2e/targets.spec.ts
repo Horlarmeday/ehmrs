@@ -55,6 +55,7 @@ async function smallTargets(page: Page, min: number): Promise<string[]> {
       const own = element.getBoundingClientRect();
       const style = getComputedStyle(element);
       if (style.visibility === 'hidden' || style.display === 'none') continue;
+      if (style.clip === 'rect(0px, 0px, 0px, 0px)') continue;
       if (own.width <= 1 || own.height <= 1) {
         const id = element.id;
         const label = id ? document.querySelector(`label[for="${CSS.escape(id)}"]`) : null;
@@ -89,6 +90,8 @@ const views = [
   'overlays',
   'fbc',
   'layout',
+  'patient-desk',
+  'archetypes',
 ];
 
 for (const view of views) {

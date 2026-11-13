@@ -12,11 +12,15 @@ export interface ShellNavItem {
   icon: ShellIconName;
 }
 
-const props = defineProps<{
-  navigation: ShellNavItem[];
-  current: string;
-  userName: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    navigation: ShellNavItem[];
+    current: string;
+    userName: string;
+    autofocusSearch?: boolean;
+  }>(),
+  { autofocusSearch: false }
+);
 
 const emit = defineEmits<{
   navigate: [value: string];
@@ -57,7 +61,10 @@ function focusMain(): void {
   nextTick(() => document.getElementById('main')?.focus());
 }
 
-onMounted(() => window.addEventListener('keydown', onShortcut));
+onMounted(() => {
+  window.addEventListener('keydown', onShortcut);
+  if (props.autofocusSearch && !coarse.value) nextTick(() => searchBox.value?.focus());
+});
 onBeforeUnmount(() => window.removeEventListener('keydown', onShortcut));
 
 const itemClass = (value: string) => [
@@ -74,7 +81,7 @@ const itemClass = (value: string) => [
   >
     <a
       href="#main"
-      class="sr-only z-50 rounded-sm bg-surface px-3 py-2 font-semibold shadow-md focus:not-sr-only focus:fixed focus:left-2 focus:top-2"
+      class="sr-only z-50 rounded-sm bg-surface px-3 py-2 font-semibold shadow-md focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:inline-flex focus:min-h-sm focus:items-center touch:focus:min-h-touch"
       @click.prevent="focusMain"
       >Skip to content</a
     >
@@ -117,12 +124,11 @@ const itemClass = (value: string) => [
           class="ml-auto min-w-0 flex-1 xl:ml-0 xl:max-w-[420px]"
           @submit.prevent="submit"
         >
-          <label for="global-search" class="sr-only"
-            >Find a patient by name, phone or hospital number</label
+          <label
+            for="global-search"
+            class="flex min-h-sm cursor-text items-center gap-2 rounded-sm border border-line-subtle bg-surface pl-3 pr-2 focus-within:border-primary focus-within:outline focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-primary touch:min-h-touch"
           >
-          <div
-            class="flex min-h-sm items-center gap-2 rounded-sm border border-line-subtle bg-surface pl-3 pr-2 focus-within:border-primary focus-within:outline focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-primary touch:min-h-touch"
-          >
+            <span class="sr-only">Find a patient by name, phone or hospital number</span>
             <ShellIcon name="search" class="text-ink-muted" />
             <input
               id="global-search"
@@ -139,7 +145,7 @@ const itemClass = (value: string) => [
               class="rounded-xs border border-line px-[5px] font-mono text-xs text-ink-muted"
               >/</kbd
             >
-          </div>
+          </label>
         </form>
         <KitDropdown
           :label="`Account: ${userName}`"
