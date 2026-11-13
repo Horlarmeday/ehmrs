@@ -1,19 +1,14 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
+import ListPage, { type ListQuery } from '../../components/archetypes/ListPage.vue';
+import { choiceField, textField, useRouteParam } from '../../components/archetypes/useRouteState';
 import KitBadge from '../../components/kit/KitBadge.vue';
 import KitButton from '../../components/kit/KitButton.vue';
-import KitCardList from '../../components/kit/KitCardList.vue';
-import KitConfirmHost from '../../components/kit/KitConfirmHost.vue';
-import KitDrawer from '../../components/kit/KitDrawer.vue';
 import KitDropdown from '../../components/kit/KitDropdown.vue';
 import KitInput from '../../components/kit/KitInput.vue';
 import KitNativeSelect from '../../components/kit/KitNativeSelect.vue';
-import KitPageHeader from '../../components/kit/KitPageHeader.vue';
-import KitPagination from '../../components/kit/KitPagination.vue';
-import KitTable, { type KitColumn } from '../../components/kit/KitTable.vue';
+import type { KitColumn } from '../../components/kit/KitTable.vue';
 import { useConfirm } from '../../components/kit/useConfirm';
-import { useMediaQuery } from '../../components/kit/useMediaQuery';
-import { useServerTable } from '../../components/kit/useServerTable';
 import {
   dosageForms,
   drugForms,
@@ -24,43 +19,45 @@ import {
   type StockItem,
 } from './designData';
 
-export type TableMode = 'scroll' | 'columns' | 'cards';
-
-const props = defineProps<{ tableMode: TableMode }>();
 const emit = defineEmits<{ open: [item: StockItem]; add: [] }>();
 
-const search = ref('');
-const applied = ref('');
-const filters = reactive<{
-  drugType: string | null;
-  drugForm: string | null;
-  dosageForm: string | null;
-  vendor: string | null;
-}>({ drugType: null, drugForm: null, dosageForm: null, vendor: null });
+const search = useRouteParam('search', textField({ maxLength: 60 }));
+const drugType = useRouteParam('type', choiceField(drugTypes));
+const drugForm = useRouteParam('form', choiceField(drugForms));
+const dosageForm = useRouteParam('dosage', choiceField(dosageForms));
+const vendor = useRouteParam('vendor', choiceField(vendors));
+const draft = ref(search.value);
 const selected = ref<unknown[]>([]);
-const filtersOpen = ref(false);
-const wide = useMediaQuery('(min-width: 1024px)');
-const atLeastMd = useMediaQuery('(min-width: 768px)');
 const { confirm } = useConfirm();
 
-const table = useServerTable<StockItem>(({ page, pageSize, sort }) =>
-  loadStock({ page, pageSize, sort, search: applied.value, ...filters })
+const query = computed(() => ({
+  search: search.value,
+  drugType: drugType.value,
+  drugForm: drugForm.value,
+  dosageForm: dosageForm.value,
+  vendor: vendor.value,
+}));
+const activeFilters = computed(
+  () => [drugType, drugForm, dosageForm, vendor].filter((item) => item.value).length
 );
-table.reload();
-watch([applied, () => ({ ...filters })], () => table.setPage(1), { deep: true });
 
-const activeFilters = computed(() => Object.values(filters).filter(Boolean).length);
-const options = (values: string[]) => values.map((value) => ({ value, label: value }));
+const load = (request: ListQuery) =>
+  loadStock({
+    page: request.page,
+    pageSize: request.pageSize,
+    sort: request.sort,
+    ...query.value,
+  });
 
 function runSearch(): void {
-  applied.value = search.value.trim();
+  search.value = draft.value.trim();
 }
 
 function clearFilters(): void {
-  filters.drugType = null;
-  filters.drugForm = null;
-  filters.dosageForm = null;
-  filters.vendor = null;
+  drugType.value = null;
+  drugForm.value = null;
+  dosageForm.value = null;
+  vendor.value = null;
 }
 
 async function onBulk(action: string): Promise<void> {
@@ -73,6 +70,7 @@ async function onBulk(action: string): Promise<void> {
   });
 }
 
+const options = (values: string[]) => values.map((value) => ({ value, label: value }));
 const more = [
   { value: 'bulk', label: 'Add bulk items' },
   { value: 'reset', label: 'Reset store quantity', danger: true, separatorBefore: true },
@@ -83,110 +81,87 @@ const bulkActions = [
   { value: 'update', label: 'Update items' },
   { value: 'deactivate', label: 'Deactivate', danger: true, separatorBefore: true },
 ];
-
-const columns = computed<KitColumn[]>(() => {
-  const hide = props.tableMode === 'columns';
-  return [
-    { id: 'name', header: 'Name', sortable: true, sticky: props.tableMode === 'scroll' },
-    { id: 'quantityRemaining', header: 'Qty remaining', numeric: true, sortable: true },
-    { id: 'dosageForm', header: 'Dosage form', hideBelow: hide ? 'md' : undefined },
-    { id: 'strength', header: 'Strength', hideBelow: hide ? 'md' : undefined },
-    { id: 'costPrice', header: 'Cost price', numeric: true, hideBelow: hide ? 'xl' : undefined },
-    { id: 'sellingPrice', header: 'Selling price', numeric: true },
-    { id: 'expiry', header: 'Expiry', mono: true, sortable: true },
-    { id: 'dateAdded', header: 'Date added', mono: true, hideBelow: hide ? 'xl' : undefined },
-  ];
-});
-const showCards = computed(() => props.tableMode === 'cards' && !atLeastMd.value);
+const columns: KitColumn[] = [
+  { id: 'name', header: 'Name', sortable: true },
+  { id: 'quantityRemaining', header: 'Qty remaining', numeric: true, sortable: true },
+  { id: 'dosageForm', header: 'Dosage form', hideBelow: 'lg' },
+  { id: 'strength', header: 'Strength', hideBelow: 'lg' },
+  { id: 'costPrice', header: 'Cost price', numeric: true, hideBelow: 'xl' },
+  { id: 'sellingPrice', header: 'Selling price', numeric: true },
+  { id: 'expiry', header: 'Expiry', mono: true, sortable: true },
+  { id: 'dateAdded', header: 'Date added', mono: true, hideBelow: 'xl' },
+];
 </script>
 
 <template>
-  <div class="flex flex-col gap-4">
-    <KitPageHeader title="Store items" description="Pharmacy store">
-      <template #actions>
-        <KitDropdown label="More" :items="more" severity="secondary" />
-        <KitButton @click="emit('add')">Add item</KitButton>
-      </template>
-    </KitPageHeader>
-
-    <form class="flex flex-wrap items-end gap-3" role="search" @submit.prevent="runSearch">
-      <div class="min-w-0 flex-1 basis-[240px]">
-        <KitInput
-          v-model="search"
-          label="Search items"
-          type="search"
-          enterkeyhint="search"
-          placeholder="Name or product code"
-        />
-      </div>
-      <template v-if="wide">
-        <KitNativeSelect
-          v-model="filters.drugType"
-          label="Drug type"
-          placeholder="All"
-          :options="options(drugTypes)"
-          class="w-[150px]"
-        />
-        <KitNativeSelect
-          v-model="filters.drugForm"
-          label="Drug form"
-          placeholder="All"
-          :options="options(drugForms)"
-          class="w-[150px]"
-        />
-        <KitNativeSelect
-          v-model="filters.dosageForm"
-          label="Dosage form"
-          placeholder="All"
-          :options="options(dosageForms)"
-          class="w-[150px]"
-        />
-        <KitNativeSelect
-          v-model="filters.vendor"
-          label="Vendor"
-          placeholder="All"
-          :options="options(vendors)"
-          class="w-[180px]"
-        />
-      </template>
-      <KitButton v-else severity="secondary" @click="filtersOpen = true">
-        Filters<span v-if="activeFilters" class="font-mono">({{ activeFilters }})</span>
-      </KitButton>
-      <KitButton type="submit" severity="secondary">Search</KitButton>
-    </form>
-
-    <div class="flex min-h-sm flex-wrap items-center justify-between gap-2 touch:min-h-touch">
-      <p class="text-ink-secondary" aria-live="polite" data-testid="result-summary">
-        <span class="font-mono">{{ table.total.value }}</span>
-        {{ table.total.value === 1 ? 'item' : 'items'
-        }}<template v-if="applied"> matching “{{ applied }}”</template
-        ><template v-if="activeFilters"
-          >, {{ activeFilters }} {{ activeFilters === 1 ? 'filter' : 'filters' }} on</template
-        >
-      </p>
-      <KitButton
-        v-if="activeFilters || applied"
-        size="xs"
-        severity="accent"
-        @click="
-          clearFilters();
-          search = '';
-          applied = '';
-        "
+  <ListPage
+    v-model:selected="selected"
+    title="Store items"
+    description="Pharmacy store"
+    label="Store items"
+    :columns="columns"
+    row-key="id"
+    :load="load"
+    :query="query"
+    :active-filters="activeFilters"
+    selectable
+    :row-label="(row) => `Select ${row.name}`"
+    empty-text="No items match. Try fewer filters."
+    @clear-filters="clearFilters"
+  >
+    <template #actions>
+      <KitDropdown label="More" :items="more" severity="secondary" />
+      <KitButton @click="emit('add')">Add item</KitButton>
+    </template>
+    <template #search>
+      <form
+        role="search"
+        class="flex min-w-0 flex-1 basis-[240px] items-end gap-2"
+        @submit.prevent="runSearch"
       >
-        Clear search and filters
-      </KitButton>
-    </div>
-
-    <div
-      v-if="selected.length"
-      role="region"
-      aria-label="Selected items"
-      class="flex flex-wrap items-center gap-2 rounded-sm bg-primary-subtle px-3 py-2 text-primary-subtle-text"
-    >
-      <strong class="mr-auto"
-        ><span class="font-mono">{{ selected.length }}</span> selected</strong
-      >
+        <div class="min-w-0 flex-1">
+          <KitInput
+            v-model="draft"
+            label="Search items"
+            type="search"
+            enterkeyhint="search"
+            placeholder="Name or product code"
+          />
+        </div>
+        <KitButton type="submit" severity="secondary">Search</KitButton>
+      </form>
+    </template>
+    <template #filters>
+      <KitNativeSelect
+        v-model="drugType"
+        label="Drug type"
+        placeholder="All"
+        :options="options(drugTypes)"
+        class="lg:w-[150px]"
+      />
+      <KitNativeSelect
+        v-model="drugForm"
+        label="Drug form"
+        placeholder="All"
+        :options="options(drugForms)"
+        class="lg:w-[150px]"
+      />
+      <KitNativeSelect
+        v-model="dosageForm"
+        label="Dosage form"
+        placeholder="All"
+        :options="options(dosageForms)"
+        class="lg:w-[150px]"
+      />
+      <KitNativeSelect
+        v-model="vendor"
+        label="Vendor"
+        placeholder="All"
+        :options="options(vendors)"
+        class="lg:w-[180px]"
+      />
+    </template>
+    <template #bulk>
       <KitButton size="xs" severity="secondary">Dispense</KitButton>
       <KitDropdown
         label="More actions"
@@ -195,128 +170,50 @@ const showCards = computed(() => props.tableMode === 'cards' && !atLeastMd.value
         size="xs"
         @select="onBulk"
       />
-      <KitButton size="xs" severity="secondary" @click="selected = []">Clear selection</KitButton>
-    </div>
-
-    <KitCardList
-      v-if="showCards"
-      v-model:selected="selected"
-      label="Store items"
-      :rows="table.rows.value"
-      row-key="id"
-      :loading="table.loading.value"
-      :error="table.error.value"
-      selectable
-      :row-label="(row) => `Select ${row.name}`"
-      empty-text="No items match. Try fewer filters."
-      @retry="table.reload"
-    >
-      <template #default="{ row }">
-        <div class="flex items-center justify-between gap-2">
-          <button
-            type="button"
-            class="min-h-xs text-left font-semibold hover:text-primary touch:min-h-touch focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-            @click="emit('open', row)"
-          >
-            {{ row.name }}
-          </button>
-          <KitBadge v-if="row.quantityRemaining === 0" severity="danger">Out of stock</KitBadge>
-        </div>
-        <dl class="grid grid-cols-3 gap-x-3 text-ink-secondary">
-          <div>
-            <dt class="text-xs">Remaining</dt>
-            <dd class="font-mono text-ink">{{ row.quantityRemaining }}</dd>
-          </div>
-          <div>
-            <dt class="text-xs">Selling price</dt>
-            <dd class="font-mono text-ink">{{ money(row.sellingPrice) }}</dd>
-          </div>
-          <div>
-            <dt class="text-xs">Expiry</dt>
-            <dd class="font-mono text-ink">{{ row.expiry }}</dd>
-          </div>
-        </dl>
-      </template>
-    </KitCardList>
-    <KitTable
-      v-else
-      v-model:selected="selected"
-      label="Store items"
-      :columns="columns"
-      :rows="table.rows.value"
-      row-key="id"
-      :sort="table.sort.value"
-      :loading="table.loading.value"
-      :error="table.error.value"
-      :min-width="tableMode === 'scroll' ? '920px' : undefined"
-      selectable
-      :row-label="(row) => `Select ${row.name}`"
-      empty-text="No items match. Try fewer filters."
-      @update:sort="table.setSort"
-      @retry="table.reload"
-    >
-      <template #cell-name="{ row }">
-        <span class="flex items-center gap-2">
-          <button
-            type="button"
-            class="min-h-xs rounded-xs text-left font-semibold hover:text-primary hover:underline touch:min-h-touch focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-            @click="emit('open', row)"
-          >
-            {{ row.name }}
-          </button>
-          <KitBadge v-if="row.status === 'inactive'" variant="dot">Inactive</KitBadge>
-        </span>
-      </template>
-      <template #cell-quantityRemaining="{ row }">
+    </template>
+    <template #cell-name="{ row }">
+      <span class="flex items-center gap-2">
+        <button
+          type="button"
+          class="min-h-xs rounded-xs text-left font-semibold hover:text-primary hover:underline touch:min-h-touch focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          @click="emit('open', row)"
+        >
+          {{ row.name }}
+        </button>
+        <KitBadge v-if="row.status === 'inactive'" variant="dot">Inactive</KitBadge>
+      </span>
+    </template>
+    <template #cell-quantityRemaining="{ row }">
+      <KitBadge v-if="row.quantityRemaining === 0" severity="danger">Out of stock</KitBadge>
+      <template v-else>{{ row.quantityRemaining }}</template>
+    </template>
+    <template #cell-costPrice="{ row }">{{ money(row.costPrice) }}</template>
+    <template #cell-sellingPrice="{ row }">{{ money(row.sellingPrice) }}</template>
+    <template #card="{ row }">
+      <div class="flex items-center justify-between gap-2">
+        <button
+          type="button"
+          class="min-h-xs text-left font-semibold hover:text-primary touch:min-h-touch focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          @click="emit('open', row)"
+        >
+          {{ row.name }}
+        </button>
         <KitBadge v-if="row.quantityRemaining === 0" severity="danger">Out of stock</KitBadge>
-        <template v-else>{{ row.quantityRemaining }}</template>
-      </template>
-      <template #cell-costPrice="{ row }">{{ money(row.costPrice) }}</template>
-      <template #cell-sellingPrice="{ row }">{{ money(row.sellingPrice) }}</template>
-    </KitTable>
-
-    <KitPagination
-      label="Store items pages"
-      :page="table.page.value"
-      :page-size="table.pageSize.value"
-      :total="table.total.value"
-      :shown-count="table.rows.value.length"
-      @update:page="table.setPage"
-      @update:page-size="table.setPageSize"
-    />
-
-    <KitDrawer v-model:open="filtersOpen" title="Filters" side="right">
-      <div class="flex flex-col gap-4 px-2">
-        <KitNativeSelect
-          v-model="filters.drugType"
-          label="Drug type"
-          placeholder="All"
-          :options="options(drugTypes)"
-        />
-        <KitNativeSelect
-          v-model="filters.drugForm"
-          label="Drug form"
-          placeholder="All"
-          :options="options(drugForms)"
-        />
-        <KitNativeSelect
-          v-model="filters.dosageForm"
-          label="Dosage form"
-          placeholder="All"
-          :options="options(dosageForms)"
-        />
-        <KitNativeSelect
-          v-model="filters.vendor"
-          label="Vendor"
-          placeholder="All"
-          :options="options(vendors)"
-        />
-        <div class="flex gap-2">
-          <KitButton severity="secondary" @click="clearFilters">Clear filters</KitButton>
-          <KitButton @click="filtersOpen = false">Show results</KitButton>
-        </div>
       </div>
-    </KitDrawer>
-    <KitConfirmHost />
-  </div>
+      <dl class="grid grid-cols-3 gap-x-3 text-ink-secondary">
+        <div>
+          <dt class="text-xs">Remaining</dt>
+          <dd class="font-mono text-ink">{{ row.quantityRemaining }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs">Selling price</dt>
+          <dd class="font-mono text-ink">{{ money(row.sellingPrice) }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs">Expiry</dt>
+          <dd class="font-mono text-ink">{{ row.expiry }}</dd>
+        </div>
+      </dl>
+    </template>
+  </ListPage>
 </template>

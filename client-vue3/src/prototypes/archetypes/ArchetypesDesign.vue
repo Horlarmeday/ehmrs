@@ -3,7 +3,7 @@ import { computed, nextTick, reactive, ref } from 'vue';
 import AppShell, { type ShellNavItem } from '../../components/shell/AppShell.vue';
 import DispensePrescriptionDesign from './DispensePrescriptionDesign.vue';
 import DispenseQueueDesign from './DispenseQueueDesign.vue';
-import StockListDesign, { type TableMode } from './StockListDesign.vue';
+import StockListDesign from './StockListDesign.vue';
 import StoreItemDetailDesign from './StoreItemDetailDesign.vue';
 import StoreItemFormDesign from './StoreItemFormDesign.vue';
 import { designControls, prescriptions, stockItems, type StockItem } from './designData';
@@ -12,11 +12,8 @@ type Screen = 'list' | 'form' | 'detail' | 'dispense' | 'prescription';
 
 const params = new URLSearchParams(window.location.search);
 const screens: Screen[] = ['list', 'form', 'detail', 'dispense', 'prescription'];
-const modes: TableMode[] = ['scroll', 'columns', 'cards'];
 const requested = params.get('screen') === 'worklist' ? 'dispense' : params.get('screen');
-const requestedMode = params.get('table');
 const screen = ref<Screen>(screens.find((item) => item === requested) ?? 'list');
-const tableMode = ref<TableMode>(modes.find((item) => item === requestedMode) ?? 'cards');
 const item = ref<StockItem>(stockItems[4] ?? stockItems[0]!);
 const state = params.get('state');
 designControls.empty = state === 'empty';
@@ -81,12 +78,7 @@ function step(by: number): void {
     user-name="Pharm. Amina Yusuf"
     @navigate="navigate"
   >
-    <StockListDesign
-      v-if="screen === 'list'"
-      :table-mode="tableMode"
-      @open="open"
-      @add="screen = 'form'"
-    />
+    <StockListDesign v-if="screen === 'list'" @open="open" @add="screen = 'form'" />
     <StoreItemFormDesign v-else-if="screen === 'form'" @done="screen = 'list'" />
     <StoreItemDetailDesign v-else-if="screen === 'detail'" :item="item" @back="screen = 'list'" />
     <DispenseQueueDesign

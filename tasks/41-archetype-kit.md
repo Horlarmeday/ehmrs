@@ -204,8 +204,11 @@ Complexity: S under 30 min, M under 2 h, L more than one session.
     All other v2 messages are carried over word for word (no full stop), checked in `src/validation/__tests__/setup.spec.ts` (38 tests).
   - **Behaviour check:** ran every legacy rule string through vee-validate 2's own `Validator` and v4's `validate` on sample values. One difference: v2 `required` accepts `false` (an unticked box), v4 rejects it. The setup registers `required` with v2 behaviour (`false` passes unless `required:true`), so no legacy form starts blocking. After that, zero differences.
   - **Transcription note for domain issues:** v2 `confirmed:confirmPassword` becomes `confirmed:@confirmPassword` in v4.
-- [ ] **13. List with filters (L).** `ListPage.vue`.
+- [x] **13. List with filters (L).** `ListPage.vue`.
   - AC: the A contract; filter drawer on tablet; skeleton while loading.
+  - Done: `src/components/archetypes/ListPage.vue`. The view passes `load` (its frozen loader), `query` (its filter values, which it keeps in the URL with `useRouteParam`), optional `guard` (refuse a load with a visible reason) and slots: `actions`, `search`, `filters`, `bulk`, `cell-<id>`, `card`, `empty`, `above`. `ListPage` owns page, size and sort in the URL, returns to page 1 on a filter change with one request, shows "Loading…" during every load so the count never mixes old results with new filters, puts filters in a side panel below 1024px and shows cards below 768px. The store items design now runs on it. The kit test page gained a router so URL state works there.
+  - Tests: `__tests__/ListPage.spec.ts` (6 binding-contract tests: exact `load` arguments, URL start state, tampered URL, filter change resets page with one request, sort, guard) and `e2e/archetype-list.spec.ts` (filter in URL survives reload, page restored by Back from an item, tampered URL, bulk bar, filter panel by width, cards in portrait, axe) on all three projects, three repeats.
+  - Left for the pharmacy domain issue: the dispense queue's Today and Backlog tabs need a "scopes" option on `ListPage` that keeps real tab semantics; the queue design keeps its own markup until then.
 - [ ] **14. Entry form (L).** `EntryForm.vue` and `useEntryForm.ts`, page and dialog hosts.
   - AC: the B contract; unsaved changes prompt on route leave, dialog close and reload, and not after a successful save; focused field and error summary stay visible with the on-screen keyboard; numeric fields set `inputmode`.
 - [ ] **15. Detail with tabs (L).** `DetailPage.vue`.
