@@ -1,7 +1,7 @@
 # Issue 41 — Archetype kit v1: list, entry form, detail with tabs, worklist
 
 Issue: #41 · Parent: #33 · ADR-0009, ADR-0010, ADR-0002 (amended), ADR-0007 · Branch: `41-archetype-kit` from `svsh_branch`
-Status: **plan approved by owner (2026-11-13); Phases 0 to 2 done, all designs approved; Phases 3 and the shell (task 10) done, menu approved; tasks 11 to 14 done; task 15 next**
+Status: **plan approved by owner (2026-11-13); Phases 0 to 2 done, all designs approved; Phases 3 and the shell (task 10) done, menu approved; tasks 11 to 15 done; task 16 next**
 
 Blocked by #93, #94 and #95, which are all closed (PRs #96, #97, #100). #42 (auth) and every domain issue (#45–#67) are blocked by this one.
 
@@ -214,8 +214,10 @@ Complexity: S under 30 min, M under 2 h, L more than one session.
   - Done: `useEntryForm()` gives `field(name, { label, as, rules, initial, validateOn })`, `submit(handler)`, `errors`, `dirty`, `saving`, `confirmDiscard()` and `bindSummary`. The message name defaults to the field's `name`, as vee-validate 2 used the input's `name` unless `data-vv-as` was set (`as`). `validateOn: 'blur'` matches legacy `data-vv-validate-on="blur"`. Submit runs the view's handler only when valid, ignores a second submit while saving, and clears the unsaved state only after the handler succeeds. Unsaved changes ask through `useConfirm` on route leave (`onBeforeRouteLeave`), cancel and dialog close (new `KitDialog` `beforeClose`), and through the browser on reload. `EntryForm.vue` renders the page or dialog frame, the error summary and the action bar.
   - **Found while checking the exemplar against legacy:** `CreateStoreItem.vue` validates only drug, expiration, quantity, unit, unit_price, selling_price, date_received and vendor; dosage form, strength, strength unit and route show `*` but are never checked. My first design had invented rules for those four; the design now enforces exactly the legacy eight with legacy names and blur timing. The misleading `*` on unvalidated fields is a legacy defect for the owner to rule on in #55.
   - Tests: `__tests__/useEntryForm.spec.ts` (5: exact rules and messages, handler gets exactly the bound values, one save while saving, dirty cleared after success, kept after failure) and `e2e/archetype-form.spec.ts` (summary focus and field jump, legacy messages, `inputmode`, cancel asks and Keep editing keeps, untouched cancel doesn't ask, reload warning only when dirty, blur validation, sticky action bar, dialog form: saves only when valid, close button and Escape ask, untouched closes) on all three projects, three repeats.
-- [ ] **15. Detail with tabs (L).** `DetailPage.vue`.
+- [x] **15. Detail with tabs (L).** `DetailPage.vue`.
   - AC: the C contract.
+  - Done: `src/components/archetypes/DetailPage.vue` with `title`, `tabs` (`value`, `label`, `lazy`, `hidden`, `disabled`), `tabsLabel`, optional `backLabel` and record pager (`position`, `total`, `noun`); slots `before`, `meta`, `actions`, `summary`, `panel-<value>`. The open tab is in the URL (`tab`), tampered or hidden values fall back to the first tab, hidden tabs are not rendered. Lazy panels mount on first open, so a panel component's own loader runs then. The store item design runs on it with History as its own loading component.
+  - Tests: `__tests__/DetailPage.spec.ts` (5: lazy loader not called before open, URL tab, tampered and hidden fallback, hidden not rendered, click writes URL) and `e2e/archetype-detail.spec.ts` (header and axe, History loads on open and survives reload, arrow keys, tampered tab, back link) on all three projects.
 - [ ] **16. Worklist with detail pane (L).** `WorklistPage.vue`.
   - AC: the D contract, including the portrait list-then-item flow with a way back that keeps the list position.
 
