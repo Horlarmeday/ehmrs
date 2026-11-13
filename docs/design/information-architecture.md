@@ -42,12 +42,12 @@ Built in #41 (`client-vue3/src/view/layout/navigation.ts`) by copying each role'
 
 | Role | Menu |
 | --- | --- |
-| Super Admin | Home, Patients, Worklists, Programs, Laboratory, Radiology, Pharmacy, Stock, Insurance, Orders, Reports, Administration |
-| Admin | Home, Patients, Worklists, Programs, Laboratory, Radiology, Pharmacy, Stock, Insurance, Orders, Reports, Administration |
+| Super Admin | Home, Patients, Worklists, Programs, Laboratory, Radiology, Pharmacy, Stock, Insurance, Finance, Orders, Reports, Administration |
+| Admin | Home, Patients, Worklists, Programs, Laboratory, Radiology, Pharmacy, Stock, Insurance, Finance, Orders, Reports, Administration |
 | Medical Records (and any unknown role) | Home, Patients, Worklists, Programs |
-| Customer Care | Home, Patients, Inpatients, Radiology, Pharmacy |
+| Customer Care | Home, Patients, Inpatients, Pharmacy |
 | NHIS | Home, Insurance |
-| Finance Officer | Home, Laboratory, Finance, Reports |
+| Finance Officer | Home, Finance, Reports |
 | General Practitioner | Home, Worklists, Inpatients, Programs |
 | Specialists (15 roles) | Home, Worklists, Inpatients, Programs |
 | Laboratory | Home, Laboratory, Reports |
@@ -62,21 +62,24 @@ Built in #41 (`client-vue3/src/view/layout/navigation.ts`) by copying each role'
 | Nurse, Children Ward | Home, Inpatients, Programs |
 | Nurse, Maternity | Home, Inpatients |
 | Nurse, ANC | Home, Programs |
-| Nurse, Theater | Home, Inpatients, Radiology |
+| Nurse, Theater | Home, Inpatients |
 | Nurse, HOD | Home, Worklists, Inpatients, Programs, Administration |
 | Nurse, Accident & Emergency | Home, Inpatients |
 | Nurse, VIP/Private | Home, Inpatients |
 | Nurse, any other sub-role | Home |
 
-Carried over from legacy as they are, waiting for the owner's decision:
+Owner decisions on the legacy tiles (2026-11-14), applied in `ownerMenuChanges`:
 
-- **Finance Officer** reaches Laboratory through tiles named Financial History, Insurance Claims and Transactions that point at lab pages, which the workflow map already flagged as a likely copy error.
-- **Customer Care** and **Nurse, Theater** reach Radiology through a tile named Statistics that points at radiology approvals.
+- **Finance Officer** loses Laboratory: its Financial History, Insurance Claims and Transactions tiles pointed at lab pages, a copy error.
+- **Customer Care** and **Nurse, Theater** lose Radiology: their Statistics tile pointed at radiology approvals.
+- **Admin and Super Admin** gain Finance (transactions), as the navigation table says, although their legacy dashboards had no tile for it.
+
+Kept as in legacy, approved by the owner:
+
 - **Nurse, HOD** reaches Administration only for the Nurses list.
-- **Orders** is its own section, because the route table places `/orders` there although the navigation table above doesn't list it.
+- **Orders** is its own section, because the route table places `/orders` there.
 - **A nurse with any other sub-role** sees only Home, as the legacy dashboard shows nothing.
 - **Reports** is hidden for most roles because their Reports tile points at a missing page.
-- **Admin and Super Admin** don't get Finance: neither legacy dashboard has a transactions tile, although the navigation table above lists Finance for admins.
 
 ## Patient chart
 

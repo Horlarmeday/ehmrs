@@ -54,10 +54,21 @@ describe('role menu', () => {
       'Pharmacy',
       'Stock',
       'Insurance',
+      'Finance',
       'Orders',
       'Reports',
       'Administration',
     ]);
+  });
+
+  it('applies the owner’s changes to the legacy tiles', () => {
+    expect(labels('Finance Officer')).toEqual(['Home', 'Finance', 'Reports']);
+    expect(labels('Customer Care')).toEqual(['Home', 'Patients', 'Inpatients', 'Pharmacy']);
+    expect(labels('Nurse', 'Theater')).toEqual(['Home', 'Inpatients']);
+    expect(menuFor('Admin').find((entry) => entry.id === 'finance')?.to).toBe(
+      '/account/transactions'
+    );
+    expect(labels('Admin')).toContain('Finance');
   });
 
   it('links each section to the role’s first legacy page in it', () => {

@@ -1,7 +1,7 @@
 # Issue 41 — Archetype kit v1: list, entry form, detail with tabs, worklist
 
 Issue: #41 · Parent: #33 · ADR-0009, ADR-0010, ADR-0002 (amended), ADR-0007 · Branch: `41-archetype-kit` from `svsh_branch`
-Status: **plan approved by owner (2026-11-13); Phases 0 to 2 done, all designs approved; Phases 3 and the shell (task 10) done; menu table waiting for owner review; task 11 next**
+Status: **plan approved by owner (2026-11-13); Phases 0 to 2 done, all designs approved; Phases 3 and the shell (task 10) done, menu approved; task 11 next**
 
 Blocked by #93, #94 and #95, which are all closed (PRs #96, #97, #100). #42 (auth) and every domain issue (#45–#67) are blocked by this one.
 
@@ -180,7 +180,7 @@ Complexity: S under 30 min, M under 2 h, L more than one session.
 
 - [x] **10. App shell (L).** Per the shell section.
   - AC: skip link and landmarks; `/` ignored while typing; focus to the heading on route change; drawer on tablet traps focus and closes on Escape and on navigation; prototypes run on the shell and their specs pass.
-  - Done. `src/view/layout/Layout.vue` wraps every signed-in route in `AppShell`; `App.vue` mounts `KitConfirmHost` once. Menu by role (owner decision: built here from the legacy dashboard tiles) in `src/view/layout/navigation.ts`, with the generated table and the legacy oddities it keeps in `docs/design/information-architecture.md` ("Menu by role"), waiting for owner review. Patient search sends `?search=` to `/patient/find-patient`, which that page already reads. Sign-out calls `logoutSession` then goes to `/auth/login`, as legacy does. Page title follows the current section; focus moves to the page heading (or `main`) on route change.
+  - Done. `src/view/layout/Layout.vue` wraps every signed-in route in `AppShell`; `App.vue` mounts `KitConfirmHost` once. Menu by role (owner decision: built here from the legacy dashboard tiles) in `src/view/layout/navigation.ts`, with the generated table and the legacy oddities it keeps in `docs/design/information-architecture.md` ("Menu by role"), approved by the owner on 2026-11-14 with three changes (Finance Officer loses Laboratory, Customer Care and Theater nurses lose Radiology, admins gain Finance), kept in `ownerMenuChanges` beside the untouched legacy tiles. Patient search sends `?search=` to `/patient/find-patient`, which that page already reads. Sign-out calls `logoutSession` then goes to `/auth/login`, as legacy does. Page title follows the current section; focus moves to the page heading (or `main`) on route change.
   - Ported `parseJwt` to `src/common/jwt.ts`. **Deviation:** it returns `null` for a missing or malformed token instead of throwing, and decodes base64url and non-ASCII names correctly (legacy `atob` fails on both).
   - `AppShell` got `autofocusSearch` (off by default, ignored on touch); the search box is now one `<label>`, so a tap anywhere in it focuses the field (the size check found the input was 21px).
   - Patient prototype moved onto `AppShell` and `menuFor`; portrait shows cards; the role reason is visible text instead of a `title`; `patient-desk.spec.ts` runs on all three projects.

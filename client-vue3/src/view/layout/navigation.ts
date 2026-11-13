@@ -293,6 +293,19 @@ export function dashboardFor(role?: string, subRole?: string): string | null {
   return (role && roleDashboards[role]) ?? 'medicalRecords';
 }
 
+export interface MenuChange {
+  remove?: SectionId[];
+  add?: Array<{ section: SectionId; to: string }>;
+}
+
+export const ownerMenuChanges: Record<string, MenuChange> = {
+  financeOfficer: { remove: ['laboratory'] },
+  customerCare: { remove: ['radiology'] },
+  nurseTheater: { remove: ['radiology'] },
+  admin: { add: [{ section: 'finance', to: '/account/transactions' }] },
+  superAdmin: { add: [{ section: 'finance', to: '/account/transactions' }] },
+};
+
 export interface MenuEntry extends Section {
   to: string;
 }
@@ -304,6 +317,11 @@ export function menuFor(role?: string, subRole?: string): MenuEntry[] {
   for (const tile of tiles) {
     const section = sectionOf(tile);
     if (section && !firstTile.has(section)) firstTile.set(section, tile);
+  }
+  const change = dashboard ? ownerMenuChanges[dashboard] : undefined;
+  for (const section of change?.remove ?? []) firstTile.delete(section);
+  for (const entry of change?.add ?? []) {
+    if (!firstTile.has(entry.section)) firstTile.set(entry.section, entry.to);
   }
   return sections
     .filter((section) => firstTile.has(section.id))
