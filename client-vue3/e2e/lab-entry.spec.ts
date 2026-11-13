@@ -4,7 +4,7 @@ import { expectNoSeriousA11yIssues, heightOf } from './helpers';
 
 test.skip(
   ({ hasTouch }) => hasTouch,
-  'legacy-layout FBC page, kept as a desktop keyboard test only; touch sizes are checked in touch-targets.spec.ts'
+  'legacy-layout FBC page, kept as a desktop keyboard test only; touch sizes are checked in targets.spec.ts'
 );
 
 const allRows = [...rows, ...differentialRows, ...morphologyRows];

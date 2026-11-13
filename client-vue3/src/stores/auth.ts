@@ -38,7 +38,7 @@ export const useAuthStore = defineStore('auth', {
           data: staff,
           method: 'POST',
         })
-          .then(response => {
+          .then((response) => {
             const token = response.data.data;
             localStorage.setItem('user_token', token);
 
@@ -46,7 +46,7 @@ export const useAuthStore = defineStore('auth', {
             this.auth_success(token);
             resolve(response);
           })
-          .catch(err => {
+          .catch((err) => {
             this.auth_error();
             localStorage.removeItem('user_token');
             reject(err);
@@ -61,7 +61,7 @@ export const useAuthStore = defineStore('auth', {
           data: user,
           method: 'POST',
         })
-          .then(response => {
+          .then((response) => {
             const token = response.data.token;
             const user = response.data.data;
             void user;
@@ -70,7 +70,7 @@ export const useAuthStore = defineStore('auth', {
             this.auth_success(token);
             resolve(response);
           })
-          .catch(err => {
+          .catch((err) => {
             this.auth_error();
             localStorage.removeItem('user_token');
             reject(err);
@@ -85,19 +85,19 @@ export const useAuthStore = defineStore('auth', {
           data: phone,
           method: 'POST',
         })
-          .then(response => {
+          .then((response) => {
             const user = response.data.data;
             this.auth_success(user);
             resolve(response);
           })
-          .catch(err => {
+          .catch((err) => {
             this.auth_error();
             reject(err);
           });
       });
     },
     logoutSession() {
-      return new Promise(resolve => {
+      return new Promise((resolve) => {
         this.logout();
         localStorage.removeItem('user_token');
         delete axios.defaults.headers.common['authorization'];

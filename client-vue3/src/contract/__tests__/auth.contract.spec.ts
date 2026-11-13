@@ -21,7 +21,10 @@ defineContractSuite({
       snapshot: (store) => ({ status: store.status, token: store.token }),
       expectSnapshot: (scenario) => ({
         status: scenario.response.status >= 400 ? 'error' : 'success',
-        token: scenario.response.status >= 400 ? '' : (stringField(scenario.response.body, 'data') ?? ''),
+        token:
+          scenario.response.status >= 400
+            ? ''
+            : (stringField(scenario.response.body, 'data') ?? ''),
       }),
       effects: (scenario) => {
         const expected =
@@ -29,7 +32,9 @@ defineContractSuite({
         const actual = localStorage.getItem('user_token');
         return expected === actual
           ? []
-          : [`localStorage.user_token: expected ${JSON.stringify(expected)} got ${JSON.stringify(actual)}`];
+          : [
+              `localStorage.user_token: expected ${JSON.stringify(expected)} got ${JSON.stringify(actual)}`,
+            ];
       },
     },
   ],

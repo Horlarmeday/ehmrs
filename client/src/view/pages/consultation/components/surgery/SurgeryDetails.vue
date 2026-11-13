@@ -7,7 +7,7 @@
           <th scope="col">Notes</th>
           <th scope="col">Requested By</th>
           <th scope="col">Date</th>
-          <th scope="col"></th>
+          <th scope="col">Operation Notes</th>
         </tr>
       </thead>
       <tbody>
@@ -19,9 +19,14 @@
           </td>
           <td>{{ surgery.createdAt | dayjs('ddd, MMM Do YYYY, h:mma') }}</td>
           <td>
-            <a v-b-tooltip.hover title="View details" href="#"
-              ><i class="flaticon-menu-1 icon-md text-dark"></i
-            ></a>
+            <router-link
+              v-b-tooltip.hover
+              title="Add Operation Notes"
+              :to="`/surgery/requests/${surgery.visit_id}?surgery=${surgery.id}`"
+              class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
+            >
+              <arrow-right-icon />
+            </router-link>
           </td>
         </tr>
       </tbody>
@@ -30,7 +35,10 @@
 </template>
 
 <script>
+import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
+
 export default {
+  components: { ArrowRightIcon },
   props: {
     surgery: {
       type: Object,

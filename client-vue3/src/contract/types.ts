@@ -35,9 +35,12 @@ export function stringField(source: unknown, key: string): string | undefined {
   return undefined;
 }
 
-export function jsonBody(value: unknown): Record<string, unknown> | unknown[] | string | number | boolean | undefined {
+export function jsonBody(
+  value: unknown
+): Record<string, unknown> | unknown[] | string | number | boolean | undefined {
   if (value === null || value === undefined) return undefined;
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value;
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')
+    return value;
   if (Array.isArray(value)) return value;
   if (typeof value === 'object') {
     // eslint-disable-next-line no-restricted-syntax -- single sanctioned boundary conversion, runtime-checked above
@@ -46,25 +49,21 @@ export function jsonBody(value: unknown): Record<string, unknown> | unknown[] | 
   return undefined;
 }
 
-export function describeMismatch(
-  expected: unknown,
-  actual: unknown,
-  path = 'value',
-): string[] {
+export function describeMismatch(expected: unknown, actual: unknown, path = 'value'): string[] {
   if (expected === actual) return [];
   if (
-    typeof expected === 'object' && expected !== null && !Array.isArray(expected) &&
-    typeof actual === 'object' && actual !== null && !Array.isArray(actual)
+    typeof expected === 'object' &&
+    expected !== null &&
+    !Array.isArray(expected) &&
+    typeof actual === 'object' &&
+    actual !== null &&
+    !Array.isArray(actual)
   ) {
     const out: string[] = [];
     const keys = new Set([...Object.keys(expected), ...Object.keys(actual)]);
     for (const k of keys) {
       out.push(
-        ...describeMismatch(
-          Reflect.get(expected, k),
-          Reflect.get(actual, k),
-          `${path}.${k}`,
-        ),
+        ...describeMismatch(Reflect.get(expected, k), Reflect.get(actual, k), `${path}.${k}`)
       );
     }
     return out;

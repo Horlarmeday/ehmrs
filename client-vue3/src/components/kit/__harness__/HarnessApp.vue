@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ArchetypesDesign from '../../../prototypes/archetypes/ArchetypesDesign.vue';
 import ControlsView from './ControlsView.vue';
 import FbcEntryView from './FbcEntryView.vue';
 import DisplayView from './DisplayView.vue';
@@ -13,7 +14,8 @@ const view = new URLSearchParams(window.location.search).get('view');
 </script>
 
 <template>
-  <PatientDesk v-if="view === 'patient-desk'" />
+  <ArchetypesDesign v-if="view === 'archetypes'" />
+  <PatientDesk v-else-if="view === 'patient-desk'" />
   <LabDesk v-else-if="view === 'lab-desk'" />
   <main v-else class="min-h-screen bg-surface-page p-4 text-sm text-ink">
     <h1 class="mb-4 text-xl font-semibold">Kit harness</h1>

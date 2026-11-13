@@ -6,7 +6,8 @@ import { notifyError, notifySuccess } from '../common/notify';
 const TOKEN_KEY = 'user_token';
 const SAFE_COLOR = /^#[0-9a-f]{3,8}$|^[a-z]+$/i;
 
-const calculatePercentage = (loaded: number, total: number | undefined) => Math.floor((loaded * 1.0) / (total ?? 0));
+const calculatePercentage = (loaded: number, total: number | undefined) =>
+  Math.floor((loaded * 1.0) / (total ?? 0));
 
 axios.defaults.onDownloadProgress = (e) => {
   const percentage = calculatePercentage(e.loaded, e.total);
@@ -45,7 +46,7 @@ axios.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  },
+  }
 );
 axios.interceptors.response.use(
   (response) => {
@@ -70,7 +71,7 @@ axios.interceptors.response.use(
     }
     notifyError(error);
     return Promise.reject(error.message);
-  },
+  }
 );
 
 export default axios;

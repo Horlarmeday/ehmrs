@@ -98,7 +98,9 @@ describe('interceptor contract (corpus: auth + synthetic)', () => {
 
       if (isError) {
         expect(recorded.resolved, 'error response rejects').toBe(false);
-        expect(NProgress.done, 'NProgress.done(true) immediate on error').toHaveBeenCalledWith(true);
+        expect(NProgress.done, 'NProgress.done(true) immediate on error').toHaveBeenCalledWith(
+          true
+        );
         expect(toasts, 'error toast content').toEqual([
           {
             title: 'Error message',
@@ -106,7 +108,9 @@ describe('interceptor contract (corpus: auth + synthetic)', () => {
             type: 'error',
           },
         ]);
-        expect(recorded.rejection, 'rejects with error.response.data').toEqual(scenario.response.body);
+        expect(recorded.rejection, 'rejects with error.response.data').toEqual(
+          scenario.response.body
+        );
 
         if (status === 401) {
           const store = useAuthStore();
@@ -125,9 +129,11 @@ describe('interceptor contract (corpus: auth + synthetic)', () => {
                   type: 'success',
                 },
               ]
-            : [],
+            : []
         );
-        expect(NProgress.done, 'NProgress.done(true) immediate on success').toHaveBeenCalledWith(true);
+        expect(NProgress.done, 'NProgress.done(true) immediate on success').toHaveBeenCalledWith(
+          true
+        );
       }
 
       expect(replay.result().failures, 'no contract drift').toEqual([]);
@@ -153,5 +159,4 @@ describe('interceptor contract (corpus: auth + synthetic)', () => {
       { title: 'Error message', text: undefined, type: 'error' },
     ]);
   });
-
 });

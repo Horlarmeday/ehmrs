@@ -11,6 +11,8 @@ export interface KitColumn {
   mono?: boolean;
   compact?: boolean;
   sortable?: boolean;
+  sticky?: boolean;
+  hideBelow?: 'md' | 'lg' | 'xl';
 }
 
 export interface KitSort {
@@ -34,6 +36,7 @@ const props = withDefaults(
     rowLabel?: (row: TRow) => string;
     emptyText?: string;
     skeletonRows?: number;
+    minWidth?: string;
   }>(),
   {
     groupKey: undefined,
@@ -46,6 +49,7 @@ const props = withDefaults(
     rowLabel: undefined,
     emptyText: 'No records found',
     skeletonRows: 5,
+    minWidth: undefined,
   }
 );
 
@@ -94,13 +98,29 @@ function setAll(value: boolean): void {
 
 const labelFor = (row: TRow): string =>
   props.rowLabel ? props.rowLabel(row) : `Select ${String(row[props.rowKey])}`;
+const hideClasses = {
+  md: 'hidden md:table-cell',
+  lg: 'hidden lg:table-cell',
+  xl: 'hidden xl:table-cell',
+};
+const hasSticky = computed(() => props.columns.some((column) => column.sticky));
+const selectCell = computed(() =>
+  hasSticky.value ? 'sticky left-0 z-[5] w-[56px] min-w-[56px] bg-inherit' : 'w-8'
+);
+function placement(column: KitColumn): string[] {
+  return [
+    column.hideBelow ? hideClasses[column.hideBelow] : '',
+    column.sticky ? `sticky z-[5] bg-inherit ${props.selectable ? 'left-[56px]' : 'left-0'}` : '',
+  ];
+}
 const headCell =
-  'sticky top-0 z-10 border-b border-line-subtle bg-surface-page px-3 py-[9px] text-xs font-medium text-ink-muted';
+  'sticky top-0 z-10 whitespace-nowrap border-b border-line-subtle bg-surface-page px-3 py-[9px] text-xs font-medium text-ink-muted';
 function cellClasses(column: KitColumn): string[] {
   return [
     column.compact ? 'border-b border-line-subtle px-3 py-0' : bodyCell.value,
-    column.numeric ? 'text-right font-mono tabular-nums' : '',
-    column.mono ? 'font-mono tabular-nums' : '',
+    column.numeric ? 'whitespace-nowrap text-right font-mono tabular-nums' : '',
+    column.mono ? 'whitespace-nowrap font-mono tabular-nums' : '',
+    ...placement(column),
   ];
 }
 
@@ -125,6 +145,7 @@ const bodyCell = computed(
     >
       <table
         class="w-full border-separate border-spacing-0"
+        :style="minWidth ? { minWidth } : undefined"
         :aria-busy="loading ? 'true' : 'false'"
       >
         <caption class="sr-only">
@@ -134,7 +155,7 @@ const bodyCell = computed(
         </caption>
         <thead>
           <tr>
-            <th v-if="selectable" scope="col" class="w-8" :class="headCell">
+            <th v-if="selectable" scope="col" :class="[headCell, selectCell]">
               <KitCheckbox
                 :model-value="allSelected"
                 :indeterminate="selectedOnPage > 0 && !allSelected"
@@ -149,7 +170,12 @@ const bodyCell = computed(
               :key="column.id"
               scope="col"
               :aria-sort="column.sortable ? ariaSort(column.id) : undefined"
-              :class="[headCell, column.numeric ? 'text-right' : 'text-left']"
+              :class="[
+                headCell,
+                column.numeric ? 'text-right' : 'text-left',
+                ...placement(column),
+                column.sticky ? 'z-20 bg-surface-page' : '',
+              ]"
             >
               <button
                 v-if="column.sortable"
@@ -209,10 +235,17 @@ const bodyCell = computed(
             </tr>
             <tr
               v-else
-              :class="[rowHeight, isSelected(row) ? 'bg-teal-100' : 'hover:bg-surface-alt']"
+              :class="[
+                rowHeight,
+                isSelected(row) ? 'bg-teal-100' : 'bg-surface-page hover:bg-surface-alt',
+              ]"
               data-testid="table-row"
             >
-              <td v-if="selectable" class="border-b border-line-subtle px-3 py-0">
+              <td
+                v-if="selectable"
+                class="border-b border-line-subtle px-3 py-0"
+                :class="selectCell"
+              >
                 <KitCheckbox
                   :model-value="isSelected(row)"
                   :label="labelFor(row)"

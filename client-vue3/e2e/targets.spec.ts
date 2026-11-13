@@ -1,8 +1,10 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
-const MIN = 44;
+const press = (locator: Locator, hasTouch: boolean) => (hasTouch ? locator.tap() : locator.click());
 
-async function smallTargets(page: Page): Promise<string[]> {
+const minimum = (hasTouch: boolean) => (hasTouch ? 44 : 24);
+
+async function smallTargets(page: Page, min: number): Promise<string[]> {
   return page.evaluate((min) => {
     const selector = [
       'button',
@@ -75,46 +77,44 @@ async function smallTargets(page: Page): Promise<string[]> {
       }
     }
     return failures;
-  }, MIN);
+  }, min);
 }
-
-test.skip(({ hasTouch }) => !hasTouch, 'touch target sizes apply to touch screens only');
 
 const views = ['controls', 'pickers', 'validation', 'table', 'display', 'overlays', 'fbc'];
 
 for (const view of views) {
-  test(`every tap target is at least 44px on the ${view} view`, async ({ page }) => {
+  test(`every target meets the size rule on the ${view} view`, async ({ page, hasTouch }) => {
     await page.goto(`/kit-harness.html?view=${view}`);
     await page.waitForLoadState('networkidle');
-    expect(await smallTargets(page)).toEqual([]);
+    expect(await smallTargets(page, minimum(hasTouch))).toEqual([]);
   });
 }
 
-test('select options are at least 44px when open', async ({ page }) => {
+test('select options meet the size rule when open', async ({ page, hasTouch }) => {
   await page.goto('/kit-harness.html?view=pickers');
-  await page.getByRole('combobox', { name: 'Drug', exact: true }).tap();
+  await press(page.getByRole('combobox', { name: 'Drug', exact: true }), hasTouch);
   await page.keyboard.type('a');
   await expect(page.getByRole('option').first()).toBeVisible();
-  expect(await smallTargets(page)).toEqual([]);
+  expect(await smallTargets(page, minimum(hasTouch))).toEqual([]);
 });
 
-test('calendar days are at least 44px when open', async ({ page }) => {
+test('calendar days meet the size rule when open', async ({ page, hasTouch }) => {
   await page.goto('/kit-harness.html?view=pickers');
-  await page.getByRole('button', { name: /calendar/i }).tap();
+  await press(page.getByRole('button', { name: /calendar/i }), hasTouch);
   await expect(page.getByRole('dialog')).toBeVisible();
-  expect(await smallTargets(page)).toEqual([]);
+  expect(await smallTargets(page, minimum(hasTouch))).toEqual([]);
 });
 
-test('menu items are at least 44px when open', async ({ page }) => {
+test('menu items meet the size rule when open', async ({ page, hasTouch }) => {
   await page.goto('/kit-harness.html?view=overlays');
-  await page.getByRole('button', { name: 'More actions' }).tap();
+  await press(page.getByRole('button', { name: 'More actions' }), hasTouch);
   await expect(page.getByRole('menuitem').first()).toBeVisible();
-  expect(await smallTargets(page)).toEqual([]);
+  expect(await smallTargets(page, minimum(hasTouch))).toEqual([]);
 });
 
-test('dialog controls are at least 44px when open', async ({ page }) => {
+test('dialog controls meet the size rule when open', async ({ page, hasTouch }) => {
   await page.goto('/kit-harness.html?view=overlays');
-  await page.getByTestId('open-form').tap();
+  await press(page.getByTestId('open-form'), hasTouch);
   await expect(page.getByRole('dialog')).toBeVisible();
-  expect(await smallTargets(page)).toEqual([]);
+  expect(await smallTargets(page, minimum(hasTouch))).toEqual([]);
 });

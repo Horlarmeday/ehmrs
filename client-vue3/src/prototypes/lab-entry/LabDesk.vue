@@ -178,11 +178,7 @@ function setDecision(test: LabTest, value: string | undefined): void {
           </li>
         </ul>
 
-        <section
-          v-if="selected"
-          :aria-label="selected.name"
-          class="flex min-w-0 flex-col gap-4"
-        >
+        <section v-if="selected" :aria-label="selected.name" class="flex min-w-0 flex-col gap-4">
           <div>
             <h2 class="text-lg font-semibold">{{ selected.name }}</h2>
             <p class="flex gap-3 text-ink-secondary">
