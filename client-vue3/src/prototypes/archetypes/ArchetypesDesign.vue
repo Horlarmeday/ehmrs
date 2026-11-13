@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, reactive, ref } from 'vue';
+import KitConfirmHost from '../../components/kit/KitConfirmHost.vue';
 import AppShell, { type ShellNavItem } from '../../components/shell/AppShell.vue';
 import DispensePrescriptionDesign from './DispensePrescriptionDesign.vue';
 import DispenseQueueDesign from './DispenseQueueDesign.vue';
@@ -96,4 +97,5 @@ function step(by: number): void {
       @next="step(1)"
     />
   </AppShell>
+  <KitConfirmHost />
 </template>

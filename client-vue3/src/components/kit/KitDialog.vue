@@ -18,8 +18,15 @@ const props = withDefaults(
     size?: 'sm' | 'md' | 'lg' | 'xl';
     closeOnBackdrop?: boolean;
     closeOnEscape?: boolean;
+    beforeClose?: () => boolean | Promise<boolean>;
   }>(),
-  { description: undefined, size: 'md', closeOnBackdrop: false, closeOnEscape: true }
+  {
+    description: undefined,
+    size: 'md',
+    closeOnBackdrop: false,
+    closeOnEscape: true,
+    beforeClose: undefined,
+  }
 );
 
 const emit = defineEmits<{ opened: []; closed: [] }>();
@@ -64,8 +71,18 @@ function onCloseAutoFocus(event: Event) {
   restoreFocus(returnTo);
 }
 
+async function requestClose(): Promise<void> {
+  if (props.beforeClose && !(await props.beforeClose())) return;
+  open.value = false;
+}
+
+function onOpenChange(value: boolean): void {
+  if (value) open.value = true;
+  else requestClose();
+}
+
 function onOverlayClick() {
-  if (props.closeOnBackdrop) open.value = false;
+  if (props.closeOnBackdrop) requestClose();
 }
 
 function onEscapeKeyDown(event: Event) {
@@ -74,7 +91,7 @@ function onEscapeKeyDown(event: Event) {
 </script>
 
 <template>
-  <DialogRoot v-model:open="open">
+  <DialogRoot :open="open" @update:open="onOpenChange">
     <DialogPortal>
       <DialogOverlay class="fixed inset-0 z-40 bg-ink/40" @click="onOverlayClick" />
       <DialogContent

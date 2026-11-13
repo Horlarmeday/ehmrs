@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import DialogFormExample from './DialogFormExample.vue';
 import KitActionBar from '../KitActionBar.vue';
+import KitConfirmHost from '../KitConfirmHost.vue';
 import KitBackLink from '../KitBackLink.vue';
 import KitButton from '../KitButton.vue';
 import KitCardList from '../KitCardList.vue';
@@ -78,6 +80,8 @@ function submit(): void {
       </KitDrawer>
     </section>
 
+    <DialogFormExample />
+
     <section aria-label="Pager">
       <KitRecordPager
         :position="position"
@@ -148,5 +152,6 @@ function submit(): void {
         <KitButton type="submit">Save</KitButton>
       </KitActionBar>
     </form>
+    <KitConfirmHost />
   </div>
 </template>
