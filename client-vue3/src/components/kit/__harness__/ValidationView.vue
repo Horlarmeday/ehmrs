@@ -7,6 +7,7 @@ import KitCheckbox from '../KitCheckbox.vue';
 import KitDatePicker from '../KitDatePicker.vue';
 import KitFileUpload from '../KitFileUpload.vue';
 import KitInput from '../KitInput.vue';
+import KitNativeSelect from '../KitNativeSelect.vue';
 import KitRadioGroup from '../KitRadioGroup.vue';
 import KitSelect from '../KitSelect.vue';
 import KitTextarea from '../KitTextarea.vue';
@@ -32,6 +33,7 @@ const drug = useField<number | number[] | null>('drug', 'required', {
 });
 const date = useField<string | null>('date', 'required', { ...message, initialValue: null });
 const files = useField<File[]>('files', 'required', { ...message, initialValue: [] });
+const unit = useField<string | null>('unit', 'required', { ...message, initialValue: null });
 const sexes = [
   { value: 'male', label: 'Male' },
   { value: 'female', label: 'Female' },
@@ -68,6 +70,13 @@ const sexes = [
       v-model="files.value.value"
       label="Attachment"
       :error="files.errorMessage.value"
+    />
+    <KitNativeSelect
+      v-model="unit.value.value"
+      label="Unit"
+      placeholder="Choose"
+      :options="sexes"
+      :error="unit.errorMessage.value"
     />
     <KitButton type="submit">Submit</KitButton>
     <output data-testid="submitted">{{ submitted }}</output>

@@ -161,15 +161,20 @@ Complexity: S under 30 min, M under 2 h, L more than one session.
   - **Dispense flow v3, approved by owner (2026-11-13).** All design screens are now approved. `DispenseQueueDesign.vue` (50 a page, table on desktop and landscape, cards in portrait, progress as percentage of quantity dispensed) and `DispensePrescriptionDesign.vue`; the split `DispenseWorklistDesign.vue` is deleted. `KitProgress` gained `valueText`. Axe clean on every design screen at all three sizes. Screenshots: `~/Desktop/ehmrs-archetype-review-3/`.
   - Superseded: the split-pane worklist redesign below.
   - **Worklist redesign (2026-11-13), superseded.** Rebuilt from the current `pharmacy/PrescriptionDetailUpdate.vue` and `prescriptions/PrescriptionsTable.vue`, without their emoji and boxed cards: count tiles; queue search plus status and source filters; queue rows with insurance or cash, drug and item counts, source, time and a progress bar; patient header (initials, hospital number, age, sex, phone, past prescriptions); money strip (paid by, total, patient pays, payer covers); Drugs and Additional items tabs with search and status filter; per line: dispense and payment status, progress, remaining, frequency, duration, route, unit price, patient and payer share, drug type, prescriber, dispenser; inline dispense form (prefilled with what remains, 1 to remaining) and return form (quantity and required reason, Head of Department and Super Admin only in the real screen). New `KitProgress`. Shell top bar made opaque. List defaults to cards in portrait.
-- [ ] **7. Gap list (S).** From the approved designs, list missing kit pieces with their reka-ui primitive or native element.
+- [x] **7. Gap list (S).** From the approved designs, list missing kit pieces with their reka-ui primitive or native element.
   - AC: every region maps to an existing or listed component.
+  - Already built during design (tests due in tasks 8 and 9): `KitNativeSelect`, `KitDrawer` (reka Dialog), `KitPageHeader`, `KitErrorSummary`, `KitDescriptionList`, `KitProgress` (native `progress`), `useMediaQuery`, `KitTable` `sticky`/`hideBelow`/`minWidth`, `AppShell` and `ShellIcon`.
+  - Still to add, all on native elements: `KitCardList` (portrait cards with selection, loading, error and empty states), `KitStatGrid` (count tiles and money strip), `KitRecordPager` (Previous, position, Next), `KitBackLink`, `KitFormSection` (heading plus responsive field grid), `KitActionBar` (sticky form actions).
+  - Not kit components: the initials avatar (a decorative span) and the inline dispense and return forms (pharmacy-specific, built in the pharmacy issue).
 
 ### Phase 3: kit additions
 
-- [ ] **8. Native select (M).** `KitNativeSelect`.
+- [x] **8. Native select (M).** `KitNativeSelect`.
   - AC: `v-model`, `label`, `error`, `disabled`, placeholder option, vee-validate binding, token styling, 44px on touch, axe clean, works inside `KitDialog`.
-- [ ] **9. Layout pieces (L).** Page header, empty state, description list, record banner, form section, action bar, error summary, drawer, and anything from task 7.
+  - Done: `e2e/layout.spec.ts` (model, placeholder to `null`, error tied by `aria-describedby` and `aria-invalid`, disabled, focus ring) and `e2e/validation.spec.ts` (vee-validate `required` blocks submit until chosen). Keyboard and the open list are the browser's own. Used inside `KitDrawer` on the list design; a dialog case is left to the first real screen that needs one.
+- [x] **9. Layout pieces (L).** Page header, empty state, description list, record banner, form section, action bar, error summary, drawer, and anything from task 7.
   - AC: keyboard and tap tests for interactive parts; axe clean; the error summary takes focus on a failed submit and each entry moves to its field; README updated.
+  - Done: `KitCardList`, `KitStatGrid`, `KitRecordPager`, `KitBackLink`, `KitFormSection`, `KitActionBar` added; harness page `kit-harness.html?view=layout` and `e2e/layout.spec.ts` cover them plus `KitDrawer` (focus trap, Escape, focus return, tap close), `KitProgress`, `KitDescriptionList` and `KitErrorSummary`, on desktop and both tablet sizes; the page is also in the size check. The design screens now use these components. README has a "Page structure" section. Results: lint clean, build passes, `npm test` 43/43, e2e 1230/1230 over three repeats.
 
 ### Phase 4: shell and archetypes
 

@@ -2,7 +2,7 @@
 import { computed, reactive, ref, watch } from 'vue';
 import KitBadge from '../../components/kit/KitBadge.vue';
 import KitButton from '../../components/kit/KitButton.vue';
-import KitCheckbox from '../../components/kit/KitCheckbox.vue';
+import KitCardList from '../../components/kit/KitCardList.vue';
 import KitConfirmHost from '../../components/kit/KitConfirmHost.vue';
 import KitDrawer from '../../components/kit/KitDrawer.vue';
 import KitDropdown from '../../components/kit/KitDropdown.vue';
@@ -10,7 +10,6 @@ import KitInput from '../../components/kit/KitInput.vue';
 import KitNativeSelect from '../../components/kit/KitNativeSelect.vue';
 import KitPageHeader from '../../components/kit/KitPageHeader.vue';
 import KitPagination from '../../components/kit/KitPagination.vue';
-import KitSkeleton from '../../components/kit/KitSkeleton.vue';
 import KitTable, { type KitColumn } from '../../components/kit/KitTable.vue';
 import { useConfirm } from '../../components/kit/useConfirm';
 import { useMediaQuery } from '../../components/kit/useMediaQuery';
@@ -99,15 +98,6 @@ const columns = computed<KitColumn[]>(() => {
   ];
 });
 const showCards = computed(() => props.tableMode === 'cards' && !atLeastMd.value);
-
-function isSelected(item: StockItem): boolean {
-  return selected.value.includes(item.id);
-}
-function toggle(item: StockItem, value: boolean): void {
-  selected.value = value
-    ? [...selected.value, item.id]
-    : selected.value.filter((id) => id !== item.id);
-}
 </script>
 
 <template>
@@ -208,68 +198,46 @@ function toggle(item: StockItem, value: boolean): void {
       <KitButton size="xs" severity="secondary" @click="selected = []">Clear selection</KitButton>
     </div>
 
-    <template v-if="showCards">
-      <KitSkeleton
-        v-if="table.loading.value && !table.rows.value.length"
-        variant="lines"
-        :rows="6"
-      />
-      <div
-        v-else-if="table.error.value"
-        role="alert"
-        class="flex items-center justify-between gap-2 rounded-sm bg-danger-subtle px-3 py-2 text-danger-subtle-text"
-      >
-        <span>{{ table.error.value }}</span>
-        <KitButton size="xs" severity="danger" @click="table.reload">Retry</KitButton>
-      </div>
-      <p v-else-if="!table.rows.value.length" class="py-6 text-center text-ink-secondary">
-        No items match. Try fewer filters.
-      </p>
-      <ul v-else aria-label="Store items" class="flex flex-col border-t border-line-subtle">
-        <li
-          v-for="item in table.rows.value"
-          :key="item.id"
-          class="flex items-start gap-3 border-b border-line-subtle py-3"
-          :class="isSelected(item) ? 'bg-teal-100' : ''"
-        >
-          <KitCheckbox
-            :model-value="isSelected(item)"
-            :label="`Select ${item.name}`"
-            hide-label
-            class="pl-1"
-            @update:model-value="toggle(item, $event)"
-          />
-          <div class="flex min-w-0 flex-1 flex-col gap-1">
-            <div class="flex items-center justify-between gap-2">
-              <button
-                type="button"
-                class="min-h-touch text-left font-semibold hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-                @click="emit('open', item)"
-              >
-                {{ item.name }}
-              </button>
-              <KitBadge v-if="item.quantityRemaining === 0" severity="danger"
-                >Out of stock</KitBadge
-              >
-            </div>
-            <dl class="grid grid-cols-3 gap-x-3 text-ink-secondary">
-              <div>
-                <dt class="text-xs">Remaining</dt>
-                <dd class="font-mono text-ink">{{ item.quantityRemaining }}</dd>
-              </div>
-              <div>
-                <dt class="text-xs">Selling price</dt>
-                <dd class="font-mono text-ink">{{ money(item.sellingPrice) }}</dd>
-              </div>
-              <div>
-                <dt class="text-xs">Expiry</dt>
-                <dd class="font-mono text-ink">{{ item.expiry }}</dd>
-              </div>
-            </dl>
+    <KitCardList
+      v-if="showCards"
+      v-model:selected="selected"
+      label="Store items"
+      :rows="table.rows.value"
+      row-key="id"
+      :loading="table.loading.value"
+      :error="table.error.value"
+      selectable
+      :row-label="(row) => `Select ${row.name}`"
+      empty-text="No items match. Try fewer filters."
+      @retry="table.reload"
+    >
+      <template #default="{ row }">
+        <div class="flex items-center justify-between gap-2">
+          <button
+            type="button"
+            class="min-h-xs text-left font-semibold hover:text-primary touch:min-h-touch focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+            @click="emit('open', row)"
+          >
+            {{ row.name }}
+          </button>
+          <KitBadge v-if="row.quantityRemaining === 0" severity="danger">Out of stock</KitBadge>
+        </div>
+        <dl class="grid grid-cols-3 gap-x-3 text-ink-secondary">
+          <div>
+            <dt class="text-xs">Remaining</dt>
+            <dd class="font-mono text-ink">{{ row.quantityRemaining }}</dd>
           </div>
-        </li>
-      </ul>
-    </template>
+          <div>
+            <dt class="text-xs">Selling price</dt>
+            <dd class="font-mono text-ink">{{ money(row.sellingPrice) }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs">Expiry</dt>
+            <dd class="font-mono text-ink">{{ row.expiry }}</dd>
+          </div>
+        </dl>
+      </template>
+    </KitCardList>
     <KitTable
       v-else
       v-model:selected="selected"

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import KitBackLink from '../../components/kit/KitBackLink.vue';
 import KitBadge, { type KitBadgeSeverity } from '../../components/kit/KitBadge.vue';
 import KitButton from '../../components/kit/KitButton.vue';
 import KitDialog from '../../components/kit/KitDialog.vue';
@@ -7,6 +8,8 @@ import KitInput from '../../components/kit/KitInput.vue';
 import KitNativeSelect from '../../components/kit/KitNativeSelect.vue';
 import KitPageHeader from '../../components/kit/KitPageHeader.vue';
 import KitProgress from '../../components/kit/KitProgress.vue';
+import KitRecordPager from '../../components/kit/KitRecordPager.vue';
+import KitStatGrid from '../../components/kit/KitStatGrid.vue';
 import KitTabs from '../../components/kit/KitTabs.vue';
 import { money, type PaymentStatus, type PrescribedDrug, type Prescription } from './designData';
 
@@ -70,6 +73,19 @@ const totals = computed(() => {
   const payer = props.prescription.drugs.reduce((sum, line) => sum + line.payerShare, 0);
   return { total: patient + payer, patient, payer };
 });
+const moneyStats = computed(() => [
+  {
+    label: 'Paid by',
+    value: props.prescription.insurance?.name ?? 'Cash',
+    detail: props.prescription.insurance
+      ? (props.prescription.insurance.hmo ?? 'Insurance')
+      : 'Full payment required',
+    mono: false,
+  },
+  { label: 'Total', value: money(totals.value.total) },
+  { label: 'Patient pays', value: money(totals.value.patient) },
+  { label: 'Payer covers', value: money(totals.value.payer) },
+]);
 const initials = (name: string) =>
   name
     .split(' ')
@@ -156,70 +172,21 @@ const pastPrescriptions = [
 ];
 const fact = 'flex min-w-0 flex-col gap-[2px]';
 const factLabel = 'text-xs text-ink-secondary';
-const tile = 'flex flex-col gap-1 bg-surface px-4 py-3';
-const tileLabel = 'text-xs font-medium text-ink-secondary';
-const navButton =
-  'inline-flex min-h-xs items-center gap-1 rounded-sm px-2 text-ink-secondary hover:bg-surface-alt hover:text-ink disabled:pointer-events-none disabled:text-ink-disabled touch:min-h-touch focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary';
 </script>
 
 <template>
   <div class="flex flex-col gap-5">
-    <nav aria-label="Prescription queue" class="flex flex-wrap items-center justify-between gap-2">
-      <button type="button" :class="navButton" class="-ml-2" @click="emit('back')">
-        <svg aria-hidden="true" viewBox="0 0 16 16" class="h-4 w-4" fill="none">
-          <path
-            d="M10 3.5L5.5 8l4.5 4.5"
-            stroke="currentColor"
-            stroke-width="1.75"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-        Prescriptions
-      </button>
-      <span class="flex items-center gap-1">
-        <button
-          type="button"
-          :class="navButton"
-          :disabled="position <= 1"
-          aria-label="Previous prescription"
-          @click="emit('previous')"
-        >
-          <svg aria-hidden="true" viewBox="0 0 16 16" class="h-4 w-4" fill="none">
-            <path
-              d="M10 3.5L5.5 8l4.5 4.5"
-              stroke="currentColor"
-              stroke-width="1.75"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-          Previous
-        </button>
-        <span class="px-1 text-ink-secondary" aria-live="polite">
-          <span class="font-mono text-ink">{{ position }}</span> of
-          <span class="font-mono text-ink">{{ total }}</span>
-        </span>
-        <button
-          type="button"
-          :class="navButton"
-          :disabled="position >= total"
-          aria-label="Next prescription"
-          @click="emit('next')"
-        >
-          Next
-          <svg aria-hidden="true" viewBox="0 0 16 16" class="h-4 w-4" fill="none">
-            <path
-              d="M6 3.5L10.5 8 6 12.5"
-              stroke="currentColor"
-              stroke-width="1.75"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </button>
-      </span>
-    </nav>
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <KitBackLink label="Prescriptions" @click="emit('back')" />
+      <KitRecordPager
+        :position="position"
+        :total="total"
+        noun="prescription"
+        label="Prescription queue"
+        @previous="emit('previous')"
+        @next="emit('next')"
+      />
+    </div>
 
     <KitPageHeader :title="prescription.patient">
       <template #before>
@@ -245,33 +212,7 @@ const navButton =
       </template>
     </KitPageHeader>
 
-    <dl
-      class="grid grid-cols-2 gap-px overflow-hidden rounded border border-line-subtle bg-line-subtle lg:grid-cols-4"
-    >
-      <div :class="tile">
-        <dt :class="tileLabel">Paid by</dt>
-        <dd class="font-semibold">{{ prescription.insurance?.name ?? 'Cash' }}</dd>
-        <dd class="text-xs text-ink-secondary">
-          {{
-            prescription.insurance
-              ? (prescription.insurance.hmo ?? 'Insurance')
-              : 'Full payment required'
-          }}
-        </dd>
-      </div>
-      <div :class="tile">
-        <dt :class="tileLabel">Total</dt>
-        <dd class="font-mono text-lg font-semibold">{{ money(totals.total) }}</dd>
-      </div>
-      <div :class="tile">
-        <dt :class="tileLabel">Patient pays</dt>
-        <dd class="font-mono text-lg font-semibold">{{ money(totals.patient) }}</dd>
-      </div>
-      <div :class="tile">
-        <dt :class="tileLabel">Payer covers</dt>
-        <dd class="font-mono text-lg font-semibold">{{ money(totals.payer) }}</dd>
-      </div>
-    </dl>
+    <KitStatGrid :items="moneyStats" wide-at="lg" />
 
     <p
       v-if="notice"

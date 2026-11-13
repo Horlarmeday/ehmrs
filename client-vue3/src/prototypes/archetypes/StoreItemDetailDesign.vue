@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import KitBackLink from '../../components/kit/KitBackLink.vue';
 import KitBadge from '../../components/kit/KitBadge.vue';
 import KitButton from '../../components/kit/KitButton.vue';
 import KitDescriptionList from '../../components/kit/KitDescriptionList.vue';
@@ -81,22 +82,7 @@ const more = [
   <div class="flex flex-col gap-4">
     <KitPageHeader :title="item.name">
       <template #before>
-        <button
-          type="button"
-          class="-ml-1 mb-1 inline-flex min-h-xs items-center gap-1 rounded-sm px-1 text-ink-secondary hover:text-primary touch:min-h-touch focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-          @click="emit('back')"
-        >
-          <svg aria-hidden="true" viewBox="0 0 16 16" class="h-4 w-4" fill="none">
-            <path
-              d="M10 3.5L5.5 8l4.5 4.5"
-              stroke="currentColor"
-              stroke-width="1.75"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-          Store items
-        </button>
+        <KitBackLink label="Store items" class="mb-1" @click="emit('back')" />
       </template>
       <template #meta>
         <span class="flex flex-wrap items-center gap-x-3 gap-y-1">

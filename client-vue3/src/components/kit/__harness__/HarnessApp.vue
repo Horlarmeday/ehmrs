@@ -2,6 +2,7 @@
 import ArchetypesDesign from '../../../prototypes/archetypes/ArchetypesDesign.vue';
 import ControlsView from './ControlsView.vue';
 import FbcEntryView from './FbcEntryView.vue';
+import LayoutView from './LayoutView.vue';
 import DisplayView from './DisplayView.vue';
 import LabDesk from '../../../prototypes/lab-entry/LabDesk.vue';
 import PatientDesk from '../../../prototypes/patient-desk/PatientDesk.vue';
@@ -25,6 +26,7 @@ const view = new URLSearchParams(window.location.search).get('view');
     <TableView v-else-if="view === 'table'" />
     <DisplayView v-else-if="view === 'display'" />
     <OverlaysView v-else-if="view === 'overlays'" />
+    <LayoutView v-else-if="view === 'layout'" />
     <ControlsView v-else />
   </main>
 </template>

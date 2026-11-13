@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, useTemplateRef } from 'vue';
 import { useField, useForm } from 'vee-validate';
+import KitActionBar from '../../components/kit/KitActionBar.vue';
 import KitButton from '../../components/kit/KitButton.vue';
 import KitConfirmHost from '../../components/kit/KitConfirmHost.vue';
 import KitDatePicker from '../../components/kit/KitDatePicker.vue';
+import KitFormSection from '../../components/kit/KitFormSection.vue';
 import KitErrorSummary, { type KitFieldError } from '../../components/kit/KitErrorSummary.vue';
 import KitInput from '../../components/kit/KitInput.vue';
 import KitNativeSelect from '../../components/kit/KitNativeSelect.vue';
@@ -116,10 +118,6 @@ async function cancel(): Promise<void> {
   }
   emit('done');
 }
-
-const section = 'flex flex-col gap-3 border-t border-line-subtle pt-4';
-const heading = 'text-md font-semibold';
-const grid = 'grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2 xl:grid-cols-3';
 </script>
 
 <template>
@@ -143,144 +141,133 @@ const grid = 'grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2 xl:grid-cols-3';
       Item saved. This is a design screen, so nothing was sent.
     </p>
 
-    <section :class="section" aria-labelledby="item-heading">
-      <h2 id="item-heading" :class="heading">Item</h2>
-      <div :class="grid">
-        <div data-field="drug" class="sm:col-span-2 xl:col-span-1">
-          <KitSelect
-            v-model="drug.value.value"
-            label="Generic drug *"
-            placeholder="Search generic drugs"
-            :search="searchDrugs"
-            :error="drug.errorMessage.value"
-          />
-        </div>
-        <div data-field="dosage_form">
-          <KitNativeSelect
-            v-model="dosageForm.value.value"
-            label="Dosage form *"
-            placeholder="Choose"
-            :options="options(dosageForms)"
-            :error="dosageForm.errorMessage.value"
-          />
-        </div>
-        <div data-field="route">
-          <KitNativeSelect
-            v-model="route.value.value"
-            label="Route of administration *"
-            placeholder="Choose"
-            :options="options(routes)"
-            :error="route.errorMessage.value"
-          />
-        </div>
-        <div data-field="strength_input">
-          <KitInput
-            v-model="strength.value.value"
-            label="Strength *"
-            inputmode="decimal"
-            numeric
-            :error="strength.errorMessage.value"
-          />
-        </div>
-        <div data-field="strength">
-          <KitNativeSelect
-            v-model="strengthUnit.value.value"
-            label="Strength unit *"
-            placeholder="Choose"
-            :options="options(strengthUnits)"
-            :error="strengthUnit.errorMessage.value"
-          />
-        </div>
-        <div data-field="brand">
-          <KitInput v-model="brand.value.value" label="Brand" />
-        </div>
+    <KitFormSection title="Item">
+      <div data-field="drug" class="sm:col-span-2 xl:col-span-1">
+        <KitSelect
+          v-model="drug.value.value"
+          label="Generic drug *"
+          placeholder="Search generic drugs"
+          :search="searchDrugs"
+          :error="drug.errorMessage.value"
+        />
       </div>
-    </section>
-
-    <section :class="section" aria-labelledby="batch-heading">
-      <h2 id="batch-heading" :class="heading">Batch and supplier</h2>
-      <div :class="grid">
-        <div data-field="vendor">
-          <KitNativeSelect
-            v-model="vendor.value.value"
-            label="Vendor *"
-            placeholder="Choose"
-            :options="options(vendors)"
-            :error="vendor.errorMessage.value"
-          />
-        </div>
-        <div data-field="batch"><KitInput v-model="batch.value.value" label="Batch number" /></div>
-        <div data-field="expiration">
-          <KitDatePicker
-            v-model="expiration.value.value"
-            label="Expiry date *"
-            :error="expiration.errorMessage.value"
-          />
-        </div>
-        <div data-field="date_received">
-          <KitDatePicker
-            v-model="dateReceived.value.value"
-            label="Date received *"
-            :error="dateReceived.errorMessage.value"
-          />
-        </div>
-        <div data-field="product_code">
-          <KitInput v-model="productCode.value.value" label="Product code" />
-        </div>
-        <div data-field="voucher">
-          <KitInput v-model="voucher.value.value" label="Voucher or reference number" />
-        </div>
+      <div data-field="dosage_form">
+        <KitNativeSelect
+          v-model="dosageForm.value.value"
+          label="Dosage form *"
+          placeholder="Choose"
+          :options="options(dosageForms)"
+          :error="dosageForm.errorMessage.value"
+        />
       </div>
-    </section>
-
-    <section :class="section" aria-labelledby="price-heading">
-      <h2 id="price-heading" :class="heading">Quantity and price</h2>
-      <div :class="grid">
-        <div data-field="quantity">
-          <KitInput
-            v-model="quantity.value.value"
-            label="Quantity *"
-            inputmode="numeric"
-            numeric
-            :error="quantity.errorMessage.value"
-          />
-        </div>
-        <div data-field="unit">
-          <KitNativeSelect
-            v-model="unit.value.value"
-            label="Unit *"
-            placeholder="Choose"
-            :options="options(units)"
-            :error="unit.errorMessage.value"
-          />
-        </div>
-        <div data-field="unit_price">
-          <KitInput
-            v-model="unitPrice.value.value"
-            label="Unit price (₦) *"
-            inputmode="decimal"
-            numeric
-            :error="unitPrice.errorMessage.value"
-          />
-        </div>
-        <div data-field="selling_price">
-          <KitInput
-            v-model="sellingPrice.value.value"
-            label="Selling price (₦) *"
-            inputmode="decimal"
-            numeric
-            :error="sellingPrice.errorMessage.value"
-          />
-        </div>
+      <div data-field="route">
+        <KitNativeSelect
+          v-model="route.value.value"
+          label="Route of administration *"
+          placeholder="Choose"
+          :options="options(routes)"
+          :error="route.errorMessage.value"
+        />
       </div>
-    </section>
+      <div data-field="strength_input">
+        <KitInput
+          v-model="strength.value.value"
+          label="Strength *"
+          inputmode="decimal"
+          numeric
+          :error="strength.errorMessage.value"
+        />
+      </div>
+      <div data-field="strength">
+        <KitNativeSelect
+          v-model="strengthUnit.value.value"
+          label="Strength unit *"
+          placeholder="Choose"
+          :options="options(strengthUnits)"
+          :error="strengthUnit.errorMessage.value"
+        />
+      </div>
+      <div data-field="brand">
+        <KitInput v-model="brand.value.value" label="Brand" />
+      </div>
+    </KitFormSection>
 
-    <div
-      class="sticky bottom-0 z-10 -mx-4 flex justify-end gap-2 border-t border-line-subtle bg-surface-page px-4 py-3 xl:-mx-[30px] xl:px-[30px]"
-    >
+    <KitFormSection title="Batch and supplier">
+      <div data-field="vendor">
+        <KitNativeSelect
+          v-model="vendor.value.value"
+          label="Vendor *"
+          placeholder="Choose"
+          :options="options(vendors)"
+          :error="vendor.errorMessage.value"
+        />
+      </div>
+      <div data-field="batch"><KitInput v-model="batch.value.value" label="Batch number" /></div>
+      <div data-field="expiration">
+        <KitDatePicker
+          v-model="expiration.value.value"
+          label="Expiry date *"
+          :error="expiration.errorMessage.value"
+        />
+      </div>
+      <div data-field="date_received">
+        <KitDatePicker
+          v-model="dateReceived.value.value"
+          label="Date received *"
+          :error="dateReceived.errorMessage.value"
+        />
+      </div>
+      <div data-field="product_code">
+        <KitInput v-model="productCode.value.value" label="Product code" />
+      </div>
+      <div data-field="voucher">
+        <KitInput v-model="voucher.value.value" label="Voucher or reference number" />
+      </div>
+    </KitFormSection>
+
+    <KitFormSection title="Quantity and price">
+      <div data-field="quantity">
+        <KitInput
+          v-model="quantity.value.value"
+          label="Quantity *"
+          inputmode="numeric"
+          numeric
+          :error="quantity.errorMessage.value"
+        />
+      </div>
+      <div data-field="unit">
+        <KitNativeSelect
+          v-model="unit.value.value"
+          label="Unit *"
+          placeholder="Choose"
+          :options="options(units)"
+          :error="unit.errorMessage.value"
+        />
+      </div>
+      <div data-field="unit_price">
+        <KitInput
+          v-model="unitPrice.value.value"
+          label="Unit price (₦) *"
+          inputmode="decimal"
+          numeric
+          :error="unitPrice.errorMessage.value"
+        />
+      </div>
+      <div data-field="selling_price">
+        <KitInput
+          v-model="sellingPrice.value.value"
+          label="Selling price (₦) *"
+          inputmode="decimal"
+          numeric
+          :error="sellingPrice.errorMessage.value"
+        />
+      </div>
+    </KitFormSection>
+
+    <KitActionBar>
       <KitButton severity="secondary" @click="cancel">Cancel</KitButton>
       <KitButton type="submit">Save item</KitButton>
-    </div>
+    </KitActionBar>
     <KitConfirmHost />
   </form>
 </template>

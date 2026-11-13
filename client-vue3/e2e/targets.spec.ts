@@ -80,7 +80,16 @@ async function smallTargets(page: Page, min: number): Promise<string[]> {
   }, min);
 }
 
-const views = ['controls', 'pickers', 'validation', 'table', 'display', 'overlays', 'fbc'];
+const views = [
+  'controls',
+  'pickers',
+  'validation',
+  'table',
+  'display',
+  'overlays',
+  'fbc',
+  'layout',
+];
 
 for (const view of views) {
   test(`every target meets the size rule on the ${view} view`, async ({ page, hasTouch }) => {

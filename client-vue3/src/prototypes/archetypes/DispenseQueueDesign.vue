@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import KitBadge, { type KitBadgeSeverity } from '../../components/kit/KitBadge.vue';
+import KitCardList from '../../components/kit/KitCardList.vue';
 import KitInput from '../../components/kit/KitInput.vue';
 import KitNativeSelect from '../../components/kit/KitNativeSelect.vue';
 import KitPageHeader from '../../components/kit/KitPageHeader.vue';
 import KitPagination from '../../components/kit/KitPagination.vue';
 import KitProgress from '../../components/kit/KitProgress.vue';
-import KitSkeleton from '../../components/kit/KitSkeleton.vue';
+import KitStatGrid from '../../components/kit/KitStatGrid.vue';
 import KitTable, { type KitColumn } from '../../components/kit/KitTable.vue';
 import KitTabs from '../../components/kit/KitTabs.vue';
 import { useMediaQuery } from '../../components/kit/useMediaQuery';
@@ -96,21 +97,13 @@ const sourceOptions = ['Consultation', 'Antenatal', 'Theater', 'Immunization'].m
   value,
   label: sourceLabel(value),
 }));
-const tile = 'flex flex-col gap-1 bg-surface px-4 py-3';
 </script>
 
 <template>
   <div class="flex flex-col gap-4">
     <KitPageHeader title="Prescriptions" description="Pharmacy dispensing" />
 
-    <dl
-      class="grid grid-cols-2 gap-px overflow-hidden rounded border border-line-subtle bg-line-subtle md:grid-cols-4"
-    >
-      <div v-for="item in counts" :key="item.label" :class="tile">
-        <dt class="text-xs font-medium text-ink-secondary">{{ item.label }}</dt>
-        <dd class="font-mono text-xl font-semibold">{{ item.value }}</dd>
-      </div>
-    </dl>
+    <KitStatGrid :items="counts" />
 
     <KitTabs v-model="day" :tabs="days" label="Which prescriptions">
       <template v-for="tabDay in days" :key="tabDay.value" #[`panel-${tabDay.value}`]>
@@ -145,57 +138,52 @@ const tile = 'flex flex-col gap-1 bg-surface px-4 py-3';
             {{ table.total.value === 1 ? 'prescription' : 'prescriptions' }}
           </p>
 
-          <template v-if="!atLeastMd">
-            <KitSkeleton
-              v-if="table.loading.value && !table.rows.value.length"
-              variant="lines"
-              :rows="6"
-            />
-            <p v-else-if="!table.rows.value.length" class="py-6 text-center text-ink-secondary">
-              No prescriptions match.
-            </p>
-            <ul v-else aria-label="Prescriptions" class="flex flex-col border-t border-line-subtle">
-              <li
-                v-for="item in table.rows.value"
-                :key="item.id"
-                class="border-b border-line-subtle"
+          <KitCardList
+            v-if="!atLeastMd"
+            label="Prescriptions"
+            :rows="table.rows.value"
+            row-key="id"
+            :loading="table.loading.value"
+            :error="table.error.value"
+            empty-text="No prescriptions match."
+            @retry="table.reload"
+          >
+            <template #default="{ row }">
+              <button
+                type="button"
+                class="flex w-full flex-col gap-2 text-left hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                @click="open(row)"
               >
-                <button
-                  type="button"
-                  class="flex w-full flex-col gap-2 px-1 py-3 text-left hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
-                  @click="open(item)"
-                >
-                  <span class="flex items-start justify-between gap-2">
-                    <span class="font-semibold">{{ item.patient }}</span>
-                    <KitBadge :severity="badge[statusOf(item)].severity">{{
-                      badge[statusOf(item)].label
-                    }}</KitBadge>
+                <span class="flex items-start justify-between gap-2">
+                  <span class="font-semibold">{{ row.patient }}</span>
+                  <KitBadge :severity="badge[statusOf(row)].severity">{{
+                    badge[statusOf(row)].label
+                  }}</KitBadge>
+                </span>
+                <span class="flex flex-wrap items-center gap-x-3 gap-y-1 text-ink-secondary">
+                  <span class="font-mono text-xs">{{ row.hospitalNumber }}</span>
+                  <KitBadge variant="dot" :severity="row.insurance ? 'info' : 'neutral'">{{
+                    row.insurance?.name ?? 'Cash'
+                  }}</KitBadge>
+                  <span>{{ sourceLabel(row.source) }}</span>
+                  <span class="font-mono text-xs">{{ row.prescribedAt }}</span>
+                </span>
+                <span class="flex items-center gap-3">
+                  <KitProgress
+                    class="flex-1"
+                    :label="`${row.patient}: dispensed`"
+                    :value="percent(row)"
+                    :max="100"
+                    :value-text="`${percent(row)}% dispensed`"
+                    :severity="statusOf(row) === 'Complete' ? 'success' : 'primary'"
+                  />
+                  <span class="shrink-0 text-ink-secondary">
+                    <span class="font-mono text-ink">{{ percent(row) }}%</span> dispensed
                   </span>
-                  <span class="flex flex-wrap items-center gap-x-3 gap-y-1 text-ink-secondary">
-                    <span class="font-mono text-xs">{{ item.hospitalNumber }}</span>
-                    <KitBadge variant="dot" :severity="item.insurance ? 'info' : 'neutral'">{{
-                      item.insurance?.name ?? 'Cash'
-                    }}</KitBadge>
-                    <span>{{ sourceLabel(item.source) }}</span>
-                    <span class="font-mono text-xs">{{ item.prescribedAt }}</span>
-                  </span>
-                  <span class="flex items-center gap-3">
-                    <KitProgress
-                      class="flex-1"
-                      :label="`${item.patient}: dispensed`"
-                      :value="percent(item)"
-                      :max="100"
-                      :value-text="`${percent(item)}% dispensed`"
-                      :severity="statusOf(item) === 'Complete' ? 'success' : 'primary'"
-                    />
-                    <span class="shrink-0 text-ink-secondary">
-                      <span class="font-mono text-ink">{{ percent(item) }}%</span> dispensed
-                    </span>
-                  </span>
-                </button>
-              </li>
-            </ul>
-          </template>
+                </span>
+              </button>
+            </template>
+          </KitCardList>
           <KitTable
             v-else
             label="Prescriptions"
