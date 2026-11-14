@@ -13,13 +13,12 @@ async function setup(path: string, hidden = false) {
   await router.isReady();
   const historyLoader = vi.fn();
   const billingLoader = vi.fn();
-  const Panel = (loader: () => void, text: string) =>
-    defineComponent({
-      setup() {
-        onMounted(loader);
-        return () => h('p', text);
-      },
-    });
+  const Panel = (loader: () => void, text: string) => ({
+    setup() {
+      onMounted(loader);
+      return () => h('p', text);
+    },
+  });
   const History = Panel(historyLoader, 'History rows');
   const Billing = Panel(billingLoader, 'Billing rows');
   const wrapper = mount(
