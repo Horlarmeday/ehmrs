@@ -1,7 +1,7 @@
 # Issue 41 — Archetype kit v1: list, entry form, detail with tabs, worklist
 
 Issue: #41 · Parent: #33 · ADR-0009, ADR-0010, ADR-0002 (amended), ADR-0007 · Branch: `41-archetype-kit` from `svsh_branch`
-Status: **plan approved by owner (2026-11-13); Phases 0 to 2 done, all designs approved; Phases 3 and the shell (task 10) done, menu approved; tasks 11 to 18 done; task 19 (VoiceOver script) next**
+Status: **plan approved by owner (2026-11-13); Phases 0 to 2 done, all designs approved; Phases 3 and the shell (task 10) done, menu approved; tasks 11 to 19 and 21 to 22 done; waiting for the owner's VoiceOver pass (task 20), then verify and PR**
 
 Blocked by #93, #94 and #95, which are all closed (PRs #96, #97, #100). #42 (auth) and every domain issue (#45–#67) are blocked by this one.
 
@@ -238,15 +238,18 @@ Complexity: S under 30 min, M under 2 h, L more than one session.
 
 ### Phase 6: manual accessibility pass
 
-- [ ] **19. Script (S).** Step-by-step VoiceOver and keyboard script for the shell, the four archetypes and the lab entry prototype, including radio selection with real arrow-key presses, plus a findings table.
+- [x] **19. Script (S).** Step-by-step VoiceOver and keyboard script for the shell, the four archetypes and the lab entry prototype, including radio selection with real arrow-key presses, plus a findings table.
+  - Done: `tasks/41-voiceover-script.md` (shell, list, detail, page form, dialog form, lab worklist with FBC, radio groups with arrow keys, optional TalkBack on an Android tablet). Every step was checked against the code it describes.
 - [ ] **20. Owner runs the pass (M).** In Chrome on macOS with VoiceOver.
   - AC: findings in the PR; each fixed or deferred with the owner's agreement.
 
 ### Phase 7: documentation
 
-- [ ] **21. Archetype docs (M).** `components/archetypes/README.md`: when to use which, props and slots, the binding contract, tablet behaviour, and a worked example of a legacy view's frozen script driving an archetype.
-- [ ] **22. Route-to-archetype map (M).** Add an archetype column to the route table in `information-architecture.md`.
+- [x] **21. Archetype docs (M).** `components/archetypes/README.md`: when to use which, props and slots, the binding contract, tablet behaviour, and a worked example of a legacy view's frozen script driving an archetype.
+  - Done: when to use which, the frozen-logic rule, URL state, each archetype's API with examples, rule transcription notes (`as`, blur timing, `confirmed:@target`, "check `v-validate`, not the asterisks"), touch rules, and the tests a new screen needs.
+- [x] **22. Route-to-archetype map (M).** Add an archetype column to the route table in `information-architecture.md`.
   - AC: every route has an archetype, "bespoke" or "removed".
+  - Done: Archetype column on all 171 rows of the route table: 41 list, 18 entry form, 32 detail (17 of them patient chart sections), 13 bespoke (patient search and registration, triage, lab result entry, dispense), 33 for the follow-up archetypes, 20 parent routes (read from the router), 11 system, 1 removed. Note for the stock domain: legacy `/store/pharmacy` is a type chooser, but the pharmacy HOD menu links there, so the new page should list items.
 
 ### Phase 8: verify and PR
 
