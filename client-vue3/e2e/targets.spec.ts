@@ -92,6 +92,7 @@ const views = [
   'layout',
   'patient-desk',
   'archetypes',
+  'lab-desk',
 ];
 
 for (const view of views) {

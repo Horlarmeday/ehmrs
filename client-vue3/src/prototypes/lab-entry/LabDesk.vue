@@ -8,6 +8,9 @@ import KitRadioGroup from '../../components/kit/KitRadioGroup.vue';
 import KitResultGrid from '../../components/kit/KitResultGrid.vue';
 import KitSelect from '../../components/kit/KitSelect.vue';
 import KitTextarea from '../../components/kit/KitTextarea.vue';
+import WorklistPage from '../../components/archetypes/WorklistPage.vue';
+import AppShell, { type ShellNavItem } from '../../components/shell/AppShell.vue';
+import { menuFor } from '../../view/layout/navigation';
 import { resultCell as cell, resultHead as head } from '../../components/kit/resultGridClasses';
 import {
   fbcFields,
@@ -25,13 +28,11 @@ type Stage = 'Enter results' | 'Validate' | 'Approve';
 const stages: Stage[] = ['Enter results', 'Validate', 'Approve'];
 const stage = ref<Stage>('Enter results');
 const tests = ref<LabTest[]>(initialTests());
-const selectedId = ref(1);
 const tester = ref<string | null>(null);
 const notes = ref('');
 const error = ref('');
 const saved = ref('');
 
-const selected = computed(() => tests.value.find((test) => test.id === selectedId.value));
 const reviewable = computed(() =>
   tests.value.filter((test) => hasResult(test) && test.status !== 'Approved')
 );
@@ -40,10 +41,6 @@ const decisions = [
   { value: 'Accepted', label: 'Accept' },
   { value: 'Rejected', label: 'Reject' },
 ];
-
-function select(id: number): void {
-  selectedId.value = id;
-}
 
 function chooseStage(next: Stage): void {
   stage.value = next;
@@ -116,69 +113,57 @@ function summary(test: LabTest): string {
 function setDecision(test: LabTest, value: string | undefined): void {
   if (value === 'Accepted' || value === 'Rejected') test.status = value;
 }
+const navigation: ShellNavItem[] = menuFor('Laboratory').map((entry) => ({
+  value: entry.id,
+  label: entry.label,
+  icon: entry.icon,
+}));
 </script>
 
 <template>
-  <div class="grid min-h-screen grid-cols-[208px_minmax(0,1fr)] bg-surface-page text-sm text-ink">
-    <nav aria-label="Main" class="flex flex-col gap-1 bg-surface-alt px-[10px] py-4">
-      <strong class="px-[10px] pb-4 pt-1 text-md">eHMRS</strong>
-      <span class="flex min-h-xs items-center px-[10px] font-medium text-ink-secondary">Home</span>
-      <span
-        aria-current="page"
-        class="flex min-h-xs items-center rounded-sm bg-surface px-[10px] font-medium shadow-sm"
-        >Laboratory</span
-      >
-      <span class="flex min-h-xs items-center px-[10px] font-medium text-ink-secondary"
-        >Reports</span
-      >
-    </nav>
-    <main class="flex min-w-0 flex-col gap-4 px-[30px] py-[22px]">
-      <header class="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 class="text-xl font-semibold tracking-tight">{{ patient.name }}</h1>
-          <p class="flex flex-wrap gap-3 text-ink-secondary">
-            <span class="font-mono text-xs leading-[21px]">{{ patient.hospitalNumber }}</span>
-            <span>{{ patient.gender }}, {{ patient.age }}</span>
-            <span>{{ patient.insurance }}</span>
-          </p>
-        </div>
-        <div role="group" aria-label="Stage" class="flex gap-1 rounded-sm bg-surface-alt p-1">
-          <button
-            v-for="item in stages"
-            :key="item"
-            type="button"
-            :aria-pressed="stage === item"
-            class="min-h-xs rounded-xs px-3 font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-            :class="stage === item ? 'bg-surface shadow-sm' : 'text-ink-secondary'"
-            @click="chooseStage(item)"
-          >
-            {{ item }}
-          </button>
-        </div>
-      </header>
+  <AppShell :navigation="navigation" current="laboratory" user-name="Prototype user">
+    <header class="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <h1 class="text-xl font-semibold tracking-tight">{{ patient.name }}</h1>
+        <p class="flex flex-wrap gap-3 text-ink-secondary">
+          <span class="font-mono text-xs leading-[21px]">{{ patient.hospitalNumber }}</span>
+          <span>{{ patient.gender }}, {{ patient.age }}</span>
+          <span>{{ patient.insurance }}</span>
+        </p>
+      </div>
+      <div role="group" aria-label="Stage" class="flex gap-1 rounded-sm bg-surface-alt p-1">
+        <button
+          v-for="item in stages"
+          :key="item"
+          type="button"
+          :aria-pressed="stage === item"
+          class="min-h-xs rounded-xs px-3 font-medium touch:min-h-touch focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          :class="stage === item ? 'bg-surface shadow-sm' : 'text-ink-secondary'"
+          @click="chooseStage(item)"
+        >
+          {{ item }}
+        </button>
+      </div>
+    </header>
 
-      <div v-if="stage === 'Enter results'" class="grid grid-cols-[260px_minmax(0,1fr)] gap-8">
-        <ul aria-label="Tests in this sample" class="flex flex-col gap-1">
-          <li v-for="test in tests" :key="test.id">
-            <button
-              type="button"
-              :aria-current="test.id === selectedId ? 'true' : undefined"
-              class="flex w-full flex-col gap-1 rounded-sm px-3 py-2 text-left hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-              :class="test.id === selectedId ? 'bg-primary-subtle' : ''"
-              @click="select(test.id)"
-            >
-              <span class="flex items-center justify-between gap-2 font-semibold">
-                {{ test.name }}
-                <KitBadge v-if="test.urgent" severity="danger">Urgent</KitBadge>
-              </span>
-              <KitBadge variant="dot" :severity="statusOf(test).severity">{{
-                statusOf(test).label
-              }}</KitBadge>
-            </button>
-          </li>
-        </ul>
-
-        <section v-if="selected" :aria-label="selected.name" class="flex min-w-0 flex-col gap-4">
+    <template v-if="stage === 'Enter results'">
+      <WorklistPage
+        label="Tests in this sample"
+        :items="tests"
+        item-key="id"
+        :item-label="(test) => test.name"
+        back-label="All tests"
+      >
+        <template #item="{ item: test }">
+          <span class="flex items-center justify-between gap-2 font-semibold">
+            {{ test.name }}
+            <KitBadge v-if="test.urgent" severity="danger">Urgent</KitBadge>
+          </span>
+          <KitBadge variant="dot" :severity="statusOf(test).severity">{{
+            statusOf(test).label
+          }}</KitBadge>
+        </template>
+        <template #detail="{ item: selected }">
           <div>
             <h2 class="text-lg font-semibold">{{ selected.name }}</h2>
             <p class="flex gap-3 text-ink-secondary">
@@ -304,90 +289,89 @@ function setDecision(test: LabTest, value: string | undefined): void {
               <KitInput v-model="selected.institute" label="Institute referred" />
             </div>
           </div>
-        </section>
-
-        <div
-          class="sticky bottom-0 col-span-2 flex items-end justify-end gap-3 border-t border-line-subtle bg-surface-page py-3"
-        >
-          <p v-if="error" role="alert" class="mr-auto self-center text-danger-subtle-text">
-            {{ error }}
-          </p>
-          <p v-else-if="saved" role="status" class="mr-auto self-center text-success-subtle-text">
-            {{ saved }}
-          </p>
-          <div class="w-64">
-            <KitSelect v-model="tester" label="Tester" :search="searchTesters" />
-          </div>
-          <KitButton @click="saveResults">Save results</KitButton>
-        </div>
-      </div>
-
-      <section
-        v-else-if="stage === 'Validate'"
-        aria-label="Validate results"
-        class="flex max-w-[960px] flex-col gap-4"
+        </template>
+      </WorklistPage>
+      <div
+        class="sticky bottom-0 flex items-end justify-end gap-3 border-t border-line-subtle bg-surface-page py-3"
       >
-        <p v-if="!reviewable.length" class="text-ink-secondary">
-          No results are waiting for validation.
+        <p v-if="error" role="alert" class="mr-auto self-center text-danger-subtle-text">
+          {{ error }}
         </p>
-        <article
-          v-for="test in reviewable"
-          :key="test.id"
-          class="flex flex-col gap-3 border-b border-line-subtle pb-4"
-          data-testid="review-item"
-        >
-          <div class="flex flex-wrap items-start justify-between gap-4">
-            <div class="min-w-0 flex-1">
-              <h2 class="font-semibold">{{ test.name }}</h2>
-              <p class="break-words text-ink-secondary">{{ summary(test) }}</p>
-            </div>
-            <KitRadioGroup
-              :model-value="test.status === 'Pending' ? undefined : test.status"
-              :label="`Decision for ${test.name}`"
-              :options="decisions"
-              @update:model-value="setDecision(test, $event)"
-            />
-          </div>
-          <div class="grid grid-cols-[auto_minmax(0,1fr)] items-end gap-4">
-            <KitCheckbox v-model="test.abnormal" :label="`${test.name} is abnormal`" />
-            <KitInput v-model="test.comments" :label="`Comment on ${test.name}`" />
-          </div>
-        </article>
-        <KitTextarea v-model="notes" label="Result notes" :rows="2" />
-        <div class="flex items-center justify-end gap-3">
-          <p v-if="error" role="alert" class="mr-auto text-danger-subtle-text">{{ error }}</p>
-          <p v-else-if="saved" role="status" class="mr-auto text-success-subtle-text">
-            {{ saved }}
-          </p>
-          <KitButton @click="validate">Save validation</KitButton>
+        <p v-else-if="saved" role="status" class="mr-auto self-center text-success-subtle-text">
+          {{ saved }}
+        </p>
+        <div class="w-64">
+          <KitSelect v-model="tester" label="Tester" :search="searchTesters" />
         </div>
-      </section>
+        <KitButton @click="saveResults">Save results</KitButton>
+      </div>
+    </template>
 
-      <section v-else aria-label="Approve results" class="flex max-w-[960px] flex-col gap-4">
-        <p v-if="!approvable.length" class="text-ink-secondary">
-          No accepted results are waiting for approval.
-        </p>
-        <article
-          v-for="test in approvable"
-          :key="test.id"
-          class="flex flex-col gap-1 border-b border-line-subtle pb-3"
-          data-testid="approve-item"
-        >
-          <h2 class="flex items-center gap-2 font-semibold">
-            {{ test.name }}
-            <KitBadge v-if="test.abnormal" severity="danger">Abnormal</KitBadge>
-          </h2>
-          <p class="break-words text-ink-secondary">{{ summary(test) }}</p>
-          <p v-if="test.comments" class="text-ink-secondary">Comment: {{ test.comments }}</p>
-        </article>
-        <div class="flex items-center justify-end gap-3">
-          <p v-if="error" role="alert" class="mr-auto text-danger-subtle-text">{{ error }}</p>
-          <p v-else-if="saved" role="status" class="mr-auto text-success-subtle-text">
-            {{ saved }}
-          </p>
-          <KitButton @click="approve">Approve accepted results</KitButton>
+    <section
+      v-else-if="stage === 'Validate'"
+      aria-label="Validate results"
+      class="flex max-w-[960px] flex-col gap-4"
+    >
+      <p v-if="!reviewable.length" class="text-ink-secondary">
+        No results are waiting for validation.
+      </p>
+      <article
+        v-for="test in reviewable"
+        :key="test.id"
+        class="flex flex-col gap-3 border-b border-line-subtle pb-4"
+        data-testid="review-item"
+      >
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div class="min-w-0 flex-1">
+            <h2 class="font-semibold">{{ test.name }}</h2>
+            <p class="break-words text-ink-secondary">{{ summary(test) }}</p>
+          </div>
+          <KitRadioGroup
+            :model-value="test.status === 'Pending' ? undefined : test.status"
+            :label="`Decision for ${test.name}`"
+            :options="decisions"
+            @update:model-value="setDecision(test, $event)"
+          />
         </div>
-      </section>
-    </main>
-  </div>
+        <div class="grid grid-cols-[auto_minmax(0,1fr)] items-end gap-4">
+          <KitCheckbox v-model="test.abnormal" :label="`${test.name} is abnormal`" />
+          <KitInput v-model="test.comments" :label="`Comment on ${test.name}`" />
+        </div>
+      </article>
+      <KitTextarea v-model="notes" label="Result notes" :rows="2" />
+      <div class="flex items-center justify-end gap-3">
+        <p v-if="error" role="alert" class="mr-auto text-danger-subtle-text">{{ error }}</p>
+        <p v-else-if="saved" role="status" class="mr-auto text-success-subtle-text">
+          {{ saved }}
+        </p>
+        <KitButton @click="validate">Save validation</KitButton>
+      </div>
+    </section>
+
+    <section v-else aria-label="Approve results" class="flex max-w-[960px] flex-col gap-4">
+      <p v-if="!approvable.length" class="text-ink-secondary">
+        No accepted results are waiting for approval.
+      </p>
+      <article
+        v-for="test in approvable"
+        :key="test.id"
+        class="flex flex-col gap-1 border-b border-line-subtle pb-3"
+        data-testid="approve-item"
+      >
+        <h2 class="flex items-center gap-2 font-semibold">
+          {{ test.name }}
+          <KitBadge v-if="test.abnormal" severity="danger">Abnormal</KitBadge>
+        </h2>
+        <p class="break-words text-ink-secondary">{{ summary(test) }}</p>
+        <p v-if="test.comments" class="text-ink-secondary">Comment: {{ test.comments }}</p>
+      </article>
+      <div class="flex items-center justify-end gap-3">
+        <p v-if="error" role="alert" class="mr-auto text-danger-subtle-text">{{ error }}</p>
+        <p v-else-if="saved" role="status" class="mr-auto text-success-subtle-text">
+          {{ saved }}
+        </p>
+        <KitButton @click="approve">Approve accepted results</KitButton>
+      </div>
+    </section>
+  </AppShell>
 </template>

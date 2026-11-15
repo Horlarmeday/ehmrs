@@ -1,7 +1,7 @@
 # Issue 41 — Archetype kit v1: list, entry form, detail with tabs, worklist
 
 Issue: #41 · Parent: #33 · ADR-0009, ADR-0010, ADR-0002 (amended), ADR-0007 · Branch: `41-archetype-kit` from `svsh_branch`
-Status: **plan approved by owner (2026-11-13); Phases 0 to 2 done, all designs approved; Phases 3 and the shell (task 10) done, menu approved; tasks 11 to 15 done; task 16 next**
+Status: **plan approved by owner (2026-11-13); Phases 0 to 2 done, all designs approved; Phases 3 and the shell (task 10) done, menu approved; tasks 11 to 18 done; task 19 (VoiceOver script) next**
 
 Blocked by #93, #94 and #95, which are all closed (PRs #96, #97, #100). #42 (auth) and every domain issue (#45–#67) are blocked by this one.
 
@@ -218,19 +218,23 @@ Complexity: S under 30 min, M under 2 h, L more than one session.
   - AC: the C contract.
   - Done: `src/components/archetypes/DetailPage.vue` with `title`, `tabs` (`value`, `label`, `lazy`, `hidden`, `disabled`), `tabsLabel`, optional `backLabel` and record pager (`position`, `total`, `noun`); slots `before`, `meta`, `actions`, `summary`, `panel-<value>`. The open tab is in the URL (`tab`), tampered or hidden values fall back to the first tab, hidden tabs are not rendered. Lazy panels mount on first open, so a panel component's own loader runs then. The store item design runs on it with History as its own loading component.
   - Tests: `__tests__/DetailPage.spec.ts` (5: lazy loader not called before open, URL tab, tampered and hidden fallback, hidden not rendered, click writes URL) and `e2e/archetype-detail.spec.ts` (header and axe, History loads on open and survives reload, arrow keys, tampered tab, back link) on all three projects.
-- [ ] **16. Worklist with detail pane (L).** `WorklistPage.vue`.
+- [x] **16. Worklist with detail pane (L).** `WorklistPage.vue`.
   - AC: the D contract, including the portrait list-then-item flow with a way back that keeps the list position.
+  - Done: `src/components/archetypes/WorklistPage.vue`, for short lists only (owner decision; long queues use List + Detail). Side by side from 1024px; below that the list, then the chosen item full width with focus on it and "All …" back, which returns focus to the item in the list. Selection in the URL (`item`), checked against the current items; the first item is chosen on wide screens; arrow keys move through the list. The lab entry prototype now runs on `AppShell` and `WorklistPage`; its portrait overlap from task 4 is gone and `lab-desk.spec.ts` runs on all three projects. Stage buttons got the touch size (found by the size check).
+  - Tests: `__tests__/WorklistPage.spec.ts` (5) and `e2e/lab-desk.spec.ts` (portrait flow, URL selection survives reload, axe).
 
 ### Phase 5: tests
 
-- [ ] **17. Binding-contract tests (L).** Vitest and `@vue/test-utils`.
+- [x] **17. Binding-contract tests (L).** Vitest and `@vue/test-utils`.
   - Form: each rule in a rules object fires with its legacy message and no other rule does; a field without a rule never blocks submit; the handler receives exactly the bound values; dependent rules switch with their condition; unsaved changes detection.
   - List: `load` receives exactly the view's `{ page, pageSize, sort, ...filters }`; filter change resets to page 1; out-of-date responses dropped; URL round trip.
   - Detail: a lazy panel's loader isn't called before its tab opens; tab follows the URL.
   - Worklist: selection follows the URL; locked items reject edits.
   - AC: green; tests check inputs and outputs, not markup.
-- [ ] **18. Harness e2e (L).** Playwright per archetype and the shell on desktop and both tablet projects: keyboard paths on desktop, tap paths on tablet, axe in each state.
+  - Done with each archetype: `ListPage.spec.ts` (6), `useEntryForm.spec.ts` (5), `DetailPage.spec.ts` (5), `WorklistPage.spec.ts` (5), `useRouteState.spec.ts` (6), plus `validation/setup.spec.ts` (38) and `view/layout/navigation.spec.ts` (6). `npm test` 117/117.
+- [x] **18. Harness e2e (L).** Playwright per archetype and the shell on desktop and both tablet projects: keyboard paths on desktop, tap paths on tablet, axe in each state.
   - AC: green three times in a row; no console errors or warnings.
+  - Done: `archetype-list`, `archetype-form`, `archetype-detail`, `lab-desk`, `patient-desk`, `shell`, `layout`, `targets` and `touch` specs on desktop and both tablet sizes. Full suite 1664 passed over three repeats with one failure: the radio keyboard test flagged in task 4. It did not reproduce in 360 targeted runs; the test now confirms focus before pressing ArrowRight and passed 600/600 under load.
 
 ### Phase 6: manual accessibility pass
 

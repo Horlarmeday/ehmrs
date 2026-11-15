@@ -261,7 +261,9 @@ test.describe('checkbox, radio and file upload', () => {
   test('radio moves by arrow keys and selects by label', async ({ page }) => {
     await page.getByText('Male', { exact: true }).click();
     await expect(page.getByTestId('sex')).toHaveText('male');
-    await page.getByRole('radio', { name: 'Male', exact: true }).focus();
+    const male = page.getByRole('radio', { name: 'Male', exact: true });
+    await male.focus();
+    await expect(male).toBeFocused();
     await page.keyboard.press('ArrowRight', { delay: 50 });
     await expect(page.getByTestId('sex')).toHaveText('female');
     await expect(page.getByRole('radiogroup', { name: 'Sex' })).toBeVisible();
