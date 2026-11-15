@@ -253,7 +253,8 @@ Complexity: S under 30 min, M under 2 h, L more than one session.
 
 ### Phase 8: verify and PR
 
-- [ ] **23. Verify (S).** `npm run lint`, `npm run build` (no harness or prototype code in `dist`), `npm test`, `npm run test:e2e` three times across all projects, token pipeline `--check`.
+- [x] **23. Verify (S).** `npm run lint`, `npm run build` (no harness or prototype code in `dist`), `npm test`, `npm run test:e2e` three times across all projects, token pipeline `--check`.
+  - Done (2026-11-15, commit df87495d): lint 0 problems, `vue-tsc` clean, build passes with no harness or prototype code in `dist`, `npm test` 117/117, token pipeline `--check` OK and 17/17, e2e 1665 passed and 0 failed over three repeats on desktop and both tablet sizes (153 skipped by design).
 - [ ] **24. Screenshots and PR (S).** Screenshots of every archetype and state at the three sizes to the owner before the PR; PR into `svsh_branch` with results and VoiceOver findings.
 
 ## Questions still open
