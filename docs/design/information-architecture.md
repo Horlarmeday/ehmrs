@@ -98,178 +98,178 @@ These 14 routes only let users choose a sub-page, which the menu replaces. `/qui
 
 ## Where every route goes
 
-Generated from `client/src/router.js`: 171 routes, including the two sign-in pages. Mapping is by path, so a few may move when each screen is designed.
+Generated from `client/src/router.js`: 171 routes, including the two sign-in pages. Mapping is by path, so a few may move when each screen is designed. The Archetype column (added in #41) says which pattern each page is built on: List with filters, Entry form, Detail with tabs, Worklist (short lists only), a follow-up archetype (#103 dashboard, #104 report with export, #105 settings), or Bespoke for the high-risk screens designed in their own issues. Parent routes only frame their child pages. Each domain issue confirms its rows when it designs its screens.
 
-| Route | New location |
-| --- | --- |
-| `/auth/login` | Sign in |
-| `/auth/register` | Sign in |
-| `/*` | System: one error page |
-| `/404` | System: one error page |
-| `/account` | Finance: transactions |
-| `/account/transactions` | Finance: transactions |
-| `/account/transactions/:id` | Finance: transactions |
-| `/admission` | Patient chart: admission |
-| `/admission/additional-prescriptions/:id` | Patient chart: admission |
-| `/admission/careplans/:id` | Patient chart: admission |
-| `/admission/change-ward/:id` | Patient chart: admission |
-| `/admission/delivery/:id` | Patient chart: admission |
-| `/admission/discharge-patients` | Inpatients: discharge |
-| `/admission/discharge/:id` | Inpatients: discharge |
-| `/admission/doctor-prescriptions/:id` | Patient chart: admission |
-| `/admission/history/:id` | Patient chart: admission |
-| `/admission/iocharts/:id` | Patient chart: admission |
-| `/admission/nursing-notes/:id` | Patient chart: admission |
-| `/admission/observations/:id` | Patient chart: admission |
-| `/admission/operations/:id` | Patient chart: admission |
-| `/admission/postnatal/:id` | Patient chart: admission |
-| `/admission/recommended-discharge-patients` | Inpatients: discharge |
-| `/admission/treatments/:id` | Patient chart: admission |
-| `/consultation` | Patient chart: consultation |
-| `/consultation/:id` | Patient chart: consultation |
-| `/dashboard` | Home |
-| `/employee` | Administration: staff |
-| `/employee/create` | Administration: staff |
-| `/employee/find-employee` | Administration: staff |
-| `/employee/profile/:id` | Administration: staff |
-| `/error` | System: one error page |
-| `/error/error-1` | System: one error page |
-| `/error/error-2` | System: one error page |
-| `/error/error-3` | System: one error page |
-| `/error/error-4` | System: one error page |
-| `/error/error-5` | System: one error page |
-| `/error/error-6` | System: one error page |
-| `/insurance` | Insurance: setup |
-| `/insurance/health-insurance` | Insurance: setup |
-| `/insurance/hmo` | Insurance: setup |
-| `/inventory` | Stock: unit inventory |
-| `/inventory/:id` | Stock: unit inventory |
-| `/inventory/items/:id` | Stock: unit inventory |
-| `/laboratory` | Laboratory: worklist |
-| `/laboratory/add-test-result/:id` | Laboratory: worklist |
-| `/laboratory/collect-sample/:id` | Laboratory: worklist |
-| `/laboratory/find-results` | Laboratory: worklist |
-| `/laboratory/forms` | Laboratory: setup |
-| `/laboratory/nhis-tests` | Laboratory: setup |
-| `/laboratory/reports` | Reports: laboratory |
-| `/laboratory/reports/aggregate` | Reports: laboratory |
-| `/laboratory/result-approval/:id` | Laboratory: worklist |
-| `/laboratory/result-validation/:id` | Laboratory: worklist |
-| `/laboratory/results-update` | Laboratory: worklist |
-| `/laboratory/results-update/:id` | Laboratory: worklist |
-| `/laboratory/sample-types` | Laboratory: setup |
-| `/laboratory/samples-collected` | Laboratory: worklist |
-| `/laboratory/samples-to-collect` | Laboratory: worklist |
-| `/laboratory/test-result/:id` | Laboratory: worklist |
-| `/laboratory/tests` | Laboratory: setup |
-| `/laboratory/verified-results` | Laboratory: worklist |
-| `/nurses` | Administration: staff |
-| `/nurses/change-department/:id` | Administration: staff |
-| `/nurses/list` | Administration: staff |
-| `/orders` | Orders |
-| `/patient` | Patients |
-| `/patient/create-account` | Patients: register |
-| `/patient/create-emergency-account` | Patients: register |
-| `/patient/dependants/:id` | Patient chart: dependants |
-| `/patient/edit-health-insurance/:id` | Patient chart: edit details |
-| `/patient/edit/:id` | Patient chart: edit details |
-| `/patient/find-patient` | Patients: search |
-| `/patient/health-insurance` | Insurance: patient insurance |
-| `/patient/health-insurance/:id` | Patient chart: insurance |
-| `/patient/health-insurance/default/:id` | Patient chart: insurance |
-| `/patient/profile/:id` | Patient chart: overview |
-| `/pharmacy` | Pharmacy: setup |
-| `/pharmacy/dosage-forms` | Pharmacy: setup |
-| `/pharmacy/dosage-measurements` | Pharmacy: setup |
-| `/pharmacy/generic-drugs` | Pharmacy: setup |
-| `/pharmacy/prescriptions` | Pharmacy: prescriptions |
-| `/pharmacy/prescriptions/:id` | Pharmacy: prescriptions |
-| `/pharmacy/prescriptions/:id/update` | Pharmacy: prescriptions |
-| `/pharmacy/routes-of-administration` | Pharmacy: setup |
-| `/program` | Programs |
-| `/program/ante-natal` | Programs |
-| `/program/ante-natal/enrol` | Programs |
-| `/program/ante-natal/list` | Programs |
-| `/program/ante-natal/profile/:id` | Programs |
-| `/program/ante-natal/visit/:id` | Programs |
-| `/program/immunization` | Programs |
-| `/program/immunization/enrol` | Programs |
-| `/program/immunization/list` | Programs |
-| `/program/immunization/visit/:id` | Programs |
-| `/quill` | Remove (template leftover) |
-| `/radiology` | Radiology: worklist |
-| `/radiology/add-test-result/:id` | Radiology: worklist |
-| `/radiology/imaging` | Radiology: setup |
-| `/radiology/investigations` | Radiology: worklist |
-| `/radiology/investigations-approval` | Radiology: worklist |
-| `/radiology/investigations-results` | Radiology: worklist |
-| `/radiology/investigations-results/:id` | Radiology: worklist |
-| `/radiology/requested-investigations` | Radiology: worklist |
-| `/radiology/result-approval/:id` | Radiology: worklist |
-| `/radiology/results-update` | Radiology: worklist |
-| `/radiology/results-update/:id` | Radiology: worklist |
-| `/request` | Stock: requests and returns |
-| `/request/create` | Stock: requests and returns |
-| `/request/inventory-requests` | Stock: requests and returns |
-| `/request/list` | Stock: requests and returns |
-| `/request/returns` | Stock: requests and returns |
-| `/settings` | Administration: setup |
-| `/settings/beds` | Administration: setup |
-| `/settings/change-password` | Account menu |
-| `/settings/defaults` | Administration: setup |
-| `/settings/defaults/:id` | Administration: setup |
-| `/settings/defaults/create` | Administration: setup |
-| `/settings/departments` | Administration: setup |
-| `/settings/merge-accounts` | Administration: setup |
-| `/settings/services` | Administration: setup |
-| `/settings/units` | Administration: setup |
-| `/settings/wards` | Administration: setup |
-| `/statistics` | Reports: encounters |
-| `/statistics/` | Reports: encounters |
-| `/statistics/encounters` | Reports: encounters |
-| `/statistics/encounters/:staffId` | Reports: encounters |
-| `/store` | Stock |
-| `/store/laboratory` | Stock: laboratory |
-| `/store/laboratory/add-item` | Stock: laboratory |
-| `/store/laboratory/items` | Stock: laboratory |
-| `/store/pharmacy` | Stock: pharmacy |
-| `/store/pharmacy/add-item` | Stock: pharmacy |
-| `/store/pharmacy/items` | Stock: pharmacy |
-| `/store/pharmacy/items/:item` | Stock: pharmacy |
-| `/store/pharmacy/reports` | Reports: pharmacy stock |
-| `/store/pharmacy/reports/dispense` | Reports: pharmacy stock |
-| `/store/pharmacy/reports/expiry` | Reports: pharmacy stock |
-| `/store/pharmacy/reports/inventory` | Reports: pharmacy stock |
-| `/store/pharmacy/reports/sales` | Reports: pharmacy stock |
-| `/store/pharmacy/reports/stock-level` | Reports: pharmacy stock |
-| `/store/pharmacy/reports/vendor-performance` | Reports: pharmacy stock |
-| `/store/pharmacy/update-items` | Stock: pharmacy |
-| `/store/pharmacy/vendors` | Stock: pharmacy |
-| `/surgery` | Inpatients: theatre |
-| `/surgery/requests` | Inpatients: theatre |
-| `/surgery/requests/:id` | Inpatients: theatre |
-| `/system` | Administration: setup |
-| `/system/settings` | Administration: setup |
-| `/visit` | Worklists: visits |
-| `/visit/active` | Worklists: visits |
-| `/visit/active/:id` | Worklists: visits |
-| `/visit/admit-patient/:id` | Patient chart: admit |
-| `/visit/admitted-patients` | Inpatients: admitted |
-| `/visit/all` | Worklists: visits |
-| `/visit/ante-natal` | Programs: antenatal |
-| `/visit/dialysis` | Worklists: dialysis |
-| `/visit/immunization` | Programs: immunization |
-| `/visit/inpatients` | Inpatients: admitted |
-| `/visit/maternity` | Inpatients: maternity |
-| `/visit/new/:id` | Patient chart: start visit |
-| `/visit/nhis-active-visits` | Insurance: NHIS visits |
-| `/visit/nhis-visits/:id` | Insurance: NHIS visits |
-| `/visit/prescriptions` | Pharmacy: prescriptions |
-| `/visit/prescriptions/:id` | Pharmacy: prescriptions |
-| `/visit/queue` | Worklists: doctor queue |
-| `/visit/treatments` | Worklists: treatments |
-| `/visit/treatments/:id` | Worklists: treatments |
-| `/visit/update/:id` | Patient chart: visit |
-| `/visit/vitals` | Worklists: vitals |
-| `/vitals` | Patient chart: vitals |
-| `/vitals/:id` | Patient chart: vitals |
+| Route | New location | Archetype |
+| --- | --- | --- |
+| `/auth/login` | Sign in | System |
+| `/auth/register` | Sign in | System |
+| `/*` | System: one error page | System |
+| `/404` | System: one error page | System |
+| `/account` | Finance: transactions | Parent route (frames its pages) |
+| `/account/transactions` | Finance: transactions | List with filters |
+| `/account/transactions/:id` | Finance: transactions | Detail with tabs |
+| `/admission` | Patient chart: admission | Parent route (frames its pages) |
+| `/admission/additional-prescriptions/:id` | Patient chart: admission | Detail with tabs (patient chart section) |
+| `/admission/careplans/:id` | Patient chart: admission | Detail with tabs (patient chart section) |
+| `/admission/change-ward/:id` | Patient chart: admission | Entry form |
+| `/admission/delivery/:id` | Patient chart: admission | Detail with tabs (patient chart section) |
+| `/admission/discharge-patients` | Inpatients: discharge | List with filters |
+| `/admission/discharge/:id` | Inpatients: discharge | Entry form |
+| `/admission/doctor-prescriptions/:id` | Patient chart: admission | Detail with tabs (patient chart section) |
+| `/admission/history/:id` | Patient chart: admission | Detail with tabs (patient chart section) |
+| `/admission/iocharts/:id` | Patient chart: admission | Detail with tabs (patient chart section) |
+| `/admission/nursing-notes/:id` | Patient chart: admission | Detail with tabs (patient chart section) |
+| `/admission/observations/:id` | Patient chart: admission | Detail with tabs (patient chart section) |
+| `/admission/operations/:id` | Patient chart: admission | Detail with tabs (patient chart section) |
+| `/admission/postnatal/:id` | Patient chart: admission | Detail with tabs (patient chart section) |
+| `/admission/recommended-discharge-patients` | Inpatients: discharge | List with filters |
+| `/admission/treatments/:id` | Patient chart: admission | Detail with tabs (patient chart section) |
+| `/consultation` | Patient chart: consultation | Parent route (frames its pages) |
+| `/consultation/:id` | Patient chart: consultation | Detail with tabs (patient chart section) |
+| `/dashboard` | Home | Dashboard (#103) |
+| `/employee` | Administration: staff | Parent route (frames its pages) |
+| `/employee/create` | Administration: staff | Entry form |
+| `/employee/find-employee` | Administration: staff | List with filters |
+| `/employee/profile/:id` | Administration: staff | Detail with tabs |
+| `/error` | System: one error page | System |
+| `/error/error-1` | System: one error page | System |
+| `/error/error-2` | System: one error page | System |
+| `/error/error-3` | System: one error page | System |
+| `/error/error-4` | System: one error page | System |
+| `/error/error-5` | System: one error page | System |
+| `/error/error-6` | System: one error page | System |
+| `/insurance` | Insurance: setup | Parent route (frames its pages) |
+| `/insurance/health-insurance` | Insurance: setup | Settings (#105) |
+| `/insurance/hmo` | Insurance: setup | Settings (#105) |
+| `/inventory` | Stock: unit inventory | Parent route (frames its pages) |
+| `/inventory/:id` | Stock: unit inventory | Detail with tabs |
+| `/inventory/items/:id` | Stock: unit inventory | Detail with tabs |
+| `/laboratory` | Laboratory: worklist | Parent route (frames its pages) |
+| `/laboratory/add-test-result/:id` | Laboratory: worklist | Bespoke: lab result entry (worklist) |
+| `/laboratory/collect-sample/:id` | Laboratory: worklist | Bespoke: lab result entry (worklist) |
+| `/laboratory/find-results` | Laboratory: worklist | List with filters |
+| `/laboratory/forms` | Laboratory: setup | Settings (#105) |
+| `/laboratory/nhis-tests` | Laboratory: setup | Settings (#105) |
+| `/laboratory/reports` | Reports: laboratory | Report with export (#104) |
+| `/laboratory/reports/aggregate` | Reports: laboratory | Report with export (#104) |
+| `/laboratory/result-approval/:id` | Laboratory: worklist | Bespoke: lab result entry (worklist) |
+| `/laboratory/result-validation/:id` | Laboratory: worklist | Bespoke: lab result entry (worklist) |
+| `/laboratory/results-update` | Laboratory: worklist | List with filters |
+| `/laboratory/results-update/:id` | Laboratory: worklist | Bespoke: lab result entry (worklist) |
+| `/laboratory/sample-types` | Laboratory: setup | Settings (#105) |
+| `/laboratory/samples-collected` | Laboratory: worklist | List with filters |
+| `/laboratory/samples-to-collect` | Laboratory: worklist | List with filters |
+| `/laboratory/test-result/:id` | Laboratory: worklist | Bespoke: lab result entry (worklist) |
+| `/laboratory/tests` | Laboratory: setup | Settings (#105) |
+| `/laboratory/verified-results` | Laboratory: worklist | List with filters |
+| `/nurses` | Administration: staff | Parent route (frames its pages) |
+| `/nurses/change-department/:id` | Administration: staff | Entry form |
+| `/nurses/list` | Administration: staff | List with filters |
+| `/orders` | Orders | Parent route (frames its pages) |
+| `/patient` | Patients | Parent route (frames its pages) |
+| `/patient/create-account` | Patients: register | Bespoke: patient search and registration |
+| `/patient/create-emergency-account` | Patients: register | Bespoke: patient search and registration |
+| `/patient/dependants/:id` | Patient chart: dependants | Detail with tabs (patient chart section) |
+| `/patient/edit-health-insurance/:id` | Patient chart: edit details | Entry form |
+| `/patient/edit/:id` | Patient chart: edit details | Entry form |
+| `/patient/find-patient` | Patients: search | Bespoke: patient search and registration |
+| `/patient/health-insurance` | Insurance: patient insurance | List with filters |
+| `/patient/health-insurance/:id` | Patient chart: insurance | Detail with tabs (patient chart section) |
+| `/patient/health-insurance/default/:id` | Patient chart: insurance | Detail with tabs (patient chart section) |
+| `/patient/profile/:id` | Patient chart: overview | Detail with tabs (patient chart section) |
+| `/pharmacy` | Pharmacy: setup | Parent route (frames its pages) |
+| `/pharmacy/dosage-forms` | Pharmacy: setup | Settings (#105) |
+| `/pharmacy/dosage-measurements` | Pharmacy: setup | Settings (#105) |
+| `/pharmacy/generic-drugs` | Pharmacy: setup | Settings (#105) |
+| `/pharmacy/prescriptions` | Pharmacy: prescriptions | List with filters |
+| `/pharmacy/prescriptions/:id` | Pharmacy: prescriptions | Bespoke: dispense (detail) |
+| `/pharmacy/prescriptions/:id/update` | Pharmacy: prescriptions | Bespoke: dispense (detail) |
+| `/pharmacy/routes-of-administration` | Pharmacy: setup | Settings (#105) |
+| `/program` | Programs | Parent route (frames its pages) |
+| `/program/ante-natal` | Programs | List with filters |
+| `/program/ante-natal/enrol` | Programs | Entry form |
+| `/program/ante-natal/list` | Programs | List with filters |
+| `/program/ante-natal/profile/:id` | Programs | Detail with tabs |
+| `/program/ante-natal/visit/:id` | Programs | Detail with tabs |
+| `/program/immunization` | Programs | List with filters |
+| `/program/immunization/enrol` | Programs | Entry form |
+| `/program/immunization/list` | Programs | List with filters |
+| `/program/immunization/visit/:id` | Programs | Detail with tabs |
+| `/quill` | Remove (template leftover) | Removed |
+| `/radiology` | Radiology: worklist | Parent route (frames its pages) |
+| `/radiology/add-test-result/:id` | Radiology: worklist | Entry form |
+| `/radiology/imaging` | Radiology: setup | Settings (#105) |
+| `/radiology/investigations` | Radiology: worklist | List with filters |
+| `/radiology/investigations-approval` | Radiology: worklist | List with filters |
+| `/radiology/investigations-results` | Radiology: worklist | List with filters |
+| `/radiology/investigations-results/:id` | Radiology: worklist | Detail with tabs |
+| `/radiology/requested-investigations` | Radiology: worklist | List with filters |
+| `/radiology/result-approval/:id` | Radiology: worklist | Detail with tabs |
+| `/radiology/results-update` | Radiology: worklist | List with filters |
+| `/radiology/results-update/:id` | Radiology: worklist | Detail with tabs |
+| `/request` | Stock: requests and returns | Parent route (frames its pages) |
+| `/request/create` | Stock: requests and returns | Entry form |
+| `/request/inventory-requests` | Stock: requests and returns | List with filters |
+| `/request/list` | Stock: requests and returns | List with filters |
+| `/request/returns` | Stock: requests and returns | List with filters |
+| `/settings` | Administration: setup | Parent route (frames its pages) |
+| `/settings/beds` | Administration: setup | Settings (#105) |
+| `/settings/change-password` | Account menu | Entry form |
+| `/settings/defaults` | Administration: setup | Settings (#105) |
+| `/settings/defaults/:id` | Administration: setup | Entry form |
+| `/settings/defaults/create` | Administration: setup | Entry form |
+| `/settings/departments` | Administration: setup | Settings (#105) |
+| `/settings/merge-accounts` | Administration: setup | Settings (#105) |
+| `/settings/services` | Administration: setup | Settings (#105) |
+| `/settings/units` | Administration: setup | Settings (#105) |
+| `/settings/wards` | Administration: setup | Settings (#105) |
+| `/statistics` | Reports: encounters | Report with export (#104) |
+| `/statistics/` | Reports: encounters | Report with export (#104) |
+| `/statistics/encounters` | Reports: encounters | Report with export (#104) |
+| `/statistics/encounters/:staffId` | Reports: encounters | Report with export (#104) |
+| `/store` | Stock | Parent route (frames its pages) |
+| `/store/laboratory` | Stock: laboratory | List with filters (legacy shows a type chooser here; the new page lists the items) |
+| `/store/laboratory/add-item` | Stock: laboratory | Entry form |
+| `/store/laboratory/items` | Stock: laboratory | List with filters |
+| `/store/pharmacy` | Stock: pharmacy | List with filters (legacy shows a type chooser here; the new page lists the items) |
+| `/store/pharmacy/add-item` | Stock: pharmacy | Entry form |
+| `/store/pharmacy/items` | Stock: pharmacy | List with filters |
+| `/store/pharmacy/items/:item` | Stock: pharmacy | Detail with tabs |
+| `/store/pharmacy/reports` | Reports: pharmacy stock | Report with export (#104) |
+| `/store/pharmacy/reports/dispense` | Reports: pharmacy stock | Report with export (#104) |
+| `/store/pharmacy/reports/expiry` | Reports: pharmacy stock | Report with export (#104) |
+| `/store/pharmacy/reports/inventory` | Reports: pharmacy stock | Report with export (#104) |
+| `/store/pharmacy/reports/sales` | Reports: pharmacy stock | Report with export (#104) |
+| `/store/pharmacy/reports/stock-level` | Reports: pharmacy stock | Report with export (#104) |
+| `/store/pharmacy/reports/vendor-performance` | Reports: pharmacy stock | Report with export (#104) |
+| `/store/pharmacy/update-items` | Stock: pharmacy | Entry form |
+| `/store/pharmacy/vendors` | Stock: pharmacy | List with filters |
+| `/surgery` | Inpatients: theatre | Parent route (frames its pages) |
+| `/surgery/requests` | Inpatients: theatre | List with filters |
+| `/surgery/requests/:id` | Inpatients: theatre | Detail with tabs |
+| `/system` | Administration: setup | Parent route (frames its pages) |
+| `/system/settings` | Administration: setup | Settings (#105) |
+| `/visit` | Worklists: visits | Parent route (frames its pages) |
+| `/visit/active` | Worklists: visits | List with filters |
+| `/visit/active/:id` | Worklists: visits | Detail with tabs |
+| `/visit/admit-patient/:id` | Patient chart: admit | Entry form |
+| `/visit/admitted-patients` | Inpatients: admitted | List with filters |
+| `/visit/all` | Worklists: visits | List with filters |
+| `/visit/ante-natal` | Programs: antenatal | List with filters |
+| `/visit/dialysis` | Worklists: dialysis | List with filters |
+| `/visit/immunization` | Programs: immunization | List with filters |
+| `/visit/inpatients` | Inpatients: admitted | List with filters |
+| `/visit/maternity` | Inpatients: maternity | List with filters |
+| `/visit/new/:id` | Patient chart: start visit | Entry form |
+| `/visit/nhis-active-visits` | Insurance: NHIS visits | List with filters |
+| `/visit/nhis-visits/:id` | Insurance: NHIS visits | Detail with tabs |
+| `/visit/prescriptions` | Pharmacy: prescriptions | List with filters |
+| `/visit/prescriptions/:id` | Pharmacy: prescriptions | Bespoke: dispense (detail) |
+| `/visit/queue` | Worklists: doctor queue | List with filters |
+| `/visit/treatments` | Worklists: treatments | List with filters |
+| `/visit/treatments/:id` | Worklists: treatments | Detail with tabs |
+| `/visit/update/:id` | Patient chart: visit | Detail with tabs (patient chart section) |
+| `/visit/vitals` | Worklists: vitals | List with filters |
+| `/vitals` | Patient chart: vitals | Parent route (frames its pages) |
+| `/vitals/:id` | Patient chart: vitals | Bespoke: triage |
