@@ -22,5 +22,6 @@ export default defineConfig({
     command: 'npx vite --port 5196 --strictPort',
     url: 'http://localhost:5196/kit-harness.html',
     reuseExistingServer: false,
+    env: { VITE_BACKEND_URL: 'http://127.0.0.1:9' },
   },
 });

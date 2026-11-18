@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { runContractCase } from '../contractTest';
-import { asCredentials, stringField } from '../types';
+import { asCredentials, describeMismatch, stringField } from '../types';
 import { useAuthStore } from '../../stores/auth';
 import axios from '../../core/axios';
 import authCorpus from '../fixtures/auth.json' with { type: 'json' };
@@ -107,5 +107,19 @@ describe('contract harness self-test', () => {
     });
     expect(result.failures).toEqual([]);
     expect(result.snapshotFailures.length).toBeGreaterThan(0);
+  });
+});
+
+describe('describeMismatch on arrays', () => {
+  it('treats equal arrays as equal and names the differing item', () => {
+    expect(describeMismatch([], [])).toEqual([]);
+    expect(describeMismatch([{ id: 1 }], [{ id: 1 }])).toEqual([]);
+    expect(describeMismatch([{ id: 1 }], [{ id: 2 }], 'state.alerts')).toEqual([
+      'state.alerts[0].id: expected 1 got 2',
+    ]);
+    expect(describeMismatch([1], [1, 2], 'state.alerts')).toEqual([
+      'state.alerts: expected 1 item(s) got 2',
+    ]);
+    expect(describeMismatch([], {}, 'state')).toEqual(['state: expected [] got {}']);
   });
 });

@@ -1,0 +1,244 @@
+{
+  "version": 1,
+  "flow": "settings",
+  "capturedAt": "2026-11-18T08:45:14.098Z",
+  "scenarios": [
+    {
+      "name": "GET /api/settings/system-settings/get -> 200",
+      "request": {
+        "method": "GET",
+        "url": "/api/settings/system-settings/get",
+        "body": ""
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "status": "success",
+          "message": "success",
+          "data": {
+            "id": 1,
+            "name_of_organization": "Electronic Hospital Management Resource System",
+            "address_of_organization": "037 Halima Avenue, Springfield",
+            "email": "hosp.1d2978@example.org",
+            "phone": "+1 555-014811",
+            "stamp_image": null,
+            "organization_logo": null,
+            "nhis_daily_quota_amount": "3000.00",
+            "system_color": "Blue",
+            "patient_id_prefix": "MRN76863326",
+            "createdAt": "2024-06-08T01:35:29.000Z",
+            "updatedAt": "2024-06-08T01:35:29.000Z"
+          }
+        }
+      }
+    },
+    {
+      "name": "GET /api/settings/system-settings/get -> 200 #2",
+      "request": {
+        "method": "GET",
+        "url": "/api/settings/system-settings/get",
+        "body": ""
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "status": "success",
+          "message": "success",
+          "data": {
+            "id": 1,
+            "name_of_organization": "Electronic Hospital Management Resource System",
+            "address_of_organization": "037 Halima Avenue, Springfield",
+            "email": "hosp.1d2978@example.org",
+            "phone": "+1 555-014811",
+            "stamp_image": "zqstamp-17+1 555-010320.png",
+            "organization_logo": "zqlogo-17+1 555-010320.png",
+            "nhis_daily_quota_amount": "3000.00",
+            "system_color": "Blue",
+            "patient_id_prefix": "MRN76863326",
+            "createdAt": "2024-06-08T01:35:29.000Z",
+            "updatedAt": "2024-06-08T01:35:29.000Z"
+          }
+        }
+      }
+    },
+    {
+      "name": "POST /api/settings/system-settings/update -> 201",
+      "request": {
+        "method": "POST",
+        "url": "/api/settings/system-settings/update",
+        "body": {
+          "id": 1,
+          "name_of_organization": "Electronic Hospital Management Resource System",
+          "address_of_organization": "037 Halima Avenue, Springfield",
+          "email": "hosp.1d2978@example.org",
+          "phone": "+1 555-014811",
+          "stamp_image": null,
+          "organization_logo": null,
+          "nhis_daily_quota_amount": "3000.00",
+          "system_color": "Blue",
+          "patient_id_prefix": "MRN76863326",
+          "createdAt": "2024-06-08T01:35:29.000Z",
+          "updatedAt": "2024-06-08T01:35:29.000Z"
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "status": "success",
+          "message": "Successful! Data updated",
+          "data": {
+            "id": 1,
+            "name_of_organization": "Electronic Hospital Management Resource System",
+            "address_of_organization": "037 Halima Avenue, Springfield",
+            "email": "hosp.1d2978@example.org",
+            "phone": "+1 555-014811",
+            "stamp_image": null,
+            "organization_logo": null,
+            "nhis_daily_quota_amount": "3000.00",
+            "system_color": "Blue",
+            "patient_id_prefix": "MRN76863326",
+            "createdAt": "2024-06-08T01:35:29.000Z",
+            "updatedAt": "2024-06-08T01:35:29.000Z"
+          }
+        }
+      }
+    },
+    {
+      "name": "POST /api/settings/system-settings/update -> 400",
+      "request": {
+        "method": "POST",
+        "url": "/api/settings/system-settings/update",
+        "body": {}
+      },
+      "response": {
+        "status": 400,
+        "body": {
+          "status": "error",
+          "httpCode": 400,
+          "message": "Body cannot be empty"
+        }
+      }
+    },
+    {
+      "name": "POST /api/settings/system-settings/update -> 401",
+      "request": {
+        "method": "POST",
+        "url": "/api/settings/system-settings/update",
+        "body": {
+          "id": 1,
+          "name_of_organization": "Electronic Hospital Management Resource System",
+          "address_of_organization": "037 Halima Avenue, Springfield",
+          "email": "hosp.1d2978@example.org",
+          "phone": "+1 555-014811",
+          "stamp_image": null,
+          "organization_logo": null,
+          "nhis_daily_quota_amount": "3000.00",
+          "system_color": "Blue",
+          "patient_id_prefix": "MRN76863326",
+          "createdAt": "2024-06-08T01:35:29.000Z",
+          "updatedAt": "2024-06-08T01:35:29.000Z"
+        }
+      },
+      "response": {
+        "status": 401,
+        "body": "Access denied, No token provided"
+      }
+    },
+    {
+      "name": "POST /api/auth/change-password -> 201",
+      "request": {
+        "method": "POST",
+        "url": "/api/auth/change-password",
+        "body": {
+          "oldPassword": "FakePass_95331977",
+          "newPassword": "FakePass_95331977",
+          "confirmPassword": "FakePass_95331977"
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "status": "success",
+          "message": "Password changed!",
+          "data": {
+            "fullname": "Victor Zabadi",
+            "id": 315,
+            "firstname": "Quincy Mohammed",
+            "lastname": "Victor Wabara",
+            "middlename": null,
+            "email": "zorv.10ee40@example.org",
+            "department": "Records",
+            "date_of_birth": "1981-07-02T00:00:00.000Z",
+            "gender": "Other",
+            "photo": "",
+            "status": "Active",
+            "role": "Medical Records",
+            "sub_role": null,
+            "phone": "+1 555-014955",
+            "username": "staff.4bcf17ce",
+            "address": "263 Garba Road, Milton",
+            "password": "FakePass_24773921",
+            "createdAt": "2026-11-18T09:45:10.000Z",
+            "updatedAt": "2026-11-18T08:45:11.734Z"
+          }
+        }
+      }
+    },
+    {
+      "name": "POST /api/auth/change-password -> 400",
+      "request": {
+        "method": "POST",
+        "url": "/api/auth/change-password",
+        "body": {
+          "oldPassword": "FakePass_61695417",
+          "newPassword": "FakePass_95331977",
+          "confirmPassword": "FakePass_95331977"
+        }
+      },
+      "response": {
+        "status": 400,
+        "body": {
+          "status": "error",
+          "httpCode": 400,
+          "message": "Old password not correct"
+        }
+      }
+    },
+    {
+      "name": "POST /api/auth/change-password -> 400 #2",
+      "request": {
+        "method": "POST",
+        "url": "/api/auth/change-password",
+        "body": {
+          "oldPassword": "FakePass_95331977",
+          "newPassword": "FakePass_95331977",
+          "confirmPassword": "FakePass_93384053"
+        }
+      },
+      "response": {
+        "status": 400,
+        "body": {
+          "status": "error",
+          "httpCode": 400,
+          "message": "Your new password must be equal with confirm password"
+        }
+      }
+    },
+    {
+      "name": "POST /api/auth/change-password -> 401",
+      "request": {
+        "method": "POST",
+        "url": "/api/auth/change-password",
+        "body": {
+          "oldPassword": "FakePass_95331977",
+          "newPassword": "FakePass_95331977",
+          "confirmPassword": "FakePass_95331977"
+        }
+      },
+      "response": {
+        "status": 401,
+        "body": "Access denied, No token provided"
+      }
+    }
+  ]
+}

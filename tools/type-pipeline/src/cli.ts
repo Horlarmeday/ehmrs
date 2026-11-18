@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import { generateModule, loadConfig } from './generate.js';
+import { formatLikeRepo } from './format.js';
 
 const repoRoot = join(fileURLToPath(new URL('.', import.meta.url)), '..', '..', '..');
 const check = process.argv.includes('--check');
@@ -9,8 +10,8 @@ const config = loadConfig(join(repoRoot, 'tools', 'type-pipeline', 'config', 'mo
 
 let drifted: string[] = [];
 for (const module of config.modules) {
-  const content = generateModule(module);
   const outFile = join(config.outDir, `${module.flow}.ts`);
+  const content = await formatLikeRepo(generateModule(module), outFile, repoRoot);
   mkdirSync(config.outDir, { recursive: true });
   if (check) {
     const committed = existsSync(outFile) ? readFileSync(outFile, 'utf8') : null;

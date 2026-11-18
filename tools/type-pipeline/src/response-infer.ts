@@ -61,12 +61,29 @@ function inferFields(bodies: { [k: string]: Json }[]): InferredField[] {
     });
 }
 
-export function inferResponseType(scenarios: CorpusScenario[]): InferredResponseType {
+export function pathOf(url: string): string {
+  return url.split('?')[0];
+}
+
+export function routeMatches(method: string, pattern: string, scenario: CorpusScenario): boolean {
+  if (scenario.request.method !== method) return false;
+  const wanted = pattern.split('/');
+  const actual = pathOf(scenario.request.url).split('/');
+  return (
+    wanted.length === actual.length &&
+    wanted.every((segment, i) => (segment.startsWith(':') ? actual[i] !== '' : segment === actual[i]))
+  );
+}
+
+export function inferResponseType(scenarios: CorpusScenario[], pattern?: { method: string; path: string }): InferredResponseType {
   if (scenarios.length === 0) throw new Error('Cannot infer a response type from zero scenarios');
   const first = scenarios[0];
-  const route = `${first.request.method} ${first.request.url}`;
+  const route = pattern ? `${pattern.method} ${pattern.path}` : `${first.request.method} ${pathOf(first.request.url)}`;
   for (const s of scenarios) {
-    if (`${s.request.method} ${s.request.url}` !== route) {
+    const belongs = pattern
+      ? routeMatches(pattern.method, pattern.path, s)
+      : `${s.request.method} ${pathOf(s.request.url)}` === route;
+    if (!belongs) {
       throw new Error(`Scenario "${s.name}" belongs to ${s.request.method} ${s.request.url}, expected ${route}`);
     }
   }
@@ -80,7 +97,7 @@ export function inferResponseType(scenarios: CorpusScenario[]): InferredResponse
 export function groupByRoute(scenarios: CorpusScenario[]): Map<string, CorpusScenario[]> {
   const groups = new Map<string, CorpusScenario[]>();
   for (const s of scenarios) {
-    const key = `${s.request.method} ${s.request.url}`;
+    const key = `${s.request.method} ${pathOf(s.request.url)}`;
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key)!.push(s);
   }

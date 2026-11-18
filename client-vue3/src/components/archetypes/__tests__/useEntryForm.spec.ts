@@ -117,6 +117,20 @@ describe('useEntryForm binding contract', () => {
     expect(api.form.dirty.value).toBe(false);
   });
 
+  it('keeps what a successful handler leaves in the fields, such as clearing them', async () => {
+    const api: Awaited<ReturnType<typeof setup>> = await setup(() => {
+      api.name.value.value = '';
+      api.phone.value.value = '';
+    });
+    api.name.value.value = 'Ada Obi';
+    api.phone.value.value = '08012345678';
+    await flushPromises();
+    await api.submit();
+    await flushPromises();
+    expect([api.name.value.value, api.phone.value.value]).toEqual(['', '']);
+    expect(api.form.dirty.value).toBe(false);
+  });
+
   it('keeps unsaved changes after a failed save', async () => {
     const api = await setup(() => {
       throw new Error('server refused');

@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { captureJoiSchemas } from './joi-extract.js';
 import { extractInterfaces } from './interface-extract.js';
-import { groupByRoute, inferResponseType, type CorpusScenario } from './response-infer.js';
+import { inferResponseType, routeMatches, type CorpusScenario } from './response-infer.js';
 
 export type RequestSpec =
   | { kind: 'joi'; fn: string; name: string }
@@ -70,17 +70,16 @@ export function generateModule(config: ModuleConfig): string {
   if (!existsSync(config.fixtureFile)) throw new Error(`Fixture corpus not found: ${config.fixtureFile}`);
   const corpus = JSON.parse(readFileSync(config.fixtureFile, 'utf8')) as { scenarios?: CorpusScenario[] };
   const scenarios = corpus.scenarios ?? [];
-  const groups = groupByRoute(scenarios);
-  const seenRoutes = new Set<string>();
+  const mapped = new Set<CorpusScenario>();
   for (const spec of config.responses) {
     const route = `${spec.method} ${spec.path}`;
-    seenRoutes.add(route);
-    const group = groups.get(route);
-    if (!group) throw new Error(`No fixture scenarios captured for ${route} (uncertainty rule: refusing to guess)`);
-    blocks.push(renderInterface(spec.name, inferResponseType(group).fields.map((f) => ({ name: f.name, type: f.type, required: !f.optional }))));
+    const group = scenarios.filter((s) => routeMatches(spec.method, spec.path, s));
+    if (group.length === 0) throw new Error(`No fixture scenarios captured for ${route} (uncertainty rule: refusing to guess)`);
+    group.forEach((s) => mapped.add(s));
+    blocks.push(renderInterface(spec.name, inferResponseType(group, spec).fields.map((f) => ({ name: f.name, type: f.type, required: !f.optional }))));
   }
-  for (const route of groups.keys()) {
-    if (!seenRoutes.has(route)) throw new Error(`Fixture scenarios exist for ${route} but no response spec maps them — add a ResponseSpec`);
+  for (const s of scenarios) {
+    if (!mapped.has(s)) throw new Error(`Fixture scenario "${s.name}" (${s.request.method} ${s.request.url}) is not mapped by any response spec — add a ResponseSpec`);
   }
 
   return `${HEADER_LINES.map((l) => `// ${l}`).join('\n')}\n\n${blocks.join('\n\n')}\n`;

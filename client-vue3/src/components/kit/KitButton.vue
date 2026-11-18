@@ -31,6 +31,10 @@ const sizeClasses = {
   lg: 'min-h-lg px-4 text-md',
 };
 
+function keepFocusOnSubmit(event: MouseEvent): void {
+  if (props.type === 'submit') event.preventDefault();
+}
+
 const classes = computed(() => [
   sizeClasses[props.size],
   props.disabled ? 'bg-surface-alt text-ink-secondary' : severityClasses[props.severity],
@@ -44,6 +48,7 @@ const classes = computed(() => [
     :aria-busy="loading ? 'true' : undefined"
     class="inline-flex items-center justify-center gap-1 rounded-sm font-semibold touch:min-w-touch focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
     :class="classes"
+    @mousedown="keepFocusOnSubmit"
   >
     <span
       v-if="loading"

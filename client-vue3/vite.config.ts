@@ -4,6 +4,8 @@ import { resolve } from 'path'
 import tailwindcss from 'tailwindcss'
 import autoprefixer from 'autoprefixer'
 
+const backend = process.env.VITE_BACKEND_URL ?? 'http://localhost:4050'
+
 export default defineConfig({
   plugins: [vue()],
   css: {
@@ -20,7 +22,11 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:4050',
+        target: backend,
+        changeOrigin: true,
+      },
+      '/static': {
+        target: backend,
         changeOrigin: true,
       },
     },

@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "flow": "alert",
+  "capturedAt": "2026-11-18T08:40:12.094Z",
+  "scenarios": [
+    {
+      "name": "POST /api/alerts/create -> 201",
+      "request": {
+        "method": "POST",
+        "url": "/api/alerts/create",
+        "body": {
+          "alert": "Allergy check",
+          "visit_id": 27693
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "status": "success",
+          "message": "Successful! Data saved",
+          "data": {
+            "status": "Active",
+            "id": 8,
+            "staff_id": 313,
+            "alert": "Allergy check",
+            "patient_id": 41223,
+            "updatedAt": "2026-11-18T08:40:06.470Z",
+            "createdAt": "2026-11-18T08:40:06.470Z"
+          }
+        }
+      }
+    },
+    {
+      "name": "POST /api/alerts/create -> 400",
+      "request": {
+        "method": "POST",
+        "url": "/api/alerts/create",
+        "body": {
+          "visit_id": 27693
+        }
+      },
+      "response": {
+        "status": 400,
+        "body": {
+          "status": "error",
+          "httpCode": 400,
+          "message": "\"alert\" is required"
+        }
+      }
+    },
+    {
+      "name": "GET /api/alerts/get?currentPage=1&pageLimit=10&visit_id=27693 -> 200",
+      "request": {
+        "method": "GET",
+        "url": "/api/alerts/get?currentPage=1&pageLimit=10&visit_id=27693",
+        "body": ""
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "status": "success",
+          "message": "success",
+          "data": {
+            "total": 1,
+            "docs": [
+              {
+                "id": 8,
+                "patient_id": 41223,
+                "alert": "Allergy check",
+                "status": "Active",
+                "staff_id": 313,
+                "createdAt": "2026-11-18T08:40:06.000Z",
+                "updatedAt": "2026-11-18T08:40:06.000Z",
+                "staff": {
+                  "fullname": "Victor Zabadi",
+                  "firstname": "Quincy Mohammed",
+                  "lastname": "Victor Wabara",
+                  "middlename": null
+                }
+              }
+            ],
+            "pages": 1,
+            "perPage": 10,
+            "currentPage": 1
+          }
+        }
+      }
+    },
+    {
+      "name": "GET /api/alerts/get?currentPage=2&pageLimit=10&visit_id=27693 -> 200",
+      "request": {
+        "method": "GET",
+        "url": "/api/alerts/get?currentPage=2&pageLimit=10&visit_id=27693",
+        "body": ""
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "status": "success",
+          "message": "success",
+          "data": {
+            "total": 1,
+            "docs": [],
+            "pages": 1,
+            "perPage": 10,
+            "currentPage": 2
+          }
+        }
+      }
+    },
+    {
+      "name": "PUT /api/alerts/update/8 -> 200",
+      "request": {
+        "method": "PUT",
+        "url": "/api/alerts/update/8",
+        "body": {
+          "id": 8,
+          "status": "Inactive"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "status": "success",
+          "message": "Successful! Data updated",
+          "data": [1]
+        }
+      }
+    },
+    {
+      "name": "GET /api/alerts/get?currentPage=1&pageLimit=10&visit_id=27693 -> 200 #2",
+      "request": {
+        "method": "GET",
+        "url": "/api/alerts/get?currentPage=1&pageLimit=10&visit_id=27693",
+        "body": ""
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "status": "success",
+          "message": "success",
+          "data": {
+            "total": 0,
+            "docs": [],
+            "pages": 0,
+            "perPage": 10,
+            "currentPage": 1
+          }
+        }
+      }
+    },
+    {
+      "name": "GET /api/alerts/get?currentPage=1&pageLimit=10&visit_id=27693 -> 401",
+      "request": {
+        "method": "GET",
+        "url": "/api/alerts/get?currentPage=1&pageLimit=10&visit_id=27693",
+        "body": ""
+      },
+      "response": {
+        "status": 401,
+        "body": "Access denied, No token provided"
+      }
+    }
+  ]
+}

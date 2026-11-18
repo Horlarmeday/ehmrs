@@ -4,8 +4,9 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { joiSchemaToFields, captureJoiSchemas, type JoiDescribe } from './joi-extract.js';
 import { extractInterfaces } from './interface-extract.js';
-import { inferResponseType, type CorpusScenario } from './response-infer.js';
+import { inferResponseType, routeMatches, type CorpusScenario } from './response-infer.js';
 import { generateModule, loadConfig, type ModuleConfig } from './generate.js';
+import { formatLikeRepo } from './format.js';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 
@@ -106,6 +107,49 @@ describe('response inference (uncertainty rule)', () => {
   });
 });
 
+describe('route patterns', () => {
+  const at = (method: string, url: string): CorpusScenario => ({
+    name: `${method} ${url}`,
+    request: { method, url },
+    response: { status: 200, body: { status: 'success' } },
+  });
+
+  it('ignores the query string and matches :param segments', () => {
+    expect(routeMatches('GET', '/api/alerts/get', at('GET', '/api/alerts/get?currentPage=2&visit_id=9'))).toBe(true);
+    expect(routeMatches('PUT', '/api/alerts/update/:id', at('PUT', '/api/alerts/update/7'))).toBe(true);
+    expect(routeMatches('PUT', '/api/alerts/update/:id', at('PUT', '/api/alerts/update/'))).toBe(false);
+    expect(routeMatches('PUT', '/api/alerts/update/:id', at('PUT', '/api/alerts/update/7/extra'))).toBe(false);
+    expect(routeMatches('GET', '/api/alerts/update/:id', at('PUT', '/api/alerts/update/7'))).toBe(false);
+  });
+
+  it('merges scenarios that differ only by query or id', () => {
+    const merged = inferResponseType(
+      [at('GET', '/api/alerts/get?currentPage=1'), at('GET', '/api/alerts/get?currentPage=2')],
+      { method: 'GET', path: '/api/alerts/get' }
+    );
+    expect(merged.route).toBe('GET /api/alerts/get');
+  });
+
+  it('refuses a corpus scenario that no response spec maps', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'tp-unmapped-'));
+    try {
+      const fixtureFile = join(dir, 'corpus.json');
+      writeFileSync(fixtureFile, JSON.stringify({ scenarios: [at('GET', '/api/a'), at('GET', '/api/b?x=1')] }));
+      const config: ModuleConfig = {
+        flow: 'x',
+        serverDir: dir,
+        moduleDir: 'none',
+        fixtureFile,
+        requests: [],
+        responses: [{ method: 'GET', path: '/api/a', name: 'AResponse' }],
+      };
+      expect(() => generateModule(config)).toThrow(/GET \/api\/b\?x=1.*not mapped/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
+
 describe('generation', () => {
   const config = (): ModuleConfig => {
     const dir = mkdtempSync(join(tmpdir(), 'type-pipeline-'));
@@ -164,15 +208,13 @@ describe('auth module against real server + committed corpus', () => {
     expect(captured.get('validateForgotPassword')).toEqual([{ name: 'phone', type: 'string', required: true }]);
   });
 
-  it('regeneration is byte-stable and matches the committed snapshot', () => {
+  it.each(['auth', 'settings', 'alert'])('%s regeneration is byte-stable and matches the committed snapshot', async (flow) => {
     const pipeline = loadConfig(join(repoRoot, 'tools', 'type-pipeline', 'config', 'modules.json'), repoRoot);
-    const auth = pipeline.modules.find((m) => m.flow === 'auth')!;
-    const generated = generateModule(auth);
-    expect(generated).toEqual(generateModule(auth));
-    const committed = readFileSync(join(pipeline.outDir, 'auth.ts'), 'utf8');
-    expect(generated).toEqual(committed);
+    const module = pipeline.modules.find((m) => m.flow === flow)!;
+    const outFile = join(pipeline.outDir, `${flow}.ts`);
+    const generated = await formatLikeRepo(generateModule(module), outFile, repoRoot);
+    expect(generated).toEqual(await formatLikeRepo(generateModule(module), outFile, repoRoot));
+    expect(generated).toEqual(readFileSync(outFile, 'utf8'));
     expect(generated).toContain('message: string;');
-    expect(generated).toContain('httpCode?: number;');
-    expect(generated).toContain('data?: string;');
   });
 });

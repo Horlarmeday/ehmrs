@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ArchetypesDesign from '../../../prototypes/archetypes/ArchetypesDesign.vue';
+import AuthDesign from '../../../prototypes/auth/AuthDesign.vue';
 import ControlsView from './ControlsView.vue';
 import FbcEntryView from './FbcEntryView.vue';
 import LayoutView from './LayoutView.vue';
@@ -16,6 +17,7 @@ const view = new URLSearchParams(window.location.search).get('view');
 
 <template>
   <ArchetypesDesign v-if="view === 'archetypes'" />
+  <AuthDesign v-else-if="view === 'auth'" />
   <PatientDesk v-else-if="view === 'patient-desk'" />
   <LabDesk v-else-if="view === 'lab-desk'" />
   <main v-else class="min-h-screen bg-surface-page p-4 text-sm text-ink">

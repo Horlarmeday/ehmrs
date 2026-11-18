@@ -52,7 +52,8 @@ export function createReplayServer() {
     if (!expectedPaths.includes(actual.url)) {
       mismatches.push(`url: expected ${expected.request.url} got ${actual.url}`);
     }
-    mismatches.push(...describeMismatch(expected.request.body, actual.body, 'payload'));
+    const expectedBody = expected.request.body === '' ? undefined : expected.request.body;
+    mismatches.push(...describeMismatch(expectedBody, actual.body, 'payload'));
 
     if (mismatches.length > 0) {
       const detail = `scenario "${expected.name}" request drift — ${mismatches.join('; ')}`;
