@@ -1,7 +1,7 @@
 # Issue 42 — Tracer bullet: auth domain end-to-end
 
 Issue: #42 · Parent: #33 · ADR-0002 (amended), ADR-0003, ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (amended), ADR-0010 · Branch: `42-auth-tracer-bullet` from `svsh_branch`
-Status: **done (2026-11-18); PR open into `svsh_branch`**
+Status: **done (2026-11-18); PR #108 open into `svsh_branch`**
 
 Blocked by #37, #38, #39, #41: all closed (PRs #74, #75, #76, #106).
 
@@ -292,7 +292,7 @@ Deviations this sets up (decision 3):
 - [x] **19. Domain slice playbook (M).** `docs/migration/domain-slice-playbook.md`, linked from the archetypes README. The steps this issue followed, as a reusable checklist: capture, scrub, store port, mapping table, contract and negative control, types, trace table, rule table, design gate, view, smoke. With templates for each table.
   - AC: a domain issue (#45) can follow it without reading this file.
 - [x] **20. Verify (S).** `npm run lint`, `npm run build` (no harness in `dist`), `npm test`, `npm run test:e2e` three times on all projects, type pipeline `--check`, token pipeline `--check`.
-- [ ] **21. PR (S).** Into `svsh_branch` with mapping, trace and rule tables, the legacy behaviour table, deviations, screenshots and test results; review section below filled in.
+- [x] **21. PR (S).** Into `svsh_branch` with mapping, trace and rule tables, the legacy behaviour table, deviations, screenshots and test results; review section below filled in.
 
 ## Owner decisions (2026-11-18)
 
