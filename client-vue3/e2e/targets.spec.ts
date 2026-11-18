@@ -1,0 +1,133 @@
+import { expect, test, type Locator, type Page } from '@playwright/test';
+
+const press = (locator: Locator, hasTouch: boolean) => (hasTouch ? locator.tap() : locator.click());
+
+const minimum = (hasTouch: boolean) => (hasTouch ? 44 : 24);
+
+async function smallTargets(page: Page, min: number): Promise<string[]> {
+  return page.evaluate((min) => {
+    const selector = [
+      'button',
+      'a[href]',
+      'input:not([type=hidden])',
+      'textarea',
+      'select',
+      '[role=checkbox]',
+      '[role=radio]',
+      '[role=tab]',
+      '[role=combobox]',
+      '[role=option]',
+      '[role=menuitem]',
+      '[role=switch]',
+    ].join(',');
+    const union = (a: DOMRect, b: DOMRect): DOMRect => {
+      const left = Math.min(a.left, b.left);
+      const top = Math.min(a.top, b.top);
+      return new DOMRect(
+        left,
+        top,
+        Math.max(a.right, b.right) - left,
+        Math.max(a.bottom, b.bottom) - top
+      );
+    };
+    const pseudoRect = (element: Element, rect: DOMRect): DOMRect | null => {
+      const style = getComputedStyle(element, '::before');
+      if (style.content === 'none' || style.position !== 'absolute') return null;
+      const px = (value: string) => Number.parseFloat(value) || 0;
+      return new DOMRect(
+        rect.left + px(style.left),
+        rect.top + px(style.top),
+        rect.width - px(style.left) - px(style.right),
+        rect.height - px(style.top) - px(style.bottom)
+      );
+    };
+    const describe = (element: Element): string => {
+      const name =
+        element.getAttribute('aria-label') ??
+        element.getAttribute('data-testid') ??
+        (element.textContent ?? '').trim().slice(0, 30);
+      return `${element.tagName.toLowerCase()}${element.getAttribute('role') ? `[${element.getAttribute('role')}]` : ''} "${name}"`;
+    };
+    const failures: string[] = [];
+    for (const element of document.querySelectorAll(selector)) {
+      if (element.closest('[aria-hidden=true], [inert]')) continue;
+      if (element.matches(':disabled, [aria-disabled=true], [data-disabled]')) continue;
+      const own = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      if (style.visibility === 'hidden' || style.display === 'none') continue;
+      if (style.clip === 'rect(0px, 0px, 0px, 0px)') continue;
+      if (own.width <= 1 || own.height <= 1) {
+        const id = element.id;
+        const label = id ? document.querySelector(`label[for="${CSS.escape(id)}"]`) : null;
+        if (!label) continue;
+      }
+      let hit = own;
+      const before = pseudoRect(element, own);
+      if (before) hit = union(hit, before);
+      const labels = element.id
+        ? document.querySelectorAll(`label[for="${CSS.escape(element.id)}"]`)
+        : [];
+      for (const label of labels) {
+        const rect = label.getBoundingClientRect();
+        if (rect.width > 1 && rect.height > 1) hit = union(hit, rect);
+      }
+      const wrapping = element.closest('label');
+      if (wrapping) hit = union(hit, wrapping.getBoundingClientRect());
+      if (hit.width + 0.5 < min || hit.height + 0.5 < min) {
+        failures.push(`${describe(element)} ${Math.round(hit.width)}x${Math.round(hit.height)}`);
+      }
+    }
+    return failures;
+  }, min);
+}
+
+const views = [
+  'controls',
+  'pickers',
+  'validation',
+  'table',
+  'display',
+  'overlays',
+  'fbc',
+  'layout',
+  'patient-desk',
+  'archetypes',
+  'lab-desk',
+];
+
+for (const view of views) {
+  test(`every target meets the size rule on the ${view} view`, async ({ page, hasTouch }) => {
+    await page.goto(`/kit-harness.html?view=${view}`);
+    await page.waitForLoadState('networkidle');
+    expect(await smallTargets(page, minimum(hasTouch))).toEqual([]);
+  });
+}
+
+test('select options meet the size rule when open', async ({ page, hasTouch }) => {
+  await page.goto('/kit-harness.html?view=pickers');
+  await press(page.getByRole('combobox', { name: 'Drug', exact: true }), hasTouch);
+  await page.keyboard.type('a');
+  await expect(page.getByRole('option').first()).toBeVisible();
+  expect(await smallTargets(page, minimum(hasTouch))).toEqual([]);
+});
+
+test('calendar days meet the size rule when open', async ({ page, hasTouch }) => {
+  await page.goto('/kit-harness.html?view=pickers');
+  await press(page.getByRole('button', { name: /calendar/i }), hasTouch);
+  await expect(page.getByRole('dialog')).toBeVisible();
+  expect(await smallTargets(page, minimum(hasTouch))).toEqual([]);
+});
+
+test('menu items meet the size rule when open', async ({ page, hasTouch }) => {
+  await page.goto('/kit-harness.html?view=overlays');
+  await press(page.getByRole('button', { name: 'More actions' }), hasTouch);
+  await expect(page.getByRole('menuitem').first()).toBeVisible();
+  expect(await smallTargets(page, minimum(hasTouch))).toEqual([]);
+});
+
+test('dialog controls meet the size rule when open', async ({ page, hasTouch }) => {
+  await page.goto('/kit-harness.html?view=overlays');
+  await press(page.getByTestId('open-form'), hasTouch);
+  await expect(page.getByRole('dialog')).toBeVisible();
+  expect(await smallTargets(page, minimum(hasTouch))).toEqual([]);
+});

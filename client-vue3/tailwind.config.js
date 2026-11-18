@@ -8,6 +8,9 @@ export default {
   theme: {
     extend: {
       ...tokens,
+      screens: {
+        touch: { raw: '(pointer: coarse)' },
+      },
     },
   },
   plugins: [tailwindcssAnimate],

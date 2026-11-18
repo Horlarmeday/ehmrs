@@ -18,8 +18,15 @@ const props = withDefaults(
     size?: 'sm' | 'md' | 'lg' | 'xl';
     closeOnBackdrop?: boolean;
     closeOnEscape?: boolean;
+    beforeClose?: () => boolean | Promise<boolean>;
   }>(),
-  { description: undefined, size: 'md', closeOnBackdrop: false, closeOnEscape: true }
+  {
+    description: undefined,
+    size: 'md',
+    closeOnBackdrop: false,
+    closeOnEscape: true,
+    beforeClose: undefined,
+  }
 );
 
 const emit = defineEmits<{ opened: []; closed: [] }>();
@@ -64,8 +71,18 @@ function onCloseAutoFocus(event: Event) {
   restoreFocus(returnTo);
 }
 
+async function requestClose(): Promise<void> {
+  if (props.beforeClose && !(await props.beforeClose())) return;
+  open.value = false;
+}
+
+function onOpenChange(value: boolean): void {
+  if (value) open.value = true;
+  else requestClose();
+}
+
 function onOverlayClick() {
-  if (props.closeOnBackdrop) open.value = false;
+  if (props.closeOnBackdrop) requestClose();
 }
 
 function onEscapeKeyDown(event: Event) {
@@ -74,7 +91,7 @@ function onEscapeKeyDown(event: Event) {
 </script>
 
 <template>
-  <DialogRoot v-model:open="open">
+  <DialogRoot :open="open" @update:open="onOpenChange">
     <DialogPortal>
       <DialogOverlay class="fixed inset-0 z-40 bg-ink/40" @click="onOverlayClick" />
       <DialogContent
@@ -97,7 +114,7 @@ function onEscapeKeyDown(event: Event) {
           </div>
           <DialogClose
             aria-label="Close"
-            class="inline-flex min-h-xs min-w-xs items-center justify-center rounded-sm text-ink-secondary hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+            class="inline-flex min-h-xs min-w-[30px] items-center touch:min-h-touch touch:min-w-touch justify-center rounded-sm text-ink-secondary hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
           >
             <svg aria-hidden="true" viewBox="0 0 16 16" class="h-4 w-4" fill="none">
               <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" />
@@ -112,10 +129,7 @@ function onEscapeKeyDown(event: Event) {
         >
           <slot />
         </div>
-        <footer
-          v-if="$slots.footer"
-          class="flex justify-end gap-2 border-t border-line-subtle p-4"
-        >
+        <footer v-if="$slots.footer" class="flex justify-end gap-2 border-t border-line-subtle p-4">
           <slot name="footer" />
         </footer>
       </DialogContent>

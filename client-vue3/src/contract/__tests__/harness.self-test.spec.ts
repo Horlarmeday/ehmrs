@@ -8,7 +8,10 @@ import authCorpus from '../fixtures/auth.json' with { type: 'json' };
 
 const success = authCorpus.scenarios[0]!;
 
-type AnyStore = { status?: string; login: (staff: { username: string; password: string }) => Promise<unknown> };
+type AnyStore = {
+  status?: string;
+  login: (staff: { username: string; password: string }) => Promise<unknown>;
+};
 
 function newAuthStore() {
   setActivePinia(createPinia());
@@ -16,7 +19,10 @@ function newAuthStore() {
   return useAuthStore();
 }
 
-const driftedStores: Record<string, { store: AnyStore; bootstrap: () => AnyStore; snapshot?: (s: AnyStore) => unknown }> = {
+const driftedStores: Record<
+  string,
+  { store: AnyStore; bootstrap: () => AnyStore; snapshot?: (s: AnyStore) => unknown }
+> = {
   'wrong URL': {
     store: {
       login: (body) => axios({ url: '/auth/login/v2', data: body, method: 'POST' }),
@@ -31,7 +37,8 @@ const driftedStores: Record<string, { store: AnyStore; bootstrap: () => AnyStore
   },
   'wrong payload': {
     store: {
-      login: (body) => axios({ url: '/auth/login', data: { ...body, remember: true }, method: 'POST' }),
+      login: (body) =>
+        axios({ url: '/auth/login', data: { ...body, remember: true }, method: 'POST' }),
     },
     bootstrap: () => driftedStores['wrong payload']!.store,
   },
@@ -51,7 +58,10 @@ describe('contract harness self-test', () => {
       testCase: {
         act: (store, s) => store.login(asCredentials(s.request.body)),
         snapshot: (store) => ({ status: store.status, token: store.token }),
-        expectSnapshot: (s) => ({ status: 'success', token: stringField(s.response.body, 'data') ?? '' }),
+        expectSnapshot: (s) => ({
+          status: 'success',
+          token: stringField(s.response.body, 'data') ?? '',
+        }),
       },
     });
     expect(result.failures).toEqual([]);
@@ -83,7 +93,7 @@ describe('contract harness self-test', () => {
           },
           () => {
             store.status = 'error';
-          },
+          }
         ),
     };
     const result = await runContractCase({

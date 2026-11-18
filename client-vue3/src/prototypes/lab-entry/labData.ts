@@ -3,7 +3,7 @@ import { differentialRows, rows, type FbcRow } from '../../components/kit/__harn
 export type TestStatus = 'Pending' | 'Accepted' | 'Rejected' | 'Approved';
 export type ResultForm = 'fbc' | 'widal' | 'text';
 
-export interface LabTest {
+export interface LabTest extends Record<string, unknown> {
   id: number;
   labNumber: string;
   name: string;

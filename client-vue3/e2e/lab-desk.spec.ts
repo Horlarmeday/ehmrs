@@ -1,21 +1,36 @@
 import { expect, test, type Page } from '@playwright/test';
-import { expectNoSeriousA11yIssues, heightOf } from './helpers';
+import { controlHeight, expectNoSeriousA11yIssues, expectRowHeight, heightOf } from './helpers';
 
 const open = (page: Page) => page.goto('/kit-harness.html?view=lab-desk');
 const list = (page: Page) => page.getByRole('list', { name: 'Tests in this sample' });
-const pick = (page: Page, name: string) => list(page).getByRole('button', { name }).click();
+async function pick(page: Page, name: string): Promise<void> {
+  const back = page.getByRole('button', { name: 'All tests' });
+  if (await back.isVisible()) await back.click();
+  await list(page).getByRole('button', { name }).click();
+  const opened = page.getByRole('region', { name });
+  await expect(opened).toBeVisible();
+  if ((page.viewportSize()?.width ?? 0) < 1024) await expect(opened).toBeFocused();
+}
 const stage = (page: Page, name: string) =>
   page.getByRole('group', { name: 'Stage' }).getByRole('button', { name }).click();
 
 test.beforeEach(async ({ page }) => {
   await open(page);
+  await expect(
+    list(page)
+      .or(page.getByRole('textbox', { name: 'WBC' }))
+      .first()
+  ).toBeVisible();
+  if (!(await page.getByRole('textbox', { name: 'WBC' }).isVisible())) {
+    await pick(page, 'Full blood count');
+  }
 });
 
-test('rows keep density, and the page fits 1280px', async ({ page }) => {
+test('rows keep density, and the page fits 1280px', async ({ page }, info) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   const row = page.getByTestId('result-row').first();
-  expect(await heightOf(row)).toBe(44);
-  expect(await heightOf(row.getByRole('textbox'))).toBe(38);
+  await expectRowHeight(row, info, 44);
+  expect(await heightOf(row.getByRole('textbox'))).toBe(controlHeight(info, 38));
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true
   );
@@ -45,6 +60,8 @@ test('values survive switching between tests', async ({ page }) => {
   await pick(page, 'Widal reaction');
   await pick(page, 'Full blood count');
   await expect(page.getByRole('textbox', { name: 'WBC' })).toHaveValue('7.1');
+  const back = page.getByRole('button', { name: 'All tests' });
+  if (await back.isVisible()) await back.click();
   await expect(list(page).getByRole('button', { name: /Full blood count/ })).toContainText(
     'Entered'
   );
@@ -116,4 +133,22 @@ test('no serious accessibility issues in each stage', async ({ page }) => {
   await expectNoSeriousA11yIssues(page, 'validate');
   await stage(page, 'Approve');
   await expectNoSeriousA11yIssues(page, 'approve');
+});
+
+test('portrait tablets open a test full width with a way back to the list', async ({ page }) => {
+  const width = page.viewportSize()?.width ?? 0;
+  test.skip(width >= 1024, 'side by side on wider screens');
+  await expect(list(page)).toHaveCount(0);
+  await expect(page.getByRole('region', { name: 'Full blood count' })).toBeFocused();
+  await page.getByRole('button', { name: 'All tests' }).click();
+  await expect(list(page).getByRole('button', { name: /Full blood count/ })).toBeFocused();
+  await expect(page).not.toHaveURL(/item=/);
+  await expectNoSeriousA11yIssues(page, 'test list');
+});
+
+test('the selected test is kept in the URL', async ({ page }) => {
+  await pick(page, 'Widal reaction');
+  await expect(page).toHaveURL(/item=\d+/);
+  await page.reload();
+  await expect(page.getByRole('textbox', { name: 'Salmonella Typhi O' })).toBeVisible();
 });

@@ -12,7 +12,9 @@ export interface ContractCase<S> {
   effects?: (scenario: Scenario) => string[];
 }
 
-export interface ContractCaseResult extends ReturnType<ReturnType<typeof createReplayServer>['result']> {
+export interface ContractCaseResult extends ReturnType<
+  ReturnType<typeof createReplayServer>['result']
+> {
   snapshotFailures: string[];
 }
 
@@ -51,7 +53,7 @@ export async function runContractCase<S>(opts: {
   const snapshotFailures = describeMismatch(
     testCase.expectSnapshot(scenario),
     testCase.snapshot(store),
-    'state',
+    'state'
   );
   const effectFailures = testCase.effects?.(scenario) ?? [];
 

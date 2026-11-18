@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { expectNoSeriousA11yIssues } from './helpers';
 
-const fields = ['Name', 'Notes', 'Consent', 'Sex', 'Drug', 'Sample date', 'Attachment'];
+const fields = ['Name', 'Notes', 'Consent', 'Sex', 'Drug', 'Sample date', 'Attachment', 'Unit'];
 
 test('every control blocks submit until valid and ties errors to the field', async ({ page }) => {
   await page.goto('/kit-harness.html?view=validation');
@@ -12,6 +12,13 @@ test('every control blocks submit until valid and ties errors to the field', asy
   await expect(page.getByLabel('Name')).toHaveAccessibleDescription('This field is required');
   await expect(page.getByRole('combobox', { name: 'Drug' })).toHaveAccessibleDescription(
     'This field is required'
+  );
+  await expect(page.getByRole('combobox', { name: 'Unit' })).toHaveAccessibleDescription(
+    'This field is required'
+  );
+  await expect(page.getByRole('combobox', { name: 'Unit' })).toHaveAttribute(
+    'aria-invalid',
+    'true'
   );
   await expect(page.getByRole('checkbox', { name: 'Consent' })).toHaveAccessibleDescription(
     'Must be accepted'
@@ -29,6 +36,7 @@ test('every control blocks submit until valid and ties errors to the field', asy
   await page
     .getByLabel('Attachment')
     .setInputFiles({ name: 'a.pdf', mimeType: 'application/pdf', buffer: Buffer.from('x') });
+  await page.getByRole('combobox', { name: 'Unit' }).selectOption('male');
   await page.getByRole('button', { name: 'Submit' }).click();
   await expect(page.getByTestId('submitted')).toHaveText('1');
   await expect(page.getByText('This field is required')).toHaveCount(0);

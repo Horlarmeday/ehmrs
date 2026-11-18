@@ -2,7 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 
-vi.mock('nprogress', () => ({ default: { configure: vi.fn(), set: vi.fn(), start: vi.fn(), done: vi.fn() } }));
+vi.mock('nprogress', () => ({
+  default: { configure: vi.fn(), set: vi.fn(), start: vi.fn(), done: vi.fn() },
+}));
 
 import axios from '../../core/axios';
 
@@ -12,7 +14,7 @@ describe('axios token attach', () => {
     http.all('*', ({ request }) => {
       seen.push({ authorization: request.headers.get('authorization') });
       return HttpResponse.json({}, { status: 200 });
-    }),
+    })
   );
 
   beforeEach(() => {

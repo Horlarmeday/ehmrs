@@ -21,7 +21,7 @@ visible in a working viewport.
 
 ## Non-negotiables
 
-1. **Calm comes first.** Data screens use 44px rows, 38px controls and 14px text, with 32px rows as a dense option for long lab and stock lists. Separate content with space and hairlines, not boxes. Each view has one solid action; other actions stay quiet. Any interactive target must expose a ≥24px hit area.
+1. **Calm comes first.** Data screens use 44px rows, 38px controls and 14px text, with 32px rows as a dense option for long lab and stock lists. Separate content with space and hairlines, not boxes. Each view has one solid action; other actions stay quiet. Any interactive target must expose a ≥24px hit area with a mouse, and a ≥44px one on touch screens (`control.height.touch`, applied with the `touch:` variant). Touch-only Android tablets are used for ward rounds and vitals, so nothing a user needs may appear only on hover.
 2. **WCAG-AA contrast for data-bearing text.** Every `data-text` pair declared in the
    `contrast.pairs` table must measure ≥4.5:1. The pipeline computes the ratio at
    generation time and **refuses to emit** a non-AA pair — this rule is enforced in code
@@ -66,15 +66,14 @@ Changing this direction, the teal accent or light-only v1 requires a new owner r
 
 ## Archetype and export contract (ADR-0009)
 
-This system seeds a kit of approximately 6–10 reusable page archetypes:
+Version 1 (#41) builds four archetypes inside the app shell:
 
 - list with filters;
+- entry form, as a page or inside a dialog;
 - detail with tabs;
-- entry form or wizard;
-- dashboard;
-- report with export;
-- settings;
-- one exemplar domain spanning authentication, list, and form.
+- worklist with detail pane.
+
+Dashboard, report with export and settings follow as later archetypes. There is no wizard. Every archetype must work on touch-only Android tablets in portrait and landscape.
 
 Every archetype must name the kit component responsible for each complex interaction. Bespoke screen design is reserved for patient search/registration, triage,
 lab result entry, and dispense/verify, where the clinical workflow carries higher risk.
@@ -277,6 +276,7 @@ pipeline fails on unknown or circular refs.
 | control.height.sm | 38px | **default** for all data screens |
 | control.height.md | 40px | dialogs, one-off forms |
 | control.height.lg | 44px | primary CTA / marketing islands |
+| control.height.touch | 44px | minimum height and width of every tap target on touch screens (`pointer: coarse`); never below 44px |
 | control.font.xs | 13px | row actions, table headers, meta |
 | control.font.sm | 14px | **default** data font |
 | control.font.md | 15px | dialog body |

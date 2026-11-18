@@ -29,7 +29,7 @@ const id = useId();
       <div
         v-for="option in options"
         :key="option.value"
-        class="relative inline-flex min-h-sm items-center gap-2 rounded-sm border bg-surface pl-3 transition-colors has-[:disabled]:bg-surface-alt has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary-subtle has-[:enabled]:hover:border-primary"
+        class="relative inline-flex min-h-sm items-center gap-2 rounded-sm touch:min-h-touch border bg-surface pl-3 transition-colors has-[:disabled]:bg-surface-alt has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary-subtle has-[:enabled]:hover:border-primary"
         :class="error ? 'border-danger' : 'border-line'"
       >
         <RadioGroupItem
@@ -41,7 +41,7 @@ const id = useId();
         </RadioGroupItem>
         <label
           :for="`${id}-${option.value}`"
-          class="flex min-h-sm cursor-pointer items-center pr-3 font-medium"
+          class="flex min-h-sm cursor-pointer items-center pr-3 font-medium touch:min-h-touch"
           >{{ option.label }}</label
         >
       </div>

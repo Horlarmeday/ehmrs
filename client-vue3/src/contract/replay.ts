@@ -87,7 +87,9 @@ export function createReplayServer() {
       const all = [...failures];
       const pending = this.pending();
       if (pending.length > 0) {
-        all.push(`store made no HTTP call for ${pending.length} scenario(s): ${pending.join(', ')}`);
+        all.push(
+          `store made no HTTP call for ${pending.length} scenario(s): ${pending.join(', ')}`
+        );
       }
       return { ok: all.length === 0, failures: all };
     },

@@ -37,12 +37,15 @@ const fills: Record<KitBadgeSeverity, Record<'subtle' | 'solid', string>> = {
 </script>
 
 <template>
-  <span v-if="variant === 'dot'" class="inline-flex items-center gap-2 whitespace-nowrap text-ink">
+  <span
+    v-if="variant === 'dot'"
+    class="inline-flex items-center gap-2 whitespace-nowrap font-sans text-ink"
+  >
     <span aria-hidden="true" class="h-[7px] w-[7px] rounded-full" :class="dots[severity]" /><slot />
   </span>
   <span
     v-else
-    class="inline-flex items-center whitespace-nowrap rounded-full px-2 text-xs font-medium"
+    class="inline-flex items-center whitespace-nowrap rounded-full px-2 font-sans text-xs font-medium"
     :class="fills[severity][variant]"
     ><slot
   /></span>

@@ -22,5 +22,5 @@ export interface LoginResponse {
   data?: string;
   httpCode?: number;
   message: string;
-  status?: "error" | "success";
+  status?: 'error' | 'success';
 }

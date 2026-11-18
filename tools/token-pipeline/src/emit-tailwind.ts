@@ -59,7 +59,12 @@ export function emitTailwind(manifest: DesignManifest): string {
   lines.push('  },');
   lines.push(`  fontFamily: { sans: ${fontFamilyArray(get('font.sans'))}, mono: ${fontFamilyArray(get('font.mono'))} },`);
   lines.push(`  fontSize: { xs: '${get('control.font.xs')}', sm: '${get('control.font.sm')}', md: '${get('control.font.md')}', lg: '${get('control.font.lg')}', xl: '${get('control.font.xl')}' },`);
-  lines.push(`  minHeight: { xs: '${get('control.height.xs')}', sm: '${get('control.height.sm')}', md: '${get('control.height.md')}', lg: '${get('control.height.lg')}' },`);
+  const touch = get('control.height.touch');
+  if (!/^\d+px$/.test(touch) || Number.parseInt(touch, 10) < 44) {
+    throw new Error(`control.height.touch is ${touch}; touch targets must be at least 44px`);
+  }
+  lines.push(`  minHeight: { xs: '${get('control.height.xs')}', sm: '${get('control.height.sm')}', md: '${get('control.height.md')}', lg: '${get('control.height.lg')}', touch: '${touch}' },`);
+  lines.push(`  minWidth: { touch: '${touch}' },`);
   lines.push(`  height: { row: '${get('table.row.height')}', 'row-dense': '${get('table.row.height.dense')}' },`);
   lines.push(`  borderRadius: { none: '${get('radius.none')}', xs: '${get('radius.xs')}', sm: '${get('radius.sm')}', DEFAULT: '${get('radius.md')}', lg: '${get('radius.lg')}', full: '9999px' },`);
   lines.push(`  boxShadow: { sm: '${get('shadow.sm')}', md: '${get('shadow.md')}', lg: '${get('shadow.lg')}' },`);

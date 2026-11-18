@@ -40,7 +40,7 @@ function innermostSpan(spans: RawObj[], at: number): RawObj | undefined {
 function parseLegacyRoutes(src: string): LegacyRoute[] {
   const cleaned = src
     .split('\n')
-    .filter(line => !line.trim().startsWith('//'))
+    .filter((line) => !line.trim().startsWith('//'))
     .join('\n');
 
   const spans: RawObj[] = [];
@@ -77,7 +77,7 @@ function parseLegacyRoutes(src: string): LegacyRoute[] {
   for (const s of spans) {
     if (s.requiresAuth && s.path === undefined) {
       const owner = routeObjsAll
-        .filter(p => p.open < s.open && p.close > s.close)
+        .filter((p) => p.open < s.open && p.close > s.close)
         .sort((a, b) => b.open - a.open)[0];
       if (owner) owner.requiresAuth = true;
     }
@@ -90,7 +90,7 @@ function parseLegacyRoutes(src: string): LegacyRoute[] {
     const cached = full.get(obj);
     if (cached !== undefined) return cached;
     const parent = [...routeObjs]
-      .filter(p => p.open < obj.open && p.close > obj.close)
+      .filter((p) => p.open < obj.open && p.close > obj.close)
       .sort((a, b) => b.open - a.open)[0];
     let result: string;
     const raw = obj.path;
@@ -106,7 +106,7 @@ function parseLegacyRoutes(src: string): LegacyRoute[] {
     return result;
   };
 
-  return routeObjs.map(obj => ({
+  return routeObjs.map((obj) => ({
     path: resolve(obj) === '*' ? '/:pathMatch(.*)*' : resolve(obj),
     name: obj.name,
     requiresAuth: obj.requiresAuth === true,
@@ -125,16 +125,14 @@ const ADAPTED_BY_NAME: Record<string, string> = {
 function expectedLegacyRoutes(): LegacyRoute[] {
   const raw = parseLegacyRoutes(fs.readFileSync(LEGACY_ROUTER, 'utf8'));
   const mapped = raw
-    .filter(r => !DROPPED.has(r.path))
-    .map(r => ({
+    .filter((r) => !DROPPED.has(r.path))
+    .map((r) => ({
       path:
-        (r.name !== undefined ? ADAPTED_BY_NAME[r.name] : undefined) ??
-        ADAPTED[r.path] ??
-        r.path,
+        (r.name !== undefined ? ADAPTED_BY_NAME[r.name] : undefined) ?? ADAPTED[r.path] ?? r.path,
       name: DROP_NAME.has(r.path) ? undefined : r.name,
       requiresAuth: r.requiresAuth,
     }));
-  const firstUnnamedRoot = mapped.findIndex(r => r.path === '/' && r.name === undefined);
+  const firstUnnamedRoot = mapped.findIndex((r) => r.path === '/' && r.name === undefined);
   mapped.splice(firstUnnamedRoot, 1);
   return mapped;
 }
@@ -142,7 +140,7 @@ function expectedLegacyRoutes(): LegacyRoute[] {
 function portedRoutes() {
   return router
     .getRoutes()
-    .map(r => ({
+    .map((r) => ({
       path: r.path,
       name: r.name === undefined ? undefined : String(r.name),
       requiresAuth: r.meta.requiresAuth === true,
@@ -152,20 +150,21 @@ function portedRoutes() {
 
 describe('route parity with legacy client/src/router.js', () => {
   test('every legacy route is ported 1:1 (path, name, requiresAuth)', () => {
-    const expected = expectedLegacyRoutes()
-      .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+    const expected = expectedLegacyRoutes().sort((a, b) =>
+      JSON.stringify(a).localeCompare(JSON.stringify(b))
+    );
     expect(portedRoutes()).toEqual(expected);
   });
 
   test('all 153 legacy requiresAuth meta entries preserved', () => {
     // ! 154 textual occurrences in legacy router.js minus the beforeEach guard
-    expect(router.getRoutes().filter(r => r.meta.requiresAuth).length).toBe(153);
+    expect(router.getRoutes().filter((r) => r.meta.requiresAuth).length).toBe(153);
   });
 
   test('Metronic demo routes are dropped', () => {
     expect(router.hasRoute('quill')).toBe(false);
     expect(router.hasRoute('builder')).toBe(false);
-    expect(router.getRoutes().map(r => r.path)).not.toContain('/quill');
+    expect(router.getRoutes().map((r) => r.path)).not.toContain('/quill');
   });
 });
 

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { colorsOf, contrast, expectNoSeriousA11yIssues, heightOf } from './helpers';
+import { colorsOf, contrast, controlHeight, expectNoSeriousA11yIssues, heightOf } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/kit-harness.html');
@@ -42,9 +42,13 @@ test('secondary button is AA at rest and on hover', async ({ page }) => {
   expect(contrast(hover.fg, hover.bg)).toBeGreaterThanOrEqual(4.5);
 });
 
-test('button sizes follow the density scale', async ({ page }) => {
-  expect(await heightOf(page.getByRole('button', { name: 'primary', exact: true }))).toBe(38);
-  expect(await heightOf(page.getByRole('button', { name: 'Extra small' }))).toBe(30);
+test('button sizes follow the density scale', async ({ page }, info) => {
+  expect(await heightOf(page.getByRole('button', { name: 'primary', exact: true }))).toBe(
+    controlHeight(info, 38)
+  );
+  expect(await heightOf(page.getByRole('button', { name: 'Extra small' }))).toBe(
+    controlHeight(info, 30)
+  );
   expect(await heightOf(page.getByRole('button', { name: 'Large' }))).toBe(44);
 });
 
@@ -62,9 +66,11 @@ test('button works by keyboard and shows focus; disabled and loading cannot fire
   await expect(saving).toHaveAttribute('aria-busy', 'true');
 });
 
-test('input is 28px, shows focus, and reaches the model', async ({ page }) => {
+test('input follows the density scale, shows focus, and reaches the model', async ({
+  page,
+}, info) => {
   const input = page.getByLabel('Name');
-  expect(await heightOf(input)).toBe(38);
+  expect(await heightOf(input)).toBe(controlHeight(info, 38));
   await input.focus();
   await page.keyboard.type('Ada');
   await expect(page.getByTestId('name')).toHaveText('Ada');

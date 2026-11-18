@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { expectTypeOf } from 'vitest';
-import type { LoginRequest, ForgotPasswordRequest, ChangePasswordRequest, LoginResponse } from '../auth';
+import type {
+  LoginRequest,
+  ForgotPasswordRequest,
+  ChangePasswordRequest,
+  LoginResponse,
+} from '../auth';
 import corpus from '../../../contract/fixtures/auth.json';
 
 const loginKeys = new Set(['status', 'message', 'data', 'httpCode']);
@@ -15,7 +20,11 @@ describe('generated auth api types (ADR-0004)', () => {
   });
 
   it('ChangePasswordRequest mirrors ChangePasswordParam minus the server-injected user_id', () => {
-    expectTypeOf<ChangePasswordRequest>().toEqualTypeOf<{ newPassword: string; oldPassword: string; confirmPassword: string }>();
+    expectTypeOf<ChangePasswordRequest>().toEqualTypeOf<{
+      newPassword: string;
+      oldPassword: string;
+      confirmPassword: string;
+    }>();
   });
 
   it('uncertainty rule: LoginResponse fields unobserved in some scenarios are optional, never invented', () => {

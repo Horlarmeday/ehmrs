@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, shallowRef, useId, watch } from 'vue';
 import { CalendarDate, parseDate } from '@internationalized/date';
+import KitCalendar from './KitCalendar.vue';
+import KitDialog from './KitDialog.vue';
+import { useCoarsePointer } from './useCoarsePointer';
 import {
   DatePickerAnchor,
   DatePickerCalendar,
@@ -37,6 +40,8 @@ const props = withDefaults(
 const emit = defineEmits<{ 'update:modelValue': [value: string | null] }>();
 
 const id = useId();
+const coarse = useCoarsePointer();
+const sheetOpen = ref(false);
 const outOfRange = ref(false);
 const minValue = computed(() => (props.min ? parseDate(props.min) : undefined));
 const maxValue = computed(() => (props.max ? parseDate(props.max) : undefined));
@@ -64,6 +69,11 @@ function update(next: unknown): void {
   );
   emit('update:modelValue', date && !outOfRange.value ? date.toString() : null);
 }
+
+function pick(date: CalendarDate): void {
+  update(date);
+  sheetOpen.value = false;
+}
 </script>
 
 <template>
@@ -85,7 +95,7 @@ function update(next: unknown): void {
           :aria-label="label"
           :aria-invalid="message ? 'true' : undefined"
           :aria-describedby="message ? `${id}-error` : undefined"
-          class="inline-flex min-h-sm w-full items-center rounded-sm border bg-surface pl-3 transition-colors hover:border-primary focus-within:border-primary focus-within:outline focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-primary"
+          class="inline-flex min-h-sm w-full items-center rounded-sm border touch:min-h-touch bg-surface pl-3 transition-colors hover:border-primary focus-within:border-primary focus-within:outline focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-primary"
           :class="[message ? 'border-danger' : 'border-line', disabled ? 'bg-surface-alt' : '']"
         >
           <template v-for="segment in segments" :key="segment.part">
@@ -104,7 +114,31 @@ function update(next: unknown): void {
               {{ segment.value }}
             </DatePickerInput>
           </template>
+          <button
+            v-if="coarse"
+            type="button"
+            :disabled="disabled"
+            :aria-label="`Open ${label} calendar`"
+            aria-haspopup="dialog"
+            class="relative ml-auto flex h-[36px] w-[36px] items-center justify-center rounded-sm text-ink-muted before:absolute before:-inset-[4px] hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+            @click="sheetOpen = true"
+          >
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 16 16"
+              class="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="2" y="3" width="12" height="11" rx="2" />
+              <path d="M2 6.5h12M5.5 1.5v3M10.5 1.5v3" />
+            </svg>
+          </button>
           <DatePickerTrigger
+            v-else
             :aria-label="`Open ${label} calendar`"
             class="ml-auto flex h-[36px] w-[36px] items-center justify-center rounded-sm text-ink-muted hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           >
@@ -125,15 +159,17 @@ function update(next: unknown): void {
         </DatePickerField>
       </DatePickerAnchor>
       <DatePickerContent
+        v-if="!coarse"
         align="start"
         :side-offset="6"
+        :collision-padding="8"
         class="z-50 rounded-lg border border-line-subtle bg-surface p-3 text-sm text-ink shadow-lg"
       >
         <DatePickerCalendar v-slot="{ weekDays, grid }">
           <DatePickerHeader class="mb-2 flex items-center justify-between">
             <DatePickerPrev
               aria-label="Previous month"
-              class="flex min-h-xs min-w-[30px] items-center justify-center rounded-sm text-ink-secondary hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+              class="flex min-h-xs min-w-[30px] items-center justify-center rounded-sm touch:min-h-touch touch:min-w-touch text-ink-secondary hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
             >
               <svg
                 aria-hidden="true"
@@ -151,7 +187,7 @@ function update(next: unknown): void {
             <DatePickerHeading class="font-semibold" />
             <DatePickerNext
               aria-label="Next month"
-              class="flex min-h-xs min-w-[30px] items-center justify-center rounded-sm text-ink-secondary hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+              class="flex min-h-xs min-w-[30px] items-center justify-center rounded-sm touch:min-h-touch touch:min-w-touch text-ink-secondary hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
             >
               <svg
                 aria-hidden="true"
@@ -177,7 +213,7 @@ function update(next: unknown): void {
                 <DatePickerHeadCell
                   v-for="day in weekDays"
                   :key="day"
-                  class="h-[30px] w-[38px] text-xs font-medium text-ink-muted"
+                  class="h-[30px] w-[38px] text-xs touch:min-w-touch font-medium text-ink-muted"
                 >
                   {{ day }}
                 </DatePickerHeadCell>
@@ -189,7 +225,7 @@ function update(next: unknown): void {
                   <DatePickerCellTrigger
                     :day="day"
                     :month="month.value"
-                    class="mx-auto flex h-[34px] w-[34px] items-center justify-center rounded-full tabular-nums transition-colors hover:bg-primary-subtle focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary data-[outside-view]:text-ink-muted data-[disabled]:text-ink-disabled data-[disabled]:line-through data-[today]:font-bold data-[today]:text-primary data-[selected]:bg-primary data-[selected]:font-semibold data-[selected]:text-primary-on data-[selected]:hover:bg-primary-hover"
+                    class="mx-auto flex h-[34px] w-[34px] items-center touch:min-h-touch touch:min-w-touch justify-center rounded-full tabular-nums transition-colors hover:bg-primary-subtle focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary data-[outside-view]:text-ink-muted data-[disabled]:text-ink-disabled data-[disabled]:line-through data-[today]:font-bold data-[today]:text-primary data-[selected]:bg-primary data-[selected]:font-semibold data-[selected]:text-primary-on data-[selected]:hover:bg-primary-hover"
                   />
                 </DatePickerCell>
               </DatePickerGridRow>
@@ -198,6 +234,15 @@ function update(next: unknown): void {
         </DatePickerCalendar>
       </DatePickerContent>
     </DatePickerRoot>
+    <KitDialog v-if="coarse" v-model:open="sheetOpen" :title="label" size="sm" close-on-backdrop>
+      <KitCalendar
+        :model-value="value"
+        :min-value="minValue"
+        :max-value="maxValue"
+        :label="label"
+        @select="pick"
+      />
+    </KitDialog>
     <span
       v-if="message"
       :id="`${id}-error`"
