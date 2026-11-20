@@ -28,9 +28,10 @@ export function validateTriage(triage) {
     heart_rate: Joi.string()
       .optional()
       .allow(''),
-    spo2: Joi.string()
-      .optional()
-      .allow(''),
+    spo2: Joi.number()
+      .min(0)
+      .max(100)
+      .required(),
     muac: Joi.string()
       .optional()
       .allow(''),

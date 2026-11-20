@@ -119,9 +119,17 @@
           <label class="col-lg-2 col-form-label">(16 - 20)</label>
         </div>
         <div class="form-group row">
-          <label class="col-2 col-form-label">SPO2 (%)</label>
+          <label class="col-2 col-form-label">SPO2 (%*)</label>
           <div class="col-6">
-            <input class="form-control form-control-sm" type="text" v-model="spo2" />
+            <input
+              v-validate="'required|between:0,100'"
+              data-vv-validate-on="blur"
+              name="spo2"
+              class="form-control form-control-sm"
+              type="number"
+              v-model="spo2"
+            />
+            <span class="text-danger text-sm">{{ errors.first('spo2') }}</span>
           </div>
           <label class="col-lg-2 col-form-label">(>70)</label>
         </div>
@@ -206,7 +214,7 @@ export default {
     },
 
     createVitals() {
-      this.$validator.validateAll().then(result => {
+      this.$validator.validateAll().then((result) => {
         if (result) {
           const obj = {
             temperature: this.temperature,
@@ -297,7 +305,7 @@ export default {
     },
   },
   created() {
-    this.$store.dispatch('visit/fetchVisit', this.$route.params.id).then(response => {
+    this.$store.dispatch('visit/fetchVisit', this.$route.params.id).then((response) => {
       const res = response.data.data;
       this.height = res?.triage?.height;
       this.date_of_birth = dayjs().diff(res.patient.date_of_birth, 'weeks');
