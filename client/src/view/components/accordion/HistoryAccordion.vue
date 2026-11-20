@@ -89,6 +89,9 @@
                       <b-tab v-if="summary.category === INPATIENT" title="Ward Rounds">
                         <ward-rounds-table :ward-rounds="summary.wardRounds" />
                       </b-tab>
+                      <b-tab v-if="summary.operationNotes?.length" title="Operation Notes">
+                        <operation-notes-table :operation-notes="summary.operationNotes" />
+                      </b-tab>
                     </b-tabs>
                   </div>
                 </b-collapse>
@@ -141,6 +144,7 @@ import AntenatalTriageTable from '@/view/components/table/AntenatalTriageTable.v
 import AdditionalItemsTable from '@/view/components/table/AdditionalItemsTable.vue';
 import ClinicalNotesTable from '@/view/components/table/ClinicalNotesTable.vue';
 import WardRoundsTable from '@/view/components/table/WardRoundsTable.vue';
+import OperationNotesTable from '@/view/components/table/OperationNotesTable.vue';
 
 export default {
   props: {
@@ -177,6 +181,7 @@ export default {
     FEMALE: 'Female',
   }),
   components: {
+    OperationNotesTable,
     WardRoundsTable,
     ClinicalNotesTable,
     AdditionalItemsTable,

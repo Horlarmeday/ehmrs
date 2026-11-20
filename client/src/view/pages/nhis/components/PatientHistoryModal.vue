@@ -67,7 +67,7 @@ export default {
     },
     isEmptySummary() {
       return this.summaries.every(
-        summary =>
+        (summary) =>
           isEmpty(summary.drugs) &&
           isEmpty(summary.tests) &&
           isEmpty(summary.investigations) &&
@@ -75,7 +75,8 @@ export default {
           isEmpty(summary.diagnoses) &&
           isEmpty(summary.triages) &&
           isEmpty(summary.observations.histories) &&
-          isEmpty(summary.observations.complaints)
+          isEmpty(summary.observations.complaints) &&
+          isEmpty(summary.operationNotes)
       );
     },
   },

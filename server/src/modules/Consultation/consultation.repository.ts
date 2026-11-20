@@ -9,6 +9,7 @@ import {
   getDrugsPrescribed,
 } from '../Orders/Pharmacy/pharmacy-order.repository';
 import { getPrescriptionInvestigations } from '../Orders/Radiology/radiology-order.repository';
+import { getOperationNotes } from '../Surgery/surgery.repository';
 import { getTriages } from '../Triage/triage.repository';
 import { getVisitById, getVisitsQuery } from '../Visit/visit.repository';
 import { getPrescriptionServices } from '../Orders/Service/service-order.repository';
@@ -245,6 +246,7 @@ export const getVisitPrescriptions = async (
     services,
     notes,
     wardRounds,
+    operationNotes,
   ] = await Promise.all([
     getPrescriptionTests({ visit_id: visitIds }),
     getDrugsPrescribed({ visit_id: visitIds }),
@@ -256,6 +258,7 @@ export const getVisitPrescriptions = async (
     getPrescriptionServices({ visit_id: visitIds }),
     getClinicalNotes(visitIds, categories),
     getVisitsWardRounds(visitIds, categories),
+    getOperationNotes(visitIds),
   ]);
 
   const data = {
@@ -271,6 +274,7 @@ export const getVisitPrescriptions = async (
     services: getPrescriptionsByVisit(services.map(prescription => prescription.toJSON())),
     notes: getPrescriptionsByVisit(notes.map(prescription => prescription.toJSON())),
     wardRounds: getPrescriptionsByVisit(wardRounds.map(prescription => prescription.toJSON())),
+    operationNotes: getPrescriptionsByVisit(operationNotes.map(note => note.toJSON())),
   };
 
   return visitIds.map(id => ({
@@ -284,6 +288,7 @@ export const getVisitPrescriptions = async (
     services: data.services[id] || [],
     notes: data.notes[id] || [],
     wardRounds: data.wardRounds[id] || [],
+    operationNotes: data.operationNotes[id] || [],
   }));
 };
 

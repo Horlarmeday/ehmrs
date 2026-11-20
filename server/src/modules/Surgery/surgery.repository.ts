@@ -144,7 +144,7 @@ export const createOperationNote = async (data): Promise<OperationNote> => {
  * @returns json object with operation notes data
  * @param visitId
  */
-export const getOperationNotes = async (visitId: number): Promise<OperationNote[]> => {
+export const getOperationNotes = async (visitId: number | number[]): Promise<OperationNote[]> => {
   return OperationNote.findAll({
     where: {
       visit_id: visitId,

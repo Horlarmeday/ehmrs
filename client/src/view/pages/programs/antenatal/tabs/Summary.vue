@@ -43,14 +43,15 @@ export default {
     },
     isEmptySummary() {
       return this.summaries.every(
-        summary =>
+        (summary) =>
           isEmpty(summary.drugs) &&
           isEmpty(summary.tests) &&
           isEmpty(summary.investigations) &&
           isEmpty(summary.diagnoses) &&
           isEmpty(summary.triages) &&
           isEmpty(summary.observations) &&
-          isEmpty(summary.notes)
+          isEmpty(summary.notes) &&
+          isEmpty(summary.operationNotes)
       );
     },
     antenatal() {
