@@ -1,5 +1,5 @@
 <template>
-  <b-popover :show="activePrompt" :target="target" triggers="click blur">
+  <b-popover :show.sync="activePrompt" :target="target" triggers="click blur">
     <b-button @click="onClose" class="close text-danger" aria-label="Close">
       <span class="d-inline-block" aria-hidden="true">&times;</span>
     </b-button>

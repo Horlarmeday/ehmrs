@@ -16,7 +16,7 @@
         <tr v-if="!operationNotes?.length">
           <td colspan="9" align="center" class="text-muted">No Data</td>
         </tr>
-        <tr v-for="(note, i) in operationNotes" :key="i">
+        <tr v-for="note in operationNotes" :key="note.id">
           <td>{{ note.surgery }}</td>
           <td>{{ note.anaesthesia }}</td>
           <td>{{ note.findings }}</td>
@@ -24,7 +24,7 @@
           <td>{{ note?.scrub_nurse?.fullname }}</td>
           <td>{{ note.createdAt | dayjs('DD/MM/YYYY, h:mma') }}</td>
           <td>
-            <a :id="popOverId" @click="viewPopover(note)" href="#"
+            <a :id="popoverTargetId(note)" @click.prevent="viewPopover(note)" href="#"
               ><i class="icon-xl text-primary la la-eye"></i
             ></a>
           </td>
@@ -32,8 +32,10 @@
       </tbody>
     </table>
     <operation-note-popover
+      v-if="activeTarget"
+      :key="activeTarget"
       :note="note"
-      :target="popOverId"
+      :target="activeTarget"
       :show="showPopover"
       @closePopover="hidePopover"
     />
@@ -47,7 +49,7 @@ export default {
   components: { OperationNotePopover },
   data: () => ({
     showPopover: false,
-    popOverId: 'popover-reactive-73',
+    activeTarget: null,
     note: {},
   }),
   props: {
@@ -58,12 +60,17 @@ export default {
     },
   },
   methods: {
+    popoverTargetId(note) {
+      return `operation-note-${this._uid}-${note.id}`;
+    },
     viewPopover(note) {
       this.note = note;
+      this.activeTarget = this.popoverTargetId(note);
       this.showPopover = true;
     },
     hidePopover() {
       this.showPopover = false;
+      this.activeTarget = null;
     },
   },
 };

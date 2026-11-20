@@ -136,16 +136,16 @@ export class OperationNote extends Model {
   })
   staff_id: number;
 
-  @BelongsTo(() => Staff)
+  @BelongsTo(() => Staff, 'staff_id')
   staff: Staff;
 
-  @BelongsTo(() => Staff)
+  @BelongsTo(() => Staff, 'anaesthetist_id')
   anaesthetist: Staff;
 
-  @BelongsTo(() => Staff)
+  @BelongsTo(() => Staff, 'scrub_nurse_id')
   scrub_nurse: Staff;
 
-  @BelongsTo(() => Staff)
+  @BelongsTo(() => Staff, 'surgeon_id')
   surgeon: Staff;
 
   @BelongsTo(() => Patient)

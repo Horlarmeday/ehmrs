@@ -21,7 +21,7 @@
           <td>
             <router-link
               v-b-tooltip.hover
-              title="Add Operation Notes"
+              :title="operationNoteLinkTitle"
               :to="`/surgery/requests/${surgery.visit_id}?surgery=${surgery.id}`"
               class="btn btn-icon btn-light btn-hover-primary btn-sm mx-3"
             >
@@ -31,14 +31,22 @@
         </tr>
       </tbody>
     </table>
+
+    <div class="mt-4">
+      <h6 class="font-weight-bold mb-3">Operation Notes</h6>
+      <default-skeleton v-if="loadingNotes" />
+      <operation-notes-table v-else :operation-notes="operationNotes" />
+    </div>
   </div>
 </template>
 
 <script>
 import ArrowRightIcon from '@/assets/icons/ArrowRightIcon.vue';
+import OperationNotesTable from '@/view/components/table/OperationNotesTable.vue';
+import DefaultSkeleton from '@/utils/DefaultSkeleton.vue';
 
 export default {
-  components: { ArrowRightIcon },
+  components: { ArrowRightIcon, OperationNotesTable, DefaultSkeleton },
   props: {
     surgery: {
       type: Object,
@@ -46,7 +54,28 @@ export default {
       default: () => {},
     },
   },
-  methods: {},
+  data: () => ({
+    loadingNotes: false,
+  }),
+  computed: {
+    operationNotes() {
+      return this.$store.state.surgery.operationNotes;
+    },
+    operationNoteLinkTitle() {
+      return this.operationNotes.length ? 'View / Add Operation Notes' : 'Add Operation Notes';
+    },
+  },
+  methods: {
+    fetchOperationNotes() {
+      this.loadingNotes = true;
+      this.$store
+        .dispatch('surgery/fetchOperationNotes', { id: this.surgery.visit_id })
+        .finally(() => (this.loadingNotes = false));
+    },
+  },
+  created() {
+    this.fetchOperationNotes();
+  },
 };
 </script>
 
