@@ -51,6 +51,12 @@ export function jsonBody(
 
 export function describeMismatch(expected: unknown, actual: unknown, path = 'value'): string[] {
   if (expected === actual) return [];
+  if (Array.isArray(expected) && Array.isArray(actual)) {
+    if (expected.length !== actual.length) {
+      return [`${path}: expected ${expected.length} item(s) got ${actual.length}`];
+    }
+    return expected.flatMap((item, i) => describeMismatch(item, actual[i], `${path}[${i}]`));
+  }
   if (
     typeof expected === 'object' &&
     expected !== null &&

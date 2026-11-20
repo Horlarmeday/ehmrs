@@ -18,7 +18,7 @@ Every form control takes `label`, `error` and `disabled`, and works with `v-mode
 | `KitFileUpload`   | File selection                                           | `accept`, `multiple`                                                                                                                                                          | `File[]`                                                |
 | `KitNativeSelect` | A short fixed list of options. Replaces plain `<select>` | `options` as `{ value, label, disabled }[]`, `placeholder` (an empty option that sets `null`), `hideLabel`                                                                    | `string` or `null`                                      |
 
-`KitButton` emits normal `click` events. `sm` (38px) is the default, `xs` (30px) is for actions inside rows, and `lg` (44px) is for a main action on an isolated page.
+`KitButton` emits normal `click` events. `sm` (38px) is the default, `xs` (30px) is for actions inside rows, and `lg` (44px) is for a main action on an isolated page. A `type="submit"` button doesn't take focus on mouse down, so the field being edited keeps focus until the click: otherwise its blur validation can remove an error message, move the button and lose the click.
 
 ## Mapping from `v-select`
 

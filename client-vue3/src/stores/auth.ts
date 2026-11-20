@@ -1,11 +1,7 @@
 // ! legacy dispatch('auth/logout') maps to logoutSession: the action name clashes with the ported mutation-action
 import { defineStore } from 'pinia';
 import axios from '../core/axios';
-
-interface StaffCredentials {
-  username: string;
-  password: string;
-}
+import type { ForgotPasswordRequest, LoginRequest } from '../types/api/auth';
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -30,7 +26,7 @@ export const useAuthStore = defineStore('auth', {
       this.status = '';
       this.token = '';
     },
-    login(staff: StaffCredentials) {
+    login(staff: LoginRequest) {
       return new Promise((resolve, reject) => {
         this.auth_request();
         axios({
@@ -53,31 +49,7 @@ export const useAuthStore = defineStore('auth', {
           });
       });
     },
-    register(user: Record<string, unknown>) {
-      return new Promise((resolve, reject) => {
-        this.auth_request();
-        axios({
-          url: '/users/register',
-          data: user,
-          method: 'POST',
-        })
-          .then((response) => {
-            const token = response.data.token;
-            const user = response.data.data;
-            void user;
-            localStorage.setItem('user_token', token);
-            axios.defaults.headers.common['authorization'] = `Bearer ${token}`;
-            this.auth_success(token);
-            resolve(response);
-          })
-          .catch((err) => {
-            this.auth_error();
-            localStorage.removeItem('user_token');
-            reject(err);
-          });
-      });
-    },
-    forgot(phone: { phone: string }) {
+    forgot(phone: ForgotPasswordRequest) {
       return new Promise((resolve, reject) => {
         this.auth_request();
         axios({

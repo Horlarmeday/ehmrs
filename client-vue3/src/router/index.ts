@@ -1472,7 +1472,7 @@ const routes: RouteRecordRaw[] = [
   // FULL PAGE LAYOUTS
   {
     path: '/',
-    component: () => import('@/view/pages/auth/Login-1.vue'),
+    component: () => import('@/view/pages/auth/AuthLayout.vue'),
     children: [
       {
         name: 'login',
@@ -1482,7 +1482,7 @@ const routes: RouteRecordRaw[] = [
       {
         name: 'register',
         path: '/auth/register',
-        component: () => import('@/view/pages/auth/Register.vue'),
+        redirect: '/auth/login',
       },
     ],
   },

@@ -5,6 +5,7 @@ import type { Scenario } from './types';
 
 export interface ContractCase<S> {
   name?: string;
+  match?: (scenario: Scenario) => boolean;
   act: (store: S, scenario: Scenario) => Promise<unknown> | unknown;
   rejects?: (scenario: Scenario) => boolean;
   snapshot: (store: S) => unknown;
@@ -74,7 +75,9 @@ export function defineContractSuite<S>(opts: {
     for (const scenario of opts.corpus.scenarios) {
       it(scenario.name, async () => {
         const failures: string[] = [];
-        for (const testCase of opts.cases) {
+        const cases = opts.cases.filter((testCase) => testCase.match?.(scenario) ?? true);
+        if (cases.length === 0) failures.push(`no contract case covers "${scenario.name}"`);
+        for (const testCase of cases) {
           const result = await runContractCase({ scenario, bootstrap: opts.bootstrap, testCase });
           failures.push(...result.failures, ...result.snapshotFailures);
         }

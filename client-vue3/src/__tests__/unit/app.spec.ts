@@ -1,10 +1,13 @@
-import { describe, it, expect } from 'vitest';
+import { beforeAll, describe, it, expect } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 import { createPinia } from 'pinia';
 import { createMemoryHistory, createRouter } from 'vue-router';
 import App from '@/App.vue';
 import { notifyError, notifySuccess } from '@/common/notify';
 import { routes } from '@/router';
+import { setupValidation } from '@/validation/setup';
+
+beforeAll(() => setupValidation());
 
 async function mountApp() {
   const router = createRouter({ history: createMemoryHistory(), routes });

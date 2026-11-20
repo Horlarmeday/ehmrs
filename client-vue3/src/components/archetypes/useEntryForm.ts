@@ -72,7 +72,7 @@ export function useEntryForm(options: EntryFormOptions = {}) {
         saving.value = true;
         try {
           await handler(current);
-          resetForm({ values: current });
+          resetForm({ values: { ...values } });
         } finally {
           saving.value = false;
         }
@@ -109,6 +109,7 @@ export function useEntryForm(options: EntryFormOptions = {}) {
     saving,
     values,
     confirmDiscard,
+    reset: (next: Record<string, unknown>) => resetForm({ values: next }),
     bindSummary: (focus: () => void) => {
       summaryFocus.value = focus;
     },

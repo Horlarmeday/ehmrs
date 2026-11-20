@@ -14,6 +14,13 @@ axios.defaults.onDownloadProgress = (e) => {
   NProgress.set(percentage);
 };
 
+NProgress.configure({
+  barSelector: '.bar',
+  spinnerSelector: '.spinner',
+  template:
+    '<div class="bar"><div class="peg"></div></div><div class="spinner"><div class="spinner-icon"></div></div>',
+});
+
 axios.defaults.baseURL = '/api';
 delete axios.defaults.headers.common['Authorization'];
 axios.defaults.timeout = 180000;

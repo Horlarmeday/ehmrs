@@ -1,5 +1,7 @@
 # Page archetypes (ADR-0009)
 
+Migrating a whole domain? Follow `docs/migration/domain-slice-playbook.md`; this file covers the screens.
+
 Every screen in the new client is built from one of these patterns inside the app shell (`components/shell/AppShell.vue`, wired in `view/layout/Layout.vue`). Pick the archetype from what the user does on the screen, not from how the legacy page looked.
 
 | Archetype                    | Use when                                                                       | Examples                                                       |
@@ -88,6 +90,8 @@ const onSubmit = form.submit((values) => store.addItem(values));
 - **Check legacy, not the asterisks:** a legacy label may show `*` without a rule (for example dosage form on the add store item page). Only `v-validate` counts.
 - Wrap each field in an element with `data-field` set to its name, so the error summary can move focus to it.
 - `submit(handler)` runs only when valid, ignores a second press while saving, and clears unsaved changes only after the handler succeeds. Errors from the handler still reach the HTTP layer's toasts.
+- After a successful save the form takes whatever is in the fields as its new starting point, so a handler that clears the fields (as legacy change password does) leaves them empty and clean. Clear them with `form.reset({ field: '' })`, not one by one: setting values one at a time revalidates dependent rules such as `confirmed`. A failed save rethrows; catch it where you call `submit` if legacy swallowed it.
+- Don't use `useEntryForm` on a screen that a 401 can reload (sign-in): its unsaved-changes prompt would block the reload. Use vee-validate's `useField` directly there.
 - Unsaved changes ask before leaving the route, before cancel (`form.confirmDiscard()`), before a dialog closes (pass `:before-close="form.confirmDiscard"` to `KitDialog`) and on reload.
 - Use `in-dialog` to host the same form in a `KitDialog`.
 

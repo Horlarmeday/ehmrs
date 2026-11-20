@@ -24,3 +24,9 @@ export interface LoginResponse {
   message: string;
   status?: 'error' | 'success';
 }
+
+export interface ForgotPasswordResponse {
+  httpCode?: number;
+  message: string;
+  status?: 'error';
+}

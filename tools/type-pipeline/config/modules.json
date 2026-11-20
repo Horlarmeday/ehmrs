@@ -12,7 +12,34 @@
         { "kind": "interface", "file": "interface/auth.interface.ts", "from": "ChangePasswordParam", "name": "ChangePasswordRequest", "omit": ["user_id"] }
       ],
       "responses": [
-        { "method": "POST", "path": "/api/auth/login", "name": "LoginResponse" }
+        { "method": "POST", "path": "/api/auth/login", "name": "LoginResponse" },
+        { "method": "POST", "path": "/api/auth/forgot-password", "name": "ForgotPasswordResponse" }
+      ]
+    },
+    {
+      "flow": "settings",
+      "serverDir": "server",
+      "moduleDir": "AdminSettings",
+      "fixtureFile": "client-vue3/src/contract/fixtures/settings.json",
+      "requests": [],
+      "responses": [
+        { "method": "GET", "path": "/api/settings/system-settings/get", "name": "SystemSettingsResponse" },
+        { "method": "POST", "path": "/api/settings/system-settings/update", "name": "UpdateSystemSettingsResponse" },
+        { "method": "POST", "path": "/api/auth/change-password", "name": "ChangePasswordResponse" }
+      ]
+    },
+    {
+      "flow": "alert",
+      "serverDir": "server",
+      "moduleDir": "Alert",
+      "fixtureFile": "client-vue3/src/contract/fixtures/alert.json",
+      "requests": [
+        { "kind": "joi", "fn": "validateAlert", "name": "AlertRequest" }
+      ],
+      "responses": [
+        { "method": "POST", "path": "/api/alerts/create", "name": "AddAlertResponse" },
+        { "method": "GET", "path": "/api/alerts/get", "name": "AlertsResponse" },
+        { "method": "PUT", "path": "/api/alerts/update/:id", "name": "UpdateAlertResponse" }
       ]
     }
   ]

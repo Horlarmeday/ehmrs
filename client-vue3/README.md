@@ -6,7 +6,7 @@ Tooling only — no UI, services, stores, or schemas. The sanctioned rewrite
 
 ## Commands (npm)
 
-- `npm run dev` — Vite dev server (proxies `/api` to `localhost:4050`)
+- `npm run dev` — Vite dev server (proxies `/api` and `/static` to `VITE_BACKEND_URL`, default `http://localhost:4050`)
 - `npm run build` — `vue-tsc -b` + Vite build
 - `npm run test` — vitest (single run)
 - `npm run lint` — eslint

@@ -1,5 +1,6 @@
 import '@fontsource-variable/figtree';
 import '@fontsource/geist-mono/400.css';
+import 'nprogress/nprogress.css';
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import App from './App.vue';
