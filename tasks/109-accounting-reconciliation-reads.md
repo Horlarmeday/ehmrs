@@ -110,11 +110,15 @@ Response: `{ "waiting", "exhausted", "oldest_unsent_at", "max_attempts", "read_a
 | R4 | The drainer claims only `attempts < max` (Accounting D14) | Exhausted rows at the head starved it (`drainer.ts:58-67`) |
 | R5 | Deleting a prescribed drug keeps the intentional `ON DELETE CASCADE` of its consumables, and also sends `charge.reversal.requested` for each consumable in the same transaction (owner, 2026-11-22) | Accounting cannot tell which consumables belonged to the drug, so without these events it kept charging for items that were gone |
 | R6 | A drug cannot be deleted while any of its consumables is paid, permitted or cleared (owner, 2026-11-22) | The same rule a consumable deleted on its own already follows; Accounting refuses to reverse a settled line |
+| R7 | `updateGenericDrug` applies only `name` and `type`; a drug's code never changes after creation (owner, 2026-11-22) | The code is the item's identity in Accounting (stock batches, item cache). The route passed the whole body to `drug.update`, so an API caller could re-code a drug and every later dispense and return would be refused. The edit screen already sends only `name` and `type` |
 
-## 4. Findings to report, not fixed here
+## 4. Findings
 
-- A patient or store return with a batch but no item code is skipped (logged only). The comparison
-  counts those units on the EMR side, so the batch shows EMR-higher.
+- ~~Cascaded consumables send no reversal request~~: fixed here (R5, R6).
+- ~~A return with a batch but no item code is skipped~~: corrected 2026-11-22, not reachable. A batch
+  id reaches a layer only through `stock.received`, which matches the drug by code
+  (`Inbox/applier.ts:452`). Codes are generated at creation and `notEmpty`, and the edit screen
+  sends only `name` and `type`. The skip is a defensive guard.
 
 ## 5. Tasks
 
@@ -167,7 +171,12 @@ including a check that the reconciliation line list shows the cascaded consumabl
 Without the change, the cascade and paid-consumable tests fail. Pharmacy, Reconciliation and reversal
 suites: 44 passed, 1 skipped (existing `describe.skip` in `pharmacy-order.test.ts`).
 
-**Finding (§4)** reported in the PR, not fixed here.
+**§4** corrected: no open findings.
+
+**Drug code locked (R7).** `Pharmacy/update-generic-drug.test.ts`: 2 passed; both fail without the
+change. `pharmacy.test.ts` failed one run because it counts every drug and dosage form in the shared
+test DB and earlier suites had left rows behind; on a freshly rebuilt DB it passes 10 of 10 with this
+change.
 
 **Limitations.** `start_date` is midnight in the server's time zone. A line created before the start
 date and deleted after it counts only through its reversal row. Each charges page recomputes the
