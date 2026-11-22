@@ -35,8 +35,10 @@ import { sequelizeConnection } from '../../../database/config/data-source';
 import { getPatientInsuranceQuery } from '../../Insurance/insurance.repository';
 import {
   emitChargeCapturedForRows,
+  emitChargeReversalRequested,
   deletePrescribedLineWithReversalRequested,
   hasEmittedChargeCaptured,
+  isOutboxEnabled,
 } from '../../Outbox/outbox-writer';
 import { sameMoney } from '../../../core/helpers/money';
 
@@ -833,7 +835,25 @@ export const deletePrescribedDrug = async (drugId: number) => {
     'drug',
     drugId,
     transaction => PrescribedDrug.findOne({ where: { id: drugId }, transaction }),
-    transaction => PrescribedDrug.destroy({ where: { id: drugId }, transaction })
+    async transaction => {
+      // The foreign key cascades the drug's consumables away with it, so each one must announce
+      // its own reversal here: Accounting cannot see which consumables belonged to the drug.
+      if (isOutboxEnabled()) {
+        const consumables = await PrescribedAdditionalItem.findAll({
+          where: { prescribed_drug_id: drugId },
+          attributes: ['id', 'visit_id'],
+          order: [['id', 'ASC']],
+          transaction,
+        });
+        for (const consumable of consumables) {
+          await emitChargeReversalRequested(
+            { type: 'additional_item', id: consumable.id, visit_id: consumable.visit_id },
+            transaction
+          );
+        }
+      }
+      return PrescribedDrug.destroy({ where: { id: drugId }, transaction });
+    }
   );
 };
 

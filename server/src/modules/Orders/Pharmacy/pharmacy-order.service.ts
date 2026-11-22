@@ -43,6 +43,7 @@ import { getOneDefault } from '../../AdminSettings/admin.repository';
 import { BadException } from '../../../common/util/api-error';
 import {
   CANNOT_DELETE_DRUG,
+  CANNOT_DELETE_DRUG_WITH_PAID_ITEMS,
   DRUG_QUANTITY_UNAVAILABLE,
   INJECTION_SYRINGES_NOT_FOUND,
   NHIS_DRUG_QUOTA,
@@ -423,6 +424,12 @@ class PharmacyOrderService {
     const drug = await getOnePrescribedDrugWithoutJoins({ id: body.drugId });
     if (drug && allowedStatuses.includes(drug.payment_status))
       throw new BadException('Error', StatusCodes.BAD_REQUEST, CANNOT_DELETE_DRUG);
+
+    const paidConsumables = await PrescribedAdditionalItem.count({
+      where: { prescribed_drug_id: body.drugId, payment_status: allowedStatuses },
+    });
+    if (paidConsumables > 0)
+      throw new BadException('Error', StatusCodes.BAD_REQUEST, CANNOT_DELETE_DRUG_WITH_PAID_ITEMS);
 
     return deletePrescribedDrug(body.drugId);
   }

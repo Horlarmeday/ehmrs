@@ -108,12 +108,11 @@ Response: `{ "waiting", "exhausted", "oldest_unsent_at", "max_attempts", "read_a
 | R2 | One migration adds read indexes: `createdAt` on the five line tables and `Inventory_Item_Histories`, `external_batch_id` on `Pharmacy_Store_Histories`, `(event_type, aggregate_id)` and `(sent_at, attempts)` on `Outbox_Events` | None exist (`schema.sql`, `outbox-events.sql`), and the outbox grows with every event. Recorded as a deviation from the Accounting plan |
 | R3 | Raw parameterised SQL (`sequelizeConnection.query` with replacements) for the aggregates | Five-table unions and grouped joins; the outbox writer already does this (`claimSequences`) |
 | R4 | The drainer claims only `attempts < max` (Accounting D14) | Exhausted rows at the head starved it (`drainer.ts:58-67`) |
+| R5 | Deleting a prescribed drug keeps the intentional `ON DELETE CASCADE` of its consumables, and also sends `charge.reversal.requested` for each consumable in the same transaction (owner, 2026-11-22) | Accounting cannot tell which consumables belonged to the drug, so without these events it kept charging for items that were gone |
+| R6 | A drug cannot be deleted while any of its consumables is paid, permitted or cleared (owner, 2026-11-22) | The same rule a consumable deleted on its own already follows; Accounting refuses to reverse a settled line |
 
 ## 4. Findings to report, not fixed here
 
-- `Additional_item_prescriptions.prescribed_drug_id` is `ON DELETE CASCADE`. Deleting a prescribed
-  drug deletes its consumables with no `charge.reversal.requested`, so Accounting keeps charges the
-  EMR no longer has. The comparison surfaces these as Accounting-higher.
 - A patient or store return with a batch but no item code is skipped (logged only). The comparison
   counts those units on the EMR side, so the batch shows EMR-higher.
 
@@ -161,7 +160,14 @@ verifier and key. The drainer no longer claims exhausted rows. One index migrati
 - `npx tsc --noEmit` clean; eslint clean on changed files (two existing non-null warnings in
   `drainer.ts`, lines 108–109, untouched).
 
-**Findings (§4)** are reported in the PR, not fixed here.
+**Added after review (R5, R6).** `deletePrescribedDrug` sends a reversal request for each consumable
+before the cascade, and the service refuses a drug with a paid consumable
+(`CANNOT_DELETE_DRUG_WITH_PAID_ITEMS`). `Orders/Pharmacy/delete-drug-consumables.test.ts`: 4 passed,
+including a check that the reconciliation line list shows the cascaded consumables as deleted.
+Without the change, the cascade and paid-consumable tests fail. Pharmacy, Reconciliation and reversal
+suites: 44 passed, 1 skipped (existing `describe.skip` in `pharmacy-order.test.ts`).
+
+**Finding (§4)** reported in the PR, not fixed here.
 
 **Limitations.** `start_date` is midnight in the server's time zone. A line created before the start
 date and deleted after it counts only through its reversal row. Each charges page recomputes the
