@@ -115,6 +115,19 @@ describe('outbox drainer', () => {
     expect(Number(row?.attempts)).toBe(3);
   });
 
+  it('exhausted rows at the head of the queue no longer starve a fresh event', async () => {
+    await seedEvents(3);
+    await OutboxEvent.update({ attempts: 3 }, { where: {} });
+    const t = await sequelizeConnection.transaction();
+    await emitChargeCaptured(line(4), t);
+    await t.commit();
+
+    const result = await drainOnce(accept, { ...CONFIG, maxAttempts: 3, batchSize: 3 });
+
+    expect(result).toMatchObject({ claimed: 1, sent: 1 });
+    expect(await OutboxEvent.count({ where: { sent_at: null } })).toBe(3);
+  });
+
   it('a recovered inbox drains a previously-failed event (replay works)', async () => {
     await seedEvents(1);
     await drainOnce(reject500, CONFIG); // fails once

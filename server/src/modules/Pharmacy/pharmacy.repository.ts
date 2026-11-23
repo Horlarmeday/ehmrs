@@ -137,7 +137,11 @@ export async function updateGenericDrug(data) {
       return drug;
     }
 
-    const updated = await drug.update(data, { transaction: t });
+    // The code is the item's identity in Accounting (stock batches, item cache), so it never changes.
+    const changes: { name?: string; type?: string } = {};
+    if (data.name !== undefined) changes.name = data.name;
+    if (data.type !== undefined) changes.type = data.type;
+    const updated = await drug.update(changes, { transaction: t });
     await emitItemChanged(updated.id, t);
     return updated;
   });

@@ -8,6 +8,7 @@ import bodyParser from 'body-parser';
 import { RequestHandler } from 'express-serve-static-core';
 import { ParsedQs } from 'qs';
 import inboxRoutes from '../../modules/Inbox/inbox.routes';
+import reconciliationRoutes from '../../modules/Reconciliation/reconciliation.routes';
 // import agenda from '../command/agenda';
 // import serveStatic from 'serve-static';
 
@@ -25,6 +26,7 @@ export default (
   // Mounted BEFORE the global JSON parser: the reverse inbox verifies an HMAC over the RAW request
   // bytes (ADR-0025 §5), so its route-scoped raw parser must see the body before bodyParser.json()
   // re-parses it. No other route is affected.
+  server.use('/api/integration/accounting/reconciliation', reconciliationRoutes);
   server.use('/api/integration/accounting', inboxRoutes);
   server.use(bodyParser.json({ limit: '50mb' }));
   server.use(bodyParser.urlencoded({ extended: true }));

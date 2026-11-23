@@ -1,4 +1,4 @@
-import { Transaction } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 import { sequelizeConnection } from '../../database/config/data-source';
 import { OutboxEvent } from '../../database/models/outboxEvent';
 import { signEvent, SigningKey } from './signer';
@@ -14,6 +14,11 @@ import { signEvent, SigningKey } from './signer';
  */
 
 const MAX_ATTEMPTS = Number(process.env.EMR_OUTBOX_MAX_ATTEMPTS || 5);
+
+/** The attempt count at which an unsent row stops being retried and becomes a dead letter. */
+export function maxOutboxAttempts(): number {
+  return MAX_ATTEMPTS;
+}
 const BATCH_SIZE = Number(process.env.EMR_OUTBOX_BATCH_SIZE || 50);
 
 export interface DrainConfig {
@@ -55,9 +60,13 @@ function readEnvConfig(): { inboxUrl: string; signingKey: SigningKey } {
  * grab the same row and never block each other. Returns the claimed rows on the caller's
  * transaction; the caller sends each and marks it in a short transaction per row.
  */
-async function claimBatch(batchSize: number, transaction: Transaction): Promise<OutboxEvent[]> {
+async function claimBatch(
+  batchSize: number,
+  maxAttempts: number,
+  transaction: Transaction
+): Promise<OutboxEvent[]> {
   return OutboxEvent.findAll({
-    where: { sent_at: null },
+    where: { sent_at: null, attempts: { [Op.lt]: maxAttempts } },
     order: [['id', 'ASC']],
     limit: batchSize,
     lock: transaction.LOCK.UPDATE,
@@ -101,19 +110,13 @@ export async function drainOnce(
   const maxAttempts = config?.maxAttempts ?? MAX_ATTEMPTS;
   const batchSize = config?.batchSize ?? BATCH_SIZE;
 
-  const claimed = await sequelizeConnection.transaction(t => claimBatch(batchSize, t));
+  const claimed = await sequelizeConnection.transaction(t => claimBatch(batchSize, maxAttempts, t));
 
   let sent = 0;
   let failed = 0;
   let deadLettered = 0;
 
   for (const row of claimed) {
-    if (row.attempts >= maxAttempts) {
-      // Already exhausted: leave it as a dead letter, do not keep hammering the inbox with it.
-      deadLettered += 1;
-      continue;
-    }
-
     const payload = stampSentAt(row.payload as Record<string, unknown>, new Date());
     const signed = signEvent(payload, signingKey);
 
