@@ -1,6 +1,6 @@
 # Domain slice playbook
 
-How to migrate one domain (#45 onward) from the Vue 2 client to `client-vue3`. It follows the auth tracer bullet (#42, `tasks/42-auth-tracer-bullet.md`), which is the worked example for every step. The rules behind it are ADR-0002 to ADR-0010; the look is `client-vue3/DESIGN.md` (Direction A).
+How to migrate one domain (#45 onward) from the Vue 2 client to `client-vue3`. It follows the auth tracer bullet (#42, `tasks/42-auth-tracer-bullet.md`), which is the worked example for every step. The rules behind it are in `AGENTS.md` ("Vue 3 migration rules") and ADR-0002 to ADR-0010; the look is `client-vue3/DESIGN.md` (Direction A).
 
 The order matters: ground truth first, then the frozen logic, then design, then views. A view never wires to a store that is not contract-green.
 
@@ -17,15 +17,7 @@ The order matters: ground truth first, then the frozen logic, then design, then 
 2. **Trace table per view** (frozen script, ADR-0002): guard → dispatch with payload → post-dispatch behaviour, each row pointing at a legacy line.
 3. **Rule transcription table** (ADR-0007): every `v-validate` rule, its v4 form and message, and the timing (`data-vv-validate-on`). Check `v-validate`, not the asterisks. Custom rules port verbatim; check every legacy copy of a custom rule, as copies differ (`phone_pattern` has two versions).
 
-Templates:
-
-| # | Step | Legacy line | Frozen? |
-| --- | --- | --- | --- |
-| 1 | Guard: `validateAll()`; stop if invalid | 214 | yes |
-
-| View | Field (message name) | Legacy v2 | v4 | Timing |
-| --- | --- | --- | --- | --- |
-| Sign in | `username` | `required\|min:3` | `required\|min:3` | blur |
+Use the trace and rule transcription templates in `AGENTS.md` ("Templates"). The transcription table has a message column: copy each legacy message exactly, since `@vee-validate/rules` supplies no message text.
 
 ## 2. Fixtures (ADR-0005)
 
@@ -41,12 +33,7 @@ Templates:
 - One store per module, same id, actions with the same names and bodies, every mutation a same-named action, calls through `core/axios`.
 - Dead code (calls to endpoints the server doesn't have, with no caller) is dropped only with owner sign-off and recorded.
 - Type state from generated types. Where legacy stores something odd (an update count in an `alert` field), keep the behaviour and make the type say so.
-- Mapping table per store, in the plan and the PR:
-
-| Legacy | Pinia | Note |
-| --- | --- | --- |
-| mutation `SET_SETTINGS` | same-named action | |
-| `dispatch('settings/fetchSettings')` in `Login-1.vue` | `useSettingsStore().fetchSettings()` | |
+- Mapping table per store, in the plan and the PR, using the template in `AGENTS.md`.
 
 ## 4. Contract tests
 
