@@ -19,8 +19,21 @@ lint () {
   fi
 }
 
+lint_vue3 () {
+  files=$(git -C "$MYPATH" diff --cached --name-only --diff-filter=ACMR -- 'client-vue3/*.ts' 'client-vue3/*.vue' 'client-vue3/*.js' | sed 's|^client-vue3/||')
+  [ -z "$files" ] && return 0
+  if [ ! -f "$MYPATH/client-vue3/node_modules/eslint/bin/eslint.js" ]; then
+    echo "You don't have linter installed for client-vue3. Skipping..."
+    return 0
+  fi
+  echo "- husky/pre-commit: client-vue3"
+  (cd "$MYPATH/client-vue3" && echo "$files" | xargs node node_modules/eslint/bin/eslint.js --no-warn-ignored) || exit 1
+}
+
 MYPATH=$(pwd)
 echo "Current path: $MYPATH"
 
+sh "$MYPATH/.husky/twin-patch-check.sh" || exit 1
 lint server Backend
 lint client Frontend
+lint_vue3
