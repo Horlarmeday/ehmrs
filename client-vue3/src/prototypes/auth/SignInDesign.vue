@@ -15,7 +15,7 @@ const organization = computed(() =>
   props.state === 'no-settings' ? '' : 'Electronic Hospital Management Resource System'
 );
 const logo = ref(
-  props.state === 'no-logo' ? '/media/logos/missing-logo.png' : '/media/logos/ms.png'
+  props.state === 'no-logo' ? '/v3/media/logos/missing-logo.png' : '/v3/media/logos/ms.png'
 );
 const logoFailed = ref(false);
 
@@ -46,7 +46,7 @@ const onSubmit = handleSubmit(() => {
 function onLogoError(): void {
   if (logoFailed.value) return;
   logoFailed.value = true;
-  logo.value = '/media/logos/ms.png';
+  logo.value = '/v3/media/logos/ms.png';
 }
 
 onMounted(() => {

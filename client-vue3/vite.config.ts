@@ -33,6 +33,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    assetsDir: 'v3/assets',
     sourcemap: true,
   },
 })

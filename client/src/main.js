@@ -4,6 +4,7 @@ import router from './router';
 import store from '@/core/services/store';
 import Notifications from 'vue-notification';
 import dayjs from '@/core/plugins/dayjs';
+import { loadFlips } from '@/core/services/flips';
 
 Vue.config.productionTip = false;
 
@@ -34,8 +35,10 @@ Vue.use(VeeValidate);
 Vue.use(Notifications);
 Vue.use(dayjs);
 
-new Vue({
-  router,
-  store,
-  render: h => h(App),
-}).$mount('#app');
+loadFlips().then(() => {
+  new Vue({
+    router,
+    store,
+    render: (h) => h(App),
+  }).$mount('#app');
+});

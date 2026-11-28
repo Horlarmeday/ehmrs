@@ -1,0 +1,18 @@
+worker_processes 1;
+pid {{OUT_DIR}}/nginx.pid;
+error_log {{OUT_DIR}}/error.log;
+
+events {
+    worker_connections 1000;
+}
+
+http {
+    include {{MIME_TYPES}};
+    default_type application/octet-stream;
+    client_body_temp_path {{OUT_DIR}}/tmp/body;
+    proxy_temp_path {{OUT_DIR}}/tmp/proxy;
+    fastcgi_temp_path {{OUT_DIR}}/tmp/fastcgi;
+    uwsgi_temp_path {{OUT_DIR}}/tmp/uwsgi;
+    scgi_temp_path {{OUT_DIR}}/tmp/scgi;
+    include {{NGINX_DIR}}/ehmrs.conf;
+}

@@ -3,6 +3,7 @@ import Router from 'vue-router';
 import authStore from '@/core/services/store/auth/moduleAuth';
 import { RESET_LAYOUT_CONFIG } from '@/core/services/store/config.module';
 import store from '@/core/services/store';
+import { handOffToVue3 } from '@/core/services/flips';
 
 Vue.use(Router);
 
@@ -1526,11 +1527,13 @@ const router = new Router({
   ],
 });
 
+router.beforeEach(handOffToVue3);
+
 router.beforeEach((to, from, next) => {
   // reset config to initial state
   store.dispatch(RESET_LAYOUT_CONFIG);
 
-  if (to.matched.some(record => record.meta.requiresAuth)) {
+  if (to.matched.some((record) => record.meta.requiresAuth)) {
     if (authStore.state.token) {
       next();
       return;

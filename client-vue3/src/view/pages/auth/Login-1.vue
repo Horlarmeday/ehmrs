@@ -10,7 +10,7 @@ import { useSettingsStore, type SystemSettings } from '../../../stores/settings'
 import SignInIllustration from './components/SignInIllustration.vue';
 import { keepSignInNotice, takeSignInNotice } from './signInNotice';
 
-const FALLBACK_LOGO = '/media/logos/ms.png';
+const FALLBACK_LOGO = '/v3/media/logos/ms.png';
 
 const auth = useAuthStore();
 const settingsStore = useSettingsStore();

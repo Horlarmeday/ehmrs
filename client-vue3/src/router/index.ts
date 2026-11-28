@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import type { RouteRecordRaw, RouterHistory } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
+import { legacyTarget } from '../core/flips';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -1498,7 +1499,8 @@ const routes: RouteRecordRaw[] = [
 ];
 
 export function createAppRouter(
-  history: RouterHistory = createWebHistory(import.meta.env.BASE_URL)
+  history: RouterHistory = createWebHistory(import.meta.env.BASE_URL),
+  handOff: (url: string) => void = (url) => window.location.assign(url)
 ) {
   const router = createRouter({
     history,
@@ -1507,6 +1509,13 @@ export function createAppRouter(
       return { left: 0, top: 0 };
     },
     routes,
+  });
+
+  router.beforeEach((to, from) => {
+    const target = legacyTarget(to, from);
+    if (target === null) return true;
+    handOff(target);
+    return false;
   });
 
   router.beforeEach((to, _from, next) => {
